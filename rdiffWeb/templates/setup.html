@@ -1,0 +1,96 @@
+<!--StartDelete-->
+<html>
+   <head>
+      <title>Setup rdiffWeb</title>
+      <link rel="stylesheet" href="../static/main.css"/>
+      <link rel="stylesheet" href="../static/setup.css"/>
+   </head>
+<!--EndDelete-->
+<link rel="stylesheet" href="../static/setup.css"/>
+<!--StartIncludeIf:error-->
+<body>
+<h1 class="error">Error: ^error$</h1>
+</body>
+<!--EndIncludeIf:error-->
+<!--StartDeleteIf:error-->
+<body>
+<h1>Set up rdiffWeb</h1>
+<div>
+   <div style="padding-bottom: 1em;">
+      rdiffWeb has not been configured, so we need to do that before logging in. Configuration will only take a few minutes.
+   </div>
+   <div class="error" id="rootpassworderror"></div>
+   <div>
+      <!--StartIncludeIf:rootEnabled-->
+      Enter the root password to continue: <input type="password" name="rootpassword" id="rootpassword"/>
+      <!--EndIncludeIf:rootEnabled-->
+      <!--StartDelete-->
+      rdiffWeb has detected that the root account has been disabled.<br/>
+      Enter the password for the user that installed rdiffWeb: <input type="password" name="rootpassword" id="rootpassword"/>
+      <!--EndDelete-->
+      <!--StartDeleteIf:rootEnabled-->
+      <div style="color: red">rdiffWeb has detected that the root account has been disabled.<br/>
+      Web-based setup for this configuration is not supported. Please run "rdiff-web-config" from the console with root privileges.</div>
+      <!--EndDeleteIf:rootEnabled-->
+   </div>
+   <div>
+      <!--StartIncludeIf:rootEnabled-->
+      <button type="button" id="rootpasswordbtn">Start setup</button>
+      <!--EndIncludeIf:rootEnabled-->
+   </div>
+</div>
+<div id="adminSetup" style="display: none">
+   <h3>Add initial adminstrator account</h3>
+   <div class="error" id="adminError"></div>
+      There must be one user account set up with adminstrative privileges.
+      This user account can then be used to add other user accounts.<br/>
+      Let's set up this user now.
+   <table>
+   <tr>
+      <td>Username for the administrative user:</td>
+      <td><input type="text" id="adminUsername"/></td>
+   </tr>
+   <tr>
+      <td>Password for the administrative user:</td>
+      <td><input type="password" id="adminPassword"/></td>
+   </tr>
+   <tr>
+      <td>Confirm password for the administrative user:</td>
+      <td><input type="password" id="adminConfirmPassword"/></td>
+   </tr>
+   </table>
+   <button type="button" id="adminbtn">Add administrative user</button>
+</div>
+<div id="adminRoot" style="display: none">
+   <h3>Set user root directory</h3>
+   <div class="error" id="adminRootError"></div>
+   <div>
+      Just one more step, and then we're done. We need to have a "root" directory for the newly-created user.<br/>
+      All rdiff-backup repositories for this user must be within this directory, and rdiffWeb will search within<br/>
+      this directory for repositories.
+   </div>
+   <table>
+   <tr>
+      <td>Enter the root directory:</td>
+      <td><input type="text" id="adminRoot"/></td>
+   </tr>
+   </table>
+   <button type="button" id="adminRootBtn">Set root directory</button>
+</div>
+<div id="SetupCompleteDiv" style="display: none">
+   <p>
+   Congratulations, rdiffWeb setup is now complete! <a href="/">Click here</a> to log into rdiffWeb.
+   </p>
+</div>
+</form>
+</body>
+<script src="/static/ajax.js" type="text/javascript"></script>
+<script src="/static/setup.js" type="text/javascript"></script>
+<script src="/static/json2.js" type="text/javascript"></script>
+<!--EndDeleteIf:error-->
+<!--StartDelete-->
+</html>
+<script src="../static/globals.js" type="text/javascript"></script>
+<script src="../static/borders.js" type="text/javascript"></script>
+<script src="../static/setup.js" type="text/javascript"></script>
+<!--EndDelete-->

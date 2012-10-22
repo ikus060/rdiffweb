@@ -1,0 +1,66 @@
+<!--StartDelete-->
+<html>
+<head>
+   <link rel="stylesheet" href="main.css" type="text/css" />
+</head>
+<body>
+<!--EndDelete-->
+
+
+<h2>^title$</h2>
+
+<!--StartDeleteIf:failuresOnly-->
+<!--StartIncludeIf:statusLink-->
+<h3><a href="^statusLink$">Recent Backup Status</a></h3>
+<!--EndIncludeIf:statusLink-->
+<!--EndDeleteIf:failuresOnly-->
+
+<!--StartDeleteIf:isEntry-->
+<!--StartIncludeIf:failuresOnly-->
+<a href="^statusLink$">Include successful backups</a>
+<!--EndIncludeIf:failuresOnly-->
+<!--StartDeleteIf:failuresOnly-->
+<a href="^failuresOnlyLink$">Show only backups with errors</a>
+<!--EndDeleteIf:failuresOnly-->
+<!--EndDeleteIf:isEntry-->
+
+<!--StartDeleteIf:messages--><p>There are no recent backups<!--StartDeleteIf:failuresOnly--> to display<!--EndDeleteIf:failuresOnly--><!--StartIncludeIf:failuresOnly--> with errors<!--EndIncludeIf:failuresOnly-->.</p><!--EndDeleteIf:messages-->
+
+<!--StartRepeat:messages-->
+<!--StartIncludeIf:isSuccess--><h3 class="backupStatus_success"><a href="^link$">Successful Backups for ^dateString$</a></h3>
+<div>
+<p>The following backups have completed successfully:</p>
+<ul>
+   <!--StartRepeat:backups-->
+   <li><a class="statusRepoLink" href="^repoLink$">^displayDate$ - ^repo$ - ^size$</a></li>
+   <!--EndRepeat:backups-->
+</ul>
+</div>
+<!--EndIncludeIf:isSuccess-->
+
+<!--StartDeleteIf:isSuccess--><h3 class="backupStatus_failure"><a href="^link$">Backup Completed with Errors: ^repo$</a></h3>
+<div>
+   <p>The backup to <strong>^repo$</strong> on <strong>^displayDate$</strong>
+   failed with the following errors:</p>
+   <blockquote>^multiline:errors$</blockquote>
+   <p>Backup size: ^size$</p>
+</div>
+<!--EndDeleteIf:isSuccess-->
+   <!--StartIncludeIf:repoErrors-->
+   <p>There following repositories contain errors:</p>
+   <ul>
+      <!--StartRepeat:repoErrors-->
+      <li><a class="statusRepoLink" href="^repoLink$">^repo$: ^multiline:error$</a></li>
+      <!--EndRepeat:repoErrors-->
+   </ul>
+   <!--EndIncludeIf:repoErrors-->
+<!--EndRepeat:messages-->
+
+<!--StartIncludeIf:feedLink-->
+<a href="^feedLink$"><img src="../static/feed-icon-32x32.png" width="32" height="32" border="0" /></a>
+<!--EndIncludeIf:feedLink-->
+
+<!--StartDelete-->
+</body>
+</html>
+<!--EndDelete-->

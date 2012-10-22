@@ -1,0 +1,88 @@
+<!--StartDelete-->
+<html>
+<head>
+   <link rel="stylesheet" href="../static/main.css" type="text/css" />
+</head>
+<body>
+<!--EndDelete-->
+<script type="text/javascript" language="javascript" src="/static/popups.js"></script>
+
+<h2>^title$</h2>
+<p>
+   <!--StartRepeat:parentDirs--> / <!--StartIncludeIf:parentPath--><a href=^parentPath$><!--EndIncludeIf:parentPath-->^parentDir$<!--StartIncludeIf:parentPath--></a><!--EndIncludeIf:parentPath--><!--EndRepeat:parentDirs-->
+</p>
+<p>
+<!--StartIncludeIf:restoreUrl--><a href="^restoreUrl$">Restore Folder</a> | View Folder<!--EndIncludeIf:restoreUrl-->
+<!--StartIncludeIf:viewUrl-->Restore Folder | <a href="^viewUrl$">View Folder</a><!--EndIncludeIf:viewUrl-->
+</p>
+
+<!--StartIncludeIf:warning-->
+<p class="warning">
+   ^warning$
+</p>
+<!--EndIncludeIf:warning-->
+
+<!--StartIncludeIf:restoreUrl-->
+<table id="PopupTable">
+<thead>
+   <tr>
+      <td></td>
+      <td>Name</td>
+      <td>Size</td>
+      <td>Last Revision</td>
+      <td>Previous Revisions</td>
+   </tr>
+</thead>
+<tbody>
+   <!--StartRepeat:files-->
+   <tr StartDeleteIf:exists- style="color: #999" EndDeleteIf:exists- StartIncludeIf:altRow- class="altRow" EndIncludeIf:altRow- >
+      <td class="Icon"><img src="/static/images/^filetype$.png" valign=middle alt="^filetype$" ></td>
+      <td><a href="^fileRestoreUrl$">^filename$</a></td>
+      <td>^size$</td>
+      <td>^date$</td>
+
+      <!--StartIncludeIf:hasPrevRevisions-->
+   <!-- ENTRIES WITH REVISIONS -->
+      <td class="PopupLinkCell">
+         <a class="PopupLink" href="javascript:void 0">^numPrevRevisions$ Previous Revision<!--StartIncludeIf:hasMultipleRevisions-->s<!--EndIncludeIf:hasMultipleRevisions--></a>
+      </td>
+      <td class="FlyoutContainer">
+         <div>
+         <table>
+            <!--StartRepeat:changeDates-->
+               <tr><td><a href="^changeDateUrl$">^changeDateStr$</a></td></tr>
+            <!--EndRepeat:changeDates-->
+         </table>
+         </div>
+      </td>
+      <!--EndIncludeIf:hasPrevRevisions-->
+      <!--StartDeleteIf:hasPrevRevisions-->
+   <!-- ENTRIES WITH NO REVISIONS -->
+      <td class="PopupLinkCell">
+         No Previous Revisions
+      </td>
+      <!--EndDeleteIf:hasPrevRevisions-->
+      </tr>
+   <!--EndRepeat:files-->
+</tbody>
+</table>
+<!--EndIncludeIf:restoreUrl-->
+
+<!--StartIncludeIf:viewUrl-->
+<table>
+<thead>
+   <tr>
+      <td></td>
+      <td>Choose a backup date to restore as of:</td>
+   </tr>
+</thead>
+<tbody>
+   <!--StartRepeat:restoreDates-->
+   <tr>
+      <td class="Icon"><img src="/static/images/history.png"></img></td>
+      <td><a href="^dirRestoreUrl$">^dateStr$</a></td>
+   </tr>
+   <!--EndRepeat:restoreDates-->
+</tbody>
+</table>
+<!--EndIncludeIf:viewUrl-->

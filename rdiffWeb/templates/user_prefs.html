@@ -1,0 +1,126 @@
+<!--StartDelete-->
+<html>
+<head>
+   <link rel="stylesheet" href="../static/main.css" type="text/css" />
+</head>
+<body>
+<!--EndDelete-->
+
+<h2>User Preferences</h2>
+<p>
+<!--StartIncludeIf:error--><p class="error">^error$</p><!--EndIncludeIf:error-->
+<!--StartIncludeIf:message--><p class="message">^message$</p><!--EndIncludeIf:message-->
+<form action="" method="post">
+<input style="display:none" name="form" value="setPassword"/>
+<div class="groupboxDiv">
+<div class="roundedBorderContents">
+<h3 class="groupboxHeader">Change Password</h3>
+<table>
+<tr>
+   <td>Current Password:</td>
+   <td><input class="textInput" type="password" name="current"/></td>
+</tr>
+<tr>
+   <td>New Password:</td>
+   <td><input class="textInput" type="password" name="new"/></td>
+</tr>
+<tr>
+   <td>Confirm New Password:</td>
+   <td><input class="textInput" type="password" name="confirm"/></td>
+</tr>
+<tr>
+   <td style="height: 2em"> <input class="groupboxButton" type="submit" value="Change Password" /></td>
+</tr>
+</table>
+</div>
+</div>
+</form>
+
+
+<form action="" method="post">
+<input style="display:none" name="form" value="updateRepos"/>
+<div class="groupboxDiv">
+<div class="roundedBorderContents">
+<h3 class="groupboxHeader">Update Backup Locations</h3>
+<input type="submit" class="groupboxButton" value="Find and Update Backup Locations" />
+</div>
+</div>
+</form>
+
+<form action="" method="post">
+<input style="display:none" name="form" value="setRestoreType"/>
+<div class="groupboxDiv">
+   <div class="roundedBorderContents">
+      <h3 class="groupboxHeader">Directory Restore Format</h3>
+         <label><input type="radio" name="restoreType" StartIncludeIf:useZipFormat- checked='checked' EndIncludeIf:useZipFormat- value="zip">
+                </input>Restore my directories in <b>.zip</b> format</label>
+      <br/>
+         <label><input type="radio" name="restoreType" StartDeleteIf:useZipFormat- checked='checked' EndDeleteIf:useZipFormat- value="tgz">
+                </input>Restore my directories in <b>.tar.gz</b> format</label>
+      <br/><br/>
+         (If unsure, select the .zip format.)
+      <br/>
+      <input type="submit" class="groupboxButton" value="Update Restore Preferences" />
+   </div>
+</div>
+</form>
+
+<!--StartIncludeIf:notificationsEnabled-->
+<form action="" method="post">
+<input style="display:none" name="form" value="setNotifications"/>
+<div class="groupboxDiv">
+<div class="roundedBorderContents">
+   <h3 class="groupboxHeader">Backup Notifications</h3>
+   <table class="emailTable">
+      <tr>
+         <td>Notify me at</td>
+         <td><input id="userEmail" class="textInput" name="userEmail" value="^userEmail$"></td>
+         <td align="left">
+            when my backups do not get backed up for:
+         </td>
+      </tr>
+   </table>
+   <table class="notificationsTable">
+      <tr></tr>
+      <!--StartRepeat:backups-->
+      <tr class="notificationsRow">
+         <td>^backupName$ : </td>
+         <td>
+            <select name="^backupName$numDays" id="^backupName$Select">
+               <!--StartRepeat:notifyOptions-->
+               <option ^selectedStr$>^optionStr$</option>
+               <!--EndRepeat:notifyOptions-->
+            </select>
+         </td>
+      </tr>
+      <!--EndRepeat:backups-->
+      <tr style="height: 2em">
+         <td><input type="submit" class="groupboxButton" value="Change Notifications" /></td>
+      </tr>
+   </table>
+</div>
+</div>
+</form>
+<script type="text/javascript">
+   var sExampleEmail = '^sampleEmail$';
+   var oUserEmailElem = document.getElementById('userEmail');
+   fnOnBlur = function()
+   {
+      if (oUserEmailElem.value === '')
+      {
+         oUserEmailElem.style.color = '#AAA';
+         oUserEmailElem.value = sExampleEmail;
+      }
+   }
+   oUserEmailElem.onfocus = function()
+   {
+      if (oUserEmailElem.value === sExampleEmail)
+      {
+         oUserEmailElem.value = '';
+         oUserEmailElem.style.color = '#000';
+      }
+   }
+   oUserEmailElem.onblur = fnOnBlur;
+   fnOnBlur();
+</script>
+<!--EndIncludeIf:notificationsEnabled-->

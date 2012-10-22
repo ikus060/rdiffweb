@@ -1,0 +1,144 @@
+#!/usr/bin/python
+
+import os
+import sys
+import stat
+import rdiffWeb.rdw_config
+import rdiffWeb.db_sqlite
+import rdiffWeb.rdw_spider_repos
+
+# legalOptions should be a list of legal values.  An empty list means all values are legal
+def promptUser(promptText, legalOptions, defaultOption, isNumericOption):
+   if defaultOption:
+      promptText = promptText + " [%s]" % str(defaultOption)
+   response = raw_input(promptText + ": ")
+   if not response:
+      return defaultOption
+
+   option = None
+   while True:
+      try:
+         if isNumericOption:
+            option = int(response)
+         else:
+            option = response
+         if legalOptions and not option in legalOptions:
+            raise ValueError
+         break
+      except ValueError:
+         response = raw_input(""""%s" is not a valid option.  Please enter your choice again: """ % response)
+
+   return option
+
+def addConfigFileLine(lineText):
+   configFilePath = "/etc/rdiffweb/rdw.conf"
+   open(configFilePath, "a").write(lineText+"\n")
+   os.chmod(configFilePath, stat.S_IRWXU)
+
+def addUser(username, password, userRoot, isAdmin):
+   userDB = rdiffWeb.db_sqlite.sqliteUserDB(rdiffWeb.rdw_config.getDatabasePath())
+   userDB.addUser(username)
+   userDB.setUserPassword(username, password)
+   userDB.setUserInfo(username, userRoot, isAdmin)
+
+def sqlSetup():
+   # TODO: load default answers from existing config file, if any
+   try:
+      import sqlite3
+   except ImportError:
+      from pysqlite2 import dbapi2 as sqlite3
+   except ImportError:
+      print "Unable to load the python bindings for sqlite (sometimes packaged as python-sqlite).  Please install this module and try again."
+      sys.exit(2)
+
+   userDB = rdiffWeb.db_sqlite.sqliteUserDB(rdiffWeb.rdw_config.getDatabasePath())
+
+   print "\nLet's add the first user account.  This user will have admin privileges, including the ability to add/delete other users."
+   username = promptUser("Enter the username", [], "", False)
+   password = promptUser("Enter the password", [], "", False)
+   userDB._executeQuery("BEGIN")
+   userDB.addUser(username)
+   userDB.setUserPassword(username, password)
+   print "\nEach user has a user root directory.  This root directory acts much as the system root directory.  All backup repositories must be within this directory.\nExamples: /var/backup/repos"
+   userRoot = ""
+   while True:
+      userRoot = promptUser("Enter the root directory for '%s'" % username, [], "", False)
+      if not os.access(userRoot, os.F_OK):
+         if promptUser("The entered directory does not exist.  Do you want to continue?", ["yes", "no"], "no", False) == "yes":
+            break
+      break
+   userDB.setUserInfo(username, userRoot, True)
+   print "User added successfully."
+
+   prompt = "\nDo you want me to automatically search the user's root directory for backup repositories?"
+   response = promptUser(prompt, ["yes", "no"], "yes", False)
+   if response == "yes":
+      try:
+         repos = rdiffWeb.rdw_spider_repos.findReposForUser(username, userDB)
+      except OSError, error:
+         print "Unable to search repository: " + str(error)
+      else:
+         print "Repository search complete."
+   userDB._executeQuery("END")
+
+def doMainSetup():
+   try:
+      import cherrypy
+   except:
+      print "Unable to load the CherryPy python module. This is most likely because it has not been installed. Please install this module and run the configuration again."
+      sys.exit(2)
+   
+   addConfigFileLine("ServerName=localhost")
+   addConfigFileLine("ServerPort=8080")
+
+   sqlSetup()
+   print "Configuration complete!"
+
+def doAddUser():
+   if len(sys.argv) != 5:
+      print "Usage: rdiff-web-config adduser <username> <password> </path/to/usr/root>"
+      sys.exit(2)
+
+   addUser(sys.argv[2], sys.argv[3], sys.argv[4], False)
+
+def doSpiderRepos():
+   rdiffWeb.rdw_spider_repos.findReposForAllUsers()  
+
+def createNeededFolders():
+   # We can't just check for root privileges, since cygwin doesn't support the "root" user.
+   # So we poke around at folders/files, to make sure that we have the required permissions.
+   
+   # The configuration directory is supposed to be readable only by root.
+   configDir = "/etc/rdiffweb"
+   if not os.path.exists(configDir):
+      os.mkdir("/etc/rdiffweb", stat.S_IRWXU)
+   os.chmod("/etc/rdiffweb", stat.S_IRWXU)
+   # If the configuration path exists, make sure that we can look inside
+   files = os.listdir(configDir)
+   
+   # See if the config file already exists, and if it does, if we can write to it.
+   configFile = os.path.join(configDir, "rdw.conf")
+   open(configFile, "a")
+   os.chmod(configFile, stat.S_IRWXU)
+
+if __name__ == "__main__":
+   # Because this script manipulates files in the /etc directory, it must be run with root privileges.
+   # Validate this before the user has spent a lot of time entering data.
+   try:
+      createNeededFolders()
+   except (IOError, OSError), error:
+      if error.errno != 13 and error.errno != 1: # Only catch "permission denied" errors
+         raise
+      print "Error: this script must be run with root privileges."
+      sys.exit(2)
+      
+   if len(sys.argv) > 1:
+      if sys.argv[1] == "adduser":
+         doAddUser()
+      elif sys.argv[1] == "spiderrepos":
+         doSpiderRepos()
+      else:
+         print "Error: unrecognized command."
+         sys.exit(2)
+   else:
+      doMainSetup()

@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<rss version="2.0">
+   <channel>
+      <title>Backup Status for ^username$</title>
+      <link>^link$</link>
+      <description>Up-to-the-minute backup status for ^username$'s backups</description>
+      <!--StartRepeat:messages-->
+
+      <item>
+<!-- BACKUP SUCCESS -->
+<!--StartIncludeIf:isSuccess-->
+         <title>Successful Backups for ^dateString$</title>
+<!--EndIncludeIf:isSuccess-->
+<!-- BACKUP FAILURE -->
+<!--StartDeleteIf:isSuccess-->
+         <title>Backup Completed with Errors: ^repo$</title>
+<!--EndDeleteIf:isSuccess-->
+         <link>^link$</link>
+         <description><![CDATA[
+<!--StartIncludeIf:isSuccess-->
+<p>The following backups have completed successfully:</p>
+<ul>
+   <!--StartRepeat:backups-->
+   <li>^displayDate$ - ^repo$ - ^size$</li>
+   <!--EndRepeat:backups-->
+</ul>
+<!--EndIncludeIf:isSuccess-->
+
+<!-- BACKUP FAILURE -->
+<!--StartDeleteIf:isSuccess-->
+<p>The backup to <strong>^repo$</strong> on <strong>^displayDate$</strong>
+completed with the following errors:</p>
+<blockquote>^multiline:errors$</blockquote>
+<p>Backup size: ^size$</p>
+</div>
+<!--EndDeleteIf:isSuccess-->
+
+   <!--StartIncludeIf:repoErrors-->
+   <p>There following repositories contain errors:</p>
+   <ul>
+      <!--StartRepeat:repoErrors-->
+      <li>^repo$: ^multiline:error$</li>
+      <!--EndRepeat:repoErrors-->
+   </ul>
+   <!--EndIncludeIf:repoErrors-->
+
+         ]]></description>
+         <pubDate>^pubDate$</pubDate>
+      </item>
+      <!--EndRepeat:messages-->
+   </channel>
+</rss>

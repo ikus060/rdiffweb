@@ -1,0 +1,73 @@
+
+.xtop,
+.xbottom
+{
+   display:block;
+   background:transparent;
+   font-size:1px;
+}
+.xb1,
+.xb2,
+.xb3,
+.xb4
+{
+   display:block;
+   overflow:hidden;
+}
+.xb1,
+.xb2,
+.xb3
+{
+   height:1px;
+}
+.xb2,
+.xb3,
+.xb4
+{
+   border-left:1px solid #555;
+   border-right:1px solid #555;
+}
+.xb1
+{
+   margin:0 5px;
+   background:#555;
+}
+.xb2
+{
+   margin:0 3px;
+   border-width:0 2px;
+}
+.xb3
+{
+   margin:0 2px;
+}
+.xb4
+{
+   height:2px;
+   margin:0 1px;
+}
+
+.roundedBorderInner
+{
+   display:block;
+   border:0 solid #555;
+   border-width:0 1px;
+}
+
+.roundedBorderContents
+{
+   padding: .3em .5em .3em .5em;
+   /* Use a default border, for times when javascript is turned off. 
+   These will be overridden below when the borders are added.*/
+   border: 1px solid #555;
+}
+.roundedBorderInner .roundedBorderContents
+{
+   background-color: inherit;
+   border: 0px solid silver;
+}
+
+.roundedBorderContainer td
+{
+   padding: 0;
+}

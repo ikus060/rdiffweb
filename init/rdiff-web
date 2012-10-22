@@ -1,0 +1,78 @@
+#!/bin/sh
+
+# Basic support for the Linux Standard Base Specification 3.1.0
+### BEGIN INIT INFO
+# Provides: rdiff_web
+# Required-Start: $network $local_fs
+# Required-Stop: $network
+# Default-Start: 2 3 5
+# Default-Stop: 0 6
+# Description: Manages the rdiffWeb daemon
+### END INIT INFO
+
+PIDFILE="/var/run/rdiff-web"
+
+SUCCESS_MSG="[71G done"
+ERROR_MSG="[71Gfailed"
+
+if [ -f /etc/init.d/functions ]; then
+ . /etc/init.d/functions
+fi
+
+# This script won't be able to run without root privileges.
+if [ `id -u` -ne 0 ]; then
+   echo "Error: this script must be run as root."
+   exit 1
+fi
+
+
+# See how we were called.
+case "$1" in
+   start)
+      if [ ! -f /etc/rdiffweb/rdw.conf ]; then
+         echo -n "rdiffWeb is not configured!  Please run 'rdiff-web-config'."
+         echo $ERROR_MSG
+         exit 1
+      fi
+      echo -n "Starting rdiffWeb..."
+      /usr/bin/rdiff-web --pid-file="$PIDFILE" \
+      --background > /dev/null 2>&1
+      echo $SUCCESS_MSG
+      exit 0
+   ;;
+
+   stop)
+      if [ -e "$PIDFILE" ]; then
+         echo -n "Stopping rdiffWeb..."
+         kill `cat "$PIDFILE" 2>/dev/null` > /dev/null 2>&1
+         rm $PIDFILE > /dev/null 2>&1
+         echo $SUCCESS_MSG
+         exit 0
+      else
+         echo -n "rdiffWeb is not running"
+         echo $ERROR_MSG
+         exit 1
+      fi
+   ;;
+
+   status)
+      echo -n "rdiffWeb "
+      if [ -e "$PIDFILE" ]; then
+         echo "is running."
+         exit 0
+      else
+         echo "is not running."
+         exit 1
+      fi
+   ;;
+
+   restart)
+      "$0" stop && "$0" start
+   ;;
+
+   *)
+      echo "Usage: `basename "$0"` {start|stop|status|restart}"
+      exit 1
+esac
+
+exit 0

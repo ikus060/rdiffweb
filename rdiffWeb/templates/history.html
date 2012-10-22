@@ -1,0 +1,65 @@
+<!--StartDelete-->
+<html>
+<head>
+   <link rel="stylesheet" href="../static/main.css" type="text/css" />
+   <link rel="stylesheet" href="../static/borders.css" type="text/css" />
+</head>
+<body>
+<script type="text/javascript" language="javascript" src="../static/globals.js"></script>
+<script type="text/javascript" language="javascript" src="../static/borders.js"></script>
+<!--EndDelete-->
+<script type="text/javascript" language="javascript" src="../static/popups.js"></script>
+
+<h2>^title$</h2>
+<table id="PopupTable">
+<thead>
+   <tr>
+      <td></td>
+      <td>Date</td>
+      <td>Size</td>
+      <td>Cumulative Size<a class="PopupLink" href="javascript:void 0">?</a></td>
+      <td class="FlyoutContainer">
+         <div id="incrementSizePopup">
+            For each backup entry, the <b>cumulative size</b> is the size of the current backup, plus the amount of data that is required to restore to that point in time.
+         </div>
+      </td>
+      <td>Result</td>
+   </tr>
+</thead>
+<tbody>
+   <!--StartRepeat:history-->
+   <tr>
+      <td class="Icon" valign="middle"><img src="/static/images/history.png"></img></td>
+      <td>^date$</td>
+      <td>^size$</td>
+      <td>^cumulativeSize$</td>
+      <td class="FlyoutContainer"></td>
+      <!--StartIncludeIf:errors-->
+      <td class="BackupResult">
+         <a class="PopupLink" href="javascript:void 0">Errors...</a>
+      </td>
+      <td class="FlyoutContainer">
+         <div id="^date$">
+         <p>
+            ^multiline:errors$
+         </p>
+         </div>
+      </td>
+      <!--EndIncludeIf:errors-->
+      <!--StartDeleteIf:errors-->
+      <td class="BackupResult">
+      <!--StartIncludeIf:inProgress-->
+         In Progress
+      <!--EndIncludeIf:inProgress-->
+      <!--StartDeleteIf:inProgress-->
+         Success
+      <!--EndDeleteIf:inProgress-->
+      </td>
+      <!--EndDeleteIf:errors-->
+
+      </tr>
+   <!--EndRepeat:history-->
+</tbody>
+</table>
+
+

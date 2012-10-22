@@ -1,0 +1,40 @@
+
+<div id="NavBar">
+   <div class="roundedBorderContents">
+      <div id="logo">rdiffWeb</div>
+   </div>
+</div>
+<br/>
+
+   <div id="Login">
+      <div style="margin: 1em">
+      <h2>Login Required</h2>
+<!--StartDeleteIf:message--><p>Enter your username and password to log in:</p><!--EndDeleteIf:message-->
+<!--StartIncludeIf:message-->
+      <p class="warning">^message$</p>
+<!--EndIncludeIf:message-->
+      <form method="post" action="^action$">
+         <input type="hidden" name="^redirectKey$" value="^redirectValue$"/>
+         <table class="Login">
+            <tr>
+               <td>Username:</td>
+               <td><input type="text" name="^loginKey$" value="^loginValue$" size="20" id="username" /></td>
+            </tr>
+            <tr>
+               <td>Password:</td>
+               <td><input type="password" name="^passwordKey$" size="20"/></td>
+            </tr>
+            <tr>
+               <td></td>
+               <td><input class="submit" type="submit" value="Log In"/></td>
+            </tr>
+         </table>
+         </form>
+      </div>
+   </div>
+   <div style="clear: both;"></div>
+<script type="text/javascript">
+document.getElementById("username").focus();
+</script>
+</body></html>
+

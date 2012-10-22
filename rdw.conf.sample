@@ -1,0 +1,20 @@
+
+# This is the name of the host that the server should bind to.
+# ServerName=localhost
+
+# This is the port that the server should listen on
+# ServerPort=8080
+
+# The server can be configured to email user when their repositories have not
+# been backed up for a user-specified period of time. To enable this feature,
+# set below settings to correct values.
+# 
+# emailNotificationTime=23:00 # The time of day when notification emails are sent out
+# emailHost=smtp.server.com
+# emailSender=john@doe.com
+# emailUsername=email_user # May be blank, if the smtp server does not require authentication
+# emailPassword=email_password # May be blank, if the smtp server does not require authentication
+
+# rdiffWeb can automatically update all user repositories. Automatic updates can be be
+# enabled by setting the interval in minutes between updates.
+# autoUpdateRepos=15 # Update user repositories every 15 minutes

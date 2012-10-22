@@ -1,0 +1,261 @@
+body
+{
+   font-family: sans-serif;
+}
+
+a
+{
+   text-decoration: none;
+   color: blue;
+}
+a:hover
+{
+   text-decoration: underline;
+}
+
+#NavBar .roundedBorderBackground,
+#NavBar .roundedBorderContents
+{
+   background-color: #ccc;
+}
+
+#NavBar 
+{
+      float: right;
+      padding: 0.25em;
+}
+#logo
+{
+   font-size: 200%;
+   font-family: "Arial" sans-serif;
+   font-weight: bold;
+   text-align: center;
+}
+#logo a:link,
+#logo a:hover,
+#logo a:visited
+{
+   color: black;
+   text-decoration: none;
+}
+#Content
+{
+   margin: 1em;
+}
+
+/* all tables have padding by default */
+table thead
+{
+   text-align: left;
+   font-size: 14pt;
+   font-weight: bold;
+   background-color: #DCE4F9;
+   border-bottom: 2px solid #F5F5F5;
+}
+
+table td
+{
+   padding: 0.25em 2em 0.25em 0em;
+   vertical-align: bottom;
+   font-size: 12pt;
+}
+
+/* Listing pages */
+td.PopupLinkCell,
+td.PopupLinkCell td
+{
+   padding-right: 0em;
+   text-align: right;
+}
+
+.altRow td
+{
+   background-color: #EFEFEF;
+}
+
+.altRow .FlyoutContainer td
+{
+   background-color: silver;
+}
+
+table
+{
+   border-collapse: collapse;
+}
+
+/* disable padding on icons and flyouts */
+td.Icon,
+td.FlyoutContainer,
+td.FlyoutContainer td
+{
+   padding-right: 0em;
+}
+
+table td.Icon
+{
+   padding-top: 0em;
+   padding-bottom: 0em;
+   vertical-align: middle;
+}
+
+td.Icon img
+{
+   height: 22px;
+   width: 22px;
+}
+
+td.FlyoutContainer div
+{
+   display:none;
+   position: absolute;
+   float:right;
+   color: black;
+   background-color: silver;
+   border: 1px solid gray;
+   padding: .25em;
+}
+
+div#incrementSizePopup
+{
+   color: black;
+   background-color: #E8EEFA;
+   font-weight: normal;
+   text-align: left;
+   width: 40em;
+   padding: 0.5em;
+}
+
+/* Login page */
+table.Login td
+{
+   padding-right: .5em;
+}
+
+#Login
+{
+   background-color: #E8EEFA;
+   color: #000;
+   spacing: 0.5em;
+   float: left;
+   border: 10px double white;
+}
+
+#Login input.submit
+{
+   background-image: url("/static/images/login_button.gif");
+   border: 0em;
+   width: 100px;
+   height: 30px;
+   color: #FFF;
+   font-weight: bold;
+}
+
+
+/* Status Page */
+.backupStatus_success,
+.backupStatus_success a:link,
+.backupStatus_success a:visited
+{
+   color: green;
+   text-decoration: none;
+}
+.backupStatus_failure,
+.backupStatus_failure a:link,
+.backupStatus_failure a:visited
+{
+   color: red;
+   text-decoration: none;
+}
+.statusRepoLink
+{
+   color: black;
+}
+
+/* Prefs page */
+p.warning,
+p.error
+{
+   color: red
+}
+
+p.message
+{
+   color: green
+}
+
+table.emailTable td
+{
+   vertical-align: top;
+   padding-right: 0.5em;
+   text-align: right;
+}
+
+tr.notificationsRow td
+{
+   border-top:1px solid #ccc;
+   padding-bottom: 5px;
+   padding-top: 5px;
+   padding-right: 1em;
+}
+
+.groupboxDiv
+{
+   display: table-cell;
+}
+.groupboxDiv .roundedBorderBackground
+{
+   background-color: #FFF;
+}
+
+h1,
+h2,
+h3,
+table thead
+{
+   color: #3162a6;
+}
+
+input.textInput
+{
+   width: 17em;
+}
+
+.groupboxHeader
+{
+   margin-top: 0px;
+}
+
+.groupboxButton
+{
+}
+
+/* Admin page */
+table.usersTable
+{
+   border-collapse: collapse;
+}
+
+table.usersTable td
+{
+   vertical-align: top;
+   /*text-align: right;*/
+   border-bottom: 1px solid #ccc;
+   padding-bottom: 5px;
+   padding-top: 5px;
+   padding-right: 1em;
+}
+
+table.usersTable tr.userEditingRow td
+{
+   border-bottom: 0px;
+}
+
+table.usersTable tr.notEditingRow,
+table.usersTable tr.notChangingPasswordRow
+{
+   display: none;
+}
+table.usersTable tr.editingRow,
+table.usersTable tr.changingPasswordRow
+{
+}
