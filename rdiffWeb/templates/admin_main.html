@@ -75,41 +75,4 @@
 		<input type="submit" value="Add User" />
 	</form>
 </div>
-
-
-<!--StartDelete-->
-<!--StartIncludeIf:emailsEnabled-->
-<form>
-<h3>Email Notifications</h3>
-rdiffWeb can be configured to notify user when their backups have not been run.<br>
-To enable email notification, the following settings must be set:
-<table>
-   <tr>
-      <td>Email Server:</td>
-      <td><input class="textInput" name="emailHost" value="^emailHost$"></td>
-   </tr>
-   <!--<tr>
-      <td>Email Port:</td>
-      <td><input name="emailPort" value="25"></td>
-   </tr>-->
-   <tr>
-      <td>From Email Address:</td>
-      <td><input class="textInput" name="emailSender" value="^emailSender$"></td>
-   </tr>
-   <tr>
-      <td colspan="2">The following must be set if the smtp server requires authentication:</td>
-   </tr>
-   <tr>
-      <td>Email Username</td>
-      <td><input class="textInput" name="emailUsername" value="^emailUsername$"></td>
-   </tr>
-   <tr>
-      <td>Email Password</td>
-      <td><input class="textInput" name="emailPassword" value="^emailPassword$"></td>
-   </tr>
-</table>
-<input type="submit" value="Configure email settings"/>
-</form>
-<!--EndIncludeIf:emailsEnabled-->
-<!--EndDelete-->
 </div>
