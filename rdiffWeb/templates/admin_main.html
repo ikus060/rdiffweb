@@ -3,55 +3,13 @@
 <!--StartIncludeIf:error--><p class="error">^error$</p><!--EndIncludeIf:error-->
 <!--StartIncludeIf:message--><p class="message">^message$</p><!--EndIncludeIf:message-->
 
-<div id="manageuser-div" class="section">
-    <h3>Manage users</h3>
-    <table class="datatable">
-        <thead>
-        	<td>Username</td>
-        	<td>User root directory</td>
-        	<td>Is administrator</td>
-        	<td>&nbsp;</td>
-        	<td>&nbsp;</td>
-        </thead>
-	<!--StartRepeat:users-->
-	    <tr>
-	        <td>^username$</td>
-	        <td>^userRoot$</td>
-	        <td>
-	            <!--StartIncludeIf:isAdmin-->Yes<!--EndIncludeIf:isAdmin-->
-                <!--StartDeleteIf:isAdmin-->No<!--EndDeleteIf:isAdmin-->
-	        </td>
-	        <td>
-	            <a href="javascript:void 0" class="overlay-link" rel="#edit-^username$">Edit</a>
-	            <div id="edit-^username$" class="simple-overlay">
-	            	<div class="overlay-content">
-	            		<h3>Edit user ^username$</h3>
-			         	<form action="" method="post">
-			            <input style="display:none" name="action" value="edit" />
-			            <input style="display:none" name="username" value="^username$" />
-			            <div id="edit-user-userroot" class="form-field">
-			               <label for="userRoot">User root directory</label>
-			               <input type="text" class="textInput" name="userRoot" value="^userRoot$" />
-			            </div>
-			            <div id="edit-user-isadmin" class="form-field">
-			               <!--StartIncludeIf:isAdmin--><input checked type="checkbox" name="isAdmin" /><!--EndIncludeIf:isAdmin-->
-			               <!--StartDeleteIf:isAdmin--><input type="checkbox" name="isAdmin" /><!--EndDeleteIf:isAdmin-->
-			            	<label for="isAdmin">Is administrator</label>
-			            </div>
-			            <input type="submit" class="groupboxButton" value="Save Changes" />
-			            </form>
-		            </div>
-	            </div>
-	        </td>
-	        <td>
-	        	<a href="/admin/deleteUser?user=^username$" onClick="if(!confirm('Are you sure that you wish to delete user ^username$?')) return(false);">Delete</a>
-	        </td>
-	    </tr>
-	<!--EndRepeat:users-->
-	</table>
+<div id="metanav">
+<ul>
+<li><a href="javascript:void 0" class="overlay-link" rel="#adduser-overlay">Add user</a></li>
+</ul>
 </div>
-
-<div id="adduser-div" class="section">
+<div id="adduser-overlay" class="simple-overlay">
+<div class="overlay-content">
 	<h3>Add user</h3>
 	<form action="/admin/" method="post">
 	<input style="display:none" name="action" value="add" />
@@ -75,4 +33,51 @@
 		<input type="submit" value="Add User" />
 	</form>
 </div>
+</div>
+	
+<h3>Manage users</h3>
+<table class="datatable">
+    <thead>
+    	<td>Username</td>
+    	<td>User root directory</td>
+    	<td>Is administrator</td>
+    	<td>&nbsp;</td>
+    	<td>&nbsp;</td>
+    </thead>
+<!--StartRepeat:users-->
+    <tr>
+        <td>^username$</td>
+        <td>^userRoot$</td>
+        <td>
+            <!--StartIncludeIf:isAdmin-->Yes<!--EndIncludeIf:isAdmin-->
+            <!--StartDeleteIf:isAdmin-->No<!--EndDeleteIf:isAdmin-->
+        </td>
+        <td>
+            <a href="javascript:void 0" class="overlay-link" rel="#edit-^username$">Edit</a>
+            <div id="edit-^username$" class="simple-overlay">
+            	<div class="overlay-content">
+            		<h3>Edit user ^username$</h3>
+		         	<form action="" method="post">
+		            <input style="display:none" name="action" value="edit" />
+		            <input style="display:none" name="username" value="^username$" />
+		            <div id="edit-user-userroot" class="form-field">
+		               <label for="userRoot">User root directory</label>
+		               <input type="text" class="textInput" name="userRoot" value="^userRoot$" />
+		            </div>
+		            <div id="edit-user-isadmin" class="form-field">
+		               <!--StartIncludeIf:isAdmin--><input checked type="checkbox" name="isAdmin" /><!--EndIncludeIf:isAdmin-->
+		               <!--StartDeleteIf:isAdmin--><input type="checkbox" name="isAdmin" /><!--EndDeleteIf:isAdmin-->
+		            	<label for="isAdmin">Is administrator</label>
+		            </div>
+		            <input type="submit" class="groupboxButton" value="Save Changes" />
+		            </form>
+	            </div>
+            </div>
+        </td>
+        <td>
+        	<a href="/admin/deleteUser?user=^username$" onClick="if(!confirm('Are you sure that you wish to delete user ^username$?')) return(false);">Delete</a>
+        </td>
+    </tr>
+<!--EndRepeat:users-->
+</table>
 </div>
