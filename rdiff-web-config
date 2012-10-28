@@ -88,7 +88,7 @@ def doMainSetup():
       print "Unable to load the CherryPy python module. This is most likely because it has not been installed. Please install this module and run the configuration again."
       sys.exit(2)
    
-   addConfigFileLine("ServerName=localhost")
+   addConfigFileLine("ServerHost=localhost")
    addConfigFileLine("ServerPort=8080")
 
    sqlSetup()

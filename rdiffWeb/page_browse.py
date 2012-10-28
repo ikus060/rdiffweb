@@ -35,7 +35,7 @@ class rdiffBrowsePage(page_main.rdiffPage):
       repo = encodePath(repo)
       path = encodePath(path)
       # Build "parent directories" links
-      parentDirs = [{ "parentPath" : self.buildLocationsUrl(), "parentDir" : "Backup Locations" }]
+      parentDirs = []
       parentDirs.append({ "parentPath" : self.buildBrowseUrl(repo, "/", False), "parentDir" : repo.lstrip("/") })
       parentDirPath = "/"
       for parentDir in path.split("/"):
@@ -53,15 +53,19 @@ class rdiffBrowsePage(page_main.rdiffPage):
       restoreUrl = ""
       viewUrl = ""
       if restore == "T":
-         title = "Restore "+repo
+         title = "Restore"
          viewUrl = self.buildBrowseUrl(repo, path, False)
-         restoreDates = librdiff.getDirRestoreDates(joinPaths(userRoot, repo), path)
-         restoreDates.reverse() # sort latest first
-         restoreDates = [ { "dateStr" : x.getDisplayString(), "dirRestoreUrl" : self.buildRestoreUrl(repo, path, x) }
-                         for x in restoreDates ]
+         tempDates = librdiff.getDirRestoreDates(joinPaths(userRoot, repo), path)
+         tempDates.reverse() # sort latest first
+         restoreDates = []
+         for x in tempDates:
+            altEntry = (len(restoreDates) % 2 != 0)
+            restoreDates.append({ "dateStr" : x.getDisplayString(), 
+                                 "dirRestoreUrl" : self.buildRestoreUrl(repo, path, x),
+                                 "altRow" : altEntry })
          entries = []
       else:
-         title = "Browse "+repo
+         title = "Browse"
          restoreUrl = self.buildBrowseUrl(repo, path, True)
          restoreDates = []
 

@@ -1,9 +1,9 @@
+<div id="page-content">
 <h2>Backup Locations</h2>
 
-<table id="PopupTable">
+<table class="datatable">
    <thead>
       <tr>
-         <td></td>
          <td>Name</td>
          <td>Last Backup</td>
          <td>Last Backup Size</td>
@@ -12,12 +12,14 @@
    </thead>
    <tbody>
       <!--StartRepeat:repos-->
-      <tr StartIncludeIf:altRow- class="altRow" EndIncludeIf:altRow- >
-         <td class="Icon"><img src="/static/images/repo.png"></img></td>
-         <td><!--StartDeleteIf:failed--><a href="^repoBrowseUrl$"><!--EndDeleteIf:failed-->^repoName$<!--StartDeleteIf:failed--></a><!--EndDeleteIf:failed--></td>
+      <tr StartIncludeIf:altRow-class="altRow"EndIncludeIf:altRow->
+         <td class="icon repo">
+         	<!--StartDeleteIf:failed--><a href="^repoBrowseUrl$"><!--EndDeleteIf:failed-->^repoName$<!--StartDeleteIf:failed--></a><!--EndDeleteIf:failed-->
+         </td>
          <td>^repoDate$</td><td>^repoSize$</td>
-         <td><a href="^repoHistoryUrl$">(more)</a></td>
+         <td><a href="^repoHistoryUrl$">More...</a></td>
       </tr>
       <!--EndRepeat:repos-->
    </tbody>
 </table>
+</div>

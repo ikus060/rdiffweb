@@ -43,10 +43,6 @@ class rdiffStatusPage(page_main.rdiffPage):
    feed.exposed = True
    
    def _compileStatusPageTemplate(self, isMainPage, messages, failuresOnly):
-      mainStatusLink = ""
-      failuresStatusLink = ""
-      if (not isMainPage) or failuresOnly: mainStatusLink = self._buildAbsolutePageUrl(False)
-      else: failuresStatusLink = self._buildAbsolutePageUrl(True)
       
       if isMainPage: title = "Backup Status"
       else: title = "Backup Status Entry"
@@ -60,8 +56,6 @@ class rdiffStatusPage(page_main.rdiffPage):
       page = page + self.compileTemplate("status.html", 
                                          messages=messages,
                                          feedLink=feedLink,
-                                         statusLink=mainStatusLink,
-                                         failuresOnlyLink=failuresStatusLink,
                                          failuresOnly=failuresOnly,
                                          title=title,
                                          isEntry=not isMainPage)

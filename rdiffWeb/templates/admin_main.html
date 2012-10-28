@@ -1,83 +1,86 @@
-<!--StartDelete-->
-<html>
-<head>
-   <link rel="stylesheet" href="../static/main.css" type="text/css" />
-</head>
-<body>
-<script type="text/javascript" language="javascript" src="../static/globals.js"></script>
-<!--EndDelete-->
-<script type="text/javascript" language="javascript" src="../static/admin.js"></script>
-
-
-<h2>Admin Panel</h2>
+<div id="page-content">
+<h2>Admin panel</h2>
 <!--StartIncludeIf:error--><p class="error">^error$</p><!--EndIncludeIf:error-->
 <!--StartIncludeIf:message--><p class="message">^message$</p><!--EndIncludeIf:message-->
-<h3>Manage Users</h3>
-<table class="usersTable">
-<!--StartRepeat:users-->
-   <tr class="userNotEditingRow">
-      <td>^username$</td>
-      <td><a href="javascript:void 0" class="editLink">Edit User</a></td>
-      <td><a href="/admin/deleteUser?user=^username$" onClick="if(!confirm('Are you sure that you wish to delete user ^username$?')) return(false) ">Delete User</a></td>
-   </tr>
-   <tr class="notEditingRow">
-      <form action="" method="post">
-         <td colspan="4" style="text-align:left">
-            <input style="display:none" name="action" value="edit" />
-            <input style="display:none" name="username" value="^username$" />
-            <div>
-               User Root Directory: <input class="textInput" name="userRoot" value="^userRoot$" />
-            </div>
-            <div style="text-align:left">
-               <!--StartIncludeIf:isAdmin--><input checked type="checkbox" name="isAdmin" /><!--EndIncludeIf:isAdmin-->
-               <!--StartDeleteIf:isAdmin--><input type="checkbox" name="isAdmin" /><!--EndDeleteIf:isAdmin-->
-            User is admin?
-            </div>
-            <br/>
-            <div><input type="submit" class="groupboxButton" value="Save Changes" /></div>
-         </td>
-      </form>
-   </tr>
-<!--EndRepeat:users-->
-</table>
 
-<br>
-<form action="/admin/" method="post">
-<input style="display:none" name="action" value="add" />
-<h3>Add User</h3>
-<table>
-   <tr>
-      <td>Username:</td>
-      <td><input name="username" value="^username$" /></td>
-   </tr>
-   <tr>
-      <td>Password:</td>
-      <td><input name="password"></td>
-   </tr>
-   <tr>
-      <td>User Root Directory:</td>
-      <td><input name="userRoot" value="^userRoot$" /></td>
-   </tr>
-   <tr>
-      <td>
-         <!--StartIncludeIf:isAdmin--><input checked type="checkbox" name="isAdmin" /><!--EndIncludeIf:isAdmin-->
-         <!--StartDeleteIf:isAdmin--><input type="checkbox" name="isAdmin" /><!--EndDeleteIf:isAdmin-->
-         User is admin?
-      </td>
-   </tr>
-</table>
-<br>
-<input type="submit" value="Add User" />
-</form>
+<div id="manageuser-div" class="section">
+    <h3>Manage users</h3>
+    <table class="datatable">
+        <thead>
+        	<td>Username</td>
+        	<td>User root directory</td>
+        	<td>Is administrator</td>
+        	<td>&nbsp;</td>
+        	<td>&nbsp;</td>
+        </thead>
+	<!--StartRepeat:users-->
+	    <tr>
+	        <td>^username$</td>
+	        <td>^userRoot$</td>
+	        <td>
+	            <!--StartIncludeIf:isAdmin-->Yes<!--EndIncludeIf:isAdmin-->
+                <!--StartDeleteIf:isAdmin-->No<!--EndDeleteIf:isAdmin-->
+	        </td>
+	        <td>
+	            <a href="javascript:void 0" class="overlay-link" rel="#edit-^username$">Edit</a>
+	            <div id="edit-^username$" class="simple-overlay">
+	            	<div class="overlay-content">
+	            		<h3>Edit user ^username$</h3>
+			         	<form action="" method="post">
+			            <input style="display:none" name="action" value="edit" />
+			            <input style="display:none" name="username" value="^username$" />
+			            <div id="edit-user-userroot" class="form-field">
+			               <label for="userRoot">User root directory</label>
+			               <input type="text" class="textInput" name="userRoot" value="^userRoot$" />
+			            </div>
+			            <div id="edit-user-isadmin" class="form-field">
+			               <!--StartIncludeIf:isAdmin--><input checked type="checkbox" name="isAdmin" /><!--EndIncludeIf:isAdmin-->
+			               <!--StartDeleteIf:isAdmin--><input type="checkbox" name="isAdmin" /><!--EndDeleteIf:isAdmin-->
+			            	<label for="isAdmin">Is administrator</label>
+			            </div>
+			            <input type="submit" class="groupboxButton" value="Save Changes" />
+			            </form>
+		            </div>
+	            </div>
+	        </td>
+	        <td>
+	        	<a href="/admin/deleteUser?user=^username$" onClick="if(!confirm('Are you sure that you wish to delete user ^username$?')) return(false);">Delete</a>
+	        </td>
+	    </tr>
+	<!--EndRepeat:users-->
+	</table>
+</div>
+
+<div id="adduser-div" class="section">
+	<h3>Add user</h3>
+	<form action="/admin/" method="post">
+	<input style="display:none" name="action" value="add" />
+		<div id="add-user-username-div" class="form-field">
+	        <label for="username">Username</label>
+	        <input type="text" name="username" value="^username$" />
+		</div>
+		<div id="add-user-password-div" class="form-field">
+	        <label for="password">Password</label>
+	        <input type="password" name="password">
+		</div>
+		<div id="add-user-userroot" class="form-field">
+	        <label for="userRoot">User root directory</label>
+	        <input type="text" name="userRoot" value="^userRoot$" />
+		</div>
+		<div id="add-user-isadmin" class="form-field">
+	         <!--StartIncludeIf:isAdmin--><input checked type="checkbox" name="isAdmin" /><!--EndIncludeIf:isAdmin-->
+	         <!--StartDeleteIf:isAdmin--><input type="checkbox" name="isAdmin" /><!--EndDeleteIf:isAdmin-->
+	         <label for="isAdmin">Is administrator</label>
+		</div>
+		<input type="submit" value="Add User" />
+	</form>
+</div>
 
 
 <!--StartDelete-->
 <!--StartIncludeIf:emailsEnabled-->
-<br>
 <form>
-<div class="groupboxDiv">
-<br>
-<h3 class="groupboxHeader">Email Notifications</h3>
+<h3>Email Notifications</h3>
 rdiffWeb can be configured to notify user when their backups have not been run.<br>
 To enable email notification, the following settings must be set:
 <table>
@@ -106,7 +109,7 @@ To enable email notification, the following settings must be set:
    </tr>
 </table>
 <input type="submit" value="Configure email settings"/>
-</div>
 </form>
 <!--EndIncludeIf:emailsEnabled-->
 <!--EndDelete-->
+</div>

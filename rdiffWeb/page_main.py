@@ -57,12 +57,12 @@ class rdiffPage:
       return self.compileTemplate("page_end.html")
 
    def writeTopLinks(self):
-      pages = [("/status/", "Backup Status")]
+      pages = [("/status/", "Backup status")]
       if self.getUserDB().modificationsSupported():
          pages.append(("/prefs", "Preferences"))
       if self.getUserDB().userIsAdmin(self.getUsername()):
          pages.append(("/admin", "Admin"))
-      pages.append(("/logout", "Log Out"))
+      pages.append(("/logout", "Logout"))
       links = []
       for page in pages:
          (url, title) = page
@@ -71,7 +71,7 @@ class rdiffPage:
 
    def writeErrorPage(self, error):
       page = self.startPage("Error")
-      page = page + error
+      page = page + self.compileTemplate("error.html", title="Error", error=error)
       page = page + self.endPage()
       return page
 

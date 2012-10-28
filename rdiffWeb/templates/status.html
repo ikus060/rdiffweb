@@ -1,28 +1,24 @@
-<!--StartDelete-->
-<html>
-<head>
-   <link rel="stylesheet" href="main.css" type="text/css" />
-</head>
-<body>
-<!--EndDelete-->
+<div id="page-content">
+<h2>
+	^title$
+	<!--StartIncludeIf:feedLink-->
+	<a href="^feedLink$"><img src="../static/feed-icon-32x32.png" width="32" height="32" border="0" valign="middle" /></a>
+	<!--EndIncludeIf:feedLink-->
+</h2>
 
 
-<h2>^title$</h2>
-
-<!--StartDeleteIf:failuresOnly-->
-<!--StartIncludeIf:statusLink-->
-<h3><a href="^statusLink$">Recent Backup Status</a></h3>
-<!--EndIncludeIf:statusLink-->
-<!--EndDeleteIf:failuresOnly-->
-
+<div id="metanav">
+<ul>
 <!--StartDeleteIf:isEntry-->
 <!--StartIncludeIf:failuresOnly-->
-<a href="^statusLink$">Include successful backups</a>
+<li><a href="?">Show all</a></li>
 <!--EndIncludeIf:failuresOnly-->
 <!--StartDeleteIf:failuresOnly-->
-<a href="^failuresOnlyLink$">Show only backups with errors</a>
+<li><a href="?failures=T">Show errors only</a></li>
 <!--EndDeleteIf:failuresOnly-->
 <!--EndDeleteIf:isEntry-->
+</ul>
+</div>
 
 <!--StartDeleteIf:messages--><p>There are no recent backups<!--StartDeleteIf:failuresOnly--> to display<!--EndDeleteIf:failuresOnly--><!--StartIncludeIf:failuresOnly--> with errors<!--EndIncludeIf:failuresOnly-->.</p><!--EndDeleteIf:messages-->
 
@@ -42,7 +38,7 @@
 <div>
    <p>The backup to <strong>^repo$</strong> on <strong>^displayDate$</strong>
    failed with the following errors:</p>
-   <blockquote>^multiline:errors$</blockquote>
+   <p class="mono">^multiline:errors$</p>
    <p>Backup size: ^size$</p>
 </div>
 <!--EndDeleteIf:isSuccess-->
@@ -55,12 +51,4 @@
    </ul>
    <!--EndIncludeIf:repoErrors-->
 <!--EndRepeat:messages-->
-
-<!--StartIncludeIf:feedLink-->
-<a href="^feedLink$"><img src="../static/feed-icon-32x32.png" width="32" height="32" border="0" /></a>
-<!--EndIncludeIf:feedLink-->
-
-<!--StartDelete-->
-</body>
-</html>
-<!--EndDelete-->
+</div>

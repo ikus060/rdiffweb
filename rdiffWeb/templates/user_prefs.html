@@ -1,75 +1,61 @@
-<!--StartDelete-->
-<html>
-<head>
-   <link rel="stylesheet" href="../static/main.css" type="text/css" />
-</head>
-<body>
-<!--EndDelete-->
-
+<div id="page-content">
 <h2>User Preferences</h2>
-<p>
+
 <!--StartIncludeIf:error--><p class="error">^error$</p><!--EndIncludeIf:error-->
 <!--StartIncludeIf:message--><p class="message">^message$</p><!--EndIncludeIf:message-->
-<form action="" method="post">
-<input style="display:none" name="form" value="setPassword"/>
-<div class="groupboxDiv">
-<div class="roundedBorderContents">
-<h3 class="groupboxHeader">Change Password</h3>
-<table>
-<tr>
-   <td>Current Password:</td>
-   <td><input class="textInput" type="password" name="current"/></td>
-</tr>
-<tr>
-   <td>New Password:</td>
-   <td><input class="textInput" type="password" name="new"/></td>
-</tr>
-<tr>
-   <td>Confirm New Password:</td>
-   <td><input class="textInput" type="password" name="confirm"/></td>
-</tr>
-<tr>
-   <td style="height: 2em"> <input class="groupboxButton" type="submit" value="Change Password" /></td>
-</tr>
-</table>
-</div>
-</div>
-</form>
 
+<div id="change-password-div" class="section">
+	<h3>Change Password</h3>
+	<form action="" method="post">
+		<input style="display:none" name="form" value="setPassword"/>
+		<div id="current-div" class="form-field">
+		    <label for="current">Current password</label>
+		    <input class="textInput" type="password" name="current"/>
+		</div>
+		<div id="new-div" class="form-field">
+		    <label for="new">New password</label>
+		    <input class="textInput" type="password" name="new"/>
+		</div>
+		<div id="confirm-div" class="form-field">
+		    <label for="confirm">Confirm new password</label>
+		    <input class="textInput" type="password" name="confirm"/>
+		</div>
+	    <input type="submit" value="Change Password" />
+	</form>
+</div>
 
-<form action="" method="post">
-<input style="display:none" name="form" value="updateRepos"/>
-<div class="groupboxDiv">
-<div class="roundedBorderContents">
-<h3 class="groupboxHeader">Update Backup Locations</h3>
-<input type="submit" class="groupboxButton" value="Find and Update Backup Locations" />
+<div id="update-repos-div" class="section">
+	<h3>Update backup locations</h3>
+	<p>Refresh the list of repository location to be displayed in the Backup status view.</p>
+	<form action="" method="post">
+		<input style="display:none" name="form" value="updateRepos"/>
+		<input type="submit" value="Update backup locations" />
+	</form>
 </div>
-</div>
-</form>
 
-<form action="" method="post">
-<input style="display:none" name="form" value="setRestoreType"/>
-<div class="groupboxDiv">
-   <div class="roundedBorderContents">
-      <h3 class="groupboxHeader">Directory Restore Format</h3>
-         <label><input type="radio" name="restoreType" StartIncludeIf:useZipFormat- checked='checked' EndIncludeIf:useZipFormat- value="zip">
-                </input>Restore my directories in <b>.zip</b> format</label>
-      <br/>
-         <label><input type="radio" name="restoreType" StartDeleteIf:useZipFormat- checked='checked' EndDeleteIf:useZipFormat- value="tgz">
-                </input>Restore my directories in <b>.tar.gz</b> format</label>
-      <br/><br/>
-         (If unsure, select the .zip format.)
-      <br/>
-      <input type="submit" class="groupboxButton" value="Update Restore Preferences" />
-   </div>
+<div id="restore-pref-div" class="section">
+	<h3>Restore format</h3>
+	<p>Select the desired archive format to be used when restoring a directory.</p>
+	<form action="" method="post">
+		<input style="display:none" name="form" value="setRestoreType"/>
+		<div id="restore-type-zip">
+			<input type="radio" name="restoreType" StartIncludeIf:useZipFormat-checked='checked'EndIncludeIf:useZipFormat- value="zip" />
+			<label for="zip">Restore my directories in <b>.zip</b> format</label>
+		</div>
+		<div id="restore-type-tgz">
+			<input type="radio" name="restoreType" StartDeleteIf:useZipFormat-checked='checked'EndDeleteIf:useZipFormat- value="tgz" />
+			<label for="tgz">Restore my directories in <b>.tar.gz</b> format</label>
+		</div>
+		<p>If unsure, select the zip format.</p>
+		<input type="submit" value="Update Restore Preferences" />
+	</form>
 </div>
-</form>
 
 <!--StartIncludeIf:notificationsEnabled-->
 <form action="" method="post">
 <input style="display:none" name="form" value="setNotifications"/>
 <div class="groupboxDiv">
-<div class="roundedBorderContents">
+<div>
    <h3 class="groupboxHeader">Backup Notifications</h3>
    <table class="emailTable">
       <tr>
@@ -124,3 +110,4 @@
    fnOnBlur();
 </script>
 <!--EndIncludeIf:notificationsEnabled-->
+</div>

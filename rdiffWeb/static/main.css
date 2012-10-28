@@ -1,155 +1,202 @@
-body
-{
-   font-family: sans-serif;
+body {
+    font-family: sans-serif;
+    margin: 0;
 }
-
-a
-{
+a {
    text-decoration: none;
    color: blue;
 }
-a:hover
-{
+a:hover {
    text-decoration: underline;
 }
-
-#NavBar .roundedBorderBackground,
-#NavBar .roundedBorderContents
-{
-   background-color: #ccc;
+p.warning, p.error {
+   color: red
+}
+p.message {
+   color: green
+}
+#page-content {
+	margin: 0 auto;
+	width: 980px;
+	min-width: 980px;
+}
+.mono {
+	font-family: monospace;
+	width: 100%;
+	overflow: auto;
+	border: 1px solid black;
+	background-color: silver;
+	padding: 5px;
 }
 
-#NavBar 
-{
-      float: right;
-      padding: 0.25em;
+/* Form style */
+input[type="email"], input[type="text"], input[type="password"] {
+	height: 32px;
+	border: 1px solid #AAA;
+	-webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+	padding: 0 8px;
 }
-#logo
-{
-   font-size: 200%;
-   font-family: "Arial" sans-serif;
-   font-weight: bold;
-   text-align: center;
+input[type="submit"], .form-button {
+	background-color: #EEE;
+	border: 1px solid #AAA;
+	border-radius: 2px;
+	-webkit-border-radius: 2px;
+	padding:8px;
+	margin:0;
 }
-#logo a:link,
-#logo a:hover,
-#logo a:visited
-{
-   color: black;
-   text-decoration: none;
+div.form-field {
+	margin: 0 0 .5em;
 }
-#Content
-{
-   margin: 1em;
+div.form-field label {
+	display:inline-block;
+    width: 170px;
 }
-
-/* all tables have padding by default */
-table thead
-{
-   text-align: left;
-   font-size: 14pt;
-   font-weight: bold;
-   background-color: #DCE4F9;
-   border-bottom: 2px solid #F5F5F5;
-}
-
-table td
-{
-   padding: 0.25em 2em 0.25em 0em;
-   vertical-align: bottom;
-   font-size: 12pt;
-}
-
-/* Listing pages */
-td.PopupLinkCell,
-td.PopupLinkCell td
-{
-   padding-right: 0em;
-   text-align: right;
-}
-
-.altRow td
-{
-   background-color: #EFEFEF;
-}
-
-.altRow .FlyoutContainer td
-{
-   background-color: silver;
-}
-
-table
-{
-   border-collapse: collapse;
-}
-
-/* disable padding on icons and flyouts */
-td.Icon,
-td.FlyoutContainer,
-td.FlyoutContainer td
-{
-   padding-right: 0em;
-}
-
-table td.Icon
-{
-   padding-top: 0em;
-   padding-bottom: 0em;
-   vertical-align: middle;
-}
-
-td.Icon img
-{
-   height: 22px;
-   width: 22px;
-}
-
-td.FlyoutContainer div
-{
-   display:none;
-   position: absolute;
-   float:right;
-   color: black;
-   background-color: silver;
-   border: 1px solid gray;
-   padding: .25em;
-}
-
-div#incrementSizePopup
-{
-   color: black;
-   background-color: #E8EEFA;
-   font-weight: normal;
-   text-align: left;
-   width: 40em;
-   padding: 0.5em;
+div.section {
+	border-bottom: 1px solid black;
 }
 
 /* Login page */
-table.Login td
-{
-   padding-right: .5em;
+#login-container {
+   padding:5px;
+   background-color: #F1F1F1;
+   border: thin solid black;
+   margin: 20% auto;
+   width: 350px;
+   text-align: center;
+}
+#login-container h2 {
+	font-size:xx-large;	
+}
+#login #username, #login #password {
+	margin: 0 0 1.5em;
+}
+#login label {
+	font-weight: bold;
 }
 
-#Login
-{
-   background-color: #E8EEFA;
-   color: #000;
-   spacing: 0.5em;
-   float: left;
-   border: 10px double white;
+/* Top nagivation bar */
+#navbar {
+	color: #BBB;
+	border-bottom: 1px solid black;
+	background-color: #2D2D2D;
+}
+#navbar ul {
+	list-style: none;
+    margin: 0 auto;
+    padding: 7px 0;
+    width: 980px;
+    min-width: 980px;
+}
+#navbar li {
+	display: inline;
+	margin: 0 2em 0 0;
+	white-space: nowrap;
+}
+#navbar a{
+	color:#BBB;
+	font-weight: bold;
+}
+#navbar a:hover {
+	color:#FFF;
 }
 
-#Login input.submit
-{
-   background-image: url("/static/images/login_button.gif");
-   border: 0em;
-   width: 100px;
-   height: 30px;
-   color: #FFF;
+/* Meta navigation bar */
+#metanav ul {
+	list-style: none;
+	margin: 0;
+    padding: 14px 0;
+}
+#metanav li {
+	background-color: #EEE;
+	border: 1px solid #AAA;
+	border-radius: 2px;
+	-webkit-border-radius: 2px;
+	padding:8px;
+	margin:0;
+	white-space: nowrap;
+	display: inline;
+}
+#metanav a {
+	color:black;
+}
+
+/* Tables */
+table.datatable {
+	border-collapse: collapse;
+	width: 100%;
+}
+table.datatable thead {
    font-weight: bold;
+   background-color: #BBB;
+   border-bottom: 2px solid #F5F5F5;
+}
+table.datatable td {
+   padding: 0.25em 2em 0.25em 0.25em;
+   vertical-align: top;
+   font-size: 12pt;
+}
+tr.notexists {
+   color:#999
 }
 
+/* Table icons */
+td.icon {
+	padding-left: 26px !important;
+	vertical-align: middle;
+	background-repeat:no-repeat;
+}
+td.icon.folder {
+	background-image: url(/static/images/folder.png);
+}
+td.icon.repo {
+	background-image: url(/static/images/repo.png);
+}
+tr.notexists td.icon.folder {
+	background-image: url(/static/images/folder-gray.png);
+}
+td.icon.file {
+	background-image: url(/static/images/file.png);
+}
+td.icon.history {
+	background-image: url(/static/images/history.png);
+}
+.altRow td {
+   background-color: #EFEFEF;
+}
+
+/* Revision menu */
+.revision {
+	position: relative;
+}
+.revision ul {
+	background-color:white;
+    display: block;
+    position:absolute;
+    top: 25px;
+    left: 15px;
+    box-shadow: #000 1px 1px .3em;
+    -webkit-box-shadow: #000 1px 1px .3em;
+    box-shadow: #000 1px 1px .3em;
+    z-index: 100;
+    padding: 0;
+    margin:0;
+}	
+.revision ul li {
+	list-style: none;
+	padding: 3px 10px;
+}
+
+/* Tooltip */
+.tooltip {
+    display:none;
+    background: #2D2D2D;
+    box-shadow: #000 1px 1px .3em;
+    font-size:12px;
+    height:70px;
+    width:160px;
+    padding:25px;
+    color:white;
+}
 
 /* Status Page */
 .backupStatus_success,
@@ -166,96 +213,27 @@ table.Login td
    color: red;
    text-decoration: none;
 }
-.statusRepoLink
-{
-   color: black;
+
+/* Simple overlay */
+.simple-overlay {
+    display:none;
+    z-index:10000;
+    background-color:#333;
+    border:1px solid #666;
+    -moz-box-shadow:0 0 90px 5px #000;
+    -webkit-box-shadow: 0 0 90px #000;
+}
+.simple-overlay .close {
+    background-image:url(/static/images/close.png);
+    position:absolute;
+    right:-15px;
+    top:-15px;
+    cursor:pointer;
+    height:35px;
+    width:35px;
+}
+.overlay-content{
+	color:white;
+	margin:20px;
 }
 
-/* Prefs page */
-p.warning,
-p.error
-{
-   color: red
-}
-
-p.message
-{
-   color: green
-}
-
-table.emailTable td
-{
-   vertical-align: top;
-   padding-right: 0.5em;
-   text-align: right;
-}
-
-tr.notificationsRow td
-{
-   border-top:1px solid #ccc;
-   padding-bottom: 5px;
-   padding-top: 5px;
-   padding-right: 1em;
-}
-
-.groupboxDiv
-{
-   display: table-cell;
-}
-.groupboxDiv .roundedBorderBackground
-{
-   background-color: #FFF;
-}
-
-h1,
-h2,
-h3,
-table thead
-{
-   color: #3162a6;
-}
-
-input.textInput
-{
-   width: 17em;
-}
-
-.groupboxHeader
-{
-   margin-top: 0px;
-}
-
-.groupboxButton
-{
-}
-
-/* Admin page */
-table.usersTable
-{
-   border-collapse: collapse;
-}
-
-table.usersTable td
-{
-   vertical-align: top;
-   /*text-align: right;*/
-   border-bottom: 1px solid #ccc;
-   padding-bottom: 5px;
-   padding-top: 5px;
-   padding-right: 1em;
-}
-
-table.usersTable tr.userEditingRow td
-{
-   border-bottom: 0px;
-}
-
-table.usersTable tr.notEditingRow,
-table.usersTable tr.notChangingPasswordRow
-{
-   display: none;
-}
-table.usersTable tr.editingRow,
-table.usersTable tr.changingPasswordRow
-{
-}

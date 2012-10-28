@@ -1,35 +1,29 @@
 
-<div id="NavBar">
-   <div class="roundedBorderContents">
-      <div id="logo">rdiffWeb</div>
-   </div>
-</div>
-<br/>
-
-   <div id="Login">
-      <div style="margin: 1em">
-      <h2>Login Required</h2>
-<!--StartDeleteIf:message--><p>Enter your username and password to log in:</p><!--EndDeleteIf:message-->
-<!--StartIncludeIf:message-->
-      <p class="warning">^message$</p>
-<!--EndIncludeIf:message-->
+   <div id="login-container">
+   	  <h1>rdiffWeb</h1>
+      <!--StartDeleteIf:message-->
+      <p>Enter your username and password to log in.</p>
+      <!--EndDeleteIf:message-->
+      <!--StartIncludeIf:message-->
+      <p class="warning">^message$</p> 
+	  <!--EndIncludeIf:message-->
+      <div id="login">
       <form method="post" action="^action$">
          <input type="hidden" name="^redirectKey$" value="^redirectValue$"/>
-         <table class="Login">
-            <tr>
-               <td>Username:</td>
-               <td><input type="text" name="^loginKey$" value="^loginValue$" size="20" id="username" /></td>
-            </tr>
-            <tr>
-               <td>Password:</td>
-               <td><input type="password" name="^passwordKey$" size="20"/></td>
-            </tr>
-            <tr>
-               <td></td>
-               <td><input class="submit" type="submit" value="Log In"/></td>
-            </tr>
+               <div class="username">
+                   <label for="^loginKey$">Username</label>
+                   <input type="text" name="^loginKey$" value="^loginValue$" id="username" /><br />
+               </div>
+               <div class="password">
+                   <label for="^passwordKey$">Password</label>
+                   <input type="password" name="^passwordKey$" id="password" />
+               </div>
+               <input class="submit" type="submit" value="Login"/>
          </table>
          </form>
+      </div>
+      <div id="copyright">
+      	
       </div>
    </div>
    <div style="clear: both;"></div>

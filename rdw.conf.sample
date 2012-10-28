@@ -1,6 +1,6 @@
 
 # This is the name of the host that the server should bind to.
-# ServerName=localhost
+# ServerHost=localhost
 
 # This is the port that the server should listen on
 # ServerPort=8080
