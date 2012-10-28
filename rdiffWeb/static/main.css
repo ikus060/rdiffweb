@@ -226,3 +226,15 @@ td.icon.history {
 .revisions ul li {
 	display: block;
 }
+
+/* Copyright */
+#copyright {
+	width:980px;
+	margin: 0 auto;
+}
+#copyright, .copyright {
+	font-size:10px;
+}
+.copyright a, #copyright a {
+	color:black;
+}
