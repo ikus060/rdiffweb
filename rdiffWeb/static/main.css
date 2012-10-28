@@ -164,37 +164,14 @@ td.icon.history {
    background-color: #EFEFEF;
 }
 
-/* Revision menu */
-.revision {
-	position: relative;
-}
-.revision ul {
-	background-color:white;
-    display: block;
-    position:absolute;
-    top: 25px;
-    left: 15px;
-    box-shadow: #000 1px 1px .3em;
-    -webkit-box-shadow: #000 1px 1px .3em;
-    box-shadow: #000 1px 1px .3em;
-    z-index: 100;
-    padding: 0;
-    margin:0;
-}	
-.revision ul li {
-	list-style: none;
-	padding: 3px 10px;
-}
-
 /* Tooltip */
 .tooltip {
     display:none;
     background: #2D2D2D;
     box-shadow: #000 1px 1px .3em;
     font-size:12px;
-    height:70px;
-    width:160px;
-    padding:25px;
+    width:170px;
+    padding:12px;
     color:white;
 }
 
@@ -236,4 +213,16 @@ td.icon.history {
 	color:white;
 	margin:20px;
 }
+.overlay-content a {
+	color:white;
+}
 
+/* Revisions */
+.revisions ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.revisions ul li {
+	display: block;
+}

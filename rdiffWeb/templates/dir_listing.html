@@ -37,34 +37,35 @@
    <!--StartIncludeIf:exists-->
    <tr class="exists StartIncludeIf:altRow- altRow EndIncludeIf:altRow-" >
    <!--EndIncludeIf:exists-->
-   	
       <td class="Icon ^filetype$ "><a href="^fileRestoreUrl$">^filename$</a></td>
       <td>^size$</td>
       <td>^date$</td>
-
-      <!--StartIncludeIf:hasPrevRevisions-->
-      <td class="revision">
-         <a class="PopupLink" href="javascript:void 0">^numPrevRevisions$ Previous Revision<!--StartIncludeIf:hasMultipleRevisions-->s<!--EndIncludeIf:hasMultipleRevisions--></a>
-         <ul>
-            <!--StartRepeat:changeDates-->
-               <li><a href="^changeDateUrl$">^changeDateStr$</a></li>
-            <!--EndRepeat:changeDates-->
-         </ul>
-      </td>
-      <!--EndIncludeIf:hasPrevRevisions-->
-      <!--StartDeleteIf:hasPrevRevisions-->
       <td>
+      	 <!--StartIncludeIf:hasPrevRevisions-->
+         <a class="overlay-link" rel="#revision-^filename$" href="javascript:void 0">^numPrevRevisions$ Previous Revision<!--StartIncludeIf:hasMultipleRevisions-->s<!--EndIncludeIf:hasMultipleRevisions--></a>
+         <div id="revision-^filename$" class="simple-overlay revisions">
+             <div class="overlay-content">
+             <p>Select the revision to be restored.</p>
+	         <ul>
+	            <!--StartRepeat:changeDates-->
+	               <li><a href="^changeDateUrl$">^changeDateStr$</a></li>
+	            <!--EndRepeat:changeDates-->
+	         </ul>
+	         </div>
+         </div>
+         <!--EndIncludeIf:hasPrevRevisions-->
+         <!--StartDeleteIf:hasPrevRevisions-->
          No Previous Revisions
+         <!--EndDeleteIf:hasPrevRevisions-->
       </td>
-      <!--EndDeleteIf:hasPrevRevisions-->
-      </tr>
+   </tr>
    <!--EndRepeat:files-->
 </tbody>
 </table>
 <!--EndIncludeIf:restoreUrl-->
 
 <!--StartIncludeIf:viewUrl-->
-<table class="restore">
+<table class="datatable">
 <thead>
    <tr>
       <td>Choose a backup to restore</td>
