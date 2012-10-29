@@ -19,13 +19,14 @@ p.message {
 	margin: 0 auto;
 	width: 980px;
 	min-width: 980px;
+	padding: 0 5px;
 }
 .mono {
 	font-family: monospace;
 	width: 100%;
 	overflow: auto;
 	border: 1px solid black;
-	background-color: silver;
+	background-color: #EEE;
 	padding: 5px;
 }
 
@@ -83,7 +84,7 @@ div.section {
 #navbar ul {
 	list-style: none;
     margin: 0 auto;
-    padding: 7px 0;
+    padding: 7px 0 7px 5px;
     width: 980px;
     min-width: 980px;
 }
