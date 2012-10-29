@@ -74,7 +74,7 @@ class rdiffStatusPage(page_main.rdiffPage):
       return url
 
    def _buildStatusEntryUrl(self, repo, date):
-      return self._buildAbsolutePageUrl(False) + "entry?repo="+rdw_helpers.encodeUrl(repo)+"&date="+rdw_helpers.encodeUrl(date.getUrlString())
+      return "entry?repo="+rdw_helpers.encodeUrl(repo)+"&date="+rdw_helpers.encodeUrl(date.getUrlString())
    
    def _getUserMessagesForDay(self, date):
       userRepos = self.getUserDB().getUserRepoPaths(self.getUsername())
