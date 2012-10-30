@@ -26,7 +26,7 @@ p.message {
 	width: 100%;
 	overflow: auto;
 	border: 1px solid black;
-	background-color: #EEE;
+	background-color: #EEE	;
 	padding: 5px;
 }
 
@@ -61,7 +61,7 @@ div.section {
    padding:5px;
    background-color: #F1F1F1;
    border: thin solid black;
-   margin: 20% auto;
+   margin: 15% auto;
    width: 350px;
    text-align: center;
 }
