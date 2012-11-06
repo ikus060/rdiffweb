@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
-import rdw_helpers, page_main, librdiff
-
+import librdiff
+import logging
+import page_main
+import rdw_helpers
 
 class rdiffLocationsPage(page_main.rdiffPage):
    ''' Shows the locations page. Will show all available destination
@@ -19,6 +21,7 @@ class rdiffLocationsPage(page_main.rdiffPage):
          try:
             repoHistory = librdiff.getLastBackupHistoryEntry(rdw_helpers.joinPaths(root, userRepo))
          except librdiff.FileError:
+            logging.exception("Can't get reference on the last backup history for %s" % userRepo)
             repoSize = "0"
             repoDate = "Error"
             repoList.append({ "repoName" : userRepo,
