@@ -42,11 +42,14 @@ class rdiffHistoryPage(page_main.rdiffPage):
             cumulativeSize += historyItem.incrementSize
             cumulativeSizeStr = rdw_helpers.formatFileSizeStr(cumulativeSize)
          entries.append({ "date" : historyItem.date.getDisplayString(),
+                          "dateinseconds" : historyItem.date.getLocalSeconds(),
                           "inProgress" : historyItem.inProgress,
                           "errors" : historyItem.errors,
-                          "cumulativeSize" : cumulativeSizeStr,
-                          "size" : fileSize })
-      return {"title" : "Backup history for "+repoName, "history" : entries, "totalBackups" : len(rdiffHistory)}
+                          "cumulativesize" : cumulativeSizeStr,
+                          "cumulativesizeinbytes" : cumulativeSize,
+                          "size" : fileSize,
+                          "sizeinbytes" : historyItem.size })
+      return {"title" : "Backup history for " + repoName, "history" : entries, "totalBackups" : len(rdiffHistory)}
       
 
 class historyPageTest(page_main.pageTest, rdiffHistoryPage):

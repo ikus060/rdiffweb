@@ -131,6 +131,9 @@ table.datatable thead {
    background-color: #BBB;
    border-bottom: 2px solid #F5F5F5;
 }
+table.datatable thead th {
+   text-align: left;
+}
 table.datatable td {
    padding: 0.25em 2em 0.25em 0.25em;
    vertical-align: top;
@@ -138,6 +141,9 @@ table.datatable td {
 }
 tr.notexists {
    color:#999
+}
+table.datatable tbody tr:nth-child(even) {
+   background-color: #EFEFEF;
 }
 
 /* Table icons */
@@ -160,9 +166,6 @@ td.icon.file {
 }
 td.icon.history {
 	background-image: url(/static/images/history.png);
-}
-.altRow td {
-   background-color: #EFEFEF;
 }
 
 /* Tooltip */

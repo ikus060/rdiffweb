@@ -1,22 +1,23 @@
 <div id="page-content">
 <h2>Backup Locations</h2>
 
-<table class="datatable">
+<table class="datatable sortable">
    <thead>
       <tr>
-         <td>Name</td>
-         <td>Last Backup</td>
-         <td>Last Backup Size</td>
-         <td title="Shows backup status history.">History</td>
+         <th class="sortable">Name</th>
+         <th class="sortable">Last Backup</th>
+         <th class="sortable">Last Backup Size</th>
+         <th title="Shows backup status history.">History</th>
       </tr>
    </thead>
    <tbody>
       <!--StartRepeat:repos-->
-      <tr StartIncludeIf:altRow-class="altRow"EndIncludeIf:altRow->
-         <td class="icon repo">
-         	<!--StartDeleteIf:failed--><a href="^repoBrowseUrl$"><!--EndDeleteIf:failed-->^repoName$<!--StartDeleteIf:failed--></a><!--EndDeleteIf:failed-->
+      <tr>
+         <td class="icon repo" data-value="^reponame$">
+         	<!--StartDeleteIf:failed--><a href="^repoBrowseUrl$"><!--EndDeleteIf:failed-->^reponame$<!--StartDeleteIf:failed--></a><!--EndDeleteIf:failed-->
          </td>
-         <td>^repoDate$</td><td>^repoSize$</td>
+         <td data-value="^repodateinseconds$">^repodate$</td>
+         <td data-value="^reposizeinbytes$">^reposize$</td>
          <td><a href="^repoHistoryUrl$">More...</a></td>
       </tr>
       <!--EndRepeat:repos-->

@@ -59,10 +59,8 @@ class rdiffBrowsePage(page_main.rdiffPage):
          tempDates.reverse() # sort latest first
          restoreDates = []
          for x in tempDates:
-            altEntry = (len(restoreDates) % 2 != 0)
-            restoreDates.append({ "dateStr" : x.getDisplayString(), 
-                                 "dirRestoreUrl" : self.buildRestoreUrl(repo, path, x),
-                                 "altRow" : altEntry })
+            restoreDates.append({ "dateStr" : x.getDisplayString(),
+                                 "dirRestoreUrl" : self.buildRestoreUrl(repo, path, x) })
          entries = []
       else:
          title = "Browse"
@@ -75,19 +73,20 @@ class rdiffBrowsePage(page_main.rdiffPage):
 
          entries = []
          for libEntry in libEntries:
-            altEntry = (len(entries) % 2 != 0)
             entryLink = ""
             if libEntry.isDir:
                entryLink = self.buildBrowseUrl(repo, joinPaths(path, libEntry.name), False)
                fileType = "folder"
-               fileSize= " "
+               size = " "
+               sizeinbytes = 0
                changeDates = []
             else:
                entryLink = self.buildRestoreUrl(repo, joinPaths(path, libEntry.name), libEntry.changeDates[-1])
                fileType = "file"
                entryChangeDates = libEntry.changeDates[:-1]
                entryChangeDates.reverse()
-               fileSize = rdw_helpers.formatFileSizeStr(libEntry.fileSize)
+               size = rdw_helpers.formatFileSizeStr(libEntry.fileSize)
+               sizeinbytes = libEntry.fileSize
                changeDates = [ { "changeDateUrl" : self.buildRestoreUrl(repo, joinPaths(path, libEntry.name), x),
                                  "changeDateStr" : x.getDisplayString() } for x in entryChangeDates]
 
@@ -97,13 +96,14 @@ class rdiffBrowsePage(page_main.rdiffPage):
                            "filetype" : fileType,
                            "exists" : libEntry.exists,
                            "date" : libEntry.changeDates[-1].getDisplayString(),
-                           "size" : fileSize,
+                           "dateinseconds" : libEntry.changeDates[-1].getLocalSeconds(),
+                           "size" : size,
+                           "sizeinbytes" : sizeinbytes,
                            "hasPrevRevisions" : len(changeDates) > 0,
-                           "numPrevRevisions" : str(len(changeDates)), 
+                           "numPrevRevisions" : str(len(changeDates)),
                            "hasMultipleRevisions" : len(changeDates) > 1,
                            "showRevisionsText" : showRevisionsText,
-                           "changeDates" : changeDates,
-                           "altRow": altEntry })
+                           "changeDates" : changeDates})
 
       return { "title" : title, "files" : entries, "parentDirs" : parentDirs, "restoreUrl" : restoreUrl, "viewUrl" : viewUrl, "restoreDates" : restoreDates, "warning" : backupWarning }
 

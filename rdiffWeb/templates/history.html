@@ -1,20 +1,20 @@
 <div id="page-content">
 <h2>^title$</h2>
-<table class="datatable">
+<table class="datatable sortable">
 <thead>
    <tr>
-      <td>Date</td>
-      <td>Size</td>
-      <td title="For each backup entry, the cumulative size is the size of the current backup, plus the amount of data that is required to restore to that point in time.">Cumulative Size</td>
-      <td>Result</td>
+      <th class="sortable">Date</th>
+      <th class="sortable">Size</th>
+      <th class="sortable" title="For each backup entry, the cumulative size is the size of the current backup, plus the amount of data that is required to restore to that point in time.">Cumulative Size</th>
+      <th class="sortable">Result</th>
    </tr>
 </thead>
 <tbody>
    <!--StartRepeat:history-->
    <tr>
-      <td class="icon history">^date$</td>
-      <td>^size$</td>
-      <td>^cumulativeSize$</td>
+      <td class="icon history" data-value="^dateinseconds$">^date$</td>
+      <td data-value="^sizeinbytes$">^size$</td>
+      <td data-value="^cumulativesizeinbytes$">^cumulativesize$</td>
       <!--StartDeleteIf:errors-->
       <td class="BackupResult">
           <!--StartIncludeIf:inProgress-->In Progress<!--EndIncludeIf:inProgress-->

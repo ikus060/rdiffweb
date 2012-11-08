@@ -17,35 +17,33 @@ class rdiffLocationsPage(page_main.rdiffPage):
    
    def getParmsForPage(self, root, repos):
       repoList = []
-      for userRepo in repos:
+      for reponame in repos:
          try:
-            repoHistory = librdiff.getLastBackupHistoryEntry(rdw_helpers.joinPaths(root, userRepo))
-         except librdiff.FileError:
-            logging.exception("Can't get reference on the last backup history for %s" % userRepo)
-            repoSize = "0"
-            repoDate = "Error"
-            repoList.append({ "repoName" : userRepo,
-                           "repoSize" : repoSize,
-                           "repoDate" : repoDate,
-                           "repoBrowseUrl" : self.buildBrowseUrl(userRepo, "/", False),
-                           "repoHistoryUrl" : self.buildHistoryUrl(userRepo),
-                           'failed': True})
-         else:
-            repoSize = rdw_helpers.formatFileSizeStr(repoHistory.size)
+            repoHistory = librdiff.getLastBackupHistoryEntry(rdw_helpers.joinPaths(root, reponame))
+            reposize = rdw_helpers.formatFileSizeStr(repoHistory.size)
+            reposizeinbytes = repoHistory.size
             if repoHistory.inProgress:
-               repoSize = "In Progress"
+               reposize = "In Progress"
             repoDate = repoHistory.date.getDisplayString()
-            repoList.append({ "repoName" : userRepo,
-                              "repoSize" : repoSize,
-                              "repoDate" : repoDate,
-                              "repoBrowseUrl" : self.buildBrowseUrl(userRepo, "/", False),
-                              "repoHistoryUrl" : self.buildHistoryUrl(userRepo),
-                              'failed': False})
+            repodateinseconds = repoHistory.date.getLocalSeconds()
+            failed = False
+         except librdiff.FileError:
+            logging.exception("Can't get reference on the last backup history for %s" % reponame)
+            reposize = "0"
+            reposizeinbytes = 0 
+            repoDate = "Error"
+            repodateinseconds = 0
+            failed = True
+         repoList.append({ "reponame" : reponame,
+                           "reposize" : reposize,
+                           "reposizeinbytes" : reposizeinbytes,
+                           "repodate" : repoDate,
+                           "repodateinseconds" : repodateinseconds,
+                           "repoBrowseUrl" : self.buildBrowseUrl(reponame, "/", False),
+                           "repoHistoryUrl" : self.buildHistoryUrl(reponame),
+                           'failed': failed})
 
       self._sortLocations(repoList)
-      # Make second pass through list, setting the 'altRow' attribute
-      for i in range(0, len(repoList)):
-         repoList[i]['altRow'] = (i % 2 == 0)
       return { "title" : "browse", "repos" : repoList }
             
             
@@ -53,7 +51,7 @@ class rdiffLocationsPage(page_main.rdiffPage):
       def compare(left, right):
          if left['failed'] != right['failed']:
             return cmp(left['failed'], right['failed'])
-         return cmp(left['repoName'], right['repoName'])
+         return cmp(left['reponame'], right['reponame'])
       
       locations.sort(compare)
       

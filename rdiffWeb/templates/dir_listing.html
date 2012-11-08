@@ -20,26 +20,26 @@
 <!--EndIncludeIf:warning-->
 
 <!--StartIncludeIf:restoreUrl-->
-<table class="datatable">
+<table class="datatable sortable">
 <thead>
    <tr>
-      <td>Name</td>
-      <td>Size</td>
-      <td>Last Revision</td>
-      <td>Previous Revisions</td>
+      <th class="sortable">Name</th>
+      <th class="sortable">Size</th>
+      <th class="sortable">Last Revision</th>
+      <th>Previous Revisions</th>
    </tr>
 </thead>
 <tbody>
    <!--StartRepeat:files-->
    <!--StartDeleteIf:exists-->
-   <tr class="notexists StartIncludeIf:altRow- altRow EndIncludeIf:altRow-" >
+   <tr class="notexists" >
    <!--EndDeleteIf:exists-->
    <!--StartIncludeIf:exists-->
-   <tr class="exists StartIncludeIf:altRow- altRow EndIncludeIf:altRow-" >
+   <tr class="exists" >
    <!--EndIncludeIf:exists-->
-      <td class="Icon ^filetype$ "><a href="^fileRestoreUrl$">^filename$</a></td>
-      <td>^size$</td>
-      <td>^date$</td>
+      <td class="Icon ^filetype$ " data-value="^filename$"><a href="^fileRestoreUrl$">^filename$</a></td>
+      <td data-value="^sizeinbytes$">^size$</td>
+      <td date-value="^dateinseconds$">^date$</td>
       <td>
       	 <!--StartIncludeIf:hasPrevRevisions-->
          <a class="overlay-link" rel="#revision-^filename$" href="javascript:void 0">^numPrevRevisions$ Previous Revision<!--StartIncludeIf:hasMultipleRevisions-->s<!--EndIncludeIf:hasMultipleRevisions--></a>
@@ -68,12 +68,12 @@
 <table class="datatable">
 <thead>
    <tr>
-      <td>Choose a backup to restore</td>
+      <th>Choose a backup to restore</th>
    </tr>
 </thead>
 <tbody>
    <!--StartRepeat:restoreDates-->
-   <tr StartIncludeIf:altRow- class="altRow" EndIncludeIf:altRow- >
+   <tr>
       <td class="icon history"><a href="^dirRestoreUrl$">^dateStr$</a></td>
    </tr>
    <!--EndRepeat:restoreDates-->
