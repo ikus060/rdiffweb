@@ -1,4 +1,19 @@
 #!/usr/bin/python
+# rdiffWeb, A web interface to rdiff-backup repositories
+# Copyright (C) 2012 rdiffWeb contributors
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import page_main
 import librdiff
@@ -50,10 +65,10 @@ class rdiffStatusPage(page_main.rdiffPage):
       feedTitle = ""
       if isMainPage:
          feedLink = self._buildStatusFeedUrl(failuresOnly)
-         feedTitle = "Backup status for "+self.getUsername()
+         feedTitle = "Backup status for " + self.getUsername()
       
-      page = self.startPage("Backup Status", rssUrl=feedLink, rssTitle = feedTitle)
-      page = page + self.compileTemplate("status.html", 
+      page = self.startPage("Backup Status", rssUrl=feedLink, rssTitle=feedTitle)
+      page = page + self.compileTemplate("status.html",
                                          messages=messages,
                                          feedLink=feedLink,
                                          failuresOnly=failuresOnly,
@@ -74,7 +89,7 @@ class rdiffStatusPage(page_main.rdiffPage):
       return url
 
    def _buildStatusEntryUrl(self, repo, date):
-      return "entry?repo="+rdw_helpers.encodeUrl(repo)+"&date="+rdw_helpers.encodeUrl(date.getUrlString())
+      return "entry?repo=" + rdw_helpers.encodeUrl(repo) + "&date=" + rdw_helpers.encodeUrl(date.getUrlString())
    
    def _getUserMessagesForDay(self, date):
       userRepos = self.getUserDB().getUserRepoPaths(self.getUsername())

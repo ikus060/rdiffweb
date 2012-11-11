@@ -1,4 +1,19 @@
 #!/usr/bin/python
+# rdiffWeb, A web interface to rdiff-backup repositories
+# Copyright (C) 2012 rdiffWeb contributors
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cherrypy
 import getopt
@@ -31,10 +46,10 @@ if __name__ == "__main__":
    logFile = ""
 
    opts, extraparams = getopt.getopt(sys.argv[1:], 'vdr', ['debug', 'log-file=', 'pid-file=', 'background', 'autoreload'])
-   for option,value in opts:
-      if option in ['-d','--debug']:
+   for option, value in opts:
+      if option in ['-d', '--debug']:
          debug = True
-      if option in ['-r','--autoreload']:
+      if option in ['-r', '--autoreload']:
          autoReload = True
       elif option in ['--log-file']:
          logFile = value
@@ -48,7 +63,7 @@ if __name__ == "__main__":
    # Wait to write out to the pidfile until after we've (possibly) been daemonized
    if pidFile:
       # Write our process id to specified file, so we can be killed later
-      open(pidFile, 'a').write(str(os.getpid())+"\n")
+      open(pidFile, 'a').write(str(os.getpid()) + "\n")
 
    serverPort = 8080
    if rdiffWeb.rdw_config.getConfigSetting("ServerPort") != "":

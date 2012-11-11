@@ -46,8 +46,8 @@ class ReadException(Exception):
     pass
 
 class JsonReader(object):
-    hex_digits = {'A': 10,'B': 11,'C': 12,'D': 13,'E': 14,'F':15}
-    escapes = {'t':'\t','n':'\n','f':'\f','r':'\r','b':'\b'}
+    hex_digits = {'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F':15}
+    escapes = {'t':'\t', 'n':'\n', 'f':'\f', 'r':'\r', 'b':'\b'}
 
     def read(self, s):
         self._generator = _StringGenerator(s)
@@ -133,12 +133,12 @@ class JsonReader(object):
                         ch = self.escapes[ch]
                     elif ch == "u":
 		        ch4096 = self._next()
-			ch256  = self._next()
-			ch16   = self._next()
-			ch1    = self._next()
+			ch256 = self._next()
+			ch16 = self._next()
+			ch1 = self._next()
 			n = 4096 * self._hexDigitToInt(ch4096)
 			n += 256 * self._hexDigitToInt(ch256)
-			n += 16  * self._hexDigitToInt(ch16)
+			n += 16 * self._hexDigitToInt(ch16)
 			n += self._hexDigitToInt(ch1)
 			ch = unichr(n)
                     elif ch not in '"/\\':

@@ -1,4 +1,19 @@
 #!/usr/bin/python
+# rdiffWeb, A web interface to rdiff-backup repositories
+# Copyright (C) 2012 rdiffWeb contributors
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import calendar
 import datetime
@@ -66,20 +81,20 @@ def formatNumStr(num, maxDecimals):
    numStr = "%.*f" % (maxDecimals, num)
    def replaceFunc(match):
       if match.group(1):
-         return "."+match.group(1)
+         return "." + match.group(1)
       return ""
    return re.compile("\.([^0]*)[0]+$").sub(replaceFunc, numStr)
 
 def formatFileSizeStr(filesize):
    if filesize == 0: return "0 bytes"
 
-   sizeNames = [(1024*1024*1024*1024, "TB"), (1024*1024*1024, "GB"), (1024*1024, "MB"), (1024, "KB"), (1, "bytes")]
+   sizeNames = [(1024 * 1024 * 1024 * 1024, "TB"), (1024 * 1024 * 1024, "GB"), (1024 * 1024, "MB"), (1024, "KB"), (1, "bytes")]
    for (size, name) in sizeNames:
-      if 1.0*filesize / size >= 1.0:
-         return formatNumStr(1.0*filesize / size, 2) + " " + name
+      if 1.0 * filesize / size >= 1.0:
+         return formatNumStr(1.0 * filesize / size, 2) + " " + name
 
    (filesize, name) = sizeNames[-1]
-   return formatNumStr(1.0*filesize / size, 2) + " " + name
+   return formatNumStr(1.0 * filesize / size, 2) + " " + name
 
 def compileTemplate(templatePath, **kwargs):
    (packageDir, ignored) = os.path.split(__file__)
@@ -102,8 +117,8 @@ class rdwTime:
 
    def initFromMidnightUTC(self, daysFromToday):
       self.timeInSeconds = time.time()
-      self.timeInSeconds -= self.timeInSeconds % (24*60*60)
-      self.timeInSeconds += daysFromToday * 24*60*60
+      self.timeInSeconds -= self.timeInSeconds % (24 * 60 * 60)
+      self.timeInSeconds += daysFromToday * 24 * 60 * 60
       self.tzOffset = 0
 
    def initFromString(self, timeString):
@@ -127,16 +142,16 @@ class rdwTime:
          raise ValueError, timeString
 
    def getLocalDaysSinceEpoch(self):
-      return self.getLocalSeconds() // (24*60*60)
+      return self.getLocalSeconds() // (24 * 60 * 60)
 
    def getDaysSinceEpoch(self):
-      return self.getSeconds() // (24*60*60)
+      return self.getSeconds() // (24 * 60 * 60)
 
    def getLocalSeconds(self):
       return self.timeInSeconds
 
    def getSeconds(self):
-      return self.timeInSeconds-self.tzOffset
+      return self.timeInSeconds - self.tzOffset
 
    def getDateDisplayString(self):
       return time.strftime("%Y-%m-%d", time.gmtime(self.timeInSeconds))
@@ -145,10 +160,10 @@ class rdwTime:
       return time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(self.getLocalSeconds()))
 
    def getUrlString(self):
-      return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(self.getLocalSeconds()))+self.getTimeZoneString()
+      return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(self.getLocalSeconds())) + self.getTimeZoneString()
 
    def getUrlStringNoTZ(self):
-      return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(self.getSeconds()))+"Z"
+      return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(self.getSeconds())) + "Z"
 
    def getRSSPubDateString(self):
       tzinfo = self._getTimeZoneDisplayInfo()
@@ -169,7 +184,7 @@ class rdwTime:
       self.timeInSeconds = calendar.timegm((year, month, day, hour, minute, second, -1, -1, 0))
 
    def _getTimeZoneDisplayInfo(self):
-      hours, minutes = divmod(abs(self.tzOffset)/60, 60)
+      hours, minutes = divmod(abs(self.tzOffset) / 60, 60)
       assert 0 <= hours <= 23
       assert 0 <= minutes <= 59
 
@@ -291,7 +306,7 @@ class helpersTest(unittest.TestCase):
 
       assert myTime.getDateDisplayString() == "2005-12-25"
       assert myTime.getLocalSeconds() < myTime.getSeconds()
-      assert myTime.getLocalSeconds() == 1135571655 - 5*60*60
+      assert myTime.getLocalSeconds() == 1135571655 - 5 * 60 * 60
       assert myTime.getSeconds() == 1135571655
       assert myTime.getLocalDaysSinceEpoch() <= myTime.getDaysSinceEpoch()
       assert myTime.getLocalDaysSinceEpoch() == 13142
@@ -354,20 +369,20 @@ class helpersTest(unittest.TestCase):
    def testFormatSizeStr(self):
       # Test simple values
       assert(formatFileSizeStr(1024) == "1 KB")
-      assert(formatFileSizeStr(1024*1024*1024) == "1 GB")
-      assert(formatFileSizeStr(1024*1024*1024*1024) == "1 TB")
+      assert(formatFileSizeStr(1024 * 1024 * 1024) == "1 GB")
+      assert(formatFileSizeStr(1024 * 1024 * 1024 * 1024) == "1 TB")
 
       assert(formatFileSizeStr(0) == "0 bytes")
       assert(formatFileSizeStr(980) == "980 bytes")
-      assert(formatFileSizeStr(1024*980) == "980 KB")
-      assert(formatFileSizeStr(1024*1024*1024*1.2) == "1.2 GB")
-      assert(formatFileSizeStr(1024*1024*1024*1.243) == "1.24 GB") # Round to one decimal
-      assert(formatFileSizeStr(1024*1024*1024*1024*120) == "120 TB") # Round to one decimal
+      assert(formatFileSizeStr(1024 * 980) == "980 KB")
+      assert(formatFileSizeStr(1024 * 1024 * 1024 * 1.2) == "1.2 GB")
+      assert(formatFileSizeStr(1024 * 1024 * 1024 * 1.243) == "1.24 GB") # Round to one decimal
+      assert(formatFileSizeStr(1024 * 1024 * 1024 * 1024 * 120) == "120 TB") # Round to one decimal
 
    def testGroupBy(self):
-      numbers = [1,2,3,4,5,6,0,0,5,5]
+      numbers = [1, 2, 3, 4, 5, 6, 0, 0, 5, 5]
       groupedNumbers = groupby(numbers)
-      assert groupedNumbers == {0: [0, 0], 1: [1], 2: [2], 3: [3], 4: [4], 5: [5,5,5], 6: [6]}
+      assert groupedNumbers == {0: [0, 0], 1: [1], 2: [2], 3: [3], 4: [4], 5: [5, 5, 5], 6: [6]}
 
       projects = [{"name": "rdiffWeb", "language": "python"}, {"name": "CherryPy", "language": "python"},
          {"name": "librsync", "language": "C"}]

@@ -1,4 +1,19 @@
 #!/usr/bin/python
+# rdiffWeb, A web interface to rdiff-backup repositories
+# Copyright (C) 2012 rdiffWeb contributors
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import rdw_helpers
 import page_main
@@ -62,9 +77,9 @@ class rdiffAdminPage(page_main.rdiffPage):
    def _generatePageHtml(self, message, error, username="", userRoot="", isAdmin=False):
       userNames = self.getUserDB().getUserList()
       users = [ { "username" : user, "isAdmin" : self.getUserDB().userIsAdmin(user), "userRoot" : self.getUserDB().getUserRoot(user) } for user in userNames ]
-      parms = { "users" : users, 
-                "username" : username, 
-                "userRoot" : userRoot, 
+      parms = { "users" : users,
+                "username" : username,
+                "userRoot" : userRoot,
                 "isAdmin" : isAdmin,
                 "message" : message,
                 "error" : error }

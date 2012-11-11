@@ -1,4 +1,19 @@
 #!/usr/bin/python
+# rdiffWeb, A web interface to rdiff-backup repositories
+# Copyright (C) 2012 rdiffWeb contributors
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import db_sql
 import rdw_config
@@ -68,7 +83,7 @@ class mysqlUserDB:
          adminInt = 1
       else:
          adminInt = 0
-      query = "UPDATE users SET UserRoot=%(userRoot)s, IsAdmin="+str(adminInt)+" WHERE Username = %(user)s"
+      query = "UPDATE users SET UserRoot=%(userRoot)s, IsAdmin=" + str(adminInt) + " WHERE Username = %(user)s"
       self._executeQuery(query, userRoot=userRoot, user=username)
       self.userRootCache[username] = userRoot # update cache
 
@@ -130,7 +145,7 @@ class mysqlUserDB:
 
    def _getUserField(self, username, fieldName):
       if not self.userExists(username): return None
-      query = "SELECT "+fieldName+" FROM users WHERE Username = %(user)s"
+      query = "SELECT " + fieldName + " FROM users WHERE Username = %(user)s"
       results = self._executeQuery(query, user=username)
       assert len(results) == 1
       return results[0][0]
@@ -144,7 +159,7 @@ class mysqlUserDB:
             valueStr = '0'
       else:
          valueStr = str(value)
-      query = 'UPDATE users SET '+fieldName+'=%(value)s WHERE Username=%(user)s'
+      query = 'UPDATE users SET ' + fieldName + '=%(value)s WHERE Username=%(user)s'
       self._executeQuery(query, value=valueStr, user=username)
 
    def _internalExecuteQuery(self, query, **kwargs):
@@ -167,7 +182,7 @@ class mysqlUserDB:
       sqlUsername = rdw_config.getConfigSetting("sqlUsername", self.configFilePath)
       sqlPassword = rdw_config.getConfigSetting("sqlPassword", self.configFilePath)
       sqlDatabaseName = rdw_config.getConfigSetting("sqlDatabase", self.configFilePath)
-      self.sqlConnection = MySQLdb.connect(host=sqlHost, user=sqlUsername, passwd=sqlPassword,db=sqlDatabaseName)
+      self.sqlConnection = MySQLdb.connect(host=sqlHost, user=sqlUsername, passwd=sqlPassword, db=sqlDatabaseName)
 
    def _hashPassword(self, password):
       import sha

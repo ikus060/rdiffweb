@@ -1,3 +1,18 @@
+# rdiffWeb, A web interface to rdiff-backup repositories
+# Copyright (C) 2012 rdiffWeb contributors
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cherrypy
 import urllib
@@ -12,16 +27,16 @@ class rdiffPage:
 
    ############################## HELPER FUNCTIONS ###################################
    def buildBrowseUrl(self, repo, path, isRestoreView):
-      url = "/browse/?repo="+rdw_helpers.encodeUrl(repo, "/")+"&path="+rdw_helpers.encodeUrl(path, "/")
+      url = "/browse/?repo=" + rdw_helpers.encodeUrl(repo, "/") + "&path=" + rdw_helpers.encodeUrl(path, "/")
       if isRestoreView:
          url = url + "&restore=T"
       return url
 
    def buildRestoreUrl(self, repo, path, date):
-      return "/restore/?repo="+rdw_helpers.encodeUrl(repo, "/")+"&path="+rdw_helpers.encodeUrl(path, "/")+"&date="+rdw_helpers.encodeUrl(date.getUrlString())
+      return "/restore/?repo=" + rdw_helpers.encodeUrl(repo, "/") + "&path=" + rdw_helpers.encodeUrl(path, "/") + "&date=" + rdw_helpers.encodeUrl(date.getUrlString())
 
    def buildHistoryUrl(self, repo):
-      return "/history/?repo="+rdw_helpers.encodeUrl(repo, "/")
+      return "/history/?repo=" + rdw_helpers.encodeUrl(repo, "/")
 
    def buildLocationsUrl(self):
       return "/"
@@ -50,7 +65,7 @@ class rdiffPage:
 
 
    ########################## PAGE HELPER FUNCTIONS ##################################
-   def startPage(self, title, rssUrl = "", rssTitle = ""):
+   def startPage(self, title, rssUrl="", rssTitle=""):
       return self.compileTemplate("page_start.html", title=title, rssLink=rssUrl, rssTitle=rssTitle) + self.writeTopLinks()
 
    def endPage(self):
