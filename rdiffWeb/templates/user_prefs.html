@@ -6,19 +6,19 @@
 
 <div id="change-password-div" class="section">
 	<h3>Change Password</h3>
-	<form action="" method="post">
+	<form action="#" method="post">
 		<input style="display:none" name="form" value="setPassword"/>
 		<div id="current-div" class="form-field">
 		    <label for="current">Current password</label>
-		    <input class="textInput" type="password" name="current"/>
+		    <input class="textInput" type="password" name="current" id="current"/>
 		</div>
 		<div id="new-div" class="form-field">
 		    <label for="new">New password</label>
-		    <input class="textInput" type="password" name="new"/>
+		    <input class="textInput" type="password" name="new" id="new"/>
 		</div>
 		<div id="confirm-div" class="form-field">
 		    <label for="confirm">Confirm new password</label>
-		    <input class="textInput" type="password" name="confirm"/>
+		    <input class="textInput" type="password" name="confirm" id="confirm"/>
 		</div>
 	    <input type="submit" value="Change Password" />
 	</form>
@@ -27,7 +27,7 @@
 <div id="update-repos-div" class="section">
 	<h3>Update backup locations</h3>
 	<p>Refresh the list of repository location to be displayed in the Backup status view.</p>
-	<form action="" method="post">
+	<form action="#" method="post">
 		<input style="display:none" name="form" value="updateRepos"/>
 		<input type="submit" value="Update backup locations" />
 	</form>
@@ -36,14 +36,14 @@
 <div id="restore-pref-div" class="section">
 	<h3>Restore format</h3>
 	<p>Select the desired archive format to be used when restoring a directory.</p>
-	<form action="" method="post">
+	<form action="#" method="post">
 		<input style="display:none" name="form" value="setRestoreType"/>
 		<div id="restore-type-zip">
-			<input type="radio" name="restoreType" StartIncludeIf:useZipFormat-checked='checked'EndIncludeIf:useZipFormat- value="zip" />
+			<input type="radio" name="restoreType" StartIncludeIf:useZipFormat-checked='checked'EndIncludeIf:useZipFormat- value="zip" id="zip" />
 			<label for="zip">Restore my directories in <b>.zip</b> format</label>
 		</div>
 		<div id="restore-type-tgz">
-			<input type="radio" name="restoreType" StartDeleteIf:useZipFormat-checked='checked'EndDeleteIf:useZipFormat- value="tgz" />
+			<input type="radio" name="restoreType" StartDeleteIf:useZipFormat-checked='checked'EndDeleteIf:useZipFormat- value="tgz" id="tgz" />
 			<label for="tgz">Restore my directories in <b>.tar.gz</b> format</label>
 		</div>
 		<p>If unsure, select the zip format.</p>
@@ -52,7 +52,7 @@
 </div>
 
 <!--StartIncludeIf:notificationsEnabled-->
-<form action="" method="post">
+<form action="#" method="post">
 <input style="display:none" name="form" value="setNotifications"/>
 <div class="groupboxDiv">
 <div>

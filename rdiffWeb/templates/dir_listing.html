@@ -2,7 +2,7 @@
 <h2>
   ^title$
   <!--StartRepeat:parentDirs-->
-  / <!--StartIncludeIf:parentPath--><a href=^parentPath$><!--EndIncludeIf:parentPath-->^parentDir$<!--StartIncludeIf:parentPath--></a><!--EndIncludeIf:parentPath-->
+  / <!--StartIncludeIf:parentPath--><a href="^parentPath$"><!--EndIncludeIf:parentPath-->^parentDir$<!--StartIncludeIf:parentPath--></a><!--EndIncludeIf:parentPath-->
   <!--EndRepeat:parentDirs-->
 </h2>
 
@@ -37,12 +37,12 @@
    <!--StartIncludeIf:exists-->
    <tr class="exists" >
    <!--EndIncludeIf:exists-->
-      <td class="Icon ^filetype$ " data-value="^filename$"><a href="^fileRestoreUrl$">^filename$</a></td>
+      <td class="icon ^filetype$ " data-value="^filename$"><a href="^fileRestoreUrl$">^filename$</a></td>
       <td data-value="^sizeinbytes$">^size$</td>
-      <td date-value="^dateinseconds$">^date$</td>
+      <td data-value="^dateinseconds$">^date$</td>
       <td>
       	 <!--StartIncludeIf:hasPrevRevisions-->
-         <a class="overlay-link" rel="#revision-^filename$" href="javascript:void 0">^numPrevRevisions$ Previous Revision<!--StartIncludeIf:hasMultipleRevisions-->s<!--EndIncludeIf:hasMultipleRevisions--></a>
+         <a class="overlay-link" href="#revision-^filename$">^numPrevRevisions$ Previous Revision<!--StartIncludeIf:hasMultipleRevisions-->s<!--EndIncludeIf:hasMultipleRevisions--></a>
          <div id="revision-^filename$" class="simple-overlay revisions">
              <div class="overlay-content">
              <p>Select the revision to be restored.</p>

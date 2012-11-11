@@ -11,9 +11,9 @@ $(".history-error").click(function(){
 });
 
 // Overlay
-$(".overlay-link[rel]").each(function(){
-	targetId = $(this).attr('rel');
-	$(this).removeAttr('rel');
+$(".overlay-link[href]").each(function(){
+	targetId = $(this).attr('href');
+	$(this).attr('href','#');
 	targetId = targetId.replace(/#/g,'');
 	targetEle = document.getElementById(targetId);
 	$(this).overlay({fixed:false,top:"center",left:"center",target:targetEle});
@@ -65,6 +65,9 @@ $("table.sortable thead th.sortable").each(function(){
 	    
 	});
 });
+
+// Focus on username form field
+$("#username").focus();
 
 });
 
