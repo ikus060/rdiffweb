@@ -45,7 +45,7 @@ $("table.sortable thead th.sortable").each(function(){
 	var table = column.parents("table");
 
 	// Attach click event to column
-	column.click(function(){
+	fctsort = function(){
 		
 		// On click sort elements
 	    table.find("tbody td").filter(function(){
@@ -77,8 +77,26 @@ $("table.sortable thead th.sortable").each(function(){
 	    });
 	    
 	    inverse = !inverse;
+	    if(table.attr('id')!="" && column.attr('id')!="") {
+	    	setPrefValue(table.attr('id') + '.sortingcolumn', column.attr('id'));
+	    	setPrefValue(table.attr('id') + '.sortingdirection', inverse ? 'desc': 'asc');
+	    }
 	    
-	});
+	};
+	column.click(fctsort);
+	
+	// Check preference
+	if(getPrefValue(table.attr('id') + '.sortingcolumn', '') == column.attr('id')) {
+		var direction = getPrefValue(table.attr('id') + '.sortingdirection', 'asc');
+		if(direction == 'asc'){
+			inverse = true;
+			fctsort();
+		} else if (direction == 'desc') {
+			inverse = false;
+			fctsort();
+		}
+	}
+	
 });
 
 // Focus on username form field
@@ -86,5 +104,32 @@ $("#username").focus();
 
 });
 
+/**
+ * Save a preference data into the local storage if available.
+ * 
+ * @param {Object} key
+ * 		the preference key
+ * @param {Object} value
+ * 		the preference value
+ */
+function setPrefValue(key, value) {
+	if(typeof(localStorage)!=="undefined") {
+		localStorage['pref.' + key] = value
+	}
+}
 
-
+/**
+ * Get the preference data from the local storage.
+ * @param {Object} key
+ * 		the preference key
+ * @param {Object} defaultValue
+ * 		the default value if the value is not available in the local storage
+ */
+function getPrefValue(key, defaultValue) {
+	if(typeof(localStorage)!=="undefined") {
+		if(typeof(localStorage['pref.' + key])==="string") {
+			return localStorage['pref.' + key];
+		}
+	}
+	return defaultValue;
+}
