@@ -34,20 +34,21 @@ $(".overlay-link[href]").each(function(){
 	$(this).overlay({fixed:false,top:"center",left:"center",target:targetEle});
 })
 
+// Focus on username form field
+$("#username").focus();
+
 // Table sorting
-$("table.sortable thead th.sortable").css('cursor', 'pointer');
 $("table.sortable thead th.sortable").each(function(){
 	
     // Get reference to this column
 	var column = $(this);
 	var columnIndex = column.index();
-	var inverse = false;
+	var direction = 'asc';
 	var table = column.parents("table");
 
-	// Attach click event to column
+	// Create sorting function
 	fctsort = function(){
 		
-		// On click sort elements
 	    table.find("tbody td").filter(function(){
 	        
 	        return $(this).index() === columnIndex;
@@ -67,7 +68,7 @@ $("table.sortable thead th.sortable").each(function(){
 	        	aData = aData.toLowerCase()
 	        	bData = bData.toLowerCase()
 	        }
-	        return aData > bData ? inverse ? -1 : 1 : inverse ? 1 : -1;
+	        return (aData > bData ? (direction=='asc' ? 1 : -1) : (direction=='asc' ? -1 : 1));
 	        
 	    }, function(){
 	        
@@ -76,31 +77,37 @@ $("table.sortable thead th.sortable").each(function(){
 	        
 	    });
 	    
-	    inverse = !inverse;
+	    // Remove desc and asc from all columns
+	    table.find("thead th.sortable").removeClass('desc asc');
+	    column.addClass(direction);
 	    if(table.attr('id')!="" && column.attr('id')!="") {
 	    	setPrefValue(table.attr('id') + '.sortingcolumn', column.attr('id'));
-	    	setPrefValue(table.attr('id') + '.sortingdirection', inverse ? 'desc': 'asc');
+	    	setPrefValue(table.attr('id') + '.sortingdirection', direction);
 	    }
 	    
+	    // Inverse direction for next execution
+	    direction = direction=='asc' ? 'desc' : 'asc';
+	    
 	};
-	column.click(fctsort);
 	
-	// Check preference
+	// Create link
+	column.wrapInner('<a href="#"/>');
+	
+	// Add click event
+	column.children('a').click(fctsort);
+	
+	// Applu user preference
 	if(getPrefValue(table.attr('id') + '.sortingcolumn', '') == column.attr('id')) {
-		var direction = getPrefValue(table.attr('id') + '.sortingdirection', 'asc');
+		var direction = getPrefValue(table.attr('id') + '.sortingdirection', direction);
 		if(direction == 'asc'){
-			inverse = true;
 			fctsort();
-		} else if (direction == 'desc') {
-			inverse = false;
+		} else {
+			direction = 'desc';
 			fctsort();
 		}
 	}
 	
 });
-
-// Focus on username form field
-$("#username").focus();
 
 });
 

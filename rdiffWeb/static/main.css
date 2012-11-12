@@ -165,6 +165,32 @@ table.datatable tbody tr:nth-child(even) {
    background-color: #EFEFEF;
 }
 
+/* Table sortable column */
+th.sortable.asc a::after {
+	/* Arrow up */
+	content: "";
+	position: absolute;
+	margin-top: 5px;
+	margin-left: 5px;
+	width: 0; 
+	height: 0; 
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-bottom: 5px solid black;
+}
+th.sortable.desc a::after {
+	/* Arrow down*/
+	content: "";
+	position: absolute;
+	margin-top: 5px;
+	margin-left: 5px;
+	width: 0; 
+	height: 0; 
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-top: 5px solid black;
+}
+
 /* Table icons */
 td.icon {
 	padding-left: 26px !important;
