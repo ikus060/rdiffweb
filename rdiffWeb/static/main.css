@@ -23,16 +23,16 @@ body {
 img { border: 0; }
 a {
    text-decoration: none;
-   color: blue;
+   color: #15C;
 }
 a:hover {
    text-decoration: underline;
 }
 p.warning, p.error {
-   color: red
+   color: #c00;
 }
 p.message {
-   color: green
+   color: #4e9a06;
 }
 #page-content {
 	margin: 0 auto;
@@ -258,14 +258,14 @@ table.datatable td.navitem {
 .backupStatus_success a:link,
 .backupStatus_success a:visited
 {
-   color: green;
+   color: #4e9a06;
    text-decoration: none;
 }
 .backupStatus_failure,
 .backupStatus_failure a:link,
 .backupStatus_failure a:visited
 {
-   color: red;
+   color: #c00;
    text-decoration: none;
 }
 
