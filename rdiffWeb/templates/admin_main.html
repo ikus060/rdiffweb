@@ -42,8 +42,8 @@
             <th>Username</th>
             <th>User root directory</th>
             <th>Is administrator</th>
-            <th>&nbsp;</th>
-            <th>&nbsp;</th>
+            <th></th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -55,7 +55,7 @@
             <!--StartIncludeIf:isAdmin-->Yes<!--EndIncludeIf:isAdmin-->
             <!--StartDeleteIf:isAdmin-->No<!--EndDeleteIf:isAdmin-->
         </td>
-        <td>
+        <td class="navitem">
             <a class="overlay-link" href="#edit-^username$">Edit</a>
             <div id="edit-^username$" class="simple-overlay">
                 <div class="overlay-content">
@@ -76,7 +76,7 @@
                 </div>
             </div>
         </td>
-        <td>
+        <td class="navitem">
             <a href="/admin/deleteUser?user=^username$" onClick="if(!confirm('Are you sure that you wish to delete user ^username$?')) return(false);">Delete</a>
         </td>
     </tr>

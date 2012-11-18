@@ -36,13 +36,12 @@ p.message {
 }
 #page-content {
 	margin: 0 auto;
-	width: 980px;
-	min-width: 980px;
+	max-width: 980px;
 	padding: 0 5px;
 }
 .mono {
 	font-family: monospace;
-	width: 100%;
+	width: auto;
 	overflow: auto;
 	border: 1px solid black;
 	background-color: #EEE	;
@@ -81,8 +80,17 @@ div.section {
    background-color: #F1F1F1;
    border: thin solid black;
    margin: 15% auto;
-   width: 350px;
+   max-width: 350px;
    text-align: center;
+}
+@media only screen and (max-device-width: 640px) {
+#login-container {
+	padding: 0;
+	background-color: inherit;
+	border: 0;
+	margin: 15% auto;
+	width: 350px;
+}
 }
 #login-container h2 {
 	font-size:xx-large;	
@@ -104,8 +112,7 @@ div.section {
 	list-style: none;
     margin: 0 auto;
     padding: 7px 0 7px 5px;
-    width: 980px;
-    min-width: 980px;
+    max-width: 980px;
 }
 #navbar li {
 	display: inline;
@@ -118,6 +125,9 @@ div.section {
 }
 #navbar a:hover {
 	color:#FFF;
+}
+@media only screen and (max-device-width: 640px) {
+#navbar li { margin: 0 .5em 0 0; }
 }
 
 /* Meta navigation bar */
@@ -152,6 +162,7 @@ table.datatable thead {
 }
 table.datatable thead th {
    text-align: left;
+   padding: 0.25em 2em 0.25em 0.25em;
 }
 table.datatable td {
    padding: 0.25em 2em 0.25em 0.25em;
@@ -163,6 +174,15 @@ tr.notexists {
 }
 table.datatable tbody tr:nth-child(even) {
    background-color: #EFEFEF;
+}
+@media only screen and (max-device-width: 640px) {
+table.datatable td,
+table.datatable thead th {
+	float:left;
+	clear:left;
+	display: block;
+	padding:0 .5em 0.05em 0.25em;
+}
 }
 
 /* Table sortable column */
@@ -213,6 +233,15 @@ td.icon.history {
 	background-image: url(/static/images/history.png);
 }
 
+/* Table navitem */
+@media only screen and (max-device-width: 640px) {
+table.datatable td.navitem {
+	float:none;
+	clear:none;
+	text-align: right;
+}
+}
+
 /* Tooltip */
 .tooltip {
     display:none;
@@ -261,6 +290,7 @@ td.icon.history {
 .overlay-content{
 	color:white;
 	margin:20px;
+	text-align: left;
 }
 .overlay-content a {
 	color:white;
@@ -278,8 +308,9 @@ td.icon.history {
 
 /* Copyright */
 #copyright {
-	width:980px;
+	max-width:980px;
 	margin: 0 auto;
+	text-align: center
 }
 #copyright, .copyright {
 	font-size:10px;

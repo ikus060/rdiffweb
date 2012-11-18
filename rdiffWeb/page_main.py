@@ -72,7 +72,7 @@ class rdiffPage:
       return self.compileTemplate("page_end.html")
 
    def writeTopLinks(self):
-      pages = [("/status/", "Backup status")]
+      pages = [("/status/", "Status")]
       if self.getUserDB().modificationsSupported():
          pages.append(("/prefs", "Preferences"))
       if self.getUserDB().userIsAdmin(self.getUsername()):
