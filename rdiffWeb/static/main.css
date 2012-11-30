@@ -29,8 +29,15 @@ a:hover {
    text-decoration: underline;
 }
 p.warning, p.error {
-   color: #c00;
+   color: black;
+   margin: 3px 0;
+   padding: 8px;
+   border: 1px solid black;
+   border-radius: 2px;
+   -webkit-border-radius: 2px;
 }
+p.warning { background-color: #FFC906; }
+p.error { background-color: #ef2929; }
 p.message {
    color: #4e9a06;
 }
@@ -104,9 +111,9 @@ div.section {
 
 /* Top nagivation bar */
 #navbar {
-	color: #BBB;
+	color: #eeeeec;
 	border-bottom: 1px solid black;
-	background-color: #2D2D2D;
+	background-color: #2e3436;
 }
 #navbar ul {
 	list-style: none;
@@ -120,7 +127,7 @@ div.section {
 	white-space: nowrap;
 }
 #navbar a{
-	color:#BBB;
+	color:#eeeeec;
 	font-weight: bold;
 }
 #navbar a:hover {
@@ -134,7 +141,7 @@ div.section {
 #metanav ul {
 	list-style: none;
 	margin: 0;
-    padding: 14px 0;
+    padding: 8px 0;
 }
 #metanav li {
 	background-color: #EEE;
@@ -157,7 +164,7 @@ table.datatable {
 }
 table.datatable thead {
    font-weight: bold;
-   background-color: #BBB;
+   background-color: #babdb6;
    border-bottom: 2px solid #F5F5F5;
 }
 table.datatable thead th {
@@ -173,7 +180,7 @@ tr.notexists {
    color:#999
 }
 table.datatable tbody tr:nth-child(even) {
-   background-color: #EFEFEF;
+   background-color: #eeeeec;
 }
 @media only screen and (max-device-width: 640px) {
 table.datatable td,
