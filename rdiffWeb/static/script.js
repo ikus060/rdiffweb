@@ -49,32 +49,19 @@ $("table.sortable thead th.sortable").each(function(){
 	// Create sorting function
 	fctsort = function(){
 		
-	    table.find("tbody td").filter(function(){
-	        
-	        return $(this).index() === columnIndex;
-	        
-	    }).sortElements(function(a, b){
-	        
-	        var aData = $([a]).attr("data-value");
-	        var bData = $([b]).attr("data-value");
-	        if(aData == null || bData ==null){
-	        	aData = $.text([a])
-	        	bData = $.text([b])
-	        } 
-	        if(!isNaN(parseInt(aData)) && !isNaN(parseInt(bData))){
-	        	aData = parseInt(aData)
-	        	bData = parseInt(bData)
-	        } else {
-	        	aData = aData.toLowerCase()
-	        	bData = bData.toLowerCase()
-	        }
-	        return (aData > bData ? (direction=='asc' ? 1 : -1) : (direction=='asc' ? -1 : 1));
-	        
-	    }, function(){
-	        
-	        // parentNode is the element we want to move
-	        return this.parentNode;
-	        
+    	var	comparator = Comparators.naturalComparator;
+		table.find("tbody").sortChildren(function(a, b) {
+		    return direction=='asc' ? comparator(a,b) : -comparator(a,b);
+        }, function(child){
+			var node = $(child.children[columnIndex]);
+			var data = node.attr("data-value")
+			if(data == null){
+				data = $.text([node]);
+			}
+			if(!isNaN(parseInt(data))){
+				return parseInt(data);
+			}
+			return data.toLowerCase();
 	    });
 	    
 	    // Remove desc and asc from all columns
