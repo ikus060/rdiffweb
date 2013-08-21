@@ -46,7 +46,7 @@ class spiderReposThread(threading.Thread):
 
 def _findRdiffRepos(dirToSearch, outRepoPaths):
    dirEntries = os.listdir(dirToSearch)
-   if librdiff.rdiffDataDirName in dirEntries:
+   if librdiff.RDIFF_BACKUP_DATA in dirEntries:
       outRepoPaths.append(dirToSearch)
       return
 
