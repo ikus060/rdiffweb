@@ -12,9 +12,9 @@ To install rdifWeb, you need to install the the prerequisites. On Debian distrib
 
 Then you may download a snapshot of the repository and proceed with the installation on your system.
 
-    wget --no-check-certificate -O ikus060-rdiffweb.tar.gz https://github.com/ikus060/rdiffweb/archive/v0.6.4.tar.gz
+    wget --no-check-certificate -O ikus060-rdiffweb.tar.gz https://github.com/ikus060/rdiffweb/archive/v0.6.5.tar.gz
     tar zxf ikus060-rdiffweb.tar.gz
-    cd ikus060-rdiffweb-*
+    cd rdiffweb-*
     python setup.py build
     sudo python setup.py install
   
