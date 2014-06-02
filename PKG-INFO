@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: rdiffWeb
-Version: 0.6.4
+Version: 0.6.5
 Summary: A web interface to rdiff-backup repositories
 Home-page: http://www.rdiffweb.org
 Author: Josh Nisly
