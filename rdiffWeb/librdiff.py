@@ -566,6 +566,8 @@ def getDirRestoreDates(repo, path):
 def _recursiveTarDir(dirPath, tarFilename):
    """This function is used during to archive a restored directory. It will
       create a tar gz archive with the specified directory."""
+   dirPath = dirPath.encode('utf-8')
+   tarFilename = tarFilename.encode('utf-8')
    assert os.path.isdir(dirPath)
    import tarfile
 
@@ -585,6 +587,7 @@ def _recursiveTarDir(dirPath, tarFilename):
 def _recursiveZipDir(dirPath, zipFilename):
    """This function is used during to archive a restored directory. It will
       create a zip archive with the specified directory."""
+   dirPath = dirPath.encode('utf-8')
    assert os.path.isdir(dirPath)
    import zipfile
 
