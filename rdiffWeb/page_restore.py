@@ -54,11 +54,11 @@ class rdiffRestorePage(page_main.rdiffPage):
          filePath = librdiff.restoreFileOrDir(fullPath, path, file, restoreTime, useZipFormat)
       except librdiff.FileError, error:
          return self.writeErrorPage(error.getErrorString())
-      except ValueError:
-         return self.writeErrorPage("Invalid date parameter.")
+      except ValueError, error:
+         return self.writeErrorPage(error)
 
       (directory, filename) = os.path.split(filePath)
-      filename = filename.replace("\"", "\\\"") # Escape quotes in filename
+      filename = filename.replace("\"", "\\\"")  # Escape quotes in filename
       return serve_file(filePath, None, disposition="attachment", name=filename)
    index.exposed = True
 
