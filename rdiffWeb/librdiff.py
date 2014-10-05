@@ -470,6 +470,8 @@ def restoreFileOrDir(repoRoot, dirPath, filename, restoreDate, useZip):
       archive format."""
    
    # Format the specified file name / repository path for validation
+   dirPath = dirPath.encode('utf-8')
+   filename = filename.encode('utf-8')
    filePath = joinPaths(dirPath, filename)
    filePath = RdiffQuotedPath(repoRoot).getQuotedPath(filePath)
    checkRepoPath(repoRoot, filePath)
