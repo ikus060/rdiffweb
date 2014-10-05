@@ -18,7 +18,7 @@
 from cherrypy.lib.static import serve_file, serve_download
 import rdw_helpers, page_main, librdiff
 import os
-
+import logging
 
 class autoDeleteDir:
    def __init__(self, dirPath):
@@ -55,7 +55,8 @@ class rdiffRestorePage(page_main.rdiffPage):
       except librdiff.FileError, error:
          return self.writeErrorPage(error.getErrorString())
       except ValueError, error:
-         return self.writeErrorPage(error)
+         logging.exception("fail to restore")
+         return self.writeErrorPage(str(error))
 
       (directory, filename) = os.path.split(filePath)
       filename = filename.replace("\"", "\\\"")  # Escape quotes in filename
