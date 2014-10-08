@@ -27,10 +27,10 @@ import logging
 import tempfile
 
 RDIFF_BACKUP_DATA = "rdiff-backup-data"
-#Constant for the rdiff-backup-data folder name.
+# Constant for the rdiff-backup-data folder name.
 
 INCREMENTS = joinPaths(RDIFF_BACKUP_DATA, "increments")
-#Constant for the increments folder name.
+# Constant for the increments folder name.
 
 ZIP_SUFFIX = ".zip"
 # Zip file extension
@@ -59,7 +59,7 @@ class UnknownError(FileError):
          self.error = "An unknown error occurred."
 
 ##### Helper Functions #####
-def rsplit(string, sep, count= -1):
+def rsplit(string, sep, count=-1):
     L = [part[::-1] for part in string[::-1].split(sep[::-1], count)]
     L.reverse()
     return L
@@ -96,7 +96,7 @@ class BackupHistoryEntries:
       self.dirEntries = os.listdir(os.path.join(repoRoot, RDIFF_BACKUP_DATA))
       self.dirEntries.sort()
 
-   def getBackupHistory(self, numLatestEntries= -1, earliestDate=None, latestDate=None, includeInProgress=True):
+   def getBackupHistory(self, numLatestEntries=-1, earliestDate=None, latestDate=None, includeInProgress=True):
       """Returns a list of backupHistoryEntry's
          earliestDate and latestDate are inclusive."""
    
@@ -194,7 +194,7 @@ class IncrementEntry:
       incrDate = self.getDate()
       if not incrDate:
          print "Warning: unintelligible date string! Filename:", self.entryName, " Filetitle:", filename, " Date String:", self.getDateString()
-         return "" # avoid crashing on invalid date strings
+         return ""  # avoid crashing on invalid date strings
 
       incrDate.timeInSeconds += tzOffset
       return incrDate.getUrlStringNoTZ()
@@ -256,7 +256,7 @@ class IncrementEntry:
       return self.statistics
 
    def getSize(self):
-      return 0 #TODO: use gzip to figure out increment size for snapshot increments
+      return 0  # TODO: use gzip to figure out increment size for snapshot increments
 
 
    def getSourceFileSize(self):
@@ -356,12 +356,12 @@ class RdiffDirEntries:
       # cache dir listings
       self.entries = []
       if os.access(self.completePath, os.F_OK):
-         self.entries = os.listdir(self.completePath) # the directory may not exist if it has been deleted
+         self.entries = os.listdir(self.completePath)  # the directory may not exist if it has been deleted
       self.dataDirEntries = os.listdir(dataPath)
       incrementsDir = joinPaths(repo, INCREMENTS, dirPath)
       self.incrementEntries = []
-      if os.access(incrementsDir, os.F_OK): # the increments may not exist if the folder has existed forever and never been changed
-         self.incrementEntries = filter(lambda x: not os.path.isdir(joinPaths(incrementsDir, x)), os.listdir(incrementsDir)) # ignore directories
+      if os.access(incrementsDir, os.F_OK):  # the increments may not exist if the folder has existed forever and never been changed
+         self.incrementEntries = filter(lambda x: not os.path.isdir(joinPaths(incrementsDir, x)), os.listdir(incrementsDir))  # ignore directories
 
       self.groupedIncrementEntries = rdw_helpers.groupby(self.incrementEntries, lambda x: IncrementEntry(repo, x).getFilename())
       self.backupTimes = [ IncrementEntry(repo, x).getDate() for x in filter(lambda x: x.startswith("mirror_metadata"), self.dataDirEntries) ]
@@ -482,7 +482,7 @@ def restoreFileOrDir(repoRoot, dirPath, filename, restoreDate, useZip):
 
    fileToRestore = joinPaths(repoRoot, dirPath, filename)
    dateString = str(restoreDate.getSeconds())
-   rdiffOutputFile = joinPaths(tempfile.mkdtemp(), restoredFilename) # TODO: make so this includes the username
+   rdiffOutputFile = joinPaths(tempfile.mkdtemp(), restoredFilename)  # TODO: make so this includes the username
    
    # Use rdiff-backup executable to restore the data into a specified location
    results = rdw_helpers.execute("rdiff-backup", "--restore-as-of=" + dateString, fileToRestore, rdiffOutputFile)
@@ -581,7 +581,7 @@ def _recursiveTarDir(dirPath, tarFilename):
    
    # Add files to the archive
    for file in files:
-      tar.add(joinPaths(dirPath, file), file) # Pass in file as name explicitly so we get relative paths
+      tar.add(joinPaths(dirPath, file), file)  # Pass in file as name explicitly so we get relative paths
    
    # Close the archive 
    tar.close()
@@ -635,7 +635,7 @@ class LibRdiffTest(unittest.TestCase):
    def setUp(self):
       # The temp dir on Mac OS X is a symlink; expand it because of validation against symlinks in paths
       self.destRoot = joinPaths(os.path.realpath(tempfile.gettempdir()), "rdiffWeb")
-      self.masterDirPath = joinPaths("..", "tests") # TODO: do this right, including tying tests into "python setup.py test"
+      self.masterDirPath = joinPaths("..", "tests")  # TODO: do this right, including tying tests into "python setup.py test"
       self.tearDown()
 
       os.makedirs(self.destRoot)
@@ -653,7 +653,7 @@ class LibRdiffTest(unittest.TestCase):
             backupTime.initFromString(backupState)
 
             # Backup the data as it should be at that state
-            #print "   State", backupState
+            # print "   State", backupState
             runRdiff(joinPaths(origStateDir, backupState), joinPaths(self.destRoot, testDir), backupTime)
 
    def tearDown(self):
@@ -703,7 +703,7 @@ class LibRdiffTest(unittest.TestCase):
          if self.hasDirRestoreDates(testDir):
             rdiffDestDir = joinPaths(self.destRoot, testDir)
             
-            #print rdiffDestDir
+            # print rdiffDestDir
             dates = getDirRestoreDates(rdiffDestDir, "/testdir2")
             statusText = ""
             for date in dates:
@@ -730,8 +730,8 @@ class LibRdiffTest(unittest.TestCase):
             for file in os.listdir(origBackupStateDir):
                totalBackupSize = totalBackupSize + os.lstat(joinPaths(origBackupStateDir, file))[6]
 
-            #TODO: fix this to handle subdirs
-            #assert totalBackupSize == entries[backupNum].size, "Calculated: "+str(totalBackupSize)+" Reported: "+str(entries[backupNum].size)+" State: "+str(backupNum)
+            # TODO: fix this to handle subdirs
+            # assert totalBackupSize == entries[backupNum].size, "Calculated: "+str(totalBackupSize)+" Reported: "+str(entries[backupNum].size)+" State: "+str(backupNum)
             backupNum = backupNum + 1
 
          # Test that the last backup entry works correctly

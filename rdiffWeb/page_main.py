@@ -99,10 +99,11 @@ class rdiffPage:
 
    ########## SESSION INFORMATION #############
    def checkAuthentication(self, username, password):
-      if self.getUserDB().areUserCredentialsValid(username, password):
-         cherrypy.session['username'] = username
-         return None
-      return "Invalid username or password."
+     # Check credential using local database.
+     if self.getUserDB().areUserCredentialsValid(username, password):
+        cherrypy.session['username'] = username
+        return None
+     return "Invalid username or password."
 
    def getUsername(self):
       username = cherrypy.session['username']
@@ -151,7 +152,7 @@ class pageTest(unittest.TestCase):
    def testCompileTemplate(self):
       for test in self._getBackupTests():
          parms = self.getParmsForTemplate(rdw_helpers.joinPaths(self.destRoot, test), "repo")
-         #print parms
+         # print parms
          
          encounteredText = rdw_templating.templateParser().parseTemplate(self._getFileText("", self.getTemplateName()), **parms)
          expectedText = self._getFileText(test, self.getExpectedResultsName())

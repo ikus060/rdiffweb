@@ -85,7 +85,7 @@ class mysqlUserDB:
          adminInt = 0
       query = "UPDATE users SET UserRoot=%(userRoot)s, IsAdmin=" + str(adminInt) + " WHERE Username = %(user)s"
       self._executeQuery(query, userRoot=userRoot, user=username)
-      self.userRootCache[username] = userRoot # update cache
+      self.userRootCache[username] = userRoot  # update cache
 
    def setUserEmail(self, username, userEmail):
       if not self.userExists(username): raise ValueError
@@ -178,10 +178,10 @@ class mysqlUserDB:
 
    def _connect(self):
       import MySQLdb
-      sqlHost = rdw_config.getConfigSetting("sqlHost", self.configFilePath)
-      sqlUsername = rdw_config.getConfigSetting("sqlUsername", self.configFilePath)
-      sqlPassword = rdw_config.getConfigSetting("sqlPassword", self.configFilePath)
-      sqlDatabaseName = rdw_config.getConfigSetting("sqlDatabase", self.configFilePath)
+      sqlHost = rdw_config.getConfigSetting("MySQLHost", self.configFilePath)
+      sqlUsername = rdw_config.getConfigSetting("MySQLUsername", self.configFilePath)
+      sqlPassword = rdw_config.getConfigSetting("MySQLPassword", self.configFilePath)
+      sqlDatabaseName = rdw_config.getConfigSetting("MySQLDatabase", self.configFilePath)
       self.sqlConnection = MySQLdb.connect(host=sqlHost, user=sqlUsername, passwd=sqlPassword, db=sqlDatabaseName)
 
    def _hashPassword(self, password):

@@ -21,8 +21,14 @@ import db_sql
 """We do no length validation for incoming parameters, since truncated values will
 at worst lead to slightly confusing results, but no security risks"""
 class sqliteUserDB:
-   def __init__(self, databaseFilePath, autoConvertDatabase=True):
-      self._databaseFilePath = databaseFilePath
+   def __init__(self, configFilePath=None, autoConvertDatabase=True):
+      self.configFilePath = configFilePath
+      # Get database location.
+      self._databaseFilePath = rdw_config.getConfigSetting("SqliteDBFile", self.configFilePath)
+      # If the database path is not define default to /etc/rdiffweb/rdw.db
+      if self._databaseFilePath == "":
+          self._databaseFilePath = "/etc/rdiffweb/rdw.db"
+          
       self._autoConvertDatabase = autoConvertDatabase
       self.userRootCache = {}
       self._connect()
@@ -83,7 +89,7 @@ class sqliteUserDB:
          adminInt = 0
       query = "UPDATE users SET UserRoot=?, IsAdmin=" + str(adminInt) + " WHERE Username = ?"
       self._executeQuery(query, (userRoot, username))
-      self.userRootCache[username] = userRoot # update cache
+      self.userRootCache[username] = userRoot  # update cache
 
    def setUserEmail(self, username, userEmail):
       if not self.userExists(username): raise ValueError
@@ -220,11 +226,11 @@ MaxAge tinyint NOT NULL DEFAULT 0)"""
          cursor.execute(statement)
 
       if self._autoConvertDatabase:
-         prevDBType = rdw_config.getConfigSetting("UserDB")
+         prevDBType = rdw_config.getConfigSetting("UserDB", self.configFilePath)
          if prevDBType.lower() == "mysql":
             print 'Converting database from mysql...'
             import db_mysql
-            prevDB = db_mysql.mysqlUserDB()
+            prevDB = db_mysql.mysqlUserDB(self.configFilePath)
             users = prevDB._executeQuery("SELECT UserID, Username, Password, UserRoot, IsAdmin, UserEmail, RestoreFormat FROM users")
             cursor.executemany("INSERT INTO users (UserID, Username, Password, UserRoot, IsAdmin, UserEmail, RestoreFormat) values (?, ?, ?, ?, ?, ?, ?)", users)
             
@@ -233,9 +239,9 @@ MaxAge tinyint NOT NULL DEFAULT 0)"""
          elif prevDBType.lower() == "file":
             print 'Converting database from file...'
             import db_file
-            prevDB = db_file.fileUserDB()
-            username = rdw_config.getConfigSetting("username")
-            password = rdw_config.getConfigSetting("password")
+            prevDB = db_file.fileUserDB(self.configFilePath)
+            username = rdw_config.getConfigSetting("username", self.configFilePath)
+            password = rdw_config.getConfigSetting("password", self.configFilePath)
             self.addUser(username)
             self.setUserPassword(username, password)
             self.setUserInfo(username, prevDB.getUserRoot(username), True)

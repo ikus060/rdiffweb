@@ -24,20 +24,14 @@ class ParameterError:
       return "Invalid parameters"
 
 def getConfigFile():
-   settingsFiles = ["rdw.conf", "/etc/rdiffweb/rdw.conf" ] # TODO: there *has* to be a better way to get the /etc config file path...
+   settingsFiles = ["rdw.conf", "/etc/rdiffweb/rdw.conf" ]  # TODO: there *has* to be a better way to get the /etc config file path...
    for settingsFile in settingsFiles:
       if os.access(settingsFile, os.F_OK):
          return settingsFile
    return ""
-   
-def getDatabasePath():
-   if os.access("/etc/rdiffweb/rdw.conf", os.F_OK):
-      return "/etc/rdiffweb/rdw.db"
-   return "rdw.db"
-   
 
 import os, re
-def getConfigSetting(settingName, settingsFile=None):
+def getConfigSetting(settingName, settingsFile=None, default=""):
    if ('=' in settingName): raise ParameterError
    if settingsFile == None:
       settingsFile = getConfigFile()
@@ -51,14 +45,14 @@ def getConfigSetting(settingName, settingsFile=None):
       if not '=' in setting:
          raise SettingsError
 
-      splitSetting = setting.split('=')
-      if not len(splitSetting) == 2:
+      splitSetting = setting.partition('=')
+      if not len(splitSetting) == 3:
          raise SettingsError
 
-      if splitSetting[0].lower() == settingName.lower(): # Lower-case both vars for case-insensitive compare
-         return splitSetting[1]
+      if splitSetting[0].lower() == settingName.lower():  # Lower-case both vars for case-insensitive compare
+         return splitSetting[2]
 
-   return ""
+   return default
 
 ##################### Unit Tests #########################
 

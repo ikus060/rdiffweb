@@ -105,6 +105,7 @@ def doMainSetup():
    
    addConfigFileLine("ServerHost=0.0.0.0")
    addConfigFileLine("ServerPort=8080")
+   addConfigFileLine("UserDB=sqlite")
 
    sqlSetup()
    print "Configuration complete!"
