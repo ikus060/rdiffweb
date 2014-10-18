@@ -1,18 +1,40 @@
-<!--StartDelete-->
-<html>
-<head>
-   <link rel="stylesheet" href="../static/main.css" type="text/css" />
-</head>
-<body>
-<!--EndDelete-->
-
-<div id="navbar">
-   <ul>
-   	<li class="first"><a href="/" id="home" >Locations</a></li>
-   	<!--StartRepeat:topLinks--><li><a href="^linkUrl$" id="^linkUrl$">^linkText$</a></li><!--EndRepeat:topLinks-->
-   </ul>
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed"
+                data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span> <span
+                    class="icon-bar"></span> <span class="icon-bar"></span> <span
+                    class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">rdiffweb</a>
+        </div>
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li class="first"><a href="/" id="home">Locations</a></li>
+                <!-- authenticated -->
+                {% if username %}
+                <li><a href="/status/">Status</a></li>
+                <li><a href="/prefs/">Preferences</a></li>
+                <!-- is_admin -->
+                {% if is_admin %}
+                <li><a href="/admin/">Admin</a></li> {% endif %}
+                <!-- /is_admin -->
+                {% endif %}
+                <!-- /authenticated -->
+            </ul>
+            <!-- authenticated -->
+            {% if username %}
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+            <p class="navbar-text navbar-right">
+                Signed in as
+                <a href="#" class="navbar-link">{{ username }}</a>
+            </p>
+            {% endif %}
+            <!-- /authenticated -->
+        </div>
+        <!--/.nav-collapse -->
+    </div>
 </div>
-
-<!--StartDelete-->
-</body>
-<!--EndDelete-->

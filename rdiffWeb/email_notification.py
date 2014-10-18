@@ -21,6 +21,7 @@ import rdw_config
 import db
 import librdiff
 import rdw_helpers
+import rdw_templating
 import datetime
 import threading
 import time
@@ -83,7 +84,7 @@ class emailNotifier:
                   
          if oldRepos:
             userEmailAddress = self.userDB.getUserEmail(user)
-            emailText = rdw_helpers.compileTemplate("email_notification.txt", repos=oldRepos, sender=self._getEmailSender(), user=user)
+            emailText = rdw_templating.compileTemplate("email_notification.txt", repos=oldRepos, sender=self._getEmailSender(), user=user)
    
             session = smtplib.SMTP(self._getEmailHost())
             session.login(self._getEmailUsername(), self._getEmailPassword())

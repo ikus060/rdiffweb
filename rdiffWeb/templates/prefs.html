@@ -1,0 +1,69 @@
+{% include 'page_start.html' %}
+<!-- nav_bar -->
+{% include 'nav_bar.html' %}
+<!-- /nav_bar -->
+<div class="container">
+    <h2>User Preferences</h2>
+
+    {% include 'message.html' %}
+
+    <h3>Change Password</h3>
+    <form action="#" method="post" role="form">
+        <div class="form-group">
+            <input type="hidden" name="form" value="setPassword" />
+            <label for="current">Current password</label>
+            <input class="form-control" type="password" name="current"
+                id="current" />
+        </div>
+        <div class="form-group">
+            <label for="new">New password</label>
+            <input class="form-control" type="password" name="new" id="new" />
+        </div>
+        <div class="form-group">
+            <label for="confirm">Confirm new password</label>
+            <input class="form-control" type="password" name="confirm"
+                id="confirm" />
+        </div>
+        <button type="submit" class="btn btn-default">Change Password</button>
+    </form>
+
+    <hr />
+
+    <h3>Update backup locations</h3>
+    <form action="#" method="post" role="form">
+        <input type="hidden" name="form" value="updateRepos" />
+        <p class="help-block">Refresh the list of repository location to be
+            displayed in the Backup status view.</p>
+        <button type="submit" class="btn btn-default">Update backup
+            locations</button>
+    </form>
+
+    <hr />
+
+    <h3>Restore format</h3>
+    <form action="#" method="post" role="form">
+        <p class="help-block">Select the desired archive format to be used
+            when restoring a directory.</p>
+        <input type="hidden" name="form" value="setRestoreType" />
+        <div id="restore-type-zip">
+            <input type="radio" name="restoreType" {% if
+                useZipFormat %}checked='checked' {% endif %} value="zip"
+                id="zip" />
+            <label for="zip">
+                Restore my directories in <b>.zip</b> format
+            </label>
+        </div>
+        <div id="restore-type-tgz">
+            <input type="radio" name="restoreType" {% if not
+                useZipFormat %}checked='checked' {% endif %} value="tgz"
+                id="tgz" />
+            <label for="tgz">
+                Restore my directories in <b>.tar.gz</b> format
+            </label>
+        </div>
+        <p class="help-block">If unsure, select the zip format.</p>
+        <button type="submit" class="btn btn-default">Update Restore
+            Preferences</button>
+    </form>
+</div>
+{% include 'page_end.html' %}

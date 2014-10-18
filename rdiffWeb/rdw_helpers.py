@@ -25,8 +25,6 @@ import zipfile
 import tarfile
 import subprocess
 
-import rdw_templating
-
 def encodePath(path):
    if isinstance(path, unicode):
       return path.encode('utf-8')
@@ -53,14 +51,6 @@ def decodeUrl(encodedUrl):
    if not encodedUrl: return encodedUrl
    return urllib.unquote_plus(encodedUrl)
 
-def encodeText(text):
-   if not text: return text
-   text = text.replace("&", "&amp;")
-   text = text.replace("<", "&lt;")
-   text = text.replace(">", "&gt;")
-   text = text.replace("\"", "&quot;")
-   return text
-
 def removeDir(dir):
    for root, dirs, files in os.walk(dir, topdown=False):
       for name in files:
@@ -84,22 +74,6 @@ def formatNumStr(num, maxDecimals):
          return "." + match.group(1)
       return ""
    return re.compile("\.([^0]*)[0]+$").sub(replaceFunc, numStr)
-
-def formatFileSizeStr(filesize):
-   if filesize == 0: return "0 bytes"
-
-   sizeNames = [(1024 * 1024 * 1024 * 1024, "TB"), (1024 * 1024 * 1024, "GB"), (1024 * 1024, "MB"), (1024, "KB"), (1, "bytes")]
-   for (size, name) in sizeNames:
-      if 1.0 * filesize / size >= 1.0:
-         return formatNumStr(1.0 * filesize / size, 2) + " " + name
-
-   (filesize, name) = sizeNames[-1]
-   return formatNumStr(1.0 * filesize / size, 2) + " " + name
-
-def compileTemplate(templatePath, **kwargs):
-   (packageDir, ignored) = os.path.split(__file__)
-   templateText = open(joinPaths(packageDir, "templates", templatePath), "r").read()
-   return rdw_templating.templateParser().parseTemplate(templateText, **kwargs)
 
 class rdwTime:
    """Time information has two components: the local time, stored in GMT as seconds since Epoch,
@@ -136,7 +110,7 @@ class rdwTime:
          timetuple = (year, month, day, hour, minute, second, -1, -1, 0)
          self.timeInSeconds = calendar.timegm(timetuple)
          self.tzOffset = self._tzdtoseconds(timeString[19:])
-         self.getTimeZoneString() # to get assertions there
+         self.getTimeZoneString()  # to get assertions there
 
       except (TypeError, ValueError, AssertionError):
          raise ValueError, timeString
@@ -165,11 +139,6 @@ class rdwTime:
    def getUrlStringNoTZ(self):
       return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(self.getSeconds())) + "Z"
 
-   def getRSSPubDateString(self):
-      tzinfo = self._getTimeZoneDisplayInfo()
-      timeZone = tzinfo["plusMinus"] + tzinfo["hours"] + tzinfo["minutes"]
-      return time.strftime("%a, %d %b %Y %H:%M:%S ", time.gmtime(self.getLocalSeconds())) + timeZone
-
    def getTimeZoneString(self):
       if self.tzOffset:
          tzinfo = self._getTimeZoneDisplayInfo()
@@ -197,7 +166,7 @@ class rdwTime:
    def _tzdtoseconds(self, tzd):
       """Given w3 compliant TZD, converts it to number of seconds from UTC"""
       if tzd == "Z": return 0
-      assert len(tzd) == 6 # only accept forms like +08:00 for now
+      assert len(tzd) == 6  # only accept forms like +08:00 for now
       assert (tzd[0] == "-" or tzd[0] == "+") and tzd[3] == ":"
 
       if tzd[0] == "+":
@@ -235,19 +204,19 @@ def daemonize():
    except OSError, e:
       raise Exception, "%s [%d]" % (e.strerror, e.errno)
 
-   if (pid == 0): # The first child.
+   if (pid == 0):  # The first child.
       os.setsid()
       try:
-         pid = os.fork()   # Fork a second child.
+         pid = os.fork()  # Fork a second child.
       except OSError, e:
          raise Exception, "%s [%d]" % (e.strerror, e.errno)
 
-      if (pid == 0): # The second child.
+      if (pid == 0):  # The second child.
          os.umask(UMASK)
       else:
-         os._exit(0) # Exit parent (the first child) of the second child.
+         os._exit(0)  # Exit parent (the first child) of the second child.
    else:
-      os._exit(0) # Exit parent of the first child.
+      os._exit(0)  # Exit parent of the first child.
 
 # Redirecting output to /dev/null fails when called from a script, for some reason...
 #    import resource      # Resource usage information.
@@ -366,19 +335,6 @@ class helpersTest(unittest.TestCase):
          else:
             assert False
 
-   def testFormatSizeStr(self):
-      # Test simple values
-      assert(formatFileSizeStr(1024) == "1 KB")
-      assert(formatFileSizeStr(1024 * 1024 * 1024) == "1 GB")
-      assert(formatFileSizeStr(1024 * 1024 * 1024 * 1024) == "1 TB")
-
-      assert(formatFileSizeStr(0) == "0 bytes")
-      assert(formatFileSizeStr(980) == "980 bytes")
-      assert(formatFileSizeStr(1024 * 980) == "980 KB")
-      assert(formatFileSizeStr(1024 * 1024 * 1024 * 1.2) == "1.2 GB")
-      assert(formatFileSizeStr(1024 * 1024 * 1024 * 1.243) == "1.24 GB") # Round to one decimal
-      assert(formatFileSizeStr(1024 * 1024 * 1024 * 1024 * 120) == "120 TB") # Round to one decimal
-
    def testGroupBy(self):
       numbers = [1, 2, 3, 4, 5, 6, 0, 0, 5, 5]
       groupedNumbers = groupby(numbers)
@@ -389,7 +345,3 @@ class helpersTest(unittest.TestCase):
       projectsByLanguage = groupby(projects, lambda x: x["language"])
       assert projectsByLanguage == {"C": [{"name": "librsync", "language": "C"}],
          "python": [{"name": "rdiffWeb", "language": "python"}, {"name": "CherryPy", "language": "python"}]}
-
-
-   def testEncodeText(self):
-      assert encodeText("<>&\"") == "&lt;&gt;&amp;&quot;"      

@@ -1,54 +1,91 @@
-<div id="page-content">
-<h2>
-	^title$
-	<!--StartIncludeIf:feedLink-->
-	<a href="^feedLink$"><img src="../static/images/feed-icon.png" alt="RSS Feed" style="vertical-align:middle;" /></a>
-	<!--EndIncludeIf:feedLink-->
-</h2>
+{% include 'page_start.html' %}
+<!-- nav_bar -->
+{% include 'nav_bar.html' %}
+<!-- /nav_bar -->
+<div class="container">
+    <h2>
+        <!-- title -->
+        {{ title }}
+        <!-- /title -->
+        {% if feedLink %}
+        <!-- feedLink -->
+        <small class="pull-right"> <a href="{{ feedLink }}">
+                Subscribe <i class="icon-rss"></i>
+            </a>
+        </small>
+        <!-- /link  -->
+        {% endif %}
+    </h2>
 
+    <ul class="nav nav-pills">
+        <li class="{% if not failuresOnly and not isEntry %}active{% endif %}"><a
+                href="?">Show all</a></li>
+        <li class="{% if failuresOnly %}active{% endif %}"><a
+                href="?failures=T">Show errors only</a></li>
+    </ul>
 
-<div id="metanav">
-<ul>
-<!--StartDeleteIf:isEntry-->
-<!--StartIncludeIf:failuresOnly-->
-<li><a href="?">Show all</a></li>
-<!--EndIncludeIf:failuresOnly-->
-<!--StartDeleteIf:failuresOnly-->
-<li><a href="?failures=T">Show errors only</a></li>
-<!--EndDeleteIf:failuresOnly-->
-<!--EndDeleteIf:isEntry-->
-</ul>
+    <!--StartDeleteIf:messages-->
+    {% if not messages %}
+    <div class="alert alert-success" role="alert">
+        <strong>Well done! </strong> {% if failuresOnly %} There are no recent
+        backups with errors. {% else %} There are no recent backups to display.
+        {% endif %}
+    </div>
+    {% endif %}
+    <!--EndDeleteIf:messages-->
+
+    {% for message in messages %}
+    <!--StartRepeat:messages-->
+    {%if message.is_success %}
+    <!--StartIncludeIf:isSuccess-->
+    <h3 class="backupStatus_success">
+        <a href="{{ message.link }}">Successful Backups for {{ message.date
+            | datetime }}</a>
+    </h3>
+    <div>
+        <p>The following backups have completed successfully:</p>
+        <ul>
+            {% for backup in message.backups %}
+            <!--StartRepeat:backups-->
+            <li><a class="statusRepoLink" href="{{ backup.repoLink }}">{{ backup.date.getLocalSeconds()
+                    | datetime }} - {{ backup.repo }} - {{ backup.size |
+                    filesize }}</a></li>
+            <!--EndRepeat:backups-->
+            {% endfor %}
+        </ul>
+    </div>
+    <!--EndIncludeIf:is_success-->
+    {% else %}
+    <!--StartDeleteIf:isSuccess-->
+    <h3 class="backupStatus_failure">
+        <a href="{{ message.link }}">Backup Completed with Errors:
+            {{ message.repo }}</a>
+    </h3>
+    <div>
+        <p>
+            The backup to <strong>{{ message.repo }}</strong> on <strong>{{ message.date
+                | datetime }}</strong> failed with the following errors:
+        </p>
+        <pre>{{ message.errors }}</pre>
+        <p>Backup size: {{ message.size | filesize }}</p>
+    </div>
+    {% endif %}
+    <!--/isSuccess-->
+
+    <!--StartIncludeIf:repoErrors-->
+    {% if message.repoErrors %}
+    <p>There following repositories contain errors:</p>
+    <ul>
+        {% for repoError in repoErrors %}
+        <!--StartRepeat:repoErrors-->
+        <li><a class="statusRepoLink" href="{{ repoError.repoLink }}">{{ repoError.repo
+                }}: {{ repoError.error }}</a></li>
+        <!--EndRepeat:repoErrors-->
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <!--EndIncludeIf:repoErrors-->
+    {% endfor %}
+    <!--EndRepeat:messages-->
 </div>
-
-<!--StartDeleteIf:messages--><p>There are no recent backups<!--StartDeleteIf:failuresOnly--> to display<!--EndDeleteIf:failuresOnly--><!--StartIncludeIf:failuresOnly--> with errors<!--EndIncludeIf:failuresOnly-->.</p><!--EndDeleteIf:messages-->
-
-<!--StartRepeat:messages-->
-<!--StartIncludeIf:isSuccess--><h3 class="backupStatus_success"><a href="^link$">Successful Backups for ^dateString$</a></h3>
-<div>
-<p>The following backups have completed successfully:</p>
-<ul>
-   <!--StartRepeat:backups-->
-   <li><a class="statusRepoLink" href="^repoLink$">^displayDate$ - ^repo$ - ^size$</a></li>
-   <!--EndRepeat:backups-->
-</ul>
-</div>
-<!--EndIncludeIf:isSuccess-->
-
-<!--StartDeleteIf:isSuccess--><h3 class="backupStatus_failure"><a href="^link$">Backup Completed with Errors: ^repo$</a></h3>
-<div>
-   <p>The backup to <strong>^repo$</strong> on <strong>^displayDate$</strong>
-   failed with the following errors:</p>
-   <p class="mono">^multiline:errors$</p>
-   <p>Backup size: ^size$</p>
-</div>
-<!--EndDeleteIf:isSuccess-->
-   <!--StartIncludeIf:repoErrors-->
-   <p>There following repositories contain errors:</p>
-   <ul>
-      <!--StartRepeat:repoErrors-->
-      <li><a class="statusRepoLink" href="^repoLink$">^repo$: ^multiline:error$</a></li>
-      <!--EndRepeat:repoErrors-->
-   </ul>
-   <!--EndIncludeIf:repoErrors-->
-<!--EndRepeat:messages-->
-</div>
+{% include 'page_end.html' %}

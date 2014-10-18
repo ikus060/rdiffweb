@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import cherrypy
 import librdiff
 import logging
 import page_main
@@ -23,53 +24,36 @@ import rdw_helpers
 class rdiffLocationsPage(page_main.rdiffPage):
    ''' Shows the locations page. Will show all available destination
    backup directories. This is the root (/) page '''
+   @cherrypy.expose
    def index(self):
-      page = self.startPage("Backup Locations")
-      page = page + self.compileTemplate("repo_listing.html", **self.getParmsForPage(self.getUserDB().getUserRoot(self.getUsername()), self.getUserDB().getUserRepoPaths(self.getUsername())))
-      page = page + self.endPage()
-      return page
-   index.exposed = True
+      return self._writePage("locations.html", **self.getParmsForPage())
    
-   def getParmsForPage(self, root, repos):
+   def getParmsForPage(self):
+      root = self.getUserDB().getUserRoot(self.getUsername())
+      repos = self.getUserDB().getUserRepoPaths(self.getUsername())
       repoList = []
-      for reponame in repos:
+      for name in repos:
          try:
-            repoHistory = librdiff.getLastBackupHistoryEntry(rdw_helpers.joinPaths(root, reponame))
-            reposize = rdw_helpers.formatFileSizeStr(repoHistory.size)
-            reposizeinbytes = repoHistory.size
-            if repoHistory.inProgress:
-               reposize = "In Progress"
-            repoDate = repoHistory.date.getDisplayString()
-            repodateinseconds = repoHistory.date.getLocalSeconds()
+            repoHistory = librdiff.getLastBackupHistoryEntry(rdw_helpers.joinPaths(root, name))
+            size = repoHistory.size
+            in_progress = repoHistory.inProgress
+            last_backup = repoHistory.date.getLocalSeconds()
             failed = False
          except librdiff.FileError:
-            logging.exception("Can't get reference on the last backup history for %s" % reponame)
-            reposize = "0"
-            reposizeinbytes = 0 
-            repoDate = "Error"
-            repodateinseconds = 0
+            logging.exception("Can't get reference on the last backup history for %s" % name)
+            size = 0
+            in_progress = false
+            last_backup = 0
             failed = True
-         repoList.append({ "reponame" : reponame,
-                           "reposize" : reposize,
-                           "reposizeinbytes" : reposizeinbytes,
-                           "repodate" : repoDate,
-                           "repodateinseconds" : repodateinseconds,
-                           "repoBrowseUrl" : self.buildBrowseUrl(reponame, "/", False),
-                           "repoHistoryUrl" : self.buildHistoryUrl(reponame),
+         repoList.append({ "name" : name,
+                           "size" : size,
+                           "last_backup" : last_backup,
+                           "browse_url" : self.buildBrowseUrl(name, "/", False),
+                           "history_url" : self.buildHistoryUrl(name),
+                           'in_progress' : in_progress,
                            'failed': failed})
 
-      self._sortLocations(repoList)
-      return { "title" : "browse", "repos" : repoList }
-            
-            
-   def _sortLocations(self, locations):
-      def compare(left, right):
-         if left['failed'] != right['failed']:
-            return cmp(left['failed'], right['failed'])
-         return cmp(left['reponame'], right['reponame'])
-      
-      locations.sort(compare)
-      
+      return { "title" : "Locations", "repos" : repoList }
 
 class locationsPageTest(page_main.pageTest, rdiffLocationsPage):
    def getTemplateName(self):

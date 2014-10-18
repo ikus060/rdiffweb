@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import cherrypy
 from cherrypy.lib.static import serve_file, serve_download
 import rdw_helpers, page_main, librdiff
 import os
@@ -30,17 +31,18 @@ class autoDeleteDir:
 class rdiffRestorePage(page_main.rdiffPage):
    _cp_config = {"response.stream": True, "response.timeout": 3000 }
    
+   @cherrypy.expose
    def index(self, repo, path, date):
       try:
          self.validateUserPath(rdw_helpers.joinPaths(repo, path))
       except rdw_helpers.accessDeniedError, error:
-         return self.writeErrorPage(str(error))
-      if not repo: return self.writeErrorPage("Backup location not specified.")
+         return self._writeErrorPage(str(error))
+      if not repo: return self._writeErrorPage("Backup location not specified.")
       if not repo in self.getUserDB().getUserRepoPaths(self.getUsername()):
-         return self.writeErrorPage("Access is denied.")
+         return self._writeErrorPage("Access is denied.")
 
       if librdiff.backupIsInProgressForRepo(rdw_helpers.joinPaths(self.getUserDB().getUserRoot(self.getUsername()), repo)):
-         return self.writeErrorPage("A backup is currently in progress to this location.  Restores are disabled until this backup is complete.")
+         return self._writeErrorPage("A backup is currently in progress to this location.  Restores are disabled until this backup is complete.")
 
       try:
          restoreTime = rdw_helpers.rdwTime()
@@ -53,13 +55,12 @@ class rdiffRestorePage(page_main.rdiffPage):
          useZipFormat = self.getUserDB().useZipFormat(self.getUsername())
          filePath = librdiff.restoreFileOrDir(fullPath, path, file, restoreTime, useZipFormat)
       except librdiff.FileError, error:
-         return self.writeErrorPage(error.getErrorString())
+         return self._writeErrorPage(error.getErrorString())
       except ValueError, error:
          logging.exception("fail to restore")
-         return self.writeErrorPage(str(error))
+         return self._writeErrorPage(str(error))
 
       (directory, filename) = os.path.split(filePath)
       filename = filename.replace("\"", "\\\"")  # Escape quotes in filename
       return serve_file(filePath, None, disposition="attachment", name=filename)
-   index.exposed = True
 

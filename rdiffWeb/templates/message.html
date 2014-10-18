@@ -1,0 +1,16 @@
+<!-- Success -->
+{% if success %}
+<div class="alert alert-success" role="alert">{{ success }}</div>
+{% endif %}
+<!-- Info -->
+{% if message %}
+<div class="alert alert-info" role="alert">{{ message }}</div>
+{% endif %}
+<!-- Warning -->
+{% if warning %}
+<div class="alert alert-warning" role="alert">{{ warning }}</div>
+{% endif %}
+<!-- Error -->
+{% if error %}
+<div class="alert alert-danger" role="alert">{{ error }}</div>
+{% endif %}

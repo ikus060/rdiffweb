@@ -20,9 +20,8 @@ import json
 import os
 import stat
 import crypt
-
+import logging
 import page_main
-import rdw_helpers
 
 
 class rdiffSetupPage(page_main.rdiffPage):
@@ -30,39 +29,55 @@ class rdiffSetupPage(page_main.rdiffPage):
       This page is displayed with rdiffWeb is not yet configured.
       """
    @cherrypy.expose
-   def index(self):
-      page = rdw_helpers.compileTemplate("page_start.html", title='Set up rdiffWeb', rssLink='', rssTitle='')
-      rootEnabled = False
+   def index(self, **kwargs):
+      completed = False
+      root_enabled = False
       error = ""
+      
+      # Check if root user is enabled
       try:
-         rootEnabled = self._rootAccountEnabled()
+         root_enabled = self._rootAccountEnabled()
       except KeyError:
-         error = "rdiffWeb setup must be run with root privileges."
-      page += rdw_helpers.compileTemplate("setup.html", rootEnabled=rootEnabled, error=error)
-      page += rdw_helpers.compileTemplate("page_end.html")
-      return page
-
-   @cherrypy.expose
-   def ajax(self):
-      postData = cherrypy.request.body.read()
-      request = json.JsonReader().read(postData)
-      print request
-      if not 'rootPassword' in request:
-         return json.JsonWriter().write({"error": "No password specified."})
+         error = "rdiffweb setup must be run with root privileges."
          
+      # Check if configuration file exists
       try:
          self._ensureConfigFileExists()
-
-         self._validatePassword(request['rootPassword'])
-         if 'adminUsername' in request:
-            self._setAdminUser(request['adminUsername'], request['adminPassword'], request['adminConfirmPassword'])
-         if 'adminRoot' in request:
-            self._setAdminRoot(request['adminUsername'], request['adminRoot'])
-      except ValueError, error:
-         return json.JsonWriter().write({"error": str(error)})
-
-      return json.JsonWriter().write({})
+      except e:
+         error = "rdiffweb configuration file doesn't exists. " + str(e)
          
+      # if no post data, return plain page.
+      if not self._is_submit():
+         return self._writePage("setup.html",
+                                title='Setup rdiffweb',
+                                root_enabled=root_enabled,
+                                error=error)
+      
+      logging.info("validating root password")
+      try:
+         # Get parameters
+         root_password = cherrypy.request.params["root_password"]
+         admin_username = cherrypy.request.params["admin_username"]
+         admin_password = cherrypy.request.params["admin_password"]
+         admin_password_confirm = cherrypy.request.params["admin_password_confirm"]
+         admin_root = cherrypy.request.params["admin_root"]
+         # Validate all the parameters
+         self._validatePassword(root_password)
+         self._validateAdminUser(admin_username, admin_password, admin_password_confirm)
+         self._validateAdminRoot(admin_username, admin_root)
+         # Execute the setup
+         self._setAdminUser(admin_username, admin_password, admin_password_confirm)
+         self._setAdminRoot(admin_username, admin_root)
+         completed = True
+      except ValueError, e:
+         logging.exception("fail to complete setup")
+         error = "Error! " + str(e)
+         
+      return self._writePage("setup.html",
+                             title='Setup rdiffweb',
+                             root_enabled=root_enabled,
+                             completed=completed,
+                             error=error)
          
    def _validatePassword(self, password):
       if self._rootAccountEnabled():
@@ -76,23 +91,15 @@ class rdiffSetupPage(page_main.rdiffPage):
          if password != "billfrank":
             raise ValueError, "The password is invalid."
          
-   def _checkSystemPassword(self, username, password):
-      cryptedpasswd = self._getCryptedPassword(username)
-      if crypt.crypt(password, cryptedpasswd) != cryptedpasswd:
-         raise ValueError, "Invalid password."
-   
-   def _setAdminUser(self, username, password, confirmPassword):
+   def _validateAdminUser(self, username, password, confirmPassword):
       if not username:
          raise ValueError, "A username was not specified."
       if not password:
          raise ValueError, "The administrative user must have a password."
       if password != confirmPassword:
          raise ValueError, "The passwords do not match."
-      
-      self.getUserDB().addUser(username)
-      self.getUserDB().setUserPassword(username, password)
-   
-   def _setAdminRoot(self, username, userRoot):
+         
+   def _validateAdminRoot(self, username, userRoot):
       if not username:
          raise ValueError, "A username was not specified."
       if not userRoot:
@@ -100,7 +107,23 @@ class rdiffSetupPage(page_main.rdiffPage):
       if not os.path.exists(userRoot):
          raise ValueError, "The specified directory does not exist."
       
-      self.getUserDB().setUserRoot(username, userRoot)
+   def _checkSystemPassword(self, username, password):
+      cryptedpasswd = self._getCryptedPassword(username)
+      if crypt.crypt(password, cryptedpasswd) != cryptedpasswd:
+         raise ValueError, "Invalid root password."
+   
+   def _setAdminUser(self, username, password, confirmPassword):
+      # Validate parameters
+      self._validateAdminUser(username, password, confirmPassword)
+      # Create the user
+      self.getUserDB().addUser(username)
+      self.getUserDB().setUserPassword(username, password)
+   
+   def _setAdminRoot(self, username, userRoot):
+      # Validate parameters
+      self._validateAdminRoot(username, userRoot)
+      # Sets admin root
+      self.getUserDB().setUserInfo(username, userRoot, True)
       
    def _rootAccountEnabled(self):
       cryptedpasswd = self._getCryptedPassword("root")

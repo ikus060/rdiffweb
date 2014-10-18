@@ -1,0 +1,39 @@
+{% include 'page_start.html' %}
+<!-- nav_bar -->
+{% include 'nav_bar.html' %}
+<!-- /nav_bar -->
+<div class="container">
+    <h2>Backup Locations</h2>
+    <table id="repos" class="sortable table">
+        <thead>
+            <tr>
+                <th id="name" class="sortable">Name</th>
+                <th id="lastbackup" class="sortable">Last Backup</th>
+                <th id="size" class="sortable">Last Backup Size</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!--StartRepeat:repos-->
+            {% for repo in repos %}
+            <tr>
+                <td class="icon repo" data-value="{{ repo.name }}">
+                    {% if repo.failed %} {{ repo.name }} {% else %}
+                    <a href="{{ repo.browse_url }}">{{ repo.name }}</a>
+                    {% endif %}
+                </td>
+                <td data-value="{{ repo.last_backup }}">{{ repo.last_backup
+                    | datetime }}{% if repo.failed %}ERROR{% endif%}</td>
+                <td data-value="{{ repo.size }}">{{ repo.size | filesize
+                    }}{% if repo.in_progress %}IN PROGRESS{% endif %}</td>
+                <td class="navitem">
+                    <a href="{{ repo.history_url }}">History</a>
+                </td>
+            </tr>
+            {% endfor %}
+            <!--EndRepeat:repos-->
+        </tbody>
+    </table>
+</div>
+<!-- /.container -->
+{% include 'page_end.html' %}

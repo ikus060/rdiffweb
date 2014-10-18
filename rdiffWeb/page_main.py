@@ -38,12 +38,6 @@ class rdiffPage:
    def buildHistoryUrl(self, repo):
       return "/history/?repo=" + rdw_helpers.encodeUrl(repo, "/")
 
-   def buildLocationsUrl(self):
-      return "/"
-
-   def compileTemplate(self, templatePath, **kwargs):
-      return rdw_helpers.compileTemplate(templatePath, **kwargs)
-         
    def validateUserPath(self, path):
       '''Takes a path relative to the user's root dir and validates that it is valid and within the user's root'''
       path = rdw_helpers.joinPaths(self.getUserDB().getUserRoot(self.getUsername()), rdw_helpers.encodePath(path))
@@ -65,36 +59,23 @@ class rdiffPage:
 
 
    ########################## PAGE HELPER FUNCTIONS ##################################
-   def startPage(self, title, rssUrl="", rssTitle=""):
-      return self.compileTemplate("page_start.html", title=title, rssLink=rssUrl, rssTitle=rssTitle) + self.writeTopLinks()
 
-   def endPage(self):
-      return self.compileTemplate("page_end.html")
-
-   def writeTopLinks(self):
-      pages = [("/status/", "Status")]
-      if self.getUserDB().modificationsSupported():
-         pages.append(("/prefs", "Preferences"))
-      if self.getUserDB().userIsAdmin(self.getUsername()):
-         pages.append(("/admin", "Admin"))
-      pages.append(("/logout", "Logout"))
-      links = []
-      for page in pages:
-         (url, title) = page
-         links.append({"linkText" : title, "title": title, "linkUrl" : url})
-      return self.compileTemplate("nav_bar.html", topLinks=links)
-
-   def writeErrorPage(self, error):
-      page = self.startPage("Error")
-      page = page + self.compileTemplate("error.html", title="Error", error=error)
-      page = page + self.endPage()
-      return page
-
-   def writeMessagePage(self, title, message):
-      page = self.startPage(title)
-      page = page + message
-      page = page + self.endPage()
-      return page
+   def _is_submit(self):
+      return cherrypy.request.method == "POST"
+   
+   def _writeErrorPage(self, error):
+      return self._writePage("error.html", title="Error", error=error)
+      
+   def _writePage(self, template_name, **kwargs):
+      """Used to generate a standard html page using the given template.
+      This method should be used by subclasses to provide default template
+      value."""
+      parms = { "title" : "rdiffweb",
+                "is_login" : True,
+                "is_admin" : self._user_is_admin(),
+                "username" : self.getUsername()}
+      parms.update(kwargs)
+      return rdw_templating.compileTemplate(template_name, **parms)
 
 
    ########## SESSION INFORMATION #############
@@ -106,9 +87,16 @@ class rdiffPage:
      return "Invalid username or password."
 
    def getUsername(self):
-      username = cherrypy.session['username']
-      return username
+      try:
+         return cherrypy.session['username']
+      except:
+         return None
    
+   def _user_is_admin(self):
+      """Check if current user is administrator. Return True or False."""
+      if self.getUsername():
+         return self.getUserDB().userIsAdmin(self.getUsername())
+      return False
 
 import unittest, shutil, tempfile, os.path
 class pageTest(unittest.TestCase):
@@ -149,17 +137,4 @@ class pageTest(unittest.TestCase):
       if (os.access(self.destRoot, os.F_OK)):
          rdw_helpers.removeDir(self.destRoot)
 
-   def testCompileTemplate(self):
-      for test in self._getBackupTests():
-         parms = self.getParmsForTemplate(rdw_helpers.joinPaths(self.destRoot, test), "repo")
-         # print parms
-         
-         encounteredText = rdw_templating.templateParser().parseTemplate(self._getFileText("", self.getTemplateName()), **parms)
-         expectedText = self._getFileText(test, self.getExpectedResultsName())
-         
-         encounteredText = encounteredText.replace('\n', '')
-         expectedText = expectedText.replace('\n', '')
-         
-         self.assertEquals(encounteredText, expectedText)
-         assert encounteredText == expectedText, "Got:\n" + encounteredText + "\nExpected:\n" + expectedText + "\nEnd"
       

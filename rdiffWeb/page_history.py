@@ -15,56 +15,55 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import cherrypy
 from rdw_helpers import joinPaths
 import rdw_helpers, page_main, librdiff
 import os, urllib
 
 
 class rdiffHistoryPage(page_main.rdiffPage):
+   
+   @cherrypy.expose
    def index(self, repo):
       try:
          self.validateUserPath(repo)
       except rdw_helpers.accessDeniedError, error:
-         return self.writeErrorPage(str(error))
+         return self._writeErrorPage(str(error))
 
-      if not repo: return self.writeErrorPage("Backup location not specified.")
+      if not repo: return self._writeErrorPage("Backup location not specified.")
       if not repo in self.getUserDB().getUserRepoPaths(self.getUsername()):
-         return self.writeErrorPage("Access is denied.")
+         return self._writeErrorPage("Access is denied.")
 
       parms = {}
       try:
-         parms = self.getParmsForPage(joinPaths(self.getUserDB().getUserRoot(self.getUsername()), repo), repo)
+         repoPath = joinPaths(self.getUserDB().getUserRoot(self.getUsername()), repo)
+         parms = self.getParmsForPage(repoPath, repo)
       except librdiff.FileError, error:
-         return self.writeErrorPage(error.getErrorString())
+         return self._writeErrorPage(error.getErrorString())
       
-      return self.startPage("Backup History") + self.compileTemplate("history.html", **parms) + self.endPage()
-   index.exposed = True
+      return self._writePage("history.html", **parms)
    
    def getParmsForPage(self, repoPath, repoName):
       rdiffHistory = librdiff.getBackupHistory(repoPath)
       rdiffHistory.reverse()
       entries = []
-      cumulativeSize = 0
-      if len(rdiffHistory) > 0: cumulativeSize = rdiffHistory[0].size
+      cumulative_size = 0
+      if len(rdiffHistory) > 0: cumulative_size = rdiffHistory[0].size
       
       for historyItem in rdiffHistory:
-         fileSize = ""
+         size = ""
          incrementSize = ""
          cumulativeSizeStr = ""
          if not historyItem.inProgress:
-            fileSize = rdw_helpers.formatFileSizeStr(historyItem.size)
-            incrementSize = rdw_helpers.formatFileSizeStr(historyItem.incrementSize)
-            cumulativeSize += historyItem.incrementSize
-            cumulativeSizeStr = rdw_helpers.formatFileSizeStr(cumulativeSize)
-         entries.append({ "date" : historyItem.date.getDisplayString(),
-                          "dateinseconds" : historyItem.date.getLocalSeconds(),
-                          "inProgress" : historyItem.inProgress,
+            size = historyItem.size
+            incrementSize = historyItem.incrementSize
+            cumulative_size += historyItem.incrementSize
+         entries.append({ "date" : historyItem.date.getLocalSeconds(),
+                          "in_progress" : historyItem.inProgress,
                           "errors" : historyItem.errors,
-                          "cumulativesize" : cumulativeSizeStr,
-                          "cumulativesizeinbytes" : cumulativeSize,
-                          "size" : fileSize,
-                          "sizeinbytes" : historyItem.size })
-      return {"title" : "Backup history for " + repoName, "history" : entries, "totalBackups" : len(rdiffHistory)}
+                          "cumulative_size" : cumulative_size,
+                          "size" : size })
+      return {"title" : "Backup history - " + repoName, "history" : entries}
       
 
 class historyPageTest(page_main.pageTest, rdiffHistoryPage):

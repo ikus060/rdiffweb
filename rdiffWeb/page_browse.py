@@ -15,38 +15,34 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import cherrypy
 from rdw_helpers import joinPaths, encodePath
 import rdw_helpers, page_main, librdiff
 import os
 import urllib
 
-
 class rdiffBrowsePage(page_main.rdiffPage):
    
+   @cherrypy.expose
    def index(self, repo="", path="", restore=""):
       try:
          self.validateUserPath(joinPaths(repo, path))
       except rdw_helpers.accessDeniedError, error:
-         return self.writeErrorPage(str(error))
+         return self._writeErrorPage(str(error))
 
       # NOTE: a blank path parm is allowed, since that just results in a listing of the repo root
-      if not repo: return self.writeErrorPage("Backup location not specified.")
+      if not repo: return self._writeErrorPage("Backup location not specified.")
       if not repo in self.getUserDB().getUserRepoPaths(self.getUsername()):
-         return self.writeErrorPage("Access is denied.")
+         return self._writeErrorPage("Access is denied.")
 
       try:
-         parms = self.getParmsForPage(self.getUserDB().getUserRoot(self.getUsername()), repo, path, restore)
+         parms = self.getParmsForPage(repo, path, restore)
       except librdiff.FileError, error:
-         return self.writeErrorPage(str(error))
-      page = self.startPage(parms["title"])
-      page = page + self.compileTemplate("dir_listing.html", **parms)
-      page = page + self.endPage()
-      return page
+         return self._writeErrorPage(str(error))
+      return self._writePage("browse.html", **parms)
    
-   index.exposed = True
-   
-   
-   def getParmsForPage(self, userRoot, repo="", path="", restore=""):
+   def getParmsForPage(self, repo="", path="", restore=""):
+      userRoot = self.getUserDB().getUserRoot(self.getUsername())
       repo = encodePath(repo)
       path = encodePath(path)
       # Build "parent directories" links
@@ -57,30 +53,30 @@ class rdiffBrowsePage(page_main.rdiffPage):
          if parentDir:
             parentDirPath = joinPaths(parentDirPath, parentDir)
             parentDirs.append({ "parentPath" : self.buildBrowseUrl(repo, parentDirPath, False), "parentDir" : parentDir })
-      parentDirs[-1]["parentPath"] = "" # Clear link for last parent, so it doesn't show it as a link
+      parentDirs[-1]["parentPath"] = ""  # Clear link for last parent, so it doesn't show it as a link
 
       # Set up warning about in-progress backups, if necessary
       if librdiff.backupIsInProgressForRepo(joinPaths(userRoot, repo)):
-         backupWarning = "Warning: a backup is currently in progress to this location.  The displayed data may be inconsistent."
+         backup_warning = "Warning: a backup is currently in progress to this location. The displayed data may be inconsistent."
       else:
-         backupWarning = ""
+         backup_warning = ""
 
-      restoreUrl = ""
-      viewUrl = ""
+      restore_url = ""
+      view_url = ""
       if restore == "T":
          title = "Restore"
-         viewUrl = self.buildBrowseUrl(repo, path, False)
+         view_url = self.buildBrowseUrl(repo, path, False)
          tempDates = librdiff.getDirRestoreDates(joinPaths(userRoot, repo), path)
-         tempDates.reverse() # sort latest first
-         restoreDates = []
+         tempDates.reverse()  # sort latest first
+         restore_dates = []
          for x in tempDates:
-            restoreDates.append({ "dateStr" : x.getDisplayString(),
-                                 "dirRestoreUrl" : self.buildRestoreUrl(repo, path, x) })
+            restore_dates.append({ "url" : self.buildRestoreUrl(repo, path, x),
+                                 "date" : x.getLocalSeconds()})
          entries = []
       else:
          title = "Browse"
-         restoreUrl = self.buildBrowseUrl(repo, path, True)
-         restoreDates = []
+         restore_url = self.buildBrowseUrl(repo, path, True)
+         restore_dates = []
 
          # Get list of actual directory entries
          fullRepoPath = joinPaths(userRoot, repo)
@@ -91,36 +87,33 @@ class rdiffBrowsePage(page_main.rdiffPage):
             entryLink = ""
             if libEntry.isDir:
                entryLink = self.buildBrowseUrl(repo, joinPaths(path, libEntry.name), False)
-               fileType = "folder"
-               size = " "
-               sizeinbytes = 0
-               changeDates = []
+               file_type = "folder"
+               size = 0 
+               change_dates = []
             else:
                entryLink = self.buildRestoreUrl(repo, joinPaths(path, libEntry.name), libEntry.changeDates[-1])
-               fileType = "file"
+               file_type = "file"
                entryChangeDates = libEntry.changeDates[:-1]
                entryChangeDates.reverse()
-               size = rdw_helpers.formatFileSizeStr(libEntry.fileSize)
-               sizeinbytes = libEntry.fileSize
-               changeDates = [ { "changeDateUrl" : self.buildRestoreUrl(repo, joinPaths(path, libEntry.name), x),
-                                 "changeDateStr" : x.getDisplayString() } for x in entryChangeDates]
+               size = libEntry.fileSize
+               change_dates = [ { "url" : self.buildRestoreUrl(repo, joinPaths(path, libEntry.name), x),
+                                 "date" : x.getLocalSeconds() } for x in entryChangeDates]
 
-            showRevisionsText = (len(changeDates) > 0) or libEntry.isDir
-            entries.append({ "filename" : libEntry.name,
-                           "fileRestoreUrl" : entryLink,
-                           "filetype" : fileType,
+            entries.append({ "name" : libEntry.name,
+                           "restore_url" : entryLink,
+                           "file_type" : file_type,
                            "exists" : libEntry.exists,
-                           "date" : libEntry.changeDates[-1].getDisplayString(),
-                           "dateinseconds" : libEntry.changeDates[-1].getLocalSeconds(),
+                           "date" : libEntry.changeDates[-1].getLocalSeconds(),
                            "size" : size,
-                           "sizeinbytes" : sizeinbytes,
-                           "hasPrevRevisions" : len(changeDates) > 0,
-                           "numPrevRevisions" : str(len(changeDates)),
-                           "hasMultipleRevisions" : len(changeDates) > 1,
-                           "showRevisionsText" : showRevisionsText,
-                           "changeDates" : changeDates})
+                           "change_dates" : change_dates})
 
-      return { "title" : title, "files" : entries, "parentDirs" : parentDirs, "restoreUrl" : restoreUrl, "viewUrl" : viewUrl, "restoreDates" : restoreDates, "warning" : backupWarning }
+      return { "title" : title,
+              "files" : entries,
+              "parentDirs" : parentDirs,
+              "restore_url" : restore_url,
+              "view_url" : view_url,
+              "restore_dates" : restore_dates,
+              "warning" : backup_warning }
 
 class browsePageTest(page_main.pageTest, rdiffBrowsePage):
    def getTemplateName(self):

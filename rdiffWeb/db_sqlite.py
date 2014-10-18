@@ -71,7 +71,8 @@ class sqliteUserDB:
       return users
 
    def addUser(self, username):
-      if self.userExists(username): raise ValueError
+      if self.userExists(username):
+         raise ValueError, "user '%s' already exists" % username
       query = "INSERT INTO users (Username) values (?)"
       self._executeQuery(query, (username,))
 

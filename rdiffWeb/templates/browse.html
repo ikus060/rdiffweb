@@ -1,0 +1,112 @@
+{% include 'page_start.html' %}
+<!-- nav_bar -->
+{% include 'nav_bar.html' %}
+<!-- /nav_bar -->
+<div class="container">
+    <h2>{{ title }}</h2>
+
+    <ol class="breadcrumb">
+        <li><a href="/">Locations</a></li> {% for parentDir in parentDirs %}
+        <!--StartRepeat:parentDirs-->
+        <li class="{% if not parentDir.parentPath %}active{% endif %}">{%
+            if not parentDir.parentPath %}{{ parentDir.parentDir }}{% else %}<a
+                href="{{ parentDir.parentPath }}"> {{ parentDir.parentDir }}
+            </a>{% endif %}
+        </li> {% endfor %}
+        <!--EndRepeat:parentDirs-->
+    </ol>
+
+    <ul class="nav nav-pills">
+        {% if view_url %}
+        <li><a href="{{ view_url }}">View Folder</a></li> {% else %}
+        <li class="active"><a href="#">View Folder</a></li> {% endif %} {% if
+        restore_url %}
+        <li><a href="{{ restore_url }}">Restore Folder</a></li> {% else %}
+        <li class="active"><a href="#">Restore Folder</a></li> {% endif %}
+    </ul>
+
+    {% include 'message.html' %}
+
+    <!--StartIncludeIf:restoreUrl-->
+    {% if restore_url %}
+    <table id="files" class="sortable table">
+        <thead>
+            <tr>
+                <th id="name" class="sortable" data-type="str">Name</th>
+                <th id="size" class="sortable" data-type="int">Size</th>
+                <th id="last-revision" class="sortable" data-type="int">Last
+                    Revision</th>
+                <th>Previous Revisions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for file in files %}
+            <!--StartRepeat:files-->
+            <tr class="{% if file.exists %}exists{% else %}notexists{% endif %}">
+                <td data-value="{{ file.filename }}">
+                    <a href="{{ file.restore_url }}">
+                        <i class="icon-{{ file.file_type }}"></i> {{ file.name
+                        }}
+                    </a>
+                </td>
+                <td data-value="{{ file.size }}">{{ file.size | filesize }}</td>
+                <td data-value="{{ file.date }}">{{ file.date | datetime }}</td>
+                <td>
+                    {% if ( file.change_dates | length ) > 0 %}
+                    <!--StartIncludeIf:hasPrevRevisions-->
+                    <!-- Single button -->
+                    <div class="dropdown">
+                        <button class="btn btn-link dropdown-toggle"
+                            type="button" id="menu1" data-toggle="dropdown">
+                            {{ file.change_dates | length }} previous
+                            revision(s) <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu"
+                            aria-labelledby="menu1">
+                            <!--StartRepeat:changeDates-->
+                            {% for entry in file.change_dates %}
+                            <li><a href="{{ entry.url }}">{{ entry.date
+                                    | datetime }}</a></li>
+                            <!--EndRepeat:changeDates-->
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% else %}
+                    <!--EndIncludeIf:hasPrevRevisions-->
+                    <!--StartDeleteIf:hasPrevRevisions-->
+                    No Previous Revisions
+                    <!--EndDeleteIf:hasPrevRevisions-->
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            <!--EndRepeat:files-->
+        </tbody>
+    </table>
+    {% endif %}
+    <!--EndIncludeIf:restoreUrl-->
+
+    <!--StartIncludeIf:viewUrl-->
+    {%if view_url %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Choose a backup to restore</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in restore_dates %}
+            <!--StartRepeat:restoreDates-->
+            <tr>
+                <td>
+                    <a href="{{ entry.url }}">{{ entry.date | datetime }}</a>
+                </td>
+            </tr>
+            {% endfor %}
+            <!--EndRepeat:restoreDates-->
+        </tbody>
+    </table>
+    {% endif %}
+    <!--EndIncludeIf:viewUrl-->
+</div>
+{% include 'page_end.html' %}

@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from rdw_helpers import joinPaths
-import rdw_helpers, page_main, librdiff
+import cherrypy
+import page_main, librdiff
 import os
 import urllib
 import rdw_spider_repos
@@ -27,6 +27,7 @@ class rdiffPreferencesPage(page_main.rdiffPage):
    
    sampleEmail = 'joe@example.com'
    
+   @cherrypy.expose
    def index(self, **parms):
       if parms:
          action = parms['form']
@@ -39,31 +40,30 @@ class rdiffPreferencesPage(page_main.rdiffPage):
          elif action == 'setRestoreType':
             return self._setRestoreType(parms['restoreType'])
          else:
-            return self._getPrefsPage(errorMessage='Invalid setting.')
+            return self._writePrefsPage(error='Invalid setting.')
          
-      return self._getPrefsPage('', '')
-   index.exposed = True
+      return self._writePrefsPage()
    
    def _changePassword(self, currentPassword, newPassword, confirmPassword):
       if not self.getUserDB().modificationsSupported():
-         return self._getPrefsPage(errorMessage="Password changing is not supported with the active user database.")
+         return self._writePrefsPage(error="Password changing is not supported with the active user database.")
       
       if not self.getUserDB().areUserCredentialsValid(self.getUsername(), currentPassword):
-         return self._getPrefsPage(errorMessage="The 'Current Password' is invalid.")
+         return self._writePrefsPage(error="The 'Current Password' is invalid.")
       
       if newPassword != confirmPassword:
-         return self._getPrefsPage(errorMessage="The passwords do not match.")
+         return self._writePrefsPage(error="The passwords do not match.")
 
       self.getUserDB().setUserPassword(self.getUsername(), newPassword)      
-      return self._getPrefsPage(statusMessage="Password updated successfully.")
+      return self._writePrefsPage(success="Password updated successfully.")
    
    def _updateRepos(self):
       rdw_spider_repos.findReposForUser(self.getUsername(), self.getUserDB())
-      return self._getPrefsPage(statusMessage="Successfully updated backup locations.")
+      return self._writePrefsPage(success="Successfully updated backup locations.")
 
    def _setNotifications(self, parms):
       if not self.getUserDB().modificationsSupported():
-         return self._getPrefsPage(errorMessage="Email notification is not supported with the active user database.")
+         return self._writePrefsPage(error="Email notification is not supported with the active user database.")
       
       repos = self.getUserDB().getUserRepoPaths(self.getUsername())
       
@@ -81,25 +81,22 @@ class rdiffPreferencesPage(page_main.rdiffPage):
                   maxDays = int(parms[parmName][0])
                self.getUserDB().setRepoMaxAge(self.getUsername(), backupName, maxDays)
                
-      return self._getPrefsPage(statusMessage="Successfully changed notification settings.")
+      return self._writePrefsPage(success="Successfully changed notification settings.")
    
    def _setRestoreType(self, restoreType):
       if not self.getUserDB().modificationsSupported():
-         return self.getPrefsPage(errorMessage="Setting the restore format is not supported with the active user database.")
+         return self.getPrefsPage(error="Setting the restore format is not supported with the active user database.")
       
       if restoreType == 'zip' or restoreType == 'tgz':
          self.getUserDB().setUseZipFormat(self.getUsername(), restoreType == 'zip')
       else:
-         return self._getPrefsPage(errorMessage='Invalid restore format.')
-      return self._getPrefsPage(statusMessage="Successfully set restore format.")
+         return self._writePrefsPage(error='Invalid restore format.')
+      return self._writePrefsPage(success="Successfully set restore format.")
    
-   def _getPrefsPage(self, errorMessage="", statusMessage=""):
-      title = "User Preferences"
+   def getParmsForPage(self):
       email = self.getUserDB().getUserEmail(self.getUsername());
       parms = {
-         "title" : title,
-         "error" : errorMessage,
-         "message" : statusMessage,
+         "title" : "User Preferences",
          "userEmail" : email,
          "notificationsEnabled" : False,
          "backups" : [],
@@ -129,6 +126,9 @@ class rdiffPreferencesPage(page_main.rdiffPage):
          
          parms.update({ "notificationsEnabled" : True, "backups" : backups })
          
-      return self.startPage(title) + self.compileTemplate("user_prefs.html", **parms) + self.endPage()
+      return parms
       
-
+   def _writePrefsPage(self, **kwargs):
+      parms = self.getParmsForPage()
+      parms.update(kwargs)
+      return self._writePage("prefs.html", **parms)

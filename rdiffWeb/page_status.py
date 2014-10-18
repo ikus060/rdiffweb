@@ -15,66 +15,68 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import cherrypy
 import page_main
 import librdiff
 import rdw_helpers
 import cherrypy
 
 class rdiffStatusPage(page_main.rdiffPage):
+   
+   @cherrypy.expose
    def index(self, failures=""):
       userMessages = self._getRecentUserMessages(failures != "")
       return self._compileStatusPageTemplate(True, userMessages, failures != "")
-   index.exposed = True
 
+   @cherrypy.expose
    def entry(self, date="", repo=""):
       # Validate date
       try:
          entryTime = rdw_helpers.rdwTime()
          entryTime.initFromString(date)
       except ValueError:
-         return self.writeErrorPage("Invalid date parameter.")
+         return self._writeErrorPage("Invalid date parameter.")
 
       if not repo:
          userMessages = self._getUserMessagesForDay(entryTime)
       else:
          # Validate repo parameter
          if not repo in self.getUserDB().getUserRepoPaths(self.getUsername()):
-            return self.writeErrorPage("Access is denied.")
+            return self._writeErrorPage("Access is denied.")
          try:
             self.validateUserPath(repo)
          except rdw_helpers.accessDeniedError, error:
-            return self.writeErrorPage(str(error))
+            return self._writeErrorPage(str(error))
 
          userMessages = self._getUserMessages([repo], False, True, entryTime, entryTime)
 
       return self._compileStatusPageTemplate(False, userMessages, False)
-   entry.exposed = True
 
+   @cherrypy.expose
    def feed(self, failures=""):
       cherrypy.response.headers["Content-Type"] = "text/xml"
       userMessages = self._getRecentUserMessages(failures != "")
       statusUrl = self._buildAbsolutePageUrl(failures != "")
-      return self.compileTemplate("status.xml", username=self.getUsername(), link=statusUrl, messages=userMessages)
-   feed.exposed = True
+      return self._writePage("status.xml", link=statusUrl, messages=userMessages)
    
    def _compileStatusPageTemplate(self, isMainPage, messages, failuresOnly):
       
-      if isMainPage: title = "Backup Status"
-      else: title = "Backup Status Entry"
-      feedLink = ""
-      feedTitle = ""
       if isMainPage:
+         title = "Backup Status"
          feedLink = self._buildStatusFeedUrl(failuresOnly)
          feedTitle = "Backup status for " + self.getUsername()
-      
-      page = self.startPage("Backup Status", rssUrl=feedLink, rssTitle=feedTitle)
-      page = page + self.compileTemplate("status.html",
-                                         messages=messages,
-                                         feedLink=feedLink,
-                                         failuresOnly=failuresOnly,
-                                         title=title,
-                                         isEntry=not isMainPage)
-      return page + self.endPage()
+      else:
+         title = "Backup Status Entry"
+         feedLink = ""
+         feedTitle = ""
+      return self._writePage("status.html",
+                             messages=messages,
+                             feedLink=feedLink,
+                             failuresOnly=failuresOnly,
+                             title=title,
+                             rssUrl=feedLink,
+                             rssTitle=feedTitle,
+                             isEntry=not isMainPage)
 
    def _buildAbsolutePageUrl(self, failuresOnly):
       url = cherrypy.request.base + "/status/"
@@ -122,8 +124,8 @@ class rdiffStatusPage(page_main.rdiffPage):
       for repo in repos:
          try:
             backups = librdiff.getBackupHistoryForDateRange(rdw_helpers.joinPaths(userRoot, repo), earliestDate, latestDate);
-            allBackups += [{"repo": repo, "date": backup.date, "displayDate": backup.date.getDisplayString(),
-               "size": rdw_helpers.formatFileSizeStr(backup.size), "errors": backup.errors,
+            allBackups += [{"repo": repo, "date": backup.date,
+               "size": backup.size, "errors": backup.errors,
                "repoLink" : self.buildBrowseUrl(repo, "/", False)} for backup in backups]
          except librdiff.FileError, error:
             repoErrors.append({"repo": repo, "error": error.getErrorString(), "repoLink" : self.buildBrowseUrl(repo, "/", False)})
@@ -143,7 +145,7 @@ class rdiffStatusPage(page_main.rdiffPage):
       if includeFailure:
          for job in failedBackups:
             date = job["date"]
-            job.update({"isSuccess": False, "date": date, "dateString": date.getDisplayString(), "pubDate": date.getRSSPubDateString(),
+            job.update({"is_success": False, "date": date.getLocalSeconds(),
                "link": self._buildStatusEntryUrl(job["repo"], date), "repoErrors": [], "backups": [], "repo": job["repo"]})
             userMessages.append(job)
 
@@ -156,7 +158,7 @@ class rdiffStatusPage(page_main.rdiffPage):
             if date == lastSuccessDate: repoErrorsForMsg = repoErrors
             else: repoErrorsForMsg = []
 
-            userMessages.append({"isSuccess": 1, "date": date, "dateString": date.getDateDisplayString(), "pubDate": date.getRSSPubDateString(),
+            userMessages.append({"is_success": True, "date": date.getLocalSeconds(),
                "link": self._buildStatusEntryUrl("", date), "repoErrors": repoErrorsForMsg, "backups":successfulBackups[day]})
 
       # sort messages by date

@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import rdw_helpers
+import cherrypy
+import rdw_templating
 
 class rdiffErrorPage:
    ''' Shows a very simple error message. Divorced 
@@ -22,12 +23,6 @@ class rdiffErrorPage:
    def __init__(self, error):
       self.error = error
       
+   @cherrypy.expose
    def index(self):
-      page = rdw_helpers.compileTemplate("page_start.html",
-                                         title="rdiffWeb - Error",
-                                         rssLink="",
-                                         rssTitle="")
-      page = page + self.error
-      page = page + rdw_helpers.compileTemplate("page_end.html")
-      return page
-   index.exposed = True
+      return rdw_templating.compileTemplate("error.html", title="rdiffWeb - Error", error=self.error)

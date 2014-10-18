@@ -1,36 +1,58 @@
-<div id="page-content">
-<h2>^title$</h2>
-<table id="history" class="datatable sortable">
-<thead>
-   <tr>
-      <th id="date" class="sortable">Date</th>
-      <th id="size" class="sortable">Size</th>
-      <th id="cumulativesize" class="sortable" title="For each backup entry, the cumulative size is the size of the current backup, plus the amount of data that is required to restore to that point in time.">Cumulative Size</th>
-      <th id="result" class="sortable">Result</th>
-   </tr>
-</thead>
-<tbody>
-   <!--StartRepeat:history-->
-   <tr>
-      <td class="icon history" data-value="^dateinseconds$">^date$</td>
-      <td data-value="^sizeinbytes$">^size$</td>
-      <td data-value="^cumulativesizeinbytes$">^cumulativesize$</td>
-      <!--StartDeleteIf:errors-->
-      <td class="BackupResult">
-          <!--StartIncludeIf:inProgress-->In Progress<!--EndIncludeIf:inProgress-->
-          <!--StartDeleteIf:inProgress-->Success<!--EndDeleteIf:inProgress-->
-      </td>
-      <!--EndDeleteIf:errors-->
-      <!--StartIncludeIf:errors-->
-      <td class="history-error">
-         <a href="javascript:void 0">More...</a>
-      </td>
-   </tr>
-   <tr class="multiline-error">
-      <td colspan="4"><p class="mono">^multiline:errors$</p></td>
-      <!--EndIncludeIf:errors-->
-   </tr>
-   <!--EndRepeat:history-->
-</tbody>
-</table>
+{% include 'page_start.html' %}
+<!-- nav_bar -->
+{% include 'nav_bar.html' %}
+<!-- /nav_bar -->
+<div class="container">
+    <h2>{{ title }}</h2>
+
+    {% include 'message.html' %}
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th id="date" class="sortable">Date</th>
+                <th id="size" class="sortable">Size</th>
+                <th id="cumulativesize" class="sortable"
+                    title="For each backup entry, the cumulative size is the size of the current backup, plus the amount of data that is required to restore to that point in time.">Cumulative
+                    Size</th>
+                <th id="result" class="sortable">Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in history %}
+            <!--StartRepeat:history-->
+            <tr {% if entry.errors %}class="danger"
+                {% elif entry.in_progress %}class="warning"{% endif %}>
+                <td class="icon-history" data-value="{{ entry.date }}">{{ entry.date
+                    | datetime }}</td>
+                <td data-value="{{ entry.size }}">{{ entry.size | filesize
+                    }}</td>
+                <td data-value="{{ entry.cumulative_size }}">{{ entry.cumulative_size
+                    | filesize }}</td>
+                <td>
+                    <!--StartDeleteIf:errors-->
+                    {% if not entry.errors %} {% if entry.in_progress %}In
+                    Progress{% else %}Success{% endif %}
+                    <!--EndDeleteIf:errors-->
+                    {% else %}
+                    <!--StartIncludeIf:errors-->
+                    Error
+                    <!--EndIncludeIf:errors-->
+                    {% endif %}
+                </td>
+            </tr>
+            {% if entry.errors %}
+            <tr class="danger">
+                <td colspan="4">
+                    <p>{{ entry.errors }}</p>
+                </td>
+                <!--EndIncludeIf:errors-->
+            </tr>
+            {% endif %}
+            <!--EndRepeat:history-->
+            {% endfor %}
+        </tbody>
+    </table>
+
 </div>
+{% include 'page_end.html' %}

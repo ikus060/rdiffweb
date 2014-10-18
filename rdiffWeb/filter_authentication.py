@@ -16,8 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cherrypy
-import page_main
-import rdw_helpers
+import rdw_templating
 import base64
 
 _loginUrl = "/login"
@@ -59,7 +58,8 @@ def handle_authentication(authMethod='', checkAuth=None):
    passwordKey = "password"
    redirectKey = "redirect"
 
-   loginParms = {"message": "", "action": _loginUrl,
+   loginParms = {"title": "Login Required",
+      "message": "", "action": _loginUrl,
       "loginKey": loginKey, "passwordKey": passwordKey, "redirectKey": redirectKey,
       "loginValue": "", "redirectValue": cherrypy.request.path_info + "?" + cherrypy.request.query_string }
 
@@ -81,8 +81,7 @@ def handle_authentication(authMethod='', checkAuth=None):
       loginParms["redirectValue"] = redirectValue
 
    # write login page
-   loginPage = page_main.rdiffPage()
-   cherrypy.response.body = loginPage.compileTemplate("page_start.html", title="Login Required - rdiffWeb", rssLink='', rssTitle='', **loginParms) + loginPage.compileTemplate("login.html", **loginParms)
+   cherrypy.response.body = rdw_templating.compileTemplate("login.html", **loginParms)
    return True
 
 cherrypy.tools.authenticate = cherrypy._cptools.HandlerTool(handle_authentication)
