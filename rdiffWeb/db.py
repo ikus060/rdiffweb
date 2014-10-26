@@ -15,25 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import rdw_config
+from . import rdw_config
 import os
 
+
 class userDB:
-   def getUserDBModule(self):
-      # Return a different implementation according to UserDB configuration.
-      prevDBType = rdw_config.getConfigSetting("UserDB")
-      if prevDBType.lower().startswith("ldap"):
-         import db_ldap
-         import db_sqlite
-         return db_ldap.ldapUserDB(db_sqlite.sqliteUserDB())
-      elif prevDBType.lower() == "mysql":
-         import db_mysql
-         return db_mysql.mysqlUserDB()
-      elif prevDBType.lower() == "file":
-         import db_file
-         return db_file.fileUserDB()
-      elif prevDBType == "" or prevDBType.lower() == "sqlite":
-         import db_sqlite
-         return db_sqlite.sqliteUserDB()
-      else:
-         raise ValueError("Invalid user database type. Re-configure rdiffweb.")
+
+    def getUserDBModule(self):
+        # Return a different implementation according to UserDB configuration.
+        prevDBType = rdw_config.getConfigSetting("UserDB")
+        if prevDBType.lower().startswith("ldap"):
+            from . import db_ldap
+            from . import db_sqlite
+            return db_ldap.ldapUserDB(db_sqlite.sqliteUserDB())
+        elif prevDBType.lower() == "mysql":
+            from . import db_mysql
+            return db_mysql.mysqlUserDB()
+        elif prevDBType.lower() == "file":
+            from . import db_file
+            return db_file.fileUserDB()
+        elif prevDBType == "" or prevDBType.lower() == "sqlite":
+            from . import db_sqlite
+            return db_sqlite.sqliteUserDB()
+        else:
+            raise ValueError(
+                "Invalid user database type. Re-configure rdiffweb.")

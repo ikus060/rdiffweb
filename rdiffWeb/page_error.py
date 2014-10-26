@@ -15,14 +15,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cherrypy
-import rdw_templating
+from . import rdw_templating
+
 
 class rdiffErrorPage:
-   ''' Shows a very simple error message. Divorced 
-       as much as possible from the rest of the system.'''
-   def __init__(self, error):
-      self.error = error
-      
-   @cherrypy.expose
-   def index(self):
-      return rdw_templating.compileTemplate("error.html", title="rdiffWeb - Error", error=self.error)
+
+    ''' Shows a very simple error message. Divorced
+         as much as possible from the rest of the system.'''
+
+    def __init__(self, error):
+        self.error = error
+
+    @cherrypy.expose
+    def index(self):
+        return rdw_templating.compileTemplate("error.html", title="rdiffWeb - Error", error=self.error)

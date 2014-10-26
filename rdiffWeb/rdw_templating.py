@@ -20,21 +20,25 @@ import time
 from jinja2 import Environment, PackageLoader
 
 # Load all the templates from ./templates directory
-jinja_env = Environment(loader=PackageLoader('rdiffWeb', 'templates'), auto_reload=True, autoescape=True)
+jinja_env = Environment(loader=PackageLoader(
+    'rdiffWeb', 'templates'), auto_reload=True, autoescape=True)
+
 
 def compileTemplate(templateName, **kwargs):
-   """Very simple implementation to render template using jinja2.
-      `templateName`
-         The filename to be used as template.
-      `kwargs`
-         The arguments to be passed to the template.
-   """
-   template = jinja_env.get_template(templateName)
-   return template.render(kwargs)
+    """Very simple implementation to render template using jinja2.
+        `templateName`
+            The filename to be used as template.
+        `kwargs`
+            The arguments to be passed to the template.
+    """
+    template = jinja_env.get_template(templateName)
+    return template.render(kwargs)
+
 
 def do_format_datetime(value, format='%Y-%m-%d %H:%M:%S'):
-   """Used to format date time"""
-   return time.strftime(format, time.gmtime(value))
+    """Used to format date time"""
+    return time.strftime(format, time.gmtime(value))
+
 
 def do_format_filesize(value, binary=False):
     """Format the value like a 'human-readable' file size (i.e. 13 kB,
