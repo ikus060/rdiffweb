@@ -17,13 +17,13 @@ Then you may download a snapshot of the repository and proceed with the installa
     python setup.py build
     sudo python setup.py install
   
-Configure rdiffWeb using the command line tool. Then follow the instruction.
+Configure rdiffweb using the command line tool. Then follow the instruction.
 
-    sudo rdiff-web-config
+    sudo rdiffweb-config
     
-Then stat rdiffWeb server using this command line.
+Then stat rdiffweb server using this command line.
 
-    sudo /etc/init.d/rdiff-web start
+    sudo /etc/init.d/rdiffweb start
 
 By default, the web server is listening on port 8080 and is accessible via the following URL.
 

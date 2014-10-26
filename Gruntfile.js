@@ -8,9 +8,9 @@ module.exports = function(grunt) {
       },
       all: [
         'Gruntfile.js',
-        'rdiffWeb/static/js/*.js',
-        '!rdiffWeb/static/js/plugins/*.js',
-        '!rdiffWeb/static/js/scripts.min.js'
+        'rdiffweb/static/js/*.js',
+        '!rdiffweb/static/js/plugins/*.js',
+        '!rdiffweb/static/js/scripts.min.js'
       ]
     },
     less: {
@@ -20,8 +20,8 @@ module.exports = function(grunt) {
           outputSourceFiles: true
         },
         files: {
-          'rdiffWeb/static/css/main.min.css': [
-            'rdiffWeb/static/less/main.less'
+          'rdiffweb/static/css/main.min.css': [
+            'rdiffweb/static/less/main.less'
           ]
         }
       }
@@ -29,9 +29,9 @@ module.exports = function(grunt) {
     uglify: {
       dist: {
         files: {
-          'rdiffWeb/static/js/scripts.min.js': [
-            'rdiffWeb/static/js/plugins/*.js',
-            'rdiffWeb/static/js/_*.js'
+          'rdiffweb/static/js/scripts.min.js': [
+            'rdiffweb/static/js/plugins/*.js',
+            'rdiffweb/static/js/_*.js'
           ]
         }
       }
@@ -39,7 +39,7 @@ module.exports = function(grunt) {
     watch: {
       less: {
         files: [
-          'rdiffWeb/static/less/*.less'
+          'rdiffweb/static/less/*.less'
         ],
         tasks: ['less']
       },
@@ -52,8 +52,8 @@ module.exports = function(grunt) {
     },
     clean: {
       dist: [
-        'rdiffWeb/static/css/main.min.css',
-        'rdiffWeb/static/js/scripts.min.js'
+        'rdiffweb/static/css/main.min.css',
+        'rdiffweb/static/js/scripts.min.js'
       ]
     }
   });

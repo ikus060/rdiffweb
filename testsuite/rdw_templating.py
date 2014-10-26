@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# rdiffWeb, A web interface to rdiff-backup repositories
-# Copyright (C) 2012 rdiffWeb contributors
+# rdiffweb, A web interface to rdiff-backup repositories
+# Copyright (C) 2012 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
