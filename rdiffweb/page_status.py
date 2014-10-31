@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012 rdiffweb contributors
 #
@@ -15,12 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import cherrypy
+
 from . import page_main
 from . import librdiff
 from . import rdw_helpers
-import cherrypy
 
+from .rdw_helpers import encode_s, decode_s, os_path_join
 
 class rdiffStatusPage(page_main.rdiffPage):
 
@@ -93,7 +97,7 @@ class rdiffStatusPage(page_main.rdiffPage):
         return url
 
     def _buildStatusEntryUrl(self, repo, date):
-        return "entry?repo=" + rdw_helpers.encodeUrl(repo) + "&date=" + rdw_helpers.encodeUrl(date.getUrlString())
+        return "entry?repo=" + rdw_helpers.encode_url(repo) + "&date=" + rdw_helpers.encode_url(date.getUrlString())
 
     def _getUserMessagesForDay(self, date):
         userRepos = self.getUserDB().getUserRepoPaths(self.getUsername())
@@ -125,20 +129,21 @@ class rdiffStatusPage(page_main.rdiffPage):
                          includeFailure,
                          earliestDate,
                          latestDate):
-        userRoot = self.getUserDB().getUserRoot(self.getUsername())
+        user_root = self.getUserDB().getUserRoot(self.getUsername())
 
         repoErrors = []
         allBackups = []
         for repo in repos:
             try:
-                backups = librdiff.getBackupHistoryForDateRange(
-                    rdw_helpers.joinPaths(userRoot, repo), earliestDate, latestDate)
-                allBackups += [{"repo": repo, "date": backup.date,
-                                "size": backup.size, "errors": backup.errors,
-                                "repoLink": self.buildBrowseUrl(repo, "/", False)} for backup in backups]
+                repo_obj = librdiff.RdiffRepo(encode_s(os_path_join(user_root, repo)))
+                backups = repo_obj.get_history_entries(-1, earliestDate, latestDate)
+                allBackups += [{"repo": repo,
+                                "date": backup.date,
+                                "size": backup.size,
+                                "errors": backup.errors} for backup in backups]
             except librdiff.FileError as error:
                 repoErrors.append(
-                    {"repo": repo, "error": error.getErrorString(), "repoLink": self.buildBrowseUrl(repo, "/", False)})
+                    {"repo": repo, "error": error.getErrorString()})
 
         allBackups.sort(lambda x, y: cmp(y["date"], x["date"]))
         failedBackups = filter(lambda x: x["errors"], allBackups)
@@ -157,8 +162,11 @@ class rdiffStatusPage(page_main.rdiffPage):
             for job in failedBackups:
                 date = job["date"]
                 job.update(
-                    {"is_success": False, "date": date.getLocalSeconds(),
-                     "link": self._buildStatusEntryUrl(job["repo"], date), "repoErrors": [], "backups": [], "repo": job["repo"]})
+                    {"is_success": False,
+                     "date": date,
+                     "repoErrors": [],
+                     "backups": [],
+                     "repo": job["repo"]})
                 userMessages.append(job)
 
         # generate success messages (publish date is most recent backup date)
@@ -173,8 +181,11 @@ class rdiffStatusPage(page_main.rdiffPage):
                     repoErrorsForMsg = []
 
                 userMessages.append(
-                    {"is_success": True, "date": date.getLocalSeconds(),
-                     "link": self._buildStatusEntryUrl("", date), "repoErrors": repoErrorsForMsg, "backups": successfulBackups[day]})
+                    {"is_success": True,
+                     "date": date,
+                     "link": self._buildStatusEntryUrl("", date),
+                     "repoErrors": repoErrorsForMsg,
+                     "backups": successfulBackups[day]})
 
         # sort messages by date
         userMessages.sort(lambda x, y: cmp(y["date"], x["date"]))

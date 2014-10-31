@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012 rdiffweb contributors
 #
@@ -35,7 +36,8 @@ def getConfigFile():
     for settingsFile in settingsFiles:
         if os.access(settingsFile, os.F_OK):
             return settingsFile
-    return ""
+    # Return default
+    return "/etc/rdiffweb/rdw.conf"
 
 import os
 import re
@@ -47,7 +49,7 @@ def getConfigSetting(settingName, settingsFile=None, default=""):
     if settingsFile is None:
         settingsFile = getConfigFile()
     if (not os.access(settingsFile, os.F_OK)):
-        return ""
+        return default
     settingsStrings = open(settingsFile, "r").readlines()
     for setting in settingsStrings:
         setting = re.compile("(.*)#.*").sub(r'\1', setting)

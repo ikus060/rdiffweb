@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012 rdiffweb contributors
 #
@@ -14,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import cherrypy
 import urllib
 import os.path
@@ -28,22 +32,9 @@ class rdiffPage:
 
     # HELPER FUNCTIONS #
 
-    def buildBrowseUrl(self, repo, path, isRestoreView):
-        url = "/browse/?repo=" + rdw_helpers.encodeUrl(
-            repo, "/") + "&path=" + rdw_helpers.encodeUrl(path, "/")
-        if isRestoreView:
-            url = url + "&restore=T"
-        return url
-
-    def buildRestoreUrl(self, repo, path, date):
-        return "/restore/?repo=" + rdw_helpers.encodeUrl(repo, "/") + "&path=" + rdw_helpers.encodeUrl(path, "/") + "&date=" + rdw_helpers.encodeUrl(date.getUrlString())
-
-    def buildHistoryUrl(self, repo):
-        return "/history/?repo=" + rdw_helpers.encodeUrl(repo, "/")
-
     def validateUserPath(self, path):
         '''Takes a path relative to the user's root dir and validates that it is valid and within the user's root'''
-        path = rdw_helpers.joinPaths(self.getUserDB().getUserRoot(
+        path = rdw_helpers.os_path_join(self.getUserDB().getUserRoot(
             self.getUsername()), rdw_helpers.encodePath(path))
         path = path.rstrip("/")
         realPath = os.path.realpath(path)
@@ -67,6 +58,7 @@ class rdiffPage:
         return cherrypy.request.method == "POST"
 
     def _writeErrorPage(self, error):
+        assert isinstance(error, unicode)
         return self._writePage("error.html", title="Error", error=error)
 
     def _writePage(self, template_name, **kwargs):
@@ -115,11 +107,11 @@ class pageTest(unittest.TestCase):
 
     def _getBackupTests(self):
         tests = sorted(filter(lambda x: not x.startswith(".") and os.path.isdir(
-            rdw_helpers.joinPaths(self.destRoot, x)), os.listdir(self.destRoot)))
+            rdw_helpers.os_path_join(self.destRoot, x)), os.listdir(self.destRoot)))
         return tests
 
     def _getFileText(self, testName, templateName):
-        return open(rdw_helpers.joinPaths(self.destRoot, testName, templateName)).read()
+        return open(rdw_helpers.os_path_join(self.destRoot, testName, templateName)).read()
 
     def _copyDirWithoutSvn(self, src, dest):
         names = filter(lambda x: x != ".svn", os.listdir(src))
@@ -133,7 +125,7 @@ class pageTest(unittest.TestCase):
                 shutil.copy2(srcname, destname)
 
     def setUp(self):
-        self.destRoot = rdw_helpers.joinPaths(
+        self.destRoot = rdw_helpers.os_path_join(
             os.path.realpath(tempfile.gettempdir()), "rdiffweb")
         self.masterDirPath = os.path.realpath("tests")
         self.tearDown()

@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012 rdiffweb contributors
 #
@@ -20,7 +21,9 @@ import getopt
 import os
 import sys
 import threading
+import logging
 
+import rdw_helpers
 import rdw_config
 import rdw_spider_repos
 import email_notification
@@ -37,107 +40,157 @@ import page_setup
 import page_status
 import page_prefs
 
-if __name__ == "__main__":
-   # Parse command line options
-   verbose = True
-   debug = False
-   autoReload = False
-   pidFile = ""
-   logFile = ""
+# Define logger for this module
+logger = logging.getLogger(__name__)
 
-   opts, extraparams = getopt.getopt(sys.argv[1:], 'vdr', ['debug', 'log-file=', 'pid-file=', 'background', 'autoreload'])
-   for option, value in opts:
-      if option in ['-d', '--debug']:
-         debug = True
-      if option in ['-r', '--autoreload']:
-         autoReload = True
-      elif option in ['--log-file']:
-         logFile = value
-      elif option in ['--pid-file']:
-         pidFile = value
-      elif option in ['--background']:
-         import rdiffweb.rdw_helpers
-         rdiffweb.rdw_helpers.daemonize()
-         verbose = False
+# Negate logging filter
+class NotFilter(logging.Filter):
+    
+    def __init__(self, name=''):
+        self.name = name
+        self.nlen = len(name)
+    
+    def filter(self, record):
+        if self.nlen == 0:
+            return 0
+        elif self.name == record.name:
+            return 0
+        elif record.name.find(self.name, 0, self.nlen) != 0:
+            return 1
+        return not (record.name[self.nlen] == ".")
 
-   # Wait to write out to the pidfile until after we've (possibly) been daemonized
-   if pidFile:
-      # Write our process id to specified file, so we can be killed later
-      open(pidFile, 'a').write(str(os.getpid()) + "\n")
 
-   serverPort = 8080
-   if rdiffweb.rdw_config.getConfigSetting("ServerPort") != "":
-      serverPort = int(rdiffweb.rdw_config.getConfigSetting("ServerPort"))
-         
-   environment = "development"
-   if not debug:
-      environment = "production"
-   global_settings = {
-      'tools.encode.on': True,
-      'tools.encode.encoding': 'utf-8',
-      'tools.gzip.on': True,
-      'tools.sessions.on' : True,
-      'tools.authenticate.on' : True,
-      'autoreload.on' : autoReload,
-      'server.socket_host' : rdiffweb.rdw_config.getConfigSetting("ServerHost"),
-      'server.socket_port' : serverPort,
-      'server.log_file' : logFile,
-      'server.ssl_certificate': rdiffweb.rdw_config.getConfigSetting("SslCertificate"),
-      'server.ssl_private_key': rdiffweb.rdw_config.getConfigSetting("SslPrivateKey"),
-      'log.screen': True,
-      'server.environment': environment,
-   }
-   
-   page_settings = {
-      '/': {
-         'tools.authenticate.checkAuth' : rdiffweb.page_locations.rdiffLocationsPage().checkAuthentication,
-         'tools.authenticate.on' : True,
-         'tools.setup.on': True,
-      },
-      '/status/feed': {
-         'tools.authenticate.authMethod' : 'HTTP Header'
-      },
-      '/static' : {
-         'tools.staticdir.on' : True,
-         'tools.staticdir.root': rdiffweb.rdw_helpers.getStaticRootPath(),
-         'tools.staticdir.dir': "static",
-         'tools.authenticate.on' : False,
-         'tools.setup.on': False,
-      },
-      '/setup': {
-         'tools.setup.on': False,
-         'tools.authenticate.on' : False,
-         'tools.sessions.on' : False,
-      }
-   }
-   
-   if rdiffweb.rdw_config.getConfigSetting("SessionStorage").lower() == "disk":
-      sessionDir = rdiffweb.rdw_config.getConfigSetting("SessionDir")
-      if os.path.exists(sessionDir) and os.path.isdir(sessionDir) and os.access(sessionDir, os.W_OK):
-         cherrypy.log("Setting session mode to disk in directory %s" % sessionDir)
-         global_settings['tools.sessions.on'] = True
-         global_settings['tools.sessions.storage_type'] = 'file'
-         global_settings['tools.sessions.storage_path'] = sessionDir
+def start():
+    """Start rdiffweb deamon."""
+    # Parse command line options
+    verbose = True
+    debug = False
+    autoReload = False
+    pidFile = ""
+    logFile = ""
+    logAccessFile = ""
 
-   cherrypy.config.update(global_settings)
-   root = rdiffweb.page_locations.rdiffLocationsPage()
-   root.setup = rdiffweb.page_setup.rdiffSetupPage()
-   root.browse = rdiffweb.page_browse.rdiffBrowsePage()
-   root.restore = rdiffweb.page_restore.rdiffRestorePage()
-   root.history = rdiffweb.page_history.rdiffHistoryPage()
-   root.status = rdiffweb.page_status.rdiffStatusPage()
-   root.admin = rdiffweb.page_admin.rdiffAdminPage()
-   root.prefs = rdiffweb.page_prefs.rdiffPreferencesPage()
-   
-   # Start repo spider thread
-   if not debug:
-      killEvent = threading.Event()
-   
-      rdiffweb.rdw_spider_repos.startRepoSpiderThread(killEvent)
-      rdiffweb.email_notification.startEmailNotificationThread(killEvent)
-      if hasattr(cherrypy.engine, 'subscribe'):  # CherryPy >= 3.1
-          cherrypy.engine.subscribe('stop', lambda: killEvent.set())
-      else:
-          cherrypy.engine.on_stop_engine_list.append(lambda: killEvent.set())
+    opts, extraparams = getopt.getopt(sys.argv[1:], 'vdr', ['debug', 'log-file=', 'log-access-file=', 'pid-file=', 'background', 'autoreload'])
+    for option, value in opts:
+        if option in ['-d', '--debug']:
+            debug = True
+        if option in ['-r', '--autoreload']:
+            autoReload = True
+        elif option in ['--log-file']:
+            logFile = value
+        elif option in ['--log-access-file']:
+            logAccessFile = value
+        elif option in ['--pid-file']:
+            pidFile = value
+        elif option in ['--background']:
+            rdw_helpers.daemonize()
+            verbose = False
 
-   cherrypy.quickstart(root, config=page_settings)
+    # Wait to write out to the pidfile until after we've (possibly) been daemonized
+    if pidFile:
+        # Write our process id to specified file, so we can be killed later
+        open(pidFile, 'a').write(str(os.getpid()) + "\n")
+
+    # Configure logging
+    format = '[%(asctime)s][%(levelname)-7s][%(name)s] %(message)s'
+    level = logging.DEBUG if debug else logging.INFO
+    if logFile:
+        if not os.access(logFile, os.F_OK):
+            print "log file %s not accessible" % logFile
+            quit()
+        logging.basicConfig(filename=logFile, level=level, format=format)
+    else:
+        logging.basicConfig(level=level, format=format)
+    if logAccessFile:
+        logging.root.handlers[0].addFilter(NotFilter("cherrypy.access"))
+
+
+    # Check if configuration file exists
+    config_file = rdw_config.getConfigFile()
+    if not os.access(config_file, os.F_OK):
+        logger.error("configuration file is not accessible: %s" % config_file)
+        quit()
+
+    # Get port number.
+    try:
+        serverPort = int(rdw_config.getConfigSetting("ServerPort", default="8080"))
+    except ValueError, e:
+        logger.error("ServerPort should be a port number")
+        return;
+    
+    environment = "development"
+    if not debug:
+        environment = "production"
+    global_settings = {
+        'tools.encode.on': True,
+        'tools.encode.encoding': 'utf-8',
+        'tools.gzip.on': True,
+        'tools.sessions.on' : True,
+        'tools.authenticate.on' : True,
+        'autoreload.on' : autoReload,
+        'server.socket_host' : rdw_config.getConfigSetting("ServerHost", default="localhost"),
+        'server.socket_port' : serverPort,
+        'server.log_file' : logFile,
+        'server.ssl_certificate': rdw_config.getConfigSetting("SslCertificate"),
+        'server.ssl_private_key': rdw_config.getConfigSetting("SslPrivateKey"),
+        'log.screen': False,
+        'log.access_file':logAccessFile,
+        'server.environment': environment,
+    }
+    
+    page_settings = {
+        '/': {
+            'tools.authenticate.checkAuth' : page_locations.rdiffLocationsPage().checkAuthentication,
+            'tools.authenticate.on' : True,
+            'tools.setup.on': True,
+        },
+        '/status/feed': {
+            'tools.authenticate.authMethod' : 'HTTP Header'
+        },
+        '/static' : {
+            'tools.staticdir.on' : True,
+            'tools.staticdir.root': rdw_helpers.getStaticRootPath(),
+            'tools.staticdir.dir': "static",
+            'tools.authenticate.on' : False,
+            'tools.setup.on': False,
+        },
+        '/setup': {
+            'tools.setup.on': False,
+            'tools.authenticate.on' : False,
+            'tools.sessions.on' : False,
+        }
+    }
+    
+    if rdw_config.getConfigSetting("SessionStorage").lower() == "disk":
+        sessionDir = rdw_config.getConfigSetting("SessionDir")
+        if os.path.exists(sessionDir) and os.path.isdir(sessionDir) and os.access(sessionDir, os.W_OK):
+            logger.info("Setting session mode to disk in directory %s" % sessionDir)
+            global_settings['tools.sessions.on'] = True
+            global_settings['tools.sessions.storage_type'] = 'file'
+            global_settings['tools.sessions.storage_path'] = sessionDir
+
+    cherrypy.config.update(global_settings)
+    root = page_locations.rdiffLocationsPage()
+    root.setup = page_setup.rdiffSetupPage()
+    root.browse = page_browse.rdiffBrowsePage()
+    root.restore = page_restore.rdiffRestorePage()
+    root.history = page_history.rdiffHistoryPage()
+    root.status = page_status.rdiffStatusPage()
+    root.admin = page_admin.rdiffAdminPage()
+    root.prefs = page_prefs.rdiffPreferencesPage()
+    
+    # Start repo spider thread
+    if not debug:
+        killEvent = threading.Event()
+    
+        rdw_spider_repos.startRepoSpiderThread(killEvent)
+        email_notification.startEmailNotificationThread(killEvent)
+        if hasattr(cherrypy.engine, 'subscribe'):  # CherryPy >= 3.1
+             cherrypy.engine.subscribe('stop', lambda: killEvent.set())
+        else:
+             cherrypy.engine.on_stop_engine_list.append(lambda: killEvent.set())
+
+    # Start webserver
+    cherrypy.quickstart(root, config=page_settings)
+    
+    

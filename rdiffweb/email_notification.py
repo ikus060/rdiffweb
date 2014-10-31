@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012 rdiffweb contributors
 #
@@ -80,7 +81,7 @@ class emailNotifier:
                     # get the last backup date
                     try:
                         lastBackup = librdiff.getLastBackupHistoryEntry(
-                            rdw_helpers.joinPaths(self.userDB.getUserRoot(user), repo), False)
+                            rdw_helpers.os_path_join(self.userDB.getUserRoot(user), repo), False)
                     except librdiff.FileError:
                         pass  # Skip repos that have never been successfully backed up
                     else:

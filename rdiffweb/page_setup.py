@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012 rdiffweb contributors
 #
@@ -22,6 +23,8 @@ import crypt
 import logging
 from . import page_main
 
+# Define the logger
+logger = logging.getLogger(__name__)
 
 class rdiffSetupPage(page_main.rdiffPage):
 
@@ -33,6 +36,7 @@ class rdiffSetupPage(page_main.rdiffPage):
         completed = False
         root_enabled = False
         error = ""
+        message = ""
 
         # Check if root user is enabled
         try:
@@ -46,6 +50,14 @@ class rdiffSetupPage(page_main.rdiffPage):
         except e:
             error = "rdiffweb configuration file doesn't exists. " + str(e)
 
+        # Check if users already exists
+        try:
+            self.getUserDB().getUserList()
+            message = "rdiffweb is already configured !"
+        except e:
+            # Do nothing
+            message = ""
+
         # if no post data, return plain page.
         if not self._is_submit():
             return self._writePage("setup.html",
@@ -53,7 +65,7 @@ class rdiffSetupPage(page_main.rdiffPage):
                                    root_enabled=root_enabled,
                                    error=error)
 
-        logging.info("validating root password")
+        logger.info("validating root password")
         try:
             # Get parameters
             root_password = cherrypy.request.params["root_password"]
@@ -73,7 +85,7 @@ class rdiffSetupPage(page_main.rdiffPage):
             self._setAdminRoot(admin_username, admin_root)
             completed = True
         except ValueError as e:
-            logging.exception("fail to complete setup")
+            logger.exception("fail to complete setup")
             error = "Error! " + str(e)
 
         return self._writePage("setup.html",

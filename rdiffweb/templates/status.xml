@@ -31,7 +31,7 @@
                 <ul>
                     {% for backup in message.backups %}
                     <!--StartRepeat:backups -->
-                    <li>{{ backup.date.getLocalSeconds() | datetime }} - {{ backup.repo
+                    <li>{{ backup.date | datetime }} - {{ backup.repo
                         }} - {{ backup.size | filesize }}</li>
                     <!--EndRepeat:backups -->
                     {% endfor %}

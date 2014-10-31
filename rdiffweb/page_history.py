@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012 rdiffweb contributors
 #
@@ -15,13 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import cherrypy
-from .rdw_helpers import joinPaths
-from . import rdw_helpers
-from . import page_main
-from . import librdiff
 import os
 import urllib
+
+from . import librdiff
+from . import page_main
+from . import rdw_helpers
+
+from .rdw_helpers import encode_s, decode_s, os_path_join
 
 
 class rdiffHistoryPage(page_main.rdiffPage):
@@ -34,42 +39,32 @@ class rdiffHistoryPage(page_main.rdiffPage):
             return self._writeErrorPage(str(error))
 
         if not repo:
+            logger.warn("Backup location not specified.")
             return self._writeErrorPage("Backup location not specified.")
         if repo not in self.getUserDB().getUserRepoPaths(self.getUsername()):
+            logger.warn("Access is denied.")
             return self._writeErrorPage("Access is denied.")
 
         parms = {}
         try:
-            repoPath = joinPaths(
-                self.getUserDB().getUserRoot(self.getUsername()), repo)
-            parms = self.getParmsForPage(repoPath, repo)
+            parms = self.getParmsForPage(repo)
         except librdiff.FileError as error:
+            logger.exception(str(error))
             return self._writeErrorPage(error.getErrorString())
 
         return self._writePage("history.html", **parms)
 
-    def getParmsForPage(self, repoPath, repoName):
-        rdiffHistory = librdiff.getBackupHistory(repoPath)
-        rdiffHistory.reverse()
-        entries = []
-        cumulative_size = 0
-        if len(rdiffHistory) > 0:
-            cumulative_size = rdiffHistory[0].size
-
-        for historyItem in rdiffHistory:
-            size = ""
-            incrementSize = ""
-            cumulativeSizeStr = ""
-            if not historyItem.inProgress:
-                size = historyItem.size
-                incrementSize = historyItem.incrementSize
-                cumulative_size += historyItem.incrementSize
-            entries.append({"date": historyItem.date.getLocalSeconds(),
-                            "in_progress": historyItem.inProgress,
-                            "errors": historyItem.errors,
-                            "cumulative_size": cumulative_size,
-                            "size": size})
-        return {"title": "Backup history - " + repoName, "history": entries}
+    def getParmsForPage(self, repo):
+        assert isinstance(repo, unicode)
+        
+        # Get reference to repository
+        user_root = self.getUserDB().getUserRoot(self.getUsername())
+        repo_obj = librdiff.RdiffRepo(encode_s(os_path_join(user_root, repo)))
+        
+        # Get history for the repo.
+        history_entries = repo_obj.get_history_entries()
+        
+        return {"title": "Backup history", "history_entries": history_entries}
 
 
 class historyPageTest(page_main.pageTest, rdiffHistoryPage):
@@ -81,4 +76,4 @@ class historyPageTest(page_main.pageTest, rdiffHistoryPage):
         return "history_results.txt"
 
     def getParmsForTemplate(self, repoParentPath, repoName):
-        return self.getParmsForPage(rdw_helpers.joinPaths(repoParentPath, repoName), repoName)
+        return self.getParmsForPage(rdw_helpers.os_path_join(repoParentPath, repoName), repoName)

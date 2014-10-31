@@ -1,5 +1,7 @@
-# rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2012 rdiffweb contributors
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# rdiffWeb, A web interface to rdiff-backup repositories
+# Copyright (C) 2012 rdiffWeb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cherrypy
-from . import rdw_config
+import rdw_config
 
 
 def handle_setup():

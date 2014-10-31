@@ -9,25 +9,24 @@
             <tr>
                 <th id="name" class="sortable">Name</th>
                 <th id="lastbackup" class="sortable">Last Backup</th>
-                <th id="size" class="sortable">Last Backup Size</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
             <!--StartRepeat:repos-->
             {% for repo in repos %}
-            <tr>
+            <tr {% if repo.failed %}class="danger" {% elif
+                repo.in_progress%}class="warning"{%endif%} >
                 <td class="icon repo" data-value="{{ repo.name }}">
                     {% if repo.failed %} {{ repo.name }} {% else %}
-                    <a href="{{ repo.browse_url }}">{{ repo.name }}</a>
+                    <a href="{{ url_for_browse(repo.name,'/') }}">{{ repo.name }}</a>
                     {% endif %}
                 </td>
-                <td data-value="{{ repo.last_backup }}">{{ repo.last_backup
-                    | datetime }}{% if repo.failed %}ERROR{% endif%}</td>
-                <td data-value="{{ repo.size }}">{{ repo.size | filesize
-                    }}{% if repo.in_progress %}IN PROGRESS{% endif %}</td>
+                <td data-value="{{ repo.last_backup_date }}">{% if repo.failed
+                    %}Error{% elif repo.in_progress %}In progress{% else
+                    %}{{ repo.last_backup_date | datetime }}{% endif %}</td>
                 <td class="navitem">
-                    <a href="{{ repo.history_url }}">History</a>
+                    <a href="{{ url_for('history', repo=repo.name) }}">History</a>
                 </td>
             </tr>
             {% endfor %}

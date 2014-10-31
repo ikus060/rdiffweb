@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012 rdiffweb contributors
 #
@@ -48,16 +49,21 @@ class spiderReposThread(threading.Thread):
                     return
 
 
-def _findRdiffRepos(dirToSearch, outRepoPaths):
+def _findRdiffRepos(dirToSearch, outRepoPaths, depth=0):
+    # TODO Should be a configuration
+    # Limit the depthness
+    if depth >= 3:
+        return
+    
     dirEntries = os.listdir(dirToSearch)
     if librdiff.RDIFF_BACKUP_DATA in dirEntries:
         outRepoPaths.append(dirToSearch)
         return
 
     for entry in dirEntries:
-        entryPath = rdw_helpers.joinPaths(dirToSearch, entry)
+        entryPath = os.path.join(dirToSearch, entry)
         if os.path.isdir(entryPath) and not os.path.islink(entryPath):
-            _findRdiffRepos(entryPath, outRepoPaths)
+            _findRdiffRepos(entryPath, outRepoPaths, depth + 1)
 
 
 def findReposForUser(user, userDBModule):

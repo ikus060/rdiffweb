@@ -11,9 +11,9 @@
         </div>
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
-                <li class="first"><a href="/" id="home">Locations</a></li>
                 <!-- authenticated -->
                 {% if username %}
+                <li><a href="/" id="home">Locations</a></li>
                 <li><a href="/status/">Status</a></li>
                 <li><a href="/prefs/">Preferences</a></li>
                 <!-- is_admin -->

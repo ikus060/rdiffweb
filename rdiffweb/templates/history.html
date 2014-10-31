@@ -12,14 +12,11 @@
             <tr>
                 <th id="date" class="sortable">Date</th>
                 <th id="size" class="sortable">Size</th>
-                <th id="cumulativesize" class="sortable"
-                    title="For each backup entry, the cumulative size is the size of the current backup, plus the amount of data that is required to restore to that point in time.">Cumulative
-                    Size</th>
                 <th id="result" class="sortable">Result</th>
             </tr>
         </thead>
         <tbody>
-            {% for entry in history %}
+            {% for entry in history_entries %}
             <!--StartRepeat:history-->
             <tr {% if entry.errors %}class="danger"
                 {% elif entry.in_progress %}class="warning"{% endif %}>
@@ -27,8 +24,6 @@
                     | datetime }}</td>
                 <td data-value="{{ entry.size }}">{{ entry.size | filesize
                     }}</td>
-                <td data-value="{{ entry.cumulative_size }}">{{ entry.cumulative_size
-                    | filesize }}</td>
                 <td>
                     <!--StartDeleteIf:errors-->
                     {% if not entry.errors %} {% if entry.in_progress %}In

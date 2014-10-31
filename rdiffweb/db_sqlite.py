@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012 rdiffweb contributors
 #
@@ -162,8 +163,8 @@ class sqliteUserDB:
 
     # Helper functions #
     def _encodePath(self, path):
-        if isinstance(path, unicode):
-            return path.encode('utf-8')
+        if not isinstance(path, unicode):
+            return path.decode('utf-8')
         return path
 
     def _deleteUserRepos(self, username):

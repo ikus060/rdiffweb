@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012 rdiffweb contributors
 #
@@ -20,6 +21,8 @@ import logging
 from . import db
 from . import rdw_config
 
+# Define the logger
+logger = logging.getLogger(__name__)
 
 class ldapUserDB(db.userDB):
 
@@ -62,7 +65,7 @@ class ldapUserDB(db.userDB):
             self.version = int(rdw_config.getConfigSetting(
                 "LdapVersion", self.configFilePath, "3"))
         except ValueError:
-            logging.warn("LdapVersion shoud be either 2 or 3")
+            logger.warn("LdapVersion shoud be either 2 or 3")
 
         # Get Network timeout
         self.network_timeout = 100
@@ -70,14 +73,14 @@ class ldapUserDB(db.userDB):
             self.network_timeout = int(rdw_config.getConfigSetting(
                 "LdapNetworkTimeout", self.configFilePath, "10"))
         except ValueError:
-            logging.warn("LdapNetworkTimeout shoud be an integer")
+            logger.warn("LdapNetworkTimeout shoud be an integer")
 
         # Get Timeout
         try:
             self.timeout = int(rdw_config.getConfigSetting(
                 "LdapTimeout", self.configFilePath, "300"))
         except ValueError:
-            logging.warn("LdapTimeout shoud be an integer")
+            logger.warn("LdapTimeout shoud be an integer")
 
     def modificationsSupported(self):
         return True
@@ -101,10 +104,10 @@ class ldapUserDB(db.userDB):
                 l.start_tls_s()
             except ldap.LDAPError as e:
                 if isinstance(e.message, dict) and 'desc' in e.message:
-                    logging.exception(
+                    logger.exception(
                         "error connecting ldap server: " + e.message['desc'])
                 else:
-                    logging.exception(
+                    logger.exception(
                         "error connecting ldap server: " + e.message['info'])
                 return False
 
@@ -113,30 +116,32 @@ class ldapUserDB(db.userDB):
         # Try to bind with username/password
         try:
             # Bind to the LDAP server
-            logging.error("binding to ldap server {}".format(self.uri))
+            logger.info("binding to ldap server {}".format(self.uri))
             l.simple_bind_s(self.bind_dn, self.bind_password)
 
             # Search the LDAP server
             search_filter = "(&{}({}={}))".format(
                 self.filter, self.attribute, username)
-            logging.info("search ldap server: {}/{}?{}?{}?{}".format(
+            logger.info("search ldap server: {}/{}?{}?{}?{}".format(
                 self.uri, self.base_dn, self.attribute, self.scope, self.filter))
             r = l.search_s(self.base_dn, self.scope, search_filter)
             if len(r) != 1:
+                logger.warn("user [%s] not found" % username)
                 return False
 
             # Bind using the user credentials. Throws an exception in case of
             # error.
             l.simple_bind_s(r[0][0], password)
             l.unbind_s()
+            logger.warn("user [%s] found" % username)
             return True
         except ldap.LDAPError as e:
             l.unbind_s()
             if isinstance(e.message, dict) and 'desc' in e.message:
-                logging.exception(
+                logger.exception(
                     "error connecting ldap server: " + e.message['desc'])
             else:
-                logging.exception(
+                logger.exception(
                     "error connecting ldap server: " + e.message['info'])
             return False
 

@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012 rdiffweb contributors
 #
@@ -15,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
 import calendar
 import datetime
 import os
@@ -25,18 +27,33 @@ import zipfile
 import tarfile
 import subprocess
 
+# Get the system encoding
+system_charset = sys.getfilesystemencoding()
 
 def encodePath(path):
-    if isinstance(path, unicode):
-        return path.encode('utf-8')
+    if not isinstance(path, unicode):
+        return path.decode(system_charset)
     return path
 
+def decode_s(value):
+    """Convert charset to system unicode."""
+    assert isinstance(value, str)
+    return value.decode(system_charset)
 
-def joinPaths(parentPath, *args):
-    parentPath = encodePath(parentPath)
-    args = [x.lstrip("/") for x in args]
-    return os.path.join(parentPath, *args)
+def encode_s(value):
+    """Convert unicode to system charset."""
+    assert isinstance(value, unicode)
+    return value.encode(system_charset)
 
+def os_path_join(parentPath, *args):
+    assert isinstance(parentPath, unicode)
+    for x in args:
+        assert isinstance(x, unicode)
+    args = [x.lstrip("/").encode(system_charset) for x in args]
+    value = os.path.join(parentPath.encode(system_charset), *args)
+    value = value.decode(system_charset)
+    assert isinstance(value, unicode)
+    return value
 
 def getStaticRootPath():
     return os.path.abspath(os.path.dirname(__file__))
@@ -48,14 +65,33 @@ class accessDeniedError:
         return "Access is denied."
 
 
-def encodeUrl(url, safeChars=""):
+def encode_url(url, safe=None):
+    """encode url but try to keep encoding (unicode vs str)"""
+    # If url is None, return None
     if not url:
         return url
-    url = encodePath(url)
-    return urllib.quote_plus(url, safeChars)
+    # If safe is define, make sure it's the same object type (either unicode
+    # or str)
+    if safe:
+        assert type(url) == type(safe), "url [%s] and safe [%s] are not the same type" % (type(url), type(safe))
+    else:
+        safe = ""    
+        
+    is_unicode = False
+    if isinstance(url, unicode):
+        is_unicode = True
+        url = url.encode('utf8')
+        safe = safe.encode('utf8')
+        
+    # Url encode
+    value = urllib.quote_plus(url, safe)
+    
+    if is_unicode:
+        value = value.decode('utf8')
+    
+    return value
 
-
-def decodeUrl(encodedUrl):
+def decode_url(encodedUrl):
     if not encodedUrl:
         return encodedUrl
     return urllib.unquote_plus(encodedUrl)
@@ -87,6 +123,10 @@ def formatNumStr(num, maxDecimals):
         return ""
     return re.compile("\.([^0]*)[0]+$").sub(replaceFunc, numStr)
 
+def strftime(format, t):
+    """Same as time.strftime() but fixes unicode problem"""
+    assert isinstance(format, unicode)
+    return decode_s(time.strftime(encode_s(format), t))
 
 class rdwTime:
 
@@ -102,6 +142,11 @@ class rdwTime:
 
     def initFromCurrentUTC(self):
         self.timeInSeconds = time.time()
+        self.tzOffset = 0
+
+    def initFromInt(self, seconds):
+        assert isinstance(seconds, int)
+        self.timeInSeconds = seconds
         self.tzOffset = 0
 
     def initFromMidnightUTC(self, daysFromToday):
@@ -143,16 +188,16 @@ class rdwTime:
         return self.timeInSeconds - self.tzOffset
 
     def getDateDisplayString(self):
-        return time.strftime("%Y-%m-%d", time.gmtime(self.timeInSeconds))
+        return strftime(u"%Y-%m-%d", time.gmtime(self.timeInSeconds))
 
     def getDisplayString(self):
-        return time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(self.getLocalSeconds()))
+        return strftime(u"%Y-%m-%d %H:%M:%S", time.gmtime(self.getLocalSeconds()))
 
     def getUrlString(self):
-        return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(self.getLocalSeconds())) + self.getTimeZoneString()
+        return strftime(u"%Y-%m-%dT%H:%M:%S", time.gmtime(self.getLocalSeconds())) + self.getTimeZoneString()
 
     def getUrlStringNoTZ(self):
-        return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(self.getSeconds())) + "Z"
+        return strftime(u"%Y-%m-%dT%H:%M:%S", time.gmtime(self.getSeconds())) + "Z"
 
     def getTimeZoneString(self):
         if self.tzOffset:
@@ -194,7 +239,25 @@ class rdwTime:
         return plusMinus * 60 * (60 * int(tzd[1:3]) + int(tzd[4:]))
 
     def __cmp__(self, other):
+        assert isinstance(other, rdwTime)
         return cmp(self.getSeconds(), other.getSeconds())
+    
+    def __eq__(self, other):
+        return isinstance(other, rdwTime) and self.getSeconds() == other.getSeconds()
+
+    def __hash__(self):
+        return hash(self.getSeconds())
+
+    def __str__(self):
+        """return utf-8 string"""
+        return str(self.getDisplayString())
+    
+    def __unicode__(self):
+        return self.getDisplayString()
+    
+    def __repr__(self):
+        """return second since epoch"""
+        return str(self.getSeconds())
 
 # Taken from ASPN:
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/259173
@@ -274,12 +337,12 @@ import unittest
 class helpersTest(unittest.TestCase):
 
     def testJoinPaths(self):
-        assert(joinPaths("/", "/test", "/temp.txt") == "/test/temp.txt")
-        assert(joinPaths("/", "test", "/temp.txt") == "/test/temp.txt")
-        assert(joinPaths("/", "/test", "temp.txt") == "/test/temp.txt")
-        assert(joinPaths("/", "//test", "/temp.txt") == "/test/temp.txt")
-        assert(joinPaths("/", "", "/temp.txt") == "/temp.txt")
-        assert(joinPaths("test", "", "/temp.txt") == "test/temp.txt")
+        assert(os_path_join("/", "/test", "/temp.txt") == "/test/temp.txt")
+        assert(os_path_join("/", "test", "/temp.txt") == "/test/temp.txt")
+        assert(os_path_join("/", "/test", "temp.txt") == "/test/temp.txt")
+        assert(os_path_join("/", "//test", "/temp.txt") == "/test/temp.txt")
+        assert(os_path_join("/", "", "/temp.txt") == "/temp.txt")
+        assert(os_path_join("test", "", "/temp.txt") == "test/temp.txt")
 
     def testRdwTime(self):
         # Test initialization

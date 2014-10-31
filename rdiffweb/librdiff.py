@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012 rdiffweb contributors
 #
@@ -15,29 +16,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""All functions throw on error."""
-
-import os
 import bisect
 import gzip
-import re
-from .rdw_helpers import joinPaths, removeDir
-from . import rdw_helpers
 import logging
+import os
+import re
 import tempfile
 
-RDIFF_BACKUP_DATA = "rdiff-backup-data"
+from . import rdw_helpers
+from rdiff_backup.hash import Report
+
+# Define the logger
+logger = logging.getLogger(__name__)
+
 # Constant for the rdiff-backup-data folder name.
+RDIFF_BACKUP_DATA = "rdiff-backup-data"
 
-INCREMENTS = joinPaths(RDIFF_BACKUP_DATA, "increments")
 # Constant for the increments folder name.
+INCREMENTS = os.path.join(RDIFF_BACKUP_DATA, "increments")
 
-ZIP_SUFFIX = ".zip"
 # Zip file extension
+ZIP_SUFFIX = ".zip"
 
-TARGZ_SUFFIX = ".tar.gz"
 # Tar gz extension
-
+TARGZ_SUFFIX = ".tar.gz"
 
 class FileError:
 
@@ -56,8 +58,8 @@ class AccessDeniedError(FileError):
 
 class DoesNotExistError(FileError):
 
-    def __init__(self):
-        self.error = "The backup location does not exist."
+    def __init__(self, location):
+        self.error = "The backup location [%s] does not exist." % location
 
 
 class UnknownError(FileError):
@@ -69,7 +71,6 @@ class UnknownError(FileError):
 
 # Helper Functions #
 
-
 def rsplit(string, sep, count=-1):
     L = [part[::-1] for part in string[::-1].split(sep[::-1], count)]
     L.reverse()
@@ -77,816 +78,813 @@ def rsplit(string, sep, count=-1):
 
 # Interfaced objects #
 
-
 class DirEntry:
 
     """Includes name, isDir, fileSize, exists, and dict (changeDates) of sorted local dates when backed up"""
 
-    def __init__(self, name, quoter, isDir, fileSize, exists, changeDates):
-        self.name = quoter.getUnquotedPath(name)
-        self.isDir = isDir
-        self.fileSize = fileSize
+    def __init__(self, repo_path, name, exists, increments):
+        assert isinstance(repo_path, RdiffPath)
+        assert isinstance(name, str)
+        
+        # Keep reference to the path and repo object.
+        self._repo = repo_path.repo
+        # Keep reference to this entry name.
+        self.name = name
+        # Relative path to the directory entry
+        self.path = os.path.join(
+            repo_path.path,
+            name)
+        # Absolute path to the directory
+        self.full_path = os.path.join(
+            self._repo.repo_root,
+            repo_path.path,
+            name)
         self.exists = exists
-        self.changeDates = changeDates
+        self.increments = increments
 
+    @property
+    def display_name(self):
+        """Return the most human readable filename. Without quote."""
+        value = self._repo.unquote(self.name)
+        return value.decode(self._repo.encoding, 'replace')
 
-class BackupHistoryEntry:
-
-    def __init__(self):
-        self.date = None
-        self.size = None
-        self.errors = None
-        self.incrementSize = None
-        self.inProgress = None
-    pass
-
-
-class BackupHistoryEntries:
-
-    """Instance of this class represent a collection of backup entry for a
-        single repository. Roughtly their is one entry for each
-        'current_mirror.*' files."""
-
-    def __init__(self, repoRoot):
-        checkRepoPath(repoRoot, "")
-        self.repoRoot = repoRoot
-
-        # List all the files within the rdiff-backup-data
-        self.dirEntries = os.listdir(os.path.join(repoRoot, RDIFF_BACKUP_DATA))
-        self.dirEntries.sort()
-
-    def getBackupHistory(self,
-                         numLatestEntries=-1,
-                         earliestDate=None,
-                         latestDate=None,
-                         includeInProgress=True):
-        """Returns a list of backupHistoryEntry's
-            earliestDate and latestDate are inclusive."""
-
-        # Get a listing of error log files, and use that to build backup
-        # history
-        curEntries = filter(
-            lambda x: x.startswith("error_log."), self.dirEntries)
-        curEntries.reverse()
-
-        entries = []
-        for entryFile in curEntries:
-            entry = IncrementEntry(self.repoRoot, entryFile)
-            # compare local times because of discrepency between client/server
-            # time zones
-            if earliestDate and entry.getDate().getLocalSeconds() < earliestDate.getLocalSeconds():
-                continue
-
-            if latestDate and entry.getDate().getLocalSeconds() > latestDate.getLocalSeconds():
-                continue
-
-            try:
-                errors = entry.getErrors()
-            except IOError:
-                logging.exception("Can't retrieved errors.")
-                errors = "[Unable to read errors file.]"
-            try:
-                fileSize = entry.getSourceFileSize()
-                incrementSize = entry.getIncrementFileSize()
-            except IOError:
-                logging.exception("Can't get session stats.")
-                fileSize = 0
-                incrementSize = 0
-
-            # Create the backup history entry using data from the increment
-            # entry
-            newEntry = BackupHistoryEntry()
-            newEntry.date = entry.getDate()
-            newEntry.inProgress = self._backupIsInProgress(entry.getDate())
-            if not includeInProgress and newEntry.inProgress:
-                continue
-
-            if newEntry.inProgress:
-                newEntry.errors = ""
+    @property
+    def isdir(self):
+        """Lazy check if entry is a directory"""
+        if not hasattr(self, '_isdir'):
+            if self.exists:
+                # If the entry exists, check if it's a directory
+                self._isdir = os.path.isdir(self.full_path)
             else:
-                newEntry.errors = errors
-            newEntry.size = int(fileSize) if fileSize else 0
-            newEntry.incrementSize = int(incrementSize) if incrementSize else 0
-            entries.insert(0, newEntry)
+                # Check into the increments
+                self._isdir = self.increments[0].isdir
+                
+        return self._isdir
 
-            if numLatestEntries != -1 and len(entries) == numLatestEntries:
-                return entries
+    @property
+    def file_size(self):
+        """Return the file size in bytes."""
+        if not hasattr(self, '_file_size'):
+            self._file_size = 0 
+            if self.exists:
+                self._file_size = os.lstat(self.full_path)[6]
+            else:
+                # The only viable place to get the filesize of a deleted entry
+                # it to get it from file_statistics
+                stats = self._repo.get_file_statistic(self.last_change_date)
+                if stats:
+                    self._file_size = stats.get_source_size(self.path)
+                    
+        return self._file_size
 
-        return entries
+    @property
+    def change_dates(self):
+        """Return a list of dates when this item has changes. Represent the
+        previous revision. From old to new."""
+        # Return previous computed value
+        if hasattr(self, '_change_dates'):
+            return self._change_dates
 
-    def _backupIsInProgress(self, date):
-        # Filter the files to keep current_mirror.* files
-        mirrorMarkers = filter(
-            lambda x: x.startswith("current_mirror."), self.dirEntries)
-        if not mirrorMarkers:
-            return True
-        for marker in mirrorMarkers[1:]:
-            if IncrementEntry(self.repoRoot, marker).getDate().getSeconds() == date.getSeconds():
-                return True
-        return False
+        # Compute the dates
+        self._change_dates = []
+        for increment in self.increments:
+            # Skip "invisible" increments
+            if not increment.has_suffix:
+                continue
+            # Get date of the increment as reference
+            change_date = increment.date
+            # If the increment is a "missing" increment, need to get the date
+            # before the folder was removed.
+            if not increment.is_snapshot and increment.is_missing:
+                change_date = self._get_first_backup_after_date(change_date)
 
+            if change_date not in self._change_dates:
+                self._change_dates.append(change_date)
 
-class IncrementEntry:
+        # If the directory exists, add the last known backup date.
+        if self.exists and self._repo.last_backup_date not in self._change_dates:
+            self._change_dates.append(self._repo.last_backup_date)
+            
+        # Sort the dates
+        self._change_dates = sorted(self._change_dates)
+
+        # Return the list of dates.
+        return self._change_dates
+
+    def _get_first_backup_after_date(self, date):
+        """ Iterates the mirror_metadata files in the rdiff data dir """
+        if not date:
+            return backupTimes[0]
+        index = bisect.bisect_right(self._repo.backup_dates, date)
+        return self._repo.backup_dates[index]
+
+    @property
+    def last_change_date(self):
+        return self.change_dates[-1]
+
+class HistoryEntry:
+
+    def __init__(self, repo, date):
+        assert isinstance(repo, RdiffRepo)
+        assert isinstance(date, rdw_helpers.rdwTime)
+        self._repo = repo
+        self.date = date
+            
+    @property
+    def size(self):
+        try:
+            return self._repo._session_statistics[self.date].get_source_file_size()
+        except KeyError:
+            return 0
+    
+    @property
+    def errors(self):
+        """Return error messages."""
+        try:
+            self._repo._error_logs[self.date].read()
+        except KeyError:
+            return ""
+    
+    @property
+    def increment_size(self):
+        try:
+            return self._repo._session_statistics[self.date].get_increment_file_size()
+        except KeyError:
+            return 0
+
+class IncrementEntry(object):
 
     """Instance of the class represent one increment at a specific date for one
-        repository. The base repository is provided in the default constructor
-        and the date is provided using an error_log.* file"""
+    repository. The base repository is provided in the default constructor
+    and the date is provided using an error_log.* file"""
 
     MISSING_SUFFIX = ".missing"
 
     SUFFIXES = [".missing", ".snapshot.gz", ".snapshot",
                 ".diff.gz", ".data.gz", ".data", ".dir", ".diff"]
 
-    def __init__(self, repoRoot, entryName):
+    def __init__(self, repo_path, name):
         """Default constructor for an increment entry. User must provide the
             repository directory and an entry name. The entry name correspond to
             an error_log.* filename."""
-        # Keep reference to the repository location
-        self.repoRoot = repoRoot
-
+        assert isinstance(repo_path, RdiffPath)
+        assert isinstance(name, str)
+        # Keep reference to the current path.
+        self.repo_path = repo_path
+        # Get reference to the repository location.
+        self.repo = repo_path.repo
         # The given entry name may has quote charater, replace them
-        self.entryName = RdiffQuotedPath(repoRoot).getQuotedPath(entryName)
-
-    def getDate(self):
-        timeString = self.getDateString()
-        returnTime = rdw_helpers.rdwTime()
+        self.name = name
+            
+    @property
+    def date(self):
+        # Remove suffix from filename
+        filename = self._remove_suffix(self.name)
+        # Remove prefix from filename
+        date_string = rsplit(filename, ".", 1)[1]
+        return_time = rdw_helpers.rdwTime()
         try:
-            returnTime.initFromString(timeString)
-            return returnTime
+            return_time.initFromString(date_string)
+            return return_time
         except ValueError:
             return None
 
-    def getDateString(self):
-        filename = self._removeSuffix(self.entryName)
-        return rsplit(filename, ".", 1)[1]
+    def _open(self):
+        """Should be used to open the increment file. This method handle
+        compressed vs not-compressed file."""
+        if self._is_compressed:
+            return gzip.open(os.path.join(self.repo.data_path, self.name), "r")
+        return open(os.path.join(self.repo.data_path, self.name), "r")
 
-    def getDateStringNoTZ(self, tzOffset=0):
-        filename = self._removeSuffix(self.entryName)
-        incrDate = self.getDate()
-        if not incrDate:
-            print "Warning: unintelligible date string! Filename:", self.entryName, " Filetitle:", filename, " Date String:", self.getDateString()
-            return ""  # avoid crashing on invalid date strings
-
-        incrDate.timeInSeconds += tzOffset
-        return incrDate.getUrlStringNoTZ()
-
-    def getErrors(self):
+    def read(self):
         """Read the error file and return it's content. Raise exception if the
-            file can't be read."""
+        file can't be read."""
+        return self._open().read()
 
-        if self.isCompressed():
-            return gzip.open(os.path.join(self.repoRoot, RDIFF_BACKUP_DATA, self.entryName), "r").read()
-
-        return open(os.path.join(self.repoRoot, RDIFF_BACKUP_DATA, self.entryName), "r").read()
-
-    def getFilename(self):
-        filename = self._removeSuffix(self.entryName)
+    @property
+    def filename(self):
+        filename = self._remove_suffix(self.name)
         return rsplit(filename, ".", 1)[0]
-
-    def getIncrementFileSize(self):
-        """This function return the value of the IncrementFileSize define in the
-            session_statistics.* file for the current increment or None if the
-            file can't be found."""
-
-        stats = self._getSessionStatistics()
-        if not stats:
-            return None
-
-        return re.compile("IncrementFileSize ([0-9]+) ").findall(stats)[0]
-
-    def _getSessionStatsFile(self):
-        """Return the filepath of the sessions statistics file for a given backup
-            entry. This function search for file 'session_statistics.*'"""
-        # Get the date of the current entry
-        entryDate = self.getDate()
-
-        # List all the session_statistics file foir the current repository
-        statFiles = filter(lambda x: x.startswith("session_statistics."),
-                           os.listdir(os.path.join(self.repoRoot, RDIFF_BACKUP_DATA)))
-
-        # For each file, check if the date matches.
-        for file in statFiles:
-            time = self._parseDate(file)
-            if time == entryDate:
-                return os.path.join(self.repoRoot, RDIFF_BACKUP_DATA, file)
-
-        # Can't find the file
-        return None
-
-    def _getSessionStatistics(self):
-        """Return the content of the session_statistics.* file for the current
-            increment."""
-        if hasattr(self, "statistics"):
-            return self.statistics
-
-        filename = self._getSessionStatsFile()
-        if not filename:
-            self.statistics = None
-            return None
-
-        self.statistics = open(filename, 'r').read()
-        return self.statistics
-
-    def getSize(self):
-        return 0  # TODO: use gzip to figure out increment size for snapshot increments
-
-    def getSourceFileSize(self):
-        """This function return the value of the SourceFileSize define in the
-            session_statistics.* file for the current increment or None if the
-            file can't be found."""
-
-        stats = self._getSessionStatistics()
-        if not stats:
-            return None
-
-        return re.compile("SourceFileSize ([0-9]+) ").findall(stats)[0]
-
-    def hasIncrementSuffix(self, filename):
+    
+    @property
+    def has_suffix(self):
         for suffix in self.SUFFIXES:
-            if filename.endswith(suffix):
+            if self.name.endswith(suffix):
                 return True
         return False
 
-    def isCompressed(self):
-        return self.entryName.endswith(".gz")
+    @property
+    def _is_compressed(self):
+        return self.name.endswith(".gz")
 
-    def isMissingIncrement(self):
-        return self.entryName.endswith(self.MISSING_SUFFIX)
+    @property
+    def isdir(self):
+        return self.name.endswith(".dir")
 
-    def isSnapshotIncrement(self):
-        return self.entryName.endswith(".snapshot.gz") or self.entryName.endswith(".snapshot")
+    @property
+    def is_missing(self):
+        """Check if the curent entry is a missing increment."""
+        return self.name.endswith(self.MISSING_SUFFIX)
 
-    def shouldShowIncrement(self):
-        return self.hasIncrementSuffix(self.entryName) and not self.isMissingIncrement()
+    @property
+    def is_snapshot(self):
+        """Check if the current entry is a snapshot increment."""
+        return self.name.endswith(".snapshot.gz") or self.name.endswith(".snapshot")
 
-    def _parseDate(self, filename):
-        """Return a date object from a filename."""
-        # Parse the date of the file
-        filename = self._removeSuffix(filename)
-        filename = rsplit(filename, ".", 1)[1]
-        time = rdw_helpers.rdwTime()
-        try:
-            time.initFromString(filename)
-            return time
-        except ValueError:
-            return None
-
-    def _removeSuffix(self, filename):
+    def _remove_suffix(self, filename):
         """ returns None if there was no suffix to remove. """
         for suffix in self.SUFFIXES:
             if filename.endswith(suffix):
                 return filename[:-len(suffix)]
         return filename
 
+    def __str__(self):
+        return self.name
 
-class RdiffQuotedPath:
-
-    """This class may be used to convert quoted file name. Ridff-backup may
-        convert special charater using the following pattern ;000. This is used
-        to ensure compatibility between filesystem."""
-
-    def __init__(self, repoRoot):
-        self.unquoteRegex = re.compile(";[0-9]{3}", re.S)
-
-        charsToQuotePath = joinPaths(
-            repoRoot, RDIFF_BACKUP_DATA, "chars_to_quote")
-        if os.path.exists(charsToQuotePath):
-            charsToQuoteStr = open(charsToQuotePath).read()
-            if charsToQuoteStr:
-                self.quoteRegex = re.compile(
-                    "[^/%s]|;" % charsToQuoteStr, re.S)
-
-    def getUnquotedPath(self, quotedPath):
-        return self.unquoteRegex.sub(self.getUnquotedChar, quotedPath)
-
-    def getQuotedPath(self, unQuotedPath):
-        if not hasattr(self, "quoteRegex"):
-            return unQuotedPath
-        return self.quoteRegex.sub(self.getQuotedChar, unQuotedPath)
-
-    # This function just gives back the original text if it can decode it
-    def getUnquotedChar(self, match):
-        if not len(match.group()) == 4:
-            return match.group
+class FileStatisticsEntry(IncrementEntry):
+    
+    """Represent a single file_statistics."""
+    
+    def __init__(self, repo_path, name):
+        IncrementEntry.__init__(self, repo_path, name)
+        # check to ensure we have a file_statistics entry 
+        assert self.name.startswith("file_statistics")
+        assert self.name.endswith(".data") or self.name.endswith(".data.gz")
+    
+    def _load(self):
+        """This method is used to read the file_statistics and create the
+        appropriate structure to quickly search it.
+        
+        File Statistics contains different information related to each file of
+        the backup. This class provide a simple and easy way to access this
+        data."""
+        
+        if hasattr(self, '_data'):
+            return
+        
+        logger.info("load file_statistics [%s]" % self.name)
+        self._data = {}
+        with self._open() as f:
+            for line in f:
+                # Skip comments
+                if line.startswith("#"):
+                    continue
+                # Read the line into array
+                line = line.rstrip('\r\n')
+                data_line = line.rsplit(" ", 4)
+                # Read line into tuple
+                (filename, changed, source_size,
+                 mirror_size, increment_size) = tuple(data_line)
+                # From tuple create an entry
+                self._data[filename] = {
+                    "changed":changed,
+                    "source_size": source_size,
+                    "mirror_size" : mirror_size,
+                    "increment_size" : increment_size }
+                
+    def get_mirror_size(self, path):
+        """Return the value of MirrorSize for the given file.
+        path is the relative path from repo root."""
+        self._load()
         try:
-            return chr(int(match.group()[1:]))
-        except ValueError:
-            return match.group
+            return self._data[path]["mirror_size"]
+        except KeyError:
+            return None
+        
+    def get_source_size(self, path):
+        """Return the value of SourceSize for the given file.
+        path is the relative path from repo root."""
+        self._load()
+        try:
+            return self._data[path]["source_size"]
+        except KeyError:
+            return None
+        
+class SessionStatisticsEntry(IncrementEntry):
+    
+    """Represent a single session_statistics."""
+    
+    def __init__(self, repo_path, name):
+        IncrementEntry.__init__(self, repo_path, name)
+        # check to ensure we have a file_statistics entry 
+        assert self.name.startswith("session_statistics")
+        assert self.name.endswith(".data") or self.name.endswith(".data.gz")
+        
+    def _load(self):
+        """This method is used to read the session_statistics and create the
+        appropriate structure to quickly get the data.
+        
+        File Statistics contains different information related to each file of
+        the backup. This class provide a simple and easy way to access this
+        data."""
+        
+        if hasattr(self, '_data'):
+            return
+        
+        logger.info("load session_statistics [%s]" % self.name)
+        self._data = {}
+        with self._open() as f:
+            for line in f:
+                # Skip comments
+                if line.startswith("#"):
+                    continue
+                # Read the line into array
+                line = line.rstrip('\r\n')
+                data_line = line.split(" ", 2)
+                # Read line into tuple
+                if len(data_line) == 3:
+                    (key, value, human_readable) = tuple(data_line)
+                else:
+                    (key, value) = tuple(data_line)
+                self._data[key] = value
+        
+    def get_increment_file_size(self):
+        """Return the IncrementFileSize from this entry"""
+        self._load()
+        try:
+            return int(self._data["IncrementFileSize"])
+        except KeyError:
+            return 0
+        
+    def get_source_file_size(self):
+        """Return the SourceFileSize from this entry"""
+        self._load()
+        try:
+            return int(self._data["SourceFileSize"])
+        except KeyError:
+            return 0
 
-    def getQuotedChar(self, match):
-        return ";%03d" % (ord(match.group()))
+class RdiffRepo:
 
+    """Represent one rdiff-backup location."""
 
-class RdiffDirEntries:
+    def __init__(self, repo_root):
+        assert isinstance(repo_root, str)
+        self.repo_root = repo_root
+        self.root_path = RdiffPath(self)
 
-    """This class is responsible for building a listing of directory entries.
-        All knowledge of how increments work is contained in this class."""
+        # The location of rdiff-backup-data directory.
+        self.data_path = os.path.join(self.repo_root, RDIFF_BACKUP_DATA)
+                
+        # Check if the object is valid.        
+        self._check()
+        
+        # Check if the repository has hint for rdiffweb.
+        self._load_hints()        
 
-    # dirPath must be quoted!
+    @property
+    def backup_dates(self):
+        """Return a list of dates when backup was executed. This list is
+        sorted from old to new (ascending order). To identify dates,
+        'mirror_metadata' file located in rdiff-backup-data are used."""
+        if not hasattr(self, '_backup_dates'):
+            self._backup_dates = [
+                IncrementEntry(self.root_path, x).date
+                 for x in filter(lambda x: x.startswith("mirror_metadata"), self.data_entries)]
+            self._backup_dates = sorted(self._backup_dates)
+        return self._backup_dates
 
-    def __init__(self, repo, dirPath):
-        # Var assignment and validation
-        self.pathQuoter = RdiffQuotedPath(repo)
+    def _check(self):
+        """Check if the repository exists."""
+        # Make sure repoRoot is a valid rdiff-backup repository
+        if not os.access(self.data_path, os.F_OK) or not os.path.isdir(self.data_path):
+            raise DoesNotExistError(self.repo_root)
 
-        self.repo = repo
-        self.dirPath = dirPath
-        self.completePath = joinPaths(repo, dirPath)
-        dataPath = joinPaths(repo, RDIFF_BACKUP_DATA)
+    @property
+    def data_entries(self):
+        """Return list of folder and file located directly in
+        rdiff-backup-data folder. Each file represent a data entry."""
 
-        # cache dir listings
-        self.entries = []
-        if os.access(self.completePath, os.F_OK):
-            # the directory may not exist if it has
-            # been deleted
-            self.entries = os.listdir(self.completePath)
-        self.dataDirEntries = os.listdir(dataPath)
-        incrementsDir = joinPaths(repo, INCREMENTS, dirPath)
-        self.incrementEntries = []
-        if os.access(incrementsDir, os.F_OK):  # the increments may not exist if the folder has existed forever and never been changed
-            self.incrementEntries = filter(lambda x: not os.path.isdir(
-                joinPaths(incrementsDir, x)), os.listdir(incrementsDir))  # ignore directories
+        # Get entries from increment data.
+        return os.listdir(self.data_path)
 
-        self.groupedIncrementEntries = rdw_helpers.groupby(
-            self.incrementEntries, lambda x: IncrementEntry(repo, x).getFilename())
-        self.backupTimes = [IncrementEntry(repo, x).getDate()
-                            for x in filter(lambda x: x.startswith("mirror_metadata"), self.dataDirEntries)]
-        self.backupTimes.sort()
+    @property
+    def _error_logs(self):
+        """Return list of IncrementEntry to represent each file statistics."""
+        if not hasattr(self, '_error_logs_data'):
+            self._error_logs_data = {}
+            for x in filter(lambda x: x.startswith("error_log."), self.data_entries):
+                entry = IncrementEntry(self.root_path, x)
+                self._error_logs_data[entry.date] = entry
+        return self._error_logs_data
 
-    def getDirEntries(self):
-        """ returns dictionary of dir entries, keyed by dir name """
-        entriesDict = {}
+    @property
+    def _file_statistics(self):
+        """Return list of IncrementEntry to represent each file statistics."""
+        if not hasattr(self, '_file_statistics_data'):
+            self._file_statistics_data = {}
+            for x in filter(lambda x: x.startswith("file_statistics."), self.data_entries):
+                entry = FileStatisticsEntry(self.root_path, x)
+                self._file_statistics_data[entry.date] = entry
+        return self._file_statistics_data
+    
+    def get_file_statistic(self, date):
+        """Return the file statistic for the given date.
+        Try to search for the given file statistic and return an object to
+        represent it."""
+        # Get reference to the FileStatisticsEntry
+        try:
+            return  self._file_statistics[date]
+        except KeyError:
+            return None
 
-        # First, we grab a dir listing of the target, setting entry attributes
-        for entryName in self.entries:
-            if entryName == RDIFF_BACKUP_DATA:
+    def get_history_entries(self,
+                            numLatestEntries=-1,
+                            earliestDate=None,
+                            latestDate=None,
+                            includeInProgress=True):
+        """Returns a list of HistoryEntry's
+        earliestDate and latestDate are inclusive."""
+        
+        assert isinstance(numLatestEntries, int)
+        assert earliestDate == None or isinstance(earliestDate, rdw_helpers.rdwTime)
+        assert latestDate == None or isinstance(latestDate, rdw_helpers.rdwTime)
+        
+        logger.info("get history entries for [%s]" % self.repo_root)
+
+        entries = []
+        for backup_date in self.backup_dates:
+            # compare local times because of discrepency between client/server
+            # time zones
+            if earliestDate and backup_date < earliestDate:
                 continue
-            entryPath = joinPaths(self.repo, self.dirPath, entryName)
-            newEntry = DirEntry(
-                entryName,
-                self.pathQuoter,
-                os.path.isdir(entryPath),
-                os.lstat(entryPath)[6],
-                True,
-                [self._getLastChangedBackupTime(entryName)])
-            entriesDict[newEntry.name] = newEntry
 
-        # Go through the increments dir.  If we find any files that didn't
-        # exist in dirPath (i.e. have been deleted), add them
-        for entryFile in self.incrementEntries:
-            entry = IncrementEntry(self.repo, entryFile)
-            entryName = entry.getFilename()
-            if entry.shouldShowIncrement() or entry.isMissingIncrement():
-                entryDate = entry.getDate()
-                if not entry.isSnapshotIncrement():
-                    if entry.isMissingIncrement():
-                        entryDate = self._getFirstBackupAfterDate(
-                            entry.getDate())
-                    else:
-                        entryDate = entry.getDate()
-                if entryName not in entriesDict.keys():
-                    entryPath = joinPaths(
-                        self.repo, INCREMENTS, self.dirPath, entryName)
-                    newEntry = DirEntry(
-                        entryName, self.pathQuoter, os.path.isdir(entryPath), 0, False, [entryDate])
-                    entriesDict[entryName] = newEntry
-                elif entryDate not in entriesDict[entryName].changeDates:
-                    bisect.insort_left(
-                        entriesDict[entryName].changeDates, entryDate)
+            if latestDate and backup_date > latestDate:
+                continue
 
-        return entriesDict
+            entries.append(HistoryEntry(self, backup_date))
 
-    def _getFirstBackupAfterDate(self, date):
-        """ Iterates the mirror_metadata files in the rdiff data dir """
-        if not date:
-            return self.backupTimes[0]
-        return self.backupTimes[bisect.bisect_right(self.backupTimes, date)]
+            if numLatestEntries != -1 and len(entries) == numLatestEntries:
+                return entries
 
-    def _getLastChangedBackupTime(self, filename):
-        files = self.groupedIncrementEntries.get(filename, [])
-        if os.path.isdir(joinPaths(self.completePath, filename)):
-            files = filter(lambda x: x.endswith(
-                ".dir") or x.endswith(".missing"), files)
-        files.sort()
-        if not files:
-            return self._getFirstBackupAfterDate(None)
-        return self._getFirstBackupAfterDate(IncrementEntry(self.repo, files[-1]).getDate())
+        return entries
+
+    def get_path(self, path):
+        """Return a new instance of RdiffPath to represent the given path."""
+        assert isinstance(path, str)
+        return RdiffPath(self, path)
+    
+    @property
+    def in_progress(self):
+        """Check if a backup is in progress for the current repo."""
+        # Filter the files to keep current_mirror.* files
+        mirrorMarkers = filter(lambda x: x.startswith("current_mirror."),
+                               self.data_entries)
+        return len(mirrorMarkers) > 1
+
+    @property
+    def last_backup_date(self):
+        """Return the last known backup dates."""
+        return self.backup_dates[-1]
+        
+        
+    def _load_hints(self):
+        """For different purpose, a repository may contains an "rdiffweb" file
+        to provide hint to rdiffweb related to locale. At first, it's used to
+        define an encoding."""
+        
+        self.encoding = 'utf-8'
+        
+        hint_file = os.path.join(self.data_path, "rdiffweb")
+        if not os.access(hint_file, os.F_OK) or os.path.isdir(hint_file):
+            return
+            
+        logger.info("reading hints for [%s]" % self.repo_root)
+        with open(hint_file, "r") as f:
+            for line in f:
+                line = line.rstrip("\r\n")
+                parts = line.partition('=')
+                if not len(parts) == 3:
+                    logger.warn("invalid hints [%s]" % line)
+                    continue
+                # Sets the encoding name (if valid)
+                if "encoding" == parts[0]:
+                    try:
+                        "".encode(parts[2])
+                        self.encoding = parts[2]
+                    except LookupError:
+                        logger.warn("wrong encoding name [%s]" % parts[2])
+        
+    @property
+    def _session_statistics(self):
+        """Return list of IncrementEntry to represent each sessions
+        statistics."""
+        if not hasattr(self, '_session_statistics_data'):
+            self._session_statistics_data = {}
+            for x in filter(lambda x: x.startswith("session_statistics."), self.data_entries):
+                entry = SessionStatisticsEntry(self.root_path, x)
+                self._session_statistics_data[entry.date] = entry
+        return self._session_statistics_data
+        
+    def unquote(self, name):
+        """Remove quote from the given name."""
+        # This function just gives back the original text if it can decode it
+        def unquoted_char(match):
+            if not len(match.group()) == 4:
+                return match.group
+            try:
+                return chr(int(match.group()[1:]))
+            except ValueError:
+                return match.group
+        # Remove quote using regex     
+        return re.sub(";[0-9]{3}", unquoted_char, name, re.S)
 
 
-def checkRepoPath(repoRoot, filePath):
-    """Check if the file path specified is valid within the a repository."""
+class RdiffPath:
 
-    # Make sure repoRoot is a valid rdiff-backup repository
-    dataPath = joinPaths(repoRoot, RDIFF_BACKUP_DATA)
-    if not os.access(dataPath, os.F_OK) or not os.path.isdir(dataPath):
-        raise DoesNotExistError()
+    """Represent an rdiff-backup location. Either a root, a path or a file."""
 
-    # Make sure there are no symlinks in the path
-    pathToCheck = joinPaths(repoRoot, filePath)
-    while True:
-        pathToCheck = pathToCheck.rstrip("/")
-        if os.path.islink(pathToCheck):
+    def __init__(self, repo, path=""):
+        assert isinstance(repo, RdiffRepo)
+        assert isinstance(path, str)
+        self.repo = repo
+        self.path = path.lstrip("/")
+        
+        # Check if the object is valid
+        self._check()
+
+    def _check(self):
+        """Check if the path is valid within the a repository."""
+
+        # Make sure it'S not a subdirectory of "rdiff-backup-data"
+        if self.path.startswith(RDIFF_BACKUP_DATA):
             raise AccessDeniedError()
 
-        (pathToCheck, file) = os.path.split(pathToCheck)
-        if not file:
-            break
+        # Make sure there are no symlinks in the path
+        path_to_check = os.path.join(self.repo_root, self.path)
+        while True:
+            path_to_check = path_to_check.rstrip("/")
+            if os.path.islink(path_to_check):
+                raise AccessDeniedError()
 
-    # Make sure that the folder/file exists somewhere - either in the current
-    # folder, or in the incrementsDir
-    if not os.access(joinPaths(repoRoot, filePath), os.F_OK):
-        (parentFolder, filename) = os.path.split(
-            joinPaths(repoRoot, INCREMENTS, filePath))
-        try:
-            increments = os.listdir(parentFolder)
-        except OSError:
-            increments = []
-        increments = filter(lambda x: x.startswith(filename), increments)
-        if not increments:
-            raise DoesNotExistError()
+            (path_to_check, file) = os.path.split(path_to_check)
+            if not file:
+                break
 
+        # Make sure that the folder/file exists somewhere - either in the current
+        # folder, or in the incrementsDir
+        if not os.access(os.path.join(self.repo_root, self.path), os.F_OK):
+            (parent_folder, filename) = os.path.split(
+                os.path.join(self.repo_root, INCREMENTS, self.path))
+            try:
+                increments = os.listdir(parent_folder)
+            except e, OSError:
+                logger.exception("fail to list increments for [%s]" % parent_folder)
+                increments = []
+                
+            increments = filter(lambda x: x.startswith(filename), increments)
+            if not increments:
+                raise DoesNotExistError(self.path)
+           
+    @property
+    def dir_entries(self):
+        """Get directory entries for the current path. It is similar to
+        listdir() but for rdiff-backup."""
+        
+        logger.info("get directory entries for [%s]" % self.full_path)
 
-# Interfaced Functions #
-def getDirEntries(repoRoot, dirPath):
-    """Returns list of rdiffDirEntry objects for the directory path specified within a repository."""
-    dirPath = RdiffQuotedPath(repoRoot).getQuotedPath(dirPath)
-    checkRepoPath(repoRoot, dirPath)
+        # Group increments by filename
+        grouped_increment_entries = rdw_helpers.groupby(
+            self._increment_entries, lambda x: x.filename)
 
-    entryLister = RdiffDirEntries(repoRoot, dirPath)
-    entries = entryLister.getDirEntries()
-    entriesList = entries.values()
+        # Process each increment entries and combine this with the existing
+        # entries
+        entriesDict = {}
+        for filename, increments in grouped_increment_entries.iteritems():
+            # Check if filename exists
+            exists = filename in self.existing_entries
+            # Create DirEntry to represent the item
+            new_entry = DirEntry(
+                self,
+                filename,
+                exists,
+                increments)
+            entriesDict[filename] = new_entry
 
-    def sortDirEntries(entry1, entry2):
-        if entry1.isDir and not entry2.isDir:
-            return -1
-        if not entry1.isDir and entry2.isDir:
-            return 1
-        return cmp(entry1.name.upper(), entry2.name.upper())
-    entriesList.sort(sortDirEntries)
-    return entriesList
+        # Then add existing entries
+        for filename in self.existing_entries:
+            # Check if the entry was created by increments entry
+            if filename in entriesDict:
+                continue
+            # The entry doesn't exists (mostly because it ever change). So
+            # create a DirEntry to represent it
+            new_entry = DirEntry(
+                self,
+                filename,
+                True,
+                [])
+            entriesDict[filename] = new_entry
 
+        # Return the values (so the DirEntry objects)
+        return entriesDict.values()
+            
+    @property
+    def existing_entries(self):
+        """Return the content of the directory using a simple listdir(). This
+            represent the last known backup. Thus it return existing entries."""
 
-def restoreFileOrDir(repoRoot, dirPath, filename, restoreDate, useZip):
-    """This function is used to restore a directory tree or a file from the
-        given respository. Users may specified the restore date and the
-        archive format."""
+        if not hasattr(self, '_existing_entries'):
+            logger.info("get existing entries for [%s]" % self.full_path)
 
-    # Format the specified file name / repository path for validation
-    dirPath = dirPath.encode('utf-8')
-    filename = filename.encode('utf-8')
-    filePath = joinPaths(dirPath, filename)
-    filePath = RdiffQuotedPath(repoRoot).getQuotedPath(filePath)
-    checkRepoPath(repoRoot, filePath)
+            # Check if the directory exists. It may not exist if
+            # it has been delete
+            self._existing_entries = []
+            if os.access(self.full_path, os.F_OK):
+                # Get entries from directory structure
+                self._existing_entries = os.listdir(self.full_path)
 
-    restoredFilename = filename
-    if restoredFilename == "/":
-        restoredFilename = "(root)"
+                # Remove "rdiff-backup-data" directory
+                if self.path == "":
+                    self._existing_entries.remove(RDIFF_BACKUP_DATA)
 
-    fileToRestore = joinPaths(repoRoot, dirPath, filename)
-    dateString = str(restoreDate.getSeconds())
-    # TODO: make so this includes the username
-    rdiffOutputFile = joinPaths(tempfile.mkdtemp(), restoredFilename)
+            # Print it to logs
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug("existing entries: %s" % self._existing_entries)
 
-    # Use rdiff-backup executable to restore the data into a specified location
-    results = rdw_helpers.execute(
-        "rdiff-backup", "--restore-as-of=" + dateString, fileToRestore, rdiffOutputFile)
+        return self._existing_entries
 
-    # Check the result
-    if results['exitCode'] != 0 or not os.access(rdiffOutputFile, os.F_OK):
-        error = results['stderr']
-        if not error:
-            error = 'rdiff-backup claimed success, but did not restore anything. This indicates a bug in rdiffweb. Please report this to a developer.'
-        raise UnknownError('Unable to restore! rdiff-backup output:\n' + error)
+    @property
+    def increments_path(self):
+        """Get the increment path for the current path. This path is located
+            under rdiff-backup-data/increments"""
 
-    # The path restored is a directory and need to be archived using zip or tar
-    if os.path.isdir(rdiffOutputFile):
-        rdiffOutputDirectory = rdiffOutputFile
-        try:
-            if useZip:
-                rdiffOutputFile = rdiffOutputFile + ZIP_SUFFIX
-                _recursiveZipDir(rdiffOutputDirectory, rdiffOutputFile)
-            else:
-                rdiffOutputFile = rdiffOutputFile + TARGZ_SUFFIX
-                _recursiveTarDir(rdiffOutputDirectory, rdiffOutputFile)
-        finally:
-            rdw_helpers.removeDir(rdiffOutputDirectory)
+        if not hasattr(self, '_increments_path'):
+            self._increments_path = os.path.join(
+                self.repo.repo_root,
+                INCREMENTS,
+                self.path)
+        return self._increments_path
 
-    return rdiffOutputFile
-
-
-def backupIsInProgressForRepo(repo):
-    rdiffDir = joinPaths(repo, RDIFF_BACKUP_DATA)
-    mirrorMarkers = os.listdir(rdiffDir)
-    mirrorMarkers = filter(
-        lambda x: x.startswith("current_mirror."), mirrorMarkers)
-    return not mirrorMarkers or len(mirrorMarkers) > 1
-
-
-def getBackupHistory(repoRoot):
-    """Return a list of BackupHistoryEntry for the respository specified."""
-    historyEntries = BackupHistoryEntries(repoRoot)
-    return historyEntries.getBackupHistory()
-
-
-def getLastBackupHistoryEntry(repoRoot, includeInProgress=True):
-    """Return the most recent instance of BackupHistoryEntry for the repository
-        specified."""
-    historyEntries = BackupHistoryEntries(repoRoot)
-    history = historyEntries.getBackupHistory(1, None, None, includeInProgress)
-    if not history:
-        # We may not have any backup entries if the first backup
-        # for the repository is in progress
-        raise FileError
-    return history[0]
-
-
-def getBackupHistoryForDay(repoRoot, date):
-    historyEntries = BackupHistoryEntries(repoRoot)
-    return historyEntries.getBackupHistory(-1, date)
+    @property
+    def full_path(self):
+        """return the canonical path to the current path. Basically,
+            return absolute path"""
+        return os.path.join(self.repo_root, self.path)
 
 
-def getBackupHistorySinceDate(repoRoot, date):
-    historyEntries = BackupHistoryEntries(repoRoot)
-    return historyEntries.getBackupHistory(-1, date)
+    @property
+    def _increment_entries(self):
+        """Return all the increment entries for this path.
+            each entry represent a 'file' in the subdirectory structure under
+            rdiff-backup-data/increments"""
 
+        if not hasattr(self, '_increment_entries_data'):
+            logger.info(
+                "get increments entries for [%s]" % 
+                self.increments_path)
 
-def getBackupHistoryForDateRange(repoRoot, earliestDate, latestDate):
-    historyEntries = BackupHistoryEntries(repoRoot)
-    return historyEntries.getBackupHistory(-1, earliestDate, latestDate, False)
+            # Check if increment directory exists. The path may not exists if
+            # the folder always exists and never changed.
+            self._increment_entries_data = []
+            if os.access(self.increments_path, os.F_OK):
+                # List content of the increment directory.
+                # Ignore sub-directories.
+                self._increment_entries_data = [
+                    IncrementEntry(self, y) for y in filter(
+                        lambda x: not os.path.isdir(
+                            os.path.join(self.increments_path, x)),
+                        os.listdir(self.increments_path))]
 
+            # Print it to logs
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.info("increment entries: %s" % self._increment_entries_data)
 
-def getDirRestoreDates(repo, path):
-    backupHistory = [x.date for x in getBackupHistory(repo)]
+        return self._increment_entries_data
 
-    if path != "/":
-        (parentPath, dirName) = os.path.split(path)
-        dirListing = getDirEntries(repo, parentPath)
-        entries = filter(lambda x: x.name == dirName, dirListing)
+    @property
+    def repo_root(self):
+        """return the repository path"""
+        return self.repo.repo_root
+
+    def restore(self, name, restore_date, use_zip):
+        """Used to restore the given file located in this path."""
+        assert isinstance(name, str)
+        assert isinstance(restore_date, rdw_helpers.rdwTime)
+        name = name.lstrip("/")
+        
+        # Determine the file name to be restore (from rdiff-backup
+        # point of view).
+        file_to_restore = os.path.join(self.full_path, name)
+        file_to_restore = self.repo.unquote(file_to_restore)
+        
+        # Convert the date into epoch.
+        date_epoch = str(restore_date.getSeconds())
+        
+        # Define a location where to restore the data
+        output = os.path.join(tempfile.mkdtemp(), "root" if name == "" else name)
+    
+        # Execute rdiff-backup to restore the data.
+        logger.info("execute rdiff-backup --restore-as-of=%s '%s' '%s'" % (date_epoch, file_to_restore, output))
+        results = rdw_helpers.execute(
+            "rdiff-backup",
+            "--restore-as-of=" + date_epoch,
+            file_to_restore,
+            output)
+    
+        # Check the result
+        if results['exitCode'] != 0 or not os.access(output, os.F_OK):
+            error = results['stderr']
+            if not error:
+                error = 'rdiff-backup claimed success, but did not restore anything. This indicates a bug in rdiffweb. Please report this to a developer.'
+            raise UnknownError('nable to restore! rdiff-backup output:\n' + error)
+    
+        # The path restored is a directory and need to be archived using zip or tar
+        if os.path.isdir(output):
+            output_dir = output
+            try:
+                if use_zip:
+                    output = output_dir + ZIP_SUFFIX
+                    self._recursiveZipDir(output_dir, output)
+                else:
+                    output = output_dir + TARGZ_SUFFIX
+                    self._recursiveTarDir(output_dir, output)
+            finally:
+                rdw_helpers.removeDir(output_dir)
+        
+        # Return the location of the file to be restored
+        return output
+    
+    @property
+    def restore_dates(self):
+        """Get list of date to be restored for current path. From old to new."""
+        
+        logger.info("get restore dates for [%s]" % self.full_path)
+        
+        # If root directory return all dates.
+        if self.path == "":
+             return self.repo.backup_dates
+                
+        # Get reference to parent path
+        (parent_path, name) = os.path.split(self.path)
+        repo_path = RdiffPath(self.repo, parent_path)
+        
+        # Get entries specific to the given name
+        entries = repo_path.dir_entries
+        entries = filter(lambda x: x.name == name, entries)
         if not entries:
-            raise DoesNotExistError
+            raise DoesNotExistError(self.path)
         entry = entries[0]
 
+        # Retrieve all backup dates.
+        backup_dates = self.repo.backup_dates
+
         # Don't allow restores before the dir existed
-        backupHistory = filter(
-            lambda x: x >= entry.changeDates[0], backupHistory)
+        backup_dates = filter(
+            lambda x: x >= entry.change_dates[0], backup_dates)
 
         if not entry.exists:
             # If the dir has been deleted, don't allow restores after its
             # deletion
-            backupHistory = filter(
-                lambda x: x <= entry.changeDates[-1], backupHistory)
+            backup_dates = filter(
+                lambda x: x <= entry.change_dates[-1], backup_dates)
+        
+        return backup_dates
 
-    return backupHistory
+    def _recursiveTarDir(self, dirPath, tarFilename):
+        """This function is used during to archive a restored directory. It will
+            create a tar gz archive with the specified directory."""
+        assert isinstance(dirPath, str)
+        assert isinstance(tarFilename, str)
+        assert os.path.isdir(dirPath)
+        import tarfile
+    
+        dirPath = os.path.normpath(dirPath)
+    
+        # Create a tar.gz archive
+        logger.info("creating a tar file [%s] from [%s]", tarFilename, dirPath)
+        tar = tarfile.open(tarFilename, "w:gz")
+        
+        # List content of the directory.
+        files = os.listdir(dirPath)
+    
+        # Add files to the archive
+        for file in files:
+            # Pass in file as name explicitly so we get relative paths
+            tar.add(os.path.join(dirPath, file), file)
+    
+        # Close the archive
+        tar.close()
+    
+    def _recursiveZipDir(self, dirPath, zipFilename):
+        """This function is used during to archive a restored directory. It will
+            create a zip archive with the specified directory."""
+        assert isinstance(dirPath, str)
+        assert isinstance(zipFilename, str)
+        assert os.path.isdir(dirPath)
+        import zipfile
+    
+        dirPath = os.path.normpath(dirPath)
+    
+        # Create the archive
+        zipObj = zipfile.ZipFile(zipFilename, "w", zipfile.ZIP_DEFLATED)
+    
+        # Add files to archive
+        for root, dirs, files in os.walk(dirPath, topdown=True):
+            for name in files:
+                fullPath = os.path.join(root, name)
+                assert fullPath.startswith(dirPath)
+                relPath = fullPath[len(dirPath) + 1:]
+                zipObj.write(fullPath, relPath)
+    
+        zipObj.close()
 
-
-def _recursiveTarDir(dirPath, tarFilename):
-    """This function is used during to archive a restored directory. It will
-        create a tar gz archive with the specified directory."""
-    dirPath = dirPath.encode('utf-8')
-    tarFilename = tarFilename.encode('utf-8')
-    assert os.path.isdir(dirPath)
-    import tarfile
-
-    dirPath = os.path.normpath(dirPath)
-
-    # Create a tar.gz archive
-    tar = tarfile.open(tarFilename, "w:gz")
-    files = os.listdir(dirPath)
-
-    # Add files to the archive
-    for file in files:
-        # Pass in file as name explicitly so we get relative paths
-        tar.add(joinPaths(dirPath, file), file)
-
-    # Close the archive
-    tar.close()
-
-
-def _recursiveZipDir(dirPath, zipFilename):
-    """This function is used during to archive a restored directory. It will
-        create a zip archive with the specified directory."""
-    dirPath = dirPath.encode('utf-8')
-    assert os.path.isdir(dirPath)
-    import zipfile
-
-    dirPath = os.path.normpath(dirPath)
-
-    # Create the archive
-    zipObj = zipfile.ZipFile(zipFilename, "w", zipfile.ZIP_DEFLATED)
-
-    # Add files to archive
-    for root, dirs, files in os.walk(dirPath, topdown=True):
-        for name in files:
-            fullPath = joinPaths(root, name)
-            assert fullPath.startswith(dirPath)
-            relPath = fullPath[len(dirPath) + 1:]
-            zipObj.write(fullPath, relPath)
-
-    zipObj.close()
-
-# Unit Tests #
-
-
-def runRdiff(src, dest, time):
-    # Force a null TZ for backups, to keep rdiff-backup from mangling the times
-    environ = os.environ
-    environ['TZ'] = ""
-    os.spawnlp(os.P_WAIT, "rdiff-backup", "rdiff-backup", "--no-compare-inode",
-               "--current-time=" + str(time.getSeconds()), src, dest)
-
-
-def getMatchingDirEntry(entries, filename):
-    #     for entry in entries:
-    #         print entry.name
-    matchingEntries = filter(lambda x: x.name == filename, entries)
-    assert len(matchingEntries) == 1, entries
-    return matchingEntries[0]
-
-import unittest
-import time
-
-
-class LibRdiffTest(unittest.TestCase):
-    # The dirs containing source data for automated tests are set up in the following format:
-    # one folder for each test, named to describe the test
-        # one folder for each state in the backup, named using the rdiff-backup time format (e.g. "2006-01-04T01:49:50Z")
-            # folder contents at given state.  Subdirs are not really handled
-
-    # The setUp function is responsible for backing up data for each backup
-    # test case and test case state, rooted at self.destRoot
-
-    def setUp(self):
-        # The temp dir on Mac OS X is a symlink; expand it because of
-        # validation against symlinks in paths
-        self.destRoot = joinPaths(
-            os.path.realpath(tempfile.gettempdir()), "rdiffweb")
-        self.masterDirPath = joinPaths(
-            "..", "tests")  # TODO: do this right, including tying tests into "python setup.py test"
-        self.tearDown()
-
-        os.makedirs(self.destRoot)
-
-        # Set up each scenario
-        tests = self.getBackupTests()
-        for testDir in tests:
-            # Iterate through the backup states
-            origStateDir = joinPaths(self.masterDirPath, testDir)
-            backupStates = self.getBackupStates(origStateDir)
-            backupStates.sort(lambda x, y: cmp(x, y))
-            for backupState in backupStates:
-                # Try to parse the folder name as a date.  If we can't, raise
-                backupTime = rdw_helpers.rdwTime()
-                backupTime.initFromString(backupState)
-
-                # Backup the data as it should be at that state
-                # print "    State", backupState
-                runRdiff(joinPaths(origStateDir, backupState),
-                         joinPaths(self.destRoot, testDir), backupTime)
-
-    def tearDown(self):
-        if (os.access(self.destRoot, os.F_OK)):
-            removeDir(self.destRoot)
-
-    def getBackupTests(self):
-        return filter(lambda x: not x.startswith("."), os.listdir(self.masterDirPath))
-
-    def getBackupStates(self, backupTestDir):
-        return filter(lambda x: not x.startswith(".") and x != "results", os.listdir(backupTestDir))
-
-    def hasDirEntriesResults(self, testname):
-        return os.access(joinPaths(self.masterDirPath, testname, "results", "dir_entries.txt"), os.F_OK)
-
-    def hasDirRestoreDates(self, testname):
-        return os.access(joinPaths(self.masterDirPath, testname, "results", "dir_restore_dates.txt"), os.F_OK)
-
-    def getExpectedDirRestoreDates(self, testName):
-        return open(joinPaths(self.masterDirPath, testName, "results", "dir_restore_dates.txt")).read()
-
-    def getExpectedDirEntriesResults(self, testName):
-        return open(joinPaths(self.masterDirPath, testName, "results", "dir_entries.txt")).read()
-
-    # Start actual tests #
-    def testGetDirEntries(self):
-        tests = self.getBackupTests()
-        for testDir in tests:
-            if self.hasDirEntriesResults(testDir):
-                # Get a list of backup entries for the root folder
-                rdiffDestDir = joinPaths(self.destRoot, testDir)
-                entries = getDirEntries(rdiffDestDir, "/")
-
-                statusText = ""
-                for entry in entries:
-                    if entry.name != ".svn":
-                        for changeDate in entry.changeDates:
-                            size = entry.fileSize
-                            if entry.isDir:
-                                size = 0
-                            statusText = statusText + entry.name + "\t" + str(entry.isDir) + "\t" + str(
-                                size) + "\t" + str(entry.exists) + "\t" + changeDate.getUrlString() + "\n"
-
-                assert statusText.replace("\n", "") == self.getExpectedDirEntriesResults(testDir).replace(
-                    "\n", ""), "Got: " + statusText + "\nExpected:" + self.getExpectedDirEntriesResults(testDir)
-
-    def testGetDirRestoreDates(self):
-        tests = self.getBackupTests()
-        for testDir in tests:
-            if self.hasDirRestoreDates(testDir):
-                rdiffDestDir = joinPaths(self.destRoot, testDir)
-
-                # print rdiffDestDir
-                dates = getDirRestoreDates(rdiffDestDir, "/testdir2")
-                statusText = ""
-                for date in dates:
-                    statusText = statusText + date.getUrlString() + "\n"
-
-                assert statusText.replace("\n", "") == self.getExpectedDirRestoreDates(testDir).replace(
-                    "\n", ""), "Got: " + statusText + "\nExpected:" + self.getExpectedDirRestoreDates(testDir)
-
-    def testGetBackupHistory(self):
-        tests = self.getBackupTests()
-        for testDir in tests:
-            # Get a list of backup entries for the root folder
-            origBackupDir = joinPaths(self.masterDirPath, testDir)
-            backupStates = self.getBackupStates(origBackupDir)
-            backupStates.sort(lambda x, y: cmp(x, y))
-
-            rdiffDestDir = joinPaths(self.destRoot, testDir)
-            entries = getBackupHistory(rdiffDestDir)
-            assert len(entries) == len(backupStates)
-
-            backupNum = 0
-            for backup in backupStates:
-                origBackupStateDir = joinPaths(origBackupDir, backup)
-                totalBackupSize = 0
-                for file in os.listdir(origBackupStateDir):
-                    totalBackupSize = totalBackupSize + \
-                        os.lstat(joinPaths(origBackupStateDir, file))[6]
-
-                # TODO: fix this to handle subdirs
-                # assert totalBackupSize == entries[backupNum].size,
-                # "Calculated: "+str(totalBackupSize)+" Reported:
-                # "+str(entries[backupNum].size)+" State: "+str(backupNum)
-                backupNum = backupNum + 1
-
-            # Test that the last backup entry works correctly
-            lastEntry = getLastBackupHistoryEntry(rdiffDestDir)
-
-            lastBackupTime = rdw_helpers.rdwTime()
-            lastBackupTime.initFromString(backupStates[-1])
-            assert lastEntry.date == lastBackupTime
-
-            # Test that timezone differences are ignored
-            historyAsOf = lastEntry.date.getUrlString()
-
-            lastBackupTime = rdw_helpers.rdwTime()
-            lastBackupTime.initFromString(historyAsOf)
-            entries = getBackupHistorySinceDate(rdiffDestDir, lastBackupTime)
-            assert len(entries) == 1
-
-            # Test that no backups are returned one second after the last
-            # backup
-            historyAsOf = historyAsOf[:18] + "1" + historyAsOf[19:]
-            postBackupTime = rdw_helpers.rdwTime()
-            postBackupTime.initFromString(historyAsOf)
-            assert lastBackupTime.getLocalSeconds(
-            ) + 1 == postBackupTime.getLocalSeconds()
-            entries = getBackupHistorySinceDate(rdiffDestDir, postBackupTime)
-            assert len(entries) == 0
-
-    def testRestoreFile(self):
-        tests = self.getBackupTests()
-        for testDir in tests:
-            # Get a list of backup entries for the root folder
-            rdiffDestDir = joinPaths(self.destRoot, testDir)
-            entries = getDirEntries(rdiffDestDir, "/")
-
-            # Go back through all backup states and make sure that the backup
-            # entries match the files that exist
-            origStateDir = joinPaths(self.masterDirPath, testDir)
-            backupStates = self.getBackupStates(origStateDir)
-            backupStates.sort(lambda x, y: cmp(x, y))
-            for backupState in backupStates:
-                backupTime = rdw_helpers.rdwTime()
-                backupTime.initFromString(backupState)
-
-                # Go through each file, and make sure that the restored file
-                # looks the same as the orig file
-                origStateDir = joinPaths(
-                    self.masterDirPath, testDir, backupState)
-                files = self.getBackupStates(origStateDir)
-                for file in files:
-                    origFilePath = joinPaths(origStateDir, file)
-                    if not os.path.isdir(origFilePath):
-                        restoredFilePath = restoreFileOrDir(
-                            rdiffDestDir, "/", file, backupTime)
-                        assert open(restoredFilePath, "r").read() == open(
-                            origFilePath, "r").read()
-                        os.remove(restoredFilePath)
-
-if __name__ == "__main__":
-    print "Called as standalone program; running unit tests..."
-
-    testSuite = unittest.makeSuite(LibRdiffTest, 'test')
-    testRunner = unittest.TextTestRunner()
-    testRunner.run(testSuite)
-#     import profile
-#     profile.run("getDirEntries('/', '/')", "results.txt")
