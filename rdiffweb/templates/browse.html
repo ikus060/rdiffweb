@@ -1,7 +1,5 @@
 {% include 'page_start.html' %}
-<!-- nav_bar -->
 {% include 'nav_bar.html' %}
-<!-- /nav_bar -->
 <div class="container">
     <h2>{{ title }}</h2>
 
@@ -9,12 +7,12 @@
         <li>
             <a href="/">Locations</a>
         </li>
-        <!--StartRepeat:parentDirs-->
         {% for parent in parents %}
         <li class="active">
-            <a href="{{ url_for_browse(repo, parent.path) }}">{{ parent.name }}</a>
+            <a href="{{ url_for_browse(repo, parent.path) }}">
+                {{ parent.name }}
+            </a>
         </li>
-        <!--EndRepeat:parentDirs-->
         {% endfor %}
     </ol>
 
@@ -29,7 +27,6 @@
 
     {% include 'message.html' %}
 
-    <!--StartIncludeIf:restoreUrl-->
     {% if not restore_dates %}
     <table id="files" class="sortable table">
         <thead>
@@ -42,38 +39,38 @@
         </thead>
         <tbody>
             {% for entry in dir_entries %}
-            <!--StartRepeat:files-->
             <tr class="{% if entry.exists %}exists{% else %}notexists{% endif %}">
-                <td data-value="{{ entry.display_name }}">
-                    <a
-                        href="{% if entry.isdir %}{{ url_for_browse(repo,entry.path) }}{% else %}{{ url_for_restore(repo, entry.path, entry.last_change_date) }}{% endif %}">
-                        <!-- Entry icon -->
-                        <i {% if entry.isdir %}class="icon-folder" {% else %}class="icon-file"{% endif %}></i>
-                        <!-- Entry name -->
-                        {{ entry.display_name }}
+                <td data-value="{{ entry.display_name }}"
+                    class="nowrap">
+                    <a {% if entry.isdir %}
+                        href="{{ url_for_browse(repo,entry.path) }}"
+                        {% else %}
+                        href="{{ url_for_restore(repo, entry.path, entry.last_change_date) }}"
+                        {% endif %}
+                        {% if entry.display_name | length > 45 %}
+                        title="{{ entry.display_name }}"
+                        {% endif %}>
+                        <i {% if entry.isdir %}class="icon-folder"{% else %}class="icon-file"{% endif %}></i>
+                        {% if entry.isdir %}<span class="sr-only">&lt;DIR&gt;</span>{% endif %}
+                        {% if not entry.exists %}<span class="sr-only">&lt;DELETED&gt;</span>{% endif %}
+                        {{ entry.display_name | truncate(45,True) }}
                     </a>
                 </td>
-                <td data-value="{% if not entry.isdir %}{{ entry.file_size }}{% else %}0{% endif %}">
-                    <!--StartIncludeIf:isdir-->
+                <td class="nowrap" data-value="{% if not entry.isdir %}{{ entry.file_size }}{% else %}0{% endif %}">
                     {% if not entry.isdir %}
-                    <!-- File size -->
                     {{ entry.file_size | filesize }}
-                    <!--EndIncludeIf:isdir-->
                     {% endif %}
                 </td>
-                <td data-value="{{ entry.last_change_date.getSeconds() }}">{{ entry.last_change_date | datetime }}</td>
+                <td class="nowrap"  data-value="{{ entry.last_change_date.getSeconds() }}">
+                    {{ entry.last_change_date | datetime }}
+                </td>
                 <td>
-                    {% if entry.isdir %}
-                    <!-- Directory has no revisions -->
-                    {% elif ( entry.change_dates | length ) > 1 %}
-                    <!--StartIncludeIf:hasPrevRevisions-->
-                    <!-- Single button -->
+                    {% if not entry.isdir and ( entry.change_dates | length ) > 1 %}
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">
-                            {{ entry.change_dates | length -1 }} previous revision(s) <span class="caret"></span>
+                            {{ entry.change_dates | length -1 }} previous revisions<span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
-                            <!--StartRepeat:changeDates-->
                             {% for change_date in entry.change_dates[:-1] | reverse %}
                             <li>
                                 <a href="{{ url_for_restore(repo, entry.path, change_date) }}">
@@ -81,25 +78,16 @@
                                     {{ change_date | datetime }}
                                 </a>
                             </li>
-                            <!--EndRepeat:changeDates-->
                             {% endfor %}
                         </ul>
                     </div>
-                    {% else %}
-                    <!--EndIncludeIf:hasPrevRevisions-->
-                    <!--StartDeleteIf:hasPrevRevisions-->
-                    No Previous Revisions
-                    <!--EndDeleteIf:hasPrevRevisions-->
                     {% endif %}
                 </td>
             </tr>
             {% endfor %}
-            <!--EndRepeat:files-->
         </tbody>
     </table>
-    <!--EndIncludeIf:restoreUrl-->
     {% else %}
-    <!--StartIncludeIf:viewUrl-->
     <table class="table table-striped">
         <thead>
             <tr>
@@ -108,17 +96,14 @@
         </thead>
         <tbody>
             {% for restore_date in restore_dates | reverse %}
-            <!--StartRepeat:restoreDates-->
             <tr>
                 <td>
                     <a href="{{ url_for_restore(repo, path, restore_date) }}">{{ restore_date | datetime }}</a>
                 </td>
             </tr>
             {% endfor %}
-            <!--EndRepeat:restoreDates-->
         </tbody>
     </table>
     {% endif %}
-    <!--EndIncludeIf:viewUrl-->
 </div>
 {% include 'page_end.html' %}

@@ -6591,6 +6591,9 @@ body {
 #files .dropdown > .btn-link {
   padding: 0;
 }
+.nowrap {
+  white-space: nowrap;
+}
 .sortable .asc:after {
   font-family: "fontello";
   font-style: normal;

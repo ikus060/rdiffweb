@@ -44,7 +44,7 @@ def compileTemplate(templateName, **kwargs):
     logger.debug("template [%s] compiled" % templateName)
     return data
 
-def do_format_datetime(value, format='%Y-%m-%d %H:%M:%S'):
+def do_format_datetime(value, format='%Y-%m-%d %H:%M'):
     """Used to format an epoch into local time."""
     
     if isinstance(value, rdw_helpers.rdwTime):
@@ -52,7 +52,6 @@ def do_format_datetime(value, format='%Y-%m-%d %H:%M:%S'):
     
     # TODO Try to figure out the timezone name (it's a )
     return time.strftime(format, time.localtime(value))
-
 
 def do_format_filesize(value, binary=False):
     """Format the value like a 'human-readable' file size (i.e. 13 kB,

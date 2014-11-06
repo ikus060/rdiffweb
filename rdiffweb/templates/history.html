@@ -1,38 +1,38 @@
 {% include 'page_start.html' %}
-<!-- nav_bar -->
 {% include 'nav_bar.html' %}
-<!-- /nav_bar -->
 <div class="container">
     <h2>{{ title }}</h2>
-
     {% include 'message.html' %}
-
     <table class="table">
         <thead>
             <tr>
-                <th id="date" class="sortable">Date</th>
-                <th id="size" class="sortable">Size</th>
-                <th id="result" class="sortable">Result</th>
+                <th id="date">Date</th>
+                <th id="size">Size</th>
+                <th id="result">Result</th>
             </tr>
         </thead>
         <tbody>
-            {% for entry in history_entries %}
-            <!--StartRepeat:history-->
-            <tr {% if entry.errors %}class="danger"
-                {% elif entry.in_progress %}class="warning"{% endif %}>
-                <td class="icon-history" data-value="{{ entry.date }}">{{ entry.date
-                    | datetime }}</td>
-                <td data-value="{{ entry.size }}">{{ entry.size | filesize
-                    }}</td>
+            {% for entry in history_entries | reverse %}
+            <tr {% if entry.errors %}
+                class="danger"
+                {% elif entry.in_progress %}
+                class="warning"
+                {% endif %}>
+                <td class="icon-history" data-value="{{ entry.date }}">
+                    {{ entry.date | datetime }}
+                </td>
+                <td data-value="{{ entry.size }}">
+                    {{ entry.size | filesize }}
+                </td>
                 <td>
-                    <!--StartDeleteIf:errors-->
-                    {% if not entry.errors %} {% if entry.in_progress %}In
-                    Progress{% else %}Success{% endif %}
-                    <!--EndDeleteIf:errors-->
+                    {% if not entry.errors %}
+                    {% if entry.in_progress %}
+                    In Progress
                     {% else %}
-                    <!--StartIncludeIf:errors-->
+                    Success
+                    {% endif %}
+                    {% else %}
                     Error
-                    <!--EndIncludeIf:errors-->
                     {% endif %}
                 </td>
             </tr>
@@ -41,10 +41,8 @@
                 <td colspan="4">
                     <p>{{ entry.errors }}</p>
                 </td>
-                <!--EndIncludeIf:errors-->
             </tr>
             {% endif %}
-            <!--EndRepeat:history-->
             {% endfor %}
         </tbody>
     </table>
