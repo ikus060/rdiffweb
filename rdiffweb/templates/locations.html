@@ -18,8 +18,13 @@
                 class="warning"
                 {% endif %}>
                 <td class="icon repo" data-value="{{ repo.name }}">
-                    {% if repo.failed %}{{ repo.name }}{% else %}
-                    <a href="{{ url_for_browse(repo.name,'/') }}">{{ repo.name }}</a>
+                    {% if repo.failed %}
+                    <i class="icon-box"></i>{{ repo.name }}
+                    {% else %}
+                    <a href="{{ url_for_browse(repo.name,'') }}">
+                        <i class="icon-box"></i>
+                        {{ repo.name }}
+                    </a>
                     {% endif %}
                 </td>
                 <td class="nowrap" data-value="{{ repo.last_backup_date }}">
