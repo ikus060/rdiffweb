@@ -133,7 +133,9 @@ class DirEntry:
                 # it to get it from file_statistics
                 stats = self._repo.get_file_statistic(self.last_change_date)
                 if stats:
-                    self._file_size = stats.get_source_size(self.path)
+                    # File stats uses unquoted name.
+                    unquote_path = self._repo.unquote(self.path)
+                    self._file_size = stats.get_source_size(unquote_path)
                     
         return self._file_size
 
@@ -349,7 +351,8 @@ class FileStatisticsEntry(IncrementEntry):
         try:
             return self._data[path]["mirror_size"]
         except KeyError:
-            return None
+            logger.warn("mirror size not found for [%s]" % path)
+            return 0
         
     def get_source_size(self, path):
         """Return the value of SourceSize for the given file.
@@ -358,7 +361,8 @@ class FileStatisticsEntry(IncrementEntry):
         try:
             return self._data[path]["source_size"]
         except KeyError:
-            return None
+            logger.warn("source size not found for [%s]" % path)
+            return 0
         
 class SessionStatisticsEntry(IncrementEntry):
     
