@@ -31,7 +31,7 @@
     <table id="files" class="sortable table">
         <thead>
             <tr>
-                <th id="name" class="sortable" data-type="str">Name</th>
+                <th id="name" class="sortable" data-type="dir">Name</th>
                 <th id="size" class="sortable" data-type="int">Size</th>
                 <th id="last-revision" class="sortable" data-type="int">Last Revision</th>
                 <th>Previous Revisions</th>
@@ -40,7 +40,8 @@
         <tbody>
             {% for entry in dir_entries %}
             <tr class="{% if entry.exists %}exists{% else %}notexists{% endif %}">
-                <td data-value="{{ entry.display_name }}"
+                <td {% if entry.isdir %}data-value="dir-{{ entry.display_name }}"
+                    {% else %}data-value="file-{{ entry.display_name }}"{% endif %}
                     class="nowrap">
                     <a {% if entry.isdir %}
                         href="{{ url_for_browse(repo,entry.path) }}"

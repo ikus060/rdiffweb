@@ -30,6 +30,17 @@ $("table.sortable thead th.sortable").each(function(){
 			comparator = Comparators.naturalIntComparator;
 		} else if(column.attr("data-type")=="str"){
 			comparator = Comparators.naturalStrComparator;
+		} else if(column.attr("data-type")=="dir"){
+			comparator = function(a, b){
+				a = String(a); b = String(b);
+				aIsDir = a.indexOf("dir-")
+				bIsDir = b.indexOf("dir-")
+				if(aIsDir<bIsDir) return 1;
+				if(aIsDir>bIsDir) return -1;
+				if(a > b) return 1;
+			    if(a < b) return -1;
+			    return 0;
+			}
 		}
 		table.find("tbody").sortChildren(function(a, b) {
 		    return direction=='asc' ? comparator(a,b) : -comparator(a,b);
