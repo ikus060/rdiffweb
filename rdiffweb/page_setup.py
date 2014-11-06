@@ -47,14 +47,14 @@ class rdiffSetupPage(page_main.rdiffPage):
         # Check if configuration file exists
         try:
             self._ensureConfigFileExists()
-        except e:
+        except:
             error = "rdiffweb configuration file doesn't exists. " + str(e)
 
         # Check if users already exists
         try:
             self.getUserDB().getUserList()
             message = "rdiffweb is already configured !"
-        except e:
+        except:
             # Do nothing
             message = ""
 

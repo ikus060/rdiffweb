@@ -19,6 +19,7 @@
 from __future__ import unicode_literals
 
 import cherrypy
+import logging
 import os
 import urllib
 
@@ -28,6 +29,8 @@ from . import rdw_helpers
 
 from .rdw_helpers import encode_s, decode_s, os_path_join
 
+# Define the logger
+logger = logging.getLogger(__name__)
 
 class rdiffHistoryPage(page_main.rdiffPage):
 
@@ -36,7 +39,7 @@ class rdiffHistoryPage(page_main.rdiffPage):
         try:
             self.validateUserPath(repo)
         except rdw_helpers.accessDeniedError as error:
-            return self._writeErrorPage(str(error))
+            return self._writeErrorPage(unicode(error))
 
         if not repo:
             logger.warn("Backup location not specified.")
@@ -49,7 +52,7 @@ class rdiffHistoryPage(page_main.rdiffPage):
         try:
             parms = self.getParmsForPage(repo)
         except librdiff.FileError as error:
-            logger.exception(str(error))
+            logger.exception(error)
             return self._writeErrorPage(error.getErrorString())
 
         return self._writePage("history.html", **parms)
@@ -66,14 +69,3 @@ class rdiffHistoryPage(page_main.rdiffPage):
         
         return {"title": "Backup history", "history_entries": history_entries}
 
-
-class historyPageTest(page_main.pageTest, rdiffHistoryPage):
-
-    def getTemplateName(self):
-        return "history_template.txt"
-
-    def getExpectedResultsName(self):
-        return "history_results.txt"
-
-    def getParmsForTemplate(self, repoParentPath, repoName):
-        return self.getParmsForPage(rdw_helpers.os_path_join(repoParentPath, repoName), repoName)

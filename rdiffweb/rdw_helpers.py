@@ -35,10 +35,10 @@ def encodePath(path):
         return path.decode(system_charset)
     return path
 
-def decode_s(value):
+def decode_s(value, errors='strict'):
     """Convert charset to system unicode."""
     assert isinstance(value, str)
-    return value.decode(system_charset)
+    return value.decode(system_charset, errors)
 
 def encode_s(value):
     """Convert unicode to system charset."""

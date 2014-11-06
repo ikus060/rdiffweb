@@ -69,7 +69,7 @@ class rdiffRestorePage(page_main.rdiffPage):
         try:
             restore_date = rdw_helpers.rdwTime()
             restore_date.initFromInt(int(date))
-        except e:
+        except:
             return self._writeErrorPage("Invalid date [%s]" % date)
         
         # Get user root directory
