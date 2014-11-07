@@ -17,10 +17,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from . import db
-from . import rdw_helpers
-from . import librdiff
-from . import rdw_config
+import db
+import rdw_helpers
+import librdiff
+import rdw_config
 import time
 import threading
 

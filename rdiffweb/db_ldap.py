@@ -18,11 +18,12 @@
 
 import ldap
 import logging
-from . import db
-from . import rdw_config
+import db
+import rdw_config
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
 
 class ldapUserDB(db.userDB):
 
@@ -123,7 +124,8 @@ class ldapUserDB(db.userDB):
             search_filter = "(&{}({}={}))".format(
                 self.filter, self.attribute, username)
             logger.info("search ldap server: {}/{}?{}?{}?{}".format(
-                self.uri, self.base_dn, self.attribute, self.scope, self.filter))
+                self.uri, self.base_dn, self.attribute, self.scope,
+                self.filter))
             r = l.search_s(self.base_dn, self.scope, search_filter)
             if len(r) != 1:
                 logger.warn("user [%s] not found" % username)
@@ -174,7 +176,7 @@ class ldapUserDB(db.userDB):
         return self.delegate.setUserRepos(username, repoPaths)
 
     def setUserPassword(self, username, password):
-        # Do nothing. LDAP canoot change password.
+        # Do nothing. LDAP cannot change password.
         return
 
     def setRepoMaxAge(self, username, repoPath, maxAge):

@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import rdw_config
-from . import db_sql
+import rdw_config
+import db_sql
 
 """We do no length validation for incoming parameters, since truncated values will
 at worst lead to slightly confusing results, but no security risks"""
@@ -249,7 +249,7 @@ MaxAge tinyint NOT NULL DEFAULT 0)"""
                 "UserDB", self.configFilePath)
             if prevDBType.lower() == "mysql":
                 print 'Converting database from mysql...'
-                from . import db_mysql
+                import db_mysql
                 prevDB = db_mysql.mysqlUserDB(self.configFilePath)
                 users = prevDB._executeQuery(
                     "SELECT UserID, Username, Password, UserRoot, IsAdmin, UserEmail, RestoreFormat FROM users")
@@ -262,7 +262,7 @@ MaxAge tinyint NOT NULL DEFAULT 0)"""
                     "INSERT INTO repos (UserID, RepoPath, MaxAge) values (?, ?, ?)", repos)
             elif prevDBType.lower() == "file":
                 print 'Converting database from file...'
-                from . import db_file
+                import db_file
                 prevDB = db_file.fileUserDB(self.configFilePath)
                 username = rdw_config.getConfigSetting(
                     "username", self.configFilePath)

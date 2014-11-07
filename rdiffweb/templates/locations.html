@@ -21,7 +21,7 @@
                     {% if repo.failed %}
                     <i class="icon-box"></i>{{ repo.name }}
                     {% else %}
-                    <a href="{{ url_for_browse(repo.name,'') }}">
+                    <a href="{{ url_for_browse(repo.path,'') }}">
                         <i class="icon-box"></i>
                         {{ repo.name }}
                     </a>
@@ -33,7 +33,7 @@
                     {% else %}{{ repo.last_backup_date | datetime }}
                     {% endif %}</td>
                 <td class="navitem">
-                    <a href="{{ url_for('history', repo=repo.name) }}">History</a>
+                    <a href="{{ url_for_history(repo.path) }}">History</a>
                 </td>
             </tr>
             {% endfor %}

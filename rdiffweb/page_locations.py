@@ -21,10 +21,10 @@ from __future__ import unicode_literals
 import cherrypy
 import logging
 import os
-from . import librdiff
-from . import page_main
-from . import rdw_helpers
-from .rdw_helpers import encode_s, decode_s, os_path_join
+import librdiff
+import page_main
+import rdw_helpers
+from rdw_helpers import encode_s, decode_s
 
 class rdiffLocationsPage(page_main.rdiffPage):
 
@@ -32,28 +32,31 @@ class rdiffLocationsPage(page_main.rdiffPage):
     backup directories. This is the root (/) page '''
     @cherrypy.expose
     def index(self):
-        return self._writePage("locations.html", **self.getParmsForPage())
+        return self._writePage("locations.html", **self.get_parms_for_page())
 
-    def getParmsForPage(self):
-        root = self.getUserDB().getUserRoot(self.getUsername())
-        repos = self.getUserDB().getUserRepoPaths(self.getUsername())
+    def get_parms_for_page(self):
+        user_root_b = encode_s(self.getUserDB().getUserRoot(self.getUsername()))
+        user_repos = self.getUserDB().getUserRepoPaths(self.getUsername())
         repoList = []
-        for name in repos:
+        for user_repo in user_repos:
             try:
                 # Get reference to a repo object
-                repo_root = encode_s(os_path_join(root, name))
-                repo = librdiff.RdiffRepo(repo_root)
-                in_progress = repo.in_progress
-                last_backup_date = repo.last_backup_date
+                repo_obj = librdiff.RdiffRepo(user_root_b, encode_s(user_repo))
+                path = repo_obj.path
+                name = repo_obj.display_name
+                in_progress = repo_obj.in_progress
+                last_backup_date = repo_obj.last_backup_date
                 failed = False
             except librdiff.FileError:
                 logging.exception(
                     "Can't get reference on the last backup history for %s" % name)
-                size = 0
+                path = encode_s(user_repo)
+                name = user_repo
                 in_progress = False
                 last_backup_date = 0
                 failed = True
-            repoList.append({"name": name,
+            repoList.append({"path": path,
+                             "name": name,
                              "last_backup_date": last_backup_date,
                              'in_progress': in_progress,
                              'failed': failed})

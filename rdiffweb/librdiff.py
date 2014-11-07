@@ -25,9 +25,9 @@ import os
 import re
 import tempfile
 
-from . import rdw_helpers
+import rdw_helpers
 
-from .rdw_helpers import encode_s, decode_s
+from rdw_helpers import encode_s, decode_s
 
 from rdiff_backup.hash import Report
 
@@ -423,10 +423,13 @@ class RdiffRepo:
 
     """Represent one rdiff-backup location."""
 
-    def __init__(self, repo_root):
-        assert isinstance(repo_root, str)
+    def __init__(self, user_root, path):
+        assert isinstance(user_root, str)
+        assert isinstance(path, str)
         self.encoding = 'utf-8'
-        self.repo_root = repo_root
+        self.user_root = user_root.rstrip(b"/")
+        self.path = path.strip(b"/")
+        self.repo_root = os.path.join(self.user_root, self.path)
         self.root_path = RdiffPath(self)
         
         # The location of rdiff-backup-data directory.
@@ -465,6 +468,11 @@ class RdiffRepo:
 
         # Get entries from increment data.
         return os.listdir(self.data_path)
+    
+    @property
+    def display_name(self):
+        """Return the most human representation of the repository name."""
+        return self._decode(self.path)
     
     def _decode(self, value):
         """Used to decode a repository path into unicode."""
@@ -535,6 +543,9 @@ class RdiffRepo:
     def get_path(self, path):
         """Return a new instance of RdiffPath to represent the given path."""
         assert isinstance(path, str)
+        # Get if the path request is the root path.
+        if len(path.strip(b"/")) == 0:
+            return self.root_path
         return RdiffPath(self, path)
     
     @property
@@ -589,6 +600,7 @@ class RdiffRepo:
         
     def unquote(self, name):
         """Remove quote from the given name."""
+        assert isinstance(name, str)
         # This function just gives back the original text if it can decode it
         def unquoted_char(match):
             if not len(match.group()) == 4:
@@ -598,7 +610,7 @@ class RdiffRepo:
             except ValueError:
                 return match.group
         # Remove quote using regex     
-        return re.sub(";[0-9]{3}", unquoted_char, name, re.S)
+        return re.sub(b";[0-9]{3}", unquoted_char, name, re.S)
 
 
 class RdiffPath:
@@ -609,7 +621,7 @@ class RdiffPath:
         assert isinstance(repo, RdiffRepo)
         assert isinstance(path, str)
         self.repo = repo
-        self.path = path.lstrip(b"/")
+        self.path = path.strip(b"/")
         
         # Check if the object is valid
         self._check()
@@ -819,8 +831,8 @@ class RdiffPath:
         logger.info("get restore dates for [%s]" % self._decode(self.full_path))
         
         # If root directory return all dates.
-        if self.path == "":
-             return self.repo.backup_dates
+        if self.path == b"":
+            return self.repo.backup_dates
                 
         # Get reference to parent path
         (parent_path, name) = os.path.split(self.path)
@@ -830,7 +842,7 @@ class RdiffPath:
         entries = repo_path.dir_entries
         entries = filter(lambda x: x.name == name, entries)
         if not entries:
-            raise DoesNotExistError(self._decode(self.path))
+            raise DoesNotExistError()
         entry = entries[0]
 
         # Retrieve all backup dates.

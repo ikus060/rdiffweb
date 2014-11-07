@@ -65,7 +65,7 @@ class accessDeniedError:
         return "Access is denied."
 
 
-def encode_url(url, safe=None):
+def quote_url(url, safe=None):
     """encode url but try to keep encoding (unicode vs str)"""
     # If url is None, return None
     if not url:
@@ -75,7 +75,7 @@ def encode_url(url, safe=None):
     if safe:
         assert type(url) == type(safe), "url [%s] and safe [%s] are not the same type" % (type(url), type(safe))
     else:
-        safe = ""    
+        safe = "/"
         
     is_unicode = False
     if isinstance(url, unicode):
@@ -84,17 +84,17 @@ def encode_url(url, safe=None):
         safe = safe.encode('utf8')
         
     # Url encode
-    value = urllib.quote_plus(url, safe)
+    value = urllib.quote(url, safe)
     
     if is_unicode:
         value = value.decode('utf8')
     
     return value
 
-def decode_url(encodedUrl):
+def unquote_url(encodedUrl):
     if not encodedUrl:
         return encodedUrl
-    return urllib.unquote_plus(encodedUrl)
+    return urllib.unquote(encodedUrl)
 
 
 def removeDir(dir):

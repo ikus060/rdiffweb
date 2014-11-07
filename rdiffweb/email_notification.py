@@ -18,11 +18,11 @@
 
 import smtplib
 
-from . import rdw_config
-from . import db
-from . import librdiff
-from . import rdw_helpers
-from . import rdw_templating
+import rdw_config
+import db
+import librdiff
+import rdw_helpers
+import rdw_templating
 import datetime
 import threading
 import time

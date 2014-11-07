@@ -16,14 +16,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import cherrypy
-from . import rdw_templating
+from __future__ import unicode_literals
+
 import base64
+import cherrypy
+import logging
 
-_loginUrl = "/login"
-_logoutUrl = "/logout"
+import rdw_templating
+from rdw_helpers import quote_url
+
+# Define the logger
+logger = logging.getLogger(__name__)
+
+_loginUrl = b"/login"
+_logoutUrl = b"/logout"
 _sessionUserNameKey = "username"
-
 
 def handle_authentication(authMethod='', checkAuth=None):
     checkLoginAndPassword = checkAuth
@@ -64,13 +71,19 @@ def handle_authentication(authMethod='', checkAuth=None):
     loginKey = "login"
     passwordKey = "password"
     redirectKey = "redirect"
+    # Sending the redirect url as bytes
+    redirectValue = quote_url(cherrypy.request.path_info)
+    if cherrypy.request.query_string:
+        redirectValue += b"?"
+        redirectValue += cherrypy.request.query_string
 
     loginParms = {"title": "Login Required",
                   "message": "", "action": _loginUrl,
                   "loginKey": loginKey,
                   "passwordKey": passwordKey,
                   "redirectKey": redirectKey,
-                  "loginValue": "", "redirectValue": cherrypy.request.path_info + "?" + cherrypy.request.query_string}
+                  "loginValue": "",
+                  "redirectValue": redirectValue}
 
     if cherrypy.request.path_info == _loginUrl and cherrypy.request.method == "POST":
         # check for login credentials

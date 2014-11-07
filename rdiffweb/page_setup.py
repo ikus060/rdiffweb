@@ -21,7 +21,7 @@ import os
 import stat
 import crypt
 import logging
-from . import page_main
+import page_main
 
 # Define the logger
 logger = logging.getLogger(__name__)

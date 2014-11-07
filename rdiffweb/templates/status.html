@@ -9,7 +9,8 @@
         <!-- /title -->
         {% if feedLink %}
         <!-- feedLink -->
-        <small class="pull-right"> <a href="{{ feedLink }}">
+        <small class="pull-right">
+            <a href="{{ feedLink }}">
                 Subscribe <i class="icon-rss"></i>
             </a>
         </small>
@@ -41,8 +42,9 @@
     {%if message.is_success %}
     <!--StartIncludeIf:isSuccess-->
     <h3 class="backupStatus_success">
-        <a href="{{ message.link }}">Successful Backups for {{ message.date
-            | datetime }}</a>
+        <a href="{{ url_for_status_entry(message.date) }}">
+            Successful Backups for {{ message.date | datetime }}
+        </a>
     </h3>
     <div>
         <p>The following backups have completed successfully:</p>
@@ -50,9 +52,10 @@
             {% for backup in message.backups %}
             <!--StartRepeat:backups-->
             <li>
-                <a class="statusRepoLink" href="{{ url_for_browse(repo) }}">{{ backup.date
-                    | datetime }} - {{ backup.repo }} - {{ backup.size |
-                    filesize }}</a>
+                <a class="statusRepoLink" href="{{ url_for_browse(backup.repo_path) }}">
+                {{ backup.date | datetime }} -
+                {{ backup.repo_name }} - 
+                {{ backup.size | filesize }}</a>
             </li>
             <!--EndRepeat:backups-->
             {% endfor %}
@@ -62,13 +65,13 @@
     {% else %}
     <!--StartDeleteIf:isSuccess-->
     <h3 class="backupStatus_failure">
-        <a href="{{ message.link }}">Backup Completed with Errors:
-            {{ message.repo }}</a>
+        <a href="{{ url_for_status_entry(message.date) }}">Backup Completed with Errors:
+            {{ message.repo_name }}</a>
     </h3>
     <div>
         <p>
-            The backup to <strong>{{ message.repo }}</strong> on <strong>{{ message.date
-                | datetime }}</strong> failed with the following errors:
+            The backup to <strong>{{ message.repo_name }}</strong> on <strong>
+            {{ message.date | datetime }}</strong> failed with the following errors:
         </p>
         <pre>{{ message.errors }}</pre>
         <p>Backup size: {{ message.size | filesize }}</p>

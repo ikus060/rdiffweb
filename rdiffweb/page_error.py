@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cherrypy
-from . import rdw_templating
+import rdw_templating
 
 
 class rdiffErrorPage:

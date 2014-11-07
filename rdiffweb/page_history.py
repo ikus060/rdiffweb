@@ -23,49 +23,61 @@ import logging
 import os
 import urllib
 
-from . import librdiff
-from . import page_main
-from . import rdw_helpers
+import librdiff
+import page_main
+import rdw_helpers
 
-from .rdw_helpers import encode_s, decode_s, os_path_join
+from rdw_helpers import encode_s, decode_s, unquote_url
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 class rdiffHistoryPage(page_main.rdiffPage):
 
+    def _cp_dispatch(self, vpath):
+        """Used to handle permalink URL.
+        ref http://cherrypy.readthedocs.org/en/latest/advanced.html"""
+        # Notice vpath contains bytes.
+        if len(vpath) > 0:
+            # /the/full/path/
+            path = []
+            while len(vpath) > 0:
+                path.append(unquote_url(vpath.pop(0)))
+            cherrypy.request.params['path_b'] = b"/".join(path)
+            return self
+
+        return vpath
+
     @cherrypy.expose
-    def index(self, repo):
-        try:
-            self.validateUserPath(repo)
-        except rdw_helpers.accessDeniedError as error:
-            return self._writeErrorPage(unicode(error))
+    def index(self, path_b):
+        assert isinstance(path_b, str)
 
-        if not repo:
-            logger.warn("Backup location not specified.")
-            return self._writeErrorPage("Backup location not specified.")
-        if repo not in self.getUserDB().getUserRepoPaths(self.getUsername()):
-            logger.warn("Access is denied.")
+        logger.debug("history [%s]" % decode_s(path_b, 'replace'))
+
+        try:
+            (repo_obj, path_obj) = self.validate_user_path(path_b)
+        except rdw_helpers.accessDeniedError:
+            logger.exception("access is denied")
             return self._writeErrorPage("Access is denied.")
+        except librdiff.FileError:
+            logger.exception("invalid backup location")
+            return self._writeErrorPage("The backup location does not exist.")
 
-        parms = {}
         try:
-            parms = self.getParmsForPage(repo)
-        except librdiff.FileError as error:
-            logger.exception(error)
-            return self._writeErrorPage(error.getErrorString())
+            parms = self.get_parms_for_page(repo_obj)
+        except librdiff.FileError:
+            logger.exception("invalid backup location")
+            return self._writeErrorPage("The backup location does not exist.")
 
         return self._writePage("history.html", **parms)
 
-    def getParmsForPage(self, repo):
-        assert isinstance(repo, unicode)
-        
-        # Get reference to repository
-        user_root = self.getUserDB().getUserRoot(self.getUsername())
-        repo_obj = librdiff.RdiffRepo(encode_s(os_path_join(user_root, repo)))
-        
+    def get_parms_for_page(self, repo_obj):
+        assert isinstance(repo_obj, librdiff.RdiffRepo)
+
         # Get history for the repo.
         history_entries = repo_obj.get_history_entries()
-        
-        return {"title": "Backup history", "history_entries": history_entries}
 
+        return {"title": "Backup history",
+                "repo_name": repo_obj.display_name,
+                "repo_path": repo_obj.path,
+                "history_entries": history_entries}

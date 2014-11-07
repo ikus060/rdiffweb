@@ -19,33 +19,72 @@
 from __future__ import unicode_literals
 
 import cherrypy
+import librdiff
+import logging
 import urllib
 import os.path
 
-from . import db
-from . import rdw_templating
-from . import rdw_helpers
-from . import rdw_config
+import db
+import rdw_templating
+import rdw_helpers
+import rdw_config
+from rdw_helpers import encode_s, decode_s
 
+# Define the logger
+logger = logging.getLogger(__name__)
 
 class rdiffPage:
 
     # HELPER FUNCTIONS #
 
-    def validateUserPath(self, path):
-        '''Takes a path relative to the user's root dir and validates that it is valid and within the user's root'''
-        path = rdw_helpers.os_path_join(self.getUserDB().getUserRoot(
-            self.getUsername()), rdw_helpers.encodePath(path))
-        path = path.rstrip("/")
-        realPath = os.path.realpath(path)
-        if realPath != path:
+    def validate_user_path(self, path_b):
+        '''Takes a path relative to the user's root dir and validates that it
+        is valid and within the user's root'''
+        assert isinstance(path_b, str)
+        path_b = path_b.strip(b"/")
+
+        # NOTE: a blank path parm is allowed, since that just results in a
+        # listing of the repo root
+        if not path_b:
+            logger.warn("backup location not specified")
             raise rdw_helpers.accessDeniedError
 
-        # Make sure that the path starts with the user root
-        # This check should be accomplished by ensurePathValid, but adding for
-        # a sanity check
-        if realPath.find(rdw_helpers.encodePath(self.getUserDB().getUserRoot(self.getUsername()))) != 0:
+        logger.debug("check user access to path [%s]" %
+                     decode_s(path_b, 'replace'))
+
+        # Get reference to user repos
+        user_repos = self.getUserDB().getUserRepoPaths(self.getUsername())
+
+        # Check if any of the repos matches the given path.
+        user_repos_matches = filter(
+            lambda x: path_b.startswith(encode_s(x).strip(b"/")),
+            user_repos)
+        if not user_repos_matches:
+            # No repo matches
+            logger.error("user doesn't have access to [%s]" %
+                         decode_s(path_b, 'replace'))
             raise rdw_helpers.accessDeniedError
+        repo_b = encode_s(user_repos_matches[0]).strip(b"/")
+
+        # Get reference to user_root
+        user_root = self.getUserDB().getUserRoot(self.getUsername())
+        user_root_b = encode_s(user_root)
+
+        # Check path vs real path value
+        full_path_b = os.path.join(user_root_b, path_b)
+        if full_path_b != os.path.realpath(full_path_b):
+            logger.warn("access is denied")
+            raise rdw_helpers.accessDeniedError
+
+        # Get reference to the repository (this ensure the repository does
+        # exists and is valid.)
+        repo_obj = librdiff.RdiffRepo(user_root_b, repo_b)
+
+        # Get reference to the path.
+        path_b = path_b[len(repo_b):]
+        path_obj = repo_obj.get_path(path_b)
+
+        return (repo_obj, path_obj)
 
     def getUserDB(self):
         if not hasattr(cherrypy.thread_data, 'db'):

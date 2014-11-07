@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import db_sql
-from . import rdw_config
+import db_sql
+import rdw_config
 import warnings
 
 """We do no length validation for incoming parameters, since truncated values will

@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import page_main
+import page_main
 import cherrypy
-from . import rdw_spider_repos
+import rdw_spider_repos
 
 
 class rdiffAdminPage(page_main.rdiffPage):

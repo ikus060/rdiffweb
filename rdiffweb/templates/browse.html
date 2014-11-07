@@ -9,7 +9,7 @@
         </li>
         {% for parent in parents %}
         <li class="active">
-            <a href="{{ url_for_browse(repo, parent.path) }}">
+            <a href="{{ url_for_browse(repo_path, parent.path) }}">
                 {{ parent.name }}
             </a>
         </li>
@@ -18,10 +18,10 @@
 
     <ul class="nav nav-pills">
         <li {% if not restore_dates %}class="active"{% endif%}>
-            <a href="{{ url_for_browse(repo, path) }}">View Folder</a>
+            <a href="{{ url_for_browse(repo_path, path) }}">View Folder</a>
         </li>
         <li {% if restore_dates %}class="active"{% endif %}>
-            <a href="{{ url_for_browse(repo, path, restore=True) }}">Restore Folder</a>
+            <a href="{{ url_for_browse(repo_path, path, restore=True) }}">Restore Folder</a>
         </li>
     </ul>
 
@@ -44,9 +44,9 @@
                     {% else %}data-value="file-{{ entry.display_name }}"{% endif %}
                     class="nowrap">
                     <a {% if entry.isdir %}
-                        href="{{ url_for_browse(repo,entry.path) }}"
+                        href="{{ url_for_browse(repo_path, entry.path) }}"
                         {% else %}
-                        href="{{ url_for_restore(repo, entry.path, entry.last_change_date) }}"
+                        href="{{ url_for_restore(repo_path, entry.path, entry.last_change_date) }}"
                         {% endif %}
                         {% if entry.display_name | length > 45 %}
                         title="{{ entry.display_name }}"
@@ -74,7 +74,7 @@
                         <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
                             {% for change_date in entry.change_dates[:-1] | reverse %}
                             <li>
-                                <a href="{{ url_for_restore(repo, entry.path, change_date) }}">
+                                <a href="{{ url_for_restore(repo_path, entry.path, change_date) }}">
                                     <!-- File date -->
                                     {{ change_date | datetime }}
                                 </a>
@@ -105,10 +105,10 @@
                     {{ restore_date | datetime }}
                 </td>
                 <td>
-                    <a href="{{ url_for_restore(repo, path, restore_date) }}">Download ZIP</a>
+                    <a href="{{ url_for_restore(repo_path, path, restore_date) }}">Download ZIP</a>
                 </td>
                 <td>
-                    <a href="{{ url_for_restore(repo, path, restore_date, 'T') }}">Download TAR.GZ</a>
+                    <a href="{{ url_for_restore(repo_path, path, restore_date, 'T') }}">Download TAR.GZ</a>
                 </td>
             </tr>
             {% endfor %}

@@ -16,15 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import logging
 import time
 import urllib
 
 from jinja2 import Environment, PackageLoader
 
-from . import rdw_helpers
+import rdw_helpers
 
-# Load all the templates from ./templates directory
+# Load all the templates from /templates directory
 jinja_env = Environment(loader=PackageLoader(
     'rdiffweb', 'templates'), auto_reload=True, autoescape=True)
 
@@ -82,50 +84,77 @@ def do_format_filesize(value, binary=False):
                 return '%.1f %s' % ((base * bytes / unit), prefix)
         return '%.1f %s' % ((base * bytes / unit), prefix)
 
-def url_for(endpoint, **kwargs):
-    """Generate an url for the given endpoint."""
-    
+def url_for_browse(repo, path=b"", restore=False):
+    """Generate an URL for browse controller."""
+    # Make sure the URL end with a "/" otherwise cherrypy does an internal
+    # redirection.
+    assert isinstance(repo, str)
+    assert isinstance(path, str)
     url = []
+    url.append("/browse/")
+    repo = repo.rstrip(b"/")
+    url.append(rdw_helpers.quote_url(repo))
     url.append("/")
-    url.append(endpoint)
-    url.append("/")
-    
-    if kwargs:
+    if len(path) > 0:
+        path = path.rstrip(b"/")
+        url.append(rdw_helpers.quote_url(path))
+        url.append("/")
+    if restore:
         url.append("?")
-        for key, value in kwargs.iteritems():
-            assert key
-            url.append(key if isinstance(key, unicode) else unicode(key))
-            url.append("=")
-            if isinstance(value, unicode):
-                encoded_value = rdw_helpers.encode_url(value, u"/")
-            elif value:
-                encoded_value = rdw_helpers.encode_url(str(value), "/")
-            else:
-                encoded_value = ""
-            url.append(encoded_value)
-            url.append("&")
-        # Remove the last "&"    
-        url.pop()
+        url.append("restore=T")
     return ''.join(url)
 
-def url_for_browse(repo, path="/", restore=False):
-    if not restore:
-        return url_for('browse', repo=repo, path=path)
-    else:
-        return url_for('browse', repo=repo, path=path, restore='T')
+def url_for_history(repo):
+    url = []
+    url.append("/history/")
+    repo = repo.rstrip(b"/")
+    url.append(rdw_helpers.quote_url(repo))
+    url.append("/")
+    return ''.join(url)
 
 def url_for_restore(repo, path, date, usetar=False):
-    if isinstance(date, rdw_helpers.rdwTime):
-        date = date.getSeconds()
+    assert isinstance(repo, str)
+    assert isinstance(path, str)
+    assert isinstance(date, rdw_helpers.rdwTime)
+    url = []
+    url.append("/restore/")
+    repo = repo.rstrip(b"/")
+    url.append(rdw_helpers.quote_url(repo))
+    url.append("/")
+    if len(path) > 0:
+        path = path.rstrip(b"/")
+        url.append(rdw_helpers.quote_url(path))
+        url.append("/")
+    # Append date
+    url.append("?date=")
+    url.append(str(date.getSeconds()))
     if usetar:
-        return url_for('restore', repo=repo, path=path, date=date, usetar='T')
-    return url_for('restore', repo=repo, path=path, date=date)
+        url.append("&usetar=T")
+    return ''.join(url)
+
+def url_for_status_entry(date, repo=None):
+    assert isinstance(date, rdw_helpers.rdwTime)
+    url = []
+    url.append("/status/entry/")
+    if repo:
+        assert isinstance(repo, str)
+        repo = repo.rstrip(b"/")
+        url.append(rdw_helpers.quote_url(repo))
+        url.append("/")
+    if date:
+        url.append("?date=")
+        url.append(str(date.getSeconds()))
+    return ''.join(url)
 
 # Register filters
 jinja_env.filters['datetime'] = do_format_datetime
 jinja_env.filters['filesize'] = do_format_filesize
 
 # Register method
-jinja_env.globals['url_for'] = url_for
 jinja_env.globals['url_for_browse'] = url_for_browse
+jinja_env.globals['url_for_history'] = url_for_history
 jinja_env.globals['url_for_restore'] = url_for_restore
+jinja_env.globals['url_for_status_entry'] = url_for_status_entry
+
+
+jinja_env.globals['quote_url'] = rdw_helpers.quote_url

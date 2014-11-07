@@ -17,12 +17,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cherrypy
-from . import page_main
-from . import librdiff
+import page_main
+import librdiff
 import os
 import urllib
-from . import rdw_spider_repos
-from . import email_notification
+import rdw_spider_repos
+import email_notification
 
 
 class rdiffPreferencesPage(page_main.rdiffPage):

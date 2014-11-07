@@ -21,13 +21,12 @@ from __future__ import unicode_literals
 import cherrypy
 import logging
 import os
-import urllib
 
-from . import rdw_helpers
-from . import page_main
-from . import librdiff
+import rdw_helpers
+import page_main
+import librdiff
 
-from .rdw_helpers import encode_s, decode_s, os_path_join
+from rdw_helpers import decode_s, unquote_url
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -35,76 +34,85 @@ logger = logging.getLogger(__name__)
 
 class rdiffBrowsePage(page_main.rdiffPage):
 
+    """This contoller provide a browser view to the user. It displays file in a
+    repository."""
+
+    def _cp_dispatch(self, vpath):
+        """Used to handle permalink URL.
+        ref http://cherrypy.readthedocs.org/en/latest/advanced.html"""
+        # Notice vpath contains bytes.
+        if len(vpath) > 0:
+            # /the/full/path/
+            path = []
+            while len(vpath) > 0:
+                path.append(unquote_url(vpath.pop(0)))
+            cherrypy.request.params['path_b'] = b"/".join(path)
+            return self
+
+        return vpath
+
     @cherrypy.expose
-    def index(self, repo=u"", path=u"", restore=u""):
-        assert isinstance(repo, unicode)
-        assert isinstance(path, unicode)
+    def index(self, path_b=b"", restore=""):
+        assert isinstance(path_b, str)
         assert isinstance(restore, unicode)
 
-        logger.debug("browsing repo=%s&path=%s" % (repo, path))
+        logger.debug("browsing [%s]" % decode_s(path_b, 'replace'))
 
+        # Check user access to the given repo & path
         try:
-            self.validateUserPath(os_path_join(repo, path))
-        except rdw_helpers.accessDeniedError as error:
-            logger.warn("Access is denied.")
-            return self._writeErrorPage(unicode(error))
-
-        # NOTE: a blank path parm is allowed, since that just results in a
-        # listing of the repo root
-        if not repo:
-            logger.warn("Backup location not specified.")
-            return self._writeErrorPage("Backup location not specified.")
-        if repo not in self.getUserDB().getUserRepoPaths(self.getUsername()):
-            logger.warn("Access is denied.")
+            (repo_obj, path_obj) = self.validate_user_path(path_b)
+        except rdw_helpers.accessDeniedError:
+            logger.exception("access is denied")
             return self._writeErrorPage("Access is denied.")
+        except librdiff.FileError:
+            logger.exception("invalid backup location")
+            return self._writeErrorPage("The backup location does not exist.")
 
         # Build the parameters
         try:
-            parms = self.get_parms_for_page(repo, path, restore)
-        except librdiff.FileError as error:
-            logger.exception(unicode(error))
-            return self._writeErrorPage(unicode(error))
+            parms = self.get_parms_for_page(repo_obj,
+                                            path_obj,
+                                            restore == b"T")
+        except librdiff.FileError:
+            logger.exception("invalid backup location")
+            return self._writeErrorPage("The backup location does not exist.")
 
         return self._writePage("browse.html", **parms)
 
-    def get_parms_for_page(self, repo, path, restore):
-        assert isinstance(repo, unicode)
-        assert isinstance(path, unicode)
-        assert isinstance(restore, unicode)
-
-        # Get reference to repository
-        user_root = self.getUserDB().getUserRoot(self.getUsername())
-        repo_obj = librdiff.RdiffRepo(encode_s(os_path_join(user_root, repo)))
-        repo_path = repo_obj.get_path(encode_s(path))
+    def get_parms_for_page(self, repo_obj, path_obj, restore):
+        assert isinstance(repo_obj, librdiff.RdiffRepo)
+        assert isinstance(path_obj, librdiff.RdiffPath)
 
         # Build "parent directories" links
         parents = []
-        parents.append({"path": "/", "name": repo.lstrip("/")})
-        parent_path = u""
-        for part in path.split("/"):
-            if part:
-                parent_path = os_path_join(parent_path, part)
-                parents.append({"path": parent_path, "name": repo_obj.unquote(part)})
+        parents.append({"path": b"", "name": repo_obj.display_name})
+        parent_path_b = b""
+        for part_b in path_obj.path.split(b"/"):
+            if part_b:
+                parent_path_b = os.path.join(parent_path_b, part_b)
+                display_name = decode_s(repo_obj.unquote(part_b), 'replace')
+                parents.append({"path": parent_path_b,
+                                "name": display_name})
 
         # Set up warning about in-progress backups, if necessary
+        warning = ""
         if repo_obj.in_progress:
-            warning = "Warning: a backup is currently in progress to this location. The displayed data may be inconsistent."
-        else:
-            warning = ""
+            warning = """Warning: a backup is currently in progress to this
+                      location. The displayed data may be inconsistent."""
 
         dir_entries = []
         restore_dates = []
-        if restore == "T":
+        if restore:
             title = "Restore"
-            restore_dates = repo_path.restore_dates
+            restore_dates = path_obj.restore_dates
         else:
             title = "Browse"
             # Get list of actual directory entries
-            dir_entries = repo_path.dir_entries
+            dir_entries = path_obj.dir_entries
 
         return {"title": title,
-                "repo": repo,
-                "path": path,
+                "repo_path": repo_obj.path,
+                "path": path_obj.path,
                 "dir_entries": dir_entries,
                 "parents": parents,
                 "restore_dates": restore_dates,

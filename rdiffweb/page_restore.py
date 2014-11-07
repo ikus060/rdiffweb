@@ -22,16 +22,17 @@ import cherrypy
 import logging
 import os
 
-from cherrypy.lib.static import serve_file, serve_download
+from cherrypy.lib.static import serve_file
 
-from . import librdiff
-from . import page_main
-from . import rdw_helpers
+import librdiff
+import page_main
+import rdw_helpers
 
-from .rdw_helpers import encode_s, decode_s, os_path_join
+from rdw_helpers import decode_s, unquote_url
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
 
 class autoDeleteDir:
 
@@ -43,71 +44,78 @@ class autoDeleteDir:
 
 
 class rdiffRestorePage(page_main.rdiffPage):
-    _cp_config = {"response.stream": True, "response.timeout": 3000, "request.query_string_encoding":"Latin-1"}
+    _cp_config = {"response.stream": True, "response.timeout": 3000}
+
+    def _cp_dispatch(self, vpath):
+        """Used to handle permalink URL.
+        ref http://cherrypy.readthedocs.org/en/latest/advanced.html"""
+        # Notice vpath contains bytes.
+        if len(vpath) > 0:
+            # /the/full/path/
+            path = []
+            while len(vpath) > 0:
+                path.append(unquote_url(vpath.pop(0)))
+            cherrypy.request.params['path_b'] = b"/".join(path)
+            return self
+
+        return vpath
 
     @cherrypy.expose
     @cherrypy.tools.decode(default_encoding='Latin-1')
-    def index(self, repo="", path="", date="", usetar="F"):
-        # check encoding
-        assert isinstance(repo, unicode)
-        assert isinstance(path, unicode)
-        # Redecode as bytes
-        repo_b = repo.encode('Latin-1')
-        path_b = path.encode('Latin-1')
-        
-        logger.debug("restore repo=%s&path=%s&date=%s" % (repo, path, date))
+    def index(self, path_b=b"", date="", usetar=""):
+        assert isinstance(path_b, str)
+        assert isinstance(date, unicode)
+        assert isinstance(usetar, unicode)
+
+        logger.debug("restoring [%s][%s]" % (decode_s(path_b, 'replace'),
+                                             date))
+
+        # The path_b wont have leading and trailing "/".
+        (path_b, file_b) = os.path.split(path_b)
+        if not path_b:
+            path_b = file_b
+            file_b = b""
+
+        # Check user access to repo / path.
         try:
-            self.validateUserPath(rdw_helpers.os_path_join(repo, path))
-        except rdw_helpers.accessDeniedError as error:
-            return self._writeErrorPage(str(error))
-        if not repo:
-            return self._writeErrorPage("Backup location not specified.")
-        if repo not in self.getUserDB().getUserRepoPaths(self.getUsername()):
+            (repo_obj, path_obj) = self.validate_user_path(path_b)
+        except rdw_helpers.accessDeniedError:
+            logger.exception("access is denied")
             return self._writeErrorPage("Access is denied.")
-        
+        except librdiff.FileError:
+            logger.exception("invalid backup location")
+            return self._writeErrorPage("The backup location does not exist.")
+
         # Get the restore date
         try:
             restore_date = rdw_helpers.rdwTime()
             restore_date.initFromInt(int(date))
         except:
+            logger.warn("invalid date [%s]" % date)
             return self._writeErrorPage("Invalid date [%s]" % date)
-        
-        # Get user root directory
-        user_root = self.getUserDB().getUserRoot(self.getUsername())
 
         try:
-            # Get reference to repository
-            repo_root = encode_s(os_path_join(user_root, repo))
-            repo_obj = librdiff.RdiffRepo(repo_root)
-            
-            # Try to get reference to path
-            (path_b, file_b) = os.path.split(path_b)
-            if not file_b:
-                file_b = path_b
-                path_b = ("/".encode('Latin-1'))
-            repo_path = repo_obj.get_path(path_b)
-    
             # Get if backup in progress
             if repo_obj.in_progress:
                 return self._writeErrorPage("""A backup is currently in
                     progress to this location. Restores are disabled until
                     this backup is complete.""")
-            
+
             # Restore the file
-            file_path_b = repo_path.restore(file_b, restore_date, usetar == "F")
-            
+            file_path_b = path_obj.restore(file_b, restore_date, usetar != "T")
+
         except librdiff.FileError as error:
             logger.exception("fail to restore")
-            return self._writeErrorPage(error.getErrorString())
-        
+            return self._writeErrorPage("Fail to restore.")
+
         except ValueError as error:
             logger.exception("fail to restore")
-            return self._writeErrorPage(str(error))
-        
+            return self._writeErrorPage("Fail to restore.")
+
         # The file name return by rdiff-backup is in bytes. We do not process
         # it. Cherrypy seams to handle it any weird encoding from this point.
-        logger.info("restored file [%s]" % path)
+        logger.info("restored file [%s]" % decode_s(file_path_b, 'replace'))
         (directory, filename) = os.path.split(file_path_b)
         filename = filename.replace(b"\"", b"\\\"")  # Escape quotes in filename
-        return serve_file(file_path_b, None, disposition=b"attachment", name=filename)
-    
+        return serve_file(file_path_b, None, disposition=b"attachment",
+                          name=filename)
