@@ -114,10 +114,3 @@ class sqlUserDBTest(unittest.TestCase):
         self.assertEquals(userDataModule.getRepoMaxAge("test", "b"), 1)
         self.assertEquals(
             userDataModule.getUserRepoPaths("test"), ["b", "c", "d"])
-
-    def testRestoreFormat(self):
-        userDataModule = self._getUserDB()
-        # Should default to using zip format
-        assert(userDataModule.useZipFormat('test'))
-        userDataModule.setUseZipFormat('test', False)
-        assert(not userDataModule.useZipFormat('test'))

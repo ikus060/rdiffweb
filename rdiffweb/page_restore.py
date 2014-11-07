@@ -47,7 +47,7 @@ class rdiffRestorePage(page_main.rdiffPage):
 
     @cherrypy.expose
     @cherrypy.tools.decode(default_encoding='Latin-1')
-    def index(self, repo="", path="", date=""):
+    def index(self, repo="", path="", date="", usetar="F"):
         # check encoding
         assert isinstance(repo, unicode)
         assert isinstance(path, unicode)
@@ -93,11 +93,8 @@ class rdiffRestorePage(page_main.rdiffPage):
                     progress to this location. Restores are disabled until
                     this backup is complete.""")
             
-            # Get user preference regarding archive format
-            use_zip = self.getUserDB().useZipFormat(self.getUsername())
-            
             # Restore the file
-            file_path_b = repo_path.restore(file_b, restore_date, use_zip)
+            file_path_b = repo_path.restore(file_b, restore_date, usetar == "F")
             
         except librdiff.FileError as error:
             logger.exception("fail to restore")

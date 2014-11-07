@@ -89,17 +89,26 @@
         </tbody>
     </table>
     {% else %}
-    <table class="table table-striped">
+    <table class="table table-striped sortable">
         <thead>
             <tr>
-                <th>Choose a backup to restore</th>
+                <th class="sortable" data-type="int">Revision</th>
+                <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             {% for restore_date in restore_dates | reverse %}
             <tr>
+                <td data-value="{{ restore_date.getSeconds() }}">
+                    <i class="icon-archive"></i>
+                    {{ restore_date | datetime }}
+                </td>
                 <td>
-                    <a href="{{ url_for_restore(repo, path, restore_date) }}">{{ restore_date | datetime }}</a>
+                    <a href="{{ url_for_restore(repo, path, restore_date) }}">Download ZIP</a>
+                </td>
+                <td>
+                    <a href="{{ url_for_restore(repo, path, restore_date, 'T') }}">Download TAR.GZ</a>
                 </td>
             </tr>
             {% endfor %}

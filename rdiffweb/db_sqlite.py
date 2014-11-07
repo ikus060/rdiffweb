@@ -72,11 +72,6 @@ class sqliteUserDB:
             return None
         return self._getUserField(username, "userEmail")
 
-    def useZipFormat(self, username):
-        if not self.userExists(username):
-            return False
-        return bool(self._getUserField(username, "restoreFormat"))
-
     def getUserList(self):
         query = "SELECT UserName FROM users"
         users = [x[0] for x in self._executeQuery(query)]
@@ -138,11 +133,6 @@ class sqliteUserDB:
         if not self.userExists(username):
             raise ValueError
         self._setUserField(username, 'Password', self._hashPassword(password))
-
-    def setUseZipFormat(self, username, useZip):
-        if not self.userExists(username):
-            raise ValueError
-        self._setUserField(username, 'RestoreFormat', bool(useZip))
 
     def setRepoMaxAge(self, username, repoPath, maxAge):
         if repoPath not in self.getUserRepoPaths(username):

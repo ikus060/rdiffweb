@@ -154,9 +154,6 @@ class ldapUserDB(db.userDB):
     def getUserEmail(self, username):
         return self.delegate.getUserEmail(username)
 
-    def useZipFormat(self, username):
-        return self.delegate.useZipFormat(username)
-
     def getUserList(self):
         return self.delegate.getUserList()
 
@@ -179,9 +176,6 @@ class ldapUserDB(db.userDB):
     def setUserPassword(self, username, password):
         # Do nothing. LDAP canoot change password.
         return
-
-    def setUseZipFormat(self, username, useZip):
-        return self.delegate.setUseZipFormat(username, useZip)
 
     def setRepoMaxAge(self, username, repoPath, maxAge):
         return self.delegate.setRepoMaxAge(username, repoPath, maxAge)

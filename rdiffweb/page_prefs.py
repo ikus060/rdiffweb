@@ -39,8 +39,6 @@ class rdiffPreferencesPage(page_main.rdiffPage):
                 return self._updateRepos()
             elif action == 'setNotifications':
                 return self._setNotifications(parms)
-            elif action == 'setRestoreType':
-                return self._setRestoreType(parms['restoreType'])
             else:
                 return self._writePrefsPage(error='Invalid setting.')
 
@@ -87,17 +85,6 @@ class rdiffPreferencesPage(page_main.rdiffPage):
 
         return self._writePrefsPage(success="Successfully changed notification settings.")
 
-    def _setRestoreType(self, restoreType):
-        if not self.getUserDB().modificationsSupported():
-            return self.getPrefsPage(error="Setting the restore format is not supported with the active user database.")
-
-        if restoreType == 'zip' or restoreType == 'tgz':
-            self.getUserDB().setUseZipFormat(
-                self.getUsername(), restoreType == 'zip')
-        else:
-            return self._writePrefsPage(error='Invalid restore format.')
-        return self._writePrefsPage(success="Successfully set restore format.")
-
     def getParmsForPage(self):
         email = self.getUserDB().getUserEmail(self.getUsername())
         parms = {
@@ -105,7 +92,6 @@ class rdiffPreferencesPage(page_main.rdiffPage):
             "userEmail": email,
             "notificationsEnabled": False,
             "backups": [],
-            "useZipFormat": self.getUserDB().useZipFormat(self.getUsername()),
             "sampleEmail": self.sampleEmail
         }
         if email_notification.emailNotifier().notificationsEnabled():

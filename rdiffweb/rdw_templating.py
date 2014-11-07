@@ -114,9 +114,11 @@ def url_for_browse(repo, path="/", restore=False):
     else:
         return url_for('browse', repo=repo, path=path, restore='T')
 
-def url_for_restore(repo, path, date):
+def url_for_restore(repo, path, date, usetar=False):
     if isinstance(date, rdw_helpers.rdwTime):
         date = date.getSeconds()
+    if usetar:
+        return url_for('restore', repo=repo, path=path, date=date, usetar='T')
     return url_for('restore', repo=repo, path=path, date=date)
 
 # Register filters
