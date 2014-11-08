@@ -34,13 +34,22 @@ from rdw_helpers import decode_s, unquote_url
 logger = logging.getLogger(__name__)
 
 
-class autoDeleteDir:
+def autodelete():
+    if not hasattr(cherrypy.request, "_autodelete_dir"):
+        return
+    autodelete_dir = cherrypy.request._autodelete_dir
+    logger.info("deleting temporary folder [%s]" %
+                decode_s(autodelete_dir, 'replace'))
+    # Check if path exists
+    if not os.access(autodelete_dir, os.F_OK):
+        logger.info("temporary folder [%s] doesn't exists" %
+                    decode_s(autodelete_dir, 'replace'))
+        return
+    if not os.path.isdir(autodelete_dir):
+        autodelete_dir = os.path.dirname(autodelete_dir)
+    rdw_helpers.removeDir(autodelete_dir)
 
-    def __init__(self, dirPath):
-        self.dirPath = dirPath
-
-    def __del__(self):
-        rdw_helpers.removeDir(self.dirPath)
+cherrypy.tools.autodelete = cherrypy.Tool('on_end_request', autodelete)
 
 
 class rdiffRestorePage(page_main.rdiffPage):
@@ -61,6 +70,7 @@ class rdiffRestorePage(page_main.rdiffPage):
         return vpath
 
     @cherrypy.expose
+    @cherrypy.tools.autodelete()
     @cherrypy.tools.decode(default_encoding='Latin-1')
     def index(self, path_b=b"", date="", usetar=""):
         assert isinstance(path_b, str)
@@ -104,18 +114,24 @@ class rdiffRestorePage(page_main.rdiffPage):
             # Restore the file
             file_path_b = path_obj.restore(file_b, restore_date, usetar != "T")
 
-        except librdiff.FileError as error:
+        except librdiff.FileError:
             logger.exception("fail to restore")
             return self._writeErrorPage("Fail to restore.")
 
-        except ValueError as error:
+        except ValueError:
             logger.exception("fail to restore")
             return self._writeErrorPage("Fail to restore.")
+
+        # The restored file path need to be deleted when the user is finish
+        # downloading. The auto-delete tool, will do it if we give him a file
+        # to delete.
+        cherrypy.request._autodelete_dir = file_path_b
 
         # The file name return by rdiff-backup is in bytes. We do not process
         # it. Cherrypy seams to handle it any weird encoding from this point.
         logger.info("restored file [%s]" % decode_s(file_path_b, 'replace'))
         (directory, filename) = os.path.split(file_path_b)
-        filename = filename.replace(b"\"", b"\\\"")  # Escape quotes in filename
+        # Escape quotes in filename
+        filename = filename.replace(b"\"", b"\\\"")
         return serve_file(file_path_b, None, disposition=b"attachment",
                           name=filename)
