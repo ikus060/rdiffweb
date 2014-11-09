@@ -18,51 +18,25 @@
 
 import sys
 import calendar
-import datetime
+import logging
 import os
-import re
 import time
 import urllib
-import zipfile
-import tarfile
-import subprocess
 
 # Get the system encoding
 system_charset = sys.getfilesystemencoding()
 
-def encodePath(path):
-    if not isinstance(path, unicode):
-        return path.decode(system_charset)
-    return path
 
 def decode_s(value, errors='strict'):
     """Convert charset to system unicode."""
     assert isinstance(value, str)
     return value.decode(system_charset, errors)
 
+
 def encode_s(value):
     """Convert unicode to system charset."""
     assert isinstance(value, unicode)
     return value.encode(system_charset)
-
-def os_path_join(parentPath, *args):
-    assert isinstance(parentPath, unicode)
-    for x in args:
-        assert isinstance(x, unicode)
-    args = [x.lstrip("/").encode(system_charset) for x in args]
-    value = os.path.join(parentPath.encode(system_charset), *args)
-    value = value.decode(system_charset)
-    assert isinstance(value, unicode)
-    return value
-
-def getStaticRootPath():
-    return os.path.abspath(os.path.dirname(__file__))
-
-
-class accessDeniedError:
-
-    def __str__(self):
-        return "Access is denied."
 
 
 def quote_url(url, safe=None):
@@ -76,20 +50,21 @@ def quote_url(url, safe=None):
         assert type(url) == type(safe), "url [%s] and safe [%s] are not the same type" % (type(url), type(safe))
     else:
         safe = "/"
-        
+
     is_unicode = False
     if isinstance(url, unicode):
         is_unicode = True
         url = url.encode('utf8')
         safe = safe.encode('utf8')
-        
+
     # Url encode
     value = urllib.quote(url, safe)
-    
+
     if is_unicode:
         value = value.decode('utf8')
-    
+
     return value
+
 
 def unquote_url(encodedUrl):
     if not encodedUrl:
@@ -97,8 +72,9 @@ def unquote_url(encodedUrl):
     return urllib.unquote(encodedUrl)
 
 
-def removeDir(dir):
-    for root, dirs, files in os.walk(dir, topdown=False):
+def removeDir(directory):
+    """Used to remove directory and subdirectory"""
+    for root, dirs, files in os.walk(directory, topdown=False):
         for name in files:
             filePath = os.path.join(root, name)
             if os.path.islink(filePath):
@@ -111,37 +87,27 @@ def removeDir(dir):
                 os.unlink(dirPath)
             else:
                 os.rmdir(dirPath)
-    os.rmdir(dir)
+    os.rmdir(directory)
 
 
-def formatNumStr(num, maxDecimals):
-    numStr = "%.*f" % (maxDecimals, num)
-
-    def replaceFunc(match):
-        if match.group(1):
-            return "." + match.group(1)
-        return ""
-    return re.compile("\.([^0]*)[0]+$").sub(replaceFunc, numStr)
-
-def strftime(format, t):
+def strftime(dateformat, t):
     """Same as time.strftime() but fixes unicode problem"""
-    assert isinstance(format, unicode)
-    return decode_s(time.strftime(encode_s(format), t))
+    assert isinstance(dateformat, unicode)
+    return decode_s(time.strftime(encode_s(dateformat), t))
+
 
 class rdwTime:
 
-    """Time information has two components: the local time, stored in GMT as seconds since Epoch,
-    and the timezone, stored as a seconds offset.  Since the server may not be in the same timezone
-    as the user, we cannot rely on the built-in localtime() functions, but look at the rdiff-backup string
-    for timezone information.  As a general rule, we always display the "local" time, but pass the timezone
-    information on to rdiff-backup, so it can restore to the correct state"""
+    """Time information has two components: the local time, stored in GMT as
+    seconds since Epoch, and the timezone, stored as a seconds offset. Since
+    the server may not be in the same timezone as the user, we cannot rely on
+    the built-in localtime() functions, but look at the rdiff-backup string
+    for timezone information.  As a general rule, we always display the
+    "local" time, but pass the timezone information on to rdiff-backup, so
+    it can restore to the correct state"""
 
     def __init__(self):
         self.timeInSeconds = 0
-        self.tzOffset = 0
-
-    def initFromCurrentUTC(self):
-        self.timeInSeconds = time.time()
         self.tzOffset = 0
 
     def initFromInt(self, seconds):
@@ -178,31 +144,22 @@ class rdwTime:
     def getLocalDaysSinceEpoch(self):
         return self.getLocalSeconds() // (24 * 60 * 60)
 
-    def getDaysSinceEpoch(self):
-        return self.getSeconds() // (24 * 60 * 60)
-
     def getLocalSeconds(self):
         return self.timeInSeconds
 
     def getSeconds(self):
         return self.timeInSeconds - self.tzOffset
 
-    def getDateDisplayString(self):
-        return strftime(u"%Y-%m-%d", time.gmtime(self.timeInSeconds))
-
     def getDisplayString(self):
-        return strftime(u"%Y-%m-%d %H:%M:%S", time.gmtime(self.getLocalSeconds()))
-
-    def getUrlString(self):
-        return strftime(u"%Y-%m-%dT%H:%M:%S", time.gmtime(self.getLocalSeconds())) + self.getTimeZoneString()
-
-    def getUrlStringNoTZ(self):
-        return strftime(u"%Y-%m-%dT%H:%M:%S", time.gmtime(self.getSeconds())) + "Z"
+        return strftime(u"%Y-%m-%d %H:%M:%S",
+                        time.gmtime(self.getLocalSeconds()))
 
     def getTimeZoneString(self):
         if self.tzOffset:
             tzinfo = self._getTimeZoneDisplayInfo()
-            return tzinfo["plusMinus"] + tzinfo["hours"] + ":" + tzinfo["minutes"]
+            return (tzinfo["plusMinus"]
+                    + tzinfo["hours"]
+                    + ":" + tzinfo["minutes"])
         else:
             return "Z"
 
@@ -222,7 +179,9 @@ class rdwTime:
             plusMinus = "+"
         else:
             plusMinus = "-"
-        return {"plusMinus": plusMinus, "hours": "%02d" % hours, "minutes": "%02d" % minutes}
+        return {"plusMinus": plusMinus,
+                "hours": "%02d" % hours,
+                "minutes": "%02d" % minutes}
 
     def _tzdtoseconds(self, tzd):
         """Given w3 compliant TZD, converts it to number of seconds from UTC"""
@@ -241,9 +200,10 @@ class rdwTime:
     def __cmp__(self, other):
         assert isinstance(other, rdwTime)
         return cmp(self.getSeconds(), other.getSeconds())
-    
+
     def __eq__(self, other):
-        return isinstance(other, rdwTime) and self.getSeconds() == other.getSeconds()
+        return (isinstance(other, rdwTime)
+                and self.getSeconds() == other.getSeconds())
 
     def __hash__(self):
         return hash(self.getSeconds())
@@ -251,10 +211,10 @@ class rdwTime:
     def __str__(self):
         """return utf-8 string"""
         return str(self.getDisplayString())
-    
+
     def __unicode__(self):
         return self.getDisplayString()
-    
+
     def __repr__(self):
         """return second since epoch"""
         return str(self.getSeconds())
@@ -303,7 +263,8 @@ def daemonize():
     else:
         os._exit(0)  # Exit parent of the first child.
 
-# Redirecting output to /dev/null fails when called from a script, for some reason...
+# Redirecting output to /dev/null fails when called from a script, for some
+# reason...
 # import resource        # Resource usage information.
 #     maxfd = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
 #     if (maxfd == resource.RLIM_INFINITY):
@@ -317,127 +278,3 @@ def daemonize():
 # os.dup2(0, 1)          # standard output (1)
 # os.dup2(0, 2)          # standard error (2)
     return(0)
-
-
-def execute(command, *args):
-    parms = [command]
-    parms.extend(args)
-    execution = subprocess.Popen(
-        parms, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    results = {}
-    results['exitCode'] = execution.wait()
-    (results['stdout'], results['stderr']) = execution.communicate()
-    return results
-
-
-import unittest
-
-
-class helpersTest(unittest.TestCase):
-
-    def testJoinPaths(self):
-        assert(os_path_join("/", "/test", "/temp.txt") == "/test/temp.txt")
-        assert(os_path_join("/", "test", "/temp.txt") == "/test/temp.txt")
-        assert(os_path_join("/", "/test", "temp.txt") == "/test/temp.txt")
-        assert(os_path_join("/", "//test", "/temp.txt") == "/test/temp.txt")
-        assert(os_path_join("/", "", "/temp.txt") == "/temp.txt")
-        assert(os_path_join("test", "", "/temp.txt") == "test/temp.txt")
-
-    def testRdwTime(self):
-        # Test initialization
-        myTime = rdwTime()
-        assert myTime.getSeconds() == 0
-        goodTimeString = "2005-12-25T23:34:15-05:00"
-        goodTimeStringNoTZ = "2005-12-26T04:34:15Z"
-        myTime.initFromString(goodTimeString)
-
-        myTimeNoTZ = rdwTime()
-        myTimeNoTZ.initFromString(goodTimeStringNoTZ)
-        assert myTimeNoTZ.getSeconds() == myTimeNoTZ.getLocalSeconds()
-        assert myTime.getSeconds() == myTimeNoTZ.getSeconds()
-
-        # Test correct load and retrieval
-        assert myTime.getUrlString() == goodTimeString
-        assert myTime.getUrlStringNoTZ() == goodTimeStringNoTZ
-        assert myTime.getDisplayString() == "2005-12-25 23:34:15"
-        assert myTime.getRSSPubDateString(
-        ) == "Sun, 25 Dec 2005 23:34:15 -0500"
-
-        assert myTime.getDateDisplayString() == "2005-12-25"
-        assert myTime.getLocalSeconds() < myTime.getSeconds()
-        assert myTime.getLocalSeconds() == 1135571655 - 5 * 60 * 60
-        assert myTime.getSeconds() == 1135571655
-        assert myTime.getLocalDaysSinceEpoch() <= myTime.getDaysSinceEpoch()
-        assert myTime.getLocalDaysSinceEpoch() == 13142
-        assert myTime.getDaysSinceEpoch() == 13143
-
-        goodTimeString = "2005-12-25T23:04:15-05:30"
-        myTime.initFromString(goodTimeString)
-        assert myTime.getUrlString() == goodTimeString
-        assert myTime.getUrlStringNoTZ() == goodTimeStringNoTZ
-
-        goodTimeString = "2005-12-26T09:34:15+05:00"
-        myTime.initFromString(goodTimeString)
-        assert myTime.getUrlString() == goodTimeString
-        assert myTime.getUrlStringNoTZ() == goodTimeStringNoTZ
-
-        goodTimeString = "2005-12-26T10:04:15+05:30"
-        myTime.initFromString(goodTimeString)
-        assert myTime.getUrlString() == goodTimeString
-        assert myTime.getUrlStringNoTZ() == goodTimeStringNoTZ
-
-        # Test boundaries on days since epoch
-        myTime.initFromString("2005-12-31T18:59:59-05:00")
-        assert myTime.getUrlStringNoTZ() == "2005-12-31T23:59:59Z"
-        assert myTime.getDaysSinceEpoch() == 13148
-        assert myTime.getLocalDaysSinceEpoch() == 13148
-
-        myTime.initFromString("2005-12-31T19:00:00-05:00")
-        assert myTime.getUrlStringNoTZ() == "2006-01-01T00:00:00Z"
-        assert myTime.getDaysSinceEpoch() == 13149
-        assert myTime.getLocalDaysSinceEpoch() == 13148
-
-        # Test UTC
-        myTime.initFromCurrentUTC()
-        assert myTime.getSeconds() == myTime.getLocalSeconds()
-        todayAsString = myTime.getDateDisplayString()
-
-        # Test midnight UTC
-        myTime.initFromMidnightUTC(0)
-        assert myTime.getSeconds() == myTime.getLocalSeconds()
-        assert myTime.getUrlString().find("T00:00:00Z") != -1
-        assert myTime.getDateDisplayString() == todayAsString
-
-        myTime.initFromCurrentUTC()
-        midnightTime = rdwTime()
-        midnightTime.initFromMidnightUTC(0)
-        assert myTime.getSeconds() != midnightTime.getSeconds()
-        myTime.setTime(0, 0, 0)
-        assert myTime.getSeconds() == midnightTime.getSeconds()
-
-        # Make sure it rejects bad strings with the appropriate exceptions
-        badTimeStrings = ["2005-12X25T23:34:15-05:00",
-                          "20005-12-25T23:34:15-05:00", "2005-12-25", "2005-12-25 23:34:15"]
-        for badTime in badTimeStrings:
-            try:
-                myTime.initFromString(badTime)
-            except ValueError:
-                pass
-            else:
-                assert False
-
-    def testGroupBy(self):
-        numbers = [1, 2, 3, 4, 5, 6, 0, 0, 5, 5]
-        groupedNumbers = groupby(numbers)
-        assert groupedNumbers == {
-            0: [0, 0], 1: [1], 2: [2], 3: [3], 4: [4], 5: [5, 5, 5], 6: [6]}
-
-        projects = [
-            {"name": "rdiffweb", "language": "python"}, {
-                "name": "CherryPy", "language": "python"},
-            {"name": "librsync", "language": "C"}]
-        projectsByLanguage = groupby(projects, lambda x: x["language"])
-        assert projectsByLanguage == {
-            "C": [{"name": "librsync", "language": "C"}],
-            "python": [{"name": "rdiffweb", "language": "python"}, {"name": "CherryPy", "language": "python"}]}

@@ -34,19 +34,19 @@ class ldapUserDB(db.userDB):
         self.configFilePath = configFilePath
 
         # Get LDAP configuration parameters
-        self.uri = rdw_config.getConfigSetting(
+        self.uri = rdw_config.get_config(
             "LdapUri", self.configFilePath, None)
         if self.uri is None:
             raise "LdapUri must be define in configuration"
-        self.tls = rdw_config.getConfigSetting(
+        self.tls = rdw_config.get_config(
             "LdapTls", self.configFilePath).lower() == "true"
-        self.base_dn = rdw_config.getConfigSetting(
+        self.base_dn = rdw_config.get_config(
             "LdapBaseDn", self.configFilePath, None)
         if self.uri is None:
             raise "LdapUri must be define in configuration"
-        self.attribute = rdw_config.getConfigSetting(
+        self.attribute = rdw_config.get_config(
             "LdapAttribute", self.configFilePath, "uid")
-        self.scope = rdw_config.getConfigSetting(
+        self.scope = rdw_config.get_config(
             "LdapScope", self.configFilePath, "subtree")
         if self.scope == "base":
             self.scope = ldap.SCOPE_BASE
@@ -54,31 +54,31 @@ class ldapUserDB(db.userDB):
             self.scope = ldap.SCOPE_ONELEVEL
         else:
             self.scope = ldap.SCOPE_SUBTREE
-        self.filter = rdw_config.getConfigSetting(
+        self.filter = rdw_config.get_config(
             "LdapFilter", self.configFilePath, "(objectClass=*)")
-        self.bind_dn = rdw_config.getConfigSetting(
+        self.bind_dn = rdw_config.get_config(
             "LdapBindDn", self.configFilePath, "")
-        self.bind_password = rdw_config.getConfigSetting(
+        self.bind_password = rdw_config.get_config(
             "LdapBindPassword", self.configFilePath, "")
 
         # Get Version
         try:
-            self.version = int(rdw_config.getConfigSetting(
+            self.version = int(rdw_config.get_config(
                 "LdapVersion", self.configFilePath, "3"))
         except ValueError:
-            logger.warn("LdapVersion shoud be either 2 or 3")
+            logger.warn("LdapVersion should be either 2 or 3")
 
         # Get Network timeout
         self.network_timeout = 100
         try:
-            self.network_timeout = int(rdw_config.getConfigSetting(
+            self.network_timeout = int(rdw_config.get_config(
                 "LdapNetworkTimeout", self.configFilePath, "10"))
         except ValueError:
             logger.warn("LdapNetworkTimeout shoud be an integer")
 
         # Get Timeout
         try:
-            self.timeout = int(rdw_config.getConfigSetting(
+            self.timeout = int(rdw_config.get_config(
                 "LdapTimeout", self.configFilePath, "300"))
         except ValueError:
             logger.warn("LdapTimeout shoud be an integer")
@@ -135,7 +135,7 @@ class ldapUserDB(db.userDB):
             # error.
             l.simple_bind_s(r[0][0], password)
             l.unbind_s()
-            logger.warn("user [%s] found" % username)
+            logger.info("user [%s] found" % username)
             return True
         except ldap.LDAPError as e:
             l.unbind_s()

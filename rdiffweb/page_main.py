@@ -21,17 +21,21 @@ from __future__ import unicode_literals
 import cherrypy
 import librdiff
 import logging
-import urllib
 import os.path
 
 import db
 import rdw_templating
-import rdw_helpers
-import rdw_config
 from rdw_helpers import encode_s, decode_s
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
+
+class AccessDeniedError:
+
+    def __str__(self):
+        return "Access is denied."
+
 
 class rdiffPage:
 
@@ -43,11 +47,8 @@ class rdiffPage:
         assert isinstance(path_b, str)
         path_b = path_b.strip(b"/")
 
-        # NOTE: a blank path parm is allowed, since that just results in a
-        # listing of the repo root
-        if not path_b:
-            logger.warn("backup location not specified")
-            raise rdw_helpers.accessDeniedError
+        # NOTE: a blank path is allowed, since the user root directory might be
+        # a backup location.
 
         logger.debug("check user access to path [%s]" %
                      decode_s(path_b, 'replace'))
@@ -63,7 +64,7 @@ class rdiffPage:
             # No repo matches
             logger.error("user doesn't have access to [%s]" %
                          decode_s(path_b, 'replace'))
-            raise rdw_helpers.accessDeniedError
+            raise AccessDeniedError
         repo_b = encode_s(user_repos_matches[0]).strip(b"/")
 
         # Get reference to user_root
@@ -71,10 +72,13 @@ class rdiffPage:
         user_root_b = encode_s(user_root)
 
         # Check path vs real path value
-        full_path_b = os.path.join(user_root_b, path_b)
-        if full_path_b != os.path.realpath(full_path_b):
-            logger.warn("access is denied")
-            raise rdw_helpers.accessDeniedError
+        full_path_b = os.path.join(user_root_b, path_b).rstrip(b"/")
+        real_path_b = os.path.realpath(full_path_b).rstrip(b"/")
+        if full_path_b != real_path_b:
+            logger.warn("access is denied [%s] vs [%s]" % (
+                decode_s(full_path_b, 'replace'),
+                decode_s(real_path_b, 'replace')))
+            raise AccessDeniedError
 
         # Get reference to the repository (this ensure the repository does
         # exists and is valid.)

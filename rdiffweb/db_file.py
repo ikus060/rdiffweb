@@ -26,7 +26,7 @@ class fileUserDB(db.userDB):
         self.configFilePath = configFilePath
 
     def userExists(self, username):
-        valid_username = rdw_config.getConfigSetting(
+        valid_username = rdw_config.get_config(
             "username", self.configFilePath)
         return valid_username == username
 
@@ -34,22 +34,22 @@ class fileUserDB(db.userDB):
         """The valid users string in the config file is in the form:
             username=bill
             password=frank """
-        valid_username = rdw_config.getConfigSetting(
+        valid_username = rdw_config.get_config(
             "username", self.configFilePath)
-        valid_password = rdw_config.getConfigSetting(
+        valid_password = rdw_config.get_config(
             "password", self.configFilePath)
         return valid_username == username and valid_password == password
 
     def getUserRoot(self, username):
         if not self.userExists(username):
             return None
-        return rdw_config.getConfigSetting("UserRoot", self.configFilePath)
+        return rdw_config.get_config("UserRoot", self.configFilePath)
 
     def getUserRepoPaths(self, username):
         """The user home dirs string in the config file is in the form of username:/data/dir|/data/dir2..."""
         if not self.userExists(username):
             return None
-        return rdw_config.getConfigSetting("UserRepoPaths", self.configFilePath).split("|")
+        return rdw_config.get_config("UserRepoPaths", self.configFilePath).split("|")
 
     def userIsAdmin(self, username):
         return False

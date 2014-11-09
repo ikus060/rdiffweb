@@ -35,8 +35,8 @@ class rdiffStatusPage(page_main.rdiffPage):
 
     def _cp_dispatch(self, vpath):
         """Used to handle permalink URL.
-        ref http://cherrypy.readthedocs.org/en/latest/advanced.html"""
-        # Notice vpath contains bytes.
+        reference http://cherrypy.readthedocs.org/en/latest/advanced.html"""
+        # Notice path contains bytes.
         if len(vpath) > 0:
             # /the/full/path/
             path = []
@@ -50,7 +50,8 @@ class rdiffStatusPage(page_main.rdiffPage):
     @cherrypy.expose
     def index(self, failures=""):
         userMessages = self._get_recent_user_messages(failures != "")
-        return self._compileStatusPageTemplate(True, userMessages, failures != "")
+        return self._compileStatusPageTemplate(True, userMessages,
+                                               failures != "")
 
     @cherrypy.expose
     def entry(self, path_b=b"", date=""):
@@ -70,7 +71,7 @@ class rdiffStatusPage(page_main.rdiffPage):
             # Validate repo parameter
             try:
                 (repo_obj, path_obj) = self.validate_user_path(path_b)
-            except rdw_helpers.accessDeniedError:
+            except page_main.AccessDeniedError:
                 logger.exception("access is denied")
                 return self._writeErrorPage("Access is denied.")
 
@@ -84,7 +85,9 @@ class rdiffStatusPage(page_main.rdiffPage):
         cherrypy.response.headers["Content-Type"] = "text/xml"
         userMessages = self._get_recent_user_messages(failures != "")
         statusUrl = self._buildAbsolutePageUrl(failures != "")
-        return self._writePage("status.xml", link=statusUrl, messages=userMessages)
+        return self._writePage("status.xml",
+                               link=statusUrl,
+                               messages=userMessages)
 
     def _compileStatusPageTemplate(self, isMainPage, messages, failuresOnly):
 
@@ -132,14 +135,16 @@ class rdiffStatusPage(page_main.rdiffPage):
         endTime.tzOffset = date.tzOffset
         endTime.setTime(23, 59, 59)
 
-        return self._getUserMessages(userRepos, True, False, startTime, endTime)
+        return self._getUserMessages(userRepos, True, False,
+                                     startTime, endTime)
 
     def _get_recent_user_messages(self, failuresOnly):
         user_repos = self.getUserDB().getUserRepoPaths(self.getUsername())
         asOfDate = rdw_helpers.rdwTime()
         asOfDate.initFromMidnightUTC(-5)
 
-        return self._getUserMessages(user_repos, not failuresOnly, True, asOfDate, None)
+        return self._getUserMessages(user_repos, not failuresOnly, True,
+                                     asOfDate, None)
 
     def _getUserMessages(self,
                          repos,
@@ -147,7 +152,9 @@ class rdiffStatusPage(page_main.rdiffPage):
                          includeFailure,
                          earliest_date,
                          latest_date):
-        user_root_b = encode_s(self.getUserDB().getUserRoot(self.getUsername()))
+
+        user_root = self.getUserDB().getUserRoot(self.getUsername())
+        user_root_b = encode_s(user_root)
 
         repoErrors = []
         allBackups = []
@@ -157,7 +164,8 @@ class rdiffStatusPage(page_main.rdiffPage):
             repo_b = repo_b.lstrip(b"/")
             try:
                 repo_obj = librdiff.RdiffRepo(user_root_b, repo_b)
-                backups = repo_obj.get_history_entries(-1, earliest_date, latest_date)
+                backups = repo_obj.get_history_entries(-1, earliest_date,
+                                                       latest_date)
                 allBackups += [{"repo_path": repo_obj.path,
                                 "repo_name": repo_obj.display_name,
                                 "date": backup.date,

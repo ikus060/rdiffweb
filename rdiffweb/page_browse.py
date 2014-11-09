@@ -21,8 +21,6 @@ from __future__ import unicode_literals
 import cherrypy
 import logging
 import os
-
-import rdw_helpers
 import page_main
 import librdiff
 
@@ -61,7 +59,7 @@ class rdiffBrowsePage(page_main.rdiffPage):
         # Check user access to the given repo & path
         try:
             (repo_obj, path_obj) = self.validate_user_path(path_b)
-        except rdw_helpers.accessDeniedError:
+        except page_main.AccessDeniedError:
             logger.exception("access is denied")
             return self._writeErrorPage("Access is denied.")
         except librdiff.FileError:

@@ -20,11 +20,13 @@ from __future__ import unicode_literals
 
 import cherrypy
 import logging
-import os
 import librdiff
 import page_main
-import rdw_helpers
-from rdw_helpers import encode_s, decode_s
+from rdw_helpers import encode_s
+
+# Define the logger
+logger = logging.getLogger(__name__)
+
 
 class rdiffLocationsPage(page_main.rdiffPage):
 
@@ -32,10 +34,12 @@ class rdiffLocationsPage(page_main.rdiffPage):
     backup directories. This is the root (/) page '''
     @cherrypy.expose
     def index(self):
+        logger.debug("browsing locations")
         return self._writePage("locations.html", **self.get_parms_for_page())
 
     def get_parms_for_page(self):
-        user_root_b = encode_s(self.getUserDB().getUserRoot(self.getUsername()))
+        user_root = self.getUserDB().getUserRoot(self.getUsername())
+        user_root_b = encode_s(user_root)
         user_repos = self.getUserDB().getUserRepoPaths(self.getUsername())
         repoList = []
         for user_repo in user_repos:
@@ -49,7 +53,8 @@ class rdiffLocationsPage(page_main.rdiffPage):
                 failed = False
             except librdiff.FileError:
                 logging.exception(
-                    "Can't get reference on the last backup history for %s" % name)
+                    "Can't get reference on the last backup history for %s" %
+                    user_repo)
                 path = encode_s(user_repo)
                 name = user_repo
                 in_progress = False

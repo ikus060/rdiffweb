@@ -17,14 +17,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import rdw_config
-import os
 
 
 class userDB:
 
     def getUserDBModule(self):
         # Return a different implementation according to UserDB configuration.
-        prevDBType = rdw_config.getConfigSetting("UserDB")
+        prevDBType = rdw_config.get_config("UserDB")
         if prevDBType.lower().startswith("ldap"):
             import db_ldap
             import db_sqlite

@@ -26,6 +26,7 @@ import page_main
 # Define the logger
 logger = logging.getLogger(__name__)
 
+
 class rdiffSetupPage(page_main.rdiffPage):
 
     """Helps the user through initial rdiffweb setup.
@@ -48,7 +49,7 @@ class rdiffSetupPage(page_main.rdiffPage):
         try:
             self._ensureConfigFileExists()
         except:
-            error = "rdiffweb configuration file doesn't exists. " + str(e)
+            error = "rdiffweb configuration file doesn't exists."
 
         # Check if users already exists
         try:

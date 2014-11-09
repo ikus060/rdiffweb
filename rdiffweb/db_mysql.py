@@ -196,12 +196,12 @@ class mysqlUserDB:
 
     def _connect(self):
         import MySQLdb
-        sqlHost = rdw_config.getConfigSetting("MySQLHost", self.configFilePath)
-        sqlUsername = rdw_config.getConfigSetting(
+        sqlHost = rdw_config.get_config("MySQLHost", self.configFilePath)
+        sqlUsername = rdw_config.get_config(
             "MySQLUsername", self.configFilePath)
-        sqlPassword = rdw_config.getConfigSetting(
+        sqlPassword = rdw_config.get_config(
             "MySQLPassword", self.configFilePath)
-        sqlDatabaseName = rdw_config.getConfigSetting(
+        sqlDatabaseName = rdw_config.get_config(
             "MySQLDatabase", self.configFilePath)
         self.sqlConnection = MySQLdb.connect(
             host=sqlHost, user=sqlUsername, passwd=sqlPassword, db=sqlDatabaseName)

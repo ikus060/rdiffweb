@@ -43,7 +43,7 @@ import os
 import re
 
 
-def getConfigSetting(settingName, settingsFile=None, default=""):
+def get_config(settingName, settingsFile=None, default=""):
     if ('=' in settingName):
         raise ParameterError
     if settingsFile is None:
@@ -77,7 +77,7 @@ import unittest
 
 class configFileTest(unittest.TestCase):
 
-    """Unit tests for the getConfigSetting() function"""
+    """Unit tests for the get_config() function"""
     goodConfigText = """ #This=is a comment
     SpacesValue=is a setting with spaces
     spaces setting=withspaces
@@ -104,11 +104,11 @@ class configFileTest(unittest.TestCase):
             os.remove(self.configFilePath)
 
     def testBadParms(self):
-        value = getConfigSetting("setting", "/tmp/rdw_bogus.conf")
+        value = get_config("setting", "/tmp/rdw_bogus.conf")
         assert(value == "")
         self.writeGoodFile()
         try:
-            getConfigSetting("setting=", "/tmp/rdw_config.conf")
+            get_config("setting=", "/tmp/rdw_config.conf")
         except ParameterError:
             pass
         else:
@@ -116,37 +116,37 @@ class configFileTest(unittest.TestCase):
 
     def testSpacesInValue(self):
         self.writeGoodFile()
-        assert(getConfigSetting("SpacesValue", "/tmp/rdw_config.conf")
+        assert(get_config("SpacesValue", "/tmp/rdw_config.conf")
                == "is a setting with spaces")
 
     def testSpacesInSetting(self):
         self.writeGoodFile()
         assert(
-            getConfigSetting("spaces setting", "/tmp/rdw_config.conf") == "withspaces")
+            get_config("spaces setting", "/tmp/rdw_config.conf") == "withspaces")
 
     def testCommentInValue(self):
         self.writeGoodFile()
         assert(
-            getConfigSetting("CommentInValue", "/tmp/rdw_config.conf") == "Value")
+            get_config("CommentInValue", "/tmp/rdw_config.conf") == "Value")
 
     def testEmptyValue(self):
         self.writeGoodFile()
-        assert(getConfigSetting("NoValue", "/tmp/rdw_config.conf") == "")
+        assert(get_config("NoValue", "/tmp/rdw_config.conf") == "")
 
     def testCaseInsensitivity(self):
         self.writeGoodFile()
         assert(
-            getConfigSetting("commentinvalue", "/tmp/rdw_config.conf") == "Value")
+            get_config("commentinvalue", "/tmp/rdw_config.conf") == "Value")
 
     def testMissingSetting(self):
         self.writeGoodFile()
         assert(
-            getConfigSetting("SettingThatDoesntExist", "/tmp/rdw_config.conf") == "")
+            get_config("SettingThatDoesntExist", "/tmp/rdw_config.conf") == "")
 
     def testBadFile(self):
         self.writeBadFile(0)
         try:
-            getConfigSetting("SpacesValue", "/tmp/rdw_config.conf")
+            get_config("SpacesValue", "/tmp/rdw_config.conf")
         except SettingsError:
             pass
         else:
@@ -154,7 +154,7 @@ class configFileTest(unittest.TestCase):
 
         self.writeBadFile(1)
         try:
-            getConfigSetting("SpacesValue", "/tmp/rdw_config.conf")
+            get_config("SpacesValue", "/tmp/rdw_config.conf")
         except SettingsError:
             pass
         else:

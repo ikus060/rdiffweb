@@ -89,7 +89,7 @@ class rdiffRestorePage(page_main.rdiffPage):
         # Check user access to repo / path.
         try:
             (repo_obj, path_obj) = self.validate_user_path(path_b)
-        except rdw_helpers.accessDeniedError:
+        except page_main.AccessDeniedError:
             logger.exception("access is denied")
             return self._writeErrorPage("Access is denied.")
         except librdiff.FileError:
@@ -130,7 +130,7 @@ class rdiffRestorePage(page_main.rdiffPage):
         # The file name return by rdiff-backup is in bytes. We do not process
         # it. Cherrypy seams to handle it any weird encoding from this point.
         logger.info("restored file [%s]" % decode_s(file_path_b, 'replace'))
-        (directory, filename) = os.path.split(file_path_b)
+        filename = os.path.basename(file_path_b)
         # Escape quotes in filename
         filename = filename.replace(b"\"", b"\\\"")
         return serve_file(file_path_b, None, disposition=b"attachment",

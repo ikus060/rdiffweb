@@ -32,6 +32,7 @@ _loginUrl = b"/login"
 _logoutUrl = b"/logout"
 _sessionUserNameKey = "username"
 
+
 def handle_authentication(authMethod='', checkAuth=None):
     checkLoginAndPassword = checkAuth
     if not checkLoginAndPassword:
@@ -50,7 +51,7 @@ def handle_authentication(authMethod='', checkAuth=None):
         return False
 
     if authMethod == "HTTP Header":
-        # if not already authenticated, authenticate via the Authorization
+        # if not already authenticated, authenticate via the authorization
         # header
         httpAuth = _getHTTPAuthorizationCredentials(
             cherrypy.request.headers.get("Authorization", ""))
@@ -85,7 +86,8 @@ def handle_authentication(authMethod='', checkAuth=None):
                   "loginValue": "",
                   "redirectValue": redirectValue}
 
-    if cherrypy.request.path_info == _loginUrl and cherrypy.request.method == "POST":
+    if (cherrypy.request.path_info == _loginUrl
+            and cherrypy.request.method == "POST"):
         # check for login credentials
         loginValue = cherrypy.request.params[loginKey]
         passwordValue = cherrypy.request.params[passwordKey]
@@ -130,7 +132,6 @@ def _getHTTPAuthorizationCredentials(authHeader):
 # Unit Tests #
 
 import unittest
-import os
 
 
 class rdwAuthenticationFilterTest(unittest.TestCase):
@@ -143,8 +144,10 @@ class rdwAuthenticationFilterTest(unittest.TestCase):
         assert not _getHTTPAuthorizationCredentials(
             "Digest " + base64.encodestring("username"))
         assert _getHTTPAuthorizationCredentials(
-            "Basic " + base64.encodestring("username")) == {"login": "username", "password": ""}
+            "Basic " + base64.encodestring("username")) == {"login": "username",
+                                                            "password": ""}
         assert _getHTTPAuthorizationCredentials(
-            "Basic " + base64.encodestring("user:pass")) == {"login": "user", "password": "pass"}
+            "Basic " + base64.encodestring("user:pass")) == {"login": "user",
+                                                             "password": "pass"}
         assert _getHTTPAuthorizationCredentials("Basic " + base64.encodestring(
             "user:pass:word")) == {"login": "user", "password": "pass:word"}

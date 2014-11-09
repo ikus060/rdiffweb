@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 import logging
 import time
-import urllib
 
 from jinja2 import Environment, PackageLoader
 
@@ -32,6 +31,7 @@ jinja_env = Environment(loader=PackageLoader(
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
 
 def compileTemplate(templateName, **kwargs):
     """Very simple implementation to render template using jinja2.
@@ -46,14 +46,16 @@ def compileTemplate(templateName, **kwargs):
     logger.debug("template [%s] compiled" % templateName)
     return data
 
-def do_format_datetime(value, format='%Y-%m-%d %H:%M'):
+
+def do_format_datetime(value, dateformat='%Y-%m-%d %H:%M'):
     """Used to format an epoch into local time."""
-    
+
     if isinstance(value, rdw_helpers.rdwTime):
         value = value.getSeconds()
-    
-    # TODO Try to figure out the timezone name (it's a )
-    return time.strftime(format, time.localtime(value))
+
+    # TODO Try to figure out the time zone name (it's a )
+    return time.strftime(dateformat, time.localtime(value))
+
 
 def do_format_filesize(value, binary=False):
     """Format the value like a 'human-readable' file size (i.e. 13 kB,
@@ -61,7 +63,7 @@ def do_format_filesize(value, binary=False):
     Giga, etc.), if the second parameter is set to `True` the binary
     prefixes are used (Mebi, Gibi).
     """
-    bytes = float(value)
+    size = float(value)
     base = binary and 1024 or 1000
     prefixes = [
         (binary and 'KiB' or 'kB'),
@@ -73,16 +75,17 @@ def do_format_filesize(value, binary=False):
         (binary and 'ZiB' or 'ZB'),
         (binary and 'YiB' or 'YB')
     ]
-    if bytes == 1:
+    if size == 1:
         return '1 Byte'
-    elif bytes < base:
-        return '%d Bytes' % bytes
+    elif size < base:
+        return '%d Bytes' % size
     else:
         for i, prefix in enumerate(prefixes):
             unit = base ** (i + 2)
-            if bytes < unit:
-                return '%.1f %s' % ((base * bytes / unit), prefix)
-        return '%.1f %s' % ((base * bytes / unit), prefix)
+            if size < unit:
+                return '%.1f %s' % ((base * size / unit), prefix)
+        return '%.1f %s' % ((base * size / unit), prefix)
+
 
 def url_for_browse(repo, path=b"", restore=False):
     """Generate an URL for browse controller."""
@@ -92,9 +95,10 @@ def url_for_browse(repo, path=b"", restore=False):
     assert isinstance(path, str)
     url = []
     url.append("/browse/")
-    repo = repo.rstrip(b"/")
-    url.append(rdw_helpers.quote_url(repo))
-    url.append("/")
+    if repo:
+        repo = repo.rstrip(b"/")
+        url.append(rdw_helpers.quote_url(repo))
+        url.append("/")
     if len(path) > 0:
         path = path.rstrip(b"/")
         url.append(rdw_helpers.quote_url(path))
@@ -104,13 +108,16 @@ def url_for_browse(repo, path=b"", restore=False):
         url.append("restore=T")
     return ''.join(url)
 
+
 def url_for_history(repo):
     url = []
     url.append("/history/")
-    repo = repo.rstrip(b"/")
-    url.append(rdw_helpers.quote_url(repo))
-    url.append("/")
+    if repo:
+        repo = repo.rstrip(b"/")
+        url.append(rdw_helpers.quote_url(repo))
+        url.append("/")
     return ''.join(url)
+
 
 def url_for_restore(repo, path, date, usetar=False):
     assert isinstance(repo, str)
@@ -118,9 +125,10 @@ def url_for_restore(repo, path, date, usetar=False):
     assert isinstance(date, rdw_helpers.rdwTime)
     url = []
     url.append("/restore/")
-    repo = repo.rstrip(b"/")
-    url.append(rdw_helpers.quote_url(repo))
-    url.append("/")
+    if repo:
+        repo = repo.rstrip(b"/")
+        url.append(rdw_helpers.quote_url(repo))
+        url.append("/")
     if len(path) > 0:
         path = path.rstrip(b"/")
         url.append(rdw_helpers.quote_url(path))
@@ -131,6 +139,7 @@ def url_for_restore(repo, path, date, usetar=False):
     if usetar:
         url.append("&usetar=T")
     return ''.join(url)
+
 
 def url_for_status_entry(date, repo=None):
     assert isinstance(date, rdw_helpers.rdwTime)
@@ -155,6 +164,3 @@ jinja_env.globals['url_for_browse'] = url_for_browse
 jinja_env.globals['url_for_history'] = url_for_history
 jinja_env.globals['url_for_restore'] = url_for_restore
 jinja_env.globals['url_for_status_entry'] = url_for_status_entry
-
-
-jinja_env.globals['quote_url'] = rdw_helpers.quote_url

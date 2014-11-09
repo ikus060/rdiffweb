@@ -19,8 +19,8 @@
 import rdw_config
 import db_sql
 
-"""We do no length validation for incoming parameters, since truncated values will
-at worst lead to slightly confusing results, but no security risks"""
+"""We do no length validation for incoming parameters, since truncated values
+will at worst lead to slightly confusing results, but no security risks"""
 
 
 class sqliteUserDB:
@@ -28,7 +28,7 @@ class sqliteUserDB:
     def __init__(self, configFilePath=None, autoConvertDatabase=True):
         self.configFilePath = configFilePath
         # Get database location.
-        self._databaseFilePath = rdw_config.getConfigSetting(
+        self._databaseFilePath = rdw_config.get_config(
             "SqliteDBFile", self.configFilePath)
         # If the database path is not define default to /etc/rdiffweb/rdw.db
         if self._databaseFilePath == "":
@@ -49,7 +49,8 @@ class sqliteUserDB:
 
     def areUserCredentialsValid(self, username, password):
         results = self._executeQuery(
-            "SELECT Username FROM users WHERE Username = ? AND Password = ?", (username, self._hashPassword(password)))
+            "SELECT Username FROM users WHERE Username = ? AND Password = ?",
+            (username, self._hashPassword(password)))
         return len(results) == 1
 
     def getUserRoot(self, username):
@@ -61,8 +62,8 @@ class sqliteUserDB:
     def getUserRepoPaths(self, username):
         if not self.userExists(username):
             return None
-        query = "SELECT RepoPath FROM repos WHERE UserID = %d" % self._getUserID(
-            username)
+        query = ("SELECT RepoPath FROM repos WHERE UserID = %d" %
+                 self._getUserID(username))
         repos = [self._encodePath(row[0]) for row in self._executeQuery(query)]
         repos.sort(lambda x, y: cmp(x.upper(), y.upper()))
         return repos
@@ -100,7 +101,8 @@ class sqliteUserDB:
         query = "UPDATE users SET UserRoot=?, IsAdmin=" + \
             str(adminInt) + " WHERE Username = ?"
         self._executeQuery(query, (userRoot, username))
-        self.userRootCache[username] = userRoot  # update cache
+        # update cache
+        self.userRootCache.pop(username, None)
 
     def setUserEmail(self, username, userEmail):
         if not self.userExists(username):
@@ -160,7 +162,7 @@ class sqliteUserDB:
     def _deleteUserRepos(self, username):
         if not self.userExists(username):
             raise ValueError
-        self._executeQuery("DELETE FROM repos WHERE UserID=%d" % 
+        self._executeQuery("DELETE FROM repos WHERE UserID=%d" %
                            self._getUserID(username))
 
     def _getUserID(self, username):
@@ -213,7 +215,8 @@ class sqliteUserDB:
         self.sqlConnection.isolation_level = None
 
     def _getTables(self):
-        return [column[0] for column in self._executeQuery('select name from sqlite_master where type="table"')]
+        return [column[0] for column in
+                self._executeQuery('select name from sqlite_master where type="table"')]
 
     def _getCreateStatements(self):
         return [
@@ -233,8 +236,9 @@ MaxAge tinyint NOT NULL DEFAULT 0)"""
         ]
 
     def _migrateExistingData(self):
-        """ If we don't have any data, we may be using a sqlite interface for the first time.
-        See if they have another database backend specified, and if they do, try to migrate the data."""
+        """ If we don't have any data, we may be using a sqlite interface for
+        the first time. See if they have another database backend specified,
+        and if they do, try to migrate the data."""
 
         if self._getTables():
             return
@@ -245,7 +249,7 @@ MaxAge tinyint NOT NULL DEFAULT 0)"""
             cursor.execute(statement)
 
         if self._autoConvertDatabase:
-            prevDBType = rdw_config.getConfigSetting(
+            prevDBType = rdw_config.get_config(
                 "UserDB", self.configFilePath)
             if prevDBType.lower() == "mysql":
                 print 'Converting database from mysql...'
@@ -264,9 +268,9 @@ MaxAge tinyint NOT NULL DEFAULT 0)"""
                 print 'Converting database from file...'
                 import db_file
                 prevDB = db_file.fileUserDB(self.configFilePath)
-                username = rdw_config.getConfigSetting(
+                username = rdw_config.get_config(
                     "username", self.configFilePath)
-                password = rdw_config.getConfigSetting(
+                password = rdw_config.get_config(
                     "password", self.configFilePath)
                 self.addUser(username)
                 self.setUserPassword(username, password)

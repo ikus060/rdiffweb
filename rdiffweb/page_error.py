@@ -30,4 +30,6 @@ class rdiffErrorPage:
 
     @cherrypy.expose
     def index(self):
-        return rdw_templating.compileTemplate("error.html", title="rdiffweb - Error", error=self.error)
+        return rdw_templating.compileTemplate("error.html",
+                                              title="rdiffweb - Error",
+                                              error=self.error)

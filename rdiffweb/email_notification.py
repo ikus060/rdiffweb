@@ -43,7 +43,7 @@ class emailNotifyThread(threading.Thread):
         self.notifier = emailNotifier()
         if not self.notifier.notificationsEnabled():
             return
-        emailTimeStr = rdw_config.getConfigSetting("emailNotificationTime")
+        emailTimeStr = rdw_config.get_config("emailNotificationTime")
         while True:
             emailTime = time.strptime(emailTimeStr, "%H:%M")
             now = datetime.datetime.now()
@@ -81,7 +81,7 @@ class emailNotifier:
                     # get the last backup date
                     try:
                         lastBackup = librdiff.getLastBackupHistoryEntry(
-                            rdw_helpers.os_path_join(self.userDB.getUserRoot(user), repo), False)
+                            os.path.join(self.userDB.getUserRoot(user), repo), False)
                     except librdiff.FileError:
                         pass  # Skip repos that have never been successfully backed up
                     else:
@@ -106,16 +106,16 @@ class emailNotifier:
                 session.quit()
 
     def _getEmailHost(self):
-        return rdw_config.getConfigSetting("emailHost")
+        return rdw_config.get_config("emailHost")
 
     def _getEmailSender(self):
-        return rdw_config.getConfigSetting("emailSender")
+        return rdw_config.get_config("emailSender")
 
     def _getEmailUsername(self):
-        return rdw_config.getConfigSetting("emailUsername")
+        return rdw_config.get_config("emailUsername")
 
     def _getEmailPassword(self):
-        return rdw_config.getConfigSetting("emailPassword")
+        return rdw_config.get_config("emailPassword")
 
     def _getNotificationTimeStr(self):
-        return rdw_config.getConfigSetting("emailNotificationTime")
+        return rdw_config.get_config("emailNotificationTime")

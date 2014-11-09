@@ -49,7 +49,7 @@ class rdiffHistoryPage(page_main.rdiffPage):
         return vpath
 
     @cherrypy.expose
-    def index(self, path_b):
+    def index(self, path_b=b""):
         assert isinstance(path_b, str)
 
         logger.debug("history [%s]" % decode_s(path_b, 'replace'))

@@ -18,10 +18,8 @@
 
 import os
 import db
-import rdw_helpers
 import librdiff
 import rdw_config
-import time
 import threading
 
 # Returns pid of started process, or 0 if no process was started
@@ -39,7 +37,7 @@ class spiderReposThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        spiderInterval = rdw_config.getConfigSetting("autoUpdateRepos")
+        spiderInterval = rdw_config.get_config("autoUpdateRepos")
         if spiderInterval:
             spiderInterval = int(spiderInterval)
             while True:
@@ -54,7 +52,7 @@ def _findRdiffRepos(dirToSearch, outRepoPaths, depth=0):
     # Limit the depthness
     if depth >= 3:
         return
-    
+
     dirEntries = os.listdir(dirToSearch)
     if librdiff.RDIFF_BACKUP_DATA in dirEntries:
         outRepoPaths.append(dirToSearch)
