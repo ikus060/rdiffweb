@@ -2,6 +2,10 @@
 {% include 'nav_bar.html' %}
 <div class="container">
     <h2>Backup Locations</h2>
+    {% if repos|length == 0 %}
+    {% set message = "You don't have any backup locations configured." %}
+    {% include 'message.html' %}
+    {% else %}
     <table id="repos" class="sortable table">
         <thead>
             <tr>
@@ -39,5 +43,6 @@
             {% endfor %}
         </tbody>
     </table>
+    {% endif %}
 </div>
 {% include 'page_end.html' %}
