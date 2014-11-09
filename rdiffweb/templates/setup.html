@@ -4,12 +4,8 @@
 <!-- /nav_bar -->
 <div class="container">
     <h1>Setup rdiffweb</h1>
-    {% if not root_enabled %}
-    <div class="alert alert-warning" role="alert">
-        rdiffweb has detected that the root account has been disabled.<br />
-        Web-based setup for this configuration is not supported. Please run
-        "rdiffweb-config" from the console with root privileges.
-    </div>
+    {% if not setup_enabled %}
+    {% include 'message.html'%}
     {% elif completed %}
     <div class="alert alert-success" role="alert">
         Congratulations, rdiffweb setup is now complete!

@@ -96,11 +96,10 @@ def start():
     # Check if configuration file exists
     config_file = rdw_config.getConfigFile()
     if not os.access(config_file, os.F_OK):
-        logger.error("configuration file is not accessible: %s" % config_file)
-        quit()
+        logger.warn("configuration file is not accessible: %s" % config_file)
 
     # Get configuration
-    serverHost = rdw_config.get_config("ServerHost", default="localhost")
+    serverHost = rdw_config.get_config("ServerHost", default="0.0.0.0")
     try:
         serverPort = int(rdw_config.get_config("ServerPort", default="8080"))
     except ValueError:

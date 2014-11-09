@@ -29,44 +29,57 @@ logger = logging.getLogger(__name__)
 
 class rdiffSetupPage(page_main.rdiffPage):
 
-    """Helps the user through initial rdiffweb setup.
-        This page is displayed with rdiffweb is not yet configured.
-        """
+    """
+    Helps the user through initial rdiffweb setup.
+    This page is displayed with rdiffweb is not yet configured.
+    """
+
     @cherrypy.expose
     def index(self, **kwargs):
-        completed = False
-        root_enabled = False
-        error = ""
+        setup_enabled = True
+        warning = ""
         message = ""
+        error = ""
+
+        # Check if users already exists
+        try:
+            if len(self.getUserDB().getUserList()) > 0:
+                setup_enabled = False
+                message = "rdiffweb is already configured !"
+        except:
+            logger.exception("fail to get users")
+
+        # Check if configuration file exists
+        try:
+            self._ensure_config_file_exists()
+        except:
+            setup_enabled = False
+            warning = """rdiffweb doesn't have read-write access to the
+                      configuration file. You may try to change the permissions
+                      of this file or run "rdiffweb-config" from the console
+                      with root privileges."""
 
         # Check if root user is enabled
         try:
             root_enabled = self._rootAccountEnabled()
         except KeyError:
-            error = "rdiffweb setup must be run with root privileges."
-
-        # Check if configuration file exists
-        try:
-            self._ensureConfigFileExists()
-        except:
-            error = "rdiffweb configuration file doesn't exists."
-
-        # Check if users already exists
-        try:
-            self.getUserDB().getUserList()
-            message = "rdiffweb is already configured !"
-        except:
-            # Do nothing
-            message = ""
+            setup_enabled = False
+            warning = """rdiffweb has detected that the root account has been
+                      disabled. Web-based setup for this configuration is not
+                      supported. Please run "rdiffweb-config" from the console
+                      with root privileges."""
 
         # if no post data, return plain page.
-        if not self._is_submit():
+        if not setup_enabled or not self._is_submit():
             return self._writePage("setup.html",
                                    title='Setup rdiffweb',
-                                   root_enabled=root_enabled,
+                                   setup_enabled=setup_enabled,
+                                   message=message,
+                                   warning=warning,
                                    error=error)
 
         logger.info("validating root password")
+        completed = False
         try:
             # Get parameters
             root_password = cherrypy.request.params["root_password"]
@@ -146,7 +159,10 @@ class rdiffSetupPage(page_main.rdiffPage):
         cryptedpasswd = self._getCryptedPassword("root")
         return cryptedpasswd != '!'
 
-    def _ensureConfigFileExists(self):
+    def _ensure_config_file_exists(self):
+
+        """Raised an exception if the configuration file is not accessible."""
+
         try:
             if not os.path.exists("/etc/rdiffweb"):
                 os.mkdir("/etc/rdiffweb", stat.S_IRWXU)
