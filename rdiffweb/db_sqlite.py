@@ -39,28 +39,28 @@ class sqliteUserDB:
         self._connect()
         self._migrateExistingData()
 
-    def modificationsSupported(self):
+    def is_modifiable(self):
         return True
 
-    def userExists(self, username):
+    def exists(self, username):
         results = self._executeQuery(
             "SELECT Username FROM users WHERE Username = ?", (username,))
         return len(results) == 1
 
-    def areUserCredentialsValid(self, username, password):
+    def are_valid_credentials(self, username, password):
         results = self._executeQuery(
             "SELECT Username FROM users WHERE Username = ? AND Password = ?",
             (username, self._hashPassword(password)))
         return len(results) == 1
 
-    def getUserRoot(self, username):
+    def get_root_dir(self, username):
         if username not in self.userRootCache:
             self.userRootCache[username] = self._encodePath(
                 self._getUserField(username, "UserRoot"))
         return self.userRootCache[username]
 
-    def getUserRepoPaths(self, username):
-        if not self.userExists(username):
+    def get_repos(self, username):
+        if not self.exists(username):
             return None
         query = ("SELECT RepoPath FROM repos WHERE UserID = %d" %
                  self._getUserID(username))
@@ -68,31 +68,31 @@ class sqliteUserDB:
         repos.sort(lambda x, y: cmp(x.upper(), y.upper()))
         return repos
 
-    def getUserEmail(self, username):
-        if not self.userExists(username):
+    def get_email(self, username):
+        if not self.exists(username):
             return None
         return self._getUserField(username, "userEmail")
 
-    def getUserList(self):
+    def list(self):
         query = "SELECT UserName FROM users"
         users = [x[0] for x in self._executeQuery(query)]
         return users
 
-    def addUser(self, username):
-        if self.userExists(username):
+    def add_user(self, username):
+        if self.exists(username):
             raise ValueError("user '%s' already exists" % username)
         query = "INSERT INTO users (Username) values (?)"
         self._executeQuery(query, (username,))
 
-    def deleteUser(self, username):
-        if not self.userExists(username):
+    def delete_user(self, username):
+        if not self.exists(username):
             raise ValueError
-        self._deleteUserRepos(username)
+        self._delete_userRepos(username)
         query = "DELETE FROM users WHERE Username = ?"
         self._executeQuery(query, (username,))
 
-    def setUserInfo(self, username, userRoot, isAdmin):
-        if not self.userExists(username):
+    def set_info(self, username, userRoot, isAdmin):
+        if not self.exists(username):
             raise ValueError
         if isAdmin:
             adminInt = 1
@@ -104,19 +104,19 @@ class sqliteUserDB:
         # update cache
         self.userRootCache.pop(username, None)
 
-    def setUserEmail(self, username, userEmail):
-        if not self.userExists(username):
+    def set_email(self, username, userEmail):
+        if not self.exists(username):
             raise ValueError
         self._setUserField(username, 'UserEmail', userEmail)
 
-    def setUserRepos(self, username, repoPaths):
-        if not self.userExists(username):
+    def set_repos(self, username, repoPaths):
+        if not self.exists(username):
             raise ValueError
         userID = self._getUserID(username)
 
         # We don't want to just delete and recreate the repos, since that
         # would lose notification information.
-        existingRepos = self.getUserRepoPaths(username)
+        existingRepos = self.get_repos(username)
         reposToDelete = filter(lambda x: x not in repoPaths, existingRepos)
         reposToAdd = filter(lambda x: x not in existingRepos, repoPaths)
 
@@ -131,27 +131,34 @@ class sqliteUserDB:
         cursor = self.sqlConnection.cursor()
         cursor.executemany(query, repoPaths)
 
-    def setUserPassword(self, username, password):
-        if not self.userExists(username):
-            raise ValueError
+    def set_password(self, username, old_password, password):
+        if not self.exists(username):
+            raise ValueError("invalid username")
+        if not password:
+            raise ValueError("password can't be empty")
+        if old_password and not self.are_valid_credentials(username, old_password):
+            raise ValueError("wrong password")
         self._setUserField(username, 'Password', self._hashPassword(password))
 
-    def setRepoMaxAge(self, username, repoPath, maxAge):
-        if repoPath not in self.getUserRepoPaths(username):
+    def set_repo_maxage(self, username, repoPath, maxAge):
+        if repoPath not in self.get_repos(username):
             raise ValueError
         query = "UPDATE repos SET MaxAge=? WHERE RepoPath=? AND UserID = " + \
             str(self._getUserID(username))
         self._executeQuery(query, (maxAge, repoPath))
 
-    def getRepoMaxAge(self, username, repoPath):
+    def get_repo_maxage(self, username, repoPath):
         query = "SELECT MaxAge FROM repos WHERE RepoPath=? AND UserID = " + \
             str(self._getUserID(username))
         results = self._executeQuery(query, (repoPath,))
         assert len(results) == 1
         return int(results[0][0])
 
-    def userIsAdmin(self, username):
+    def is_admin(self, username):
         return bool(self._getUserField(username, "IsAdmin"))
+
+    def is_ldap(self):
+        return False
 
     # Helper functions #
     def _encodePath(self, path):
@@ -159,18 +166,18 @@ class sqliteUserDB:
             return path.decode('utf-8')
         return path
 
-    def _deleteUserRepos(self, username):
-        if not self.userExists(username):
+    def _delete_userRepos(self, username):
+        if not self.exists(username):
             raise ValueError
         self._executeQuery("DELETE FROM repos WHERE UserID=%d" %
                            self._getUserID(username))
 
     def _getUserID(self, username):
-        assert self.userExists(username)
+        assert self.exists(username)
         return self._getUserField(username, 'UserID')
 
     def _getUserField(self, username, fieldName):
-        if not self.userExists(username):
+        if not self.exists(username):
             return None
         query = "SELECT " + fieldName + " FROM users WHERE Username = ?"
         results = self._executeQuery(query, (username,))
@@ -178,7 +185,7 @@ class sqliteUserDB:
         return results[0][0]
 
     def _setUserField(self, username, fieldName, value):
-        if not self.userExists(username):
+        if not self.exists(username):
             raise ValueError
         if isinstance(value, bool):
             if value:
@@ -272,10 +279,10 @@ MaxAge tinyint NOT NULL DEFAULT 0)"""
                     "username", self.configFilePath)
                 password = rdw_config.get_config(
                     "password", self.configFilePath)
-                self.addUser(username)
-                self.setUserPassword(username, password)
-                self.setUserInfo(username, prevDB.getUserRoot(username), True)
-                self.setUserRepos(username, prevDB.getUserRepoPaths(username))
+                self.add_user(username)
+                self.set_password(username, None, password)
+                self.set_info(username, prevDB.get_root_dir(username), True)
+                self.set_repos(username, prevDB.get_repos(username))
 
         cursor.execute("COMMIT TRANSACTION")
 

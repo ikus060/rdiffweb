@@ -28,8 +28,9 @@ logger = logging.getLogger(__name__)
 class ldapUserDB(db.userDB):
 
     def __init__(self, delegate, configFilePath=None):
-        """Create a new LDAP Database for authentication. Some behavior are
-            delegate to external database."""
+        """Create a new LDAP Database for authentication. Some behaviour are
+        delegate to external database."""
+
         self.delegate = delegate
         self.configFilePath = configFilePath
 
@@ -60,36 +61,58 @@ class ldapUserDB(db.userDB):
             "LdapBindDn", self.configFilePath, "")
         self.bind_password = rdw_config.get_config(
             "LdapBindPassword", self.configFilePath, "")
-
         # Get Version
-        try:
-            self.version = int(rdw_config.get_config(
-                "LdapVersion", self.configFilePath, "3"))
-        except ValueError:
-            logger.warn("LdapVersion should be either 2 or 3")
-
+        self.version = rdw_config.get_config_int(
+            "LdapVersion", self.configFilePath, 3)
         # Get Network timeout
-        self.network_timeout = 100
-        try:
-            self.network_timeout = int(rdw_config.get_config(
-                "LdapNetworkTimeout", self.configFilePath, "10"))
-        except ValueError:
-            logger.warn("LdapNetworkTimeout shoud be an integer")
-
+        self.network_timeout = rdw_config.get_config_int(
+            "LdapNetworkTimeout", self.configFilePath, 100)
         # Get Timeout
+        self.timeout = rdw_config.get_config_int(
+            "LdapTimeout", self.configFilePath, 300)
+        # Check if password change are allowed.
+        self.allow_password_change = rdw_config.get_config_boolean(
+            "LdapAllowPasswordChange", self.configFilePath)
+
+    def are_valid_credentials(self, username, password):
+        """Check if the given credential as valid according to LDAP."""
+
+        # Check with local database first.
+        if self.delegate.are_valid_credentials(username, password):
+            return True
+
+        def check_crendential(l, r):
+            # Check results
+            if len(r) != 1:
+                logger.warn("user [%s] not found in LDAP" % username)
+                return False
+
+            # Bind using the user credentials. Throws an exception in case of
+            # error.
+            l.simple_bind_s(r[0][0], password)
+            l.unbind_s()
+            logger.info("user [%s] found in LDAP" % username)
+            return True
+
+        # Execute the LDAP operation
         try:
-            self.timeout = int(rdw_config.get_config(
-                "LdapTimeout", self.configFilePath, "300"))
-        except ValueError:
-            logger.warn("LdapTimeout shoud be an integer")
+            return self._execute(username, check_crendential)
+        except:
+            logger.exception("can't validate credentials")
+            return False
 
-    def modificationsSupported(self):
-        return True
+    def add_user(self, username):
+        # Then add it to internal database.
+        return self.delegate.add_user(username)
 
-    def userExists(self, username):
-        return self.delegate.userExists(username)
+    def delete_user(self, username):
+        # Only delete eser from internal database.
+        return self.delegate.delete_user(username)
 
-    def areUserCredentialsValid(self, username, password):
+    def _execute(self, username, function):
+
+        """Reusable method to run LDAP operation."""
+
         # Check LDAP credential only.
         l = ldap.initialize(self.uri)
 
@@ -99,25 +122,13 @@ class ldapUserDB(db.userDB):
         else:
             l.protocol_version = ldap.VERSION3
 
-        # try STARTLS if configured
-        if self.tls:
-            try:
-                l.start_tls_s()
-            except ldap.LDAPError as e:
-                if isinstance(e.message, dict) and 'desc' in e.message:
-                    logger.exception(
-                        "error connecting ldap server: " + e.message['desc'])
-                else:
-                    logger.exception(
-                        "error connecting ldap server: " + e.message['info'])
-                return False
-
-        # Sets the scope for the search
-
-        # Try to bind with username/password
         try:
+            # try STARTLS if configured
+            if self.tls:
+                l.start_tls_s()
+
             # Bind to the LDAP server
-            logger.info("binding to ldap server {}".format(self.uri))
+            logger.debug("binding to ldap server {}".format(self.uri))
             l.simple_bind_s(self.bind_dn, self.bind_password)
 
             # Search the LDAP server
@@ -127,63 +138,122 @@ class ldapUserDB(db.userDB):
                 self.uri, self.base_dn, self.attribute, self.scope,
                 self.filter))
             r = l.search_s(self.base_dn, self.scope, search_filter)
+
+            # Execute operation
+            return function(l, r)
+        except ldap.LDAPError as e:
+            l.unbind_s()
+            if isinstance(e.message, dict) and 'desc' in e.message:
+                raise ValueError(e.message['desc'])
+            else:
+                raise ValueError(e.message['info'])
+
+    def exists(self, username):
+        return self.delegate.exists(username)
+
+    def _exists_in_ldap(self, username):
+        """Check if the user exists in LDAP"""
+
+        def check_user_exists(l, r):
+            # Check the results
             if len(r) != 1:
                 logger.warn("user [%s] not found" % username)
                 return False
 
-            # Bind using the user credentials. Throws an exception in case of
-            # error.
-            l.simple_bind_s(r[0][0], password)
-            l.unbind_s()
             logger.info("user [%s] found" % username)
             return True
-        except ldap.LDAPError as e:
-            l.unbind_s()
-            if isinstance(e.message, dict) and 'desc' in e.message:
-                logger.exception(
-                    "error connecting ldap server: " + e.message['desc'])
-            else:
-                logger.exception(
-                    "error connecting ldap server: " + e.message['info'])
+
+        # Execute the LDAP operation
+        try:
+            return self._execute(username, check_user_exists)
+        except:
+            logger.exception("can't validate credentials")
             return False
 
-    def getUserRoot(self, username):
-        return self.delegate.getUserRoot(username)
+    def get_email(self, username):
+        # Get email from local database.
+        email = self.delegate.get_email(username)
+        if email:
+            return email
+        # Get from LDAP
+        logger.debug("get email for user [%s]" % username)
+        return self._get_email_from_ldap(username)
 
-    def getUserRepoPaths(self, username):
-        return self.delegate.getUserRepoPaths(username)
+    def _get_email_from_ldap(self, username):
+        """Query LDAP server for email."""
 
-    def getUserEmail(self, username):
-        return self.delegate.getUserEmail(username)
+        def fetch_user_email(l, r):
+            if len(r) != 1:
+                logger.warn("user [%s] not found" % username)
+                return ""
+            if 'mail' in r[0][1] and len(r[0][1]['mail']) > 0:
+                return r[0][1]['mail'][0]
+            return ""
 
-    def getUserList(self):
-        return self.delegate.getUserList()
+        # Execute the LDAP operation
+        try:
+            return self._execute(username, fetch_user_email)
+        except:
+            logger.exception("can't get user email")
+            return ""
 
-    def addUser(self, username):
-        return self.delegate.addUser(username)
+    def get_root_dir(self, username):
+        return self.delegate.get_root_dir(username)
 
-    def deleteUser(self, username):
-        return self.delegate.deleteUser(username)
+    def get_repos(self, username):
+        return self.delegate.get_repos(username)
 
-    def setUserInfo(self, username, userRoot, isAdmin):
-        return self.delegate.setUserInfo(username, userRoot, isAdmin)
+    def get_repo_maxage(self, username, repoPath):
+        return self.delegate.get_repo_maxage(username, repoPath)
 
-    def setUserEmail(self, username, userEmail):
-        # TODO May try to get email from LDAP.
-        return self.delegate.setUserEmail(username, userEmail)
+    def list(self):
+        return self.delegate.list()
 
-    def setUserRepos(self, username, repoPaths):
-        return self.delegate.setUserRepos(username, repoPaths)
+    def is_admin(self, username):
+        return self.delegate.is_admin(username)
 
-    def setUserPassword(self, username, password):
-        # Do nothing. LDAP cannot change password.
-        return
+    def is_ldap(self):
+        return True
 
-    def setRepoMaxAge(self, username, repoPath, maxAge):
-        return self.delegate.setRepoMaxAge(username, repoPath, maxAge)
+    def is_modifiable(self):
+        return True
 
-    def getRepoMaxAge(self, username, repoPath):
-        return self.delegate.getRepoMaxAge(username, repoPath)
+    def set_email(self, username, userEmail):
+        return self.delegate.set_email(username, userEmail)
 
-    def userIsAdmin(self, username):
-        return self.delegate.userIsAdmin(username)
+    def set_info(self, username, userRoot, isAdmin):
+        return self.delegate.set_info(username, userRoot, isAdmin)
+
+    def set_password(self, username, old_password, password):
+        """Update the password of the given user."""
+        # Check if the user is in LDAP.
+        if self._exists_in_ldap(username):
+            if password and not self.allow_password_change:
+                raise ValueError("""LDAP users are not allowed to change their
+                                 password with rdiffweb.""")
+            # Update the username password of the given user. If possible.
+            return self._set_password_in_ldap(username, old_password, password)
+        else:
+            return self.delegate.set_password(username, old_password, password)
+
+    def _set_password_in_ldap(self, username, old_password, password):
+
+        def check_user_exists(l, r):
+            if len(r) != 1:
+                raise ValueError("user [%s] not found" % username)
+            # Bind using the user credentials. Throws an exception in case of
+            # error.
+            l.simple_bind_s(r[0][0], old_password)
+            l.passwd_s(r[0][0], old_password, password)
+            l.unbind_s()
+            logger.info("password for user [%s] is updated in LDAP" % username)
+
+        # Execute the LDAP operation
+        logger.debug("updating password for [%s] in LDAP" % username)
+        return self._execute(username, check_user_exists)
+
+    def set_repos(self, username, repoPaths):
+        return self.delegate.set_repos(username, repoPaths)
+
+    def set_repo_maxage(self, username, repoPath, maxAge):
+        return self.delegate.set_repo_maxage(username, repoPath, maxAge)

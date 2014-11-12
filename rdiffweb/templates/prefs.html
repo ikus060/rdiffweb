@@ -8,30 +8,41 @@
     {% include 'message.html' %}
 
     <h3>Change Password</h3>
-    <form action="#" method="post" role="form">
+    <form action="#" method="post" role="form" class="form-horizontal clearfix" >
         <div class="form-group">
-            <input type="hidden" name="form" value="setPassword" />
-            <label for="current">Current password</label>
-            <input class="form-control" type="password" name="current"
-                id="current" />
+            <label for="current" class="col-sm-3 control-label">
+            	Current password</label>
+            <div class="col-sm-7">
+	            <input class="form-control" type="password" name="current"
+	                id="current" />
+            </div>
         </div>
         <div class="form-group">
-            <label for="new">New password</label>
-            <input class="form-control" type="password" name="new" id="new" />
+            <label for="new" class="col-sm-3 control-label">
+            	New password</label>
+            <div class="col-sm-7">
+            	<input class="form-control" type="password" name="new" id="new" />
+            </div>
         </div>
         <div class="form-group">
-            <label for="confirm">Confirm new password</label>
+            <label for="confirm" class="col-sm-3 control-label">
+            	Confirm new password</label>
+        	<div class="col-sm-7">
             <input class="form-control" type="password" name="confirm"
                 id="confirm" />
+            </div>
         </div>
-        <button type="submit" class="btn btn-default">Change Password</button>
+        <input type="hidden" name="action" value="set_password" />
+        <div class="col-sm-offset-3 col-sm-7">
+        	<button type="submit" class="btn btn-default">Change Password</button>
+        </div>
     </form>
 
     <hr />
 
     <h3>Update backup locations</h3>
     <form action="#" method="post" role="form">
-        <input type="hidden" name="form" value="updateRepos" />
+        <input type="hidden" name="action" value="update_repos" />
         <p class="help-block">Refresh the list of repository location to be
             displayed in the Backup status view.</p>
         <button type="submit" class="btn btn-default">Update backup

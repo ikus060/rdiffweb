@@ -69,19 +69,19 @@ class emailNotifier:
         return self._getEmailHost() != "" and\
                self._getEmailSender() != "" and\
                self._getNotificationTimeStr() != "" and\
-               self.userDB.modificationsSupported()
+               self.userDB.is_modifiable()
 
     def sendEmails(self):
-        for user in self.userDB.getUserList():
-            userRepos = self.userDB.getUserRepoPaths(user)
+        for user in self.userDB.list():
+            userRepos = self.userDB.get_repos(user)
             oldRepos = []
             for repo in userRepos:
-                maxDaysOld = self.userDB.getRepoMaxAge(user, repo)
+                maxDaysOld = self.userDB.get_repo_maxage(user, repo)
                 if maxDaysOld != 0:
                     # get the last backup date
                     try:
                         lastBackup = librdiff.getLastBackupHistoryEntry(
-                            os.path.join(self.userDB.getUserRoot(user), repo), False)
+                            os.path.join(self.userDB.get_root_dir(user), repo), False)
                     except librdiff.FileError:
                         pass  # Skip repos that have never been successfully backed up
                     else:
@@ -94,7 +94,7 @@ class emailNotifier:
                                     {"repo": repo, "lastBackupDate": lastBackup.date.getDisplayString(), "maxAge": maxDaysOld})
 
             if oldRepos:
-                userEmailAddress = self.userDB.getUserEmail(user)
+                userEmailAddress = self.userDB.get_email(user)
                 emailText = rdw_templating.compileTemplate(
                     "email_notification.txt", repos=oldRepos, sender=self._getEmailSender(), user=user)
 

@@ -19,12 +19,15 @@
 import os
 import db
 import librdiff
+import logging
 import rdw_config
 import threading
 
+# Define the logger
+logger = logging.getLogger(__name__)
+
+
 # Returns pid of started process, or 0 if no process was started
-
-
 def startRepoSpiderThread(killEvent):
     newThread = spiderReposThread(killEvent)
     newThread.start()
@@ -65,7 +68,8 @@ def _findRdiffRepos(dirToSearch, outRepoPaths, depth=0):
 
 
 def findReposForUser(user, userDBModule):
-    userRoot = userDBModule.getUserRoot(user)
+    logger.debug("find repos for [%s]" % user)
+    userRoot = userDBModule.get_root_dir(user)
     repoPaths = []
     _findRdiffRepos(userRoot, repoPaths)
 
@@ -74,14 +78,14 @@ def findReposForUser(user, userDBModule):
             return "/"
         return path[len(userRoot):]
     repoPaths = map(stripRoot, repoPaths)
-    userDBModule.setUserRepos(user, repoPaths)
+    userDBModule.set_repos(user, repoPaths)
 
 
 def findReposForAllUsers():
     userDBModule = db.userDB().getUserDBModule()
-    if not userDBModule.modificationsSupported():
+    if not userDBModule.is_modifiable():
         return
 
-    users = userDBModule.getUserList()
+    users = userDBModule.list()
     for user in users:
         findReposForUser(user, userDBModule)

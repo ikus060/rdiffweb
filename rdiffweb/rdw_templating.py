@@ -47,6 +47,15 @@ def compileTemplate(templateName, **kwargs):
     return data
 
 
+def do_filter(sequence, attribute_name):
+    """Filter sequence of objects."""
+    return filter(lambda x:
+                  (isinstance(x, dict) and attribute_name in x
+                   and x[attribute_name]) or
+                  (hasattr(x, attribute_name) and getattr(x, attribute_name)),
+                  sequence)
+
+
 def do_format_datetime(value, dateformat='%Y-%m-%d %H:%M'):
     """Used to format an epoch into local time."""
 
@@ -156,6 +165,7 @@ def url_for_status_entry(date, repo=None):
     return ''.join(url)
 
 # Register filters
+jinja_env.filters['filter'] = do_filter
 jinja_env.filters['datetime'] = do_format_datetime
 jinja_env.filters['filesize'] = do_format_filesize
 

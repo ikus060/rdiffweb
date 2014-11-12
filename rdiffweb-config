@@ -50,11 +50,11 @@ def addConfigFileLine(lineText):
    open(configFilePath, "a").write(lineText + "\n")
    os.chmod(configFilePath, stat.S_IRWXU)
 
-def addUser(username, password, userRoot, isAdmin):
+def add_user(username, password, userRoot, isAdmin):
    userDB = rdiffweb.db_sqlite.sqliteUserDB(rdiffweb.rdw_config.getDatabasePath())
-   userDB.addUser(username)
-   userDB.setUserPassword(username, password)
-   userDB.setUserInfo(username, userRoot, isAdmin)
+   userDB.add_user(username)
+   userDB.set_password(username, password)
+   userDB.set_info(username, userRoot, isAdmin)
 
 def sqlSetup():
    # TODO: load default answers from existing config file, if any
@@ -72,8 +72,8 @@ def sqlSetup():
    username = promptUser("Enter the username", [], "", False)
    password = promptUser("Enter the password", [], "", False)
    userDB._executeQuery("BEGIN")
-   userDB.addUser(username)
-   userDB.setUserPassword(username, password)
+   userDB.add_user(username)
+   userDB.set_password(username, password)
    print "\nEach user has a user root directory.  This root directory acts much as the system root directory.  All backup repositories must be within this directory.\nExamples: /var/backup/repos"
    userRoot = ""
    while True:
@@ -82,7 +82,7 @@ def sqlSetup():
          if promptUser("The entered directory does not exist.  Do you want to continue?", ["yes", "no"], "no", False) == "yes":
             break
       break
-   userDB.setUserInfo(username, userRoot, True)
+   userDB.set_info(username, userRoot, True)
    print "User added successfully."
 
    prompt = "\nDo you want me to automatically search the user's root directory for backup repositories?"
@@ -110,12 +110,12 @@ def doMainSetup():
    sqlSetup()
    print "Configuration complete!"
 
-def doAddUser():
+def doadd_user():
    if len(sys.argv) != 5:
-      print "Usage: rdiffweb-config adduser <username> <password> </path/to/usr/root>"
+      print "Usage: rdiffweb-config add_user <username> <password> </path/to/usr/root>"
       sys.exit(2)
 
-   addUser(sys.argv[2], sys.argv[3], sys.argv[4], False)
+   add_user(sys.argv[2], sys.argv[3], sys.argv[4], False)
 
 def doSpiderRepos():
    rdiffweb.rdw_spider_repos.findReposForAllUsers()  
@@ -149,8 +149,8 @@ if __name__ == "__main__":
       sys.exit(2)
       
    if len(sys.argv) > 1:
-      if sys.argv[1] == "adduser":
-         doAddUser()
+      if sys.argv[1] == "add_user":
+         doadd_user()
       elif sys.argv[1] == "spiderrepos":
          doSpiderRepos()
       else:

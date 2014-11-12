@@ -25,12 +25,12 @@ class fileUserDB(db.userDB):
     def __init__(self, configFilePath=None):
         self.configFilePath = configFilePath
 
-    def userExists(self, username):
+    def exists(self, username):
         valid_username = rdw_config.get_config(
             "username", self.configFilePath)
         return valid_username == username
 
-    def areUserCredentialsValid(self, username, password):
+    def are_valid_credentials(self, username, password):
         """The valid users string in the config file is in the form:
             username=bill
             password=frank """
@@ -40,18 +40,18 @@ class fileUserDB(db.userDB):
             "password", self.configFilePath)
         return valid_username == username and valid_password == password
 
-    def getUserRoot(self, username):
-        if not self.userExists(username):
+    def get_root_dir(self, username):
+        if not self.exists(username):
             return None
         return rdw_config.get_config("UserRoot", self.configFilePath)
 
-    def getUserRepoPaths(self, username):
+    def get_repos(self, username):
         """The user home dirs string in the config file is in the form of username:/data/dir|/data/dir2..."""
-        if not self.userExists(username):
+        if not self.exists(username):
             return None
         return rdw_config.get_config("UserRepoPaths", self.configFilePath).split("|")
 
-    def userIsAdmin(self, username):
+    def is_admin(self, username):
         return False
 
 
@@ -81,41 +81,41 @@ class fileUserDataTest(unittest.TestCase):
 
     def testValidUser(self):
         authModule = fileUserDB(self.configFilePath)
-        assert(authModule.userExists("test"))
-        assert(authModule.areUserCredentialsValid("test", "user"))
+        assert(authModule.exists("test"))
+        assert(authModule.are_valid_credentials("test", "user"))
 
     def testBadPassword(self):
         authModule = fileUserDB(self.configFilePath)
         # Basic test
-        assert(not authModule.areUserCredentialsValid("test", "user2"))
+        assert(not authModule.are_valid_credentials("test", "user2"))
         # password is case sensitive
-        assert(not authModule.areUserCredentialsValid("test", "User"))
+        assert(not authModule.are_valid_credentials("test", "User"))
         # Match entire password
-        assert(not authModule.areUserCredentialsValid("test", "use"))
+        assert(not authModule.are_valid_credentials("test", "use"))
         # Make sure pipe at end doesn't allow blank username/password
-        assert(not authModule.areUserCredentialsValid("test", ""))
+        assert(not authModule.are_valid_credentials("test", ""))
 
     def testBadUser(self):
         authModule = fileUserDB(self.configFilePath)
         # username is case sensitive
-        assert(not authModule.userExists("Test"))
+        assert(not authModule.exists("Test"))
         # Match entire username
-        assert(not authModule.userExists("tes"))
+        assert(not authModule.exists("tes"))
         # Make sure blank username is disallowed
-        assert(not authModule.userExists(""))
+        assert(not authModule.exists(""))
 
     def testGoodUserDir(self):
         userDataModule = fileUserDB(self.configFilePath)
-        assert(userDataModule.getUserRepoPaths("test")
+        assert(userDataModule.get_repos("test")
                == ["/data/bill", "/data/frank"])
-        assert(userDataModule.getUserRoot("test") == "/data")
+        assert(userDataModule.get_root_dir("test") == "/data")
 
     def testBadUser(self):
         userDataModule = fileUserDB(self.configFilePath)
         # should return None if user doesn't exist
-        assert(not userDataModule.getUserRepoPaths("test2"))
+        assert(not userDataModule.get_repos("test2"))
         # should return None if user doesn't exist
-        assert(not userDataModule.getUserRoot(""))
+        assert(not userDataModule.get_root_dir(""))
 
 if __name__ == "__main__":
     print "Called as standalone program; running unit tests..."

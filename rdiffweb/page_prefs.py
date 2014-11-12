@@ -16,10 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import cherrypy
+import logging
 import page_main
 import rdw_spider_repos
 import email_notification
+
+# Define the logger
+logger = logging.getLogger(__name__)
 
 
 class rdiffPreferencesPage(page_main.rdiffPage):
@@ -27,57 +33,66 @@ class rdiffPreferencesPage(page_main.rdiffPage):
     sampleEmail = 'joe@example.com'
 
     @cherrypy.expose
-    def index(self, **parms):
-        if parms:
-            action = parms['form']
-            if action == 'setPassword':
-                return self._changePassword(parms['current'],
-                                            parms['new'],
-                                            parms['confirm'])
-            elif action == 'updateRepos':
-                return self._updateRepos()
-            elif action == 'setNotifications':
-                return self._setNotifications(parms)
-            else:
-                return self._writePrefsPage(error='Invalid setting.')
+    def index(self, action=u"", current=u"", new=u"", confirm=u""):
 
-        return self._writePrefsPage()
+        params = {}
 
-    def _changePassword(self, currentPassword, newPassword, confirmPassword):
-        if not self.getUserDB().modificationsSupported():
-            return self._writePrefsPage(error="""Password changing is not
-                                              supported with the active user
-                                              database.""")
+        # Process the parameters.
+        if self._is_submit():
+            try:
+                if action == "set_password":
+                    params = self._set_password(current, new, confirm)
+                elif action == "update_repos":
+                    params = self._update_repos()
+                elif action == 'set_notifications':
+                    params = self._setNotifications()
+            except ValueError as e:
+                params['error'] = unicode(e)
+            except Exception as e:
+                logger.exception("unknown error processing action")
+                params['error'] = unicode(e)
 
-        if not self.getUserDB().areUserCredentialsValid(self.getUsername(),
-                                                        currentPassword):
-            return self._writePrefsPage(error="""The 'Current Password' is
-                                              invalid.""")
+        # Get page params
+        try:
+            params.update(self._get_parms_for_page())
+        except Exception as e:
+            params['error'] = unicode(e)
 
-        if newPassword != confirmPassword:
-            return self._writePrefsPage(error="The passwords do not match.")
+        return self._writePage("prefs.html", **params)
 
-        self.getUserDB().setUserPassword(self.getUsername(), newPassword)
-        return self._writePrefsPage(success="Password updated successfully.")
+    def _set_password(self, old_password, new_password, confirm_password):
+        # Check if current database support it.
+        if not self.getUserDB().is_modifiable():
+            return {'error': """Password changing is not
+                              supported with the active user
+                              database."""}
 
-    def _updateRepos(self):
+        # Check if confirmation is valid.
+        if new_password != confirm_password:
+            return {'error': "The passwords do not match."}
+
+        self.getUserDB().set_password(self.getUsername(),
+                                      old_password,
+                                      new_password)
+        return {'success': "Password updated successfully."}
+
+    def _update_repos(self):
         rdw_spider_repos.findReposForUser(self.getUsername(), self.getUserDB())
-        return self._writePrefsPage(success="""Successfully updated backup
-                                            locations.""")
+        return {'success': """Successfully updated backup locations."""}
 
     def _setNotifications(self, parms):
-        if not self.getUserDB().modificationsSupported():
+        if not self.getUserDB().is_modifiable():
             return self._writePrefsPage(error="""Email notification is not
                                               supported with the active user
                                               database.""")
 
-        repos = self.getUserDB().getUserRepoPaths(self.getUsername())
+        repos = self.getUserDB().get_repos(self.getUsername())
 
         for parmName in parms.keys():
             if parmName == "userEmail":
                 if parms[parmName] == self.sampleEmail:
                     parms[parmName] = ''
-                self.getUserDB().setUserEmail(
+                self.getUserDB().set_email(
                     self.getUsername(), parms[parmName])
             if parmName.endswith("numDays"):
                 backupName = parmName[:-7]
@@ -86,14 +101,14 @@ class rdiffPreferencesPage(page_main.rdiffPage):
                         maxDays = 0
                     else:
                         maxDays = int(parms[parmName][0])
-                    self.getUserDB().setRepoMaxAge(
+                    self.getUserDB().set_repo_maxage(
                         self.getUsername(), backupName, maxDays)
 
         return self._writePrefsPage(success="""Successfully changed
                                             notification settings.""")
 
-    def getParmsForPage(self):
-        email = self.getUserDB().getUserEmail(self.getUsername())
+    def _get_parms_for_page(self):
+        email = self.getUserDB().get_email(self.getUsername())
         parms = {
             "title": "User Preferences",
             "userEmail": email,
@@ -102,10 +117,10 @@ class rdiffPreferencesPage(page_main.rdiffPage):
             "sampleEmail": self.sampleEmail
         }
         if email_notification.emailNotifier().notificationsEnabled():
-            repos = self.getUserDB().getUserRepoPaths(self.getUsername())
+            repos = self.getUserDB().get_repos(self.getUsername())
             backups = []
             for repo in repos:
-                maxAge = self.getUserDB().getRepoMaxAge(
+                maxAge = self.getUserDB().get_repo_maxage(
                     self.getUsername(), repo)
                 notifyOptions = []
                 for i in range(0, 8):
@@ -128,8 +143,3 @@ class rdiffPreferencesPage(page_main.rdiffPage):
             parms.update({"notificationsEnabled": True, "backups": backups})
 
         return parms
-
-    def _writePrefsPage(self, **kwargs):
-        parms = self.getParmsForPage()
-        parms.update(kwargs)
-        return self._writePage("prefs.html", **parms)

@@ -70,6 +70,28 @@ def get_config(settingName, settingsFile=None, default=""):
 
     return default
 
+
+def get_config_int(settingName, settingsFile=None, default=0):
+
+    """A convenience method which coerces the settingName to an integer."""
+
+    try:
+        return int(get_config(settingName, settingsFile))
+    except:
+        return default
+
+
+def get_config_boolean(settingName, settingsFile=None, default=False):
+
+    """A convenience method which coerces the settingName to a boolean."""
+
+    try:
+        value = get_config(settingName, settingsFile)
+        return (value == "1" or value == "yes" or value == "true"
+                or value == "on")
+    except:
+        return default
+
 # Unit Tests #
 
 import unittest

@@ -54,7 +54,7 @@ class rdiffPage:
                      decode_s(path_b, 'replace'))
 
         # Get reference to user repos
-        user_repos = self.getUserDB().getUserRepoPaths(self.getUsername())
+        user_repos = self.getUserDB().get_repos(self.getUsername())
 
         # Check if any of the repos matches the given path.
         user_repos_matches = filter(
@@ -68,7 +68,7 @@ class rdiffPage:
         repo_b = encode_s(user_repos_matches[0]).strip(b"/")
 
         # Get reference to user_root
-        user_root = self.getUserDB().getUserRoot(self.getUsername())
+        user_root = self.getUserDB().get_root_dir(self.getUsername())
         user_root_b = encode_s(user_root)
 
         # Check path vs real path value
@@ -118,7 +118,7 @@ class rdiffPage:
     # SESSION INFORMATION #
     def checkAuthentication(self, username, password):
         # Check credential using local database.
-        if self.getUserDB().areUserCredentialsValid(username, password):
+        if self.getUserDB().are_valid_credentials(username, password):
             cherrypy.session['username'] = username
             return None
         return "Invalid username or password."
@@ -132,5 +132,5 @@ class rdiffPage:
     def _user_is_admin(self):
         """Check if current user is administrator. Return True or False."""
         if self.getUsername():
-            return self.getUserDB().userIsAdmin(self.getUsername())
+            return self.getUserDB().is_admin(self.getUsername())
         return False

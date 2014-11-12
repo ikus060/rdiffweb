@@ -121,7 +121,7 @@ class rdiffStatusPage(page_main.rdiffPage):
         return url
 
     def _get_user_messages_for_day(self, date):
-        userRepos = self.getUserDB().getUserRepoPaths(self.getUsername())
+        userRepos = self.getUserDB().get_repos(self.getUsername())
 
         # Set the start and end time to be the start and end of the day,
         # respectively, to get all entries for that day
@@ -139,7 +139,7 @@ class rdiffStatusPage(page_main.rdiffPage):
                                      startTime, endTime)
 
     def _get_recent_user_messages(self, failuresOnly):
-        user_repos = self.getUserDB().getUserRepoPaths(self.getUsername())
+        user_repos = self.getUserDB().get_repos(self.getUsername())
         asOfDate = rdw_helpers.rdwTime()
         asOfDate.initFromMidnightUTC(-5)
 
@@ -153,7 +153,7 @@ class rdiffStatusPage(page_main.rdiffPage):
                          earliest_date,
                          latest_date):
 
-        user_root = self.getUserDB().getUserRoot(self.getUsername())
+        user_root = self.getUserDB().get_root_dir(self.getUsername())
         user_root_b = encode_s(user_root)
 
         repoErrors = []

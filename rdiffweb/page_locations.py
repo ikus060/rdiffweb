@@ -38,9 +38,9 @@ class rdiffLocationsPage(page_main.rdiffPage):
         return self._writePage("locations.html", **self.get_parms_for_page())
 
     def get_parms_for_page(self):
-        user_root = self.getUserDB().getUserRoot(self.getUsername())
+        user_root = self.getUserDB().get_root_dir(self.getUsername())
         user_root_b = encode_s(user_root)
-        user_repos = self.getUserDB().getUserRepoPaths(self.getUsername())
+        user_repos = self.getUserDB().get_repos(self.getUsername())
         repoList = []
         for user_repo in user_repos:
             try:

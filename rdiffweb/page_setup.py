@@ -43,7 +43,7 @@ class rdiffSetupPage(page_main.rdiffPage):
 
         # Check if users already exists
         try:
-            if len(self.getUserDB().getUserList()) > 0:
+            if len(self.getUserDB().list()) > 0:
                 setup_enabled = False
                 message = "rdiffweb is already configured !"
         except:
@@ -146,14 +146,14 @@ class rdiffSetupPage(page_main.rdiffPage):
         # Validate parameters
         self._validateAdminUser(username, password, confirmPassword)
         # Create the user
-        self.getUserDB().addUser(username)
-        self.getUserDB().setUserPassword(username, password)
+        self.getUserDB().add_user(username)
+        self.getUserDB().set_password(username, None, password)
 
     def _setAdminRoot(self, username, userRoot):
         # Validate parameters
         self._validateAdminRoot(username, userRoot)
         # Sets admin root
-        self.getUserDB().setUserInfo(username, userRoot, True)
+        self.getUserDB().set_info(username, userRoot, True)
 
     def _rootAccountEnabled(self):
         cryptedpasswd = self._getCryptedPassword("root")
