@@ -1,8 +1,31 @@
 {% include 'page_start.html' %}
 {% include 'nav_bar.html' %}
 <div class="container">
-    <h2>{{ title }}</h2>
+    <h2>Backup history</h2>
+    
+	<ol class="breadcrumb">
+        <li>
+            <a href="/">Locations</a>
+        </li>
+        <li>
+            <a href="{{ url_for_browse(repo_path) }}">{{ repo_name }}</a>
+        </li>
+    </ol>
+
+    <ul class="nav navbar nav-pills" role="navigation">
+        <li>
+            <a href="{{ url_for_browse(repo_path) }}">Browse folder</a>
+        </li>
+        <li>
+            <a href="{{ url_for_browse(repo_path, restore=True) }}">Restore folder</a>
+        </li>
+        <li class="active">
+            <a href="{{ url_for_history(repo_path) }}">View history</a>
+        </li>
+    </ul>
+    
     {% include 'message.html' %}
+    
     <table class="table">
         <thead>
             <tr>

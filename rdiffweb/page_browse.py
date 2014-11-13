@@ -101,14 +101,12 @@ class rdiffBrowsePage(page_main.rdiffPage):
         dir_entries = []
         restore_dates = []
         if restore:
-            title = "Restore"
             restore_dates = path_obj.restore_dates
         else:
-            title = "Browse"
             # Get list of actual directory entries
             dir_entries = path_obj.dir_entries
 
-        return {"title": title,
+        return {"repo_name": repo_obj.display_name,
                 "repo_path": repo_obj.path,
                 "path": path_obj.path,
                 "dir_entries": dir_entries,

@@ -1,48 +1,40 @@
 {% include 'page_start.html' %}
 {% include 'nav_bar.html' %}
 <div class="container">
-    <h2>Backup Locations</h2>
+    <h2>Backup locations</h2>
     {% if repos|length == 0 %}
-    {% set message = "You don't have any backup locations configured." %}
-    {% include 'message.html' %}
+	    {% set message = "You don't have any backup locations configured." %}
+	    {% include 'message.html' %}
     {% else %}
-    <table id="repos" class="sortable table">
-        <thead>
-            <tr>
-                <th id="name" class="sortable">Name</th>
-                <th id="lastbackup" class="sortable">Last Backup</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for repo in repos %}
-            <tr {% if repo.failed %}
-                class="danger"
-                {% elif repo.in_progress%}
-                class="warning"
-                {% endif %}>
-                <td class="icon repo" data-value="{{ repo.name }}">
-                    {% if repo.failed %}
-                    <i class="icon-box"></i>{{ repo.name }}
-                    {% else %}
-                    <a href="{{ url_for_browse(repo.path,'') }}">
-                        <i class="icon-box"></i>
-                        {{ repo.name }}
-                    </a>
-                    {% endif %}
-                </td>
-                <td class="nowrap" data-value="{{ repo.last_backup_date }}">
-                    {% if repo.failed %} Error
-                    {% elif repo.in_progress %} In progress
-                    {% else %}{{ repo.last_backup_date | datetime }}
-                    {% endif %}</td>
-                <td class="navitem">
-                    <a href="{{ url_for_history(repo.path) }}">History</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+	<ul class="list-group">
+		{% for repo in repos %}
+		<li {% if repo.failed %}
+	            class="list-group-item list-group-item-danger"
+	            {% elif repo.in_progress%}
+	            class="list-group-item list-group-item-warning"
+	            {% else %}
+	            class="list-group-item"
+	            {% endif %}>
+			<h4>
+				{% if repo.failed %}
+	            <i class="icon-box"></i>{{ repo.name }}
+	            {% else %}
+	            <a href="{{ url_for_browse(repo.path) }}">
+	                <i class="icon-box"></i>
+	                {{ repo.name }}
+	            </a>
+	            {% endif %}
+            </a>
+            </h4>
+			<span class="light">
+				{% if repo.failed %} Error
+	            {% elif repo.in_progress %} In progress
+	            {% else %}Last backup: {{ repo.last_backup_date | datetime }}
+	            {% endif %}
+			</span>
+		</li>
+		{% endfor %}
+	</ul>
     {% endif %}
 </div>
 {% include 'page_end.html' %}

@@ -20,17 +20,16 @@ from __future__ import unicode_literals
 
 import cherrypy
 import logging
-import os
-import urllib
 
 import librdiff
 import page_main
 import rdw_helpers
 
-from rdw_helpers import encode_s, decode_s, unquote_url
+from rdw_helpers import decode_s, unquote_url
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
 
 class rdiffHistoryPage(page_main.rdiffPage):
 
@@ -56,7 +55,7 @@ class rdiffHistoryPage(page_main.rdiffPage):
 
         try:
             (repo_obj, path_obj) = self.validate_user_path(path_b)
-        except rdw_helpers.accessDeniedError:
+        except page_main.AccessDeniedError:
             logger.exception("access is denied")
             return self._writeErrorPage("Access is denied.")
         except librdiff.FileError:
@@ -77,7 +76,6 @@ class rdiffHistoryPage(page_main.rdiffPage):
         # Get history for the repo.
         history_entries = repo_obj.get_history_entries()
 
-        return {"title": "Backup history",
-                "repo_name": repo_obj.display_name,
+        return {"repo_name": repo_obj.display_name,
                 "repo_path": repo_obj.path,
                 "history_entries": history_entries}
