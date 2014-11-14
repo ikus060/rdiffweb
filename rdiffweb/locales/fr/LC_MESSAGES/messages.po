@@ -1,0 +1,441 @@
+# French translations for rdiffweb.
+# Copyright (C) 2014 ORGANIZATION
+# This file is distributed under the same license as the rdiffweb project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: rdiffweb 0.6.5\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2015-01-14 09:24-0500\n"
+"PO-Revision-Date: 2014-11-14 10:00-0500\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+
+#: rdiffweb/librdiff.py:54 rdiffweb/librdiff.py:73
+msgid "An unknown error occurred."
+msgstr "Une erreur inconnue s'est produite."
+
+#: rdiffweb/librdiff.py:60 rdiffweb/page_admin.py:54 rdiffweb/page_admin.py:80
+msgid "Access denied."
+msgstr "Accès refusé."
+
+#: rdiffweb/librdiff.py:66
+msgid "The repository does not exist."
+msgstr "Le dépôt n'existe pas."
+
+#: rdiffweb/page_admin.py:68
+msgid "Can't get admin information."
+msgstr "Impossible d'obtenir les informations administrateur."
+
+#: rdiffweb/page_admin.py:102
+msgid "Can't get user list."
+msgstr "Impossible d'obtenir la liste des utilisateurs."
+
+#: rdiffweb/page_browse.py:96
+msgid ""
+"A backup is currently in progress to this repository. The displayed data "
+"may be inconsistent."
+msgstr ""
+"Une sauvegarde est en cours dans ce dépôt. Les données affichées peuvent "
+"être incohérentes."
+
+#: rdiffweb/page_restore.py:103 rdiffweb/page_status.py:66
+msgid "Invalid date."
+msgstr "Date non valide."
+
+#: rdiffweb/page_restore.py:108
+msgid ""
+"A backup is currently in progress to this repository. Restores are "
+"disabled until this backup is complete."
+msgstr ""
+"Une sauvegarde est en cours dans ce dépôt. La restauration sera "
+"désactivée jusqu'à ce que cette sauvegarde soit terminée."
+
+#: rdiffweb/page_restore.py:118
+msgid "Fail to restore."
+msgstr "Impossible de restaurer les données."
+
+#: rdiffweb/templates/admin.html:1 rdiffweb/templates/nav_bar.html:21
+msgid "Admin area"
+msgstr "Espace administrative"
+
+#: rdiffweb/templates/admin.html:19
+msgid "users"
+msgstr "utilisateurs"
+
+#: rdiffweb/templates/admin.html:25
+msgid "repositories"
+msgstr "dépôts"
+
+#: rdiffweb/templates/admin_nav_bar.html:4
+msgid "General info"
+msgstr "Informations générales"
+
+#: rdiffweb/templates/admin_nav_bar.html:7
+#: rdiffweb/templates/admin_users.html:57
+msgid "Users"
+msgstr "Utilisateurs"
+
+#: rdiffweb/templates/admin_users.html:1
+msgid "User management"
+msgstr "Gestion des utilisateurs"
+
+#: rdiffweb/templates/admin_users.html:23
+msgid "Active users"
+msgstr "Utilisateurs actifs"
+
+#: rdiffweb/templates/admin_users.html:29
+msgid "Admin users"
+msgstr "Utilisateurs administrateurs"
+
+#: rdiffweb/templates/admin_users.html:38
+msgid "Search user"
+msgstr "Rechercher un utilisateur"
+
+#: rdiffweb/templates/admin_users.html:40
+msgid "Name, email or username"
+msgstr "Nom, courriel ou nom d'utilisateur"
+
+#: rdiffweb/templates/admin_users.html:46
+msgid "Search"
+msgstr "Rechercher"
+
+#: rdiffweb/templates/admin_users.html:62
+#: rdiffweb/templates/admin_users.html:110
+msgid "Add user"
+msgstr "Ajouter un utilisateur"
+
+#: rdiffweb/templates/admin_users.html:76
+msgid "Admin"
+msgstr "Administrateur"
+
+#: rdiffweb/templates/admin_users.html:79
+msgid "It's you"
+msgstr "C'est vous"
+
+#: rdiffweb/templates/admin_users.html:89
+msgid "Edit"
+msgstr "Modifier"
+
+#: rdiffweb/templates/admin_users.html:95
+#: rdiffweb/templates/admin_users.html:231
+msgid "Delete"
+msgstr "Supprimer"
+
+#: rdiffweb/templates/admin_users.html:114
+msgid "LDAP enabled!"
+msgstr "LDAP activé!"
+
+#: rdiffweb/templates/admin_users.html:115
+msgid ""
+"To create an LDAP user, use the same username and don't enter an email "
+"and password."
+msgstr ""
+"Pour créer un utilisateur LDAP, utilisez le même nom d'utilisateur et "
+"n'entrez pas de courriel ou de mot de passe."
+
+#: rdiffweb/templates/admin_users.html:120 rdiffweb/templates/login.html:27
+msgid "Username"
+msgstr "Nom d'utilisateur"
+
+#: rdiffweb/templates/admin_users.html:128
+#: rdiffweb/templates/admin_users.html:176
+msgid "Email"
+msgstr "Courriel"
+
+#: rdiffweb/templates/admin_users.html:137
+#: rdiffweb/templates/admin_users.html:185 rdiffweb/templates/login.html:30
+msgid "Password"
+msgstr "Mot de passe"
+
+#: rdiffweb/templates/admin_users.html:146
+#: rdiffweb/templates/admin_users.html:194
+msgid "Root directory"
+msgstr "Répertoire racine"
+
+#: rdiffweb/templates/admin_users.html:157
+#: rdiffweb/templates/admin_users.html:212
+msgid "Is administrator"
+msgstr "Est un administrateur"
+
+#: rdiffweb/templates/admin_users.html:170
+#, python-format
+msgid "Edit user %(name)s"
+msgstr "Modifier l'utilisateur %(name)s"
+
+#: rdiffweb/templates/admin_users.html:171
+msgid "Save changes"
+msgstr "Enregistrer modifications"
+
+#: rdiffweb/templates/admin_users.html:216
+msgid "You cannot remove your own admin rights."
+msgstr "Vous ne pouvez pas supprimer vos propres droits d'administrateur."
+
+#: rdiffweb/templates/admin_users.html:231
+#, python-format
+msgid "Delete user %(name)s"
+msgstr "Supprimer l'utilisateur %(name)s"
+
+#: rdiffweb/templates/admin_users.html:234
+#, python-format
+msgid "Are you sure that you wish to delete user `%(username)s`?"
+msgstr "Êtes-vous sûr que vous voulez supprimer l'utilisateur `%(username)s`?"
+
+#: rdiffweb/templates/browse.html:6 rdiffweb/templates/browse.html:30
+#: rdiffweb/templates/history.html:20
+msgid "Restore folder"
+msgstr "Restaurer répertoire"
+
+#: rdiffweb/templates/browse.html:8 rdiffweb/templates/browse.html:27
+#: rdiffweb/templates/history.html:17
+msgid "Browse folder"
+msgstr "Parcourir répertoire"
+
+#: rdiffweb/templates/browse.html:14 rdiffweb/templates/history.html:8
+#: rdiffweb/templates/locations.html:1 rdiffweb/templates/nav_bar.html:16
+msgid "Repositories"
+msgstr "Dépôts"
+
+#: rdiffweb/templates/browse.html:33 rdiffweb/templates/history.html:23
+msgid "View history"
+msgstr "Voir historique"
+
+#: rdiffweb/templates/browse.html:43
+msgid "Name"
+msgstr "Nom"
+
+#: rdiffweb/templates/browse.html:44 rdiffweb/templates/history.html:33
+msgid "Size"
+msgstr "Taille"
+
+#: rdiffweb/templates/browse.html:45
+msgid "Rev."
+msgstr "Rév."
+
+#: rdiffweb/templates/browse.html:111
+#, python-format
+msgid "Revisions (%(count)s)"
+msgstr "Révisions (%(count)s)"
+
+#: rdiffweb/templates/browse.html:121 rdiffweb/templates/browse.html:125
+msgid "Download"
+msgstr "Télécharger"
+
+#: rdiffweb/templates/history.html:4
+msgid "Backup history"
+msgstr "Historique des sauvegardes"
+
+#: rdiffweb/templates/history.html:32
+msgid "Date"
+msgstr "Date"
+
+#: rdiffweb/templates/history.html:34
+msgid "Result"
+msgstr "Résultat"
+
+#: rdiffweb/templates/history.html:53 rdiffweb/templates/locations.html:32
+msgid "In progress"
+msgstr "Sauvegarde en cours"
+
+#: rdiffweb/templates/history.html:55
+msgid "Success"
+msgstr "Succès"
+
+#: rdiffweb/templates/history.html:58 rdiffweb/templates/locations.html:31
+msgid "Error"
+msgstr "Erreur"
+
+#: rdiffweb/templates/locations.html:7
+msgid "You don't have any repositories configured."
+msgstr "Vous n'avez pas de dépôts configurés."
+
+#: rdiffweb/templates/locations.html:33
+msgid "Last backup: "
+msgstr "Dernière sauvegarde : "
+
+#: rdiffweb/templates/login.html:1 rdiffweb/templates/login.html:24
+#: rdiffweb/templates/login.html:32
+msgid "Sign in"
+msgstr "Se connecter"
+
+#: rdiffweb/templates/login.html:7 rdiffweb/templates/nav_bar.html:10
+#: rdiffweb/templates/page_start.html:4
+msgid "rdiffweb"
+msgstr "rdiffweb"
+
+#: rdiffweb/templates/login.html:9
+msgid ""
+"Originally developed by Josh Nisly, rdiffweb is a web interface for "
+"browsing and restoring from rdiff-backup repositories."
+msgstr ""
+"Initialement développé par Josh Nisly, rdiffweb est une interface web "
+"pour la naviguer et la restaurer à partir des dépôts de rdiff-backup."
+
+#: rdiffweb/templates/login.html:13
+#, python-format
+msgid "version %(version)s"
+msgstr "version %(version)s"
+
+#: rdiffweb/templates/login.html:26
+msgid "Enter your username and password to log in."
+msgstr "Entrez votre nom d'utilisateur et mot de passe pour vous connecter."
+
+#: rdiffweb/templates/macros.html:8 rdiffweb/templates/macros.html:15
+msgid "Close"
+msgstr "Fermer"
+
+#: rdiffweb/templates/message.html:3 rdiffweb/templates/status.html:35
+msgid "Well done!"
+msgstr "Bravo!"
+
+#: rdiffweb/templates/message.html:10
+msgid "Warning!"
+msgstr "Avertissement!"
+
+#: rdiffweb/templates/message.html:14
+msgid "Error!"
+msgstr "Erreur!"
+
+#: rdiffweb/templates/nav_bar.html:6
+msgid "Toggle navigation"
+msgstr "Basculer la navigation"
+
+#: rdiffweb/templates/nav_bar.html:17 rdiffweb/templates/status.html:1
+msgid "Status"
+msgstr "État"
+
+#: rdiffweb/templates/nav_bar.html:18
+msgid "Preferences"
+msgstr "Préférences"
+
+#: rdiffweb/templates/nav_bar.html:29
+msgid "Logout"
+msgstr "Déconnexion"
+
+#: rdiffweb/templates/nav_bar.html:32
+#, python-format
+msgid "Signed in as %(username)s"
+msgstr "Session ouverte sous %(username)s"
+
+#: rdiffweb/templates/prefs.html:1
+msgid "User Preferences"
+msgstr "Préférences"
+
+#: rdiffweb/templates/prefs.html:11
+msgid "Change password"
+msgstr "Modifier le mot de passe"
+
+#: rdiffweb/templates/prefs.html:15
+msgid "Current password"
+msgstr "Mot de passe actuel"
+
+#: rdiffweb/templates/prefs.html:23
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+#: rdiffweb/templates/prefs.html:30
+msgid "Confirm new password"
+msgstr "Confirmer mot de passe"
+
+#: rdiffweb/templates/prefs.html:38
+msgid "Change"
+msgstr "Modifier"
+
+#: rdiffweb/templates/prefs.html:44 rdiffweb/templates/prefs.html:51
+msgid "Refresh"
+msgstr "Actualiser"
+
+#: rdiffweb/templates/prefs.html:48
+msgid ""
+"Refresh the list of repositories associated to your account. If you "
+"recently add a new repository and it doesn't show, you may try to refresh"
+" the list."
+msgstr ""
+"Actualiser la liste des dépôts associés à votre compte. Si vous avez "
+"récemment ajoutez un nouveau référentiel et il ne apparaît pas, vous "
+"pouvez essayer d'actualiser la liste."
+
+#: rdiffweb/templates/setup.html:7
+msgid "Setup rdiffweb"
+msgstr "Configuration de rdiffweb"
+
+#: rdiffweb/templates/setup.html:12
+msgid "Congratulations, rdiffweb setup is now complete!"
+msgstr "Félicitations, la configuration de rdiffweb est maintenant terminée!"
+
+#: rdiffweb/templates/setup.html:13
+msgid "Click here"
+msgstr "Cliquez ici"
+
+#: rdiffweb/templates/setup.html:14
+msgid "to log into rdiffweb using default administrator account:"
+msgstr ""
+"pour vous connecter à rdiffweb enutilisant le compte d'administrateur par"
+" défaut:"
+
+#: rdiffweb/templates/setup.html:16
+msgid "username: "
+msgstr "nom d'utilisateur : "
+
+#: rdiffweb/templates/setup.html:17
+msgid "password: "
+msgstr "mot de passe : "
+
+#: rdiffweb/templates/setup.html:28
+msgid ""
+"rdiffweb has not been configured, so we need to do that before logging "
+"in. Configuration will only take a few minutes."
+msgstr ""
+"rdiffweb n'a pas été configuré. Nous avons besoin de le faire avant de "
+"vous connecter. La configuration ne vous prendra que quelques minutes."
+
+#: rdiffweb/templates/setup.html:32
+msgid "Continue..."
+msgstr "Continuer ..."
+
+#: rdiffweb/templates/status.html:15
+msgid "Subscribe"
+msgstr "Souscrire"
+
+#: rdiffweb/templates/status.html:25
+msgid "Show all"
+msgstr "Afficher tout"
+
+#: rdiffweb/templates/status.html:28
+msgid "Show errors only"
+msgstr "Afficher erreurs seulement"
+
+#: rdiffweb/templates/status.html:37
+msgid "There are no recent backups with errors."
+msgstr "Il n'y a pas de sauvegardes récentes avec des erreurs."
+
+#: rdiffweb/templates/status.html:39
+msgid "There are no recent backups to display."
+msgstr "Il n'y a pas de sauvegardes récentes à afficher."
+
+#: rdiffweb/templates/status.html:51
+msgid "Successful backups for "
+msgstr "Sauvegardes réussies pour "
+
+#: rdiffweb/templates/status.html:55
+msgid "The following backups have completed successfully: "
+msgstr "Les sauvegardes suivantes se sont terminés avec succès: "
+
+#: rdiffweb/templates/status.html:73
+msgid "Backup completed with errors:"
+msgstr "Sauvegarde terminée avec des erreurs: "
+
+#: rdiffweb/templates/status.html:82
+msgid "Backup size: "
+msgstr "Taille de la sauvegarde: "
+
+#: rdiffweb/templates/status.html:89
+msgid "There following repositories contain errors: "
+msgstr "Les dépôts suivants contiennent des erreurs: "
+

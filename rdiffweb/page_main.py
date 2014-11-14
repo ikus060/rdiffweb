@@ -31,12 +31,6 @@ from rdw_helpers import encode_s, decode_s
 logger = logging.getLogger(__name__)
 
 
-class AccessDeniedError:
-
-    def __str__(self):
-        return "Access is denied."
-
-
 class rdiffPage:
 
     # HELPER FUNCTIONS #
@@ -64,7 +58,7 @@ class rdiffPage:
             # No repo matches
             logger.error("user doesn't have access to [%s]" %
                          decode_s(path_b, 'replace'))
-            raise AccessDeniedError
+            raise librdiff.AccessDeniedError
         repo_b = encode_s(user_repos_matches[0]).strip(b"/")
 
         # Get reference to user_root
@@ -84,7 +78,7 @@ class rdiffPage:
                 logger.warn("access is denied [%s] vs [%s]" % (
                     decode_s(full_path_b, 'replace'),
                     decode_s(real_path_b, 'replace')))
-                raise AccessDeniedError
+                raise librdiff.AccessDeniedError
 
         # Get reference to the repository (this ensure the repository does
         # exists and is valid.)

@@ -1,4 +1,4 @@
-{% set title="Admin area"%}
+{% set title = _("Admin area")%}
 {% include 'page_start.html' %}
 <!-- nav_bar -->
 {% include 'nav_bar.html' %}
@@ -8,7 +8,7 @@
     
 	{% include 'admin_nav_bar.html'%}    
     
-    <h3>Admin area</h3>
+    <h3>{{ title }}</h3>
 
     {% include 'message.html' %}
     
@@ -16,13 +16,13 @@
 		<div class="col-md-6">
 			<div class="well clearfix">
 			<h1 class="text-center">{{ user_count }} 
-				<small>users</small></h1>
+				<small>{% trans %}users{% endtrans %}</small></h1>
 			</div>	
 		</div>
 		<div class="col-md-6">
 			<div class="well">
 			<h1 class="text-center">{{ repo_count }}
-				<small>respositories</small></h1>
+				<small>{% trans %}repositories{% endtrans %}</small></h1>
 			</div>
 		</div>
 	</div>

@@ -3,22 +3,22 @@
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed"
                 data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span> <span
+                <span class="sr-only">{% trans %}Toggle navigation{% endtrans %}</span> <span
                     class="icon-bar"></span> <span class="icon-bar"></span> <span
                     class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/"><i class="icon-rdiffweb"></i> rdiffweb</a>
+            <a class="navbar-brand" href="/"><i class="icon-rdiffweb"></i> {% trans %}rdiffweb{% endtrans %}</a>
         </div>
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
                 <!-- authenticated -->
                 {% if username %}
-                <li><a href="/" id="home">Locations</a></li>
-                <li><a href="/status/">Status</a></li>
-                <li><a href="/prefs/">Preferences</a></li>
+                <li><a href="/" id="home">{% trans %}Repositories{% endtrans %}</a></li>
+                <li><a href="/status/">{% trans %}Status{% endtrans %}</a></li>
+                <li><a href="/prefs/">{% trans %}Preferences{% endtrans %}</a></li>
                 <!-- is_admin -->
                 {% if is_admin %}
-                <li><a href="/admin/">Admin</a></li> {% endif %}
+                <li><a href="/admin/">{% trans %}Admin area{% endtrans %}</a></li> {% endif %}
                 <!-- /is_admin -->
                 {% endif %}
                 <!-- /authenticated -->
@@ -26,10 +26,10 @@
             <!-- authenticated -->
             {% if username %}
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="/logout/">Logout</a></li>
+                <li><a href="/logout/">{% trans %}Logout{% endtrans %}</a></li>
             </ul>
             <p class="navbar-text navbar-right">
-                Signed in as {{ username }}
+                {% trans %}Signed in as {{ username }}{% endtrans %}
             </p>
             {% endif %}
             <!-- /authenticated -->

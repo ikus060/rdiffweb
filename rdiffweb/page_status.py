@@ -62,8 +62,8 @@ class rdiffStatusPage(page_main.rdiffPage):
             entry_time = rdw_helpers.rdwTime()
             entry_time.initFromInt(int(date))
         except ValueError:
-            logger.exception("invalid date parameter")
-            return self._writeErrorPage("Invalid date parameter.")
+            logger.exception("invalid date")
+            return self._writeErrorPage(_("Invalid date."))
 
         if not path_b:
             userMessages = self._get_user_messages_for_day(entry_time)
@@ -71,9 +71,9 @@ class rdiffStatusPage(page_main.rdiffPage):
             # Validate repo parameter
             try:
                 (repo_obj, path_obj) = self.validate_user_path(path_b)
-            except page_main.AccessDeniedError:
-                logger.exception("access is denied")
-                return self._writeErrorPage("Access is denied.")
+            except librdiff.FileError as e:
+                logger.exception("invalid user path")
+                return self._writeErrorPage(unicode(e))
 
             userMessages = self._getUserMessages(
                 [repo_obj.path], False, True, entry_time, entry_time)
@@ -168,11 +168,11 @@ class rdiffStatusPage(page_main.rdiffPage):
                                 "date": backup.date,
                                 "size": backup.size,
                                 "errors": backup.errors} for backup in backups]
-            except librdiff.FileError as error:
+            except librdiff.FileError as e:
                 repoErrors.append(
                     {"repo_path": repo_b,
                      "repo_name": decode_s(repo_b, 'replace'),
-                     "error": error.getErrorString()})
+                     "error": unicode(e)})
 
         allBackups.sort(lambda x, y: cmp(y["date"], x["date"]))
         failedBackups = filter(lambda x: x["errors"], allBackups)

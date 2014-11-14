@@ -22,7 +22,9 @@ import os
 import sys
 import threading
 import logging
+import inspect
 
+import i18n
 import rdw_helpers
 import rdw_config
 import rdw_spider_repos
@@ -108,6 +110,11 @@ def start():
     sslCertificate = rdw_config.get_config("SslCertificate")
     sslPrivateKey = rdw_config.get_config("SslPrivateKey")
 
+    # Define the locales directory
+    localesdir = os.path.split(inspect.getfile(inspect.currentframe()))[0]
+    localesdir = os.path.realpath(os.path.abspath(localesdir))
+    localesdir = os.path.join(localesdir, 'locales/')
+
     environment = "development"
     if not debug:
         environment = "production"
@@ -132,6 +139,10 @@ def start():
         '/': {
             'tools.authform.on': True,
             'tools.setup.on': True,
+            'tools.i18n.on': True,
+            'tools.i18n.default': 'en_US',
+            'tools.i18n.mo_dir': localesdir,
+            'tools.i18n.domain': 'messages'
         },
         '/login': {
             'tools.authform.on': False,

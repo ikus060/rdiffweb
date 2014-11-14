@@ -52,9 +52,7 @@ class rdiffLocationsPage(page_main.rdiffPage):
                 last_backup_date = repo_obj.last_backup_date
                 failed = False
             except librdiff.FileError:
-                logging.exception(
-                    "Can't get reference on the last backup history for %s" %
-                    user_repo)
+                logging.exception("invalid user path %s" % user_repo)
                 path = encode_s(user_repo)
                 name = user_repo
                 in_progress = False

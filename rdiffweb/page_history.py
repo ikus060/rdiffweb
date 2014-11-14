@@ -55,18 +55,15 @@ class rdiffHistoryPage(page_main.rdiffPage):
 
         try:
             (repo_obj, path_obj) = self.validate_user_path(path_b)
-        except page_main.AccessDeniedError:
-            logger.exception("access is denied")
-            return self._writeErrorPage("Access is denied.")
-        except librdiff.FileError:
-            logger.exception("invalid backup location")
-            return self._writeErrorPage("The backup location does not exist.")
+        except librdiff.FileError as e:
+            logger.exception("invalid user path")
+            return self._writeErrorPage(unicode(e))
 
         try:
             parms = self.get_parms_for_page(repo_obj)
         except librdiff.FileError:
-            logger.exception("invalid backup location")
-            return self._writeErrorPage("The backup location does not exist.")
+            logger.exception("can't create page params")
+            return self._writeErrorPage(unicode(e))
 
         return self._writePage("history.html", **parms)
 

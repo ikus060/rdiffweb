@@ -33,3 +33,16 @@ By default, the web server is listening on port 8080 and is accessible via the f
 
     http://server_name:8080
     
+Translation
+===========
+Reference http://babel.edgewall.org/wiki/Documentation/setup.html
+
+rdiffweb may be translated. This section describe briefly how to translate
+rdiffweb. It's not a complete instruction set, it's merely a reminder.
+
+Extract the strings to be translated.
+
+	./setup.py extract_messages --output-file rdiffweb/locales/messages.pot
+
+	./setup.py compile_catalog --directory rdiffweb/locales --locale fr
+

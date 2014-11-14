@@ -29,6 +29,8 @@ import tempfile
 import rdw_helpers
 import rdw_config
 
+from i18n import ugettext as _
+
 # Define the logger
 logger = logging.getLogger(__name__)
 
@@ -47,31 +49,35 @@ TARGZ_SUFFIX = b".tar.gz"
 
 class FileError:
 
-    def getErrorString(self):
-        return self.error
-
     def __str__(self):
-        return self.getErrorString()
+        return rdw_helpers.encode_s(unicode(self))
+
+    def __unicode__(self):
+        return _("An unknown error occurred.")
 
 
 class AccessDeniedError(FileError):
 
-    def __init__(self):
-        self.error = "Access is denied."
+    def __unicode__(self):
+        return _("Access denied.")
 
 
 class DoesNotExistError(FileError):
 
-    def __init__(self):
-        self.error = "The backup location does not exist."
+    def __unicode__(self):
+        return _("The repository does not exist.")
 
 
 class UnknownError(FileError):
 
     def __init__(self, error=None):
+        if not error:
+            error = _("An unknown error occurred.")
+        assert isinstance(error, unicode)
         self.error = error
-        if not self.error:
-            self.error = "An unknown error occurred."
+
+    def __unicode__(self):
+        return self.error
 
 
 # Interfaced objects #

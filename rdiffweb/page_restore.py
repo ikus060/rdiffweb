@@ -22,6 +22,7 @@ import cherrypy
 import logging
 import os
 
+from i18n import ugettext as _
 from cherrypy.lib.static import serve_file
 
 import librdiff
@@ -89,38 +90,32 @@ class rdiffRestorePage(page_main.rdiffPage):
         # Check user access to repo / path.
         try:
             (repo_obj, path_obj) = self.validate_user_path(path_b)
-        except page_main.AccessDeniedError:
-            logger.exception("access is denied")
-            return self._writeErrorPage("Access is denied.")
-        except librdiff.FileError:
-            logger.exception("invalid backup location")
-            return self._writeErrorPage("The backup location does not exist.")
+        except librdiff.FileError as e:
+            logger.exception("invalid user path")
+            return self._writeErrorPage(unicode(e))
 
         # Get the restore date
         try:
             restore_date = rdw_helpers.rdwTime()
             restore_date.initFromInt(int(date))
         except:
-            logger.warn("invalid date [%s]" % date)
-            return self._writeErrorPage("Invalid date [%s]" % date)
+            logger.warn("invalid date %s" % date)
+            return self._writeErrorPage(_("Invalid date."))
 
         try:
             # Get if backup in progress
             if repo_obj.in_progress:
-                return self._writeErrorPage("""A backup is currently in
-                    progress to this location. Restores are disabled until
-                    this backup is complete.""")
+                return self._writeErrorPage(_("""A backup is currently in progress to this repository. Restores are disabled until this backup is complete."""))
 
             # Restore the file
             file_path_b = path_obj.restore(file_b, restore_date, usetar != "T")
 
-        except librdiff.FileError:
+        except librdiff.FileError as e:
             logger.exception("fail to restore")
-            return self._writeErrorPage("Fail to restore.")
-
+            return self._writeErrorPage(unicode(e))
         except ValueError:
             logger.exception("fail to restore")
-            return self._writeErrorPage("Fail to restore.")
+            return self._writeErrorPage(_("Fail to restore."))
 
         # The restored file path need to be deleted when the user is finish
         # downloading. The auto-delete tool, will do it if we give him a file

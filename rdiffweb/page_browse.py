@@ -24,6 +24,7 @@ import os
 import page_main
 import librdiff
 
+from i18n import ugettext as _
 from rdw_helpers import decode_s, unquote_url
 
 # Define the logger
@@ -59,21 +60,18 @@ class rdiffBrowsePage(page_main.rdiffPage):
         # Check user access to the given repo & path
         try:
             (repo_obj, path_obj) = self.validate_user_path(path_b)
-        except page_main.AccessDeniedError:
-            logger.exception("access is denied")
-            return self._writeErrorPage("Access is denied.")
-        except librdiff.FileError:
-            logger.exception("invalid backup location")
-            return self._writeErrorPage("The backup location does not exist.")
+        except librdiff.FileError as e:
+            logger.exception("invalid user path")
+            return self._writeErrorPage(unicode(e))
 
         # Build the parameters
         try:
             parms = self.get_parms_for_page(repo_obj,
                                             path_obj,
                                             restore == b"T")
-        except librdiff.FileError:
-            logger.exception("invalid backup location")
-            return self._writeErrorPage("The backup location does not exist.")
+        except librdiff.FileError as e:
+            logger.exception("can't create pare params")
+            return self._writeErrorPage(unicode(e))
 
         return self._writePage("browse.html", **parms)
 
@@ -95,8 +93,7 @@ class rdiffBrowsePage(page_main.rdiffPage):
         # Set up warning about in-progress backups, if necessary
         warning = ""
         if repo_obj.in_progress:
-            warning = """Warning: a backup is currently in progress to this
-                      location. The displayed data may be inconsistent."""
+            warning = _("""A backup is currently in progress to this repository. The displayed data may be inconsistent.""")
 
         dir_entries = []
         restore_dates = []

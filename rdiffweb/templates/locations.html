@@ -1,10 +1,10 @@
-{% set title = "Locations"%}
+{% set title = _("Repositories") %}
 {% include 'page_start.html' %}
 {% include 'nav_bar.html' %}
 <div class="container">
-    <h2>Backup locations</h2>
+    <h2>{{ title }}</h2>
     {% if repos|length == 0 %}
-	    {% set message = "You don't have any backup locations configured." %}
+	    {% set message = _("You don't have any repositories configured.") %}
 	    {% include 'message.html' %}
     {% else %}
 	<ul class="list-group">
@@ -28,9 +28,9 @@
             </a>
             </h4>
 			<span class="light">
-				{% if repo.failed %} Error
-	            {% elif repo.in_progress %} In progress
-	            {% else %}Last backup: {{ repo.last_backup_date | datetime }}
+				{% if repo.failed %}{% trans %}Error{% endtrans %}
+	            {% elif repo.in_progress %}{% trans %}In progress{% endtrans %}
+	            {% else %}{% trans %}Last backup: {% endtrans %}{{ repo.last_backup_date | datetime }}
 	            {% endif %}
 			</span>
 		</li>

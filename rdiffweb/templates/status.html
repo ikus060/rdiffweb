@@ -1,4 +1,4 @@
-{% set title = "Status" %}
+{% set title = _("Status") %}
 {% include 'page_start.html' %}
 <!-- nav_bar -->
 {% include 'nav_bar.html' %}
@@ -12,7 +12,8 @@
         <!-- feedLink -->
         <small class="pull-right">
             <a href="{{ feedLink }}">
-                Subscribe <i class="icon-rss"></i>
+                {% trans %}Subscribe{% endtrans %}
+                <i class="icon-rss"></i>
             </a>
         </small>
         <!-- /link  -->
@@ -21,18 +22,21 @@
 
     <ul class="nav nav-pills">
         <li class="{% if not failuresOnly and not isEntry %}active{% endif %}">
-            <a href="/status/?">Show all</a>
+            <a href="/status/?">{% trans %}Show all{% endtrans %}</a>
         </li>
         <li class="{% if failuresOnly %}active{% endif %}">
-            <a href="/status/?failures=T">Show errors only</a>
+            <a href="/status/?failures=T">{% trans %}Show errors only{% endtrans %}</a>
         </li>
     </ul>
 
     <!--StartDeleteIf:messages-->
     {% if not messages %}
     <div class="alert alert-success" role="alert">
-        <strong>Well done! </strong> {% if failuresOnly %} There are no recent
-        backups with errors. {% else %} There are no recent backups to display.
+        <strong>{% trans %}Well done!{% endtrans %}</strong>
+        {% if failuresOnly %}
+		{% trans %}There are no recent backups with errors.{% endtrans %}
+    	{% else %}
+    	{% trans %}There are no recent backups to display.{% endtrans %}
         {% endif %}
     </div>
     {% endif %}
@@ -44,11 +48,11 @@
     <!--StartIncludeIf:isSuccess-->
     <h3 class="backupStatus_success">
         <a href="{{ url_for_status_entry(message.date) }}">
-            Successful Backups for {{ message.date | datetime }}
+            {% trans %}Successful backups for {% endtrans %}{{ message.date | datetime }}
         </a>
     </h3>
     <div>
-        <p>The following backups have completed successfully:</p>
+        <p>{% trans %}The following backups have completed successfully: {% endtrans %}</p>
         <ul>
             {% for backup in message.backups %}
             <!--StartRepeat:backups-->
@@ -66,7 +70,7 @@
     {% else %}
     <!--StartDeleteIf:isSuccess-->
     <h3 class="backupStatus_failure">
-        <a href="{{ url_for_status_entry(message.date) }}">Backup Completed with Errors:
+        <a href="{{ url_for_status_entry(message.date) }}">{% trans %}Backup completed with errors:{% endtrans %}
             {{ message.repo_name }}</a>
     </h3>
     <div>
@@ -75,14 +79,14 @@
             {{ message.date | datetime }}</strong> failed with the following errors:
         </p>
         <pre>{{ message.errors }}</pre>
-        <p>Backup size: {{ message.size | filesize }}</p>
+        <p>{% trans %}Backup size: {% endtrans %}{{ message.size | filesize }}</p>
     </div>
     {% endif %}
     <!--/isSuccess-->
 
     <!--StartIncludeIf:repoErrors-->
     {% if message.repoErrors %}
-    <p>There following repositories contain errors:</p>
+    <p>{% trans %}There following repositories contain errors: {% endtrans %}</p>
     <ul>
         {% for repoError in repoErrors %}
         <!--StartRepeat:repoErrors-->

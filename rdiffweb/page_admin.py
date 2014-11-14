@@ -24,6 +24,8 @@ import logging
 import os
 import rdw_spider_repos
 
+from i18n import ugettext as _
+
 # Define the logger
 logger = logging.getLogger(__name__)
 
@@ -49,7 +51,7 @@ class rdiffAdminPage(page_main.rdiffPage):
 
         # Check if user is an administrator
         if not self._user_is_admin():
-            return self._writeErrorPage("Access denied.")
+            return self._writeErrorPage(_("Access denied."))
 
         params = {}
         try:
@@ -63,7 +65,7 @@ class rdiffAdminPage(page_main.rdiffPage):
                       "repo_count": len(repos)}
         except:
             logger.exception("fail to get stats", **params)
-            return self._writeErrorPage("Can't get admin information.")
+            return self._writeErrorPage(_("Can't get admin information."))
 
         return self._writePage("admin.html", **params)
 
@@ -75,7 +77,7 @@ class rdiffAdminPage(page_main.rdiffPage):
 
         # Check if user is an administrator
         if not self._user_is_admin():
-            return self._writeErrorPage("Access denied.")
+            return self._writeErrorPage(_("Access denied."))
 
         # If we're just showing the initial page, just do that
         params = {}
@@ -97,7 +99,7 @@ class rdiffAdminPage(page_main.rdiffPage):
                 self._users_get_params_for_page(userfilter, usersearch))
         except:
             logger.exception("fail to get user list")
-            return self._writeErrorPage("Can't get user list.")
+            return self._writeErrorPage(_("Can't get user list."))
 
         # Build users page
         return self._writePage("admin_users.html", **params)

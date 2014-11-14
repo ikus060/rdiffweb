@@ -1,11 +1,11 @@
 {% include 'page_start.html' %}
 {% include 'nav_bar.html' %}
 <div class="container">
-    <h2>Backup history</h2>
+    <h2>{% trans %}Backup history{% endtrans %}</h2>
     
 	<ol class="breadcrumb">
         <li>
-            <a href="/">Locations</a>
+            <a href="/">{% trans %}Repositories{% endtrans %}</a>
         </li>
         <li>
             <a href="{{ url_for_browse(repo_path) }}">{{ repo_name }}</a>
@@ -14,13 +14,13 @@
 
     <ul class="nav navbar nav-pills" role="navigation">
         <li>
-            <a href="{{ url_for_browse(repo_path) }}">Browse folder</a>
+            <a href="{{ url_for_browse(repo_path) }}">{% trans %}Browse folder{% endtrans %}</a>
         </li>
         <li>
-            <a href="{{ url_for_browse(repo_path, restore=True) }}">Restore folder</a>
+            <a href="{{ url_for_browse(repo_path, restore=True) }}">{% trans %}Restore folder{% endtrans %}</a>
         </li>
         <li class="active">
-            <a href="{{ url_for_history(repo_path) }}">View history</a>
+            <a href="{{ url_for_history(repo_path) }}">{% trans %}View history{% endtrans %}</a>
         </li>
     </ul>
     
@@ -29,9 +29,9 @@
     <table class="table">
         <thead>
             <tr>
-                <th id="date">Date</th>
-                <th id="size">Size</th>
-                <th id="result">Result</th>
+                <th id="date">{% trans %}Date{% endtrans %}</th>
+                <th id="size">{% trans %}Size{% endtrans %}</th>
+                <th id="result">{% trans %}Result{% endtrans %}</th>
             </tr>
         </thead>
         <tbody>
@@ -50,12 +50,12 @@
                 <td>
                     {% if not entry.errors %}
                     {% if entry.in_progress %}
-                    In Progress
+                    {% trans %}In progress{% endtrans %}
                     {% else %}
-                    Success
+                    {% trans %}Success{% endtrans %}
                     {% endif %}
                     {% else %}
-                    Error
+                    {% trans %}Error{% endtrans %}
                     {% endif %}
                 </td>
             </tr>

@@ -24,10 +24,13 @@ import time
 from jinja2 import Environment, PackageLoader
 
 import rdw_helpers
+from i18n import ugettext, ungettext
 
 # Load all the templates from /templates directory
-jinja_env = Environment(loader=PackageLoader(
-    'rdiffweb', 'templates'), auto_reload=True, autoescape=True)
+jinja_env = Environment(loader=PackageLoader('rdiffweb', 'templates'),
+                        auto_reload=True,
+                        autoescape=True,
+                        extensions=['jinja2.ext.i18n'])
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -41,6 +44,7 @@ def compileTemplate(templateName, **kwargs):
             The arguments to be passed to the template.
     """
     logger.debug("compiling template [%s]" % templateName)
+    jinja_env.install_gettext_callables(ugettext, ungettext, newstyle=True)
     template = jinja_env.get_template(templateName)
     data = template.render(kwargs)
     logger.debug("template [%s] compiled" % templateName)

@@ -1,16 +1,16 @@
-{% set title = "Login"%}
+{% set title = _("Sign in") %}
 {% include 'page_start.html' %}
+{% include 'nav_bar.html' %}
 <div class='container'>
     <div class='col-sm-offset-3 col-sm-6'>
         <center>
-            <h1>rdiffweb</h1>
+            <h1>{% trans %}rdiffweb{% endtrans %}</h1>
             <p class='light'>
-                Originally developped by Josh Nisly, rdiffweb is a web interface
-                for browsing and restoring from rdiff-backup
-                repositories.
+            	{% trans %}Originally developed by Josh Nisly, rdiffweb is a web interface for browsing and restoring from rdiff-backup repositories.{% endtrans %}
             </p>
             <a href="http://www.patrikdufresne.com/en/rdiffweb/">rdiffweb</a>
-            version 0.7.0
+            {% set version="0.7.0" %}
+            {% trans %}version {{ version }}{% endtrans %}
         </center>
     </div>
     <!-- /content -->
@@ -21,16 +21,15 @@
     		action="/login/" id="form-login">
         <input type="hidden" name="redirect"
             value="{{ redirect }}" />
-        <h2 class="form-signin-heading">Sign in</h2>
+        <h2 class="form-signin-heading">{{ _('Sign in') }}</h2>
         {% include 'message.html' %}
-        <p>Enter your username and password to log in.</p>
-        <input type="text" class="form-control" placeholder="Username"
+        <p>{% trans %}Enter your username and password to log in.{% endtrans %}</p>
+        <input type="text" class="form-control" placeholder="{{ _('Username') }}"
             name="login" value="{{ login }}" id="username"
             required autofocus>
-        <input type="password" class="form-control" placeholder="Password"
+        <input type="password" class="form-control" placeholder="{{ _('Password') }}"
             name="password" id="password" required>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign
-            in</button>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">{{ _('Sign in') }}</button>
     </form>
 </div>
 <!-- /login-page -->

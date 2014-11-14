@@ -4,17 +4,17 @@
 {% include 'nav_bar.html' %}
 <!-- /nav_bar -->
 <div class="container">
-    <h1>Setup rdiffweb</h1>
+    <h1>{% trans %}Setup rdiffweb{% endtrans %}</h1>
     {% if not setup_enabled %}
     {% include 'message.html'%}
     {% elif completed %}
     <div class="alert alert-success" role="alert">
-        Congratulations, rdiffweb setup is now complete!
-        <a href="/" class="alert-link">Click here</a>
-        to log into rdiffweb using default administrator account: 
+        {% trans %}Congratulations, rdiffweb setup is now complete!{% endtrans %}
+        <a href="/" class="alert-link">{% trans %}Click here{% endtrans %}</a>
+        {% trans %}to log into rdiffweb using default administrator account:{% endtrans %} 
         <ul>
-	        <li>username: {{ admin_username }}</li>
-	        <li>password: {{ admin_password }}</li>
+	        <li>{% trans %}username: {% endtrans %}{{ admin_username }}</li>
+	        <li>{% trans %}password: {% endtrans %}{{ admin_password }}</li>
         </ul>
     </div>
     {% else %}
@@ -24,13 +24,12 @@
     {% include 'message.html'%}
     <!-- /Error message -->
     {% else %}
-    <div class="alert alert-info" role="alert">rdiffweb has not been
-        configured, so we need to do that before logging in. Configuration will
-        only take a few minutes.</div>
+    <div class="alert alert-info" role="alert">
+    	{% trans %}rdiffweb has not been configured, so we need to do that before logging in. Configuration will only take a few minutes.{% endtrans %}</div>
     {% endif %}
     <form action="#" method="post" role="form" class="form-horizontal" autocomplete="off">
         <!-- Submit button -->
-		<button type="submit" class="btn btn-primary">Continue...</button>
+		<button type="submit" class="btn btn-primary">{% trans %}Continue...{% endtrans %}</button>
     </form>
     {% endif %}
 </div>
