@@ -46,6 +46,11 @@ class rdiffAdminPage(page_main.rdiffPage):
 
     @cherrypy.expose
     def index(self):
+
+        # Check if user is an administrator
+        if not self._user_is_admin():
+            return self._writeErrorPage("Access denied.")
+
         params = {}
         try:
             users = self.getUserDB().list()
