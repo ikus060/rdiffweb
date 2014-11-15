@@ -85,6 +85,7 @@ class rdiffAdminPage(page_main.rdiffPage):
                                                    email, password, user_root,
                                                    is_admin)
             except ValueError as e:
+                logger.exception("unknown error processing action")
                 params['error'] = unicode(e)
             except Exception as e:
                 logger.exception("unknown error processing action")

@@ -16,16 +16,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import ldap
 import logging
 import db
 import rdw_config
+
+from rdw_helpers import encode_s
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
 class ldapUserDB(db.userDB):
+
+    """Wrapper for LDAP authentication.
+
+    This implementation assume the LDAP is using the system encoding."""
 
     def __init__(self, delegate, configFilePath=None):
         """Create a new LDAP Database for authentication. Some behaviour are
@@ -76,6 +84,8 @@ class ldapUserDB(db.userDB):
 
     def are_valid_credentials(self, username, password):
         """Check if the given credential as valid according to LDAP."""
+        assert isinstance(username, unicode)
+        assert isinstance(password, unicode)
 
         # Check with local database first.
         if self.delegate.are_valid_credentials(username, password):
@@ -89,7 +99,7 @@ class ldapUserDB(db.userDB):
 
             # Bind using the user credentials. Throws an exception in case of
             # error.
-            l.simple_bind_s(r[0][0], password)
+            l.simple_bind_s(r[0][0], encode_s(password))
             l.unbind_s()
             logger.info("user [%s] found in LDAP" % username)
             return True
@@ -110,6 +120,7 @@ class ldapUserDB(db.userDB):
         return self.delegate.delete_user(username)
 
     def _execute(self, username, function):
+        assert isinstance(username, unicode)
 
         """Reusable method to run LDAP operation."""
 
@@ -137,7 +148,9 @@ class ldapUserDB(db.userDB):
             logger.info("search ldap server: {}/{}?{}?{}?{}".format(
                 self.uri, self.base_dn, self.attribute, self.scope,
                 self.filter))
-            r = l.search_s(self.base_dn, self.scope, search_filter)
+            r = l.search_s(encode_s(self.base_dn),
+                           self.scope,
+                           encode_s(search_filter))
 
             # Execute operation
             return function(l, r)
@@ -171,6 +184,8 @@ class ldapUserDB(db.userDB):
             return False
 
     def get_email(self, username):
+        assert isinstance(username, unicode)
+
         # Get email from local database.
         email = self.delegate.get_email(username)
         if email:
@@ -226,6 +241,10 @@ class ldapUserDB(db.userDB):
 
     def set_password(self, username, old_password, password):
         """Update the password of the given user."""
+        assert isinstance(username, unicode)
+        assert old_password is None or isinstance(old_password, unicode)
+        assert isinstance(password, unicode)
+
         # Check if the user is in LDAP.
         if self._exists_in_ldap(username):
             if password and not self.allow_password_change:
@@ -243,8 +262,8 @@ class ldapUserDB(db.userDB):
                 raise ValueError("user [%s] not found" % username)
             # Bind using the user credentials. Throws an exception in case of
             # error.
-            l.simple_bind_s(r[0][0], old_password)
-            l.passwd_s(r[0][0], old_password, password)
+            l.simple_bind_s(r[0][0], encode_s(old_password))
+            l.passwd_s(r[0][0], encode_s(old_password), encode_s(password))
             l.unbind_s()
             logger.info("password for user [%s] is updated in LDAP" % username)
 

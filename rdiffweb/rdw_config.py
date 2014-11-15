@@ -16,6 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+import codecs
+
 
 class SettingsError:
 
@@ -50,7 +53,8 @@ def get_config(settingName, settingsFile=None, default=""):
         settingsFile = getConfigFile()
     if (not os.access(settingsFile, os.F_OK)):
         return default
-    settingsStrings = open(settingsFile, "r").readlines()
+    # Open settings file as utf-8
+    settingsStrings = codecs.open(settingsFile, "r", encoding='utf-8', errors='replace').readlines()
     for setting in settingsStrings:
         setting = re.compile("(.*)#.*").sub(r'\1', setting)
         setting = setting.rstrip()

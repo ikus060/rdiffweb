@@ -16,8 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import rdw_config
 import db_sql
+from rdw_helpers import encode_s, decode_s
 
 """We do no length validation for incoming parameters, since truncated values
 will at worst lead to slightly confusing results, but no security risks"""
@@ -43,23 +46,32 @@ class sqliteUserDB:
         return True
 
     def exists(self, username):
+        assert isinstance(username, unicode)
+
         results = self._executeQuery(
             "SELECT Username FROM users WHERE Username = ?", (username,))
         return len(results) == 1
 
     def are_valid_credentials(self, username, password):
+        assert isinstance(username, unicode)
+        assert isinstance(password, unicode)
+
         results = self._executeQuery(
             "SELECT Username FROM users WHERE Username = ? AND Password = ?",
             (username, self._hashPassword(password)))
         return len(results) == 1
 
     def get_root_dir(self, username):
+        assert isinstance(username, unicode)
+
         if username not in self.userRootCache:
             self.userRootCache[username] = self._encodePath(
                 self._getUserField(username, "UserRoot"))
         return self.userRootCache[username]
 
     def get_repos(self, username):
+        assert isinstance(username, unicode)
+
         if not self.exists(username):
             return None
         query = ("SELECT RepoPath FROM repos WHERE UserID = %d" %
@@ -69,6 +81,8 @@ class sqliteUserDB:
         return repos
 
     def get_email(self, username):
+        assert isinstance(username, unicode)
+
         if not self.exists(username):
             return None
         return self._getUserField(username, "userEmail")
@@ -79,12 +93,16 @@ class sqliteUserDB:
         return users
 
     def add_user(self, username):
+        assert isinstance(username, unicode)
+
         if self.exists(username):
             raise ValueError("user '%s' already exists" % username)
         query = "INSERT INTO users (Username) values (?)"
         self._executeQuery(query, (username,))
 
     def delete_user(self, username):
+        assert isinstance(username, unicode)
+
         if not self.exists(username):
             raise ValueError
         self._delete_userRepos(username)
@@ -92,6 +110,8 @@ class sqliteUserDB:
         self._executeQuery(query, (username,))
 
     def set_info(self, username, userRoot, isAdmin):
+        assert isinstance(username, unicode)
+
         if not self.exists(username):
             raise ValueError
         if isAdmin:
@@ -104,12 +124,17 @@ class sqliteUserDB:
         # update cache
         self.userRootCache.pop(username, None)
 
-    def set_email(self, username, userEmail):
+    def set_email(self, username, email):
+        assert isinstance(username, unicode)
+        assert isinstance(email, unicode)
+
         if not self.exists(username):
             raise ValueError
-        self._setUserField(username, 'UserEmail', userEmail)
+        self._setUserField(username, 'UserEmail', email)
 
     def set_repos(self, username, repoPaths):
+        assert isinstance(username, unicode)
+
         if not self.exists(username):
             raise ValueError
         userID = self._getUserID(username)
@@ -132,6 +157,10 @@ class sqliteUserDB:
         cursor.executemany(query, repoPaths)
 
     def set_password(self, username, old_password, password):
+        assert isinstance(username, unicode)
+        assert old_password is None or isinstance(old_password, unicode)
+        assert isinstance(password, unicode)
+
         if not self.exists(username):
             raise ValueError("invalid username")
         if not password:
@@ -141,6 +170,8 @@ class sqliteUserDB:
         self._setUserField(username, 'Password', self._hashPassword(password))
 
     def set_repo_maxage(self, username, repoPath, maxAge):
+        assert isinstance(username, unicode)
+
         if repoPath not in self.get_repos(username):
             raise ValueError
         query = "UPDATE repos SET MaxAge=? WHERE RepoPath=? AND UserID = " + \
@@ -148,6 +179,8 @@ class sqliteUserDB:
         self._executeQuery(query, (maxAge, repoPath))
 
     def get_repo_maxage(self, username, repoPath):
+        assert isinstance(username, unicode)
+
         query = "SELECT MaxAge FROM repos WHERE RepoPath=? AND UserID = " + \
             str(self._getUserID(username))
         results = self._executeQuery(query, (repoPath,))
@@ -155,6 +188,8 @@ class sqliteUserDB:
         return int(results[0][0])
 
     def is_admin(self, username):
+        assert isinstance(username, unicode)
+
         return bool(self._getUserField(username, "IsAdmin"))
 
     def is_ldap(self):
@@ -185,25 +220,31 @@ class sqliteUserDB:
         return results[0][0]
 
     def _setUserField(self, username, fieldName, value):
+        assert isinstance(username, unicode)
+        assert isinstance(fieldName, unicode)
+        assert not isinstance(value, str)
+
         if not self.exists(username):
             raise ValueError
         if isinstance(value, bool):
             if value:
-                valueStr = '1'
+                value = '1'
             else:
-                valueStr = '0'
-        else:
-            valueStr = str(value)
+                value = '0'
         query = 'UPDATE users SET ' + fieldName + '=? WHERE Username=?'
-        self._executeQuery(query, (valueStr, username))
+        self._executeQuery(query, (value, username))
 
     def _hashPassword(self, password):
+        # At this point the password should be unicode. We converted it into
+        # system encoding.
+        password_b = encode_s(password)
         import sha
         hasher = sha.new()
-        hasher.update(password)
-        return hasher.hexdigest()
+        hasher.update(password_b)
+        return decode_s(hasher.hexdigest())
 
     def _executeQuery(self, query, args=()):
+        assert isinstance(query, unicode)
         cursor = self.sqlConnection.cursor()
         cursor.execute(query, args)
         results = cursor.fetchall()
