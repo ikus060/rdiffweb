@@ -110,7 +110,6 @@ class rdiffPreferencesPage(page_main.rdiffPage):
     def _get_parms_for_page(self):
         email = self.getUserDB().get_email(self.getUsername())
         parms = {
-            "title": "User Preferences",
             "userEmail": email,
             "notificationsEnabled": False,
             "backups": [],

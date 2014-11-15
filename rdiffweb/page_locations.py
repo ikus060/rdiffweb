@@ -66,4 +66,4 @@ class rdiffLocationsPage(page_main.rdiffPage):
                              'in_progress': in_progress,
                              'failed': failed})
 
-        return {"title": "Locations", "repos": repoList}
+        return {"repos": repoList}

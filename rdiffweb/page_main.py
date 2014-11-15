@@ -102,14 +102,13 @@ class rdiffPage:
 
     def _writeErrorPage(self, error):
         assert isinstance(error, unicode)
-        return self._writePage("error.html", title="Error", error=error)
+        return self._writePage("error.html", error=error)
 
     def _writePage(self, template_name, **kwargs):
         """Used to generate a standard html page using the given template.
         This method should be used by subclasses to provide default template
         value."""
-        parms = {"title": "rdiffweb",
-                 "is_login": True,
+        parms = {"is_login": True,
                  "is_admin": self._user_is_admin(),
                  "username": self.getUsername()}
         parms.update(kwargs)

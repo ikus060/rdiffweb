@@ -92,18 +92,15 @@ class rdiffStatusPage(page_main.rdiffPage):
     def _compileStatusPageTemplate(self, isMainPage, messages, failuresOnly):
 
         if isMainPage:
-            title = "Backup Status"
             feedLink = self._buildStatusFeedUrl(failuresOnly)
             feedTitle = "Backup status for " + self.getUsername()
         else:
-            title = "Backup Status Entry"
             feedLink = ""
             feedTitle = ""
         return self._writePage("status.html",
                                messages=messages,
                                feedLink=feedLink,
                                failuresOnly=failuresOnly,
-                               title=title,
                                rssUrl=feedLink,
                                rssTitle=feedTitle,
                                isEntry=not isMainPage)

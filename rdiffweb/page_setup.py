@@ -72,7 +72,6 @@ class rdiffSetupPage(page_main.rdiffPage):
         # if no post data, return plain page.
         if not setup_enabled or not self._is_submit():
             return self._writePage("setup.html",
-                                   title='Setup rdiffweb',
                                    setup_enabled=setup_enabled,
                                    message=message,
                                    warning=warning,
@@ -103,7 +102,6 @@ class rdiffSetupPage(page_main.rdiffPage):
             error = "Error! " + str(e)
 
         return self._writePage("setup.html",
-                               title='Setup rdiffweb',
                                root_enabled=root_enabled,
                                completed=completed,
                                error=error)

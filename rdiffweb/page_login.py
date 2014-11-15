@@ -30,6 +30,8 @@ class rdiffLoginPage(page_main.rdiffPage):
 
     @cherrypy.expose
     def index(self, redirect=u"", login=u"", password=""):
+        assert isinstance(login, unicode)
+        assert isinstance(password, unicode)
 
         params = {'redirect': redirect,
                   'login': login}
