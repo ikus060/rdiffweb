@@ -16,22 +16,17 @@
 </div>
 <!-- /container -->
 <div class="container login-page">
-    <form class="form-signin" role="form" method="post" action="{{ action }}">
-        <input type="hidden" name="{{ redirectKey }}"
-            value="{{ redirectValue }}" />
+    <form class="form-signin" role="form" method="post" action="/login/">
+        <input type="hidden" name="redirect"
+            value="{{ redirect }}" />
         <h2 class="form-signin-heading">Sign in</h2>
-        {% if message %}
-        <div class="alert alert-warning" role="alert">
-            <strong>Warning!</strong> {{ message }}
-        </div>
-        {% else %}
+        {% include 'message.html' %}
         <p>Enter your username and password to log in.</p>
-        {% endif %}
         <input type="text" class="form-control" placeholder="Username"
-            name="{{ loginKey }}" value="{{ loginValue }}" id="username"
+            name="login" value="{{ login }}" id="username"
             required autofocus>
         <input type="password" class="form-control" placeholder="Password"
-            name="{{ passwordKey }}" id="password" required>
+            name="password" id="password" required>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign
             in</button>
     </form>

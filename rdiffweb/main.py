@@ -38,6 +38,9 @@ import page_restore
 import page_setup
 import page_status
 import page_prefs
+import page_login
+import page_logout
+import page_main
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -116,7 +119,7 @@ def start():
         'tools.encode.encoding': 'utf-8',
         'tools.gzip.on': True,
         'tools.sessions.on': True,
-        'tools.authenticate.on': True,
+        'tools.authform.on': True,
         'autoreload.on': autoReload,
         'server.socket_host': serverHost,
         'server.socket_port': serverPort,
@@ -130,23 +133,27 @@ def start():
 
     page_settings = {
         '/': {
-            'tools.authenticate.checkAuth': page_locations.rdiffLocationsPage().checkAuthentication,
-            'tools.authenticate.on': True,
+            'tools.authform.on': True,
             'tools.setup.on': True,
         },
+        '/login': {
+            'tools.authform.on': False,
+        },
         '/status/feed': {
-            'tools.authenticate.authMethod': 'HTTP Header'
+            'tools.authform.on': False,
+            'tools.authbasic.on': True,
+            'tools.authbasic.checkpassword': page_login.rdiffLoginPage().checkpassword
         },
         '/static': {
             'tools.staticdir.on': True,
             'tools.staticdir.root': os.path.abspath(os.path.dirname(__file__)),
             'tools.staticdir.dir': "static",
-            'tools.authenticate.on': False,
+            'tools.authform.on': False,
             'tools.setup.on': False,
         },
         '/setup': {
             'tools.setup.on': False,
-            'tools.authenticate.on': False,
+            'tools.authform.on': False,
             'tools.sessions.on': False,
         }
     }
@@ -165,6 +172,8 @@ def start():
     cherrypy.config.update(global_settings)
     root = page_locations.rdiffLocationsPage()
     root.setup = page_setup.rdiffSetupPage()
+    root.login = page_login.rdiffLoginPage()
+    root.logout = page_logout.rdiffLogoutPage()
     root.browse = page_browse.rdiffBrowsePage()
     root.restore = page_restore.rdiffRestorePage()
     root.history = page_history.rdiffHistoryPage()

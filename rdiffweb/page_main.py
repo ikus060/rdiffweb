@@ -116,18 +116,22 @@ class rdiffPage:
         return rdw_templating.compileTemplate(template_name, **parms)
 
     # SESSION INFORMATION #
-    def checkAuthentication(self, username, password):
+    def checkpassword(self, username, password):
         # Check credential using local database.
         if self.getUserDB().are_valid_credentials(username, password):
-            cherrypy.session['username'] = username
+            cherrypy.session['username'] = username  # @UndefinedVariable
             return None
         return "Invalid username or password."
 
     def getUsername(self):
         try:
-            return cherrypy.session['username']
+            return cherrypy.session['username']  # @UndefinedVariable
         except:
             return None
+
+    def setUsername(self, username):
+        """Store the username in the user session."""
+        cherrypy.session['username'] = username  # @UndefinedVariable
 
     def _user_is_admin(self):
         """Check if current user is administrator. Return True or False."""
