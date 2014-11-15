@@ -147,7 +147,7 @@ class ldapUserDB(db.userDB):
                 self.filter, self.attribute, username)
             logger.info("search ldap server: {}/{}?{}?{}?{}".format(
                 self.uri, self.base_dn, self.attribute, self.scope,
-                self.filter))
+                search_filter))
             r = l.search_s(encode_s(self.base_dn),
                            self.scope,
                            encode_s(search_filter))
