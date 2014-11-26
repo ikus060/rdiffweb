@@ -197,7 +197,8 @@ class sqliteUserDB:
 
     # Helper functions #
     def _encodePath(self, path):
-        if not isinstance(path, unicode):
+        if isinstance(path, str):
+            # convert to unicode...
             return path.decode('utf-8')
         return path
 
