@@ -91,6 +91,10 @@ class ldapUserDB(db.userDB):
         if self.delegate.are_valid_credentials(username, password):
             return True
 
+        # Check if exists exists
+        if not self.delegate.exists(username):
+            return False
+
         def check_crendential(l, r):
             # Check results
             if len(r) != 1:
@@ -247,7 +251,11 @@ class ldapUserDB(db.userDB):
 
         # Check if the user is in LDAP.
         if self._exists_in_ldap(username):
-            if password and not self.allow_password_change:
+            # Do nothing if password is empty
+            if not password:
+                return
+            # Check if users are allowed to change their password in LDAP.
+            if not self.allow_password_change:
                 raise ValueError("""LDAP users are not allowed to change their
                                  password with rdiffweb.""")
             # Update the username password of the given user. If possible.
