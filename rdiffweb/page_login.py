@@ -22,6 +22,8 @@ import cherrypy
 import logging
 import page_main
 
+from rdw_helpers import quote_url
+
 # Define the logger
 logger = logging.getLogger(__name__)
 
@@ -30,8 +32,18 @@ class rdiffLoginPage(page_main.rdiffPage):
 
     @cherrypy.expose
     def index(self, redirect=u"", login=u"", password=""):
+        assert isinstance(redirect, unicode)
         assert isinstance(login, unicode)
         assert isinstance(password, unicode)
+
+        # when parameters are sent using post, redirect URL doesn't need to be
+        # quoted.
+        if not self._is_submit():
+            parts = redirect.partition("?")
+            redirect = quote_url(parts[0])
+            if parts[2]:
+                redirect += "?"
+                redirect += quote_url(parts[2], safe="/=&")
 
         params = {'redirect': redirect,
                   'login': login}
@@ -42,8 +54,11 @@ class rdiffLoginPage(page_main.rdiffPage):
             errorMsg = self.checkpassword(login, password)
             if not errorMsg:
                 self.setUsername(login)
-                if not redirect:
+                if not redirect or redirect.startswith("/login/"):
                     redirect = "/"
+                # The redirect url was unquoted by cherrypy, quote the
+                # url again.
+                logger.info("redirect user to %s" % redirect)
                 raise cherrypy.HTTPRedirect(redirect)
 
             # update form values
