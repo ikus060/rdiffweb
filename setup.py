@@ -46,7 +46,6 @@ setup(name='rdiffweb',
       data_files=[('/etc/rdiffweb', ['rdw.conf']),
                   ('/etc/init.d', ['init-script/rdiffweb'])
                   ],
-      scripts=['rdiffweb-config'],
       entry_points={"console_scripts": ["rdiffweb = rdiffweb.main:start"]},
       install_requires=["CherryPy>=3.2.2",
       		            "pysqlite>=2.6.3",

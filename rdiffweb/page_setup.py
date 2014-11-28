@@ -60,8 +60,7 @@ class rdiffSetupPage(page_main.rdiffPage):
             setup_enabled = False
             warning = """rdiffweb doesn't have read-write access to the
                       configuration file. You may try to change the permissions
-                      of this file or run "rdiffweb-config" from the console
-                      with root privileges."""
+                      of this file."""
 
         # if no post data, return plain page.
         if not setup_enabled or not self._is_submit():
