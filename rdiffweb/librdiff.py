@@ -27,6 +27,7 @@ import subprocess
 import tempfile
 
 import rdw_helpers
+import rdw_config
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -836,7 +837,9 @@ class RdiffPath:
             filename = os.path.basename(self.path)
         if name != b"":
             filename = name
-        output = os.path.join(tempfile.mkdtemp(), filename)
+        # Generate a temporary location used to restore data.
+        tempdir = rdw_config.get_config("tempdir", default=None)
+        output = os.path.join(tempfile.mkdtemp(dir=tempdir), filename)
 
         # Execute rdiff-backup to restore the data.
         logger.info(b"execute rdiff-backup --restore-as-of=%s '%s' '%s'" %
