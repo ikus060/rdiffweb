@@ -87,9 +87,6 @@ def start():
     logformat = '[%(asctime)s][%(levelname)-7s][%(name)s] %(message)s'
     level = logging.DEBUG if debug else logging.INFO
     if logFile:
-        if not os.access(logFile, os.F_OK):
-            print "log file %s not accessible" % logFile
-            quit()
         logging.basicConfig(filename=logFile, level=level, format=logformat)
     else:
         logging.basicConfig(level=level, format=logformat)
@@ -107,7 +104,7 @@ def start():
         serverPort = int(rdw_config.get_config("ServerPort", default="8080"))
     except ValueError:
         logger.error("ServerPort should be a port number")
-        return
+        sys.exit(1)
     sslCertificate = rdw_config.get_config("SslCertificate")
     sslPrivateKey = rdw_config.get_config("SslPrivateKey")
 

@@ -43,7 +43,7 @@ setup(name='rdiffweb',
                                  'static/js/scripts.min.js',
                                  'static/js/vendor/*.js',
                                  'static/css/*.css', 'static/fonts/*']},
-      data_files=[('/etc/rdiffweb', ['rdw.conf.sample']),
+      data_files=[('/etc/rdiffweb', ['rdw.conf']),
                   ('/etc/init.d', ['init-script/rdiffweb'])
                   ],
       scripts=['rdiffweb-config'],

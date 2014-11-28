@@ -11,7 +11,11 @@
     <div class="alert alert-success" role="alert">
         Congratulations, rdiffweb setup is now complete!
         <a href="/" class="alert-link">Click here</a>
-        to log into rdiffweb.
+        to log into rdiffweb using default administrator account: 
+        <ul>
+	        <li>username: {{ admin_username }}</li>
+	        <li>password: {{ admin_password }}</li>
+        </ul>
     </div>
     {% else %}
     <!-- Setup form -->
@@ -25,69 +29,8 @@
         only take a few minutes.</div>
     {% endif %}
     <form action="#" method="post" role="form" class="form-horizontal" autocomplete="off">
-        <!-- Root password -->
-        <div class="form-group">
-            <label for="root-password" class="col-sm-2 control-label">Root
-                password</label>
-            <div class="col-sm-10">
-                <input type="password" name="root_password" id="root-password"
-                    class=" form-control" required/>
-                <p class="help-block">Enter the root password to continue.</p>
-            </div>
-        </div>
-        <hr />
-        <!-- Admin username -->
-        <h3>Initial administrator account</h3>
-        <div class="well col-sm-offset-2 col-sm-10">There must be one user
-            account set up with adminstrative privileges. This user account can
-            then be used to add other user accounts.</div>
-        <div class="form-group">
-            <label for="admin-username" class="col-sm-2 control-label">Username</label>
-            <div class="col-sm-10">
-                <input type="text" name="admin_username" id="admin-username"
-                    class="form-control" required/>
-                <p class="help-block">Username for the administrative user.</p>
-            </div>
-        </div>
-        <!-- Admin password -->
-        <div class="form-group">
-            <label for="admin-password" class="col-sm-2 control-label">Password</label>
-            <div class="col-sm-10">
-                <input type="password" name="admin_password" id="admin-password"
-                    class="form-control" required/>
-                <p class="help-block">Password for the administrative user.</p>
-            </div>
-        </div>
-        <!-- Admin password confirm -->
-        <div class="form-group">
-            <label for="admin-password-confirm" class="col-sm-2 control-label">Confirmation</label>
-            <div class="col-sm-10">
-                <input type="password" name="admin_password_confirm"
-                    id="admin-password-confirm" class="form-control" required/>
-                <p class="help-block">Confirm password for the
-                    administrative user.</p>
-            </div>
-        </div>
-        <!-- Admin root -->
-        <div class="well col-sm-offset-2 col-sm-10">We need to have a
-            "root" directory for the newly-created user. All rdiff-backup
-            repositories for this user must be within this directory, and
-            rdiffweb will search within this directory for repositories.</div>
-        <div class="form-group">
-            <label for="admin-root" class="col-sm-2 control-label">Root
-                directory</label>
-            <div class="col-sm-10">
-                <input type="text" name="admin_root" id="admin-root"
-                    class="form-control" required/>
-                <p class="help-block">Enter the root directory.</p>
-            </div>
-        </div>
         <!-- Submit button -->
-        <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-10">
-                <button type="submit" class="btn btn-primary">Continue...</button>
-            </div>
-        </div>
+		<button type="submit" class="btn btn-primary">Continue...</button>
     </form>
     {% endif %}
 </div>

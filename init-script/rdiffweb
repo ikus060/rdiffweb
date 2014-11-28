@@ -25,6 +25,7 @@
 # Description: Manages the rdiffweb daemon
 ### END INIT INFO
 
+RDIFFWEB="/usr/local/bin/rdiffweb"
 PIDFILE="/var/run/rdiffweb"
 LOGFILE="/var/log/rdiffweb.log"
 
@@ -41,20 +42,19 @@ if [ `id -u` -ne 0 ]; then
     exit 1
 fi
 
-
 # See how we were called.
 case "$1" in
     start)
-        if [ ! -f /etc/rdiffweb/rdw.conf ]; then
-            echo -n "rdiffweb is not configured!  Please run 'rdiffweb-config'."
-            echo $ERROR_MSG
-            exit 1
-        fi
         echo -n "Starting rdiffweb..."
-        /usr/bin/rdiffweb --pid-file="$PIDFILE" \
+        "$RDIFFWEB" --pid-file="$PIDFILE" \
         --log-file="$LOGFILE" \
-        --background > /dev/null 2>&1
-        echo $SUCCESS_MSG
+        --background
+        RETVAL="$?"
+        if [ "$RETVAL" = "0" ]; then
+        	echo $SUCCESS_MSG
+       	else
+       		echo $ERROR_MSG
+       	fi
         exit 0
     ;;
 

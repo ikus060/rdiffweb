@@ -17,17 +17,17 @@ Then you may download a snapshot of the repository and proceed with the installa
     python setup.py build
     sudo python setup.py install
   
+Start rdiffweb server using this command line.
+
+    sudo /etc/init.d/rdiffweb start
+    
+Proceeding with the setup will initialise your database by creating a default admin user with the following username and password:
+ * username : admin
+ * password : admin123
+  
 Configure rdiffweb using web interface.
 
 	http://localhost:8080/setup
-
-Os configure it using command line.
-
-    sudo rdiffweb-config
-    
-Then start rdiffweb server using this command line.
-
-    sudo /etc/init.d/rdiffweb start
 
 By default, the web server is listening on port 8080 and is accessible via the following URL.
 
