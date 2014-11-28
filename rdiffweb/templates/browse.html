@@ -37,7 +37,9 @@
             <tr>
                 <th id="name" class="sortable" data-type="dir">Name</th>
                 <th id="size" class="sortable" data-type="int">Size</th>
-                <th id="last-revision" class="sortable" data-type="int">Revisions</th>
+                <th id="last-revision" class="sortable" data-type="int">
+                	Rev.
+            	</th>
             </tr>
         </thead>
         <tbody>
@@ -64,13 +66,17 @@
                     {{ entry.file_size | filesize }}
                     {% endif %}
                 </td>
-                <td class="nowrap"  data-value="{{ entry.last_change_date.getSeconds() }}">
+                <td data-value="{{ entry.last_change_date.getSeconds() }}">
                 	{% if entry.isdir %}
-                    {{ entry.last_change_date | datetime }}
+                	<span class="hidden-xs">
+                    	{{ entry.last_change_date | datetime }}
+                    </span>
                     {% elif ( entry.change_dates | length ) > 1 %}
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">
-                            {{ entry.last_change_date | datetime }}
+                        	<span class="hidden-xs">
+                            	{{ entry.last_change_date | datetime }}
+                            </span>
                             <span class="badge">{{ entry.change_dates | length }}</span>
                             <span class="caret"></span>
                         </button>
@@ -86,7 +92,9 @@
                         </ul>
                     </div>
                     {% else %}
-                    {{ entry.last_change_date | datetime }}
+                    <span class="hidden-xs">
+                    	{{ entry.last_change_date | datetime }}
+                    </span>
                     {% endif %}
                 </td>
             </tr>
@@ -102,7 +110,7 @@
         </div>
 	    <ul class="list-group">
 			{% for restore_date in restore_dates | reverse %}
-			<li class="list-group-item">
+			<li class="list-group-item clearfix">
 				<i class="icon-archive"></i>
 	            {{ restore_date | datetime }}
 	            <div class="pull-right">
