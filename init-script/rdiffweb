@@ -18,78 +18,52 @@
 # Basic support for the Linux Standard Base Specification 3.1.0
 ### BEGIN INIT INFO
 # Provides: rdiffweb
-# Required-Start: $network $local_fs
-# Required-Stop: $network
-# Default-Start: 2 3 5
-# Default-Stop: 0 6
+# Required-Start: $local_fs $network $named $time $syslog
+# Required-Stop: $local_fs $network $named $time $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
 # Description: Manages the rdiffweb daemon
 ### END INIT INFO
 
-RDIFFWEB="/usr/local/bin/rdiffweb"
-PIDFILE="/var/run/rdiffweb"
+ACCESSLOGFILE="/var/log/rdiffweb-access.log"
+SCRIPT="/usr/local/bin/rdiffweb --background --log-access-file=$ACCESSLOGFILE"
+RUNAS=root
+
+PIDFILE=/var/run/rdiffweb.pid
 LOGFILE="/var/log/rdiffweb.log"
-
-SUCCESS_MSG="[71G done"
-ERROR_MSG="[71Gfailed"
-
-if [ -f /etc/init.d/functions ]; then
- . /etc/init.d/functions
-fi
-
-# This script won't be able to run without root privileges.
-if [ `id -u` -ne 0 ]; then
-    echo "Error: this script must be run as root."
-    exit 1
-fi
-
-# See how we were called.
+ 
+start() {
+  if [ -f /var/run/$PIDNAME ] && kill -0 $(cat /var/run/$PIDNAME); then
+    echo 'Service already running' >&2
+    return 1
+  fi
+  echo 'Starting service…' >&2
+  local CMD="$SCRIPT &> \"$LOGFILE\" & echo \$!"
+  su -c "$CMD" $RUNAS > "$PIDFILE"
+  echo 'Service started' >&2
+}
+ 
+stop() {
+  if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
+    echo 'Service not running' >&2
+    return 1
+  fi
+  echo 'Stopping service…' >&2
+  kill -15 $(cat "$PIDFILE") && rm -f "$PIDFILE"
+  echo 'Service stopped' >&2
+}
+ 
 case "$1" in
-    start)
-        echo -n "Starting rdiffweb..."
-        "$RDIFFWEB" --pid-file="$PIDFILE" \
-        --log-file="$LOGFILE" \
-        --background
-        RETVAL="$?"
-        if [ "$RETVAL" = "0" ]; then
-        	echo $SUCCESS_MSG
-       	else
-       		echo $ERROR_MSG
-       	fi
-        exit 0
+  start)
+    start
     ;;
-
-    stop)
-        if [ -e "$PIDFILE" ]; then
-            echo -n "Stopping rdiffweb..."
-            kill `cat "$PIDFILE" 2>/dev/null` > /dev/null 2>&1
-            rm $PIDFILE > /dev/null 2>&1
-            echo $SUCCESS_MSG
-            exit 0
-        else
-            echo -n "rdiffweb is not running"
-            echo $ERROR_MSG
-            exit 1
-        fi
+  stop)
+    stop
     ;;
-
-    status)
-        echo -n "rdiffweb "
-        if [ -e "$PIDFILE" ]; then
-            echo "is running."
-            exit 0
-        else
-            echo "is not running."
-            exit 1
-        fi
+  restart)
+    stop
+    start
     ;;
-
-    restart)
-        "$0" stop && "$0" start
-    ;;
-
-    *)
-        echo "Usage: `basename "$0"` {start|stop|status|restart}"
-        exit 1
+  *)
+    echo "Usage: $0 {start|stop|restart}"
 esac
-
-exit 0
