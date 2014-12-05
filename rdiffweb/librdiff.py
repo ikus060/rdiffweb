@@ -838,7 +838,8 @@ class RdiffPath:
         if name != b"":
             filename = name
         # Generate a temporary location used to restore data.
-        tempdir = rdw_config.get_config("tempdir", default=None)
+        tempdir = rdw_helpers.encode_s(rdw_config.get_config("tempdir",
+                                                             default=None))
         output = os.path.join(tempfile.mkdtemp(dir=tempdir), filename)
 
         # Execute rdiff-backup to restore the data.

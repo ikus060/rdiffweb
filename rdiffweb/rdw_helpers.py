@@ -35,6 +35,8 @@ def decode_s(value, errors='strict'):
 
 def encode_s(value):
     """Convert unicode to system charset."""
+    if value is None:
+        return None
     assert isinstance(value, unicode)
     return value.encode(system_charset)
 
@@ -74,6 +76,7 @@ def unquote_url(encodedUrl):
 
 def removeDir(directory):
     """Used to remove directory and subdirectory"""
+    assert isinstance(directory, str)
     for root, dirs, files in os.walk(directory, topdown=False):
         for name in files:
             filePath = os.path.join(root, name)
