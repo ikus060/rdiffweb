@@ -32,7 +32,7 @@ if pythonVersion < 2.4:
     sys.exit(1)
 
 setup(name='rdiffweb',
-      version='0.6.5',
+      version='0.7.0',
       description='A web interface to rdiff-backup repositories',
       author='Patrik Dufresne',
       author_email='info@patrikdufresne.com',
