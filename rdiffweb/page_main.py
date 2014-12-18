@@ -75,10 +75,16 @@ class rdiffPage:
         full_path_b = os.path.join(user_root_b, path_b).rstrip(b"/")
         real_path_b = os.path.realpath(full_path_b).rstrip(b"/")
         if full_path_b != real_path_b:
-            logger.warn("access is denied [%s] vs [%s]" % (
-                decode_s(full_path_b, 'replace'),
-                decode_s(real_path_b, 'replace')))
-            raise AccessDeniedError
+            # We can safely assume the realpath contains a symbolic link. If
+            # the symbolic link is valid, we display the content of the "real"
+            # path.
+            if real_path_b.startswith(os.path.join(user_root_b, repo_b)):
+                path_b = os.path.relpath(real_path_b, user_root_b)
+            else:
+                logger.warn("access is denied [%s] vs [%s]" % (
+                    decode_s(full_path_b, 'replace'),
+                    decode_s(real_path_b, 'replace')))
+                raise AccessDeniedError
 
         # Get reference to the repository (this ensure the repository does
         # exists and is valid.)
