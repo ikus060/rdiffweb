@@ -583,7 +583,9 @@ class RdiffRepo:
     def last_backup_date(self):
         """Return the last known backup dates."""
 
-        return self.backup_dates[-1]
+        if len(self.backup_dates) > 0:
+            return self.backup_dates[-1]
+        return None
 
     def _load_hints(self):
         """For different purpose, a repository may contains an "rdiffweb" file

@@ -59,6 +59,9 @@ def do_filter(sequence, attribute_name):
 def do_format_datetime(value, dateformat='%Y-%m-%d %H:%M'):
     """Used to format an epoch into local time."""
 
+    if not value:
+        return ""
+
     if isinstance(value, rdw_helpers.rdwTime):
         value = value.getSeconds()
 
