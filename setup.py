@@ -31,6 +31,59 @@ if pythonVersion < 2.4:
     print 'Python version 2.3 and lower is not supported.'
     sys.exit(1)
 
+from distutils.command.build import build as build_
+from babel.messages.frontend import compile_catalog, extract_messages, update_catalog, init_catalog
+from distutils.cmd import Command
+from string import strip
+
+# this is implementation of command which complies all catalogs (dictionaries)
+class compile_all_catalogs(Command):
+
+    description = 'compile message catalogs for all languages to binary MO files'
+    user_options = [
+        ('domain=', 'D',
+         "domain of PO file (default 'messages')"),
+        ('directory=', 'd',
+         'path to base directory containing the catalogs'),
+        ('locales=', 'l',
+         'locale of the catalogs to compile'),
+        ('use-fuzzy', 'f',
+         'also include fuzzy translations'),
+        ('statistics', None,
+         'print statistics about translations')
+    ]
+    boolean_options = ['use-fuzzy', 'statistics']
+
+    def initialize_options(self):
+        self.domain = None
+        self.directory = None
+        self.locales = None
+        self.use_fuzzy = False
+        self.statistics = False
+
+    def finalize_options(self):
+        self.locales = map(strip, self.locales.split(','))
+
+    def run(self):
+        for locale in self.locales:
+            compiler = compile_catalog(self.distribution)
+
+            compiler.initialize_options()
+            compiler.domain = self.domain
+            compiler.directory = self.directory
+            compiler.locale = locale
+            compiler.use_fuzzy = self.use_fuzzy
+            compiler.statistics = self.statistics
+            compiler.finalize_options()
+
+            compiler.run()
+
+# This is modification of build command, compile_all_catalogs
+# is added as last/first command
+class build(build_):
+     sub_commands = build_.sub_commands[:]
+     sub_commands.insert(0, ('compile_all_catalogs', None))
+
 setup(name='rdiffweb',
       version='0.7.0',
       description='A web interface to rdiff-backup repositories',
@@ -43,12 +96,25 @@ setup(name='rdiffweb',
                                  'static/js/scripts.min.js',
                                  'static/js/vendor/*.js',
                                  'static/css/*.css', 'static/fonts/*',
-                                 'locales/fr/LC_MESSAGES/messages.mo']},
+                                 'locales/fr/LC_MESSAGES/messages.mo'
+                                 ]
+                    },
       data_files=[('/etc/rdiffweb', ['rdw.conf']),
                   ('/etc/init.d', ['init-script/rdiffweb'])
                   ],
       entry_points={"console_scripts": ["rdiffweb = rdiffweb.main:start"]},
+      # new commands added and build command modified
+      cmdclass={'build': build,
+                'compile_catalog': compile_catalog,
+                'extract_messages': extract_messages,
+                'update_catalog': update_catalog,
+                'init_catalog': init_catalog,
+                'compile_all_catalogs': compile_all_catalogs
+                },
       install_requires=["CherryPy>=3.2.2",
-      		            "pysqlite>=2.6.3",
-                        "Jinja2>=2.6"]
+                        "pysqlite>=2.6.3",
+                        "Jinja2>=2.6"
+                        ],
+      # required packages for build process
+      setup_requires=["babel>=0.9"]
       )
