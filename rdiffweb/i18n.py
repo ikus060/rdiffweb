@@ -58,10 +58,10 @@ catalog file in it.
 Example::
 
     [/]
-    tools.I18nTool.on = True
-    tools.I18nTool.default = 'en_US'
-    tools.I18nTool.mo_dir = '/home/user/web/myapp/i18n'
-    tools.I18nTool.domain = 'myapp'
+    tools.i18n.on = True
+    tools.i18n.default = 'en_US'
+    tools.i18n.mo_dir = '/home/user/web/myapp/i18n'
+    tools.i18n.domain = 'myapp'
 
     Now the tool will look for a file called myapp.mo in
     /home/user/web/myapp/i18n/en/LC_MESSACES/
@@ -76,6 +76,7 @@ That's it.
 
 import cherrypy
 import gettext
+import logging
 
 from collections import namedtuple
 Lang = namedtuple('Lang', 'locale trans')
@@ -83,6 +84,10 @@ Lang = namedtuple('Lang', 'locale trans')
 
 # Cache for Translations and Locale objects
 _languages = {}
+
+
+# Define the logger
+logger = logging.getLogger(__name__)
 
 
 # Exception
@@ -152,6 +157,7 @@ def load_translation(langs, dirname, domain):
                                         languages=[locale],
                                         fallback=True)
         except (ValueError, IOError):
+            logger.debug("error loading translation")
             continue
         # If the translation was found, exit loop
         if isinstance(trans, gettext.GNUTranslations):
@@ -172,22 +178,19 @@ def get_lang(mo_dir, default, domain):
 
     :parameters:
         mo_dir : String
-            `tools.I18nTool.mo_dir`
+            `tools.i18n.mo_dir`
         default : String
-            `tools.I18nTool.default`
+            `tools.i18n.default`
         domain : String
-            `tools.I18nTool.domain`
+            `tools.i18n.domain`
     """
     langs = [x.value.replace('-', '_') for x in
              cherrypy.request.headers.elements('Accept-Language')]
-    sessions_on = cherrypy.request.config.get('tools.sessions.on', False)
-    if sessions_on and cherrypy.session.get('_lang_', ''):  # @UndefinedVariable
-        langs.insert(0, cherrypy.session.get('_lang_', '__'))  # @UndefinedVariable
     langs.append(default)
+    logger.debug("accept-language: %s " % (langs))
     loc = load_translation(langs, mo_dir, domain)
     cherrypy.response.i18n = loc
-    if sessions_on:
-        cherrypy.session['_lang_'] = str(loc.locale)  # @UndefinedVariable
+    logger.debug("use-language: %s " % str(loc.locale))
 
 
 def set_lang():
