@@ -154,10 +154,8 @@ class rdiffAdminPage(page_main.rdiffPage):
             # Check and update user directory
             try:
                 self._check_user_root_dir(user_root)
-                logger.info("COUCOU1")
                 rdw_spider_repos.findReposForUser(username,
                                                   self.getUserDB())
-                logger.info("COUCOU2")
             except ValueError as e:
                 success = ""
                 warning = unicode(e)
