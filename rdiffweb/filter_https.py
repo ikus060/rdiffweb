@@ -18,9 +18,9 @@
 
 import cherrypy
 try:
-    from cherrypy.filters.basefilter import BaseFilter
+    from cherrypy.filters.basefilter import BaseFilter  # @UnresolvedImport
 except:
-    from cherrypy.lib.filter.basefilter import BaseFilter
+    from cherrypy.lib.filter.basefilter import BaseFilter  # @UnresolvedImport
 
 
 class rdwHttpsFilter(BaseFilter):

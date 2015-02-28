@@ -198,7 +198,7 @@ def start():
         if hasattr(cherrypy.engine, 'subscribe'):  # CherryPy >= 3.1
             cherrypy.engine.subscribe('stop', lambda: killEvent.set())
         else:
-            cherrypy.engine.on_stop_engine_list.append(lambda: killEvent.set())
+            cherrypy.engine.on_stop_engine_list.append(lambda: killEvent.set())  # @UndefinedVariable
 
     # Start web server
     cherrypy.quickstart(root, config=page_settings)
