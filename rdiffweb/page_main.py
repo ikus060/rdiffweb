@@ -42,7 +42,7 @@ class rdiffPage:
         path_b = path_b.strip(b"/")
 
         # NOTE: a blank path is allowed, since the user root directory might be
-        # a backup location.
+        # a repository.
 
         logger.debug("check user access to path [%s]" %
                      decode_s(path_b, 'replace'))

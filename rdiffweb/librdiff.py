@@ -437,7 +437,7 @@ class SessionStatisticsEntry(IncrementEntry):
 
 class RdiffRepo:
 
-    """Represent one rdiff-backup location."""
+    """Represent one rdiff-backup repository."""
 
     def __init__(self, user_root, path):
         assert isinstance(user_root, str)
@@ -478,7 +478,7 @@ class RdiffRepo:
         # Make sure repoRoot is a valid rdiff-backup repository
         if (not os.access(self.data_path, os.F_OK)
                 or not os.path.isdir(self.data_path)):
-            logger.error("backup location [%s] doesn't exists" %
+            logger.error("repository [%s] doesn't exists" %
                          self._decode(self.repo_root))
             raise DoesNotExistError()
 
@@ -649,7 +649,7 @@ class RdiffRepo:
 
 class RdiffPath:
 
-    """Represent an rdiff-backup location. Either a root, a path or a file."""
+    """Represent an rdiff-backup repository. Either a root, a path or a file."""
 
     def __init__(self, repo, path=b""):
         assert isinstance(repo, RdiffRepo)
@@ -692,7 +692,7 @@ class RdiffPath:
 
             increments = filter(lambda x: x.startswith(filename), increments)
             if not increments:
-                logger.error("backup location [%s] doesn't exists" %
+                logger.error("repository [%s] doesn't exists" %
                              self._decode(self.path))
                 raise DoesNotExistError()
 

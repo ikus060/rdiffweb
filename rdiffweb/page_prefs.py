@@ -78,7 +78,7 @@ class rdiffPreferencesPage(page_main.rdiffPage):
 
     def _update_repos(self):
         rdw_spider_repos.findReposForUser(self.getUsername(), self.getUserDB())
-        return {'success': """Successfully updated backup locations."""}
+        return {'success': """Successfully updated repositories."""}
 
     def _setNotifications(self, parms):
         if not self.getUserDB().is_modifiable():

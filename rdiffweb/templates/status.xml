@@ -55,7 +55,7 @@
 
                 <!--StartIncludeIf:repoErrors -->
                 {% if message.repoErrors %}
-                <p>There following repositories contain errors:</p>
+                <p>The following repositories contain errors:</p>
                 <ul>
                     {% for repoErro in message.repoErrors %}
                     <!--StartRepeat:repoErrors -->

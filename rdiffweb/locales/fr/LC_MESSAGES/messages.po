@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-14 09:24-0500\n"
+"POT-Creation-Date: 2015-03-01 11:00-0500\n"
 "PO-Revision-Date: 2014-11-14 10:00-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -17,23 +17,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: rdiffweb/librdiff.py:54 rdiffweb/librdiff.py:73
+#: rdiffweb/librdiff.py:56 rdiffweb/librdiff.py:75
 msgid "An unknown error occurred."
 msgstr "Une erreur inconnue s'est produite."
 
-#: rdiffweb/librdiff.py:60 rdiffweb/page_admin.py:54 rdiffweb/page_admin.py:80
+#: rdiffweb/librdiff.py:62 rdiffweb/page_admin.py:55 rdiffweb/page_admin.py:79
 msgid "Access denied."
 msgstr "Accès refusé."
 
-#: rdiffweb/librdiff.py:66
+#: rdiffweb/librdiff.py:68
 msgid "The repository does not exist."
 msgstr "Le dépôt n'existe pas."
 
-#: rdiffweb/page_admin.py:68
+#: rdiffweb/page_admin.py:69
 msgid "Can't get admin information."
 msgstr "Impossible d'obtenir les informations administrateur."
 
-#: rdiffweb/page_admin.py:102
+#: rdiffweb/page_admin.py:104
 msgid "Can't get user list."
 msgstr "Impossible d'obtenir la liste des utilisateurs."
 
@@ -45,11 +45,11 @@ msgstr ""
 "Une sauvegarde est en cours dans ce dépôt. Les données affichées peuvent "
 "être incohérentes."
 
-#: rdiffweb/page_restore.py:103 rdiffweb/page_status.py:66
+#: rdiffweb/page_restore.py:105 rdiffweb/page_status.py:66
 msgid "Invalid date."
 msgstr "Date non valide."
 
-#: rdiffweb/page_restore.py:108
+#: rdiffweb/page_restore.py:110
 msgid ""
 "A backup is currently in progress to this repository. Restores are "
 "disabled until this backup is complete."
@@ -57,7 +57,7 @@ msgstr ""
 "Une sauvegarde est en cours dans ce dépôt. La restauration sera "
 "désactivée jusqu'à ce que cette sauvegarde soit terminée."
 
-#: rdiffweb/page_restore.py:118
+#: rdiffweb/page_restore.py:120
 msgid "Fail to restore."
 msgstr "Impossible de restaurer les données."
 
@@ -436,6 +436,6 @@ msgid "Backup size: "
 msgstr "Taille de la sauvegarde: "
 
 #: rdiffweb/templates/status.html:89
-msgid "There following repositories contain errors: "
+msgid "The following repositories contain errors: "
 msgstr "Les dépôts suivants contiennent des erreurs: "
 

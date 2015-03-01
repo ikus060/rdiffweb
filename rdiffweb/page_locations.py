@@ -29,12 +29,12 @@ logger = logging.getLogger(__name__)
 
 
 class rdiffLocationsPage(page_main.rdiffPage):
-    """Shows the locations page. Will show all available destination
+    """Shows the repository page. Will show all available destination
     backup directories. This is the root (/) page"""
 
     @cherrypy.expose
     def index(self):
-        logger.debug("browsing locations")
+        logger.debug("browsing repositories")
         return self._writePage("locations.html", **self._get_parms_for_page())
 
     def _get_parms_for_page(self):
