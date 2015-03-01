@@ -114,6 +114,9 @@ class sqliteUserDB:
 
         if not self.exists(username):
             raise ValueError
+        # Remove the user from the cache before
+        # updating the database.
+        self.userRootCache.pop(username, None)
         if isAdmin:
             adminInt = 1
         else:
@@ -121,8 +124,6 @@ class sqliteUserDB:
         query = "UPDATE users SET UserRoot=?, IsAdmin=" + \
             str(adminInt) + " WHERE Username = ?"
         self._executeQuery(query, (userRoot, username))
-        # update cache
-        self.userRootCache.pop(username, None)
 
     def set_email(self, username, email):
         assert isinstance(username, unicode)

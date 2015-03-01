@@ -21,8 +21,11 @@ import rdw_config
 
 
 def handle_setup():
-    if not rdw_config.getConfigFile():
-        print
+
+    """This filter tool redirect users to /setup/ if the configuration
+    file doesn't exists."""
+
+    if not rdw_config.get_config_file():
         raise cherrypy.HTTPRedirect("/setup/")
 
 cherrypy.tools.setup = cherrypy.Tool('before_handler', handle_setup)

@@ -82,7 +82,7 @@ def findReposForUser(user, userDBModule):
 
 
 def findReposForAllUsers():
-    userDBModule = db.userDB().getUserDBModule()
+    userDBModule = db.userDB().get_userdb_module()
     if not userDBModule.is_modifiable():
         return
 

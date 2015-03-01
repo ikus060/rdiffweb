@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 class rdiffAdminPage(page_main.rdiffPage):
+    """Administration pages. Allow to manage users database."""
 
     def _check_user_exists(self, username):
         """Raise an exception if the user doesn't exists."""
@@ -72,12 +73,13 @@ class rdiffAdminPage(page_main.rdiffPage):
     @cherrypy.expose
     def users(self, userfilter=u"", usersearch=u"", action=u"", username=u"",
               email=u"", password=u"", user_root=u"", is_admin=u""):
-        assert isinstance(userfilter, unicode)
-        assert isinstance(usersearch, unicode)
 
         # Check if user is an administrator
         if not self._user_is_admin():
             return self._writeErrorPage(_("Access denied."))
+
+        assert isinstance(userfilter, unicode)
+        assert isinstance(usersearch, unicode)
 
         # If we're just showing the initial page, just do that
         params = {}

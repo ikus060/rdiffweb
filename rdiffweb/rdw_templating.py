@@ -36,7 +36,7 @@ jinja_env = Environment(loader=PackageLoader('rdiffweb', 'templates'),
 logger = logging.getLogger(__name__)
 
 
-def compileTemplate(templateName, **kwargs):
+def compile_template(templateName, **kwargs):
     """Very simple implementation to render template using jinja2.
         `templateName`
             The filename to be used as template.

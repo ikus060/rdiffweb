@@ -36,6 +36,8 @@ logger = logging.getLogger(__name__)
 
 
 def autodelete():
+    """Register an handler to delete the restored files when the HTTP
+    request is ending."""
     if not hasattr(cherrypy.request, "_autodelete_dir"):
         return
     autodelete_dir = cherrypy.request._autodelete_dir
@@ -48,7 +50,7 @@ def autodelete():
         return
     if not os.path.isdir(autodelete_dir):
         autodelete_dir = os.path.dirname(autodelete_dir)
-    rdw_helpers.removeDir(autodelete_dir)
+    rdw_helpers.remove_dir(autodelete_dir)
 
 cherrypy.tools.autodelete = cherrypy.Tool('on_end_request', autodelete)
 

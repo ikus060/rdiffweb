@@ -110,13 +110,6 @@ class fileUserDataTest(unittest.TestCase):
                == ["/data/bill", "/data/frank"])
         assert(userDataModule.get_root_dir("test") == "/data")
 
-    def testBadUser(self):
-        userDataModule = fileUserDB(self.configFilePath)
-        # should return None if user doesn't exist
-        assert(not userDataModule.get_repos("test2"))
-        # should return None if user doesn't exist
-        assert(not userDataModule.get_root_dir(""))
-
 if __name__ == "__main__":
     print "Called as standalone program; running unit tests..."
     fileUserDataTest = unittest.makeSuite(fileUserDataTest, 'test')

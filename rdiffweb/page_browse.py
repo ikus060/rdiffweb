@@ -66,16 +66,16 @@ class rdiffBrowsePage(page_main.rdiffPage):
 
         # Build the parameters
         try:
-            parms = self.get_parms_for_page(repo_obj,
-                                            path_obj,
-                                            restore == b"T")
+            parms = self._get_parms_for_page(repo_obj,
+                                             path_obj,
+                                             restore == b"T")
         except librdiff.FileError as e:
             logger.exception("can't create pare params")
             return self._writeErrorPage(unicode(e))
 
         return self._writePage("browse.html", **parms)
 
-    def get_parms_for_page(self, repo_obj, path_obj, restore):
+    def _get_parms_for_page(self, repo_obj, path_obj, restore):
         assert isinstance(repo_obj, librdiff.RdiffRepo)
         assert isinstance(path_obj, librdiff.RdiffPath)
 

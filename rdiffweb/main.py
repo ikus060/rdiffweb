@@ -96,7 +96,7 @@ def start():
         logging.root.handlers[0].addFilter(NotFilter("cherrypy.access"))
     logging.root.handlers[0].addFilter(ContextFilter())
     # Check if configuration file exists
-    config_file = rdw_config.getConfigFile()
+    config_file = rdw_config.get_config_file()
     if not os.access(config_file, os.F_OK):
         logger.warn("configuration file is not accessible: %s" % config_file)
 

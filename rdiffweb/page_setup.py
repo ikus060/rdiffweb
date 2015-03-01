@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 import cherrypy
 import os
 import stat
-import crypt
 import logging
 import page_main
 
@@ -78,8 +77,8 @@ class rdiffSetupPage(page_main.rdiffPage):
             admin_password = "admin123"
             admin_root = "/var/backups/"
             # Execute the setup
-            self._setAdminUser(admin_username, admin_password)
-            self._setAdminRoot(admin_username, admin_root)
+            self._set_admin_user(admin_username, admin_password)
+            self._set_admin_root(admin_username, admin_root)
             logger.info("setup completed")
             completed = True
         except ValueError as e:
@@ -95,19 +94,18 @@ class rdiffSetupPage(page_main.rdiffPage):
                                warning=warning,
                                error=error)
 
-    def _setAdminUser(self, username, password):
+    def _set_admin_user(self, username, password):
         # Create the user
         self.getUserDB().add_user(username)
         self.getUserDB().set_password(username, None, password)
 
-    def _setAdminRoot(self, username, userRoot):
+    def _set_admin_root(self, username, userRoot):
         # Sets admin root
         self.getUserDB().set_info(username, userRoot, True)
 
     def _ensure_config_file_exists(self):
-
-        """Raised an exception if the configuration file is not accessible."""
-
+        """Try to access or create the configuration file. It raised an
+        exception if the configuration file is not accessible."""
         try:
             if not os.path.exists("/etc/rdiffweb"):
                 os.mkdir("/etc/rdiffweb", stat.S_IRWXU)

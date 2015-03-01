@@ -21,7 +21,7 @@ import rdw_config
 
 class userDB:
 
-    def getUserDBModule(self):
+    def get_userdb_module(self):
         # Return a different implementation according to UserDB configuration.
         prevDBType = rdw_config.get_config("UserDB")
         if prevDBType.lower() == "ldap":

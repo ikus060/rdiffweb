@@ -32,7 +32,7 @@ class ParameterError:
         return "Invalid parameters"
 
 
-def getConfigFile():
+def get_config_file():
     settingsFiles = ["rdw.conf", "/etc/rdiffweb/rdw.conf"]
     # TODO: there *has* to be a better way to get the /etc config file
     # path...
@@ -50,7 +50,7 @@ def get_config(settingName, settingsFile=None, default=""):
     if ('=' in settingName):
         raise ParameterError
     if settingsFile is None:
-        settingsFile = getConfigFile()
+        settingsFile = get_config_file()
     if (not os.access(settingsFile, os.F_OK)):
         return default
     # Open settings file as utf-8
@@ -179,9 +179,5 @@ class configFileTest(unittest.TestCase):
             assert(False)
 
         self.writeBadFile(1)
-        try:
-            get_config("SpacesValue", "/tmp/rdw_config.conf")
-        except SettingsError:
-            pass
-        else:
-            assert(False)
+        value = get_config("This", "/tmp/rdw_config.conf")
+        assert(value == "more=than one equals")

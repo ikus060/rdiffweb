@@ -63,7 +63,7 @@ class emailNotifyThread(threading.Thread):
 class emailNotifier:
 
     def __init__(self):
-        self.userDB = db.userDB().getUserDBModule()
+        self.userDB = db.userDB().get_userdb_module()
 
     def notificationsEnabled(self):
         return self._getEmailHost() != "" and\
@@ -95,7 +95,7 @@ class emailNotifier:
 
             if oldRepos:
                 userEmailAddress = self.userDB.get_email(user)
-                emailText = rdw_templating.compileTemplate(
+                emailText = rdw_templating.compile_template(
                     "email_notification.txt", repos=oldRepos, sender=self._getEmailSender(), user=user)
 
                 session = smtplib.SMTP(self._getEmailHost())

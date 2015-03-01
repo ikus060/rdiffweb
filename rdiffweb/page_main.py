@@ -92,7 +92,7 @@ class rdiffPage:
 
     def getUserDB(self):
         """Return the user database."""
-        return db.userDB().getUserDBModule()
+        return db.userDB().get_userdb_module()
 
     # PAGE HELPER FUNCTIONS #
 
@@ -111,7 +111,7 @@ class rdiffPage:
                  "is_admin": self._user_is_admin(),
                  "username": self.getUsername()}
         parms.update(kwargs)
-        return rdw_templating.compileTemplate(template_name, **parms)
+        return rdw_templating.compile_template(template_name, **parms)
 
     # SESSION INFORMATION #
     def checkpassword(self, username, password):

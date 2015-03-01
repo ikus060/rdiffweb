@@ -60,14 +60,14 @@ class rdiffHistoryPage(page_main.rdiffPage):
             return self._writeErrorPage(unicode(e))
 
         try:
-            parms = self.get_parms_for_page(repo_obj)
+            parms = self._get_parms_for_page(repo_obj)
         except librdiff.FileError:
             logger.exception("can't create page params")
             return self._writeErrorPage(unicode(e))
 
         return self._writePage("history.html", **parms)
 
-    def get_parms_for_page(self, repo_obj):
+    def _get_parms_for_page(self, repo_obj):
         assert isinstance(repo_obj, librdiff.RdiffRepo)
 
         # Get history for the repo.

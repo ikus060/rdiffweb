@@ -18,7 +18,6 @@
 
 import sys
 import calendar
-import logging
 import os
 import time
 import urllib
@@ -42,8 +41,8 @@ def encode_s(value):
 
 
 def quote_url(url, safe=None):
-    """encode url but try to keep encoding (unicode vs str)"""
-    # If url is None, return None
+    """encode URL but try to keep encoding (unicode vs str)"""
+    # If URL is None, return None
     if not url:
         return url
     # If safe is define, make sure it's the same object type (either unicode
@@ -59,7 +58,7 @@ def quote_url(url, safe=None):
         url = url.encode('utf8')
         safe = safe.encode('utf8')
 
-    # Url encode
+    # URL encode
     value = urllib.quote(url, safe)
 
     if is_unicode:
@@ -74,7 +73,7 @@ def unquote_url(encodedUrl):
     return urllib.unquote(encodedUrl)
 
 
-def removeDir(directory):
+def remove_dir(directory):
     """Used to remove directory and subdirectory"""
     assert isinstance(directory, str)
     for root, dirs, files in os.walk(directory, topdown=False):
@@ -91,12 +90,6 @@ def removeDir(directory):
             else:
                 os.rmdir(dirPath)
     os.rmdir(directory)
-
-
-def strftime(dateformat, t):
-    """Same as time.strftime() but fixes unicode problem"""
-    assert isinstance(dateformat, unicode)
-    return decode_s(time.strftime(encode_s(dateformat), t))
 
 
 class rdwTime:
@@ -154,8 +147,8 @@ class rdwTime:
         return self.timeInSeconds - self.tzOffset
 
     def getDisplayString(self):
-        return strftime(u"%Y-%m-%d %H:%M:%S",
-                        time.gmtime(self.getLocalSeconds()))
+        return decode_s(time.strftime(encode_s(u"%Y-%m-%d %H:%M:%S"),
+                                      time.gmtime(self.getLocalSeconds())))
 
     def getTimeZoneString(self):
         if self.tzOffset:

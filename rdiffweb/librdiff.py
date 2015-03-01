@@ -880,7 +880,7 @@ class RdiffPath:
                     output = output_dir + TARGZ_SUFFIX
                     self._recursiveTarDir(output_dir, output)
             finally:
-                rdw_helpers.removeDir(output_dir)
+                rdw_helpers.remove_dir(output_dir)
 
         # Return the location of the file to be restored
         return output
