@@ -91,9 +91,8 @@ class rdiffPage:
         return (repo_obj, path_obj)
 
     def getUserDB(self):
-        if not hasattr(cherrypy.thread_data, 'db'):
-            cherrypy.thread_data.db = db.userDB().getUserDBModule()
-        return cherrypy.thread_data.db
+        """Return the user database."""
+        return db.userDB().getUserDBModule()
 
     # PAGE HELPER FUNCTIONS #
 
