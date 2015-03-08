@@ -24,6 +24,7 @@ except ImportError:
     from setuptools import setup, find_packages, Extension
 
 import sys
+import os
 
 # < Python 2.4 does not have the package_data setup keyword, so it is unsupported
 pythonVersion = sys.version_info[0] + sys.version_info[1] / 10.0
@@ -84,6 +85,12 @@ class build(build_):
      sub_commands = build_.sub_commands[:]
      sub_commands.insert(0, ('compile_all_catalogs', None))
 
+_data_files = [('/etc/init.d', ['extras/init/rdiffweb']),
+            ('/etc/logrotate.d', ['extras/logrotate/rdiffweb']),
+           ]
+if not os.path.isfile("/etc/rdiffweb/rdw.conf"):
+  _data_files.append(('/etc/rdiffweb', ['rdw.conf']))
+
 setup(name='rdiffweb',
       version='0.7.0',
       description='A web interface to rdiff-backup repositories',
@@ -100,10 +107,7 @@ setup(name='rdiffweb',
                                  'locales/fr/LC_MESSAGES/messages.mo'
                                  ]
                     },
-      data_files=[('/etc/rdiffweb', ['rdw.conf']),
-                  ('/etc/init.d', ['extras/init/rdiffweb']),
-                  ('/etc/logrotate.d', ['extras/logrotate/rdiffweb']),
-                  ],
+      data_files=_data_files,
       entry_points={"console_scripts": ["rdiffweb = rdiffweb.main:start"]},
       # new commands added and build command modified
       cmdclass={'build': build,
