@@ -101,7 +101,8 @@ setup(name='rdiffweb',
                                  ]
                     },
       data_files=[('/etc/rdiffweb', ['rdw.conf']),
-                  ('/etc/init.d', ['init-script/rdiffweb'])
+                  ('/etc/init.d', ['extras/init/rdiffweb']),
+                  ('/etc/logrotate.d', ['extras/logrotate/rdiffweb']),
                   ],
       entry_points={"console_scripts": ["rdiffweb = rdiffweb.main:start"]},
       # new commands added and build command modified
