@@ -89,10 +89,13 @@ class ldapUserDB(db.userDB):
 
         # Check with local database first.
         if self.delegate.are_valid_credentials(username, password):
+            logger.debug(("valid credentials for [%s]" +
+                         "according to local database") % username)
             return True
 
         # Check if exists exists
         if not self.delegate.exists(username):
+            logger.debug("user [%s] doesn't exists in local database" % username)
             return False
 
         def check_crendential(l, r):
@@ -128,6 +131,10 @@ class ldapUserDB(db.userDB):
 
         """Reusable method to run LDAP operation."""
 
+        # try STARTLS if configured
+        if self.tls:
+            ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+
         # Check LDAP credential only.
         l = ldap.initialize(self.uri)
 
@@ -138,10 +145,6 @@ class ldapUserDB(db.userDB):
             l.protocol_version = ldap.VERSION3
 
         try:
-            # try STARTLS if configured
-            if self.tls:
-                l.start_tls_s()
-
             # Bind to the LDAP server
             logger.debug("binding to ldap server {}".format(self.uri))
             l.simple_bind_s(self.bind_dn, self.bind_password)
@@ -181,11 +184,7 @@ class ldapUserDB(db.userDB):
             return True
 
         # Execute the LDAP operation
-        try:
-            return self._execute(username, check_user_exists)
-        except:
-            logger.exception("can't validate credentials")
-            return False
+        return self._execute(username, check_user_exists)
 
     def get_email(self, username):
         assert isinstance(username, unicode)
