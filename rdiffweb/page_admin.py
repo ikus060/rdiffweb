@@ -151,7 +151,7 @@ class rdiffAdminPage(page_main.rdiffPage):
                 self.getUserDB().set_password(username, None, password)
             self.getUserDB().set_info(username, user_root, is_admin)
             self.getUserDB().set_email(username, email)
-            success = "User information modified successfully."
+            success = _("User information modified successfully.")
 
             # Check and update user directory
             try:

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-01 11:00-0500\n"
+"POT-Creation-Date: 2015-03-28 13:50-0400\n"
 "PO-Revision-Date: 2014-11-14 10:00-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -36,6 +36,10 @@ msgstr "Impossible d'obtenir les informations administrateur."
 #: rdiffweb/page_admin.py:104
 msgid "Can't get user list."
 msgstr "Impossible d'obtenir la liste des utilisateurs."
+
+#: rdiffweb/page_admin.py:154
+msgid "User information modified successfully."
+msgstr "Utilisateur modifié avec succès."
 
 #: rdiffweb/page_browse.py:96
 msgid ""
