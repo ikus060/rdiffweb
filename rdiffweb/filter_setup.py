@@ -17,15 +17,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cherrypy
-import rdw_config
+import logging
 
+import db
+
+# Define the logger
+logger = logging.getLogger(__name__)
 
 def handle_setup():
 
-    """This filter tool redirect users to /setup/ if the configuration
-    file doesn't exists."""
+    """This filter tool redirect users to /setup/ if no users."""
+    # Get the user database.
+    try:
+        userdb = db.userDB().get_userdb_module()
+    except:
+        logger.warn("user database is not configured")
+        userdb = False
 
-    if not rdw_config.get_config_file():
+    if not userdb or len(userdb.list()) == 0:
+        logger.info("redirect user to setup page")
         raise cherrypy.HTTPRedirect("/setup/")
 
 cherrypy.tools.setup = cherrypy.Tool('before_handler', handle_setup)
