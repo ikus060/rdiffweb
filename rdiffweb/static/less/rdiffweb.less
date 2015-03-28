@@ -78,3 +78,17 @@ body {
 		content: '\E807';
 	}
 }
+
+//
+// Dropdown alignment (xs,sm) -- for revision dropdown menu
+// ============================================================================
+.dropdown-menu-right-xs {
+    @media (max-width: @screen-xs-max) {
+        .dropdown-menu-right()
+    }
+}
+.dropdown-menu-left-xs {
+    @media (max-width: @screen-xs-max) {
+        .dropdown-menu-left()
+    }
+}
