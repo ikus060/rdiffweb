@@ -87,13 +87,12 @@
                                 data-toggle="modal"
                                 data-target="#edit-user-{{ user.username }}-modal">
                             {% trans %}Edit{% endtrans %}</button>
-                        {# Don't show delete button for our self. #}
-                        {% if user.username != username %}
+                        {# Disable delete button for our self. #}
                         <button type="button" class="btn btn-danger btn-xs"
                                 data-toggle="modal"
-                                data-target="#delete-user-{{ user.username }}-modal">
+                                data-target="#delete-user-{{ user.username }}-modal"
+                                {% if user.username == username %}disabled="disabled"{% endif %}>
                             {% trans %}Delete{% endtrans %}</button>
-                        {% endif %}
                     </div>
                 </li>
                 {% endfor %}
