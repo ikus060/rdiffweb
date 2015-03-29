@@ -2,21 +2,22 @@
 {% include 'page_start.html' %}
 {% include 'nav_bar.html' %}
 <div class="container">
-    <h2>{{ title }}</h2>
     {% if repos|length == 0 %}
+        <h2>{{ title }}</h2>
 	    {% set message = _("You don't have any repositories configured.") %}
 	    {% include 'message.html' %}
     {% else %}
+    <h2>{{ title }} ({{ repos|length }})</h2>
 	<ul class="list-group">
 		{% for repo in repos %}
 		<li {% if repo.failed %}
-	            class="list-group-item list-group-item-danger"
+	            class="list-group-item list-group-item-danger clearfix"
 	            {% elif repo.in_progress%}
-	            class="list-group-item list-group-item-warning"
+	            class="list-group-item list-group-item-warning clearfix"
 	            {% else %}
-	            class="list-group-item"
+	            class="list-group-item clearfix"
 	            {% endif %}>
-			<h4>
+			<span class="h4">
 				{% if repo.failed %}
 	            <i class="icon-box"></i>{{ repo.name }}
 	            {% else %}
@@ -25,14 +26,16 @@
 	                {{ repo.name }}
 	            </a>
 	            {% endif %}
-            </a>
-            </h4>
+            </span>
+            
+            <div class="pull-right">
 			<span class="light">
 				{% if repo.failed %}{% trans %}Error{% endtrans %}
 	            {% elif repo.in_progress %}{% trans %}In progress{% endtrans %}
 	            {% else %}{% trans %}Last backup: {% endtrans %}{{ repo.last_backup_date | datetime }}
 	            {% endif %}
 			</span>
+			</div>
 		</li>
 		{% endfor %}
 	</ul>
