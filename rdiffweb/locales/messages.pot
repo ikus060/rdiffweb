@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.7.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-28 13:50-0400\n"
+"POT-Creation-Date: 2015-03-29 08:03-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -61,7 +61,17 @@ msgstr ""
 msgid "Fail to restore."
 msgstr ""
 
-#: rdiffweb/templates/admin.html:1 rdiffweb/templates/nav_bar.html:21
+#: rdiffweb/page_setup.py:53
+msgid "can't determine if rdiffweb is configured! Check application log."
+msgstr ""
+
+#: rdiffweb/page_setup.py:60
+msgid ""
+"rdiffweb doesn't have read-write access to the configuration file. You may "
+"try to change the permissions of this file."
+msgstr ""
+
+#: rdiffweb/templates/admin.html:1 rdiffweb/templates/nav_bar.html:25
 msgid "Admin area"
 msgstr ""
 
@@ -105,7 +115,7 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:62 rdiffweb/templates/admin_users.html:110
+#: rdiffweb/templates/admin_users.html:62 rdiffweb/templates/admin_users.html:109
 msgid "Add user"
 msgstr ""
 
@@ -121,60 +131,60 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:95 rdiffweb/templates/admin_users.html:231
+#: rdiffweb/templates/admin_users.html:95 rdiffweb/templates/admin_users.html:230
 msgid "Delete"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:114
+#: rdiffweb/templates/admin_users.html:113
 msgid "LDAP enabled!"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:115
+#: rdiffweb/templates/admin_users.html:114
 msgid ""
 "To create an LDAP user, use the same username and don't enter an email and "
 "password."
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:120 rdiffweb/templates/login.html:27
+#: rdiffweb/templates/admin_users.html:119 rdiffweb/templates/login.html:27
 msgid "Username"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:128 rdiffweb/templates/admin_users.html:176
+#: rdiffweb/templates/admin_users.html:127 rdiffweb/templates/admin_users.html:175
 msgid "Email"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:137 rdiffweb/templates/admin_users.html:185
+#: rdiffweb/templates/admin_users.html:136 rdiffweb/templates/admin_users.html:184
 #: rdiffweb/templates/login.html:30
 msgid "Password"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:146 rdiffweb/templates/admin_users.html:194
+#: rdiffweb/templates/admin_users.html:145 rdiffweb/templates/admin_users.html:193
 msgid "Root directory"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:157 rdiffweb/templates/admin_users.html:212
+#: rdiffweb/templates/admin_users.html:156 rdiffweb/templates/admin_users.html:211
 msgid "Is administrator"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:170
+#: rdiffweb/templates/admin_users.html:169
 #, python-format
 msgid "Edit user %(name)s"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:171
+#: rdiffweb/templates/admin_users.html:170
 msgid "Save changes"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:216
+#: rdiffweb/templates/admin_users.html:215
 msgid "You cannot remove your own admin rights."
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:231
+#: rdiffweb/templates/admin_users.html:230
 #, python-format
 msgid "Delete user %(name)s"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:234
+#: rdiffweb/templates/admin_users.html:233
 #, python-format
 msgid "Are you sure that you wish to delete user `%(username)s`?"
 msgstr ""
@@ -190,7 +200,7 @@ msgid "Browse folder"
 msgstr ""
 
 #: rdiffweb/templates/browse.html:14 rdiffweb/templates/history.html:8
-#: rdiffweb/templates/locations.html:1 rdiffweb/templates/nav_bar.html:16
+#: rdiffweb/templates/locations.html:1 rdiffweb/templates/nav_bar.html:20
 msgid "Repositories"
 msgstr ""
 
@@ -256,7 +266,7 @@ msgstr ""
 msgid "Sign in"
 msgstr ""
 
-#: rdiffweb/templates/login.html:7 rdiffweb/templates/nav_bar.html:10
+#: rdiffweb/templates/login.html:7 rdiffweb/templates/nav_bar.html:14
 #: rdiffweb/templates/page_start.html:4
 msgid "rdiffweb"
 msgstr ""
@@ -292,15 +302,15 @@ msgstr ""
 msgid "Error!"
 msgstr ""
 
-#: rdiffweb/templates/nav_bar.html:6
+#: rdiffweb/templates/nav_bar.html:8
 msgid "Toggle navigation"
 msgstr ""
 
-#: rdiffweb/templates/nav_bar.html:17 rdiffweb/templates/status.html:1
+#: rdiffweb/templates/nav_bar.html:21 rdiffweb/templates/status.html:1
 msgid "Status"
 msgstr ""
 
-#: rdiffweb/templates/nav_bar.html:18
+#: rdiffweb/templates/nav_bar.html:22
 msgid "Preferences"
 msgstr ""
 

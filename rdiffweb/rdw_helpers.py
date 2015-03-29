@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import sys
 import calendar
 import os
@@ -45,18 +47,24 @@ def quote_url(url, safe=None):
     # If URL is None, return None
     if not url:
         return url
+
     # If safe is define, make sure it's the same object type (either unicode
     # or str)
     if safe:
-        assert type(url) == type(safe), "url [%s] and safe [%s] are not the same type" % (type(url), type(safe))
-    else:
-        safe = "/"
+        assert (type(url) == type(safe),
+                "url [%s] and safe [%s] are not the same type" %
+                (type(url), type(safe)))
 
+    # Handle case when URL is unicode.
     is_unicode = False
     if isinstance(url, unicode):
         is_unicode = True
         url = url.encode('utf8')
+    if safe and isinstance(safe, unicode):
         safe = safe.encode('utf8')
+
+    if not safe:
+        safe = b"/"
 
     # URL encode
     value = urllib.quote(url, safe)

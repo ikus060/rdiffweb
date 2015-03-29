@@ -50,16 +50,14 @@ class rdiffSetupPage(page_main.rdiffPage):
         except:
             logger.exception("fail to get users")
             setup_enabled = False
-            warning = "can't determine if rdiffweb is configured !"
+            warning = _("""can't determine if rdiffweb is configured! Check application log.""")
 
         # Check if configuration file exists
         try:
             self._ensure_config_file_exists()
         except:
             setup_enabled = False
-            warning = """rdiffweb doesn't have read-write access to the
-                      configuration file. You may try to change the permissions
-                      of this file."""
+            warning = _("""rdiffweb doesn't have read-write access to the configuration file. You may try to change the permissions of this file.""")
 
         # if no post data, return plain page.
         if not setup_enabled or not self._is_submit():

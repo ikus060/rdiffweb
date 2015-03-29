@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-28 13:50-0400\n"
+"POT-Creation-Date: 2015-03-29 08:03-0400\n"
 "PO-Revision-Date: 2014-11-14 10:00-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -65,7 +65,22 @@ msgstr ""
 msgid "Fail to restore."
 msgstr "Impossible de restaurer les données."
 
-#: rdiffweb/templates/admin.html:1 rdiffweb/templates/nav_bar.html:21
+#: rdiffweb/page_setup.py:53
+msgid "can't determine if rdiffweb is configured! Check application log."
+msgstr ""
+"impossible de déterminer si rdiffweb est configuré! Vérifier les logs de "
+"l'application"
+
+#: rdiffweb/page_setup.py:60
+msgid ""
+"rdiffweb doesn't have read-write access to the configuration file. You "
+"may try to change the permissions of this file."
+msgstr ""
+"rdiffweb n'a pas accès en lecture-écriture au fichier de "
+"configuration.Vous pouvez essayer de modifier les autorisations de ce "
+"fichier."
+
+#: rdiffweb/templates/admin.html:1 rdiffweb/templates/nav_bar.html:25
 msgid "Admin area"
 msgstr "Espace administrative"
 
@@ -111,7 +126,7 @@ msgid "Search"
 msgstr "Rechercher"
 
 #: rdiffweb/templates/admin_users.html:62
-#: rdiffweb/templates/admin_users.html:110
+#: rdiffweb/templates/admin_users.html:109
 msgid "Add user"
 msgstr "Ajouter un utilisateur"
 
@@ -128,15 +143,15 @@ msgid "Edit"
 msgstr "Modifier"
 
 #: rdiffweb/templates/admin_users.html:95
-#: rdiffweb/templates/admin_users.html:231
+#: rdiffweb/templates/admin_users.html:230
 msgid "Delete"
 msgstr "Supprimer"
 
-#: rdiffweb/templates/admin_users.html:114
+#: rdiffweb/templates/admin_users.html:113
 msgid "LDAP enabled!"
 msgstr "LDAP activé!"
 
-#: rdiffweb/templates/admin_users.html:115
+#: rdiffweb/templates/admin_users.html:114
 msgid ""
 "To create an LDAP user, use the same username and don't enter an email "
 "and password."
@@ -144,49 +159,49 @@ msgstr ""
 "Pour créer un utilisateur LDAP, utilisez le même nom d'utilisateur et "
 "n'entrez pas de courriel ou de mot de passe."
 
-#: rdiffweb/templates/admin_users.html:120 rdiffweb/templates/login.html:27
+#: rdiffweb/templates/admin_users.html:119 rdiffweb/templates/login.html:27
 msgid "Username"
 msgstr "Nom d'utilisateur"
 
-#: rdiffweb/templates/admin_users.html:128
-#: rdiffweb/templates/admin_users.html:176
+#: rdiffweb/templates/admin_users.html:127
+#: rdiffweb/templates/admin_users.html:175
 msgid "Email"
 msgstr "Courriel"
 
-#: rdiffweb/templates/admin_users.html:137
-#: rdiffweb/templates/admin_users.html:185 rdiffweb/templates/login.html:30
+#: rdiffweb/templates/admin_users.html:136
+#: rdiffweb/templates/admin_users.html:184 rdiffweb/templates/login.html:30
 msgid "Password"
 msgstr "Mot de passe"
 
-#: rdiffweb/templates/admin_users.html:146
-#: rdiffweb/templates/admin_users.html:194
+#: rdiffweb/templates/admin_users.html:145
+#: rdiffweb/templates/admin_users.html:193
 msgid "Root directory"
 msgstr "Répertoire racine"
 
-#: rdiffweb/templates/admin_users.html:157
-#: rdiffweb/templates/admin_users.html:212
+#: rdiffweb/templates/admin_users.html:156
+#: rdiffweb/templates/admin_users.html:211
 msgid "Is administrator"
 msgstr "Est un administrateur"
 
-#: rdiffweb/templates/admin_users.html:170
+#: rdiffweb/templates/admin_users.html:169
 #, python-format
 msgid "Edit user %(name)s"
 msgstr "Modifier l'utilisateur %(name)s"
 
-#: rdiffweb/templates/admin_users.html:171
+#: rdiffweb/templates/admin_users.html:170
 msgid "Save changes"
 msgstr "Enregistrer modifications"
 
-#: rdiffweb/templates/admin_users.html:216
+#: rdiffweb/templates/admin_users.html:215
 msgid "You cannot remove your own admin rights."
 msgstr "Vous ne pouvez pas supprimer vos propres droits d'administrateur."
 
-#: rdiffweb/templates/admin_users.html:231
+#: rdiffweb/templates/admin_users.html:230
 #, python-format
 msgid "Delete user %(name)s"
 msgstr "Supprimer l'utilisateur %(name)s"
 
-#: rdiffweb/templates/admin_users.html:234
+#: rdiffweb/templates/admin_users.html:233
 #, python-format
 msgid "Are you sure that you wish to delete user `%(username)s`?"
 msgstr "Êtes-vous sûr que vous voulez supprimer l'utilisateur `%(username)s`?"
@@ -202,7 +217,7 @@ msgid "Browse folder"
 msgstr "Parcourir répertoire"
 
 #: rdiffweb/templates/browse.html:14 rdiffweb/templates/history.html:8
-#: rdiffweb/templates/locations.html:1 rdiffweb/templates/nav_bar.html:16
+#: rdiffweb/templates/locations.html:1 rdiffweb/templates/nav_bar.html:20
 msgid "Repositories"
 msgstr "Dépôts"
 
@@ -268,7 +283,7 @@ msgstr "Dernière sauvegarde : "
 msgid "Sign in"
 msgstr "Se connecter"
 
-#: rdiffweb/templates/login.html:7 rdiffweb/templates/nav_bar.html:10
+#: rdiffweb/templates/login.html:7 rdiffweb/templates/nav_bar.html:14
 #: rdiffweb/templates/page_start.html:4
 msgid "rdiffweb"
 msgstr "rdiffweb"
@@ -306,15 +321,15 @@ msgstr "Avertissement!"
 msgid "Error!"
 msgstr "Erreur!"
 
-#: rdiffweb/templates/nav_bar.html:6
+#: rdiffweb/templates/nav_bar.html:8
 msgid "Toggle navigation"
 msgstr "Basculer la navigation"
 
-#: rdiffweb/templates/nav_bar.html:17 rdiffweb/templates/status.html:1
+#: rdiffweb/templates/nav_bar.html:21 rdiffweb/templates/status.html:1
 msgid "Status"
 msgstr "État"
 
-#: rdiffweb/templates/nav_bar.html:18
+#: rdiffweb/templates/nav_bar.html:22
 msgid "Preferences"
 msgstr "Préférences"
 
@@ -442,4 +457,7 @@ msgstr "Taille de la sauvegarde: "
 #: rdiffweb/templates/status.html:89
 msgid "The following repositories contain errors: "
 msgstr "Les dépôts suivants contiennent des erreurs: "
+
+#~ msgid ""
+#~ msgstr ""
 

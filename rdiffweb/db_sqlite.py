@@ -31,8 +31,7 @@ class sqliteUserDB:
     def __init__(self, configFilePath=None, autoConvertDatabase=True):
         self.configFilePath = configFilePath
         # Get database location.
-        self._databaseFilePath = rdw_config.get_config(
-            "SqliteDBFile", self.configFilePath)
+        self._databaseFilePath = rdw_config.get_config("SqliteDBFile")
         # If the database path is not define default to /etc/rdiffweb/rdw.db
         if self._databaseFilePath == "":
             self._databaseFilePath = "/etc/rdiffweb/rdw.db"
@@ -299,8 +298,7 @@ MaxAge tinyint NOT NULL DEFAULT 0)"""
             cursor.execute(statement)
 
         if self._autoConvertDatabase:
-            prevDBType = rdw_config.get_config(
-                "UserDB", self.configFilePath)
+            prevDBType = rdw_config.get_config("UserDB")
             if prevDBType.lower() == "mysql":
                 print 'Converting database from mysql...'
                 import db_mysql
@@ -318,10 +316,8 @@ MaxAge tinyint NOT NULL DEFAULT 0)"""
                 print 'Converting database from file...'
                 import db_file
                 prevDB = db_file.fileUserDB(self.configFilePath)
-                username = rdw_config.get_config(
-                    "username", self.configFilePath)
-                password = rdw_config.get_config(
-                    "password", self.configFilePath)
+                username = rdw_config.get_config("username")
+                password = rdw_config.get_config("password")
                 self.add_user(username)
                 self.set_password(username, None, password)
                 self.set_info(username, prevDB.get_root_dir(username), True)

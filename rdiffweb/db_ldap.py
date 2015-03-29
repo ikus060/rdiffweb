@@ -40,47 +40,36 @@ class ldapUserDB(db.userDB):
         delegate to external database."""
 
         self.delegate = delegate
-        self.configFilePath = configFilePath
 
         # Get LDAP configuration parameters
-        self.uri = rdw_config.get_config(
-            "LdapUri", self.configFilePath, None)
+        self.uri = rdw_config.get_config("LdapUri", None)
         if self.uri is None:
             raise "LdapUri must be define in configuration"
-        self.tls = rdw_config.get_config(
-            "LdapTls", self.configFilePath).lower() == "true"
-        self.base_dn = rdw_config.get_config(
-            "LdapBaseDn", self.configFilePath, None)
+        self.tls = rdw_config.get_config("LdapTls").lower() == "true"
+        self.base_dn = rdw_config.get_config("LdapBaseDn", None)
         if self.uri is None:
             raise "LdapUri must be define in configuration"
-        self.attribute = rdw_config.get_config(
-            "LdapAttribute", self.configFilePath, "uid")
-        self.scope = rdw_config.get_config(
-            "LdapScope", self.configFilePath, "subtree")
+        self.attribute = rdw_config.get_config("LdapAttribute", "uid")
+        self.scope = rdw_config.get_config("LdapScope", "subtree")
         if self.scope == "base":
             self.scope = ldap.SCOPE_BASE
         elif self.scope == "onelevel":
             self.scope = ldap.SCOPE_ONELEVEL
         else:
             self.scope = ldap.SCOPE_SUBTREE
-        self.filter = rdw_config.get_config(
-            "LdapFilter", self.configFilePath, "(objectClass=*)")
-        self.bind_dn = rdw_config.get_config(
-            "LdapBindDn", self.configFilePath, "")
-        self.bind_password = rdw_config.get_config(
-            "LdapBindPassword", self.configFilePath, "")
+        self.filter = rdw_config.get_config("LdapFilter", "(objectClass=*)")
+        self.bind_dn = rdw_config.get_config("LdapBindDn", "")
+        self.bind_password = rdw_config.get_config("LdapBindPassword", "")
         # Get Version
-        self.version = rdw_config.get_config_int(
-            "LdapVersion", self.configFilePath, 3)
+        self.version = rdw_config.get_config_int("LdapVersion", 3)
         # Get Network timeout
         self.network_timeout = rdw_config.get_config_int(
-            "LdapNetworkTimeout", self.configFilePath, 100)
+            "LdapNetworkTimeout", 100)
         # Get Timeout
-        self.timeout = rdw_config.get_config_int(
-            "LdapTimeout", self.configFilePath, 300)
+        self.timeout = rdw_config.get_config_int("LdapTimeout", 300)
         # Check if password change are allowed.
         self.allow_password_change = rdw_config.get_config_boolean(
-            "LdapAllowPasswordChange", self.configFilePath)
+            "LdapAllowPasswordChange")
 
     def are_valid_credentials(self, username, password):
         """Check if the given credential as valid according to LDAP."""

@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import db_sql
 import rdw_config
 import warnings
@@ -203,13 +205,10 @@ class mysqlUserDB:
 
     def _connect(self):
         import MySQLdb
-        sqlHost = rdw_config.get_config("MySQLHost", self.configFilePath)
-        sqlUsername = rdw_config.get_config(
-            "MySQLUsername", self.configFilePath)
-        sqlPassword = rdw_config.get_config(
-            "MySQLPassword", self.configFilePath)
-        sqlDatabaseName = rdw_config.get_config(
-            "MySQLDatabase", self.configFilePath)
+        sqlHost = rdw_config.get_config("MySQLHost")
+        sqlUsername = rdw_config.get_config("MySQLUsername")
+        sqlPassword = rdw_config.get_config("MySQLPassword")
+        sqlDatabaseName = rdw_config.get_config("MySQLDatabase")
         self.sqlConnection = MySQLdb.connect(
             host=sqlHost, user=sqlUsername, passwd=sqlPassword, db=sqlDatabaseName)
 
@@ -318,5 +317,5 @@ class mysqlUserDBTest(db_sql.sqlUserDBTest):
         except MySQLdb.IntegrityError:
             pass
         else:
-            assert(false)
+            assert(False)
         warnings.resetwarnings()

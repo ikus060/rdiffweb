@@ -74,6 +74,8 @@ That's it.
 :Date: 2010-02-08
 """
 
+from __future__ import unicode_literals
+
 import cherrypy
 import gettext
 import logging

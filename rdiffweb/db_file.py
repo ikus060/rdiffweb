@@ -16,40 +16,40 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
+
 import rdw_config
 import db
 
 
 class fileUserDB(db.userDB):
 
-    def __init__(self, configFilePath=None):
-        self.configFilePath = configFilePath
+    def __init__(self):
+        """Nothing to do"""
 
     def exists(self, username):
-        valid_username = rdw_config.get_config(
-            "username", self.configFilePath)
+        valid_username = rdw_config.get_config("username")
         return valid_username == username
 
     def are_valid_credentials(self, username, password):
         """The valid users string in the config file is in the form:
             username=bill
             password=frank """
-        valid_username = rdw_config.get_config(
-            "username", self.configFilePath)
-        valid_password = rdw_config.get_config(
-            "password", self.configFilePath)
+        valid_username = rdw_config.get_config("username")
+        valid_password = rdw_config.get_config("password")
         return valid_username == username and valid_password == password
 
     def get_root_dir(self, username):
         if not self.exists(username):
             return None
-        return rdw_config.get_config("UserRoot", self.configFilePath)
+        return rdw_config.get_config("UserRoot")
 
     def get_repos(self, username):
         """The user home dirs string in the config file is in the form of username:/data/dir|/data/dir2..."""
         if not self.exists(username):
             return None
-        return rdw_config.get_config("UserRepoPaths", self.configFilePath).split("|")
+        return rdw_config.get_config("UserRepoPaths").split("|")
 
     def is_admin(self, username):
         return False

@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import cherrypy
 import getopt
 import os
@@ -54,15 +56,17 @@ def start():
     debug = False
     autoReload = False
     pidFile = ""
-    logFile = ""
-    logAccessFile = ""
+    logFile = b""
+    logAccessFile = b""
+    configfile = False
 
     opts, extraparams = getopt.getopt(sys.argv[1:],
-                                      'vdr',
+                                      'vdrf',
                                       ['debug',
                                        'log-file=',
                                        'log-access-file=',
                                        'pid-file=',
+                                       'config='
                                        'background',
                                        'autoreload'])
     for option, value in opts:
@@ -76,6 +80,8 @@ def start():
             logAccessFile = value
         elif option in ['--pid-file']:
             pidFile = value
+        elif option in ['-f', '--config']:
+            configfile = value
         elif option in ['--background']:
             rdw_helpers.daemonize()
 
@@ -96,16 +102,14 @@ def start():
         logging.root.handlers[0].addFilter(NotFilter("cherrypy.access"))
     logging.root.handlers[0].addFilter(ContextFilter())
     # Check if configuration file exists
-    config_file = rdw_config.get_config_file()
-    if not os.access(config_file, os.F_OK):
-        logger.warn("configuration file is not accessible: %s" % config_file)
+    if configfile:
+        rdw_config.set_config_file(configfile)
 
     # Get configuration
-    serverHost = rdw_config.get_config("ServerHost", default="0.0.0.0")
-    try:
-        serverPort = int(rdw_config.get_config("ServerPort", default="8080"))
-    except ValueError:
-        logger.error("ServerPort should be a port number")
+    serverHost = rdw_config.get_config_str("ServerHost", default="0.0.0.0")
+    serverPort = rdw_config.get_config_int("ServerPort", default=8080)
+    if not serverPort:
+        logger.error("ServerPort should be a port number: %s" % (serverPort))
         sys.exit(1)
     sslCertificate = rdw_config.get_config("SslCertificate")
     sslPrivateKey = rdw_config.get_config("SslPrivateKey")
@@ -136,7 +140,7 @@ def start():
     }
 
     page_settings = {
-        '/': {
+        b'/': {
             'tools.authform.on': True,
             'tools.setup.on': True,
             'tools.i18n.on': True,
@@ -144,22 +148,22 @@ def start():
             'tools.i18n.mo_dir': localesdir,
             'tools.i18n.domain': 'messages'
         },
-        '/login': {
+        b'/login': {
             'tools.authform.on': False,
         },
-        '/status/feed': {
+        b'/status/feed': {
             'tools.authform.on': False,
             'tools.authbasic.on': True,
             'tools.authbasic.checkpassword': page_login.rdiffLoginPage().checkpassword
         },
-        '/static': {
+        b'/static': {
             'tools.staticdir.on': True,
             'tools.staticdir.root': os.path.abspath(os.path.dirname(__file__)),
             'tools.staticdir.dir': "static",
             'tools.authform.on': False,
             'tools.setup.on': False,
         },
-        '/setup': {
+        b'/setup': {
             'tools.setup.on': False,
             'tools.authform.on': False,
             'tools.sessions.on': False,
