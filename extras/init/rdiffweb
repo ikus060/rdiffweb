@@ -29,8 +29,6 @@
 DEBUG=0
 AUTORELOAD=0
 
-#DEBUG=true
-
 ## Options you should probably not change ##
 DESC="rdiffweb server"
 NAME=rdiffweb
@@ -57,7 +55,7 @@ ACCESSLOGFILE="/var/log/$NAME-access.log"
 . /lib/lsb/init-functions
 
 ## Build extra options ##
-DAEMON_ARGS="--log-access-file=$ACCESSLOGFILE --log-file=$LOGFILE"
+DAEMON_ARGS="--log-access-file=$ACCESSLOGFILE"
 if [ "$DEBUG" = "1" ]; then
   DAEMON_ARGS="$DAEMON_ARGS --debug"
 fi
@@ -74,12 +72,11 @@ do_start()
   #   0 if daemon has been started
   #   1 if daemon was already running
   #   2 if daemon could not be started
-  start-stop-daemon --start --background --quiet \
-    --pidfile $PIDFILE --startas $DAEMON --test > /dev/null \
+  start-stop-daemon --start --background --quiet --pidfile $PIDFILE --test \
+    --startas $DAEMON > /dev/null \
     || return 1
-  start-stop-daemon --start --background --quiet \
-    --pidfile $PIDFILE --make-pidfile --exec $DAEMON -- \
-    $DAEMON_ARGS \
+  start-stop-daemon --start --background --quiet --pidfile $PIDFILE --make-pidfile \
+    --startas /bin/bash -- -c "exec $DAEMON $DAEMON_ARGS >> $LOGFILE 2>&1" \
     || return 2
 }
 
@@ -107,19 +104,6 @@ do_stop()
   # Many daemons don't delete their pidfiles when they exit.
   rm -f $PIDFILE
   return "$RETVAL"
-}
-
-#
-# Function that sends a SIGHUP to the daemon/service
-#
-do_reload() {
-  #
-  # If the daemon can reload its configuration without
-  # restarting (for example, when it is sent a SIGHUP),
-  # then implement that here.
-  #
-  start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name $NAME
-  return 0
 }
 
 case "$1" in
