@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+    <channel>
+        <title>Backup Status for {{ username }}</title>
+        <link>{{ link }}</link>
+        <description>Up-to-the-minute backup status for {{ username }}'s
+            backups
+        </description>
+        {% for message in messages %}
+        <!--StartRepeat:messages -->
+
+        <item>
+            <!-- BACKUP SUCCESS -->
+            {% if message.is_success %}
+            <!--StartIncludeIf:isSuccess -->
+            <title>Successful Backups for {{ message.date | datetime }}
+            </title>
+            {% else %}
+            <!--EndIncludeIf:isSuccess -->
+            <!-- BACKUP FAILURE -->
+            <!--StartDeleteIf:isSuccess -->
+            <title>Backup Completed with Errors: {{ message.repo }}</title>
+            <!--EndDeleteIf:isSuccess -->
+            {% endif %}
+            <link>{{ message.link }}</link>
+            <description><![CDATA[
+                {% if message.is_success %}
+                <!--StartIncludeIf:isSuccess -->
+                <p>The following backups have completed successfully:
+                </p>
+                <ul>
+                    {% for backup in message.backups %}
+                    <!--StartRepeat:backups -->
+                    <li>{{ backup.date | datetime }} - {{ backup.repo
+                        }} - {{ backup.size | filesize }}</li>
+                    <!--EndRepeat:backups -->
+                    {% endfor %}
+                </ul>
+                <!--EndIncludeIf:isSuccess -->
+                {% else %}
+                <!-- BACKUP FAILURE -->
+                <!--StartDeleteIf:isSuccess -->
+                <p>
+                    The backup to
+                    <strong>{{ message.repo }}</strong>
+                    on
+                    <strong>{{ message.date | datetime }}</strong>
+                    completed with the following errors:
+                </p>
+                <blockquote>{{ message.errors }}</blockquote>
+                <p>Backup size: {{ message.size | filesize }}</p>
+
+                {% endif %}
+                <!--EndDeleteIf:isSuccess -->
+
+                <!--StartIncludeIf:repoErrors -->
+                {% if message.repoErrors %}
+                <p>The following repositories contain errors:</p>
+                <ul>
+                    {% for repoErro in message.repoErrors %}
+                    <!--StartRepeat:repoErrors -->
+                    <li>{{ repoErro.repo }}: {{ repoErro.error }}</li>
+                    <!--EndRepeat:repoErrors -->
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                <!--EndIncludeIf:repoErrors -->
+
+            ]]></description>
+            <pubDate>{{ message.date | datetime("%a, %d %b %Y %H:%M:%S +0000") }}</pubDate>
+        </item>
+        {% endfor %}
+        <!--EndRepeat:messages -->
+    </channel>
+</rss>

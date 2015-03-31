@@ -1,10 +1,11 @@
 Metadata-Version: 1.0
-Name: rdiffWeb
-Version: 0.6.5
+Name: rdiffweb
+Version: 0.7.0
 Summary: A web interface to rdiff-backup repositories
-Home-page: http://www.rdiffweb.org
-Author: Josh Nisly
-Author-email: rdiffweb@joshnisly.com
+Home-page: http://www.patrikdufresne.com/en/rdiffweb/
+Author: Patrik Dufresne
+Author-email: info@patrikdufresne.com
 License: GPLv3
-Description: UNKNOWN
-Platform: UNKNOWN
+Description: Originally developped by Josh Nisly, rdiffweb is a web interface 
+             for browsing and restoring from rdiff-backup repositories.
+Platform: POSIX

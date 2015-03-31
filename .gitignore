@@ -25,3 +25,8 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+/node_modules/
+.project
+.externalToolBuilders
+.settings
+/ez_setup

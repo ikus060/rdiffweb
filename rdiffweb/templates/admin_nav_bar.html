@@ -1,0 +1,9 @@
+{# Navigation bar for Administration #}
+<ul class="nav nav-tabs" role="tablist">
+	<li {% if not admin_nav_active %}class="active"{% endif %}>
+		<a href="/admin/">{% trans %}General info{% endtrans %}</a>
+	</li>
+	<li {% if admin_nav_active=="users"%}class="active"{% endif %}>
+		<a href="/admin/users/">{% trans %}Users{% endtrans %}</a>
+	</li>
+</ul>
