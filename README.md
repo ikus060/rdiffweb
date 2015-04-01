@@ -3,7 +3,6 @@ rdiffweb
 Release under GPLv3
 
 # Installation
-ref.: http://www.rdiffweb.org/wiki/index.php?title=Installation
 
 To install rdifWeb, you need to install the the prerequisites. On Debian distribution you may proceed as follow.
 
