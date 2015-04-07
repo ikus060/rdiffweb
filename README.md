@@ -6,7 +6,7 @@ Release under GPLv3
 
 To install rdifWeb, you need to install the the prerequisites. On Debian distribution you may proceed as follow.
 
-    sudo apt-get install python-cherrypy3 python-pysqlite2 libsqlite3-dev python-jinja2 python-setuptools python-babel
+    sudo apt-get install python-cherrypy3 python-pysqlite2 libsqlite3-dev python-jinja2 python-setuptools python-babel rdiff-backup 
 
 Then you may download a snapshot of the repository and proceed with the installation on your system.
 
