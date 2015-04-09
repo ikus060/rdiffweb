@@ -15,6 +15,8 @@ Then you may download a snapshot of the repository and proceed with the installa
     cd rdiffweb-*
     python setup.py build
     sudo python setup.py install
+    
+    sudo update-rc.d rdiffweb defaults
   
 Start rdiffweb server using this command line.
 
