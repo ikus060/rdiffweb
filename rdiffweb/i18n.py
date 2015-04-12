@@ -109,6 +109,8 @@ def ugettext(message):
     :returns: The translated message.
     :rtype: Unicode
     """
+    if not hasattr(cherrypy.response, "i18n"):
+        return message
     return cherrypy.response.i18n.trans.ugettext(message)
 
 
@@ -127,6 +129,8 @@ def ungettext(singular, plural, num):
     :returns: The translated message as singular or plural.
     :rtype: Unicode
     """
+    if not hasattr(cherrypy.response, "i18n"):
+        return singular
     return cherrypy.response.i18n.trans.ungettext(singular, plural, num)
 
 
