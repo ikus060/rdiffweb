@@ -24,11 +24,13 @@ import stat
 import logging
 import page_main
 
+from i18n import ugettext as _
+
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-class rdiffSetupPage(page_main.rdiffPage):
+class SetupPage(page_main.MainPage):
 
     """
     Helps the user through initial rdiffweb setup.
@@ -44,7 +46,7 @@ class rdiffSetupPage(page_main.rdiffPage):
 
         # Check if users already exists
         try:
-            if len(self.getUserDB().list()) > 0:
+            if len(self.app.userdb.list()) > 0:
                 setup_enabled = False
                 message = "rdiffweb is already configured !"
         except:
@@ -57,11 +59,12 @@ class rdiffSetupPage(page_main.rdiffPage):
             self._ensure_config_file_exists()
         except:
             setup_enabled = False
+            logger.exception("no access to configuration file")
             warning = _("""rdiffweb doesn't have read-write access to the configuration file. You may try to change the permissions of this file.""")
 
         # if no post data, return plain page.
         if not setup_enabled or not self._is_submit():
-            return self._writePage("setup.html",
+            return self._compile_template("setup.html",
                                    setup_enabled=setup_enabled,
                                    message=message,
                                    warning=warning,
@@ -83,7 +86,7 @@ class rdiffSetupPage(page_main.rdiffPage):
             logger.exception("fail to complete setup")
             error = "Error! " + str(e)
 
-        return self._writePage("setup.html",
+        return self._compile_template("setup.html",
                                setup_enabled=setup_enabled,
                                completed=completed,
                                admin_username=admin_username,
@@ -94,21 +97,20 @@ class rdiffSetupPage(page_main.rdiffPage):
 
     def _set_admin_user(self, username, password):
         # Create the user
-        self.getUserDB().add_user(username)
-        self.getUserDB().set_password(username, None, password)
+        self.app.userdb.add_user(username)
+        self.app.userdb.set_password(username, None, password)
 
     def _set_admin_root(self, username, userRoot):
         # Sets admin root
-        self.getUserDB().set_info(username, userRoot, True)
+        self.app.userdb.set_info(username, userRoot, True)
 
     def _ensure_config_file_exists(self):
         """Try to access or create the configuration file. It raised an
         exception if the configuration file is not accessible."""
+        config_file = self.app.config.get_config_file()
         try:
-            if not os.path.exists("/etc/rdiffweb"):
-                os.mkdir("/etc/rdiffweb", stat.S_IRWXU)
-            if not os.path.exists("/etc/rdiffweb/rdw.conf"):
-                open("/etc/rdiffweb/rdw.conf", "a").close()
-                os.chmod("/etc/rdiffweb/rdw.conf", stat.S_IRWXU)
+            if not os.path.exists(config_file):
+                open(config_file, "a").close()
+                os.chmod(config_file, stat.S_IRWXU)
         except OSError as error:
             raise ValueError(str(error))

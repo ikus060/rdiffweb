@@ -31,7 +31,7 @@ from rdw_helpers import encode_s, decode_s, unquote_url
 logger = logging.getLogger(__name__)
 
 
-class rdiffStatusPage(page_main.rdiffPage):
+class StatusPage(page_main.MainPage):
 
     def _cp_dispatch(self, vpath):
         """Used to handle permalink URL.
@@ -63,7 +63,7 @@ class rdiffStatusPage(page_main.rdiffPage):
             entry_time.initFromInt(int(date))
         except ValueError:
             logger.exception("invalid date")
-            return self._writeErrorPage(_("Invalid date."))
+            return self._compile_error_template(_("Invalid date."))
 
         if not path_b:
             userMessages = self._get_user_messages_for_day(entry_time)
@@ -73,7 +73,7 @@ class rdiffStatusPage(page_main.rdiffPage):
                 (repo_obj, path_obj) = self.validate_user_path(path_b)
             except librdiff.FileError as e:
                 logger.exception("invalid user path")
-                return self._writeErrorPage(unicode(e))
+                return self._compile_error_template(unicode(e))
 
             userMessages = self._getUserMessages(
                 [repo_obj.path], False, True, entry_time, entry_time)
@@ -85,7 +85,7 @@ class rdiffStatusPage(page_main.rdiffPage):
         cherrypy.response.headers["Content-Type"] = "text/xml"
         userMessages = self._get_recent_user_messages(failures != "")
         statusUrl = self._buildAbsolutePageUrl(failures != "")
-        return self._writePage("status.xml",
+        return self._compile_template("status.xml",
                                link=statusUrl,
                                messages=userMessages)
 
@@ -93,11 +93,11 @@ class rdiffStatusPage(page_main.rdiffPage):
 
         if isMainPage:
             feedLink = self._buildStatusFeedUrl(failuresOnly)
-            feedTitle = "Backup status for " + self.getUsername()
+            feedTitle = "Backup status for " + self.get_username()
         else:
             feedLink = ""
             feedTitle = ""
-        return self._writePage("status.html",
+        return self._compile_template("status.html",
                                messages=messages,
                                feedLink=feedLink,
                                failuresOnly=failuresOnly,
@@ -118,7 +118,7 @@ class rdiffStatusPage(page_main.rdiffPage):
         return url
 
     def _get_user_messages_for_day(self, date):
-        userRepos = self.getUserDB().get_repos(self.getUsername())
+        userRepos = self.app.userdb.get_repos(self.get_username())
 
         # Set the start and end time to be the start and end of the day,
         # respectively, to get all entries for that day
@@ -136,7 +136,7 @@ class rdiffStatusPage(page_main.rdiffPage):
                                      startTime, endTime)
 
     def _get_recent_user_messages(self, failuresOnly):
-        user_repos = self.getUserDB().get_repos(self.getUsername())
+        user_repos = self.app.userdb.get_repos(self.get_username())
         asOfDate = rdw_helpers.rdwTime()
         asOfDate.initFromMidnightUTC(-5)
 
@@ -150,7 +150,7 @@ class rdiffStatusPage(page_main.rdiffPage):
                          earliest_date,
                          latest_date):
 
-        user_root = self.getUserDB().get_root_dir(self.getUsername())
+        user_root = self.app.userdb.get_root_dir(self.get_username())
         user_root_b = encode_s(user_root)
 
         repoErrors = []

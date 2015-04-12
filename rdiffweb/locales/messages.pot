@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.7.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-29 08:03-0400\n"
+"POT-Creation-Date: 2015-04-10 16:40-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,8 @@ msgstr ""
 msgid "An unknown error occurred."
 msgstr ""
 
-#: rdiffweb/librdiff.py:62 rdiffweb/page_admin.py:55 rdiffweb/page_admin.py:79
+#: rdiffweb/librdiff.py:62 rdiffweb/page_admin.py:55 rdiffweb/page_admin.py:80
+#: rdiffweb/page_admin.py:121
 msgid "Access denied."
 msgstr ""
 
@@ -33,11 +34,19 @@ msgstr ""
 msgid "Can't get admin information."
 msgstr ""
 
-#: rdiffweb/page_admin.py:104
+#: rdiffweb/page_admin.py:87
+msgid "Fail to get list of plugins."
+msgstr ""
+
+#: rdiffweb/page_admin.py:138
+msgid "Fail to execute operation."
+msgstr ""
+
+#: rdiffweb/page_admin.py:146
 msgid "Can't get user list."
 msgstr ""
 
-#: rdiffweb/page_admin.py:154
+#: rdiffweb/page_admin.py:196
 msgid "User information modified successfully."
 msgstr ""
 
@@ -45,6 +54,18 @@ msgstr ""
 msgid ""
 "A backup is currently in progress to this repository. The displayed data may "
 "be inconsistent."
+msgstr ""
+
+#: rdiffweb/page_locations.py:51
+msgid "fail to get user's locations"
+msgstr ""
+
+#: rdiffweb/page_login.py:78
+msgid "Invalid username or password."
+msgstr ""
+
+#: rdiffweb/page_login.py:81
+msgid "Fail to validate user credential."
 msgstr ""
 
 #: rdiffweb/page_restore.py:105 rdiffweb/page_status.py:66
@@ -61,17 +82,17 @@ msgstr ""
 msgid "Fail to restore."
 msgstr ""
 
-#: rdiffweb/page_setup.py:53
+#: rdiffweb/page_setup.py:55
 msgid "can't determine if rdiffweb is configured! Check application log."
 msgstr ""
 
-#: rdiffweb/page_setup.py:60
+#: rdiffweb/page_setup.py:62
 msgid ""
 "rdiffweb doesn't have read-write access to the configuration file. You may "
 "try to change the permissions of this file."
 msgstr ""
 
-#: rdiffweb/templates/admin.html:1 rdiffweb/templates/nav_bar.html:25
+#: rdiffweb/templates/admin.html:1 rdiffweb/templates/nav_bar.html:36
 msgid "Admin area"
 msgstr ""
 
@@ -89,6 +110,39 @@ msgstr ""
 
 #: rdiffweb/templates/admin_nav_bar.html:7 rdiffweb/templates/admin_users.html:57
 msgid "Users"
+msgstr ""
+
+#: rdiffweb/templates/admin_nav_bar.html:10
+#: rdiffweb/templates/admin_plugins.html:22
+msgid "Plugins"
+msgstr ""
+
+#: rdiffweb/templates/admin_plugins.html:1
+msgid "Plugin management"
+msgstr ""
+
+#: rdiffweb/templates/admin_plugins.html:33
+msgid "Enabled"
+msgstr ""
+
+#: rdiffweb/templates/admin_plugins.html:36
+msgid "Disabled"
+msgstr ""
+
+#: rdiffweb/templates/admin_plugins.html:41
+msgid "Author"
+msgstr ""
+
+#: rdiffweb/templates/admin_plugins.html:47
+msgid "Description"
+msgstr ""
+
+#: rdiffweb/templates/admin_plugins.html:54
+msgid "Copyright"
+msgstr ""
+
+#: rdiffweb/templates/admin_plugins.html:59
+msgid "Location"
 msgstr ""
 
 #: rdiffweb/templates/admin_users.html:1
@@ -145,7 +199,7 @@ msgid ""
 "password."
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:119 rdiffweb/templates/login.html:27
+#: rdiffweb/templates/admin_users.html:119 rdiffweb/templates/login.html:29
 msgid "Username"
 msgstr ""
 
@@ -154,7 +208,7 @@ msgid "Email"
 msgstr ""
 
 #: rdiffweb/templates/admin_users.html:136 rdiffweb/templates/admin_users.html:184
-#: rdiffweb/templates/login.html:30
+#: rdiffweb/templates/login.html:32
 msgid "Password"
 msgstr ""
 
@@ -200,7 +254,7 @@ msgid "Browse folder"
 msgstr ""
 
 #: rdiffweb/templates/browse.html:14 rdiffweb/templates/history.html:8
-#: rdiffweb/templates/locations.html:1 rdiffweb/templates/nav_bar.html:20
+#: rdiffweb/templates/locations.html:1 rdiffweb/templates/nav_bar.html:31
 msgid "Repositories"
 msgstr ""
 
@@ -241,7 +295,7 @@ msgstr ""
 msgid "Result"
 msgstr ""
 
-#: rdiffweb/templates/history.html:53 rdiffweb/templates/locations.html:32
+#: rdiffweb/templates/history.html:53 rdiffweb/templates/locations.html:35
 msgid "In progress"
 msgstr ""
 
@@ -249,7 +303,7 @@ msgstr ""
 msgid "Success"
 msgstr ""
 
-#: rdiffweb/templates/history.html:58 rdiffweb/templates/locations.html:31
+#: rdiffweb/templates/history.html:58 rdiffweb/templates/locations.html:34
 msgid "Error"
 msgstr ""
 
@@ -257,32 +311,27 @@ msgstr ""
 msgid "You don't have any repositories configured."
 msgstr ""
 
-#: rdiffweb/templates/locations.html:33
+#: rdiffweb/templates/locations.html:36
 msgid "Last backup: "
 msgstr ""
 
-#: rdiffweb/templates/login.html:1 rdiffweb/templates/login.html:24
-#: rdiffweb/templates/login.html:32
+#: rdiffweb/templates/login.html:1 rdiffweb/templates/login.html:26
+#: rdiffweb/templates/login.html:34
 msgid "Sign in"
 msgstr ""
 
-#: rdiffweb/templates/login.html:7 rdiffweb/templates/nav_bar.html:14
-#: rdiffweb/templates/page_start.html:4
-msgid "rdiffweb"
-msgstr ""
-
-#: rdiffweb/templates/login.html:9
+#: rdiffweb/templates/login.html:10
 msgid ""
 "Originally developed by Josh Nisly, rdiffweb is a web interface for browsing "
 "and restoring from rdiff-backup repositories."
 msgstr ""
 
-#: rdiffweb/templates/login.html:13
+#: rdiffweb/templates/login.html:14
 #, python-format
 msgid "version %(version)s"
 msgstr ""
 
-#: rdiffweb/templates/login.html:26
+#: rdiffweb/templates/login.html:28
 msgid "Enter your username and password to log in."
 msgstr ""
 
@@ -306,19 +355,19 @@ msgstr ""
 msgid "Toggle navigation"
 msgstr ""
 
-#: rdiffweb/templates/nav_bar.html:21 rdiffweb/templates/status.html:1
+#: rdiffweb/templates/nav_bar.html:32 rdiffweb/templates/status.html:1
 msgid "Status"
 msgstr ""
 
-#: rdiffweb/templates/nav_bar.html:22
+#: rdiffweb/templates/nav_bar.html:33
 msgid "Preferences"
 msgstr ""
 
-#: rdiffweb/templates/nav_bar.html:29
+#: rdiffweb/templates/nav_bar.html:40
 msgid "Logout"
 msgstr ""
 
-#: rdiffweb/templates/nav_bar.html:32
+#: rdiffweb/templates/nav_bar.html:43
 #, python-format
 msgid "Signed in as %(username)s"
 msgstr ""

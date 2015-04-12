@@ -31,7 +31,7 @@ from rdw_helpers import decode_s, unquote_url
 logger = logging.getLogger(__name__)
 
 
-class rdiffBrowsePage(page_main.rdiffPage):
+class BrowsePage(page_main.MainPage):
 
     """This contoller provide a browser view to the user. It displays file in a
     repository."""
@@ -62,7 +62,7 @@ class rdiffBrowsePage(page_main.rdiffPage):
             (repo_obj, path_obj) = self.validate_user_path(path_b)
         except librdiff.FileError as e:
             logger.exception("invalid user path")
-            return self._writeErrorPage(unicode(e))
+            return self._compile_error_template(unicode(e))
 
         # Build the parameters
         try:
@@ -71,9 +71,9 @@ class rdiffBrowsePage(page_main.rdiffPage):
                                              restore == b"T")
         except librdiff.FileError as e:
             logger.exception("can't create pare params")
-            return self._writeErrorPage(unicode(e))
+            return self._compile_error_template(unicode(e))
 
-        return self._writePage("browse.html", **parms)
+        return self._compile_template("browse.html", **parms)
 
     def _get_parms_for_page(self, repo_obj, path_obj, restore):
         assert isinstance(repo_obj, librdiff.RdiffRepo)

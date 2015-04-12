@@ -1,0 +1,73 @@
+{% set title=_("Plugin management")%}
+{% include 'page_start.html' %}
+<!-- nav_bar -->
+{% include 'nav_bar.html' %}
+<!-- /nav_bar -->
+
+<div class="container">
+
+	{% set admin_nav_active="plugins" %}
+	{% include 'admin_nav_bar.html' %}    
+    
+    <h2>{{ title }}</h2>
+
+    {% include 'message.html' %}
+
+    <div class="row">
+
+        <div class="col-md-9">
+        <div class="panel panel-default">
+            <div class="panel-heading clearfix">
+                <div class="panel-title pull-left">
+                    {% trans %}Plugins{% endtrans %} ({{ plugins | length }})
+                </div>
+            </div>
+            <ul class="list-group">
+            	{# List filtered user by name. #}
+                {% for plugin in plugins|sort(attribute='name') %}
+                <li class="list-group-item clearfix">
+                    <h4 class="list-group-item-heading">
+                    {{ plugin.name }} v{{ plugin.version }}
+                    {% if plugin.enabled %}
+                        <small><span class="label label-success">
+                            {% trans %}Enabled{% endtrans %}</span></small>
+                    {% else %}
+                        <small><span class="label label-default">
+                            {% trans %}Disabled{% endtrans %}</span></small>
+                    {% endif %}
+                    </h4>
+					<dl class="dl-horizontal">
+                    {% if plugin.author %}
+                        <dt>{% trans %}Author{% endtrans %}</dt>
+                        <dd>
+                        {{ plugin.author }}
+                        </dd>
+                    {% endif %}
+                    {% if plugin.description %}
+	                    <dt>{% trans %}Description{% endtrans %}</dt>
+	                    <dd>
+	                    {{ plugin.description }}
+	                    {{ plugin.website }}
+	                    </dd>
+                    {% endif %}
+                    {% if plugin.copyright %}
+                        <dt>{% trans %}Copyright{% endtrans %}</dt>
+	                    <dd>
+	                    {{ plugin.copyright }}
+	                    </dd>
+                    {% endif %}
+                    <dt>{% trans %}Location{% endtrans %}</dt>
+                    <dd>
+                     {{ plugin.path }}
+                    </dd>
+                    </dl>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        </div>
+    
+    </div>
+
+</div>
+{% include 'page_end.html' %}

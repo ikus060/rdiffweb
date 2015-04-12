@@ -22,33 +22,13 @@ import logging
 import time
 
 from jinja2 import Environment, PackageLoader
+from jinja2.loaders import ChoiceLoader
 
 import rdw_helpers
 from i18n import ugettext, ungettext
 
-# Load all the templates from /templates directory
-jinja_env = Environment(loader=PackageLoader('rdiffweb', 'templates'),
-                        auto_reload=True,
-                        autoescape=True,
-                        extensions=['jinja2.ext.i18n'])
-
 # Define the logger
 logger = logging.getLogger(__name__)
-
-
-def compile_template(templateName, **kwargs):
-    """Very simple implementation to render template using jinja2.
-        `templateName`
-            The filename to be used as template.
-        `kwargs`
-            The arguments to be passed to the template.
-    """
-    logger.debug("compiling template [%s]" % templateName)
-    jinja_env.install_gettext_callables(ugettext, ungettext, newstyle=True)
-    template = jinja_env.get_template(templateName)
-    data = template.render(kwargs)
-    logger.debug("template [%s] compiled" % templateName)
-    return data
 
 
 def do_filter(sequence, attribute_name):
@@ -171,13 +151,63 @@ def url_for_status_entry(date, repo=None):
         url.append(str(date.getSeconds()))
     return ''.join(url)
 
-# Register filters
-jinja_env.filters['filter'] = do_filter
-jinja_env.filters['datetime'] = do_format_datetime
-jinja_env.filters['filesize'] = do_format_filesize
 
-# Register method
-jinja_env.globals['url_for_browse'] = url_for_browse
-jinja_env.globals['url_for_history'] = url_for_history
-jinja_env.globals['url_for_restore'] = url_for_restore
-jinja_env.globals['url_for_status_entry'] = url_for_status_entry
+class TemplateManager():
+    """
+    Uses to generate HTML page from template using Jinja2 templating.
+    """
+
+    def __init__(self):
+
+        loader = ChoiceLoader([
+            PackageLoader('rdiffweb', 'templates')
+            ])
+
+        # Load all the templates from /templates directory
+        self.jinja_env = Environment(loader=loader,
+                                     auto_reload=True,
+                                     autoescape=True,
+                                     extensions=['jinja2.ext.i18n'])
+
+        # Register filters
+        self.jinja_env.filters['filter'] = do_filter
+        self.jinja_env.filters['datetime'] = do_format_datetime
+        self.jinja_env.filters['filesize'] = do_format_filesize
+
+        # Register method
+        self.jinja_env.globals['url_for_browse'] = url_for_browse
+        self.jinja_env.globals['url_for_history'] = url_for_history
+        self.jinja_env.globals['url_for_restore'] = url_for_restore
+        self.jinja_env.globals['url_for_status_entry'] = url_for_status_entry
+
+    def add_location(self, package_name, package_path='templates'):
+        """
+        Add a new template loader.
+        """
+        # Add a new template location to the list of loaders.
+        loaders = self.jinja_env.loader.loaders
+        loaders.append(PackageLoader(package_name, package_path))
+
+    def compile_template(self, template_name, **kwargs):
+        """Very simple implementation to render template using jinja2.
+            `templateName`
+                The filename to be used as template.
+            `kwargs`
+                The arguments to be passed to the template.
+        """
+        logger.debug("compiling template [%s]" % template_name)
+        self.jinja_env.install_gettext_callables(
+            ugettext, ungettext, newstyle=True)
+        template = self.jinja_env.get_template(template_name)
+        data = template.render(kwargs)
+        logger.debug("template [%s] compiled" % template_name)
+        return data
+
+    def get_template(self, template_name):
+        """
+        Return a reference to the given template identify by `template_name`.
+        This method is commonly used by plugins. If the `template_name` is not
+        found an error is raised.
+        """
+        # Simply use the jinja env to return reference to template.
+        return self.jinja_env.get_template(template_name)

@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 import smtplib
 
 import rdw_config
-import db
 import librdiff
 import rdw_helpers
 import rdw_templating
@@ -30,22 +29,24 @@ import threading
 import time
 
 
-def startEmailNotificationThread(killEvent):
-    newThread = emailNotifyThread(killEvent)
+def startEmailNotificationThread(killEvent, app):
+    newThread = emailNotifyThread(killEvent, app)
     newThread.start()
 
 
 class emailNotifyThread(threading.Thread):
 
-    def __init__(self, killEvent):
+    def __init__(self, killEvent, app):
         self.killEvent = killEvent
+        self.app = app
         threading.Thread.__init__(self)
 
     def run(self):
-        self.notifier = emailNotifier()
+        userdb = self.app.userdb
+        self.notifier = emailNotifier(userdb)
         if not self.notifier.notificationsEnabled():
             return
-        emailTimeStr = rdw_config.get_config("emailNotificationTime")
+        emailTimeStr = self.app.config.get_config("emailNotificationTime")
         while True:
             emailTime = time.strptime(emailTimeStr, "%H:%M")
             now = datetime.datetime.now()
@@ -64,8 +65,8 @@ class emailNotifyThread(threading.Thread):
 
 class emailNotifier:
 
-    def __init__(self):
-        self.userDB = db.userDB().get_userdb_module()
+    def __init__(self, userdb):
+        self.userDB = userdb
 
     def notificationsEnabled(self):
         return self._getEmailHost() != "" and\

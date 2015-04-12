@@ -104,6 +104,7 @@ setup(name='rdiffweb',
                                  'static/js/scripts.min.js',
                                  'static/js/vendor/*.js',
                                  'static/css/*.css', 'static/fonts/*',
+                                 'plugins/*.py', 'plugins/*.plugin',
                                  'locales/fr/LC_MESSAGES/messages.mo'
                                  ]
                     },
@@ -119,7 +120,8 @@ setup(name='rdiffweb',
                 },
       install_requires=["CherryPy>=3.2.2",
                         "pysqlite>=2.6.3",
-                        "Jinja2>=2.6"
+                        "Jinja2>=2.6",
+                        "yapsy>=1.10.423",
                         ],
       # required packages for build process
       setup_requires=["babel>=0.9"]

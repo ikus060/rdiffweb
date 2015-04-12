@@ -26,13 +26,13 @@ import page_main
 logger = logging.getLogger(__name__)
 
 
-class rdiffLogoutPage(page_main.rdiffPage):
+class LogoutPage(page_main.MainPage):
 
     @cherrypy.expose
     def index(self):
 
         # Empty the session info
-        self.setUsername(None)
+        self.set_username(None)
         cherrypy.request.user = None
 
         # Redirect user to /login

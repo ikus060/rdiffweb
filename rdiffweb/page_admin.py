@@ -30,12 +30,12 @@ from i18n import ugettext as _
 logger = logging.getLogger(__name__)
 
 
-class rdiffAdminPage(page_main.rdiffPage):
+class AdminPage(page_main.MainPage):
     """Administration pages. Allow to manage users database."""
 
     def _check_user_exists(self, username):
         """Raise an exception if the user doesn't exists."""
-        if not self.getUserDB().exists(username):
+        if not self.app.userdb.exists(username):
             raise ValueError("The user does not exist.")
 
     def _check_user_root_dir(self, directory):
@@ -52,23 +52,65 @@ class rdiffAdminPage(page_main.rdiffPage):
 
         # Check if user is an administrator
         if not self._user_is_admin():
-            return self._writeErrorPage(_("Access denied."))
+            return self._compile_error_template(_("Access denied."))
 
         params = {}
         try:
-            users = self.getUserDB().list()
+            users = self.app.userdb.list()
             repos = set()
             for user in users:
-                for repo in self.getUserDB().get_repos(user):
+                for repo in self.app.userdb.get_repos(user):
                     repos.add(repo)
 
             params = {"user_count": len(users),
                       "repo_count": len(repos)}
         except:
             logger.exception("fail to get stats", **params)
-            return self._writeErrorPage(_("Can't get admin information."))
+            return self._compile_error_template(_("Can't get admin information."))
 
-        return self._writePage("admin.html", **params)
+        return self._compile_template("admin.html", **params)
+
+    @cherrypy.expose
+    def plugins(self):
+        """
+        Display the plugins page. Listing all the plugin.
+        """
+        # Check if user is an administrator
+        if not self._user_is_admin():
+            return self._compile_error_template(_("Access denied."))
+
+        params = {}
+        try:
+            params = self._plugins_get_params_for_page()
+        except:
+            logger.exception("fail to get list of plugins")
+            params['error'] = _("Fail to get list of plugins.")
+
+        return self._compile_template("admin_plugins.html", **params)
+
+    def _plugins_get_params_for_page(self):
+        """
+        Build the list of params to display the page.
+        """
+        plugins = list()
+        for plugin_info in self.app.plugins.locate_plugins():
+            # Check if the plugin is currently enabled.
+            plugin_enabled = self.app.plugins.get_plugin_by_name(
+                plugin_info.name) is not None
+            # Create a data structure to represent the plugin. Don't send the
+            # PluginInfo to the templates !
+            plugin = {"name": plugin_info.name,
+                      "author": plugin_info.author,
+                      "copyright": plugin_info.copyright,
+                      "description": plugin_info.description,
+                      "path": plugin_info.path,
+                      "version": plugin_info.version,
+                      "website": plugin_info.website,
+                      "enabled":  plugin_enabled,
+                      }
+            plugins.append(plugin)
+
+        return {"plugins": plugins}
 
     @cherrypy.expose
     def users(self, userfilter=u"", usersearch=u"", action=u"", username=u"",
@@ -76,7 +118,7 @@ class rdiffAdminPage(page_main.rdiffPage):
 
         # Check if user is an administrator
         if not self._user_is_admin():
-            return self._writeErrorPage(_("Access denied."))
+            return self._compile_error_template(_("Access denied."))
 
         assert isinstance(userfilter, unicode)
         assert isinstance(usersearch, unicode)
@@ -93,7 +135,7 @@ class rdiffAdminPage(page_main.rdiffPage):
                 params['error'] = unicode(e)
             except Exception as e:
                 logger.exception("unknown error processing action")
-                params['error'] = "Fail to execute operation."
+                params['error'] = _("Fail to execute operation.")
 
         # Get page parameters
         try:
@@ -101,17 +143,17 @@ class rdiffAdminPage(page_main.rdiffPage):
                 self._users_get_params_for_page(userfilter, usersearch))
         except:
             logger.exception("fail to get user list")
-            return self._writeErrorPage(_("Can't get user list."))
+            return self._compile_error_template(_("Can't get user list."))
 
         # Build users page
-        return self._writePage("admin_users.html", **params)
+        return self._compile_template("admin_users.html", **params)
 
     def _users_get_params_for_page(self, userfilter, usersearch):
-        usernames = self.getUserDB().list()
+        usernames = self.app.userdb.list()
         users = [{"username": username,
-                  "email": self.getUserDB().get_email(username),
-                  "is_admin": self.getUserDB().is_admin(username),
-                  "user_root": self.getUserDB().get_root_dir(username)
+                  "email": self.app.userdb.get_email(username),
+                  "is_admin": self.app.userdb.is_admin(username),
+                  "user_root": self.app.userdb.get_root_dir(username)
                   } for username in usernames]
 
         # Apply the filters.
@@ -125,7 +167,7 @@ class rdiffAdminPage(page_main.rdiffPage):
                                     or usersearch in x["email"],
                                     filtered_users)
 
-        return {"ldap_enabled": self.getUserDB().is_ldap(),
+        return {"ldap_enabled": self.app.userdb.is_ldap(),
                 "userfilter": userfilter,
                 "usersearch": usersearch,
                 "filtered_users": filtered_users,
@@ -139,46 +181,46 @@ class rdiffAdminPage(page_main.rdiffPage):
 
         # We need to change values. Change them, then give back that main
         # page again, with a message
-        if username == self.getUsername():
+        if username == self.get_username():
             # Don't allow the user to changes it's "admin" state.
-            is_admin = self.getUserDB().is_admin(username)
+            is_admin = self.app.userdb.is_admin(username)
 
         # Fork the behaviour according to the action.
         if action == "edit":
             self._check_user_exists(username)
             logger.info("updating user info")
             if password:
-                self.getUserDB().set_password(username, None, password)
-            self.getUserDB().set_info(username, user_root, is_admin)
-            self.getUserDB().set_email(username, email)
+                self.app.userdb.set_password(username, None, password)
+            self.app.userdb.set_info(username, user_root, is_admin)
+            self.app.userdb.set_email(username, email)
             success = _("User information modified successfully.")
 
             # Check and update user directory
             try:
                 self._check_user_root_dir(user_root)
                 rdw_spider_repos.findReposForUser(username,
-                                                  self.getUserDB())
+                                                  self.app.userdb)
             except ValueError as e:
                 success = ""
                 warning = unicode(e)
 
         elif action == "add":
 
-            if self.getUserDB().exists(username):
+            if self.app.userdb.exists(username):
                 raise ValueError("The specified user already exists.")
             elif username == "":
                 raise ValueError("The username is invalid.")
             logger.info("adding user [%s]" % username)
-            self.getUserDB().add_user(username)
-            self.getUserDB().set_password(username, None, password)
-            self.getUserDB().set_info(username, user_root, is_admin)
-            self.getUserDB().set_email(username, email)
+            self.app.userdb.add_user(username)
+            self.app.userdb.set_password(username, None, password)
+            self.app.userdb.set_info(username, user_root, is_admin)
+            self.app.userdb.set_email(username, email)
 
             # Check and update user directory
             try:
                 self._check_user_root_dir(user_root)
                 rdw_spider_repos.findReposForUser(username,
-                                                  self.getUserDB())
+                                                  self.app.userdb)
             except ValueError as e:
                 warning = unicode(e)
             success = "User added successfully."
@@ -186,10 +228,10 @@ class rdiffAdminPage(page_main.rdiffPage):
         if action == "delete":
 
             self._check_user_exists(username)
-            if username == self.getUsername():
+            if username == self.get_username():
                 raise ValueError("You cannot remove your own account!.")
             logger.info("deleting user [%s]" % username)
-            self.getUserDB().delete_user(username)
+            self.app.userdb.delete_user(username)
             success = "User account removed."
 
         # Return messages

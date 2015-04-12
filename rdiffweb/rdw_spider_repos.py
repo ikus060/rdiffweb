@@ -19,10 +19,8 @@
 from __future__ import unicode_literals
 
 import os
-import db
 import librdiff
 import logging
-import rdw_config
 import threading
 
 # Define the logger
@@ -30,24 +28,32 @@ logger = logging.getLogger(__name__)
 
 
 # Returns pid of started process, or 0 if no process was started
-def startRepoSpiderThread(killEvent):
-    newThread = spiderReposThread(killEvent)
+def startRepoSpiderThread(killEvent, app):
+    # Get refresh interval from app config.
+    spiderInterval = app.config.get_config_bool("autoUpdateRepos", "False")
+
+    # Start the thread.
+    newThread = SpiderReposThread(killEvent, app, spiderInterval)
     newThread.start()
 
 
-class spiderReposThread(threading.Thread):
+class SpiderReposThread(threading.Thread):
 
-    def __init__(self, killEvent):
+    def __init__(self, killEvent, app, spiderInterval=False):
+        """Create a new SpiderRepo to refresh the users repositories."""
         self.killEvent = killEvent
+        self.app = app
+        # Make sure it's an integer.
+        if spiderInterval:
+            assert isinstance(spiderInterval, int)
+        self.spiderInterval = spiderInterval
         threading.Thread.__init__(self)
 
     def run(self):
-        spiderInterval = rdw_config.get_config("autoUpdateRepos")
-        if spiderInterval:
-            spiderInterval = int(spiderInterval)
+        if self.spiderInterval:
             while True:
-                findReposForAllUsers()
-                self.killEvent.wait(60 * spiderInterval)
+                findReposForAllUsers(self.app)
+                self.killEvent.wait(60 * self.spiderInterval)
                 if self.killEvent.isSet():
                     return
 
@@ -83,11 +89,12 @@ def findReposForUser(user, userDBModule):
     userDBModule.set_repos(user, repoPaths)
 
 
-def findReposForAllUsers():
-    userDBModule = db.userDB().get_userdb_module()
-    if not userDBModule.is_modifiable():
+def findReposForAllUsers(app):
+    """Refresh all users repositories using the given `app`."""
+    user_db = app.userdb
+    if not user_db.is_modifiable():
         return
 
-    users = userDBModule.list()
+    users = user_db.list()
     for user in users:
-        findReposForUser(user, userDBModule)
+        findReposForUser(user, user_db)

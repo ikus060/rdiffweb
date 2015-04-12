@@ -45,131 +45,145 @@ import os
 import re
 
 
-# Declare the cache variable used to store the configuration in memory.
-_cache = False
-# Declare default location
-_filename = "/etc/rdiffweb/rdw.conf"
-# Declare modification time
-_lastmtime = False
+class Configuration(object):
 
+    def __init__(self, filename="/etc/rdiffweb/rdw.conf"):
+        # Declare the cache variable used to store the configuration in memory.
+        self._cache = False
+        # Declare default location
+        self._filename = filename
+        # Declare modification time
+        self._lastmtime = False
 
-def set_config_file(filename):
-    """Set the configuration file to be read."""
-    # Check filename access
-    global _filename
-    _filename = filename
-    if (not os.access(_filename, os.F_OK)):
-        raise SettingsError("Error reading %s, make sure it's readable."
-                            % filename)
+    def get_config_file(self):
+        """Return the configuration file location."""
+        return self._filename
 
-    # Force reading the configuration file.
-    global _lastmtime
-    _lastmtime = False
+    def set_config_file(self, filename):
+        """Set the configuration file to be read."""
+        # Check filename access
+        self._filename = filename
+        if (not os.access(self._filename, os.F_OK)):
+            raise SettingsError("Error reading %s, make sure it's readable."
+                                % filename)
 
+        # Force reading the configuration file.
+        self._lastmtime = False
 
-def get_config(key, default=""):
-    """Get the configuration value corresponding to key."""
-    assert isinstance(key, unicode)
-    # Raise error if key contains equals(=)
-    if ('=' in key):
-        raise ValueError
+    def get_config(self, key, default=""):
+        """Get the configuration value corresponding to key."""
+        assert isinstance(key, unicode)
+        # Raise error if key contains equals(=)
+        if ('=' in key):
+            raise ValueError
 
-    # Read the configuration file if required.
-    _parse_if_needed()
+        # Read the configuration file if required.
+        self._parse_if_needed()
 
-    # Use the cached value
-    cache = _cache.get(key.lower())
-    if cache:
-        return cache
-    else:
-        return default
+        # Use the cached value
+        cache = self._cache.get(key.lower())
+        if cache:
+            return cache
+        else:
+            return default
 
-
-def get_config_boolean(key, default=False):
-
-    """A convenience method which coerces the settingName to a boolean."""
-
-    try:
-        value = get_config(key)
+    def get_config_bool(self, key, default="False"):
+        """
+        A convenience method which coerces the key to a boolean.
+        """
+        value = self.get_config(key, default)
         return (value == "1" or value == "yes" or value == "true"
                 or value == "on")
-    except:
-        return default
 
+    def get_config_int(self, key, default=''):
+        """
+        A convenience method which coerces the key to an integer.
+        """
+        return int(self.get_config(key, default))
 
-def get_config_int(key, default=0):
+    def get_config_list(self, key, default='', sep=',', keep_empty=False):
+        """A convenience method which coerces the key to a list of string.
+    
+        A different separator can be specified using the `sep` parameter. The
+        `sep` parameter can specify multiple values using a list or a tuple.
+        If the `keep_empty` parameter is set to `True`, empty elements are
+        included in the list.
+    
+        Valid default input is a string or a list. Returns a string.
+        """
+        value = self.get_config(key, default)
+        if not value:
+            return []
+        if isinstance(value, basestring):
+            if isinstance(sep, (list, tuple)):
+                splitted = re.split('|'.join(map(re.escape, sep)), value)
+            else:
+                splitted = value.split(sep)
+            items = [item.strip() for item in splitted]
+        else:
+            items = list(value)
+        if not keep_empty:
+            items = [item for item in items if item not in (None, '')]
+        return items
 
-    """A convenience method which coerces the settingName to an integer."""
+    def get_config_str(self, key, default=""):
 
-    try:
-        return int(get_config(key))
-    except:
-        return default
+        """A convenience method which coerces the key to an str."""
 
+        try:
+            return rdw_helpers.encode_s(self.get_config(key, default))
+        except:
+            return default
 
-def get_config_str(key, default=""):
+    def _parse_if_needed(self, force=False):
+        """Read the configuration file and update the internal _cache. Return True
+        if the configuration was read. False if the configuration wasn't read. Used
+        may called this method with force=True to force the configuration to be
+        read."""
+        if not self._filename:
+            raise SettingsError("Error reading configuration. Filename not define.")
 
-    """A convenience method which coerces the settingName to an str."""
+        # Check if parsing the config file is required.
+        modtime = os.path.getmtime(self._filename)
+        if self._cache and not force and modtime == self._lastmtime:
+            return False
 
-    try:
-        return rdw_helpers.encode_s(get_config(key, default))
-    except:
-        return default
+        # Read configuration file.
+        logger.debug("reading configuration file [%s]" % (self._filename))
+        if not os.access(self._filename, os.F_OK):
+            raise SettingsError("Error reading %s, make sure it's readable."
+                                % (self._filename))
 
-def _parse_if_needed(force=False):
-    """Read the configuration file and update the internal _cache. Return True
-    if the configuration was read. False if the configuration wasn't read. Used
-    may called this method with force=True to force the configuration to be
-    read."""
-    global _filename
-    if not _filename:
-        raise SettingsError("Error reading configuration. Filename not define.")
+        new_cache = dict()
 
-    # Check if parsing the config file is required.
-    global _cache
-    global _lastmtime
-    modtime = os.path.getmtime(_filename)
-    if _cache and not force and modtime == _lastmtime:
-        return False
+        # Open settings file as utf-8
+        lines = codecs.open(self._filename, "r",
+                            encoding='utf-8',
+                            errors='replace').readlines()
+        for line in lines:
+            line = re.compile("(.*)#.*").sub(r'\1', line).strip()
+            if not line:
+                continue
+            if '=' not in line:
+                raise SettingsError(
+                    "Error reading configuration line %s" % (line))
+            split_line = line.partition('=')
+            if not len(split_line) == 3:
+                raise SettingsError(
+                    "Error reading configuration line %s" % (line))
+            new_cache[split_line[0].lower().strip()] = split_line[2].strip()
 
-    # Read configuration file.
-    logger.debug("reading configuration file [%s]" % (_filename))
-    if not os.access(_filename, os.F_OK):
-        raise SettingsError("Error reading %s, make sure it's readable."
-                            % (_filename))
-
-    new_cache = dict()
-
-    # Open settings file as utf-8
-    lines = codecs.open(_filename, "r",
-                        encoding='utf-8',
-                        errors='replace').readlines()
-    for line in lines:
-        line = re.compile("(.*)#.*").sub(r'\1', line)
-        line = line.rstrip()
-        line = line.lstrip()
-        if not line:
-            continue
-        if '=' not in line:
-            raise SettingsError("Error reading configuration line %s" % (line))
-
-        split_line = line.partition('=')
-        if not len(split_line) == 3:
-            raise SettingsError("Error reading configuration line %s" % (line))
-
-        new_cache[split_line[0].lower()] = split_line[2]
-
-    # Return the configuration data.
-    _cache = new_cache
-    _lastmtime = modtime
-    return True
+        # Return the configuration data.
+        self._cache = new_cache
+        self._lastmtime = modtime
+        return True
 
 # Unit Tests #
 
 import unittest
 
 
-class configFileTest(unittest.TestCase):
+class ConfigurationTest(unittest.TestCase):
 
     """Unit tests for the get_config() function"""
     goodConfigText = """ #This=is a comment
@@ -186,14 +200,14 @@ class configFileTest(unittest.TestCase):
         file = open(self.configFilePath, "w")
         file.write(self.goodConfigText)
         file.close()
-        set_config_file(self.configFilePath)
+        self.config = Configuration(self.configFilePath)
 
     def writeBadFile(self, badSettingNum):
         self.writeGoodFile()
         file = open(self.configFilePath, "w")
         file.write(self.badConfigTexts[badSettingNum])
         file.close()
-        set_config_file(self.configFilePath)
+        self.config = Configuration(self.configFilePath)
 
     def tearDown(self):
         if (os.access(self.configFilePath, os.F_OK)):
@@ -202,7 +216,7 @@ class configFileTest(unittest.TestCase):
     def testBadParms(self):
         self.writeGoodFile()
         try:
-            get_config("setting=")
+            self.config.get_config("setting=")
         except ValueError:
             pass
         else:
@@ -210,42 +224,42 @@ class configFileTest(unittest.TestCase):
 
     def testSpacesInValue(self):
         self.writeGoodFile()
-        assert(get_config("SpacesValue")
+        assert(self.config.get_config("SpacesValue")
                == "is a setting with spaces")
 
     def testSpacesInSetting(self):
         self.writeGoodFile()
         assert(
-            get_config("spaces setting") == "withspaces")
+            self.config.get_config("spaces setting") == "withspaces")
 
     def testCommentInValue(self):
         self.writeGoodFile()
         assert(
-            get_config("CommentInValue") == "Value")
+            self.config.get_config("CommentInValue") == "Value")
 
     def testEmptyValue(self):
         self.writeGoodFile()
-        assert(get_config("NoValue") == "")
+        assert(self.config.get_config("NoValue") == "")
 
     def testCaseInsensitivity(self):
         self.writeGoodFile()
         assert(
-            get_config("commentinvalue") == "Value")
+            self.config.get_config("commentinvalue") == "Value")
 
     def testMissingSetting(self):
         self.writeGoodFile()
         assert(
-            get_config("SettingThatDoesntExist") == "")
+            self.config.get_config("SettingThatDoesntExist") == "")
 
     def testBadFile(self):
         self.writeBadFile(0)
         try:
-            get_config("SpacesValue")
+            self.config.get_config("SpacesValue")
         except SettingsError:
             pass
         else:
             assert(False)
 
         self.writeBadFile(1)
-        value = get_config("This")
+        value = self.config.get_config("This")
         assert(value == "more=than one equals")

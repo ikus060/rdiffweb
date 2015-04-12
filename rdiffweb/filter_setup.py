@@ -21,17 +21,15 @@ from __future__ import unicode_literals
 import cherrypy
 import logging
 
-import db
-
 # Define the logger
 logger = logging.getLogger(__name__)
 
-def handle_setup():
 
+def handle_setup():
     """This filter tool redirect users to /setup/ if no users."""
     # Get the user database.
     try:
-        userdb = db.userDB().get_userdb_module()
+        userdb = cherrypy.request.app.root.userdb  # @UndefinedVariable
     except:
         logger.warn("user database is not configured")
         userdb = False

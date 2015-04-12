@@ -1,0 +1,15 @@
+[Core]
+Name = Ldap
+Module = db_ldap
+
+[Documentation]
+Author = Patrik Dufresne
+Version = 8.0
+Website = http://www.patrikdufresne.com/en/rdiffweb/
+Description: LDAP UserDB backend used to validate credentials. This plugin will
+    use SQLite database for user's data. Both, LDAP and SQLite plugin must be
+    enabled.
+Copyright: rdiffweb Ldap plugin Copyright (C) 2015 Patrik Dufresne Service Logiciel.
+    This program comes with ABSOLUTELY NO WARRANTY.
+    This is free software, and you are welcome to redistribute it
+    under certain conditions.

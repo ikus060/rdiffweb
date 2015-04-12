@@ -30,3 +30,7 @@ pip-log.txt
 .externalToolBuilders
 .settings
 /ez_setup
+/rdwtest.conf
+/rdwtest.db
+/runtest.py
+.pydevproject

@@ -55,7 +55,7 @@ def autodelete():
 cherrypy.tools.autodelete = cherrypy.Tool('on_end_request', autodelete)
 
 
-class rdiffRestorePage(page_main.rdiffPage):
+class RestorePage(page_main.MainPage):
     _cp_config = {"response.stream": True, "response.timeout": 3000}
 
     def _cp_dispatch(self, vpath):
@@ -94,7 +94,7 @@ class rdiffRestorePage(page_main.rdiffPage):
             (repo_obj, path_obj) = self.validate_user_path(path_b)
         except librdiff.FileError as e:
             logger.exception("invalid user path")
-            return self._writeErrorPage(unicode(e))
+            return self._compile_error_template(unicode(e))
 
         # Get the restore date
         try:
@@ -102,22 +102,22 @@ class rdiffRestorePage(page_main.rdiffPage):
             restore_date.initFromInt(int(date))
         except:
             logger.warn("invalid date %s" % date)
-            return self._writeErrorPage(_("Invalid date."))
+            return self._compile_error_template(_("Invalid date."))
 
         try:
             # Get if backup in progress
             if repo_obj.in_progress:
-                return self._writeErrorPage(_("""A backup is currently in progress to this repository. Restores are disabled until this backup is complete."""))
+                return self._compile_error_template(_("""A backup is currently in progress to this repository. Restores are disabled until this backup is complete."""))
 
             # Restore the file
             file_path_b = path_obj.restore(file_b, restore_date, usetar != "T")
 
         except librdiff.FileError as e:
             logger.exception("fail to restore")
-            return self._writeErrorPage(unicode(e))
+            return self._compile_error_template(unicode(e))
         except ValueError:
             logger.exception("fail to restore")
-            return self._writeErrorPage(_("Fail to restore."))
+            return self._compile_error_template(_("Fail to restore."))
 
         # The restored file path need to be deleted when the user is finish
         # downloading. The auto-delete tool, will do it if we give him a file

@@ -11,7 +11,18 @@
             </button>
             {% endif %}
             <!-- /authenticated -->
-            <a class="navbar-brand" href="/"><i class="icon-rdiffweb"></i> {% trans %}rdiffweb{% endtrans %}</a>
+            <!-- Header_logo -->
+            <a class="navbar-brand" href="/">
+            {% if header_logo %}
+            <img src="{{ header_logo }}" style="display: inline">
+            {% else %}
+            <i class="icon-rdiffweb"></i>
+            {% endif %}
+            <!-- /Header_logo -->
+            <!-- Header_name -->
+            {% if header_name %}{{ header_name }}{% else %}rdiffweb{% endif %}
+            <!-- /Header_name -->
+            </a>
         </div>
         <!-- authenticated -->
         {% if username %}

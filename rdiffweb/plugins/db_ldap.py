@@ -20,56 +20,78 @@ from __future__ import unicode_literals
 
 import ldap
 import logging
-import db
-import rdw_config
 
-from rdw_helpers import encode_s
+from rdiffweb.rdw_helpers import encode_s
+from rdiffweb.rdw_plugin import IUserDBPlugin
+from rdiffweb.rdw_app import RdiffwebApp
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-class ldapUserDB(db.userDB):
+class LdapUserDB(IUserDBPlugin):
 
     """Wrapper for LDAP authentication.
 
     This implementation assume the LDAP is using the system encoding."""
 
-    def __init__(self, delegate, configFilePath=None):
-        """Create a new LDAP Database for authentication. Some behaviour are
-        delegate to external database."""
+    def activate(self):
+        """Called by the plugin manager to setup the plugin."""
+        IUserDBPlugin.activate(self)
 
-        self.delegate = delegate
-
-        # Get LDAP configuration parameters
-        self.uri = rdw_config.get_config("LdapUri", None)
-        if self.uri is None:
+        # Get Ldap URI
+        self.uri = self.app.config.get_config(
+            "LdapUri", "")
+        if not self.uri:
             raise "LdapUri must be define in configuration"
-        self.tls = rdw_config.get_config("LdapTls").lower() == "true"
-        self.base_dn = rdw_config.get_config("LdapBaseDn", None)
-        if self.uri is None:
-            raise "LdapUri must be define in configuration"
-        self.attribute = rdw_config.get_config("LdapAttribute", "uid")
-        self.scope = rdw_config.get_config("LdapScope", "subtree")
+        # Check if TLs is enabled
+        self.tls = self.app.config.get_config_bool(
+            "LdapTls", "false")
+        # Get Base DN
+        self.base_dn = self.app.config.get_config(
+            "LdapBaseDn", "")
+        if not self.base_dn:
+            raise "LdapBaseDn must be define in configuration"
+        # Get attribute
+        self.attribute = self.app.config.get_config(
+            "LdapAttribute", "uid")
+        # Get Scope
+        self.scope = self.app.config.get_config(
+            "LdapScope", "subtree")
         if self.scope == "base":
             self.scope = ldap.SCOPE_BASE
         elif self.scope == "onelevel":
             self.scope = ldap.SCOPE_ONELEVEL
         else:
             self.scope = ldap.SCOPE_SUBTREE
-        self.filter = rdw_config.get_config("LdapFilter", "(objectClass=*)")
-        self.bind_dn = rdw_config.get_config("LdapBindDn", "")
-        self.bind_password = rdw_config.get_config("LdapBindPassword", "")
+        # Filter
+        self.filter = self.app.config.get_config(
+            "LdapFilter", "(objectClass=*)")
+        # Bind Dn
+        self.bind_dn = self.app.config.get_config(
+            "LdapBindDn", "")
+        # Bind password
+        self.bind_password = self.app.config.get_config(
+            "LdapBindPassword", "")
         # Get Version
-        self.version = rdw_config.get_config_int("LdapVersion", 3)
+        self.version = self.app.config.get_config_int(
+            "LdapVersion", "3")
         # Get Network timeout
-        self.network_timeout = rdw_config.get_config_int(
-            "LdapNetworkTimeout", 100)
+        self.network_timeout = self.app.config.get_config_int(
+            "LdapNetworkTimeout", "100")
         # Get Timeout
-        self.timeout = rdw_config.get_config_int("LdapTimeout", 300)
+        self.timeout = self.app.config.get_config_int(
+            "LdapTimeout", "300")
         # Check if password change are allowed.
-        self.allow_password_change = rdw_config.get_config_boolean(
-            "LdapAllowPasswordChange")
+        self.allow_password_change = self.app.config.get_config_bool(
+            "LdapAllowPasswordChange", "false")
+
+        # Plugins system doesn't allow direct access to plugin via "import".
+        # So we need to get reference to the plugin via the plugin manager.
+        sqlite_plugin = self.app.plugins.get_plugin_by_name("SQLite", "UserDB")
+        if sqlite_plugin is None:
+            raise ValueError("cannot find SQLite plugin.")
+        self.delegate = sqlite_plugin.plugin_object
 
     def are_valid_credentials(self, username, password):
         """Check if the given credential as valid according to LDAP."""

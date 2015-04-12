@@ -1,12 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>{% if title %}{{ title }} - {% endif %}{% trans %}rdiffweb{% endtrans %}</title>
+<title>
+{% if title %}{{ title }} - {% endif %}
+{% if header_name %}{{ header_name }}{% else %}rdiffweb{% endif %}
+</title>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="/static/css/main.min.css" type="text/css">
-<link rel="icon" type="image/png" href="/static/favicon.png">
+<link rel="shortcut icon"
+      {% if favicon %}
+      {% if favicon.endswith(".png") %}type="image/png"{% endif %}
+      {% if favicon.endswith(".gif") %}type="image/gif"{% endif %}
+      href="{{ favicon }}"
+      {% else %}
+      type="image/png"
+      href="/static/favicon.png"
+      {% endif %}>
 {% if rssLink %}
 <link rel="alternate" type="application/rss+xml" href="{{ rssLink }}"
     title="{{ rssTitle }}" />

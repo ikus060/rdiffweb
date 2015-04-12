@@ -8,6 +8,7 @@
 	    {% include 'message.html' %}
     {% else %}
     <h2>{{ title }} ({{ repos|length }})</h2>
+    {% include templates_before_content ignore missing with context %}
 	<ul class="list-group">
 		{% for repo in repos %}
 		<li {% if repo.failed %}

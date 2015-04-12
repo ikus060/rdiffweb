@@ -31,7 +31,7 @@ from rdw_helpers import decode_s, unquote_url
 logger = logging.getLogger(__name__)
 
 
-class rdiffHistoryPage(page_main.rdiffPage):
+class HistoryPage(page_main.MainPage):
 
     def _cp_dispatch(self, vpath):
         """Used to handle permalink URL.
@@ -57,15 +57,15 @@ class rdiffHistoryPage(page_main.rdiffPage):
             (repo_obj, path_obj) = self.validate_user_path(path_b)
         except librdiff.FileError as e:
             logger.exception("invalid user path")
-            return self._writeErrorPage(unicode(e))
+            return self._compile_error_template(unicode(e))
 
         try:
             parms = self._get_parms_for_page(repo_obj)
         except librdiff.FileError:
             logger.exception("can't create page params")
-            return self._writeErrorPage(unicode(e))
+            return self._compile_error_template(unicode(e))
 
-        return self._writePage("history.html", **parms)
+        return self._compile_template("history.html", **parms)
 
     def _get_parms_for_page(self, repo_obj):
         assert isinstance(repo_obj, librdiff.RdiffRepo)

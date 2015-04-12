@@ -26,28 +26,129 @@ import threading
 import logging
 import inspect
 
-import i18n
-import rdw_helpers
-import rdw_config
+import rdw_app
 import rdw_spider_repos
-import email_notification
-import filter_authentication
-import filter_setup
-
-import page_admin
-import page_browse
-import page_history
-import page_locations
-import page_restore
-import page_setup
-import page_status
-import page_prefs
-import page_login
-import page_logout
-import page_main
+import i18n  # @UnusedImport
+import filter_authentication  # @UnusedImport
+import filter_setup  # @UnusedImport
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
+
+
+def setup_favicon(app, page_settings):
+    """
+    Used to add an entry to the page setting if the FavIcon configuration is
+    defined.
+    """
+    favicon_b = app.config.get_config_str("FavIcon")
+    if not favicon_b:
+        return
+
+    # Append custom favicon
+    if (not os.path.exists(favicon_b)
+            or not os.path.isfile(favicon_b)
+            or not os.access(favicon_b, os.R_OK)):
+        logger.warn("""path define by FavIcon doesn't exists or is no
+                    accessible: %s""", favicon_b)
+    else:
+        logger.info("use custom favicon: %s", favicon_b)
+        basename_b = os.path.basename(favicon_b)
+        app.favicon = b'/custom/%s' % (basename_b)
+        page_settings.update({
+            app.favicon: {
+                'tools.staticfile.on': True,
+                'tools.staticfile.filename': favicon_b,
+                'tools.authform.on': False,
+                'tools.setup.on': False,
+            }
+        })
+
+
+def setup_header_logo(app, page_settings):
+    """
+    Used to add an entry to the page setting if the FavIcon configuration is
+    defined.
+    """
+    header_logo_b = app.config.get_config_str("HeaderLogo")
+    if not header_logo_b:
+        return
+    # Append custom header logo
+    if (not os.path.exists(header_logo_b)
+            or not os.path.isfile(header_logo_b)
+            or not os.access(header_logo_b, os.R_OK)):
+        logger.warn("path define by HeaderLogo doesn't exists: %s",
+                    header_logo_b)
+    else:
+        logger.info("use custom header logo: %s", header_logo_b)
+        basename_b = os.path.basename(header_logo_b)
+        app.header_logo = b'/custom/%s' % (basename_b)
+        page_settings.update({
+            app.header_logo: {
+                'tools.staticfile.on': True,
+                'tools.staticfile.filename': header_logo_b,
+                'tools.authform.on': False,
+                'tools.setup.on': False,
+            }
+        })
+
+
+def setup_logging(log_file, log_access_file, debug):
+    """
+    Called by `start()` to configure the logging system
+    """
+
+    class NotFilter(logging.Filter):
+
+        """
+        Negate logging filter
+        """
+
+        def __init__(self, name=''):
+            self.name = name
+            self.nlen = len(name)
+
+        def filter(self, record):
+            if self.nlen == 0:
+                return 0
+            elif self.name == record.name:
+                return 0
+            elif record.name.find(self.name, 0, self.nlen) != 0:
+                return 1
+            return not (record.name[self.nlen] == ".")
+
+    class ContextFilter(logging.Filter):
+        """
+        This is a filter which injects contextual information into the log.
+        """
+
+        def filter(self, record):
+            try:
+                if hasattr(cherrypy, 'serving'):
+                    request = cherrypy.serving.request
+                    remote = request.remote
+                    record.ip = remote.name or remote.ip
+                if hasattr(cherrypy, 'session'):
+                    record.user = cherrypy.session['username']
+            except:
+                record.ip = "unknown"
+                record.user = "unknown"
+            return True
+
+    logformat = '[%(asctime)s][%(levelname)-7s][%(name)s] %(message)s'
+    level = logging.DEBUG if debug else logging.INFO
+    # Configure default log file.
+    if log_file:
+        assert isinstance(log_file, str)
+        logging.basicConfig(filename=log_file, level=level, format=logformat)
+    else:
+        logging.basicConfig(level=level, format=logformat)
+
+    # Configure access log file.
+    if log_access_file:
+        assert isinstance(log_access_file, str)
+        logging.root.handlers[0].addFilter(NotFilter("cherrypy.access"))
+    logging.root.handlers[0].addFilter(ContextFilter())
 
 
 def start():
@@ -55,19 +156,16 @@ def start():
     # Parse command line options
     debug = False
     autoReload = False
-    pidFile = ""
-    logFile = b""
-    logAccessFile = b""
+    log_file = b""
+    log_access_file = b""
     configfile = False
 
     opts, extraparams = getopt.getopt(sys.argv[1:],
-                                      'vdrf',
+                                      'vdrf:',
                                       ['debug',
                                        'log-file=',
                                        'log-access-file=',
-                                       'pid-file=',
                                        'config='
-                                       'background',
                                        'autoreload'])
     for option, value in opts:
         if option in ['-d', '--debug']:
@@ -75,53 +173,36 @@ def start():
         if option in ['-r', '--autoreload']:
             autoReload = True
         elif option in ['--log-file']:
-            logFile = value
+            log_file = value
         elif option in ['--log-access-file']:
-            logAccessFile = value
-        elif option in ['--pid-file']:
-            pidFile = value
+            log_access_file = value
         elif option in ['-f', '--config']:
             configfile = value
-        elif option in ['--background']:
-            rdw_helpers.daemonize()
-
-    # Wait to write out to the pidfile until after we've (possibly) been
-    # daemonized
-    if pidFile:
-        # Write our process id to specified file, so we can be killed later
-        open(pidFile, 'a').write(str(os.getpid()) + "\n")
 
     # Configure logging
-    logformat = '[%(asctime)s][%(levelname)-7s][%(name)s] %(message)s'
-    level = logging.DEBUG if debug else logging.INFO
-    if logFile:
-        logging.basicConfig(filename=logFile, level=level, format=logformat)
-    else:
-        logging.basicConfig(level=level, format=logformat)
-    if logAccessFile:
-        logging.root.handlers[0].addFilter(NotFilter("cherrypy.access"))
-    logging.root.handlers[0].addFilter(ContextFilter())
-    # Check if configuration file exists
-    if configfile:
-        rdw_config.set_config_file(configfile)
+    setup_logging(
+        log_file=log_file,
+        log_access_file=log_access_file,
+        debug=debug)
+
+    # Create App.
+    app = rdw_app.RdiffwebApp(configfile=configfile)
 
     # Get configuration
-    serverHost = rdw_config.get_config_str("ServerHost", default="0.0.0.0")
-    serverPort = rdw_config.get_config_int("ServerPort", default=8080)
+    serverHost = app.config.get_config_str("ServerHost", default="0.0.0.0")
+    serverPort = app.config.get_config_int("ServerPort", default="8080")
     if not serverPort:
         logger.error("ServerPort should be a port number: %s" % (serverPort))
         sys.exit(1)
-    sslCertificate = rdw_config.get_config("SslCertificate")
-    sslPrivateKey = rdw_config.get_config("SslPrivateKey")
+    # Get SSL configuration (if any)
+    sslCertificate = app.config.get_config("SslCertificate")
+    sslPrivateKey = app.config.get_config("SslPrivateKey")
 
     # Define the locales directory
     localesdir = os.path.split(inspect.getfile(inspect.currentframe()))[0]
     localesdir = os.path.realpath(os.path.abspath(localesdir))
     localesdir = os.path.join(localesdir, 'locales/')
 
-    environment = "development"
-    if not debug:
-        environment = "production"
     global_settings = {
         'tools.encode.on': True,
         'tools.encode.encoding': 'utf-8',
@@ -131,12 +212,12 @@ def start():
         'autoreload.on': autoReload,
         'server.socket_host': serverHost,
         'server.socket_port': serverPort,
-        'server.log_file': logFile,
+        'server.log_file': log_file,
         'server.ssl_certificate': sslCertificate,
         'server.ssl_private_key': sslPrivateKey,
         'log.screen': False,
-        'log.access_file': logAccessFile,
-        'server.environment': environment,
+        'log.access_file': log_access_file,
+        'server.environment': "development" if debug else "production"
     }
 
     page_settings = {
@@ -154,7 +235,7 @@ def start():
         b'/status/feed': {
             'tools.authform.on': False,
             'tools.authbasic.on': True,
-            'tools.authbasic.checkpassword': page_login.rdiffLoginPage().checkpassword
+            'tools.authbasic.checkpassword': app.login.check_password
         },
         b'/static': {
             'tools.staticdir.on': True,
@@ -170,8 +251,14 @@ def start():
         }
     }
 
-    if rdw_config.get_config("SessionStorage").lower() == "disk":
-        sessionDir = rdw_config.get_config("SessionDir")
+    # Setup the custom favicon.
+    setup_favicon(app, page_settings)
+    # Setup the custom header logo.
+    setup_header_logo(app, page_settings)
+
+    # Configure session storage.
+    if app.config.get_config("SessionStorage").lower() == "disk":
+        sessionDir = app.config.get_config("SessionDir")
         if (os.path.exists(sessionDir)
                 and os.path.isdir(sessionDir)
                 and os.access(sessionDir, os.W_OK)):
@@ -182,66 +269,16 @@ def start():
             global_settings['tools.sessions.storage_path'] = sessionDir
 
     cherrypy.config.update(global_settings)
-    root = page_locations.rdiffLocationsPage()
-    root.setup = page_setup.rdiffSetupPage()
-    root.login = page_login.rdiffLoginPage()
-    root.logout = page_logout.rdiffLogoutPage()
-    root.browse = page_browse.rdiffBrowsePage()
-    root.restore = page_restore.rdiffRestorePage()
-    root.history = page_history.rdiffHistoryPage()
-    root.status = page_status.rdiffStatusPage()
-    root.admin = page_admin.rdiffAdminPage()
-    root.prefs = page_prefs.rdiffPreferencesPage()
 
-    # Start repo spider thread
-    if not debug:
-        killEvent = threading.Event()
+    # Start daemon thread to refresh users repository
+    kill_event = threading.Event()
+    rdw_spider_repos.startRepoSpiderThread(kill_event, app)
 
-        rdw_spider_repos.startRepoSpiderThread(killEvent)
-        email_notification.startEmailNotificationThread(killEvent)
-        if hasattr(cherrypy.engine, 'subscribe'):  # CherryPy >= 3.1
-            cherrypy.engine.subscribe('stop', lambda: killEvent.set())
-        else:
-            cherrypy.engine.on_stop_engine_list.append(lambda: killEvent.set())  # @UndefinedVariable
+    # Register kill_event
+    if hasattr(cherrypy.engine, 'subscribe'):  # CherryPy >= 3.1
+        cherrypy.engine.subscribe('stop', lambda: kill_event.set())
+    else:
+        cherrypy.engine.on_stop_engine_list.append(lambda: kill_event.set())  # @UndefinedVariable
 
     # Start web server
-    cherrypy.quickstart(root, config=page_settings)
-
-
-class NotFilter(logging.Filter):
-
-    """
-    Negate logging filter
-    """
-
-    def __init__(self, name=''):
-        self.name = name
-        self.nlen = len(name)
-
-    def filter(self, record):
-        if self.nlen == 0:
-            return 0
-        elif self.name == record.name:
-            return 0
-        elif record.name.find(self.name, 0, self.nlen) != 0:
-            return 1
-        return not (record.name[self.nlen] == ".")
-
-
-class ContextFilter(logging.Filter):
-    """
-    This is a filter which injects contextual information into the log.
-    """
-
-    def filter(self, record):
-        try:
-            if hasattr(cherrypy, 'serving'):
-                request = cherrypy.serving.request
-                remote = request.remote
-                record.ip = remote.name or remote.ip
-            if hasattr(cherrypy, 'session'):
-                record.user = cherrypy.session['username']
-        except:
-            record.ip = "unknown"
-            record.user = "unknown"
-        return True
+    cherrypy.quickstart(app, config=page_settings)

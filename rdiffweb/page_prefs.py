@@ -22,13 +22,12 @@ import cherrypy
 import logging
 import page_main
 import rdw_spider_repos
-import email_notification
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-class rdiffPreferencesPage(page_main.rdiffPage):
+class PreferencesPage(page_main.MainPage):
 
     sampleEmail = 'joe@example.com'
 
@@ -58,11 +57,11 @@ class rdiffPreferencesPage(page_main.rdiffPage):
         except Exception as e:
             params['error'] = unicode(e)
 
-        return self._writePage("prefs.html", **params)
+        return self._compile_template("prefs.html", **params)
 
     def _set_password(self, old_password, new_password, confirm_password):
         # Check if current database support it.
-        if not self.getUserDB().is_modifiable():
+        if not self.app.userdb.is_modifiable():
             return {'error': """Password changing is not
                               supported with the active user
                               database."""}
@@ -71,29 +70,29 @@ class rdiffPreferencesPage(page_main.rdiffPage):
         if new_password != confirm_password:
             return {'error': "The passwords do not match."}
 
-        self.getUserDB().set_password(self.getUsername(),
+        self.app.userdb.set_password(self.get_username(),
                                       old_password,
                                       new_password)
         return {'success': "Password updated successfully."}
 
     def _update_repos(self):
-        rdw_spider_repos.findReposForUser(self.getUsername(), self.getUserDB())
+        rdw_spider_repos.findReposForUser(self.get_username(), self.app.userdb)
         return {'success': """Successfully updated repositories."""}
 
     def _setNotifications(self, parms):
-        if not self.getUserDB().is_modifiable():
+        if not self.app.userdb.is_modifiable():
             return self._writePrefsPage(error="""Email notification is not
                                               supported with the active user
                                               database.""")
 
-        repos = self.getUserDB().get_repos(self.getUsername())
+        repos = self.app.userdb.get_repos(self.get_username())
 
         for parmName in parms.keys():
             if parmName == "userEmail":
                 if parms[parmName] == self.sampleEmail:
                     parms[parmName] = ''
-                self.getUserDB().set_email(
-                    self.getUsername(), parms[parmName])
+                self.app.userdb.set_email(
+                    self.get_username(), parms[parmName])
             if parmName.endswith("numDays"):
                 backupName = parmName[:-7]
                 if backupName in repos:
@@ -101,44 +100,40 @@ class rdiffPreferencesPage(page_main.rdiffPage):
                         maxDays = 0
                     else:
                         maxDays = int(parms[parmName][0])
-                    self.getUserDB().set_repo_maxage(
-                        self.getUsername(), backupName, maxDays)
+                    self.app.userdb.set_repo_maxage(
+                        self.get_username(), backupName, maxDays)
 
         return self._writePrefsPage(success="""Successfully changed
                                             notification settings.""")
 
     def _get_parms_for_page(self):
-        email = self.getUserDB().get_email(self.getUsername())
+        email = self.app.userdb.get_email(self.get_username())
         parms = {
             "userEmail": email,
             "notificationsEnabled": False,
             "backups": [],
             "sampleEmail": self.sampleEmail
         }
-        if email_notification.emailNotifier().notificationsEnabled():
-            repos = self.getUserDB().get_repos(self.getUsername())
-            backups = []
-            for repo in repos:
-                maxAge = self.getUserDB().get_repo_maxage(
-                    self.getUsername(), repo)
-                notifyOptions = []
-                for i in range(0, 8):
-                    notifyStr = "Don't notify"
-                    if i == 1:
-                        notifyStr = "1 day"
-                    elif i > 1:
-                        notifyStr = str(i) + " days"
-
-                    selectedStr = ""
-                    if i == maxAge:
-                        selectedStr = "selected"
-
-                    notifyOptions.append(
-                        {"optionStr": notifyStr, "selectedStr": selectedStr})
-
-                backups.append(
-                    {"backupName": repo, "notifyOptions": notifyOptions})
-
-            parms.update({"notificationsEnabled": True, "backups": backups})
+        # if email_notification.emailNotifier().notificationsEnabled():
+        #    repos = self.app.userdb.get_repos(self.get_username())
+        #    backups = []
+        #    for repo in repos:
+        #        maxAge = self.app.userdb.get_repo_maxage(
+        #            self.get_username(), repo)
+        #        notifyOptions = []
+        #        for i in range(0, 8):
+        #            notifyStr = "Don't notify"
+        #            if i == 1:
+        #                notifyStr = "1 day"
+        #            elif i > 1:
+        #                notifyStr = str(i) + " days"
+        #            selectedStr = ""
+        #            if i == maxAge:
+        #                selectedStr = "selected"
+        #            notifyOptions.append(
+        #                {"optionStr": notifyStr, "selectedStr": selectedStr})
+        #        backups.append(
+        #            {"backupName": repo, "notifyOptions": notifyOptions})
+        #    parms.update({"notificationsEnabled": True, "backups": backups})
 
         return parms

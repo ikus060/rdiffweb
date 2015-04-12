@@ -20,28 +20,48 @@ from __future__ import unicode_literals
 
 import cherrypy
 import logging
+
 import librdiff
 import page_main
+
 from rdw_helpers import encode_s
+from rdiffweb import rdw_plugin
+from i18n import ugettext as _
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-class rdiffLocationsPage(page_main.rdiffPage):
-    """Shows the repository page. Will show all available destination
-    backup directories. This is the root (/) page"""
+class LocationsPage(page_main.MainPage):
+    """
+    Shows the repository page. Will show all available destination
+    backup directories. This is the root (/) page.
+    """
 
     @cherrypy.expose
     def index(self):
-        logger.debug("browsing repositories")
-        return self._writePage("locations.html", **self._get_parms_for_page())
+        logger.debug("browsing locations")
+
+        # Get page params
+        params = {}
+        try:
+            params = self._get_parms_for_page()
+        except:
+            logger.exception("fail to get user's locations")
+            params["error"] = _("fail to get user's locations")
+
+        # Render the page.
+        return self._compile_template("locations.html", **params)
 
     def _get_parms_for_page(self):
-        user_root = self.getUserDB().get_root_dir(self.getUsername())
+        """
+        Build the params for the locations templates.
+        """
+        # Get user's locations.
+        user_root = self.app.userdb.get_root_dir(self.get_username())
         user_root_b = encode_s(user_root)
-        user_repos = self.getUserDB().get_repos(self.getUsername())
-        repoList = []
+        user_repos = self.app.userdb.get_repos(self.get_username())
+        repos = []
         for user_repo in user_repos:
             try:
                 # Get reference to a repo object
@@ -58,10 +78,21 @@ class rdiffLocationsPage(page_main.rdiffPage):
                 in_progress = False
                 last_backup_date = 0
                 failed = True
-            repoList.append({"path": path,
-                             "name": name,
-                             "last_backup_date": last_backup_date,
-                             'in_progress': in_progress,
-                             'failed': failed})
+            # Create an entry to represent the repository
+            repos.append({
+                "path": path,
+                "name": name,
+                "last_backup_date": last_backup_date,
+                'in_progress': in_progress,
+                'failed': failed
+                })
+        params = {"repos": repos}
 
-        return {"repos": repoList}
+        # Add plugins params.
+        # TODO transform this into lambda function.
+        self.app.plugins.run(
+            lambda x: x.locations_update_params(params),
+            rdw_plugin.ILocationsPagePlugin.CATEGORY)
+
+        # Return the complete list of params.
+        return params

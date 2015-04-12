@@ -18,15 +18,14 @@
 
 from __future__ import unicode_literals
 
-import db_sql
-import rdw_config
+from rdiffweb.rdw_plugin import IUserDBPlugin
 import warnings
 
 """We do no length validation for incoming parameters, since truncated values will
 at worst lead to slightly confusing results, but no security risks"""
 
 
-class mysqlUserDB:
+class mysqlUserDB(IUserDBPlugin):
 
     def __init__(self, configFilePath=None):
         import MySQLdb

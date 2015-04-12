@@ -22,13 +22,14 @@ import cherrypy
 import logging
 import page_main
 
+from i18n import ugettext as _
 from rdw_helpers import quote_url
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-class rdiffLoginPage(page_main.rdiffPage):
+class LoginPage(page_main.MainPage):
 
     @cherrypy.expose
     def index(self, redirect=u"", login=u"", password=""):
@@ -51,9 +52,9 @@ class rdiffLoginPage(page_main.rdiffPage):
         if self._is_submit():
             # check for login credentials
             logger.info("check credentials for [%s]" % login)
-            errorMsg = self.checkpassword(login, password)
+            errorMsg = self.check_password(login, password)
             if not errorMsg:
-                self.setUsername(login)
+                self.set_username(login)
                 if not redirect or redirect.startswith("/login/"):
                     redirect = "/"
                 # The redirect url was unquoted by cherrypy, quote the
@@ -64,4 +65,17 @@ class rdiffLoginPage(page_main.rdiffPage):
             # update form values
             params["warning"] = errorMsg
 
-        return self._writePage("login.html", **params)
+        return self._compile_template("login.html", **params)
+
+    def check_password(self, username, password):
+        """
+        Check credential using local database.
+        """
+        try:
+            if self.app.userdb.are_valid_credentials(username, password):
+                cherrypy.session['username'] = username  # @UndefinedVariable
+                return False
+            return _("Invalid username or password.")
+        except:
+            logger.exception("fail to validate user credential.")
+            return _("Fail to validate user credential.")
