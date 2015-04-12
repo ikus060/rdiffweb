@@ -54,9 +54,7 @@ def quote_url(url, safe=None):
     # If safe is define, make sure it's the same object type (either unicode
     # or str)
     if safe:
-        assert (type(url) == type(safe),
-                "url [%s] and safe [%s] are not the same type" %
-                (type(url), type(safe)))
+        assert type(url) == type(safe)
 
     # Handle case when URL is unicode.
     is_unicode = False
