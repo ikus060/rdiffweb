@@ -29,7 +29,10 @@ system_charset = sys.getfilesystemencoding()
 
 
 def decode_s(value, errors='strict'):
-    """Convert charset to system unicode."""
+    """
+    Convert charset to system unicode. Default is 'strict'. Other possible
+    values are 'ignore' and 'replace'.
+    """
     assert isinstance(value, str)
     return value.decode(system_charset, errors)
 
