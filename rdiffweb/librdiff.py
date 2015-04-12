@@ -851,8 +851,12 @@ class RdiffPath:
         output = os.path.join(tempfile.mkdtemp(dir=tempdir), filename)
 
         # Execute rdiff-backup to restore the data.
-        logger.info(b"execute rdiff-backup --restore-as-of=%s '%s' '%s'" %
-                    (date_epoch, file_to_restore, output))
+        logger.info(
+            "execute rdiff-backup --restore-as-of=%s '%s' '%s'" % (
+                date_epoch,
+                rdw_helpers.decode_s(file_to_restore, 'replace'),
+                rdw_helpers.decode_s(output, 'replace'),
+                ))
         results = self._execute(
             b"rdiff-backup",
             b"--restore-as-of=" + date_epoch,
