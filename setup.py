@@ -92,7 +92,7 @@ if not os.path.isfile("/etc/rdiffweb/rdw.conf"):
   _data_files.append(('/etc/rdiffweb', ['rdw.conf']))
 
 setup(name='rdiffweb',
-      version='0.7.0',
+      version='0.8.0',
       description='A web interface to rdiff-backup repositories',
       author='Patrik Dufresne',
       author_email='info@patrikdufresne.com',
