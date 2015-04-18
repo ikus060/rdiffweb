@@ -110,6 +110,7 @@ class MainPage:
             "is_login": True,
             "is_admin": self._user_is_admin(),
             "username": self.get_username(),
+            "version": self.app.get_version(),
             }
 
         # Append custom branding

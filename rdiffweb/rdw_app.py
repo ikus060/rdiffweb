@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+import pkg_resources
 
 import page_admin
 import page_browse
@@ -120,4 +121,16 @@ class RdiffwebApp(page_locations.LocationsPage):
         # Throw error
         raise ValueError("can't create UserDB plugin")
 
-
+    def get_version(self):
+        """
+        Get the current running version (using package info).
+        """
+        # Use a cached version
+        if hasattr(self, "_version"):
+            return self._version
+        # Get version.
+        try:
+            self._version = pkg_resources.get_distribution("rdiffweb").version
+        except:
+            self._version = "DEV"
+        return self._version
