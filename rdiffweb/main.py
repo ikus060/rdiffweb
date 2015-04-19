@@ -198,11 +198,6 @@ def start():
     sslCertificate = app.config.get_config("SslCertificate")
     sslPrivateKey = app.config.get_config("SslPrivateKey")
 
-    # Define the locales directory
-    localesdir = os.path.split(inspect.getfile(inspect.currentframe()))[0]
-    localesdir = os.path.realpath(os.path.abspath(localesdir))
-    localesdir = os.path.join(localesdir, 'locales/')
-
     global_settings = {
         'tools.encode.on': True,
         'tools.encode.encoding': 'utf-8',
@@ -226,7 +221,6 @@ def start():
             'tools.setup.on': True,
             'tools.i18n.on': True,
             'tools.i18n.default': 'en_US',
-            'tools.i18n.mo_dir': localesdir,
             'tools.i18n.domain': 'messages'
         },
         b'/login': {

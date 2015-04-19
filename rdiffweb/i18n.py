@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 """Internationalization and Localization for CherryPy
 
 **Tested with CherryPy 3.1.2**
@@ -76,6 +77,8 @@ That's it.
 
 from __future__ import unicode_literals
 
+import os
+import inspect
 import cherrypy
 import gettext
 import logging
@@ -174,7 +177,7 @@ def load_translation(langs, dirname, domain):
     return res
 
 
-def get_lang(mo_dir, default, domain):
+def get_lang(default, domain):
     """Main function which will be invoked during the request by `I18nTool`.
     If the SessionTool is on and has a lang key, this language get the
     highest priority. Default language get the lowest priority.
@@ -183,26 +186,37 @@ def get_lang(mo_dir, default, domain):
     SessionTool is on).
 
     :parameters:
-        mo_dir : String
-            `tools.i18n.mo_dir`
         default : String
             `tools.i18n.default`
         domain : String
             `tools.i18n.domain`
     """
+    # Define the locales directory
+    mo_dir = os.path.split(inspect.getfile(inspect.currentframe()))[0]
+    mo_dir = os.path.realpath(os.path.abspath(mo_dir))
+    mo_dir = os.path.join(mo_dir, 'locales/')
+
+    # Determine the language to be used according to accept-language.
     langs = [x.value.replace('-', '_') for x in
              cherrypy.request.headers.elements('Accept-Language')]
     langs.append(default)
     logger.debug("accept-language: %s " % (langs))
+
+    # Search for an appropriate translation.
     loc = load_translation(langs, mo_dir, domain)
+
+    # Store the translation into the cherrypy context.
     cherrypy.response.i18n = loc
     logger.debug("use-language: %s " % str(loc.locale))
 
 
 def set_lang():
-    """Sets the Content-Language response header (if not already set) to the
+    """
+    Sets the Content-Language response header (if not already set) to the
     language of `cherrypy.response.i18n.locale`.
     """
+    # Just to make it clear, this is to properly reply to the client telling
+    # them the language used in the content.
     if ('Content-Language' not in cherrypy.response.headers and
             hasattr(cherrypy.response, 'i18n')):
         cherrypy.response.headers['Content-Language'] = str(

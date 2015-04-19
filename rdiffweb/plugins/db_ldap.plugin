@@ -4,7 +4,7 @@ Module = db_ldap
 
 [Documentation]
 Author = Patrik Dufresne
-Version = 8.0
+Version = 0.8.0
 Website = http://www.patrikdufresne.com/en/rdiffweb/
 Description: LDAP UserDB backend used to validate credentials. This plugin will
     use SQLite database for user's data. Both, LDAP and SQLite plugin must be

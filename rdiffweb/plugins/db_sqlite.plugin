@@ -4,7 +4,7 @@ Module = db_sqlite
 
 [Documentation]
 Author = Patrik Dufresne
-Version = 8.0
+Version = 0.8.0
 Website = http://www.patrikdufresne.com/en/rdiffweb/
 Description: SQLite UserDB backend used to store users data and credentials
     into a SQLite database.
