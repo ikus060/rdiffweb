@@ -25,34 +25,40 @@
             <ul class="list-group">
             	{# List filtered user by name. #}
                 {% for plugin in plugins|sort(attribute='name') %}
-                <li class="list-group-item clearfix">
+                <li itemscope itemtype="https://schema.org/SoftwareApplication" 
+                    class="list-group-item clearfix">
                     <h4 class="list-group-item-heading">
-                    {{ plugin.name }} v{{ plugin.version }}
+                    <span itemprop="name">{{ plugin.name }}</span>
+                    v<span itemprop="softwareVersion">{{ plugin.version }}</span>
                     {% if plugin.enabled %}
-                        <small><span class="label label-success">
+                        <small><span class="label label-success"
+                                     itemprop="installed"
+                                     content="true">
                             {% trans %}Enabled{% endtrans %}</span></small>
                     {% else %}
-                        <small><span class="label label-default">
+                        <small><span class="label label-default"
+                                     itemprop="installed"
+                                     content="false">
                             {% trans %}Disabled{% endtrans %}</span></small>
                     {% endif %}
                     </h4>
 					<dl class="dl-horizontal">
                     {% if plugin.author %}
                         <dt>{% trans %}Author{% endtrans %}</dt>
-                        <dd>
+                        <dd itemprop="author">
                         {{ plugin.author }}
                         </dd>
                     {% endif %}
                     {% if plugin.description %}
 	                    <dt>{% trans %}Description{% endtrans %}</dt>
 	                    <dd>
-	                    {{ plugin.description }}
-	                    {{ plugin.website }}
+	                    <span itemprop="description">{{ plugin.description }}</span>
+	                    <span itemprop="url">{{ plugin.website }}</span>
 	                    </dd>
                     {% endif %}
                     {% if plugin.copyright %}
                         <dt>{% trans %}Copyright{% endtrans %}</dt>
-	                    <dd>
+	                    <dd itemprop="license">
 	                    {{ plugin.copyright }}
 	                    </dd>
                     {% endif %}
