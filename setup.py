@@ -122,6 +122,7 @@ setup(name='rdiffweb',
                         "pysqlite>=2.6.3",
                         "Jinja2>=2.6",
                         "yapsy>=1.10.423",
+                        "babel>=0.9",
                         ],
       # required packages for build process
       setup_requires=["babel>=0.9"]
