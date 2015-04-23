@@ -37,8 +37,12 @@ from babel.messages.frontend import compile_catalog, extract_messages, update_ca
 from distutils.cmd import Command
 from string import strip
 
-# this is implementation of command which complies all catalogs (dictionaries)
+
 class compile_all_catalogs(Command):
+    """
+    This is implementation of command which complies all catalogs
+    (dictionaries).
+    """
 
     description = 'compile message catalogs for all languages to binary MO files'
     user_options = [
@@ -68,7 +72,6 @@ class compile_all_catalogs(Command):
     def run(self):
         for locale in self.locales:
             compiler = compile_catalog(self.distribution)
-
             compiler.initialize_options()
             compiler.domain = self.domain
             compiler.directory = self.directory
@@ -76,54 +79,64 @@ class compile_all_catalogs(Command):
             compiler.use_fuzzy = self.use_fuzzy
             compiler.statistics = self.statistics
             compiler.finalize_options()
-
             compiler.run()
 
-# This is modification of build command, compile_all_catalogs
-# is added as last/first command
+
 class build(build_):
-     sub_commands = build_.sub_commands[:]
-     sub_commands.insert(0, ('compile_all_catalogs', None))
+    """
+    This is modification of build command, compile_all_catalogs
+    is added as last/first command
+    """
+
+    sub_commands = build_.sub_commands[:]
+    sub_commands.insert(0, ('compile_all_catalogs', None))
 
 _data_files = [('/etc/init.d', ['extras/init/rdiffweb']),
-            ('/etc/logrotate.d', ['extras/logrotate/rdiffweb']),
-           ]
+               ('/etc/logrotate.d', ['extras/logrotate/rdiffweb']),
+               ]
 if not os.path.isfile("/etc/rdiffweb/rdw.conf"):
-  _data_files.append(('/etc/rdiffweb', ['rdw.conf']))
+    _data_files.append(('/etc/rdiffweb', ['rdw.conf']))
 
-setup(name='rdiffweb',
-      version='0.8.0',
-      description='A web interface to rdiff-backup repositories',
-      author='Patrik Dufresne',
-      author_email='info@patrikdufresne.com',
-      url='http://www.patrikdufresne.com/en/rdiffweb/',
-      license="GPLv3",
-      packages=['rdiffweb'],
-      package_data={'rdiffweb': ['templates/*.html', 'templates/*.xml',
-                                 'templates/*.txt', 'static/*.png',
-                                 'static/js/scripts.min.js',
-                                 'static/js/vendor/*.js',
-                                 'static/css/*.css', 'static/fonts/*',
-                                 'plugins/*.py', 'plugins/*.plugin',
-                                 'locales/fr/LC_MESSAGES/messages.mo'
-                                 ]
-                    },
-      data_files=_data_files,
-      entry_points={"console_scripts": ["rdiffweb = rdiffweb.main:start"]},
-      # new commands added and build command modified
-      cmdclass={'build': build,
-                'compile_catalog': compile_catalog,
-                'extract_messages': extract_messages,
-                'update_catalog': update_catalog,
-                'init_catalog': init_catalog,
-                'compile_all_catalogs': compile_all_catalogs
-                },
-      install_requires=["CherryPy>=3.2.2",
-                        "pysqlite>=2.6.3",
-                        "Jinja2>=2.6",
-                        "yapsy>=1.10.423",
-                        "babel>=0.9",
-                        ],
-      # required packages for build process
-      setup_requires=["babel>=0.9"]
-      )
+setup(
+    name='rdiffweb',
+    version='0.8.0',
+    description='A web interface to rdiff-backup repositories',
+    author='Patrik Dufresne',
+    author_email='info@patrikdufresne.com',
+    url='http://www.patrikdufresne.com/en/rdiffweb/',
+    license="GPLv3",
+    packages=['rdiffweb'],
+    package_data={
+        'rdiffweb': [
+            'templates/*.html', 'templates/*.xml',
+            'templates/*.txt', 'static/*.png',
+            'static/js/scripts.min.js',
+            'static/js/vendor/*.js',
+            'static/css/*.css', 'static/fonts/*',
+            'plugins/*.py', 'plugins/*.plugin',
+            'locales/fr/LC_MESSAGES/messages.mo'
+            ]
+        },
+    data_files=_data_files,
+    entry_points={"console_scripts": ["rdiffweb = rdiffweb.main:start"]},
+    # new commands added and build command modified
+    cmdclass={
+        'build': build,
+        'compile_catalog': compile_catalog,
+        'extract_messages': extract_messages,
+        'update_catalog': update_catalog,
+        'init_catalog': init_catalog,
+        'compile_all_catalogs': compile_all_catalogs,
+        },
+    install_requires=[
+        "CherryPy>=3.2.2",
+        "pysqlite>=2.6.3",
+        "Jinja2>=2.6",
+        "yapsy>=1.10.423",
+        "babel>=0.9",
+        ],
+    # required packages for build process
+    setup_requires=[
+        "babel>=0.9",
+        ]
+    )
