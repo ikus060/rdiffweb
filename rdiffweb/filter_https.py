@@ -20,9 +20,9 @@ from __future__ import unicode_literals
 
 import cherrypy
 try:
-    from cherrypy.filters.basefilter import BaseFilter  # @UnresolvedImport
+    from cherrypy.filters.basefilter import BaseFilter  # @UnusedImport @UnresolvedImport
 except:
-    from cherrypy.lib.filter.basefilter import BaseFilter  # @UnresolvedImport
+    from cherrypy.lib.filter.basefilter import BaseFilter  # @UnusedImport @UnresolvedImport @Reimport
 
 
 class rdwHttpsFilter(BaseFilter):

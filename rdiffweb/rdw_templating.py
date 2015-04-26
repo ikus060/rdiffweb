@@ -22,10 +22,12 @@ import logging
 import time
 
 from jinja2 import Environment, PackageLoader
-from jinja2.loaders import ChoiceLoader
+from jinja2.ext import _make_new_gettext, _make_new_ngettext
+from jinja2.loaders import ChoiceLoader, FileSystemLoader
 
 import rdw_helpers
-from i18n import ugettext, ungettext
+import i18n
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -152,6 +154,16 @@ def url_for_status_entry(date, repo=None):
     return ''.join(url)
 
 
+def _load_translation(domain):
+    """
+    Used in templates to load a different translation domain.
+    """
+    t = i18n.load_translation(domain)
+    t.ugettext = _make_new_gettext(t.ugettext)
+    t.ungettext = _make_new_ngettext(t.ungettext)
+    return t
+
+
 class TemplateManager():
     """
     Uses to generate HTML page from template using Jinja2 templating.
@@ -167,7 +179,10 @@ class TemplateManager():
         self.jinja_env = Environment(loader=loader,
                                      auto_reload=True,
                                      autoescape=True,
-                                     extensions=['jinja2.ext.i18n'])
+                                     extensions=[
+                                         'jinja2.ext.i18n',
+                                         'jinja2.ext.with_',
+                                         ])
 
         # Register filters
         self.jinja_env.filters['filter'] = do_filter
@@ -179,14 +194,15 @@ class TemplateManager():
         self.jinja_env.globals['url_for_history'] = url_for_history
         self.jinja_env.globals['url_for_restore'] = url_for_restore
         self.jinja_env.globals['url_for_status_entry'] = url_for_status_entry
+        self.jinja_env.globals['load_translation'] = _load_translation
 
-    def add_location(self, package_name, package_path='templates'):
+    def add_templatesdir(self, templates_dir):
         """
-        Add a new template loader.
+        Add a new templates directory.
         """
         # Add a new template location to the list of loaders.
         loaders = self.jinja_env.loader.loaders
-        loaders.append(PackageLoader(package_name, package_path))
+        loaders.append(FileSystemLoader(templates_dir))
 
     def compile_template(self, template_name, **kwargs):
         """Very simple implementation to render template using jinja2.
@@ -197,7 +213,7 @@ class TemplateManager():
         """
         logger.debug("compiling template [%s]" % template_name)
         self.jinja_env.install_gettext_callables(
-            ugettext, ungettext, newstyle=True)
+            i18n.ugettext, i18n.ungettext, newstyle=True)
         template = self.jinja_env.get_template(template_name)
         data = template.render(kwargs)
         logger.debug("template [%s] compiled" % template_name)

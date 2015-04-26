@@ -75,6 +75,11 @@ class RdiffwebApp(page_locations.LocationsPage):
         # Activate every loaded plugin
         self.plugins.run(lambda x: x.activate_with_app(self))
 
+        # Add templates location to the templating engine.
+        self.plugins.run(lambda x:
+                         x.get_templatesdir() is None or
+                         self.templates.add_templatesdir(x.get_templatesdir()))
+
     def __get_userdb(self):
         """
         Return reference to the user database. Create a new instance of user

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-04-10 16:40-0400\n"
+"POT-Creation-Date: 2015-04-26 12:03-0400\n"
 "PO-Revision-Date: 2014-11-14 10:00-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -92,7 +92,7 @@ msgstr ""
 "impossible de déterminer si rdiffweb est configuré! Vérifier les logs de "
 "l'application"
 
-#: rdiffweb/page_setup.py:62
+#: rdiffweb/page_setup.py:63
 msgid ""
 "rdiffweb doesn't have read-write access to the configuration file. You "
 "may try to change the permissions of this file."
@@ -131,28 +131,27 @@ msgstr "Plugiciels"
 msgid "Plugin management"
 msgstr "Gestion des plugiciels"
 
-#: rdiffweb/templates/admin_plugins.html:33
-#, fuzzy
+#: rdiffweb/templates/admin_plugins.html:37
 msgid "Enabled"
 msgstr "LDAP activé!"
 
-#: rdiffweb/templates/admin_plugins.html:36
+#: rdiffweb/templates/admin_plugins.html:42
 msgid "Disabled"
 msgstr "Désactivé"
 
-#: rdiffweb/templates/admin_plugins.html:41
+#: rdiffweb/templates/admin_plugins.html:47
 msgid "Author"
 msgstr "Auteur"
 
-#: rdiffweb/templates/admin_plugins.html:47
+#: rdiffweb/templates/admin_plugins.html:53
 msgid "Description"
 msgstr "Description"
 
-#: rdiffweb/templates/admin_plugins.html:54
+#: rdiffweb/templates/admin_plugins.html:60
 msgid "Copyright"
 msgstr "Droit d'auteur"
 
-#: rdiffweb/templates/admin_plugins.html:59
+#: rdiffweb/templates/admin_plugins.html:65
 msgid "Location"
 msgstr "Emplacement"
 
@@ -214,7 +213,7 @@ msgstr ""
 "Pour créer un utilisateur LDAP, utilisez le même nom d'utilisateur et "
 "n'entrez pas de courriel ou de mot de passe."
 
-#: rdiffweb/templates/admin_users.html:119 rdiffweb/templates/login.html:29
+#: rdiffweb/templates/admin_users.html:119 rdiffweb/templates/login.html:28
 msgid "Username"
 msgstr "Nom d'utilisateur"
 
@@ -224,7 +223,7 @@ msgid "Email"
 msgstr "Courriel"
 
 #: rdiffweb/templates/admin_users.html:136
-#: rdiffweb/templates/admin_users.html:184 rdiffweb/templates/login.html:32
+#: rdiffweb/templates/admin_users.html:184 rdiffweb/templates/login.html:31
 msgid "Password"
 msgstr "Mot de passe"
 
@@ -333,8 +332,8 @@ msgstr "Vous n'avez pas de dépôts configurés."
 msgid "Last backup: "
 msgstr "Dernière sauvegarde : "
 
-#: rdiffweb/templates/login.html:1 rdiffweb/templates/login.html:26
-#: rdiffweb/templates/login.html:34
+#: rdiffweb/templates/login.html:1 rdiffweb/templates/login.html:25
+#: rdiffweb/templates/login.html:33
 msgid "Sign in"
 msgstr "Se connecter"
 
@@ -346,12 +345,12 @@ msgstr ""
 "Initialement développé par Josh Nisly, rdiffweb est une interface web "
 "pour la naviguer et la restaurer à partir des dépôts de rdiff-backup."
 
-#: rdiffweb/templates/login.html:14
+#: rdiffweb/templates/login.html:13
 #, python-format
 msgid "version %(version)s"
 msgstr "version %(version)s"
 
-#: rdiffweb/templates/login.html:28
+#: rdiffweb/templates/login.html:27
 msgid "Enter your username and password to log in."
 msgstr "Entrez votre nom d'utilisateur et mot de passe pour vous connecter."
 

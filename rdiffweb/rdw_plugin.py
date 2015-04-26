@@ -18,9 +18,10 @@
 
 from __future__ import unicode_literals
 
-import pkg_resources
-import logging
 import cherrypy
+import logging
+import os
+import pkg_resources
 
 from yapsy.IPlugin import IPlugin
 from yapsy.PluginFileLocator import PluginFileLocator
@@ -75,7 +76,7 @@ class PluginManager():
             IUserDBPlugin.CATEGORY: IUserDBPlugin,
             IDeamonPlugin.CATEGORY: IDeamonPlugin,
             ILocationsPagePlugin.CATEGORY: ILocationsPagePlugin,
-            })
+        })
 
         # Set filter.
         self.manager.isPluginOk = self.is_plugin_enabled
@@ -199,6 +200,29 @@ class IRdiffwebPlugin(IPlugin):
             raise ValueError("app is not available")
         return app
 
+    def get_localesdir(self):
+        """
+        Return the location of the locales directory. Default implementation
+        return the "locales" directory if exists. Otherwise return None.
+        """
+        # Add plugin translation too.
+        mo_dir = pkg_resources.resource_filename(# @UndefinedVariable
+            self.__module__, 'locales')
+        if os.path.exists(mo_dir):
+            return mo_dir
+        return None
+
+    def get_templatesdir(self):
+        """
+        Return the location of the templates director. Default implementation
+        return the "templates" director if exists. Otherwise return None.
+        """
+        templates_dir = pkg_resources.resource_filename(# @UndefinedVariable
+            self.__module__, 'templates')
+        if os.path.exists(templates_dir):
+            return templates_dir
+        return None
+
     def get_username(self):
         """
         Return current username (from cherrypy session).
@@ -235,5 +259,4 @@ class ILocationsPagePlugin(IRdiffwebPlugin):
         """
         Called by the LocationsPage to add extra data to the page.
         """
-        raise NotImplementedError("get_locations_extra_param is not implemented")
-
+        raise NotImplementedError("locations_update_params is not implemented")

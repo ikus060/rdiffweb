@@ -86,10 +86,12 @@ class LocationsPage(page_main.MainPage):
                 'in_progress': in_progress,
                 'failed': failed
                 })
-        params = {"repos": repos}
+        params = {
+            "repos": repos,
+            "templates_before_content": list(),
+            }
 
         # Add plugins params.
-        # TODO transform this into lambda function.
         self.app.plugins.run(
             lambda x: x.locations_update_params(params),
             rdw_plugin.ILocationsPagePlugin.CATEGORY)

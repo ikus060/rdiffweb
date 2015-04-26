@@ -220,8 +220,6 @@ def start():
             'tools.authform.on': True,
             'tools.setup.on': True,
             'tools.i18n.on': True,
-            'tools.i18n.default': 'en_US',
-            'tools.i18n.domain': 'messages'
         },
         b'/login': {
             'tools.authform.on': False,
