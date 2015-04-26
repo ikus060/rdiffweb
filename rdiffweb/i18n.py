@@ -93,7 +93,7 @@ def _find(domain, localedirs, languages=None):
     # Get some reasonable defaults for arguments that were not supplied
     if languages is None:
         languages = []
-        for envar in ('LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG'):
+        for envar in ['LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG']:
             val = os.environ.get(envar)
             if val:
                 languages = val.split(':')
@@ -139,7 +139,7 @@ def _translation(domain, localedirs=None, languages=None):
         return t
     # Lookup the mo files.
     result = None
-    for (lang, mofile) in mofiles:
+    for lang, mofile in mofiles:
         # Search the cache to avoid parsing the same file again.
         key = os.path.abspath(mofile)
         t = _translations.get(key)
