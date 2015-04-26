@@ -33,6 +33,27 @@ from yapsy.FilteredPluginManager import FilteredPluginManager
 logger = logging.getLogger(__name__)
 
 
+class PluginLocator(PluginFileLocator):
+    """
+    Custom plugin file locator to handle an error when loading plugin. To
+    avoid all the application to crash.
+    """
+
+    def __init__(self):
+        analyzer = PluginFileAnalyzerWithInfoFile(
+            name="rdiffweb-info",
+            extensions="plugin")
+        PluginFileLocator.__init__(self, analyzers=[analyzer])
+        # Desiable resursive search.
+        self.recursive = False
+
+    def _getInfoForPluginFromAnalyzer(self, analyzer, dirpath, filename):
+        try:
+            return PluginFileLocator._getInfoForPluginFromAnalyzer(self, analyzer, dirpath, filename)
+        except ValueError:
+            logger.exception("fail to load plugin [%s]" % (filename,))
+
+
 class PluginManager():
 
     def __init__(self, config):
@@ -64,10 +85,7 @@ class PluginManager():
         self.manager = PluginManagerSingleton.get()
 
         # Sets plugins locations.
-        plugin_analyzer = PluginFileAnalyzerWithInfoFile(
-            name="rdiffweb-info",
-            extensions="plugin")
-        plugin_locator = PluginFileLocator(analyzers=[plugin_analyzer])
+        plugin_locator = PluginLocator()
         self.manager.setPluginLocator(plugin_locator)
         plugin_locator.setPluginPlaces(searchpath)
 
