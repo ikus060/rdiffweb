@@ -44,7 +44,7 @@ class PluginLocator(PluginFileLocator):
             name="rdiffweb-info",
             extensions="plugin")
         PluginFileLocator.__init__(self, analyzers=[analyzer])
-        # Desiable resursive search.
+        # Disable recursive search.
         self.recursive = False
 
     def _getInfoForPluginFromAnalyzer(self, analyzer, dirpath, filename):
@@ -65,18 +65,18 @@ class PluginManager():
         self.config = config
 
         # Get plugin locations.
-        plugin_locations = self.config.get_config_list(
+        plugin_search_path_b = self.config.get_config_str(
             "PluginSearchPath",
-            default="/etc/rdiffweb/plugins")
+            default=b"/etc/rdiffweb/plugins")
 
         # Determine the search path
         searchpath = []
-        # Append core plugins directory
-        path = pkg_resources.resource_filename('rdiffweb', 'plugins')  # @UndefinedVariable
-        searchpath.append(path)
+        # Append core plugins directory (in bytes)
+        path_b = pkg_resources.resource_filename('rdiffweb', b'plugins')  # @UndefinedVariable
+        searchpath.append(path_b)
         # Append user plugins directory
-        if plugin_locations:
-            searchpath.extend(plugin_locations)
+        plugin_locations = plugin_search_path_b.split(b',')
+        searchpath.extend(plugin_locations)
         # Build the manager
         logger.debug("plugin search path [%s]" % (searchpath))
 
