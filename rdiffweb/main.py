@@ -185,6 +185,9 @@ def start():
         log_access_file=log_access_file,
         debug=debug)
 
+    # Log startup
+    logger.info("START")
+
     # Create App.
     app = rdw_app.RdiffwebApp(configfile=configfile)
 
@@ -274,3 +277,6 @@ def start():
 
     # Start web server
     cherrypy.quickstart(app, config=page_settings)
+
+    # Log startup
+    logger.info("STOP")
