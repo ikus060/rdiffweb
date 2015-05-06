@@ -27,7 +27,6 @@ import subprocess
 import tempfile
 
 import rdw_helpers
-import rdw_config
 
 from i18n import ugettext as _
 
