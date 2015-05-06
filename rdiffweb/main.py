@@ -24,7 +24,7 @@ import os
 import sys
 import threading
 import logging
-import inspect
+import tempfile
 
 import rdw_app
 import rdw_spider_repos
@@ -34,6 +34,25 @@ import filter_setup  # @UnusedImport
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
+
+
+def debug_dump():
+    """
+    Called when receiving a debug signal.
+    Interrupt running process, and provide a python prompt for
+    interactive debugging."""
+    logger.warn("receive signal to dump memory")
+    try:
+        from meliae import scanner  # @UnresolvedImport
+    except:
+        logger.warn("can't dump memory, meliae is not available")
+        return
+    try:
+        filename = tempfile.mktemp(suffix='.json', prefix='rdiff-dump-')
+        logger.info("create memory dump: %s" % (filename,))
+        scanner.dump_all_objects(filename)
+    except:
+        logger.warn("fail to dump memory", exc_info=True)
 
 
 def setup_favicon(app, page_settings):
@@ -274,6 +293,9 @@ def start():
         cherrypy.engine.subscribe('stop', lambda: kill_event.set())
     else:
         cherrypy.engine.on_stop_engine_list.append(lambda: kill_event.set())  # @UndefinedVariable
+
+    # Add a custom signal handler
+    cherrypy.engine.signal_handler.handlers['SIGUSR2'] = debug_dump
 
     # Start web server
     cherrypy.quickstart(app, config=page_settings)
