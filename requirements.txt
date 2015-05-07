@@ -1,0 +1,4 @@
+CherryPy>=3.2.2
+pysqlite>=2.6.3		
+Jinja2>=2.6
+babel>=0.9
