@@ -1,0 +1,14 @@
+rdiffweb (20150507.2102) trusty; urgency=medium
+
+  * fix script path after first running daemon
+  * repair user creation in preinstall script
+  * remove --root for build
+  * adjust setup to debian packaging
+
+ -- root <root@server.fliphess.com>  Thu, 07 May 2015 20:31:55 +0200
+
+rdiffweb (20150507.2027) trusty; urgency=medium
+
+  * Initial packaging
+
+ -- Flip Hess <flip@fliphess.com>  Thu, 7 May 2015 00:00:00 +0100

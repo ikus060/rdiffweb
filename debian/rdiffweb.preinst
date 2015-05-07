@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+
+if ! getent group rdiffweb >/dev/null; then
+    echo "Adding group rdiffweb"
+    addgroup --quiet rdiffweb
+fi
+
+if ! getent passwd rdiffweb >/dev/null; then
+    echo "Adding user rdiffweb"
+    useradd rdiffweb -g rdiffweb --system
+fi
+
+exit 0
