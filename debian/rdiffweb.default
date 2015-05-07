@@ -1,0 +1,13 @@
+#############################
+# Rdiffweb default settings #
+#############################
+
+DEBUG=0
+AUTORELOAD=1
+
+USER="rdiffweb"
+GROUP="rdiffweb"
+
+PIDFILE="/var/run/rdiffweb.pid"
+LOGFILE="/var/log/rdiffweb/rdiffweb.log"
+ACCESSLOGFILE="/var/log/rdiffweb/rdiffweb-access.log"

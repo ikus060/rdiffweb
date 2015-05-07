@@ -27,20 +27,17 @@
 # Description: Manages the rdiffweb daemon
 ### END INIT INFO
 
-## Options you may change ##
-DEBUG=0
-AUTORELOAD=0
-
-## Options you should probably not change ##
 DESC="rdiffweb server"
 NAME=rdiffweb
 DAEMON=/usr/bin/$NAME
 DAEMON_ARGS=""
-PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
+
+DEBUG=0
+AUTORELOAD=0
 USER="rdiffweb"
 GROUP="rdiffweb"
-
+PIDFILE=/var/run/$NAME.pid
 LOGFILE="/var/log/${NAME}/${NAME}.log"
 ACCESSLOGFILE="/var/log/${NAME}/${NAME}-access.log"
 
@@ -50,12 +47,8 @@ ACCESSLOGFILE="/var/log/${NAME}/${NAME}-access.log"
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
-# Load the VERBOSE setting and other rcS variables
-#. /lib/init/vars.sh
-
 # Define LSB log_* functions.
-# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
-# and status_of_proc is working.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present and status_of_proc is working.
 . /lib/lsb/init-functions
 
 ## Build extra options ##
@@ -63,6 +56,7 @@ DAEMON_ARGS="--log-access-file=$ACCESSLOGFILE"
 if [ "$DEBUG" = "1" ]; then
   DAEMON_ARGS="$DAEMON_ARGS --debug"
 fi
+
 if [ "$AUTORELOAD" = "1" ]; then
   DAEMON_ARGS="$DAEMON_ARGS --autoreload"
 fi
@@ -105,6 +99,7 @@ do_stop()
   rm -f $PIDFILE
   return "$RETVAL"
 }
+
 
 case "$1" in
   start)
