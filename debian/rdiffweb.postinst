@@ -1,9 +1,7 @@
 #!/bin/sh
 set -e
 
-chmod +x /etc/init.d/rdiffweb
-chown -R rdiffweb:rdiffweb /var/log/rdiffweb /etc/rdiffweb
-
+chown -R rdiffweb:rdiffweb debian/rdiffweb/var/log/rdiffweb /etc/rdiffweb
 service rdiffweb start || true
 
 exit 0

@@ -9,7 +9,7 @@ fi
 
 if ! getent passwd rdiffweb >/dev/null; then
     echo "Adding user rdiffweb"
-    useradd rdiffweb -g rdiffweb --system
+    adduser --system --no-create-home --disabled-password --ingroup rdiffweb rdiffweb
 fi
 
 exit 0

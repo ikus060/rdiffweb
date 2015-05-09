@@ -1,27 +1,4 @@
-rdiffweb (v0.7.0ubuntu1) trusty; urgency=medium
-
-  [ Patrik Dufresne ]
-  * Update README.md - add rdiff-backup to apt-get
-  * Update README.md - add update-rc command line
-
-  [ Flip ]
-  * initial boilerplate for packaging
-
-  [ Flip Hess ]
-  * fix logrotate
-  * start as privileged user
-  * set permissions on /etc/rdiffweb dir
-  * Annotate changelog
-  * create default settings file in /etc/default/rdiffweb
-  * adjustments after suggestions
-  * mass yearly file update by changing the 2014 to 2015
-  * adjust changelog to current versioning scheme
-
-  [ root ]
-
- -- root <root@server.fliphess.com>  Sat, 09 May 2015 15:11:23 +0200
-
-rdiffweb (v0.7.0) unstable; urgency=medium
+rdiffweb (2:v0.7.0) unstable; urgency=medium
 
   * Initial packaging
 

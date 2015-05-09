@@ -18,6 +18,7 @@ override_dh_install:
 
 override_dh_fixperms:
 	dh_fixperms
+	chmod 0755 debian/rdiffweb/etc/init.d/rdiffweb
 
 override_dh_auto_test:
 	nosetests -v
