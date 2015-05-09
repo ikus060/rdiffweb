@@ -1,22 +1,4 @@
-rdiffweb (20150507.2227) unstable; urgency=medium
-
-  * initial boilerplate for packaging
-  * fix logrotate
-  * start as privileged user
-  * set permissions on /etc/rdiffweb dir
-
- -- Flip Hess <flip@fliphess.com>  Thu, 07 May 2015 22:27:02 +0200
-
-rdiffweb (20150507.2102) unstable; urgency=medium
-
-  * fix script path after first running daemon
-  * repair user creation in preinstall script
-  * remove --root for build
-  * adjust setup to debian packaging
-
- -- Flip Hess <flip@fliphess.com>  Thu, 07 May 2015 20:31:55 +0200
-
-rdiffweb (20150507.2027) unstable; urgency=medium
+rdiffweb (0v7.1) unstable; urgency=medium
 
   * Initial packaging
 
