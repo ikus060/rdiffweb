@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2014 rdiffweb contributors
+# Copyright (C) 2015 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -70,8 +70,12 @@ do_start()
   #   0 if daemon has been started
   #   1 if daemon was already running
   #   2 if daemon could not be started
-  start-stop-daemon --start -u $USER -g $GROUP -c $USER:$GROUP --background --quiet --pidfile $PIDFILE --test --startas $DAEMON > /dev/null || return 1
-  start-stop-daemon --start -u $USER -g $GROUP -c $USER:$GROUP --background --quiet --pidfile $PIDFILE --make-pidfile --startas /bin/bash -- -c "exec $DAEMON $DAEMON_ARGS >> $LOGFILE 2>&1" || return 2
+  start-stop-daemon --start -u $USER -g $GROUP -c $USER:$GROUP --background \
+    --quiet --pidfile $PIDFILE --test --startas $DAEMON > /dev/null \
+    || return 1
+  start-stop-daemon --start -u $USER -g $GROUP -c $USER:$GROUP --background \
+    --quiet --pidfile $PIDFILE --make-pidfile --startas /bin/bash -- -c "exec $DAEMON $DAEMON_ARGS >> $LOGFILE 2>&1" \
+    || return 2
 }
 
 #
