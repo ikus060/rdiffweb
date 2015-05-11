@@ -23,7 +23,6 @@ import logging
 
 from rdiffweb.rdw_helpers import encode_s
 from rdiffweb.rdw_plugin import IUserDBPlugin
-from rdiffweb.rdw_app import RdiffwebApp
 
 # Define the logger
 logger = logging.getLogger(__name__)
