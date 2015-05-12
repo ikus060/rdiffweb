@@ -26,11 +26,11 @@ import threading
 import logging
 import tempfile
 
-import rdw_app
-import rdw_spider_repos
-import i18n  # @UnusedImport
-import filter_authentication  # @UnusedImport
-import filter_setup  # @UnusedImport
+from rdiffweb import rdw_app
+from rdiffweb import rdw_spider_repos
+from rdiffweb import i18n  # @UnusedImport
+from rdiffweb import filter_authentication  # @UnusedImport
+from rdiffweb import filter_setup  # @UnusedImport
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -302,3 +302,8 @@ def start():
 
     # Log startup
     logger.info("STOP")
+
+
+if __name__ == "__main__":
+    # import sys;sys.argv = ['', 'Test.testName']
+    start()
