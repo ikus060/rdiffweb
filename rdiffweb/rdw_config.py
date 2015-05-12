@@ -91,7 +91,7 @@ class Configuration(object):
         """
         A convenience method which coerces the key to a boolean.
         """
-        value = self.get_config(key, default)
+        value = self.get_config(key, default).lower()
         return (value == "1" or value == "yes" or value == "true"
                 or value == "on")
 
