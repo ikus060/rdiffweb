@@ -105,28 +105,27 @@ class RdiffwebApp(page_locations.LocationsPage):
         Return a different implementation according to UserDB configuration.
         """
 
-        # Activate the UserDB plugin
+        # Get available plugins
         try:
             category = rdw_plugin.IUserDBPlugin.CATEGORY
             plugins = self.plugins.get_plugins_of_category(category)
-            if len(plugins) == 0:
-                raise ValueError("no UserDB plugins enabled")
+        except:
+            plugins = list()
+        if len(plugins) == 0:
+            raise ValueError("no UserDB plugins enabled, check your configuration")
 
-            # If UserDB is defined, use it as a hint.
-            userdb = self.config.get_config("UserDB")
-            if userdb:
-                matches = filter(lambda plugin: plugin.name == userdb, plugins)
-                if len(matches) > 0:
-                    return matches[0].plugin_object
-
+        # If UserDB is defined, use it as a hint.
+        userdb = self.config.get_config("UserDB")
+        if userdb:
+            # Find the plugin matching userdb
+            matches = filter(lambda plugin: plugin.name.lower() == userdb.lower(), plugins)
+            if len(matches) > 0:
+                return matches[0].plugin_object
+            else:
+                raise ValueError('UserDB value [%s] is invalid' % (userdb,))
+        else:
             # Otherwise return the first plugins
             return plugins[0].plugin_object
-        except:
-            # Log the error.
-            logger.exception("can't create UserDB plugin")
-
-        # Throw error
-        raise ValueError("can't create UserDB plugin")
 
     def get_version(self):
         """
