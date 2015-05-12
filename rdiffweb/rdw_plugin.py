@@ -102,23 +102,6 @@ class PluginManager():
         # Load all plugins
         self.manager.collectPlugins()
 
-        # Activate all loaded plugins
-        for plugin_info in self.manager.getAllPlugins():
-            # Check if the plugin should be enabled.
-            if not self.is_plugin_enabled(plugin_info):
-                logger.info("plugin [%s v%s] not enabled, skip activation",
-                            plugin_info.name, plugin_info.version)
-                continue
-
-            # Active the plugin.
-            try:
-                logger.info("activate plugin [%s v%s]",
-                            plugin_info.name, plugin_info.version)
-                self.manager.activatePluginByName(plugin_info.name)
-            except:
-                logger.info("error activating plugin [%s v%s]",
-                            plugin_info.name, plugin_info.version)
-
     def get_all_plugins(self):
         """
         Return a complete list of plugins. (enabled only).
@@ -153,6 +136,10 @@ class PluginManager():
         value = self.config.get_config_bool(
             plugin_info.name + "Enabled",
             default="False")
+        if not value:
+            logger.info("plugin [%s v%s] rejected: plugins is not enabled",
+                        plugin_info.name,
+                        plugin_info.version)
         return value
 
     def locate_plugins(self):
@@ -187,7 +174,13 @@ class IRdiffwebPlugin(IPlugin):
     """
     Defines the interface for all plugins.
     """
+
     CATEGORY = "Undefined"
+
+    def activate(self):
+        logger.debug("activate plugin object [%s]",
+                     self.__class__.__name__)
+        return IPlugin.activate(self)
 
     def activate_with_app(self, app):
         """
@@ -198,6 +191,11 @@ class IRdiffwebPlugin(IPlugin):
             self.activate()
         finally:
             self._app = None
+
+    def deactivate(self):
+        logger.debug("deactivate plugin object [%s]",
+                     self.__class__.__name__)
+        return IPlugin.deactivate(self)
 
     def __get_app(self):
         """
