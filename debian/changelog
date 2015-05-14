@@ -1,4 +1,10 @@
-rdiffweb (2:v0.7.0) unstable; urgency=medium
+rdiffweb (20150514.1859) trusty; urgency=medium
+
+  * Start daemon at boot
+
+ -- root <root@server.fliphess.com>  Thu, 14 May 2015 18:59:46 +0200
+
+rdiffweb (1) unstable; urgency=medium
 
   * Initial packaging
 
