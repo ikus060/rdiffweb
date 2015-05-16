@@ -32,7 +32,7 @@ class LogoutPage(page_main.MainPage):
     def index(self):
 
         # Empty the session info
-        self.set_username(None)
+        cherrypy.session['username'] = None  # @UndefinedVariable
         cherrypy.request.user = None
 
         # Redirect user to /login

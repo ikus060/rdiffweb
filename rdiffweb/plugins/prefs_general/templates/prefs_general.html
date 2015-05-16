@@ -1,0 +1,85 @@
+<!-- Panel title -->
+<h3>{% trans %}Profile information{% endtrans %}</h3>
+
+{% include 'message.html' %}
+
+{% import 'macros.html' as macros %}
+
+<!-- Panel to set user info. -->
+{% call macros.panel(title=_("General information")) %}
+<div class="panel-body">
+<form action="#" method="post" role="form" class="clearfix" >
+    <div class="form-group">
+        <label for="username" class="control-label">
+            {% trans %}Username{% endtrans %}</label>
+        <div>
+            <input class="form-control" type="text" name="username" 
+                id="username" readonly="readonly"
+                value="{{ username }}" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="email" class="control-label">
+            {% trans %}Email{% endtrans %}</label>
+        <div>
+            <input class="form-control" type="text" name="email" id="email"
+                value="{{ email }}"/>
+        </div>
+    </div>
+    <input type="hidden" name="action" value="set_profile_info" />
+    <div>
+        <button type="submit" class="btn btn-default">{% trans %}Save changes{% endtrans %}</button>
+    </div>
+</form>
+</div>
+{% endcall %}
+
+<!-- Panel to change password. -->
+{% call macros.panel(title=_("Change password")) %}
+<div class="panel-body">
+<form action="#" method="post" role="form" class="clearfix" >
+    <div class="form-group">
+        <label for="current" class="control-label">
+            {% trans %}Current password{% endtrans %}</label>
+        <div>
+            <input class="form-control" type="password" name="current"
+                id="current" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="new" class="control-label">
+            {% trans %}New password{% endtrans %}</label>
+        <div>
+            <input class="form-control" type="password" name="new" id="new" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="confirm" class="control-label">
+            {% trans %}Confirm new password{% endtrans %}</label>
+        <div>
+        <input class="form-control" type="password" name="confirm"
+            id="confirm" />
+        </div>
+    </div>
+    <input type="hidden" name="action" value="set_password" />
+    <div>
+        <button type="submit" class="btn btn-default">{% trans %}Update password{% endtrans %}</button>
+    </div>
+</form>
+</div>
+{% endcall %}
+
+<!-- Panel to refresh repository list. -->
+{% call macros.panel(title=_("Refresh")) %}
+<div class="panel-body">
+<form action="#" method="post" role="form">
+    <input type="hidden" name="action" value="update_repos" />
+    <p class="help-block">
+        {% trans %}Refresh the list of repositories associated to your account. If you recently add a new repository and it doesn't show, you may try to refresh the list.{% endtrans %}
+    </p>
+    <button type="submit" class="btn btn-default">
+        {% trans %}Refresh repositories{% endtrans %}
+    </button>
+</form>
+</div>
+{% endcall %}

@@ -18,6 +18,7 @@
 
 from __future__ import unicode_literals
 
+import cherrypy
 import logging
 import os
 import pkg_resources
@@ -127,6 +128,24 @@ class RdiffwebApp(page_locations.LocationsPage):
             # Otherwise return the first plugins
             return plugins[0].plugin_object
 
+    def __get_currentuser(self):
+        """
+        Get the current user.
+        """
+        try:
+            username = cherrypy.session['username']  # @UndefinedVariable
+        except:
+            username = False
+        if not username:
+            return None
+
+        # Check if object already exists.
+        if not hasattr(cherrypy.request, 'user'):
+            cherrypy.request.user = CurrentUser(self.userdb, username)
+        return cherrypy.request.user  # @UndefinedVariable
+
+    currentuser = property(fget=__get_currentuser)
+
     def get_version(self):
         """
         Get the current running version (using package info).
@@ -140,3 +159,34 @@ class RdiffwebApp(page_locations.LocationsPage):
         except:
             self._version = "DEV"
         return self._version
+
+
+def _getter(field):
+    """
+    Getter to fetch field from CurrentUser.
+    """
+    def get_field(x):
+        attrname = '__%s' % (field,)
+        if not hasattr(x, attrname):
+            func = getattr(x._userdb, field)
+            value = func(x._username)
+            setattr(x, attrname, value)
+        return getattr(x, attrname)
+
+    return get_field
+
+
+class CurrentUser():
+
+    def __init__(self, userdb, username):
+        self._userdb = userdb
+        self._username = username
+
+    def __get_username(self):
+        return self._username
+
+    username = property(fget=__get_username)
+    is_admin = property(fget=_getter('is_admin'))
+    email = property(fget=_getter('get_email'))
+    root_dir = property(fget=_getter('get_root_dir'))
+    repos = property(fget=_getter('get_repos'))

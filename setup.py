@@ -114,6 +114,8 @@ setup(
             'static/js/vendor/*.js',
             'static/css/*.css', 'static/fonts/*',
             'plugins/*.py', 'plugins/*.plugin',
+            'plugins/prefs_general/*.py',
+            'plugins/prefs_general/templates/*.html',
             'locales/fr/LC_MESSAGES/messages.mo',
             'locales/en/LC_MESSAGES/messages.mo',
             ]

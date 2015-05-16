@@ -44,7 +44,7 @@ class MainPage:
                      decode_s(path_b, 'replace'))
 
         # Get reference to user repos
-        user_repos = self.app.userdb.get_repos(self.get_username())
+        user_repos = self.app.currentuser.repos
 
         # Check if any of the repos matches the given path.
         user_repos_matches = filter(
@@ -58,7 +58,7 @@ class MainPage:
         repo_b = encode_s(user_repos_matches[0]).strip(b"/")
 
         # Get reference to user_root
-        user_root = self.app.userdb.get_root_dir(self.get_username())
+        user_root = self.app.currentuser.root_dir
         user_root_b = encode_s(user_root)
 
         # Check path vs real path value
@@ -108,10 +108,11 @@ class MainPage:
         """
         parms = {
             "is_login": True,
-            "is_admin": self._user_is_admin(),
-            "username": self.get_username(),
             "version": self.app.get_version(),
-            }
+        }
+        if self.app.currentuser:
+            parms['username'] = self.app.currentuser.username
+            parms['is_admin'] = self.app.currentuser.is_admin
 
         # Append custom branding
         if hasattr(self.app, "favicon"):
@@ -139,30 +140,5 @@ class MainPage:
         if not app:
             raise ValueError("app is not available")
         return app
-
-    def get_username(self):
-        """
-        Get the current username (from cherrypy session).
-        """
-        try:
-            return cherrypy.session['username']  # @UndefinedVariable
-        except:
-            return None
-
-    def set_username(self, username):
-        """
-        Store the username in the user session.
-        """
-        cherrypy.session['username'] = username  # @UndefinedVariable
-
-    def _user_is_admin(self):
-        """Check if current user is administrator. Return True or False."""
-        current_username = self.get_username()
-        if current_username:
-            try:
-                return self.app.userdb.is_admin(current_username)
-            except:
-                logger.exception("fail to verify if user is admin")
-        return False
 
     app = property(fget=__get_app)

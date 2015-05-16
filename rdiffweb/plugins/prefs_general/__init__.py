@@ -1,0 +1,128 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# rdiffweb, A web interface to rdiff-backup repositories
+# Copyright (C) 2015 Patrik Dufresne Service Logiciel
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import unicode_literals
+
+import cherrypy
+import logging
+import os
+
+from rdiffweb.i18n import ugettext as _
+from rdiffweb.rdw_plugin import IPreferencesPanelProvider
+from rdiffweb.rdw_helpers import encode_s
+from rdiffweb import rdw_spider_repos
+
+"""
+Created on May 16, 2015
+
+@author: Patrik Dufresne
+"""
+
+# Define the logger
+_logger = logging.getLogger(__name__)
+
+
+class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
+    """
+    Plugin to change user profile and password.
+    """
+
+    def get_prefs_panels(self):
+        """
+        Return a single page.
+        """
+        yield ('general', _('Profile'))
+
+    def _handle_set_password(self, **kwargs):
+        """
+        Called when changing user password.
+        """
+        if 'current' not in kwargs:
+            raise ValueError(_("current password is missing"))
+        if 'new' not in kwargs:
+            raise ValueError(_("new password is missing"))
+        if 'confirm' not in kwargs:
+            raise ValueError(_("confirmation password is missing"))
+
+        # TODO: Validate password length.
+
+        # Check if current database support it.
+        if not self.app.userdb.is_modifiable():
+            return {'error': _("Password changing is not supported with this user database.")}
+
+        # Check if confirmation is valid.
+        if kwargs['new'] != kwargs['confirm']:
+            return {'error': _("The new password and it's confirmation does not matches.")}
+
+        # Update user password
+        username = self.app.currentuser.username
+        _logger.info("updating user [%s] password", username)
+        self.app.userdb.set_password(username, kwargs['current'], kwargs['new'])
+        return {'success': _("Password updated successfully.")}
+
+    def _handle_set_profile_info(self, **kwargs):
+        """
+        Called when changing user profile.
+        """
+        # Check data.
+        if 'email' not in kwargs:
+            raise ValueError(_("email is not define"))
+
+        # TODO: validate email value. General format and length.
+
+        # Update the user's email
+        if self.app.currentuser:
+            username = self.app.currentuser.username
+            email = kwargs['email']
+            _logger.info("updating user [%s] email [%s]", username, email)
+            self.app.userdb.set_email(username, kwargs['email'])
+
+        return {'success': _("Profile updated successfully")}
+
+    def _handle_update_repos(self):
+        """
+        Called to refresh the user repos.
+        """
+        rdw_spider_repos.findReposForUser(self.app.currentuser.username, self.app.userdb)
+        return {'success': _("Repositories successfully updated.")}
+
+    def render_prefs_panel(self, panelid, **kwargs):
+        # Process the parameters.
+        params = dict()
+        action = kwargs.get('action')
+        if action:
+            try:
+                if action == "set_profile_info":
+                    params = self._handle_set_profile_info(**kwargs)
+                elif action == "set_password":
+                    params = self._handle_set_password(**kwargs)
+                elif action == "update_repos":
+                    params = self._handle_update_repos()
+                else:
+                    _logger.info("unknown action: %s", action)
+                    raise cherrypy.NotFound("Unknown action")
+            except ValueError as e:
+                params['error'] = unicode(e)
+            except Exception as e:
+                _logger.warn("unknown error processing action", exc_info=True)
+                params['error'] = _("Unknown error")
+
+        params.update({
+            'email': self.app.currentuser.email
+        })
+        return "prefs_general.html", params

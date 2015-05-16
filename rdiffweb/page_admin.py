@@ -51,7 +51,7 @@ class AdminPage(page_main.MainPage):
     def index(self):
 
         # Check if user is an administrator
-        if not self._user_is_admin():
+        if not self.app.currentuser or not self.app.currentuser.is_admin:
             return self._compile_error_template(_("Access denied."))
 
         params = {}
@@ -76,7 +76,7 @@ class AdminPage(page_main.MainPage):
         Display the plugins page. Listing all the plugin.
         """
         # Check if user is an administrator
-        if not self._user_is_admin():
+        if not self.app.currentuser or not self.app.currentuser.is_admin:
             return self._compile_error_template(_("Access denied."))
 
         params = {}
@@ -117,7 +117,7 @@ class AdminPage(page_main.MainPage):
               email=u"", password=u"", user_root=u"", is_admin=u""):
 
         # Check if user is an administrator
-        if not self._user_is_admin():
+        if not self.app.currentuser or not self.app.currentuser.is_admin:
             return self._compile_error_template(_("Access denied."))
 
         assert isinstance(userfilter, unicode)
@@ -181,9 +181,9 @@ class AdminPage(page_main.MainPage):
 
         # We need to change values. Change them, then give back that main
         # page again, with a message
-        if username == self.get_username():
+        if username == self.app.currentuser.username:
             # Don't allow the user to changes it's "admin" state.
-            is_admin = self.app.userdb.is_admin(username)
+            is_admin = self.app.currentuser.is_admin
 
         # Fork the behaviour according to the action.
         if action == "edit":
@@ -228,7 +228,7 @@ class AdminPage(page_main.MainPage):
         if action == "delete":
 
             self._check_user_exists(username)
-            if username == self.get_username():
+            if username == self.app.currentuser.username:
                 raise ValueError("You cannot remove your own account!.")
             logger.info("deleting user [%s]" % username)
             self.app.userdb.delete_user(username)

@@ -94,6 +94,7 @@ class PluginManager():
             IUserDBPlugin.CATEGORY: IUserDBPlugin,
             IDeamonPlugin.CATEGORY: IDeamonPlugin,
             ILocationsPagePlugin.CATEGORY: ILocationsPagePlugin,
+            IPreferencesPanelProvider.CATEGORY: IPreferencesPanelProvider,
         })
 
         # Set filter.
@@ -239,15 +240,6 @@ class IRdiffwebPlugin(IPlugin):
             return templates_dir
         return None
 
-    def get_username(self):
-        """
-        Return current username (from cherrypy session).
-        """
-        try:
-            return cherrypy.session['username']  # @UndefinedVariable
-        except:
-            return None
-
     app = property(fget=__get_app)
 
 
@@ -276,3 +268,41 @@ class ILocationsPagePlugin(IRdiffwebPlugin):
         Called by the LocationsPage to add extra data to the page.
         """
         raise NotImplementedError("locations_update_params is not implemented")
+
+
+class IPreferencesPanelProvider(IRdiffwebPlugin):
+    """
+    Rdiffweb provide a user settings page to allow users to change some
+    preference settings. Plugins can participate to this system by extending
+    this interface.
+    """
+    CATEGORY = "PreferencesPanelProvider"
+
+    def get_prefs_panels(self):
+        """
+        Called by the PreferencesPage.
+        Subclasses should return a list of panels.
+
+        e.g.:
+
+            def get_prefs_panels(self):
+                yield ('photo',_('User picture'))
+                yield ('profile', _('Profile info'))
+
+        """
+        raise NotImplementedError("prefs_update_params is not implemented")
+
+    def render_prefs_panel(self, pageid, **kwargs):
+        """
+        This method is called when one of the page is requested by the user.
+        The `pageid` define the page to be randered.
+        The `params` is a dict() with the data to generate the page.
+
+        e.g.:
+
+            def render_prefs_panel(self, pageid, params)
+                if pageid == 'photo':
+                    params['photo_url'] = ...
+                    template = self.app.templates.get_template("page_prefs_photo.html")
+                    params['template_content'] = template
+        """

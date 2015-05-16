@@ -93,7 +93,7 @@ class StatusPage(page_main.MainPage):
 
         if isMainPage:
             feedLink = self._buildStatusFeedUrl(failuresOnly)
-            feedTitle = "Backup status for " + self.get_username()
+            feedTitle = "Backup status for " + self.app.currentuser.username
         else:
             feedLink = ""
             feedTitle = ""
@@ -118,7 +118,7 @@ class StatusPage(page_main.MainPage):
         return url
 
     def _get_user_messages_for_day(self, date):
-        userRepos = self.app.userdb.get_repos(self.get_username())
+        userRepos = self.app.userdb.get_repos(self.app.currentuser.username)
 
         # Set the start and end time to be the start and end of the day,
         # respectively, to get all entries for that day
@@ -136,7 +136,7 @@ class StatusPage(page_main.MainPage):
                                      startTime, endTime)
 
     def _get_recent_user_messages(self, failuresOnly):
-        user_repos = self.app.userdb.get_repos(self.get_username())
+        user_repos = self.app.userdb.get_repos(self.app.currentuser.username)
         asOfDate = rdw_helpers.rdwTime()
         asOfDate.initFromMidnightUTC(-5)
 
@@ -150,7 +150,7 @@ class StatusPage(page_main.MainPage):
                          earliest_date,
                          latest_date):
 
-        user_root = self.app.userdb.get_root_dir(self.get_username())
+        user_root = self.app.userdb.get_root_dir(self.app.currentuser.username)
         user_root_b = encode_s(user_root)
 
         repoErrors = []

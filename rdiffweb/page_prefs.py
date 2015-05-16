@@ -20,8 +20,11 @@ from __future__ import unicode_literals
 
 import cherrypy
 import logging
-import page_main
-import rdw_spider_repos
+
+from rdiffweb import page_main
+from rdiffweb import rdw_plugin
+from rdiffweb.i18n import ugettext as _
+from rdiffweb.rdw_helpers import unquote_url, decode_s
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -29,111 +32,79 @@ logger = logging.getLogger(__name__)
 
 class PreferencesPage(page_main.MainPage):
 
-    sampleEmail = 'joe@example.com'
+    def _cp_dispatch(self, vpath):
+        """
+        Used to dispatch `/prefs/<panelid>`
+        The `panelid` make reference to a plugin panel.
+        """
+        # Notice vpath contains bytes.
+        if len(vpath) > 0:
+            # /the/full/path/
+            path = []
+            while len(vpath) > 0:
+                path.append(decode_s(unquote_url(vpath.pop(0))))
+            cherrypy.request.params['panelid'] = "/".join(path)
+            return self
+        return vpath
 
     @cherrypy.expose
-    def index(self, action=u"", current=u"", new=u"", confirm=u""):
+    def index(self, panelid="", **kwargs):
 
-        params = {}
+        # Get the panels
+        panels, providers = self._get_panels()
+        if not panels:
+            raise cherrypy.HTTPError(message=_("No user prefs panels available. Check your config."))
 
-        # Process the parameters.
-        if self._is_submit():
-            try:
-                if action == "set_password":
-                    params = self._set_password(current, new, confirm)
-                elif action == "update_repos":
-                    params = self._update_repos()
-                elif action == 'set_notifications':
-                    params = self._setNotifications()
-            except ValueError as e:
-                params['error'] = unicode(e)
-            except Exception as e:
-                logger.exception("unknown error processing action")
-                params['error'] = unicode(e)
+        # Sort the panels to have a deterministic order.
+        def _panel_order(p1, p2):
+            if p1[0] == 'general':
+                if p2[0] == 'general':
+                    return cmp(p1[1:], p2[1:])
+                return -1
+            elif p2[0] == 'general':
+                return 1
+            return cmp(p1, p2)
+        panels.sort(_panel_order)
 
-        # Get page params
-        try:
-            params.update(self._get_parms_for_page())
-        except Exception as e:
-            params['error'] = unicode(e)
+        # Select the right panelid. Default to the first one if not define by url.
+        panelid = panelid or panels[0][0]
+
+        # Search the panelid withint our providers.
+        provider = providers.get(panelid)
+        if not provider:
+            raise cherrypy.HTTPError(message=_("Unknown user prefs panel."))
+
+        # Render the page.
+        template, params = provider.render_prefs_panel(panelid, **kwargs)
+
+        # Create a params with a default panelid.
+        params.update({
+            "panels": panels,
+            "active_panelid": panelid,
+            "template_content": template,
+        })
 
         return self._compile_template("prefs.html", **params)
 
-    def _set_password(self, old_password, new_password, confirm_password):
-        # Check if current database support it.
-        if not self.app.userdb.is_modifiable():
-            return {'error': """Password changing is not
-                              supported with the active user
-                              database."""}
+    def _get_panels(self):
+        """
+        List all the panels available.
+        """
+        panels = list()
+        providers = dict()
 
-        # Check if confirmation is valid.
-        if new_password != confirm_password:
-            return {'error': "The passwords do not match."}
+        # List panels
+        def add_panelid(x):
+            p = list(x.get_prefs_panels() or [])
+            for panelid, panelname in p:
+                assert isinstance(panelid, basestring)
+                assert isinstance(panelname, basestring)
+                panels.append((panelid, panelname))
+                providers[panelid] = x
 
-        self.app.userdb.set_password(self.get_username(),
-                                      old_password,
-                                      new_password)
-        return {'success': "Password updated successfully."}
+        # Add panel entry for each plugins.
+        self.app.plugins.run(
+            add_panelid,
+            rdw_plugin.IPreferencesPanelProvider.CATEGORY)
 
-    def _update_repos(self):
-        rdw_spider_repos.findReposForUser(self.get_username(), self.app.userdb)
-        return {'success': """Successfully updated repositories."""}
-
-    def _setNotifications(self, parms):
-        if not self.app.userdb.is_modifiable():
-            return self._writePrefsPage(error="""Email notification is not
-                                              supported with the active user
-                                              database.""")
-
-        repos = self.app.userdb.get_repos(self.get_username())
-
-        for parmName in parms.keys():
-            if parmName == "userEmail":
-                if parms[parmName] == self.sampleEmail:
-                    parms[parmName] = ''
-                self.app.userdb.set_email(
-                    self.get_username(), parms[parmName])
-            if parmName.endswith("numDays"):
-                backupName = parmName[:-7]
-                if backupName in repos:
-                    if parms[parmName] == "Don't notify":
-                        maxDays = 0
-                    else:
-                        maxDays = int(parms[parmName][0])
-                    self.app.userdb.set_repo_maxage(
-                        self.get_username(), backupName, maxDays)
-
-        return self._writePrefsPage(success="""Successfully changed
-                                            notification settings.""")
-
-    def _get_parms_for_page(self):
-        email = self.app.userdb.get_email(self.get_username())
-        parms = {
-            "userEmail": email,
-            "notificationsEnabled": False,
-            "backups": [],
-            "sampleEmail": self.sampleEmail
-        }
-        # if email_notification.emailNotifier().notificationsEnabled():
-        #    repos = self.app.userdb.get_repos(self.get_username())
-        #    backups = []
-        #    for repo in repos:
-        #        maxAge = self.app.userdb.get_repo_maxage(
-        #            self.get_username(), repo)
-        #        notifyOptions = []
-        #        for i in range(0, 8):
-        #            notifyStr = "Don't notify"
-        #            if i == 1:
-        #                notifyStr = "1 day"
-        #            elif i > 1:
-        #                notifyStr = str(i) + " days"
-        #            selectedStr = ""
-        #            if i == maxAge:
-        #                selectedStr = "selected"
-        #            notifyOptions.append(
-        #                {"optionStr": notifyStr, "selectedStr": selectedStr})
-        #        backups.append(
-        #            {"backupName": repo, "notifyOptions": notifyOptions})
-        #    parms.update({"notificationsEnabled": True, "backups": backups})
-
-        return parms
+        return panels, providers
