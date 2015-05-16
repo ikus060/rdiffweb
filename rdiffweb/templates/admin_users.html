@@ -106,7 +106,7 @@
     {% import 'macros.html' as macros %}
     <form action="#" method="post" role="form" autocomplete="off"
     		class="form-horizontal">
-        {% call macros.model_dialog('add-user-modal',_('Add user'), _('Add user')) %}
+        {% call macros.modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
         <input type="hidden" name="action" value="add" >
         {% if ldap_enabled %}
         <div class="alert alert-info" role="alert">
@@ -166,7 +166,7 @@
     <form action="#" method="post" role="form" autocomplete="off"
     		class="form-horizontal">
         {% set modalid = "edit-user-" + user.username + "-modal" %}
-        {% call macros.model_dialog(modalid, _('Edit user %(name)s', name=user.username),
+        {% call macros.modal_dialog(modalid, _('Edit user %(name)s', name=user.username),
         		_('Save changes')) %}
         <input type="hidden" name="action" value="edit" >
         <input type="hidden" name="username" value="{{ user.username }}" >
@@ -226,7 +226,7 @@
     {% for user in filtered_users|sort(attribute='username') %}
     <form action="#" method="post" role="form" autocomplete="off">
         {% set modalid = "delete-user-" + user.username + "-modal" %}
-        {% call macros.model_dialog(modalid,
+        {% call macros.modal_dialog(modalid,
         		_('Delete user %(name)s', name=user.username), _('Delete')) %}
         <input type="hidden" name="action" value="delete" >
         <input type="hidden" name="username" value="{{ user.username }}" >
