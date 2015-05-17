@@ -27,14 +27,14 @@
 {%- endmacro %}
 
 {# Button to confirm deletion. #}
-{% macro form_confirm(label, message, href='#', action='delete', class='btn-danger', hiddens={}) -%}
+{% macro delete_confirm(label, message, href='#', action='delete', class='danger', hiddens={}) -%}
 <form action="{{ href }}" method="post" role="form" autocomplete="off" style="display: inline;">
     <div style="margin:0;padding:0;display:inline">
     {% for key, value in hiddens.items() %}
     <input type="hidden" name="{{ key }}" value="{{ value }}" >
     {% endfor %}
     </div>
-    <button type="submit" class="btn btn-xs {{ class }}" data-confirm="{{ message }}">{{ label }}</button>
+    <button type="submit" class="btn btn-xs btn-{{ class }}" data-confirm="{{ message }}">{{ label }}</button>
 </form>
 {%- endmacro %}
 
