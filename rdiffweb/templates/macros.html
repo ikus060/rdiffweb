@@ -23,6 +23,25 @@
 <!-- /.modal -->
 {%- endmacro %}
 
+{# Button to confirm deletion. #}
+{% macro form_confirm(label, message, href='#', action='delete', class='btn-danger', hiddens={}) -%}
+<form action="{{ href }}" method="post" role="form" autocomplete="off" style="display: inline;">
+    <div style="margin:0;padding:0;display:inline">
+    {% for key, value in hiddens.items() %}
+    <input type="hidden" name="{{ key }}" value="{{ value }}" >
+    {% endfor %}
+    </div>
+    <button type="submit" class="btn btn-xs {{ class }}" data-confirm="{{ message }}">{{ label }}</button>
+</form>
+{%- endmacro %}
+
+{# modal dialog for confirmation #}
+{% macro data_confirm_modal(title, submit, id='data-confirm-modal') -%}
+{% call modal_dialog(id, title, submit) %}
+{% endcall%}
+{%- endmacro %}
+
+{# Bootstrap panel #}
 {% macro panel(title, class='default') -%}
 <div class="panel panel-{{ class }}">
     <div class="panel-heading">{{ title }}</div>

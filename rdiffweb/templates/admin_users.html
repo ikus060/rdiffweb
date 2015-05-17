@@ -13,6 +13,8 @@
 
     {% include 'message.html' %}
 
+	{% import 'macros.html' as macros with context %}
+
     <div class="row">
 
         <div class="col-md-3">
@@ -87,12 +89,16 @@
                                 data-toggle="modal"
                                 data-target="#edit-user-{{ user.username }}-modal">
                             {% trans %}Edit{% endtrans %}</button>
-                        {# Disable delete button for our self. #}
-                        <button type="button" class="btn btn-danger btn-xs"
-                                data-toggle="modal"
-                                data-target="#delete-user-{{ user.username }}-modal"
-                                {% if user.username == username %}disabled="disabled"{% endif %}>
-                            {% trans %}Delete{% endtrans %}</button>
+
+                        {# Delete button with confirmation. #}
+                        {{ macros.form_confirm(
+                               label=_('Delete'),
+                               message=_('Are your sure ?'),
+                               hiddens={
+                                   'action': 'delete',
+                                   'username':user.username,
+                               }) }}
+
                     </div>
                 </li>
                 {% endfor %}
@@ -103,7 +109,6 @@
     </div>
 
  	{# Dialog to create new user. #}
-    {% import 'macros.html' as macros %}
     <form action="#" method="post" role="form" autocomplete="off"
     		class="form-horizontal">
         {% call macros.modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
@@ -221,19 +226,9 @@
         {% endcall %}
     </form>
     {% endfor %}
-
-	{# Dialogs to delete user. #}
-    {% for user in filtered_users|sort(attribute='username') %}
-    <form action="#" method="post" role="form" autocomplete="off">
-        {% set modalid = "delete-user-" + user.username + "-modal" %}
-        {% call macros.modal_dialog(modalid,
-        		_('Delete user %(name)s', name=user.username), _('Delete')) %}
-        <input type="hidden" name="action" value="delete" >
-        <input type="hidden" name="username" value="{{ user.username }}" >
-        {% trans username=user.username%}Are you sure that you wish to delete user `{{ username }}`?{% endtrans %}
-        {% endcall %}
-    </form>
-    {% endfor %}
+    
+    {# Create a deletion dialog. #}
+    {{ macros.data_confirm_modal(title=_('Confirm deletion'), submit=_('Delete')) }}
 
 </div>
 {% include 'page_end.html' %}

@@ -14,14 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-'use strict';
+
 module.exports = function(grunt) {
 
   grunt.initConfig({
     jshint: {
-      options: {
-        jshintrc: '.jshintrc'
-      },
       all: [
         'Gruntfile.js',
         'rdiffweb/static/js/*.js',

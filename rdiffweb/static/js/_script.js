@@ -33,21 +33,21 @@ $("table.sortable thead th.sortable").each(function(){
 		} else if(column.attr("data-type")=="dir"){
 			comparator = function(a, b){
 				a = String(a); b = String(b);
-				aIsDir = a.indexOf("dir-")
-				bIsDir = b.indexOf("dir-")
+				aIsDir = a.indexOf("dir-");
+				bIsDir = b.indexOf("dir-");
 				if(aIsDir<bIsDir) return 1;
 				if(aIsDir>bIsDir) return -1;
 				if(a > b) return 1;
 			    if(a < b) return -1;
 			    return 0;
-			}
+			};
 		}
 		table.find("tbody").sortChildren(function(a, b) {
 		    return direction=='asc' ? comparator(a,b) : -comparator(a,b);
         }, function(child){
 			var node = $(child.children[columnIndex]);
-			var data = node.attr("data-value")
-			if(data == null){
+			var data = node.attr("data-value");
+			if(data === null){
 				data = $.text([node]);
 			}
 			if(!isNaN(parseInt(data))){
@@ -59,7 +59,7 @@ $("table.sortable thead th.sortable").each(function(){
 	    // Remove desc and asc from all columns
 	    table.find("thead th.sortable").removeClass('desc asc');
 	    column.addClass(direction);
-	    if(table.attr('id')!="" && column.attr('id')!="") {
+	    if(table.attr('id')!=="" && column.attr('id')!=="") {
 	    	setPrefValue(table.attr('id') + '.sortingcolumn', column.attr('id'));
 	    	setPrefValue(table.attr('id') + '.sortingdirection', direction);
 	    }
@@ -75,9 +75,9 @@ $("table.sortable thead th.sortable").each(function(){
 	// Add click event
 	column.children('a').click(fctsort);
 	
-	// Applu user preference
+	// Apply user preference
 	if(getPrefValue(table.attr('id') + '.sortingcolumn', '') == column.attr('id')) {
-		var direction = getPrefValue(table.attr('id') + '.sortingdirection', direction);
+		direction = getPrefValue(table.attr('id') + '.sortingdirection', direction);
 		if(direction == 'asc'){
 			fctsort();
 		} else {
@@ -97,7 +97,7 @@ $("table.sortable thead th.sortable").each(function(){
  */
 function setPrefValue(key, value) {
 	if(typeof(localStorage)!=="undefined") {
-		localStorage['pref.' + key] = value
+		localStorage['pref.' + key] = value;
 	}
 }
 
@@ -116,3 +116,42 @@ function getPrefValue(key, defaultValue) {
 	}
 	return defaultValue;
 }
+
+/**
+ * Create confirmation dialog on the fly.
+ */
+$(function() {
+	$('button[data-confirm]').click(function(ev) {
+		// Get reference to the form
+		var formid = $(this).attr('data-target');
+		if(formid) {
+			form = $(formid);
+		} else {
+			form = $(this).closest('form');
+		}
+		if(!form.length){
+			return false;
+		}
+		// Get the message to be displayed.
+		var message = $(this).attr('data-confirm');
+		// Get reference to modal dialog.
+		var modal = $('#data-confirm-modal');
+		if(modal.length){
+			// Replace message content
+			modal.find('.modal-body').text(message);
+			// Hook an event to submit the form.
+			modal.find('button[type=submit]').click(function(ev) {
+				form.submit();
+			});
+			// Show the modal dialog
+			modal.modal({show:true});
+		} else {
+			// Default to use javascript confirm function if the
+			// modal dialog doesn't exists.
+			if(confirm(message)){
+				form.submit();
+			}
+		}
+		return false;
+	});
+});
