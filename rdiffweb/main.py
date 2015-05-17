@@ -232,6 +232,8 @@ def start():
         'server.log_file': log_file,
         'server.ssl_certificate': sslCertificate,
         'server.ssl_private_key': sslPrivateKey,
+        # Set maximum POST size to 2MiB, for security.
+        'server.max_request_body_size': 2097152,
         'log.screen': False,
         'log.access_file': log_access_file,
         'server.environment': "development" if debug else "production"
