@@ -142,6 +142,7 @@ $(function() {
 			// Hook an event to submit the form.
 			modal.find('button[type=submit]').click(function(ev) {
 				form.submit();
+				return false;
 			});
 			// Show the modal dialog
 			modal.modal({show:true});

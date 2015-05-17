@@ -109,52 +109,50 @@
     </div>
 
  	{# Dialog to create new user. #}
-    <form action="#" method="post" role="form" autocomplete="off"
-    		class="form-horizontal">
-        {% call macros.modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
-        <input type="hidden" name="action" value="add" >
-        {% if ldap_enabled %}
-        <div class="alert alert-info" role="alert">
-        <strong>{% trans %}LDAP enabled!{% endtrans %}</strong>
-        {% trans %}To create an LDAP user, use the same username and don't enter an email and password.{% endtrans %}
-        </div>
-        {% endif %}
-        <div class="form-group">
-            <label class="col-sm-3 control-label" for="username">
-            	{% trans %}Username{% endtrans %}</label>
-        	<div class="col-sm-7">
-            <input type="text" name="username" value="" id="username"
-                class="form-control" required>
-            </div>
-        </div>
+    {% call macros.modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
+	    <input type="hidden" name="action" value="add" >
+	    {% if ldap_enabled %}
+	    <div class="alert alert-info" role="alert">
+	    <strong>{% trans %}LDAP enabled!{% endtrans %}</strong>
+	    {% trans %}To create an LDAP user, use the same username and don't enter an email and password.{% endtrans %}
+	    </div>
+	    {% endif %}
+	    <div class="form-group">
+	        <label class="col-sm-3 control-label" for="username">
+	        	{% trans %}Username{% endtrans %}</label>
+	    	<div class="col-sm-7">
+	        <input type="text" name="username" value="" id="username"
+	            class="form-control" required>
+	        </div>
+	    </div>
 		<div class="form-group">
-            <label class="col-sm-3 control-label" for="email">
-            	{% trans %}Email{% endtrans %}</label>
-        	<div class="col-sm-7">
-            <input type="text" name="email" value="" id="email"
-                class="form-control"
-                {% if not ldap_enabled %}required{% endif %}>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-3 control-label" for="password">
-            	{% trans %}Password{% endtrans %}</label>
-        	<div class="col-sm-7">
-            <input type="password" name="password" id="password"
-                class="form-control"
-                {% if not ldap_enabled %}required{% endif %}>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-3 control-label" for="user-root">
-            	{% trans %}Root directory{% endtrans %}</label>
-        	<div class="col-sm-7">
-            <input type="text" name="user_root" id="user-root"
-                value="{{ user_root }}" class="form-control" required>
-            </div>
-        </div>
+	        <label class="col-sm-3 control-label" for="email">
+	        	{% trans %}Email{% endtrans %}</label>
+	    	<div class="col-sm-7">
+	        <input type="text" name="email" value="" id="email"
+	            class="form-control"
+	            {% if not ldap_enabled %}required{% endif %}>
+	        </div>
+	    </div>
+	    <div class="form-group">
+	        <label class="col-sm-3 control-label" for="password">
+	        	{% trans %}Password{% endtrans %}</label>
+	    	<div class="col-sm-7">
+	        <input type="password" name="password" id="password"
+	            class="form-control"
+	            {% if not ldap_enabled %}required{% endif %}>
+	        </div>
+	    </div>
+	    <div class="form-group">
+	        <label class="col-sm-3 control-label" for="user-root">
+	        	{% trans %}Root directory{% endtrans %}</label>
+	    	<div class="col-sm-7">
+	        <input type="text" name="user_root" id="user-root"
+	            value="{{ user_root }}" class="form-control" required>
+	        </div>
+	    </div>
 		<div class="form-group">
-        	<div class="col-sm-offset-3 col-sm-7">
+	    	<div class="col-sm-offset-3 col-sm-7">
 		        <div class="checkbox">
 		            <label>
 		                <input type="checkbox" name="is_admin">
@@ -162,17 +160,14 @@
 		            </label>
 	            </div>
 	        </div>
-        </div>
-        {% endcall %}
-    </form>
+	    </div>
+    {% endcall %}
     
     {# Dialogs to edit user. #}
     {% for user in filtered_users|sort(attribute='username') %}
-    <form action="#" method="post" role="form" autocomplete="off"
-    		class="form-horizontal">
-        {% set modalid = "edit-user-" + user.username + "-modal" %}
-        {% call macros.modal_dialog(modalid, _('Edit user %(name)s', name=user.username),
-        		_('Save changes')) %}
+    {% set modalid = "edit-user-" + user.username + "-modal" %}
+    {% call macros.modal_dialog(modalid, _('Edit user %(name)s', name=user.username),
+    		_('Save changes')) %}
         <input type="hidden" name="action" value="edit" >
         <input type="hidden" name="username" value="{{ user.username }}" >
         <div class="form-group">
@@ -223,8 +218,7 @@
 	            </div>
 	        </div>
         </div>
-        {% endcall %}
-    </form>
+    {% endcall %}
     {% endfor %}
     
     {# Create a deletion dialog. #}
