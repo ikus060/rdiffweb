@@ -57,8 +57,6 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
         """
         if 'key' not in kwargs:
             raise ValueError(_("key is missing"))
-        # if 'title' not in kwargs:
-        #    raise ValueError(_("title is missing"))
 
         # Validate the content of the key.
         key = authorizedkeys.check_publickey(kwargs['key'])
@@ -66,6 +64,10 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
         # Check if already exists
         if authorizedkeys.exists(filename, key):
             raise ValueError(_("SSH key already exists"))
+
+        # Check size.
+        if key.size and key.size < 2048:
+            raise ValueError(_("SSH key is too short. RSA key of at least 2048 bits is required."))
 
         # Add comment to the key.
         comment = key.comment

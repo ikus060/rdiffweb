@@ -77,10 +77,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% call macros.modal_dialog('add-sshkey-modal',_('Add SSH key'), _('Add SSH key')) %}
     <input type="hidden" name="action" value="add" >
     <div class="form-group">
-        <label class="col-sm-2 control-label" for="comment">
+        <label class="col-sm-2 control-label" for="title">
             {% trans %}Title{% endtrans %}</label>
         <div class="col-sm-10">
-	        <input type="text" name="comment" value="" id="comment"
+	        <input type="text" name="title" value="" id="title"
 	            class="form-control">
 	        <p class="help-block">
 	            {% trans %}The title is an optional description to identify the key. e.g.: bob@thinkpad-t530{% endtrans %}

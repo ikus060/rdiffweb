@@ -84,6 +84,19 @@ class KeySplit(namedtuple('KeySplit', 'lineno options keytype key comment')):
             buf += self.comment
         return buf
 
+    @property
+    def size(self):
+        """
+        Return the size of the key or crypto is available. Otherwise return
+        an estimate of the size.
+        """
+        try:
+            from Crypto.PublicKey import RSA
+            rsakey = RSA.importKey("%s %s" % (self.keytype, self.key))
+            return rsakey.size() + 1
+        except ImportError:
+            return False
+
 
 def add(filename, key):
     """
@@ -91,10 +104,14 @@ def add(filename, key):
     """
     # Open the file
     with open(filename, 'r+') as f:
-        # last character in file
-        f.seek(-1, 2)
-        if f.read(1) != '\n':
-            f.write('\n')
+        # Check the file size.
+        f.seek(0, 2)
+        pos = f.tell()
+        if pos:
+            # last character in file
+            f.seek(-1, 2)
+            if f.read(1) != '\n':
+                f.write('\n')
         f.write(str(key))
         f.write('\n')
 
@@ -114,13 +131,6 @@ def check_publickey(data):
     m = PATTERN_LINE.match(data)
     if m:
         key = KeySplit(lineno=False, options=False, keytype=m.group(2), key=m.group(3), comment=m.group(4))
-    # Check if the key is valid base64
-    try:
-        rawkey = base64.b64decode(key.key)
-    except:
-        raise ValueError()
-    if (len(rawkey) * 8) < 2048:
-        raise ValueError('SSH key too small')
     return key
 
 
