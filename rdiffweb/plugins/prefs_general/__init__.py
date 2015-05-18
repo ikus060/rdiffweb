@@ -62,7 +62,7 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         if 'confirm' not in kwargs:
             raise ValueError(_("confirmation password is missing"))
 
-        # TODO: Validate password length.
+        # Password length is validated by userdb.
 
         # Check if current database support it.
         if not self.app.userdb.is_modifiable():
