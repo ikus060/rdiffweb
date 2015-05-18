@@ -18,6 +18,7 @@
 
 from __future__ import unicode_literals
 
+from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IUserDBPlugin
 from rdiffweb.rdw_helpers import encode_s, decode_s
 
@@ -90,7 +91,7 @@ class SQLiteUserDB(IUserDBPlugin):
                  self._get_user_id(username))
         repos = [
             self._encode_path(row[0]) for row in self._execute_query(query)
-            ]
+        ]
         repos.sort(lambda x, y: cmp(x.upper(), y.upper()))
         return repos
 
