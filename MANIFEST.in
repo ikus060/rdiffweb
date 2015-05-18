@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+include LICENSE
+include README.md
+include MANIFEST.in
+
 # Include templates
 recursive-include rdiffweb/templates *.html *.xml *.txt
 
@@ -28,4 +32,8 @@ recursive-include rdiffweb/static/fonts *.eot *.svg *.ttf *.woff
 recursive-include rdiffweb/plugins *.py *.plugin *.html
 
 # Include translation file
-recursive-include rdiffweb/locales *.po *.pot
+recursive-include rdiffweb/locales *.po *.pot *.mo
+
+# Exclude compiled
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
