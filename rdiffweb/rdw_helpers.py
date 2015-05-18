@@ -162,9 +162,7 @@ class rdwTime:
     def getTimeZoneString(self):
         if self.tzOffset:
             tzinfo = self._getTimeZoneDisplayInfo()
-            return (tzinfo["plusMinus"]
-                    + tzinfo["hours"]
-                    + ":" + tzinfo["minutes"])
+            return "%s%s:%s" % (tzinfo["plusMinus"], tzinfo["hours"], tzinfo["minutes"])
         else:
             return "Z"
 
@@ -207,8 +205,8 @@ class rdwTime:
         return cmp(self.getSeconds(), other.getSeconds())
 
     def __eq__(self, other):
-        return (isinstance(other, rdwTime)
-                and self.getSeconds() == other.getSeconds())
+        return (isinstance(other, rdwTime) and
+                self.getSeconds() == other.getSeconds())
 
     def __hash__(self):
         return hash(self.getSeconds())

@@ -70,7 +70,7 @@ class StatusPage(page_main.MainPage):
         else:
             # Validate repo parameter
             try:
-                (repo_obj, path_obj) = self.validate_user_path(path_b)
+                repo_obj = self.validate_user_path(path_b)[0]
             except librdiff.FileError as e:
                 logger.exception("invalid user path")
                 return self._compile_error_template(unicode(e))
@@ -85,9 +85,10 @@ class StatusPage(page_main.MainPage):
         cherrypy.response.headers["Content-Type"] = "text/xml"
         userMessages = self._get_recent_user_messages(failures != "")
         statusUrl = self._buildAbsolutePageUrl(failures != "")
-        return self._compile_template("status.xml",
-                               link=statusUrl,
-                               messages=userMessages)
+        return self._compile_template(
+            "status.xml",
+            link=statusUrl,
+            messages=userMessages)
 
     def _compileStatusPageTemplate(self, isMainPage, messages, failuresOnly):
 
@@ -97,13 +98,14 @@ class StatusPage(page_main.MainPage):
         else:
             feedLink = ""
             feedTitle = ""
-        return self._compile_template("status.html",
-                               messages=messages,
-                               feedLink=feedLink,
-                               failuresOnly=failuresOnly,
-                               rssUrl=feedLink,
-                               rssTitle=feedTitle,
-                               isEntry=not isMainPage)
+        return self._compile_template(
+            "status.html",
+            messages=messages,
+            feedLink=feedLink,
+            failuresOnly=failuresOnly,
+            rssUrl=feedLink,
+            rssTitle=feedTitle,
+            isEntry=not isMainPage)
 
     def _buildAbsolutePageUrl(self, failuresOnly):
         url = cherrypy.request.base + "/status/"

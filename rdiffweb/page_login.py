@@ -54,7 +54,7 @@ class LoginPage(page_main.MainPage):
             logger.info("check credentials for [%s]" % login)
             errorMsg = self.check_password(login, password)
             if not errorMsg:
-                cherrypy.session['username'] = login
+                cherrypy.session['username'] = login  # @UndefinedVariable
                 if not redirect or redirect.startswith("/login/"):
                     redirect = "/"
                 # The redirect url was unquoted by cherrypy, quote the

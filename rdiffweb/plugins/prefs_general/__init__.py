@@ -108,7 +108,7 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         rdw_spider_repos.findReposForUser(self.app.currentuser.username, self.app.userdb)
         return {'success': _("Repositories successfully updated.")}
 
-    def render_prefs_panel(self, panelid, **kwargs):
+    def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
         # Process the parameters.
         params = dict()
         action = kwargs.get('action')

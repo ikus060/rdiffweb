@@ -106,7 +106,7 @@ class AdminPage(page_main.MainPage):
                       "path": plugin_info.path,
                       "version": plugin_info.version,
                       "website": plugin_info.website,
-                      "enabled":  plugin_enabled,
+                      "enabled": plugin_enabled,
                       }
             plugins.append(plugin)
 
@@ -163,8 +163,8 @@ class AdminPage(page_main.MainPage):
                                     filtered_users)
         # Apply the search.
         if usersearch:
-            filtered_users = filter(lambda x: usersearch in x["username"]
-                                    or usersearch in x["email"],
+            filtered_users = filter(lambda x: usersearch in x["username"] or
+                                    usersearch in x["email"],
                                     filtered_users)
 
         return {"ldap_enabled": self.app.userdb.is_ldap(),

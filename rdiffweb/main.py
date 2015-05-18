@@ -65,9 +65,9 @@ def setup_favicon(app, page_settings):
         return
 
     # Append custom favicon
-    if (not os.path.exists(favicon_b)
-            or not os.path.isfile(favicon_b)
-            or not os.access(favicon_b, os.R_OK)):
+    if (not os.path.exists(favicon_b) or
+            not os.path.isfile(favicon_b) or
+            not os.access(favicon_b, os.R_OK)):
         logger.warn("""path define by FavIcon doesn't exists or is no
                     accessible: %s""", favicon_b)
     else:
@@ -93,9 +93,9 @@ def setup_header_logo(app, page_settings):
     if not header_logo_b:
         return
     # Append custom header logo
-    if (not os.path.exists(header_logo_b)
-            or not os.path.isfile(header_logo_b)
-            or not os.access(header_logo_b, os.R_OK)):
+    if (not os.path.exists(header_logo_b) or
+            not os.path.isfile(header_logo_b) or
+            not os.access(header_logo_b, os.R_OK)):
         logger.warn("path define by HeaderLogo doesn't exists: %s",
                     header_logo_b)
     else:
@@ -275,9 +275,9 @@ def start():
     # Configure session storage.
     if app.config.get_config("SessionStorage").lower() == "disk":
         sessionDir = app.config.get_config("SessionDir")
-        if (os.path.exists(sessionDir)
-                and os.path.isdir(sessionDir)
-                and os.access(sessionDir, os.W_OK)):
+        if (os.path.exists(sessionDir) and
+                os.path.isdir(sessionDir) and
+                os.access(sessionDir, os.W_OK)):
             logger.info("Setting session mode to disk in directory %s" %
                         sessionDir)
             global_settings['tools.sessions.on'] = True

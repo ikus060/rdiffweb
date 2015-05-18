@@ -184,7 +184,7 @@ class LdapUserDB(IUserDBPlugin):
     def _exists_in_ldap(self, username):
         """Check if the user exists in LDAP"""
 
-        def check_user_exists(l, r):
+        def check_user_exists(l, r):  # @UnusedVariable
             # Check the results
             if len(r) != 1:
                 logger.warn("user [%s] not found" % username)
@@ -210,7 +210,7 @@ class LdapUserDB(IUserDBPlugin):
     def _get_email_from_ldap(self, username):
         """Query LDAP server for email."""
 
-        def fetch_user_email(l, r):
+        def fetch_user_email(l, r):  # @UnusedVariable
             if len(r) != 1:
                 logger.warn("user [%s] not found" % username)
                 return ""

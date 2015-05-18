@@ -102,7 +102,7 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
         _logger.info("removing key [%s] from [%s]", lineno, filename)
         authorizedkeys.remove(filename, lineno)
 
-    def render_prefs_panel(self, panelid, **kwargs):
+    def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
         # Get user root directory
         user_root = self.app.userdb.get_root_dir(self.app.currentuser.username)
         user_root_b = encode_s(user_root)

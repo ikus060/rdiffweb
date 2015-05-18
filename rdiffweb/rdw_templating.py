@@ -36,8 +36,8 @@ logger = logging.getLogger(__name__)
 def do_filter(sequence, attribute_name):
     """Filter sequence of objects."""
     return filter(lambda x:
-                  (isinstance(x, dict) and attribute_name in x
-                   and x[attribute_name]) or
+                  (isinstance(x, dict) and attribute_name in x and
+                   x[attribute_name]) or
                   (hasattr(x, attribute_name) and getattr(x, attribute_name)),
                   sequence)
 
@@ -173,16 +173,17 @@ class TemplateManager():
 
         loader = ChoiceLoader([
             PackageLoader('rdiffweb', 'templates')
-            ])
+        ])
 
         # Load all the templates from /templates directory
-        self.jinja_env = Environment(loader=loader,
-                                     auto_reload=True,
-                                     autoescape=True,
-                                     extensions=[
-                                         'jinja2.ext.i18n',
-                                         'jinja2.ext.with_',
-                                         ])
+        self.jinja_env = Environment(
+            loader=loader,
+            auto_reload=True,
+            autoescape=True,
+            extensions=[
+                'jinja2.ext.i18n',
+                'jinja2.ext.with_',
+            ])
 
         # Register filters
         self.jinja_env.filters['filter'] = do_filter

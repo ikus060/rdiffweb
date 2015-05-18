@@ -15,27 +15,28 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
 
 try:
     from setuptools import setup, find_packages, Extension
 except ImportError:
     import ez_setup
     ez_setup.use_setuptools()
-    from setuptools import setup, find_packages, Extension
+    from setuptools import setup, find_packages, Extension  # @UnusedImport
 
 import sys
 import os
+
+from distutils.command.build import build as build_
+from babel.messages.frontend import compile_catalog, extract_messages, update_catalog, init_catalog
+from distutils.cmd import Command
+from string import strip
 
 # < Python 2.4 does not have the package_data setup keyword, so it is unsupported
 pythonVersion = sys.version_info[0] + sys.version_info[1] / 10.0
 if pythonVersion < 2.4:
     print 'Python version 2.3 and lower is not supported.'
     sys.exit(1)
-
-from distutils.command.build import build as build_
-from babel.messages.frontend import compile_catalog, extract_messages, update_catalog, init_catalog
-from distutils.cmd import Command
-from string import strip
 
 
 class compile_all_catalogs(Command):
@@ -118,8 +119,8 @@ setup(
             'plugins/prefs_general/templates/*.html',
             'locales/fr/LC_MESSAGES/messages.mo',
             'locales/en/LC_MESSAGES/messages.mo',
-            ]
-        },
+        ]
+    },
     data_files=_data_files,
     entry_points={"console_scripts": ["rdiffweb = rdiffweb.main:start"]},
     # new commands added and build command modified
@@ -130,16 +131,16 @@ setup(
         'update_catalog': update_catalog,
         'init_catalog': init_catalog,
         'compile_all_catalogs': compile_all_catalogs,
-        },
+    },
     install_requires=[
         "CherryPy>=3.2.2",
         "pysqlite>=2.6.3",
         "Jinja2>=2.6",
         "yapsy>=1.10.423",
         "babel>=0.9",
-        ],
+    ],
     # required packages for build process
     setup_requires=[
         "babel>=0.9",
-        ]
-    )
+    ]
+)

@@ -18,8 +18,12 @@
 
 from __future__ import unicode_literals
 
+
 import codecs
 import logging
+import os
+import re
+
 import rdw_helpers
 
 # Define the logger
@@ -39,10 +43,6 @@ class SettingsError:
 
     def __str__(self):
         return rdw_helpers.encode_s(unicode(self))
-
-
-import os
-import re
 
 
 class Configuration(object):
@@ -92,8 +92,10 @@ class Configuration(object):
         A convenience method which coerces the key to a boolean.
         """
         value = self.get_config(key, default).lower()
-        return (value == "1" or value == "yes" or value == "true"
-                or value == "on")
+        return (value == "1" or
+                value == "yes" or
+                value == "true" or
+                value == "on")
 
     def get_config_int(self, key, default=''):
         """
@@ -102,13 +104,14 @@ class Configuration(object):
         return int(self.get_config(key, default))
 
     def get_config_list(self, key, default='', sep=',', keep_empty=False):
-        """A convenience method which coerces the key to a list of string.
-    
+        """
+        A convenience method which coerces the key to a list of string.
+
         A different separator can be specified using the `sep` parameter. The
         `sep` parameter can specify multiple values using a list or a tuple.
         If the `keep_empty` parameter is set to `True`, empty elements are
         included in the list.
-    
+
         Valid default input is a string or a list. Returns a string.
         """
         value = self.get_config(key, default)
@@ -197,16 +200,16 @@ class ConfigurationTest(unittest.TestCase):
     configFilePath = "/tmp/rdw_config.conf"
 
     def writeGoodFile(self):
-        file = open(self.configFilePath, "w")
-        file.write(self.goodConfigText)
-        file.close()
+        f = open(self.configFilePath, "w")
+        f.write(self.goodConfigText)
+        f.close()
         self.config = Configuration(self.configFilePath)
 
     def writeBadFile(self, badSettingNum):
         self.writeGoodFile()
-        file = open(self.configFilePath, "w")
-        file.write(self.badConfigTexts[badSettingNum])
-        file.close()
+        f = open(self.configFilePath, "w")
+        f.write(self.badConfigTexts[badSettingNum])
+        f.close()
         self.config = Configuration(self.configFilePath)
 
     def tearDown(self):
@@ -224,18 +227,15 @@ class ConfigurationTest(unittest.TestCase):
 
     def testSpacesInValue(self):
         self.writeGoodFile()
-        assert(self.config.get_config("SpacesValue")
-               == "is a setting with spaces")
+        assert(self.config.get_config("SpacesValue") == "is a setting with spaces")
 
     def testSpacesInSetting(self):
         self.writeGoodFile()
-        assert(
-            self.config.get_config("spaces setting") == "withspaces")
+        assert(self.config.get_config("spaces setting") == "withspaces")
 
     def testCommentInValue(self):
         self.writeGoodFile()
-        assert(
-            self.config.get_config("CommentInValue") == "Value")
+        assert(self.config.get_config("CommentInValue") == "Value")
 
     def testEmptyValue(self):
         self.writeGoodFile()
@@ -243,13 +243,11 @@ class ConfigurationTest(unittest.TestCase):
 
     def testCaseInsensitivity(self):
         self.writeGoodFile()
-        assert(
-            self.config.get_config("commentinvalue") == "Value")
+        assert(self.config.get_config("commentinvalue") == "Value")
 
     def testMissingSetting(self):
         self.writeGoodFile()
-        assert(
-            self.config.get_config("SettingThatDoesntExist") == "")
+        assert(self.config.get_config("SettingThatDoesntExist") == "")
 
     def testBadFile(self):
         self.writeBadFile(0)

@@ -85,11 +85,11 @@ class LocationsPage(page_main.MainPage):
                 "last_backup_date": last_backup_date,
                 'in_progress': in_progress,
                 'failed': failed
-                })
+            })
         params = {
             "repos": repos,
             "templates_before_content": list(),
-            }
+        }
 
         # Add plugins params.
         self.app.plugins.run(
