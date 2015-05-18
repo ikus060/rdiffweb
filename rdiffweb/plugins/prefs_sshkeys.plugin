@@ -1,0 +1,16 @@
+[Core]
+Name = UserPrefsSSHKeys
+Module = prefs_sshkeys
+
+[Documentation]
+Author = Patrik Dufresne
+Version = 0.8.0
+Website = http://www.patrikdufresne.com/en/rdiffweb/
+Description: Plugins to allows users to configure the SSH keys using the web
+    interface. Basically it's a UI for `~/.ssh/authorized_keys`. For this
+    plugin to work properly, the users home directory need to match a real
+    user home.
+Copyright: rdiffweb SQLite plugin Copyright (C) 2015 Patrik Dufresne Service Logiciel.
+    This program comes with ABSOLUTELY NO WARRANTY.
+    This is free software, and you are welcome to redistribute it
+    under certain conditions.

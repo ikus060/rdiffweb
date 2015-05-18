@@ -28,6 +28,56 @@ import datetime
 import threading
 import time
 
+# This stuff was taken from user prefs
+#
+# if email_notification.emailNotifier().notificationsEnabled():
+#    repos = self.app.userdb.get_repos(self.get_username())
+#    backups = []
+#    for repo in repos:
+#        maxAge = self.app.userdb.get_repo_maxage(
+#            self.get_username(), repo)
+#        notifyOptions = []
+#        for i in range(0, 8):
+#            notifyStr = "Don't notify"
+#            if i == 1:
+#                notifyStr = "1 day"
+#            elif i > 1:
+#                notifyStr = str(i) + " days"
+#            selectedStr = ""
+#            if i == maxAge:
+#                selectedStr = "selected"
+#            notifyOptions.append(
+#                {"optionStr": notifyStr, "selectedStr": selectedStr})
+#        backups.append(
+#            {"backupName": repo, "notifyOptions": notifyOptions})
+#    parms.update({"notificationsEnabled": True, "backups": backups})
+
+def _setNotifications(self, parms):
+    if not self.app.userdb.is_modifiable():
+        return self._writePrefsPage(error="""Email notification is not
+                                          supported with the active user
+                                          database.""")
+
+    repos = self.app.userdb.get_repos(self.get_username())
+
+    for parmName in parms.keys():
+        if parmName == "userEmail":
+            if parms[parmName] == self.sampleEmail:
+                parms[parmName] = ''
+            self.app.userdb.set_email(
+                self.get_username(), parms[parmName])
+        if parmName.endswith("numDays"):
+            backupName = parmName[:-7]
+            if backupName in repos:
+                if parms[parmName] == "Don't notify":
+                    maxDays = 0
+                else:
+                    maxDays = int(parms[parmName][0])
+                self.app.userdb.set_repo_maxage(
+                    self.get_username(), backupName, maxDays)
+
+    return self._writePrefsPage(success="""Successfully changed
+                                        notification settings.""")
 
 def startEmailNotificationThread(killEvent, app):
     newThread = emailNotifyThread(killEvent, app)
