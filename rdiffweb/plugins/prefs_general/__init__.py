@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import cherrypy
 import logging
 import os
+import re
 
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPreferencesPanelProvider
@@ -32,6 +33,8 @@ Created on May 16, 2015
 
 @author: Patrik Dufresne
 """
+
+PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
 
 # Define the logger
 _logger = logging.getLogger(__name__)
@@ -81,9 +84,13 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         """
         # Check data.
         if 'email' not in kwargs:
-            raise ValueError(_("email is not define"))
+            raise ValueError(_("Email is not define"))
 
-        # TODO: validate email value. General format and length.
+        # Parse the email value to extract a valid email. The following method
+        # return an empty string if the email is not valid. This RFC also accept
+        # local email address without '@'. So we add verification for '@'
+        if not PATTERN_EMAIL.match(kwargs['email'].lower()):
+            raise ValueError(_("invalid Email"))
 
         # Update the user's email
         if self.app.currentuser:
@@ -92,7 +99,7 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
             _logger.info("updating user [%s] email [%s]", username, email)
             self.app.userdb.set_email(username, kwargs['email'])
 
-        return {'success': _("Profile updated successfully")}
+        return {'success': _("Profile updated successfully.")}
 
     def _handle_update_repos(self):
         """
