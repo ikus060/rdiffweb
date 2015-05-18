@@ -116,7 +116,7 @@ class SQLiteUserDB(IUserDBPlugin):
         assert isinstance(username, unicode)
 
         if self.exists(username):
-            raise ValueError("user '%s' already exists" % username)
+            raise ValueError(_("user '%s' already exists") % username)
         query = "INSERT INTO users (Username) values (?)"
         self._execute_query(query, (username,))
 
@@ -190,11 +190,11 @@ class SQLiteUserDB(IUserDBPlugin):
         assert isinstance(password, unicode)
 
         if not self.exists(username):
-            raise ValueError("invalid username")
+            raise ValueError(_("invalid username"))
         if not password:
-            raise ValueError("password can't be empty")
+            raise ValueError(_("password can't be empty"))
         if old_password and not self.are_valid_credentials(username, old_password):
-            raise ValueError("wrong password")
+            raise ValueError(_("wrong password"))
         self._set_user_field(username, 'Password', self._hash_password(password))
 
     def set_repo_maxage(self, username, repoPath, maxAge):
