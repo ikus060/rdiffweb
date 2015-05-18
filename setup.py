@@ -15,14 +15,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from __future__ import unicode_literals
 
 try:
-    from setuptools import setup, find_packages, Extension
+    from setuptools import setup
 except ImportError:
     import ez_setup
     ez_setup.use_setuptools()
-    from setuptools import setup, find_packages, Extension  # @UnusedImport
+    from setuptools import setup
 
 import sys
 import os
@@ -107,20 +106,7 @@ setup(
     url='http://www.patrikdufresne.com/en/rdiffweb/',
     license="GPLv3",
     packages=['rdiffweb'],
-    package_data={
-        'rdiffweb': [
-            'templates/*.html', 'templates/*.xml',
-            'templates/*.txt', 'static/*.png',
-            'static/js/scripts.min.js',
-            'static/js/vendor/*.js',
-            'static/css/*.css', 'static/fonts/*',
-            'plugins/*.py', 'plugins/*.plugin',
-            'plugins/prefs_general/*.py',
-            'plugins/prefs_general/templates/*.html',
-            'locales/fr/LC_MESSAGES/messages.mo',
-            'locales/en/LC_MESSAGES/messages.mo',
-        ]
-    },
+    include_package_data=True,
     data_files=_data_files,
     entry_points={"console_scripts": ["rdiffweb = rdiffweb.main:start"]},
     # new commands added and build command modified
