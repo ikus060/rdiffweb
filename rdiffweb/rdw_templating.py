@@ -55,7 +55,7 @@ def do_format_datetime(value, dateformat='%Y-%m-%d %H:%M'):
     return time.strftime(dateformat, time.localtime(value))
 
 
-def do_format_filesize(value, binary=False):
+def do_format_filesize(value, binary=True):
     """Format the value like a 'human-readable' file size (i.e. 13 kB,
     4.1 MB, 102 Bytes, etc).  Per default decimal prefixes are used (Mega,
     Giga, etc.), if the second parameter is set to `True` the binary
