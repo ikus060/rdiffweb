@@ -1,3 +1,9 @@
+rdiffweb (20150520.1544) trusty; urgency=medium
+
+  * fix postinst
+
+ -- root <root@server.fliphess.com>  Wed, 20 May 2015 15:44:04 +0200
+
 rdiffweb (20150514.1859) trusty; urgency=medium
 
   * Start daemon at boot
