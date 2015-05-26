@@ -25,6 +25,7 @@ import os
 import re
 import subprocess
 import tempfile
+import weakref
 
 import rdw_helpers
 
@@ -197,7 +198,7 @@ class HistoryEntry:
     def __init__(self, repo, date):
         assert isinstance(repo, RdiffRepo)
         assert isinstance(date, rdw_helpers.rdwTime)
-        self._repo = repo
+        self._repo = weakref.proxy(repo)
         self.date = date
 
     @property
@@ -243,11 +244,14 @@ class IncrementEntry(object):
         assert isinstance(repo_path, RdiffPath)
         assert isinstance(name, str)
         # Keep reference to the current path.
-        self.repo_path = repo_path
-        # Get reference to the repository location.
-        self.repo = repo_path.repo
+        self.repo_path = weakref.proxy(repo_path)
         # The given entry name may has quote charater, replace them
         self.name = name
+
+    @property
+    def repo(self):
+        # Get reference to the repository location.
+        return self.repo_path.repo
 
     @property
     def date(self):
@@ -445,7 +449,7 @@ class RdiffRepo:
         self.user_root = user_root.rstrip(b"/")
         self.path = path.strip(b"/")
         self.repo_root = os.path.join(self.user_root, self.path)
-        self.root_path = RdiffPath(self)
+        self.root_path = RdiffPath(weakref.proxy(self))
 
         # The location of rdiff-backup-data directory.
         self.data_path = os.path.join(self.repo_root, RDIFF_BACKUP_DATA)
@@ -574,7 +578,7 @@ class RdiffRepo:
         # Get if the path request is the root path.
         if len(path.strip(b"/")) == 0:
             return self.root_path
-        return RdiffPath(self, path)
+        return RdiffPath(weakref.proxy(self), path)
 
     @property
     def in_progress(self):
