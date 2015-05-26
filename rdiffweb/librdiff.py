@@ -172,8 +172,8 @@ class DirEntry:
                 self._change_dates.append(change_date)
 
         # If the directory exists, add the last known backup date.
-        if (self.exists
-                and self._repo.last_backup_date not in self._change_dates):
+        if (self.exists and
+                self._repo.last_backup_date not in self._change_dates):
             self._change_dates.append(self._repo.last_backup_date)
 
         # Sort the dates
@@ -302,8 +302,8 @@ class IncrementEntry(object):
     @property
     def is_snapshot(self):
         """Check if the current entry is a snapshot increment."""
-        return (self.name.endswith(b".snapshot.gz")
-                or self.name.endswith(b".snapshot"))
+        return (self.name.endswith(b".snapshot.gz") or
+                self.name.endswith(b".snapshot"))
 
     def _remove_suffix(self, filename):
         """ returns None if there was no suffix to remove. """
@@ -475,8 +475,8 @@ class RdiffRepo:
     def _check(self):
         """Check if the repository exists."""
         # Make sure repoRoot is a valid rdiff-backup repository
-        if (not os.access(self.data_path, os.F_OK)
-                or not os.path.isdir(self.data_path)):
+        if (not os.access(self.data_path, os.F_OK) or
+                not os.path.isdir(self.data_path)):
             logger.error("repository [%s] doesn't exists" %
                          self._decode(self.repo_root))
             raise DoesNotExistError()
@@ -543,10 +543,10 @@ class RdiffRepo:
         earliestDate and latestDate are inclusive."""
 
         assert isinstance(numLatestEntries, int)
-        assert (earliestDate is None
-                or isinstance(earliestDate, rdw_helpers.rdwTime))
-        assert (latestDate is None
-                or isinstance(latestDate, rdw_helpers.rdwTime))
+        assert (earliestDate is None or
+                isinstance(earliestDate, rdw_helpers.rdwTime))
+        assert (latestDate is None or
+                isinstance(latestDate, rdw_helpers.rdwTime))
 
         logger.debug("get history entries for [%s]" %
                      self._decode(self.repo_root))
@@ -853,7 +853,7 @@ class RdiffPath:
                 date_epoch,
                 rdw_helpers.decode_s(file_to_restore, 'replace'),
                 rdw_helpers.decode_s(output, 'replace'),
-                ))
+            ))
         results = self._execute(
             b"rdiff-backup",
             b"--restore-as-of=" + date_epoch,
