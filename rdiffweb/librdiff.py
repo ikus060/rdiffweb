@@ -845,7 +845,7 @@ class RdiffPath:
         if name != b"":
             filename = name
         # Generate a temporary location used to restore data.
-        output = os.path.join(tempfile.mkdtemp(), filename)
+        output = os.path.join(tempfile.mkdtemp(suffix=b"rdiffweb-"), filename)
 
         # Execute rdiff-backup to restore the data.
         logger.info(
