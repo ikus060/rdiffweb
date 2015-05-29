@@ -1,0 +1,37 @@
+Source: rdiffweb
+Maintainer: Patrik Dufresne
+Section: python
+Priority: extra
+Standards-Version: 3.9.4
+X-Python-Version: >= 2.7
+Homepage: http://www.patrikdufresne.com/en/rdiffweb/
+Vcs-Git: git://github.com/ikus060/rdiffweb.git
+Vcs-Browser: https://github.com/ikus060/rdiffweb
+Build-Depends: debhelper (>= 9), 
+               libsqlite3-dev,
+               python, 
+               python-babel,
+               python-cherrypy3,
+               python-jinja2,
+               python-mysqldb,
+               python-nose,
+               python-pysqlite2,
+               python-setuptools (>= 0.6b3),
+               python-yaml, 
+               rdiff-backup
+
+Package: rdiffweb
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         ${python:Depends},
+         libsqlite3-dev,
+         python, 
+         python-babel,
+         python-cherrypy3,
+         python-jinja2,
+         python-mysqldb,
+         python-pysqlite2,
+         python-yaml, 
+         rdiff-backup
+Description: management webui for rdiff-backup

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2014 rdiffweb contributors
+# Copyright (C) 2015 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -85,12 +85,6 @@ class build(build_):
      sub_commands = build_.sub_commands[:]
      sub_commands.insert(0, ('compile_all_catalogs', None))
 
-_data_files = [('/etc/init.d', ['extras/init/rdiffweb']),
-            ('/etc/logrotate.d', ['extras/logrotate/rdiffweb']),
-           ]
-if not os.path.isfile("/etc/rdiffweb/rdw.conf"):
-  _data_files.append(('/etc/rdiffweb', ['rdw.conf']))
-
 setup(name='rdiffweb',
       version='0.7.0',
       description='A web interface to rdiff-backup repositories',
@@ -107,7 +101,6 @@ setup(name='rdiffweb',
                                  'locales/fr/LC_MESSAGES/messages.mo'
                                  ]
                     },
-      data_files=_data_files,
       entry_points={"console_scripts": ["rdiffweb = rdiffweb.main:start"]},
       # new commands added and build command modified
       cmdclass={'build': build,
@@ -117,10 +110,4 @@ setup(name='rdiffweb',
                 'init_catalog': init_catalog,
                 'compile_all_catalogs': compile_all_catalogs
                 },
-      install_requires=["CherryPy>=3.2.2",
-                        "pysqlite>=2.6.3",
-                        "Jinja2>=2.6"
-                        ],
-      # required packages for build process
-      setup_requires=["babel>=0.9"]
       )

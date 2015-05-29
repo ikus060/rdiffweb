@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --with python2
+
+override_dh_auto_build:
+
+override_dh_clean:
+	rm -rf build/
+	dh_clean
+
+override_dh_auto_install:
+	python setup.py build
+	python setup.py install --root=debian/rdiffweb --install-layout=deb --no-compile
+
+override_dh_install:
+	dh_install --fail-missing
+
+override_dh_fixperms:
+	dh_fixperms
+	chmod 0755 debian/rdiffweb/etc/init.d/rdiffweb
+
+override_dh_auto_test:
+	nosetests -v

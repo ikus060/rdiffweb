@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+chown -R rdiffweb:rdiffweb /var/log/rdiffweb /etc/rdiffweb
+
+update-rc.d rdiffweb defaults
+
+service rdiffweb start || true
+
+exit 0

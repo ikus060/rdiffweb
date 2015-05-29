@@ -1,0 +1,17 @@
+rdiffweb (20150520.1544) trusty; urgency=medium
+
+  * fix postinst
+
+ -- root <root@server.fliphess.com>  Wed, 20 May 2015 15:44:04 +0200
+
+rdiffweb (20150514.1859) trusty; urgency=medium
+
+  * Start daemon at boot
+
+ -- root <root@server.fliphess.com>  Thu, 14 May 2015 18:59:46 +0200
+
+rdiffweb (1) unstable; urgency=medium
+
+  * Initial packaging
+
+ -- Flip Hess <flip@fliphess.com>  Thu, 7 May 2015 00:00:00 +0100
