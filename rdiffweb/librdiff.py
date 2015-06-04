@@ -23,13 +23,17 @@ import gzip
 import logging
 import os
 import re
-import subprocess
 import tempfile
 import weakref
 
 import rdw_helpers
 
 from i18n import ugettext as _
+
+try:
+    import subprocess32 as subprocess  # @UnresolvedImport @UnusedImport
+except:
+    import subprocess  # @Reimport
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -849,7 +853,7 @@ class RdiffPath:
         if name != b"":
             filename = name
         # Generate a temporary location used to restore data.
-        output = os.path.join(tempfile.mkdtemp(suffix=b"rdiffweb-"), filename)
+        output = os.path.join(tempfile.mkdtemp(prefix=b"rdiffweb-"), filename)
 
         # Execute rdiff-backup to restore the data.
         logger.info(
