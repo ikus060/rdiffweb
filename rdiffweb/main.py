@@ -154,7 +154,7 @@ def setup_logging(log_file, log_access_file, debug):
                 record.user = "unknown"
             return True
 
-    logformat = '[%(asctime)s][%(levelname)-7s][%(name)s] %(message)s'
+    logformat = '[%(asctime)s][%(levelname)-7s][%(threadName)s][%(name)s] %(message)s'
     level = logging.DEBUG if debug else logging.INFO
     # Configure default log file.
     if log_file:
