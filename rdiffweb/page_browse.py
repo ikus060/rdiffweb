@@ -70,7 +70,7 @@ class BrowsePage(page_main.MainPage):
                                              path_obj,
                                              restore == b"T")
         except librdiff.FileError as e:
-            logger.exception("can't create pare params")
+            logger.exception("can't create params")
             return self._compile_error_template(unicode(e))
 
         return self._compile_template("browse.html", **parms)
