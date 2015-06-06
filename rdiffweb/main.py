@@ -55,6 +55,16 @@ def debug_dump():
         logger.warn("fail to dump memory", exc_info=True)
 
 
+def error_page(**kwargs):
+    """
+    Default error page.
+    Try to fix a cherrypy error related to encoding.
+    """
+    # Template is a str, convert it to unicode.
+    template = cherrypy._cperror._HTTPErrorTemplate.decode('ascii', 'replace')
+    return template % dict([(key, value.decode('ascii', 'replace')) for key, value in kwargs.iteritems()])
+
+
 def setup_favicon(app, page_settings):
     """
     Used to add an entry to the page setting if the FavIcon configuration is
@@ -236,7 +246,8 @@ def start():
         'server.max_request_body_size': 2097152,
         'log.screen': False,
         'log.access_file': log_access_file,
-        'server.environment': "development" if debug else "production"
+        'server.environment': "development" if debug else "production",
+        'error_page.default': error_page,
     }
 
     page_settings = {
