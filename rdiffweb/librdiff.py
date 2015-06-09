@@ -109,7 +109,9 @@ class DirEntry:
             repo_path.path,
             name)
         self.exists = exists
-        self._increments = increments
+        # Store the increments sorted by date.
+        # See self.last_change_date()
+        self._increments = sorted(increments, key=lambda x: x.date, reverse=True)
 
     @property
     def display_name(self):
@@ -120,42 +122,47 @@ class DirEntry:
     @property
     def isdir(self):
         """Lazy check if entry is a directory"""
-        if not hasattr(self, '_isdir'):
-            if self.exists:
-                # If the entry exists, check if it's a directory
-                self._isdir = os.path.isdir(self.full_path)
-            else:
-                # Check if increments is a directory
-                for increment in self._increments:
-                    if increment.is_missing:
-                        # Ignore missing increment...
-                        continue
-                    self._isdir = increment.isdir
-                    break
+        if hasattr(self, '_isdir'):
+            return self._isdir
+        if self.exists:
+            # If the entry exists, check if it's a directory
+            self._isdir = os.path.isdir(self.full_path)
+        else:
+            # Check if increments is a directory
+            for increment in self._increments:
+                if increment.is_missing:
+                    # Ignore missing increment...
+                    continue
+                self._isdir = increment.isdir
+                break
         return self._isdir
 
     @property
     def file_size(self):
         """Return the file size in bytes."""
-        if not hasattr(self, '_file_size'):
-            self._file_size = 0
-            if self.exists:
-                self._file_size = os.lstat(self.full_path)[6]
+        if hasattr(self, '_file_size'):
+            return self._file_size
+        if self.exists:
+            self._file_size = os.lstat(self.full_path).st_size
+        else:
+            # The only viable place to get the filesize of a deleted entry
+            # it to get it from file_statistics
+            stats = self._repo.get_file_statistic(self.last_change_date)
+            if stats:
+                # File stats uses unquoted name.
+                unquote_path = self._repo.unquote(self.path)
+                self._file_size = stats.get_source_size(unquote_path)
             else:
-                # The only viable place to get the filesize of a deleted entry
-                # it to get it from file_statistics
-                stats = self._repo.get_file_statistic(self.last_change_date)
-                if stats:
-                    # File stats uses unquoted name.
-                    unquote_path = self._repo.unquote(self.path)
-                    self._file_size = stats.get_source_size(unquote_path)
-
+                logger.warn("cannot file file statistic [%s]", self.last_change_date)
+                self._file_size = 0
         return self._file_size
 
     @property
     def change_dates(self):
-        """Return a list of dates when this item has changes. Represent the
-        previous revision. From old to new."""
+        """
+        Return a list of dates when this item has changes. Represent the
+        previous revision. From new to old.
+        """
         # Return previous computed value
         if hasattr(self, '_change_dates'):
             return self._change_dates
@@ -181,8 +188,7 @@ class DirEntry:
                 self._repo.last_backup_date not in self._change_dates):
             self._change_dates.append(self._repo.last_backup_date)
 
-        # Sort the dates
-        self._change_dates = sorted(self._change_dates)
+        # No need to sort the change date since increments are already sorted.
 
         # Return the list of dates.
         return self._change_dates
@@ -194,7 +200,9 @@ class DirEntry:
 
     @property
     def last_change_date(self):
-        return self.change_dates[-1]
+        # Avoid using change_date if not already computed.
+        # It's too long. Unless change_date is define.
+        return self.change_dates[0]
 
 
 class HistoryEntry:
@@ -251,14 +259,15 @@ class IncrementEntry(object):
         self.repo_path = weakref.proxy(repo_path)
         # The given entry name may has quote charater, replace them
         self.name = name
+        # Calculate the date of the increment.
+        self.date = self._get_date()
 
     @property
     def repo(self):
         # Get reference to the repository location.
         return self.repo_path.repo
 
-    @property
-    def date(self):
+    def _get_date(self):
         # Remove suffix from filename
         filename = self._remove_suffix(self.name)
         # Remove prefix from filename
@@ -350,21 +359,17 @@ class FileStatisticsEntry(IncrementEntry):
         self._data = {}
         with self._open() as f:
             for line in f:
-                # Skip comments
-                if line.startswith(b"#"):
+                # Skip comments or empty line
+                if len(line) == 0 or line[1] == b"#":
                     continue
                 # Read the line into array
-                line = line.rstrip(b'\r\n')
-                data_line = line.rsplit(b" ", 4)
-                # Read line into tuple
-                (filename, changed, source_size,
-                 mirror_size, increment_size) = tuple(data_line)
-                # From tuple create an entry
-                self._data[filename] = {
-                    "changed": changed,
-                    "source_size": source_size,
-                    "mirror_size": mirror_size,
-                    "increment_size": increment_size}
+                data_line = line.rstrip(b'\r\n').rsplit(b" ", 4)
+                # From array create an entry
+                self._data[data_line[0]] = {
+                    "changed": data_line[1],
+                    "source_size": data_line[2],
+                    "mirror_size": data_line[3],
+                    "increment_size": data_line[4]}
 
     def get_mirror_size(self, path):
         """Return the value of MirrorSize for the given file.
@@ -717,7 +722,7 @@ class RdiffPath:
 
         # Group increments by filename
         grouped_increment_entries = rdw_helpers.groupby(
-            self._increment_entries, lambda x: x.filename)
+            self._create_increment_entries(), lambda x: x.filename)
 
         # Process each increment entries and combine this with the existing
         # entries
@@ -787,13 +792,7 @@ class RdiffPath:
     def increments_path(self):
         """Get the increment path for the current path. This path is located
             under rdiff-backup-data/increments"""
-
-        if not hasattr(self, '_increments_path'):
-            self._increments_path = os.path.join(
-                self.repo.repo_root,
-                INCREMENTS,
-                self.path)
-        return self._increments_path
+        return os.path.join(self.repo.repo_root, INCREMENTS, self.path)
 
     @property
     def full_path(self):
@@ -801,30 +800,30 @@ class RdiffPath:
             return absolute path"""
         return os.path.join(self.repo_root, self.path)
 
-    @property
-    def _increment_entries(self):
-        """Return all the increment entries for this path.
-            each entry represent a 'file' in the subdirectory structure under
-            rdiff-backup-data/increments"""
+    def _create_increment_entries(self):
+        """
+        Return all the increment entries for this path.
+        each entry represent a 'file' in the sub-directory structure under
+        rdiff-backup-data/increments
+        """
 
-        if not hasattr(self, '_increment_entries_data'):
-            logger.debug(
-                "get increments entries for [%s]" %
-                self._decode(self.increments_path))
+        logger.debug(
+            "get increments entries for [%s]" %
+            self._decode(self.increments_path))
 
-            # Check if increment directory exists. The path may not exists if
-            # the folder always exists and never changed.
-            self._increment_entries_data = []
-            if os.access(self.increments_path, os.F_OK):
-                # List content of the increment directory.
-                # Ignore sub-directories.
-                self._increment_entries_data = [
-                    IncrementEntry(self, y) for y in filter(
-                        lambda x: not os.path.isdir(
-                            os.path.join(self.increments_path, x)),
-                        os.listdir(self.increments_path))]
+        # Check if increment directory exists. The path may not exists if
+        # the folder always exists and never changed.
+        if not os.access(self.increments_path, os.F_OK):
+            return list()
 
-        return self._increment_entries_data
+        # List content of the increment directory.
+        # Ignore sub-directories.
+        increment_entries = [
+            IncrementEntry(self, y) for y in filter(
+                lambda x: not os.path.isdir(
+                    os.path.join(self.increments_path, x)),
+                os.listdir(self.increments_path))]
+        return increment_entries
 
     @property
     def repo_root(self):
@@ -853,7 +852,7 @@ class RdiffPath:
         if name != b"":
             filename = name
         # Generate a temporary location used to restore data.
-        output = os.path.join(tempfile.mkdtemp(prefix=b"rdiffweb-"), filename)
+        output = os.path.join(tempfile.mkdtemp(), filename)
 
         # Execute rdiff-backup to restore the data.
         logger.info(
@@ -923,13 +922,13 @@ class RdiffPath:
 
         # Don't allow restores before the dir existed
         backup_dates = filter(
-            lambda x: x >= entry.change_dates[0], backup_dates)
+            lambda x: x >= entry.change_dates[-1], backup_dates)
 
         if not entry.exists:
             # If the dir has been deleted, don't allow restores after its
             # deletion
             backup_dates = filter(
-                lambda x: x <= entry.change_dates[-1], backup_dates)
+                lambda x: x <= entry.change_dates[0], backup_dates)
 
         return backup_dates
 
