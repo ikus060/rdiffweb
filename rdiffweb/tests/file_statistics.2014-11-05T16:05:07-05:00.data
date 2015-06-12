@@ -1,0 +1,21 @@
+# Format of each line in file statistics file:
+# Filename Changed SourceSize MirrorSize IncrementSize
+. 0 0 0 NA
+<F!chïer> (@vec) {càraçt#èrë} $épêcial 0 286 143 NA
+Char ;090 to quote 0 0 0 NA
+Char ;090 to quote/Data 0 21 21 NA
+Char ;090 to quote/Untitled Testcase.doc 0 14848 14848 NA
+DIR� 0 0 0 NA
+DIR�/Data 0 10 10 NA
+Fichier @ <root> 0 13 13 NA
+Fichier avec non asci char �velyne M�re.txt 0 18 18 NA
+Revisions 1 0 0 NA
+Revisions/Data 1 9 9 72
+Répertoire (@vec) {càraçt#èrë} $épêcial 0 0 0 NA
+Répertoire (@vec) {càraçt#èrë} $épêcial/Untitled Testcase.doc 0 14848 14848 NA
+Répertoire Existant 0 0 0 NA
+Répertoire Existant/Untitled Empty Text File 0 0 0 NA
+Répertoire Existant/Untitled Empty Text File 2 0 0 0 NA
+test\\test 0 0 0 NA
+test\\test/some data 0 226 226 NA
+이루마 YIRUMA - River Flows in You.mp3 0 3636731 3636731 NA

@@ -24,6 +24,7 @@ import logging
 import os
 import re
 import shutil
+import sys
 import tempfile
 import weakref
 
@@ -32,6 +33,7 @@ import rdw_helpers
 from i18n import ugettext as _
 from rdiffweb.rdw_helpers import decode_s
 from rdiffweb.rdw_config import Configuration
+import zlib
 
 try:
     import subprocess32 as subprocess  # @UnresolvedImport @UnusedImport
@@ -44,6 +46,9 @@ logger = logging.getLogger(__name__)
 # Constant for the rdiff-backup-data folder name.
 RDIFF_BACKUP_DATA = b"rdiff-backup-data"
 
+# Size to be read from gzip
+CHUNK_SIZE = 1024 * 1024
+
 # Constant for the increments folder name.
 INCREMENTS = os.path.join(RDIFF_BACKUP_DATA, b"increments")
 
@@ -52,6 +57,14 @@ ZIP_SUFFIX = b".zip"
 
 # Tar gz extension
 TARGZ_SUFFIX = b".tar.gz"
+
+# Declare io_method()
+if sys.version.startswith("3"):
+    import io
+    io_method = io.BytesIO
+else:
+    import cStringIO
+    io_method = cStringIO.StringIO
 
 
 class FileError:
@@ -263,16 +276,20 @@ class IncrementEntry(object):
         # The given entry name may has quote charater, replace them
         self.name = name
         # Calculate the date of the increment.
-        self.date = self._get_date()
+        self.date = IncrementEntry.extract_date(self.name)
 
     @property
     def repo(self):
         # Get reference to the repository location.
         return self.repo_path.repo
 
-    def _get_date(self):
+    @staticmethod
+    def extract_date(filename):
+        """
+        Extract date from rdiff-backup filenames.
+        """
         # Remove suffix from filename
-        filename = self._remove_suffix(self.name)
+        filename = IncrementEntry._remove_suffix(filename)
         # Remove prefix from filename
         date_string = filename.rsplit(b".", 1)[-1]
         return_time = rdw_helpers.rdwTime()
@@ -296,12 +313,12 @@ class IncrementEntry(object):
 
     @property
     def filename(self):
-        filename = self._remove_suffix(self.name)
+        filename = IncrementEntry._remove_suffix(self.name)
         return filename.rsplit(b".", 1)[0]
 
     @property
     def has_suffix(self):
-        for suffix in self.SUFFIXES:
+        for suffix in IncrementEntry.SUFFIXES:
             if self.name.endswith(suffix):
                 return True
         return False
@@ -325,9 +342,10 @@ class IncrementEntry(object):
         return (self.name.endswith(b".snapshot.gz") or
                 self.name.endswith(b".snapshot"))
 
-    def _remove_suffix(self, filename):
+    @staticmethod
+    def _remove_suffix(filename):
         """ returns None if there was no suffix to remove. """
-        for suffix in self.SUFFIXES:
+        for suffix in IncrementEntry.SUFFIXES:
             if filename.endswith(suffix):
                 return filename[:-len(suffix)]
         return filename
@@ -338,7 +356,13 @@ class IncrementEntry(object):
 
 class FileStatisticsEntry(IncrementEntry):
 
-    """Represent a single file_statistics."""
+    """
+    Represent a single file_statistics.
+
+    File Statistics contains different information related to each file of
+    the backup. This class provide a simple and easy way to access this
+    data.
+    """
 
     def __init__(self, repo_path, name):
         IncrementEntry.__init__(self, repo_path, name)
@@ -346,55 +370,80 @@ class FileStatisticsEntry(IncrementEntry):
         assert self.name.startswith(b"file_statistics.")
         assert self.name.endswith(b".data") or self.name.endswith(b".data.gz")
 
-    def _load(self):
-        """This method is used to read the file_statistics and create the
-        appropriate structure to quickly search it.
-
-        File Statistics contains different information related to each file of
-        the backup. This class provide a simple and easy way to access this
-        data."""
-
-        if hasattr(self, '_data'):
-            return
-
-        logger.debug("load file_statistics [%s]" %
-                     self.repo._decode(self.name))
-        self._data = {}
-        with self._open() as f:
-            for line in f:
-                # Skip comments or empty line
-                if len(line) == 0 or line[1] == b"#":
-                    continue
-                # Read the line into array
-                data_line = line.rstrip(b'\r\n').rsplit(b" ", 4)
-                # From array create an entry
-                self._data[data_line[0]] = {
-                    "changed": data_line[1],
-                    "source_size": data_line[2],
-                    "mirror_size": data_line[3],
-                    "increment_size": data_line[4]}
-
     def get_mirror_size(self, path):
         """Return the value of MirrorSize for the given file.
         path is the relative path from repo root."""
-        self._load()
         try:
-            return self._data[path]["mirror_size"]
-        except KeyError:
+            return int(self._search(path)["mirror_size"])
+        except:
             logger.warn("mirror size not found for [%s]" %
-                        self.repo._decode(path))
+                        self.repo._decode(path),
+                        exc_info=1)
             return 0
 
     def get_source_size(self, path):
         """Return the value of SourceSize for the given file.
         path is the relative path from repo root."""
-        self._load()
         try:
-            return self._data[path]["source_size"]
-        except KeyError:
+            return int(self._search(path)["source_size"])
+        except:
             logger.warn("source size not found for [%s]" %
-                        self.repo._decode(path))
+                        self.repo._decode(path),
+                        exc_info=1)
             return 0
+
+    def _search(self, path):
+        """
+        This function search for a file entry in the file_statistics compress
+        file. Since python gzip seams to be 2 time slower, we directly use
+        zgrep to search the file. If zgrep is not available, fallback to
+        python implementation.
+        """
+        logger.debug("read file_statistics [%s]" %
+                     self.repo._decode(self.name))
+
+        path += b' '
+
+        # Open file are compress.
+        if self._is_compressed:
+            line = None
+            fullfn = os.path.join(self.repo.data_path, self.name)
+            in_file = gzip.open(fullfn, 'r')
+            decompress = zlib.decompressobj(-zlib.MAX_WBITS)
+            try:
+                in_file._read_gzip_header()
+
+                while 1:
+                    buf = in_file.fileobj.read(CHUNK_SIZE)
+                    if not buf:
+                        break
+                    if not line:
+                        d_buf = decompress.decompress(buf)
+                    else:
+                        d_buf = line + decompress.decompress(buf)
+
+                    # Search beginning of a line matching our filename
+                    for line in io_method(d_buf):
+                        if line.startswith(path):
+                            break
+            finally:
+                in_file.fileobj.close()
+                decompress = None
+        else:
+            with self._open() as f:
+                for line in f:
+                    if not line.startswith(path):
+                        continue
+                    break
+
+        # Split the line into array
+        data = line.rstrip(b'\r\n').rsplit(b' ', 4)
+        # From array create an entry
+        return {
+            'changed': data[1],
+            'source_size': data[2],
+            'mirror_size': data[3],
+            'increment_size': data[4]}
 
 
 class SessionStatisticsEntry(IncrementEntry):
@@ -540,10 +589,10 @@ class RdiffRepo:
         """Return list of IncrementEntry to represent each file statistics."""
         if not hasattr(self, '_file_statistics_data'):
             self._file_statistics_data = {}
-            for x in filter(lambda x: x.startswith(b"file_statistics."),
-                            self.data_entries):
-                entry = FileStatisticsEntry(self.root_path, x)
-                self._file_statistics_data[entry.date] = entry
+            for filename in filter(lambda filename: filename.startswith(b"file_statistics."),
+                                   self.data_entries):
+                date = IncrementEntry.extract_date(filename)
+                self._file_statistics_data[date] = filename
         return self._file_statistics_data
 
     def get_encoding(self):
@@ -555,9 +604,18 @@ class RdiffRepo:
     def get_file_statistic(self, date):
         """Return the file statistic for the given date.
         Try to search for the given file statistic and return an object to
-        represent it."""
+        represent it.
+
+        Try to be lazy as possible. To list file_statistics then only create
+        object if required.
+        """
         # Get reference to the FileStatisticsEntry
         try:
+            value = self._file_statistics[date]
+            if isinstance(value, str):
+                entry = FileStatisticsEntry(self.root_path, value)
+                self._file_statistics[date] = entry
+                return entry
             return self._file_statistics[date]
         except KeyError:
             return None
@@ -800,7 +858,7 @@ class RdiffPath:
                 self._existing_entries = os.listdir(self.full_path)
 
                 # Remove "rdiff-backup-data" directory
-                if self.path == "":
+                if self.path == b'':
                     self._existing_entries.remove(RDIFF_BACKUP_DATA)
 
         return self._existing_entries
