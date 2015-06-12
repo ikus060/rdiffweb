@@ -82,25 +82,6 @@ def unquote_url(encodedUrl):
     return urllib.unquote(encodedUrl)
 
 
-def remove_dir(directory):
-    """Used to remove directory and subdirectory"""
-    assert isinstance(directory, str)
-    for root, dirs, files in os.walk(directory, topdown=False):
-        for name in files:
-            filePath = os.path.join(root, name)
-            if os.path.islink(filePath):
-                os.unlink(filePath)
-            else:
-                os.remove(filePath)
-        for name in dirs:
-            dirPath = os.path.join(root, name)
-            if os.path.islink(dirPath):
-                os.unlink(dirPath)
-            else:
-                os.rmdir(dirPath)
-    os.rmdir(directory)
-
-
 class rdwTime:
 
     """Time information has two components: the local time, stored in GMT as

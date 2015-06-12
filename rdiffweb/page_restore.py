@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import cherrypy
 import logging
 import os
+import shutil
 
 from i18n import ugettext as _
 from cherrypy.lib.static import serve_file
@@ -50,7 +51,7 @@ def autodelete():
         return
     if not os.path.isdir(autodelete_dir):
         autodelete_dir = os.path.dirname(autodelete_dir)
-    rdw_helpers.remove_dir(autodelete_dir)
+    shutil.rmtree(autodelete_dir, ignore_errors=True)
 
 cherrypy.tools.autodelete = cherrypy.Tool('on_end_request', autodelete)
 

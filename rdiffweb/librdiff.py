@@ -23,6 +23,7 @@ import gzip
 import logging
 import os
 import re
+import shutil
 import tempfile
 import weakref
 
@@ -888,7 +889,7 @@ class RdiffPath:
                     output = output_dir + TARGZ_SUFFIX
                     self._recursiveTarDir(output_dir, output)
             finally:
-                rdw_helpers.remove_dir(output_dir)
+                shutil.rmtree(output_dir, ignore_errors=True)
 
         # Return the location of the file to be restored
         return output
