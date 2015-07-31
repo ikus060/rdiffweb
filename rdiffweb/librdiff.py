@@ -885,7 +885,7 @@ class RdiffPath:
             try:
                 if use_zip:
                     output = output_dir + ZIP_SUFFIX
-                    self._recursiveZipDir(output_dir, output)
+                    self._recursive_zip(output_dir, output)
                 else:
                     output = output_dir + TARGZ_SUFFIX
                     self._recursiveTarDir(output_dir, output)
@@ -934,55 +934,56 @@ class RdiffPath:
 
         return backup_dates
 
-    def _recursiveTarDir(self, dirPath, tarFilename):
+    def _recursiveTarDir(self, dirpath, target):
         """This function is used during to archive a restored directory. It will
             create a tar gz archive with the specified directory."""
-        assert isinstance(dirPath, str)
-        assert isinstance(tarFilename, str)
-        assert os.path.isdir(dirPath)
+        assert isinstance(dirpath, str)
+        assert isinstance(target, str)
+        assert os.path.isdir(dirpath)
         import tarfile
 
-        dirPath = os.path.normpath(dirPath)
+        dirpath = os.path.normpath(dirpath)
 
         # Create a tar.gz archive
         logger.info("creating a tar file [%s] from [%s]",
-                    self._decode(tarFilename), self._decode(dirPath))
-        tar = tarfile.open(tarFilename, "w:gz")
+                    self._decode(target), self._decode(dirpath))
+        tar = tarfile.open(target, "w:gz")
 
         # List content of the directory.
-        files = os.listdir(dirPath)
+        files = os.listdir(dirpath)
 
         # Add files to the archive
         for filename in files:
             # Pass in file as name explicitly so we get relative paths
-            tar.add(os.path.join(dirPath, filename), filename)
+            tar.add(os.path.join(dirpath, filename), filename)
 
         # Close the archive
         tar.close()
 
-    def _recursiveZipDir(self, dirPath, zipFilename):
+    def _recursive_zip(self, dirpath, target):
         """This function is used during to archive a restored directory. It will
             create a zip archive with the specified directory."""
-        assert isinstance(dirPath, str)
-        assert isinstance(zipFilename, str)
-        assert os.path.isdir(dirPath)
+        assert isinstance(dirpath, str)
+        assert isinstance(target, str)
+        assert os.path.isdir(dirpath)
         import zipfile
 
-        dirPath = os.path.normpath(dirPath)
+        dirpath = os.path.normpath(dirpath)
 
         # Create the archive
-        zipObj = zipfile.ZipFile(zipFilename, "w", zipfile.ZIP_DEFLATED)
+        zipobj = zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED)
 
         # Add files to archive
-        for root, dirs, files in os.walk(dirPath, topdown=True):
+        for root, dirs, files in os.walk(dirpath, topdown=True):
             for name in files:
-                fullPath = os.path.join(root, name)
-                assert fullPath.startswith(dirPath)
-                relPath = fullPath[len(dirPath) + 1:]
+                fullpath = os.path.join(root, name)
+                assert fullpath.startswith(dirpath)
+                relpath = fullpath[len(dirpath) + 1:]
                 # Get unicode representation of the path. Then convert it to
                 # ISO-8859-1 because ZIP uses this encoding. See #55.
-                relPath_u = self._decode(relPath)
-                relPath = relPath_u.encode('ISO-8859-1', errors='replace')
-                zipObj.write(fullPath, relPath)
+                relPath_u = self._decode(relpath)
+                relpath = relPath_u.encode('ISO-8859-1', errors='replace')
+                # Add the file to the archive.
+                zipobj.write(fullpath, relpath)
 
-        zipObj.close()
+        zipobj.close()
