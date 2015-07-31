@@ -35,7 +35,9 @@ class MainPage:
         '''Takes a path relative to the user's root dir and validates that it
         is valid and within the user's root'''
         assert isinstance(path_b, str)
-        path_b = path_b.strip(b"/")
+
+        # Add a ending slash (/) to avoid matching wrong repo. Ref #56
+        path_b = path_b.strip(b'/') + b'/'
 
         # NOTE: a blank path is allowed, since the user root directory might be
         # a repository.
@@ -47,15 +49,16 @@ class MainPage:
         user_repos = self.app.currentuser.repos
 
         # Check if any of the repos matches the given path.
-        user_repos_matches = filter(
-            lambda x: path_b.startswith(encode_s(x).strip(b"/")),
-            user_repos)
+        user_repos_matches = [
+            encode_s(user_repo).strip(b'/')
+            for user_repo in user_repos
+            if path_b.startswith(encode_s(user_repo).strip(b'/') + b'/')]
         if not user_repos_matches:
             # No repo matches
             logger.error("user doesn't have access to [%s]" %
                          decode_s(path_b, 'replace'))
             raise librdiff.AccessDeniedError
-        repo_b = encode_s(user_repos_matches[0]).strip(b"/")
+        repo_b = user_repos_matches[0]
 
         # Get reference to user_root
         user_root = self.app.currentuser.root_dir
