@@ -30,6 +30,7 @@ import weakref
 import rdw_helpers
 
 from i18n import ugettext as _
+from rdiffweb.rdw_helpers import decode_s
 
 try:
     import subprocess32 as subprocess  # @UnresolvedImport @UnusedImport
@@ -978,6 +979,10 @@ class RdiffPath:
                 fullPath = os.path.join(root, name)
                 assert fullPath.startswith(dirPath)
                 relPath = fullPath[len(dirPath) + 1:]
+                # Get unicode representation of the path. Then convert it to
+                # ISO-8859-1 because ZIP uses this encoding. See #55.
+                relPath_u = self._decode(relPath)
+                relPath = relPath_u.encode('ISO-8859-1', errors='replace')
                 zipObj.write(fullPath, relPath)
 
         zipObj.close()
