@@ -28,7 +28,6 @@ import page_browse
 import page_history
 import page_locations
 import page_restore
-import page_setup
 import page_status
 import page_prefs
 import page_login
@@ -63,7 +62,6 @@ class RdiffwebApp(page_locations.LocationsPage):
         self.plugins = rdw_plugin.PluginManager(self.config)
 
         # Setup pages.
-        self.setup = page_setup.SetupPage()
         self.login = page_login.LoginPage()
         self.logout = page_logout.LogoutPage()
         self.browse = page_browse.BrowsePage()

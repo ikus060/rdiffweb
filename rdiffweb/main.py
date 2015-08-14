@@ -30,7 +30,6 @@ from rdiffweb import rdw_app
 from rdiffweb import rdw_spider_repos
 from rdiffweb import i18n  # @UnusedImport
 from rdiffweb import filter_authentication  # @UnusedImport
-from rdiffweb import filter_setup  # @UnusedImport
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -89,7 +88,6 @@ def setup_favicon(app, page_settings):
                 'tools.staticfile.on': True,
                 'tools.staticfile.filename': favicon_b,
                 'tools.authform.on': False,
-                'tools.setup.on': False,
             }
         })
 
@@ -117,7 +115,6 @@ def setup_header_logo(app, page_settings):
                 'tools.staticfile.on': True,
                 'tools.staticfile.filename': header_logo_b,
                 'tools.authform.on': False,
-                'tools.setup.on': False,
             }
         })
 
@@ -253,7 +250,6 @@ def start():
     page_settings = {
         b'/': {
             'tools.authform.on': True,
-            'tools.setup.on': True,
             'tools.i18n.on': True,
         },
         b'/login': {
@@ -269,10 +265,8 @@ def start():
             'tools.staticdir.root': os.path.abspath(os.path.dirname(__file__)),
             'tools.staticdir.dir': "static",
             'tools.authform.on': False,
-            'tools.setup.on': False,
         },
         b'/setup': {
-            'tools.setup.on': False,
             'tools.authform.on': False,
             'tools.sessions.on': False,
         }

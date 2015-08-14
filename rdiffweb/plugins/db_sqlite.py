@@ -320,6 +320,11 @@ class SQLiteUserDB(IUserDBPlugin):
         finally:
             conn.close()
 
+        # Create admin user
+        self.add_user('admin')
+        self.set_password('admin', None, 'admin123')
+        self.set_info('admin', '/backups/', True)
+
     def _get_tables(self):
         return [
             column[0] for column in
