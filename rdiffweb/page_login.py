@@ -49,6 +49,11 @@ class LoginPage(page_main.MainPage):
         params = {'redirect': redirect,
                   'login': login}
 
+        # Add welcom message to params.
+        welcome_msg = self.app.config.get_config("WelcomeMsg")
+        if welcome_msg:
+            params["welcome_msg"] = welcome_msg
+
         if self._is_submit():
             # check for login credentials
             logger.info("check credentials for [%s]" % login)

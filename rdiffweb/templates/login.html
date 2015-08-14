@@ -1,21 +1,23 @@
 {% set title = _("Sign in") %}
 {% include 'page_start.html' %}
 {% include 'nav_bar.html' %}
-{% if not header_name %}
 <div class='container'>
     <div class='col-sm-offset-3 col-sm-6'>
         <center>
-            <h1>rdiffweb</h1>
+            <h1>{% if header_name %}{{ header_name }}{% else %}rdiffweb{% endif %}</h1>
             <p class='light'>
-            	{% trans %}Originally developed by Josh Nisly, rdiffweb is a web interface for browsing and restoring from rdiff-backup repositories.{% endtrans %}
+                {% if welcome_msg %}
+                    {{ welcome_msg }}
+                {% else %}  
+            	    {% trans %}Originally developed by Josh Nisly, rdiffweb is a web interface for browsing and restoring from rdiff-backup repositories.{% endtrans %}
+            	    <a href="http://www.patrikdufresne.com/en/rdiffweb/">rdiffweb</a>
+                    {% trans %}version {{ version }}{% endtrans %}
+            	{% endif %}
             </p>
-            <a href="http://www.patrikdufresne.com/en/rdiffweb/">rdiffweb</a>
-            {% trans %}version {{ version }}{% endtrans %}
         </center>
     </div>
     <!-- /content -->
 </div>
-{% endif %}
 <!-- /container -->
 <div class="container login-page">
     <form class="form-signin" role="form" method="post" 
