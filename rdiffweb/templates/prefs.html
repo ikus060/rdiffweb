@@ -15,8 +15,18 @@
 	    {% endfor %}
 	</ul>
     
-    <!-- panel content -->
-    {% include template_content with context %}
+    {% if not panels %}
+        <div class="alert alert-info" role="alert">
+        {% trans %}You do not have access to the user preferences. Verify with your administrator if you want to access it.{% endtrans %}
+        {% if is_admin %}
+        <br/><br/>
+        {% trans %}Check rdiffweb configuration. Enabled one or more `UserPrefs` plugins.{% endtrans %}
+        {% endif %}
+        </div>
+    {% else %}
+	    <!-- panel content -->
+	    {% include template_content with context %}
+    {% endif %}
 
 </div>
 {% include 'page_end.html' %}

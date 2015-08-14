@@ -111,6 +111,7 @@ class RdiffwebApp(page_locations.LocationsPage):
             category = rdw_plugin.IUserDBPlugin.CATEGORY
             plugins = self.plugins.get_plugins_of_category(category)
         except:
+            logger.error('fail to load UserDB plugin', exc_info=True)
             plugins = list()
         if len(plugins) == 0:
             raise ValueError("no UserDB plugins enabled, check your configuration")

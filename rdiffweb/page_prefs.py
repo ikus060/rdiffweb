@@ -52,8 +52,6 @@ class PreferencesPage(page_main.MainPage):
 
         # Get the panels
         panels, providers = self._get_panels()
-        if not panels:
-            raise cherrypy.HTTPError(message=_("No user prefs panels available. Check your config."))
 
         # Sort the panels to have a deterministic order.
         def _panel_order(p1, p2):
@@ -67,15 +65,19 @@ class PreferencesPage(page_main.MainPage):
         panels.sort(_panel_order)
 
         # Select the right panelid. Default to the first one if not define by url.
-        panelid = panelid or panels[0][0]
+        panelid = None
+        template = None
+        params = dict()
+        if panels:
+            panelid = panelid or panels[0][0]
 
-        # Search the panelid withint our providers.
-        provider = providers.get(panelid)
-        if not provider:
-            raise cherrypy.HTTPError(message=_("Unknown user prefs panel."))
+            # Search the panelid within our providers.
+            provider = providers.get(panelid)
+            if not provider:
+                raise cherrypy.HTTPError(message=_("Unknown user prefs panel."))
 
-        # Render the page.
-        template, params = provider.render_prefs_panel(panelid, **kwargs)
+            # Render the page.
+            template, params = provider.render_prefs_panel(panelid, **kwargs)
 
         # Create a params with a default panelid.
         params.update({
