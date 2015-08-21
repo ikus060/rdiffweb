@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IUserDBPlugin
 from rdiffweb.rdw_helpers import encode_s, decode_s
+from threading import RLock
 
 """We do no length validation for incoming parameters, since truncated values
 will at worst lead to slightly confusing results, but no security risks"""
@@ -33,6 +34,9 @@ class SQLiteUserDB(IUserDBPlugin):
         Called by the plugin manager to setup the plugin.
         """
         IUserDBPlugin.activate(self)
+
+        # Declare a lock.
+        self.create_tables_lock = RLock()
 
         # Get database location.
         self._db_file = self.app.config.get_config("SQLiteDBFile",
@@ -305,25 +309,28 @@ class SQLiteUserDB(IUserDBPlugin):
         Used to create or update the database.
         """
 
-        # Check if tables exists, if not created them.
-        if self._get_tables():
-            return
+        # To avoid re-creating the table twice.
+        with self.create_tables_lock:
 
-        # Create the tables.
-        conn = self._connect()
-        try:
-            cursor = conn.cursor()
-            cursor.execute("BEGIN TRANSACTION")
-            for statement in self._get_create_statements():
-                cursor.execute(statement)
-            cursor.execute("COMMIT TRANSACTION")
-        finally:
-            conn.close()
+            # Check if tables exists, if not created them.
+            if self._get_tables():
+                return
 
-        # Create admin user
-        self.add_user('admin')
-        self.set_password('admin', None, 'admin123')
-        self.set_info('admin', '/backups/', True)
+            # Create the tables.
+            conn = self._connect()
+            try:
+                cursor = conn.cursor()
+                cursor.execute("BEGIN TRANSACTION")
+                for statement in self._get_create_statements():
+                    cursor.execute(statement)
+                cursor.execute("COMMIT TRANSACTION")
+            finally:
+                conn.close()
+
+            # Create admin user
+            self.add_user('admin')
+            self.set_password('admin', None, 'admin123')
+            self.set_info('admin', '/backups/', True)
 
     def _get_tables(self):
         return [
