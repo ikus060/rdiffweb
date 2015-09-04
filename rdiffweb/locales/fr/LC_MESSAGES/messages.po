@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-04-26 12:03-0400\n"
+"POT-Creation-Date: 2015-09-04 16:52-0400\n"
 "PO-Revision-Date: 2014-11-14 10:00-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -17,16 +17,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: rdiffweb/librdiff.py:56 rdiffweb/librdiff.py:75
+#: rdiffweb/librdiff.py:62 rdiffweb/librdiff.py:81
 msgid "An unknown error occurred."
 msgstr "Une erreur inconnue s'est produite."
 
-#: rdiffweb/librdiff.py:62 rdiffweb/page_admin.py:55 rdiffweb/page_admin.py:80
+#: rdiffweb/librdiff.py:68 rdiffweb/page_admin.py:55 rdiffweb/page_admin.py:80
 #: rdiffweb/page_admin.py:121
 msgid "Access denied."
 msgstr "Accès refusé."
 
-#: rdiffweb/librdiff.py:68
+#: rdiffweb/librdiff.py:74
 msgid "The repository does not exist."
 msgstr "Le dépôt n'existe pas."
 
@@ -62,19 +62,23 @@ msgstr ""
 msgid "fail to get user's locations"
 msgstr "Impossible d'obtenir la liste des utilisateurs."
 
-#: rdiffweb/page_login.py:78
+#: rdiffweb/page_login.py:83
 msgid "Invalid username or password."
 msgstr "Nom d'utilisateur ou mot de passe invalide."
 
-#: rdiffweb/page_login.py:81
+#: rdiffweb/page_login.py:86
 msgid "Fail to validate user credential."
 msgstr "Impossible de valider l'informations d'identification de l'utilisateur."
 
-#: rdiffweb/page_restore.py:105 rdiffweb/page_status.py:66
+#: rdiffweb/page_prefs.py:77
+msgid "unknown user preference pane"
+msgstr "panneau de préférences utilisateur inconnu"
+
+#: rdiffweb/page_restore.py:106 rdiffweb/page_status.py:66
 msgid "Invalid date."
 msgstr "Date non valide."
 
-#: rdiffweb/page_restore.py:110
+#: rdiffweb/page_restore.py:111
 msgid ""
 "A backup is currently in progress to this repository. Restores are "
 "disabled until this backup is complete."
@@ -82,24 +86,224 @@ msgstr ""
 "Une sauvegarde est en cours dans ce dépôt. La restauration sera "
 "désactivée jusqu'à ce que cette sauvegarde soit terminée."
 
-#: rdiffweb/page_restore.py:120
+#: rdiffweb/page_restore.py:121
 msgid "Fail to restore."
 msgstr "Impossible de restaurer les données."
 
-#: rdiffweb/page_setup.py:55
-msgid "can't determine if rdiffweb is configured! Check application log."
-msgstr ""
-"impossible de déterminer si rdiffweb est configuré! Vérifier les logs de "
-"l'application"
+#: rdiffweb/plugins/db_sqlite.py:124
+#, python-format
+msgid "user '%s' already exists"
+msgstr "l'utilisateur '%s' existe déjà"
 
-#: rdiffweb/page_setup.py:63
+#: rdiffweb/plugins/db_sqlite.py:198
+msgid "invalid username"
+msgstr "nom d'utilisateur invalide."
+
+#: rdiffweb/plugins/db_sqlite.py:200
+msgid "password can't be empty"
+msgstr "le mot de passe ne peut pas être vide"
+
+#: rdiffweb/plugins/db_sqlite.py:202
+msgid "wrong password"
+msgstr "mauvais mot de passe"
+
+#: rdiffweb/plugins/prefs_general/__init__.py:52
+msgid "Profile"
+msgstr "Profil"
+
+#: rdiffweb/plugins/prefs_general/__init__.py:59
+msgid "current password is missing"
+msgstr "le mot de passe actuel est manquant"
+
+#: rdiffweb/plugins/prefs_general/__init__.py:61
+msgid "new password is missing"
+msgstr "le nouveau mot de passe est manquant"
+
+#: rdiffweb/plugins/prefs_general/__init__.py:63
+msgid "confirmation password is missing"
+msgstr "le mot de passe de confirmation est manquant"
+
+#: rdiffweb/plugins/prefs_general/__init__.py:69
+msgid "Password changes is not supported."
+msgstr "Le changement de mot de passe n'est pas pris en charge."
+
+#: rdiffweb/plugins/prefs_general/__init__.py:73
+msgid "The new password and its confirmation does not matches."
+msgstr "Le nouveau mot de passe et la confirmation ne correspondent pas."
+
+#: rdiffweb/plugins/prefs_general/__init__.py:79
+msgid "Password updated successfully."
+msgstr "Mot de passe mis à jour avec succès."
+
+#: rdiffweb/plugins/prefs_general/__init__.py:87
+msgid "email is undefined"
+msgstr "email undefined"
+
+#: rdiffweb/plugins/prefs_general/__init__.py:93
+msgid "invalid email"
+msgstr "Date non valide."
+
+#: rdiffweb/plugins/prefs_general/__init__.py:102
+msgid "Profile updated successfully."
+msgstr "Profil mis à jour avec succès."
+
+#: rdiffweb/plugins/prefs_general/__init__.py:109
+msgid "Repositories successfully updated."
+msgstr "Référentiels mis à jour avec succès."
+
+#: rdiffweb/plugins/prefs_general/__init__.py:130
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:124
+msgid "Unknown error"
+msgstr "Une erreur inconnue s'est produite."
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:2
+msgid "Profile information"
+msgstr "Informations sur le profil"
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:9
+msgid "General information"
+msgstr "Informations générales"
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:14
+#: rdiffweb/templates/admin_users.html:122 rdiffweb/templates/login.html:30
+msgid "Username"
+msgstr "Nom d'utilisateur"
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:23
+#: rdiffweb/templates/admin_users.html:130
+#: rdiffweb/templates/admin_users.html:175
+msgid "Email"
+msgstr "Courriel"
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:31
+#: rdiffweb/templates/admin_users.html:170
+msgid "Save changes"
+msgstr "Enregistrer modifications"
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:38
+msgid "Change password"
+msgstr "Modifier le mot de passe"
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:43
+msgid "Current password"
+msgstr "Mot de passe actuel"
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:51
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:58
+msgid "Confirm new password"
+msgstr "Confirmer mot de passe"
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:66
+msgid "Update password"
+msgstr "Nouveau mot de passe"
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:73
+msgid "Refresh"
+msgstr "Actualiser"
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:78
 msgid ""
-"rdiffweb doesn't have read-write access to the configuration file. You "
-"may try to change the permissions of this file."
+"Refresh the list of repositories associated to your account. If you "
+"recently add a new repository and it doesn't show, you may try to refresh"
+" the list."
 msgstr ""
-"rdiffweb n'a pas accès en lecture-écriture au fichier de "
-"configuration.Vous pouvez essayer de modifier les autorisations de ce "
-"fichier."
+"Actualiser la liste des dépôts associés à votre compte. Si vous avez "
+"récemment ajoutez un nouveau référentiel et il ne apparaît pas, vous "
+"pouvez essayer d'actualiser la liste."
+
+#: rdiffweb/plugins/prefs_general/templates/prefs_general.html:81
+msgid "Refresh repositories"
+msgstr "Actualiser dépôts"
+
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:52
+#: rdiffweb/plugins/prefs_sshkeys/templates/prefs_sshkeys.html:34
+msgid "SSH Keys"
+msgstr "Clés SSH"
+
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:59
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:95
+msgid "key is missing"
+msgstr "clé manquante"
+
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:66
+msgid "SSH key already exists"
+msgstr "La clé SSH existe déjà"
+
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:70
+msgid "SSH key is too short. RSA key of at least 2048 bits is required."
+msgstr "La clé SSH est trop courte. Une clé RSA de 2048 bits est requise."
+
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:99
+msgid "key is invalid"
+msgstr "clé invalide"
+
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:136
+msgid "error reading SSH keys file"
+msgstr "erreur de lecture du fichier de clés SSH"
+
+#: rdiffweb/plugins/prefs_sshkeys/templates/prefs_sshkeys.html:20
+msgid "My SSH keys"
+msgstr "Mes clés SSH"
+
+#: rdiffweb/plugins/prefs_sshkeys/templates/prefs_sshkeys.html:22
+msgid ""
+"SSH keys allow you to establish a secure connection between your computer"
+" and this backup system."
+msgstr ""
+"Les clés SSH vous permettent d'établir une connexion sécurisée entre "
+"votre ordinateur et le système de sauvegarde."
+
+#: rdiffweb/plugins/prefs_sshkeys/templates/prefs_sshkeys.html:46
+msgid ""
+"This is a list of SSH keys associated with your account. Remove any keys "
+"that you do not recognize."
+msgstr ""
+"Ceci est la liste de clés SSH associés à votre compte. Retirez toutes les"
+" clés que vous ne reconnaissez pas."
+
+#: rdiffweb/plugins/prefs_sshkeys/templates/prefs_sshkeys.html:58
+#: rdiffweb/templates/admin_users.html:95
+#: rdiffweb/templates/admin_users.html:225
+msgid "Delete"
+msgstr "Supprimer"
+
+#: rdiffweb/plugins/prefs_sshkeys/templates/prefs_sshkeys.html:59
+#: rdiffweb/templates/admin_users.html:96
+msgid "Are you sure ?"
+msgstr "Êtes-vous sûr?"
+
+#: rdiffweb/plugins/prefs_sshkeys/templates/prefs_sshkeys.html:78
+msgid "Add SSH key"
+msgstr "Ajouter clé SSH"
+
+#: rdiffweb/plugins/prefs_sshkeys/templates/prefs_sshkeys.html:82
+msgid "Title"
+msgstr "Titre"
+
+#: rdiffweb/plugins/prefs_sshkeys/templates/prefs_sshkeys.html:87
+msgid ""
+"The title is an optional description to identify the key. e.g.: "
+"bob@thinkpad-t530"
+msgstr ""
+"Le titre est une description facultative pour identifier la clé. P.ex.: "
+"bob@thinkpad-t530"
+
+#: rdiffweb/plugins/prefs_sshkeys/templates/prefs_sshkeys.html:93
+msgid "Key"
+msgstr "Clé"
+
+#: rdiffweb/plugins/prefs_sshkeys/templates/prefs_sshkeys.html:98
+msgid ""
+"Enter a SSH public key. It should start with 'ssh-dss', 'ssh-ed25519', "
+"'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-"
+"sha2-nistp521'."
+msgstr ""
+"Entrez une clé publique SSH. Elle doit commencer par 'ssh-dss', 'ssh-"
+"ed25519', 'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or "
+"'ecdsa-sha2-nistp521'."
 
 #: rdiffweb/templates/admin.html:1 rdiffweb/templates/nav_bar.html:36
 msgid "Admin area"
@@ -118,7 +322,7 @@ msgid "General info"
 msgstr "Informations générales"
 
 #: rdiffweb/templates/admin_nav_bar.html:7
-#: rdiffweb/templates/admin_users.html:57
+#: rdiffweb/templates/admin_users.html:59
 msgid "Users"
 msgstr "Utilisateurs"
 
@@ -159,53 +363,48 @@ msgstr "Emplacement"
 msgid "User management"
 msgstr "Gestion des utilisateurs"
 
-#: rdiffweb/templates/admin_users.html:23
+#: rdiffweb/templates/admin_users.html:25
 msgid "Active users"
 msgstr "Utilisateurs actifs"
 
-#: rdiffweb/templates/admin_users.html:29
+#: rdiffweb/templates/admin_users.html:31
 msgid "Admin users"
 msgstr "Utilisateurs administrateurs"
 
-#: rdiffweb/templates/admin_users.html:38
+#: rdiffweb/templates/admin_users.html:40
 msgid "Search user"
 msgstr "Rechercher un utilisateur"
 
-#: rdiffweb/templates/admin_users.html:40
+#: rdiffweb/templates/admin_users.html:42
 msgid "Name, email or username"
 msgstr "Nom, courriel ou nom d'utilisateur"
 
-#: rdiffweb/templates/admin_users.html:46
+#: rdiffweb/templates/admin_users.html:48
 msgid "Search"
 msgstr "Rechercher"
 
-#: rdiffweb/templates/admin_users.html:62
-#: rdiffweb/templates/admin_users.html:109
+#: rdiffweb/templates/admin_users.html:64
+#: rdiffweb/templates/admin_users.html:112
 msgid "Add user"
 msgstr "Ajouter un utilisateur"
 
-#: rdiffweb/templates/admin_users.html:76
+#: rdiffweb/templates/admin_users.html:78
 msgid "Admin"
 msgstr "Administrateur"
 
-#: rdiffweb/templates/admin_users.html:79
+#: rdiffweb/templates/admin_users.html:81
 msgid "It's you"
 msgstr "C'est vous"
 
-#: rdiffweb/templates/admin_users.html:89
+#: rdiffweb/templates/admin_users.html:91
 msgid "Edit"
 msgstr "Modifier"
 
-#: rdiffweb/templates/admin_users.html:95
-#: rdiffweb/templates/admin_users.html:230
-msgid "Delete"
-msgstr "Supprimer"
-
-#: rdiffweb/templates/admin_users.html:113
+#: rdiffweb/templates/admin_users.html:116
 msgid "LDAP enabled!"
 msgstr "LDAP activé!"
 
-#: rdiffweb/templates/admin_users.html:114
+#: rdiffweb/templates/admin_users.html:117
 msgid ""
 "To create an LDAP user, use the same username and don't enter an email "
 "and password."
@@ -213,26 +412,17 @@ msgstr ""
 "Pour créer un utilisateur LDAP, utilisez le même nom d'utilisateur et "
 "n'entrez pas de courriel ou de mot de passe."
 
-#: rdiffweb/templates/admin_users.html:119 rdiffweb/templates/login.html:28
-msgid "Username"
-msgstr "Nom d'utilisateur"
-
-#: rdiffweb/templates/admin_users.html:127
-#: rdiffweb/templates/admin_users.html:175
-msgid "Email"
-msgstr "Courriel"
-
-#: rdiffweb/templates/admin_users.html:136
-#: rdiffweb/templates/admin_users.html:184 rdiffweb/templates/login.html:31
+#: rdiffweb/templates/admin_users.html:139
+#: rdiffweb/templates/admin_users.html:184 rdiffweb/templates/login.html:33
 msgid "Password"
 msgstr "Mot de passe"
 
-#: rdiffweb/templates/admin_users.html:145
+#: rdiffweb/templates/admin_users.html:148
 #: rdiffweb/templates/admin_users.html:193
 msgid "Root directory"
 msgstr "Répertoire racine"
 
-#: rdiffweb/templates/admin_users.html:156
+#: rdiffweb/templates/admin_users.html:159
 #: rdiffweb/templates/admin_users.html:211
 msgid "Is administrator"
 msgstr "Est un administrateur"
@@ -242,23 +432,13 @@ msgstr "Est un administrateur"
 msgid "Edit user %(name)s"
 msgstr "Modifier l'utilisateur %(name)s"
 
-#: rdiffweb/templates/admin_users.html:170
-msgid "Save changes"
-msgstr "Enregistrer modifications"
-
 #: rdiffweb/templates/admin_users.html:215
 msgid "You cannot remove your own admin rights."
 msgstr "Vous ne pouvez pas supprimer vos propres droits d'administrateur."
 
-#: rdiffweb/templates/admin_users.html:230
-#, python-format
-msgid "Delete user %(name)s"
-msgstr "Supprimer l'utilisateur %(name)s"
-
-#: rdiffweb/templates/admin_users.html:233
-#, python-format
-msgid "Are you sure that you wish to delete user `%(username)s`?"
-msgstr "Êtes-vous sûr que vous voulez supprimer l'utilisateur `%(username)s`?"
+#: rdiffweb/templates/admin_users.html:225
+msgid "Confirm deletion"
+msgstr ""
 
 #: rdiffweb/templates/browse.html:6 rdiffweb/templates/browse.html:30
 #: rdiffweb/templates/history.html:20
@@ -332,12 +512,12 @@ msgstr "Vous n'avez pas de dépôts configurés."
 msgid "Last backup: "
 msgstr "Dernière sauvegarde : "
 
-#: rdiffweb/templates/login.html:1 rdiffweb/templates/login.html:25
-#: rdiffweb/templates/login.html:33
+#: rdiffweb/templates/login.html:1 rdiffweb/templates/login.html:27
+#: rdiffweb/templates/login.html:35
 msgid "Sign in"
 msgstr "Se connecter"
 
-#: rdiffweb/templates/login.html:10
+#: rdiffweb/templates/login.html:12
 msgid ""
 "Originally developed by Josh Nisly, rdiffweb is a web interface for "
 "browsing and restoring from rdiff-backup repositories."
@@ -345,16 +525,16 @@ msgstr ""
 "Initialement développé par Josh Nisly, rdiffweb est une interface web "
 "pour la naviguer et la restaurer à partir des dépôts de rdiff-backup."
 
-#: rdiffweb/templates/login.html:13
+#: rdiffweb/templates/login.html:14
 #, python-format
 msgid "version %(version)s"
 msgstr "version %(version)s"
 
-#: rdiffweb/templates/login.html:27
+#: rdiffweb/templates/login.html:29
 msgid "Enter your username and password to log in."
 msgstr "Entrez votre nom d'utilisateur et mot de passe pour vous connecter."
 
-#: rdiffweb/templates/macros.html:8 rdiffweb/templates/macros.html:15
+#: rdiffweb/templates/macros.html:10 rdiffweb/templates/macros.html:17
 msgid "Close"
 msgstr "Fermer"
 
@@ -378,9 +558,9 @@ msgstr "Basculer la navigation"
 msgid "Status"
 msgstr "État"
 
-#: rdiffweb/templates/nav_bar.html:33
-msgid "Preferences"
-msgstr "Préférences"
+#: rdiffweb/templates/nav_bar.html:33 rdiffweb/templates/prefs.html:1
+msgid "User settings"
+msgstr "Paramètres de l'utilisateur"
 
 #: rdiffweb/templates/nav_bar.html:40
 msgid "Logout"
@@ -391,43 +571,19 @@ msgstr "Déconnexion"
 msgid "Signed in as %(username)s"
 msgstr "Session ouverte sous %(username)s"
 
-#: rdiffweb/templates/prefs.html:1
-msgid "User Preferences"
-msgstr "Préférences"
-
-#: rdiffweb/templates/prefs.html:11
-msgid "Change password"
-msgstr "Modifier le mot de passe"
-
-#: rdiffweb/templates/prefs.html:15
-msgid "Current password"
-msgstr "Mot de passe actuel"
+#: rdiffweb/templates/prefs.html:20
+msgid ""
+"You do not have access to the user preferences. Verify with your "
+"administrator if you want to access it."
+msgstr ""
+"Vous ne disposez pas de l'accès aux préférences de l'utilisateur. "
+"Vérifiez avec votre administrateur si vous voulez y accéder."
 
 #: rdiffweb/templates/prefs.html:23
-msgid "New password"
-msgstr "Nouveau mot de passe"
-
-#: rdiffweb/templates/prefs.html:30
-msgid "Confirm new password"
-msgstr "Confirmer mot de passe"
-
-#: rdiffweb/templates/prefs.html:38
-msgid "Change"
-msgstr "Modifier"
-
-#: rdiffweb/templates/prefs.html:44 rdiffweb/templates/prefs.html:51
-msgid "Refresh"
-msgstr "Actualiser"
-
-#: rdiffweb/templates/prefs.html:48
-msgid ""
-"Refresh the list of repositories associated to your account. If you "
-"recently add a new repository and it doesn't show, you may try to refresh"
-" the list."
+msgid "Check rdiffweb configuration. Enable one or more `UserPrefs` plugins."
 msgstr ""
-"Actualiser la liste des dépôts associés à votre compte. Si vous avez "
-"récemment ajoutez un nouveau référentiel et il ne apparaît pas, vous "
-"pouvez essayer d'actualiser la liste."
+"Vérifiez la configuration de rdiffweb. Activer un ou plusieurs plugins "
+"`UserPrefs`."
 
 #: rdiffweb/templates/setup.html:7
 msgid "Setup rdiffweb"

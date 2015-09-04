@@ -66,11 +66,11 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
 
         # Check if current database support it.
         if not self.app.userdb.is_modifiable():
-            return {'error': _("Password changing is not supported with this user database.")}
+            return {'error': _("Password changes is not supported.")}
 
         # Check if confirmation is valid.
         if kwargs['new'] != kwargs['confirm']:
-            return {'error': _("The new password and it's confirmation does not matches.")}
+            return {'error': _("The new password and its confirmation does not matches.")}
 
         # Update user password
         username = self.app.currentuser.username
@@ -84,13 +84,13 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         """
         # Check data.
         if 'email' not in kwargs:
-            raise ValueError(_("Email is not define"))
+            raise ValueError(_("email is undefined"))
 
         # Parse the email value to extract a valid email. The following method
         # return an empty string if the email is not valid. This RFC also accept
         # local email address without '@'. So we add verification for '@'
         if not PATTERN_EMAIL.match(kwargs['email'].lower()):
-            raise ValueError(_("invalid Email"))
+            raise ValueError(_("invalid email"))
 
         # Update the user's email
         if self.app.currentuser:

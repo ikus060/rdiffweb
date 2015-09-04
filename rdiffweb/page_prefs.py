@@ -74,7 +74,7 @@ class PreferencesPage(page_main.MainPage):
             # Search the panelid within our providers.
             provider = providers.get(panelid)
             if not provider:
-                raise cherrypy.HTTPError(message=_("Unknown user prefs panel."))
+                raise cherrypy.HTTPError(message=_("unknown user preference pane"))
 
             # Render the page.
             template, params = provider.render_prefs_panel(panelid, **kwargs)
