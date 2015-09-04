@@ -104,7 +104,8 @@ setup(name='rdiffweb',
                                  'static/js/scripts.min.js',
                                  'static/js/vendor/*.js',
                                  'static/css/*.css', 'static/fonts/*',
-                                 'locales/fr/LC_MESSAGES/messages.mo'
+                                 'locales/fr/LC_MESSAGES/messages.mo',
+                                 'locales/ru/LC_MESSAGES/messages.mo'
                                  ]
                     },
       data_files=_data_files,
