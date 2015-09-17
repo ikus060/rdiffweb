@@ -9,9 +9,10 @@
     {% else %}
     <h2>{{ title }} ({{ repos|length }})</h2>
     {% include templates_before_content ignore missing with context %}
-	<ul class="list-group">
+	<ul class="list-group" itemscope itemtype="http://schema.org/ItemList">
 		{% for repo in repos %}
-		<li {% if repo.failed %}
+		<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem"
+            {% if repo.failed %}
 	            class="list-group-item list-group-item-danger clearfix"
 	            {% elif repo.in_progress%}
 	            class="list-group-item list-group-item-warning clearfix"
@@ -20,12 +21,13 @@
 	            {% endif %}>
 			<span class="h4">
 				{% if repo.failed %}
-	            <i class="icon-box"></i>{{ repo.name }}
+		            <i class="icon-box"></i>
+		            <span itemprop="name">{{ repo.name }}</span>
 	            {% else %}
-	            <a href="{{ url_for_browse(repo.path) }}">
+		            <a itemprop="item" href="{{ url_for_browse(repo.path) }}">
 	                <i class="icon-box"></i>
-	                {{ repo.name }}
-	            </a>
+	                <span itemprop="name">{{ repo.name }}</span>
+		            </a>
 	            {% endif %}
             </span>
             
@@ -33,7 +35,8 @@
 			<span class="light">
 				{% if repo.failed %}{% trans %}Error{% endtrans %}
 	            {% elif repo.in_progress %}{% trans %}In progress{% endtrans %}
-	            {% else %}{% trans %}Last backup: {% endtrans %}{{ repo.last_backup_date | datetime }}
+	            {% else %}{% trans %}Last backup: {% endtrans %}
+	            <time datetime="{{ repo.last_backup_date | datetime }}" itemprop="lastBackupDate">{{ repo.last_backup_date | datetime }}</time>
 	            {% endif %}
 			</span>
 			</div>
