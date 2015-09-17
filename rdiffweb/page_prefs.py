@@ -65,7 +65,6 @@ class PreferencesPage(page_main.MainPage):
         panels.sort(_panel_order)
 
         # Select the right panelid. Default to the first one if not define by url.
-        panelid = None
         template = None
         params = dict()
         if panels:
