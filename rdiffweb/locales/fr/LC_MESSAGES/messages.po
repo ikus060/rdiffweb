@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-04 16:52-0400\n"
+"POT-Creation-Date: 2015-09-15 09:05-0400\n"
 "PO-Revision-Date: 2014-11-14 10:00-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -32,7 +32,7 @@ msgstr "Le dépôt n'existe pas."
 
 #: rdiffweb/page_admin.py:69
 msgid "Can't get admin information."
-msgstr "Impossible d'obtenir les informations administrateur."
+msgstr "Impossible d'obtenir les informations d'administrateur."
 
 #: rdiffweb/page_admin.py:87
 msgid "Fail to get list of plugins."
@@ -68,7 +68,7 @@ msgstr "Nom d'utilisateur ou mot de passe invalide."
 
 #: rdiffweb/page_login.py:86
 msgid "Fail to validate user credential."
-msgstr "Impossible de valider l'informations d'identification de l'utilisateur."
+msgstr "Impossible de valider l'information d'identification de l'utilisateur."
 
 #: rdiffweb/page_prefs.py:77
 msgid "unknown user preference pane"
@@ -101,11 +101,11 @@ msgstr "nom d'utilisateur invalide."
 
 #: rdiffweb/plugins/db_sqlite.py:200
 msgid "password can't be empty"
-msgstr "le mot de passe ne peut pas être vide"
+msgstr "mot de passe ne peut pas être vide"
 
 #: rdiffweb/plugins/db_sqlite.py:202
 msgid "wrong password"
-msgstr "mauvais mot de passe"
+msgstr "mot de passe invalide"
 
 #: rdiffweb/plugins/prefs_general/__init__.py:52
 msgid "Profile"
@@ -113,15 +113,15 @@ msgstr "Profil"
 
 #: rdiffweb/plugins/prefs_general/__init__.py:59
 msgid "current password is missing"
-msgstr "le mot de passe actuel est manquant"
+msgstr "le mot de passe actuel est vide"
 
 #: rdiffweb/plugins/prefs_general/__init__.py:61
 msgid "new password is missing"
-msgstr "le nouveau mot de passe est manquant"
+msgstr "le nouveau mot de passe est vide"
 
 #: rdiffweb/plugins/prefs_general/__init__.py:63
 msgid "confirmation password is missing"
-msgstr "le mot de passe de confirmation est manquant"
+msgstr "le mot de passe de confirmation est vide"
 
 #: rdiffweb/plugins/prefs_general/__init__.py:69
 msgid "Password changes is not supported."
@@ -137,11 +137,11 @@ msgstr "Mot de passe mis à jour avec succès."
 
 #: rdiffweb/plugins/prefs_general/__init__.py:87
 msgid "email is undefined"
-msgstr "email undefined"
+msgstr "courriel non défini"
 
 #: rdiffweb/plugins/prefs_general/__init__.py:93
 msgid "invalid email"
-msgstr "Date non valide."
+msgstr "adresse courriel non valide."
 
 #: rdiffweb/plugins/prefs_general/__init__.py:102
 msgid "Profile updated successfully."
@@ -149,7 +149,7 @@ msgstr "Profil mis à jour avec succès."
 
 #: rdiffweb/plugins/prefs_general/__init__.py:109
 msgid "Repositories successfully updated."
-msgstr "Référentiels mis à jour avec succès."
+msgstr "Dépôts mis à jour avec succès."
 
 #: rdiffweb/plugins/prefs_general/__init__.py:130
 #: rdiffweb/plugins/prefs_sshkeys/__init__.py:124
@@ -211,12 +211,12 @@ msgid ""
 " the list."
 msgstr ""
 "Actualiser la liste des dépôts associés à votre compte. Si vous avez "
-"récemment ajoutez un nouveau référentiel et il ne apparaît pas, vous "
+"récemment ajouté un nouveau dépôt et qu'il n'apparaît pas, vous "
 "pouvez essayer d'actualiser la liste."
 
 #: rdiffweb/plugins/prefs_general/templates/prefs_general.html:81
 msgid "Refresh repositories"
-msgstr "Actualiser dépôts"
+msgstr "Actualiser les dépôts"
 
 #: rdiffweb/plugins/prefs_sshkeys/__init__.py:52
 #: rdiffweb/plugins/prefs_sshkeys/templates/prefs_sshkeys.html:34
@@ -302,12 +302,12 @@ msgid ""
 "sha2-nistp521'."
 msgstr ""
 "Entrez une clé publique SSH. Elle doit commencer par 'ssh-dss', 'ssh-"
-"ed25519', 'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or "
+"ed25519', 'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' ou "
 "'ecdsa-sha2-nistp521'."
 
 #: rdiffweb/templates/admin.html:1 rdiffweb/templates/nav_bar.html:36
 msgid "Admin area"
-msgstr "Espace administrative"
+msgstr "Espace admin"
 
 #: rdiffweb/templates/admin.html:19
 msgid "users"
@@ -337,7 +337,7 @@ msgstr "Gestion des plugiciels"
 
 #: rdiffweb/templates/admin_plugins.html:37
 msgid "Enabled"
-msgstr "LDAP activé!"
+msgstr "Activé!"
 
 #: rdiffweb/templates/admin_plugins.html:42
 msgid "Disabled"
@@ -438,7 +438,7 @@ msgstr "Vous ne pouvez pas supprimer vos propres droits d'administrateur."
 
 #: rdiffweb/templates/admin_users.html:225
 msgid "Confirm deletion"
-msgstr ""
+msgstr "Confirmer la suppression"
 
 #: rdiffweb/templates/browse.html:6 rdiffweb/templates/browse.html:30
 #: rdiffweb/templates/history.html:20
@@ -523,7 +523,7 @@ msgid ""
 "browsing and restoring from rdiff-backup repositories."
 msgstr ""
 "Initialement développé par Josh Nisly, rdiffweb est une interface web "
-"pour la naviguer et la restaurer à partir des dépôts de rdiff-backup."
+"pour naviguer et restaurer à partir des dépôts de rdiff-backup."
 
 #: rdiffweb/templates/login.html:14
 #, python-format
@@ -582,7 +582,7 @@ msgstr ""
 #: rdiffweb/templates/prefs.html:23
 msgid "Check rdiffweb configuration. Enable one or more `UserPrefs` plugins."
 msgstr ""
-"Vérifiez la configuration de rdiffweb. Activer un ou plusieurs plugins "
+"Vérifiez la configuration de rdiffweb. Activer un ou plusieurs plugiciels "
 "`UserPrefs`."
 
 #: rdiffweb/templates/setup.html:7
@@ -600,7 +600,7 @@ msgstr "Cliquez ici"
 #: rdiffweb/templates/setup.html:14
 msgid "to log into rdiffweb using default administrator account:"
 msgstr ""
-"pour vous connecter à rdiffweb enutilisant le compte d'administrateur par"
+"pour vous connecter à rdiffweb en utilisant le compte d'administrateur par"
 " défaut:"
 
 #: rdiffweb/templates/setup.html:16
@@ -616,8 +616,8 @@ msgid ""
 "rdiffweb has not been configured, so we need to do that before logging "
 "in. Configuration will only take a few minutes."
 msgstr ""
-"rdiffweb n'a pas été configuré. Nous avons besoin de le faire avant de "
-"vous connecter. La configuration ne vous prendra que quelques minutes."
+"rdiffweb n'a pas été configuré. Nous avons besoin de le faire avant la "
+"connection. La configuration ne vous prendra que quelques minutes."
 
 #: rdiffweb/templates/setup.html:32
 msgid "Continue..."
