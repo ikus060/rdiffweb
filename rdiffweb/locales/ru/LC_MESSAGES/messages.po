@@ -1,4 +1,4 @@
-# Translations template for rdiffweb.
+# Russian translations for rdiffweb.
 # Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the rdiffweb project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2015.
@@ -7,10 +7,12 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.7.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-28 13:50-0400\n"
+"POT-Creation-Date: 2015-09-22 17:04-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Евгений Максимов <me@vragam.net>\n"
 "Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -42,8 +44,8 @@ msgstr "Информация пользователя успешно измен�
 
 #: rdiffweb/page_browse.py:96
 msgid ""
-"A backup is currently in progress to this repository. The displayed data may "
-"be inconsistent."
+"A backup is currently in progress to this repository. The displayed data "
+"may be inconsistent."
 msgstr ""
 "В настоящее время осуществляется резервное копирование в это хранилище. "
 "Отображаемые данные могут быть некорректны."
@@ -54,8 +56,8 @@ msgstr "Неверная дата."
 
 #: rdiffweb/page_restore.py:110
 msgid ""
-"A backup is currently in progress to this repository. Restores are disabled "
-"until this backup is complete."
+"A backup is currently in progress to this repository. Restores are "
+"disabled until this backup is complete."
 msgstr ""
 "В настоящее время осуществляется резервное копирование в это хранилище. "
 "Восстановление отключено до завершения процесса."
@@ -64,7 +66,7 @@ msgstr ""
 msgid "Fail to restore."
 msgstr "Ошибка восстановления."
 
-#: rdiffweb/templates/admin.html:1 rdiffweb/templates/nav_bar.html:21
+#: rdiffweb/templates/admin.html:1 rdiffweb/templates/nav_bar.html:25
 msgid "Admin area"
 msgstr "Администрирование"
 
@@ -80,7 +82,8 @@ msgstr "хранилищ(а)"
 msgid "General info"
 msgstr "Общая информация"
 
-#: rdiffweb/templates/admin_nav_bar.html:7 rdiffweb/templates/admin_users.html:57
+#: rdiffweb/templates/admin_nav_bar.html:7
+#: rdiffweb/templates/admin_users.html:57
 msgid "Users"
 msgstr "Пользователи"
 
@@ -108,7 +111,8 @@ msgstr "Имя, email или логин"
 msgid "Search"
 msgstr "Поиск"
 
-#: rdiffweb/templates/admin_users.html:62 rdiffweb/templates/admin_users.html:110
+#: rdiffweb/templates/admin_users.html:62
+#: rdiffweb/templates/admin_users.html:109
 msgid "Add user"
 msgstr "Добавить пользователя"
 
@@ -124,62 +128,66 @@ msgstr "Это вы"
 msgid "Edit"
 msgstr "Редактировать"
 
-#: rdiffweb/templates/admin_users.html:95 rdiffweb/templates/admin_users.html:231
+#: rdiffweb/templates/admin_users.html:95
+#: rdiffweb/templates/admin_users.html:230
 msgid "Delete"
 msgstr "Удалить"
 
-#: rdiffweb/templates/admin_users.html:114
+#: rdiffweb/templates/admin_users.html:113
 msgid "LDAP enabled!"
 msgstr "LDAP включен!"
 
-#: rdiffweb/templates/admin_users.html:115
+#: rdiffweb/templates/admin_users.html:114
 msgid ""
-"To create an LDAP user, use the same username and don't enter an email and "
-"password."
+"To create an LDAP user, use the same username and don't enter an email "
+"and password."
 msgstr ""
 "Для создания LDAP пользователя, используйте тот же логин и не вводите "
 "email и пароль."
 
-#: rdiffweb/templates/admin_users.html:120 rdiffweb/templates/login.html:27
+#: rdiffweb/templates/admin_users.html:119 rdiffweb/templates/login.html:27
 msgid "Username"
 msgstr "Логин"
 
-#: rdiffweb/templates/admin_users.html:128 rdiffweb/templates/admin_users.html:176
+#: rdiffweb/templates/admin_users.html:127
+#: rdiffweb/templates/admin_users.html:175
 msgid "Email"
 msgstr "Email"
 
-#: rdiffweb/templates/admin_users.html:137 rdiffweb/templates/admin_users.html:185
-#: rdiffweb/templates/login.html:30
+#: rdiffweb/templates/admin_users.html:136
+#: rdiffweb/templates/admin_users.html:184 rdiffweb/templates/login.html:30
 msgid "Password"
 msgstr "Пароль"
 
-#: rdiffweb/templates/admin_users.html:146 rdiffweb/templates/admin_users.html:194
+#: rdiffweb/templates/admin_users.html:145
+#: rdiffweb/templates/admin_users.html:193
 msgid "Root directory"
 msgstr "Корневая директория"
 
-#: rdiffweb/templates/admin_users.html:157 rdiffweb/templates/admin_users.html:212
+#: rdiffweb/templates/admin_users.html:156
+#: rdiffweb/templates/admin_users.html:211
 msgid "Is administrator"
 msgstr "Администратор"
 
-#: rdiffweb/templates/admin_users.html:170
+#: rdiffweb/templates/admin_users.html:169
 #, python-format
 msgid "Edit user %(name)s"
 msgstr "Редактировать пользователя %(name)s"
 
-#: rdiffweb/templates/admin_users.html:171
+#: rdiffweb/templates/admin_users.html:170
 msgid "Save changes"
 msgstr "Сохранить изменения"
 
-#: rdiffweb/templates/admin_users.html:216
+#: rdiffweb/templates/admin_users.html:215
 msgid "You cannot remove your own admin rights."
 msgstr "Вы не можете лишить себя прав администратора."
 
-#: rdiffweb/templates/admin_users.html:231
+#: rdiffweb/templates/admin_users.html:230
 #, python-format
 msgid "Delete user %(name)s"
 msgstr "Удалить пользователя %(name)s"
 
-#: rdiffweb/templates/admin_users.html:234
+#: rdiffweb/templates/admin_users.html:233
 #, python-format
 msgid "Are you sure that you wish to delete user `%(username)s`?"
 msgstr "Вы действительно хотите удалить пользователя `%(username)s`?"
@@ -195,7 +203,7 @@ msgid "Browse folder"
 msgstr "Просмотреть директорию"
 
 #: rdiffweb/templates/browse.html:14 rdiffweb/templates/history.html:8
-#: rdiffweb/templates/locations.html:1 rdiffweb/templates/nav_bar.html:16
+#: rdiffweb/templates/locations.html:1 rdiffweb/templates/nav_bar.html:20
 msgid "Repositories"
 msgstr "Хранилища"
 
@@ -236,7 +244,7 @@ msgstr "Дата"
 msgid "Result"
 msgstr "Результат"
 
-#: rdiffweb/templates/history.html:53 rdiffweb/templates/locations.html:32
+#: rdiffweb/templates/history.html:53 rdiffweb/templates/locations.html:34
 msgid "In progress"
 msgstr "В процессе"
 
@@ -244,7 +252,7 @@ msgstr "В процессе"
 msgid "Success"
 msgstr "Успешно"
 
-#: rdiffweb/templates/history.html:58 rdiffweb/templates/locations.html:31
+#: rdiffweb/templates/history.html:58 rdiffweb/templates/locations.html:33
 msgid "Error"
 msgstr "Ошибка"
 
@@ -252,7 +260,7 @@ msgstr "Ошибка"
 msgid "You don't have any repositories configured."
 msgstr "Вы не имеете настроенных хранилищ."
 
-#: rdiffweb/templates/locations.html:33
+#: rdiffweb/templates/locations.html:35
 msgid "Last backup: "
 msgstr "Последняя резервная копия: "
 
@@ -261,18 +269,18 @@ msgstr "Последняя резервная копия: "
 msgid "Sign in"
 msgstr "Войти"
 
-#: rdiffweb/templates/login.html:7 rdiffweb/templates/nav_bar.html:10
+#: rdiffweb/templates/login.html:7 rdiffweb/templates/nav_bar.html:14
 #: rdiffweb/templates/page_start.html:4
 msgid "rdiffweb"
 msgstr "rdiffweb"
 
 #: rdiffweb/templates/login.html:9
 msgid ""
-"Originally developed by Josh Nisly, rdiffweb is a web interface for browsing "
-"and restoring from rdiff-backup repositories."
+"Originally developed by Josh Nisly, rdiffweb is a web interface for "
+"browsing and restoring from rdiff-backup repositories."
 msgstr ""
-"Оригинальная разработка Josh Nisly, rdiffweb это web-интерфейс для просмотра "
-"и восстановления rdiff-backup хранилищ."
+"Оригинальная разработка Josh Nisly, rdiffweb это web-интерфейс для "
+"просмотра и восстановления rdiff-backup хранилищ."
 
 #: rdiffweb/templates/login.html:13
 #, python-format
@@ -299,15 +307,15 @@ msgstr "Внимание!"
 msgid "Error!"
 msgstr "Ошибка!"
 
-#: rdiffweb/templates/nav_bar.html:6
+#: rdiffweb/templates/nav_bar.html:8
 msgid "Toggle navigation"
 msgstr "Переключить навигацию"
 
-#: rdiffweb/templates/nav_bar.html:17 rdiffweb/templates/status.html:1
+#: rdiffweb/templates/nav_bar.html:21 rdiffweb/templates/status.html:1
 msgid "Status"
 msgstr "Статус"
 
-#: rdiffweb/templates/nav_bar.html:18
+#: rdiffweb/templates/nav_bar.html:22
 msgid "Preferences"
 msgstr "Настройки"
 
@@ -350,11 +358,13 @@ msgstr "Обновить"
 
 #: rdiffweb/templates/prefs.html:48
 msgid ""
-"Refresh the list of repositories associated to your account. If you recently "
-"add a new repository and it doesn't show, you may try to refresh the list."
+"Refresh the list of repositories associated to your account. If you "
+"recently add a new repository and it doesn't show, you may try to refresh"
+" the list."
 msgstr ""
-"Обновить список хранилищ связанных с вашим аккаунтом. Если вы, в последнее время, "
-"добавили новое хранилище, но оно не отображается, вы можете попробовать обновить список."
+"Обновить список хранилищ связанных с вашим аккаунтом. Если вы, в "
+"последнее время, добавили новое хранилище, но оно не отображается, вы "
+"можете попробовать обновить список."
 
 #: rdiffweb/templates/setup.html:7
 msgid "Setup rdiffweb"
@@ -382,11 +392,11 @@ msgstr "пароль: "
 
 #: rdiffweb/templates/setup.html:28
 msgid ""
-"rdiffweb has not been configured, so we need to do that before logging in. "
-"Configuration will only take a few minutes."
+"rdiffweb has not been configured, so we need to do that before logging "
+"in. Configuration will only take a few minutes."
 msgstr ""
-"rdiffweb не был настроен, так что мы должны сделать это перед входом в систему. "
-"Настройка займет всего несколько минут."
+"rdiffweb не был настроен, так что мы должны сделать это перед входом в "
+"систему. Настройка займет всего несколько минут."
 
 #: rdiffweb/templates/setup.html:32
 msgid "Continue..."
