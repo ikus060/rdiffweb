@@ -1,0 +1,11 @@
+<ul class="nav nav-tabs nav-justified" role="navigation">
+    <li {% if dir_entries %}class="active"{% endif%}>
+        <a href="{{ url_for_browse(repo_path, path or "") }}"><i class="icon-docs"></i> {% trans %}Files{% endtrans %}</a>
+    </li>
+    <li {% if restore_dates %}class="active"{% endif %}>
+        <a href="{{ url_for_browse(repo_path, path or "", restore=True) }}"><i class="icon-file-archive"></i> {% trans %}Restore folder{% endtrans %}</a>
+    </li>
+    <li {% if history_entries %}class="active"{% endif %}>
+        <a href="{{ url_for_history(repo_path) }}"><i class="icon-history"></i> {% trans %}History{% endtrans %}</a>
+    </li>
+</ul>

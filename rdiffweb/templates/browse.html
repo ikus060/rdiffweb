@@ -2,13 +2,6 @@
 {% include 'nav_bar.html' %}
 <div class="container">
 	
-    <h2>{% if restore_dates %}
-    {% trans %}Restore folder{% endtrans %}
-    {% else %}
-    {% trans %}Browse folder{% endtrans %}
-    {% endif %}
-    </h2>
-
     <ol class="breadcrumb">
         <li>
             <a href="/">{% trans %}Repositories{% endtrans %}</a>
@@ -21,19 +14,9 @@
         </li>
         {% endfor %}
     </ol>
-
-    <ul class="nav navbar nav-pills" role="navigation">
-        <li {% if not restore_dates %}class="active"{% endif%}>
-            <a href="{{ url_for_browse(repo_path, path) }}">{% trans %}Browse folder{% endtrans %}</a>
-        </li>
-        <li {% if restore_dates %}class="active"{% endif %}>
-            <a href="{{ url_for_browse(repo_path, path, restore=True) }}">{% trans %}Restore folder{% endtrans %}</a>
-        </li>
-        <li>
-            <a href="{{ url_for_history(repo_path) }}">{% trans %}View history{% endtrans %}</a>
-        </li>
-    </ul>
-
+	
+	{% include 'repo_nav_bar.html' %}
+    
     {% include 'message.html' %}
 
     {% if not restore_dates %}
@@ -105,7 +88,7 @@
         </tbody>
     </table>
     {% else %}
-    <div class="panel panel-default">
+    <div class="panel panel-default spacer">
         <div class="panel-heading clearfix">
             <div class="panel-title pull-left">
             	{% trans count=restore_dates|length %}Revisions ({{ count }}){% endtrans %}

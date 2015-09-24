@@ -1,9 +1,8 @@
 {% include 'page_start.html' %}
 {% include 'nav_bar.html' %}
 <div class="container">
-    <h2>{% trans %}Backup history{% endtrans %}</h2>
     
-	<ol class="breadcrumb">
+    <ol class="breadcrumb">
         <li>
             <a href="/">{% trans %}Repositories{% endtrans %}</a>
         </li>
@@ -11,18 +10,8 @@
             <a href="{{ url_for_browse(repo_path) }}">{{ repo_name }}</a>
         </li>
     </ol>
-
-    <ul class="nav navbar nav-pills" role="navigation">
-        <li>
-            <a href="{{ url_for_browse(repo_path) }}">{% trans %}Browse folder{% endtrans %}</a>
-        </li>
-        <li>
-            <a href="{{ url_for_browse(repo_path, restore=True) }}">{% trans %}Restore folder{% endtrans %}</a>
-        </li>
-        <li class="active">
-            <a href="{{ url_for_history(repo_path) }}">{% trans %}View history{% endtrans %}</a>
-        </li>
-    </ul>
+    
+    {% include 'repo_nav_bar.html' %}
     
     {% include 'message.html' %}
     
