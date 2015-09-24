@@ -1,0 +1,42 @@
+{% include 'page_start.html' %}
+{% include 'nav_bar.html' %}
+<div class="container">
+    
+    {% include 'repo_breadcrumb.html' %}
+    
+    {% include 'repo_nav_bar.html' %}
+
+    <div class="spacer"/>
+    
+    {% include 'message.html' %}
+    
+    {% import 'macros.html' as macros %}	
+	
+	<!-- Panel to set user info. -->
+	{% call macros.panel(title=_("Character encoding"), class='primary') %}
+	<div class="panel-body">
+	  <form action="#" method="post" role="form" class="clearfix" >
+	    <div class="form-group">
+	        <label for="encoding" class="control-label">
+	            {% trans %}Encoding{% endtrans %}</label>
+	        <select class="form-control" name="encoding" id="encoding">
+	          {% for encoding in supported_encodings %}
+              <option {% if current_encoding == encoding %}selected="selected"{% endif%} value="{{ encoding }}">
+                {{ encoding }}
+              </option>
+              {% endfor %}
+		    </select>
+	    </div>
+	    <span class="help-block">
+	        {% trans %}This value may need to be changed if your files are not displayed with the right characters. This is very common for non-english speaker.{% endtrans %}
+	    </span>
+	    <input type="hidden" name="action" value="set_encoding" />
+	    <div>
+	        <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
+	    </div>
+	  </form>
+	</div>
+	{% endcall %}
+
+</div>
+{% include 'page_end.html' %}

@@ -2,14 +2,7 @@
 {% include 'nav_bar.html' %}
 <div class="container">
     
-    <ol class="breadcrumb">
-        <li>
-            <a href="/">{% trans %}Repositories{% endtrans %}</a>
-        </li>
-        <li>
-            <a href="{{ url_for_browse(repo_path) }}">{{ repo_name }}</a>
-        </li>
-    </ol>
+    {% include 'repo_breadcrumb.html' %}
     
     {% include 'repo_nav_bar.html' %}
     

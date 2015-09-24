@@ -139,6 +139,16 @@ def url_for_restore(repo, path, date, usetar=False):
     return ''.join(url)
 
 
+def url_for_settings(repo):
+    url = []
+    url.append("/settings/")
+    if repo:
+        repo = repo.rstrip(b"/")
+        url.append(rdw_helpers.quote_url(repo))
+        url.append("/")
+    return ''.join(url)
+
+
 def url_for_status_entry(date, repo=None):
     assert isinstance(date, rdw_helpers.rdwTime)
     url = []
@@ -194,6 +204,7 @@ class TemplateManager():
         self.jinja_env.globals['url_for_browse'] = url_for_browse
         self.jinja_env.globals['url_for_history'] = url_for_history
         self.jinja_env.globals['url_for_restore'] = url_for_restore
+        self.jinja_env.globals['url_for_settings'] = url_for_settings
         self.jinja_env.globals['url_for_status_entry'] = url_for_status_entry
         self.jinja_env.globals['load_translation'] = _load_translation
 

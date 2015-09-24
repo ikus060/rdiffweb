@@ -25,6 +25,7 @@ import os
 import re
 
 import rdw_helpers
+from collections import OrderedDict
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -130,9 +131,9 @@ class Configuration(object):
         return items
 
     def get_config_str(self, key, default=""):
-
-        """A convenience method which coerces the key to an str."""
-
+        """
+        A convenience method which coerces the key to an str.
+        """
         try:
             return rdw_helpers.encode_s(self.get_config(key, default))
         except:
@@ -146,6 +147,11 @@ class Configuration(object):
         if not self._filename:
             raise SettingsError("Error reading configuration. Filename not define.")
 
+        if not os.access(self._filename, os.R_OK) or not os.path.isfile(self._filename):
+            logger.info("configuration file [%s] doesn't exists" % (self._filename))
+            self._cache = OrderedDict()
+            return False
+
         # Check if parsing the config file is required.
         modtime = os.path.getmtime(self._filename)
         if self._cache and not force and modtime == self._lastmtime:
@@ -157,7 +163,7 @@ class Configuration(object):
             raise SettingsError("Error reading %s, make sure it's readable."
                                 % (self._filename))
 
-        new_cache = dict()
+        new_cache = OrderedDict()
 
         # Open settings file as utf-8
         lines = codecs.open(self._filename, "r",
@@ -181,83 +187,27 @@ class Configuration(object):
         self._lastmtime = modtime
         return True
 
-# Unit Tests #
+    def set_config(self, key, value):
+        """
+        Write to config file.
+        """
+        assert isinstance(key, unicode)
+        assert isinstance(value, unicode)
+        # Raise error if key contains equals(=)
+        if ('=' in key):
+            raise ValueError
+        # Read file if required
+        self._parse_if_needed()
+        # Update the cache
+        self._cache[key] = value
 
-import unittest
-
-
-class ConfigurationTest(unittest.TestCase):
-
-    """Unit tests for the get_config() function"""
-    goodConfigText = """ #This=is a comment
-    SpacesValue=is a setting with spaces
-    spaces setting=withspaces
-    CommentInValue=Value#this is a comment
-    NoValue=#This is a setting with no value
-    """
-    badConfigTexts = [
-        'This#doesnt have an equals', 'This=more=than one equals']
-    configFilePath = "/tmp/rdw_config.conf"
-
-    def writeGoodFile(self):
-        f = open(self.configFilePath, "w")
-        f.write(self.goodConfigText)
-        f.close()
-        self.config = Configuration(self.configFilePath)
-
-    def writeBadFile(self, badSettingNum):
-        self.writeGoodFile()
-        f = open(self.configFilePath, "w")
-        f.write(self.badConfigTexts[badSettingNum])
-        f.close()
-        self.config = Configuration(self.configFilePath)
-
-    def tearDown(self):
-        if (os.access(self.configFilePath, os.F_OK)):
-            os.remove(self.configFilePath)
-
-    def testBadParms(self):
-        self.writeGoodFile()
-        try:
-            self.config.get_config("setting=")
-        except ValueError:
-            pass
-        else:
-            assert(False)
-
-    def testSpacesInValue(self):
-        self.writeGoodFile()
-        assert(self.config.get_config("SpacesValue") == "is a setting with spaces")
-
-    def testSpacesInSetting(self):
-        self.writeGoodFile()
-        assert(self.config.get_config("spaces setting") == "withspaces")
-
-    def testCommentInValue(self):
-        self.writeGoodFile()
-        assert(self.config.get_config("CommentInValue") == "Value")
-
-    def testEmptyValue(self):
-        self.writeGoodFile()
-        assert(self.config.get_config("NoValue") == "")
-
-    def testCaseInsensitivity(self):
-        self.writeGoodFile()
-        assert(self.config.get_config("commentinvalue") == "Value")
-
-    def testMissingSetting(self):
-        self.writeGoodFile()
-        assert(self.config.get_config("SettingThatDoesntExist") == "")
-
-    def testBadFile(self):
-        self.writeBadFile(0)
-        try:
-            self.config.get_config("SpacesValue")
-        except SettingsError:
-            pass
-        else:
-            assert(False)
-
-        self.writeBadFile(1)
-        value = self.config.get_config("This")
-        assert(value == "more=than one equals")
+    def save(self):
+        """Write the configuration back to file."""
+        # Nothing read / nothing written.
+        if not self._cache:
+            return
+        # Start writting the file.
+        with codecs.open(self._filename, "w", encoding='utf-8', errors='replace') as f:
+            for key, value in self._cache.items():
+                f.write('%s=%s' % (key, value))
+                f.write('\n')

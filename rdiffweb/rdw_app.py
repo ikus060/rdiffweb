@@ -32,6 +32,7 @@ import page_status
 import page_prefs
 import page_login
 import page_logout
+import page_settings
 import rdw_plugin
 import rdw_config
 from rdiffweb import rdw_templating
@@ -70,6 +71,7 @@ class RdiffwebApp(page_locations.LocationsPage):
         self.status = page_status.StatusPage()
         self.admin = page_admin.AdminPage()
         self.prefs = page_prefs.PreferencesPage()
+        self.settings = page_settings.SettingsPage()
 
         # Activate every loaded plugin
         self.plugins.run(lambda x: x.activate_with_app(self))

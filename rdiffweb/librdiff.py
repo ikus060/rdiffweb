@@ -31,6 +31,7 @@ import rdw_helpers
 
 from i18n import ugettext as _
 from rdiffweb.rdw_helpers import decode_s
+from rdiffweb.rdw_config import Configuration
 
 try:
     import subprocess32 as subprocess  # @UnresolvedImport @UnusedImport
@@ -540,6 +541,12 @@ class RdiffRepo:
                 self._file_statistics_data[entry.date] = entry
         return self._file_statistics_data
 
+    def get_encoding(self):
+        """
+        Return the interface encoding value.
+        """
+        return self.encoding
+
     def get_file_statistic(self, date):
         """Return the file statistic for the given date.
         Try to search for the given file statistic and return an object to
@@ -616,22 +623,10 @@ class RdiffRepo:
         if not os.access(hint_file, os.F_OK) or os.path.isdir(hint_file):
             return
 
+        # Read rdiffweb file asconfiguration file.
         logger.debug("reading hints for [%s]" % self._decode(self.repo_root))
-        with open(hint_file, "r") as f:
-            for line in f:
-                line = line.rstrip(b"\r\n")
-                parts = line.partition(b'=')
-                if not len(parts) == 3:
-                    logger.warn("invalid hints [%s]" % self._decode(line))
-                    continue
-                # Sets the encoding name (if valid)
-                if b"encoding" == parts[0]:
-                    try:
-                        b"".encode(parts[2])
-                        self.encoding = parts[2]
-                    except LookupError:
-                        logger.warn("wrong encoding name [%s]" %
-                                    self._decode(parts[2]))
+        config = Configuration(hint_file)
+        self.encoding = config.get_config('encoding', self.encoding)
 
     @property
     def _session_statistics(self):
@@ -644,6 +639,19 @@ class RdiffRepo:
                 entry = SessionStatisticsEntry(self.root_path, x)
                 self._session_statistics_data[entry.date] = entry
         return self._session_statistics_data
+
+    def set_encoding(self, name):
+        """
+        Change the encoding of the repository.
+        """
+        # Need to update the 'rdiffweb' file
+        hint_file = os.path.join(self.data_path, b"rdiffweb")
+        logger.debug("writing hints for [%s]" % self._decode(self.repo_root))
+        config = Configuration(hint_file)
+        config.set_config('encoding', name)
+        config.save()
+        # Also update current encoding.
+        self.encoding = name
 
     def unquote(self, name):
         """Remove quote from the given name."""
@@ -659,6 +667,9 @@ class RdiffRepo:
                 return match.group
         # Remove quote using regex
         return re.sub(b";[0-9]{3}", unquoted_char, name, re.S)
+
+    def __unicode__(self):
+        return self._decode(self.repo_root)
 
 
 class RdiffPath:
