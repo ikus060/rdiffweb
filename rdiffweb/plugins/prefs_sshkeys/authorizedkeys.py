@@ -103,7 +103,7 @@ def add(filename, key):
     Add a key to an `authorized_keys` file.
     """
     # Open the file
-    with open(filename, 'r+') as f:
+    with open(filename, 'rw+') as f:
         # Check the file size.
         f.seek(0, 2)
         pos = f.tell()
@@ -198,7 +198,7 @@ def read(filename):
     See http://www.openbsd.org/cgi-bin/man.cgi/OpenBSD-current/man8/sshd.8?query=sshd
     """
     # Open the file
-    with open(filename) as f:
+    with open(filename, "r+") as f:
 
         # Read file line by line.
         keys = list()
@@ -224,7 +224,7 @@ def remove(filename, keylineno):
     The `keylineno` represent the line number to be removed.
     """
     # Copy file to temp
-    with open(filename, "r") as f:
+    with open(filename, "r+") as f:
         lines = f.readlines()
     with open(filename, "w") as f:
         for lineno, line in enumerate(lines, start=1):
