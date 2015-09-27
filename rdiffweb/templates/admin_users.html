@@ -7,10 +7,10 @@
 <div class="container">
 
 	{% set admin_nav_active="users" %}
-	{% include 'admin_nav_bar.html' %}    
+	{% include 'admin_nav_bar.html' %}  
+	
+	<div class="spacer"/>  
     
-    <h2>{{ title }}</h2>
-
     {% include 'message.html' %}
 
 	{% import 'macros.html' as macros with context %}

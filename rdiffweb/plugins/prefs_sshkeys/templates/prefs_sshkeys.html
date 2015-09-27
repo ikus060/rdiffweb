@@ -17,10 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #}
 
-<h3>{% trans %}My SSH keys{% endtrans %}</h3>
-<p class="light">
-    {% trans %}SSH keys allow you to establish a secure connection between your computer and this backup system.{%endtrans%}
-</p>
+<div class="spacer"/>
 
 {% include 'message.html' %}
 
@@ -45,9 +42,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <!-- /.panel-heading -->
     
     <div class="panel-body">
-        <span class="light" itemprop="description">
-            {% trans %}This is a list of SSH keys associated with your account. Remove any keys that you do not recognize.{% endtrans %}
-        </span>
+        <p class="light">
+            {% trans %}SSH keys allow you to establish a secure connection between your computer and this backup system. This is a list of SSH keys associated with your account. Remove any keys that you do not recognize.{% endtrans %}
+        </p>
     </div>
     
     <!-- List of keys-->
