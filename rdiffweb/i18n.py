@@ -191,7 +191,7 @@ def load_translation(domain="messages"):
         langs.append(default)
 
     # Search for an appropriate translation.
-    _logger.debug("loading translation [%s] from %s for %s" % (domain, localesdirs, langs))
+    _logger.log(1, "loading translation [%s] from %s for %s" % (domain, localesdirs, langs))
     return _translation(domain, localesdirs, langs)
 
 

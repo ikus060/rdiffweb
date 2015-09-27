@@ -624,7 +624,6 @@ class RdiffRepo:
             return
 
         # Read rdiffweb file asconfiguration file.
-        logger.debug("reading hints for [%s]" % self._decode(self.repo_root))
         config = Configuration(hint_file)
         self.encoding = config.get_config('encoding', self.encoding)
 
