@@ -25,6 +25,7 @@ import re
 import os
 
 from collections import namedtuple, OrderedDict
+import stat
 
 """
 Created on May 12, 2015
@@ -102,8 +103,22 @@ def add(filename, key):
     """
     Add a key to an `authorized_keys` file.
     """
-    # Open the file
-    with open(filename, 'rw+') as f:
+    # Create directory if not exists.
+    directory = os.path.dirname(filename)
+    if not os.path.exists(directory):
+        try:
+            os.mkdir(directory)
+            os.chmod(directory, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
+        except:
+            # Swallow any error.
+            pass
+    # Create file is missing.
+    if not os.path.isfile(filename):
+        with open(filename, 'w+'):
+            os.utime(filename, None)
+        os.chmod(filename, stat.S_IRUSR | stat.S_IWUSR)
+    # Add key to file.
+    with open(filename, "rw+") as f:
         # Check the file size.
         f.seek(0, 2)
         pos = f.tell()
@@ -197,8 +212,10 @@ def read(filename):
     See https://github.com/grawity/code/blob/master/lib/python/nullroute/authorized_keys.py
     See http://www.openbsd.org/cgi-bin/man.cgi/OpenBSD-current/man8/sshd.8?query=sshd
     """
+    if not os.path.isfile(filename):
+        return []
     # Open the file
-    with open(filename, "r+") as f:
+    with open(filename, "r") as f:
 
         # Read file line by line.
         keys = list()
@@ -224,7 +241,7 @@ def remove(filename, keylineno):
     The `keylineno` represent the line number to be removed.
     """
     # Copy file to temp
-    with open(filename, "r+") as f:
+    with open(filename, "r") as f:
         lines = f.readlines()
     with open(filename, "w") as f:
         for lineno, line in enumerate(lines, start=1):
