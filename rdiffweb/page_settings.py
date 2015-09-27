@@ -28,6 +28,7 @@ import page_main
 from rdiffweb import rdw_helpers
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import decode_s, unquote_url
+from cherrypy._cperror import HTTPRedirect
 
 # Define the logger
 _logger = logging.getLogger(__name__)
@@ -67,13 +68,18 @@ class SettingsPage(page_main.MainPage):
         action = kwargs.get('action')
         if action:
             try:
-                if action == "set_encoding":
+                if action == "delete":
+                    params.update(self._handle_delete(repo_obj, **kwargs))
+                elif action == "set_encoding":
                     params.update(self._handle_set_encoding(repo_obj, **kwargs))
                 else:
                     _logger.info("unknown action: %s", action)
                     raise cherrypy.NotFound("Unknown action")
             except ValueError as e:
                 params['error'] = unicode(e)
+            except HTTPRedirect as e:
+                # Re-raise HTTPRedirect exception.
+                raise e
             except Exception as e:
                 _logger.warn("unknown error processing action", exc_info=True)
                 params['error'] = _("Unknown error")
@@ -125,6 +131,27 @@ class SettingsPage(page_main.MainPage):
                 "shift_jisx0213", "utf_32", "utf_32_be", "utf_32_le",
                 "utf_16", "utf_16_be", "utf_16_le", "utf_7", "utf_8",
                 "utf_8_sig"]
+
+    def _handle_delete(self, repo_obj, **kwargs):
+        """
+        Delete the repository.
+        """
+        # Validate the name
+        confirm_name = kwargs.get('confirm_name')
+        if confirm_name != repo_obj.display_name:
+            raise ValueError(_("confirmation doesn't matches"))
+
+        # Update the repository encoding
+        _logger.info("deleting repository [%s]", repo_obj)
+        repo_obj.delete()
+
+        # Refresh repository list
+        username = self.app.currentuser.username
+        repos = self.app.userdb.get_repos(username)
+        repos.remove(b"/" + repo_obj.path)
+        self.app.userdb.set_repos(username, repos)
+
+        raise HTTPRedirect("/")
 
     def _handle_set_encoding(self, repo_obj, **kwargs):
         """

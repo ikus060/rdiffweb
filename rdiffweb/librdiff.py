@@ -505,6 +505,11 @@ class RdiffRepo:
         # Get entries from increment data.
         return os.listdir(self.data_path)
 
+    def delete(self):
+        """Delete the repository permanently."""
+        # Not sure if error should be ignored.
+        shutil.rmtree(self.repo_root)
+
     @property
     def display_name(self):
         """Return the most human representation of the repository name."""
