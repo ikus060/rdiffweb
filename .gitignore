@@ -34,3 +34,5 @@ pip-log.txt
 /rdwtest.db
 /runtest.py
 .pydevproject
+/rdw.db
+/testrdw.conf

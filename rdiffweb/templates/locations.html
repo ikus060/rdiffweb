@@ -21,11 +21,11 @@
 	            {% endif %}>
 			<span class="h4">
 				{% if repo.failed %}
-		            <i class="icon-box"></i>
+		            <i class="icon-cube"></i>
 		            <span itemprop="name">{{ repo.name }}</span>
 	            {% else %}
 		            <a itemprop="item" href="{{ url_for_browse(repo.path) }}">
-	                <i class="icon-box"></i>
+	                <i class="icon-cube"></i>
 	                <span itemprop="name">{{ repo.name }}</span>
 		            </a>
 	            {% endif %}

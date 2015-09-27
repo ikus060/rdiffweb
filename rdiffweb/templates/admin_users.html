@@ -59,9 +59,10 @@
                     {% trans %}Users{% endtrans %} ({{ users | length }})
                 </div>
                 <div class="btn-group pull-right">
-                    <button type="button" class="btn btn-primary btn-xs"
+                    <button type="button" class="btn btn-success btn-xs"
                             data-toggle="modal"
-                            data-target="#add-user-modal">{% trans %}Add user{% endtrans %}</button>
+                            data-target="#add-user-modal"><i class="icon-plus"></i>
+                        {% trans %}Add user{% endtrans %}</button>
                 </div>
             </div>
             <ul class="list-group">
