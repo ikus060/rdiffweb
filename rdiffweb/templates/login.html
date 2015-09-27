@@ -7,7 +7,7 @@
             <h1>{% if header_name %}{{ header_name }}{% else %}rdiffweb{% endif %}</h1>
             <p class='light'>
                 {% if welcome_msg %}
-                    {{ welcome_msg }}
+                    {% autoescape false %}{{ welcome_msg }}{% endautoescape %}
                 {% else %}  
             	    {% trans %}Originally developed by Josh Nisly, rdiffweb is a web interface for browsing and restoring from rdiff-backup repositories.{% endtrans %}
             	    <a href="http://www.patrikdufresne.com/en/rdiffweb/">rdiffweb</a>
