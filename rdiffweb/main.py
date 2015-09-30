@@ -154,12 +154,15 @@ def setup_logging(log_file, log_access_file, debug):
                     request = cherrypy.serving.request
                     remote = request.remote
                     record.ip = remote.name or remote.ip
+                    # If the request was forware by a reverse proxy
+                    if 'X-Forwarded-For' in request.headers:
+                        record.ip = request.headers['X-Forwarded-For']
             except:
-                record.ip = "unknown"
+                record.ip = "none"
             try:
                 record.user = cherrypy.session['username']  # @UndefinedVariable
             except:
-                record.user = "unknown"
+                record.user = "none"
             return True
 
     logformat = '[%(asctime)s][%(levelname)-7s][%(ip)s][%(user)s][%(threadName)s][%(name)s] %(message)s'
