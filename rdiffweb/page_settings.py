@@ -159,7 +159,7 @@ class SettingsPage(page_main.MainPage):
         """
         # Validate the encoding value
         new_encoding = kwargs.get('encoding')
-        new_encoding = unicode(encodings.normalize_encoding(new_encoding))
+        new_encoding = unicode(encodings.normalize_encoding(new_encoding)).lower()
         if new_encoding not in self._get_encodings():
             raise ValueError(_("invalid encoding value"))
 
