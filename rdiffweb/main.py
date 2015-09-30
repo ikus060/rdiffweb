@@ -154,14 +154,15 @@ def setup_logging(log_file, log_access_file, debug):
                     request = cherrypy.serving.request
                     remote = request.remote
                     record.ip = remote.name or remote.ip
-                if hasattr(cherrypy, 'session'):
-                    record.user = cherrypy.session['username']
             except:
                 record.ip = "unknown"
+            try:
+                record.user = cherrypy.session['username']  # @UndefinedVariable
+            except:
                 record.user = "unknown"
             return True
 
-    logformat = '[%(asctime)s][%(levelname)-7s][%(threadName)s][%(name)s] %(message)s'
+    logformat = '[%(asctime)s][%(levelname)-7s][%(ip)s][%(user)s][%(threadName)s][%(name)s] %(message)s'
     level = logging.DEBUG if debug else logging.INFO
     # Configure default log file.
     if log_file:
