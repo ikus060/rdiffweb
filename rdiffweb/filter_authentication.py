@@ -47,7 +47,7 @@ def authform():
     redirect = "?redirect=" + quote_url(redirect)
 
     # write login page
-    logger.info("user not logged in, redirect to /login/")
+    logger.debug("user not logged in, redirect to /login/")
     raise cherrypy.HTTPRedirect("/login/" + redirect)
 
 cherrypy.tools.authform = cherrypy._cptools.HandlerTool(authform)
