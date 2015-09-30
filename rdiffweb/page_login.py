@@ -80,6 +80,7 @@ class LoginPage(page_main.MainPage):
             if self.app.userdb.are_valid_credentials(username, password):
                 cherrypy.session['username'] = username  # @UndefinedVariable
                 return False
+            logger.warn("invalid username or password")
             return _("Invalid username or password.")
         except:
             logger.exception("fail to validate user credential.")
