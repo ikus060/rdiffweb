@@ -594,7 +594,7 @@ msgid ""
 "This value may need to be changed if your files are not displayed with "
 "the right characters. This is very common for non-english speaker."
 msgstr ""
-"Cette valeur peut être modifié si vos fichiers ne sont pas affichés avec "
+"Cette valeur peut être modifiée si vos fichiers ne sont pas affichés avec "
 "les bons caractères. Ceci est très fréquent pour les non-anglophones."
 
 #: rdiffweb/templates/settings.html:42
@@ -720,4 +720,3 @@ msgstr "Taille de la sauvegarde: "
 #: rdiffweb/templates/status.html:89
 msgid "The following repositories contain errors: "
 msgstr "Les dépôts suivants contiennent des erreurs: "
-
