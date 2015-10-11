@@ -39,7 +39,7 @@ class rdiffPage:
         '''Takes a path relative to the user's root dir and validates that it
         is valid and within the user's root'''
         assert isinstance(path_b, str)
-        path_b = path_b.strip(b"/")
+        path_b = path_b.strip(b"/")+b"/"
 
         # NOTE: a blank path is allowed, since the user root directory might be
         # a repository.
@@ -52,7 +52,7 @@ class rdiffPage:
 
         # Check if any of the repos matches the given path.
         user_repos_matches = filter(
-            lambda x: path_b.startswith(encode_s(x).strip(b"/")),
+            lambda x: path_b.startswith(encode_s(x).strip(b"/")+b"/"),
             user_repos)
         if not user_repos_matches:
             # No repo matches
