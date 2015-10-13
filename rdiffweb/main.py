@@ -188,7 +188,7 @@ def start():
     autoReload = False
     log_file = b""
     log_access_file = b""
-    configfile = False
+    configfile = b'/etc/rdiffweb/rdw.conf'
 
     opts, extraparams = getopt.getopt(sys.argv[1:],
                                       'vdrf:',

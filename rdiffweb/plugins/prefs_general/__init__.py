@@ -27,6 +27,7 @@ from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPreferencesPanelProvider
 from rdiffweb.rdw_helpers import encode_s
 from rdiffweb import rdw_spider_repos
+from rdiffweb.core import RdiffError
 
 """
 Created on May 16, 2015
@@ -62,20 +63,19 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         if 'confirm' not in kwargs:
             raise ValueError(_("confirmation password is missing"))
 
-        # Password length is validated by userdb.
-
-        # Check if current database support it.
-        if not self.app.userdb.is_modifiable():
-            return {'error': _("Password changes is not supported.")}
-
         # Check if confirmation is valid.
         if kwargs['new'] != kwargs['confirm']:
             return {'error': _("The new password and its confirmation does not matches.")}
 
+        # Check if current database support it.
+        user = self.app.currentuser.username
+        store = self.app.userdb.find_user_store(user)
+        if not store or not store.supports('set_password'):
+            return {'error': _("Password changes is not supported.")}
+
         # Update user password
-        username = self.app.currentuser.username
-        _logger.info("updating user [%s] password", username)
-        self.app.userdb.set_password(username, kwargs['current'], kwargs['new'])
+        _logger.info("updating user [%s] password", user)
+        self.app.userdb.set_password(user, kwargs['new'], old_password=kwargs['current'])
         return {'success': _("Password updated successfully.")}
 
     def _handle_set_profile_info(self, **kwargs):
@@ -86,6 +86,10 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         if 'email' not in kwargs:
             raise ValueError(_("email is undefined"))
 
+        # Check if email update is supported
+        if not self.app.userdb.supports('set_email'):
+            return {'error': _("Email update is not supported.")}
+
         # Parse the email value to extract a valid email. The following method
         # return an empty string if the email is not valid. This RFC also accept
         # local email address without '@'. So we add verification for '@'
@@ -93,11 +97,13 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
             raise ValueError(_("invalid email"))
 
         # Update the user's email
-        if self.app.currentuser:
-            username = self.app.currentuser.username
-            email = kwargs['email']
-            _logger.info("updating user [%s] email [%s]", username, email)
-            self.app.userdb.set_email(username, kwargs['email'])
+        if not self.app.currentuser:
+            raise RdiffError(_("invalid state"))
+
+        username = self.app.currentuser.username
+        email = kwargs['email']
+        _logger.info("updating user [%s] email [%s]", username, email)
+        self.app.userdb.set_email(username, kwargs['email'])
 
         return {'success': _("Profile updated successfully.")}
 
@@ -130,6 +136,8 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
                 params['error'] = _("Unknown error")
 
         params.update({
-            'email': self.app.currentuser.email
+            'email': self.app.currentuser.email,
+            'supports_set_email': self.app.userdb.supports('set_email'),
+            'supports_set_password': self.app.userdb.supports('set_password'),
         })
         return "prefs_general.html", params

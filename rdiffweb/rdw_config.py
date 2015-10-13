@@ -48,9 +48,9 @@ class SettingsError:
 
 class Configuration(object):
 
-    def __init__(self, filename="/etc/rdiffweb/rdw.conf"):
+    def __init__(self, filename=None):
         # Declare the cache variable used to store the configuration in memory.
-        self._cache = False
+        self._cache = OrderedDict()
         # Declare default location
         self._filename = filename
         # Declare modification time
@@ -145,16 +145,15 @@ class Configuration(object):
         may called this method with force=True to force the configuration to be
         read."""
         if not self._filename:
-            raise SettingsError("Error reading configuration. Filename not define.")
+            return False
 
         if not os.access(self._filename, os.R_OK) or not os.path.isfile(self._filename):
             logger.info("configuration file [%s] doesn't exists" % (self._filename))
-            self._cache = OrderedDict()
             return False
 
         # Check if parsing the config file is required.
         modtime = os.path.getmtime(self._filename)
-        if self._cache and not force and modtime == self._lastmtime:
+        if not force and modtime == self._lastmtime:
             return False
 
         # Read configuration file.
@@ -199,7 +198,7 @@ class Configuration(object):
         # Read file if required
         self._parse_if_needed()
         # Update the cache
-        self._cache[key] = value
+        self._cache[key.lower().strip()] = value
 
     def save(self):
         """Write the configuration back to file."""

@@ -20,12 +20,12 @@ from __future__ import unicode_literals
 
 import unittest
 import pkg_resources
-
-import authorizedkeys
 import shutil
 import tempfile
 import os
 from collections import OrderedDict
+
+from rdiffweb.plugins.prefs_sshkeys import authorizedkeys
 
 """
 Created on May 11, 2015

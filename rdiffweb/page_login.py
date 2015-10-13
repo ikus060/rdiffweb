@@ -77,7 +77,8 @@ class LoginPage(page_main.MainPage):
         Check credential using local database.
         """
         try:
-            if self.app.userdb.are_valid_credentials(username, password):
+            username = self.app.userdb.login(username, password)
+            if username:
                 cherrypy.session['username'] = username  # @UndefinedVariable
                 return False
             logger.warn("invalid username or password")

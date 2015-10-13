@@ -18,7 +18,6 @@
 
 from __future__ import unicode_literals
 
-import cherrypy
 import logging
 import os
 import pkg_resources
@@ -91,10 +90,12 @@ class PluginManager():
 
         # Define categories
         self.manager.setCategoriesFilter({
-            IUserDBPlugin.CATEGORY: IUserDBPlugin,
+            IDatabase.CATEGORY: IDatabase,
             IDeamonPlugin.CATEGORY: IDeamonPlugin,
             ILocationsPagePlugin.CATEGORY: ILocationsPagePlugin,
+            IPasswordStore.CATEGORY: IPasswordStore,
             IPreferencesPanelProvider.CATEGORY: IPreferencesPanelProvider,
+            IUserChangeListener.CATEGORY: IUserChangeListener,
         })
 
         # Set filter.
@@ -183,39 +184,10 @@ class IRdiffwebPlugin(IPlugin):
                      self.__class__.__name__)
         return IPlugin.activate(self)
 
-    def activate_with_app(self, app):
-        """
-        This method is called by the RdiffwebApp to setup the plugin.
-        """
-        self._app = app
-        try:
-            self.activate()
-        finally:
-            self._app = None
-
     def deactivate(self):
         logger.debug("deactivate plugin object [%s]",
                      self.__class__.__name__)
         return IPlugin.deactivate(self)
-
-    def __get_app(self):
-        """
-        Utility method to access the application. (a.k.a. RdiffwebApp)
-
-        Raise a ValueError if the application is not accessible.
-        """
-        # Get app from cherrypy context.
-        try:
-            app = cherrypy.request.app.root  # @UndefinedVariable
-        except:
-            app = None
-        # Fall back to use private _app reference.
-        if hasattr(self, "_app") and self._app is not None:
-            app = self._app
-        # Raise an error if the app is not available.
-        if app is None:
-            raise ValueError("app is not available")
-        return app
 
     def get_localesdir(self):
         """
@@ -240,14 +212,54 @@ class IRdiffwebPlugin(IPlugin):
             return templates_dir
         return None
 
-    app = property(fget=__get_app)
 
+class IDatabase(IRdiffwebPlugin):
+    """
+    Database plugins to allow alternative database implementation.
+    """
+    CATEGORY = "Database"
 
-class IUserDBPlugin(IRdiffwebPlugin):
-    """
-    Plugin used to provide user authentication and user's persistence.
-    """
-    CATEGORY = "UserDB"
+    def add_user(self, user):
+        """
+        Add a new username to this userdb.
+
+        Returns True, if a new account was created, False if user already
+        exists.
+        """
+
+    def delete_user(self, user):
+        """
+        Deletes the user account.
+
+        Returns True, if the account existed and was deleted, False otherwise.
+        """
+
+    def get_root_dir(self, user):
+        """Get user root directory."""
+
+    def get_repos(self, user):
+        """Get list of repos for the given `username`."""
+
+    def get_email(self, user):
+        """Return the user email."""
+
+    def set_info(self, user, user_root, is_admin):
+        """Sets the user information."""
+
+    def set_email(self, user, email):
+        """Sets the given user email."""
+
+    def set_repos(self, user, repoPaths):
+        """Sets the list of repos for the given user."""
+
+    def set_repo_maxage(self, user, repoPath, maxAge):
+        """Sets the max age for the given repo."""
+
+    def get_repo_maxage(self, user, repoPath):
+        """Return the max age of the given repo."""
+
+    def is_admin(self, user):
+        """Return True if the user is Admin."""
 
 
 class IDeamonPlugin(IRdiffwebPlugin):
@@ -268,6 +280,49 @@ class ILocationsPagePlugin(IRdiffwebPlugin):
         Called by the LocationsPage to add extra data to the page.
         """
         raise NotImplementedError("locations_update_params is not implemented")
+
+
+class IPasswordStore(IRdiffwebPlugin):
+    """
+    Plugin used to provide user authentication.
+
+    Implementations may omit implementing `delete_user` and `set_password`.
+    """
+    CATEGORY = "PasswordStore"
+
+    def are_valid_credentials(self, user, password):
+        """Checks if the password is valid for the user.
+
+        Returns `username`, if the correct user and password are specified.
+        Returns False, if the incorrect password was specified.
+        Returns None, if the user doesn't exist in this password store.
+
+        Note: Returning `False` is an active rejection of the login attempt.
+        Return None to let the authentication eventually fall through to
+        next store in a chain.
+        """
+        return None
+
+    def delete_user(self, user):
+        """
+        Deletes the user account.
+
+        Returns True, if the account existed and was deleted, False otherwise.
+        """
+        return False
+
+    def exists(self, user):
+        """Returns whether the user account exists."""
+        return False
+
+    def set_password(self, user, password, old_password=None):
+        """Sets the password for the user."""
+
+    def supports(self, operation):
+        """
+        Return true if the given operation is supported.
+        """
+        return False
 
 
 class IPreferencesPanelProvider(IRdiffwebPlugin):
@@ -306,3 +361,19 @@ class IPreferencesPanelProvider(IRdiffwebPlugin):
                     template = self.app.templates.get_template("page_prefs_photo.html")
                     params['template_content'] = template
         """
+
+
+class IUserChangeListener(IRdiffwebPlugin):
+    """
+    A plugin to receive user changes event.
+    """
+    CATEGORY = "UserChangeListener"
+
+    def user_created(self, user, password):
+        """New user (account) created."""
+
+    def user_password_changed(self, user, password):
+        """Password changed."""
+
+    def user_deleted(self, user):
+        """User and related account information have been deleted."""

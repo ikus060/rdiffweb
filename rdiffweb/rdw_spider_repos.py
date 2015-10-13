@@ -97,7 +97,7 @@ def find_repos_for_user(user, userdb):
 def find_repos_for_all_users(app):
     """Refresh all users repositories using the given `app`."""
     user_db = app.userdb
-    if not user_db.is_modifiable():
+    if not user_db.supports('set_repos'):
         return
 
     users = user_db.list()

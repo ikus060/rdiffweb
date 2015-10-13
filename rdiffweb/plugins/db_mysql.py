@@ -18,14 +18,14 @@
 
 from __future__ import unicode_literals
 
-from rdiffweb.rdw_plugin import IUserDBPlugin
+from rdiffweb.rdw_plugin import IPasswordStore
 import warnings
 
 """We do no length validation for incoming parameters, since truncated values will
 at worst lead to slightly confusing results, but no security risks"""
 
 
-class mysqlUserDB(IUserDBPlugin):
+class mysqlUserDB(IPasswordStore):
 
     def __init__(self, configFilePath=None):
         import MySQLdb
@@ -34,9 +34,6 @@ class mysqlUserDB(IUserDBPlugin):
         self.userRootCache = {}
         self._connect()
         self._updateToLatestFormat()
-
-    def is_modifiable(self):
-        return True
 
     def exists(self, username):
         results = self._executeQuery(
@@ -125,7 +122,11 @@ class mysqlUserDB(IUserDBPlugin):
         cursor = self.sqlConnection.cursor()
         cursor.executemany(query, repoPaths)
 
-    def set_password(self, username, old_password, password):
+    def set_password(self, username, password, old_password=None):
+        assert isinstance(username, unicode)
+        assert old_password is None or isinstance(old_password, unicode)
+        assert isinstance(password, unicode)
+
         if not password:
             raise ValueError("password can't be empty")
         if not self.exists(username):
@@ -148,7 +149,7 @@ class mysqlUserDB(IUserDBPlugin):
         assert len(results) == 1
         return int(results[0][0])
 
-    def is_admin(self, username):
+    def get_is_admin(self, username):
         return bool(self._getUserField(username, "IsAdmin"))
 
     def is_ldap(self):

@@ -22,39 +22,33 @@ import cherrypy
 import logging
 import os
 import pkg_resources
-
-import page_admin
-import page_browse
-import page_history
-import page_locations
-import page_restore
-import page_status
-import page_prefs
-import page_login
-import page_logout
-import page_settings
-import rdw_plugin
 import rdw_config
-from rdiffweb import rdw_templating
+import rdw_plugin
+import rdw_templating
+
+from user import UserManager
+from page_admin import AdminPage
+from page_browse import BrowsePage
+from page_history import HistoryPage
+from page_locations import LocationsPage
+from page_login import LoginPage
+from page_logout import LogoutPage
+from page_prefs import PreferencesPage
+from page_restore import RestorePage
+from page_settings import SettingsPage
+from page_status import StatusPage
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-class RdiffwebApp(page_locations.LocationsPage):
+class RdiffwebApp(LocationsPage):
     """This class represent the application context."""
 
-    def __init__(self, configfile):
+    def __init__(self, configfile=None):
 
         # Initialise the configuration
-        self.config = rdw_config.Configuration()
-        if configfile:
-            self.config.set_config_file(configfile)
-
-        # Define TEMP env
-        tempdir = self.config.get_config_str("TempDir", default="")
-        if tempdir:
-            os.environ["TMPDIR"] = tempdir
+        self.load_config(configfile)
 
         # Initialise the template enginge.
         self.templates = rdw_templating.TemplateManager()
@@ -63,71 +57,32 @@ class RdiffwebApp(page_locations.LocationsPage):
         self.plugins = rdw_plugin.PluginManager(self.config)
 
         # Setup pages.
-        self.login = page_login.LoginPage()
-        self.logout = page_logout.LogoutPage()
-        self.browse = page_browse.BrowsePage()
-        self.restore = page_restore.RestorePage()
-        self.history = page_history.HistoryPage()
-        self.status = page_status.StatusPage()
-        self.admin = page_admin.AdminPage()
-        self.prefs = page_prefs.PreferencesPage()
-        self.settings = page_settings.SettingsPage()
+        self.login = LoginPage(self)
+        self.logout = LogoutPage(self)
+        self.browse = BrowsePage(self)
+        self.restore = RestorePage(self)
+        self.history = HistoryPage(self)
+        self.status = StatusPage(self)
+        self.admin = AdminPage(self)
+        self.prefs = PreferencesPage(self)
+        self.settings = SettingsPage(self)
 
         # Activate every loaded plugin
-        self.plugins.run(lambda x: x.activate_with_app(self))
+        self.plugins.run(lambda x: self.activate_plugin(x))
 
+        # create user
+        self.userdb = UserManager(self)
+
+        # Init Component
+        LocationsPage.__init__(self, self)
+
+    def activate_plugin(self, plugin_obj):
+        """Activate the given plugin object."""
+        plugin_obj.app = self
+        plugin_obj.activate()
         # Add templates location to the templating engine.
-        self.plugins.run(lambda x:
-                         x.get_templatesdir() is None or
-                         self.templates.add_templatesdir(x.get_templatesdir()))
-
-    def __get_userdb(self):
-        """
-        Return reference to the user database. Create a new instance of user
-        db if it doesn't exists.
-        """
-
-        # Check if already exists.
-        if hasattr(self, "_userdb") and self._userdb:
-            return self._userdb
-
-        # Create a new instance of userdb.
-        self._userdb = self.__get_userdb_module()
-
-        # Check result. If the db is not created raise an error.
-        if not self._userdb:
-            raise ValueError("invalid userdb type. Re-configure rdiffweb.")
-        return self._userdb
-
-    userdb = property(fget=__get_userdb)
-
-    def __get_userdb_module(self):
-        """
-        Return a different implementation according to UserDB configuration.
-        """
-
-        # Get available plugins
-        try:
-            category = rdw_plugin.IUserDBPlugin.CATEGORY
-            plugins = self.plugins.get_plugins_of_category(category)
-        except:
-            logger.error('fail to load UserDB plugin', exc_info=True)
-            plugins = list()
-        if len(plugins) == 0:
-            raise ValueError("no UserDB plugins enabled, check your configuration")
-
-        # If UserDB is defined, use it as a hint.
-        userdb = self.config.get_config("UserDB")
-        if userdb:
-            # Find the plugin matching userdb
-            matches = filter(lambda plugin: plugin.name.lower() == userdb.lower(), plugins)
-            if len(matches) > 0:
-                return matches[0].plugin_object
-            else:
-                raise ValueError('UserDB value [%s] is invalid' % (userdb,))
-        else:
-            # Otherwise return the first plugins
-            return plugins[0].plugin_object
+        if plugin_obj.get_templatesdir():
+            self.templates.add_templatesdir(plugin_obj.get_templatesdir())
 
     def __get_currentuser(self):
         """
@@ -160,6 +115,15 @@ class RdiffwebApp(page_locations.LocationsPage):
         except:
             self._version = "DEV"
         return self._version
+
+    def load_config(self, configfile=None):
+        """Called during app creating to load the configuration from file."""
+        self.config = rdw_config.Configuration(configfile)
+
+        # Define TEMP env
+        tempdir = self.config.get_config_str("TempDir", default="")
+        if tempdir:
+            os.environ["TMPDIR"] = tempdir
 
 
 def _getter(field):

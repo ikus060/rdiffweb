@@ -112,3 +112,16 @@ NoValue=#This is a setting with no value
         self.config2 = Configuration(self.config_file_path)
         # Check value.
         self.assertEqual('new_value', self.config2.get_config('new_key'))
+
+    def test_set_config_uppercase(self):
+        self.write_good_file()
+        self.config.set_config('NewKey', 'new_value')
+        self.config.save()
+        # re-read the config file
+        self.config2 = Configuration(self.config_file_path)
+        # Check value.
+        self.assertEqual('new_value', self.config2.get_config('newkey'))
+
+if __name__ == "__main__":
+    # import sys;sys.argv = ['', 'Test.testName']
+    unittest.main()

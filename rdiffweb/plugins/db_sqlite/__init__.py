@@ -19,21 +19,25 @@
 from __future__ import unicode_literals
 
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_plugin import IUserDBPlugin
+from rdiffweb.rdw_plugin import IPasswordStore, IDatabase
 from rdiffweb.rdw_helpers import encode_s, decode_s
 from threading import RLock
+from rdiffweb.core import InvalidUserError
 
 """We do no length validation for incoming parameters, since truncated values
 will at worst lead to slightly confusing results, but no security risks"""
 
 
-class SQLiteUserDB(IUserDBPlugin):
+class SQLiteUserDB(IPasswordStore, IDatabase):
+
+    def _bool(self, val):
+        return str(val).lower() in ['true', '1']
 
     def activate(self):
         """
         Called by the plugin manager to setup the plugin.
         """
-        IUserDBPlugin.activate(self)
+        super(SQLiteUserDB, self).activate()
 
         # Declare a lock.
         self.create_tables_lock = RLock()
@@ -43,12 +47,6 @@ class SQLiteUserDB(IUserDBPlugin):
                                                    "/etc/rdiffweb/rdw.db")
         self._user_root_cache = {}
         self._create_or_update()
-
-    def is_modifiable(self):
-        """
-        Return true if the UserDB is modifiable.
-        """
-        return True
 
     def exists(self, username):
         """
@@ -68,9 +66,13 @@ class SQLiteUserDB(IUserDBPlugin):
         assert isinstance(password, unicode)
 
         results = self._execute_query(
-            "SELECT Username FROM users WHERE Username = ? AND Password = ?",
-            (username, self._hash_password(password)))
-        return len(results) == 1
+            "SELECT Password, Username FROM users WHERE Username = ?",
+            (username,))
+        if not len(results):
+            return None
+        if results[0][0] == self._hash_password(password):
+            return results[0][1]
+        return False
 
     def get_root_dir(self, username):
         """
@@ -88,9 +90,8 @@ class SQLiteUserDB(IUserDBPlugin):
         Get list of repos for the given `username`.
         """
         assert isinstance(username, unicode)
-
         if not self.exists(username):
-            return None
+            raise InvalidUserError(username)
         query = ("SELECT RepoPath FROM repos WHERE UserID = %d" %
                  self._get_user_id(username))
         repos = [
@@ -101,9 +102,6 @@ class SQLiteUserDB(IUserDBPlugin):
 
     def get_email(self, username):
         assert isinstance(username, unicode)
-
-        if not self.exists(username):
-            return None
         return self._get_user_field(username, "userEmail")
 
     def list(self):
@@ -119,9 +117,6 @@ class SQLiteUserDB(IUserDBPlugin):
         Add a new username to this userdb.
         """
         assert isinstance(username, unicode)
-
-        if self.exists(username):
-            raise ValueError(_("user '%s' already exists") % username)
         query = "INSERT INTO users (Username) values (?)"
         self._execute_query(query, (username,))
 
@@ -130,18 +125,21 @@ class SQLiteUserDB(IUserDBPlugin):
         Delete the given `username`.
         """
         assert isinstance(username, unicode)
-
+        # Check if user exists
         if not self.exists(username):
-            raise ValueError
-        self._delete_user_repos(username)
-        query = "DELETE FROM users WHERE Username = ?"
-        self._execute_query(query, (username,))
+            return False
+        # Delete user
+        self._execute_query("DELETE FROM repos WHERE UserID=%d" %
+                            self._get_user_id(username))
+        self._execute_query("DELETE FROM users WHERE Username = ?",
+                            (username,))
+        return True
 
     def set_info(self, username, user_root, is_admin):
         assert isinstance(username, unicode)
-
+        assert isinstance(user_root, unicode)
         if not self.exists(username):
-            raise ValueError
+            raise InvalidUserError(username)
         # Remove the user from the cache before
         # updating the database.
         self._user_root_cache.pop(username, None)
@@ -156,16 +154,12 @@ class SQLiteUserDB(IUserDBPlugin):
     def set_email(self, username, email):
         assert isinstance(username, unicode)
         assert isinstance(email, unicode)
-
-        if not self.exists(username):
-            raise ValueError
         self._set_user_field(username, 'UserEmail', email)
 
     def set_repos(self, username, repoPaths):
         assert isinstance(username, unicode)
-
         if not self.exists(username):
-            raise ValueError
+            raise InvalidUserError(username)
         userID = self._get_user_id(username)
 
         # We don't want to just delete and recreate the repos, since that
@@ -189,22 +183,22 @@ class SQLiteUserDB(IUserDBPlugin):
         finally:
             conn.close()
 
-    def set_password(self, username, old_password, password):
+    def set_password(self, username, password, old_password=None):
         assert isinstance(username, unicode)
         assert old_password is None or isinstance(old_password, unicode)
         assert isinstance(password, unicode)
-
-        if not self.exists(username):
-            raise ValueError(_("invalid username"))
         if not password:
             raise ValueError(_("password can't be empty"))
+
+        # Check old password value.
         if old_password and not self.are_valid_credentials(username, old_password):
             raise ValueError(_("wrong password"))
+
+        # Update password.
         self._set_user_field(username, 'Password', self._hash_password(password))
 
     def set_repo_maxage(self, username, repoPath, maxAge):
         assert isinstance(username, unicode)
-
         if repoPath not in self.get_repos(username):
             raise ValueError
         query = "UPDATE repos SET MaxAge=? WHERE RepoPath=? AND UserID = " + \
@@ -222,11 +216,8 @@ class SQLiteUserDB(IUserDBPlugin):
 
     def is_admin(self, username):
         assert isinstance(username, unicode)
-
-        return bool(self._get_user_field(username, "IsAdmin"))
-
-    def is_ldap(self):
-        return False
+        value = self._get_user_field(username, "IsAdmin")
+        return self._bool(value)
 
     # Helper functions #
     def _encode_path(self, path):
@@ -235,19 +226,13 @@ class SQLiteUserDB(IUserDBPlugin):
             return path.decode('utf-8')
         return path
 
-    def _delete_user_repos(self, username):
-        if not self.exists(username):
-            raise ValueError
-        self._execute_query("DELETE FROM repos WHERE UserID=%d" %
-                            self._get_user_id(username))
-
     def _get_user_id(self, username):
         assert self.exists(username)
         return self._get_user_field(username, 'UserID')
 
     def _get_user_field(self, username, fieldName):
         if not self.exists(username):
-            return None
+            raise InvalidUserError(username)
         query = "SELECT " + fieldName + " FROM users WHERE Username = ?"
         results = self._execute_query(query, (username,))
         assert len(results) == 1
@@ -259,7 +244,7 @@ class SQLiteUserDB(IUserDBPlugin):
         assert not isinstance(value, str)
 
         if not self.exists(username):
-            raise ValueError
+            raise InvalidUserError(username)
         if isinstance(value, bool):
             if value:
                 value = '1'
@@ -328,8 +313,7 @@ class SQLiteUserDB(IUserDBPlugin):
                 conn.close()
 
             # Create admin user
-            self.add_user('admin')
-            self.set_password('admin', None, 'admin123')
+            self.set_password('admin', 'admin123', old_password=None)
             self.set_info('admin', '/backups/', True)
 
     def _get_tables(self):
@@ -354,103 +338,5 @@ RepoPath varchar (255) NOT NULL,
 MaxAge tinyint NOT NULL DEFAULT 0)"""
         ]
 
-
-import unittest
-
-
-class SQLiteUserDBTest(unittest.TestCase):
-
-    """Unit tests for the sqliteUserDBTeste class"""
-
-    def _getUserDBObject(self):
-        return SQLiteUserDB(":memory:", autoConvertDatabase=False)
-
-    def setUp(self):
-        super(SQLiteUserDBTest, self).setUp()
-
-    def _getUserDB(self):
-        userData = self._getUserDBObject()
-        if not userData._get_tables():
-            for statement in userData._get_create_statements():
-                userData._execute_query(statement)
-
-        userData.add_user("test")
-        userData.set_info("test", "/data", False)
-        userData.set_password("test", None, "user")
-        userData.set_repos("test", ["/data/bill", "/data/frank"])
-        return userData
-
-    def tearDown(self):
-        userData = self._getUserDB()
-        tableNames = userData._get_tables()
-        print tableNames
-        if 'users' in tableNames:
-            userData._execute_query("DROP TABLE users")
-        if 'repos' in tableNames:
-            userData._execute_query("DROP TABLE repos")
-
-    def testValidUser(self):
-        authModule = self._getUserDB()
-        assert(authModule.exists("test"))
-        assert(authModule.are_valid_credentials("test", "user"))
-
-    def testUserList(self):
-        authModule = self._getUserDB()
-        assert(authModule.list() == ["test"])
-
-    def testdelete_user(self):
-        authModule = self._getUserDB()
-        assert(authModule.list() == ["test"])
-        authModule.delete_user("test")
-        assert(authModule.list() == [])
-
-    def testUserInfo(self):
-        authModule = self._getUserDB()
-        assert(authModule.get_root_dir("test") == "/data")
-        assert(not authModule.is_admin("test"))
-
-    def testBadPassword(self):
-        authModule = self._getUserDB()
-        # Basic test
-        assert(not authModule.are_valid_credentials("test", "user2"))
-        # password is case sensitive
-        assert(not authModule.are_valid_credentials("test", "User"))
-        # Match entire password
-        assert(not authModule.are_valid_credentials("test", "use"))
-        # Match entire password
-        assert(not authModule.are_valid_credentials("test", ""))
-
-    def testBadUser(self):
-        authModule = self._getUserDB()
-        assert(not authModule.exists("Test"))  # username is case sensitive
-        assert(not authModule.exists("tes"))  # Match entire username
-
-    def testGoodUserDir(self):
-        userDataModule = self._getUserDB()
-        assert(userDataModule.get_repos("test")
-               == ["/data/bill", "/data/frank"])
-        assert(userDataModule.get_root_dir("test") == "/data")
-
-    def testBadUserReturn(self):
-        userDataModule = self._getUserDB()
-        # should return None if user doesn't exist
-        assert(not userDataModule.get_repos("test2"))
-        # should return None if user doesn't exist
-        assert(not userDataModule.get_root_dir(""))
-
-    def testUserRepos(self):
-        userDataModule = self._getUserDB()
-        userDataModule.set_repos("test", [])
-        userDataModule.set_repos("test", ["a", "b", "c"])
-        self.assertEquals(
-            userDataModule.get_repos("test"), ["a", "b", "c"])
-        # Make sure that repo max ages are initialized to 0
-        maxAges = [userDataModule.get_repo_maxage("test", x)
-                   for x in userDataModule.get_repos("test")]
-        self.assertEquals(maxAges, [0, 0, 0])
-        userDataModule.set_repo_maxage("test", "b", 1)
-        self.assertEquals(userDataModule.get_repo_maxage("test", "b"), 1)
-        userDataModule.set_repos("test", ["b", "c", "d"])
-        self.assertEquals(userDataModule.get_repo_maxage("test", "b"), 1)
-        self.assertEquals(
-            userDataModule.get_repos("test"), ["b", "c", "d"])
+    def supports(self, operation):
+        return hasattr(self, operation)

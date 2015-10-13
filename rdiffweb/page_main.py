@@ -24,12 +24,13 @@ import logging
 import os.path
 
 from rdw_helpers import encode_s, decode_s
+from rdiffweb.core import Component
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-class MainPage:
+class MainPage(Component):
 
     def validate_user_path(self, path_b):
         '''Takes a path relative to the user's root dir and validates that it
@@ -130,18 +131,3 @@ class MainPage:
         parms.update(kwargs)
         return self.app.templates.compile_template(template_name, **parms)
 
-    def __get_app(self):
-        """
-        Utility method to access the application. (a.k.a. RdiffwebApp)
-
-        Raise a ValueError if the application is not accessible.
-        """
-        try:
-            app = cherrypy.request.app.root  # @UndefinedVariable
-        except:
-            app = False
-        if not app:
-            raise ValueError("app is not available")
-        return app
-
-    app = property(fget=__get_app)

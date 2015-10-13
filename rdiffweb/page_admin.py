@@ -167,8 +167,7 @@ class AdminPage(page_main.MainPage):
                                     usersearch in x["email"],
                                     filtered_users)
 
-        return {"ldap_enabled": self.app.userdb.is_ldap(),
-                "userfilter": userfilter,
+        return {"userfilter": userfilter,
                 "usersearch": usersearch,
                 "filtered_users": filtered_users,
                 "users": users}
@@ -190,7 +189,7 @@ class AdminPage(page_main.MainPage):
             self._check_user_exists(username)
             logger.info("updating user info")
             if password:
-                self.app.userdb.set_password(username, None, password)
+                self.app.userdb.set_password(username, password, old_password=None)
             self.app.userdb.set_info(username, user_root, is_admin)
             self.app.userdb.set_email(username, email)
             success = _("User information modified successfully.")
@@ -198,8 +197,7 @@ class AdminPage(page_main.MainPage):
             # Check and update user directory
             try:
                 self._check_user_root_dir(user_root)
-                rdw_spider_repos.find_repos_for_user(username,
-                                                  self.app.userdb)
+                rdw_spider_repos.find_repos_for_user(username, self.app.userdb)
             except ValueError as e:
                 success = ""
                 warning = unicode(e)
@@ -207,20 +205,19 @@ class AdminPage(page_main.MainPage):
         elif action == "add":
 
             if self.app.userdb.exists(username):
-                raise ValueError("The specified user already exists.")
+                raise ValueError("The user %s already exists." % (username))
             elif username == "":
                 raise ValueError("The username is invalid.")
             logger.info("adding user [%s]" % username)
-            self.app.userdb.add_user(username)
-            self.app.userdb.set_password(username, None, password)
+
+            self.app.userdb.add_user(username, password)
             self.app.userdb.set_info(username, user_root, is_admin)
             self.app.userdb.set_email(username, email)
 
             # Check and update user directory
             try:
                 self._check_user_root_dir(user_root)
-                rdw_spider_repos.find_repos_for_user(username,
-                                                  self.app.userdb)
+                rdw_spider_repos.find_repos_for_user(username, self.app.userdb)
             except ValueError as e:
                 warning = unicode(e)
             success = "User added successfully."

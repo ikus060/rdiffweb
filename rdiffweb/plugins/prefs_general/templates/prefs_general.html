@@ -41,6 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             {% trans %}Email{% endtrans %}</label>
         <div>
             <input class="form-control" type="text" name="email" id="email"
+                {% if supports_set_email %}readonly="readonly"{% endif %}
                 value="{{ email }}"/>
         </div>
     </div>
@@ -53,6 +54,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcall %}
 
 <!-- Panel to change password. -->
+{% if supports_set_password %}
 {% call macros.panel(title=_("Change password")) %}
 <div class="panel-body">
 <form action="#" method="post" role="form" class="clearfix" >
@@ -88,6 +90,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 </form>
 </div>
 {% endcall %}
+{% endif %}
 
 <!-- Panel to refresh repository list. -->
 {% call macros.panel(title=_("Refresh")) %}
