@@ -22,13 +22,14 @@ import os
 import librdiff
 import logging
 import threading
+from rdiffweb.rdw_helpers import encode_s
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
 # Returns pid of started process, or 0 if no process was started
-def startRepoSpiderThread(killEvent, app):
+def start_repo_spider_thread(killEvent, app):
     # Get refresh interval from app config.
     spiderInterval = app.config.get_config_bool("autoUpdateRepos", "False")
 
@@ -52,44 +53,48 @@ class SpiderReposThread(threading.Thread):
     def run(self):
         if self.spiderInterval:
             while True:
-                findReposForAllUsers(self.app)
+                find_repos_for_all_users(self.app)
                 self.killEvent.wait(60 * self.spiderInterval)
                 if self.killEvent.isSet():
                     return
 
 
-def _findRdiffRepos(dirToSearch, outRepoPaths, depth=0):
+def _find_repos(dirToSearch, depth=3):
     # TODO Should be a configuration
     # Limit the depthness
-    if depth >= 3:
+    if depth <= 0:
         return
 
-    dirEntries = os.listdir(dirToSearch)
-    if librdiff.RDIFF_BACKUP_DATA in dirEntries:
-        outRepoPaths.append(dirToSearch)
+    try:
+        dirEntries = os.listdir(dirToSearch)
+    except:
+        # Ignore error.
         return
+    if librdiff.RDIFF_BACKUP_DATA in dirEntries:
+        yield dirToSearch
 
     for entry in dirEntries:
         entryPath = os.path.join(dirToSearch, entry)
         if os.path.isdir(entryPath) and not os.path.islink(entryPath):
-            _findRdiffRepos(entryPath, outRepoPaths, depth + 1)
+            for x in _find_repos(entryPath, depth - 1):
+                yield x
 
 
-def findReposForUser(user, userDBModule):
+def find_repos_for_user(user, userdb):
     logger.debug("find repos for [%s]" % user)
-    userRoot = userDBModule.get_root_dir(user)
-    repoPaths = []
-    _findRdiffRepos(userRoot, repoPaths)
+    user_root = encode_s(userdb.get_root_dir(user))
+    repo_paths = list(_find_repos(user_root))
 
-    def stripRoot(path):
-        if not path[len(userRoot):]:
+    def striproot(path):
+        if not path[len(user_root):]:
             return "/"
-        return path[len(userRoot):]
-    repoPaths = map(stripRoot, repoPaths)
-    userDBModule.set_repos(user, repoPaths)
+        return path[len(user_root):]
+    repo_paths = map(striproot, repo_paths)
+    logger.debug("set user [%s] repos: %s " % (user, repo_paths))
+    userdb.set_repos(user, repo_paths)
 
 
-def findReposForAllUsers(app):
+def find_repos_for_all_users(app):
     """Refresh all users repositories using the given `app`."""
     user_db = app.userdb
     if not user_db.is_modifiable():
@@ -97,4 +102,4 @@ def findReposForAllUsers(app):
 
     users = user_db.list()
     for user in users:
-        findReposForUser(user, user_db)
+        find_repos_for_user(user, user_db)

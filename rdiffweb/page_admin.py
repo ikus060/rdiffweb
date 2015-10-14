@@ -198,7 +198,7 @@ class AdminPage(page_main.MainPage):
             # Check and update user directory
             try:
                 self._check_user_root_dir(user_root)
-                rdw_spider_repos.findReposForUser(username,
+                rdw_spider_repos.find_repos_for_user(username,
                                                   self.app.userdb)
             except ValueError as e:
                 success = ""
@@ -219,7 +219,7 @@ class AdminPage(page_main.MainPage):
             # Check and update user directory
             try:
                 self._check_user_root_dir(user_root)
-                rdw_spider_repos.findReposForUser(username,
+                rdw_spider_repos.find_repos_for_user(username,
                                                   self.app.userdb)
             except ValueError as e:
                 warning = unicode(e)

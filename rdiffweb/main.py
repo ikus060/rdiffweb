@@ -297,7 +297,7 @@ def start():
 
     # Start daemon thread to refresh users repository
     kill_event = threading.Event()
-    rdw_spider_repos.startRepoSpiderThread(kill_event, app)
+    rdw_spider_repos.start_repo_spider_thread(kill_event, app)
 
     # Register kill_event
     if hasattr(cherrypy.engine, 'subscribe'):  # CherryPy >= 3.1
