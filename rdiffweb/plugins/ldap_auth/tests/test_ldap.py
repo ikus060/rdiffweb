@@ -95,10 +95,10 @@ class UserManagerLdapTest(unittest.TestCase):
     def test_are_valid_credentials_with_invalid_password(self):
         self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'invalid'))
         # password is case sensitive
-        self.assertFalse(self.db.are_valid_credentials('jeff', 'Password'))
+        self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'Password'))
         # Match entire password
-        self.assertFalse(self.db.are_valid_credentials('jeff', 'pass'))
-        self.assertFalse(self.db.are_valid_credentials('jeff', ''))
+        self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'pass'))
+        self.assertFalse(self.ldapstore.are_valid_credentials('jeff', ''))
 
     def test_are_valid_credentials_with_invalid_user(self):
         self.assertIsNone(self.ldapstore.are_valid_credentials('josh', 'password'))
@@ -127,7 +127,7 @@ class UserManagerLdapTest(unittest.TestCase):
         self.assertFalse(self.ldapstore.set_password('john', 'new_password', old_password='password'))
 
     def test_set_password_with_invalid_old_password(self):
-        with self.assertRaises(RdiffError):
+        with self.assertRaises(ValueError):
             self.ldapstore.set_password('foo', 'new_password', old_password='invalid')
 
     def test_set_password_update_not_exists(self):
