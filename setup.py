@@ -130,7 +130,7 @@ setup(
         "babel>=0.9",
     ],
     # requirement for testing
-    tests_requires=[
+    tests_require=[
         "mockldap>=0.2.6",
         "python-ldap>=2.4.21",
     ]
