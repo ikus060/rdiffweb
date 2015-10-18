@@ -172,14 +172,12 @@ def load_translation(domain="messages"):
     localesdirs = [pkg_resources.resource_filename(# @UndefinedVariable
         __package__, 'locales')]
     if cherrypy.request.app:
-        app = cherrypy.request.app.root  # @UndefinedVariable
-        # Get default language from app
-        config = app.config  # @UndefinedVariable
-        default = config.get_config("DefaultLanguage", "en_US")
+        app = cherrypy.request.app
+        default = app.cfg.get_config("DefaultLanguage", "en_US")
         # Get more directory from app plugins.
         app.plugins.run(lambda x:
-                        x.get_localesdir() is None
-                        or localesdirs.append(x.get_localesdir()))
+                        x.get_localesdir() is None or
+                        localesdirs.append(x.get_localesdir()))
 
     # Determine the language to be used according to accept-language.
     langs = list()

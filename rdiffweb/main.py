@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 import cherrypy
 import getopt
-import os
 import sys
 import threading
 import logging
@@ -62,61 +61,6 @@ def error_page(**kwargs):
     # Template is a str, convert it to unicode.
     template = cherrypy._cperror._HTTPErrorTemplate.decode('ascii', 'replace')
     return template % dict([(key, value.decode('ascii', 'replace')) for key, value in kwargs.iteritems()])
-
-
-def setup_favicon(app, page_settings):
-    """
-    Used to add an entry to the page setting if the FavIcon configuration is
-    defined.
-    """
-    favicon_b = app.config.get_config_str("FavIcon")
-    if not favicon_b:
-        return
-
-    # Append custom favicon
-    if (not os.path.exists(favicon_b) or
-            not os.path.isfile(favicon_b) or
-            not os.access(favicon_b, os.R_OK)):
-        logger.warn("""path define by FavIcon doesn't exists or is no
-                    accessible: %s""", favicon_b)
-    else:
-        logger.info("use custom favicon: %s", favicon_b)
-        basename_b = os.path.basename(favicon_b)
-        app.favicon = b'/custom/%s' % (basename_b)
-        page_settings.update({
-            app.favicon: {
-                'tools.staticfile.on': True,
-                'tools.staticfile.filename': favicon_b,
-                'tools.authform.on': False,
-            }
-        })
-
-
-def setup_header_logo(app, page_settings):
-    """
-    Used to add an entry to the page setting if the FavIcon configuration is
-    defined.
-    """
-    header_logo_b = app.config.get_config_str("HeaderLogo")
-    if not header_logo_b:
-        return
-    # Append custom header logo
-    if (not os.path.exists(header_logo_b) or
-            not os.path.isfile(header_logo_b) or
-            not os.access(header_logo_b, os.R_OK)):
-        logger.warn("path define by HeaderLogo doesn't exists: %s",
-                    header_logo_b)
-    else:
-        logger.info("use custom header logo: %s", header_logo_b)
-        basename_b = os.path.basename(header_logo_b)
-        app.header_logo = b'/custom/%s' % (basename_b)
-        page_settings.update({
-            app.header_logo: {
-                'tools.staticfile.on': True,
-                'tools.staticfile.filename': header_logo_b,
-                'tools.authform.on': False,
-            }
-        })
 
 
 def setup_logging(log_file, log_access_file, debug):
@@ -185,23 +129,21 @@ def start():
     """Start rdiffweb deamon."""
     # Parse command line options
     debug = False
-    autoReload = False
     log_file = b""
     log_access_file = b""
     configfile = b'/etc/rdiffweb/rdw.conf'
 
-    opts, extraparams = getopt.getopt(sys.argv[1:],
-                                      'vdrf:',
-                                      ['debug',
-                                       'log-file=',
-                                       'log-access-file=',
-                                       'config='
-                                       'autoreload'])
+    opts = getopt.getopt(
+        sys.argv[1:],
+        'vdrf:', [
+            'debug',
+            'log-file=',
+            'log-access-file=',
+            'config=',
+        ])[0]
     for option, value in opts:
         if option in ['-d', '--debug']:
             debug = True
-        if option in ['-r', '--autoreload']:
-            autoReload = True
         elif option in ['--log-file']:
             log_file = value
         elif option in ['--log-access-file']:
@@ -219,25 +161,19 @@ def start():
     logger.info("START")
 
     # Create App.
-    app = rdw_app.RdiffwebApp(configfile=configfile)
+    app = rdw_app.RdiffwebApp(configfile)
 
     # Get configuration
-    serverHost = app.config.get_config_str("ServerHost", default="0.0.0.0")
-    serverPort = app.config.get_config_int("ServerPort", default="8080")
+    serverHost = app.cfg.get_config_str("ServerHost", default="0.0.0.0")
+    serverPort = app.cfg.get_config_int("ServerPort", default="8080")
     if not serverPort:
         logger.error("ServerPort should be a port number: %s" % (serverPort))
         sys.exit(1)
     # Get SSL configuration (if any)
-    sslCertificate = app.config.get_config("SslCertificate")
-    sslPrivateKey = app.config.get_config("SslPrivateKey")
+    sslCertificate = app.cfg.get_config("SslCertificate")
+    sslPrivateKey = app.cfg.get_config("SslPrivateKey")
 
-    global_settings = {
-        'tools.encode.on': True,
-        'tools.encode.encoding': 'utf-8',
-        'tools.gzip.on': True,
-        'tools.sessions.on': True,
-        'tools.authform.on': True,
-        'autoreload.on': autoReload,
+    global_config = {
         'server.socket_host': serverHost,
         'server.socket_port': serverPort,
         'server.log_file': log_file,
@@ -251,49 +187,7 @@ def start():
         'error_page.default': error_page,
     }
 
-    page_settings = {
-        b'/': {
-            'tools.authform.on': True,
-            'tools.i18n.on': True,
-        },
-        b'/login': {
-            'tools.authform.on': False,
-        },
-        b'/status/feed': {
-            'tools.authform.on': False,
-            'tools.authbasic.on': True,
-            'tools.authbasic.checkpassword': app.login.check_password
-        },
-        b'/static': {
-            'tools.staticdir.on': True,
-            'tools.staticdir.root': os.path.abspath(os.path.dirname(__file__)),
-            'tools.staticdir.dir': "static",
-            'tools.authform.on': False,
-        },
-        b'/setup': {
-            'tools.authform.on': False,
-            'tools.sessions.on': False,
-        }
-    }
-
-    # Setup the custom favicon.
-    setup_favicon(app, page_settings)
-    # Setup the custom header logo.
-    setup_header_logo(app, page_settings)
-
-    # Configure session storage.
-    if app.config.get_config("SessionStorage").lower() == "disk":
-        sessionDir = app.config.get_config("SessionDir")
-        if (os.path.exists(sessionDir) and
-                os.path.isdir(sessionDir) and
-                os.access(sessionDir, os.W_OK)):
-            logger.info("Setting session mode to disk in directory %s" %
-                        sessionDir)
-            global_settings['tools.sessions.on'] = True
-            global_settings['tools.sessions.storage_type'] = 'file'
-            global_settings['tools.sessions.storage_path'] = sessionDir
-
-    cherrypy.config.update(global_settings)
+    cherrypy.config.update(global_config)
 
     # Start daemon thread to refresh users repository
     kill_event = threading.Event()
@@ -309,7 +203,7 @@ def start():
     cherrypy.engine.signal_handler.handlers['SIGUSR2'] = debug_dump
 
     # Start web server
-    cherrypy.quickstart(app, config=page_settings)
+    cherrypy.quickstart(app)
 
     # Log startup
     logger.info("STOP")

@@ -23,6 +23,7 @@ recursive-include rdiffweb/templates *.html *.xml *.txt
 
 # Include static Web files
 include rdiffweb/static/*.png
+include rdiffweb/static/*.ico
 include rdiffweb/static/js/scripts.min.js
 include rdiffweb/static/js/vendor/*.js
 include rdiffweb/static/css/*.css

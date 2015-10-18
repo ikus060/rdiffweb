@@ -43,7 +43,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         self.create_tables_lock = RLock()
 
         # Get database location.
-        self._db_file = self.app.config.get_config("SQLiteDBFile",
+        self._db_file = self.app.cfg.get_config("SQLiteDBFile",
                                                    "/etc/rdiffweb/rdw.db")
         self._user_root_cache = {}
         self._create_or_update()

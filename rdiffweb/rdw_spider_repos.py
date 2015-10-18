@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 # Returns pid of started process, or 0 if no process was started
 def start_repo_spider_thread(killEvent, app):
     # Get refresh interval from app config.
-    spiderInterval = app.config.get_config_bool("autoUpdateRepos", "False")
+    spiderInterval = app.cfg.get_config_bool("autoUpdateRepos", "False")
 
     # Start the thread.
     newThread = SpiderReposThread(killEvent, app, spiderInterval)

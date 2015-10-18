@@ -44,19 +44,19 @@ class MockRdiffwebApp(RdiffwebApp):
 
         # Enabled given plugins
         for plugin_name in self.enabled_plugins:
-            self.config.set_config('%sEnabled' % plugin_name, 'True')
+            self.cfg.set_config('%sEnabled' % plugin_name, 'True')
 
         # database in memory
         if 'SQLite' in self.enabled_plugins:
-            self.config.set_config('SQLiteDBFile', '/tmp/rdiffweb.tmp.db')
+            self.cfg.set_config('SQLiteDBFile', '/tmp/rdiffweb.tmp.db')
 
         if 'Ldap' in self.enabled_plugins:
-            self.config.set_config('LdapUri', '__default__')
-            self.config.set_config('LdapBaseDn', 'dc=nodomain')
+            self.cfg.set_config('LdapUri', '__default__')
+            self.cfg.set_config('LdapBaseDn', 'dc=nodomain')
 
         # Set config
         for key, val in self.default_config.items():
-            self.config.set_config(key, val)
+            self.cfg.set_config(key, val)
 
     def reset(self):
         """

@@ -18,8 +18,7 @@
       {% if favicon.endswith(".gif") %}type="image/gif"{% endif %}
       href="{{ favicon }}"
       {% else %}
-      type="image/png"
-      href="/static/favicon.png"
+      href="/favicon.ico"
       {% endif %}>
 {% if rssLink %}
 <link rel="alternate" type="application/rss+xml" href="{{ rssLink }}"

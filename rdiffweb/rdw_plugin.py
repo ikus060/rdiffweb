@@ -55,16 +55,16 @@ class PluginLocator(PluginFileLocator):
 
 class PluginManager():
 
-    def __init__(self, config):
+    def __init__(self, cfg):
         """
         Initialise the plugin system.
         """
 
-        assert config
-        self.config = config
+        assert cfg
+        self.cfg = cfg
 
         # Get plugin locations.
-        plugin_search_path_b = self.config.get_config_str(
+        plugin_search_path_b = self.cfg.get_config_str(
             "PluginSearchPath",
             default=b"/etc/rdiffweb/plugins")
 
@@ -135,7 +135,7 @@ class PluginManager():
         """
 
         # Check if the plugin is enabled in config file.
-        value = self.config.get_config_bool(
+        value = self.cfg.get_config_bool(
             plugin_info.name + "Enabled",
             default="False")
         if not value:

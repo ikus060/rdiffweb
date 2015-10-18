@@ -39,7 +39,7 @@ class UserManager(Component):
 
     @property
     def _allow_create_user(self):
-        return self.app.config.get_config_bool("CreateUserIfMissing", "false")
+        return self.app.cfg.get_config_bool("CreateUserIfMissing", "false")
 
     @property
     def _databases(self):

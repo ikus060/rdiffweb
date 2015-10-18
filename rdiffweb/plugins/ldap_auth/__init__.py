@@ -41,23 +41,23 @@ class LdapPasswordStore(IPasswordStore):
         super(LdapPasswordStore, self).activate()
 
         # Get Ldap URI
-        self.uri = self.app.config.get_config(
+        self.uri = self.app.cfg.get_config(
             "LdapUri", "")
         if not self.uri:
             raise "LdapUri must be define in configuration"
         # Check if TLs is enabled
-        self.tls = self.app.config.get_config_bool(
+        self.tls = self.app.cfg.get_config_bool(
             "LdapTls", "false")
         # Get Base DN
-        self.base_dn = self.app.config.get_config(
+        self.base_dn = self.app.cfg.get_config(
             "LdapBaseDn", "")
         if not self.base_dn:
             raise "LdapBaseDn must be define in configuration"
         # Get attribute
-        self.attribute = self.app.config.get_config(
+        self.attribute = self.app.cfg.get_config(
             "LdapAttribute", "uid")
         # Get Scope
-        self.scope = self.app.config.get_config(
+        self.scope = self.app.cfg.get_config(
             "LdapScope", "subtree")
         if self.scope == "base":
             self.scope = ldap.SCOPE_BASE
@@ -66,25 +66,25 @@ class LdapPasswordStore(IPasswordStore):
         else:
             self.scope = ldap.SCOPE_SUBTREE
         # Filter
-        self.filter = self.app.config.get_config(
+        self.filter = self.app.cfg.get_config(
             "LdapFilter", "(objectClass=*)")
         # Bind Dn
-        self.bind_dn = self.app.config.get_config(
+        self.bind_dn = self.app.cfg.get_config(
             "LdapBindDn", "")
         # Bind password
-        self.bind_password = self.app.config.get_config(
+        self.bind_password = self.app.cfg.get_config(
             "LdapBindPassword", "")
         # Get Version
-        self.version = self.app.config.get_config_int(
+        self.version = self.app.cfg.get_config_int(
             "LdapVersion", "3")
         # Get Network timeout
-        self.network_timeout = self.app.config.get_config_int(
+        self.network_timeout = self.app.cfg.get_config_int(
             "LdapNetworkTimeout", "100")
         # Get Timeout
-        self.timeout = self.app.config.get_config_int(
+        self.timeout = self.app.cfg.get_config_int(
             "LdapTimeout", "300")
         # Check if password change are allowed.
-        self.allow_password_change = self.app.config.get_config_bool(
+        self.allow_password_change = self.app.cfg.get_config_bool(
             "LdapAllowPasswordChange", "false")
         # Define supported operations
         self.supported_operations = ['are_valid_credentials', 'get_mail']

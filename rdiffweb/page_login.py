@@ -50,7 +50,7 @@ class LoginPage(page_main.MainPage):
                   'login': login}
 
         # Add welcom message to params.
-        welcome_msg = self.app.config.get_config("WelcomeMsg")
+        welcome_msg = self.app.cfg.get_config("WelcomeMsg")
         if welcome_msg:
             params["welcome_msg"] = welcome_msg
 

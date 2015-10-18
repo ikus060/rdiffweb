@@ -123,7 +123,7 @@ class MainPage(Component):
             parms["favicon"] = self.app.favicon  # See main,py
         if hasattr(self.app, "header_logo"):
             parms["header_logo"] = self.app.header_logo  # See main,py
-        header_name = self.app.config.get_config("HeaderName")
+        header_name = self.app.cfg.get_config("HeaderName")
         if header_name:
             parms["header_name"] = header_name
 
