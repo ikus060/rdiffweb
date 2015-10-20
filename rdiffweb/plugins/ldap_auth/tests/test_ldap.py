@@ -32,21 +32,23 @@ Created on Oct 17, 2015
 
 
 def _ldap_user(name, password='password'):
-    return ('uid=%s,ou=People,dc=nodomain' % (name), {
-        'uid': [name],
-        'cn': [name],
-        'userPassword': [password],
-        'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']})
+    name = str(name)
+    password = str(password)
+    return (b'uid=%s,ou=People,dc=nodomain' % (name), {
+        b'uid': [name],
+        b'cn': [name],
+        b'userPassword': [password],
+        b'objectClass': [b'person', b'organizationalPerson', b'inetOrgPerson', b'posixAccount']})
 
 
 class UserManagerLdapTest(unittest.TestCase):
 
-    basedn = ('dc=nodomain', {
-        'dc': ['nodomain'],
-        'o': ['nodomain']})
-    people = ('ou=People,dc=nodomain', {
-        'ou': ['People'],
-        'objectClass': ['organizationalUnit']})
+    basedn = (b'dc=nodomain', {
+        b'dc': [b'nodomain'],
+        b'o': [b'nodomain']})
+    people = (b'ou=People,dc=nodomain', {
+        b'ou': [b'People'],
+        b'objectClass': [b'organizationalUnit']})
 
     # This is the content of our mock LDAP directory. It takes the form
     # {dn: {attr: [value, ...], ...}, ...}.

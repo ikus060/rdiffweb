@@ -22,7 +22,7 @@ import ldap
 import logging
 
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import encode_s
+from rdiffweb.rdw_helpers import encode_s, decode_s
 from rdiffweb.rdw_plugin import IPasswordStore
 from rdiffweb.core import RdiffError
 
@@ -108,7 +108,7 @@ class LdapPasswordStore(IPasswordStore):
             l.unbind_s()
             logger.info("user [%s] found in LDAP" % username)
             # Return the username
-            return r[0][1][self.attribute][0]
+            return decode_s(r[0][1][self.attribute][0])
 
         # Execute the LDAP operation
         try:

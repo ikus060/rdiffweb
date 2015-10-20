@@ -34,11 +34,14 @@ Module to test `user` module.
 
 
 def _ldap_user(name, password='password'):
-    return ('uid=%s,ou=People,dc=nodomain' % (name), {
-        'uid': [name],
-        'cn': [name],
-        'userPassword': [password],
-        'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']})
+    """Create ldap entry to be mock."""
+    name = str(name)
+    password = str(password)
+    return (b'uid=%s,ou=People,dc=nodomain' % (name), {
+        b'uid': [name],
+        b'cn': [name],
+        b'userPassword': [password],
+        b'objectClass': [b'person', b'organizationalPerson', b'inetOrgPerson', b'posixAccount']})
 
 
 class UserManagerSQLiteTest(unittest.TestCase):
