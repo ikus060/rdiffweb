@@ -41,7 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             {% trans %}Email{% endtrans %}</label>
         <div>
             <input class="form-control" type="text" name="email" id="email"
-                {% if supports_set_email %}readonly="readonly"{% endif %}
+                {% if not supports_set_email %}readonly="readonly"{% endif %}
                 value="{{ email }}"/>
         </div>
     </div>
