@@ -106,7 +106,7 @@ class RdiffwebApp(Application):
         # Activate every loaded plugin
         self.plugins.run(lambda x: self.activate_plugin(x))
 
-        # create user
+        # create user manager
         self.userdb = UserManager(self)
 
     def activate_plugin(self, plugin_obj):

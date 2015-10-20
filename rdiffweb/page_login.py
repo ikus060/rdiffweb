@@ -55,34 +55,34 @@ class LoginPage(page_main.MainPage):
             params["welcome_msg"] = welcome_msg
 
         if self._is_submit():
-            # check for login credentials
-            logger.info("check credentials for [%s]" % login)
-            errorMsg = self.check_password(login, password)
-            if not errorMsg:
-                cherrypy.session['username'] = login  # @UndefinedVariable
+            params.update(self.handle_login(login, password, redirect))
+
+        return self._compile_template("login.html", **params)
+
+    def handle_login(self, login, password, redirect):
+        """
+        Handle login.
+        """
+        # check for login credentials
+        params = dict()
+        logger.info("check credentials for [%s]" % login)
+        try:
+            username = self.app.userdb.login(login, password)
+        except:
+            logger.exception("fail to validate user credential.")
+            params["warning"] = _("Fail to validate user credential.")
+        else:
+            if username:
+                # Login successful
+                cherrypy.session['username'] = username  # @UndefinedVariable
                 if not redirect or redirect.startswith("/login/"):
                     redirect = "/"
                 # The redirect url was unquoted by cherrypy, quote the
                 # url again.
                 logger.info("redirect user to %s" % redirect)
                 raise cherrypy.HTTPRedirect(redirect)
+            else:
+                logger.warn("invalid username or password")
+                params["warning"] = _("Invalid username or password.")
 
-            # update form values
-            params["warning"] = errorMsg
-
-        return self._compile_template("login.html", **params)
-
-    def check_password(self, username, password):
-        """
-        Check credential using local database.
-        """
-        try:
-            username = self.app.userdb.login(username, password)
-            if username:
-                cherrypy.session['username'] = username  # @UndefinedVariable
-                return False
-            logger.warn("invalid username or password")
-            return _("Invalid username or password.")
-        except:
-            logger.exception("fail to validate user credential.")
-            return _("Fail to validate user credential.")
+        return params

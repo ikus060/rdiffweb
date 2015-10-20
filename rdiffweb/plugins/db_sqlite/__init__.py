@@ -23,9 +23,13 @@ from rdiffweb.rdw_plugin import IPasswordStore, IDatabase
 from rdiffweb.rdw_helpers import encode_s, decode_s
 from threading import RLock
 from rdiffweb.core import InvalidUserError
+import logging
 
 """We do no length validation for incoming parameters, since truncated values
 will at worst lead to slightly confusing results, but no security risks"""
+
+# Define the logger
+logger = logging.getLogger(__name__)
 
 
 class SQLiteUserDB(IPasswordStore, IDatabase):
@@ -44,7 +48,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
 
         # Get database location.
         self._db_file = self.app.cfg.get_config("SQLiteDBFile",
-                                                   "/etc/rdiffweb/rdw.db")
+                                                "/etc/rdiffweb/rdw.db")
         self._user_root_cache = {}
         self._create_or_update()
 
@@ -64,7 +68,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         """
         assert isinstance(username, unicode)
         assert isinstance(password, unicode)
-
+        logger.info("validating user [%s] credentials", username)
         results = self._execute_query(
             "SELECT Password, Username FROM users WHERE Username = ?",
             (username,))
@@ -117,6 +121,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         Add a new username to this userdb.
         """
         assert isinstance(username, unicode)
+        logger.info("adding new user [%s]", username)
         query = "INSERT INTO users (Username) values (?)"
         self._execute_query(query, (username,))
 
@@ -129,6 +134,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         if not self.exists(username):
             return False
         # Delete user
+        logger.info("deleting user [%s]", username)
         self._execute_query("DELETE FROM repos WHERE UserID=%d" %
                             self._get_user_id(username))
         self._execute_query("DELETE FROM users WHERE Username = ?",

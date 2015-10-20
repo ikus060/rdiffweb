@@ -180,6 +180,7 @@ class UserManagerSQLiteLdapTest(unittest.TestCase):
         _ldap_user('jeff'),
         _ldap_user('john'),
         _ldap_user('karl'),
+        _ldap_user('kim'),
         _ldap_user('larry'),
         _ldap_user('mike'),
         _ldap_user('tony'),
@@ -276,7 +277,7 @@ class UserManagerSQLiteLdapTest(unittest.TestCase):
         self.assertEqual('tom', self.app.userdb.login('tom', 'password'))
         self.assertFalse(self.app.userdb.login('tom', 'invalid'))
 
-    def login_with_invalid_password(self):
+    def test_login_with_invalid_password(self):
         self.app.userdb.add_user('jeff', 'password')
         self.assertFalse(self.app.userdb.login('jeff', 'invalid'))
         # password is case sensitive
@@ -289,15 +290,20 @@ class UserManagerSQLiteLdapTest(unittest.TestCase):
         """Check if login work"""
         self.assertIsNone(self.app.userdb.login('josh', 'password'))
 
+    def test_login_with_invalid_user_in_ldap(self):
+        """Check if login work"""
+        self.assertIsNone(self.app.userdb.login('kim', 'password'))
+
     def test_login_with_create_user(self):
         """Check if login create the user in database if user exists in LDAP"""
         self.assertFalse(self.app.userdb.exists('tony'))
-        self.app.cfg.set_config('CreateUserIfMissing', 'true')
+        self.app.cfg.set_config('AddMissingUser', 'true')
         try:
             self.app.userdb.login('tony', 'password')
             self.assertTrue(self.app.userdb.exists('tony'))
+            self.assertFalse(self.app.userdb.is_admin('tony'))
         finally:
-            self.app.cfg.set_config('CreateUserIfMissing', 'false')
+            self.app.cfg.set_config('AddMissingUser', 'false')
 
     def test_set_invalid_user(self):
         with self.assertRaises(InvalidUserError):

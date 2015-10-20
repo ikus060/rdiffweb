@@ -99,7 +99,7 @@ class LdapPasswordStore(IPasswordStore):
         def check_crendential(l, r):
             # Check results
             if len(r) != 1:
-                logger.warn("user [%s] not found in LDAP" % username)
+                logger.debug("user [%s] not found in LDAP" % username)
                 return None
 
             # Bind using the user credentials. Throws an exception in case of
@@ -143,7 +143,7 @@ class LdapPasswordStore(IPasswordStore):
             # Search the LDAP server
             search_filter = "(&{}({}={}))".format(
                 self.filter, self.attribute, username)
-            logger.info("search ldap server: {}/{}?{}?{}?{}".format(
+            logger.debug("search ldap server: {}/{}?{}?{}?{}".format(
                 self.uri, self.base_dn, self.attribute, self.scope,
                 search_filter))
             r = l.search_s(encode_s(self.base_dn),
@@ -164,7 +164,7 @@ class LdapPasswordStore(IPasswordStore):
         def check_user_exists(l, r):  # @UnusedVariable
             # Check the results
             if len(r) != 1:
-                logger.warn("user [%s] not found" % username)
+                logger.debug("user [%s] not found" % username)
                 return False
 
             logger.debug("user [%s] found" % username)

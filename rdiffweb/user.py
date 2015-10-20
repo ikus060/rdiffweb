@@ -38,8 +38,8 @@ class UserManager(Component):
         Component.__init__(self, app)
 
     @property
-    def _allow_create_user(self):
-        return self.app.cfg.get_config_bool("CreateUserIfMissing", "false")
+    def _allow_add_user(self):
+        return self.app.cfg.get_config_bool("AddMissingUser", "false")
 
     @property
     def _databases(self):
@@ -68,10 +68,11 @@ class UserManager(Component):
         db = self.find_user_database(user)
         if db:
             raise ValueError(_("user %s already exists" % (user,)))
-        # Find a database where to create the user
+        # Find a database where to add the user
         db = self._get_supporting_database('add_user')
+        logger.info("adding new user [%s] to database [%s]", user, db)
         db.add_user(user)
-        self._notify('created', user, password)
+        self._notify('added', user, password)
         # Find a password store where to set password
         if password:
             self.set_password(user, password)
@@ -87,12 +88,14 @@ class UserManager(Component):
         # Delete user from database (required).
         db = self.find_user_database(user)
         if db:
+            logger.info("deleting user [%s] from database [%s]", user, db)
             result |= db.delete_user(user)
         if not result:
             return result
         # Delete credentials from password store (optional).
         store = self.find_user_store(user)
         if hasattr(store, 'delete_user'):
+            logger.info("deleting user [%s] from password store [%s]", user, store)
             result |= store.delete_user(user)
         self._notify('deleted', user)
         return True
@@ -215,7 +218,7 @@ class UserManager(Component):
         """
         Called to authenticate the given user.
 
-        Check if the credentials are valid. Then may actually create the user
+        Check if the credentials are valid. Then may actually add the user
         in database if allowed.
 
         If valid, return the username. Return False if the user exists but the
@@ -226,6 +229,7 @@ class UserManager(Component):
         assert isinstance(user, unicode)
         assert password is None or isinstance(user, unicode)
         # Validate the credentials
+        logger.info("validating user [%s] credentials", user)
         real_user = False
         for store in self._password_stores:
             real_user = store.are_valid_credentials(user, password)
@@ -234,14 +238,14 @@ class UserManager(Component):
         if not real_user:
             return real_user
         # Check if user exists in database
-        db = self.find_user_database(real_user)
-        if db:
+        if self.exists(real_user):
             return real_user
-        # Check if user may be created.
-        db = self._get_supporting_database('add_user')
-        if self._allow_create_user:
-            # Create the user in database
-            db.add_user(real_user)
+        # Check if user may be added.
+        if not self._allow_add_user:
+            logger.info("user [%s] not found in database", real_user)
+            return None
+        # Create user
+        self.add_user(real_user)
         return real_user
 
     def set_info(self, user, user_root, is_admin):
