@@ -63,6 +63,7 @@ class UserManager(Component):
         """
         Used to add a new user with an optional password.
         """
+        assert password is None or isinstance(user, unicode)
         # Check if user already exists.
         db = self.find_user_database(user)
         if db:
@@ -111,6 +112,7 @@ class UserManager(Component):
         If the user isn't found in any IPasswordStore in the chain, None is
         returned.
         """
+        assert isinstance(user, unicode)
         for db in self._password_stores:
             if db.exists(user):
                 return db
@@ -123,6 +125,7 @@ class UserManager(Component):
         If the user isn't found in any IDatabase in the chain, None is
         returned.
         """
+        assert isinstance(user, unicode)
         for db in self._databases:
             if db.exists(user):
                 return db
@@ -220,6 +223,8 @@ class UserManager(Component):
         password store.
         The return value may not be equals to the given username.
         """
+        assert isinstance(user, unicode)
+        assert password is None or isinstance(user, unicode)
         # Validate the credentials
         real_user = False
         for store in self._password_stores:
@@ -288,6 +293,7 @@ class UserManager(Component):
         """
         Check if the users password store or user database supports the given operation.
         """
+        assert isinstance(operation, unicode)
         if self._get_supporting_store(operation) or self._get_supporting_database(operation):
             return True
         else:
