@@ -78,17 +78,6 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
             return results[0][1]
         return False
 
-    def get_user_root(self, username):
-        """
-        Get user root directory.
-        """
-        assert isinstance(username, unicode)
-
-        if username not in self._user_root_cache:
-            self._user_root_cache[username] = self._encode_path(
-                self._get_user_field(username, "UserRoot"))
-        return self._user_root_cache[username]
-
     def get_repos(self, username):
         """
         Get list of repos for the given `username`.
@@ -118,8 +107,13 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         return self._get_user_field(username, "UserEmail")
 
     def get_user_root(self, username):
+        """Get user root directory."""
         assert isinstance(username, unicode)
-        return self._get_user_field(username, "UserRoot")
+
+        if username not in self._user_root_cache:
+            self._user_root_cache[username] = self._encode_path(
+                self._get_user_field(username, "UserRoot"))
+        return self._user_root_cache[username]
 
     def is_admin(self, username):
         assert isinstance(username, unicode)
