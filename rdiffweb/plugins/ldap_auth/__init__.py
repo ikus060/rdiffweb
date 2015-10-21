@@ -199,8 +199,11 @@ class LdapPasswordStore(IPasswordStore):
                              for x in attr
                              if x in r[0][1]])
             elif attr in r[0][1]:
-                return [decode_s(x)
-                        for x in r[0][1][attr]]
+                if isinstance(r[0][1][attr], list):
+                    return [decode_s(x)
+                            for x in r[0][1][attr]]
+                else:
+                    return decode_s(r[0][1][attr])
             return None
 
         # Execute the LDAP operation
