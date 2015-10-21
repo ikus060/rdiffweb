@@ -234,7 +234,7 @@ class IDatabase(IRdiffwebPlugin):
         Returns True, if the account existed and was deleted, False otherwise.
         """
 
-    def get_root_dir(self, user):
+    def get_user_root(self, user):
         """Get user root directory."""
 
     def get_repos(self, user):
@@ -369,11 +369,14 @@ class IUserChangeListener(IRdiffwebPlugin):
     """
     CATEGORY = "UserChangeListener"
 
-    def user_created(self, user, password):
+    def user_added(self, user, password):
         """New user (account) created."""
 
     def user_password_changed(self, user, password):
         """Password changed."""
+
+    def user_attr_changed(self, user, attrs={}):
+        """User attribute changed."""
 
     def user_deleted(self, user):
         """User and related account information have been deleted."""

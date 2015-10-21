@@ -260,5 +260,5 @@ class CurrentUser():
     username = property(fget=__get_username)
     is_admin = property(fget=_getter('is_admin'))
     email = property(fget=_getter('get_email'))
-    root_dir = property(fget=_getter('get_root_dir'))
+    root_dir = property(fget=_getter('get_user_root'))
     repos = property(fget=_getter('get_repos'))

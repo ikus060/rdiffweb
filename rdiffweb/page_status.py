@@ -152,7 +152,7 @@ class StatusPage(page_main.MainPage):
                          earliest_date,
                          latest_date):
 
-        user_root = self.app.userdb.get_root_dir(self.app.currentuser.username)
+        user_root = self.app.userdb.get_user_root(self.app.currentuser.username)
         user_root_b = encode_s(user_root)
 
         repoErrors = []

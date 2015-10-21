@@ -87,20 +87,21 @@ class SQLiteUserDBTest(unittest.TestCase):
 
         email = self.db.get_email(user)
         repos = self.db.get_repos(user)
-        user_root = self.db.get_root_dir(user)
+        user_root = self.db.get_user_root(user)
         is_admin = self.db.is_admin(user)
         self.assertEqual('', email)
         self.assertEqual([], repos)
         self.assertEqual('', user_root)
         self.assertEqual(False, is_admin)
 
-        self.db.set_info(user, '/backups/', True)
+        self.db.set_user_root(user, '/backups/')
+        self.db.set_is_admin(user, True)
         self.db.set_email(user, 'larry@gmail.com')
         self.db.set_repos(user, ['/backups/computer/', '/backups/laptop/'])
 
         email = self.db.get_email(user)
         repos = self.db.get_repos(user)
-        user_root = self.db.get_root_dir(user)
+        user_root = self.db.get_user_root(user)
         self.assertEqual('larry@gmail.com', email)
         self.assertEqual(['/backups/computer/', '/backups/laptop/'], repos)
         self.assertEqual('/backups/', user_root)
@@ -111,7 +112,7 @@ class SQLiteUserDBTest(unittest.TestCase):
         with self.assertRaises(InvalidUserError):
             self.db.get_repos('invalid')
         with self.assertRaises(InvalidUserError):
-            self.db.get_root_dir('invalid')
+            self.db.get_user_root('invalid')
 
     def test_list(self):
         self.assertEqual(['admin'], self.app.userdb.list())
@@ -120,7 +121,9 @@ class SQLiteUserDBTest(unittest.TestCase):
 
     def test_set_invalid_user(self):
         with self.assertRaises(InvalidUserError):
-            self.db.set_info('invalid', '/backups/', True)
+            self.db.set_user_root('invalid', '/backups/')
+        with self.assertRaises(InvalidUserError):
+            self.db.set_is_admin('invalid', True)
         with self.assertRaises(InvalidUserError):
             self.db.set_email('invalid', 'larry@gmail.com')
         with self.assertRaises(InvalidUserError):

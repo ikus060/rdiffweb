@@ -162,12 +162,12 @@ class UserManager(Component):
             raise InvalidUserError(user)
         return db.get_repo_maxage(user, repo_path)
 
-    def get_root_dir(self, user):
+    def get_user_root(self, user):
         """Get user root directory."""
         db = self.find_user_database(user)
         if not db:
             raise InvalidUserError(user)
-        return db.get_root_dir(user)
+        return db.get_user_root(user)
 
     def _get_all_supporting_stores(self, operation):
         """Returns a list of stores that implement the specified operation"""
@@ -248,19 +248,26 @@ class UserManager(Component):
         self.add_user(real_user)
         return real_user
 
-    def set_info(self, user, user_root, is_admin):
-        """Sets the user information."""
-        db = self.find_user_database(user)
-        if not db:
-            raise InvalidUserError(user)
-        db.set_info(user, user_root, is_admin)
-
     def set_email(self, user, email):
         """Sets the given user email."""
         db = self.find_user_database(user)
         if not db:
             raise InvalidUserError(user)
         db.set_email(user, email)
+
+    def set_is_admin(self, user, is_admin):
+        """Sets the user root directory."""
+        db = self.find_user_database(user)
+        if not db:
+            raise InvalidUserError(user)
+        db.set_is_admin(user, is_admin)
+
+    def set_user_root(self, user, user_root):
+        """Sets the user root directory."""
+        db = self.find_user_database(user)
+        if not db:
+            raise InvalidUserError(user)
+        db.set_user_root(user, user_root)
 
     def set_password(self, user, password, old_password=None):
         # Check if user exists in database

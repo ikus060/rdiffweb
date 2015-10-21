@@ -45,7 +45,7 @@ class mysqlUserDB(IPasswordStore):
             "SELECT Username FROM users WHERE Username = %(user)s AND Password = %(password)s", user=username, password=self._hashPassword(password))
         return len(results) == 1
 
-    def get_root_dir(self, username):
+    def get_user_root(self, username):
         if username not in self.userRootCache:
             self.userRootCache[username] = self._getUserField(
                 username, "UserRoot")
@@ -149,7 +149,7 @@ class mysqlUserDB(IPasswordStore):
         assert len(results) == 1
         return int(results[0][0])
 
-    def get_is_admin(self, username):
+    def is_admin(self, username):
         return bool(self._getUserField(username, "IsAdmin"))
 
     def is_ldap(self):

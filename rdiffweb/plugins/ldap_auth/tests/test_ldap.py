@@ -118,6 +118,14 @@ class UserManagerLdapTest(unittest.TestCase):
     def test_exists_with_invalid_user(self):
         self.assertFalse(self.ldapstore.exists('invalid'))
 
+    def test_get_user_attr(self):
+        self.assertEquals(['bob'], self.ldapstore.get_user_attr('bob', 'uid'))
+        self.assertEquals(['bob'], self.ldapstore.get_user_attr('bob', 'cn'))
+        self.assertEquals(['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+                          self.ldapstore.get_user_attr('bob', 'objectClass'))
+        self.assertEquals({u'uid': ['bob'], u'cn': ['bob']},
+                          self.ldapstore.get_user_attr('bob', ['uid', 'cn']))
+
     def test_set_password_not_found(self):
         with self.assertRaises(ValueError):
             self.assertTrue(self.ldapstore.set_password('joe', 'password'))

@@ -78,7 +78,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
             return results[0][1]
         return False
 
-    def get_root_dir(self, username):
+    def get_user_root(self, username):
         """
         Get user root directory.
         """
@@ -104,9 +104,27 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         repos.sort(lambda x, y: cmp(x.upper(), y.upper()))
         return repos
 
+    def get_repo_maxage(self, username, repoPath):
+        assert isinstance(username, unicode)
+
+        query = "SELECT MaxAge FROM repos WHERE RepoPath=? AND UserID = " + \
+            str(self._get_user_id(username))
+        results = self._execute_query(query, (repoPath,))
+        assert len(results) == 1
+        return int(results[0][0])
+
     def get_email(self, username):
         assert isinstance(username, unicode)
-        return self._get_user_field(username, "userEmail")
+        return self._get_user_field(username, "UserEmail")
+
+    def get_user_root(self, username):
+        assert isinstance(username, unicode)
+        return self._get_user_field(username, "UserRoot")
+
+    def is_admin(self, username):
+        assert isinstance(username, unicode)
+        value = self._get_user_field(username, "IsAdmin")
+        return self._bool(value)
 
     def list(self):
         """
@@ -141,21 +159,17 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
                             (username,))
         return True
 
-    def set_info(self, username, user_root, is_admin):
+    def set_is_admin(self, username, is_admin):
         assert isinstance(username, unicode)
-        assert isinstance(user_root, unicode)
         if not self.exists(username):
             raise InvalidUserError(username)
-        # Remove the user from the cache before
-        # updating the database.
-        self._user_root_cache.pop(username, None)
         if is_admin:
             admin_int = 1
         else:
             admin_int = 0
-        query = "UPDATE users SET UserRoot=?, IsAdmin=" + \
-            str(admin_int) + " WHERE Username = ?"
-        self._execute_query(query, (user_root, username))
+        self._execute_query(
+            "UPDATE users SET IsAdmin = ? WHERE Username = ?",
+            (admin_int, username))
 
     def set_email(self, username, email):
         assert isinstance(username, unicode)
@@ -211,19 +225,17 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
             str(self._get_user_id(username))
         self._execute_query(query, (maxAge, repoPath))
 
-    def get_repo_maxage(self, username, repoPath):
+    def set_user_root(self, username, user_root):
         assert isinstance(username, unicode)
-
-        query = "SELECT MaxAge FROM repos WHERE RepoPath=? AND UserID = " + \
-            str(self._get_user_id(username))
-        results = self._execute_query(query, (repoPath,))
-        assert len(results) == 1
-        return int(results[0][0])
-
-    def is_admin(self, username):
-        assert isinstance(username, unicode)
-        value = self._get_user_field(username, "IsAdmin")
-        return self._bool(value)
+        assert isinstance(user_root, unicode)
+        if not self.exists(username):
+            raise InvalidUserError(username)
+        # Remove the user from the cache before
+        # updating the database.
+        self._user_root_cache.pop(username, None)
+        self._execute_query(
+            "UPDATE users SET UserRoot=? WHERE Username = ?",
+            (user_root, username))
 
     # Helper functions #
     def _encode_path(self, path):
@@ -320,7 +332,8 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
 
             # Create admin user
             self.set_password('admin', 'admin123', old_password=None)
-            self.set_info('admin', '/backups/', True)
+            self.set_user_root('admin', '/backups/')
+            self.set_is_admin('admin', True)
 
     def _get_tables(self):
         return [

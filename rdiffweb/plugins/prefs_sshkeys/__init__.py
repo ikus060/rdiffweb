@@ -104,7 +104,7 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
 
     def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
         # Get user root directory
-        user_root = self.app.userdb.get_root_dir(self.app.currentuser.username)
+        user_root = self.app.userdb.get_user_root(self.app.currentuser.username)
         user_root_b = encode_s(user_root)
         filename = os.path.join(user_root_b, b'.ssh', b'authorized_keys')
 

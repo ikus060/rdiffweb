@@ -153,7 +153,7 @@ class AdminPage(page_main.MainPage):
         users = [{"username": username,
                   "email": self.app.userdb.get_email(username),
                   "is_admin": self.app.userdb.is_admin(username),
-                  "user_root": self.app.userdb.get_root_dir(username)
+                  "user_root": self.app.userdb.get_user_root(username)
                   } for username in usernames]
 
         # Apply the filters.

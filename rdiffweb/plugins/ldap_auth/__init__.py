@@ -174,21 +174,34 @@ class LdapPasswordStore(IPasswordStore):
         return self._execute(username, check_user_exists)
 
     def get_email(self, username):
-        assert isinstance(username, unicode)
-        # Get from LDAP
+        """Get user mail."""
         logger.debug("get email for user [%s]" % username)
-        return self._get_email_from_ldap(username)
+        value = self.get_user_attr(username, 'mail')
+        if value:
+            return value[0]
+        return None
 
-    def _get_email_from_ldap(self, username):
-        """Query LDAP server for email."""
+    def get_home_dir(self, username):
+        """Get user home directory."""
+        logger.debug("get email for user [%s]" % username)
+        return self.get_user_attr(username, 'homeDirectory')
+
+    def get_user_attr(self, username, attr):
+        """Get user attributes."""
+        assert isinstance(username, unicode)
 
         def fetch_user_email(l, r):  # @UnusedVariable
             if len(r) != 1:
                 logger.warn("user [%s] not found" % username)
                 return ""
-            if 'mail' in r[0][1] and len(r[0][1]['mail']) > 0:
-                return r[0][1]['mail'][0]
-            return ""
+            if isinstance(attr, list):
+                return dict([(x, r[0][1][x])
+                             for x in attr
+                             if x in r[0][1]])
+            elif attr in r[0][1]:
+                return [decode_s(x)
+                        for x in r[0][1][attr]]
+            return None
 
         # Execute the LDAP operation
         try:
