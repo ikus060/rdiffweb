@@ -243,11 +243,14 @@ class IDatabase(IRdiffwebPlugin):
     def get_email(self, user):
         """Return the user email."""
 
-    def set_info(self, user, user_root, is_admin):
+    def set_user_root(self, user, user_root):
         """Sets the user information."""
 
     def set_email(self, user, email):
         """Sets the given user email."""
+
+    def set_is_admin(self, user, is_admin):
+        """Sets the user information."""
 
     def set_repos(self, user, repoPaths):
         """Sets the list of repos for the given user."""

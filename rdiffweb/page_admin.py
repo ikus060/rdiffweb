@@ -190,7 +190,8 @@ class AdminPage(page_main.MainPage):
             logger.info("updating user info")
             if password:
                 self.app.userdb.set_password(username, password, old_password=None)
-            self.app.userdb.set_info(username, user_root, is_admin)
+            self.app.userdb.set_user_root(username, user_root)
+            self.app.userdb.set_is_admin(username, is_admin)
             self.app.userdb.set_email(username, email)
             success = _("User information modified successfully.")
 
@@ -211,7 +212,8 @@ class AdminPage(page_main.MainPage):
             logger.info("adding user [%s]" % username)
 
             self.app.userdb.add_user(username, password)
-            self.app.userdb.set_info(username, user_root, is_admin)
+            self.app.userdb.set_user_root(username, user_root)
+            self.app.userdb.set_is_admin(username, is_admin)
             self.app.userdb.set_email(username, email)
 
             # Check and update user directory
