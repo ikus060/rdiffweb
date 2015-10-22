@@ -184,7 +184,10 @@ class LdapPasswordStore(IPasswordStore):
     def get_home_dir(self, username):
         """Get user home directory."""
         logger.debug("get email for user [%s]" % username)
-        return self.get_user_attr(username, 'homeDirectory')
+        value = self.get_user_attr(username, 'homeDirectory')
+        if isinstance(value, list):
+            value = value[0]
+        return value
 
     def get_user_attr(self, username, attr):
         """Get user attributes."""
