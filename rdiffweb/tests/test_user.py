@@ -55,6 +55,12 @@ class UserManagerSQLiteTest(unittest.TestCase):
         self.app.userdb.add_user('joe')
         self.assertTrue(self.app.userdb.exists('joe'))
 
+    def test_add_user_with_duplicate(self):
+        """Add user to database."""
+        self.app.userdb.add_user('denise')
+        with self.assertRaises(ValueError):
+            self.app.userdb.add_user('denise')
+
     def test_add_user_with_password(self):
         """Add user to database with password."""
         self.app.userdb.add_user('jo', 'password')
@@ -113,6 +119,8 @@ class UserManagerSQLiteTest(unittest.TestCase):
             self.app.userdb.get_repos('invalid')
         with self.assertRaises(InvalidUserError):
             self.app.userdb.get_user_root('invalid')
+        with self.assertRaises(InvalidUserError):
+            self.app.userdb.is_admin('invalid')
 
     def test_list(self):
         self.assertEqual(['admin'], self.app.userdb.list())

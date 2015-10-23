@@ -169,14 +169,6 @@ class UserManager(Component):
             raise InvalidUserError(user)
         return db.get_user_root(user)
 
-    def _get_all_supporting_stores(self, operation):
-        """Returns a list of stores that implement the specified operation"""
-        stores = []
-        for store in self._password_stores:
-            if store.supports(operation):
-                stores.append(store)
-        return stores
-
     def _get_supporting_store(self, operation):
         """
         Returns the IPasswordStore that implements the specified operation.
@@ -187,14 +179,6 @@ class UserManager(Component):
             if store.supports(operation):
                 return store
         return None
-
-    def _get_all_supporting_databases(self, operation):
-        """Returns a list of database that implement the specified operation"""
-        stores = []
-        for db in self._databases:
-            if db.supports(operation):
-                stores.append(db)
-        return stores
 
     def _get_supporting_database(self, operation):
         """
