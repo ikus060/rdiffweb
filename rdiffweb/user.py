@@ -63,7 +63,7 @@ class UserManager(Component):
         """
         Used to add a new user with an optional password.
         """
-        assert password is None or isinstance(user, unicode)
+        assert password is None or isinstance(password, unicode)
         # Check if user already exists.
         db = self.find_user_database(user)
         if db:
@@ -315,7 +315,7 @@ class UserManager(Component):
         for listener in self._change_listeners:
             # Support divergent account change listener implementations too.
             try:
-                logger.debug('CHANGE_LISTENER: %s(%s)' % (repr(listener), mod))
+                logger.debug('call %s(%s)' % (repr(listener), mod))
                 getattr(listener, mod)(*args)
             except AttributeError:
                 logger.warn(
