@@ -49,10 +49,11 @@ class LoginPage(page_main.MainPage):
         params = {'redirect': redirect,
                   'login': login}
 
-        # Add welcom message to params.
-        welcome_msg = self.app.cfg.get_config("WelcomeMsg")
-        if welcome_msg:
-            params["welcome_msg"] = welcome_msg
+        # Add welcome message to params. Try to load translated message.
+        params["welcome_msg"] = self.app.cfg.get_config("WelcomeMsg")
+        if hasattr(cherrypy.response, 'i18n'):
+            lang = cherrypy.response.i18n._lang
+            params["welcome_msg"] = self.app.cfg.get_config("WelcomeMsg[%s]" % (lang), params["welcome_msg"])
 
         if self._is_submit():
             params.update(self.handle_login(login, password, redirect))
