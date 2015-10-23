@@ -31,7 +31,6 @@ import weakref
 import rdw_helpers
 
 from i18n import ugettext as _
-from rdiffweb.rdw_helpers import decode_s
 from rdiffweb.rdw_config import Configuration
 import zlib
 
