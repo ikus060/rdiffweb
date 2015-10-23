@@ -62,8 +62,7 @@ class MainPage(Component):
         repo_b = user_repos_matches[0]
 
         # Get reference to user_root
-        user_root = self.app.currentuser.root_dir
-        user_root_b = encode_s(user_root)
+        user_root_b = encode_s(self.app.currentuser.root_dir)
 
         # Check path vs real path value
         full_path_b = os.path.join(user_root_b, path_b).rstrip(b"/")
@@ -130,4 +129,3 @@ class MainPage(Component):
         # Append template parameters.
         parms.update(kwargs)
         return self.app.templates.compile_template(template_name, **parms)
-
