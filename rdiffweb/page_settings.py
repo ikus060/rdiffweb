@@ -54,13 +54,13 @@ class SettingsPage(page_main.MainPage):
     def index(self, path_b=b"", **kwargs):
         assert isinstance(path_b, str)
 
-        _logger.debug("settings [%s]" % decode_s(path_b, 'replace'))
+        _logger.debug("repo settings [%s]", decode_s(path_b, 'replace'))
 
         # Check user permissions
         try:
-            (repo_obj, path_obj) = self.validate_user_path(path_b)
+            repo_obj = self.validate_user_path(path_b)[0]
         except librdiff.FileError as e:
-            _logger.exception("invalid user path")
+            _logger.exception("invalid user path [%s]", decode_s(path_b, 'replace'))
             return self._compile_error_template(unicode(e))
 
         # Check if any action to process.
