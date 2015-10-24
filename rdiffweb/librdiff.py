@@ -33,6 +33,7 @@ import rdw_helpers
 from i18n import ugettext as _
 from rdiffweb.rdw_config import Configuration
 import zlib
+import errno
 
 try:
     import subprocess32 as subprocess  # @UnresolvedImport @UnusedImport
@@ -664,9 +665,38 @@ class RdiffRepo:
     def in_progress(self):
         """Check if a backup is in progress for the current repo."""
         # Filter the files to keep current_mirror.* files
-        mirrorMarkers = filter(lambda x: x.startswith(b"current_mirror."),
-                               self.data_entries)
-        return len(mirrorMarkers) > 1
+        current_mirrors = filter(lambda x: x.startswith(b"current_mirror."),
+                                 self.data_entries)
+
+        pid_re = re.compile(b"^PID\s*([0-9]+)", re.I | re.M)
+
+        def extract_pid(current_mirror):
+            """Return process ID from a current mirror marker, if any"""
+            entry = IncrementEntry(self.root_path, current_mirror)
+            match = pid_re.search(entry.read())
+            if not match:
+                return None
+            else:
+                return int(match.group(1))
+
+        def pid_running(pid):
+            """True if we know if process with pid is currently running"""
+            try:
+                os.kill(pid, 0)
+            except OSError as e:
+                if e[0] == errno.ESRCH:
+                    return False
+                else:
+                    logger.warn("unable to check if PID %d still running", pid)
+                    return False
+            return True
+
+        # Read content of the file and check if pid still exists
+        for current_mirror in current_mirrors:
+            pid = extract_pid(current_mirror)
+            if pid and pid_running(pid):
+                return True
+        return False
 
     @property
     def last_backup_date(self):
