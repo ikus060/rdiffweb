@@ -91,12 +91,6 @@ class build(build_):
     sub_commands = build_.sub_commands[:]
     sub_commands.insert(0, ('compile_all_catalogs', None))
 
-_data_files = [('/etc/init.d', ['extras/init/rdiffweb']),
-               ('/etc/logrotate.d', ['extras/logrotate/rdiffweb']),
-               ]
-if not os.path.isfile("/etc/rdiffweb/rdw.conf"):
-    _data_files.append(('/etc/rdiffweb', ['rdw.conf']))
-
 setup(
     name='rdiffweb',
     version='0.8.0',
@@ -107,7 +101,6 @@ setup(
     license="GPLv3",
     packages=['rdiffweb'],
     include_package_data=True,
-    data_files=_data_files,
     entry_points={"console_scripts": ["rdiffweb = rdiffweb.main:start"]},
     # new commands added and build command modified
     cmdclass={
