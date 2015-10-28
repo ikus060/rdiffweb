@@ -67,13 +67,8 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         if kwargs['new'] != kwargs['confirm']:
             return {'error': _("The new password and its confirmation does not matches.")}
 
-        # Check if current database support it.
-        user = self.app.currentuser.username
-        store = self.app.userdb.find_user_store(user)
-        if not store or not store.supports('set_password'):
-            return {'error': _("Password changes is not supported.")}
-
         # Update user password
+        user = self.app.currentuser.username
         _logger.info("updating user [%s] password", user)
         self.app.userdb.set_password(user, kwargs['new'], old_password=kwargs['current'])
         return {'success': _("Password updated successfully.")}
@@ -129,15 +124,18 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
                 else:
                     _logger.info("unknown action: %s", action)
                     raise cherrypy.NotFound("Unknown action")
+            except RdiffError as e:
+                params['error'] = unicode(e)
             except ValueError as e:
                 params['error'] = unicode(e)
             except Exception as e:
                 _logger.warn("unknown error processing action", exc_info=True)
                 params['error'] = _("Unknown error")
 
+        user = self.app.currentuser.username
         params.update({
             'email': self.app.currentuser.email,
-            'supports_set_email': self.app.userdb.supports('set_email'),
-            'supports_set_password': self.app.userdb.supports('set_password'),
+            'supports_set_email': self.app.userdb.supports('set_email', user),
+            'supports_set_password': self.app.userdb.supports('set_password', user),
         })
         return "prefs_general.html", params

@@ -86,10 +86,6 @@ class LdapPasswordStore(IPasswordStore):
         # Check if password change are allowed.
         self.allow_password_change = self.app.cfg.get_config_bool(
             "LdapAllowPasswordChange", "false")
-        # Define supported operations
-        self.supported_operations = ['are_valid_credentials', 'get_mail']
-        if self.allow_password_change:
-            self.supported_operations.extend(['set_password'])
 
     def are_valid_credentials(self, username, password):
         """Check if the given credential as valid according to LDAP."""
@@ -256,4 +252,6 @@ class LdapPasswordStore(IPasswordStore):
         return self._execute(username, change_passwd)
 
     def supports(self, operation):
-        return operation in self.supported_operations
+        if operation == 'set_password':
+            return self.allow_password_change
+        return hasattr(self, operation)

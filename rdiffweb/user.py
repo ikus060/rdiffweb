@@ -264,8 +264,8 @@ class UserManager(Component):
             raise InvalidUserError(user)
         # Try to update the user password.
         store = self.find_user_store(user)
-        if store and not hasattr(store, 'set_password'):
-            raise RdiffError(_("""the authentication backend for user %s does
+        if store and not store.supports('set_password'):
+            raise RdiffError(_("""The authentication backend for user %s does
             not support setting the password""" % user))
         elif not store:
             store = self._get_supporting_store('set_password')
@@ -288,15 +288,25 @@ class UserManager(Component):
             raise InvalidUserError(user)
         db.set_repo_maxage(user, repo_path, max_age)
 
-    def supports(self, operation):
+    def supports(self, operation, user=None):
         """
         Check if the users password store or user database supports the given operation.
         """
         assert isinstance(operation, unicode)
-        if self._get_supporting_store(operation) or self._get_supporting_database(operation):
-            return True
+        assert user is None or isinstance(user, unicode)
+
+        if user:
+            if operation in ['set_password']:
+                store = self.find_user_store(user)
+                return store is not None and store.supports(operation)
+            else:
+                db = self.find_user_database(user)
+                return db is not None and db.supports(operation)
         else:
-            return False
+            if operation in ['set_password']:
+                return self._get_supporting_store(operation) is not None
+            else:
+                return self._get_supporting_database(operation) is not None
 
     def _notify(self, mod, *args):
         mod = '_'.join(['user', mod])

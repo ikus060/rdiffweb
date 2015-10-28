@@ -351,6 +351,8 @@ class UserManagerSQLiteLdapTest(unittest.TestCase):
         """Check basic supports"""
         self.assertTrue(self.app.userdb.supports('set_password'))
         self.assertTrue(self.app.userdb.supports('set_email'))
+        self.assertTrue(self.app.userdb.supports('set_password', 'annik'))
+        self.assertFalse(self.app.userdb.supports('set_email', 'annik'))
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
