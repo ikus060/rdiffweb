@@ -325,6 +325,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
                 conn.close()
 
             # Create admin user
+            self.add_user('admin')
             self.set_password('admin', 'admin123', old_password=None)
             self.set_user_root('admin', '/backups/')
             self.set_is_admin('admin', True)
