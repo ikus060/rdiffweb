@@ -158,7 +158,7 @@ class LdapPasswordStore(IPasswordStore):
                 raise RdiffError(e.message['desc'])
             raise RdiffError(unicode(repr(e)))
 
-    def exists(self, username):
+    def has_password(self, username):
         """Check if the user exists in LDAP"""
 
         def check_user_exists(l, r):  # @UnusedVariable

@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 import logging
 import unittest
 
-from rdiffweb.tests.test import MockRdiffwebApp
+from rdiffweb.test import MockRdiffwebApp
 from mockldap import MockLdap
 from rdiffweb.core import InvalidUserError
 

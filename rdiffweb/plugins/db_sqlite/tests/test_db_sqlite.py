@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 import unittest
 from rdiffweb.plugins.db_sqlite import SQLiteUserDB
-from rdiffweb.tests.test import MockRdiffwebApp
+from rdiffweb.test import MockRdiffwebApp
 from rdiffweb.core import InvalidUserError
 
 """
@@ -113,6 +113,13 @@ class SQLiteUserDBTest(unittest.TestCase):
             self.db.get_repos('invalid')
         with self.assertRaises(InvalidUserError):
             self.db.get_user_root('invalid')
+
+    def test_has_password(self):
+
+        self.db.add_user('carol')
+        self.assertFalse(self.db.has_password('carol'))
+        self.db.set_password('carol', 'password')
+        self.assertTrue(self.db.has_password('carol'))
 
     def test_list(self):
         self.assertEqual(['admin'], self.app.userdb.list())

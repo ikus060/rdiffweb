@@ -115,6 +115,13 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
                 self._get_user_field(username, "UserRoot"))
         return self._user_root_cache[username]
 
+    def has_password(self, username):
+        """Check if the given user has a password in database."""
+        try:
+            return bool(self._get_user_field(username, "Password"))
+        except InvalidUserError:
+            return False
+
     def is_admin(self, username):
         assert isinstance(username, unicode)
         value = self._get_user_field(username, "IsAdmin")

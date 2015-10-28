@@ -75,7 +75,11 @@ class UserManager(Component):
         self._notify('added', user, password)
         # Find a password store where to set password
         if password:
-            self.set_password(user, password)
+            # Check if database support set password, otherwise try to set password as usual.
+            if hasattr(db, 'set_password'):
+                db.set_password(user, password)
+            else:
+                self.set_password(user, password)
 
     def delete_user(self, user):
         """
@@ -116,9 +120,9 @@ class UserManager(Component):
         returned.
         """
         assert isinstance(user, unicode)
-        for db in self._password_stores:
-            if db.exists(user):
-                return db
+        for store in self._password_stores:
+            if store.has_password(user):
+                return store
         return None
 
     def find_user_database(self, user):

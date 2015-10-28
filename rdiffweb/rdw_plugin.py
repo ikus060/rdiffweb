@@ -314,8 +314,8 @@ class IPasswordStore(IRdiffwebPlugin):
         """
         return False
 
-    def exists(self, user):
-        """Returns whether the user account exists."""
+    def has_password(self, user):
+        """Returns whether the user account exists in password store."""
         return False
 
     def set_password(self, user, password, old_password=None):
