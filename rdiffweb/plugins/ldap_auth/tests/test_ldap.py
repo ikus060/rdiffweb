@@ -22,7 +22,7 @@ import unittest
 import logging
 from rdiffweb.core import RdiffError
 from mockldap import MockLdap
-from rdiffweb.tests.test import MockRdiffwebApp
+from rdiffweb.test import MockRdiffwebApp
 
 """
 Created on Oct 17, 2015
@@ -112,12 +112,6 @@ class UserManagerLdapTest(unittest.TestCase):
     def test_delete_user_with_invalid_user(self):
         self.assertFalse(self.ldapstore.delete_user('eve'))
 
-    def test_exists(self):
-        self.assertTrue(self.ldapstore.exists('bob'))
-
-    def test_exists_with_invalid_user(self):
-        self.assertFalse(self.ldapstore.exists('invalid'))
-
     def test_get_user_attr(self):
         self.assertEquals(['bob'], self.ldapstore.get_user_attr('bob', 'uid'))
         self.assertEquals(['bob'], self.ldapstore.get_user_attr('bob', 'cn'))
@@ -125,6 +119,12 @@ class UserManagerLdapTest(unittest.TestCase):
                           self.ldapstore.get_user_attr('bob', 'objectClass'))
         self.assertEquals({u'uid': ['bob'], u'cn': ['bob']},
                           self.ldapstore.get_user_attr('bob', ['uid', 'cn']))
+
+    def test_has_password(self):
+        self.assertTrue(self.ldapstore.has_password('bob'))
+
+    def test_has_password_with_invalid_user(self):
+        self.assertFalse(self.ldapstore.has_password('invalid'))
 
     def test_set_password_not_found(self):
         with self.assertRaises(ValueError):
