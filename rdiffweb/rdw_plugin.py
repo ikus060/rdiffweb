@@ -375,11 +375,14 @@ class IUserChangeListener(IRdiffwebPlugin):
     def user_added(self, user, password):
         """New user (account) created."""
 
-    def user_password_changed(self, user, password):
-        """Password changed."""
-
     def user_attr_changed(self, user, attrs={}):
         """User attribute changed."""
 
     def user_deleted(self, user):
         """User and related account information have been deleted."""
+
+    def user_logined(self, user, password):
+        """User successfully logged into rdiffweb."""
+
+    def user_password_changed(self, user, password):
+        """Password changed."""

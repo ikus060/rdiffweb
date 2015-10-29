@@ -224,6 +224,7 @@ class UserManager(Component):
             if real_user:
                 break
         if not real_user:
+            self._notify('logined', user, password)
             return real_user
         # Check if user exists in database
         if self.exists(real_user):
@@ -234,6 +235,7 @@ class UserManager(Component):
             return None
         # Create user
         self.add_user(real_user)
+        self._notify('logined', user, password)
         return real_user
 
     def set_email(self, user, email):
@@ -313,9 +315,9 @@ class UserManager(Component):
         for listener in self._change_listeners:
             # Support divergent account change listener implementations too.
             try:
-                logger.debug('call %s(%s)' % (repr(listener), mod))
+                logger.debug('call [%s] [%s]' % (listener.__class__.__name__, mod))
                 getattr(listener, mod)(*args)
-            except AttributeError:
+            except:
                 logger.warn(
-                    'IUserChangeListener %s does not support method %s'
+                    'IUserChangeListener [%s] fail to run [%s]'
                     % (listener.__class__.__name__, mod), exc_info=1)
