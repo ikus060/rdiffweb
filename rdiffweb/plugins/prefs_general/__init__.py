@@ -56,11 +56,11 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         """
         Called when changing user password.
         """
-        if 'current' not in kwargs:
+        if 'current' not in kwargs or not kwargs['current']:
             raise ValueError(_("current password is missing"))
-        if 'new' not in kwargs:
+        if 'new' not in kwargs or not kwargs['new']:
             raise ValueError(_("new password is missing"))
-        if 'confirm' not in kwargs:
+        if 'confirm' not in kwargs or not kwargs['confirm']:
             raise ValueError(_("confirmation password is missing"))
 
         # Check if confirmation is valid.

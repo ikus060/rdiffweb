@@ -150,8 +150,9 @@ class LdapPasswordStore(IPasswordStore):
             return function(l, r)
         except ldap.LDAPError as e:
             l.unbind_s()
+            logger.warn('ldap error', exc_info=1)
             if isinstance(e.message, dict) and 'desc' in e.message:
-                raise RdiffError(e.message['desc'])
+                raise RdiffError(decode_s(e.message['desc']))
             raise RdiffError(unicode(repr(e)))
 
     def has_password(self, username):
