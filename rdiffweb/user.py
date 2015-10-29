@@ -224,10 +224,10 @@ class UserManager(Component):
             if real_user:
                 break
         if not real_user:
-            self._notify('logined', user, password)
             return real_user
         # Check if user exists in database
         if self.exists(real_user):
+            self._notify('logined', user, password)
             return real_user
         # Check if user may be added.
         if not self._allow_add_user:
