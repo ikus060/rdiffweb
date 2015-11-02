@@ -127,7 +127,7 @@ class DirEntry:
         self.exists = exists
         # Store the increments sorted by date.
         # See self.last_change_date()
-        self._increments = sorted(increments, key=lambda x: x.date, reverse=True)
+        self._increments = sorted(increments, key=lambda x: x.date)
 
     @property
     def display_name(self):
@@ -177,7 +177,7 @@ class DirEntry:
     def change_dates(self):
         """
         Return a list of dates when this item has changes. Represent the
-        previous revision. From new to old.
+        previous revision. From old to new.
         """
         # Return previous computed value
         if hasattr(self, '_change_dates'):
@@ -218,7 +218,7 @@ class DirEntry:
     def last_change_date(self):
         # Avoid using change_date if not already computed.
         # It's too long. Unless change_date is define.
-        return self.change_dates[0]
+        return self.change_dates[-1]
 
 
 class HistoryEntry:
@@ -1026,13 +1026,13 @@ class RdiffPath:
 
         # Don't allow restores before the dir existed
         backup_dates = filter(
-            lambda x: x >= entry.change_dates[-1], backup_dates)
+            lambda x: x >= entry.change_dates[0], backup_dates)
 
         if not entry.exists:
             # If the dir has been deleted, don't allow restores after its
             # deletion
             backup_dates = filter(
-                lambda x: x <= entry.change_dates[0], backup_dates)
+                lambda x: x <= entry.change_dates[-1], backup_dates)
 
         return backup_dates
 

@@ -92,8 +92,9 @@ class rdwTime:
     "local" time, but pass the timezone information on to rdiff-backup, so
     it can restore to the correct state"""
 
-    def __init__(self):
-        self.timeInSeconds = 0
+    def __init__(self, seconds=0):
+        assert isinstance(seconds, int)
+        self.timeInSeconds = seconds
         self.tzOffset = 0
 
     def initFromInt(self, seconds):

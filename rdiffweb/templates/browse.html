@@ -56,7 +56,7 @@
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right-xs" role="menu" aria-labelledby="menu1">
-                            {% for change_date in entry.change_dates %}
+                            {% for change_date in entry.change_dates | reverse %}
                             <li>
                                 <a href="{{ url_for_restore(repo_path, entry.path, change_date) }}">
                                     <!-- File date -->

@@ -20,7 +20,11 @@ from __future__ import unicode_literals
 import pkg_resources
 import unittest
 
-from rdiffweb.librdiff import RdiffPath, FileStatisticsEntry, RdiffRepo
+from rdiffweb.librdiff import RdiffPath, FileStatisticsEntry, RdiffRepo, \
+    DirEntry, IncrementEntry
+import os
+from rdiffweb.rdw_helpers import rdwTime
+
 """
 Created on Oct 3, 2015
 
@@ -34,13 +38,58 @@ class MockRdiffRepo(RdiffRepo):
 
     def __init__(self):
         self.encoding = 'utf8'
-        self.data_path = pkg_resources.resource_filename('rdiffweb', 'tests')  # @UndefinedVariable
+        self.repo_root = pkg_resources.resource_filename(b'rdiffweb', b'tests')  # @UndefinedVariable
+        self.data_path = os.path.join(self.repo_root, b'rdiff-backup-data')
+        self.root_path = MockRdiffPath(self)
 
 
 class MockRdiffPath(RdiffPath):
 
-    def __init__(self):
+    def __init__(self, repo):
+        self.repo = repo
+        self.path = pkg_resources.resource_filename(b'rdiffweb', b'tests')  # @UndefinedVariable
+
+
+class DirEntryTest(unittest.TestCase):
+
+    def setUp(self):
         self.repo = MockRdiffRepo()
+        backup_dates = [
+            1414871387, 1414871426, 1414871448, 1414871475, 1414871489, 1414873822,
+            1414873850, 1414879639, 1414887165, 1414887491, 1414889478, 1414937803,
+            1414939853, 1414967021, 1415047607, 1415059497, 1415221262, 1415221470,
+            1415221495, 1415221507]
+        self.repo.backup_dates = [rdwTime(x) for x in backup_dates]
+        self.root_path = self.repo.root_path
+
+    def test_change_dates(self):
+        """Check if dates are properly sorted."""
+        increments = [
+            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'),
+            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T09:16:43-05:00.missing'),
+            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-03T19:04:57-05:00.diff.gz')]
+        entry = DirEntry(self.root_path, b'my_filename.txt', False, increments)
+
+        self.assertEquals(
+            [rdwTime(1414939853),
+             rdwTime(1414967021),
+             rdwTime(1415059497)],
+            entry.change_dates)
+
+    def test_change_dates_with_exists(self):
+        """Check if dates are properly sorted."""
+        increments = [
+            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'),
+            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T09:16:43-05:00.missing'),
+            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-03T19:04:57-05:00.diff.gz')]
+        entry = DirEntry(self.root_path, b'my_filename.txt', True, increments)
+
+        self.assertEquals(
+            [rdwTime(1414939853),
+             rdwTime(1414967021),
+             rdwTime(1415059497),
+             rdwTime(1415221507)],
+            entry.change_dates)
 
 
 class FileStatisticsEntryTest(unittest.TestCase):
@@ -49,7 +98,8 @@ class FileStatisticsEntryTest(unittest.TestCase):
     """
 
     def setUp(self):
-        self.root_path = MockRdiffPath()
+        self.repo = MockRdiffRepo()
+        self.root_path = self.repo.root_path
 
     def test_get_mirror_size(self):
         entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data')
