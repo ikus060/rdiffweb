@@ -209,6 +209,11 @@ class DirEntry:
         # Return the list of dates.
         return self._change_dates
 
+    @property
+    def first_change_date(self):
+        """Return first change date."""
+        return self.change_dates[0]
+
     def _get_first_backup_after_date(self, date):
         """ Iterates the mirror_metadata files in the rdiff data dir """
         index = bisect.bisect_right(self._repo.backup_dates, date)
@@ -219,6 +224,20 @@ class DirEntry:
         # Avoid using change_date if not already computed.
         # It's too long. Unless change_date is define.
         return self.change_dates[-1]
+
+    @property
+    def restore_dates(self):
+        """
+        Return a sorted (old to new) list of valid restore date for the given directory
+        entry.
+        """
+        # Don't allow restores before the dir existed.
+        # If the dir has been deleted, don't allow restores after its deletion
+        return [
+            x
+            for x in self._repo.backup_dates
+            if (x >= self.first_change_date and
+                (self.exists or x <= self.last_change_date))]
 
 
 class HistoryEntry:
@@ -1015,26 +1034,10 @@ class RdiffPath:
         repo_path = RdiffPath(self.repo, parent_path)
 
         # Get entries specific to the given name
-        entries = repo_path.dir_entries
-        entries = filter(lambda x: x.name == name, entries)
+        entries = [x for x in repo_path.dir_entries if x.name == name]
         if not entries:
             raise DoesNotExistError()
-        entry = entries[0]
-
-        # Retrieve all backup dates.
-        backup_dates = self.repo.backup_dates
-
-        # Don't allow restores before the dir existed
-        backup_dates = filter(
-            lambda x: x >= entry.change_dates[0], backup_dates)
-
-        if not entry.exists:
-            # If the dir has been deleted, don't allow restores after its
-            # deletion
-            backup_dates = filter(
-                lambda x: x <= entry.change_dates[-1], backup_dates)
-
-        return backup_dates
+        return entries[0].restore_dates
 
     def _recursiveTarDir(self, dirpath, target):
         """This function is used during to archive a restored directory. It will

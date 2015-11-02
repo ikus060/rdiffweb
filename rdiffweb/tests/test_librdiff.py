@@ -91,6 +91,29 @@ class DirEntryTest(unittest.TestCase):
              rdwTime(1415221507)],
             entry.change_dates)
 
+    def test_restore_dates(self):
+        increments = [
+            IncrementEntry(self.root_path, b'my_dir.2014-11-05T16:04:30-05:00.dir'),
+            IncrementEntry(self.root_path, b'my_dir.2014-11-05T16:04:55-05:00.dir')]
+        entry = DirEntry(self.root_path, b'my_dir', False, increments)
+        self.assertEquals(
+            [rdwTime(1415221470),
+             rdwTime(1415221495),
+             ],
+            entry.restore_dates)
+
+    def test_restore_dates_with_exists(self):
+        increments = [
+            IncrementEntry(self.root_path, b'my_dir.2014-11-05T16:04:30-05:00.dir'),
+            IncrementEntry(self.root_path, b'my_dir.2014-11-05T16:04:55-05:00.dir')]
+        entry = DirEntry(self.root_path, b'my_dir', True, increments)
+        self.assertEquals(
+            [rdwTime(1415221470),
+             rdwTime(1415221495),
+             rdwTime(1415221507),
+             ],
+            entry.restore_dates)
+
 
 class FileStatisticsEntryTest(unittest.TestCase):
     """
