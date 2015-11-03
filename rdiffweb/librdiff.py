@@ -549,11 +549,10 @@ class RdiffRepo:
         if not hasattr(self, '_backup_dates'):
             logger.debug("get backup dates for [%s]" %
                          self._decode(self.repo_root))
-            self._backup_dates = [
-                IncrementEntry(self.root_path, x).date
-                for x in filter(lambda x: x.startswith(b"mirror_metadata"),
-                                self.data_entries)]
-            self._backup_dates = sorted(self._backup_dates)
+            self._backup_dates = sorted([
+                IncrementEntry.extract_date(x)
+                for x in self.data_entries
+                if x.startswith(b"mirror_metadata")])
         return self._backup_dates
 
     def _check(self):
@@ -594,24 +593,22 @@ class RdiffRepo:
 
     @property
     def _error_logs(self):
-        """Return list of IncrementEntry to represent each file statistics."""
+        """Return dict of {date: IncrementEntry} to represent each file statistics."""
         if not hasattr(self, '_error_logs_data'):
-            self._error_logs_data = {}
-            for x in filter(lambda x: x.startswith(b"error_log."),
-                            self.data_entries):
-                entry = IncrementEntry(self.root_path, x)
-                self._error_logs_data[entry.date] = entry
+            self._error_logs_data = {
+                IncrementEntry.extract_date(x): IncrementEntry(self.root_path, x)
+                for x in self.data_entries
+                if x.startswith(b"error_log.")}
         return self._error_logs_data
 
     @property
     def _file_statistics(self):
-        """Return list of IncrementEntry to represent each file statistics."""
+        """Return dict of {date: filename} to represent each file statistics."""
         if not hasattr(self, '_file_statistics_data'):
-            self._file_statistics_data = {}
-            for filename in filter(lambda filename: filename.startswith(b"file_statistics."),
-                                   self.data_entries):
-                date = IncrementEntry.extract_date(filename)
-                self._file_statistics_data[date] = filename
+            self._file_statistics_data = {
+                IncrementEntry.extract_date(x): x
+                for x in self.data_entries
+                if x.startswith(b"file_statistics.")}
         return self._file_statistics_data
 
     def get_encoding(self):
@@ -684,8 +681,10 @@ class RdiffRepo:
     def in_progress(self):
         """Check if a backup is in progress for the current repo."""
         # Filter the files to keep current_mirror.* files
-        current_mirrors = filter(lambda x: x.startswith(b"current_mirror."),
-                                 self.data_entries)
+        current_mirrors = [
+            x
+            for x in self.data_entries
+            if x.startswith(b"current_mirror.")]
 
         pid_re = re.compile(b"^PID\s*([0-9]+)", re.I | re.M)
 
@@ -743,11 +742,10 @@ class RdiffRepo:
         """Return list of IncrementEntry to represent each sessions
         statistics."""
         if not hasattr(self, '_session_statistics_data'):
-            self._session_statistics_data = {}
-            for x in filter(lambda x: x.startswith(b"session_statistics."),
-                            self.data_entries):
-                entry = SessionStatisticsEntry(self.root_path, x)
-                self._session_statistics_data[entry.date] = entry
+            self._session_statistics_data = {
+                IncrementEntry.extract_date(x): SessionStatisticsEntry(self.root_path, x)
+                for x in self.data_entries
+                if x.startswith(b"session_statistics.")}
         return self._session_statistics_data
 
     def set_encoding(self, name):
@@ -819,13 +817,15 @@ class RdiffPath:
             (parent_folder, filename) = os.path.split(
                 os.path.join(self.repo_root, INCREMENTS, self.path))
             try:
-                increments = os.listdir(parent_folder)
+                increments = [
+                    x
+                    for x in os.listdir(parent_folder)
+                    if x.startswith(filename)]
             except OSError:
                 logger.exception("fail to list increments for [%s]" %
                                  self._decode(parent_folder))
                 increments = []
 
-            increments = filter(lambda x: x.startswith(filename), increments)
             if not increments:
                 logger.error("repository [%s] doesn't exists" %
                              self._decode(self.path))
@@ -942,10 +942,9 @@ class RdiffPath:
         # List content of the increment directory.
         # Ignore sub-directories.
         increment_entries = [
-            IncrementEntry(self, y) for y in filter(
-                lambda x: not os.path.isdir(
-                    os.path.join(self.increments_path, x)),
-                os.listdir(self.increments_path))]
+            IncrementEntry(self, x)
+            for x in os.listdir(self.increments_path)
+            if not os.path.isdir(os.path.join(self.increments_path, x))]
         return increment_entries
 
     @property
