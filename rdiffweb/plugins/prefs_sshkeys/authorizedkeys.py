@@ -103,20 +103,10 @@ def add(filename, key):
     """
     Add a key to an `authorized_keys` file.
     """
-    # Create directory if not exists.
-    directory = os.path.dirname(filename)
-    if not os.path.exists(directory):
-        try:
-            os.mkdir(directory)
-            os.chmod(directory, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
-        except:
-            # Swallow any error.
-            pass
-    # Create file is missing.
+    # Create file if missing.
     if not os.path.isfile(filename):
-        with open(filename, 'w+'):
-            os.utime(filename, None)
-        os.chmod(filename, stat.S_IRUSR | stat.S_IWUSR)
+        create_file(filename)
+
     # Add key to file.
     with open(filename, "rw+") as f:
         # Check the file size.
@@ -147,6 +137,32 @@ def check_publickey(data):
     if m:
         key = KeySplit(lineno=False, options=False, keytype=m.group(2), key=m.group(3), comment=m.group(4))
     return key
+
+
+def create_file(filename):
+    """
+    Try to create the file and directory with right user permissions.
+    """
+    # Create directory (.ssh) if not exists.
+    directory = os.path.dirname(filename)
+    if not os.path.exists(directory):
+        _logger.info("creating directory %s" % (directory,))
+        os.mkdir(directory, 0700)
+
+    # Create the file.
+    _logger.info("creating authorized_keys file %s" % (filename,))
+    if not os.path.exists(filename):
+        with open(filename, 'w+'):
+            os.utime(filename, None)
+
+        # Try to change mode
+        os.chmod(filename, stat.S_IRUSR | stat.S_IWUSR)
+
+        # Get UID / gui from directory owner
+        val = os.stat(directory)
+
+        # Also try to change owner
+        os.chown(filename, val.st_uid, val.st_gid)
 
 
 def exists(filename, key):
