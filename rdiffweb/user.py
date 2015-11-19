@@ -70,7 +70,7 @@ class UserManager(Component):
             raise ValueError(_("user %s already exists" % (user,)))
         # Find a database where to add the user
         db = self._get_supporting_database('add_user')
-        logger.info("adding new user [%s] to database [%s]", user, db)
+        logger.debug("adding new user [%s] to database [%s]", user, db)
         db.add_user(user)
         self._notify('added', user, password)
         # Find a password store where to set password
@@ -217,7 +217,7 @@ class UserManager(Component):
         assert isinstance(user, unicode)
         assert password is None or isinstance(user, unicode)
         # Validate the credentials
-        logger.info("validating user [%s] credentials", user)
+        logger.debug("validating user [%s] credentials", user)
         real_user = False
         for store in self._password_stores:
             real_user = store.are_valid_credentials(user, password)

@@ -66,7 +66,7 @@ class LoginPage(page_main.MainPage):
         """
         # check for login credentials
         params = dict()
-        logger.info("check credentials for [%s]" % login)
+        logger.debug("check credentials for [%s]" % login)
         try:
             username = self.app.userdb.login(login, password)
         except:
