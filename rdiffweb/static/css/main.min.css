@@ -7090,7 +7090,7 @@ button.close {
   content: '\e821';
 }
 body {
-  padding-top: 50px;
+  padding-top: 45px;
 }
 .light {
   color: #626262;
@@ -7220,4 +7220,14 @@ body {
 }
 .spacer {
   margin-top: 21px;
+}
+.repohead {
+  background-color: #f5f5f5;
+}
+.repohead h1 {
+  font-size: 18px;
+  margin-top: 10.5px;
+}
+.repohead h1 .breadcrumb {
+  margin-bottom: 0px;
 }

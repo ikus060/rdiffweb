@@ -2,7 +2,7 @@
 // Default layout
 // ============================================================================
 body {
-	padding-top: 50px;
+	padding-top: 45px;
 }
 .light {
 	color: lighten(@text-color, 25%);
@@ -94,3 +94,14 @@ body {
 }
 
 .spacer { margin-top: @line-height-computed; }
+
+.repohead {
+    background-color: @breadcrumb-bg;
+    h1 {
+        font-size: 18px;
+        margin-top: 10.5px;
+        .breadcrumb {
+            margin-bottom: 0px;
+        }
+    }
+}
