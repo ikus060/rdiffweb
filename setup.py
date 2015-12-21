@@ -93,7 +93,7 @@ class build(build_):
 
 setup(
     name='rdiffweb',
-    version='0.8.0',
+    version='0.8.1',
     description='A web interface to rdiff-backup repositories',
     author='Patrik Dufresne',
     author_email='info@patrikdufresne.com',
