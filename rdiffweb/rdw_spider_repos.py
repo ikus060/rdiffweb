@@ -32,6 +32,8 @@ logger = logging.getLogger(__name__)
 def start_repo_spider_thread(killEvent, app):
     # Get refresh interval from app config.
     spiderInterval = app.cfg.get_config_bool("autoUpdateRepos", "False")
+    if not spiderInterval:
+        return
 
     # Start the thread.
     newThread = SpiderReposThread(killEvent, app, spiderInterval)
@@ -42,21 +44,18 @@ class SpiderReposThread(threading.Thread):
 
     def __init__(self, killEvent, app, spiderInterval=False):
         """Create a new SpiderRepo to refresh the users repositories."""
+        assert isinstance(spiderInterval, int)
         self.killEvent = killEvent
         self.app = app
-        # Make sure it's an integer.
-        if spiderInterval:
-            assert isinstance(spiderInterval, int)
         self.spiderInterval = spiderInterval
         threading.Thread.__init__(self)
 
     def run(self):
-        if self.spiderInterval:
-            while True:
-                find_repos_for_all_users(self.app)
-                self.killEvent.wait(60 * self.spiderInterval)
-                if self.killEvent.isSet():
-                    return
+        while True:
+            self.killEvent.wait(60 * self.spiderInterval)
+            find_repos_for_all_users(self.app)
+            if self.killEvent.isSet():
+                return
 
 
 def _find_repos(dirToSearch, depth=3):
