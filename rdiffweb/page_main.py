@@ -25,6 +25,7 @@ import os.path
 
 from rdw_helpers import encode_s, decode_s
 from rdiffweb.core import Component
+from rdiffweb.rdw_plugin import ITemplateFilterPlugin
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -128,4 +129,10 @@ class MainPage(Component):
 
         # Append template parameters.
         parms.update(kwargs)
+
+        # Filter params using plugins
+        self.app.plugins.run(
+            lambda x: x.filter_data(template_name, parms),
+            category=ITemplateFilterPlugin.CATEGORY)
+
         return self.app.templates.compile_template(template_name, **parms)

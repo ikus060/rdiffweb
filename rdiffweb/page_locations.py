@@ -91,10 +91,5 @@ class LocationsPage(page_main.MainPage):
             "templates_before_content": list(),
         }
 
-        # Add plugins params.
-        self.app.plugins.run(
-            lambda x: x.locations_update_params(params),
-            rdw_plugin.ILocationsPagePlugin.CATEGORY)
-
         # Return the complete list of params.
         return params

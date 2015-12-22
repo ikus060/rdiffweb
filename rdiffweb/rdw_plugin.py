@@ -92,7 +92,7 @@ class PluginManager():
         self.manager.setCategoriesFilter({
             IDatabase.CATEGORY: IDatabase,
             IDeamonPlugin.CATEGORY: IDeamonPlugin,
-            ILocationsPagePlugin.CATEGORY: ILocationsPagePlugin,
+            ITemplateFilterPlugin.CATEGORY: ITemplateFilterPlugin,
             IPasswordStore.CATEGORY: IPasswordStore,
             IPreferencesPanelProvider.CATEGORY: IPreferencesPanelProvider,
             IUserChangeListener.CATEGORY: IUserChangeListener,
@@ -285,19 +285,6 @@ class IDeamonPlugin(IRdiffwebPlugin):
         raise NotImplementedError("run is not implemented")
 
 
-class ILocationsPagePlugin(IRdiffwebPlugin):
-    """
-    Plugin to extend the LocationsPage.
-    """
-    CATEGORY = "LocationsPage"
-
-    def locations_update_params(self, params):
-        """
-        Called by the LocationsPage to add extra data to the page.
-        """
-        raise NotImplementedError("locations_update_params is not implemented")
-
-
 class IPasswordStore(IRdiffwebPlugin):
     """
     Plugin used to provide user authentication.
@@ -377,6 +364,19 @@ class IPreferencesPanelProvider(IRdiffwebPlugin):
                     template = self.app.templates.get_template("page_prefs_photo.html")
                     params['template_content'] = template
         """
+
+
+class ITemplateFilterPlugin(IRdiffwebPlugin):
+    """
+    Plugin to extend any pages params.
+    """
+    CATEGORY = "TemplateFilter"
+
+    def filter_data(self, template_name, data):
+        """
+        Called by to filter the params.
+        """
+        raise NotImplementedError("filter_data is not implemented")
 
 
 class IUserChangeListener(IRdiffwebPlugin):
