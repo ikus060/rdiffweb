@@ -38,6 +38,7 @@ from page_restore import RestorePage
 from page_settings import SettingsPage
 from page_status import StatusPage
 from cherrypy import Application, tools
+from cherrypy.process.plugins import Monitor
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -108,6 +109,9 @@ class RdiffwebApp(Application):
 
         # create user manager
         self.userdb = UserManager(self)
+
+        # Start deamon plugins
+        self._start_deamons()
 
     def activate_plugin(self, plugin_obj):
         """Activate the given plugin object."""
@@ -231,6 +235,20 @@ class RdiffwebApp(Application):
             'tools.sessions.storage_type': True,
             'tools.sessions.storage_path': session_dir,
         })
+
+    def _start_deamons(self):
+        """
+        Start deamon plugins
+        """
+        logger.debug("starting deamon plugins")
+
+        def start_deamon(p):
+            Monitor(cherrypy.engine,
+                    p.deamon_run,
+                    frequency=p.deamon_frequency,
+                    name="DeamonPlugin").subscribe()
+
+        self.plugins.run(start_deamon, category='Daemon')
 
 
 def _getter(field):

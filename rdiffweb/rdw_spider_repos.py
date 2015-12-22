@@ -21,41 +21,10 @@ from __future__ import unicode_literals
 import os
 import librdiff
 import logging
-import threading
 from rdiffweb.rdw_helpers import encode_s
 
 # Define the logger
 logger = logging.getLogger(__name__)
-
-
-# Returns pid of started process, or 0 if no process was started
-def start_repo_spider_thread(killEvent, app):
-    # Get refresh interval from app config.
-    spiderInterval = app.cfg.get_config_bool("autoUpdateRepos", "False")
-    if not spiderInterval:
-        return
-
-    # Start the thread.
-    newThread = SpiderReposThread(killEvent, app, spiderInterval)
-    newThread.start()
-
-
-class SpiderReposThread(threading.Thread):
-
-    def __init__(self, killEvent, app, spiderInterval=False):
-        """Create a new SpiderRepo to refresh the users repositories."""
-        assert isinstance(spiderInterval, int)
-        self.killEvent = killEvent
-        self.app = app
-        self.spiderInterval = spiderInterval
-        threading.Thread.__init__(self)
-
-    def run(self):
-        while True:
-            self.killEvent.wait(60 * self.spiderInterval)
-            find_repos_for_all_users(self.app)
-            if self.killEvent.isSet():
-                return
 
 
 def _find_repos(dirToSearch, depth=3):
@@ -91,14 +60,3 @@ def find_repos_for_user(user, userdb):
     repo_paths = map(striproot, repo_paths)
     logger.debug("set user [%s] repos: %s " % (user, repo_paths))
     userdb.set_repos(user, repo_paths)
-
-
-def find_repos_for_all_users(app):
-    """Refresh all users repositories using the given `app`."""
-    user_db = app.userdb
-    if not user_db.supports('set_repos'):
-        return
-
-    users = user_db.list()
-    for user in users:
-        find_repos_for_user(user, user_db)

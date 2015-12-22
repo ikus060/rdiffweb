@@ -271,6 +271,19 @@ class IDeamonPlugin(IRdiffwebPlugin):
     """
     CATEGORY = "Daemon"
 
+    @property
+    def deamon_frequency(self):
+        """
+        Return the frequency of the deamon plugin in seconds.
+        """
+        raise NotImplementedError("frequency is not implemented")
+
+    def deamon_run(self):
+        """
+        Called periodically.
+        """
+        raise NotImplementedError("run is not implemented")
+
 
 class ILocationsPagePlugin(IRdiffwebPlugin):
     """

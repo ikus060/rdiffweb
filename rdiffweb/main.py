@@ -189,16 +189,6 @@ def start():
 
     cherrypy.config.update(global_config)
 
-    # Start daemon thread to refresh users repository
-    kill_event = threading.Event()
-    rdw_spider_repos.start_repo_spider_thread(kill_event, app)
-
-    # Register kill_event
-    if hasattr(cherrypy.engine, 'subscribe'):  # CherryPy >= 3.1
-        cherrypy.engine.subscribe('stop', lambda: kill_event.set())
-    else:
-        cherrypy.engine.on_stop_engine_list.append(lambda: kill_event.set())  # @UndefinedVariable
-
     # Add a custom signal handler
     cherrypy.engine.signal_handler.handlers['SIGUSR2'] = debug_dump
 
