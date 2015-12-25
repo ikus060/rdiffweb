@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import bisect
 import gzip
@@ -28,9 +29,9 @@ import sys
 import tempfile
 import weakref
 
-import rdw_helpers
+from rdiffweb import rdw_helpers
 
-from i18n import ugettext as _
+from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_config import Configuration
 import zlib
 import errno

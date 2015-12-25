@@ -17,13 +17,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import cherrypy
-import librdiff
+from rdiffweb import librdiff
 import logging
 import os.path
 
-from rdw_helpers import encode_s, decode_s
+from rdiffweb.rdw_helpers import encode_s, decode_s
 from rdiffweb.core import Component
 from rdiffweb.rdw_plugin import ITemplateFilterPlugin
 

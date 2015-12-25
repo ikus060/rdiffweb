@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import logging
 import time
@@ -25,8 +26,8 @@ from jinja2 import Environment, PackageLoader
 from jinja2.ext import _make_new_gettext, _make_new_ngettext
 from jinja2.loaders import ChoiceLoader, FileSystemLoader
 
-import rdw_helpers
-import i18n
+from rdiffweb import rdw_helpers
+from rdiffweb import i18n
 
 
 # Define the logger

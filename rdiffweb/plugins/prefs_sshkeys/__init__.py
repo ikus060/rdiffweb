@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import cherrypy
 import logging
@@ -28,7 +29,7 @@ from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPreferencesPanelProvider
 from rdiffweb.rdw_helpers import encode_s
 
-import authorizedkeys
+from . import authorizedkeys
 
 """
 Created on May 11, 2015

@@ -17,15 +17,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import cherrypy
 import logging
 import os
-import page_main
-import librdiff
+from rdiffweb import page_main
+from rdiffweb import librdiff
 
-from i18n import ugettext as _
-from rdw_helpers import decode_s, unquote_url
+from rdiffweb.i18n import ugettext as _
+from rdiffweb.rdw_helpers import decode_s, unquote_url
 
 # Define the logger
 logger = logging.getLogger(__name__)

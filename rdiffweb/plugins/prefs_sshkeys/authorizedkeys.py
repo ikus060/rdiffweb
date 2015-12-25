@@ -147,7 +147,7 @@ def create_file(filename):
     directory = os.path.dirname(filename)
     if not os.path.exists(directory):
         _logger.info("creating directory %s" % (directory,))
-        os.mkdir(directory, 0700)
+        os.mkdir(directory, 0o700)
 
     # Create the file.
     _logger.info("creating authorized_keys file %s" % (filename,))

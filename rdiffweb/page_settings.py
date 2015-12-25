@@ -17,13 +17,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import cherrypy
 import encodings
 import logging
 
-import librdiff
-import page_main
+from rdiffweb import librdiff
+from rdiffweb import page_main
 
 from rdiffweb import rdw_helpers
 from rdiffweb.i18n import ugettext as _

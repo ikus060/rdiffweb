@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 
 import codecs
@@ -24,7 +25,7 @@ import logging
 import os
 import re
 
-import rdw_helpers
+from rdiffweb import rdw_helpers
 from collections import OrderedDict
 
 # Define the logger

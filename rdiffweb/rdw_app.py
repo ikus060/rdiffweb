@@ -17,26 +17,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import cherrypy
 import logging
 import os
 import pkg_resources
-import rdw_config
-import rdw_plugin
-import rdw_templating
+from rdiffweb import rdw_config
+from rdiffweb import rdw_plugin
+from rdiffweb import rdw_templating
 
-from user import UserManager
-from page_admin import AdminPage
-from page_browse import BrowsePage
-from page_history import HistoryPage
-from page_locations import LocationsPage
-from page_login import LoginPage
-from page_logout import LogoutPage
-from page_prefs import PreferencesPage
-from page_restore import RestorePage
-from page_settings import SettingsPage
-from page_status import StatusPage
+from rdiffweb.user import UserManager
+from rdiffweb.page_admin import AdminPage
+from rdiffweb.page_browse import BrowsePage
+from rdiffweb.page_history import HistoryPage
+from rdiffweb.page_locations import LocationsPage
+from rdiffweb.page_login import LoginPage
+from rdiffweb.page_logout import LogoutPage
+from rdiffweb.page_prefs import PreferencesPage
+from rdiffweb.page_restore import RestorePage
+from rdiffweb.page_settings import SettingsPage
+from rdiffweb.page_status import StatusPage
 from cherrypy import Application, tools
 from cherrypy.process.plugins import Monitor
 

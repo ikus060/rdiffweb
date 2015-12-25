@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import binascii
 import cherrypy
@@ -24,7 +25,7 @@ import logging
 
 from cherrypy._cpcompat import base64_decode
 
-from rdw_helpers import quote_url
+from rdiffweb.rdw_helpers import quote_url
 
 # Define the logger
 logger = logging.getLogger(__name__)

@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 try:
     from setuptools import setup
 except ImportError:
@@ -34,10 +35,18 @@ from distutils.log import error, info
 from distutils.util import split_quoted
 from string import strip, Template
 
-# < Python 2.4 does not have the package_data setup keyword, so it is unsupported
-pythonVersion = sys.version_info[0] + sys.version_info[1] / 10.0
-if pythonVersion < 2.4:
-    print 'Python version 2.3 and lower is not supported.'
+# Check running python version.
+if sys.version_info >= (3, 0):
+    py3k = True
+else:
+    py3k = False
+
+if py3k and not sys.version_info >= (3, 4):
+    print('python version 3.4 is required.')
+    sys.exit(1)
+
+if not py3k and not sys.version_info >= (2, 7):
+    print('python version 2.7 is required.')
     sys.exit(1)
 
 
@@ -148,6 +157,7 @@ class build(build_):
 
     sub_commands = build_.sub_commands[:]
     sub_commands.insert(0, ('compile_all_catalogs', None))
+    sub_commands.insert(0, ('filltmpl', None))
 
 setup(
     name='rdiffweb',
