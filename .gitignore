@@ -40,3 +40,4 @@ nosetests.xml
 .pydevproject
 /rdw.db
 /testrdw.conf
+/sonar-project.properties
