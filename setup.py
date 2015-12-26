@@ -18,9 +18,17 @@
 
 from __future__ import print_function
 from __future__ import unicode_literals
-from builtins import map
-from past.builtins import basestring
-from past import utils
+
+from babel.messages.frontend import compile_catalog, extract_messages, update_catalog, init_catalog
+from distutils.cmd import Command
+from distutils.command.build import build as build_
+from distutils.dist import DistributionMetadata
+from distutils.log import error, info
+from distutils.util import split_quoted
+from string import Template
+import sys
+
+
 try:
     from setuptools import setup
 except ImportError:
@@ -28,27 +36,19 @@ except ImportError:
     ez_setup.use_setuptools()
     from setuptools import setup
 
-import sys
-import os
-
-from distutils.command.build import build as build_
-from babel.messages.frontend import compile_catalog, extract_messages, update_catalog, init_catalog
-from distutils.cmd import Command
-from distutils.dist import DistributionMetadata
-from distutils.log import error, info
-from distutils.util import split_quoted
-if utils.PY2:
+try:
     from string import strip
-else:
+except ImportError:
     strip = str.strip
-from string import Template
+
+PY2 = sys.version_info[0] == 2
 
 # Check running python version.
-if utils.PY3 and not sys.version_info >= (3, 4):
+if not PY2 and not sys.version_info >= (3, 4):
     print('python version 3.4 is required.')
     sys.exit(1)
 
-if utils.PY2 and not sys.version_info >= (2, 7):
+if PY2 and not sys.version_info >= (2, 7):
     print('python version 2.7 is required.')
     sys.exit(1)
 
@@ -72,7 +72,7 @@ class fill_template(Command):
         self.template_ext = '.in'
 
     def finalize_options(self):
-        if isinstance(self.templates, basestring):
+        if isinstance(self.templates, str):
             self.templates = split_quoted(self.templates)
 
         self.templates += getattr(self.distribution.metadata, 'templates', None) or []
@@ -168,8 +168,9 @@ install_requires = [
     "Jinja2>=2.6",
     "yapsy>=1.11.223",
     "babel>=0.9",
+    "future>=0.15.2",
 ]
-if utils.PY2:
+if PY2:
     install_requires.extend(["pysqlite>=2.6.3"])
 
 setup(
