@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-from __future__ import unicode_literals
+# from __future__ import unicode_literals
 
 from babel.messages.frontend import compile_catalog, extract_messages, update_catalog, init_catalog
 from distutils.cmd import Command
@@ -35,11 +35,6 @@ except ImportError:
     import ez_setup
     ez_setup.use_setuptools()
     from setuptools import setup
-
-try:
-    from string import strip
-except ImportError:
-    strip = str.strip
 
 PY2 = sys.version_info[0] == 2
 
@@ -137,7 +132,7 @@ class compile_all_catalogs(Command):
         self.statistics = False
 
     def finalize_options(self):
-        self.locales = list(map(strip, self.locales.split(',')))
+        self.locales = list(map(str.strip, self.locales.split(',')))
 
     def run(self):
         for locale in self.locales:
