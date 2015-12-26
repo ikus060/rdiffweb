@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
+from builtins import bytes
+
 import pkg_resources
 import unittest
 
@@ -38,7 +40,7 @@ class MockRdiffRepo(RdiffRepo):
 
     def __init__(self):
         self.encoding = 'utf8'
-        self.repo_root = pkg_resources.resource_filename(b'rdiffweb', b'tests')  # @UndefinedVariable
+        self.repo_root = bytes(pkg_resources.resource_filename('rdiffweb', 'tests'), encoding='utf-8')  # @UndefinedVariable
         self.data_path = os.path.join(self.repo_root, b'rdiff-backup-data')
         self.root_path = MockRdiffPath(self)
 
@@ -47,7 +49,30 @@ class MockRdiffPath(RdiffPath):
 
     def __init__(self, repo):
         self.repo = repo
-        self.path = pkg_resources.resource_filename(b'rdiffweb', b'tests')  # @UndefinedVariable
+        self.path = bytes(pkg_resources.resource_filename('rdiffweb', 'tests'), encoding='utf-8')  # @UndefinedVariable
+
+
+class IncrementEntryTest(unittest.TestCase):
+
+    def setUp(self):
+        self.repo = MockRdiffRepo()
+        backup_dates = [
+            1414871387, 1414871426, 1414871448, 1414871475, 1414871489, 1414873822,
+            1414873850, 1414879639, 1414887165, 1414887491, 1414889478, 1414937803,
+            1414939853, 1414967021, 1415047607, 1415059497, 1415221262, 1415221470,
+            1415221495, 1415221507]
+        self.repo._backup_dates = [rdwTime(x) for x in backup_dates]
+        self.root_path = self.repo.root_path
+
+    def test_extract_date(self):
+
+        self.assertEqual(rdwTime(1414967021), IncrementEntry.extract_date(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'))
+
+    def test_init(self):
+
+        increment = IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz')
+        self.assertEqual(rdwTime(1414967021), increment.date)
+        self.assertEqual(b'my_filename.txt', increment.filename)
 
 
 class DirEntryTest(unittest.TestCase):
@@ -59,7 +84,7 @@ class DirEntryTest(unittest.TestCase):
             1414873850, 1414879639, 1414887165, 1414887491, 1414889478, 1414937803,
             1414939853, 1414967021, 1415047607, 1415059497, 1415221262, 1415221470,
             1415221495, 1415221507]
-        self.repo.backup_dates = [rdwTime(x) for x in backup_dates]
+        self.repo._backup_dates = [rdwTime(x) for x in backup_dates]
         self.root_path = self.repo.root_path
 
     def test_change_dates(self):
@@ -70,7 +95,7 @@ class DirEntryTest(unittest.TestCase):
             IncrementEntry(self.root_path, b'my_filename.txt.2014-11-03T19:04:57-05:00.diff.gz')]
         entry = DirEntry(self.root_path, b'my_filename.txt', False, increments)
 
-        self.assertEquals(
+        self.assertEqual(
             [rdwTime(1414939853),
              rdwTime(1414967021),
              rdwTime(1415059497)],
@@ -84,7 +109,7 @@ class DirEntryTest(unittest.TestCase):
             IncrementEntry(self.root_path, b'my_filename.txt.2014-11-03T19:04:57-05:00.diff.gz')]
         entry = DirEntry(self.root_path, b'my_filename.txt', True, increments)
 
-        self.assertEquals(
+        self.assertEqual(
             [rdwTime(1414939853),
              rdwTime(1414967021),
              rdwTime(1415059497),
@@ -96,7 +121,7 @@ class DirEntryTest(unittest.TestCase):
             IncrementEntry(self.root_path, b'my_dir.2014-11-05T16:04:30-05:00.dir'),
             IncrementEntry(self.root_path, b'my_dir.2014-11-05T16:04:55-05:00.dir')]
         entry = DirEntry(self.root_path, b'my_dir', False, increments)
-        self.assertEquals(
+        self.assertEqual(
             [rdwTime(1415221470),
              rdwTime(1415221495),
              ],
@@ -107,7 +132,7 @@ class DirEntryTest(unittest.TestCase):
             IncrementEntry(self.root_path, b'my_dir.2014-11-05T16:04:30-05:00.dir'),
             IncrementEntry(self.root_path, b'my_dir.2014-11-05T16:04:55-05:00.dir')]
         entry = DirEntry(self.root_path, b'my_dir', True, increments)
-        self.assertEquals(
+        self.assertEqual(
             [rdwTime(1415221470),
              rdwTime(1415221495),
              rdwTime(1415221507),
@@ -126,22 +151,22 @@ class FileStatisticsEntryTest(unittest.TestCase):
 
     def test_get_mirror_size(self):
         entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data')
-        size = entry.get_mirror_size(b'<F!chïer> (@vec) {càraçt#èrë} $épêcial')
+        size = entry.get_mirror_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(143, size)
 
     def test_get_source_size(self):
         entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data')
-        size = entry.get_source_size(b'<F!chïer> (@vec) {càraçt#èrë} $épêcial')
+        size = entry.get_source_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(286, size)
 
     def test_get_mirror_size_gzip(self):
         entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data.gz')
-        size = entry.get_mirror_size(b'<F!chïer> (@vec) {càraçt#èrë} $épêcial')
+        size = entry.get_mirror_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(143, size)
 
     def test_get_source_size_gzip(self):
         entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data.gz')
-        size = entry.get_source_size(b'<F!chïer> (@vec) {càraçt#èrë} $épêcial')
+        size = entry.get_source_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(286, size)
 
 

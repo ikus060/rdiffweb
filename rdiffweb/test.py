@@ -15,10 +15,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from __future__ import unicode_literals
-
-from rdiffweb.rdw_app import RdiffwebApp
-
 """
 Created on Oct 14, 2015
 
@@ -26,6 +22,10 @@ Mock class for testing.
 
 @author: ikus060
 """
+
+from __future__ import unicode_literals
+
+from rdiffweb.rdw_app import RdiffwebApp
 
 
 class MockRdiffwebApp(RdiffwebApp):
@@ -55,7 +55,7 @@ class MockRdiffwebApp(RdiffwebApp):
             self.cfg.set_config('LdapBaseDn', 'dc=nodomain')
 
         # Set config
-        for key, val in self.default_config.items():
+        for key, val in list(self.default_config.items()):
             self.cfg.set_config(key, val)
 
     def reset(self):

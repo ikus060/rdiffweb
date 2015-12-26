@@ -18,6 +18,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+from builtins import str
 
 import cherrypy
 import logging
@@ -119,7 +120,7 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
                 elif action == 'delete':
                     self._handle_delete(filename, **kwargs)
             except ValueError as e:
-                params['error'] = unicode(e)
+                params['error'] = str(e)
             except Exception as e:
                 _logger.warn("unknown error processing action", exc_info=True)
                 params['error'] = _("Unknown error")

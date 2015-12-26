@@ -16,11 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import bisect
+from builtins import bytes
+from builtins import chr
+from builtins import object
+from builtins import str
+import errno
+from future.utils import iteritems
+from future.utils import python_2_unicode_compatible
 import gzip
+import io
 import logging
 import os
 import re
@@ -28,13 +36,12 @@ import shutil
 import sys
 import tempfile
 import weakref
+import zlib
 
 from rdiffweb import rdw_helpers
-
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_config import Configuration
-import zlib
-import errno
+
 
 try:
     import subprocess32 as subprocess  # @UnresolvedImport @UnusedImport
@@ -59,58 +66,50 @@ ZIP_SUFFIX = b".zip"
 # Tar gz extension
 TARGZ_SUFFIX = b".tar.gz"
 
-# Declare io_method()
-if sys.version.startswith("3"):
-    import io
-    io_method = io.BytesIO
-else:
-    import cStringIO
-    io_method = cStringIO.StringIO
-
-
-class FileError:
+@python_2_unicode_compatible
+class FileError(object):
 
     def __str__(self):
-        return rdw_helpers.encode_s(unicode(self))
-
-    def __unicode__(self):
         return _("An unknown error occurred.")
 
 
+@python_2_unicode_compatible
 class AccessDeniedError(FileError):
 
-    def __unicode__(self):
+    def __str__(self):
         return _("Access denied.")
 
 
+@python_2_unicode_compatible
 class DoesNotExistError(FileError):
 
-    def __unicode__(self):
+    def __str__(self):
         return _("The repository does not exist.")
 
 
+@python_2_unicode_compatible
 class UnknownError(FileError):
 
     def __init__(self, error=None):
         if not error:
             error = _("An unknown error occurred.")
-        assert isinstance(error, unicode)
+        assert isinstance(error, str)
         self.error = error
 
-    def __unicode__(self):
+    def __str__(self):
         return self.error
 
 
 # Interfaced objects #
 
-class DirEntry:
+class DirEntry(object):
 
     """Includes name, isDir, fileSize, exists, and dict (changeDates) of sorted
     local dates when backed up"""
 
     def __init__(self, repo_path, name, exists, increments):
         assert isinstance(repo_path, RdiffPath)
-        assert isinstance(name, str)
+        assert isinstance(name, bytes)
 
         # Keep reference to the path and repo object.
         self._repo = repo_path.repo
@@ -170,7 +169,7 @@ class DirEntry:
                 unquote_path = self._repo.unquote(self.path)
                 self._file_size = stats.get_source_size(unquote_path)
             else:
-                logger.warn("cannot file file statistic [%s]", self.last_change_date)
+                logger.warning("cannot file file statistic [%s]", self.last_change_date)
                 self._file_size = 0
         return self._file_size
 
@@ -241,7 +240,7 @@ class DirEntry:
                 (self.exists or x <= self.last_change_date))]
 
 
-class HistoryEntry:
+class HistoryEntry(object):
 
     def __init__(self, repo, date):
         assert isinstance(repo, RdiffRepo)
@@ -290,7 +289,7 @@ class IncrementEntry(object):
             repository directory and an entry name. The entry name correspond
             to an error_log.* filename."""
         assert isinstance(repo_path, RdiffPath)
-        assert isinstance(name, str)
+        assert isinstance(name, bytes)
         # Keep reference to the current path.
         self.repo_path = weakref.proxy(repo_path)
         # The given entry name may has quote charater, replace them
@@ -314,7 +313,7 @@ class IncrementEntry(object):
         date_string = filename.rsplit(b".", 1)[-1]
         return_time = rdw_helpers.rdwTime()
         try:
-            return_time.initFromString(date_string)
+            return_time.initFromString(date_string.decode())
             return return_time
         except ValueError:
             return None
@@ -323,8 +322,8 @@ class IncrementEntry(object):
         """Should be used to open the increment file. This method handle
         compressed vs not-compressed file."""
         if self._is_compressed:
-            return gzip.open(os.path.join(self.repo.data_path, self.name), "r")
-        return open(os.path.join(self.repo.data_path, self.name), "r")
+            return gzip.open(os.path.join(self.repo.data_path, self.name), "rb")
+        return open(os.path.join(self.repo.data_path, self.name), "rb")
 
     def read(self):
         """Read the error file and return it's content. Raise exception if the
@@ -396,9 +395,9 @@ class FileStatisticsEntry(IncrementEntry):
         try:
             return int(self._search(path)["mirror_size"])
         except:
-            logger.warn("mirror size not found for [%s]" %
-                        self.repo._decode(path),
-                        exc_info=1)
+            logger.warning("mirror size not found for [%s]" %
+                           self.repo._decode(path),
+                           exc_info=1)
             return 0
 
     def get_source_size(self, path):
@@ -407,9 +406,9 @@ class FileStatisticsEntry(IncrementEntry):
         try:
             return int(self._search(path)["source_size"])
         except:
-            logger.warn("source size not found for [%s]" %
-                        self.repo._decode(path),
-                        exc_info=1)
+            logger.warning("source size not found for [%s]" %
+                           self.repo._decode(path),
+                           exc_info=1)
             return 0
 
     def _search(self, path):
@@ -443,7 +442,7 @@ class FileStatisticsEntry(IncrementEntry):
                         d_buf = line + decompress.decompress(buf)
 
                     # Search beginning of a line matching our filename
-                    for line in io_method(d_buf):
+                    for line in io.BytesIO(d_buf):
                         if line.startswith(path):
                             break
             finally:
@@ -519,14 +518,14 @@ class SessionStatisticsEntry(IncrementEntry):
             return 0
 
 
-class RdiffRepo:
+class RdiffRepo(object):
 
     """Represent one rdiff-backup repository."""
 
     def __init__(self, user_root, path):
-        assert isinstance(user_root, str)
-        assert isinstance(path, str)
-        self.encoding = 'utf-8'
+        assert isinstance(user_root, bytes)
+        assert isinstance(path, bytes)
+        self.encoding = sys.getfilesystemencoding() or 'utf-8'
         self.user_root = user_root.rstrip(b"/")
         self.path = path.strip(b"/")
         self.repo_root = os.path.join(self.user_root, self.path)
@@ -534,7 +533,7 @@ class RdiffRepo:
 
         # The location of rdiff-backup-data directory.
         self.data_path = os.path.join(self.repo_root, RDIFF_BACKUP_DATA)
-        assert isinstance(self.data_path, str)
+        assert isinstance(self.data_path, bytes)
 
         # Check if the object is valid.
         self._check()
@@ -589,7 +588,7 @@ class RdiffRepo:
 
     def _decode(self, value):
         """Used to decode a repository path into unicode."""
-        assert isinstance(value, str)
+        assert isinstance(value, bytes)
         return value.decode(self.encoding, 'replace')
 
     @property
@@ -672,7 +671,7 @@ class RdiffRepo:
 
     def get_path(self, path):
         """Return a new instance of RdiffPath to represent the given path."""
-        assert isinstance(path, str)
+        assert isinstance(path, bytes)
         # Get if the path request is the root path.
         if len(path.strip(b"/")) == 0:
             return self.root_path
@@ -706,7 +705,7 @@ class RdiffRepo:
                 if e[0] == errno.ESRCH:
                     return False
                 else:
-                    logger.warn("unable to check if PID %d still running", pid)
+                    logger.warning("unable to check if PID %d still running", pid)
                     return False
             return True
 
@@ -764,7 +763,7 @@ class RdiffRepo:
 
     def unquote(self, name):
         """Remove quote from the given name."""
-        assert isinstance(name, str)
+        assert isinstance(name, bytes)
 
         # This function just gives back the original text if it can decode it
         def unquoted_char(match):
@@ -781,13 +780,13 @@ class RdiffRepo:
         return self._decode(self.repo_root)
 
 
-class RdiffPath:
+class RdiffPath(object):
 
     """Represent an rdiff-backup repository. Either a root, a path or a file."""
 
     def __init__(self, repo, path=b""):
         assert isinstance(repo, RdiffRepo)
-        assert isinstance(path, str)
+        assert isinstance(path, bytes)
         self.repo = repo
         self.path = path.strip(b"/")
 
@@ -851,7 +850,7 @@ class RdiffPath:
         # Process each increment entries and combine this with the existing
         # entries
         entriesDict = {}
-        for filename, increments in grouped_increment_entries.iteritems():
+        for filename, increments in iteritems(grouped_increment_entries):
             # Check if filename exists
             exists = filename in self.existing_entries
             # Create DirEntry to represent the item
@@ -877,7 +876,7 @@ class RdiffPath:
             entriesDict[filename] = new_entry
 
         # Return the values (so the DirEntry objects)
-        return entriesDict.values()
+        return list(entriesDict.values())
 
     def _execute(self, command, *args):
         parms = [command]
@@ -955,7 +954,7 @@ class RdiffPath:
 
     def restore(self, name, restore_date, use_zip):
         """Used to restore the given file located in this path."""
-        assert isinstance(name, str)
+        assert isinstance(name, bytes)
         assert isinstance(restore_date, rdw_helpers.rdwTime)
         name = name.lstrip(b"/")
 
@@ -1042,8 +1041,8 @@ class RdiffPath:
     def _recursiveTarDir(self, dirpath, target):
         """This function is used during to archive a restored directory. It will
             create a tar gz archive with the specified directory."""
-        assert isinstance(dirpath, str)
-        assert isinstance(target, str)
+        assert isinstance(dirpath, bytes)
+        assert isinstance(target, bytes)
         assert os.path.isdir(dirpath)
         import tarfile
 
@@ -1068,8 +1067,8 @@ class RdiffPath:
     def _recursive_zip(self, dirpath, target):
         """This function is used during to archive a restored directory. It will
             create a zip archive with the specified directory."""
-        assert isinstance(dirpath, str)
-        assert isinstance(target, str)
+        assert isinstance(dirpath, bytes)
+        assert isinstance(target, bytes)
         assert os.path.isdir(dirpath)
         import zipfile
 

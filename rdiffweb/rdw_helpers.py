@@ -16,13 +16,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import division
 from __future__ import unicode_literals
 
-import sys
+from builtins import map
+from builtins import object
+from builtins import str
 import calendar
+from future.utils import iteritems
 import os
+from past.builtins import cmp
+from past.utils import old_div
+import sys
 import time
-import urllib
+
+try:
+    from urllib.parse import quote, unquote
+except ImportError:
+    # Python 2
+    from urllib import quote, unquote
+
 
 # Get the system encoding
 system_charset = sys.getfilesystemencoding()
@@ -33,7 +46,7 @@ def decode_s(value, errors='strict'):
     Convert charset to system unicode. Default is 'strict'. Other possible
     values are 'ignore' and 'replace'.
     """
-    assert isinstance(value, str)
+    assert isinstance(value, bytes)
     return value.decode(system_charset, errors)
 
 
@@ -41,7 +54,7 @@ def encode_s(value):
     """Convert unicode to system charset."""
     if value is None:
         return None
-    assert isinstance(value, unicode)
+    assert isinstance(value, str)
     return value.encode(system_charset)
 
 
@@ -58,17 +71,17 @@ def quote_url(url, safe=None):
 
     # Handle case when URL is unicode.
     is_unicode = False
-    if isinstance(url, unicode):
+    if isinstance(url, str):
         is_unicode = True
         url = url.encode('utf8')
-    if safe and isinstance(safe, unicode):
+    if safe and isinstance(safe, str):
         safe = safe.encode('utf8')
 
     if not safe:
         safe = b"/"
 
     # URL encode
-    value = urllib.quote(url, safe)
+    value = urllib.parse.quote(url, safe)
 
     if is_unicode:
         value = value.decode('utf8')
@@ -79,10 +92,10 @@ def quote_url(url, safe=None):
 def unquote_url(encodedUrl):
     if not encodedUrl:
         return encodedUrl
-    return urllib.unquote(encodedUrl)
+    return urllib.parse.unquote(encodedUrl)
 
 
-class rdwTime:
+class rdwTime(object):
 
     """Time information has two components: the local time, stored in GMT as
     seconds since Epoch, and the timezone, stored as a seconds offset. Since
@@ -111,8 +124,8 @@ class rdwTime:
     def initFromString(self, timeString):
         try:
             date, daytime = timeString[:19].split("T")
-            year, month, day = map(int, date.split("-"))
-            hour, minute, second = map(int, daytime.split(":"))
+            year, month, day = list(map(int, date.split("-")))
+            hour, minute, second = list(map(int, daytime.split(":")))
             assert 1900 < year < 2100, year
             assert 1 <= month <= 12
             assert 1 <= day <= 31
@@ -156,7 +169,7 @@ class rdwTime:
             (year, month, day, hour, minute, second, -1, -1, 0))
 
     def _getTimeZoneDisplayInfo(self):
-        hours, minutes = divmod(abs(self.tzOffset) / 60, 60)
+        hours, minutes = divmod(old_div(abs(self.tzOffset), 60), 60)
         assert 0 <= hours <= 23
         assert 0 <= minutes <= 59
 
@@ -181,6 +194,22 @@ class rdwTime:
             plusMinus = -1
 
         return plusMinus * 60 * (60 * int(tzd[1:3]) + int(tzd[4:]))
+
+    def __lt__(self, other):
+        assert isinstance(other, rdwTime)
+        return self.getSeconds() < other.getSeconds()
+
+    def __le__(self, other):
+        assert isinstance(other, rdwTime)
+        return self.getSeconds() <= other.getSeconds()
+
+    def __gt__(self, other):
+        assert isinstance(other, rdwTime)
+        return self.getSeconds() > other.getSeconds()
+
+    def __ge__(self, other):
+        assert isinstance(other, rdwTime)
+        return self.getSeconds() >= other.getSeconds()
 
     def __cmp__(self, other):
         assert isinstance(other, rdwTime)
@@ -214,4 +243,4 @@ class groupby(dict):
         for value in seq:
             k = key(value)
             self.setdefault(k, []).append(value)
-    __iter__ = dict.iteritems
+    __iter__ = iteritems

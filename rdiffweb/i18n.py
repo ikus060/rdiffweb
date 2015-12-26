@@ -35,12 +35,14 @@ See `rdw_templating`.
 """
 from __future__ import unicode_literals
 
+from builtins import str
 import cherrypy
 import copy
 import gettext
 import logging
 import os
 import pkg_resources
+
 
 _logger = logging.getLogger(__name__)
 

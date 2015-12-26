@@ -16,12 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import cherrypy
 import logging
+
 from rdiffweb import page_main
+
 
 # Define the logger
 logger = logging.getLogger(__name__)

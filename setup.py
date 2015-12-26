@@ -17,6 +17,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+from __future__ import unicode_literals
+from builtins import map
+from past.builtins import basestring
+from past import utils
 try:
     from setuptools import setup
 except ImportError:
@@ -33,19 +37,18 @@ from distutils.cmd import Command
 from distutils.dist import DistributionMetadata
 from distutils.log import error, info
 from distutils.util import split_quoted
-from string import strip, Template
+if utils.PY2:
+    from string import strip
+else:
+    strip = str.strip
+from string import Template
 
 # Check running python version.
-if sys.version_info >= (3, 0):
-    py3k = True
-else:
-    py3k = False
-
-if py3k and not sys.version_info >= (3, 4):
+if utils.PY3 and not sys.version_info >= (3, 4):
     print('python version 3.4 is required.')
     sys.exit(1)
 
-if not py3k and not sys.version_info >= (2, 7):
+if utils.PY2 and not sys.version_info >= (2, 7):
     print('python version 2.7 is required.')
     sys.exit(1)
 
@@ -134,7 +137,7 @@ class compile_all_catalogs(Command):
         self.statistics = False
 
     def finalize_options(self):
-        self.locales = map(strip, self.locales.split(','))
+        self.locales = list(map(strip, self.locales.split(',')))
 
     def run(self):
         for locale in self.locales:
@@ -159,6 +162,16 @@ class build(build_):
     sub_commands.insert(0, ('compile_all_catalogs', None))
     sub_commands.insert(0, ('filltmpl', None))
 
+# Compute requirements
+install_requires = [
+    "CherryPy>=3.2.2",
+    "Jinja2>=2.6",
+    "yapsy>=1.11.223",
+    "babel>=0.9",
+]
+if utils.PY2:
+    install_requires.extend(["pysqlite>=2.6.3"])
+
 setup(
     name='rdiffweb',
     version='0.8.2.dev1',
@@ -181,13 +194,7 @@ setup(
         'filltmpl': fill_template,
     },
     templates=['sonar-project.properties.in'],
-    install_requires=[
-        "CherryPy>=3.2.2",
-        "pysqlite>=2.6.3",
-        "Jinja2>=2.6",
-        "yapsy>=1.10.423",
-        "babel>=0.9",
-    ],
+    install_requires=install_requires,
     # required packages for build process
     setup_requires=[
         "babel>=0.9",
@@ -195,6 +202,5 @@ setup(
     # requirement for testing
     tests_require=[
         "mockldap>=0.2.6",
-        "python-ldap>=2.4.21",
     ]
 )

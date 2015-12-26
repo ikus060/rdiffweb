@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from builtins import str
 
 import cherrypy
 import logging
@@ -125,9 +126,9 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
                     _logger.info("unknown action: %s", action)
                     raise cherrypy.NotFound("Unknown action")
             except RdiffError as e:
-                params['error'] = unicode(e)
+                params['error'] = str(e)
             except ValueError as e:
-                params['error'] = unicode(e)
+                params['error'] = str(e)
             except Exception as e:
                 _logger.warn("unknown error processing action", exc_info=True)
                 params['error'] = _("Unknown error")

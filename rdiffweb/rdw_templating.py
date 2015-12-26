@@ -16,18 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import logging
-import time
-
+from builtins import object
+from builtins import str
 from jinja2 import Environment, PackageLoader
 from jinja2.ext import _make_new_gettext, _make_new_ngettext
 from jinja2.loaders import ChoiceLoader, FileSystemLoader
+import logging
+import time
 
-from rdiffweb import rdw_helpers
 from rdiffweb import i18n
+from rdiffweb import rdw_helpers
 
 
 # Define the logger
@@ -36,11 +37,9 @@ logger = logging.getLogger(__name__)
 
 def do_filter(sequence, attribute_name):
     """Filter sequence of objects."""
-    return filter(lambda x:
-                  (isinstance(x, dict) and attribute_name in x and
+    return [x for x in sequence if (isinstance(x, dict) and attribute_name in x and
                    x[attribute_name]) or
-                  (hasattr(x, attribute_name) and getattr(x, attribute_name)),
-                  sequence)
+                  (hasattr(x, attribute_name) and getattr(x, attribute_name))]
 
 
 def do_format_datetime(value, dateformat='%Y-%m-%d %H:%M'):
@@ -175,7 +174,7 @@ def _load_translation(domain):
     return t
 
 
-class TemplateManager():
+class TemplateManager(object):
     """
     Uses to generate HTML page from template using Jinja2 templating.
     """

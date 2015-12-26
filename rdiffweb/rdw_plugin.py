@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from builtins import object
 
 import logging
 import os
@@ -53,7 +54,7 @@ class PluginLocator(PluginFileLocator):
             logger.exception("fail to load plugin [%s]" % (filename,))
 
 
-class PluginManager():
+class PluginManager(object):
 
     def __init__(self, cfg):
         """
@@ -64,17 +65,17 @@ class PluginManager():
         self.cfg = cfg
 
         # Get plugin locations.
-        plugin_search_path_b = self.cfg.get_config_str(
+        plugin_search_path = self.cfg.get_config(
             "PluginSearchPath",
-            default=b"/etc/rdiffweb/plugins")
+            default="/etc/rdiffweb/plugins")
 
         # Determine the search path
         searchpath = []
         # Append core plugins directory (in bytes)
-        path_b = pkg_resources.resource_filename('rdiffweb', b'plugins')  # @UndefinedVariable
-        searchpath.append(path_b)
+        path = pkg_resources.resource_filename('rdiffweb', 'plugins')  # @UndefinedVariable
+        searchpath.append(path)
         # Append user plugins directory
-        plugin_locations = plugin_search_path_b.split(b',')
+        plugin_locations = plugin_search_path.split(',')
         searchpath.extend(plugin_locations)
         # Build the manager
         logger.debug("plugin search path [%s]" % (searchpath))

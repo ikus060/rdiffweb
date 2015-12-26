@@ -16,18 +16,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
+from builtins import object
+from cherrypy import Application
 import cherrypy
+from cherrypy.process.plugins import Monitor
 import logging
 import os
 import pkg_resources
+
 from rdiffweb import rdw_config
 from rdiffweb import rdw_plugin
 from rdiffweb import rdw_templating
-
-from rdiffweb.user import UserManager
 from rdiffweb.page_admin import AdminPage
 from rdiffweb.page_browse import BrowsePage
 from rdiffweb.page_history import HistoryPage
@@ -38,8 +40,8 @@ from rdiffweb.page_prefs import PreferencesPage
 from rdiffweb.page_restore import RestorePage
 from rdiffweb.page_settings import SettingsPage
 from rdiffweb.page_status import StatusPage
-from cherrypy import Application, tools
-from cherrypy.process.plugins import Monitor
+from rdiffweb.user import UserManager
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -88,7 +90,7 @@ class RdiffwebApp(Application):
             b'/favicon.ico': {
                 'tools.authform.on': False,
                 'tools.staticfile.on': True,
-                'tools.staticfile.filename': os.path.join(cwd, b'static', b'favicon.ico'),
+                'tools.staticfile.filename': os.path.join(cwd, 'static', 'favicon.ico'),
             },
             b'/login': {
                 'tools.authform.on': False,
@@ -267,7 +269,7 @@ def _getter(field):
     return get_field
 
 
-class CurrentUser():
+class CurrentUser(object):
 
     def __init__(self, userdb, username):
         self._userdb = userdb

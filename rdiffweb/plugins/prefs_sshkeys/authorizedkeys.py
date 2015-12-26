@@ -17,6 +17,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from builtins import str
+from builtins import zip
+from past.builtins import basestring
+from future.utils import python_2_unicode_compatible
 
 import base64
 import hashlib
@@ -45,6 +49,7 @@ PATTERN_OPTION3 = re.compile(r'^([-a-z0-9A-Z_]+)')
 PATTERN_SPACES = re.compile(r'\s+')
 
 
+@python_2_unicode_compatible
 class KeySplit(namedtuple('KeySplit', 'lineno options keytype key comment')):
     """
     The `key`field contains the ssh key. e.g.: ssh-rsa ...
@@ -63,12 +68,9 @@ class KeySplit(namedtuple('KeySplit', 'lineno options keytype key comment')):
         return ':'.join(a + b for a, b in zip(fp_plain[::2], fp_plain[1::2]))
 
     def __str__(self):
-        return unicode(self).encode('ascii', 'replace')
-
-    def __unicode__(self):
         buf = ''
         if self.options:
-            for key, value in self.options.items():
+            for key, value in list(self.options.items()):
                 if len(buf) > 0:
                     buf += ','
                 buf += key
@@ -79,7 +81,7 @@ class KeySplit(namedtuple('KeySplit', 'lineno options keytype key comment')):
             buf += ' '
         buf += self.keytype
         buf += ' '
-        buf += self.key.encode()
+        buf += self.key
         if self.comment:
             buf += ' '
             buf += self.comment
@@ -108,15 +110,7 @@ def add(filename, key):
         create_file(filename)
 
     # Add key to file.
-    with open(filename, "rw+") as f:
-        # Check the file size.
-        f.seek(0, 2)
-        pos = f.tell()
-        if pos:
-            # last character in file
-            f.seek(-1, 2)
-            if f.read(1) != '\n':
-                f.write('\n')
+    with open(filename, "a+") as f:
         f.write(str(key))
         f.write('\n')
 
@@ -205,7 +199,7 @@ def parse_options(value):
         m = (PATTERN_OPTION2.match(value[i:]) or
              PATTERN_OPTION3.match(value[i:]))
         if not m:
-            _logger.warn("invalid options: %s", value)
+            _logger.warning("invalid options: %s", value[i:])
             break
         i += len(m.group(0))
         if m.lastindex == 2:
@@ -243,7 +237,7 @@ def read(filename):
             m = PATTERN_LINE.match(line)
             # Print warning is a line is invalide.
             if not m:
-                _logger.warn("invalid authorised_key line: %s", line)
+                _logger.warning("invalid authorised_key line: %s", line)
                 continue
             options = parse_options(m.group(1))
             keys.append(KeySplit(lineno, options, m.group(2), m.group(3), m.group(4)))

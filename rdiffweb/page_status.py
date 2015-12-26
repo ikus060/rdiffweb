@@ -16,17 +16,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
+from builtins import str
+from builtins import bytes
 import cherrypy
 import logging
+from past.builtins import cmp
 
-from rdiffweb import page_main
 from rdiffweb import librdiff
+from rdiffweb import page_main
 from rdiffweb import rdw_helpers
-
 from rdiffweb.rdw_helpers import encode_s, decode_s, unquote_url
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -56,8 +59,8 @@ class StatusPage(page_main.MainPage):
 
     @cherrypy.expose
     def entry(self, path_b=b"", date=""):
-        assert isinstance(path_b, str)
-        assert isinstance(date, unicode)
+        assert isinstance(path_b, bytes)
+        assert isinstance(date, str)
         # Validate date
         try:
             entry_time = rdw_helpers.rdwTime()
@@ -74,7 +77,7 @@ class StatusPage(page_main.MainPage):
                 repo_obj = self.validate_user_path(path_b)[0]
             except librdiff.FileError as e:
                 logger.exception("invalid user path")
-                return self._compile_error_template(unicode(e))
+                return self._compile_error_template(str(e))
 
             userMessages = self._getUserMessages(
                 [repo_obj.path], False, True, entry_time, entry_time)
@@ -160,7 +163,7 @@ class StatusPage(page_main.MainPage):
         allBackups = []
         for repo in repos:
             # Get binary representation of the repo
-            repo_b = encode_s(repo) if isinstance(repo, unicode) else repo
+            repo_b = encode_s(repo) if isinstance(repo, str) else repo
             repo_b = repo_b.lstrip(b"/")
             try:
                 repo_obj = librdiff.RdiffRepo(user_root_b, repo_b)
@@ -175,13 +178,13 @@ class StatusPage(page_main.MainPage):
                 repoErrors.append(
                     {"repo_path": repo_b,
                      "repo_name": decode_s(repo_b, 'replace'),
-                     "error": unicode(e)})
+                     "error": str(e)})
 
         allBackups.sort(lambda x, y: cmp(y["date"], x["date"]))
-        failedBackups = filter(lambda x: x["errors"], allBackups)
+        failedBackups = [x for x in allBackups if x["errors"]]
 
         # group successful backups by day
-        successfulBackups = filter(lambda x: not x["errors"], allBackups)
+        successfulBackups = [x for x in allBackups if not x["errors"]]
         if successfulBackups:
             lastSuccessDate = successfulBackups[0]["date"]
         successfulBackups = rdw_helpers.groupby(
@@ -204,7 +207,7 @@ class StatusPage(page_main.MainPage):
 
         # generate success messages (publish date is most recent backup date)
         if includeSuccess:
-            for day in successfulBackups.keys():
+            for day in list(successfulBackups.keys()):
                 date = successfulBackups[day][0]["date"]
 
                 # include repository errors in most recent entry

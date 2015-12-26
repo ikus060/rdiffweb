@@ -16,20 +16,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
+from builtins import str
+from builtins import bytes
 import cherrypy
+from cherrypy._cperror import HTTPRedirect
 import encodings
 import logging
 
 from rdiffweb import librdiff
 from rdiffweb import page_main
-
 from rdiffweb import rdw_helpers
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import decode_s, unquote_url
-from cherrypy._cperror import HTTPRedirect
+
 
 # Define the logger
 _logger = logging.getLogger(__name__)
@@ -53,7 +55,7 @@ class SettingsPage(page_main.MainPage):
 
     @cherrypy.expose
     def index(self, path_b=b"", **kwargs):
-        assert isinstance(path_b, str)
+        assert isinstance(path_b, bytes)
 
         _logger.debug("repo settings [%s]", decode_s(path_b, 'replace'))
 
@@ -62,7 +64,7 @@ class SettingsPage(page_main.MainPage):
             repo_obj = self.validate_user_path(path_b)[0]
         except librdiff.FileError as e:
             _logger.exception("invalid user path [%s]", decode_s(path_b, 'replace'))
-            return self._compile_error_template(unicode(e))
+            return self._compile_error_template(str(e))
 
         # Check if any action to process.
         params = {}
@@ -77,7 +79,7 @@ class SettingsPage(page_main.MainPage):
                     _logger.info("unknown action: %s", action)
                     raise cherrypy.NotFound("Unknown action")
             except ValueError as e:
-                params['error'] = unicode(e)
+                params['error'] = str(e)
             except HTTPRedirect as e:
                 # Re-raise HTTPRedirect exception.
                 raise e
@@ -90,7 +92,7 @@ class SettingsPage(page_main.MainPage):
             params.update(self._get_parms_for_page(repo_obj))
         except librdiff.FileError:
             _logger.exception("can't create page params")
-            return self._compile_error_template(unicode(e))
+            return self._compile_error_template(str(e))
 
         # Generate page.
         return self._compile_template("settings.html", **params)
@@ -160,7 +162,7 @@ class SettingsPage(page_main.MainPage):
         """
         # Validate the encoding value
         new_encoding = kwargs.get('encoding')
-        new_encoding = unicode(encodings.normalize_encoding(new_encoding)).lower()
+        new_encoding = str(encodings.normalize_encoding(new_encoding)).lower()
         if new_encoding not in self._get_encodings():
             raise ValueError(_("invalid encoding value"))
 

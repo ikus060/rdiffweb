@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from builtins import str
 
 import ldap
 import logging
@@ -89,8 +90,8 @@ class LdapPasswordStore(IPasswordStore):
 
     def are_valid_credentials(self, username, password):
         """Check if the given credential as valid according to LDAP."""
-        assert isinstance(username, unicode)
-        assert isinstance(password, unicode)
+        assert isinstance(username, str)
+        assert isinstance(password, str)
 
         def check_crendential(l, r):
             # Check results
@@ -100,11 +101,11 @@ class LdapPasswordStore(IPasswordStore):
 
             # Bind using the user credentials. Throws an exception in case of
             # error.
-            l.simple_bind_s(r[0][0], encode_s(password))
+            l.simple_bind_s(r[0][0], str(password))
             l.unbind_s()
             logger.info("user [%s] found in LDAP" % username)
             # Return the username
-            return decode_s(r[0][1][self.attribute][0])
+            return str(r[0][1][self.attribute][0])
 
         # Execute the LDAP operation
         try:
@@ -114,7 +115,7 @@ class LdapPasswordStore(IPasswordStore):
             return False
 
     def _execute(self, username, function):
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
 
         """Reusable method to run LDAP operation."""
 
@@ -142,9 +143,7 @@ class LdapPasswordStore(IPasswordStore):
             logger.debug("search ldap server: {}/{}?{}?{}?{}".format(
                 self.uri, self.base_dn, self.attribute, self.scope,
                 search_filter))
-            r = l.search_s(encode_s(self.base_dn),
-                           self.scope,
-                           encode_s(search_filter))
+            r = l.search_s(self.base_dn, self.scope, search_filter)
 
             # Execute operation
             return function(l, r)
@@ -153,7 +152,7 @@ class LdapPasswordStore(IPasswordStore):
             logger.warn('ldap error', exc_info=1)
             if isinstance(e.message, dict) and 'desc' in e.message:
                 raise RdiffError(decode_s(e.message['desc']))
-            raise RdiffError(unicode(repr(e)))
+            raise RdiffError(str(repr(e)))
 
     def has_password(self, username):
         """Check if the user exists in LDAP"""
@@ -188,7 +187,7 @@ class LdapPasswordStore(IPasswordStore):
 
     def get_user_attr(self, username, attr):
         """Get user attributes."""
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
 
         def fetch_user_email(l, r):  # @UnusedVariable
             if len(r) != 1:
@@ -200,10 +199,10 @@ class LdapPasswordStore(IPasswordStore):
                              if x in r[0][1]])
             elif attr in r[0][1]:
                 if isinstance(r[0][1][attr], list):
-                    return [decode_s(x)
+                    return [str(x)
                             for x in r[0][1][attr]]
                 else:
-                    return decode_s(r[0][1][attr])
+                    return str(r[0][1][attr])
             return None
 
         # Execute the LDAP operation
@@ -215,9 +214,9 @@ class LdapPasswordStore(IPasswordStore):
 
     def set_password(self, username, password, old_password=None):
         """Update the password of the given user."""
-        assert isinstance(username, unicode)
-        assert old_password is None or isinstance(old_password, unicode)
-        assert isinstance(password, unicode)
+        assert isinstance(username, str)
+        assert old_password is None or isinstance(old_password, str)
+        assert isinstance(password, str)
 
         # Do nothing if password is empty
         if not password:
@@ -241,8 +240,8 @@ class LdapPasswordStore(IPasswordStore):
             # Bind using the user credentials. Throws an exception in case of
             # error.
             if old_password is not None:
-                l.simple_bind_s(r[0][0], encode_s(old_password))
-            l.passwd_s(r[0][0], encode_s(old_password), encode_s(password))
+                l.simple_bind_s(r[0][0], old_password)
+            l.passwd_s(r[0][0], old_password, password)
             l.unbind_s()
             logger.info("password for user [%s] is updated in LDAP" % username)
             # User updated, return False

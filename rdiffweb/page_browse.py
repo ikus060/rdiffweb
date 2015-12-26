@@ -16,17 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
+from builtins import str
 import cherrypy
 import logging
 import os
-from rdiffweb import page_main
-from rdiffweb import librdiff
 
+from rdiffweb import librdiff
+from rdiffweb import page_main
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import decode_s, unquote_url
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -53,8 +55,8 @@ class BrowsePage(page_main.MainPage):
 
     @cherrypy.expose
     def index(self, path_b=b"", restore=""):
-        assert isinstance(path_b, str)
-        assert isinstance(restore, unicode)
+        assert isinstance(path_b, bytes)
+        assert isinstance(restore, str)
 
         logger.debug("browsing [%s]" % decode_s(path_b, 'replace'))
 
@@ -63,7 +65,7 @@ class BrowsePage(page_main.MainPage):
             (repo_obj, path_obj) = self.validate_user_path(path_b)
         except librdiff.FileError as e:
             logger.exception("invalid user path")
-            return self._compile_error_template(unicode(e))
+            return self._compile_error_template(str(e))
 
         # Build the parameters
         try:
@@ -72,7 +74,7 @@ class BrowsePage(page_main.MainPage):
                                              restore == b"T")
         except librdiff.FileError as e:
             logger.exception("can't create params")
-            return self._compile_error_template(unicode(e))
+            return self._compile_error_template(str(e))
 
         return self._compile_template("browse.html", **parms)
 

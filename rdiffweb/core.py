@@ -18,6 +18,9 @@
 
 from __future__ import unicode_literals
 
+from builtins import object
+from builtins import str
+
 from rdiffweb.i18n import ugettext as _
 
 
@@ -27,7 +30,7 @@ class RdiffError(Exception):
     """
 
     def __init__(self, message):
-        assert isinstance(message, unicode)
+        assert isinstance(message, str)
         super(RdiffError, self).__init__(message)
         self.message = message
 
@@ -41,7 +44,7 @@ class InvalidUserError(Exception):
         super(InvalidUserError, self).__init__(_("user %s doesn't exists" % (user,)))
 
 
-class Component():
+class Component(object):
 
     def __init__(self, app):
         assert app

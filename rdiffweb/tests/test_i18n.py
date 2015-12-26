@@ -44,7 +44,7 @@ class Test(unittest.TestCase):
         # Load default translation
         t = i18n.load_translation()
         self.assertTrue(isinstance(t, gettext.GNUTranslations))
-        self.assertEquals("en", t._lang)
+        self.assertEqual("en", t._lang)
 
     def test_load_translation_with_accept_language_fr(self):
         # Mock a header
@@ -52,7 +52,7 @@ class Test(unittest.TestCase):
         # Load default translation
         t = i18n.load_translation()
         self.assertTrue(isinstance(t, gettext.GNUTranslations))
-        self.assertEquals("fr", t._lang)
+        self.assertEqual("fr", t._lang)
 
     def test_load_translation_with_accept_language_unknown(self):
         # Mock a header
@@ -60,65 +60,65 @@ class Test(unittest.TestCase):
         # Load default translation
         t = i18n.load_translation()
         self.assertTrue(isinstance(t, gettext.GNUTranslations))
-        self.assertEquals("en", t._lang)
+        self.assertEqual("en", t._lang)
 
     def test_translation_with_fr(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["fr"])
         self.assertTrue(isinstance(t, gettext.GNUTranslations))
-        self.assertEquals("fr", t._lang)
+        self.assertEqual("fr", t._lang)
         # Test translation object
-        self.assertEquals("Modifier", t.ugettext("Edit"))
+        self.assertEqual("Modifier", t.gettext("Edit"))
         # Check if the translation fallback
-        self.assertEquals("Invalid String", t.ugettext("Invalid String"))
+        self.assertEqual("Invalid String", t.gettext("Invalid String"))
         pass
 
     def test_translation_with_en(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["en"])
         self.assertTrue(isinstance(t, gettext.GNUTranslations))
-        self.assertEquals("en", t._lang)
+        self.assertEqual("en", t._lang)
         pass
 
     def test_translation_with_en_us(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["en_US"])
         self.assertTrue(isinstance(t, gettext.GNUTranslations))
-        self.assertEquals("en", t._lang)
+        self.assertEqual("en", t._lang)
         pass
 
     def test_translation_with_fr_ca(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["fr_CA"])
         self.assertTrue(isinstance(t, gettext.GNUTranslations))
-        self.assertEquals("fr", t._lang)
+        self.assertEqual("fr", t._lang)
         pass
 
     def test_translation_with_en_fr(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["en", "fr"])
         self.assertTrue(isinstance(t, gettext.GNUTranslations))
-        self.assertEquals("en", t._lang)
+        self.assertEqual("en", t._lang)
         # Test translation object
-        self.assertEquals("Edit", t.ugettext("Edit"))
+        self.assertEqual("Edit", t.gettext("Edit"))
         # Check if the translation fallback
-        self.assertEquals("Invalid String", t.ugettext("Invalid String"))
+        self.assertEqual("Invalid String", t.gettext("Invalid String"))
         pass
 
     def test_translation_with_fr_en(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["fr", "en"])
         self.assertTrue(isinstance(t, gettext.GNUTranslations))
-        self.assertEquals("fr", t._lang)
+        self.assertEqual("fr", t._lang)
         # Test translation object
-        self.assertEquals("Modifier", t.ugettext("Edit"))
+        self.assertEqual("Modifier", t.gettext("Edit"))
         pass
 
     def test_translation_with_unknown(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["br"])
         self.assertTrue(isinstance(t, gettext.NullTranslations))
-        self.assertEquals("en", t._lang)
+        self.assertEqual("en", t._lang)
         pass
 
 

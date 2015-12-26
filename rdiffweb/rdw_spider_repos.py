@@ -16,13 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import os
-from rdiffweb import librdiff
+from builtins import map
 import logging
+import os
+
+from rdiffweb import librdiff
 from rdiffweb.rdw_helpers import encode_s
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -58,6 +61,6 @@ def find_repos_for_user(user, userdb):
         if not path[len(user_root):]:
             return "/"
         return path[len(user_root):]
-    repo_paths = map(striproot, repo_paths)
+    repo_paths = list(map(striproot, repo_paths))
     logger.debug("set user [%s] repos: %s " % (user, repo_paths))
     userdb.set_repos(user, repo_paths)

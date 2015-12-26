@@ -16,17 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
+from builtins import str
 import cherrypy
 import logging
 
 from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb import rdw_helpers
-
 from rdiffweb.rdw_helpers import decode_s, unquote_url
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ class HistoryPage(page_main.MainPage):
 
     @cherrypy.expose
     def index(self, path_b=b""):
-        assert isinstance(path_b, str)
+        assert isinstance(path_b, bytes)
 
         logger.debug("history [%s]" % decode_s(path_b, 'replace'))
 
@@ -58,13 +59,13 @@ class HistoryPage(page_main.MainPage):
             (repo_obj, path_obj) = self.validate_user_path(path_b)
         except librdiff.FileError as e:
             logger.exception("invalid user path")
-            return self._compile_error_template(unicode(e))
+            return self._compile_error_template(str(e))
 
         try:
             parms = self._get_parms_for_page(repo_obj)
         except librdiff.FileError:
             logger.exception("can't create page params")
-            return self._compile_error_template(unicode(e))
+            return self._compile_error_template(str(e))
 
         return self._compile_template("history.html", **parms)
 

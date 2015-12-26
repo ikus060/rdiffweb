@@ -16,16 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
-from rdiffweb import page_main
+from builtins import str
 import cherrypy
 import logging
 import os
-from rdiffweb import rdw_spider_repos
 
+from rdiffweb import page_main
+from rdiffweb import rdw_spider_repos
 from rdiffweb.i18n import ugettext as _
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -121,8 +123,8 @@ class AdminPage(page_main.MainPage):
         if not self.app.currentuser or not self.app.currentuser.is_admin:
             return self._compile_error_template(_("Access denied."))
 
-        assert isinstance(userfilter, unicode)
-        assert isinstance(usersearch, unicode)
+        assert isinstance(userfilter, str)
+        assert isinstance(usersearch, str)
 
         # If we're just showing the initial page, just do that
         params = {}
@@ -133,7 +135,7 @@ class AdminPage(page_main.MainPage):
                                                    is_admin)
             except ValueError as e:
                 logger.exception("unknown error processing action")
-                params['error'] = unicode(e)
+                params['error'] = str(e)
             except Exception as e:
                 logger.exception("unknown error processing action")
                 params['error'] = _("Fail to execute operation.")
@@ -160,13 +162,11 @@ class AdminPage(page_main.MainPage):
         # Apply the filters.
         filtered_users = users
         if userfilter == "admins":
-            filtered_users = filter(lambda x: x["is_admin"],
-                                    filtered_users)
+            filtered_users = [x for x in filtered_users if x["is_admin"]]
         # Apply the search.
         if usersearch:
-            filtered_users = filter(lambda x: usersearch in x["username"] or
-                                    usersearch in x["email"],
-                                    filtered_users)
+            filtered_users = [x for x in filtered_users if usersearch in x["username"] or
+                                    usersearch in x["email"]]
 
         return {"userfilter": userfilter,
                 "usersearch": usersearch,
@@ -202,7 +202,7 @@ class AdminPage(page_main.MainPage):
                 rdw_spider_repos.find_repos_for_user(username, self.app.userdb)
             except ValueError as e:
                 success = ""
-                warning = unicode(e)
+                warning = str(e)
 
         elif action == "add":
 
@@ -222,7 +222,7 @@ class AdminPage(page_main.MainPage):
                 self._check_user_root_dir(user_root)
                 rdw_spider_repos.find_repos_for_user(username, self.app.userdb)
             except ValueError as e:
-                warning = unicode(e)
+                warning = str(e)
             success = "User added successfully."
 
         if action == "delete":

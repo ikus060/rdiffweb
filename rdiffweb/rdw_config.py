@@ -16,35 +16,39 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
-
-import codecs
+from builtins import map
+from builtins import object
+from builtins import str
+from io import open
+from collections import OrderedDict
 import logging
 import os
+from past.builtins import basestring
 import re
 
 from rdiffweb import rdw_helpers
-from collections import OrderedDict
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-class SettingsError:
+class SettingsError(Exception):
 
     def __init__(self, error=None):
         if not error:
             raise ValueError
-        assert isinstance(error, unicode)
+        assert isinstance(error, str)
         self.error = error
 
     def __unicode__(self):
         return self.error
 
     def __str__(self):
-        return rdw_helpers.encode_s(unicode(self))
+        return rdw_helpers.encode_s(str(self))
 
 
 class Configuration(object):
@@ -74,7 +78,7 @@ class Configuration(object):
 
     def get_config(self, key, default=""):
         """Get the configuration value corresponding to key."""
-        assert isinstance(key, unicode)
+        assert isinstance(key, str)
         # Raise error if key contains equals(=)
         if ('=' in key):
             raise ValueError
@@ -166,9 +170,8 @@ class Configuration(object):
         new_cache = OrderedDict()
 
         # Open settings file as utf-8
-        lines = codecs.open(self._filename, "r",
-                            encoding='utf-8',
-                            errors='replace').readlines()
+        with open(self._filename, encoding='utf-8') as f:
+            lines = f.readlines()
         for line in lines:
             line = re.compile("(.*)#.*").sub(r'\1', line).strip()
             if not line:
@@ -191,8 +194,8 @@ class Configuration(object):
         """
         Write to config file.
         """
-        assert isinstance(key, unicode)
-        assert isinstance(value, unicode)
+        assert isinstance(key, str)
+        assert isinstance(value, str)
         # Raise error if key contains equals(=)
         if ('=' in key):
             raise ValueError
@@ -207,7 +210,7 @@ class Configuration(object):
         if not self._cache:
             return
         # Start writting the file.
-        with codecs.open(self._filename, "w", encoding='utf-8', errors='replace') as f:
-            for key, value in self._cache.items():
+        with open(self._filename, "w", encoding='utf-8') as f:
+            for key, value in list(self._cache.items()):
                 f.write('%s=%s' % (key, value))
                 f.write('\n')

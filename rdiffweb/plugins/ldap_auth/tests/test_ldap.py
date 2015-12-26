@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from builtins import str
 
 import unittest
 import logging
@@ -34,21 +35,21 @@ Created on Oct 17, 2015
 def _ldap_user(name, password='password'):
     name = str(name)
     password = str(password)
-    return (b'uid=%s,ou=People,dc=nodomain' % (name), {
-        b'uid': [name],
-        b'cn': [name],
-        b'userPassword': [password],
-        b'objectClass': [b'person', b'organizationalPerson', b'inetOrgPerson', b'posixAccount']})
+    return ('uid=%s,ou=People,dc=nodomain' % (name), {
+        'uid': [name],
+        'cn': [name],
+        'userPassword': [password],
+        'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']})
 
 
 class UserManagerLdapTest(unittest.TestCase):
 
-    basedn = (b'dc=nodomain', {
-        b'dc': [b'nodomain'],
-        b'o': [b'nodomain']})
-    people = (b'ou=People,dc=nodomain', {
-        b'ou': [b'People'],
-        b'objectClass': [b'organizationalUnit']})
+    basedn = ('dc=nodomain', {
+        'dc': ['nodomain'],
+        'o': ['nodomain']})
+    people = ('ou=People,dc=nodomain', {
+        'ou': ['People'],
+        'objectClass': ['organizationalUnit']})
 
     # This is the content of our mock LDAP directory. It takes the form
     # {dn: {attr: [value, ...], ...}, ...}.

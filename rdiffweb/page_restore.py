@@ -16,22 +16,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
+from builtins import str
+from builtins import bytes
 import cherrypy
+from cherrypy.lib.static import serve_file
 import logging
 import os
 import shutil
 
-from rdiffweb.i18n import ugettext as _
-from cherrypy.lib.static import serve_file
-
 from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb import rdw_helpers
-
+from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import decode_s, unquote_url
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -78,9 +79,9 @@ class RestorePage(page_main.MainPage):
     @cherrypy.tools.autodelete()
     @cherrypy.tools.decode(default_encoding='Latin-1')
     def index(self, path_b=b"", date="", usetar=""):
-        assert isinstance(path_b, str)
-        assert isinstance(date, unicode)
-        assert isinstance(usetar, unicode)
+        assert isinstance(path_b, bytes)
+        assert isinstance(date, str)
+        assert isinstance(usetar, str)
 
         logger.debug("restoring [%s][%s]" % (decode_s(path_b, 'replace'),
                                              date))
@@ -96,7 +97,7 @@ class RestorePage(page_main.MainPage):
             (repo_obj, path_obj) = self.validate_user_path(path_b)
         except librdiff.FileError as e:
             logger.exception("invalid user path")
-            return self._compile_error_template(unicode(e))
+            return self._compile_error_template(str(e))
 
         # Get the restore date
         try:
@@ -116,7 +117,7 @@ class RestorePage(page_main.MainPage):
 
         except librdiff.FileError as e:
             logger.exception("fail to restore")
-            return self._compile_error_template(unicode(e))
+            return self._compile_error_template(str(e))
         except ValueError:
             logger.exception("fail to restore")
             return self._compile_error_template(_("Fail to restore."))

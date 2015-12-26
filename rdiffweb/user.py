@@ -18,11 +18,13 @@
 
 from __future__ import unicode_literals
 
+from builtins import str
 import logging
 
 from rdiffweb.core import RdiffError, Component, InvalidUserError
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPasswordStore, IDatabase, IUserChangeListener
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -63,7 +65,7 @@ class UserManager(Component):
         """
         Used to add a new user with an optional password.
         """
-        assert password is None or isinstance(password, unicode)
+        assert password is None or isinstance(password, str)
         # Check if user already exists.
         db = self.find_user_database(user)
         if db:
@@ -119,7 +121,7 @@ class UserManager(Component):
         If the user isn't found in any IPasswordStore in the chain, None is
         returned.
         """
-        assert isinstance(user, unicode)
+        assert isinstance(user, str)
         for store in self._password_stores:
             if store.has_password(user):
                 return store
@@ -132,7 +134,7 @@ class UserManager(Component):
         If the user isn't found in any IDatabase in the chain, None is
         returned.
         """
-        assert isinstance(user, unicode)
+        assert isinstance(user, str)
         for db in self._databases:
             if db.exists(user):
                 return db
@@ -214,8 +216,8 @@ class UserManager(Component):
         password store.
         The return value may not be equals to the given username.
         """
-        assert isinstance(user, unicode)
-        assert password is None or isinstance(user, unicode)
+        assert isinstance(user, str)
+        assert password is None or isinstance(user, str)
         # Validate the credentials
         logger.debug("validating user [%s] credentials", user)
         real_user = False
@@ -294,8 +296,8 @@ class UserManager(Component):
         """
         Check if the users password store or user database supports the given operation.
         """
-        assert isinstance(operation, unicode)
-        assert user is None or isinstance(user, unicode)
+        assert isinstance(operation, str)
+        assert user is None or isinstance(user, str)
 
         if user:
             if operation in ['set_password']:

@@ -52,3 +52,7 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual(do_format_filesize(1024 * 1024 * 1024 * 1.243, True), "1.2 GiB")
         # Round to one decimal
         self.assertEqual(do_format_filesize(1024 * 1024 * 1024 * 1024 * 120, True), "120.0 TiB")
+
+if __name__ == "__main__":
+    # import sys;sys.argv = ['', 'Test.testName']
+    unittest.main()

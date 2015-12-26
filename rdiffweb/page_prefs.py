@@ -20,11 +20,14 @@ from __future__ import unicode_literals
 
 import cherrypy
 import logging
+from past.builtins import str
+from past.builtins import cmp
 
 from rdiffweb import page_main
 from rdiffweb import rdw_plugin
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import unquote_url, decode_s
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -98,8 +101,8 @@ class PreferencesPage(page_main.MainPage):
         def add_panelid(x):
             p = list(x.get_prefs_panels() or [])
             for panelid, panelname in p:
-                assert isinstance(panelid, basestring)
-                assert isinstance(panelname, basestring)
+                assert isinstance(panelid, str)
+                assert isinstance(panelname, str)
                 panels.append((panelid, panelname))
                 providers[panelid] = x
 

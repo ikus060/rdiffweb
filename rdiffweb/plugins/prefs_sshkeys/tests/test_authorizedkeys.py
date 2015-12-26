@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from builtins import str
 
 import unittest
 import pkg_resources
@@ -55,12 +56,12 @@ class AuthorizedKeysTest(unittest.TestCase):
 
             # Read the file again.
             keys = authorizedkeys.read(tempfilename)
-            self.assertEquals(6, len(keys))
+            self.assertEqual(6, len(keys))
 
             # Check data
-            self.assertEquals('ssh-rsa', keys[5].keytype)
-            self.assertEquals('AAAAA', keys[5].key)
-            self.assertEquals('bobo@computer', keys[5].comment)
+            self.assertEqual('ssh-rsa', keys[5].keytype)
+            self.assertEqual('AAAAA', keys[5].key)
+            self.assertEqual('bobo@computer', keys[5].comment)
         finally:
             os.remove(tempfilename)
 
@@ -71,10 +72,10 @@ class AuthorizedKeysTest(unittest.TestCase):
         f.close()
         # Check line.
         key = authorizedkeys.check_publickey(line)
-        self.assertEquals('ssh-rsa', key.keytype)
-        self.assertEquals(372, len(key.key))
+        self.assertEqual('ssh-rsa', key.keytype)
+        self.assertEqual(372, len(key.key))
         self.assertTrue(key.key.startswith('AAAAB3NzaC1yc2EAAAADAQABAAABAQDDY'))
-        self.assertEquals('ikus060@ikus060-t530', key.comment)
+        self.assertEqual('ikus060@ikus060-t530', key.comment)
 
     def test_check_publickey_with_dsa(self):
         filename = pkg_resources.resource_filename(__name__, 'test_publickey_ssh_dsa.pub')  # @UndefinedVariable
@@ -83,10 +84,10 @@ class AuthorizedKeysTest(unittest.TestCase):
         f.close()
         # Check line.
         key = authorizedkeys.check_publickey(line)
-        self.assertEquals('ssh-dss', key.keytype)
-        self.assertEquals(580, len(key.key))
+        self.assertEqual('ssh-dss', key.keytype)
+        self.assertEqual(580, len(key.key))
         self.assertTrue(key.key.startswith('AAAAB3NzaC1kc3MAAACBAM8gRuUD+MFPy'))
-        self.assertEquals('ikus060@ikus060-t530', key.comment)
+        self.assertEqual('ikus060@ikus060-t530', key.comment)
 
     def test_exists(self):
         filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable
@@ -100,20 +101,20 @@ class AuthorizedKeysTest(unittest.TestCase):
     def test_fingerprint(self):
         filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable
         keys = authorizedkeys.read(filename)
-        self.assertEquals(5, len(keys))
+        self.assertEqual(5, len(keys))
 
         # Check first key
-        self.assertEquals('7b:25:d6:13:a2:c2:ae:c3:cd:5e:c6:b4:e9:78:9b:00', keys[0].fingerprint)
-        self.assertIsInstance(keys[0].fingerprint, unicode)
+        self.assertEqual('7b:25:d6:13:a2:c2:ae:c3:cd:5e:c6:b4:e9:78:9b:00', keys[0].fingerprint)
+        self.assertIsInstance(keys[0].fingerprint, str)
 
     def test_unicode(self):
         options = OrderedDict()
         options['command'] = 'bash'
         options['no-user-rc'] = False
         key = authorizedkeys.KeySplit(lineno=1, options=options, keytype='ssh-rsa', key='AAAAA', comment='bobo@computer')
-        line = unicode(key)
-        self.assertEquals('command="bash",no-user-rc ssh-rsa AAAAA bobo@computer', line)
-        self.assertIsInstance(line, unicode)
+        line = str(key)
+        self.assertEqual('command="bash",no-user-rc ssh-rsa AAAAA bobo@computer', line)
+        self.assertIsInstance(line, str)
 
     def test_str(self):
         options = OrderedDict()
@@ -121,53 +122,53 @@ class AuthorizedKeysTest(unittest.TestCase):
         options['no-user-rc'] = False
         key = authorizedkeys.KeySplit(lineno=1, options=options, keytype='ssh-rsa', key='AAAAA', comment='bobo@computer')
         line = str(key)
-        self.assertEquals(b'command="bash",no-user-rc ssh-rsa AAAAA bobo@computer', line)
+        self.assertEqual('command="bash",no-user-rc ssh-rsa AAAAA bobo@computer', line)
         self.assertIsInstance(line, str)
 
     def test_parse_options(self):
 
-        self.assertEquals({'key': 'value'}, authorizedkeys.parse_options('key="value"'))
-        self.assertEquals({'option': False}, authorizedkeys.parse_options('option'))
-        self.assertEquals({'option1': False, 'key': 'value', 'option2': False}, authorizedkeys.parse_options('option1,key="value",option2'))
+        self.assertEqual({'key': 'value'}, authorizedkeys.parse_options('key="value"'))
+        self.assertEqual({'option': False}, authorizedkeys.parse_options('option'))
+        self.assertEqual({'option1': False, 'key': 'value', 'option2': False}, authorizedkeys.parse_options('option1,key="value",option2'))
 
     def test_read(self):
         filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable
         keys = authorizedkeys.read(filename)
-        self.assertEquals(5, len(keys))
+        self.assertEqual(5, len(keys))
 
         # Check first key
-        self.assertEquals(1, keys[0].lineno)
-        self.assertEquals('ssh-rsa', keys[0].keytype)
+        self.assertEqual(1, keys[0].lineno)
+        self.assertEqual('ssh-rsa', keys[0].keytype)
         self.assertTrue(keys[0].key.startswith('AAAAB3NzaC1yc2EAAAADAQABAAABAQDFqrQ'))
-        self.assertEquals('root@thymara', keys[0].comment)
+        self.assertEqual('root@thymara', keys[0].comment)
 
         # Check second key
-        self.assertEquals(2, keys[1].lineno)
-        self.assertEquals('ssh-rsa', keys[1].keytype)
+        self.assertEqual(2, keys[1].lineno)
+        self.assertEqual('ssh-rsa', keys[1].keytype)
         self.assertTrue(keys[1].key.startswith('AAAAB3NzaC1yc2EAAAADAQABAAABAQDf'))
-        self.assertEquals('root@mercor', keys[1].comment)
-        self.assertEquals({'command': 'mycommand arg'}, keys[1].options)
+        self.assertEqual('root@mercor', keys[1].comment)
+        self.assertEqual({'command': 'mycommand arg'}, keys[1].options)
 
         # Check thrid key
-        self.assertEquals(5, keys[2].lineno)
-        self.assertEquals('ssh-rsa', keys[2].keytype)
+        self.assertEqual(5, keys[2].lineno)
+        self.assertEqual('ssh-rsa', keys[2].keytype)
         self.assertTrue(keys[2].key.startswith('AAAAB3NzaC1yc2EAAAADAQABAAUGK'))
-        self.assertEquals('root@kalo', keys[2].comment)
-        self.assertEquals({'no-user-rc': False}, keys[2].options)
+        self.assertEqual('root@kalo', keys[2].comment)
+        self.assertEqual({'no-user-rc': False}, keys[2].options)
 
         # Check fourth key
-        self.assertEquals(6, keys[3].lineno)
-        self.assertEquals('ssh-rsa', keys[3].keytype)
-        self.assertEquals('AAAAB3NzaC1yc2EAAAADAQSTlX', keys[3].key)
-        self.assertEquals('root@ranculos', keys[3].comment)
-        self.assertEquals({'command': 'mycommand arg'}, keys[3].options)
+        self.assertEqual(6, keys[3].lineno)
+        self.assertEqual('ssh-rsa', keys[3].keytype)
+        self.assertEqual('AAAAB3NzaC1yc2EAAAADAQSTlX', keys[3].key)
+        self.assertEqual('root@ranculos', keys[3].comment)
+        self.assertEqual({'command': 'mycommand arg'}, keys[3].options)
 
         # Check fifth key
-        self.assertEquals(7, keys[4].lineno)
-        self.assertEquals('ssh-rsa', keys[4].keytype)
-        self.assertEquals('AAAAB3NzaC1yc2EAAAADAQABAAUGK', keys[4].key)
-        self.assertEquals('', keys[4].comment)
-        self.assertEquals({'tunnel': 'n', 'no-X11-forwarding': False}, keys[4].options)
+        self.assertEqual(7, keys[4].lineno)
+        self.assertEqual('ssh-rsa', keys[4].keytype)
+        self.assertEqual('AAAAB3NzaC1yc2EAAAADAQABAAUGK', keys[4].key)
+        self.assertEqual('', keys[4].comment)
+        self.assertEqual({'tunnel': 'n', 'no-X11-forwarding': False}, keys[4].options)
 
     def test_remove(self):
         # Copy file
@@ -181,13 +182,13 @@ class AuthorizedKeysTest(unittest.TestCase):
 
             # Read the file again.
             keys = authorizedkeys.read(tempfilename)
-            self.assertEquals(4, len(keys))
+            self.assertEqual(4, len(keys))
 
             # Check data
-            self.assertEquals('root@thymara', keys[0].comment)
-            self.assertEquals('root@mercor', keys[1].comment)
-            self.assertEquals('root@ranculos', keys[2].comment)
-            self.assertEquals('', keys[3].comment)
+            self.assertEqual('root@thymara', keys[0].comment)
+            self.assertEqual('root@mercor', keys[1].comment)
+            self.assertEqual('root@ranculos', keys[2].comment)
+            self.assertEqual('', keys[3].comment)
         finally:
             os.remove(tempfilename)
 

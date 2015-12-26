@@ -17,13 +17,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from past.builtins import cmp
+from builtins import str
 
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPasswordStore, IDatabase
 from rdiffweb.rdw_helpers import encode_s, decode_s
 from threading import RLock
 from rdiffweb.core import InvalidUserError
+import sys
 import logging
+from future.utils.surrogateescape import FS_ENCODING
+
+try:
+    # Python 2.5+
+    from hashlib import sha1 as sha
+except ImportError:
+    from sha import new as sha
 
 """We do no length validation for incoming parameters, since truncated values
 will at worst lead to slightly confusing results, but no security risks"""
@@ -56,7 +66,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         """
         Check if `username` exists.
         """
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
 
         results = self._execute_query(
             "SELECT Username FROM users WHERE Username = ?", (username,))
@@ -66,8 +76,8 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         """
         Check if the given `username` and `password` are valid.
         """
-        assert isinstance(username, unicode)
-        assert isinstance(password, unicode)
+        assert isinstance(username, str)
+        assert isinstance(password, str)
         logger.info("validating user [%s] credentials", username)
         results = self._execute_query(
             "SELECT Password, Username FROM users WHERE Username = ?",
@@ -82,19 +92,15 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         """
         Get list of repos for the given `username`.
         """
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
         if not self.exists(username):
             raise InvalidUserError(username)
         query = ("SELECT RepoPath FROM repos WHERE UserID = %d" %
                  self._get_user_id(username))
-        repos = [
-            self._encode_path(row[0]) for row in self._execute_query(query)
-        ]
-        repos.sort(lambda x, y: cmp(x.upper(), y.upper()))
-        return repos
+        return [row[0] for row in self._execute_query(query)]
 
     def get_repo_maxage(self, username, repoPath):
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
 
         query = "SELECT MaxAge FROM repos WHERE RepoPath=? AND UserID = " + \
             str(self._get_user_id(username))
@@ -103,16 +109,16 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         return int(results[0][0])
 
     def get_email(self, username):
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
         return self._get_user_field(username, "UserEmail")
 
     def get_user_root(self, username):
         """Get user root directory."""
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
 
         if username not in self._user_root_cache:
-            self._user_root_cache[username] = self._encode_path(
-                self._get_user_field(username, "UserRoot"))
+            self._user_root_cache[username] = self._get_user_field(username, "UserRoot")
+
         return self._user_root_cache[username]
 
     def has_password(self, username):
@@ -123,7 +129,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
             return False
 
     def is_admin(self, username):
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
         value = self._get_user_field(username, "IsAdmin")
         return self._bool(value)
 
@@ -139,7 +145,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         """
         Add a new username to this userdb.
         """
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
         logger.info("adding new user [%s]", username)
         query = "INSERT INTO users (Username) values (?)"
         self._execute_query(query, (username,))
@@ -148,7 +154,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         """
         Delete the given `username`.
         """
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
         # Check if user exists
         if not self.exists(username):
             return False
@@ -161,7 +167,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         return True
 
     def set_is_admin(self, username, is_admin):
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
         if not self.exists(username):
             raise InvalidUserError(username)
         if is_admin:
@@ -173,12 +179,12 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
             (admin_int, username))
 
     def set_email(self, username, email):
-        assert isinstance(username, unicode)
-        assert isinstance(email, unicode)
+        assert isinstance(username, str)
+        assert isinstance(email, str)
         self._set_user_field(username, 'UserEmail', email)
 
     def set_repos(self, username, repoPaths):
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
         if not self.exists(username):
             raise InvalidUserError(username)
         userID = self._get_user_id(username)
@@ -186,8 +192,8 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         # We don't want to just delete and recreate the repos, since that
         # would lose notification information.
         existingRepos = self.get_repos(username)
-        reposToDelete = filter(lambda x: x not in repoPaths, existingRepos)
-        reposToAdd = filter(lambda x: x not in existingRepos, repoPaths)
+        reposToDelete = [x for x in existingRepos if x not in repoPaths]
+        reposToAdd = [x for x in repoPaths if x not in existingRepos]
 
         # delete any obsolete repos
         for repo in reposToDelete:
@@ -205,9 +211,9 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
             conn.close()
 
     def set_password(self, username, password, old_password=None):
-        assert isinstance(username, unicode)
-        assert old_password is None or isinstance(old_password, unicode)
-        assert isinstance(password, unicode)
+        assert isinstance(username, str)
+        assert old_password is None or isinstance(old_password, str)
+        assert isinstance(password, str)
         if not password:
             raise ValueError(_("password can't be empty"))
 
@@ -219,7 +225,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         self._set_user_field(username, 'Password', self._hash_password(password))
 
     def set_repo_maxage(self, username, repoPath, maxAge):
-        assert isinstance(username, unicode)
+        assert isinstance(username, str)
         if repoPath not in self.get_repos(username):
             raise ValueError
         query = "UPDATE repos SET MaxAge=? WHERE RepoPath=? AND UserID = " + \
@@ -227,8 +233,8 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         self._execute_query(query, (maxAge, repoPath))
 
     def set_user_root(self, username, user_root):
-        assert isinstance(username, unicode)
-        assert isinstance(user_root, unicode)
+        assert isinstance(username, str)
+        assert isinstance(user_root, str)
         if not self.exists(username):
             raise InvalidUserError(username)
         # Remove the user from the cache before
@@ -237,13 +243,6 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         self._execute_query(
             "UPDATE users SET UserRoot=? WHERE Username = ?",
             (user_root, username))
-
-    # Helper functions #
-    def _encode_path(self, path):
-        if isinstance(path, str):
-            # convert to unicode...
-            return path.decode('utf-8')
-        return path
 
     def _get_user_id(self, username):
         assert self.exists(username)
@@ -258,9 +257,9 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         return results[0][0]
 
     def _set_user_field(self, username, fieldName, value):
-        assert isinstance(username, unicode)
-        assert isinstance(fieldName, unicode)
-        assert not isinstance(value, str)
+        assert isinstance(username, str)
+        assert isinstance(fieldName, str)
+        assert isinstance(value, str) or isinstance(value, bool) or isinstance(value, int)
 
         if not self.exists(username):
             raise InvalidUserError(username)
@@ -276,13 +275,12 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         # At this point the password should be unicode. We converted it into
         # system encoding.
         password_b = encode_s(password)
-        import sha
-        hasher = sha.new()
+        hasher = sha()
         hasher.update(password_b)
-        return decode_s(hasher.hexdigest())
+        return str(hasher.hexdigest())
 
     def _execute_query(self, query, args=()):
-        assert isinstance(query, unicode)
+        assert isinstance(query, str)
         conn = self._connect()
         try:
             cursor = conn.cursor()

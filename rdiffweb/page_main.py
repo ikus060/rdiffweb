@@ -16,17 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import cherrypy
-from rdiffweb import librdiff
 import logging
 import os.path
 
-from rdiffweb.rdw_helpers import encode_s, decode_s
+from rdiffweb import librdiff
 from rdiffweb.core import Component
+from rdiffweb.rdw_helpers import encode_s, decode_s
 from rdiffweb.rdw_plugin import ITemplateFilterPlugin
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -102,7 +103,7 @@ class MainPage(Component):
         Compile an error template.
             `error` the error message.
         """
-        assert isinstance(error, unicode)
+        assert isinstance(error, str)
         return self._compile_template("error.html", error=error)
 
     def _compile_template(self, template_name, **kwargs):

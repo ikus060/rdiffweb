@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
+from builtins import str
 
 import logging
 import unittest
@@ -37,11 +38,11 @@ def _ldap_user(name, password='password'):
     """Create ldap entry to be mock."""
     name = str(name)
     password = str(password)
-    return (b'uid=%s,ou=People,dc=nodomain' % (name), {
-        b'uid': [name],
-        b'cn': [name],
-        b'userPassword': [password],
-        b'objectClass': [b'person', b'organizationalPerson', b'inetOrgPerson', b'posixAccount']})
+    return ('uid=%s,ou=People,dc=nodomain' % (name), {
+        'uid': [name],
+        'cn': [name],
+        'userPassword': [password],
+        'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']})
 
 
 class UserManagerSQLiteTest(unittest.TestCase):

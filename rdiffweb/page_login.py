@@ -16,15 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import cherrypy
 import logging
-from rdiffweb import page_main
 
+from rdiffweb import page_main
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import quote_url
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -34,9 +35,9 @@ class LoginPage(page_main.MainPage):
 
     @cherrypy.expose
     def index(self, redirect=u"", login=u"", password=""):
-        assert isinstance(redirect, unicode)
-        assert isinstance(login, unicode)
-        assert isinstance(password, unicode)
+        assert isinstance(redirect, str)
+        assert isinstance(login, str)
+        assert isinstance(password, str)
 
         # when parameters are sent using post, redirect URL doesn't need to be
         # quoted.

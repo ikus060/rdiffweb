@@ -20,15 +20,14 @@ from __future__ import unicode_literals
 
 import cherrypy
 import getopt
-import sys
-import threading
 import logging
+import sys
 import tempfile
 
-from rdiffweb import rdw_app
-from rdiffweb import rdw_spider_repos
-from rdiffweb import i18n  # @UnusedImport
 from rdiffweb import filter_authentication  # @UnusedImport
+from rdiffweb import i18n  # @UnusedImport
+from rdiffweb import rdw_app
+
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -60,7 +59,8 @@ def error_page(**kwargs):
     """
     # Template is a str, convert it to unicode.
     template = cherrypy._cperror._HTTPErrorTemplate.decode('ascii', 'replace')
-    return template % dict([(key, value.decode('ascii', 'replace')) for key, value in kwargs.iteritems()])
+    return template % {key: value.decode('ascii', 'replace'))
+                       for key, value in kwargs.items()}
 
 
 def setup_logging(log_file, log_access_file, debug):

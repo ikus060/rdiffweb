@@ -17,6 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from past.builtins import cmp
+from builtins import str
 
 from rdiffweb.rdw_plugin import IPasswordStore
 import warnings
@@ -108,8 +110,8 @@ class mysqlUserDB(IPasswordStore):
         # We don't want to just delete and recreate the repos, since that
         # would lose notification information.
         existingRepos = self.get_repos(username)
-        reposToDelete = filter(lambda x: x not in repoPaths, existingRepos)
-        reposToAdd = filter(lambda x: x not in existingRepos, repoPaths)
+        reposToDelete = [x for x in existingRepos if x not in repoPaths]
+        reposToAdd = [x for x in repoPaths if x not in existingRepos]
 
         # delete any obsolete repos
         for repo in reposToDelete:
@@ -123,9 +125,9 @@ class mysqlUserDB(IPasswordStore):
         cursor.executemany(query, repoPaths)
 
     def set_password(self, username, password, old_password=None):
-        assert isinstance(username, unicode)
-        assert old_password is None or isinstance(old_password, unicode)
-        assert isinstance(password, unicode)
+        assert isinstance(username, str)
+        assert old_password is None or isinstance(old_password, str)
+        assert isinstance(password, str)
 
         if not password:
             raise ValueError("password can't be empty")
