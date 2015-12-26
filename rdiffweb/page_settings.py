@@ -19,8 +19,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from builtins import str
 from builtins import bytes
+from builtins import str
 import cherrypy
 from cherrypy._cperror import HTTPRedirect
 import encodings
@@ -48,22 +48,22 @@ class SettingsPage(page_main.MainPage):
             path = []
             while len(vpath) > 0:
                 path.append(unquote_url(vpath.pop(0)))
-            cherrypy.request.params['path_b'] = b"/".join(path)
+            cherrypy.request.params['path'] = b"/".join(path)
             return self
 
         return vpath
 
     @cherrypy.expose
-    def index(self, path_b=b"", **kwargs):
-        assert isinstance(path_b, bytes)
+    def index(self, path=b"", **kwargs):
+        assert isinstance(path, bytes)
 
-        _logger.debug("repo settings [%s]", decode_s(path_b, 'replace'))
+        _logger.debug("repo settings [%s]", decode_s(path, 'replace'))
 
         # Check user permissions
         try:
-            repo_obj = self.validate_user_path(path_b)[0]
+            repo_obj = self.validate_user_path(path)[0]
         except librdiff.FileError as e:
-            _logger.exception("invalid user path [%s]", decode_s(path_b, 'replace'))
+            _logger.exception("invalid user path [%s]", decode_s(path, 'replace'))
             return self._compile_error_template(str(e))
 
         # Check if any action to process.

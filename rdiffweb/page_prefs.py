@@ -18,10 +18,10 @@
 
 from __future__ import unicode_literals
 
+from builtins import cmp
+from builtins import str
 import cherrypy
 import logging
-from past.builtins import str
-from past.builtins import cmp
 
 from rdiffweb import page_main
 from rdiffweb import rdw_plugin

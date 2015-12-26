@@ -18,6 +18,7 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 
 #: rdiffweb/core.py:41
+#, python-format
 msgid "user %s doesn't exists"
 msgstr "l'utilisateur '%s' existe déjà"
 
@@ -112,6 +113,7 @@ msgid "Repository updated successfully with new encoding."
 msgstr "Dépôt mis à jour avec le nouvel encodage."
 
 #: rdiffweb/user.py:70
+#, python-format
 msgid "user %s already exists"
 msgstr "l'utilisateur '%s' existe déjà"
 

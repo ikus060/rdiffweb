@@ -59,7 +59,7 @@ def error_page(**kwargs):
     """
     # Template is a str, convert it to unicode.
     template = cherrypy._cperror._HTTPErrorTemplate.decode('ascii', 'replace')
-    return template % {key: value.decode('ascii', 'replace'))
+    return template % {key: value.decode('ascii', 'replace')
                        for key, value in kwargs.items()}
 
 

@@ -19,6 +19,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+from builtins import str
 import cherrypy
 import logging
 
@@ -34,7 +35,7 @@ logger = logging.getLogger(__name__)
 class LoginPage(page_main.MainPage):
 
     @cherrypy.expose
-    def index(self, redirect=u"", login=u"", password=""):
+    def index(self, redirect="", login="", password=""):
         assert isinstance(redirect, str)
         assert isinstance(login, str)
         assert isinstance(password, str)
@@ -42,7 +43,8 @@ class LoginPage(page_main.MainPage):
         # when parameters are sent using post, redirect URL doesn't need to be
         # quoted.
         if not self._is_submit():
-            parts = redirect.partition("?")
+            redirect_b = redirect.encode(cherrypy.request.query_string_encoding)
+            parts = redirect_b.partition(b"?")
             redirect = quote_url(parts[0])
             if parts[2]:
                 redirect += "?"

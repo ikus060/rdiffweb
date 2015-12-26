@@ -70,7 +70,7 @@ class RestorePage(page_main.MainPage):
             path = []
             while len(vpath) > 0:
                 path.append(unquote_url(vpath.pop(0)))
-            cherrypy.request.params['path_b'] = b"/".join(path)
+            cherrypy.request.params['path'] = b"/".join(path)
             return self
 
         return vpath
@@ -78,23 +78,23 @@ class RestorePage(page_main.MainPage):
     @cherrypy.expose
     @cherrypy.tools.autodelete()
     @cherrypy.tools.decode(default_encoding='Latin-1')
-    def index(self, path_b=b"", date="", usetar=""):
-        assert isinstance(path_b, bytes)
+    def index(self, path=b"", date="", usetar=""):
+        assert isinstance(path, bytes)
         assert isinstance(date, str)
         assert isinstance(usetar, str)
 
-        logger.debug("restoring [%s][%s]" % (decode_s(path_b, 'replace'),
+        logger.debug("restoring [%s][%s]" % (decode_s(path, 'replace'),
                                              date))
 
-        # The path_b wont have leading and trailing "/".
-        (path_b, file_b) = os.path.split(path_b)
-        if not path_b:
-            path_b = file_b
+        # The path wont have leading and trailing "/".
+        (path, file_b) = os.path.split(path)
+        if not path:
+            path = file_b
             file_b = b""
 
         # Check user access to repo / path.
         try:
-            (repo_obj, path_obj) = self.validate_user_path(path_b)
+            (repo_obj, path_obj) = self.validate_user_path(path)
         except librdiff.FileError as e:
             logger.exception("invalid user path")
             return self._compile_error_template(str(e))

@@ -44,19 +44,19 @@ class HistoryPage(page_main.MainPage):
             path = []
             while len(vpath) > 0:
                 path.append(unquote_url(vpath.pop(0)))
-            cherrypy.request.params['path_b'] = b"/".join(path)
+            cherrypy.request.params['path'] = b"/".join(path)
             return self
 
         return vpath
 
     @cherrypy.expose
-    def index(self, path_b=b""):
-        assert isinstance(path_b, bytes)
+    def index(self, path=b""):
+        assert isinstance(path, bytes)
 
-        logger.debug("history [%s]" % decode_s(path_b, 'replace'))
+        logger.debug("history [%s]" % decode_s(path, 'replace'))
 
         try:
-            (repo_obj, path_obj) = self.validate_user_path(path_b)
+            (repo_obj, path_obj) = self.validate_user_path(path)
         except librdiff.FileError as e:
             logger.exception("invalid user path")
             return self._compile_error_template(str(e))

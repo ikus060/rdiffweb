@@ -49,7 +49,7 @@ class MockRdiffPath(RdiffPath):
 
     def __init__(self, repo):
         self.repo = repo
-        self.path = bytes(pkg_resources.resource_filename('rdiffweb', 'tests'), encoding='utf-8')  # @UndefinedVariable
+        self.path = b''
 
 
 class IncrementEntryTest(unittest.TestCase):
@@ -139,6 +139,26 @@ class DirEntryTest(unittest.TestCase):
              ],
             entry.restore_dates)
 
+    def test_display_name(self):
+        """Check if display name is unquoted and unicode."""
+        entry = DirEntry(self.root_path, b'my_dir', True, [])
+        self.assertEqual('my_dir', entry.display_name)
+
+        entry = DirEntry(self.root_path, b'my;090dir', True, [])
+        self.assertEqual('myZdir', entry.display_name)
+
+    def test_file_size(self):
+        increments = [
+            IncrementEntry(self.root_path, bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial.2014-11-05T16:05:07-05:00.dir', encoding='utf-8'))]
+        entry = DirEntry(self.root_path, bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'), False, increments)
+        self.assertEqual(286, entry.file_size)
+
+    def test_file_size_without_stats(self):
+        increments = [
+            IncrementEntry(self.root_path, b'my_file.2014-11-05T16:04:30-05:00.dir')]
+        entry = DirEntry(self.root_path, b'my_file', False, increments)
+        self.assertEqual(0, entry.file_size)
+
 
 class FileStatisticsEntryTest(unittest.TestCase):
     """
@@ -168,6 +188,16 @@ class FileStatisticsEntryTest(unittest.TestCase):
         entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data.gz')
         size = entry.get_source_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(286, size)
+
+
+class RdiffRepoTest(unittest.TestCase):
+
+    def setUp(self):
+        self.repo = MockRdiffRepo()
+        self.root_path = self.repo.root_path
+
+    def test_unquote(self):
+        self.assertEqual(b'Char ;090 to quote', self.repo.unquote(b'Char ;059090 to quote'))
 
 
 if __name__ == "__main__":

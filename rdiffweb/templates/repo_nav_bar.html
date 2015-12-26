@@ -1,9 +1,9 @@
 <ul class="nav nav-tabs" role="navigation">
     <li {% if dir_entries %}class="active"{% endif%}>
-        <a href="{{ url_for_browse(repo_path, path or "") }}"><i class="icon-docs"></i> {% trans %}Files{% endtrans %}</a>
+        <a href="{{ url_for_browse(repo_path, path) }}"><i class="icon-docs"></i> {% trans %}Files{% endtrans %}</a>
     </li>
     <li {% if restore_dates %}class="active"{% endif %}>
-        <a href="{{ url_for_browse(repo_path, path or "", restore=True) }}"><i class="icon-file-archive"></i> {% trans %}Restore folder{% endtrans %}</a>
+        <a href="{{ url_for_browse(repo_path, path, restore=True) }}"><i class="icon-file-archive"></i> {% trans %}Restore folder{% endtrans %}</a>
     </li>
     <li {% if history_entries %}class="active"{% endif %}>
         <a href="{{ url_for_history(repo_path) }}"><i class="icon-history"></i> {% trans %}History{% endtrans %}</a>

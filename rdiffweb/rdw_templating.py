@@ -19,6 +19,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+from builtins import bytes
 from builtins import object
 from builtins import str
 from jinja2 import Environment, PackageLoader
@@ -37,9 +38,12 @@ logger = logging.getLogger(__name__)
 
 def do_filter(sequence, attribute_name):
     """Filter sequence of objects."""
-    return [x for x in sequence if (isinstance(x, dict) and attribute_name in x and
-                   x[attribute_name]) or
-                  (hasattr(x, attribute_name) and getattr(x, attribute_name))]
+    return [x for x in sequence
+            if (isinstance(x, dict) and
+                attribute_name in x and
+                x[attribute_name]) or
+               (hasattr(x, attribute_name) and
+                getattr(x, attribute_name))]
 
 
 def do_format_datetime(value, dateformat='%Y-%m-%d %H:%M'):
@@ -85,12 +89,14 @@ def do_format_filesize(value, binary=True):
         return '%.1f %s' % ((base * size / unit), prefix)
 
 
-def url_for_browse(repo, path=b"", restore=False):
+def url_for_browse(repo, path=None, restore=False):
     """Generate an URL for browse controller."""
     # Make sure the URL end with a "/" otherwise cherrypy does an internal
     # redirection.
-    assert isinstance(repo, str)
-    assert isinstance(path, str)
+    assert isinstance(repo, bytes)
+    assert isinstance(path, bytes) or not path
+    if not path:
+        path = b''
     url = []
     url.append("/browse/")
     if repo:
@@ -108,6 +114,7 @@ def url_for_browse(repo, path=b"", restore=False):
 
 
 def url_for_history(repo):
+    assert isinstance(repo, bytes)
     url = []
     url.append("/history/")
     if repo:
@@ -118,8 +125,8 @@ def url_for_history(repo):
 
 
 def url_for_restore(repo, path, date, usetar=False):
-    assert isinstance(repo, str)
-    assert isinstance(path, str)
+    assert isinstance(repo, bytes)
+    assert isinstance(path, bytes)
     assert isinstance(date, rdw_helpers.rdwTime)
     url = []
     url.append("/restore/")
@@ -154,7 +161,7 @@ def url_for_status_entry(date, repo=None):
     url = []
     url.append("/status/entry/")
     if repo:
-        assert isinstance(repo, str)
+        assert isinstance(repo, bytes)
         repo = repo.rstrip(b"/")
         url.append(rdw_helpers.quote_url(repo))
         url.append("/")

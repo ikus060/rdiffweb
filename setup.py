@@ -17,25 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-# from __future__ import unicode_literals
 
-from babel.messages.frontend import compile_catalog, extract_messages, update_catalog, init_catalog
-from distutils.cmd import Command
-from distutils.command.build import build as build_
-from distutils.dist import DistributionMetadata
-from distutils.log import error, info
-from distutils.util import split_quoted
-from string import Template
 import sys
-
-
-try:
-    from setuptools import setup
-except ImportError:
-    import ez_setup
-    ez_setup.use_setuptools()
-    from setuptools import setup
-
 PY2 = sys.version_info[0] == 2
 
 # Check running python version.
@@ -47,6 +30,20 @@ if PY2 and not sys.version_info >= (2, 7):
     print('python version 2.7 is required.')
     sys.exit(1)
 
+from babel.messages.frontend import compile_catalog, extract_messages, update_catalog, init_catalog
+from distutils.cmd import Command
+from distutils.command.build import build as build_
+from distutils.dist import DistributionMetadata
+from distutils.log import error, info
+from distutils.util import split_quoted
+from string import Template
+
+try:
+    from setuptools import setup
+except ImportError:
+    import ez_setup
+    ez_setup.use_setuptools()
+    from setuptools import setup
 
 DistributionMetadata.templates = None
 

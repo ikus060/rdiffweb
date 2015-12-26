@@ -66,8 +66,9 @@ ZIP_SUFFIX = b".zip"
 # Tar gz extension
 TARGZ_SUFFIX = b".tar.gz"
 
+
 @python_2_unicode_compatible
-class FileError(object):
+class FileError(Exception):
 
     def __str__(self):
         return _("An unknown error occurred.")
@@ -169,7 +170,7 @@ class DirEntry(object):
                 unquote_path = self._repo.unquote(self.path)
                 self._file_size = stats.get_source_size(unquote_path)
             else:
-                logger.warning("cannot file file statistic [%s]", self.last_change_date)
+                logger.warning("cannot find file statistic [%s]", self.last_change_date)
                 self._file_size = 0
         return self._file_size
 
@@ -628,7 +629,7 @@ class RdiffRepo(object):
         # Get reference to the FileStatisticsEntry
         try:
             value = self._file_statistics[date]
-            if isinstance(value, str):
+            if not isinstance(value, FileStatisticsEntry):
                 entry = FileStatisticsEntry(self.root_path, value)
                 self._file_statistics[date] = entry
                 return entry
@@ -702,7 +703,7 @@ class RdiffRepo(object):
             try:
                 os.kill(pid, 0)
             except OSError as e:
-                if e[0] == errno.ESRCH:
+                if e.errno == errno.ESRCH:
                     return False
                 else:
                     logger.warning("unable to check if PID %d still running", pid)
@@ -770,7 +771,7 @@ class RdiffRepo(object):
             if not len(match.group()) == 4:
                 return match.group
             try:
-                return chr(int(match.group()[1:]))
+                return bytes([int(match.group()[1:])])
             except ValueError:
                 return match.group
         # Remove quote using regex

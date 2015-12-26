@@ -19,6 +19,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+from builtins import str
+from builtins import bytes
 import cherrypy
 import logging
 import os.path
@@ -38,7 +40,7 @@ class MainPage(Component):
     def validate_user_path(self, path_b):
         '''Takes a path relative to the user's root dir and validates that it
         is valid and within the user's root'''
-        assert isinstance(path_b, str)
+        assert isinstance(path_b, bytes)
 
         # Add a ending slash (/) to avoid matching wrong repo. Ref #56
         path_b = path_b.strip(b'/') + b'/'
@@ -46,8 +48,7 @@ class MainPage(Component):
         # NOTE: a blank path is allowed, since the user root directory might be
         # a repository.
 
-        logger.debug("check user access to path [%s]" %
-                     decode_s(path_b, 'replace'))
+        logger.debug("check user access to path [%r]", path_b)
 
         # Get reference to user repos
         user_repos = self.app.currentuser.repos

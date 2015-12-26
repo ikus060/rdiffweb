@@ -20,6 +20,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from builtins import str
+from builtins import bytes
 import cherrypy
 import logging
 import os
@@ -48,21 +49,21 @@ class BrowsePage(page_main.MainPage):
             path = []
             while len(vpath) > 0:
                 path.append(unquote_url(vpath.pop(0)))
-            cherrypy.request.params['path_b'] = b"/".join(path)
+            cherrypy.request.params['path'] = b"/".join(path)
             return self
 
         return vpath
 
     @cherrypy.expose
-    def index(self, path_b=b"", restore=""):
-        assert isinstance(path_b, bytes)
+    def index(self, path=b"", restore=""):
+        assert isinstance(path, bytes)
         assert isinstance(restore, str)
 
-        logger.debug("browsing [%s]" % decode_s(path_b, 'replace'))
+        logger.debug("browsing [%s]" % decode_s(path, 'replace'))
 
         # Check user access to the given repo & path
         try:
-            (repo_obj, path_obj) = self.validate_user_path(path_b)
+            (repo_obj, path_obj) = self.validate_user_path(path)
         except librdiff.FileError as e:
             logger.exception("invalid user path")
             return self._compile_error_template(str(e))

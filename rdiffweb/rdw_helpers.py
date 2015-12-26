@@ -19,16 +19,18 @@
 from __future__ import division
 from __future__ import unicode_literals
 
+from builtins import bytes
 from builtins import map
 from builtins import object
 from builtins import str
 import calendar
 from future.utils import iteritems
-import os
+from future.utils import python_2_unicode_compatible
 from past.builtins import cmp
 from past.utils import old_div
 import sys
 import time
+
 
 try:
     from urllib.parse import quote, unquote
@@ -58,43 +60,46 @@ def encode_s(value):
     return value.encode(system_charset)
 
 
-def quote_url(url, safe=None):
-    """encode URL but try to keep encoding (unicode vs str)"""
+# TODO: Move this into page_main
+def quote_url(url, safe='/'):
+    """
+    Receive either str or bytes. Always return str.
+    """
     # If URL is None, return None
     if not url:
-        return url
-
-    # If safe is define, make sure it's the same object type (either unicode
-    # or str)
-    if safe:
-        assert type(url) == type(safe)
-
-    # Handle case when URL is unicode.
-    is_unicode = False
-    if isinstance(url, str):
-        is_unicode = True
-        url = url.encode('utf8')
-    if safe and isinstance(safe, str):
-        safe = safe.encode('utf8')
-
-    if not safe:
-        safe = b"/"
+        return ''
+    # Convert everything to bytes
+    if not isinstance(url, bytes):
+        url = url.encode(encoding='latin1')
+    if not isinstance(safe, bytes):
+        safe = safe.encode(encoding='latin1')
 
     # URL encode
-    value = urllib.parse.quote(url, safe)
-
-    if is_unicode:
-        value = value.decode('utf8')
-
-    return value
+    val = quote(url, safe)
+    if not isinstance(val, str):
+        val = str(val, encoding='latin1')
+    return val
 
 
-def unquote_url(encodedUrl):
-    if not encodedUrl:
-        return encodedUrl
-    return urllib.parse.unquote(encodedUrl)
+# TODO: Move this into page_main
+def unquote_url(url):
+    """
+    Receive either str or bytes. Always return bytes
+    """
+    if not url:
+        return url
+    # Convert everything to str
+    if not isinstance(url, str):
+        url = str(url, encoding='latin1')
+    # Unquote
+    val = unquote(url)
+    # Make sure to return bytes.
+    if not isinstance(val, bytes):
+        val = val.encode('latin1')
+    return val
 
 
+@python_2_unicode_compatible
 class rdwTime(object):
 
     """Time information has two components: the local time, stored in GMT as
@@ -151,8 +156,10 @@ class rdwTime(object):
         return self.timeInSeconds - self.tzOffset
 
     def getDisplayString(self):
-        return decode_s(time.strftime(encode_s(u"%Y-%m-%d %H:%M:%S"),
-                                      time.gmtime(self.getLocalSeconds())))
+        value = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(self.getLocalSeconds()))
+        if isinstance(value, bytes):
+            value = value.decode(encoding='latin1')
+        return value
 
     def getTimeZoneString(self):
         if self.tzOffset:
@@ -224,9 +231,6 @@ class rdwTime(object):
 
     def __str__(self):
         """return utf-8 string"""
-        return str(self.getDisplayString())
-
-    def __unicode__(self):
         return self.getDisplayString()
 
     def __repr__(self):

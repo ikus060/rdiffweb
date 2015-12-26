@@ -25,6 +25,16 @@ Mock class for testing.
 
 from __future__ import unicode_literals
 
+from builtins import str
+from cherrypy import HTTPRedirect
+import cherrypy
+from future.utils import native_str
+import os
+import pkg_resources
+import shutil
+import tarfile
+import tempfile
+
 from rdiffweb.rdw_app import RdiffwebApp
 
 
@@ -39,6 +49,17 @@ class MockRdiffwebApp(RdiffwebApp):
         # Call parent constructor
         RdiffwebApp.__init__(self)
 
+    def clear(self):
+        if hasattr(self, 'testcases'):
+            shutil.rmtree(native_str(self.testcases))
+
+        if hasattr(self, 'database_dir'):
+            shutil.rmtree(native_str(self.database_dir))
+
+        cherrypy.session = {}
+        if hasattr(cherrypy.request, 'user'):
+            delattr(cherrypy.request, 'user')
+
     def load_config(self, configfile=None):
         RdiffwebApp.load_config(self, None)
 
@@ -48,7 +69,8 @@ class MockRdiffwebApp(RdiffwebApp):
 
         # database in memory
         if 'SQLite' in self.enabled_plugins:
-            self.cfg.set_config('SQLiteDBFile', '/tmp/rdiffweb.tmp.db')
+            self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
+            self.cfg.set_config('SQLiteDBFile', os.path.join(self.database_dir, 'rdiffweb.tmp.db'))
 
         if 'Ldap' in self.enabled_plugins:
             self.cfg.set_config('LdapUri', '__default__')
@@ -69,3 +91,32 @@ class MockRdiffwebApp(RdiffwebApp):
         # Create new user admin
         if self.userdb.supports('add_user'):
             self.userdb.add_user('admin', 'admin123')
+
+    def reset_testcases(self):
+        """Extract testcases."""
+        # Extract 'testcases.tar.gz'
+        testcases = pkg_resources.resource_filename('rdiffweb.tests', 'testcases.tar.gz')  # @UndefinedVariable
+        new = str(tempfile.mkdtemp(prefix='rdiffweb_tests_'))
+        tarfile.open(testcases).extractall(native_str(new))
+
+        # Register repository
+        self.userdb.set_user_root('admin', new)
+        self.userdb.set_repos('admin', ['testcases/'])
+
+        assert self.userdb.get_user_root('admin') == new
+        self.testcases = new
+
+    def login(self):
+        """
+        Simulate login with admin user
+        """
+        # Login as admin
+        if hasattr(cherrypy.request, 'user'):
+            delattr(cherrypy.request, 'user')
+        cherrypy.session = {}
+        cherrypy.request.method = 'POST'
+        try:
+            self.root.login.index(login="admin", password="admin123")
+        except HTTPRedirect:
+            pass
+        cherrypy.request.method = 'GET'
