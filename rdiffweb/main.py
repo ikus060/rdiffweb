@@ -164,7 +164,7 @@ def start():
     app = rdw_app.RdiffwebApp(configfile)
 
     # Get configuration
-    serverHost = app.cfg.get_config_str("ServerHost", default="0.0.0.0")
+    serverHost = app.cfg.get_config("ServerHost", default="0.0.0.0")
     serverPort = app.cfg.get_config_int("ServerPort", default="8080")
     if not serverPort:
         logger.error("ServerPort should be a port number: %s" % (serverPort))

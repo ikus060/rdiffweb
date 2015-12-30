@@ -22,20 +22,20 @@ from __future__ import unicode_literals
 from builtins import map
 from builtins import object
 from builtins import str
-from io import open
 from collections import OrderedDict
+from future.utils import python_2_unicode_compatible
+from io import open
 import logging
 import os
 from past.builtins import basestring
 import re
-
-from rdiffweb import rdw_helpers
 
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
+@python_2_unicode_compatible
 class SettingsError(Exception):
 
     def __init__(self, error=None):
@@ -44,11 +44,8 @@ class SettingsError(Exception):
         assert isinstance(error, str)
         self.error = error
 
-    def __unicode__(self):
-        return self.error
-
     def __str__(self):
-        return rdw_helpers.encode_s(str(self))
+        return self.error
 
 
 class Configuration(object):
@@ -134,15 +131,6 @@ class Configuration(object):
         if not keep_empty:
             items = [item for item in items if item not in (None, '')]
         return items
-
-    def get_config_str(self, key, default=""):
-        """
-        A convenience method which coerces the key to an str.
-        """
-        try:
-            return rdw_helpers.encode_s(self.get_config(key, default))
-        except:
-            return default
 
     def _parse_if_needed(self, force=False):
         """Read the configuration file and update the internal _cache. Return True

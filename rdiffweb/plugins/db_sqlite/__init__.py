@@ -101,10 +101,8 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
 
     def get_repo_maxage(self, username, repoPath):
         assert isinstance(username, str)
-
-        query = "SELECT MaxAge FROM repos WHERE RepoPath=? AND UserID = " + \
-            str(self._get_user_id(username))
-        results = self._execute_query(query, (repoPath,))
+        query = "SELECT MaxAge FROM repos WHERE RepoPath=? AND UserID = ?"
+        results = self._execute_query(query, (repoPath, self._get_user_id(username)))
         assert len(results) == 1
         return int(results[0][0])
 
@@ -187,7 +185,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         assert isinstance(username, str)
         if not self.exists(username):
             raise InvalidUserError(username)
-        userID = self._get_user_id(username)
+        user_id = self._get_user_id(username)
 
         # We don't want to just delete and recreate the repos, since that
         # would lose notification information.
@@ -198,11 +196,11 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         # delete any obsolete repos
         for repo in reposToDelete:
             query = "DELETE FROM repos WHERE UserID=? AND RepoPath=?"
-            self._execute_query(query, (str(userID), repo))
+            self._execute_query(query, (user_id, repo))
 
         # add in new repos
         query = "INSERT INTO repos (UserID, RepoPath) values (?, ?)"
-        repoPaths = [[str(userID), repo] for repo in reposToAdd]
+        repoPaths = [[user_id, repo] for repo in reposToAdd]
         conn = self._connect()
         try:
             cursor = conn.cursor()
@@ -228,9 +226,8 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         assert isinstance(username, str)
         if repoPath not in self.get_repos(username):
             raise ValueError
-        query = "UPDATE repos SET MaxAge=? WHERE RepoPath=? AND UserID = " + \
-            str(self._get_user_id(username))
-        self._execute_query(query, (maxAge, repoPath))
+        query = "UPDATE repos SET MaxAge=? WHERE RepoPath=? AND UserID = ?"
+        self._execute_query(query, (maxAge, repoPath, self._get_user_id(username)))
 
     def set_user_root(self, username, user_root):
         assert isinstance(username, str)
@@ -277,7 +274,10 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         password_b = encode_s(password)
         hasher = sha()
         hasher.update(password_b)
-        return str(hasher.hexdigest())
+        value = hasher.hexdigest()
+        if isinstance(value, bytes):
+            value = value.decode(encoding='latin1')
+        return value
 
     def _execute_query(self, query, args=()):
         assert isinstance(query, str)

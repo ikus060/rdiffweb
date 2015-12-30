@@ -76,8 +76,8 @@ def quote_url(url, safe='/'):
 
     # URL encode
     val = quote(url, safe)
-    if not isinstance(val, str):
-        val = str(val, encoding='latin1')
+    if isinstance(val, bytes):
+        val = val.decode(encoding='latin1')
     return val
 
 
@@ -89,13 +89,13 @@ def unquote_url(url):
     if not url:
         return url
     # Convert everything to str
-    if not isinstance(url, str):
-        url = str(url, encoding='latin1')
+    if isinstance(url, bytes):
+        url = url.decode(encoding='latin1')
     # Unquote
     val = unquote(url)
     # Make sure to return bytes.
-    if not isinstance(val, bytes):
-        val = val.encode('latin1')
+    if isinstance(val, str):
+        val = val.encode(encoding='latin1')
     return val
 
 

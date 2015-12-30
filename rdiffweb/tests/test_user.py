@@ -15,16 +15,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from __future__ import unicode_literals
-from builtins import str
-
-import logging
-import unittest
-
-from rdiffweb.test import MockRdiffwebApp
-from mockldap import MockLdap
-from rdiffweb.core import InvalidUserError
-
 """
 Created on Oct 14, 2015
 
@@ -33,11 +23,21 @@ Module to test `user` module.
 @author: ikus060
 """
 
+from __future__ import unicode_literals
+
+from builtins import str
+import logging
+from mockldap import MockLdap
+import unittest
+
+from rdiffweb.core import InvalidUserError
+from rdiffweb.test import MockRdiffwebApp
+
 
 def _ldap_user(name, password='password'):
     """Create ldap entry to be mock."""
-    name = str(name)
-    password = str(password)
+    assert isinstance(name, str)
+    assert isinstance(password, str)
     return ('uid=%s,ou=People,dc=nodomain' % (name), {
         'uid': [name],
         'cn': [name],

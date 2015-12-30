@@ -16,29 +16,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
-from builtins import str
-
-import cherrypy
-import logging
-import os
-
-from datetime import date
-
-from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_plugin import IPreferencesPanelProvider
-from rdiffweb.rdw_helpers import encode_s
-
-from . import authorizedkeys
-
 """
 Created on May 11, 2015
 
 @author: Patrik Dufresne
 """
-
 # Define the logger
+
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
+from builtins import str
+import cherrypy
+from datetime import date
+import logging
+import os
+
+from rdiffweb.i18n import ugettext as _
+from rdiffweb.rdw_helpers import encode_s
+from rdiffweb.rdw_plugin import IPreferencesPanelProvider
+
+from . import authorizedkeys
+
+
 _logger = logging.getLogger(__name__)
 
 

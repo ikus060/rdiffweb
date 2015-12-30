@@ -18,7 +18,6 @@
 
 from __future__ import unicode_literals
 
-from builtins import cmp
 from builtins import str
 import cherrypy
 import logging
@@ -56,16 +55,8 @@ class PreferencesPage(page_main.MainPage):
         # Get the panels
         panels, providers = self._get_panels()
 
-        # Sort the panels to have a deterministic order.
-        def _panel_order(p1, p2):
-            if p1[0] == 'general':
-                if p2[0] == 'general':
-                    return cmp(p1[1:], p2[1:])
-                return -1
-            elif p2[0] == 'general':
-                return 1
-            return cmp(p1, p2)
-        panels.sort(_panel_order)
+        # Sort the panels to have a deterministic order. (Place general panel first)
+        panels.sort(key=lambda p: (-1 if p[0] == 'general' else 0, p[1]))
 
         # Select the right panelid. Default to the first one if not define by url.
         template = None

@@ -16,23 +16,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-from builtins import str
-
-import unittest
-import pkg_resources
-import shutil
-import tempfile
-import os
-from collections import OrderedDict
-
-from rdiffweb.plugins.prefs_sshkeys import authorizedkeys
-
 """
 Created on May 11, 2015
 
 @author: ikus060
 """
+
+from __future__ import unicode_literals
+
+from builtins import str
+from collections import OrderedDict
+import os
+import pkg_resources
+import shutil
+import tempfile
+import unittest
+
+from rdiffweb.plugins.prefs_sshkeys import authorizedkeys
 
 
 class AuthorizedKeysTest(unittest.TestCase):

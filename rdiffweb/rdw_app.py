@@ -161,7 +161,7 @@ class RdiffwebApp(Application):
         self.cfg = rdw_config.Configuration(configfile)
 
         # Define TEMP env
-        tempdir = self.cfg.get_config_str("TempDir", default="")
+        tempdir = self.cfg.get_config("TempDir", default="")
         if tempdir:
             os.environ["TMPDIR"] = tempdir
 
@@ -170,26 +170,26 @@ class RdiffwebApp(Application):
         Used to add an entry to the page setting if the FavIcon configuration is
         defined.
         """
-        favicon_b = self.cfg.get_config_str("FavIcon")
-        if not favicon_b:
+        favicon = self.cfg.get_config("FavIcon")
+        if not favicon:
             return
 
         # Append custom favicon
-        if (not os.path.exists(favicon_b) or
-                not os.path.isfile(favicon_b) or
-                not os.access(favicon_b, os.R_OK)):
+        if (not os.path.exists(favicon) or
+                not os.path.isfile(favicon) or
+                not os.access(favicon, os.R_OK)):
             logger.warn("""path define by FavIcon doesn't exists or is no
-                        accessible: %s""", favicon_b)
+                        accessible: %s""", favicon)
             return
 
-        logger.info("use custom favicon: %s", favicon_b)
-        basename_b = os.path.basename(favicon_b)
-        self.favicon = b'/%s' % (basename_b)
+        logger.info("use custom favicon: %s", favicon)
+        basename = os.path.basename(favicon)
+        self.favicon = '/%s' % (basename)
         config.update({
             self.favicon: {
                 'tools.authform.on': False,
                 'tools.staticfile.on': True,
-                'tools.staticfile.filename': favicon_b,
+                'tools.staticfile.filename': favicon,
             }
         })
 
@@ -198,24 +198,24 @@ class RdiffwebApp(Application):
         Used to add an entry to the page setting if the FavIcon configuration is
         defined.
         """
-        header_logo_b = self.cfg.get_config_str("HeaderLogo")
-        if not header_logo_b:
+        header_logo = self.cfg.get_config("HeaderLogo")
+        if not header_logo:
             return
         # Append custom header logo
-        if (not os.path.exists(header_logo_b) or
-                not os.path.isfile(header_logo_b) or
-                not os.access(header_logo_b, os.R_OK)):
+        if (not os.path.exists(header_logo) or
+                not os.path.isfile(header_logo) or
+                not os.access(header_logo, os.R_OK)):
             logger.warn("path define by HeaderLogo doesn't exists: %s",
-                        header_logo_b)
+                        header_logo)
             return
 
-        logger.info("use custom header logo: %s", header_logo_b)
-        basename_b = os.path.basename(header_logo_b)
-        self.header_logo = b'/%s' % (basename_b)
+        logger.info("use custom header logo: %s", header_logo)
+        basename = os.path.basename(header_logo)
+        self.header_logo = '/%s' % (basename)
         config.update({
             self.header_logo: {
                 'tools.staticfile.on': True,
-                'tools.staticfile.filename': header_logo_b,
+                'tools.staticfile.filename': header_logo,
                 'tools.authform.on': False,
             }
         })

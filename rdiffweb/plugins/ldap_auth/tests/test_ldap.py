@@ -16,25 +16,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-from builtins import str
-
-import unittest
-import logging
-from rdiffweb.core import RdiffError
-from mockldap import MockLdap
-from rdiffweb.test import MockRdiffwebApp
-
 """
 Created on Oct 17, 2015
 
 @author: ikus060
 """
 
+from __future__ import unicode_literals
+
+from builtins import str
+import logging
+from mockldap import MockLdap
+import unittest
+
+from rdiffweb.core import RdiffError
+from rdiffweb.test import MockRdiffwebApp
+
 
 def _ldap_user(name, password='password'):
-    name = str(name)
-    password = str(password)
+    assert isinstance(name, str)
+    assert isinstance(password, str)
     return ('uid=%s,ou=People,dc=nodomain' % (name), {
         'uid': [name],
         'cn': [name],

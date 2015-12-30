@@ -17,15 +17,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-from builtins import str
 
+from builtins import bytes
+from builtins import str
 import ldap
 import logging
 
+from rdiffweb.core import RdiffError
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import encode_s, decode_s
 from rdiffweb.rdw_plugin import IPasswordStore
-from rdiffweb.core import RdiffError
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -87,6 +89,9 @@ class LdapPasswordStore(IPasswordStore):
         # Check if password change are allowed.
         self.allow_password_change = self.app.cfg.get_config_bool(
             "LdapAllowPasswordChange", "false")
+        # Get default LdapEncoding
+        self.encoding = self.app.cfg.get_config(
+            "LdapEncoding", "utf-8")
 
     def are_valid_credentials(self, username, password):
         """Check if the given credential as valid according to LDAP."""
@@ -101,11 +106,11 @@ class LdapPasswordStore(IPasswordStore):
 
             # Bind using the user credentials. Throws an exception in case of
             # error.
-            l.simple_bind_s(r[0][0], str(password))
+            l.simple_bind_s(r[0][0], password)
             l.unbind_s()
             logger.info("user [%s] found in LDAP" % username)
             # Return the username
-            return str(r[0][1][self.attribute][0])
+            return self._decode(r[0][1][self.attribute][0])
 
         # Execute the LDAP operation
         try:
@@ -113,6 +118,12 @@ class LdapPasswordStore(IPasswordStore):
         except:
             logger.exception("can't validate credentials")
             return False
+
+    def _decode(self, value):
+        """If required, decode the given bytes str into unicode."""
+        if isinstance(value, bytes):
+            value = value.decode(encoding=self.encoding)
+        return value
 
     def _execute(self, username, function):
         assert isinstance(username, str)
@@ -152,7 +163,7 @@ class LdapPasswordStore(IPasswordStore):
             logger.warn('ldap error', exc_info=1)
             if isinstance(e.message, dict) and 'desc' in e.message:
                 raise RdiffError(decode_s(e.message['desc']))
-            raise RdiffError(str(repr(e)))
+            raise RdiffError(str(e))
 
     def has_password(self, username):
         """Check if the user exists in LDAP"""
@@ -199,10 +210,10 @@ class LdapPasswordStore(IPasswordStore):
                              if x in r[0][1]])
             elif attr in r[0][1]:
                 if isinstance(r[0][1][attr], list):
-                    return [str(x)
+                    return [self._decode(x)
                             for x in r[0][1][attr]]
                 else:
-                    return str(r[0][1][attr])
+                    return self._decode(r[0][1][attr])
             return None
 
         # Execute the LDAP operation

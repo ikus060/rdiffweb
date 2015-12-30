@@ -215,8 +215,7 @@ def _set_content_lang():
     # them the language used in the content.
     if ('Content-Language' not in cherrypy.response.headers and
             hasattr(cherrypy.response, 'i18n')):
-        cherrypy.response.headers['Content-Language'] = str(
-            cherrypy.response.i18n._lang)
+        cherrypy.response.headers['Content-Language'] = cherrypy.response.i18n._lang
 
 
 class I18nTool(cherrypy.Tool):

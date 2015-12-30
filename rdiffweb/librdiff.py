@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 
 import bisect
 from builtins import bytes
-from builtins import chr
 from builtins import object
 from builtins import str
 import errno
@@ -768,6 +767,7 @@ class RdiffRepo(object):
 
         # This function just gives back the original text if it can decode it
         def unquoted_char(match):
+            """For each ;000 return the corresponding byte."""
             if not len(match.group()) == 4:
                 return match.group
             try:
@@ -965,7 +965,7 @@ class RdiffPath(object):
         file_to_restore = self.repo.unquote(file_to_restore)
 
         # Convert the date into epoch.
-        date_epoch = str(restore_date.getSeconds())
+        date_epoch = restore_date.getSeconds()
 
         # Define a location where to restore the data
         if name == b"" and self.path == b"":
@@ -986,7 +986,7 @@ class RdiffPath(object):
             ))
         results = self._execute(
             b"rdiff-backup",
-            b"--restore-as-of=" + date_epoch,
+            b"--restore-as-of=%s" % date_epoch,
             file_to_restore,
             output)
 

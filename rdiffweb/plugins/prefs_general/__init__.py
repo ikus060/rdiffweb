@@ -16,25 +16,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-from builtins import str
-
-import cherrypy
-import logging
-import os
-import re
-
-from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_plugin import IPreferencesPanelProvider
-from rdiffweb.rdw_helpers import encode_s
-from rdiffweb import rdw_spider_repos
-from rdiffweb.core import RdiffError
-
 """
 Created on May 16, 2015
 
 @author: Patrik Dufresne
 """
+
+from __future__ import unicode_literals
+
+from builtins import str
+import cherrypy
+import logging
+import os
+import re
+
+from rdiffweb import rdw_spider_repos
+from rdiffweb.core import RdiffError
+from rdiffweb.i18n import ugettext as _
+from rdiffweb.rdw_helpers import encode_s
+from rdiffweb.rdw_plugin import IPreferencesPanelProvider
+
 
 PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
 
