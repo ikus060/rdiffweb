@@ -19,7 +19,6 @@
 from __future__ import unicode_literals
 from builtins import str
 from builtins import zip
-from past.builtins import basestring
 from future.utils import python_2_unicode_compatible
 
 import base64
@@ -74,7 +73,7 @@ class KeySplit(namedtuple('KeySplit', 'lineno options keytype key comment')):
                 if len(buf) > 0:
                     buf += ','
                 buf += key
-                if isinstance(value, basestring):
+                if isinstance(value, str):
                     buf += '="'
                     buf += value
                     buf += '"'
@@ -121,7 +120,7 @@ def check_publickey(data):
     If `Crypto.PublicKey` is available, read any supported key and
     generate an SSH key.
     """
-    assert isinstance(data, basestring)
+    assert isinstance(data, str)
 
     # Remove any extra space.
     data = data.strip()

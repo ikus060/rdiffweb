@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2015 Patrik Dufresne Service Logiciel
@@ -16,20 +16,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-Created on Dec 29, 2015
+Created on Dec 30, 2015
 
 @author: Patrik Dufresne
 """
 
+from __future__ import print_function
 from __future__ import unicode_literals
 
+from collections import OrderedDict
 import logging
+import re
 import unittest
 
 from rdiffweb.test import WebCase
 
 
-class HistoryPageTest(WebCase):
+class CheckLinkTest(WebCase):
 
     login = True
 
@@ -37,22 +40,32 @@ class HistoryPageTest(WebCase):
 
     reset_testcases = True
 
-    def _history(self, repo):
-        return self.getPage("/history/" + repo + "/")
+    @classmethod
+    def setup_server(cls,):
+        WebCase.setup_server(enabled_plugins=['SQLite', 'UserPrefsGeneral', 'UserPrefsSSHKeys'])
 
-    def test_history(self):
-        self._history(self.REPO)
-        self.assertInBody("2014-11-01 20:51:18")
-        self.assertInBody("2014-11-01 20:18:11")
-        self.assertInBody("2014-11-01 20:12:45")
-        self.assertInBody("2014-11-01 18:07:19")
-        self.assertInBody("2014-11-01 16:30:50")
-        self.assertInBody("2014-11-01 16:30:22")
-        self.assertInBody("2014-11-01 15:51:29")
-        self.assertInBody("2014-11-01 15:51:15")
-        self.assertInBody("2014-11-01 15:50:48")
-        self.assertInBody("2014-11-01 15:50:26")
-        self.assertInBody("2014-11-01 15:49:47")
+    def test_links(self):
+        """
+        Crawl all the pages to find broken links.
+        """
+        done = set(['#', '/logout/'])
+        todo = OrderedDict()
+        todo["/"] = "/"
+        self.getPage("/")
+        while todo:
+            page, ref = todo.popitem(last=False)
+
+            self.getPage(page)
+            self.assertStatus('200 OK', "can't access page [%s] referenced by [%s]" % (page, ref))
+
+            done.add(page)
+
+            for newpage in re.findall("href=\"([^\"]+)\"", self.body.decode('utf8', 'replace')):
+                newpage = newpage.replace("&amp;", "&")
+                if newpage.startswith("?"):
+                    newpage = re.sub("\\?.*", "", page) + newpage
+                if newpage not in done:
+                    todo[newpage] = page
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

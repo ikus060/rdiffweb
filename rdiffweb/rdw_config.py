@@ -27,7 +27,6 @@ from future.utils import python_2_unicode_compatible
 from io import open
 import logging
 import os
-from past.builtins import basestring
 import re
 
 
@@ -120,7 +119,7 @@ class Configuration(object):
         value = self.get_config(key, default)
         if not value:
             return []
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             if isinstance(sep, (list, tuple)):
                 splitted = re.split('|'.join(map(re.escape, sep)), value)
             else:

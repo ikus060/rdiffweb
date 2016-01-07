@@ -165,8 +165,9 @@ class AdminPage(page_main.MainPage):
             filtered_users = [x for x in filtered_users if x["is_admin"]]
         # Apply the search.
         if usersearch:
-            filtered_users = [x for x in filtered_users if usersearch in x["username"] or
-                                    usersearch in x["email"]]
+            filtered_users = [x for x in filtered_users
+                              if usersearch in x["username"] or
+                              usersearch in x["email"]]
 
         return {"userfilter": userfilter,
                 "usersearch": usersearch,
@@ -184,6 +185,8 @@ class AdminPage(page_main.MainPage):
         if username == self.app.currentuser.username:
             # Don't allow the user to changes it's "admin" state.
             is_admin = self.app.currentuser.is_admin
+
+        is_admin = str(is_admin).lower() in ['true', '1']
 
         # Fork the behaviour according to the action.
         if action == "edit":

@@ -43,7 +43,7 @@ def authform():
     # Sending the redirect URL as bytes
     redirect = cherrypy.request.path_info
     if cherrypy.request.query_string:
-        redirect += b"?"
+        redirect += "?"
         redirect += cherrypy.request.query_string
     redirect = "?redirect=" + quote_url(redirect)
 
@@ -54,7 +54,7 @@ def authform():
 cherrypy.tools.authform = cherrypy._cptools.HandlerTool(authform)
 
 
-def authbasic(checkpassword, authmethod=""):
+def authbasic(checkpassword):
 
     """Filter used to restrict access to resource via HTTP basic auth."""
 

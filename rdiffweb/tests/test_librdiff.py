@@ -26,6 +26,7 @@ from rdiffweb.librdiff import RdiffPath, FileStatisticsEntry, RdiffRepo, \
     DirEntry, IncrementEntry
 import os
 from rdiffweb.rdw_helpers import rdwTime
+import encodings
 
 """
 Created on Oct 3, 2015
@@ -39,7 +40,8 @@ Module used to test the librdiff.
 class MockRdiffRepo(RdiffRepo):
 
     def __init__(self):
-        self.encoding = 'utf8'
+        self.encoding = encodings.search_function('utf-8')
+        assert self.encoding
         self.repo_root = bytes(pkg_resources.resource_filename('rdiffweb', 'tests'), encoding='utf-8')  # @UndefinedVariable
         self.data_path = os.path.join(self.repo_root, b'rdiff-backup-data')
         self.root_path = MockRdiffPath(self)

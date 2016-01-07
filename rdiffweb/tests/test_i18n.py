@@ -22,6 +22,7 @@ Module used to test the i18n tools. Check if translation are properly loaded.
 
 @author: ikus060
 """
+
 from __future__ import unicode_literals
 
 import cherrypy
@@ -30,6 +31,7 @@ import pkg_resources
 import unittest
 
 from rdiffweb import i18n
+from rdiffweb.test import WebCase
 
 
 class Test(unittest.TestCase):
@@ -120,6 +122,36 @@ class Test(unittest.TestCase):
         self.assertTrue(isinstance(t, gettext.NullTranslations))
         self.assertEqual("en", t._lang)
         pass
+
+
+class TestI18nWebCase(WebCase):
+
+    reset_app = True
+
+    def testLanguage_WithUnknown(self):
+        #  Query the page without login-in
+        self.getPage("/login/", headers=[("Accept-Language", "es")])
+        self.assertStatus('200 OK')
+        self.assertHeaderItemValue("Content-Language", "en")
+        self.assertInBody("Sign in")
+
+    def testLanguage_En(self):
+        self.getPage("/login/", headers=[("Accept-Language", "en-US,en;q=0.8")])
+        self.assertStatus('200 OK')
+        self.assertHeaderItemValue("Content-Language", "en")
+        self.assertInBody("Sign in")
+
+    def testLanguage_EnFr(self):
+        self.getPage("/login/", headers=[("Accept-Language", "en-US,en;q=0.8,fr-CA;q=0.8")])
+        self.assertStatus('200 OK')
+        self.assertHeaderItemValue("Content-Language", "en")
+        self.assertInBody("Sign in")
+
+    def testLanguage_Fr(self):
+        self.getPage("/login/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
+        self.assertStatus('200 OK')
+        self.assertHeaderItemValue("Content-Language", "fr")
+        self.assertInBody("Se connecter")
 
 
 if __name__ == "__main__":

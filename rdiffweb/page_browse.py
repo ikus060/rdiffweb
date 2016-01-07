@@ -58,6 +58,7 @@ class BrowsePage(page_main.MainPage):
     def index(self, path=b"", restore=""):
         assert isinstance(path, bytes)
         assert isinstance(restore, str)
+        restore = bool(restore)
 
         logger.debug("browsing [%s]" % decode_s(path, 'replace'))
 
@@ -70,9 +71,7 @@ class BrowsePage(page_main.MainPage):
 
         # Build the parameters
         try:
-            parms = self._get_parms_for_page(repo_obj,
-                                             path_obj,
-                                             restore == b"T")
+            parms = self._get_parms_for_page(repo_obj, path_obj, restore)
         except librdiff.FileError as e:
             logger.exception("can't create params")
             return self._compile_error_template(str(e))

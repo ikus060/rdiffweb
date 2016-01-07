@@ -15,7 +15,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 Created on Oct 17, 2015
 
@@ -30,7 +29,7 @@ from mockldap import MockLdap
 import unittest
 
 from rdiffweb.core import RdiffError
-from rdiffweb.test import MockRdiffwebApp
+from rdiffweb.test import AppTestCase
 
 
 def _ldap_user(name, password='password'):
@@ -43,7 +42,7 @@ def _ldap_user(name, password='password'):
         'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']})
 
 
-class UserManagerLdapTest(unittest.TestCase):
+class UserManagerLdapTest(AppTestCase):
 
     basedn = ('dc=nodomain', {
         'dc': ['nodomain'],
@@ -68,6 +67,10 @@ class UserManagerLdapTest(unittest.TestCase):
         _ldap_user('vicky'),
     ])
 
+    enabled_plugins = ['Ldap']
+
+    default_config = {'LdapAllowPasswordChange': 'true'}
+
     @classmethod
     def setUpClass(cls):
         # We only need to create the MockLdap instance once. The content we
@@ -79,12 +82,10 @@ class UserManagerLdapTest(unittest.TestCase):
         del cls.mockldap
 
     def setUp(self):
+        AppTestCase.setUp(self)
         # Mock LDAP
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
-        # Mock Application
-        self.app = MockRdiffwebApp(enabled_plugins=['Ldap'], default_config={'LdapAllowPasswordChange': 'true'})
-        self.app.reset()
         # Get reference to LdapStore
         self.ldapstore = self.app.userdb._password_stores[0]
 
@@ -92,6 +93,7 @@ class UserManagerLdapTest(unittest.TestCase):
         # Stop patching ldap.initialize and reset state.
         self.mockldap.stop()
         del self.ldapobj
+        AppTestCase.tearDown(self)
 
     def test_are_valid_credentials(self):
         self.assertEquals('mike', self.ldapstore.are_valid_credentials('mike', 'password'))
@@ -148,7 +150,7 @@ class UserManagerLdapTest(unittest.TestCase):
             self.assertFalse(self.ldapstore.set_password('bar', 'new_password'))
 
 
-class UserManagerLdapNoPasswordChangeTest(unittest.TestCase):
+class UserManagerLdapNoPasswordChangeTest(AppTestCase):
 
     basedn = ('dc=nodomain', {
         'dc': ['nodomain'],
@@ -167,6 +169,10 @@ class UserManagerLdapNoPasswordChangeTest(unittest.TestCase):
         _ldap_user('john'),
     ])
 
+    enabled_plugins = ['Ldap']
+
+    default_config = {'LdapAllowPasswordChange': 'false'}
+
     @classmethod
     def setUpClass(cls):
         # We only need to create the MockLdap instance once. The content we
@@ -178,12 +184,10 @@ class UserManagerLdapNoPasswordChangeTest(unittest.TestCase):
         del cls.mockldap
 
     def setUp(self):
+        AppTestCase.setUp(self)
         # Mock LDAP
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
-        # Mock Application
-        self.app = MockRdiffwebApp(enabled_plugins=['Ldap'], default_config={'LdapAllowPasswordChange': 'false'})
-        self.app.reset()
         # Get reference to LdapStore
         self.ldapstore = self.app.userdb._password_stores[0]
 
@@ -191,6 +195,7 @@ class UserManagerLdapNoPasswordChangeTest(unittest.TestCase):
         # Stop patching ldap.initialize and reset state.
         self.mockldap.stop()
         del self.ldapobj
+        AppTestCase.tearDown(self)
 
     def test_set_password_update(self):
         with self.assertRaises(RdiffError):

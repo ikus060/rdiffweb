@@ -35,7 +35,6 @@ See `rdw_templating`.
 """
 from __future__ import unicode_literals
 
-from builtins import str
 import cherrypy
 import copy
 import gettext
@@ -157,6 +156,11 @@ def _translation(domain, localedirs=None, languages=None):
             result = t
         else:
             result.add_fallback(t)
+    # For py2/py3 compatibility (patch ugettext).
+    if not hasattr(result, 'ugettext'):
+        result.ugettext = result.gettext
+    if not hasattr(result, 'ungettext'):
+        result.ungettext = result.ngettext
     return result
 
 

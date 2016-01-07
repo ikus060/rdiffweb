@@ -180,7 +180,7 @@ class StatusPage(page_main.MainPage):
                      "repo_name": decode_s(repo_b, 'replace'),
                      "error": str(e)})
 
-        allBackups.sort(lambda x, y: cmp(y["date"], x["date"]))
+        allBackups.sort(key=lambda x: x["date"])
         failedBackups = [x for x in allBackups if x["errors"]]
 
         # group successful backups by day
@@ -223,5 +223,5 @@ class StatusPage(page_main.MainPage):
                      "backups": successfulBackups[day]})
 
         # sort messages by date
-        userMessages.sort(lambda x, y: cmp(y["date"], x["date"]))
+        userMessages.sort(key=lambda x: x["date"])
         return userMessages

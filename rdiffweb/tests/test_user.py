@@ -31,7 +31,7 @@ from mockldap import MockLdap
 import unittest
 
 from rdiffweb.core import InvalidUserError
-from rdiffweb.test import MockRdiffwebApp
+from rdiffweb.test import AppTestCase
 
 
 def _ldap_user(name, password='password'):
@@ -45,11 +45,7 @@ def _ldap_user(name, password='password'):
         'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']})
 
 
-class UserManagerSQLiteTest(unittest.TestCase):
-
-    def setUp(self):
-        self.app = MockRdiffwebApp(enabled_plugins=['SQLite'])
-        self.app.reset()
+class UserManagerSQLiteTest(AppTestCase):
 
     def test_add_user(self):
         """Add user to database."""
@@ -124,9 +120,9 @@ class UserManagerSQLiteTest(unittest.TestCase):
             self.app.userdb.is_admin('invalid')
 
     def test_list(self):
-        self.assertEqual(['admin'], self.app.userdb.list())
+        self.assertEqual([], self.app.userdb.list())
         self.app.userdb.add_user('annik')
-        self.assertEqual(['admin', 'annik'], self.app.userdb.list())
+        self.assertEqual(['annik'], self.app.userdb.list())
 
     def test_login(self):
         """Check if login work"""
@@ -170,7 +166,7 @@ class UserManagerSQLiteTest(unittest.TestCase):
             self.assertFalse(self.app.userdb.set_password('bar', 'new_password'))
 
 
-class UserManagerSQLiteLdapTest(unittest.TestCase):
+class UserManagerSQLiteLdapTest(AppTestCase):
 
     basedn = ('dc=nodomain', {
         'dc': ['nodomain'],
@@ -197,6 +193,10 @@ class UserManagerSQLiteLdapTest(unittest.TestCase):
         _ldap_user('vicky'),
     ])
 
+    enabled_plugins = ['Ldap', 'SQLite']
+
+    default_config = {'LdapAllowPasswordChange': 'true'}
+
     @classmethod
     def setUpClass(cls):
         # We only need to create the MockLdap instance once. The content we
@@ -211,9 +211,8 @@ class UserManagerSQLiteLdapTest(unittest.TestCase):
         # Mock LDAP
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
-        # Mock Application
-        self.app = MockRdiffwebApp(enabled_plugins=['Ldap', 'SQLite'], default_config={'LdapAllowPasswordChange': 'true'})
-        self.app.reset()
+        # Original setup
+        AppTestCase.setUp(self)
         # Get reference to LdapStore
         self.ldapstore = self.app.userdb._password_stores[0]
 
@@ -221,6 +220,7 @@ class UserManagerSQLiteLdapTest(unittest.TestCase):
         # Stop patching ldap.initialize and reset state.
         self.mockldap.stop()
         del self.ldapobj
+        AppTestCase.tearDown(self)
 
     def test_add_user_to_sqlite(self):
         """Add user to local database."""
@@ -278,9 +278,9 @@ class UserManagerSQLiteLdapTest(unittest.TestCase):
         self.assertEqual('/backups/', user_root)
 
     def test_list(self):
-        self.assertEqual(['admin'], self.app.userdb.list())
+        self.assertEqual([], self.app.userdb.list())
         self.app.userdb.add_user('annik')
-        self.assertEqual(['admin', 'annik'], self.app.userdb.list())
+        self.assertEqual(['annik'], self.app.userdb.list())
 
     def test_login(self):
         """Check if login work"""

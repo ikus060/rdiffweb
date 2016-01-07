@@ -15,29 +15,27 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from __future__ import unicode_literals
-
-import unittest
-from rdiffweb.plugins.db_sqlite import SQLiteUserDB
-from rdiffweb.test import MockRdiffwebApp
-from rdiffweb.core import InvalidUserError
-
 """
 Created on Oct 17, 2015
 
 @author: ikus060
 """
 
+from __future__ import unicode_literals
 
-class SQLiteUserDBTest(unittest.TestCase):
+import unittest
+
+from rdiffweb.core import InvalidUserError
+from rdiffweb.plugins.db_sqlite import SQLiteUserDB
+from rdiffweb.test import AppTestCase
+
+
+class SQLiteUserDBTest(AppTestCase):
 
     """Unit tests for the sqliteUserDBTeste class"""
 
     def setUp(self):
-        # Mock Application
-        self.app = MockRdiffwebApp(enabled_plugins=['SQLite'])
-        self.app.reset()
+        AppTestCase.setUp(self)
         # Get reference to SQLite database
         self.db = self.app.userdb._databases[0]
 
@@ -122,9 +120,8 @@ class SQLiteUserDBTest(unittest.TestCase):
         self.assertTrue(self.db.has_password('carol'))
 
     def test_list(self):
-        self.assertEqual(['admin'], self.app.userdb.list())
         self.app.userdb.add_user('annik')
-        self.assertEqual(['admin', 'annik'], self.app.userdb.list())
+        self.assertEqual(['annik'], self.app.userdb.list())
 
     def test_set_invalid_user(self):
         with self.assertRaises(InvalidUserError):

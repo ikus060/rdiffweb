@@ -26,6 +26,7 @@ from __future__ import unicode_literals
 
 from builtins import str
 from collections import OrderedDict
+from io import open
 import os
 import pkg_resources
 import shutil
@@ -67,7 +68,7 @@ class AuthorizedKeysTest(unittest.TestCase):
 
     def test_check_publickey_with_rsa(self):
         filename = pkg_resources.resource_filename(__name__, 'test_publickey_ssh_rsa.pub')  # @UndefinedVariable
-        f = open(filename, 'r')
+        f = open(filename, 'r', encoding='utf8')
         line = f.readline()
         f.close()
         # Check line.
@@ -79,7 +80,7 @@ class AuthorizedKeysTest(unittest.TestCase):
 
     def test_check_publickey_with_dsa(self):
         filename = pkg_resources.resource_filename(__name__, 'test_publickey_ssh_dsa.pub')  # @UndefinedVariable
-        f = open(filename, 'r')
+        f = open(filename, 'r', encoding='utf8')
         line = f.readline()
         f.close()
         # Check line.

@@ -27,6 +27,8 @@ import logging
 import os
 import pkg_resources
 
+from rdiffweb import filter_authentication  # @UnusedImport
+from rdiffweb import i18n  # @UnusedImport
 from rdiffweb import rdw_config
 from rdiffweb import rdw_plugin
 from rdiffweb import rdw_templating
@@ -41,6 +43,7 @@ from rdiffweb.page_restore import RestorePage
 from rdiffweb.page_settings import SettingsPage
 from rdiffweb.page_status import StatusPage
 from rdiffweb.user import UserManager
+from future.utils import native_str
 
 
 # Define the logger
@@ -79,7 +82,7 @@ class RdiffwebApp(Application):
         # Initialise the application
         cwd = os.path.abspath(os.path.dirname(__file__))
         config = {
-            b'/': {
+            native_str('/'): {
                 'tools.authform.on': True,
                 'tools.i18n.on': True,
                 'tools.encode.on': True,
@@ -87,15 +90,15 @@ class RdiffwebApp(Application):
                 'tools.gzip.on': True,
                 'tools.sessions.on': True,
             },
-            b'/favicon.ico': {
+            native_str('/favicon.ico'): {
                 'tools.authform.on': False,
                 'tools.staticfile.on': True,
                 'tools.staticfile.filename': os.path.join(cwd, 'static', 'favicon.ico'),
             },
-            b'/login': {
+            native_str('/login'): {
                 'tools.authform.on': False,
             },
-            b'/static': {
+            native_str('/static'): {
                 'tools.staticdir.on': True,
                 'tools.staticdir.root': cwd,
                 'tools.staticdir.dir': "static",

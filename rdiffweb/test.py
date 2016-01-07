@@ -25,21 +25,27 @@ Mock class for testing.
 
 from __future__ import unicode_literals
 
-from builtins import str
-from cherrypy import HTTPRedirect
+from builtins import str, delattr
 import cherrypy
+from cherrypy.test import helper
 from future.utils import native_str
 import os
 import pkg_resources
 import shutil
 import tarfile
 import tempfile
+import unittest
 
 from rdiffweb.rdw_app import RdiffwebApp
 
 
-class MockRdiffwebApp(RdiffwebApp):
+try:
+    from urllib.parse import urlencode  # @UnresolvedImport @UnusedImport
+except:
+    from urllib import urlencode  # @UnresolvedImport @UnusedImport @Reimport
 
+
+class MockRdiffwebApp(RdiffwebApp):
     def __init__(self, enabled_plugins=['SQLite'], default_config={}):
         assert enabled_plugins is None or isinstance(enabled_plugins, list)
         self.enabled_plugins = enabled_plugins
@@ -49,16 +55,15 @@ class MockRdiffwebApp(RdiffwebApp):
         # Call parent constructor
         RdiffwebApp.__init__(self)
 
-    def clear(self):
+    def clear_db(self):
+        if hasattr(self, 'database_dir'):
+            shutil.rmtree(self.database_dir, ignore_errors=True)
+            delattr(self, 'database_dir')
+
+    def clear_testcases(self):
         if hasattr(self, 'testcases'):
             shutil.rmtree(native_str(self.testcases))
-
-        if hasattr(self, 'database_dir'):
-            shutil.rmtree(native_str(self.database_dir))
-
-        cherrypy.session = {}
-        if hasattr(cherrypy.request, 'user'):
-            delattr(cherrypy.request, 'user')
+            delattr(self, 'testcases')
 
     def load_config(self, configfile=None):
         RdiffwebApp.load_config(self, None)
@@ -80,7 +85,7 @@ class MockRdiffwebApp(RdiffwebApp):
         for key, val in list(self.default_config.items()):
             self.cfg.set_config(key, val)
 
-    def reset(self):
+    def reset(self, username=None, password=None):
         """
         Reset the application. Delete all data from database.
         """
@@ -89,8 +94,9 @@ class MockRdiffwebApp(RdiffwebApp):
             self.userdb.delete_user(user)
 
         # Create new user admin
-        if self.userdb.supports('add_user'):
-            self.userdb.add_user('admin', 'admin123')
+        if self.userdb.supports('add_user') and username and password:
+            self.userdb.add_user(username, password)
+            self.userdb.set_is_admin(username, True)
 
     def reset_testcases(self):
         """Extract testcases."""
@@ -100,23 +106,101 @@ class MockRdiffwebApp(RdiffwebApp):
         tarfile.open(testcases).extractall(native_str(new))
 
         # Register repository
-        self.userdb.set_user_root('admin', new)
-        self.userdb.set_repos('admin', ['testcases/'])
+        for user in self.userdb.list():
+            self.userdb.set_user_root(user, new)
+            self.userdb.set_repos(user, ['testcases/'])
 
-        assert self.userdb.get_user_root('admin') == new
         self.testcases = new
 
-    def login(self):
+
+class AppTestCase(unittest.TestCase):
+
+    enabled_plugins = ['SQLite']
+
+    default_config = {}
+
+    def setUp(self):
+        self.app = MockRdiffwebApp(self.enabled_plugins, self.default_config)
+        self.app.reset()
+        unittest.TestCase.setUp(self)
+
+    def tearDown(self):
+        self.app.clear_db()
+        unittest.TestCase.tearDown(self)
+
+
+class WebCase(helper.CPWebCase):
+    """
+    Helper class for the rdiffweb test suite.
+    """
+
+    REPO = 'testcases'
+
+    USERNAME = 'admin'
+
+    PASSWORD = 'admin123'
+
+    interactive = False
+
+    login = False
+
+    reset_app = False
+
+    reset_testcases = False
+
+    @classmethod
+    def setUpClass(cls):
+        cls.setup_class()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.teardown_class()
+        app = cherrypy.tree.apps['']
+        app.clear_db()
+
+    @classmethod
+    def setup_server(cls, enabled_plugins=['SQLite'], default_config={}):
+        app = MockRdiffwebApp(enabled_plugins, default_config)
+        cherrypy.tree.mount(app)
+
+    def setUp(self):
+        helper.CPWebCase.setUp(self)
+        if self.reset_app:
+            self.app.reset(self.USERNAME, self.PASSWORD)
+        if self.reset_testcases:
+            self.app.reset_testcases()
+        if self.login:
+            self._login()
+
+    def tearDown(self):
+        if self.reset_testcases:
+            self.app.clear_testcases()
+
+    @property
+    def app(self):
         """
-        Simulate login with admin user
+        Return reference to Rdiffweb application.
         """
-        # Login as admin
-        if hasattr(cherrypy.request, 'user'):
-            delattr(cherrypy.request, 'user')
-        cherrypy.session = {}
-        cherrypy.request.method = 'POST'
-        try:
-            self.root.login.index(login="admin", password="admin123")
-        except HTTPRedirect:
-            pass
-        cherrypy.request.method = 'GET'
+        return cherrypy.tree.apps['']
+
+    @property
+    def baseurl(self):
+        return 'http://%s:%s' % (self.HOST, self.PORT)
+
+    def getPage(self, url, headers=None, method="GET", body=None,
+                protocol=None):
+        if headers is None:
+            headers = []
+        # When body is a dict, send the data as form data.
+        if isinstance(body, dict) and method in ['POST', 'PUT']:
+            data = [(k.encode(encoding='latin1'), v.encode(encoding='utf-8'))
+                    for k, v in body.items()]
+            body = urlencode(data)
+        # Send back cookies if any
+        if hasattr(self, 'cookies') and self.cookies:
+            headers.extend(self.cookies)
+        helper.CPWebCase.getPage(self, url, headers, method, body, protocol)
+
+    def _login(self, username=USERNAME, password=PASSWORD):
+        self.getPage("/login/", method='POST', body={'login': username, 'password': password})
+        self.assertStatus('303 See Other')

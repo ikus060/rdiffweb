@@ -106,9 +106,11 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
 
     def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
         # Get user root directory
+        filename = None
         user_root = self.app.userdb.get_user_root(self.app.currentuser.username)
-        user_root_b = encode_s(user_root)
-        filename = os.path.join(user_root_b, b'.ssh', b'authorized_keys')
+        if user_root:
+            user_root_b = encode_s(user_root)
+            filename = os.path.join(user_root_b, b'.ssh', b'authorized_keys')
 
         # Handle action
         params = {}
@@ -127,7 +129,7 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
 
         # Get SSH keys if file exists.
         params["sshkeys"] = []
-        if os.access(filename, os.R_OK):
+        if filename:
             try:
                 params["sshkeys"] = [
                     {'title': key.comment or (key.keytype + ' ' + key.key[:18]),
@@ -137,5 +139,8 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
             except IOError:
                 params['error'] = _("error reading SSH keys file")
                 _logger.warn("error reading SSH keys file [%s]", filename)
+        else:
+            params['error'] = _("error reading SSH keys file")
+            _logger.warn("SSH keys file [%s] is not accessible", filename)
 
         return "prefs_sshkeys.html", params

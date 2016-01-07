@@ -195,5 +195,6 @@ setup(
     # requirement for testing
     tests_require=[
         "mockldap>=0.2.6",
+        "pycrypto>=2.6.1",
     ]
 )

@@ -59,7 +59,7 @@ class LoginPage(page_main.MainPage):
             lang = cherrypy.response.i18n._lang
             params["welcome_msg"] = self.app.cfg.get_config("WelcomeMsg[%s]" % (lang), params["welcome_msg"])
 
-        if self._is_submit():
+        if login or password:
             params.update(self.handle_login(login, password, redirect))
 
         return self._compile_template("login.html", **params)

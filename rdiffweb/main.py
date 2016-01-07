@@ -24,8 +24,6 @@ import logging
 import sys
 import tempfile
 
-from rdiffweb import filter_authentication  # @UnusedImport
-from rdiffweb import i18n  # @UnusedImport
 from rdiffweb import rdw_app
 
 

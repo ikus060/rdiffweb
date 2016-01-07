@@ -23,6 +23,7 @@ import bisect
 from builtins import bytes
 from builtins import object
 from builtins import str
+import encodings
 import errno
 from future.utils import iteritems
 from future.utils import python_2_unicode_compatible
@@ -47,6 +48,8 @@ try:
 except:
     import subprocess  # @Reimport
 
+PY3 = sys.version_info[0] == 3
+
 # Define the logger
 logger = logging.getLogger(__name__)
 
@@ -64,6 +67,8 @@ ZIP_SUFFIX = b".zip"
 
 # Tar gz extension
 TARGZ_SUFFIX = b".tar.gz"
+
+FS_ENCODING = (sys.getfilesystemencoding() or 'utf-8').lower()
 
 
 @python_2_unicode_compatible
@@ -518,6 +523,7 @@ class SessionStatisticsEntry(IncrementEntry):
             return 0
 
 
+@python_2_unicode_compatible
 class RdiffRepo(object):
 
     """Represent one rdiff-backup repository."""
@@ -525,7 +531,8 @@ class RdiffRepo(object):
     def __init__(self, user_root, path):
         assert isinstance(user_root, bytes)
         assert isinstance(path, bytes)
-        self.encoding = sys.getfilesystemencoding() or 'utf-8'
+        self.encoding = encodings.search_function(FS_ENCODING)
+        assert self.encoding
         self.user_root = user_root.rstrip(b"/")
         self.path = path.strip(b"/")
         self.repo_root = os.path.join(self.user_root, self.path)
@@ -547,8 +554,7 @@ class RdiffRepo(object):
         sorted from old to new (ascending order). To identify dates,
         'mirror_metadata' file located in rdiff-backup-data are used."""
         if not hasattr(self, '_backup_dates'):
-            logger.debug("get backup dates for [%s]" %
-                         self._decode(self.repo_root))
+            logger.debug("get backup dates for [%r]", self.repo_root)
             self._backup_dates = sorted([
                 IncrementEntry.extract_date(x)
                 for x in self.data_entries
@@ -560,8 +566,7 @@ class RdiffRepo(object):
         # Make sure repoRoot is a valid rdiff-backup repository
         if (not os.access(self.data_path, os.F_OK) or
                 not os.path.isdir(self.data_path)):
-            logger.error("repository [%s] doesn't exists" %
-                         self._decode(self.repo_root))
+            logger.error("repository [%r] doesn't exists", self.repo_root)
             raise DoesNotExistError()
 
     @property
@@ -586,10 +591,10 @@ class RdiffRepo(object):
             return self._decode(name_b)
         return self._decode(self.path)
 
-    def _decode(self, value):
+    def _decode(self, value, errors='replace'):
         """Used to decode a repository path into unicode."""
         assert isinstance(value, bytes)
-        return value.decode(self.encoding, 'replace')
+        return self.encoding.decode(value, errors)[0]
 
     @property
     def _error_logs(self):
@@ -615,7 +620,7 @@ class RdiffRepo(object):
         """
         Return the interface encoding value.
         """
-        return self.encoding
+        return self.encoding.name
 
     def get_file_statistic(self, date):
         """Return the file statistic for the given date.
@@ -649,8 +654,7 @@ class RdiffRepo(object):
         assert (latestDate is None or
                 isinstance(latestDate, rdw_helpers.rdwTime))
 
-        logger.debug("get history entries for [%s]" %
-                     self._decode(self.repo_root))
+        logger.debug("get history entries for [%r]", self.repo_root)
 
         entries = []
         for backup_date in self.backup_dates:
@@ -735,7 +739,11 @@ class RdiffRepo(object):
 
         # Read rdiffweb file asconfiguration file.
         config = Configuration(hint_file)
-        self.encoding = config.get_config('encoding', self.encoding)
+        name = config.get_config('encoding', default=FS_ENCODING)
+        self.encoding = encodings.search_function(name.lower())
+        if not self.encoding:
+            encodings.search_function(FS_ENCODING)
+        assert self.encoding
 
     @property
     def _session_statistics(self):
@@ -752,14 +760,17 @@ class RdiffRepo(object):
         """
         Change the encoding of the repository.
         """
+        # Check if the given name if valid encoding.
+        encoding = encodings.search_function(name.lower())
+        assert encoding is not None
         # Need to update the 'rdiffweb' file
         hint_file = os.path.join(self.data_path, b"rdiffweb")
-        logger.debug("writing hints for [%s]" % self._decode(self.repo_root))
+        logger.debug("writing hints for [%r]", self.repo_root)
         config = Configuration(hint_file)
         config.set_config('encoding', name)
         config.save()
         # Also update current encoding.
-        self.encoding = name
+        self.encoding = encoding
 
     def unquote(self, name):
         """Remove quote from the given name."""
@@ -777,8 +788,8 @@ class RdiffRepo(object):
         # Remove quote using regex
         return re.sub(b";[0-9]{3}", unquoted_char, name, re.S)
 
-    def __unicode__(self):
-        return self._decode(self.repo_root)
+    def __str__(self):
+        return "%r" % (self.repo_root,)
 
 
 class RdiffPath(object):
@@ -790,6 +801,7 @@ class RdiffPath(object):
         assert isinstance(path, bytes)
         self.repo = repo
         self.path = path.strip(b"/")
+        self._decode = self.repo._decode
 
         # Check if the object is valid
         self._check()
@@ -823,26 +835,19 @@ class RdiffPath(object):
                     for x in os.listdir(parent_folder)
                     if x.startswith(filename)]
             except OSError:
-                logger.exception("fail to list increments for [%s]" %
-                                 self._decode(parent_folder))
+                logger.exception("fail to list increments for [%r]", parent_folder)
                 increments = []
 
             if not increments:
-                logger.error("repository [%s] doesn't exists" %
-                             self._decode(self.path))
+                logger.error("repository [%r] doesn't exists", self.path)
                 raise DoesNotExistError()
-
-    def _decode(self, value):
-        """Used to decode a repostior ypath into unicode."""
-        return self.repo._decode(value)
 
     @property
     def dir_entries(self):
         """Get directory entries for the current path. It is similar to
         listdir() but for rdiff-backup."""
 
-        logger.debug("get directory entries for [%s]" %
-                     self._decode(self.full_path))
+        logger.debug("get directory entries for [%r]", self.full_path)
 
         # Group increments by filename
         grouped_increment_entries = rdw_helpers.groupby(
@@ -883,7 +888,9 @@ class RdiffPath(object):
         parms = [command]
         parms.extend(args)
         execution = subprocess.Popen(
-            parms, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            parms, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env={})
 
         results = {}
         results['exitCode'] = execution.wait()
@@ -896,8 +903,7 @@ class RdiffPath(object):
         represent the last known backup. Thus it return existing entries."""
 
         if not hasattr(self, '_existing_entries'):
-            logger.debug("get existing entries for [%s]" %
-                         self._decode(self.full_path))
+            logger.debug("get existing entries for [%r]", self.full_path)
 
             # Check if the directory exists. It may not exist if
             # it has been delete
@@ -931,9 +937,7 @@ class RdiffPath(object):
         rdiff-backup-data/increments
         """
 
-        logger.debug(
-            "get increments entries for [%s]" %
-            self._decode(self.increments_path))
+        logger.debug("get increments entries for [%r]", self.increments_path)
 
         # Check if increment directory exists. The path may not exists if
         # the folder always exists and never changed.
@@ -975,7 +979,10 @@ class RdiffPath(object):
         if name != b"":
             filename = name
         # Generate a temporary location used to restore data.
-        output = os.path.join(tempfile.mkdtemp(), filename)
+        outputdir = tempfile.mkdtemp(prefix='rdiffweb_restore_')
+        if isinstance(outputdir, str):
+            outputdir = outputdir.encode(encoding=FS_ENCODING)
+        output = os.path.join(outputdir, filename)
 
         # Execute rdiff-backup to restore the data.
         logger.info(
@@ -986,13 +993,14 @@ class RdiffPath(object):
             ))
         results = self._execute(
             b"rdiff-backup",
-            b"--restore-as-of=%s" % date_epoch,
+            b"--restore-as-of=" + str(date_epoch).encode(encoding='latin1'),
             file_to_restore,
             output)
 
         # Check the result
         if results['exitCode'] != 0 or not os.access(output, os.F_OK):
             error = results['stderr']
+            error = error.decode(encoding=sys.getdefaultencoding(), errors='replace')
             if not error:
                 error = '''rdiff-backup claimed success, but did not restore
                         anything. This indicates a bug in rdiffweb. Please
@@ -1022,8 +1030,7 @@ class RdiffPath(object):
         """Get list of date to be restored for current path. From old to
         new."""
 
-        logger.debug("get restore dates for [%s]" %
-                     self._decode(self.full_path))
+        logger.debug("get restore dates for [%r]", self.full_path)
 
         # If root directory return all dates.
         if self.path == b"":
@@ -1050,17 +1057,29 @@ class RdiffPath(object):
         dirpath = os.path.normpath(dirpath)
 
         # Create a tar.gz archive
-        logger.info("creating a tar file [%s] from [%s]",
-                    self._decode(target), self._decode(dirpath))
+        logger.info("creating a tar file [%r] from [%r]", target, dirpath)
         tar = tarfile.open(target, "w:gz")
+        tar_encoding = encodings.search_function(tar.encoding.lower()).name
 
         # List content of the directory.
         files = os.listdir(dirpath)
 
         # Add files to the archive
         for filename in files:
+            name = os.path.join(dirpath, filename)
+            arcname = filename
+            if PY3:
+                # Py3, tarfile doesn't support bytes file path. So we need
+                # to use surrogate escape to escape invalid unicode char.
+                name = name.decode('ascii', 'surrogateescape')
+                arcname = self._decode(arcname, 'surrogateescape')
+            elif tar_encoding != self.repo.encoding.name:
+                # Py2, tarfile accept filepath as bytes, but we still need to
+                # decode  filename as unicode so it get converted into utf8 by
+                # tarfile.
+                arcname = self._decode(arcname)
             # Pass in file as name explicitly so we get relative paths
-            tar.add(os.path.join(dirpath, filename), filename)
+            tar.add(name, arcname)
 
         # Close the archive
         tar.close()
@@ -1075,20 +1094,31 @@ class RdiffPath(object):
 
         dirpath = os.path.normpath(dirpath)
 
+        # Py3, zipfile doesn't support bytes file path. So we need
+        # to use surrogate escape to escape invalid unicode char.
+        if PY3:
+            target = target.decode('ascii', 'surrogateescape')
+
         # Create the archive
         zipobj = zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED)
 
         # Add files to archive
         for root, dirs, files in os.walk(dirpath, topdown=True):
-            for name in files:
-                fullpath = os.path.join(root, name)
-                assert fullpath.startswith(dirpath)
-                relpath = fullpath[len(dirpath) + 1:]
-                # Get unicode representation of the path. Then convert it to
-                # ISO-8859-1 because ZIP uses this encoding. See #55.
-                relPath_u = self._decode(relpath)
-                relpath = relPath_u.encode('ISO-8859-1', errors='replace')
+            for file in files:
+                filename = os.path.join(root, file)
+                assert filename.startswith(dirpath)
+                arcname = filename[len(dirpath) + 1:]
+                # Get unicode representation of the path.
+                if PY3:
+                    # Py3, zipfile doesn't support bytes file path. So we need
+                    # to use surrogate escape to escape invalid unicode char.
+                    filename = filename.decode('ascii', 'surrogateescape')
+                    arcname = self._decode(arcname)
+                else:
+                    # Py2, provide arcname as unicode so it get converted to a
+                    # rightful encoding.
+                    arcname = self._decode(arcname)
                 # Add the file to the archive.
-                zipobj.write(fullpath, relpath)
+                zipobj.write(filename, arcname)
 
         zipobj.close()

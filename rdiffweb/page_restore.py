@@ -133,5 +133,7 @@ class RestorePage(page_main.MainPage):
         filename = os.path.basename(file_path_b)
         # Escape quotes in filename
         filename = filename.replace(b"\"", b"\\\"")
-        return serve_file(file_path_b, None, disposition=b"attachment",
+        return serve_file(file_path_b,
+                          content_type='application/octet-stream',
+                          disposition=b"attachment",
                           name=filename)

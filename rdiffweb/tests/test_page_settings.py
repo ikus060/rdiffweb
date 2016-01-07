@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2015 Patrik Dufresne Service Logiciel
+# Copyright (C) 2014 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-Created on Dec 29, 2015
+Created on Jan 1, 2016
 
-@author: Patrik Dufresne
+@author: ikus060
 """
-
 from __future__ import unicode_literals
 
 import logging
@@ -29,7 +28,7 @@ import unittest
 from rdiffweb.test import WebCase
 
 
-class HistoryPageTest(WebCase):
+class SettingsTest(WebCase):
 
     login = True
 
@@ -37,22 +36,18 @@ class HistoryPageTest(WebCase):
 
     reset_testcases = True
 
-    def _history(self, repo):
-        return self.getPage("/history/" + repo + "/")
+    def _settings(self, repo):
+        return self.getPage("/settings/" + repo + "/")
 
-    def test_history(self):
-        self._history(self.REPO)
-        self.assertInBody("2014-11-01 20:51:18")
-        self.assertInBody("2014-11-01 20:18:11")
-        self.assertInBody("2014-11-01 20:12:45")
-        self.assertInBody("2014-11-01 18:07:19")
-        self.assertInBody("2014-11-01 16:30:50")
-        self.assertInBody("2014-11-01 16:30:22")
-        self.assertInBody("2014-11-01 15:51:29")
-        self.assertInBody("2014-11-01 15:51:15")
-        self.assertInBody("2014-11-01 15:50:48")
-        self.assertInBody("2014-11-01 15:50:26")
-        self.assertInBody("2014-11-01 15:49:47")
+    def test_check_encoding(self):
+        self._settings(self.REPO)
+        self.assertInBody("Character encoding")
+        self.assertInBody("utf_8")
+
+    def test_check_delete(self):
+        self._settings(self.REPO)
+        self.assertInBody("Delete")
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
