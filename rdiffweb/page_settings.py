@@ -30,7 +30,7 @@ from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb import rdw_helpers
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import decode_s, unquote_url
+from rdiffweb.rdw_helpers import unquote_url
 
 
 # Define the logger
@@ -57,13 +57,13 @@ class SettingsPage(page_main.MainPage):
     def index(self, path=b"", **kwargs):
         assert isinstance(path, bytes)
 
-        _logger.debug("repo settings [%s]", decode_s(path, 'replace'))
+        _logger.debug("repo settings [%r]", path)
 
         # Check user permissions
         try:
             repo_obj = self.validate_user_path(path)[0]
         except librdiff.FileError as e:
-            _logger.exception("invalid user path [%s]", decode_s(path, 'replace'))
+            _logger.exception("invalid user path [%r]", path)
             return self._compile_error_template(str(e))
 
         # Check if any action to process.

@@ -26,7 +26,6 @@ from __future__ import unicode_literals
 import unittest
 
 from rdiffweb.core import InvalidUserError
-from rdiffweb.plugins.db_sqlite import SQLiteUserDB
 from rdiffweb.test import AppTestCase
 
 

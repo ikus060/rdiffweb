@@ -25,8 +25,7 @@ import logging
 
 from rdiffweb import librdiff
 from rdiffweb import page_main
-from rdiffweb import rdw_helpers
-from rdiffweb.rdw_helpers import decode_s, unquote_url
+from rdiffweb.rdw_helpers import unquote_url
 
 
 # Define the logger
@@ -53,7 +52,7 @@ class HistoryPage(page_main.MainPage):
     def index(self, path=b""):
         assert isinstance(path, bytes)
 
-        logger.debug("history [%s]" % decode_s(path, 'replace'))
+        logger.debug("history [%r]", path)
 
         try:
             (repo_obj, path_obj) = self.validate_user_path(path)

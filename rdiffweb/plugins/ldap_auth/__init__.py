@@ -25,7 +25,6 @@ import logging
 
 from rdiffweb.core import RdiffError
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import encode_s, decode_s
 from rdiffweb.rdw_plugin import IPasswordStore
 
 
@@ -161,8 +160,8 @@ class LdapPasswordStore(IPasswordStore):
         except ldap.LDAPError as e:
             l.unbind_s()
             logger.warn('ldap error', exc_info=1)
-            if isinstance(e.message, dict) and 'desc' in e.message:
-                raise RdiffError(decode_s(e.message['desc']))
+            if hasattr(e, 'message') and isinstance(e.message, dict) and 'desc' in e.message:
+                raise RdiffError(e.message['desc'])
             raise RdiffError(str(e))
 
     def has_password(self, username):

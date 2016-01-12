@@ -31,7 +31,7 @@ from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb import rdw_helpers
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import decode_s, unquote_url
+from rdiffweb.rdw_helpers import unquote_url
 
 
 # Define the logger
@@ -44,12 +44,10 @@ def autodelete():
     if not hasattr(cherrypy.request, "_autodelete_dir"):
         return
     autodelete_dir = cherrypy.request._autodelete_dir
-    logger.info("deleting temporary folder [%s]" %
-                decode_s(autodelete_dir, 'replace'))
+    logger.info("deleting temporary folder [%r]", autodelete_dir)
     # Check if path exists
     if not os.access(autodelete_dir, os.F_OK):
-        logger.info("temporary folder [%s] doesn't exists" %
-                    decode_s(autodelete_dir, 'replace'))
+        logger.info("temporary folder [%r] doesn't exists", autodelete_dir)
         return
     if not os.path.isdir(autodelete_dir):
         autodelete_dir = os.path.dirname(autodelete_dir)
@@ -83,8 +81,7 @@ class RestorePage(page_main.MainPage):
         assert isinstance(date, str)
         assert isinstance(usetar, str)
 
-        logger.debug("restoring [%s][%s]" % (decode_s(path, 'replace'),
-                                             date))
+        logger.debug("restoring [%r][%s]", path, date)
 
         # The path wont have leading and trailing "/".
         (path, file_b) = os.path.split(path)
@@ -129,7 +126,7 @@ class RestorePage(page_main.MainPage):
 
         # The file name return by rdiff-backup is in bytes. We do not process
         # it. Cherrypy seams to handle it any weird encoding from this point.
-        logger.info("restored file [%s]" % decode_s(file_path_b, 'replace'))
+        logger.info("restored file [%r]", file_path_b)
         filename = os.path.basename(file_path_b)
         # Escape quotes in filename
         filename = filename.replace(b"\"", b"\\\"")

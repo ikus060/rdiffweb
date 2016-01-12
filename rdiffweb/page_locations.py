@@ -25,7 +25,6 @@ import logging
 from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import encode_s
 
 
 # Define the logger
@@ -59,13 +58,12 @@ class LocationsPage(page_main.MainPage):
         """
         # Get user's locations.
         user_root = self.app.currentuser.root_dir
-        user_root_b = encode_s(user_root)
         user_repos = self.app.currentuser.repos
         repos = []
         for user_repo in user_repos:
             try:
                 # Get reference to a repo object
-                repo_obj = librdiff.RdiffRepo(user_root_b, encode_s(user_repo))
+                repo_obj = librdiff.RdiffRepo(user_root, user_repo)
                 path = repo_obj.path
                 name = repo_obj.display_name
                 in_progress = repo_obj.in_progress
@@ -73,7 +71,7 @@ class LocationsPage(page_main.MainPage):
                 failed = False
             except librdiff.FileError:
                 logging.exception("invalid user path %s" % user_repo)
-                path = encode_s(user_repo)
+                path = b''
                 name = user_repo
                 in_progress = False
                 last_backup_date = 0

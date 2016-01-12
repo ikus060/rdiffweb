@@ -23,12 +23,11 @@ from builtins import str
 from builtins import bytes
 import cherrypy
 import logging
-from past.builtins import cmp
 
 from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb import rdw_helpers
-from rdiffweb.rdw_helpers import encode_s, decode_s, unquote_url
+from rdiffweb.rdw_helpers import unquote_url
 
 
 # Define the logger
@@ -142,7 +141,7 @@ class StatusPage(page_main.MainPage):
                                      startTime, endTime)
 
     def _get_recent_user_messages(self, failuresOnly):
-        user_repos = self.app.userdb.get_repos(self.app.currentuser.username)
+        user_repos = self.app.currentuser.repos
         asOfDate = rdw_helpers.rdwTime()
         asOfDate.initFromMidnightUTC(-5)
 
@@ -156,17 +155,14 @@ class StatusPage(page_main.MainPage):
                          earliest_date,
                          latest_date):
 
-        user_root = self.app.userdb.get_user_root(self.app.currentuser.username)
-        user_root_b = encode_s(user_root)
+        user_root = self.app.currentuser.root_dir
 
         repoErrors = []
         allBackups = []
         for repo in repos:
-            # Get binary representation of the repo
-            repo_b = encode_s(repo) if isinstance(repo, str) else repo
-            repo_b = repo_b.lstrip(b"/")
+            repo = repo.lstrip("/")
             try:
-                repo_obj = librdiff.RdiffRepo(user_root_b, repo_b)
+                repo_obj = librdiff.RdiffRepo(user_root, repo)
                 backups = repo_obj.get_history_entries(-1, earliest_date,
                                                        latest_date)
                 allBackups += [{"repo_path": repo_obj.path,
@@ -176,8 +172,8 @@ class StatusPage(page_main.MainPage):
                                 "errors": backup.errors} for backup in backups]
             except librdiff.FileError as e:
                 repoErrors.append(
-                    {"repo_path": repo_b,
-                     "repo_name": decode_s(repo_b, 'replace'),
+                    {"repo_path": repo,
+                     "repo_name": repo,
                      "error": str(e)})
 
         allBackups.sort(key=lambda x: x["date"])

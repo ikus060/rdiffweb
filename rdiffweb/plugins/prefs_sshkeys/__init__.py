@@ -21,7 +21,6 @@ Created on May 11, 2015
 
 @author: Patrik Dufresne
 """
-# Define the logger
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
@@ -33,7 +32,6 @@ import logging
 import os
 
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import encode_s
 from rdiffweb.rdw_plugin import IPreferencesPanelProvider
 
 from . import authorizedkeys
@@ -107,10 +105,9 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
     def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
         # Get user root directory
         filename = None
-        user_root = self.app.userdb.get_user_root(self.app.currentuser.username)
+        user_root = self.app.currentuser.root_dir
         if user_root:
-            user_root_b = encode_s(user_root)
-            filename = os.path.join(user_root_b, b'.ssh', b'authorized_keys')
+            filename = os.path.join(user_root, '.ssh', 'authorized_keys')
 
         # Handle action
         params = {}

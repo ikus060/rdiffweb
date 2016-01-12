@@ -25,7 +25,7 @@ import logging
 from rdiffweb import page_main
 from rdiffweb import rdw_plugin
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import unquote_url, decode_s
+from rdiffweb.rdw_helpers import unquote_url
 
 
 # Define the logger
@@ -44,13 +44,14 @@ class PreferencesPage(page_main.MainPage):
             # /the/full/path/
             path = []
             while len(vpath) > 0:
-                path.append(decode_s(unquote_url(vpath.pop(0))))
+                path.append(unquote_url(vpath.pop(0)).decode('ascii'))
             cherrypy.request.params['panelid'] = "/".join(path)
             return self
         return vpath
 
     @cherrypy.expose
     def index(self, panelid="", **kwargs):
+        assert isinstance(panelid, str)
 
         # Get the panels
         panels, providers = self._get_panels()

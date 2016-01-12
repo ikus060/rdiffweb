@@ -139,11 +139,11 @@ def create_file(filename):
     # Create directory (.ssh) if not exists.
     directory = os.path.dirname(filename)
     if not os.path.exists(directory):
-        _logger.info("creating directory %s" % (directory,))
+        _logger.info("creating directory %r", directory)
         os.mkdir(directory, 0o700)
 
     # Create the file.
-    _logger.info("creating authorized_keys file %s" % (filename,))
+    _logger.info("creating authorized_keys file %r", filename)
     if not os.path.exists(filename):
         with open(filename, 'w+'):
             os.utime(filename, None)

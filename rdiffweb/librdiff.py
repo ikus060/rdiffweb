@@ -27,6 +27,7 @@ import encodings
 import errno
 from future.utils import iteritems
 from future.utils import python_2_unicode_compatible
+from future.utils.surrogateescape import decodefilename, encodefilename
 import gzip
 import io
 import logging
@@ -529,6 +530,10 @@ class RdiffRepo(object):
     """Represent one rdiff-backup repository."""
 
     def __init__(self, user_root, path):
+        if isinstance(user_root, str):
+            user_root = encodefilename(user_root)
+        if isinstance(path, str):
+            path = encodefilename(path)
         assert isinstance(user_root, bytes)
         assert isinstance(path, bytes)
         self.encoding = encodings.search_function(FS_ENCODING)
@@ -985,12 +990,7 @@ class RdiffPath(object):
         output = os.path.join(outputdir, filename)
 
         # Execute rdiff-backup to restore the data.
-        logger.info(
-            "execute rdiff-backup --restore-as-of=%s '%s' '%s'" % (
-                date_epoch,
-                rdw_helpers.decode_s(file_to_restore, 'replace'),
-                rdw_helpers.decode_s(output, 'replace'),
-            ))
+        logger.info("execute rdiff-backup --restore-as-of=%s %r %r", date_epoch, file_to_restore, output)
         results = self._execute(
             b"rdiff-backup",
             b"--restore-as-of=" + str(date_epoch).encode(encoding='latin1'),

@@ -33,7 +33,6 @@ import re
 from rdiffweb import rdw_spider_repos
 from rdiffweb.core import RdiffError
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import encode_s
 from rdiffweb.rdw_plugin import IPreferencesPanelProvider
 
 

@@ -24,7 +24,6 @@ import logging
 import os
 
 from rdiffweb import librdiff
-from rdiffweb.rdw_helpers import encode_s
 
 
 # Define the logger
@@ -54,7 +53,7 @@ def _find_repos(dirToSearch, depth=3):
 
 def find_repos_for_user(user, userdb):
     logger.debug("find repos for [%s]" % user)
-    user_root = encode_s(userdb.get_user_root(user))
+    user_root = userdb.get_user_root(user)
     repo_paths = list(_find_repos(user_root))
 
     def striproot(path):

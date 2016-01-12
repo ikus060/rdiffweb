@@ -28,7 +28,6 @@ from future.utils import iteritems
 from future.utils import python_2_unicode_compatible
 from past.builtins import cmp
 from past.utils import old_div
-import sys
 import time
 
 
@@ -37,27 +36,6 @@ try:
 except ImportError:
     # Python 2
     from urllib import quote, unquote
-
-
-# Get the system encoding
-system_charset = sys.getfilesystemencoding()
-
-
-def decode_s(value, errors='strict'):
-    """
-    Convert charset to system unicode. Default is 'strict'. Other possible
-    values are 'ignore' and 'replace'.
-    """
-    assert isinstance(value, bytes)
-    return value.decode(system_charset, errors)
-
-
-def encode_s(value):
-    """Convert unicode to system charset."""
-    if value is None:
-        return None
-    assert isinstance(value, str)
-    return value.encode(system_charset)
 
 
 # TODO: Move this into page_main

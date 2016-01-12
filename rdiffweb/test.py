@@ -119,13 +119,26 @@ class AppTestCase(unittest.TestCase):
 
     default_config = {}
 
+    reset_app = True
+
+    reset_testcases = False
+
+    USERNAME = None
+
+    PASSWORD = None
+
     def setUp(self):
         self.app = MockRdiffwebApp(self.enabled_plugins, self.default_config)
-        self.app.reset()
+        if self.reset_app:
+            self.app.reset(self.USERNAME, self.PASSWORD)
+        if self.reset_testcases:
+            self.app.reset_testcases()
         unittest.TestCase.setUp(self)
 
     def tearDown(self):
         self.app.clear_db()
+        if self.reset_testcases:
+            self.app.clear_testcases()
         unittest.TestCase.tearDown(self)
 
 

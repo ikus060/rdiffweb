@@ -28,7 +28,7 @@ import os
 from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import decode_s, unquote_url
+from rdiffweb.rdw_helpers import unquote_url
 
 
 # Define the logger
@@ -60,7 +60,7 @@ class BrowsePage(page_main.MainPage):
         assert isinstance(restore, str)
         restore = bool(restore)
 
-        logger.debug("browsing [%s]" % decode_s(path, 'replace'))
+        logger.debug("browsing [%r]", path)
 
         # Check user access to the given repo & path
         try:
@@ -83,13 +83,14 @@ class BrowsePage(page_main.MainPage):
         assert isinstance(path_obj, librdiff.RdiffPath)
 
         # Build "parent directories" links
+        # TODO This Should to me elsewhere. It contains logic related to librdiff encoding.
         parents = []
         parents.append({"path": b"", "name": repo_obj.display_name})
         parent_path_b = b""
-        for part_b in path_obj.path.split(b"/"):
+        for part_b in path_obj.path.split(b'/'):
             if part_b:
                 parent_path_b = os.path.join(parent_path_b, part_b)
-                display_name = decode_s(repo_obj.unquote(part_b), 'replace')
+                display_name = repo_obj._decode(repo_obj.unquote(part_b))
                 parents.append({"path": parent_path_b,
                                 "name": display_name})
 

@@ -19,15 +19,15 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from builtins import str
 from builtins import bytes
+from builtins import str
 import cherrypy
+from future.utils.surrogateescape import encodefilename
 import logging
 import os.path
 
-from rdiffweb import librdiff
 from rdiffweb.core import Component
-from rdiffweb.rdw_helpers import encode_s, decode_s
+from rdiffweb.librdiff import RdiffRepo, AccessDeniedError
 from rdiffweb.rdw_plugin import ITemplateFilterPlugin
 
 
@@ -37,9 +37,14 @@ logger = logging.getLogger(__name__)
 
 class MainPage(Component):
 
+    # TODO Should be moved to different location. e.g.: user.py
     def validate_user_path(self, path_b):
-        '''Takes a path relative to the user's root dir and validates that it
-        is valid and within the user's root'''
+        '''
+        Takes a path relative to the user's root dir and validates that it
+        is valid and within the user's root.
+
+        Uses bytes path to avoid any data lost in encoding/decoding.
+        '''
         assert isinstance(path_b, bytes)
 
         # Add a ending slash (/) to avoid matching wrong repo. Ref #56
@@ -48,25 +53,25 @@ class MainPage(Component):
         # NOTE: a blank path is allowed, since the user root directory might be
         # a repository.
 
-        logger.debug("check user access to path [%r]", path_b)
+        logger.debug("checking user access to path [%r]", path_b)
 
-        # Get reference to user repos
-        user_repos = self.app.currentuser.repos
+        # Get reference to user repos (as bytes)
+        user_repos = [
+            encodefilename(r).strip(b'/') + b'/'
+            for r in self.app.currentuser.repos]
 
         # Check if any of the repos matches the given path.
-        user_repos_matches = [
-            encode_s(user_repo).strip(b'/')
+        repo_b = next((
+            user_repo
             for user_repo in user_repos
-            if path_b.startswith(encode_s(user_repo).strip(b'/') + b'/')]
-        if not user_repos_matches:
+            if path_b.startswith(user_repo)), None)
+        if not repo_b:
             # No repo matches
-            logger.error("user doesn't have access to [%s]" %
-                         decode_s(path_b, 'replace'))
-            raise librdiff.AccessDeniedError
-        repo_b = user_repos_matches[0]
+            logger.error("user doesn't have access to [%r]", path_b)
+            raise AccessDeniedError
 
         # Get reference to user_root
-        user_root_b = encode_s(self.app.currentuser.root_dir)
+        user_root_b = encodefilename(self.app.currentuser.root_dir)
 
         # Check path vs real path value
         full_path_b = os.path.join(user_root_b, path_b).rstrip(b"/")
@@ -78,14 +83,12 @@ class MainPage(Component):
             if real_path_b.startswith(os.path.join(user_root_b, repo_b)):
                 path_b = os.path.relpath(real_path_b, user_root_b)
             else:
-                logger.warn("access is denied [%s] vs [%s]" % (
-                    decode_s(full_path_b, 'replace'),
-                    decode_s(real_path_b, 'replace')))
-                raise librdiff.AccessDeniedError
+                logger.warn("access is denied [%r] vs [%r]", full_path_b, real_path_b)
+                raise AccessDeniedError
 
         # Get reference to the repository (this ensure the repository does
         # exists and is valid.)
-        repo_obj = librdiff.RdiffRepo(user_root_b, repo_b)
+        repo_obj = RdiffRepo(user_root_b, repo_b)
 
         # Get reference to the path.
         path_b = path_b[len(repo_b):]

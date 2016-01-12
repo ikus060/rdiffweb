@@ -17,17 +17,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-from past.builtins import cmp
-from builtins import str
 
+from builtins import str
+import logging
+from threading import RLock
+
+from rdiffweb.core import InvalidUserError
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPasswordStore, IDatabase
-from rdiffweb.rdw_helpers import encode_s, decode_s
-from threading import RLock
-from rdiffweb.core import InvalidUserError
-import sys
-import logging
-from future.utils.surrogateescape import FS_ENCODING
+
 
 try:
     # Python 2.5+
@@ -271,7 +269,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
     def _hash_password(self, password):
         # At this point the password should be unicode. We converted it into
         # system encoding.
-        password_b = encode_s(password)
+        password_b = password.encode('utf8')
         hasher = sha()
         hasher.update(password_b)
         value = hasher.hexdigest()
