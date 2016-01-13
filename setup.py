@@ -30,7 +30,6 @@ if PY2 and not sys.version_info >= (2, 7):
     print('python version 2.7 is required.')
     sys.exit(1)
 
-from babel.messages.frontend import compile_catalog, extract_messages, update_catalog, init_catalog
 from distutils.cmd import Command
 from distutils.command.build import build as build_
 from distutils.dist import DistributionMetadata
@@ -132,6 +131,7 @@ class compile_all_catalogs(Command):
         self.locales = list(map(str.strip, self.locales.split(',')))
 
     def run(self):
+        from babel.messages.frontend import compile_catalog
         for locale in self.locales:
             compiler = compile_catalog(self.distribution)
             compiler.initialize_options()
@@ -167,7 +167,7 @@ if PY2:
 
 setup(
     name='rdiffweb',
-    version='0.8.2.dev1',
+    version='0.9.1.dev1',
     description='A web interface to rdiff-backup repositories',
     author='Patrik Dufresne',
     author_email='info@patrikdufresne.com',
@@ -179,10 +179,6 @@ setup(
     # new commands added and build command modified
     cmdclass={
         'build': build,
-        'compile_catalog': compile_catalog,
-        'extract_messages': extract_messages,
-        'update_catalog': update_catalog,
-        'init_catalog': init_catalog,
         'compile_all_catalogs': compile_all_catalogs,
         'filltmpl': fill_template,
     },
