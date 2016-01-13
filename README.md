@@ -47,3 +47,15 @@ Extract the strings to be translated.
 
 	./setup.py compile_catalog --directory rdiffweb/locales --locale fr
 
+
+Tests
+=====
+
+Rdiffweb is provided with unit tests and integration test. To run the tests,
+you may run it as follow for your current python version :
+
+    python setup.py. nosetests
+
+You may also want to run the tests for python 2.7 and python 3.x
+
+    tox
