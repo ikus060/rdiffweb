@@ -100,14 +100,14 @@ class LdapPasswordStore(IPasswordStore):
         def check_crendential(l, r):
             # Check results
             if len(r) != 1:
-                logger.debug("user [%s] not found in LDAP" % username)
+                logger.debug("user [%s] not found in LDAP", username)
                 return None
 
             # Bind using the user credentials. Throws an exception in case of
             # error.
             l.simple_bind_s(r[0][0], password)
             l.unbind_s()
-            logger.info("user [%s] found in LDAP" % username)
+            logger.info("user [%s] found in LDAP", username)
             # Return the username
             return self._decode(r[0][1][self.attribute][0])
 
@@ -170,10 +170,10 @@ class LdapPasswordStore(IPasswordStore):
         def check_user_exists(l, r):  # @UnusedVariable
             # Check the results
             if len(r) != 1:
-                logger.debug("user [%s] not found" % username)
+                logger.debug("user [%s] not found", username)
                 return False
 
-            logger.debug("user [%s] found" % username)
+            logger.debug("user [%s] found", username)
             return True
 
         # Execute the LDAP operation
@@ -181,7 +181,7 @@ class LdapPasswordStore(IPasswordStore):
 
     def get_email(self, username):
         """Get user mail."""
-        logger.debug("get email for user [%s]" % username)
+        logger.debug("get email for user [%s]", username)
         value = self.get_user_attr(username, 'mail')
         if value:
             return value[0]
@@ -189,7 +189,7 @@ class LdapPasswordStore(IPasswordStore):
 
     def get_home_dir(self, username):
         """Get user home directory."""
-        logger.debug("get email for user [%s]" % username)
+        logger.debug("get email for user [%s]", username)
         value = self.get_user_attr(username, 'homeDirectory')
         if isinstance(value, list):
             value = value[0]
@@ -201,7 +201,7 @@ class LdapPasswordStore(IPasswordStore):
 
         def fetch_user_email(l, r):  # @UnusedVariable
             if len(r) != 1:
-                logger.warn("user [%s] not found" % username)
+                logger.warn("user [%s] not found", username)
                 return ""
             if isinstance(attr, list):
                 return dict([(x, r[0][1][x])
@@ -253,12 +253,12 @@ class LdapPasswordStore(IPasswordStore):
                 l.simple_bind_s(r[0][0], old_password)
             l.passwd_s(r[0][0], old_password, password)
             l.unbind_s()
-            logger.info("password for user [%s] is updated in LDAP" % username)
+            logger.info("password for user [%s] is updated in LDAP", username)
             # User updated, return False
             return False
 
         # Execute the LDAP operation
-        logger.debug("updating password for [%s] in LDAP" % username)
+        logger.debug("updating password for [%s] in LDAP", username)
         return self._execute(username, change_passwd)
 
     def supports(self, operation):

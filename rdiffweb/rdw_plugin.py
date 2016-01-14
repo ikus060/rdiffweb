@@ -51,7 +51,7 @@ class PluginLocator(PluginFileLocator):
         try:
             return PluginFileLocator._getInfoForPluginFromAnalyzer(self, analyzer, dirpath, filename)
         except ValueError:
-            logger.exception("fail to load plugin [%s]" % (filename,))
+            logger.exception("fail to load plugin [%s]", filename)
 
 
 class PluginManager(object):
@@ -78,7 +78,7 @@ class PluginManager(object):
         plugin_locations = plugin_search_path.split(',')
         searchpath.extend(plugin_locations)
         # Build the manager
-        logger.debug("plugin search path [%s]" % (searchpath))
+        logger.debug("plugin search path [%s]", searchpath)
 
         # Create the plugin manager.
         PluginManagerSingleton.setBehaviour([FilteredPluginManager])
@@ -170,7 +170,7 @@ class PluginManager(object):
             try:
                 method(plugin.plugin_object)
             except:
-                logger.exception("fail to run plugin [%s]" % (plugin.name))
+                logger.exception("fail to run plugin [%s]", plugin.name)
 
 
 class IRdiffwebPlugin(IPlugin):

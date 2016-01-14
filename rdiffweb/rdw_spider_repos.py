@@ -30,29 +30,28 @@ from rdiffweb import librdiff
 logger = logging.getLogger(__name__)
 
 
-def _find_repos(dirToSearch, depth=3):
+def _find_repos(path, depth=3):
     # TODO Should be a configuration
     # Limit the depthness
     if depth <= 0:
         return
-
     try:
-        dirEntries = os.listdir(dirToSearch)
+        direntries = os.listdir(path)
     except:
         # Ignore error.
         return
-    if librdiff.RDIFF_BACKUP_DATA in dirEntries:
-        yield dirToSearch
+    if librdiff.RDIFF_BACKUP_DATA in direntries:
+        yield path
 
-    for entry in dirEntries:
-        entryPath = os.path.join(dirToSearch, entry)
+    for entry in direntries:
+        entryPath = os.path.join(path, entry)
         if os.path.isdir(entryPath) and not os.path.islink(entryPath):
             for x in _find_repos(entryPath, depth - 1):
                 yield x
 
 
 def find_repos_for_user(user, userdb):
-    logger.debug("find repos for [%s]" % user)
+    logger.debug("find repos for [%s]", user)
     user_root = userdb.get_user_root(user)
     repo_paths = list(_find_repos(user_root))
 
@@ -61,5 +60,5 @@ def find_repos_for_user(user, userdb):
             return "/"
         return path[len(user_root):]
     repo_paths = list(map(striproot, repo_paths))
-    logger.debug("set user [%s] repos: %s " % (user, repo_paths))
+    logger.debug("set user [%s] repos: %s ", user, repo_paths)
     userdb.set_repos(user, repo_paths)

@@ -73,9 +73,9 @@ def authbasic(checkpassword):
                 username, password = base64_decode(params).split(':', 1)
                 error_msg = checkpassword(username, password)
                 if error_msg:
-                    logger.info('basic auth fail for %s: %s' % (username, error_msg))
+                    logger.info('basic auth fail for %s: %s', username, error_msg)
                 else:
-                    logger.info('basic auth succeeded for %s' % (username))
+                    logger.info('basic auth succeeded for %s', username)
                     request.login = username
                     return  # successful authentication
         # split() error, base64.decodestring() error

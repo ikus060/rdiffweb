@@ -231,12 +231,12 @@ class TemplateManager(object):
             `kwargs`
                 The arguments to be passed to the template.
         """
-        logger.log(1, "compiling template [%s]" % template_name)
+        logger.log(1, "compiling template [%s]", template_name)
         self.jinja_env.install_gettext_callables(
             i18n.ugettext, i18n.ungettext, newstyle=True)
         template = self.jinja_env.get_template(template_name)
         data = template.render(kwargs)
-        logger.log(1, "template [%s] compiled" % template_name)
+        logger.log(1, "template [%s] compiled", template_name)
         return data
 
     def get_template(self, template_name):

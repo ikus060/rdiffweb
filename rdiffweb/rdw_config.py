@@ -140,7 +140,7 @@ class Configuration(object):
             return False
 
         if not os.access(self._filename, os.R_OK) or not os.path.isfile(self._filename):
-            logger.info("configuration file [%s] doesn't exists" % (self._filename))
+            logger.info("configuration file [%s] doesn't exists", self._filename)
             return False
 
         # Check if parsing the config file is required.
@@ -149,7 +149,7 @@ class Configuration(object):
             return False
 
         # Read configuration file.
-        logger.debug("reading configuration file [%s]" % (self._filename))
+        logger.debug("reading configuration file [%s]", self._filename)
         if not os.access(self._filename, os.F_OK):
             raise SettingsError("Error reading %s, make sure it's readable."
                                 % (self._filename))

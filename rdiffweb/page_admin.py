@@ -214,7 +214,7 @@ class AdminPage(page_main.MainPage):
                 raise ValueError("The user %s already exists." % (username))
             elif username == "":
                 raise ValueError("The username is invalid.")
-            logger.info("adding user [%s]" % username)
+            logger.info("adding user [%s]", username)
 
             self.app.userdb.add_user(username, password)
             self.app.userdb.set_user_root(username, user_root)
@@ -234,7 +234,7 @@ class AdminPage(page_main.MainPage):
             self._check_user_exists(username)
             if username == self.app.currentuser.username:
                 raise ValueError("You cannot remove your own account!.")
-            logger.info("deleting user [%s]" % username)
+            logger.info("deleting user [%s]", username)
             self.app.userdb.delete_user(username)
             success = "User account removed."
 

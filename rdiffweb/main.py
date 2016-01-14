@@ -44,7 +44,7 @@ def debug_dump():
         return
     try:
         filename = tempfile.mktemp(suffix='.json', prefix='rdiff-dump-')
-        logger.info("create memory dump: %s" % (filename,))
+        logger.info("create memory dump: %s", filename)
         scanner.dump_all_objects(filename)
     except:
         logger.warn("fail to dump memory", exc_info=True)
@@ -164,9 +164,6 @@ def start():
     # Get configuration
     serverHost = app.cfg.get_config("ServerHost", default="0.0.0.0")
     serverPort = app.cfg.get_config_int("ServerPort", default="8080")
-    if not serverPort:
-        logger.error("ServerPort should be a port number: %s" % (serverPort))
-        sys.exit(1)
     # Get SSL configuration (if any)
     sslCertificate = app.cfg.get_config("SslCertificate")
     sslPrivateKey = app.cfg.get_config("SslPrivateKey")

@@ -401,9 +401,7 @@ class FileStatisticsEntry(IncrementEntry):
         try:
             return int(self._search(path)["mirror_size"])
         except:
-            logger.warning("mirror size not found for [%s]" %
-                           self.repo._decode(path),
-                           exc_info=1)
+            logger.warning("mirror size not found for [%r]", path, exc_info=1)
             return 0
 
     def get_source_size(self, path):
@@ -412,9 +410,7 @@ class FileStatisticsEntry(IncrementEntry):
         try:
             return int(self._search(path)["source_size"])
         except:
-            logger.warning("source size not found for [%s]" %
-                           self.repo._decode(path),
-                           exc_info=1)
+            logger.warning("source size not found for [%r]", path, exc_info=1)
             return 0
 
     def _search(self, path):
@@ -424,8 +420,7 @@ class FileStatisticsEntry(IncrementEntry):
         zgrep to search the file. If zgrep is not available, fallback to
         python implementation.
         """
-        logger.debug("read file_statistics [%s]" %
-                     self.repo._decode(self.name))
+        logger.debug("read file_statistics [%r]", self.name)
 
         path += b' '
 
@@ -492,8 +487,7 @@ class SessionStatisticsEntry(IncrementEntry):
         if hasattr(self, '_data'):
             return
 
-        logger.debug("load session_statistics [%s]" %
-                     self.repo._decode(self.name))
+        logger.debug("load session_statistics [%r]", self.name)
         self._data = {}
         with self._open() as f:
             for line in f:

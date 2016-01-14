@@ -235,7 +235,7 @@ class RdiffwebApp(Application):
                 not os.access(session_dir, os.W_OK)):
             return
 
-        logger.info("Setting session mode to disk in directory %s" % (session_dir,))
+        logger.info("Setting session mode to disk in directory %s", session_dir)
         config.update({
             'tools.sessions.on': True,
             'tools.sessions.storage_type': True,
