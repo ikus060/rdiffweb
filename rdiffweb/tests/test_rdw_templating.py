@@ -21,11 +21,21 @@ from __future__ import unicode_literals
 import unittest
 
 from rdiffweb.rdw_templating import do_format_filesize, url_for_browse, \
-    url_for_history, url_for_restore
+    url_for_history, url_for_restore, attrib
 from rdiffweb.rdw_helpers import rdwTime
 
 
 class TemplateManagerTest(unittest.TestCase):
+
+    def test_attrib(self):
+        # Single value
+        self.assertEqual('id="row"', attrib(id='row'))
+        # Single value with quote
+        self.assertEqual('id="val&lt;ue&quot;with&quot;qu&gt;ot&amp;e"', attrib(id='val<ue"with"qu>ot&e'))
+        # Multi attribute
+        self.assertEqual('type="table" id="row"', attrib(id='row', type='table'))
+        # Attribute with list
+        self.assertEqual('type="table container"', attrib(type=['table', 'container']))
 
     def test_do_format_filesize(self):
         # Test simple values

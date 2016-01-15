@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from builtins import bytes
 from builtins import object
 from builtins import str
+from io import StringIO
 from jinja2 import Environment, PackageLoader
 from jinja2.ext import _make_new_gettext, _make_new_ngettext
 from jinja2.loaders import ChoiceLoader, FileSystemLoader
@@ -34,6 +35,45 @@ from rdiffweb import rdw_helpers
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
+
+def attrib(**kwargs):
+    """Generate an attribute list from the keyword argument."""
+
+    def _escape(text):
+        text = str(text)
+        if "&" in text:
+            text = text.replace("&", "&amp;")
+        if "<" in text:
+            text = text.replace("<", "&lt;")
+        if ">" in text:
+            text = text.replace(">", "&gt;")
+        if "\"" in text:
+            text = text.replace("\"", "&quot;")
+        return text
+
+    def _format(key, val):
+        # Don't write the attribute if value is False
+        if not val:
+            return
+        yield str(key)
+        yield '="'
+        if isinstance(val, list):
+            yield ' '.join([_escape(v) for v in val])
+        else:
+            yield _escape(val)
+        yield '"'
+    first = True
+    buf = StringIO()
+    for key, val in kwargs.items():
+        if not first:
+            buf.write(' ')
+        first = False
+        for t in _format(key, val):
+            buf.write(t)
+    data = buf.getvalue()
+    buf.close()
+    return data
 
 
 def do_filter(sequence, attribute_name):
