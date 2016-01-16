@@ -56,20 +56,21 @@ def attrib(**kwargs):
         # Don't write the attribute if value is False
         if not val:
             return
-        yield str(key)
-        yield '="'
         if isinstance(val, list):
-            yield ' '.join([_escape(v) for v in val])
-        else:
-            yield _escape(val)
-        yield '"'
+            val = ' '.join([_escape(v) for v in val if v])
+        elif val:
+            val = _escape(val)
+        if not val:
+            return
+        yield '%s="%s"' % (str(key), val)
+
     first = True
     buf = StringIO()
     for key, val in kwargs.items():
-        if not first:
-            buf.write(' ')
-        first = False
         for t in _format(key, val):
+            if not first:
+                buf.write(' ')
+            first = False
             buf.write(t)
     data = buf.getvalue()
     buf.close()
@@ -249,6 +250,7 @@ class TemplateManager(object):
         self.jinja_env.filters['filesize'] = do_format_filesize
 
         # Register method
+        self.jinja_env.globals['attrib'] = attrib
         self.jinja_env.globals['url_for_browse'] = url_for_browse
         self.jinja_env.globals['url_for_history'] = url_for_history
         self.jinja_env.globals['url_for_restore'] = url_for_restore

@@ -36,6 +36,16 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual('type="table" id="row"', attrib(id='row', type='table'))
         # Attribute with list
         self.assertEqual('type="table container"', attrib(type=['table', 'container']))
+        # Attribute with class
+        self.assertEqual('class="table container"', attrib(**{'class': ['table', 'container']}))
+        # Boolean expressions
+        self.assertEqual('id="active"', attrib(id=[False, 'active', False]))
+        self.assertEqual('data="coucou" id="active"', attrib(type=False, id=[False, 'active', False], data='coucou'))
+        active = True
+        self.assertEqual('id="active"', attrib(id=[active and 'active']))
+        active = False
+        self.assertEqual('', attrib(id=[active and 'active']))
+
 
     def test_do_format_filesize(self):
         # Test simple values
