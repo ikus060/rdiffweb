@@ -1058,8 +1058,10 @@ class RdiffPath:
 
         # Add files to the archive
         for filename in files:
+            name = os.path.join(dirpath, filename)
+            arcname = self._decode(filename)
             # Pass in file as name explicitly so we get relative paths
-            tar.add(os.path.join(dirpath, filename), filename)
+            tar.add(name, arcname)
 
         # Close the archive
         tar.close()
@@ -1080,14 +1082,10 @@ class RdiffPath:
         # Add files to archive
         for root, dirs, files in os.walk(dirpath, topdown=True):
             for name in files:
-                fullpath = os.path.join(root, name)
-                assert fullpath.startswith(dirpath)
-                relpath = fullpath[len(dirpath) + 1:]
-                # Get unicode representation of the path. Then convert it to
-                # ISO-8859-1 because ZIP uses this encoding. See #55.
-                relPath_u = self._decode(relpath)
-                relpath = relPath_u.encode('ISO-8859-1', errors='replace')
+                filename = os.path.join(root, name)
+                assert filename.startswith(dirpath)
+                arcname = self._decode(filename[len(dirpath) + 1:])
                 # Add the file to the archive.
-                zipobj.write(fullpath, relpath)
+                zipobj.write(filename, arcname)
 
         zipobj.close()
