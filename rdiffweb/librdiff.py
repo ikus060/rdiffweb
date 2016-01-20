@@ -1053,15 +1053,14 @@ class RdiffPath:
                     self._decode(target), self._decode(dirpath))
         tar = tarfile.open(target, "w:gz")
 
-        # List content of the directory.
-        files = os.listdir(dirpath)
-
         # Add files to the archive
-        for filename in files:
-            name = os.path.join(dirpath, filename)
-            arcname = self._decode(filename)
-            # Pass in file as name explicitly so we get relative paths
-            tar.add(name, arcname)
+        for root, dirs, files in os.walk(dirpath, topdown=True):
+            for name in files:
+                filename = os.path.join(root, name)
+                assert filename.startswith(dirpath)
+                arcname = self._decode(filename[len(dirpath) + 1:])
+                # Add the file to the archive.
+                tar.add(filename, arcname, recursive=False)
 
         # Close the archive
         tar.close()
