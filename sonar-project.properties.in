@@ -12,3 +12,6 @@ sonar.sourceEncoding=UTF-8
 # Provide unitests report
 sonar.python.xunit.reportPath=nosetests.xml
 sonar.python.coverage.reportPath=coverage.xml
+
+# Excludes
+sonar.exclusions=**/static/**
