@@ -42,6 +42,7 @@ import zlib
 from rdiffweb import rdw_helpers
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_config import Configuration
+from itertools import chain
 
 
 try:
@@ -1055,25 +1056,24 @@ class RdiffPath(object):
         tar = tarfile.open(target, "w:gz")
         tar_encoding = encodings.search_function(tar.encoding.lower()).name
 
-        # List content of the directory.
-        files = os.listdir(dirpath)
-
         # Add files to the archive
-        for filename in files:
-            name = os.path.join(dirpath, filename)
-            arcname = filename
-            if PY3:
-                # Py3, tarfile doesn't support bytes file path. So we need
-                # to use surrogate escape to escape invalid unicode char.
-                name = name.decode('ascii', 'surrogateescape')
-                arcname = self._decode(arcname, 'surrogateescape')
-            elif tar_encoding != self.repo.encoding.name:
-                # Py2, tarfile accept filepath as bytes, but we still need to
-                # decode  filename as unicode so it get converted into utf8 by
-                # tarfile.
-                arcname = self._decode(arcname)
-            # Pass in file as name explicitly so we get relative paths
-            tar.add(name, arcname)
+        for root, dirs, files in os.walk(dirpath, topdown=True):
+            for name in chain(dirs, files):
+                filename = os.path.join(root, name)
+                assert filename.startswith(dirpath)
+                arcname = filename[len(dirpath) + 1:]
+                if PY3:
+                    # Py3, tarfile doesn't support bytes file path. So we need
+                    # to use surrogate escape to escape invalid unicode char.
+                    filename = filename.decode('ascii', 'surrogateescape')
+                    arcname = self._decode(arcname, 'surrogateescape')
+                elif tar_encoding != self.repo.encoding.name:
+                    # Py2, tarfile accept filepath as bytes, but we still need to
+                    # decode  filename as unicode so it get converted into utf8 by
+                    # tarfile.
+                    arcname = self._decode(arcname)
+                # Add the file to the archive.
+                tar.add(filename, arcname, recursive=False)
 
         # Close the archive
         tar.close()
