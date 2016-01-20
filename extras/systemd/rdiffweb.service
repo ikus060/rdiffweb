@@ -1,0 +1,9 @@
+[Unit]
+Description=rdiffweb server
+Documentation=http://www.patrikdufresne.com/en/rdiffweb/
+
+[Service]
+ExecStart=/usr/local/bin/rdiffweb --log-access-file=/var/log/rdiffweb-access.log
+
+[Install]
+WantedBy=multi-user.target
