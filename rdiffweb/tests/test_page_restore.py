@@ -141,10 +141,12 @@ class RestoreTest(WebCase):
         self._restore(self.REPO, "", "1414871387", False)
         #  Read the content as tar.gz with UTF8 encoding.
         expected = {}
+        expected["Répertoire Supprimé/"] = 0
         expected["Répertoire Supprimé/Untitled Empty Text File"] = 0
         expected["Répertoire Supprimé/Untitled Empty Text File 2"] = 0
         expected["Répertoire Supprimé/Untitled Empty Text File 3"] = 0
         expected["Fichier @ <root>"] = 0
+        expected["Répertoire Existant/"] = 0
         expected["Répertoire Existant/Untitled Empty Text File"] = 0
         expected["Répertoire Existant/Untitled Empty Text File 2"] = 0
         expected["Répertoire Existant/Fichier supprimé"] = 0
@@ -166,14 +168,20 @@ class RestoreTest(WebCase):
         expected = {}
         expected["Fichier avec non asci char �velyne M�re.txt"] = 18
         expected["이루마 YIRUMA - River Flows in You.mp3"] = 3636731
+        expected["Char ;090 to quote/"] = 0
         expected["Char ;090 to quote/Untitled Testcase.doc"] = 14848
         expected["Char ;090 to quote/Data"] = 21
+        expected["DIR�/"] = 0
         expected["DIR�/Data"] = 10
+        expected["test\\test/"] = 0
         expected["test\\test/some data"] = 226
+        expected["Revisions/"] = 0
         expected["Revisions/Data"] = 9
+        expected["Répertoire (@vec) {càraçt#èrë} $épêcial/"] = 0
         expected["Répertoire (@vec) {càraçt#èrë} $épêcial/Untitled Testcase.doc"] = 14848
         expected["<F!chïer> (@vec) {càraçt#èrë} $épêcial"] = 286
         expected["Fichier @ <root>"] = 13
+        expected["Répertoire Existant/"] = 0
         expected["Répertoire Existant/Untitled Empty Text File"] = 0
         expected["Répertoire Existant/Untitled Empty Text File 2"] = 0
         #  Read data as zip

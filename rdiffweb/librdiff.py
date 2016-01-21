@@ -1098,8 +1098,8 @@ class RdiffPath(object):
 
         # Add files to archive
         for root, dirs, files in os.walk(dirpath, topdown=True):
-            for file in files:
-                filename = os.path.join(root, file)
+            for name in chain(dirs, files):
+                filename = os.path.join(root, name)
                 assert filename.startswith(dirpath)
                 arcname = filename[len(dirpath) + 1:]
                 # Get unicode representation of the path.
