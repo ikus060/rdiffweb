@@ -34,6 +34,7 @@ from i18n import ugettext as _
 from rdiffweb.rdw_config import Configuration
 import zlib
 import errno
+from itertools import chain
 
 try:
     import subprocess32 as subprocess  # @UnresolvedImport @UnusedImport
@@ -1055,7 +1056,7 @@ class RdiffPath:
 
         # Add files to the archive
         for root, dirs, files in os.walk(dirpath, topdown=True):
-            for name in files:
+            for name in chain(dirs, files):
                 filename = os.path.join(root, name)
                 assert filename.startswith(dirpath)
                 arcname = self._decode(filename[len(dirpath) + 1:])
