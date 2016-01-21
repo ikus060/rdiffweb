@@ -44,10 +44,14 @@ def _find_repos(path, depth=3):
         yield path
 
     for entry in direntries:
-        entryPath = os.path.join(path, entry)
-        if os.path.isdir(entryPath) and not os.path.islink(entryPath):
-            for x in _find_repos(entryPath, depth - 1):
-                yield x
+        try:
+            entryPath = os.path.join(path, entry)
+            if os.path.isdir(entryPath) and not os.path.islink(entryPath):
+                for x in _find_repos(entryPath, depth - 1):
+                    yield x
+        except UnicodeDecodeError:
+            # Invalid encoding for root dir is not supported.
+            logger.warning('skip invalid directory name %r/%r', path, entry)
 
 
 def find_repos_for_user(user, userdb):
