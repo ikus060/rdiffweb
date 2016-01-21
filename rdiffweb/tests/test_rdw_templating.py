@@ -23,6 +23,7 @@ import unittest
 from rdiffweb.rdw_templating import do_format_filesize, url_for_browse, \
     url_for_history, url_for_restore, attrib
 from rdiffweb.rdw_helpers import rdwTime
+from collections import OrderedDict
 
 
 class TemplateManagerTest(unittest.TestCase):
@@ -33,19 +34,20 @@ class TemplateManagerTest(unittest.TestCase):
         # Single value with quote
         self.assertEqual('id="val&lt;ue&quot;with&quot;qu&gt;ot&amp;e"', attrib(id='val<ue"with"qu>ot&e'))
         # Multi attribute
-        self.assertEqual('type="table" id="row"', attrib(id='row', type='table'))
+        self.assertTrue(attrib(type='table', id='row') in
+                        ['type="table" id="row"', 'id="row" type="table"'])
         # Attribute with list
         self.assertEqual('type="table container"', attrib(type=['table', 'container']))
         # Attribute with class
         self.assertEqual('class="table container"', attrib(**{'class': ['table', 'container']}))
         # Boolean expressions
         self.assertEqual('id="active"', attrib(id=[False, 'active', False]))
-        self.assertEqual('data="coucou" id="active"', attrib(type=False, id=[False, 'active', False], data='coucou'))
+        self.assertTrue(attrib(type=False, id=[False, 'active', False], data='coucou') in
+                        ['data="coucou" id="active"', 'id="active" data="coucou"'])
         active = True
         self.assertEqual('id="active"', attrib(id=[active and 'active']))
         active = False
         self.assertEqual('', attrib(id=[active and 'active']))
-
 
     def test_do_format_filesize(self):
         # Test simple values
