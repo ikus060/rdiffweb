@@ -991,6 +991,7 @@ class RdiffPath(object):
             b"--restore-as-of=" + str(date_epoch).encode(encoding='latin1'),
             file_to_restore,
             output)
+        logger.info("restore completed")
 
         # Check the result
         if results['exitCode'] != 0 or not os.access(output, os.F_OK):
