@@ -17,7 +17,8 @@ Then you may download a snapshot of the repository and proceed with the installa
     
 If it's the frist time you are installing rdiffweb on the system, you will need to manually copy `rdw.conf` to `/etc/rdiffweb`:
 
-    sudo cp rdw.conf /etc/rdiffweb
+    sudo mkdir -p /etc/rdiffweb
+    sudo cp rdw.conf /etc/rdiffweb/
    
 You may also need to create an init script to startup rdiffweb on reboot. One is provided for Debian 7 (Wheezy):
 
