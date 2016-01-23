@@ -317,9 +317,9 @@ class UserManager(Component):
         for listener in self._change_listeners:
             # Support divergent account change listener implementations too.
             try:
-                logger.debug('call [%s] [%s]', (listener.__class__.__name__, mod))
+                logger.debug('call [%s] [%s]', listener.__class__.__name__, mod)
                 getattr(listener, mod)(*args)
             except:
                 logger.warn(
-                    'IUserChangeListener [%s] fail to run [%s]'
-                    % (listener.__class__.__name__, mod), exc_info=1)
+                    'IUserChangeListener [%s] fail to run [%s]',
+                    listener.__class__.__name__, mod, exc_info=1)
