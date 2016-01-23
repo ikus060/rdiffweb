@@ -179,12 +179,12 @@ class IRdiffwebPlugin(IPlugin):
     CATEGORY = "Undefined"
 
     def activate(self):
-        logger.debug("activate plugin object [%s]",
+        logger.info("activate plugin object [%s]",
                      self.__class__.__name__)
         return IPlugin.activate(self)
 
     def deactivate(self):
-        logger.debug("deactivate plugin object [%s]",
+        logger.info("deactivate plugin object [%s]",
                      self.__class__.__name__)
         return IPlugin.deactivate(self)
 
