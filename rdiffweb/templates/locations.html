@@ -2,13 +2,12 @@
 {% include 'page_start.html' %}
 {% include 'nav_bar.html' %}
 <div class="container">
+    <h2>{{ title }} ({{ repos|length }})</h2>
+    {% include templates_before_content ignore missing with context %}
     {% if repos|length == 0 %}
-        <h2>{{ title }}</h2>
 	    {% set message = _("You don't have any repositories configured.") %}
 	    {% include 'message.html' %}
     {% else %}
-    <h2>{{ title }} ({{ repos|length }})</h2>
-    {% include templates_before_content ignore missing with context %}
 	<ul class="list-group" itemscope itemtype="http://schema.org/ItemList">
 		{% for repo in repos %}
 		<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem"
