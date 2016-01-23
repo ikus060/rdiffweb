@@ -159,7 +159,7 @@ class LdapPasswordStore(IPasswordStore):
             return function(l, r)
         except ldap.LDAPError as e:
             l.unbind_s()
-            logger.warn('ldap error', exc_info=1)
+            logger.warning('ldap error', exc_info=1)
             if hasattr(e, 'message') and isinstance(e.message, dict) and 'desc' in e.message:
                 raise RdiffError(e.message['desc'])
             raise RdiffError(str(e))
@@ -201,7 +201,7 @@ class LdapPasswordStore(IPasswordStore):
 
         def fetch_user_email(l, r):  # @UnusedVariable
             if len(r) != 1:
-                logger.warn("user [%s] not found", username)
+                logger.warning("user [%s] not found", username)
                 return ""
             if isinstance(attr, list):
                 return dict([(x, r[0][1][x])

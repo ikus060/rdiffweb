@@ -181,8 +181,8 @@ class RdiffwebApp(Application):
         if (not os.path.exists(favicon) or
                 not os.path.isfile(favicon) or
                 not os.access(favicon, os.R_OK)):
-            logger.warn("""path define by FavIcon doesn't exists or is no
-                        accessible: %s""", favicon)
+            logger.warning(
+                "path define by FavIcon doesn't exists or is no accessible: %s", favicon)
             return
 
         logger.info("use custom favicon: %s", favicon)
@@ -208,8 +208,8 @@ class RdiffwebApp(Application):
         if (not os.path.exists(header_logo) or
                 not os.path.isfile(header_logo) or
                 not os.access(header_logo, os.R_OK)):
-            logger.warn("path define by HeaderLogo doesn't exists: %s",
-                        header_logo)
+            logger.warning(
+                "path define by HeaderLogo doesn't exists: %s", header_logo)
             return
 
         logger.info("use custom header logo: %s", header_logo)

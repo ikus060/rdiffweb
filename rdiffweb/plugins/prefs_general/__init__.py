@@ -130,7 +130,7 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
             except ValueError as e:
                 params['error'] = str(e)
             except Exception as e:
-                _logger.warn("unknown error processing action", exc_info=True)
+                _logger.warning("unknown error processing action", exc_info=True)
                 params['error'] = _("Unknown error")
 
         user = self.app.currentuser.username

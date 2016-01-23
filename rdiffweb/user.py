@@ -320,6 +320,6 @@ class UserManager(Component):
                 logger.debug('call [%s] [%s]', listener.__class__.__name__, mod)
                 getattr(listener, mod)(*args)
             except:
-                logger.warn(
+                logger.warning(
                     'IUserChangeListener [%s] fail to run [%s]',
                     listener.__class__.__name__, mod, exc_info=1)

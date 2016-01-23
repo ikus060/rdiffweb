@@ -83,7 +83,7 @@ class MainPage(Component):
             if real_path_b.startswith(os.path.join(user_root_b, repo_b)):
                 path_b = os.path.relpath(real_path_b, user_root_b)
             else:
-                logger.warn("access is denied [%r] vs [%r]", full_path_b, real_path_b)
+                logger.warning("access is denied [%r] vs [%r]", full_path_b, real_path_b)
                 raise AccessDeniedError
 
         # Get reference to the repository (this ensure the repository does

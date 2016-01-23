@@ -204,7 +204,7 @@ class AdminPage(page_main.MainPage):
                 self._check_user_root_dir(user_root)
                 rdw_spider_repos.find_repos_for_user(username, self.app.userdb)
             except ValueError as e:
-                logger.warn('fail to update repo for user [%s]', username, exc_info=True)
+                logger.warning('fail to update repo for user [%s]', username, exc_info=True)
                 success = ""
                 warning = str(e)
 

@@ -84,7 +84,7 @@ class SettingsPage(page_main.MainPage):
                 # Re-raise HTTPRedirect exception.
                 raise e
             except Exception as e:
-                _logger.warn("unknown error processing action", exc_info=True)
+                _logger.warning("unknown error processing action", exc_info=True)
                 params['error'] = _("Unknown error")
 
         # Get page data.

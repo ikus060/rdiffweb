@@ -36,18 +36,18 @@ def debug_dump():
     Called when receiving a debug signal.
     Interrupt running process, and provide a python prompt for
     interactive debugging."""
-    logger.warn("receive signal to dump memory")
+    logger.warning("receive signal to dump memory")
     try:
         from meliae import scanner  # @UnresolvedImport
     except:
-        logger.warn("can't dump memory, meliae is not available")
+        logger.warning("can't dump memory, meliae is not available")
         return
     try:
         filename = tempfile.mktemp(suffix='.json', prefix='rdiff-dump-')
         logger.info("create memory dump: %s", filename)
         scanner.dump_all_objects(filename)
     except:
-        logger.warn("fail to dump memory", exc_info=True)
+        logger.warning("fail to dump memory", exc_info=True)
 
 
 def error_page(**kwargs):

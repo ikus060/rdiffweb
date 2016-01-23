@@ -121,7 +121,7 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
             except ValueError as e:
                 params['error'] = str(e)
             except Exception as e:
-                _logger.warn("unknown error processing action", exc_info=True)
+                _logger.warning("unknown error processing action", exc_info=True)
                 params['error'] = _("Unknown error")
 
         # Get SSH keys if file exists.
@@ -135,9 +135,9 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
                     for key in authorizedkeys.read(filename)]
             except IOError:
                 params['error'] = _("error reading SSH keys file")
-                _logger.warn("error reading SSH keys file [%s]", filename)
+                _logger.warning("error reading SSH keys file [%s]", filename)
         else:
             params['error'] = _("error reading SSH keys file")
-            _logger.warn("SSH keys file [%s] is not accessible", filename)
+            _logger.warning("SSH keys file [%s] is not accessible", filename)
 
         return "prefs_sshkeys.html", params

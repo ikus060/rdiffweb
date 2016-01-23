@@ -87,7 +87,7 @@ class LoginPage(page_main.MainPage):
                 logger.info("redirect user to %s", redirect)
                 raise cherrypy.HTTPRedirect(redirect)
             else:
-                logger.warn("invalid username or password")
+                logger.warning("invalid username or password")
                 params["warning"] = _("Invalid username or password.")
 
         return params
