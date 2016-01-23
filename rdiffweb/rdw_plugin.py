@@ -44,8 +44,6 @@ class PluginLocator(PluginFileLocator):
             name="rdiffweb-info",
             extensions="plugin")
         PluginFileLocator.__init__(self, analyzers=[analyzer])
-        # Disable recursive search.
-        self.recursive = False
 
     def _getInfoForPluginFromAnalyzer(self, analyzer, dirpath, filename):
         try:
