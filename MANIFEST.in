@@ -35,7 +35,3 @@ recursive-include rdiffweb/plugins *.py *.plugin *.html
 
 # Include translation file
 recursive-include rdiffweb/locales *.po *.pot *.mo
-
-# Exclude compiled
-recursive-exclude * __pycache__
-recursive-exclude * *.py[co]
