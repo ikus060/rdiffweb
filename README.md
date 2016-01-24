@@ -33,9 +33,10 @@ Configure rdiffweb using web interface.
 By default, the web server is listening on port 8080 and is accessible via the following URL.
 
     http://server_name:8080
-    
-Translation
-===========
+
+# Development
+  
+## Translation
 Reference http://babel.edgewall.org/wiki/Documentation/setup.html
 
 rdiffweb may be translated. This section describe briefly how to translate
@@ -48,14 +49,20 @@ Extract the strings to be translated.
 	./setup.py compile_catalog --directory rdiffweb/locales --locale fr
 
 
-Tests
-=====
+## Tests
 
 Rdiffweb is provided with unit tests and integration test. To run the tests,
 you may run it as follow for your current python version :
 
     python setup.py. nosetests
 
-You may also want to run the tests for python 2.7 and python 3.x
+## Profiling
 
-    tox
+Since v0.9, you may profile rdiffweb by calling it with `--profile`.
+
+    rdiffweb --debug --profile
+    
+Profiling file will be generated into `/tmp` unless you call rdiffweb
+with `--profile-path`. After all, you may visualize the data with:
+
+    snakeviz rdiffweb_0001.prof

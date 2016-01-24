@@ -25,6 +25,7 @@ import sys
 import tempfile
 
 from rdiffweb import rdw_app
+from rdiffweb.rdw_profiler import ProfilingApplication
 
 
 # Define logger for this module
@@ -130,11 +131,17 @@ def start():
     log_file = b""
     log_access_file = b""
     configfile = b'/etc/rdiffweb/rdw.conf'
+    profile = False
+    profile_path = '/tmp'
+    profile_aggregated = False
 
     opts = getopt.getopt(
         sys.argv[1:],
         'vdrf:', [
             'debug',
+            'profile',
+            'profile-path=',
+            'profile-aggregated',
             'log-file=',
             'log-access-file=',
             'config=',
@@ -148,6 +155,12 @@ def start():
             log_access_file = value
         elif option in ['-f', '--config']:
             configfile = value
+        elif option in ['--profile']:
+            profile = True
+        elif option in ['--profile-path']:
+            profile_path = value
+        elif option in ['--profile-aggregated']:
+            profile_aggregated = True
 
     # Configure logging
     setup_logging(
@@ -186,6 +199,12 @@ def start():
 
     # Add a custom signal handler
     cherrypy.engine.signal_handler.handlers['SIGUSR2'] = debug_dump
+
+    # Create application wrapper if profiling is enabled.
+    if profile or profile_aggregated:
+        app = ProfilingApplication(app, profile_path, profile_aggregated)
+        if profile_aggregated:
+            global_config['server.thread_pool'] = 1
 
     # Start web server
     cherrypy.quickstart(app)
