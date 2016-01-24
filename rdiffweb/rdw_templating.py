@@ -212,11 +212,11 @@ def url_for_status_entry(date, repo=None):
     return ''.join(url)
 
 
-def _load_translation(domain):
+def _get_translation(domain):
     """
     Used in templates to load a different translation domain.
     """
-    t = i18n.load_translation(domain)
+    t = i18n.get_translation(domain)
     t.ugettext = _make_new_gettext(t.ugettext)
     t.ungettext = _make_new_ngettext(t.ungettext)
     return t
@@ -256,7 +256,8 @@ class TemplateManager(object):
         self.jinja_env.globals['url_for_restore'] = url_for_restore
         self.jinja_env.globals['url_for_settings'] = url_for_settings
         self.jinja_env.globals['url_for_status_entry'] = url_for_status_entry
-        self.jinja_env.globals['load_translation'] = _load_translation
+        self.jinja_env.globals['load_translation'] = _get_translation
+        self.jinja_env.globals['get_translation'] = _get_translation
 
     def add_templatesdir(self, templates_dir):
         """

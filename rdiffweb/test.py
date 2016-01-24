@@ -163,6 +163,7 @@ class WebCase(helper.CPWebCase):
 
     @classmethod
     def setUpClass(cls):
+        super(helper.CPWebCase, cls).setUpClass()
         cls.setup_class()
 
     @classmethod

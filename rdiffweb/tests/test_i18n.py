@@ -44,7 +44,7 @@ class Test(unittest.TestCase):
 
     def test_load_translation(self):
         # Load default translation
-        t = i18n.load_translation()
+        t = i18n.get_translation()
         self.assertTrue(isinstance(t, gettext.GNUTranslations))
         self.assertEqual("en", t._lang)
 
@@ -52,7 +52,7 @@ class Test(unittest.TestCase):
         # Mock a header
         cherrypy.request.headers["Accept-Language"] = "fr_CA,fr,en_en_US"
         # Load default translation
-        t = i18n.load_translation()
+        t = i18n.get_translation()
         self.assertTrue(isinstance(t, gettext.GNUTranslations))
         self.assertEqual("fr", t._lang)
 
@@ -60,7 +60,7 @@ class Test(unittest.TestCase):
         # Mock a header
         cherrypy.request.headers["Accept-Language"] = "br_CA"
         # Load default translation
-        t = i18n.load_translation()
+        t = i18n.get_translation()
         self.assertTrue(isinstance(t, gettext.GNUTranslations))
         self.assertEqual("en", t._lang)
 
@@ -120,7 +120,7 @@ class Test(unittest.TestCase):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["br"])
         self.assertTrue(isinstance(t, gettext.NullTranslations))
-        self.assertEqual("en", t._lang)
+        self.assertEqual("en_US", t._lang)
         pass
 
 
