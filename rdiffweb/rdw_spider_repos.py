@@ -23,11 +23,11 @@ from builtins import map
 import logging
 import os
 
-from rdiffweb import librdiff
-
-
 # Define the logger
 logger = logging.getLogger(__name__)
+
+
+RDIFF_BACKUP_DATA = "rdiff-backup-data"
 
 
 def _find_repos(path, depth=3):
@@ -35,23 +35,23 @@ def _find_repos(path, depth=3):
     # Limit the depthness
     if depth <= 0:
         return
+    if not os.path.isdir(path) or os.path.islink(path):
+        return
     try:
         direntries = os.listdir(path)
     except:
         # Ignore error.
         return
-    if librdiff.RDIFF_BACKUP_DATA in direntries:
+    if RDIFF_BACKUP_DATA in direntries:
         yield path
-
-    for entry in direntries:
-        try:
-            entryPath = os.path.join(path, entry)
-            if os.path.isdir(entryPath) and not os.path.islink(entryPath):
-                for x in _find_repos(entryPath, depth - 1):
+    else:
+        for entry in direntries:
+            try:
+                for x in _find_repos(os.path.join(path, entry), depth - 1):
                     yield x
-        except UnicodeDecodeError:
-            # Invalid encoding for root dir is not supported.
-            logger.warning('skip invalid directory name %r/%r', path, entry)
+            except UnicodeDecodeError:
+                # Invalid encoding for root dir is not supported.
+                logger.warning('skip invalid directory name %r/%r', path, entry)
 
 
 def find_repos_for_user(user, userdb):
