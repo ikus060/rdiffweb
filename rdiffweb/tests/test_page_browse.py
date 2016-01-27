@@ -24,6 +24,7 @@ Created on Dec 26, 2015
 from __future__ import unicode_literals
 
 import logging
+import os
 import unittest
 
 from rdiffweb.test import WebCase
@@ -200,6 +201,22 @@ class BrowsePageTest(WebCase):
         """
         self._browse(self.REPO, "rdiff-backup-data/")
         self.assertInBody("Access denied.")
+
+    def test_with_single_repo(self):
+        """
+        Verify if browsing '/browse/' for a single repository is working.
+        """
+        # Change the user setting to match single repo.
+        self.app.userdb.set_user_root(self.USERNAME, os.path.join(self.app.testcases, self.REPO))
+        self.app.userdb.set_repos(self.USERNAME, ['/'])
+        # Check if browsing is working.
+        self.getPage('/browse/')
+        self.assertStatus('200 OK')
+        self.assertInBody('Files')
+        # Check sub directory browsing
+        self.getPage('/browse/Revisions/')
+        self.assertStatus('200 OK')
+        self.assertInBody('Files')
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

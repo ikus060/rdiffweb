@@ -35,6 +35,18 @@ from rdiffweb.rdw_plugin import ITemplateFilterPlugin
 logger = logging.getLogger(__name__)
 
 
+SEP = b'/'
+
+
+def normpath(val):
+    "Normalize path value"
+    if not val.endswith(SEP):
+        val += SEP
+    if val.startswith(SEP):
+        val = val[1:]
+    return val
+
+
 class MainPage(Component):
 
     # TODO Should be moved to different location. e.g.: user.py
@@ -48,16 +60,16 @@ class MainPage(Component):
         assert isinstance(path_b, bytes)
 
         # Add a ending slash (/) to avoid matching wrong repo. Ref #56
-        path_b = path_b.strip(b'/') + b'/'
+        path_b = normpath(path_b)
 
         # NOTE: a blank path is allowed, since the user root directory might be
         # a repository.
 
-        logger.debug("checking user access to path [%r]", path_b)
+        logger.debug("checking user access to path %r", path_b)
 
         # Get reference to user repos (as bytes)
         user_repos = [
-            encodefilename(r).strip(b'/') + b'/'
+            normpath(encodefilename(r))
             for r in self.app.currentuser.repos]
 
         # Check if any of the repos matches the given path.
@@ -65,7 +77,7 @@ class MainPage(Component):
             user_repo
             for user_repo in user_repos
             if path_b.startswith(user_repo)), None)
-        if not repo_b:
+        if repo_b is None:
             # No repo matches
             logger.error("user doesn't have access to [%r]", path_b)
             raise AccessDeniedError
@@ -74,7 +86,7 @@ class MainPage(Component):
         user_root_b = encodefilename(self.app.currentuser.root_dir)
 
         # Check path vs real path value
-        full_path_b = os.path.join(user_root_b, path_b).rstrip(b"/")
+        full_path_b = os.path.join(user_root_b, path_b.lstrip(b'/')).rstrip(b"/")
         real_path_b = os.path.realpath(full_path_b).rstrip(b"/")
         if full_path_b != real_path_b:
             # We can safely assume the realpath contains a symbolic link. If
