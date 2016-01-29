@@ -145,7 +145,7 @@ def get_localedirs():
         app = cherrypy.request.app
         # Get more directory from app plugins.
         for p in app.plugins.get_all_plugins():
-            localesdirs.append(p.plugin_object.get_localesdir())
+            localesdirs.append(p.get_localesdir())
     return localesdirs
 
 

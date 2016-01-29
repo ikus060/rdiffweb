@@ -16,7 +16,6 @@
 
 CherryPy>=3.2.2
 Jinja2>=2.6
-yapsy>=1.10.423
 babel>=0.9
 future>=0.15.2
 pycrypto>=2.6.1

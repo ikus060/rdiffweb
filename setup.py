@@ -158,7 +158,6 @@ class build(build_):
 install_requires = [
     "CherryPy>=3.2.2",
     "Jinja2>=2.6",
-    "yapsy>=1.11.223",
     "babel>=0.9",
     "future>=0.15.2",
 ]
@@ -175,7 +174,16 @@ setup(
     license="GPLv3",
     packages=['rdiffweb'],
     include_package_data=True,
-    entry_points={"console_scripts": ["rdiffweb = rdiffweb.main:start"]},
+    entry_points={
+        "console_scripts": ["rdiffweb = rdiffweb.main:start"],
+        "rdiffweb.plugins": [
+            "SQLite = rdiffweb.plugins.db_sqlite",
+            "Ldap = rdiffweb.plugins.ldap_auth",
+            "UserPrefsGeneral = rdiffweb.plugins.prefs_general",
+            "UserPrefsSSHKeys = rdiffweb.plugins.prefs_sshkeys",
+            "UpdateRepos = rdiffweb.plugins.update_repos",
+        ]
+    },
     # new commands added and build command modified
     cmdclass={
         'build': build,

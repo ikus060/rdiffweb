@@ -46,20 +46,17 @@ class UserManager(Component):
     @property
     def _databases(self):
         """Return all configured database."""
-        return [x.plugin_object
-                for x in self.app.plugins.get_plugins_of_category(IDatabase.CATEGORY)]
+        return self.app.plugins.get_plugins_of_category(IDatabase.CATEGORY)
 
     @property
     def _change_listeners(self):
         """Return list of IUserChangeListener"""
-        return [x.plugin_object
-                for x in self.app.plugins.get_plugins_of_category(IUserChangeListener.CATEGORY)]
+        return self.app.plugins.get_plugins_of_category(IUserChangeListener.CATEGORY)
 
     @property
     def _password_stores(self):
         """Return all configured password store."""
-        return [x.plugin_object
-                for x in self.app.plugins.get_plugins_of_category(IPasswordStore.CATEGORY)]
+        return self.app.plugins.get_plugins_of_category(IPasswordStore.CATEGORY)
 
     def add_user(self, user, password=None):
         """

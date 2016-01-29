@@ -84,36 +84,14 @@ class AdminPage(page_main.MainPage):
 
         params = {}
         try:
-            params = self._plugins_get_params_for_page()
+            params = {
+                "plugins": self.app.plugins.get_plugin_infos()
+            }
         except:
             logger.exception("fail to get list of plugins")
             params['error'] = _("Fail to get list of plugins.")
 
         return self._compile_template("admin_plugins.html", **params)
-
-    def _plugins_get_params_for_page(self):
-        """
-        Build the list of params to display the page.
-        """
-        plugins = list()
-        for plugin_info in self.app.plugins.locate_plugins():
-            # Check if the plugin is currently enabled.
-            plugin_enabled = self.app.plugins.get_plugin_by_name(
-                plugin_info.name) is not None
-            # Create a data structure to represent the plugin. Don't send the
-            # PluginInfo to the templates !
-            plugin = {"name": plugin_info.name,
-                      "author": plugin_info.author,
-                      "copyright": plugin_info.copyright,
-                      "description": plugin_info.description,
-                      "path": plugin_info.path,
-                      "version": plugin_info.version,
-                      "website": plugin_info.website,
-                      "enabled": plugin_enabled,
-                      }
-            plugins.append(plugin)
-
-        return {"plugins": plugins}
 
     @cherrypy.expose
     def users(self, userfilter=u"", usersearch=u"", action=u"", username=u"",

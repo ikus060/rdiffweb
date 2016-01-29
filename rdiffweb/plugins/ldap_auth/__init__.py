@@ -40,7 +40,7 @@ class LdapPasswordStore(IPasswordStore):
 
     def activate(self):
         """Called by the plugin manager to setup the plugin."""
-        super(LdapPasswordStore, self).activate()
+        super(IPasswordStore, self).activate()
 
         # Get Ldap URI
         self.uri = self.app.cfg.get_config(

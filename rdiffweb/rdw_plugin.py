@@ -17,39 +17,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-from builtins import object
 
+from builtins import bytes
+from builtins import object
+from builtins import str
+from glob import glob
+import imp
 import logging
 import os
+from pkg_resources import working_set, Environment
 import pkg_resources
-
-from yapsy.IPlugin import IPlugin
-from yapsy.PluginFileLocator import PluginFileLocator
-from yapsy.PluginFileLocator import PluginFileAnalyzerWithInfoFile
-from yapsy.PluginManager import PluginManagerSingleton
-from yapsy.FilteredPluginManager import FilteredPluginManager
+import sys
+from collections import namedtuple
+from itertools import chain
+import inspect
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
 
 
-class PluginLocator(PluginFileLocator):
-    """
-    Custom plugin file locator to handle an error when loading plugin. To
-    avoid all the application to crash.
-    """
-
-    def __init__(self):
-        analyzer = PluginFileAnalyzerWithInfoFile(
-            name="rdiffweb-info",
-            extensions="plugin")
-        PluginFileLocator.__init__(self, analyzers=[analyzer])
-
-    def _getInfoForPluginFromAnalyzer(self, analyzer, dirpath, filename):
-        try:
-            return PluginFileLocator._getInfoForPluginFromAnalyzer(self, analyzer, dirpath, filename)
-        except ValueError:
-            logger.exception("fail to load plugin [%s]", filename)
+PluginInfo = namedtuple(
+    'PluginInfo',
+    ['name', 'version', 'author', 'description', 'path', 'enabled', 'url', 'copyright'])
 
 
 class PluginManager(object):
@@ -58,90 +47,180 @@ class PluginManager(object):
         """
         Initialise the plugin system.
         """
-
         assert cfg
         self.cfg = cfg
+        self._categories = {}
+        self._names = {}
+        self._plugin_infos = []
 
-        # Get plugin locations.
-        plugin_search_path = self.cfg.get_config(
+        # Load all enabled plugins.
+        self._load_plugins()
+
+    def _get_search_path(self):
+        """
+        Determine the search path to look for plugins.
+        """
+        # Load plugins from config
+        search_path = self.cfg.get_config(
             "PluginSearchPath",
             default="/etc/rdiffweb/plugins")
+        return [os.path.normpath(p) for p in search_path.split(',')]
 
-        # Determine the search path
-        searchpath = []
+    def _load_plugins(self):
+        """
+        Load plugin using multiple `loaders`.
+        """
+        # Get additional search path (from configuration).
+        search_path = self._get_search_path()
+
+        # Call each loaders
+        for loadfunc in [self._load_eggs, self._load_py]:
+            for name, module, dist in loadfunc(search_path):
+                self._register_module(name, module, dist)
+
+    def _load_eggs(self, search_path):
+        # Redefine where to search entry point.
+        distributions, errors = working_set.find_plugins(
+            Environment(search_path)
+        )
+        if errors:
+            logger.warn('could not load %s', errors)
+        map(working_set.add, distributions)
+
+        # Load each entry point one by one
+        for entry in working_set.iter_entry_points('rdiffweb.plugins'):
+            # Get unicode plugin name
+            module_name = entry.name
+            if isinstance(module_name, bytes):
+                module_name = module_name.decode('ascii')
+            # Plugin is enabled. Load it.
+            logger.debug('loading module plugin [%s] from [%r]', module_name, entry.module_name)
+            try:
+                yield (module_name, entry.load(), entry.dist)
+            except:
+                logger.error('fail to load module plugin [%s] from [%r]', module_name, entry.module_name, exc_info=1)
+
+    def _load_py(self, search_path):
+        """
+        Called to load py file.
+        """
+        for path in search_path:
+            plugin_files = glob(os.path.join(path, '*.py'))
+            for plugin_file in plugin_files:
+                # Check if plugin is filtered
+                module_name = os.path.basename(plugin_file[:-3])
+                try:
+                    logger.debug('loading module plugin [%s] from [%r]', module_name, plugin_file)
+                    if module_name not in sys.modules:
+                        yield (module_name, imp.load_source(module_name, plugin_file), None)
+                except:
+                    logger.error('failed to load module plugin [%s] from [%s]', module_name, plugin_file, exc_info=1)
+
         # Append core plugins directory (in bytes)
-        path = pkg_resources.resource_filename('rdiffweb', 'plugins')  # @UndefinedVariable
-        searchpath.append(path)
+        # path = pkg_resources.resource_filename('rdiffweb', 'plugins')  # @UndefinedVariable
+        # searchpath.append(path)
         # Append user plugins directory
-        plugin_locations = plugin_search_path.split(',')
-        searchpath.extend(plugin_locations)
+        # plugin_locations = plugin_search_path.split(',')
+        # searchpath.extend(plugin_locations)
         # Build the manager
-        logger.debug("plugin search path [%s]", searchpath)
+        # logger.debug("plugin search path [%s]", searchpath)
 
         # Create the plugin manager.
-        PluginManagerSingleton.setBehaviour([FilteredPluginManager])
-        self.manager = PluginManagerSingleton.get()
+        # PluginManagerSingleton.setBehaviour([FilteredPluginManager])
+        # self.manager = PluginManagerSingleton.get()
 
         # Sets plugins locations.
-        plugin_locator = PluginLocator()
-        self.manager.setPluginLocator(plugin_locator)
-        plugin_locator.setPluginPlaces(searchpath)
+        # plugin_locator = PluginLocator()
+        # self.manager.setPluginLocator(plugin_locator)
+        # plugin_locator.setPluginPlaces(searchpath)
 
         # Define categories
-        self.manager.setCategoriesFilter({
-            IDatabase.CATEGORY: IDatabase,
-            IDeamonPlugin.CATEGORY: IDeamonPlugin,
-            ITemplateFilterPlugin.CATEGORY: ITemplateFilterPlugin,
-            IPasswordStore.CATEGORY: IPasswordStore,
-            IPreferencesPanelProvider.CATEGORY: IPreferencesPanelProvider,
-            IUserChangeListener.CATEGORY: IUserChangeListener,
-        })
+        # self.manager.setCategoriesFilter({
+        #    IDatabase.CATEGORY: IDatabase,
+        #    IDeamonPlugin.CATEGORY: IDeamonPlugin,
+        #    ITemplateFilterPlugin.CATEGORY: ITemplateFilterPlugin,
+        #    IPasswordStore.CATEGORY: IPasswordStore,
+        #    IPreferencesPanelProvider.CATEGORY: IPreferencesPanelProvider,
+        #    IUserChangeListener.CATEGORY: IUserChangeListener,
+        # })
 
         # Set filter.
-        self.manager.isPluginOk = self.is_plugin_enabled
+        # self.manager.isPluginOk = self.is_plugin_enabled
 
         # Load all plugins
-        self.manager.collectPlugins()
+        # self.manager.collectPlugins()
 
     def get_all_plugins(self):
         """
         Return a complete list of plugins. (enabled only).
         """
-        return self.manager.getAllPlugins()
+        return list(self._names.values())
 
-    def get_plugin_by_name(self, name, category=None):
+    def get_plugin_by_name(self, name):
         """
         Get the plugin corresponding to a given name.
         """
-        if category is None:
-            categories = self.manager.getCategories()
-            for category in categories:
-                plugin_info = self.manager.getPluginByName(name, category)
-                if plugin_info is not None:
-                    return plugin_info
-        return self.manager.getPluginByName(name, category)
+        return self._names.get(name, None)
 
     def get_plugins_of_category(self, category):
         """
         Returns a list of all plugins in category.
         """
-        return self.manager.getPluginsOfCategory(category)
+        return self._categories.get(category, [])
 
-    def is_plugin_enabled(self, plugin_info):
+    def _get_plugin_info(self, name, module, dist):
+        """
+        Extract plugin information from module and distribution.
+        """
+        param = {
+            'name': name,
+            'author': getattr(module, 'author', None),
+            'version': getattr(module, 'version', None),
+            'description': inspect.getdoc(module),
+            'path': getattr(module, '__locations__', None),
+            'copyright': None,
+            'url': None,
+        }
+        # Override value with dist.
+        if dist:
+            if dist.version:
+                param['version'] = dist.version
+            if dist.location:
+                param['path'] = dist.location
+            # Try to get more with metadata
+            attrs = {
+                'author': 'author',
+                'license': 'copyright',
+                'home-page': 'url',
+            }
+            metadata = 'METADATA' if dist.has_metadata('METADATA') else 'PKG-INFO'
+            try:
+                data = [line.partition(': ') for line in dist.get_metadata(metadata).split('\n')]
+                for key, sep, value in data:
+                    key = key.lower()
+                    if key in attrs:
+                        param[attrs[key]] = value
+            except Exception:
+                pass
+
+        return param
+
+    def get_plugin_infos(self):
+        """
+        Return list of plugin info.
+        """
+        return list(self._plugin_infos)
+
+    def is_module_enabled(self, module_name):
         """
         Called to filter the plugin list. Current implementation return
         true if the config file enable the plugin.
         """
-
+        assert isinstance(module_name, str)
         # Check if the plugin is enabled in config file.
-        value = self.cfg.get_config_bool(
-            plugin_info.name + "Enabled",
+        return self.cfg.get_config_bool(
+            "%sEnabled" % (module_name,),
             default="False")
-        if not value:
-            logger.info("plugin [%s v%s] rejected: plugins is not enabled",
-                        plugin_info.name,
-                        plugin_info.version)
-        return value
 
     def locate_plugins(self):
         """
@@ -154,24 +233,87 @@ class PluginManager(object):
             plugins_list.append(data[2])
         return plugins_list
 
+    def _register_module(self, name, module, dist):
+        """
+        Register the given module. Each class in the module will be registered
+        as a plugin.
+        """
+        # Check if enabled
+        enabled = self.is_module_enabled(name)
+
+        # Collect plugin info
+        param = self._get_plugin_info(name, module, dist)
+        param['enabled'] = enabled
+        self._plugin_infos.append(PluginInfo(**param))
+
+        # Filter the modules.
+        if not enabled:
+            logger.info("module plugin [%s] rejected: plugins is not enabled", name)
+            return
+
+        # Get module name
+        module_name = module.__name__
+        if isinstance(module_name, bytes):
+            module_name = module_name.decode('ascii')
+
+        # Loop on element in the module to find plugin class.
+        for element in (getattr(module, name) for name in dir(module)):
+            # Check if element is a plugin class.
+            try:
+                if not issubclass(element, IRdiffwebPlugin):
+                    continue
+            except Exception:
+                continue
+            # Get plugin name
+            plugin_name = element.__name__
+            if isinstance(plugin_name, bytes):
+                plugin_name = plugin_name.decode('ascii')
+            # Make sure the element is not an interface too.
+            # FIXME figure-out a different way to exclude interface.
+            if plugin_name.startswith('I'):
+                continue
+            # Get categories
+            categories = [c.CATEGORY for c in element.__bases__ if hasattr(c, 'CATEGORY')]
+            categories.extend([c.__name__ for c in element.__bases__])
+            # Create instance
+            logger.debug('loading plugin [%s] from module [%s]', plugin_name, module_name)
+            try:
+                instance = element()
+            except Exception:
+                logger.warn('fail to create new instance of plugin [%s]', plugin_name)
+                continue
+            # Register the plugin.
+            self._register_plugin(plugin_name, categories, instance)
+
+    def _register_plugin(self, plugin_name, categories, instance):
+        """
+        Register the given plugin element.
+        """
+        # Then register the plugin with name
+        self._names[plugin_name] = instance
+        # Register plugin with category.
+        for c in set(categories):
+            self._categories.setdefault(c, list()).append(instance)
+
     def run(self, method, category=None):
         """
         Utility method to run plugins of given category.
         """
+        assert method
         # Get plugins of given category.
         if category is None:
-            plugins = self.manager.getAllPlugins()
+            plugins = self.get_all_plugins()
         else:
-            plugins = self.manager.getPluginsOfCategory(category)
+            plugins = self.get_plugins_of_category(category)
         # Run every plugin.
         for plugin in plugins:
             try:
-                method(plugin.plugin_object)
+                method(plugin)
             except:
-                logger.exception("fail to run plugin [%s]", plugin.name)
+                logger.exception("fail to run plugin [%r]", plugin.__class__.__name__)
 
 
-class IRdiffwebPlugin(IPlugin):
+class IRdiffwebPlugin(object):
     """
     Defines the interface for all plugins.
     """
@@ -181,12 +323,10 @@ class IRdiffwebPlugin(IPlugin):
     def activate(self):
         logger.info("activate plugin object [%s]",
                     self.__class__.__name__)
-        return IPlugin.activate(self)
 
     def deactivate(self):
         logger.info("deactivate plugin object [%s]",
                     self.__class__.__name__)
-        return IPlugin.deactivate(self)
 
     def get_localesdir(self):
         """

@@ -49,7 +49,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         """
         Called by the plugin manager to setup the plugin.
         """
-        super(SQLiteUserDB, self).activate()
+        super(IPasswordStore, self).activate()
 
         # Declare a lock.
         self.create_tables_lock = RLock()
