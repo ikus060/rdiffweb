@@ -189,7 +189,7 @@ class RdiffwebApp(Application):
         basename = os.path.basename(favicon)
         self.favicon = '/%s' % (basename)
         config.update({
-            self.favicon: {
+            native_str(self.favicon): {
                 'tools.authform.on': False,
                 'tools.staticfile.on': True,
                 'tools.staticfile.filename': favicon,
@@ -216,7 +216,7 @@ class RdiffwebApp(Application):
         basename = os.path.basename(header_logo)
         self.header_logo = '/%s' % (basename)
         config.update({
-            self.header_logo: {
+            native_str(self.header_logo): {
                 'tools.staticfile.on': True,
                 'tools.staticfile.filename': header_logo,
                 'tools.authform.on': False,
