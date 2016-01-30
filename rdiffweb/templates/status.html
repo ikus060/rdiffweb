@@ -1,8 +1,6 @@
-{% set title = _("Status") %}
-{% include 'page_start.html' %}
-<!-- nav_bar -->
-{% include 'nav_bar.html' %}
-<!-- /nav_bar -->
+{% extends 'layout.html' %}
+{% block title %}{% trans %}Status{% endtrans %}{% endblock %}
+{% block body %}
 <div class="container">
     <h2>
         <!-- title -->
@@ -102,4 +100,4 @@
     {% endfor %}
     <!--EndRepeat:messages-->
 </div>
-{% include 'page_end.html' %}
+{% endblock %}

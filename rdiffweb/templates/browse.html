@@ -1,110 +1,99 @@
-{% include 'page_start.html' %}
-{% include 'nav_bar.html' %}
+{% extends 'layout_repo.html' %}
 
-<div class="container-fluid repohead">
-    <div class="container">
-    {% include 'repo_breadcrumb.html' %}
-	{% include 'repo_nav_bar.html' %}
-    </div>
-</div>
-
-<div class="container">
-    {% include 'message.html' %}
-
-    {% if not restore_dates %}
-    <table id="files" class="sortable table">
-        <thead>
-            <tr>
-                <th id="name" class="sortable" data-type="dir">{% trans %}Name{% endtrans %}</th>
-                <th id="size" class="sortable" data-type="int">{% trans %}Size{% endtrans %}</th>
-                <th id="last-revision" class="sortable" data-type="int">{% trans %}Rev.{% endtrans %}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in dir_entries %}
-            <tr class="{% if entry.exists %}exists{% else %}notexists{% endif %}">
-                <td {% if entry.isdir %}data-value="dir-{{ entry.display_name }}"
-                    {% else %}data-value="file-{{ entry.display_name }}"{% endif %}>
-                    <a {% if entry.isdir %}
-                        href="{{ url_for_browse(repo_path, entry.path) }}"
-                        {% else %}
-                        href="{{ url_for_restore(repo_path, entry.path, entry.last_change_date) }}"
-                        {% endif %}
-                        {% if entry.display_name | length > 45 %}
-                        title="{{ entry.display_name }}"
-                        {% endif %}>
-                        <i {% if entry.isdir %}class="icon-folder"{% else %}class="icon-file"{% endif %}></i>
-                        {% if entry.isdir %}<span class="sr-only">&lt;DIR&gt;</span>{% endif %}
-                        {% if not entry.exists %}<span class="sr-only">&lt;DELETED&gt;</span>{% endif %}
-                        {{ entry.display_name | truncate(45,True) }}
-                    </a>
-                </td>
-                <td class="nowrap" data-value="{% if not entry.isdir %}{{ entry.file_size }}{% else %}0{% endif %}">
-                    {% if not entry.isdir %}
-                    {{ entry.file_size | filesize }}
-                    {% endif %}
-                </td>
-                <td data-value="{{ entry.last_change_date.getSeconds() }}">
-                	{% if entry.isdir %}
-                	<span class="hidden-xs">
-                    	{{ entry.last_change_date | datetime }}
-                    </span>
-                    {% elif ( entry.change_dates | length ) > 1 %}
-                    <div class="dropdown">
-                        <button class="btn btn-link dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">
-                        	<span class="hidden-xs">
-                            	{{ entry.last_change_date | datetime }}
-                            </span>
-                            <span class="badge">{{ entry.change_dates | length }}</span>
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-right-xs" role="menu" aria-labelledby="menu1">
-                            {% for change_date in entry.change_dates | reverse %}
-                            <li>
-                                <a href="{{ url_for_restore(repo_path, entry.path, change_date) }}">
-                                    <!-- File date -->
-                                    {{ change_date | datetime }}
-                                </a>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
+{% block content %}
+{% if not restore_dates %}
+<table id="files" class="sortable table">
+    <thead>
+        <tr>
+            <th id="name" class="sortable" data-type="dir">{% trans %}Name{% endtrans %}</th>
+            <th id="size" class="sortable" data-type="int">{% trans %}Size{% endtrans %}</th>
+            <th id="last-revision" class="sortable" data-type="int">{% trans %}Rev.{% endtrans %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in dir_entries %}
+        <tr class="{% if entry.exists %}exists{% else %}notexists{% endif %}">
+            <td {% if entry.isdir %}data-value="dir-{{ entry.display_name }}"
+                {% else %}data-value="file-{{ entry.display_name }}"{% endif %}>
+                <a {% if entry.isdir %}
+                    href="{{ url_for_browse(repo_path, entry.path) }}"
                     {% else %}
-                    <span class="hidden-xs">
-                    	{{ entry.last_change_date | datetime }}
-                    </span>
+                    href="{{ url_for_restore(repo_path, entry.path, entry.last_change_date) }}"
                     {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="panel panel-default spacer">
-        <div class="panel-heading clearfix">
-            <div class="panel-title pull-left">
-            	{% trans count=restore_dates|length %}Revisions ({{ count }}){% endtrans %}
-            </div>
+                    {% if entry.display_name | length > 45 %}
+                    title="{{ entry.display_name }}"
+                    {% endif %}>
+                    <i {% if entry.isdir %}class="icon-folder"{% else %}class="icon-file"{% endif %}></i>
+                    {% if entry.isdir %}<span class="sr-only">&lt;DIR&gt;</span>{% endif %}
+                    {% if not entry.exists %}<span class="sr-only">&lt;DELETED&gt;</span>{% endif %}
+                    {{ entry.display_name | truncate(45,True) }}
+                </a>
+            </td>
+            <td class="nowrap" data-value="{% if not entry.isdir %}{{ entry.file_size }}{% else %}0{% endif %}">
+                {% if not entry.isdir %}
+                {{ entry.file_size | filesize }}
+                {% endif %}
+            </td>
+            <td data-value="{{ entry.last_change_date.getSeconds() }}">
+                {% if entry.isdir %}
+                <span class="hidden-xs">
+                    {{ entry.last_change_date | datetime }}
+                </span>
+                {% elif ( entry.change_dates | length ) > 1 %}
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">
+                        <span class="hidden-xs">
+                            {{ entry.last_change_date | datetime }}
+                        </span>
+                        <span class="badge">{{ entry.change_dates | length }}</span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right-xs" role="menu" aria-labelledby="menu1">
+                        {% for change_date in entry.change_dates | reverse %}
+                        <li>
+                            <a href="{{ url_for_restore(repo_path, entry.path, change_date) }}">
+                                <!-- File date -->
+                                {{ change_date | datetime }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% else %}
+                <span class="hidden-xs">
+                    {{ entry.last_change_date | datetime }}
+                </span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="panel panel-default spacer">
+    <div class="panel-heading clearfix">
+        <div class="panel-title pull-left">
+            {% trans count=restore_dates|length %}Revisions ({{ count }}){% endtrans %}
         </div>
-	    <ul class="list-group">
-			{% for restore_date in restore_dates | reverse %}
-			<li class="list-group-item clearfix">
-				<i class="icon-archive"></i>
-	            {{ restore_date | datetime }}
-	            <div class="pull-right">
-	            	<a href="{{ url_for_restore(repo_path, path, restore_date) }}">
-	            		{% trans %}Download{% endtrans %}
-	            		<span class="label label-info"><i class="icon-file-archive"></i>
-	            			ZIP</span></a>
-	            	<a href="{{ url_for_restore(repo_path, path, restore_date, 'T') }}">
-	        			{% trans %}Download{% endtrans %}
-	        			<span class="label label-info"><i class="icon-file-archive"></i>
-	        				TAR.GZ</span></a>
-    			</div>
-			</li>
-			{% endfor %}
-		</ul>
-	</div>
-    {% endif %}
+    </div>
+    <ul class="list-group">
+        {% for restore_date in restore_dates | reverse %}
+        <li class="list-group-item clearfix">
+            <i class="icon-archive"></i>
+            {{ restore_date | datetime }}
+            <div class="pull-right">
+                <a href="{{ url_for_restore(repo_path, path, restore_date) }}">
+                    {% trans %}Download{% endtrans %}
+                    <span class="label label-info"><i class="icon-file-archive"></i>
+                        ZIP</span></a>
+                <a href="{{ url_for_restore(repo_path, path, restore_date, 'T') }}">
+                    {% trans %}Download{% endtrans %}
+                    <span class="label label-info"><i class="icon-file-archive"></i>
+                        TAR.GZ</span></a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
 </div>
-{% include 'page_end.html' %}
+{% endif %}
+{% endblock %}

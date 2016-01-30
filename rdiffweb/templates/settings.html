@@ -1,74 +1,63 @@
-{% include 'page_start.html' %}
-{% include 'nav_bar.html' %}
-<div class="container-fluid repohead">
-    <div class="container">
-    {% include 'repo_breadcrumb.html' %}
-	{% include 'repo_nav_bar.html' %}
-    </div>
-</div>
+{% extends 'layout_repo.html' %}
 
-<div class="container">
+{% import 'macros.html' as macros %}
 
-    <div class="spacer"/>
-    
-    {% include 'message.html' %}
-    
-    {% import 'macros.html' as macros %}	
-	
-	<!-- Panel to set user info. -->
-	{% call macros.panel(title=_("Character encoding"), class='primary') %}
-	<div class="panel-body">
-	  <form action="#" method="post" role="form" class="clearfix" >
-	    <div class="form-group">
-	        <label for="encoding" class="control-label">
-	            {% trans %}Encoding{% endtrans %}</label>
-	        <select class="form-control" name="encoding" id="encoding">
-	          {% for encoding in supported_encodings %}
-              <option {% if current_encoding == encoding %}selected="selected"{% endif%} value="{{ encoding }}">
-                {{ encoding }}
-              </option>
-              {% endfor %}
-		    </select>
-	    </div>
-	    <span class="help-block">
-	        {% trans %}This value may need to be changed if your files are not displayed with the right characters. This is very common for non-english speaker.{% endtrans %}
-	    </span>
-	    <input type="hidden" name="action" value="set_encoding" />
-	    <div>
-	        <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
-	    </div>
-	  </form>
-	</div>
-	{% endcall %}
-	
-    <!-- Delete repo. -->
-    {% call macros.panel(title=_("Delete repository"), class='danger') %}
-    <div class="panel-body">
-      <span class="help-block">
-         {% trans %}Removing the repository will permanantly delete all related resources including files, history, status etc.{% endtrans %}<br/>
-         <b>{% trans %}Removed repository cannot be restored!{% endtrans %}</b>
-      </span>
-      <div>
-         <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#delete-repo-modal">{% trans %}Delete{% endtrans %}</button>
-      </div>
-    </div>
-    {% endcall %}
-    <!-- Delete Modal -->
-    <form action="#" method="post" role="form" class="clearfix" >
-    <input type="hidden" name="action" value="delete" />
-    {% call macros.modal_dialog('delete-repo-modal', _('Confirmation required'), _('Confirm'), class="danger") %}
-    <p class="lead text-danger">
-      {% trans %}You are going to remove {{ repo_name }}. Removed repository CANNOT be restored! Are you ABSOLUTELY sure?{% endtrans %}
-    </p>
-    <p>
-      {% trans %}This action can lead to data loss. To prevent accidental actions we ask you to confirm your intention.{% endtrans %}<br/>
-      {% trans %}Please type {{ repo_name }} to proceed or close this modal to cancel{% endtrans %}
-    </p>
+{% block content %}
+<div class="spacer"></div>
+
+<!-- Panel to set user info. -->
+{% call macros.panel(title=_("Character encoding"), class='primary') %}
+<div class="panel-body">
+  <form action="#" method="post" role="form" class="clearfix" >
     <div class="form-group">
-	   <input class="form-control" id="confirm_name" name="confirm_name" type="text" value="">
-	</div>
-    {% endcall %}
-    </form>
-
+        <label for="encoding" class="control-label">
+            {% trans %}Encoding{% endtrans %}</label>
+        <select class="form-control" name="encoding" id="encoding">
+          {% for encoding in supported_encodings %}
+          <option {% if current_encoding == encoding %}selected="selected"{% endif%} value="{{ encoding }}">
+            {{ encoding }}
+          </option>
+          {% endfor %}
+	    </select>
+    </div>
+    <span class="help-block">
+        {% trans %}This value may need to be changed if your files are not displayed with the right characters. This is very common for non-english speaker.{% endtrans %}
+    </span>
+    <input type="hidden" name="action" value="set_encoding" />
+    <div>
+        <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
+    </div>
+  </form>
 </div>
-{% include 'page_end.html' %}
+{% endcall %}
+
+<!-- Delete repo. -->
+{% call macros.panel(title=_("Delete repository"), class='danger') %}
+<div class="panel-body">
+  <span class="help-block">
+     {% trans %}Removing the repository will permanantly delete all related resources including files, history, status etc.{% endtrans %}<br/>
+     <b>{% trans %}Removed repository cannot be restored!{% endtrans %}</b>
+  </span>
+  <div>
+     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#delete-repo-modal">{% trans %}Delete{% endtrans %}</button>
+  </div>
+</div>
+{% endcall %}
+<!-- Delete Modal -->
+<form action="#" method="post" role="form" class="clearfix" >
+<input type="hidden" name="action" value="delete" />
+{% call macros.modal_dialog('delete-repo-modal', _('Confirmation required'), _('Confirm'), class="danger") %}
+<p class="lead text-danger">
+  {% trans %}You are going to remove {{ repo_name }}. Removed repository CANNOT be restored! Are you ABSOLUTELY sure?{% endtrans %}
+</p>
+<p>
+  {% trans %}This action can lead to data loss. To prevent accidental actions we ask you to confirm your intention.{% endtrans %}<br/>
+  {% trans %}Please type {{ repo_name }} to proceed or close this modal to cancel{% endtrans %}
+</p>
+<div class="form-group">
+   <input class="form-control" id="confirm_name" name="confirm_name" type="text" value="">
+</div>
+{% endcall %}
+</form>
+
+{% endblock %}

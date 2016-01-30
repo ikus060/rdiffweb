@@ -1,6 +1,6 @@
-{% set title = _("Sign in") %}
-{% include 'page_start.html' %}
-{% include 'nav_bar.html' %}
+{% extends 'layout.html' %}
+{% block title %}{% trans %}Sign in{% endtrans %}{% endblock %}
+{% block body %}
 <div class='container'>
     <div class='col-sm-offset-3 col-sm-6'>
         <center>
@@ -35,5 +35,4 @@
         <button class="btn btn-lg btn-primary btn-block" type="submit">{{ _('Sign in') }}</button>
     </form>
 </div>
-<!-- /login-page -->
-{% include 'page_end.html' %}
+{% endblock %}

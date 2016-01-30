@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
+{% block head %}
 <title>
+{% block title %}
 {% if title %}{{ title }} - {% endif %}
 {% if header_name %}{{ header_name }}{% else %}rdiffweb{% endif %}
+{% endblock title %}
 </title>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -20,9 +23,20 @@
   {% else %}
       href="/favicon.ico"
   {% endif %}>
-{% if rssLink %}
-<link rel="alternate" type="application/rss+xml" href="{{ rssLink }}"
-    title="{{ rssTitle }}" />
-{% endif %}
+  {% if rssLink %}<link rel="alternate" type="application/rss+xml" href="{{ rssLink }}"
+    title="{{ rssTitle }}" />{% endif %}
+{% endblock head %}
 </head>
 <body>
+{% include 'nav_bar.html' %}
+{% block body %}
+
+{% endblock %}
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="/static/js/vendor/jquery-1.11.1.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="/static/js/vendor/bootstrap.js"></script>
+<!-- Include rdiffweb specifics -->
+<script src="/static/js/scripts.min.js"></script>
+</body>
+</html>

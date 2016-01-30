@@ -1,229 +1,219 @@
-{% set title=_("User management")%}
-{% include 'page_start.html' %}
-<!-- nav_bar -->
-{% include 'nav_bar.html' %}
-<!-- /nav_bar -->
-
-<div class="container">
-
-	{% set admin_nav_active="users" %}
-	{% include 'admin_nav_bar.html' %}  
+{% extends 'admin.html' %}
+{% block title %}{% trans %}User management{% endtrans %}{% endblock %}
+{% set admin_nav_active="users" %}
+{% block content %}
 	
-	<div class="spacer"/>  
-    
-    {% include 'message.html' %}
+{% import 'macros.html' as macros with context %}
 
-	{% import 'macros.html' as macros with context %}
+<div class="row">
 
-    <div class="row">
-
-        <div class="col-md-3">
-            <div class="user-filter">
-                <ul class="nav nav-pills nav-stacked">
-                    <li {% if userfilter == "" %}class="active"{% endif %}>
-                        <a href="?userfilter=">
-                            {% trans %}Active users{% endtrans %}
-                            <span class="badge">{{ users|length }}</span>
-                        </a>
-                    </li>
-                    <li {% if userfilter == "admins" %}class="active"{% endif %}>
-                        <a href="?userfilter=admins">
-                            {% trans %}Admin users{% endtrans %}
-                            <span class="badge">{{ users|filter("is_admin")|length }}</span>
-                        </a>
-                    </li>
-                </ul>
-                <hr>
-                <form accept-charset="UTF-8" action=""
-                        class="clearfix" method="get" role="form">
-                    <div class="form-group">
-                        <label class="sr-only" for="name">{% trans %}Search user{% endtrans %}</label>
-                        <input class="form-control" id="usersearch" name="usersearch"
-                                placeholder="{% trans %}Name, email or username{% endtrans %}"
-                                value="{{ usersearch }}"
-                                type="search">
-                    </div>
-                    <button class="btn btn-primary pull-right"
-                            type="submit">
-                        <i class="icon-search"></i> {% trans %}Search{% endtrans %}
-                    </button>
-                </form>
-                <hr>
-            </div>
-        </div>
-        
-        <div class="col-md-9">
-        <div class="panel panel-default">
-            <div class="panel-heading clearfix">
-                <div class="panel-title pull-left">
-                    {% trans %}Users{% endtrans %} ({{ users | length }})
-                </div>
-                <div class="btn-group pull-right">
-                    <button type="button" class="btn btn-success btn-xs"
-                            data-toggle="modal"
-                            data-target="#add-user-modal"><i class="icon-plus"></i>
-                        {% trans %}Add user{% endtrans %}</button>
-                </div>
-            </div>
-            <ul class="list-group">
-            	{# List filtered user by name. #}
-                {% for user in filtered_users|sort(attribute='username') %}
-                <li class="list-group-item clearfix">
-                    {{ user.username }}
-                    {% if user.email %}
-                    <span class="light">
-                        ({{ user.email }})
-                    </span>
-                    {% endif%}
-                    {% if user.is_admin %}
-                    <span class="label label-info">{% trans %}Admin{% endtrans %}</span>
-                    {% endif %}
-                    {% if user.username == username %}
-                    <span class="label label-success">{% trans %}It's you{% endtrans %}</span>
-                    {% endif %}
-                    
-                    <div class="pull-right">
-                        <span class="light">
-                            {{ user.user_root }}
-                        </span>
-                        <button type="button" class="btn btn-default btn-xs"
-                                data-toggle="modal"
-                                data-target="#edit-user-{{ user.username }}-modal">
-                            {% trans %}Edit{% endtrans %}</button>
-
-                        {# Delete button with confirmation. #}
-                        {{ macros.delete_confirm(
-                               label=_('Delete'),
-                               message=_('Are you sure ?'),
-                               hiddens={
-                                   'action': 'delete',
-                                   'username':user.username,
-                               }) }}
-
-                    </div>
+    <div class="col-md-3">
+        <div class="user-filter">
+            <ul class="nav nav-pills nav-stacked">
+                <li {% if userfilter == "" %}class="active"{% endif %}>
+                    <a href="?userfilter=">
+                        {% trans %}Active users{% endtrans %}
+                        <span class="badge">{{ users|length }}</span>
+                    </a>
                 </li>
-                {% endfor %}
+                <li {% if userfilter == "admins" %}class="active"{% endif %}>
+                    <a href="?userfilter=admins">
+                        {% trans %}Admin users{% endtrans %}
+                        <span class="badge">{{ users|filter("is_admin")|length }}</span>
+                    </a>
+                </li>
             </ul>
+            <hr>
+            <form accept-charset="UTF-8" action=""
+                    class="clearfix" method="get" role="form">
+                <div class="form-group">
+                    <label class="sr-only" for="name">{% trans %}Search user{% endtrans %}</label>
+                    <input class="form-control" id="usersearch" name="usersearch"
+                            placeholder="{% trans %}Name, email or username{% endtrans %}"
+                            value="{{ usersearch }}"
+                            type="search">
+                </div>
+                <button class="btn btn-primary pull-right"
+                        type="submit">
+                    <i class="icon-search"></i> {% trans %}Search{% endtrans %}
+                </button>
+            </form>
+            <hr>
         </div>
-        </div>
+    </div>
     
+    <div class="col-md-9">
+    <div class="panel panel-default">
+        <div class="panel-heading clearfix">
+            <div class="panel-title pull-left">
+                {% trans %}Users{% endtrans %} ({{ users | length }})
+            </div>
+            <div class="btn-group pull-right">
+                <button type="button" class="btn btn-success btn-xs"
+                        data-toggle="modal"
+                        data-target="#add-user-modal"><i class="icon-plus"></i>
+                    {% trans %}Add user{% endtrans %}</button>
+            </div>
+        </div>
+        <ul class="list-group">
+        	{# List filtered user by name. #}
+            {% for user in filtered_users|sort(attribute='username') %}
+            <li class="list-group-item clearfix">
+                {{ user.username }}
+                {% if user.email %}
+                <span class="light">
+                    ({{ user.email }})
+                </span>
+                {% endif%}
+                {% if user.is_admin %}
+                <span class="label label-info">{% trans %}Admin{% endtrans %}</span>
+                {% endif %}
+                {% if user.username == username %}
+                <span class="label label-success">{% trans %}It's you{% endtrans %}</span>
+                {% endif %}
+                
+                <div class="pull-right">
+                    <span class="light">
+                        {{ user.user_root }}
+                    </span>
+                    <button type="button" class="btn btn-default btn-xs"
+                            data-toggle="modal"
+                            data-target="#edit-user-{{ user.username }}-modal">
+                        {% trans %}Edit{% endtrans %}</button>
+
+                    {# Delete button with confirmation. #}
+                    {{ macros.delete_confirm(
+                           label=_('Delete'),
+                           message=_('Are you sure ?'),
+                           hiddens={
+                               'action': 'delete',
+                               'username':user.username,
+                           }) }}
+
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
     </div>
 
- 	{# Dialog to create new user. #}
-    {% call macros.modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
-	    <input type="hidden" name="action" value="add" >
-	    {% if ldap_enabled %}
-	    <div class="alert alert-info" role="alert">
-	    <strong>{% trans %}LDAP enabled!{% endtrans %}</strong>
-	    {% trans %}To create an LDAP user, use the same username and don't enter an email and password.{% endtrans %}
-	    </div>
-	    {% endif %}
-	    <div class="form-group">
-	        <label class="col-sm-3 control-label" for="username">
-	        	{% trans %}Username{% endtrans %}</label>
-	    	<div class="col-sm-7">
-	        <input type="text" name="username" value="" id="username"
-	            class="form-control" required>
-	        </div>
-	    </div>
-		<div class="form-group">
-	        <label class="col-sm-3 control-label" for="email">
-	        	{% trans %}Email{% endtrans %}</label>
-	    	<div class="col-sm-7">
-	        <input type="text" name="email" value="" id="email"
-	            class="form-control"
-	            {% if not ldap_enabled %}required{% endif %}>
-	        </div>
-	    </div>
-	    <div class="form-group">
-	        <label class="col-sm-3 control-label" for="password">
-	        	{% trans %}Password{% endtrans %}</label>
-	    	<div class="col-sm-7">
-	        <input type="password" name="password" id="password"
-	            class="form-control"
-	            {% if not ldap_enabled %}required{% endif %}>
-	        </div>
-	    </div>
-	    <div class="form-group">
-	        <label class="col-sm-3 control-label" for="user-root">
-	        	{% trans %}Root directory{% endtrans %}</label>
-	    	<div class="col-sm-7">
-	        <input type="text" name="user_root" id="user-root"
-	            value="{{ user_root }}" class="form-control" required>
-	        </div>
-	    </div>
-		<div class="form-group">
-	    	<div class="col-sm-offset-3 col-sm-7">
-		        <div class="checkbox">
-		            <label>
-		                <input type="checkbox" name="is_admin">
-		                {% trans %}Is administrator{% endtrans %}
-		            </label>
-	            </div>
-	        </div>
-	    </div>
-    {% endcall %}
-    
-    {# Dialogs to edit user. #}
-    {% for user in filtered_users|sort(attribute='username') %}
-    {% set modalid = "edit-user-" + user.username + "-modal" %}
-    {% call macros.modal_dialog(modalid, _('Edit user %(name)s', name=user.username),
-    		_('Save changes')) %}
-        <input type="hidden" name="action" value="edit" >
-        <input type="hidden" name="username" value="{{ user.username }}" >
-        <div class="form-group">
-            <label class="col-sm-3 control-label" for="user-email-{{ loop.index }}">
-            	{% trans %}Email{% endtrans %}</label>
-        	<div class="col-sm-7">
-	            <input type="text" class="form-control"
-	                id="user-email-{{ loop.index }}" name="email"
-	                value="{{ user.email }}" >
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-3 control-label" for="user-password-{{ loop.index }}">
-            	{% trans %}Password{% endtrans %}</label>
-        	<div class="col-sm-7">
-	            <input type="password" class="form-control"
-	                id="user-password-{{ loop.index }}" name="password"
-	                value="" >
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-3 control-label" for="user-root-{{ loop.index }}">
-            	{% trans %}Root directory{% endtrans %}</label>
-        	<div class="col-sm-7">
-	            <input type="text" class="form-control"
-	                id="user-root-{{ loop.index }}" name="user_root"
-	                value="{{ user.user_root }}" >
-            </div>
-        </div>
-        <div class="form-group">
-        	<div class="col-sm-offset-3 col-sm-7">
-		        <div class="checkbox">
-		            <label>
-		                <input type="checkbox" name="is_admin"
-		                		{% if user.is_admin%}
-		                		checked="checked"
-		                		{% endif %}
-		                		{% if user.username == username %}
-		                		disabled="disabled"
-		                		{% endif %}>
-		                {% trans %}Is administrator{% endtrans %}
-		            </label>
-		            {% if user.username == username %}
-		            <p class="help-block">
-		            	{% trans %}You cannot remove your own admin rights.{% endtrans %}
-		            </p>
-		            {% endif %}
-	            </div>
-	        </div>
-        </div>
-    {% endcall %}
-    {% endfor %}
-    
-    {# Create a deletion dialog. #}
-    {{ macros.data_confirm_modal(title=_('Confirm deletion'), submit=_('Delete')) }}
-
+<!-- /.row -->
 </div>
-{% include 'page_end.html' %}
+
+{# Dialog to create new user. #}
+{% call macros.modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
+    <input type="hidden" name="action" value="add" >
+    {% if ldap_enabled %}
+    <div class="alert alert-info" role="alert">
+    <strong>{% trans %}LDAP enabled!{% endtrans %}</strong>
+    {% trans %}To create an LDAP user, use the same username and don't enter an email and password.{% endtrans %}
+    </div>
+    {% endif %}
+    <div class="form-group">
+        <label class="col-sm-3 control-label" for="username">
+        	{% trans %}Username{% endtrans %}</label>
+    	<div class="col-sm-7">
+        <input type="text" name="username" value="" id="username"
+            class="form-control" required>
+        </div>
+    </div>
+	<div class="form-group">
+        <label class="col-sm-3 control-label" for="email">
+        	{% trans %}Email{% endtrans %}</label>
+    	<div class="col-sm-7">
+        <input type="text" name="email" value="" id="email"
+            class="form-control"
+            {% if not ldap_enabled %}required{% endif %}>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-3 control-label" for="password">
+        	{% trans %}Password{% endtrans %}</label>
+    	<div class="col-sm-7">
+        <input type="password" name="password" id="password"
+            class="form-control"
+            {% if not ldap_enabled %}required{% endif %}>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-3 control-label" for="user-root">
+        	{% trans %}Root directory{% endtrans %}</label>
+    	<div class="col-sm-7">
+        <input type="text" name="user_root" id="user-root"
+            value="{{ user_root }}" class="form-control" required>
+        </div>
+    </div>
+	<div class="form-group">
+    	<div class="col-sm-offset-3 col-sm-7">
+	        <div class="checkbox">
+	            <label>
+	                <input type="checkbox" name="is_admin">
+	                {% trans %}Is administrator{% endtrans %}
+	            </label>
+            </div>
+        </div>
+    </div>
+{% endcall %}
+
+{# Dialogs to edit user. #}
+{% for user in filtered_users|sort(attribute='username') %}
+{% set modalid = "edit-user-" + user.username + "-modal" %}
+{% call macros.modal_dialog(modalid, _('Edit user %(name)s', name=user.username),
+		_('Save changes')) %}
+    <input type="hidden" name="action" value="edit" >
+    <input type="hidden" name="username" value="{{ user.username }}" >
+    <div class="form-group">
+        <label class="col-sm-3 control-label" for="user-email-{{ loop.index }}">
+        	{% trans %}Email{% endtrans %}</label>
+    	<div class="col-sm-7">
+            <input type="text" class="form-control"
+                id="user-email-{{ loop.index }}" name="email"
+                value="{{ user.email }}" >
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-3 control-label" for="user-password-{{ loop.index }}">
+        	{% trans %}Password{% endtrans %}</label>
+    	<div class="col-sm-7">
+            <input type="password" class="form-control"
+                id="user-password-{{ loop.index }}" name="password"
+                value="" >
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-3 control-label" for="user-root-{{ loop.index }}">
+        	{% trans %}Root directory{% endtrans %}</label>
+    	<div class="col-sm-7">
+            <input type="text" class="form-control"
+                id="user-root-{{ loop.index }}" name="user_root"
+                value="{{ user.user_root }}" >
+        </div>
+    </div>
+    <div class="form-group">
+    	<div class="col-sm-offset-3 col-sm-7">
+	        <div class="checkbox">
+	            <label>
+	                <input type="checkbox" name="is_admin"
+	                		{% if user.is_admin%}
+	                		checked="checked"
+	                		{% endif %}
+	                		{% if user.username == username %}
+	                		disabled="disabled"
+	                		{% endif %}>
+	                {% trans %}Is administrator{% endtrans %}
+	            </label>
+	            {% if user.username == username %}
+	            <p class="help-block">
+	            	{% trans %}You cannot remove your own admin rights.{% endtrans %}
+	            </p>
+	            {% endif %}
+            </div>
+        </div>
+    </div>
+{% endcall %}
+{% endfor %}
+
+{# Create a deletion dialog. #}
+{{ macros.data_confirm_modal(title=_('Confirm deletion'), submit=_('Delete')) }}
+
+{% endblock %}

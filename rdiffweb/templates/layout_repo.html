@@ -1,0 +1,58 @@
+{% extends 'layout.html' %}
+{% block title %}{% trans %}Status{% endtrans %}{% endblock %}
+{% block body %}
+<div class="container-fluid repohead">
+    <div class="container">
+    
+    <!-- Breadcrumb -->
+    <h1>
+    <ol class="breadcrumb">
+    <li>
+        <a href="/">{% trans %}Repositories{% endtrans %}</a>
+    </li>
+    {% if parents %}
+    {% for parent in parents %}
+    <li class="active">
+        <a href="{{ url_for_browse(repo_path, parent.path) }}">
+            {{ parent.name }}
+        </a>
+    </li>
+    {% endfor %}
+    {% elif repo_path %}
+    <li class="active">
+        <a href="{{ url_for_browse(repo_path) }}">
+            {{ repo_name }}
+        </a>
+    </li>    
+    {% endif%}
+    </ol>
+    </h1>
+    
+    <!-- Repo Nav -->
+    <ul class="nav nav-tabs" role="navigation">
+    <li {% if dir_entries %}class="active"{% endif%}>
+        <a href="{{ url_for_browse(repo_path, path) }}"><i class="icon-docs"></i> {% trans %}Files{% endtrans %}</a>
+    </li>
+    <li {% if restore_dates %}class="active"{% endif %}>
+        <a href="{{ url_for_browse(repo_path, path, restore=True) }}"><i class="icon-file-archive"></i> {% trans %}Restore folder{% endtrans %}</a>
+    </li>
+    <li {% if history_entries %}class="active"{% endif %}>
+        <a href="{{ url_for_history(repo_path) }}"><i class="icon-history"></i> {% trans %}History{% endtrans %}</a>
+    </li>
+    <li {% if settings %}class="active"{% endif %}>
+        <a href="{{ url_for_settings(repo_path) }}"><i class="icon-cog-alt"></i> {% trans %}Settings{% endtrans %}</a>
+    </li>
+    </ul>
+    
+    </div>
+</div>
+
+<div class="container">
+
+{% include 'message.html' %}
+
+{% block content %}
+{% endblock %}
+    
+</div>
+{% endblock %}

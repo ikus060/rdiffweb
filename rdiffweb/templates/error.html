@@ -1,10 +1,8 @@
-{% set title = "Error"%}
-{% include 'page_start.html' %}
-<!-- nav_bar -->
-{% include 'nav_bar.html' %}
-<!-- /nav_bar -->
+{% extends 'layout.html' %}
+{% block title %}{% trans %}Error{% endtrans %}{% endblock %}
+{% block body %}
 <div class="container">
     <h2>{{ title }}</h2>
     {% include 'message.html' %}
 </div>
-{% include 'page_end.html' %}
+{% endblock %}

@@ -1,8 +1,8 @@
-{% set title = _("Repositories") %}
-{% include 'page_start.html' %}
-{% include 'nav_bar.html' %}
+{% extends 'layout.html' %}
+{% block title %}{% trans %}Repositories{% endtrans %}{% endblock %}
+{% block body %}
 <div class="container">
-    <h2>{{ title }} ({{ repos|length }})</h2>
+    <h2>{% trans %}Repositories{% endtrans %} ({{ repos|length }})</h2>
     {% include templates_before_content ignore missing with context %}
     {% if repos|length == 0 %}
 	    {% set message = _("You don't have any repositories configured.") %}
@@ -44,4 +44,4 @@
 	</ul>
     {% endif %}
 </div>
-{% include 'page_end.html' %}
+{% endblock %}

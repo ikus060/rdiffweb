@@ -1,59 +1,47 @@
-{% include 'page_start.html' %}
-{% include 'nav_bar.html' %}
+{% extends 'layout_repo.html' %}
 
-<div class="container-fluid repohead">
-    <div class="container">
-    {% include 'repo_breadcrumb.html' %}
-	{% include 'repo_nav_bar.html' %}
-    </div>
-</div>
-
-<div class="container">
-    {% include 'message.html' %}
-    
-    <table class="table">
-        <thead>
-            <tr>
-                <th id="date">{% trans %}Date{% endtrans %}</th>
-                <th id="size">{% trans %}Size{% endtrans %}</th>
-                <th id="result">{% trans %}Result{% endtrans %}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in history_entries | reverse %}
-            <tr {% if entry.errors %}
-                class="danger"
-                {% elif entry.in_progress %}
-                class="warning"
-                {% endif %}>
-                <td class="icon-history" data-value="{{ entry.date }}">
-                    {{ entry.date | datetime }}
-                </td>
-                <td data-value="{{ entry.size }}">
-                    {{ entry.size | filesize }}
-                </td>
-                <td>
-                    {% if not entry.errors %}
-                    {% if entry.in_progress %}
-                    {% trans %}In progress{% endtrans %}
-                    {% else %}
-                    {% trans %}Success{% endtrans %}
-                    {% endif %}
-                    {% else %}
-                    {% trans %}Error{% endtrans %}
-                    {% endif %}
-                </td>
-            </tr>
-            {% if entry.errors %}
-            <tr class="danger">
-                <td colspan="4">
-                    <p>{{ entry.errors }}</p>
-                </td>
-            </tr>
-            {% endif %}
-            {% endfor %}
-        </tbody>
-    </table>
-
-</div>
-{% include 'page_end.html' %}
+{% block content %}
+<table class="table">
+    <thead>
+        <tr>
+            <th id="date">{% trans %}Date{% endtrans %}</th>
+            <th id="size">{% trans %}Size{% endtrans %}</th>
+            <th id="result">{% trans %}Result{% endtrans %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in history_entries | reverse %}
+        <tr {% if entry.errors %}
+            class="danger"
+            {% elif entry.in_progress %}
+            class="warning"
+            {% endif %}>
+            <td class="icon-history" data-value="{{ entry.date }}">
+                {{ entry.date | datetime }}
+            </td>
+            <td data-value="{{ entry.size }}">
+                {{ entry.size | filesize }}
+            </td>
+            <td>
+                {% if not entry.errors %}
+                {% if entry.in_progress %}
+                {% trans %}In progress{% endtrans %}
+                {% else %}
+                {% trans %}Success{% endtrans %}
+                {% endif %}
+                {% else %}
+                {% trans %}Error{% endtrans %}
+                {% endif %}
+            </td>
+        </tr>
+        {% if entry.errors %}
+        <tr class="danger">
+            <td colspan="4">
+                <p>{{ entry.errors }}</p>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
