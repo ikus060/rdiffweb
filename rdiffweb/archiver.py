@@ -157,7 +157,7 @@ class NonSeekZipFile(ZipFile):
             zinfo.external_attr |= 0x10  # MS-DOS directory flag
             self.filelist.append(zinfo)
             self.NameToInfo[zinfo.filename] = zinfo
-            self.fp.write(zinfo.FileHeader(False))
+            self.fp.write(zinfo.FileHeader())
             self.start_dir = self.fp.tell()
             return
 
@@ -166,10 +166,16 @@ class NonSeekZipFile(ZipFile):
             # Must overwrite CRC and sizes with correct data later
             zinfo.CRC = CRC = 0
             zinfo.compress_size = compress_size = 0
-            # Compressed size can be larger than uncompressed size
-            zip64 = self._allowZip64 and \
-                zinfo.file_size * 1.05 > ZIP64_LIMIT
-            self.fp.write(zinfo.FileHeader(zip64))
+            try:
+                # Python > 2.7.3
+                # Compressed size can be larger than uncompressed size
+                zip64 = self._allowZip64 and \
+                    zinfo.file_size * 1.05 > ZIP64_LIMIT
+                self.fp.write(zinfo.FileHeader(zip64))
+            except TypeError:
+                # Python <= 2.7.3
+                zip64 = zinfo.file_size > ZIP64_LIMIT or compress_size > ZIP64_LIMIT
+                self.fp.write(zinfo.FileHeader())
             if zinfo.compress_type == ZIP_DEFLATED:
                 cmpr = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION,
                                         zlib.DEFLATED, -15)
@@ -201,7 +207,7 @@ class NonSeekZipFile(ZipFile):
             if compress_size > ZIP64_LIMIT:
                 raise RuntimeError('Compressed size larger than uncompressed size')
         # Write CRC and file sizes after the file data
-        fmt = '<LQQ' if zip64 else '<LLL'
+        fmt = b'<LQQ' if zip64 else b'<LLL'
         self.fp.write(struct.pack(fmt, zinfo.CRC, zinfo.compress_size,
                                   zinfo.file_size))
         self.start_dir = self.fp.tell()
