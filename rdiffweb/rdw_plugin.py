@@ -218,9 +218,12 @@ class PluginManager(object):
         """
         assert isinstance(module_name, str)
         # Check if the plugin is enabled in config file.
-        return self.cfg.get_config_bool(
-            "%sEnabled" % (module_name,),
-            default="False")
+        try:
+            return self.cfg.get_config_bool(
+                "%sEnabled" % (module_name,),
+                default="False")
+        except:
+            return False
 
     def locate_plugins(self):
         """
