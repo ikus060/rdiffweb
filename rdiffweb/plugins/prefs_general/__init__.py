@@ -17,9 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Created on May 16, 2015
-
-@author: Patrik Dufresne
+Default preference page to show general user information. It allows user
+to change password ans refresh it's repository view.
 """
 
 from __future__ import unicode_literals

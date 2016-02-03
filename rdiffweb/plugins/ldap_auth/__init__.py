@@ -15,7 +15,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+LDAP UserDB backend used to validate credentials. This plugin will
+use SQLite database for user's data. Both, LDAP and SQLite plugin must be
+enabled.
 
+The LDAP plugin cannot create new users. Users must already exist in the
+LDAP directory. It would be difficult to create a new LDAP user, as the
+creation of a LDAP user requires properties which are not made available
+to the LDAP plugin.
+"""
 from __future__ import unicode_literals
 
 from builtins import bytes

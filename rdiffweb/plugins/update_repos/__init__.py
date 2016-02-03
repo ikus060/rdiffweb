@@ -15,11 +15,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
-Created on Dec 22, 2015
-
-@author: Patrik Dufresne
+When enabled, this plugin is responsible to periodically refresh
+the users repositories. If a new repository is added to the home directory
+of a user, it will be automatically added to his list of repository.
 """
 # Define the logger
 

@@ -17,9 +17,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Created on May 11, 2015
-
-@author: Patrik Dufresne
+Plugins to allows users to configure the SSH keys using the web
+interface. Basically it's a UI for `~/.ssh/authorized_keys`. For this
+plugin to work properly, the users home directory need to match a real
+user home.
 """
 
 from __future__ import absolute_import
