@@ -57,7 +57,7 @@ class MockRdiffwebApp(RdiffwebApp):
 
     def clear_db(self):
         if hasattr(self, 'database_dir'):
-            shutil.rmtree(self.database_dir, ignore_errors=True)
+            shutil.rmtree(self.database_dir)
             delattr(self, 'database_dir')
 
     def clear_testcases(self):

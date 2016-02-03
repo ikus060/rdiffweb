@@ -22,10 +22,9 @@ from __future__ import unicode_literals
 from builtins import str
 from builtins import bytes
 import cherrypy
-from cherrypy.lib.static import serve_file
+from cherrypy.lib.static import _serve_fileobj
 import logging
 import os
-import shutil
 
 from rdiffweb import librdiff
 from rdiffweb import page_main
@@ -36,24 +35,6 @@ from rdiffweb.rdw_helpers import unquote_url
 
 # Define the logger
 logger = logging.getLogger(__name__)
-
-
-def autodelete():
-    """Register an handler to delete the restored files when the HTTP
-    request is ending."""
-    if not hasattr(cherrypy.request, "_autodelete_dir"):
-        return
-    autodelete_dir = cherrypy.request._autodelete_dir
-    logger.info("deleting temporary folder [%r]", autodelete_dir)
-    # Check if path exists
-    if not os.access(autodelete_dir, os.F_OK):
-        logger.info("temporary folder [%r] doesn't exists", autodelete_dir)
-        return
-    if not os.path.isdir(autodelete_dir):
-        autodelete_dir = os.path.dirname(autodelete_dir)
-    shutil.rmtree(autodelete_dir, ignore_errors=True)
-
-cherrypy.tools.autodelete = cherrypy.Tool('on_end_request', autodelete)
 
 
 class RestorePage(page_main.MainPage):
@@ -74,8 +55,7 @@ class RestorePage(page_main.MainPage):
         return vpath
 
     @cherrypy.expose
-    @cherrypy.tools.autodelete()
-    @cherrypy.tools.decode(default_encoding='Latin-1')
+    @cherrypy.tools.gzip(on=False)
     def index(self, path=b"", date="", usetar=""):
         assert isinstance(path, bytes)
         assert isinstance(date, str)
@@ -104,14 +84,18 @@ class RestorePage(page_main.MainPage):
             logger.warning("invalid date %s", date)
             return self._compile_error_template(_("Invalid date."))
 
+        # Get if backup in progress
+        if repo_obj.in_progress:
+            return self._compile_error_template(_("""A backup is currently in progress to this repository. Restores are disabled until this backup is complete."""))
+
+        # Determine the kind.
+        kind = 'zip'
+        if usetar:
+            kind = 'tar.gz'
+
+        # Restore file(s)
         try:
-            # Get if backup in progress
-            if repo_obj.in_progress:
-                return self._compile_error_template(_("""A backup is currently in progress to this repository. Restores are disabled until this backup is complete."""))
-
-            # Restore the file
-            file_path_b = path_obj.restore(file_b, restore_date, usetar != "T")
-
+            fileobj = path_obj.restore(file_b, int(date), kind=kind)
         except librdiff.FileError as e:
             logger.exception("fail to restore")
             return self._compile_error_template(str(e))
@@ -119,18 +103,11 @@ class RestorePage(page_main.MainPage):
             logger.exception("fail to restore")
             return self._compile_error_template(_("Fail to restore."))
 
-        # The restored file path need to be deleted when the user is finish
-        # downloading. The auto-delete tool, will do it if we give him a file
-        # to delete.
-        cherrypy.request._autodelete_dir = file_path_b
+        # Provide hint filename
+        filename_b = os.path.basename(path) + b'.' + kind.encode('ascii')
+        filename_b = filename_b.replace(b"\"", b"\\\"")
+        cd = b'attachment; filename="' + filename_b + b'"'
+        cherrypy.response.headers["Content-Disposition"] = cd
 
-        # The file name return by rdiff-backup is in bytes. We do not process
-        # it. Cherrypy seams to handle it any weird encoding from this point.
-        logger.info("restored file [%r]", file_path_b)
-        filename = os.path.basename(file_path_b)
-        # Escape quotes in filename
-        filename = filename.replace(b"\"", b"\\\"")
-        return serve_file(file_path_b,
-                          content_type='application/octet-stream',
-                          disposition=b"attachment",
-                          name=filename)
+        # Stream the data.
+        return _serve_fileobj(fileobj, content_type=None, content_length=None, debug=True)

@@ -27,7 +27,7 @@ import encodings
 import errno
 from future.utils import iteritems
 from future.utils import python_2_unicode_compatible
-from future.utils.surrogateescape import decodefilename, encodefilename
+from future.utils.surrogateescape import encodefilename
 import gzip
 import io
 import logging
@@ -36,13 +36,15 @@ import re
 import shutil
 import sys
 import tempfile
+import threading
 import weakref
 import zlib
 
 from rdiffweb import rdw_helpers
+from rdiffweb.archiver import archive, ARCHIVERS
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_config import Configuration
-from itertools import chain
+from shutil import copyfileobj
 
 
 try:
@@ -957,10 +959,11 @@ class RdiffPath(object):
         """return the repository path"""
         return self.repo.repo_root
 
-    def restore(self, name, restore_date, use_zip):
+    def restore(self, name, restore_date, kind='zip'):
         """Used to restore the given file located in this path."""
         assert isinstance(name, bytes)
-        assert isinstance(restore_date, rdw_helpers.rdwTime)
+        assert isinstance(restore_date, rdw_helpers.rdwTime) or isinstance(restore_date, int)
+        assert kind in ARCHIVERS
         name = name.lstrip(b"/")
 
         # Determine the file name to be restore (from rdiff-backup
@@ -969,7 +972,8 @@ class RdiffPath(object):
         file_to_restore = self.repo.unquote(file_to_restore)
 
         # Convert the date into epoch.
-        date_epoch = restore_date.getSeconds()
+        if isinstance(restore_date, rdw_helpers.rdwTime):
+            restore_date = restore_date.getSeconds()
 
         # Define a location where to restore the data
         if name == b"" and self.path == b"":
@@ -984,41 +988,63 @@ class RdiffPath(object):
             outputdir = outputdir.encode(encoding=FS_ENCODING)
         output = os.path.join(outputdir, filename)
 
-        # Execute rdiff-backup to restore the data.
-        logger.info("execute rdiff-backup --restore-as-of=%s %r %r", date_epoch, file_to_restore, output)
-        results = self._execute(
-            b"rdiff-backup",
-            b"--restore-as-of=" + str(date_epoch).encode(encoding='latin1'),
-            file_to_restore,
-            output)
-        logger.info("restore completed")
-
-        # Check the result
-        if results['exitCode'] != 0 or not os.access(output, os.F_OK):
-            error = results['stderr']
-            error = error.decode(encoding=sys.getdefaultencoding(), errors='replace')
-            if not error:
-                error = '''rdiff-backup claimed success, but did not restore
-                        anything. This indicates a bug in rdiffweb. Please
-                        report this to a developer.'''
-            raise UnknownError('unable to restore!\n' + error)
-
-        # The path restored is a directory and need to be archived using zip
-        # or tar
-        if os.path.isdir(output):
-            output_dir = output
+        # Asynchronously create an archive if multiple file.
+        def _async(fdst):
             try:
-                if use_zip:
-                    output = output_dir + ZIP_SUFFIX
-                    self._recursive_zip(output_dir, output)
-                else:
-                    output = output_dir + TARGZ_SUFFIX
-                    self._recursiveTarDir(output_dir, output)
-            finally:
-                shutil.rmtree(output_dir, ignore_errors=True)
+                # Change thread name
+                threading.currentThread().name = 'Restore' + threading.currentThread().name
 
-        # Return the location of the file to be restored
-        return output
+                # Execute rdiff-backup to restore the data.
+                logger.info("execute rdiff-backup --restore-as-of=%s %r %r", restore_date, file_to_restore, output)
+                results = self._execute(
+                    b"rdiff-backup",
+                    b"--restore-as-of=" + str(restore_date).encode(encoding='latin1'),
+                    file_to_restore,
+                    output)
+                logger.debug("restored locally completed")
+
+                # Check the result
+                if results['exitCode'] != 0 or not os.access(output, os.F_OK):
+                    error = results['stderr']
+                    error = error.decode(encoding=sys.getdefaultencoding(), errors='replace')
+                    if not error:
+                        error = '''rdiff-backup claimed success, but did not restore
+                                anything. This indicates a bug in rdiffweb. Please
+                                report this to a developer.'''
+                    raise UnknownError('unable to restore:' + error)
+
+                # Archive data or pipe data.
+                if os.path.isdir(output):
+                    archive(output, fdst, kind=kind, encoding=self.repo.get_encoding())
+                else:
+                    # Pipe the content of the file.
+                    with io.open(output, 'rb') as fsrc:
+                        copyfileobj(fsrc, fdst)
+                logger.debug("restore completed")
+            except:
+                logger.error('restore failed', exc_info=1)
+            finally:
+                # Make sure to close pipe.
+                fdst.close()
+                # Clean up temp file.
+                shutil.rmtree(outputdir, ignore_errors=True)
+
+        # Start new thread.
+        rfd, wfd = os.pipe()
+        r = io.open(rfd, 'rb')
+        w = io.open(wfd, 'wb')
+        try:
+            thread = threading.Thread(target=_async, args=(w,))
+            thread.start()
+            # Return one of a stream.
+            return r
+        except Exception as e:
+            # If creation of thread fail, close pipe.
+            r.close()
+            w.close()
+            # Then re-raise issue
+            logger.error('fail to create new thread', exc_info=1)
+            raise e
 
     @property
     def restore_dates(self):
@@ -1041,79 +1067,3 @@ class RdiffPath(object):
         if not entries:
             raise DoesNotExistError()
         return entries[0].restore_dates
-
-    def _recursiveTarDir(self, dirpath, target):
-        """This function is used during to archive a restored directory. It will
-            create a tar gz archive with the specified directory."""
-        assert isinstance(dirpath, bytes)
-        assert isinstance(target, bytes)
-        assert os.path.isdir(dirpath)
-        import tarfile
-
-        dirpath = os.path.normpath(dirpath)
-
-        # Create a tar.gz archive
-        logger.info("creating a tar file [%r] from [%r]", target, dirpath)
-        tar = tarfile.open(target, "w:gz")
-        tar_encoding = encodings.search_function(tar.encoding.lower()).name
-
-        # Add files to the archive
-        for root, dirs, files in os.walk(dirpath, topdown=True):
-            for name in chain(dirs, files):
-                filename = os.path.join(root, name)
-                assert filename.startswith(dirpath)
-                arcname = filename[len(dirpath) + 1:]
-                if PY3:
-                    # Py3, tarfile doesn't support bytes file path. So we need
-                    # to use surrogate escape to escape invalid unicode char.
-                    filename = filename.decode('ascii', 'surrogateescape')
-                    arcname = self._decode(arcname, 'surrogateescape')
-                elif tar_encoding != self.repo.encoding.name:
-                    # Py2, tarfile accept filepath as bytes, but we still need to
-                    # decode  filename as unicode so it get converted into utf8 by
-                    # tarfile.
-                    arcname = self._decode(arcname)
-                # Add the file to the archive.
-                tar.add(filename, arcname, recursive=False)
-
-        # Close the archive
-        tar.close()
-
-    def _recursive_zip(self, dirpath, target):
-        """This function is used during to archive a restored directory. It will
-            create a zip archive with the specified directory."""
-        assert isinstance(dirpath, bytes)
-        assert isinstance(target, bytes)
-        assert os.path.isdir(dirpath)
-        import zipfile
-
-        dirpath = os.path.normpath(dirpath)
-
-        # Py3, zipfile doesn't support bytes file path. So we need
-        # to use surrogate escape to escape invalid unicode char.
-        if PY3:
-            target = target.decode('ascii', 'surrogateescape')
-
-        # Create the archive
-        zipobj = zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED)
-
-        # Add files to archive
-        for root, dirs, files in os.walk(dirpath, topdown=True):
-            for name in chain(dirs, files):
-                filename = os.path.join(root, name)
-                assert filename.startswith(dirpath)
-                arcname = filename[len(dirpath) + 1:]
-                # Get unicode representation of the path.
-                if PY3:
-                    # Py3, zipfile doesn't support bytes file path. So we need
-                    # to use surrogate escape to escape invalid unicode char.
-                    filename = filename.decode('ascii', 'surrogateescape')
-                    arcname = self._decode(arcname)
-                else:
-                    # Py2, provide arcname as unicode so it get converted to a
-                    # rightful encoding.
-                    arcname = self._decode(arcname)
-                # Add the file to the archive.
-                zipobj.write(filename, arcname)
-
-        zipobj.close()
