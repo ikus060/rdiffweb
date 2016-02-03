@@ -26,13 +26,15 @@ import tempfile
 
 from rdiffweb import rdw_app
 from rdiffweb.rdw_profiler import ProfilingApplication
+import threading
+import traceback
 
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
 
 
-def debug_dump():
+def debug_dump_mem():
     """
     Called when receiving a debug signal.
     Interrupt running process, and provide a python prompt for
@@ -49,6 +51,17 @@ def debug_dump():
         scanner.dump_all_objects(filename)
     except:
         logger.warning("fail to dump memory", exc_info=True)
+
+
+def debug_dump_thread():
+    """
+    Called when receiving a debug signal.
+    Dump all thread stack in stdout.
+    """
+    for th in threading.enumerate():
+        print(th)
+        traceback.print_stack(sys._current_frames()[th.ident])
+        print()
 
 
 def error_page(**kwargs):
@@ -198,7 +211,8 @@ def start():
     cherrypy.config.update(global_config)
 
     # Add a custom signal handler
-    cherrypy.engine.signal_handler.handlers['SIGUSR2'] = debug_dump
+    cherrypy.engine.signal_handler.handlers['SIGUSR2'] = debug_dump_mem
+    cherrypy.engine.signal_handler.handlers['SIGABRT'] = debug_dump_thread
 
     # Create application wrapper if profiling is enabled.
     if profile or profile_aggregated:
