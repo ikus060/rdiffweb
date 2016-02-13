@@ -82,6 +82,27 @@ class UserManagerSQLiteTest(AppTestCase):
     def test_exists_with_invalid_user(self):
         self.assertFalse(self.app.userdb.exists('invalid'))
 
+    def test_get_user_obj(self):
+        """
+        Test user record.
+        """
+        # Create new user
+        user = 'bernie'
+        self.app.userdb.add_user(user, 'my-password')
+        self.app.userdb.set_user_root(user, '/backups/bernie/')
+        self.app.userdb.set_is_admin(user, True)
+        self.app.userdb.set_email(user, 'bernie@gmail.com')
+        self.app.userdb.set_repos(user, ['/backups/bernie/computer/', '/backups/bernie/laptop/'])
+
+        # Get user record.
+        obj = self.app.userdb.get(user)
+        self.assertIsNotNone(obj)
+        self.assertEqual(user, obj.username)
+        self.assertEqual('bernie@gmail.com', obj.email)
+        self.assertEqual(['/backups/bernie/computer/', '/backups/bernie/laptop/'], obj.repos)
+        self.assertEqual('/backups/bernie/', obj.user_root)
+        self.assertEqual(True, obj.is_admin)
+
     def test_get_set(self):
         user = 'larry'
         self.app.userdb.add_user(user, 'password')
@@ -142,6 +163,16 @@ class UserManagerSQLiteTest(AppTestCase):
     def test_login_with_invalid_user(self):
         """Check if login work"""
         self.assertIsNone(self.app.userdb.login('josh', 'password'))
+
+    def test_search(self):
+        """
+        Check if search is working.
+        """
+        self.app.userdb.add_user('Charlie', 'password')
+        self.app.userdb.add_user('Bernard', 'password')
+        self.app.userdb.add_user('Kim', 'password')
+        users = list(self.app.userdb.search())
+        self.assertEqual(3, len(users))
 
     def test_set_password_update(self):
         self.app.userdb.add_user('annik', 'password')

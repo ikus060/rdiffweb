@@ -30,6 +30,43 @@ from rdiffweb.rdw_plugin import IPasswordStore, IDatabase, IUserChangeListener
 logger = logging.getLogger(__name__)
 
 
+def _getter(field):
+    """
+    Getter to fetch field from CurrentUser.
+    """
+
+    attrname = '_cache_%s' % (field,)
+
+    def get_field(x):
+        # Check cache value.
+        if not hasattr(x, attrname):
+            # Not in cache, query value.
+            func = getattr(x._db, field)
+            value = func(x._username)
+            # Store value in cache
+            setattr(x, attrname, value)
+        return getattr(x, attrname)
+
+    return get_field
+
+
+class UserObject(object):
+    """Represent an instance of user."""
+
+    def __init__(self, db, username):
+        self._db = db
+        self._username = username
+
+    @property
+    def username(self):
+        return self._username
+
+    is_admin = property(fget=_getter('is_admin'))
+    email = property(fget=_getter('get_email'))
+    user_root = property(fget=_getter('get_user_root'))
+    repos = property(fget=_getter('get_repos'))
+
+
 class UserManager(Component):
     """
     This class handle all user operation. This class is greatly inspired from
@@ -165,6 +202,13 @@ class UserManager(Component):
             raise InvalidUserError(user)
         return db.get_repo_maxage(user, repo_path)
 
+    def get(self, username):
+        """Return a user object."""
+        db = self.find_user_database(username)
+        if not db:
+            raise InvalidUserError(username)
+        return UserObject(db, username)
+
     def get_user_root(self, user):
         """Get user root directory."""
         db = self.find_user_database(user)
@@ -236,6 +280,13 @@ class UserManager(Component):
         self.add_user(real_user)
         self._notify('logined', user, password)
         return real_user
+
+    def search(self):
+        """Search users database. Return a generator of user object."""
+        # TODO Add criteria as required.
+        for db in self._databases:
+            for username in db.list():
+                yield UserObject(db, username)
 
     def set_email(self, user, email):
         """Sets the given user email."""
