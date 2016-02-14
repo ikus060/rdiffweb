@@ -246,13 +246,13 @@ class RdiffwebApp(Application):
         """
         Start deamon plugins
         """
-        logger.debug("starting deamon plugins")
+        logger.debug("starting daemon plugins")
 
         def start_deamon(p):
             Monitor(cherrypy.engine,
                     p.deamon_run,
                     frequency=p.deamon_frequency,
-                    name="DeamonPlugin").subscribe()
+                    name=p.__class__.__name__).subscribe()
 
         self.plugins.run(start_deamon, category='Daemon')
 
