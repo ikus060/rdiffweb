@@ -323,10 +323,8 @@ class IncrementEntry(object):
         filename = IncrementEntry._remove_suffix(filename)
         # Remove prefix from filename
         date_string = filename.rsplit(b".", 1)[-1]
-        return_time = rdw_helpers.rdwTime()
         try:
-            return_time.initFromString(date_string.decode())
-            return return_time
+            return rdw_helpers.rdwTime(date_string.decode())
         except ValueError:
             return None
 

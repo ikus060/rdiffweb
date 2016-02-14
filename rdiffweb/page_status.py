@@ -62,8 +62,7 @@ class StatusPage(page_main.MainPage):
         assert isinstance(date, str)
         # Validate date
         try:
-            entry_time = rdw_helpers.rdwTime()
-            entry_time.initFromInt(int(date))
+            entry_time = rdw_helpers.rdwTime(int(date))
         except ValueError:
             logger.exception("invalid date")
             return self._compile_error_template(_("Invalid date."))

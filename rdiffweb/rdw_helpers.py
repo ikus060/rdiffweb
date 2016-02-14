@@ -29,6 +29,7 @@ from future.utils import python_2_unicode_compatible
 from past.builtins import cmp
 from past.utils import old_div
 import time
+from datetime import timedelta
 
 
 try:
@@ -88,15 +89,17 @@ class rdwTime(object):
     "local" time, but pass the timezone information on to rdiff-backup, so
     it can restore to the correct state"""
 
-    def __init__(self, seconds=0):
-        assert isinstance(seconds, int)
-        self.timeInSeconds = seconds
-        self.tzOffset = 0
-
-    def initFromInt(self, seconds):
-        assert isinstance(seconds, int)
-        self.timeInSeconds = seconds
-        self.tzOffset = 0
+    def __init__(self, value=None, tz_offset=None):
+        assert value is None or isinstance(value, int) or isinstance(value, str)
+        if value is None:
+            # Get GMT time.
+            self.timeInSeconds = int(time.time())
+            self.tzOffset = tz_offset or 0
+        elif isinstance(value, int):
+            self.timeInSeconds = value
+            self.tzOffset = tz_offset or 0
+        else:
+            self._initFromString(value)
 
     def initFromMidnightUTC(self, daysFromToday):
         self.timeInSeconds = time.time()
@@ -104,7 +107,7 @@ class rdwTime(object):
         self.timeInSeconds += daysFromToday * 24 * 60 * 60
         self.tzOffset = 0
 
-    def initFromString(self, timeString):
+    def _initFromString(self, timeString):
         try:
             date, daytime = timeString[:19].split("T")
             year, month, day = list(map(int, date.split("-")))
@@ -179,6 +182,20 @@ class rdwTime(object):
             plusMinus = -1
 
         return plusMinus * 60 * (60 * int(tzd[1:3]) + int(tzd[4:]))
+
+    def __add__(self, other):
+        """Support plus (+) timedelta"""
+        assert isinstance(other, timedelta)
+        return rdwTime(self.timeInSeconds + int(other.total_seconds()), self.tzOffset)
+
+    def __sub__(self, other):
+        """Support minus (-) timedelta"""
+        assert isinstance(other, timedelta)
+        return rdwTime(self.timeInSeconds - int(other.total_seconds()), self.tzOffset)
+
+    def __int__(self):
+        """Return this date as seconds since epoch."""
+        return self.timeInSeconds
 
     def __lt__(self, other):
         assert isinstance(other, rdwTime)

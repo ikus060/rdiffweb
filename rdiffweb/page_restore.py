@@ -101,8 +101,7 @@ class RestorePage(page_main.MainPage):
 
         # Get the restore date
         try:
-            restore_date = rdw_helpers.rdwTime()
-            restore_date.initFromInt(int(date))
+            rdw_helpers.rdwTime(int(date))
         except:
             logger.warning("invalid date %s", date)
             return self._compile_error_template(_("Invalid date."))

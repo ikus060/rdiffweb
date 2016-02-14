@@ -15,7 +15,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 Created on Dec 26, 2015
 
@@ -25,6 +24,8 @@ Created on Dec 26, 2015
 from __future__ import unicode_literals
 
 from builtins import str
+import datetime
+import time
 import unittest
 
 from rdiffweb.rdw_helpers import quote_url, unquote_url, rdwTime
@@ -45,9 +46,55 @@ class Test(unittest.TestCase):
 
 class RdwTimeTest(unittest.TestCase):
 
+    def test_add(self):
+        """Check if addition with timedelta is working as expected."""
+        # Without timezone
+        self.assertEqual(rdwTime('2014-11-08T21:04:30Z'),
+                         rdwTime('2014-11-05T21:04:30Z') + datetime.timedelta(days=3))
+        # With timezone
+        self.assertEqual(rdwTime('2014-11-08T21:04:30-04:00'),
+                         rdwTime('2014-11-05T21:04:30-04:00') + datetime.timedelta(days=3))
+
+    def test_compare(self):
+        """Check behaviour of comparison operator operator."""
+
+        self.assertTrue(rdwTime('2014-11-07T21:04:30-04:00') < rdwTime('2014-11-08T21:04:30Z'))
+        self.assertTrue(rdwTime('2014-11-08T21:04:30Z') < rdwTime('2014-11-08T21:50:30Z'))
+        self.assertFalse(rdwTime('2014-11-08T22:04:30Z') < rdwTime('2014-11-08T21:50:30Z'))
+
+        self.assertFalse(rdwTime('2014-11-07T21:04:30-04:00') > rdwTime('2014-11-08T21:04:30Z'))
+        self.assertFalse(rdwTime('2014-11-08T21:04:30Z') > rdwTime('2014-11-08T21:50:30Z'))
+        self.assertTrue(rdwTime('2014-11-08T22:04:30Z') > rdwTime('2014-11-08T21:50:30Z'))
+
+    def test_init(self):
+        """
+        Check various constructor.
+        """
+        t0 = rdwTime()
+        self.assertAlmostEqual(int(time.time()), t0.timeInSeconds, delta=5000)
+
+        t1 = rdwTime(1415221470)
+        self.assertEqual(1415221470, t1.timeInSeconds)
+
+        t2 = rdwTime('2014-11-05T21:04:30Z')
+        self.assertEqual(1415221470, t2.timeInSeconds)
+
+    def test_int(self):
+        """Check if int(rdwTime) return expected value."""
+        self.assertEqual(1415221470, int(rdwTime(1415221470)))
+
     def test_str(self):
         """Check if __str__ is working."""
         self.assertEqual('2014-11-05 21:04:30', str(rdwTime(1415221470)))
+
+    def test_sub(self):
+        """Check if addition with timedelta is working as expected."""
+        # Without timezone
+        self.assertEqual(rdwTime('2014-11-02T21:04:30Z'),
+                         rdwTime('2014-11-05T21:04:30Z') - datetime.timedelta(days=3))
+        # With timezone
+        self.assertEqual(rdwTime('2014-11-02T21:04:30-04:00'),
+                         rdwTime('2014-11-05T21:04:30-04:00') - datetime.timedelta(days=3))
 
 
 if __name__ == "__main__":
