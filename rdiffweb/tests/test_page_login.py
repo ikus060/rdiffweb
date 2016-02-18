@@ -48,6 +48,15 @@ class LoginPageTest(WebCase):
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=/browse/' + self.REPO + '/DIR%EF%BF%BD/')
 
+    def test_getpage_with_broken_encoding(self):
+        """
+        Check encoding of redirect url when send using GET method.
+        """
+        #  Query the page without login-in
+        self.getPage('/restore/' + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt/?date=1454448640')
+        self.assertStatus('303 See Other')
+        self.assertHeader('Location', self.baseurl + '/login/?redirect=/restore/' + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt/%3Fdate%3D1454448640')
+
     def test_getpage_with_redirect_post(self):
         """
         Check encoding of redirect url when send using POST method.

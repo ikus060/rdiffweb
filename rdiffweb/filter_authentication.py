@@ -26,6 +26,7 @@ import logging
 from cherrypy._cpcompat import base64_decode
 
 from rdiffweb.rdw_helpers import quote_url
+from future.utils import native_str
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -40,16 +41,15 @@ def authform():
         # page passes credentials; allow to be processed
         return False
 
-    # Sending the redirect URL as bytes
+    # Sending the redirect URL
     redirect = cherrypy.request.path_info
     if cherrypy.request.query_string:
-        redirect += "?"
-        redirect += cherrypy.request.query_string
-    redirect = "?redirect=" + quote_url(redirect)
+        redirect = redirect + native_str("?") + cherrypy.request.query_string
+    redirect = native_str("?redirect=") + quote_url(redirect)
 
     # write login page
     logger.debug("user not logged in, redirect to /login/")
-    raise cherrypy.HTTPRedirect("/login/" + redirect)
+    raise cherrypy.HTTPRedirect(native_str("/login/") + redirect)
 
 cherrypy.tools.authform = cherrypy._cptools.HandlerTool(authform)
 
