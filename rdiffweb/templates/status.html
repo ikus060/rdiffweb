@@ -4,12 +4,12 @@
 <div class="container">
     <h2>
         <!-- title -->
-        {{ title }}
+        {{ title }}
         <!-- /title -->
         {% if feedLink %}
         <!-- feedLink -->
         <small class="pull-right">
-            <a href="{{ feedLink }}">
+            <a href="{{ feedLink }}">
                 {% trans %}Subscribe{% endtrans %}
                 <i class="icon-rss"></i>
             </a>
@@ -45,8 +45,8 @@
     {%if message.is_success %}
     <!--StartIncludeIf:isSuccess-->
     <h3 class="backupStatus_success">
-        <a href="{{ url_for_status_entry(message.date) }}">
-            {% trans %}Successful backups for {% endtrans %}{{ message.date | datetime }}
+        <a href="{{ url_for_status_entry(message.date) }}">
+            {% trans %}Successful backups for {% endtrans %}{{ message.date | datetime }}
         </a>
     </h3>
     <div>
@@ -55,10 +55,10 @@
             {% for backup in message.backups %}
             <!--StartRepeat:backups-->
             <li>
-                <a class="statusRepoLink" href="{{ url_for_browse(backup.repo_path) }}">
-                {{ backup.date | datetime }} -
-                {{ backup.repo_name }} - 
-                {{ backup.size | filesize }}</a>
+                <a class="statusRepoLink" href="{{ url_for_browse(backup.repo_path) }}">
+                {{ backup.date | datetime }} -
+                {{ backup.repo_name }} - 
+                {{ backup.size | filesize }}</a>
             </li>
             <!--EndRepeat:backups-->
             {% endfor %}
@@ -68,16 +68,16 @@
     {% else %}
     <!--StartDeleteIf:isSuccess-->
     <h3 class="backupStatus_failure">
-        <a href="{{ url_for_status_entry(message.date) }}">{% trans %}Backup completed with errors:{% endtrans %}
-            {{ message.repo_name }}</a>
+        <a href="{{ url_for_status_entry(message.date) }}">{% trans %}Backup completed with errors:{% endtrans %}
+            {{ message.repo_name }}</a>
     </h3>
     <div>
         <p>
-            The backup to <strong>{{ message.repo_name }}</strong> on <strong>
-            {{ message.date | datetime }}</strong> failed with the following errors:
+            The backup to <strong>{{ message.repo_name }}</strong> on <strong>
+            {{ message.date | datetime }}</strong> failed with the following errors:
         </p>
-        <pre>{{ message.errors }}</pre>
-        <p>{% trans %}Backup size: {% endtrans %}{{ message.size | filesize }}</p>
+        <pre>{{ message.errors }}</pre>
+        <p>{% trans %}Backup size: {% endtrans %}{{ message.size | filesize }}</p>
     </div>
     {% endif %}
     <!--/isSuccess-->
@@ -89,8 +89,8 @@
         {% for repoError in repoErrors %}
         <!--StartRepeat:repoErrors-->
         <li>
-            <a class="statusRepoLink" href="{{ repoError.repoLink }}">{{ repoError.repo
-                }}: {{ repoError.error }}</a>
+            <a class="statusRepoLink" href="{{ repoError.repoLink }}">{{ repoError.repo
+                }}: {{ repoError.error }}</a>
         </li>
         <!--EndRepeat:repoErrors-->
         {% endfor %}

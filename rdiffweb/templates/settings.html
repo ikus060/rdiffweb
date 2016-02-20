@@ -15,7 +15,7 @@
         <select class="form-control" name="encoding" id="encoding">
           {% for encoding in supported_encodings %}
           <option {% if current_encoding == encoding %}selected="selected"{% endif%} value="{{ encoding }}">
-            {{ encoding }}
+            {{ encoding }}
           </option>
           {% endfor %}
 	    </select>

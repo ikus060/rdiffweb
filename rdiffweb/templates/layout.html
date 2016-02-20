@@ -4,7 +4,7 @@
 {% block head %}
 <title>
 {% block title %}
-{% if title %}{{ title }} - {% endif %}
+{% if title %}{{ title }} - {% endif %}
 {% if header_name %}{{ header_name }}{% else %}rdiffweb{% endif %}
 {% endblock title %}
 </title>
@@ -12,7 +12,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {% if version %}<meta name="app-version" content="{{ version }}">{% endif %}
-<meta name="application-name" content="{{ header_name }}"/>
+<meta name="application-name" content="{{ header_name }}"/>
 <link rel="mask-icon" sizes="any" href="/static/favicon.svg" color="#ffffff">
 <link rel="stylesheet" href="/static/css/main.min.css" type="text/css">
 <link rel="shortcut icon"
@@ -23,8 +23,8 @@
   {% else %}
       href="/favicon.ico"
   {% endif %}>
-  {% if rssLink %}<link rel="alternate" type="application/rss+xml" href="{{ rssLink }}"
-    title="{{ rssTitle }}" />{% endif %}
+  {% if rssLink %}<link rel="alternate" type="application/rss+xml" href="{{ rssLink }}"
+    title="{{ rssTitle }}" />{% endif %}
 {% endblock head %}
 </head>
 <body>
