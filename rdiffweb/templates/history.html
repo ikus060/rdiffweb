@@ -23,11 +23,11 @@
                 {% elif entry.in_progress %}
                 class="warning"
                 {% endif %}>
-                <td class="icon-history" data-value="{{ entry.date }}">
-                    {{ entry.date | datetime }}
+                <td class="icon-history" data-value="{{ entry.date }}">
+                    {{ entry.date | datetime }}
                 </td>
-                <td data-value="{{ entry.size }}">
-                    {{ entry.size | filesize }}
+                <td data-value="{{ entry.size }}">
+                    {{ entry.size | filesize }}
                 </td>
                 <td>
                     {% if not entry.errors %}
@@ -44,7 +44,7 @@
             {% if entry.errors %}
             <tr class="danger">
                 <td colspan="4">
-                    <p>{{ entry.errors }}</p>
+                    <p>{{ entry.errors }}</p>
                 </td>
             </tr>
             {% endif %}

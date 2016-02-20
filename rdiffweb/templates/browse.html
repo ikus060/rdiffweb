@@ -20,12 +20,12 @@
         <tbody>
             {% for entry in dir_entries %}
             <tr class="{% if entry.exists %}exists{% else %}notexists{% endif %}">
-                <td {% if entry.isdir %}data-value="dir-{{ entry.display_name }}"
-                    {% else %}data-value="file-{{ entry.display_name }}"{% endif %}>
+                <td {% if entry.isdir %}data-value="dir-{{ entry.display_name }}"
+                    {% else %}data-value="file-{{ entry.display_name }}"{% endif %}>
                     <a {% if entry.isdir %}
-                        href="{{ url_for_browse(repo_path, entry.path) }}"
+                        href="{{ url_for_browse(repo_path, entry.path) }}"
                         {% else %}
-                        href="{{ url_for_restore(repo_path, entry.path, entry.last_change_date) }}"
+                        href="{{ url_for_restore(repo_path, entry.path, entry.last_change_date) }}"
                         {% endif %}
                         {% if entry.display_name | length > 45 %}
                         title="{{ entry.display_name }}"
@@ -33,34 +33,34 @@
                         <i {% if entry.isdir %}class="icon-folder"{% else %}class="icon-file"{% endif %}></i>
                         {% if entry.isdir %}<span class="sr-only">&lt;DIR&gt;</span>{% endif %}
                         {% if not entry.exists %}<span class="sr-only">&lt;DELETED&gt;</span>{% endif %}
-                        {{ entry.display_name | truncate(45,True) }}
+                        {{ entry.display_name | truncate(45,True) }}
                     </a>
                 </td>
-                <td class="nowrap" data-value="{% if not entry.isdir %}{{ entry.file_size }}{% else %}0{% endif %}">
+                <td class="nowrap" data-value="{% if not entry.isdir %}{{ entry.file_size }}{% else %}0{% endif %}">
                     {% if not entry.isdir %}
-                    {{ entry.file_size | filesize }}
+                    {{ entry.file_size | filesize }}
                     {% endif %}
                 </td>
-                <td data-value="{{ entry.last_change_date.getSeconds() }}">
+                <td data-value="{{ entry.last_change_date and entry.last_change_date.getSeconds() }}">
                 	{% if entry.isdir %}
                 	<span class="hidden-xs">
-                    	{{ entry.last_change_date | datetime }}
+                    	{{ entry.last_change_date | datetime }}
                     </span>
                     {% elif ( entry.change_dates | length ) > 1 %}
                     <div class="dropdown">
                         <button class="btn btn-link dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">
                         	<span class="hidden-xs">
-                            	{{ entry.last_change_date | datetime }}
+                            	{{ entry.last_change_date | datetime }}
                             </span>
-                            <span class="badge">{{ entry.change_dates | length }}</span>
+                            <span class="badge">{{ entry.change_dates | length }}</span>
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right-xs" role="menu" aria-labelledby="menu1">
                             {% for change_date in entry.change_dates | reverse %}
                             <li>
-                                <a href="{{ url_for_restore(repo_path, entry.path, change_date) }}">
+                                <a href="{{ url_for_restore(repo_path, entry.path, change_date) }}">
                                     <!-- File date -->
-                                    {{ change_date | datetime }}
+                                    {{ change_date | datetime }}
                                 </a>
                             </li>
                             {% endfor %}
@@ -68,7 +68,7 @@
                     </div>
                     {% else %}
                     <span class="hidden-xs">
-                    	{{ entry.last_change_date | datetime }}
+                    	{{ entry.last_change_date | datetime }}
                     </span>
                     {% endif %}
                 </td>
@@ -87,13 +87,13 @@
 			{% for restore_date in restore_dates | reverse %}
 			<li class="list-group-item clearfix">
 				<i class="icon-archive"></i>
-	            {{ restore_date | datetime }}
+	            {{ restore_date | datetime }}
 	            <div class="pull-right">
-	            	<a href="{{ url_for_restore(repo_path, path, restore_date) }}">
+	            	<a href="{{ url_for_restore(repo_path, path, restore_date) }}">
 	            		{% trans %}Download{% endtrans %}
 	            		<span class="label label-info"><i class="icon-file-archive"></i>
 	            			ZIP</span></a>
-	            	<a href="{{ url_for_restore(repo_path, path, restore_date, 'T') }}">
+	            	<a href="{{ url_for_restore(repo_path, path, restore_date, 'T') }}">
 	        			{% trans %}Download{% endtrans %}
 	        			<span class="label label-info"><i class="icon-file-archive"></i>
 	        				TAR.GZ</span></a>

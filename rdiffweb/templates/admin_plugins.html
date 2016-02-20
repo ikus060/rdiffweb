@@ -25,8 +25,8 @@
             <li itemscope itemtype="https://schema.org/SoftwareApplication" 
                 class="list-group-item clearfix">
                 <h4 class="list-group-item-heading">
-                <span itemprop="name">{{ plugin.name }}</span>
-                v<span itemprop="softwareVersion">{{ plugin.version }}</span>
+                <span itemprop="name">{{ plugin.name }}</span>
+                v<span itemprop="softwareVersion">{{ plugin.version }}</span>
                 {% if plugin.enabled %}
                     <small><span class="label label-success"
                                  itemprop="installed"
@@ -43,25 +43,25 @@
                 {% if plugin.author %}
                     <dt>{% trans %}Author{% endtrans %}</dt>
                     <dd itemprop="author">
-                    {{ plugin.author }}
+                    {{ plugin.author }}
                     </dd>
                 {% endif %}
                 {% if plugin.description %}
                     <dt>{% trans %}Description{% endtrans %}</dt>
                     <dd>
-                    <span itemprop="description">{{ plugin.description }}</span>
-                    <span itemprop="url">{{ plugin.website }}</span>
+                    <span itemprop="description">{{ plugin.description }}</span>
+                    <span itemprop="url">{{ plugin.website }}</span>
                     </dd>
                 {% endif %}
                 {% if plugin.copyright %}
                     <dt>{% trans %}Copyright{% endtrans %}</dt>
                     <dd itemprop="license">
-                    {{ plugin.copyright }}
+                    {{ plugin.copyright }}
                     </dd>
                 {% endif %}
                 <dt>{% trans %}Location{% endtrans %}</dt>
                 <dd>
-                 {{ plugin.path }}
+                 {{ plugin.path }}
                 </dd>
                 </dl>
             </li>

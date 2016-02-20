@@ -22,11 +22,11 @@
 			<span class="h4">
 				{% if repo.failed %}
 		            <i class="icon-cube"></i>
-		            <span itemprop="name">{{ repo.name }}</span>
+		            <span itemprop="name">{{ repo.name }}</span>
 	            {% else %}
-		            <a itemprop="item" href="{{ url_for_browse(repo.path) }}">
+		            <a itemprop="item" href="{{ url_for_browse(repo.path) }}">
 	                <i class="icon-cube"></i>
-	                <span itemprop="name">{{ repo.name }}</span>
+	                <span itemprop="name">{{ repo.name }}</span>
 		            </a>
 	            {% endif %}
             </span>
@@ -36,7 +36,7 @@
 				{% if repo.failed %}{% trans %}Error{% endtrans %}
 	            {% elif repo.in_progress %}{% trans %}In progress{% endtrans %}
 	            {% else %}{% trans %}Last backup: {% endtrans %}
-	            <time datetime="{{ repo.last_backup_date | datetime }}" itemprop="lastBackupDate">{{ repo.last_backup_date | datetime }}</time>
+	            <time datetime="{{ repo.last_backup_date | datetime }}" itemprop="lastBackupDate">{{ repo.last_backup_date | datetime }}</time>
 	            {% endif %}
 			</span>
 			</div>
