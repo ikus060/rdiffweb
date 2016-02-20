@@ -57,8 +57,21 @@ class RestoreTest(WebCase):
     def test_broken_encoding(self):
         self._restore(self.REPO, "Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt/", "1415221507", True)
         self.assertBody("Centers the value\n")
+        if PY3:
+            self.assertHeader('Content-Disposition', 'attachment; filename="Fichier avec non asci char ?velyne M?re.txt"; filename*=UTF-8\'\'Fichier%20avec%20non%20asci%20char%20%EF%BF%BDvelyne%20M%EF%BF%BDre.txt')
+        else:
+            self.assertHeader('Content-Disposition', b'attachment; filename="Fichier avec non asci char ?velyne M?re.txt"; filename*=UTF-8\'\'Fichier%20avec%20non%20asci%20char%20%EF%BF%BDvelyne%20M%EF%BF%BDre.txt')
+
         self._restore(self.REPO, "DIR%EF%BF%BD/Data/", "1415059497", True)
         self.assertBody("My Data !\n")
+        self.assertHeader('Content-Disposition', 'attachment; filename="Data"')
+
+    def test_quoted(self):
+        """
+        Check names return for a quoted path.
+        """
+        self._restore(self.REPO, "Char%20%3B059090%20to%20quote/", "1415221507", True)
+        self.assertHeader('Content-Disposition', 'attachment; filename="Char ;090 to quote.tar.gz"')
 
     def test_file(self):
         """

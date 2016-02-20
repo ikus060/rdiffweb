@@ -975,18 +975,27 @@ class RdiffPath(object):
         if isinstance(restore_date, rdw_helpers.rdwTime):
             restore_date = restore_date.getSeconds()
 
-        # Define a location where to restore the data
+        # Define a nice filename for the archive or file to be created.
         if name == b"" and self.path == b"":
-            filename = b"root"
-        if self.path != b"":
-            filename = os.path.basename(self.path)
-        if name != b"":
-            filename = name
+            filename = "root." + kind
+        else:
+            if self.path != b"":
+                filename_b = os.path.basename(self.path)
+            if name != b"":
+                filename_b = name
+            # Unquote the filename (remove ;090).
+            filename_b = self.repo.unquote(filename_b)
+            # Decode string as repo encoding.
+            filename = self._decode(filename_b)
+            # Append archive extention if a directory
+            entry = next((d for d in self.dir_entries if d.name == name), None)
+            if entry and entry.isdir:
+                filename = filename + '.' + kind
+
         # Generate a temporary location used to restore data.
-        outputdir = tempfile.mkdtemp(prefix='rdiffweb_restore_')
-        if isinstance(outputdir, str):
-            outputdir = outputdir.encode(encoding=FS_ENCODING)
-        output = os.path.join(outputdir, filename)
+        output = tempfile.mkdtemp(prefix='rdiffweb_restore_')
+        if isinstance(output, str):
+            output = output.encode(encoding=FS_ENCODING)
 
         # Asynchronously create an archive if multiple file.
         def _async(fdst):
@@ -1026,8 +1035,11 @@ class RdiffPath(object):
             finally:
                 # Make sure to close pipe.
                 fdst.close()
-                # Clean up temp file.
-                shutil.rmtree(outputdir, ignore_errors=True)
+                # Clean up temp file or dir.
+                if os.path.isdir(output):
+                    shutil.rmtree(output, ignore_errors=True)
+                elif os.path.exists(output):
+                    os.remove(output)
 
         # Start new thread.
         rfd, wfd = os.pipe()
@@ -1037,7 +1049,7 @@ class RdiffPath(object):
             thread = threading.Thread(target=_async, args=(w,))
             thread.start()
             # Return one of a stream.
-            return r
+            return filename, r
         except Exception as e:
             # If creation of thread fail, close pipe.
             r.close()

@@ -19,8 +19,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from builtins import str
 from builtins import bytes
+from builtins import str
 import cherrypy
 from cherrypy.lib.static import _serve_fileobj
 import logging
@@ -30,7 +30,7 @@ from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb import rdw_helpers
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import unquote_url
+from rdiffweb.rdw_helpers import unquote_url, quote_url
 
 
 # Define the logger
@@ -95,7 +95,7 @@ class RestorePage(page_main.MainPage):
 
         # Restore file(s)
         try:
-            fileobj = path_obj.restore(file_b, int(date), kind=kind)
+            filename, fileobj = path_obj.restore(file_b, int(date), kind=kind)
         except librdiff.FileError as e:
             logger.exception("fail to restore")
             return self._compile_error_template(str(e))
@@ -103,10 +103,19 @@ class RestorePage(page_main.MainPage):
             logger.exception("fail to restore")
             return self._compile_error_template(_("Fail to restore."))
 
-        # Provide hint filename
-        filename_b = os.path.basename(path) + b'.' + kind.encode('ascii')
-        filename_b = filename_b.replace(b"\"", b"\\\"")
-        cd = b'attachment; filename="' + filename_b + b'"'
+        # Provide hint filename. Try to follow recommendation at
+        # http://greenbytes.de/tech/tc2231/
+        try:
+            # 1. Used quoted filename for ascii filename.
+            filename.encode('ascii')
+            cd = 'attachment; filename="%s"' % filename
+        except:
+            # 2. Define filename as ascii for fallback. Define filename* with
+            filename_ascii = filename.encode('ascii', 'replace').decode('ascii')
+            filename_utf8 = filename.encode('utf-8', 'replace')
+            cd = 'attachment; filename="%s"; filename*=UTF-8\'\'%s' % (
+                filename_ascii,
+                quote_url(filename_utf8, safe='?'))
         cherrypy.response.headers["Content-Disposition"] = cd
 
         # Stream the data.
