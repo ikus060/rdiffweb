@@ -218,6 +218,9 @@ class DirEntry:
     def _get_first_backup_after_date(self, date):
         """ Iterates the mirror_metadata files in the rdiff data dir """
         index = bisect.bisect_right(self._repo.backup_dates, date)
+        # Check if index is in range.
+        if index >= len(self._repo.backup_dates):
+            return None
         return self._repo.backup_dates[index]
 
     @property
