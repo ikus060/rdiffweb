@@ -267,7 +267,7 @@ def archive(path, dest, encoding, kind='zip', callback=None):
     assert kind in ARCHIVERS
 
     # Get the right decode function.
-    decoder = codecs.getdecoder('utf-8')
+    decoder = codecs.getdecoder(encoding)
     assert decoder
     if PY3 and kind != 'zip':
         def decode(val):

@@ -79,6 +79,7 @@ if PY3:
 else:
     TAR_EXPECTED["Fichier avec non asci char �velyne M�re.txt"] = 18
 
+
 def archive_async(*args, **kwargs):
     thread = threading.Thread(target=archive, args=args, kwargs=kwargs)
     thread.start()
@@ -101,7 +102,7 @@ class ArchiverTest(AppTestCase):
         self.path = os.path.join(self.app.testcases.encode('ascii'), b'testcases')
         assert os.path.isdir(self.path)
 
-    def assertInZip(self, expected_files, filename):
+    def assertInZip(self, expected_files, filename, equal=True):
         """
         Check if the given `expected_files` exists in the Zip archive.
         """
@@ -128,13 +129,16 @@ class ArchiverTest(AppTestCase):
                 actual[name] = m.file_size
             a.close()
             # Compare.
-            assertion_func = self._getAssertEqualityFunc(expected_files, actual)
-            assertion_func(expected_files, actual)
+            if equal:
+                self.assertEqual(expected_files, actual)
+            else:
+                for expected_file in expected_files:
+                    self.assertIn(expected_file, actual)
         finally:
             if new_filename:
                 os.remove(new_filename)
 
-    def assertInTar(self, expected_files, filename, mode=None):
+    def assertInTar(self, expected_files, filename, mode=None, equal=True):
         """
         Check if the given `expected_files` exists in the Zip archive.
         """
@@ -162,8 +166,11 @@ class ArchiverTest(AppTestCase):
         if hasattr(filename, 'close'):
             filename.close()
         # Compare.
-        assertion_func = self._getAssertEqualityFunc(expected_files, actual)
-        assertion_func(expected_files, actual)
+        if equal:
+            self.assertEqual(expected_files, actual)
+        else:
+            for expected_file in expected_files:
+                self.assertIn(expected_file, actual)
 
     def test_pipe_zip_file(self):
         """
@@ -190,6 +197,24 @@ class ArchiverTest(AppTestCase):
         finally:
             os.remove(filename)
 
+    def test_zip_file_cp1252(self):
+        """
+        Check if archiver support different encoding.
+        """
+        # Define path to be archived
+        filename = tempfile.mktemp(prefix='rdiffweb_test_archiver_', suffix='.zip')
+        try:
+            # Run archiver
+            with open(filename, 'wb') as f:
+                archive(self.path, f, encoding='cp1252', kind='zip')
+            # Check result.
+            expected = {
+                "Fichier avec non asci char Évelyne Mère.txt": 18,
+            }
+            self.assertInZip(expected, filename, equal=False)
+        finally:
+            os.remove(filename)
+
     def test_pipe_tar_file(self):
         """
         Check creation of tar.gz.
@@ -211,6 +236,23 @@ class ArchiverTest(AppTestCase):
                 archive(self.path, f, encoding='utf-8', kind='tar')
             # Check result.
             self.assertInTar(TAR_EXPECTED, filename)
+        finally:
+            os.remove(filename)
+
+    def test_tar_file_cp1252(self):
+        """
+        Check if archiver support different encoding.
+        """
+        filename = tempfile.mktemp(prefix='rdiffweb_test_archiver_', suffix='.tar')
+        try:
+            # Run archiver
+            with open(filename, 'wb') as f:
+                archive(self.path, f, encoding='cp1252', kind='tar')
+            # Check result.
+            expected = {
+                "Fichier avec non asci char Évelyne Mère.txt": 18,
+            }
+            self.assertInTar(expected, filename, equal=False)
         finally:
             os.remove(filename)
 
