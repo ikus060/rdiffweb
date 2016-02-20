@@ -30,10 +30,32 @@ import tarfile
 import unittest
 import zipfile
 
-from rdiffweb.test import WebCase
+from rdiffweb.test import WebCase, AppTestCase
 
 
 PY3 = sys.version_info[0] == 3
+
+
+class RestorePageTest(AppTestCase):
+
+    def setUp(self):
+        AppTestCase.setUp(self)
+        self.page = self.app.root.restore
+
+    def test_content_disposition(self):
+        """
+        Check value generated for different content-disposition.
+        """
+        # Simple ascii
+        self.assertEqual('attachment; filename="foo.bar"', self.page._content_disposition("foo.bar"))
+        # ISO-8859-1 > UTF-8
+        self.assertEqual("attachment; filename*=UTF-8''foo-%C3%A4.html", self.page._content_disposition("foo-ä.html"))
+        # Ascii filename with %
+        self.assertEqual("attachment; filename*=UTF-8''foo-%2541.html", self.page._content_disposition("foo-%41.html"))
+        # Ascii filename with ;
+        self.assertEqual("attachment; filename*=UTF-8''foo-%3B41.html", self.page._content_disposition("foo-;41.html"))
+        # Ascii filename with \
+        self.assertEqual("attachment; filename*=UTF-8''foo-%5C41.html", self.page._content_disposition("foo-\\41.html"))
 
 
 class RestoreTest(WebCase):
@@ -57,10 +79,7 @@ class RestoreTest(WebCase):
     def test_broken_encoding(self):
         self._restore(self.REPO, "Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt/", "1415221507", True)
         self.assertBody("Centers the value\n")
-        if PY3:
-            self.assertHeader('Content-Disposition', 'attachment; filename="Fichier avec non asci char ?velyne M?re.txt"; filename*=UTF-8\'\'Fichier%20avec%20non%20asci%20char%20%EF%BF%BDvelyne%20M%EF%BF%BDre.txt')
-        else:
-            self.assertHeader('Content-Disposition', b'attachment; filename="Fichier avec non asci char ?velyne M?re.txt"; filename*=UTF-8\'\'Fichier%20avec%20non%20asci%20char%20%EF%BF%BDvelyne%20M%EF%BF%BDre.txt')
+        self.assertHeader('Content-Disposition', 'attachment; filename*=UTF-8\'\'Fichier%20avec%20non%20asci%20char%20%EF%BF%BDvelyne%20M%EF%BF%BDre.txt')
 
         self._restore(self.REPO, "DIR%EF%BF%BD/Data/", "1415059497", True)
         self.assertBody("My Data !\n")
@@ -71,7 +90,7 @@ class RestoreTest(WebCase):
         Check names return for a quoted path.
         """
         self._restore(self.REPO, "Char%20%3B059090%20to%20quote/", "1415221507", True)
-        self.assertHeader('Content-Disposition', 'attachment; filename="Char ;090 to quote.tar.gz"')
+        self.assertHeader('Content-Disposition', 'attachment; filename*=UTF-8\'\'Char%20%3B090%20to%20quote.tar.gz')
 
     def test_file(self):
         """

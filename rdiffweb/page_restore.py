@@ -54,6 +54,29 @@ class RestorePage(page_main.MainPage):
 
         return vpath
 
+    def _content_disposition(self, filename):
+        """
+        Try to generate the best content-disposition value to support most browser.
+        """
+        assert isinstance(filename, str)
+        # Provide hint filename. Try to follow recommendation at
+        # http://greenbytes.de/tech/tc2231/
+        # I choose to only provide filename if the filename is a simple ascii
+        # file without special character. Otherwise, we provide filename*
+
+        # 1. Used quoted filename for ascii filename.
+        try:
+            filename.encode('ascii')
+            # Some char are not decoded properly by user agent.
+            if any(c in filename for c in [';', '%', '\\']):
+                raise ValueError("contains special char")
+            return 'attachment; filename="%s"' % filename
+        except:
+            pass
+        # 3. Define filename* as encoded UTF8 (replace invalid char)
+        filename_utf8 = filename.encode('utf-8', 'replace')
+        return 'attachment; filename*=UTF-8\'\'%s' % quote_url(filename_utf8, safe='?')
+
     @cherrypy.expose
     @cherrypy.tools.gzip(on=False)
     def index(self, path=b"", date="", usetar=""):
@@ -103,20 +126,7 @@ class RestorePage(page_main.MainPage):
             logger.exception("fail to restore")
             return self._compile_error_template(_("Fail to restore."))
 
-        # Provide hint filename. Try to follow recommendation at
-        # http://greenbytes.de/tech/tc2231/
-        try:
-            # 1. Used quoted filename for ascii filename.
-            filename.encode('ascii')
-            cd = 'attachment; filename="%s"' % filename
-        except:
-            # 2. Define filename as ascii for fallback. Define filename* with
-            filename_ascii = filename.encode('ascii', 'replace').decode('ascii')
-            filename_utf8 = filename.encode('utf-8', 'replace')
-            cd = 'attachment; filename="%s"; filename*=UTF-8\'\'%s' % (
-                filename_ascii,
-                quote_url(filename_utf8, safe='?'))
-        cherrypy.response.headers["Content-Disposition"] = cd
+        cherrypy.response.headers["Content-Disposition"] = self._content_disposition(filename)
 
         # Stream the data.
         return _serve_fileobj(fileobj, content_type=None, content_length=None, debug=True)
