@@ -34,7 +34,7 @@
                 {{ entry.file_size | filesize }}
                 {% endif %}
             </td>
-            <td data-value="{{ entry.last_change_date.getSeconds() }}">
+            <td data-value="{{ entry.last_change_date and entry.last_change_date.getSeconds() }}">
                 {% if entry.isdir %}
                 <span class="hidden-xs">
                     {{ entry.last_change_date | datetime }}
