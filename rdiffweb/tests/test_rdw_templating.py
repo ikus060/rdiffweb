@@ -18,12 +18,12 @@
 
 from __future__ import unicode_literals
 
+from future.builtins import str
 import unittest
 
+from rdiffweb.rdw_helpers import rdwTime
 from rdiffweb.rdw_templating import do_format_filesize, url_for_browse, \
     url_for_history, url_for_restore, attrib
-from rdiffweb.rdw_helpers import rdwTime
-from collections import OrderedDict
 
 
 class TemplateManagerTest(unittest.TestCase):
@@ -48,6 +48,15 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual('id="active"', attrib(id=[active and 'active']))
         active = False
         self.assertEqual('', attrib(id=[active and 'active']))
+
+        # With True
+        self.assertEqual('selected', attrib(selected=True))
+
+        # Bytes
+        self.assertEqual('selected="text"', attrib(selected=b'text'))
+
+        # Newstr
+        self.assertEqual('selected="text"', attrib(selected=str('text')))
 
     def test_do_format_filesize(self):
         # Test simple values

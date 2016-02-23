@@ -31,6 +31,7 @@ import time
 
 from rdiffweb import i18n
 from rdiffweb import rdw_helpers
+from jinja2.filters import do_mark_safe
 
 
 # Define the logger
@@ -41,6 +42,8 @@ def attrib(**kwargs):
     """Generate an attribute list from the keyword argument."""
 
     def _escape(text):
+        if isinstance(text, bytes):
+            text = text.decode('ascii', 'replace')
         text = str(text)
         if "&" in text:
             text = text.replace("&", "&amp;")
@@ -55,6 +58,9 @@ def attrib(**kwargs):
     def _format(key, val):
         # Don't write the attribute if value is False
         if not val:
+            return
+        if val is True:
+            yield str(key)
             return
         if isinstance(val, list):
             val = ' '.join([_escape(v) for v in val if v])
@@ -74,7 +80,7 @@ def attrib(**kwargs):
             buf.write(t)
     data = buf.getvalue()
     buf.close()
-    return data
+    return do_mark_safe(data)
 
 
 def do_filter(sequence, attribute_name):
