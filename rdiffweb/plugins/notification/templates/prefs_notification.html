@@ -1,0 +1,78 @@
+{#
+Rdiffweb SSHKeys plugins
+
+Copyright (C) 2015 Patrik Dufresne Service Logiciel
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#}
+
+<div class="spacer"/>
+
+{% include 'message.html' %}
+
+{% import 'macros.html' as macros %}
+
+{# Dropdown select for notification #}
+{% macro dropdown(id, value) -%}
+                               
+  <select class="form-control" {{ attrib(id=id, name=id) }}>
+    <option value="-1" {{ attrib(selected=value == -1) }}>{% trans %}disabled{% endtrans %}</option>
+    <option value="1" {{ attrib(selected=value == 1) }}>{% trans %}1 day{% endtrans %}</option>
+    <option value="2"  {{ attrib(selected=value == 2) }}>{% trans %}2 days{% endtrans %}</option>
+    <option value="3"  {{ attrib(selected=value == 3) }}>{% trans %}3 days{% endtrans %}</option>
+    <option value="4"  {{ attrib(selected=value == 4) }}>{% trans %}4 days{% endtrans %}</option>
+    <option value="5"  {{ attrib(selected=value == 5) }}>{% trans %}5 days{% endtrans %}</option>
+    <option value="6"  {{ attrib(selected=value == 6) }}>{% trans %}6 days{% endtrans %}</option>
+    <option value="7"  {{ attrib(selected=value == 7) }}>{% trans %}1 week{% endtrans %}</option>
+    <option value="14" {{ attrib(selected=value == 14) }}>{% trans %}2 weeks{% endtrans %}</option>
+    <option value="21" {{ attrib(selected=value == 21) }}>{% trans %}3 weeks{% endtrans %}</option>
+    <option value="28" {{ attrib(selected=value == 28) }}>{% trans %}4 weeks{% endtrans %}</option>
+    <option value="31" {{ attrib(selected=value == 31) }}>{% trans %}1 month{% endtrans %}</option>
+  </select>
+{%- endmacro %}
+
+<!-- Panel to set notification info -->
+{% call macros.panel(title=_("Notification settings")) %}
+<div class="panel-body">
+<form action="#" method="post" role="form" class="clearfix" >
+    <div class="form-group">
+        <label for="email" class="control-label">
+            {% trans %}Notification sent to{% endtrans %}</label>
+        <div>
+            <input class="form-control" type="text"
+                id="email" readonly="readonly"
+                value="{{ email }}" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="email" class="control-label">
+            {% trans %}Send notification for the following repositories:{% endtrans %}</label>
+    </div>
+    <div class="form-horizontal">
+        {% for repo in repos %}
+        <div class="form-group" >
+            <label for="{{ repo.name }}" class="col-sm-2 control-label">{{ repo.name }}</label>
+            <div class="col-sm-10">
+            {{ dropdown(id=repo.name, value=repo.maxage) }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <input type="hidden" name="action" value="set_notification_info" />
+    <div>
+        <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
+    </div>
+</form>
+</div>
+{% endcall %}

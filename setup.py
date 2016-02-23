@@ -177,6 +177,7 @@ setup(
     entry_points={
         "console_scripts": ["rdiffweb = rdiffweb.main:start"],
         "rdiffweb.plugins": [
+            "EmailNotification = rdiffweb.plugins.notification",
             "SQLite = rdiffweb.plugins.db_sqlite",
             "Ldap = rdiffweb.plugins.ldap_auth",
             "UserPrefsGeneral = rdiffweb.plugins.prefs_general",

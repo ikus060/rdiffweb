@@ -123,6 +123,8 @@ class AppTestCase(unittest.TestCase):
 
     reset_testcases = False
 
+    REPO = 'testcases/'
+
     USERNAME = None
 
     PASSWORD = None
