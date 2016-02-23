@@ -140,9 +140,10 @@ class RdiffwebApp(Application):
 
         # Check if object already exists.
         if not hasattr(cherrypy.request, 'user'):
-            cherrypy.request.user = CurrentUser(self.userdb, username)
+            cherrypy.request.user = self.userdb.get_user_obj(username)
         return cherrypy.request.user  # @UndefinedVariable
 
+    # TODO Should be a cherrypy.tool, to set `cherrypy.request.user` directly.
     currentuser = property(fget=__get_currentuser)
 
     def get_version(self):
@@ -255,34 +256,3 @@ class RdiffwebApp(Application):
                     name=p.__class__.__name__).subscribe()
 
         self.plugins.run(start_deamon, category='Daemon')
-
-
-def _getter(field):
-    """
-    Getter to fetch field from CurrentUser.
-    """
-    def get_field(x):
-        attrname = '__%s' % (field,)
-        if not hasattr(x, attrname):
-            func = getattr(x._userdb, field)
-            value = func(x._username)
-            setattr(x, attrname, value)
-        return getattr(x, attrname)
-
-    return get_field
-
-
-class CurrentUser(object):
-
-    def __init__(self, userdb, username):
-        self._userdb = userdb
-        self._username = username
-
-    def __get_username(self):
-        return self._username
-
-    username = property(fget=__get_username)
-    is_admin = property(fget=_getter('is_admin'))
-    email = property(fget=_getter('get_email'))
-    root_dir = property(fget=_getter('get_user_root'))
-    repos = property(fget=_getter('get_repos'))

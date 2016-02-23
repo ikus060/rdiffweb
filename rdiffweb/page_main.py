@@ -83,7 +83,7 @@ class MainPage(Component):
             raise AccessDeniedError
 
         # Get reference to user_root
-        user_root_b = encodefilename(self.app.currentuser.root_dir)
+        user_root_b = encodefilename(self.app.currentuser.user_root)
 
         # Check path vs real path value
         full_path_b = os.path.join(user_root_b, path_b.lstrip(b'/')).rstrip(b"/")

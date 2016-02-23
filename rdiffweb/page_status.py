@@ -154,7 +154,7 @@ class StatusPage(page_main.MainPage):
                          earliest_date,
                          latest_date):
 
-        user_root = self.app.currentuser.root_dir
+        user_root = self.app.currentuser.user_root
 
         repoErrors = []
         allBackups = []

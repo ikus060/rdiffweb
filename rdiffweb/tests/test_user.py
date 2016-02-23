@@ -93,15 +93,23 @@ class UserManagerSQLiteTest(AppTestCase):
         self.app.userdb.set_is_admin(user, True)
         self.app.userdb.set_email(user, 'bernie@gmail.com')
         self.app.userdb.set_repos(user, ['/backups/bernie/computer/', '/backups/bernie/laptop/'])
+        self.app.userdb.set_repo_maxage(user, '/backups/bernie/computer/', -1)
+        self.app.userdb.set_repo_maxage(user, '/backups/bernie/laptop/', 3)
 
         # Get user record.
-        obj = self.app.userdb.get(user)
+        obj = self.app.userdb.get_user_obj(user)
         self.assertIsNotNone(obj)
         self.assertEqual(user, obj.username)
         self.assertEqual('bernie@gmail.com', obj.email)
         self.assertEqual(['/backups/bernie/computer/', '/backups/bernie/laptop/'], obj.repos)
         self.assertEqual('/backups/bernie/', obj.user_root)
         self.assertEqual(True, obj.is_admin)
+
+        # Get repo object
+        self.assertEqual('/backups/bernie/computer/', obj.repos_obj[0].name)
+        self.assertEqual(-1, obj.repos_obj[0].maxage)
+        self.assertEqual('/backups/bernie/laptop/', obj.repos_obj[1].name)
+        self.assertEqual(3, obj.repos_obj[1].maxage)
 
     def test_get_set(self):
         user = 'larry'
@@ -171,7 +179,7 @@ class UserManagerSQLiteTest(AppTestCase):
         self.app.userdb.add_user('Charlie', 'password')
         self.app.userdb.add_user('Bernard', 'password')
         self.app.userdb.add_user('Kim', 'password')
-        users = list(self.app.userdb.search())
+        users = list(self.app.userdb.list_obj())
         self.assertEqual(3, len(users))
 
     def test_set_password_update(self):

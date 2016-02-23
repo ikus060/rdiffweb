@@ -57,7 +57,7 @@ class LocationsPage(page_main.MainPage):
         Build the params for the locations templates.
         """
         # Get user's locations.
-        user_root = self.app.currentuser.root_dir
+        user_root = self.app.currentuser.user_root
         user_repos = self.app.currentuser.repos
         repos = []
         for user_repo in user_repos:

@@ -19,6 +19,7 @@
 from __future__ import unicode_literals
 
 from builtins import str
+from future.utils import python_2_unicode_compatible
 import logging
 
 from rdiffweb.core import RdiffError, Component, InvalidUserError
@@ -30,26 +31,7 @@ from rdiffweb.rdw_plugin import IPasswordStore, IDatabase, IUserChangeListener
 logger = logging.getLogger(__name__)
 
 
-def _getter(field):
-    """
-    Getter to fetch field from CurrentUser.
-    """
-
-    attrname = '_cache_%s' % (field,)
-
-    def get_field(x):
-        # Check cache value.
-        if not hasattr(x, attrname):
-            # Not in cache, query value.
-            func = getattr(x._db, field)
-            value = func(x._username)
-            # Store value in cache
-            setattr(x, attrname, value)
-        return getattr(x, attrname)
-
-    return get_field
-
-
+@python_2_unicode_compatible
 class UserObject(object):
     """Represent an instance of user."""
 
@@ -57,14 +39,56 @@ class UserObject(object):
         self._db = db
         self._username = username
 
+    def __eq__(self, other):
+        return (isinstance(other, UserObject) and
+                self._username == other._username and
+                self._db == other._db)
+
+    def __str__(self):
+        return 'UserObject[%s]' % self._username
+
+    def __repr__(self):
+        return 'UserObject(db, %r)' % self._username
+
     @property
     def username(self):
         return self._username
 
-    is_admin = property(fget=_getter('is_admin'))
-    email = property(fget=_getter('get_email'))
-    user_root = property(fget=_getter('get_user_root'))
-    repos = property(fget=_getter('get_repos'))
+    # Declare properties
+    is_admin = property(fget=lambda x: x._db.is_admin(x._username))
+    email = property(fget=lambda x: x._db.get_email(x._username))
+    user_root = property(fget=lambda x: x._db.get_user_root(x._username))
+    repos = property(fget=lambda x: x._db.get_repos(x._username))
+    repos_obj = property(fget=lambda x: [RepoObject(x._db, x._username, r)
+                                         for r in x._db.get_repos(x._username)])
+
+
+@python_2_unicode_compatible
+class RepoObject(object):
+    """Represent a repository."""
+
+    def __init__(self, db, username, repo):
+        self._db = db
+        self._username = username
+        self._repo = repo
+
+    def __eq__(self, other):
+        return (isinstance(other, RepoObject) and
+                self._username == other._username and
+                self._repo == other._repo and
+                self._db == other._db)
+
+    def __str__(self):
+        return 'RepoObject[%s]' % self._username
+
+    def __repr__(self):
+        return 'RepoObject(db, %r, %r)' % (self._username, self._repo)
+
+    @property
+    def name(self):
+        return self._repo
+
+    maxage = property(fget=lambda x: x._db.get_repo_maxage(x._username, x._repo))
 
 
 class UserManager(Component):
@@ -195,6 +219,14 @@ class UserManager(Component):
             raise InvalidUserError(user)
         return db.get_repos(user)
 
+    def get_repos_obj(self, user):
+        """Get list of repos for the given `user`."""
+        db = self.find_user_database(user)
+        if not db:
+            raise InvalidUserError(user)
+        for repo in db.get_repos(user):
+            yield RepoObject(db, user, repo)
+
     def get_repo_maxage(self, user, repo_path):
         """Return the max age of the given repo."""
         db = self.find_user_database(user)
@@ -202,7 +234,7 @@ class UserManager(Component):
             raise InvalidUserError(user)
         return db.get_repo_maxage(user, repo_path)
 
-    def get(self, username):
+    def get_user_obj(self, username):
         """Return a user object."""
         db = self.find_user_database(username)
         if not db:
@@ -245,6 +277,13 @@ class UserManager(Component):
             users.extend(store.list())
         return users
 
+    def list_obj(self):
+        """Search users database. Return a generator of user object."""
+        # TODO Add criteria as required.
+        for db in self._databases:
+            for username in db.list():
+                yield UserObject(db, username)
+
     def login(self, user, password):
         """
         Called to authenticate the given user.
@@ -280,13 +319,6 @@ class UserManager(Component):
         self.add_user(real_user)
         self._notify('logined', user, password)
         return real_user
-
-    def search(self):
-        """Search users database. Return a generator of user object."""
-        # TODO Add criteria as required.
-        for db in self._databases:
-            for username in db.list():
-                yield UserObject(db, username)
 
     def set_email(self, user, email):
         """Sets the given user email."""
