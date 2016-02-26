@@ -128,4 +128,4 @@ class RestorePage(page_main.MainPage):
         cherrypy.response.headers["Content-Disposition"] = self._content_disposition(filename)
 
         # Stream the data.
-        return _serve_fileobj(fileobj, content_type=None, content_length=None, debug=True)
+        return _serve_fileobj(fileobj, content_type=None, content_length=None)
