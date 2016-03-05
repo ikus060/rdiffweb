@@ -37,9 +37,7 @@ logger = logging.getLogger(__name__)
 @python_2_unicode_compatible
 class SettingsError(Exception):
 
-    def __init__(self, error=None):
-        if not error:
-            raise ValueError
+    def __init__(self, error):
         assert isinstance(error, str)
         self.error = error
 
@@ -77,7 +75,7 @@ class Configuration(object):
         assert isinstance(key, str)
         # Raise error if key contains equals(=)
         if ('=' in key):
-            raise ValueError
+            raise ValueError("key contains =")
 
         # Read the configuration file if required.
         self._parse_if_needed()
@@ -185,7 +183,7 @@ class Configuration(object):
         assert isinstance(value, str)
         # Raise error if key contains equals(=)
         if ('=' in key):
-            raise ValueError
+            raise ValueError("key contains =")
         # Read file if required
         self._parse_if_needed()
         # Update the cache

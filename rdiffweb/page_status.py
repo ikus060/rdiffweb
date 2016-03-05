@@ -63,7 +63,7 @@ class StatusPage(page_main.MainPage):
         # Validate date
         try:
             entry_time = rdw_helpers.rdwTime(int(date))
-        except ValueError:
+        except:
             logger.exception("invalid date")
             raise cherrypy.HTTPError(400, _("Invalid date."))
 

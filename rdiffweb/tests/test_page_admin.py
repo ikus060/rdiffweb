@@ -144,8 +144,8 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         except:
             pass
         self._add_user("test5", "test1@test.com", "test5", "/var/invalid/", False)
-        self.assertInBody("User added successfully.")
-        self.assertInBody("User root directory [/var/invalid/] is not accessible!")
+        self.assertNotInBody("User added successfully.")
+        self.assertInBody("User root directory /var/invalid/ is not accessible!")
 
     def test_delete_user_with_not_existing_username(self):
         """
@@ -166,7 +166,8 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure trying to update user with invalid path.
         """
         self._edit_user("test1", "test1@test.com", "test", "/var/invalid/", False)
-        self.assertInBody("User root directory [/var/invalid/] is not accessible!")
+        self.assertNotInBody("User added successfully.")
+        self.assertInBody("User root directory /var/invalid/ is not accessible!")
 
     def test_list(self):
         self.getPage("/admin/users/")

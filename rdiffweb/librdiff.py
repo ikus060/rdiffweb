@@ -311,7 +311,7 @@ class IncrementEntry(object):
         date_string = filename.rsplit(b".", 1)[-1]
         try:
             return rdw_helpers.rdwTime(date_string.decode())
-        except ValueError:
+        except:
             return None
 
     def _open(self):
@@ -772,7 +772,7 @@ class RdiffRepo(object):
                 return match.group
             try:
                 return bytes([int(match.group()[1:])])
-            except ValueError:
+            except:
                 return match.group
         # Remove quote using regex
         return re.sub(b";[0-9]{3}", unquoted_char, name, re.S)

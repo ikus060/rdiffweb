@@ -28,6 +28,7 @@ import logging
 
 from rdiffweb import librdiff
 from rdiffweb import page_main
+from rdiffweb.exceptions import Warning
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import unquote_url
 
@@ -70,8 +71,8 @@ class SettingsPage(page_main.MainPage):
                     params.update(self._handle_delete(repo_obj, **kwargs))
                 elif action == "set_encoding":
                     params.update(self._handle_set_encoding(repo_obj, **kwargs))
-            except ValueError as e:
-                params['error'] = str(e)
+            except Warning as e:
+                params['warning'] = str(e)
 
         # Get page data.
         params.update(self._get_parms_for_page(repo_obj))
@@ -124,7 +125,7 @@ class SettingsPage(page_main.MainPage):
         # Validate the name
         confirm_name = kwargs.get('confirm_name')
         if confirm_name != repo_obj.display_name:
-            raise ValueError(_("confirmation doesn't matches"))
+            raise Warning(_("confirmation doesn't matches"))
 
         # Update the repository encoding
         _logger.info("deleting repository [%s]", repo_obj)
@@ -146,7 +147,7 @@ class SettingsPage(page_main.MainPage):
         new_encoding = kwargs.get('encoding')
         new_encoding = str(encodings.normalize_encoding(new_encoding)).lower()
         if new_encoding not in self._get_encodings():
-            raise ValueError(_("invalid encoding value"))
+            raise Warning(_("invalid encoding value"))
 
         # Update the repository encoding
         _logger.info("updating repository [%s] encoding [%s]", repo_obj, new_encoding)

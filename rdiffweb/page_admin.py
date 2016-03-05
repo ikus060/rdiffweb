@@ -26,6 +26,7 @@ import os
 
 from rdiffweb import page_main
 from rdiffweb import rdw_spider_repos
+from rdiffweb.exceptions import Warning
 from rdiffweb.i18n import ugettext as _
 
 
@@ -39,16 +40,12 @@ class AdminPage(page_main.MainPage):
     def _check_user_exists(self, username):
         """Raise an exception if the user doesn't exists."""
         if not self.app.userdb.exists(username):
-            raise ValueError("The user does not exist.")
+            raise cherrypy.HTTPError(400, "The user does not exist.")
 
     def _check_user_root_dir(self, directory):
         """Raised an exception if the directory is not valid."""
-        if not os.access(directory, os.F_OK):
-            raise ValueError("User root directory [%s] is not accessible!"
-                             % directory)
-        if not os.path.isdir(directory):
-            raise ValueError("User root directory [%s] is not accessible!"
-                             % directory)
+        if not os.access(directory, os.F_OK) or not os.path.isdir(directory):
+            raise Warning(_("User root directory %s is not accessible!") % directory)
 
     @cherrypy.expose
     def index(self):
@@ -100,12 +97,8 @@ class AdminPage(page_main.MainPage):
                 params = self._users_handle_action(action, username,
                                                    email, password, user_root,
                                                    is_admin)
-            except ValueError as e:
-                logger.exception("unknown error processing action")
-                params['error'] = str(e)
-            except Exception as e:
-                logger.exception("unknown error processing action")
-                params['error'] = _("Fail to execute operation.")
+            except Warning as e:
+                params['warning'] = str(e)
 
         # Get page parameters
         params.update(
@@ -141,7 +134,6 @@ class AdminPage(page_main.MainPage):
                              user_root, is_admin):
 
         success = ""
-        warning = ""
 
         # We need to change values. Change them, then give back that main
         # page again, with a message
@@ -163,20 +155,15 @@ class AdminPage(page_main.MainPage):
             success = _("User information modified successfully.")
 
             # Check and update user directory
-            try:
-                self._check_user_root_dir(user_root)
-                rdw_spider_repos.find_repos_for_user(username, self.app.userdb)
-            except ValueError as e:
-                logger.warning('fail to update repo for user [%s]', username, exc_info=True)
-                success = ""
-                warning = str(e)
+            self._check_user_root_dir(user_root)
+            rdw_spider_repos.find_repos_for_user(username, self.app.userdb)
 
         elif action == "add":
 
             if self.app.userdb.exists(username):
-                raise ValueError("The user %s already exists." % (username))
+                raise Warning(_("The user %s already exists.") % (username))
             elif username == "":
-                raise ValueError("The username is invalid.")
+                raise Warning(_("The username is invalid."))
             logger.info("adding user [%s]", username)
 
             self.app.userdb.add_user(username, password)
@@ -185,22 +172,18 @@ class AdminPage(page_main.MainPage):
             self.app.userdb.set_email(username, email)
 
             # Check and update user directory
-            try:
-                self._check_user_root_dir(user_root)
-                rdw_spider_repos.find_repos_for_user(username, self.app.userdb)
-            except ValueError as e:
-                warning = str(e)
-            success = "User added successfully."
+            self._check_user_root_dir(user_root)
+            rdw_spider_repos.find_repos_for_user(username, self.app.userdb)
+            success = _("User added successfully.")
 
         if action == "delete":
 
             self._check_user_exists(username)
             if username == self.app.currentuser.username:
-                raise ValueError("You cannot remove your own account!.")
+                raise Warning("You cannot remove your own account!.")
             logger.info("deleting user [%s]", username)
             self.app.userdb.delete_user(username)
-            success = "User account removed."
+            success = _("User account removed.")
 
         # Return messages
-        return {'success': success,
-                'warning': warning}
+        return {'success': success}

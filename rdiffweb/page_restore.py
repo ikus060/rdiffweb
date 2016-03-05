@@ -67,9 +67,8 @@ class RestorePage(page_main.MainPage):
         try:
             filename.encode('ascii')
             # Some char are not decoded properly by user agent.
-            if any(c in filename for c in [';', '%', '\\']):
-                raise ValueError("contains special char")
-            return 'attachment; filename="%s"' % filename
+            if not any(c in filename for c in [';', '%', '\\']):
+                return 'attachment; filename="%s"' % filename
         except:
             pass
         # 3. Define filename* as encoded UTF8 (replace invalid char)
