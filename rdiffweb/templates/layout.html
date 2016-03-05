@@ -4,9 +4,10 @@
 {% block head %}
 <title>
 {% block title %}
-{% if title %}{{ title }} - {% endif %}
-{% if header_name %}{{ header_name }}{% else %}rdiffweb{% endif %}
+{% if title %}{{ title }}{% endif %}
 {% endblock title %}
+ - 
+{% if header_name %}{{ header_name }}{% else %}rdiffweb{% endif %}
 </title>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
