@@ -274,6 +274,10 @@ class RestoreTest(WebCase):
         self._restore(self.REPO, "Revisions/Data/", "1415221507", True)
         self.assertBody("Version3\n")
 
+    def test_invalid_date(self):
+        self._restore(self.REPO, "Revisions/Data/", "1415221a470", True)
+        self.assertStatus(400)
+
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     logging.basicConfig(level=logging.DEBUG)
