@@ -89,6 +89,7 @@ class RdiffwebApp(Application):
                 'tools.encode.encoding': 'utf-8',
                 'tools.gzip.on': True,
                 'tools.sessions.on': True,
+                'error_page.default': self.error_page,
             },
             native_str('/favicon.ico'): {
                 'tools.authform.on': False,
@@ -145,6 +146,24 @@ class RdiffwebApp(Application):
 
     # TODO Should be a cherrypy.tool, to set `cherrypy.request.user` directly.
     currentuser = property(fget=__get_currentuser)
+
+    def error_page(self, **kwargs):
+        """
+        Default error page shown to the user when an unexpected error occur.
+        """
+        # Try to get more page
+        parms = {}
+        try:
+            if self.currentuser:
+                parms['is_login'] = True
+                parms['username'] = self.currentuser.username
+                parms['is_admin'] = self.currentuser.is_admin
+        except:
+            pass
+
+        # Build the error page.
+        parms.update(kwargs)
+        return self.templates.compile_template('error_page_default.html', **parms)
 
     def get_version(self):
         """

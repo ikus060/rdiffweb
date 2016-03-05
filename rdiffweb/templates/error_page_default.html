@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+{% block title %}{{ status }}{% endblock %}
+{% block body %}
+<div class="spacer"></div>
+<div class="container">
+    
+    <div class="jumbotron text-center">
+	    <h1>{% trans %}Oops!{% endtrans %}</h1>
+	    <h2>{{ status }}</h2>
+	    <div class="error-details">
+	       <p>{% trans %}Sorry, an error has occured.{% endtrans %}</p>
+	       <p>{{ message }}</p>
+	    </div>
+    </div>
+    
+    {% if traceback %}
+    <pre id="traceback">{{ traceback }}</pre>
+    {% endif %}
+    
+</div>
+{% endblock %}

@@ -65,17 +65,6 @@ def debug_dump_thread():
         print()
 
 
-def error_page(**kwargs):
-    """
-    Default error page.
-    Try to fix a cherrypy error related to encoding.
-    """
-    # Template is a str, convert it to unicode.
-    template = cherrypy._cperror._HTTPErrorTemplate.decode('ascii', 'replace')
-    return template % {key: value.decode('ascii', 'replace')
-                       for key, value in kwargs.items()}
-
-
 def setup_logging(log_file, log_access_file, level):
     """
     Called by `start()` to configure the logging system
@@ -217,7 +206,6 @@ def start():
         'log.screen': False,
         'log.access_file': log_access_file,
         'server.environment': environment,
-        'error_page.default': error_page,
     })
 
     cherrypy.config.update(global_config)
