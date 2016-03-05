@@ -92,6 +92,13 @@ class PrefsTest(WebCase):
         self._set_password("oups", "t", "t")
         self.assertInBody("wrong password")
 
+    def test_invalid_pref(self):
+        """
+        Check if invalid prefs url is 404 Not Found.
+        """
+        self.getPage("/prefs/invalid/")
+        self.assertStatus(404)
+
     def test_update_repos(self):
         self._update_repos()
         self.assertInBody("Repositories successfully updated.")
