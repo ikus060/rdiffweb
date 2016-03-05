@@ -25,20 +25,12 @@
 # Description: Manages the rdiffweb daemon
 ### END INIT INFO
 
-## Options you may change ##
-DEBUG=0
-AUTORELOAD=0
-
 ## Options you should probably not change ##
 DESC="rdiffweb server"
 NAME=rdiffweb
 DAEMON=/usr/local/bin/$NAME
-DAEMON_ARGS=""
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
-
-LOGFILE="/var/log/$NAME.log"
-ACCESSLOGFILE="/var/log/$NAME-access.log"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -54,15 +46,6 @@ ACCESSLOGFILE="/var/log/$NAME-access.log"
 # and status_of_proc is working.
 . /lib/lsb/init-functions
 
-## Build extra options ##
-DAEMON_ARGS="--log-access-file=$ACCESSLOGFILE"
-if [ "$DEBUG" = "1" ]; then
-  DAEMON_ARGS="$DAEMON_ARGS --debug"
-fi
-if [ "$AUTORELOAD" = "1" ]; then
-  DAEMON_ARGS="$DAEMON_ARGS --autoreload"
-fi
-
 #
 # Function that starts the daemon/service
 #
@@ -76,7 +59,7 @@ do_start()
     --startas $DAEMON > /dev/null \
     || return 1
   start-stop-daemon --start --background --quiet --pidfile $PIDFILE --make-pidfile \
-    --startas /bin/bash -- -c "exec $DAEMON $DAEMON_ARGS >> $LOGFILE 2>&1" \
+    --startas $DAEMON \
     || return 2
 }
 

@@ -19,15 +19,16 @@
 from __future__ import unicode_literals
 
 import cherrypy
+from future.builtins import str
 import getopt
 import logging
 import sys
 import tempfile
-
-from rdiffweb import rdw_app
-from rdiffweb.rdw_profiler import ProfilingApplication
 import threading
 import traceback
+
+from rdiffweb import rdw_app, rdw_config
+from rdiffweb.rdw_profiler import ProfilingApplication
 
 
 # Define logger for this module
@@ -75,10 +76,11 @@ def error_page(**kwargs):
                        for key, value in kwargs.items()}
 
 
-def setup_logging(log_file, log_access_file, debug):
+def setup_logging(log_file, log_access_file, level):
     """
     Called by `start()` to configure the logging system
     """
+    assert isinstance(logging.getLevelName(level), int)
 
     class NotFilter(logging.Filter):
 
@@ -122,7 +124,7 @@ def setup_logging(log_file, log_access_file, debug):
             return True
 
     logformat = '[%(asctime)s][%(levelname)-7s][%(ip)s][%(user)s][%(threadName)s][%(name)s] %(message)s'
-    level = logging.DEBUG if debug else logging.INFO
+    level = logging.getLevelName(level)
     # Configure default log file.
     if log_file:
         assert isinstance(log_file, str)
@@ -140,10 +142,7 @@ def setup_logging(log_file, log_access_file, debug):
 def start():
     """Start rdiffweb deamon."""
     # Parse command line options
-    debug = False
-    log_file = b""
-    log_access_file = b""
-    configfile = b'/etc/rdiffweb/rdw.conf'
+    args = {}
     profile = False
     profile_path = '/tmp'
     profile_aggregated = False
@@ -161,13 +160,13 @@ def start():
         ])[0]
     for option, value in opts:
         if option in ['-d', '--debug']:
-            debug = True
+            args['debug'] = True
         elif option in ['--log-file']:
-            log_file = value
+            args['log_file'] = value
         elif option in ['--log-access-file']:
-            log_access_file = value
+            args['log_access_file'] = value
         elif option in ['-f', '--config']:
-            configfile = value
+            args['config'] = value
         elif option in ['--profile']:
             profile = True
         elif option in ['--profile-path']:
@@ -175,11 +174,23 @@ def start():
         elif option in ['--profile-aggregated']:
             profile_aggregated = True
 
+    # Open config file before opening the apps.
+    configfile = args.get('config', '/etc/rdiffweb/rdw.conf')
+    tmp_cfg = rdw_config.Configuration(configfile)
+    log_file = args.get('log_file', None) or tmp_cfg.get_config('LogFile', False)
+    log_access_file = args.get('log_access_file', None) or tmp_cfg.get_config('LogAccessFile', False)
+    if args.get('debug', False):
+        environment = 'development'
+        log_level = "DEBUG"
+    else:
+        environment = tmp_cfg.get_config('Environment', 'production')
+        log_level = tmp_cfg.get_config('LogLevel', 'INFO')
+
     # Configure logging
     setup_logging(
         log_file=log_file,
         log_access_file=log_access_file,
-        debug=debug)
+        level=log_level)
 
     # Log startup
     logger.info("START")
@@ -194,7 +205,8 @@ def start():
     sslCertificate = app.cfg.get_config("SslCertificate")
     sslPrivateKey = app.cfg.get_config("SslPrivateKey")
 
-    global_config = {
+    global_config = cherrypy._cpconfig.environments.get(environment, {})
+    global_config.update({
         'server.socket_host': serverHost,
         'server.socket_port': serverPort,
         'server.log_file': log_file,
@@ -204,9 +216,9 @@ def start():
         'server.max_request_body_size': 2097152,
         'log.screen': False,
         'log.access_file': log_access_file,
-        'server.environment': "development" if debug else "production",
+        'server.environment': environment,
         'error_page.default': error_page,
-    }
+    })
 
     cherrypy.config.update(global_config)
 
