@@ -30,7 +30,10 @@ import unittest
 from rdiffweb.test import WebCase
 
 
-class PluginsTest(WebCase):
+class PluginsTestAsAdmin(WebCase):
+    """
+    Plugin to verify admin plugin page as Admin.
+    """
 
     login = True
 
@@ -40,6 +43,27 @@ class PluginsTest(WebCase):
         self.getPage("/admin/plugins/")
         self.assertInBody('Ldap')
         self.assertInBody('SQLite')
+
+
+class PluginsTestAsUser(WebCase):
+    """
+    Plugin to verify admin plugin page as user.
+    """
+
+    reset_app = True
+
+    def setUp(self):
+        WebCase.setUp(self)
+        # Add test user
+        self.app.userdb.add_user('test', 'test123')
+        self._login('test', 'test123')
+
+    def test_plugins_List(self):
+        """
+        Check if listing plugins as user is forbidden.
+        """
+        self.getPage("/admin/plugins/")
+        self.assertStatus(403)
 
 
 if __name__ == "__main__":

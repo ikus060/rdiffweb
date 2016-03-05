@@ -20,14 +20,13 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from builtins import bytes
-from builtins import str
 import cherrypy
 from future.utils.surrogateescape import encodefilename
 import logging
 import os.path
 
 from rdiffweb.core import Component
-from rdiffweb.librdiff import RdiffRepo, AccessDeniedError
+from rdiffweb.librdiff import RdiffRepo, AccessDeniedError, DoesNotExistError
 from rdiffweb.rdw_plugin import ITemplateFilterPlugin
 
 
@@ -80,7 +79,7 @@ class MainPage(Component):
         if repo_b is None:
             # No repo matches
             logger.error("user doesn't have access to [%r]", path_b)
-            raise AccessDeniedError
+            raise cherrypy.HTTPError(404)
 
         # Get reference to user_root
         user_root_b = encodefilename(self.app.currentuser.user_root)
@@ -96,31 +95,31 @@ class MainPage(Component):
                 path_b = os.path.relpath(real_path_b, user_root_b)
             else:
                 logger.warning("access is denied [%r] vs [%r]", full_path_b, real_path_b)
-                raise AccessDeniedError
+                raise cherrypy.HTTPError(404)
 
-        # Get reference to the repository (this ensure the repository does
-        # exists and is valid.)
-        repo_obj = RdiffRepo(user_root_b, repo_b)
+        try:
+            # Get reference to the repository (this ensure the repository does
+            # exists and is valid.)
+            repo_obj = RdiffRepo(user_root_b, repo_b)
 
-        # Get reference to the path.
-        path_b = path_b[len(repo_b):]
-        path_obj = repo_obj.get_path(path_b)
+            # Get reference to the path.
+            path_b = path_b[len(repo_b):]
+            path_obj = repo_obj.get_path(path_b)
 
-        return (repo_obj, path_obj)
+            return (repo_obj, path_obj)
+
+        except AccessDeniedError:
+            logger.warning("access is denied %r/%r", user_root_b, repo_b, exc_info=1)
+            raise cherrypy.HTTPError(404)
+        except DoesNotExistError:
+            logger.warning("doesn't exists %r/%r", user_root_b, repo_b, exc_info=1)
+            raise cherrypy.HTTPError(404)
 
     def _is_submit(self):
         """
         Check if the cherrypy request is a POST.
         """
         return cherrypy.request.method == "POST"
-
-    def _compile_error_template(self, error):
-        """
-        Compile an error template.
-            `error` the error message.
-        """
-        assert isinstance(error, str)
-        return self._compile_template("error.html", error=error)
 
     def _compile_template(self, template_name, **kwargs):
         """

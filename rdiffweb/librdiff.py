@@ -77,36 +77,22 @@ FS_ENCODING = (sys.getfilesystemencoding() or 'utf-8').lower()
 
 @python_2_unicode_compatible
 class FileError(Exception):
-
-    def __str__(self):
-        return _("An unknown error occurred.")
+    pass
 
 
 @python_2_unicode_compatible
 class AccessDeniedError(FileError):
-
-    def __str__(self):
-        return _("Access denied.")
+    pass
 
 
 @python_2_unicode_compatible
 class DoesNotExistError(FileError):
-
-    def __str__(self):
-        return _("The repository does not exist.")
+    pass
 
 
 @python_2_unicode_compatible
 class UnknownError(FileError):
-
-    def __init__(self, error=None):
-        if not error:
-            error = _("An unknown error occurred.")
-        assert isinstance(error, str)
-        self.error = error
-
-    def __str__(self):
-        return self.error
+    pass
 
 
 # Interfaced objects #

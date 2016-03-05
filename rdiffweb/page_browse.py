@@ -63,19 +63,10 @@ class BrowsePage(page_main.MainPage):
         logger.debug("browsing [%r]", path)
 
         # Check user access to the given repo & path
-        try:
-            (repo_obj, path_obj) = self.validate_user_path(path)
-        except librdiff.FileError as e:
-            logger.exception("invalid user path")
-            return self._compile_error_template(str(e))
+        (repo_obj, path_obj) = self.validate_user_path(path)
 
         # Build the parameters
-        try:
-            parms = self._get_parms_for_page(repo_obj, path_obj, restore)
-        except librdiff.FileError as e:
-            logger.exception("can't create params")
-            return self._compile_error_template(str(e))
-
+        parms = self._get_parms_for_page(repo_obj, path_obj, restore)
         return self._compile_template("browse.html", **parms)
 
     def _get_parms_for_page(self, repo_obj, path_obj, restore):

@@ -26,7 +26,6 @@ from cherrypy.lib.static import _serve_fileobj
 import logging
 import os
 
-from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb import rdw_helpers
 from rdiffweb.i18n import ugettext as _
@@ -93,22 +92,18 @@ class RestorePage(page_main.MainPage):
             file_b = b""
 
         # Check user access to repo / path.
-        try:
-            (repo_obj, path_obj) = self.validate_user_path(path)
-        except librdiff.FileError as e:
-            logger.exception("invalid user path")
-            return self._compile_error_template(str(e))
+        (repo_obj, path_obj) = self.validate_user_path(path)
 
         # Get the restore date
         try:
             rdw_helpers.rdwTime(int(date))
         except:
             logger.warning("invalid date %s", date)
-            return self._compile_error_template(_("Invalid date."))
+            raise cherrypy.HTTPError(400, _("Invalid date."))
 
         # Get if backup in progress
         if repo_obj.in_progress:
-            return self._compile_error_template(_("""A backup is currently in progress to this repository. Restores are disabled until this backup is complete."""))
+            raise cherrypy.HTTPError(500, _("""A backup is currently in progress to this repository. Restores are disabled until this backup is complete."""))
 
         # Determine the kind.
         kind = 'zip'
@@ -116,15 +111,9 @@ class RestorePage(page_main.MainPage):
             kind = 'tar.gz'
 
         # Restore file(s)
-        try:
-            filename, fileobj = path_obj.restore(file_b, int(date), kind=kind)
-        except librdiff.FileError as e:
-            logger.exception("fail to restore")
-            return self._compile_error_template(str(e))
-        except ValueError:
-            logger.exception("fail to restore")
-            return self._compile_error_template(_("Fail to restore."))
+        filename, fileobj = path_obj.restore(file_b, int(date), kind=kind)
 
+        # Define content-disposition.
         cherrypy.response.headers["Content-Disposition"] = self._content_disposition(filename)
 
         # Stream the data.

@@ -183,24 +183,27 @@ class BrowsePageTest(WebCase):
         Browse to an invalid repository.
         """
         self._browse("/invalid/", "")
-        self.assertInBody("Access denied.")
+        self.assertStatus(404)
+        self.assertInBody("Not Found")
 
         self._browse("invalid/", "")
-        self.assertInBody("Access denied.")
+        self.assertStatus(404)
+        self.assertInBody("Not Found")
 
     def test_invalid_path(self):
         """
         Browse to an invalid path.
         """
         self._browse(self.REPO, "invalid/")
-        self.assertInBody("The repository does not exist.")
+        self.assertStatus(404)
 
     def test_with_rdiffbackupdata(self):
         """
         Verify if rdiff-backup-data is not accessible.
         """
         self._browse(self.REPO, "rdiff-backup-data/")
-        self.assertInBody("Access denied.")
+        self.assertStatus(404)
+        self.assertInBody("Not Found")
 
     def test_with_single_repo(self):
         """

@@ -55,21 +55,16 @@ class AdminPage(page_main.MainPage):
 
         # Check if user is an administrator
         if not self.app.currentuser or not self.app.currentuser.is_admin:
-            return self._compile_error_template(_("Access denied."))
+            raise cherrypy.HTTPError(403)
 
-        params = {}
-        try:
-            users = self.app.userdb.list()
-            repos = set()
-            for user in users:
-                for repo in self.app.userdb.get_repos(user):
-                    repos.add(repo)
+        users = self.app.userdb.list()
+        repos = set()
+        for user in users:
+            for repo in self.app.userdb.get_repos(user):
+                repos.add(repo)
 
-            params = {"user_count": len(users),
-                      "repo_count": len(repos)}
-        except:
-            logger.exception("fail to get stats", **params)
-            return self._compile_error_template(_("Can't get admin information."))
+        params = {"user_count": len(users),
+                  "repo_count": len(repos)}
 
         return self._compile_template("admin.html", **params)
 
@@ -80,17 +75,11 @@ class AdminPage(page_main.MainPage):
         """
         # Check if user is an administrator
         if not self.app.currentuser or not self.app.currentuser.is_admin:
-            return self._compile_error_template(_("Access denied."))
+            raise cherrypy.HTTPError(403)
 
-        params = {}
-        try:
-            params = {
-                "plugins": self.app.plugins.get_plugin_infos()
-            }
-        except:
-            logger.exception("fail to get list of plugins")
-            params['error'] = _("Fail to get list of plugins.")
-
+        params = {
+            "plugins": self.app.plugins.get_plugin_infos()
+        }
         return self._compile_template("admin_plugins.html", **params)
 
     @cherrypy.expose
@@ -99,7 +88,7 @@ class AdminPage(page_main.MainPage):
 
         # Check if user is an administrator
         if not self.app.currentuser or not self.app.currentuser.is_admin:
-            return self._compile_error_template(_("Access denied."))
+            raise cherrypy.HTTPError(403)
 
         assert isinstance(userfilter, str)
         assert isinstance(usersearch, str)
@@ -119,12 +108,8 @@ class AdminPage(page_main.MainPage):
                 params['error'] = _("Fail to execute operation.")
 
         # Get page parameters
-        try:
-            params.update(
-                self._users_get_params_for_page(userfilter, usersearch))
-        except:
-            logger.exception("fail to get user list")
-            return self._compile_error_template(_("Can't get user list."))
+        params.update(
+            self._users_get_params_for_page(userfilter, usersearch))
 
         # Build users page
         return self._compile_template("admin_users.html", **params)

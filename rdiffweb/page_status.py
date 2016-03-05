@@ -65,17 +65,13 @@ class StatusPage(page_main.MainPage):
             entry_time = rdw_helpers.rdwTime(int(date))
         except ValueError:
             logger.exception("invalid date")
-            return self._compile_error_template(_("Invalid date."))
+            raise cherrypy.HTTPError(400, _("Invalid date."))
 
         if not path_b:
             userMessages = self._get_user_messages_for_day(entry_time)
         else:
             # Validate repo parameter
-            try:
-                repo_obj = self.validate_user_path(path_b)[0]
-            except librdiff.FileError as e:
-                logger.exception("invalid user path")
-                return self._compile_error_template(str(e))
+            repo_obj = self.validate_user_path(path_b)[0]
 
             userMessages = self._getUserMessages(
                 [repo_obj.path], False, True, entry_time, entry_time)

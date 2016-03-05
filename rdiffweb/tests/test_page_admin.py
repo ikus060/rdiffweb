@@ -30,10 +30,8 @@ import unittest
 from rdiffweb.test import WebCase
 
 
-class AdminUsersTest(WebCase):
-    """Integration test for page_admin"""
-
-    login = True
+class AbstractAdminTest(WebCase):
+    """Class to regroup command method to test admin page."""
 
     def _add_user(self, username=None, email=None, password=None, user_root=None, is_admin=None):
         b = {}
@@ -69,6 +67,12 @@ class AdminUsersTest(WebCase):
         b = {'action': 'delete',
              'username': username}
         self.getPage("/admin/users/", method='POST', body=b)
+
+
+class AdminUsersAsAdminTest(AbstractAdminTest):
+    """Integration test for page_admin"""
+
+    login = True
 
     def test_add_edit_delete(self):
         #  Add user to be listed
@@ -150,6 +154,13 @@ class AdminUsersTest(WebCase):
         self._delete_user("test3")
         self.assertInBody("The user does not exist.")
 
+    def test_delete_our_self(self):
+        """
+        Verify failure to delete our self.
+        """
+        self._delete_user(self.USERNAME)
+        self.assertInBody("You cannot remove your own account!")
+
     def test_edit_user_with_invalid_path(self):
         """
         Verify failure trying to update user with invalid path.
@@ -185,6 +196,47 @@ class AdminUsersTest(WebCase):
         self.assertInBody("test1")
         self.getPage("/admin/users/?usersearch=coucou")
         self.assertNotInBody("test1")
+
+
+class AdminUsersAsUserTest(AbstractAdminTest):
+    """Integration test for page_admin"""
+
+    reset_app = True
+
+    def setUp(self):
+        WebCase.setUp(self)
+        # Add test user
+        self.app.userdb.add_user('test', 'test123')
+        self._login('test', 'test123')
+
+    def test_add_user(self):
+        """
+        Check if adding user is forbidden.
+        """
+        self._add_user("test2", "test2@test.com", "test2", "/var/backups/", False)
+        self.assertStatus(403)
+
+    def test_delete_user(self):
+        """
+        Check if deleting user is forbidden.
+        """
+        self._delete_user("test")
+        self.assertStatus(403)
+
+    def test_edit_user(self):
+        """
+        Check if editing user is forbidden.
+        """
+        self._edit_user("test", "test1@test.com", "test", "/var/invalid/", False)
+        self.assertStatus(403)
+
+    def test_list(self):
+        """
+        Check if listing user is forbidden.
+        """
+        self.getPage("/admin/users/")
+        self.assertStatus(403)
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

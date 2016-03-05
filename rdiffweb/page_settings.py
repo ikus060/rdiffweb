@@ -28,7 +28,6 @@ import logging
 
 from rdiffweb import librdiff
 from rdiffweb import page_main
-from rdiffweb import rdw_helpers
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import unquote_url
 
@@ -60,11 +59,7 @@ class SettingsPage(page_main.MainPage):
         _logger.debug("repo settings [%r]", path)
 
         # Check user permissions
-        try:
-            repo_obj = self.validate_user_path(path)[0]
-        except librdiff.FileError as e:
-            _logger.exception("invalid user path [%r]", path)
-            return self._compile_error_template(str(e))
+        repo_obj = self.validate_user_path(path)[0]
 
         # Check if any action to process.
         params = {}
@@ -75,24 +70,11 @@ class SettingsPage(page_main.MainPage):
                     params.update(self._handle_delete(repo_obj, **kwargs))
                 elif action == "set_encoding":
                     params.update(self._handle_set_encoding(repo_obj, **kwargs))
-                else:
-                    _logger.info("unknown action: %s", action)
-                    raise cherrypy.NotFound("Unknown action")
             except ValueError as e:
                 params['error'] = str(e)
-            except HTTPRedirect as e:
-                # Re-raise HTTPRedirect exception.
-                raise e
-            except Exception as e:
-                _logger.warning("unknown error processing action", exc_info=True)
-                params['error'] = _("Unknown error")
 
         # Get page data.
-        try:
-            params.update(self._get_parms_for_page(repo_obj))
-        except librdiff.FileError:
-            _logger.exception("can't create page params")
-            return self._compile_error_template(str(e))
+        params.update(self._get_parms_for_page(repo_obj))
 
         # Generate page.
         return self._compile_template("settings.html", **params)
@@ -100,7 +82,7 @@ class SettingsPage(page_main.MainPage):
     def _get_parms_for_page(self, repo_obj):
         assert isinstance(repo_obj, librdiff.RdiffRepo)
 
-        current_encoding = repo_obj.get_encoding() or rdw_helpers.system_charset
+        current_encoding = repo_obj.get_encoding()
         current_encoding = encodings.normalize_encoding(current_encoding)
 
         return {

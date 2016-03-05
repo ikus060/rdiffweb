@@ -19,7 +19,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from builtins import str
 import cherrypy
 import logging
 
@@ -54,26 +53,13 @@ class HistoryPage(page_main.MainPage):
 
         logger.debug("history [%r]", path)
 
-        try:
-            (repo_obj, path_obj) = self.validate_user_path(path)
-        except librdiff.FileError as e:
-            logger.exception("invalid user path")
-            return self._compile_error_template(str(e))
-
-        try:
-            parms = self._get_parms_for_page(repo_obj)
-        except librdiff.FileError:
-            logger.exception("can't create page params")
-            return self._compile_error_template(str(e))
-
-        return self._compile_template("history.html", **parms)
-
-    def _get_parms_for_page(self, repo_obj):
+        repo_obj = self.validate_user_path(path)[0]
         assert isinstance(repo_obj, librdiff.RdiffRepo)
 
-        # Get history for the repo.
-        history_entries = repo_obj.get_history_entries()
+        parms = {
+            "repo_name": repo_obj.display_name,
+            "repo_path": repo_obj.path,
+            "history_entries": repo_obj.get_history_entries()
+        }
 
-        return {"repo_name": repo_obj.display_name,
-                "repo_path": repo_obj.path,
-                "history_entries": history_entries}
+        return self._compile_template("history.html", **parms)
