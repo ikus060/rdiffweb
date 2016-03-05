@@ -37,17 +37,61 @@ class SettingsTest(WebCase):
     reset_testcases = True
 
     def _settings(self, repo):
-        return self.getPage("/settings/" + repo + "/")
+        self.getPage("/settings/" + repo + "/")
+
+    def _set_encoding(self, repo, encoding):
+        self.getPage("/settings/" + repo + "/", method="POST",
+                     body={'action': 'set_encoding', 'encoding': encoding})
+
+    def _delete(self, repo, confirm_name):
+        self.getPage("/settings/" + repo + "/", method="POST",
+                     body={'action': 'delete', 'confirm_name': confirm_name})
 
     def test_check_encoding(self):
         self._settings(self.REPO)
         self.assertInBody("Character encoding")
         self.assertInBody("utf_8")
 
+    def test_set_encoding(self):
+        """
+        Check to update the encoding.
+        """
+        self._set_encoding(self.REPO, 'cp1252')
+        self.assertInBody("cp1252")
+
+    def test_set_encoding_invalid(self):
+        """
+        Check to update the encoding.
+        """
+        self._set_encoding(self.REPO, 'invalid')
+        self.assertStatus(400)
+        self.assertInBody("invalid encoding value")
+
+    def test_set_encoding_windows_1252(self):
+        """
+        Check to update the encoding.
+        """
+        self._set_encoding(self.REPO, 'windows_1252')
+        self.assertStatus(200)
+        self.assertInBody("cp1252")
+
     def test_check_delete(self):
         self._settings(self.REPO)
         self.assertInBody("Delete")
 
+    def test_delete(self):
+        """
+        Check to delete a repo.
+        """
+        self._delete(self.REPO, self.REPO)
+        self.assertStatus(303)
+
+    def test_delete_wrong_confirm(self):
+        """
+        Check failure to delete a repo with wrong confirmation.
+        """
+        self._delete(self.REPO, 'wrong')
+        self.assertInBody("confirmation doesn&#39;t matches")
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

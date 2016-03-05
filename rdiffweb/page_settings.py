@@ -134,7 +134,10 @@ class SettingsPage(page_main.MainPage):
         # Refresh repository list
         username = self.app.currentuser.username
         repos = self.app.userdb.get_repos(username)
-        repos.remove(b"/" + repo_obj.path)
+        # Remove the repository. Depending of rdiffweb, the name may contains '/'.
+        for r in [repo_obj.path, b"/" + repo_obj.path, repo_obj.path + b"/", b"/" + repo_obj.path + b"/"]:
+            if r in repos:
+                repos.remove(r)
         self.app.userdb.set_repos(username, repos)
 
         raise HTTPRedirect("/")
@@ -145,9 +148,14 @@ class SettingsPage(page_main.MainPage):
         """
         # Validate the encoding value
         new_encoding = kwargs.get('encoding')
-        new_encoding = str(encodings.normalize_encoding(new_encoding)).lower()
-        if new_encoding not in self._get_encodings():
-            raise Warning(_("invalid encoding value"))
+        new_codec = encodings.search_function(new_encoding.lower())
+        if not new_codec:
+            raise cherrypy.HTTPError(400, _("invalid encoding value"))
+
+        new_encoding = new_codec.name
+        if not isinstance(new_encoding, str):
+            # Python 2
+            new_encoding = new_encoding.decode('ascii')
 
         # Update the repository encoding
         _logger.info("updating repository [%s] encoding [%s]", repo_obj, new_encoding)
