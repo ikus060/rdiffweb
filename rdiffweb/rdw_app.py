@@ -150,6 +150,9 @@ class RdiffwebApp(Application):
         """
         Default error page shown to the user when an unexpected error occur.
         """
+        # Log exception.
+        logger.exception(kwargs.get('message', ''))
+
         # Try to get more page
         parms = {}
         try:
