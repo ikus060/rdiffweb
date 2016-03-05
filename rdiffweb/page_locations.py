@@ -42,12 +42,7 @@ class LocationsPage(page_main.MainPage):
         logger.debug("browsing locations")
 
         # Get page params
-        params = {}
-        try:
-            params = self._get_parms_for_page()
-        except:
-            logger.exception("fail to get user's locations")
-            params["error"] = _("fail to get user's locations")
+        params = self._get_parms_for_page()
 
         # Render the page.
         return self._compile_template("locations.html", **params)
