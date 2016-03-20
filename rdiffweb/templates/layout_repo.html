@@ -29,19 +29,21 @@
     </h1>
     
     <!-- Repo Nav -->
+	{% set repo_nav_bar = [
+	    ('browse', _('Files'), url_for_browse(repo_path, path), 'icon-docs'),
+	    ('restore', _('Restore folder'), url_for_browse(repo_path, path, restore=True), 'icon-file-archive'),
+	    ('history', _('History'), url_for_history(repo_path), 'icon-history'),
+	    ('settings', _('Settings'), url_for_settings(repo_path), 'icon-cog-alt'),
+	] -%}
+	{% if repo_nav_bar_extras %}
+    {{ repo_nav_bar.extend(repo_nav_bar_extras) or "" }}
+    {% endif %}
     <ul class="nav nav-tabs" role="navigation">
-    <li {% if dir_entries %}class="active"{% endif%}>
-        <a href="{{ url_for_browse(repo_path, path) }}"><i class="icon-docs"></i> {% trans %}Files{% endtrans %}</a>
+    {% for item in repo_nav_bar %}
+    <li {{ attrib(class=active_repo_page==item[0] and "active") }} >
+        <a href="{{ item[2] }}"><i class="{{ item[3] }}"></i> {{ item[1] }}</a>
     </li>
-    <li {% if restore_dates %}class="active"{% endif %}>
-        <a href="{{ url_for_browse(repo_path, path, restore=True) }}"><i class="icon-file-archive"></i> {% trans %}Restore folder{% endtrans %}</a>
-    </li>
-    <li {% if history_entries %}class="active"{% endif %}>
-        <a href="{{ url_for_history(repo_path) }}"><i class="icon-history"></i> {% trans %}History{% endtrans %}</a>
-    </li>
-    <li {% if settings %}class="active"{% endif %}>
-        <a href="{{ url_for_settings(repo_path) }}"><i class="icon-cog-alt"></i> {% trans %}Settings{% endtrans %}</a>
-    </li>
+    {% endfor %}
     </ul>
     
     </div>

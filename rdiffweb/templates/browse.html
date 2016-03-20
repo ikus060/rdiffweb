@@ -1,5 +1,6 @@
 {% extends 'layout_repo.html' %}
-
+{% set active_page='repo' %}
+{% set active_repo_page=restore_dates and 'restore' or 'browse' %}
 {% block content %}
 {% if not restore_dates %}
 <table id="files" class="sortable table">
