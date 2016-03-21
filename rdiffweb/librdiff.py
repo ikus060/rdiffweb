@@ -249,8 +249,7 @@ class HistoryEntry(object):
     @property
     def size(self):
         try:
-            return (self._repo._session_statistics[self.date]
-                    .get_source_file_size())
+            return self._repo.session_statistics[self.date].sourcefilesize
         except KeyError:
             return 0
 
@@ -265,8 +264,7 @@ class HistoryEntry(object):
     @property
     def increment_size(self):
         try:
-            return (self._repo._session_statistics[self.date]
-                    .get_increment_file_size())
+            return self._repo.session_statistics[self.date].incrementfilesize
         except KeyError:
             return 0
 
@@ -312,14 +310,15 @@ class IncrementEntry(object):
         try:
             return rdw_helpers.rdwTime(date_string.decode())
         except:
+            logger.warn('fail to parse date [%r]', date_string, exc_info=1)
             return None
 
-    def _open(self):
+    def _open(self, mode='rb'):
         """Should be used to open the increment file. This method handle
         compressed vs not-compressed file."""
         if self._is_compressed:
-            return gzip.open(os.path.join(self.repo.data_path, self.name), "rb")
-        return open(os.path.join(self.repo.data_path, self.name), "rb")
+            return gzip.open(os.path.join(self.repo.data_path, self.name), mode)
+        return open(os.path.join(self.repo.data_path, self.name), mode)
 
     def read(self):
         """Read the error file and return it's content. Raise exception if the
@@ -461,10 +460,10 @@ class SessionStatisticsEntry(IncrementEntry):
     """Represent a single session_statistics."""
 
     def __init__(self, repo_path, name):
-        IncrementEntry.__init__(self, repo_path, name)
         # check to ensure we have a file_statistics entry
-        assert self.name.startswith(b"session_statistics")
-        assert self.name.endswith(b".data") or self.name.endswith(b".data.gz")
+        assert name.startswith(b"session_statistics")
+        assert name.endswith(b".data") or name.endswith(b".data.gz")
+        IncrementEntry.__init__(self, repo_path, name)
 
     def _load(self):
         """This method is used to read the session_statistics and create the
@@ -474,38 +473,32 @@ class SessionStatisticsEntry(IncrementEntry):
         the backup. This class provide a simple and easy way to access this
         data."""
 
-        if hasattr(self, '_data'):
-            return
-
-        logger.debug("load session_statistics [%r]", self.name)
-        self._data = {}
-        with self._open() as f:
-            for line in f:
+        with self._open('r') as f:
+            for line in f.readlines():
                 # Skip comments
-                if line.startswith(b"#"):
+                if line.startswith("#"):
                     continue
                 # Read the line into array
-                line = line.rstrip(b'\r\n')
-                data_line = line.split(b" ", 2)
+                line = line.rstrip('\r\n')
+                data_line = line.split(" ", 2)
                 # Read line into tuple
                 (key, value) = tuple(data_line)[0:2]
-                self._data[key] = value
+                if '.' in value:
+                    value = float(value)
+                else:
+                    value = int(value)
+                setattr(self, key.lower(), value)
 
-    def get_increment_file_size(self):
-        """Return the IncrementFileSize from this entry"""
-        self._load()
-        try:
-            return int(self._data[b"IncrementFileSize"])
-        except KeyError:
-            return 0
-
-    def get_source_file_size(self):
-        """Return the SourceFileSize from this entry"""
-        self._load()
-        try:
-            return int(self._data[b"SourceFileSize"])
-        except KeyError:
-            return 0
+    def __getattr__(self, name):
+        """
+        Intercept attribute getter to load the file.
+        """
+        if name in ['starttime', 'endtime', 'elapsedtime', 'sourcefiles', 'sourcefilesize',
+                    'mirrorfiles', 'mirrorfilesize', 'newfiles', 'newfilesize', 'deletedfiles',
+                    'deletedfilesize', 'changedfiles', 'changedsourcesize', 'changedmirrorsize',
+                    'incrementfiles', 'incrementfilesize', 'totaldestinationsizechange', 'errors']:
+            self._load()
+        return self.__dict__[name]
 
 
 @python_2_unicode_compatible
@@ -735,14 +728,14 @@ class RdiffRepo(object):
         assert self.encoding
 
     @property
-    def _session_statistics(self):
+    def session_statistics(self):
         """Return list of IncrementEntry to represent each sessions
         statistics."""
         if not hasattr(self, '_session_statistics_data'):
-            self._session_statistics_data = {
-                IncrementEntry.extract_date(x): SessionStatisticsEntry(self.root_path, x)
+            data = (SessionStatisticsEntry(self.root_path, x)
                 for x in self.data_entries
-                if x.startswith(b"session_statistics.")}
+                if x.startswith(b"session_statistics."))
+            self._session_statistics_data = {x.date: x for x in data}
         return self._session_statistics_data
 
     def set_encoding(self, name):

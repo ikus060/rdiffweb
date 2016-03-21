@@ -23,7 +23,7 @@ import pkg_resources
 import unittest
 
 from rdiffweb.librdiff import RdiffPath, FileStatisticsEntry, RdiffRepo, \
-    DirEntry, IncrementEntry
+    DirEntry, IncrementEntry, SessionStatisticsEntry
 import os
 from rdiffweb.rdw_helpers import rdwTime
 import encodings
@@ -200,6 +200,37 @@ class RdiffRepoTest(unittest.TestCase):
 
     def test_unquote(self):
         self.assertEqual(b'Char ;090 to quote', self.repo.unquote(b'Char ;059090 to quote'))
+
+
+class SessionStatisticsEntryTest(unittest.TestCase):
+
+    def setUp(self):
+        self.repo = MockRdiffRepo()
+        self.root_path = self.repo.root_path
+
+    def test_getattr(self):
+        """
+        Check how a session statistic is read.
+        """
+        entry = SessionStatisticsEntry(self.root_path, b'session_statistics.2014-11-02T09:16:43-05:00.data')
+        self.assertEqual(1414937803.00, entry.starttime)
+        self.assertEqual(1414937764.82, entry.endtime)
+        self.assertAlmostEqual(-38.18, entry.elapsedtime, delta=-0.01)
+        self.assertEqual(14, entry.sourcefiles)
+        self.assertEqual(3666973, entry.sourcefilesize)
+        self.assertEqual(13, entry.mirrorfiles)
+        self.assertEqual(30242, entry.mirrorfilesize)
+        self.assertEqual(1, entry.newfiles)
+        self.assertEqual(3636731, entry.newfilesize)
+        self.assertEqual(0, entry.deletedfiles)
+        self.assertEqual(0, entry.deletedfilesize)
+        self.assertEqual(1, entry.changedfiles)
+        self.assertEqual(0, entry.changedsourcesize)
+        self.assertEqual(0, entry.changedmirrorsize)
+        self.assertEqual(2, entry.incrementfiles)
+        self.assertEqual(0, entry.incrementfilesize)
+        self.assertEqual(3636731, entry.totaldestinationsizechange)
+        self.assertEqual(0, entry.errors)
 
 
 if __name__ == "__main__":
