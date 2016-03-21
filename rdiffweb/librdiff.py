@@ -23,6 +23,7 @@ import bisect
 from builtins import bytes
 from builtins import object
 from builtins import str
+from collections import OrderedDict
 import encodings
 import errno
 from future.utils import iteritems
@@ -33,6 +34,7 @@ import io
 import logging
 import os
 import re
+from shutil import copyfileobj
 import shutil
 import sys
 import tempfile
@@ -43,7 +45,6 @@ import zlib
 from rdiffweb import rdw_helpers
 from rdiffweb.archiver import archive, ARCHIVERS
 from rdiffweb.rdw_config import Configuration
-from shutil import copyfileobj
 
 
 try:
@@ -731,10 +732,11 @@ class RdiffRepo(object):
         """Return list of IncrementEntry to represent each sessions
         statistics."""
         if not hasattr(self, '_session_statistics_data'):
-            data = (SessionStatisticsEntry(self.root_path, x)
-                for x in self.data_entries
+            data = (
+                SessionStatisticsEntry(self.root_path, x)
+                for x in sorted(self.data_entries)
                 if x.startswith(b"session_statistics."))
-            self._session_statistics_data = {x.date: x for x in data}
+            self._session_statistics_data = OrderedDict([(x.date, x) for x in data])
         return self._session_statistics_data
 
     def set_encoding(self, name):

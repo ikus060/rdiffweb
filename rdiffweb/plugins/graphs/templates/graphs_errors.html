@@ -1,0 +1,201 @@
+{% extends 'graphs.html' %}
+{% set active_graph_page='errors' %}
+{% block head %}
+{{ super() }}
+<style>
+
+#graph {
+  font: 10px sans-serif;
+  width: 100%;
+}
+
+.bar {
+  fill: #f17f49;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.focus circle {
+  fill: none;
+  stroke: steelblue;
+}
+
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+</style>
+{% endblock %}
+{% block graph_body %}
+<p>
+{% trans %}Cumulative number of errors by period of time.{% endtrans%}
+</p>
+<svg id="graph" preserveAspectRatio="xMidYMid"></svg>
+<script src="http://d3js.org/d3.v3.js"></script>
+<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+<script>
+
+var margin = {top: 20, right: 20, bottom: 35, left: 50},
+    width = parseInt(d3.select("#graph").style("width")) - margin.left - margin.right,
+    height = width/2 - margin.top - margin.bottom;
+
+var tip = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([-10, 0])
+  .html(function(d) {
+    return "<strong>Errors: </strong>" + d.errors + "";
+  })
+
+var svg = d3.select("#graph")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .attr("viewBox", "0 0 " + (width + margin.left + margin.right) + " " + (height + margin.top + margin.bottom))
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+svg.call(tip);
+
+d3.csv("{{ url_for_graphs(repo_path, 'data') }}", type, function(error, csv_data) {
+  if (error) throw error;
+
+  // Define a temporary X axis to figure out grouping.
+  var x0 = d3.time.scale().range([0, width]);
+  x0.domain(d3.extent(csv_data, function(d) { return d.date; })).nice();
+  var groupby;
+  var formatby;
+  var xlabel = "";
+  if(x0.ticks(d3.time.year, 1).length > 4) {
+    groupby = d3.time.year;
+    formatby = d3.time.format("%Y");
+  } else if(x0.ticks(d3.time.month, 1).length > 11) {
+    groupby = d3.time.month;
+    formatby = d3.time.format("%b");
+  } else if(x0.ticks(d3.time.week, 1).length > 4) {
+    groupby = d3.time.week;
+    formatby = d3.time.format("%b %d");
+    xlabel = "Grouped by week"
+  } else {
+    groupby = d3.time.day;
+    formatby = d3.time.format("%b %d");
+  }
+  x0.ticks(groupby, 1).forEach(function(tick) {
+    var d = {};
+    d.date = tick
+    d.errors = 0;
+    csv_data.push(d)
+  });
+  
+  // Aggregate data.
+  var data = d3.nest()
+    .key(function(d) { return groupby(d.date);})
+    .rollup(function(leaves) {
+      return d3.sum(leaves, function(leaf) {return leaf.errors; });
+    }).entries(csv_data);
+
+  // Convert back to Date object
+  data.forEach(function(d) {
+    d.date = d3.time.format.iso.parse(d.key);
+    d.errors = d.values
+  });
+
+  // Sort the data by date.
+  data.sort(function(a, b) { return a.date - b.date; });
+
+  // Define x axis
+  var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], .1);
+  x.domain(data.map(function(d) { return d.date; }));
+
+  var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom")
+    .tickFormat(formatby);
+    
+  // Define y axis
+  var y = d3.scale.pow().range([height, 0]);
+  y.domain([0, d3.max(data, function(d) { return d.errors })]);
+
+  var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .tickFormat(d3.format("d"));
+
+  // Draw x Axis
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  // Add the text label for the x axis
+  svg.append("text")
+      .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.bottom - 5) + ")")
+      .style("text-anchor", "middle")
+      .text(xlabel);
+
+  // Draw y Axis
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
+
+  // Draw bars
+  svg.selectAll(".bar")
+      .data(data)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.date); })
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.values); })
+      .attr("height", function(d) { return height - y(d.values); })
+      .on('mouseover', tip.show)
+      .on('mouseout', tip.hide);
+
+});
+
+function type(d) {
+  var d1 = {};
+  d1.date = new Date(d.date * 1000);
+  d1.errors = d.errors
+  return d1;
+}
+
+</script>
+{% endblock %}
