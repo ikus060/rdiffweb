@@ -42,7 +42,6 @@ import zlib
 
 from rdiffweb import rdw_helpers
 from rdiffweb.archiver import archive, ARCHIVERS
-from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_config import Configuration
 from shutil import copyfileobj
 
