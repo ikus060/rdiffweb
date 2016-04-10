@@ -59,7 +59,7 @@ no way a complete reference.
 **Basic configuration**
 
 Add the following to your Apache configuration. It's recommended to create a 
-file in /etc/apache2/sites-available/rdiffweb.
+file in `/etc/apache2/sites-available/rdiffweb`.
 
     <VirtualHost *:80>
         ServerName rdiffweb.mydomain.com
@@ -101,13 +101,14 @@ file in /etc/apache2/sites-available/rdiffweb.
     
 # Configuration
 
-# Configure email notifications
+## Configure email notifications
 
 Since rdiffweb v0.9, you may setup rdiffweb to notify you when you backup did
 not complete for some period of time. This is useful to know when you backup
 setup is broken. This section describes how to configure rdiffweb to notify you.
 
 **Edit config file**
+
 Edit rdiffweb config file `/etc/rdiffweb/rdw.conf` and edit the `Email*`
 configuration parameters to suit your environment. The following is an example
 using a gmail account to sent notification.
@@ -138,7 +139,7 @@ notification settings for each repository.
 
 # Development
 
-This section provide some details for those who want to contributes. 
+This section provide some details for those who want to contributes to the development.
   
 ## Translation
 Reference http://babel.edgewall.org/wiki/Documentation/setup.html
