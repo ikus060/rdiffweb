@@ -24,28 +24,15 @@ import logging
 
 from rdiffweb import librdiff
 from rdiffweb import page_main
-from rdiffweb.rdw_helpers import unquote_url
+from rdiffweb.dispatch import poppath
 
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
+@poppath()
 class HistoryPage(page_main.MainPage):
-
-    def _cp_dispatch(self, vpath):
-        """Used to handle permalink URL.
-        ref http://cherrypy.readthedocs.org/en/latest/advanced.html"""
-        # Notice vpath contains bytes.
-        if len(vpath) > 0:
-            # /the/full/path/
-            path = []
-            while len(vpath) > 0:
-                path.append(unquote_url(vpath.pop(0)))
-            cherrypy.request.params['path'] = b"/".join(path)
-            return self
-
-        return vpath
 
     @cherrypy.expose
     def index(self, path=b""):

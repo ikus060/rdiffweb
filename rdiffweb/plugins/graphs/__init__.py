@@ -38,6 +38,8 @@ import logging
 
 from rdiffweb import librdiff, rdw_helpers
 from rdiffweb import page_main
+import rdiffweb
+from rdiffweb.dispatch import poppath
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import unquote_url
 from rdiffweb.rdw_plugin import IRdiffwebPlugin, ITemplateFilterPlugin
@@ -60,25 +62,8 @@ def url_for_graphs(repo, graph=''):
     return ''.join(url)
 
 
+@poppath('graph')
 class GraphsPage(page_main.MainPage):
-
-    def _cp_dispatch(self, vpath):
-        """
-        Used to handle permalink URL.
-        /graphs/*/repo_path
-        """
-        assert len(vpath) > 0
-
-        # First vpath, is the graphs
-        graph = unquote_url(vpath.pop(0))
-
-        # Extract the repo path
-        path = []
-        while len(vpath) > 0:
-            path.append(unquote_url(vpath.pop(0)))
-        cherrypy.request.params['graph'] = graph.decode('ascii')
-        cherrypy.request.params['path'] = b"/".join(path)
-        return self
 
     def _data(self, path, **kwargs):
         assert isinstance(path, bytes)
@@ -143,7 +128,7 @@ class GraphsPage(page_main.MainPage):
         return self._compile_template("graphs_%s.html" % graph, **params)
 
     @cherrypy.expose
-    def index(self, path, graph, **kwargs):
+    def index(self, graph, path, **kwargs):
         """
         Called to show every graphs
         """

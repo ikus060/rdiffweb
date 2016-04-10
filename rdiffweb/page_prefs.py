@@ -24,34 +24,19 @@ import logging
 
 from rdiffweb import page_main
 from rdiffweb import rdw_plugin
-from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import unquote_url
 
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
+@cherrypy.popargs('panelid')
 class PreferencesPage(page_main.MainPage):
 
-    def _cp_dispatch(self, vpath):
-        """
-        Used to dispatch `/prefs/<panelid>`
-        The `panelid` make reference to a plugin panel.
-        """
-        # Notice vpath contains bytes.
-        if len(vpath) > 0:
-            # /the/full/path/
-            path = []
-            while len(vpath) > 0:
-                path.append(unquote_url(vpath.pop(0)).decode('ascii'))
-            cherrypy.request.params['panelid'] = "/".join(path)
-            return self
-        return vpath
-
     @cherrypy.expose
-    def index(self, panelid="", **kwargs):
-        assert isinstance(panelid, str)
+    def index(self, panelid=None, **kwargs):
+        if isinstance(panelid, bytes):
+            panelid = panelid.decode('ascii')
 
         # Get the panels
         panels, providers = self._get_panels()

@@ -28,30 +28,18 @@ import os
 
 from rdiffweb import page_main
 from rdiffweb import rdw_helpers
+import rdiffweb
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import unquote_url, quote_url
+from rdiffweb.rdw_helpers import quote_url
 
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
+@rdiffweb.dispatch.poppath()
 class RestorePage(page_main.MainPage):
     _cp_config = {"response.stream": True, "response.timeout": 3000}
-
-    def _cp_dispatch(self, vpath):
-        """Used to handle permalink URL.
-        ref http://cherrypy.readthedocs.org/en/latest/advanced.html"""
-        # Notice vpath contains bytes.
-        if len(vpath) > 0:
-            # /the/full/path/
-            path = []
-            while len(vpath) > 0:
-                path.append(unquote_url(vpath.pop(0)))
-            cherrypy.request.params['path'] = b"/".join(path)
-            return self
-
-        return vpath
 
     def _content_disposition(self, filename):
         """
