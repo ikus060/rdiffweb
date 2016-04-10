@@ -181,7 +181,12 @@ class NotificationPlugin(IPreferencesPanelProvider, IDeamonPlugin):
             return
 
         # Run the notification routine.
-        self.send_notifications()
+        try:
+            self.send_notifications()
+        finally:
+            # Determine the next execution time.
+            self.next_execution_time = self.compute_next_execution_time()
+            _logger.info("next execution time planned at [%s]", self.next_execution_time)
 
     def send_notifications(self):
         """
