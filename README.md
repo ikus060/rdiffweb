@@ -2,67 +2,10 @@ rdiffweb
 ========
 Release under GPLv3
 
+rdiffweb is a web application that allows you to view the archives generated
+by [rdiff-backup](http://www.nongnu.org/rdiff-backup/). The purpose of this
+application is to ease the management of backups and quickly restore your data.
+
 # Installation
 
-To install rdifWeb, you need to install the the prerequisites. On Debian distribution you may proceed as follow.
-
-    sudo apt-get install python-cherrypy3 python-pysqlite2 libsqlite3-dev python-jinja2 python-setuptools python-babel rdiff-backup 
-
-Then you may download a snapshot of the repository and proceed with the installation on your system.
-
-    wget --no-check-certificate -O rdiffweb.tar.gz https://github.com/ikus060/rdiffweb/archive/master.tar.gz
-    tar zxf rdiffweb.tar.gz
-    cd rdiffweb-*
-    python setup.py build
-    sudo python setup.py install
-    
-    sudo update-rc.d rdiffweb defaults
-  
-Start rdiffweb server using this command line.
-
-    sudo /etc/init.d/rdiffweb start
-    
-Proceeding with the setup will initialise your database by creating a default admin user with the following username and password:
- * username : admin
- * password : admin123
-  
-Configure rdiffweb using web interface.
-
-	http://localhost:8080/setup
-
-By default, the web server is listening on port 8080 and is accessible via the following URL.
-
-    http://server_name:8080
-
-# Development
-  
-## Translation
-Reference http://babel.edgewall.org/wiki/Documentation/setup.html
-
-rdiffweb may be translated. This section describe briefly how to translate
-rdiffweb. It's not a complete instruction set, it's merely a reminder.
-
-Extract the strings to be translated.
-
-	./setup.py extract_messages --output-file rdiffweb/locales/messages.pot
-
-	./setup.py compile_catalog --directory rdiffweb/locales --locale fr
-
-
-## Tests
-
-Rdiffweb is provided with unit tests and integration test. To run the tests,
-you may run it as follow for your current python version :
-
-    python setup.py. nosetests
-
-## Profiling
-
-Since v0.9, you may profile rdiffweb by calling it with `--profile`.
-
-    rdiffweb --debug --profile
-    
-Profiling file will be generated into `/tmp` unless you call rdiffweb
-with `--profile-path`. After all, you may visualize the data with:
-
-    snakeviz rdiffweb_0001.prof
+Installation steps are detailed in [Documentation](doc/index.md#installation).
