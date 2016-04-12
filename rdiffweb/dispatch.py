@@ -25,7 +25,7 @@ Default page handler
 from __future__ import unicode_literals
 
 import cherrypy
-from cherrypy.lib.static import serve_file
+from cherrypy.lib.static import serve_file, mimetypes
 from future.builtins import str
 import os
 
@@ -108,6 +108,14 @@ def static(path):
     """
     assert isinstance(path, str)
     assert os.path.exists(path)
+    content_type = None
+    if os.path.isfile(path):
+        # Set content-type based on filename extension
+        ext = ""
+        i = path.rfind('.')
+        if i != -1:
+            ext = path[i:].lower()
+        content_type = mimetypes.types_map.get(ext, None)  # @UndefinedVariable
 
     @cherrypy.expose
     @cherrypy.config(**{'tools.authform.on': False})
@@ -116,6 +124,6 @@ def static(path):
             return None
         filename = os.path.join(path, *args)
         assert filename.startswith(path)
-        return serve_file(filename)
+        return serve_file(filename, content_type)
 
     return handler
