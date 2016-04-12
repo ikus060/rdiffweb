@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 class LoginPage(page_main.MainPage):
 
     @cherrypy.expose
+    @cherrypy.config(**{'tools.authform.on': False})
     def index(self, redirect="", login="", password=""):
         assert isinstance(redirect, str)
         assert isinstance(login, str)

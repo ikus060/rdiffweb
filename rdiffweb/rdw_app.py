@@ -95,9 +95,6 @@ class RdiffwebApp(Application):
                 'tools.staticfile.on': True,
                 'tools.staticfile.filename': os.path.join(cwd, 'static', 'favicon.ico'),
             },
-            native_str('/login'): {
-                'tools.authform.on': False,
-            },
             native_str('/static'): {
                 'tools.staticdir.on': True,
                 'tools.staticdir.root': cwd,
