@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 from builtins import bytes
 from builtins import str
 import cherrypy
-from cherrypy._cperror import HTTPRedirect
 import encodings
 import logging
 
@@ -54,9 +53,7 @@ class SettingsPage(page_main.MainPage):
         action = kwargs.get('action')
         if action:
             try:
-                if action == "delete":
-                    params.update(self._handle_delete(repo_obj, **kwargs))
-                elif action == "set_encoding":
+                if action == "set_encoding":
                     params.update(self._handle_set_encoding(repo_obj, **kwargs))
             except Warning as e:
                 params['warning'] = str(e)
@@ -78,7 +75,8 @@ class SettingsPage(page_main.MainPage):
             'repo_path': repo_obj.path,
             'settings': True,
             'supported_encodings': self._get_encodings(),
-            'current_encoding': current_encoding
+            'current_encoding': current_encoding,
+            'templates_content': [],
         }
 
     def _get_encodings(self):
@@ -104,30 +102,6 @@ class SettingsPage(page_main.MainPage):
                 "shift_jisx0213", "utf_32", "utf_32_be", "utf_32_le",
                 "utf_16", "utf_16_be", "utf_16_le", "utf_7", "utf_8",
                 "utf_8_sig"]
-
-    def _handle_delete(self, repo_obj, **kwargs):
-        """
-        Delete the repository.
-        """
-        # Validate the name
-        confirm_name = kwargs.get('confirm_name')
-        if confirm_name != repo_obj.display_name:
-            raise Warning(_("confirmation doesn't matches"))
-
-        # Update the repository encoding
-        _logger.info("deleting repository [%s]", repo_obj)
-        repo_obj.delete()
-
-        # Refresh repository list
-        username = self.app.currentuser.username
-        repos = self.app.userdb.get_repos(username)
-        # Remove the repository. Depending of rdiffweb, the name may contains '/'.
-        for r in [repo_obj.path, b"/" + repo_obj.path, repo_obj.path + b"/", b"/" + repo_obj.path + b"/"]:
-            if r in repos:
-                repos.remove(r)
-        self.app.userdb.set_repos(username, repos)
-
-        raise HTTPRedirect("/")
 
     def _handle_set_encoding(self, repo_obj, **kwargs):
         """
