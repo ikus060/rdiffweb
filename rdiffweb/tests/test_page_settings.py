@@ -75,24 +75,6 @@ class SettingsTest(WebCase):
         self.assertStatus(200)
         self.assertInBody("cp1252")
 
-    def test_check_delete(self):
-        self._settings(self.REPO)
-        self.assertInBody("Delete")
-
-    def test_delete(self):
-        """
-        Check to delete a repo.
-        """
-        self._delete(self.REPO, self.REPO)
-        self.assertStatus(303)
-
-    def test_delete_wrong_confirm(self):
-        """
-        Check failure to delete a repo with wrong confirmation.
-        """
-        self._delete(self.REPO, 'wrong')
-        self.assertInBody("confirmation doesn&#39;t matches")
-
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     logging.basicConfig(level=logging.DEBUG)
