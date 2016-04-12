@@ -73,6 +73,11 @@ class Root(LocationsPage):
         favicon = app.cfg.get_config("Favicon", default_favicon)
         self.favicon_ico = static(favicon)
 
+        # Register header_logo
+        header_logo = app.cfg.get_config("HeaderLogo")
+        if header_logo:
+            self.static.header_logo = static(header_logo)
+
 
 class RdiffwebApp(Application):
     """This class represent the application context."""
@@ -89,7 +94,6 @@ class RdiffwebApp(Application):
         self.plugins = rdw_plugin.PluginManager(self.cfg)
 
         # Initialise the application
-        cwd = os.path.abspath(os.path.dirname(__file__))
         config = {
             native_str('/'): {
                 'tools.authform.on': True,
@@ -101,7 +105,6 @@ class RdiffwebApp(Application):
                 'error_page.default': self.error_page,
             },
         }
-        self._setup_header_logo(config)
         self._setup_session_storage(config)
         Application.__init__(self, root=Root(self), config=config)
 
