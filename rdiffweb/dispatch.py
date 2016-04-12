@@ -16,15 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-import cherrypy
-from rdiffweb.rdw_helpers import unquote_url
-
 """
 Default page handler
 
 @author: ikus060
 """
+
+from __future__ import unicode_literals
+
+import cherrypy
+from cherrypy.lib.static import serve_file
+import os
+
+from rdiffweb.rdw_helpers import unquote_url
 
 
 def poppath(*args, **kwargs):
@@ -95,3 +99,17 @@ def poppath(*args, **kwargs):
             return self
 
     return decorated
+
+
+def static(path):
+    """
+    Create a page handler to serve static files. Disable authentication.
+    """
+    assert os.path.exists(path)
+
+    @cherrypy.expose
+    @cherrypy.config(**{'tools.authform.on': False})
+    def handler():
+        return serve_file(path)
+
+    return handler

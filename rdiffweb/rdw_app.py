@@ -43,6 +43,7 @@ from rdiffweb.page_settings import SettingsPage
 from rdiffweb.page_status import StatusPage
 from rdiffweb.user import UserManager
 from future.utils import native_str
+from rdiffweb.dispatch import static
 
 
 # Define the logger
@@ -62,6 +63,11 @@ class Root(LocationsPage):
         self.admin = AdminPage(app)
         self.prefs = PreferencesPage(app)
         self.settings = SettingsPage(app)
+
+        # Register favicon.ico
+        default_favicon = pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico')  # @UndefinedVariable
+        favicon = app.cfg.get_config("Favicon", default_favicon)
+        self.favicon_ico = static(favicon)
 
 
 class RdiffwebApp(Application):
@@ -90,11 +96,6 @@ class RdiffwebApp(Application):
                 'tools.sessions.on': True,
                 'error_page.default': self.error_page,
             },
-            native_str('/favicon.ico'): {
-                'tools.authform.on': False,
-                'tools.staticfile.on': True,
-                'tools.staticfile.filename': os.path.join(cwd, 'static', 'favicon.ico'),
-            },
             native_str('/static'): {
                 'tools.staticdir.on': True,
                 'tools.staticdir.root': cwd,
@@ -102,7 +103,6 @@ class RdiffwebApp(Application):
                 'tools.authform.on': False,
             },
         }
-        self._setup_favicon(config)
         self._setup_header_logo(config)
         self._setup_session_storage(config)
         Application.__init__(self, root=Root(self), config=config)
@@ -186,34 +186,6 @@ class RdiffwebApp(Application):
         tempdir = self.cfg.get_config("TempDir", default="")
         if tempdir:
             os.environ["TMPDIR"] = tempdir
-
-    def _setup_favicon(self, config):
-        """
-        Used to add an entry to the page setting if the FavIcon configuration is
-        defined.
-        """
-        favicon = self.cfg.get_config("FavIcon")
-        if not favicon:
-            return
-
-        # Append custom favicon
-        if (not os.path.exists(favicon) or
-                not os.path.isfile(favicon) or
-                not os.access(favicon, os.R_OK)):
-            logger.warning(
-                "path define by FavIcon doesn't exists or is no accessible: %s", favicon)
-            return
-
-        logger.info("use custom favicon: %s", favicon)
-        basename = os.path.basename(favicon)
-        self.favicon = '/%s' % (basename)
-        config.update({
-            native_str(self.favicon): {
-                'tools.authform.on': False,
-                'tools.staticfile.on': True,
-                'tools.staticfile.filename': favicon,
-            }
-        })
 
     def _setup_header_logo(self, config):
         """

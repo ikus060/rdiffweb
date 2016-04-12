@@ -136,8 +136,6 @@ class MainPage(Component):
             parms['is_admin'] = self.app.currentuser.is_admin
 
         # Append custom branding
-        if hasattr(self.app, "favicon"):
-            parms["favicon"] = self.app.favicon  # See main,py
         if hasattr(self.app, "header_logo"):
             parms["header_logo"] = self.app.header_logo  # See main,py
         header_name = self.app.cfg.get_config("HeaderName")
