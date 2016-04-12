@@ -26,6 +26,7 @@ from __future__ import unicode_literals
 
 import cherrypy
 from cherrypy.lib.static import serve_file
+from future.builtins import str
 import os
 
 from rdiffweb.rdw_helpers import unquote_url
@@ -105,11 +106,16 @@ def static(path):
     """
     Create a page handler to serve static files. Disable authentication.
     """
+    assert isinstance(path, str)
     assert os.path.exists(path)
 
     @cherrypy.expose
     @cherrypy.config(**{'tools.authform.on': False})
-    def handler():
-        return serve_file(path)
+    def handler(*args, **kwargs):
+        if cherrypy.request.method not in ('GET', 'HEAD'):
+            return None
+        filename = os.path.join(path, *args)
+        assert filename.startswith(path)
+        return serve_file(filename)
 
     return handler

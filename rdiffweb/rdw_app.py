@@ -64,6 +64,10 @@ class Root(LocationsPage):
         self.prefs = PreferencesPage(app)
         self.settings = SettingsPage(app)
 
+        # Register static dir.
+        static_dir = pkg_resources.resource_filename('rdiffweb', 'static')  # @UndefinedVariable
+        self.static = static(static_dir)
+
         # Register favicon.ico
         default_favicon = pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico')  # @UndefinedVariable
         favicon = app.cfg.get_config("Favicon", default_favicon)
@@ -95,12 +99,6 @@ class RdiffwebApp(Application):
                 'tools.gzip.on': True,
                 'tools.sessions.on': True,
                 'error_page.default': self.error_page,
-            },
-            native_str('/static'): {
-                'tools.staticdir.on': True,
-                'tools.staticdir.root': cwd,
-                'tools.staticdir.dir': "static",
-                'tools.authform.on': False,
             },
         }
         self._setup_header_logo(config)
