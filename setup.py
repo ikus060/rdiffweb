@@ -35,7 +35,9 @@ from distutils.command.build import build as build_
 from distutils.dist import DistributionMetadata
 from distutils.log import error, info
 from distutils.util import split_quoted
+import os
 from string import Template
+import subprocess
 
 try:
     from setuptools import setup
@@ -144,6 +146,57 @@ class compile_all_catalogs(Command):
             compiler.run()
 
 
+class build_less(Command):
+    """
+    Command to build less file with lessc.
+    """
+
+    description = 'compile *.less files with lessc command.'
+    user_options = [
+        ('files=', 'f',
+         "List of less files to compile. Separated by `;`."),
+        ('include-path=', None,
+         'Set include paths. Separated by `;`'),
+        ('compress', 'x',
+         'Compress output by removing some whitespaces.'),
+        ('output-dir', None,
+         'Output directory where to generate the .less files. Default to current.'),
+    ]
+    boolean_options = ['compress']
+
+    def initialize_options(self):
+        self.files = None
+        self.include_path = None
+        self.compress = False
+        self.output_dir = False
+
+    def finalize_options(self):
+        self.files = self.files.split(';')
+
+    def run(self):
+        """
+        Run `lessc` for each file.
+        """
+        if not self.files:
+            return
+        # lessc --include-path=/home/ikus060/workspace/Minarca/rdiffweb.git/rdiffweb/static/less minarca_brand/main.less
+        for f in self.files:
+            args = ['lessc']
+            if self.include_path:
+                args.append('--include-path=' + self.include_path)
+            if self.compress:
+                args.append('--compress')
+            # Source
+            args.append(f)
+            # Destination
+            destination = f.replace('.less', '.css')
+            if self.output_dir:
+                destination = os.path.join(self.output_dir, os.path.basename(destination))
+            args.append(destination)
+            # Execute command line.
+            subprocess.call(args)
+
+
 class build(build_):
     """
     This is modification of build command, compile_all_catalogs
@@ -153,6 +206,7 @@ class build(build_):
     sub_commands = build_.sub_commands[:]
     sub_commands.insert(0, ('compile_all_catalogs', None))
     sub_commands.insert(0, ('filltmpl', None))
+    sub_commands.insert(0, ('build_less', None))
 
 # Compute requirements
 install_requires = [
@@ -192,6 +246,7 @@ setup(
         'build': build,
         'compile_all_catalogs': compile_all_catalogs,
         'filltmpl': fill_template,
+        'build_less': build_less,
     },
     templates=['sonar-project.properties.in'],
     install_requires=install_requires,
