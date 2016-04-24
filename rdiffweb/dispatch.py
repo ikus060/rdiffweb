@@ -74,7 +74,7 @@ def poppath(*args, **kwargs):
         for arg in args:
             if not vpath:
                 break
-            parms[arg] = vpath.pop(0)
+            parms[arg] = unquote_url(vpath.pop(0))
 
         # Build repo path.
         path = []
