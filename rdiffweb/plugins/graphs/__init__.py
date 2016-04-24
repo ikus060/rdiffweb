@@ -106,9 +106,10 @@ class GraphsPage(page_main.MainPage):
         Generic method to show graphs.
         """
         assert isinstance(path, bytes)
-        assert isinstance(graph, str)
+        assert isinstance(graph, bytes)
+        graph = graph.decode('ascii', 'replace')
 
-        _logger.debug("repo graphs [%s][%r]", graph, path)
+        _logger.debug("repo graphs [%r][%r]", graph, path)
 
         # Check user permissions
         try:
