@@ -107,7 +107,7 @@ def static(path):
     Create a page handler to serve static files. Disable authentication.
     """
     assert isinstance(path, str)
-    assert os.path.exists(path)
+    assert os.path.exists(path), "%r doesn't exists" % path
     content_type = None
     if os.path.isfile(path):
         # Set content-type based on filename extension
