@@ -7,7 +7,7 @@
 <div class="spacer"></div>
 
 <!-- Panel to set user info. -->
-{% call macros.panel(title=_("Character encoding"), class='primary') %}
+{% call macros.panel(title=_("Character encoding"), class='default') %}
 <div class="panel-body">
   <form action="#" method="post" role="form" class="clearfix" >
     <div class="form-group">
@@ -26,7 +26,7 @@
     </span>
     <input type="hidden" name="action" value="set_encoding" />
     <div>
-        <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
+        <button type="submit" class="btn btn-default">{% trans %}Save changes{% endtrans %}</button>
     </div>
   </form>
 </div>

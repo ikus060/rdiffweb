@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block title %}{% trans %}Repositories{% endtrans %}{% endblock %}
 {% block body %}
-<div class="container">
+<div class="container" id="locations">
     <h2>{% trans %}Repositories{% endtrans %} ({{ repos|length }})</h2>
     {% include templates_before_content ignore missing with context %}
     {% if repos|length == 0 %}
