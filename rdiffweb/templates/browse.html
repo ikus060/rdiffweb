@@ -84,14 +84,30 @@
             <i class="icon-archive"></i>
             {{ restore_date | datetime }}
             <div class="pull-right">
-                <a href="{{ url_for_restore(repo_path, path, restore_date) }}">
-                    {% trans %}Download{% endtrans %}
-                    <span class="label label-success"><i class="icon-file-archive"></i>
-                        ZIP</span></a>
-                <a href="{{ url_for_restore(repo_path, path, restore_date, 'T') }}">
-                    {% trans %}Download{% endtrans %}
-                    <span class="label label-success"><i class="icon-file-archive"></i>
-                        TAR.GZ</span></a>
+              <div class="btn-group">
+                <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for_restore(repo_path, path, restore_date) }}">
+                  <i class="icon-download"></i>
+                  <span>{% trans %}Download{% endtrans %} ZIP</span>
+                </a>
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <span class="caret"></span>
+                  <span class="sr-only">{% trans %}Toggle Dropdown{% endtrans %}</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right-xs" role="menu" aria-labelledby="menu1">
+                <li>
+                  <a rel="nofollow" href="{{ url_for_restore(repo_path, path, restore_date) }}">
+                    <i class="icon-download"></i>
+                    <span>{% trans %}Download{% endtrans %} ZIP</span>
+                  </a>
+                </li>
+                <li>
+                  <a rel="nofollow" href="{{ url_for_restore(repo_path, path, restore_date, 'T') }}">
+                    <i class="icon-download"></i>
+                    <span>{% trans %}Download{% endtrans %} TAR.GZ</span>
+                  </a>
+                </li>
+                </ul>
+              </div>
             </div>
         </li>
         {% endfor %}
