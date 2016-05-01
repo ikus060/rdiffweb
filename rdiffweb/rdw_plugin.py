@@ -336,14 +336,18 @@ class IRdiffwebPlugin(object):
         Return the location of the locales directory. Default implementation
         return the "locales" directory if exists. Otherwise return None.
         """
-        return pkg_resources.resource_filename(self.__module__, 'locales')  # @UndefinedVariable
+        if pkg_resources.resource_isdir(self.__module__, 'locales'):  # @UndefinedVariable
+            return pkg_resources.resource_filename(self.__module__, 'locales')  # @UndefinedVariable
+        return False
 
     def get_templatesdir(self):
         """
         Return the location of the templates director. Default implementation
         return the "templates" director if exists. Otherwise return None.
         """
-        return pkg_resources.resource_filename(self.__module__, 'templates')  # @UndefinedVariable
+        if pkg_resources.resource_isdir(self.__module__, 'templates'):  # @UndefinedVariable
+            return pkg_resources.resource_filename(self.__module__, 'templates')  # @UndefinedVariable
+        return False
 
 
 class IDatabase(IRdiffwebPlugin):
