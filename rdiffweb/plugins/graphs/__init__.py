@@ -105,10 +105,6 @@ class GraphsPage(page_main.MainPage):
         """
         Generic method to show graphs.
         """
-        assert isinstance(path, bytes)
-        assert isinstance(graph, bytes)
-        graph = graph.decode('ascii', 'replace')
-
         _logger.debug("repo graphs [%r][%r]", graph, path)
 
         # Check user permissions
@@ -133,12 +129,17 @@ class GraphsPage(page_main.MainPage):
         """
         Called to show every graphs
         """
+        assert isinstance(path, bytes)
+        assert isinstance(graph, bytes)
+        graph = graph.decode('ascii', 'replace')
+
         # check if data should be shown.
         if graph == 'data':
             return self._data(path, **kwargs)
-
-        # Else, show graph.
-        return self._page(path, graph, **kwargs)
+        elif graph in ['activities', 'errors', 'files', 'sizes', 'times']:
+            return self._page(path, graph, **kwargs)
+        # Raise error.
+        raise cherrypy.NotFound()
 
 
 class GraphsPlugins(ITemplateFilterPlugin):
