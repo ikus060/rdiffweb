@@ -22,13 +22,7 @@ include MANIFEST.in
 recursive-include rdiffweb/templates *.html *.xml *.txt
 
 # Include static Web files
-include rdiffweb/static/*.png
-include rdiffweb/static/*.ico
-include rdiffweb/static/*.svg
-include rdiffweb/static/js/scripts.min.js
-include rdiffweb/static/js/vendor/*.js
-include rdiffweb/static/css/*.css
-recursive-include rdiffweb/static/fonts *.eot *.svg *.ttf *.woff
+recursive-include rdiffweb/static *
 
 # Include plugins data
 recursive-include rdiffweb/plugins *.py *.plugin *.html
