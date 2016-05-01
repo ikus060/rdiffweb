@@ -101,6 +101,50 @@ file in `/etc/apache2/sites-available/rdiffweb`.
     
 # Configuration
 
+## Authentication
+
+Rdiffweb is currently provided with a limited set of plugins for authentication and authorization:
+ * SQLite : Embedded database used for authentication, authorization and data storage;
+ * LDAP (optional) : Allow users to authenticate with their LDAP password.
+
+### SQLite
+
+To use the embeded database for authentication, make sure you have a section similare to the following in your configuration file `/etc/rdiffweb/rdw.conf`:
+
+    #----- Enable Sqlite DB Authentication.
+    SQLiteEnabled=True
+    SQLiteDBFile=/etc/rdiffweb/rdw.db
+
+### LDAP
+
+The LDAP plugin can only be used for authentication. To make everything work, you will need to enabled SQLite plugin and LDAP plugin at the same time. LDAP will be used for authentication and SQLite will be used for autorization and data storage.
+
+You may need to install `python-ldap` as follow:
+
+    sudo apt-get install python-ldap
+
+To make LDAP authentication work, you need to enable the plugin and provide information about your environment.
+
+    #----- Enable LDAP Authentication
+    LdapEnabled=true
+
+Plugin parameters:
+
+| Parameter | Description | Required | Example |
+| --- | --- | --- | --- |
+| LdapUri | URIs containing only the schema, the host, and the port fields. | Yes | ldap://localhost:389 | 
+| LdapTls | `true` to enable TLS. Default to `false` | No | false |
+| LdapProtocolVersion | Version of LDAP in use either 2 or 3. Default to 3. | No | 3 |
+| LdapBaseDn | The DN of the branch of the directory where all searches should start from. | Yes | dc=my,dc=domain | 
+| LdapBindDn | An optional DN used to bind to the server when searching for entries. If not provided, will use an anonymous bind. | No | cn=manager,dc=my,dc=domain |
+| LdapBindPassword |  A bind password to use in conjunction with `LdapBindDn`. Note that the bind password is probably sensitive data, and should be properly protected. You should only use the LdapBindDn and LdapBindPassword if you absolutely need them to search the directory. | No | mypassword |
+| LdapAttribute | The attribute to search username. If no attributes are provided, the default is to use `uid`. It's a good idea to choose an attribute that will be unique across all entries in the subtree you will be using. | No | cn | 
+| LdapScope | The scope of the search. Can be either `base`, `onelevel` or `subtree`. Default to `subtree`. | No | onelevel |
+| LdapFilter | A valid LDAP search filter. If not provided, defaults to `(objectClass=*)`, which will search for all objects in the tree. | No | (objectClass=*) | 
+| LdapNetworkTimeout | Optional timeout value. Default to 10 sec. | No | 10 |
+| LdapTimeout | Optional timeout value. Default to 300 sec. | No | 300 |
+| LdapAllowPasswordChange | `true` to allow LDAP users to  update their password using rdiffweb. This option should only be enabled if the LDAP if confiugred to allow the user to change their own password. Default to  `false`. | No | true |
+
 ## Configure email notifications
 
 Since rdiffweb v0.9, you may setup rdiffweb to notify you when you backup did
