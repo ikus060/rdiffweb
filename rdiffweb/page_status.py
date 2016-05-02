@@ -118,7 +118,7 @@ class StatusPage(page_main.MainPage):
         return url
 
     def _get_user_messages_for_day(self, date):
-        userRepos = self.app.userdb.get_repos(self.app.currentuser.username)
+        userRepos = self.app.currentuser.repos
 
         # Set the start and end time to be the start and end of the day,
         # respectively, to get all entries for that day

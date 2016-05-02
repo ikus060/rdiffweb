@@ -197,20 +197,20 @@ class NotificationPlugin(IPreferencesPanelProvider, IDeamonPlugin):
 
         def _user_repos():
             """Return a generator trought user repos to be notified."""
-            for user in self.app.userdb.list_obj():
+            for user in self.app.userdb.list():
                 # Check if user has email.
                 if not user.email:
                     continue
                 # Identify old repo for current user.
                 old_repos = []
-                for repo in user.repos:
+                for repo in user.repo_list:
                     # Check if repo has age configured (in days)
-                    max_age = self.app.userdb.get_repo_maxage(user.username, repo)
-                    if not max_age or max_age <= 0:
+                    maxage = repo.maxage
+                    if not maxage or maxage <= 0:
                         continue
                     # Check repo age.
-                    r = librdiff.RdiffRepo(user.user_root, repo)
-                    if r.last_backup_date < (now - datetime.timedelta(days=max_age)):
+                    r = librdiff.RdiffRepo(user.user_root, repo.name)
+                    if r.last_backup_date < (now - datetime.timedelta(days=maxage)):
                         old_repos.append(r)
                 # Return an item only if user had old repo
                 if old_repos:
@@ -312,6 +312,6 @@ class NotificationPlugin(IPreferencesPanelProvider, IDeamonPlugin):
 
         params.update({
             'email': self.app.currentuser.email,
-            'repos': self.app.currentuser.repos_obj
+            'repos': self.app.currentuser.repo_list,
         })
         return "prefs_notification.html", params

@@ -64,14 +64,12 @@ class DeleteRepoPage(MainPage):
         repo_obj.delete()
 
         # Refresh repository list
-        username = self.app.currentuser.username
-        repos = self.app.userdb.get_repos(username)
+        repos = self.app.currentuser.repos
         # Remove the repository. Depending of rdiffweb, the name may contains '/'.
         for r in [repo_obj.path, b"/" + repo_obj.path, repo_obj.path + b"/", b"/" + repo_obj.path + b"/"]:
             if r in repos:
                 repos.remove(r)
-        self.app.userdb.set_repos(username, repos)
-
+        self.app.currentuser.repos = repos
         raise HTTPRedirect("/")
 
 

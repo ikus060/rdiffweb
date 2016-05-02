@@ -22,7 +22,7 @@ from builtins import str
 from future.utils import python_2_unicode_compatible
 import logging
 
-from rdiffweb.core import RdiffError, Component, InvalidUserError
+from rdiffweb.core import Component, InvalidUserError, RdiffError
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPasswordStore, IDatabase, IUserChangeListener
 
@@ -55,12 +55,14 @@ class UserObject(object):
         return self._username
 
     # Declare properties
-    is_admin = property(fget=lambda x: x._db.is_admin(x._username))
-    email = property(fget=lambda x: x._db.get_email(x._username))
-    user_root = property(fget=lambda x: x._db.get_user_root(x._username))
-    repos = property(fget=lambda x: x._db.get_repos(x._username))
-    repos_obj = property(fget=lambda x: [RepoObject(x._db, x._username, r)
+    is_admin = property(fget=lambda x: x._db.is_admin(x._username), fset=lambda x, y: x._db.set_is_admin(x._username, y))
+    email = property(fget=lambda x: x._db.get_email(x._username), fset=lambda x, y: x._db.set_email(x._username, y))
+    user_root = property(fget=lambda x: x._db.get_user_root(x._username), fset=lambda x, y: x._db.set_user_root(x._username, y))
+    repos = property(fget=lambda x: x._db.get_repos(x._username), fset=lambda x, y: x._db.set_repos(x._username, y))
+    repo_list = property(fget=lambda x: [RepoObject(x._db, x._username, r)
                                          for r in x._db.get_repos(x._username)])
+    repo_dict = property(fget=lambda x: {r: RepoObject(x._db, x._username, r)
+                                         for r in x._db.get_repos(x._username)})
 
 
 @python_2_unicode_compatible
@@ -88,7 +90,7 @@ class RepoObject(object):
     def name(self):
         return self._repo
 
-    maxage = property(fget=lambda x: x._db.get_repo_maxage(x._username, x._repo))
+    maxage = property(fget=lambda x: x._db.get_repo_maxage(x._username, x._repo), fset=lambda x, y: x._db.set_repo_maxage(x._username, x._repo, y))
 
 
 class UserManager(Component):
@@ -131,7 +133,7 @@ class UserManager(Component):
         # Find a database where to add the user
         db = self._get_supporting_database('add_user')
         logger.debug("adding new user [%s] to database [%s]", user, db)
-        db.add_user(user)
+        userobj = db.add_user(user)
         self._notify('added', user, password)
         # Find a password store where to set password
         if password:
@@ -141,6 +143,9 @@ class UserManager(Component):
             else:
                 self.set_password(user, password)
 
+        # Return user object
+        return userobj
+
     def delete_user(self, user):
         """
         Delete the given user from password store.
@@ -148,6 +153,8 @@ class UserManager(Component):
         Return True if the user was deleted. Return False if the user didn't
         exists.
         """
+        if hasattr(user, 'username'):
+            user = user.username
         result = False
         # Delete user from database (required).
         db = self.find_user_database(user)
@@ -198,42 +205,6 @@ class UserManager(Component):
                 return db
         return None
 
-    def get_email(self, user):
-        """Return the user email. Return the first email found."""
-        db = self.find_user_database(user)
-        if not db:
-            raise InvalidUserError(user)
-        return db.get_email(user)
-
-    def is_admin(self, user):
-        """Return True if the user is Admin."""
-        db = self.find_user_database(user)
-        if not db:
-            raise InvalidUserError(user)
-        return db.is_admin(user)
-
-    def get_repos(self, user):
-        """Get list of repos for the given `user`."""
-        db = self.find_user_database(user)
-        if not db:
-            raise InvalidUserError(user)
-        return db.get_repos(user)
-
-    def get_repos_obj(self, user):
-        """Get list of repos for the given `user`."""
-        db = self.find_user_database(user)
-        if not db:
-            raise InvalidUserError(user)
-        for repo in db.get_repos(user):
-            yield RepoObject(db, user, repo)
-
-    def get_repo_maxage(self, user, repo_path):
-        """Return the max age of the given repo."""
-        db = self.find_user_database(user)
-        if not db:
-            raise InvalidUserError(user)
-        return db.get_repo_maxage(user, repo_path)
-
     def get_user_obj(self, username):
         """Return a user object."""
         db = self.find_user_database(username)
@@ -241,12 +212,7 @@ class UserManager(Component):
             raise InvalidUserError(username)
         return UserObject(db, username)
 
-    def get_user_root(self, user):
-        """Get user root directory."""
-        db = self.find_user_database(user)
-        if not db:
-            raise InvalidUserError(user)
-        return db.get_user_root(user)
+    get_user = get_user_obj
 
     def _get_supporting_store(self, operation):
         """
@@ -271,13 +237,6 @@ class UserManager(Component):
         return None
 
     def list(self):
-        """List all users from databases."""
-        users = []
-        for store in self._databases:
-            users.extend(store.list())
-        return users
-
-    def list_obj(self):
         """Search users database. Return a generator of user object."""
         # TODO Add criteria as required.
         for db in self._databases:
@@ -294,7 +253,7 @@ class UserManager(Component):
         If valid, return the username. Return False if the user exists but the
         password doesn't matches. Return None if the user was not found in any
         password store.
-        The return value may not be equals to the given username.
+        The return user object. The username may not be equals to the given username.
         """
         assert isinstance(user, str)
         assert password is None or isinstance(user, str)
@@ -306,40 +265,21 @@ class UserManager(Component):
             if real_user:
                 break
         if not real_user:
-            return real_user
-        # Check if user exists in database
-        if self.exists(real_user):
-            self._notify('logined', user, password)
-            return real_user
-        # Check if user may be added.
-        if not self._allow_add_user:
-            logger.info("user [%s] not found in database", real_user)
             return None
-        # Create user
-        self.add_user(real_user)
-        self._notify('logined', user, password)
-        return real_user
-
-    def set_email(self, user, email):
-        """Sets the given user email."""
-        db = self.find_user_database(user)
-        if not db:
-            raise InvalidUserError(user)
-        db.set_email(user, email)
-
-    def set_is_admin(self, user, is_admin):
-        """Sets the user root directory."""
-        db = self.find_user_database(user)
-        if not db:
-            raise InvalidUserError(user)
-        db.set_is_admin(user, is_admin)
-
-    def set_user_root(self, user, user_root):
-        """Sets the user root directory."""
-        db = self.find_user_database(user)
-        if not db:
-            raise InvalidUserError(user)
-        db.set_user_root(user, user_root)
+        # Check if user exists in database
+        try:
+            userobj = self.get_user_obj(real_user)
+            self._notify('logined', userobj.username, password)
+            return userobj
+        except InvalidUserError:
+            # Check if user may be added.
+            if not self._allow_add_user:
+                logger.info("user [%s] not found in database", real_user)
+                return None
+            # Create user
+            userobj = self.add_user(real_user)
+            self._notify('logined', user, password)
+            return userobj
 
     def set_password(self, user, password, old_password=None):
         # Check if user exists in database
@@ -357,20 +297,6 @@ class UserManager(Component):
             raise RdiffError(_("none of the IPasswordStore supports setting the password"))
         store.set_password(user, password, old_password)
         self._notify('password_changed', user, password)
-
-    def set_repos(self, user, repo_paths):
-        """Sets the list of repos for the given user."""
-        db = self.find_user_database(user)
-        if not db:
-            raise InvalidUserError(user)
-        db.set_repos(user, repo_paths)
-
-    def set_repo_maxage(self, user, repo_path, max_age):
-        """Sets the max age for the given repo."""
-        db = self.find_user_database(user)
-        if not db:
-            raise InvalidUserError(user)
-        db.set_repo_maxage(user, repo_path, max_age)
 
     def supports(self, operation, user=None):
         """

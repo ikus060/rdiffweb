@@ -56,7 +56,7 @@ def _find_repos(path, depth=3):
 
 def find_repos_for_user(user, userdb):
     logger.debug("find repos for [%s]", user)
-    user_root = userdb.get_user_root(user)
+    user_root = userdb.get_user(user).user_root
     repo_paths = list(_find_repos(user_root))
 
     def striproot(path):
@@ -65,4 +65,4 @@ def find_repos_for_user(user, userdb):
         return path[len(user_root):]
     repo_paths = list(map(striproot, repo_paths))
     logger.debug("set user [%s] repos: %s ", user, repo_paths)
-    userdb.set_repos(user, repo_paths)
+    userdb.get_user(user).repos = repo_paths

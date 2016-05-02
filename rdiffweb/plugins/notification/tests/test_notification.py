@@ -47,8 +47,9 @@ class NotificationTest(AppTestCase):
         Run the notification and check if mails are sent
         """
         # Set user config
-        self.app.userdb.set_email(self.USERNAME, 'test@test.com')
-        self.app.userdb.set_repo_maxage(self.USERNAME, self.REPO, 1)
+        user = self.app.userdb.get_user(self.USERNAME)
+        user.email = 'test@test.com'
+        user.repo_list[0].maxage = 1
 
         # Get ref to notification plugin
         n = self.app.plugins.get_plugin_by_name('NotificationPlugin')
@@ -59,16 +60,16 @@ class NotificationTest(AppTestCase):
         n.send_notifications()
 
         # Expect it to be called.
-        admin_obj = self.app.userdb.get_user_obj(self.USERNAME)
-        n.send_mail.assert_called_once_with(admin_obj, 'Notification', 'email_notification.html', repos=[ANY], user=admin_obj)
+        n.send_mail.assert_called_once_with(user, 'Notification', 'email_notification.html', repos=[ANY], user=user)
 
     def test_run_without_notification(self):
         """
         Run the notification and check if mails are sent
         """
         # Set user config
-        self.app.userdb.set_email(self.USERNAME, 'test@test.com')
-        self.app.userdb.set_repo_maxage(self.USERNAME, self.REPO, -1)
+        user = self.app.userdb.get_user(self.USERNAME)
+        user.email = 'test@test.com'
+        user.repo_list[0].maxage = -1
 
         # Get ref to notification plugin
         n = self.app.plugins.get_plugin_by_name('NotificationPlugin')
@@ -87,8 +88,8 @@ class NotificationTest(AppTestCase):
         """
         with patch('rdiffweb.plugins.notification.smtplib') as patcher:
             # Set user config
-            self.app.userdb.set_email(self.USERNAME, 'test@test.com')
-            user = self.app.userdb.get_user_obj(self.USERNAME)
+            user = self.app.userdb.get_user(self.USERNAME)
+            user.email = 'test@test.com'
 
             # Set email config
             self.app.cfg.set_config('EmailHost', 'smtp.gmail.com:587')

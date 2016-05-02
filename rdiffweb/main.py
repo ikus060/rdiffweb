@@ -107,7 +107,7 @@ def setup_logging(log_file, log_access_file, level):
             except:
                 record.ip = "none"
             try:
-                record.user = cherrypy.session['username']  # @UndefinedVariable
+                record.user = cherrypy.session['user'].username  # @UndefinedVariable
             except:
                 record.user = "none"
             return True

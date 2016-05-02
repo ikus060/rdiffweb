@@ -37,7 +37,7 @@ def authform():
     """Filter used to redirect user to login page if not logged in."""
 
     # Check if logged-in.
-    if cherrypy.session.get("username"):  # @UndefinedVariable
+    if cherrypy.session.get("user"):  # @UndefinedVariable
         # page passes credentials; allow to be processed
         return False
 
@@ -59,7 +59,7 @@ def authbasic(checkpassword):
     """Filter used to restrict access to resource via HTTP basic auth."""
 
     # Check if logged-in.
-    if cherrypy.session.get("username"):  # @UndefinedVariable
+    if cherrypy.session.get("user"):  # @UndefinedVariable
         # page passes credentials; allow to be processed
         return False
 

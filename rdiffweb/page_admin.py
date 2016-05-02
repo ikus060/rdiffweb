@@ -26,6 +26,7 @@ import os
 
 from rdiffweb import page_main
 from rdiffweb import rdw_spider_repos
+from rdiffweb.core import InvalidUserError
 from rdiffweb.exceptions import Warning
 from rdiffweb.i18n import ugettext as _
 
@@ -54,14 +55,14 @@ class AdminPage(page_main.MainPage):
         if not self.app.currentuser or not self.app.currentuser.is_admin:
             raise cherrypy.HTTPError(403)
 
-        users = self.app.userdb.list()
-        repos = set()
-        for user in users:
-            for repo in self.app.userdb.get_repos(user):
-                repos.add(repo)
+        user_count = 0
+        repo_count = 0
+        for user in self.app.userdb.list():
+            user_count += 1
+            repo_count += len(user.repos)
 
-        params = {"user_count": len(users),
-                  "repo_count": len(repos)}
+        params = {"user_count": user_count,
+                  "repo_count": repo_count}
 
         return self._compile_template("admin.html", **params)
 
@@ -108,12 +109,11 @@ class AdminPage(page_main.MainPage):
         return self._compile_template("admin_users.html", **params)
 
     def _users_get_params_for_page(self, userfilter, usersearch):
-        usernames = self.app.userdb.list()
-        users = [{"username": username,
-                  "email": self.app.userdb.get_email(username),
-                  "is_admin": self.app.userdb.is_admin(username),
-                  "user_root": self.app.userdb.get_user_root(username)
-                  } for username in usernames]
+        users = [{"username": user.username,
+                  "email": user.email,
+                  "is_admin": user.is_admin,
+                  "user_root": user.user_root,
+                  } for user in self.app.userdb.list()]
 
         # Apply the filters.
         filtered_users = users
@@ -145,13 +145,16 @@ class AdminPage(page_main.MainPage):
 
         # Fork the behaviour according to the action.
         if action == "edit":
-            self._check_user_exists(username)
-            logger.info("updating user info")
+            try:
+                user = self.app.userdb.get_user(username)
+            except InvalidUserError:
+                raise cherrypy.HTTPError(400, "user does not exist")
+            logger.info("updating user [%s] info", user)
             if password:
                 self.app.userdb.set_password(username, password, old_password=None)
-            self.app.userdb.set_user_root(username, user_root)
-            self.app.userdb.set_is_admin(username, is_admin)
-            self.app.userdb.set_email(username, email)
+            user.user_root = user_root
+            user.is_admin = is_admin
+            user.email = email
             success = _("User information modified successfully.")
 
             # Check and update user directory
@@ -166,10 +169,10 @@ class AdminPage(page_main.MainPage):
                 raise Warning(_("The username is invalid."))
             logger.info("adding user [%s]", username)
 
-            self.app.userdb.add_user(username, password)
-            self.app.userdb.set_user_root(username, user_root)
-            self.app.userdb.set_is_admin(username, is_admin)
-            self.app.userdb.set_email(username, email)
+            user = self.app.userdb.add_user(username, password)
+            user.user_root = user_root
+            user.is_admin = is_admin
+            user.email = email
 
             # Check and update user directory
             self._check_user_root_dir(user_root)
@@ -177,12 +180,14 @@ class AdminPage(page_main.MainPage):
             success = _("User added successfully.")
 
         if action == "delete":
-
-            self._check_user_exists(username)
+            try:
+                user = self.app.userdb.get_user(username)
+            except InvalidUserError:
+                raise cherrypy.HTTPError(400, "user does not exist")
             if username == self.app.currentuser.username:
                 raise Warning("You cannot remove your own account!.")
             logger.info("deleting user [%s]", username)
-            self.app.userdb.delete_user(username)
+            self.app.userdb.delete_user(user)
             success = _("User account removed.")
 
         # Return messages

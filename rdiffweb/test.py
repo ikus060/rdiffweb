@@ -95,8 +95,8 @@ class MockRdiffwebApp(RdiffwebApp):
 
         # Create new user admin
         if self.userdb.supports('add_user') and username and password:
-            self.userdb.add_user(username, password)
-            self.userdb.set_is_admin(username, True)
+            user = self.userdb.add_user(username, password)
+            user.is_admin = True
 
     def reset_testcases(self):
         """Extract testcases."""
@@ -107,8 +107,8 @@ class MockRdiffwebApp(RdiffwebApp):
 
         # Register repository
         for user in self.userdb.list():
-            self.userdb.set_user_root(user, new)
-            self.userdb.set_repos(user, ['testcases/'])
+            user.user_root = new
+            user.repos = ['testcases/']
 
         self.testcases = new
 

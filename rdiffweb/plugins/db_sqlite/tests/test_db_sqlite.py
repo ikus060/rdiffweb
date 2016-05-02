@@ -120,7 +120,9 @@ class SQLiteUserDBTest(AppTestCase):
 
     def test_list(self):
         self.app.userdb.add_user('annik')
-        self.assertEqual(['annik'], self.app.userdb.list())
+        users = list(self.app.userdb.list())
+        self.assertEqual(1, len(users))
+        self.assertEqual('annik', users[0].username)
 
     def test_set_invalid_user(self):
         with self.assertRaises(InvalidUserError):

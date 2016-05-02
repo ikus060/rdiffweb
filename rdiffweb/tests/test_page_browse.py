@@ -210,8 +210,9 @@ class BrowsePageTest(WebCase):
         Verify if browsing '/browse/' for a single repository is working.
         """
         # Change the user setting to match single repo.
-        self.app.userdb.set_user_root(self.USERNAME, os.path.join(self.app.testcases, self.REPO))
-        self.app.userdb.set_repos(self.USERNAME, ['/'])
+        user = self.app.userdb.get_user(self.USERNAME)
+        user.user_root = os.path.join(self.app.testcases, self.REPO)
+        user.repos = ['/']
         # Check if browsing is working.
         self.getPage('/browse/')
         self.assertStatus('200 OK')

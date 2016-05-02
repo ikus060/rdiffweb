@@ -49,7 +49,8 @@ class UserManagerSQLiteTest(AppTestCase):
 
     def test_add_user(self):
         """Add user to database."""
-        self.app.userdb.add_user('joe')
+        user = self.app.userdb.add_user('joe')
+        self.assertIsNotNone(user)
         self.assertTrue(self.app.userdb.exists('joe'))
 
     def test_add_user_with_duplicate(self):
@@ -87,76 +88,58 @@ class UserManagerSQLiteTest(AppTestCase):
         Test user record.
         """
         # Create new user
-        user = 'bernie'
-        self.app.userdb.add_user(user, 'my-password')
-        self.app.userdb.set_user_root(user, '/backups/bernie/')
-        self.app.userdb.set_is_admin(user, True)
-        self.app.userdb.set_email(user, 'bernie@gmail.com')
-        self.app.userdb.set_repos(user, ['/backups/bernie/computer/', '/backups/bernie/laptop/'])
-        self.app.userdb.set_repo_maxage(user, '/backups/bernie/computer/', -1)
-        self.app.userdb.set_repo_maxage(user, '/backups/bernie/laptop/', 3)
+        user = self.app.userdb.add_user('bernie', 'my-password')
+        user.user_root = '/backups/bernie/'
+        user.is_admin = True
+        user.email = 'bernie@gmail.com'
+        user.repos = ['/backups/bernie/computer/', '/backups/bernie/laptop/']
+        user.repo_list[0].maxage = -1
+        user.repo_list[1].maxage = 3
 
         # Get user record.
-        obj = self.app.userdb.get_user_obj(user)
+        obj = self.app.userdb.get_user_obj('bernie')
         self.assertIsNotNone(obj)
-        self.assertEqual(user, obj.username)
+        self.assertEqual('bernie', obj.username)
         self.assertEqual('bernie@gmail.com', obj.email)
         self.assertEqual(['/backups/bernie/computer/', '/backups/bernie/laptop/'], obj.repos)
         self.assertEqual('/backups/bernie/', obj.user_root)
         self.assertEqual(True, obj.is_admin)
 
         # Get repo object
-        self.assertEqual('/backups/bernie/computer/', obj.repos_obj[0].name)
-        self.assertEqual(-1, obj.repos_obj[0].maxage)
-        self.assertEqual('/backups/bernie/laptop/', obj.repos_obj[1].name)
-        self.assertEqual(3, obj.repos_obj[1].maxage)
+        self.assertEqual('/backups/bernie/computer/', obj.repo_list[0].name)
+        self.assertEqual(-1, obj.repo_list[0].maxage)
+        self.assertEqual('/backups/bernie/laptop/', obj.repo_list[1].name)
+        self.assertEqual(3, obj.repo_list[1].maxage)
 
     def test_get_set(self):
-        user = 'larry'
-        self.app.userdb.add_user(user, 'password')
+        user = self.app.userdb.add_user('larry', 'password')
 
-        email = self.app.userdb.get_email(user)
-        repos = self.app.userdb.get_repos(user)
-        user_root = self.app.userdb.get_user_root(user)
-        is_admin = self.app.userdb.is_admin(user)
-        self.assertEqual('', email)
-        self.assertEqual([], repos)
-        self.assertEqual('', user_root)
-        self.assertEqual(False, is_admin)
+        self.assertEqual('', user.email)
+        self.assertEqual([], user.repos)
+        self.assertEqual('', user.user_root)
+        self.assertEqual(False, user.is_admin)
 
-        self.app.userdb.set_user_root(user, '/backups/')
-        self.app.userdb.set_is_admin(user, True)
-        self.app.userdb.set_email(user, 'larry@gmail.com')
-        self.app.userdb.set_repos(user, ['/backups/computer/', '/backups/laptop/'])
+        user.user_root = '/backups/'
+        user.is_admin = True
+        user.email = 'larry@gmail.com'
+        user.repos = ['/backups/computer/', '/backups/laptop/']
 
-        email = self.app.userdb.get_email(user)
-        repos = self.app.userdb.get_repos(user)
-        user_root = self.app.userdb.get_user_root(user)
-        is_admin = self.app.userdb.is_admin(user)
-        self.assertEqual('larry@gmail.com', email)
-        self.assertEqual(['/backups/computer/', '/backups/laptop/'], repos)
-        self.assertEqual('/backups/', user_root)
-        self.assertEqual(True, is_admin)
-
-    def test_get_invalid_user(self):
-        with self.assertRaises(InvalidUserError):
-            self.app.userdb.get_email('invalid')
-        with self.assertRaises(InvalidUserError):
-            self.app.userdb.get_repos('invalid')
-        with self.assertRaises(InvalidUserError):
-            self.app.userdb.get_user_root('invalid')
-        with self.assertRaises(InvalidUserError):
-            self.app.userdb.is_admin('invalid')
+        self.assertEqual('larry@gmail.com', user.email)
+        self.assertEqual(['/backups/computer/', '/backups/laptop/'], user.repos)
+        self.assertEqual('/backups/', user.user_root)
+        self.assertEqual(True, user.is_admin)
 
     def test_list(self):
-        self.assertEqual([], self.app.userdb.list())
+        self.assertEqual([], list(self.app.userdb.list()))
         self.app.userdb.add_user('annik')
-        self.assertEqual(['annik'], self.app.userdb.list())
+        users = list(self.app.userdb.list())
+        self.assertEqual(1, len(users))
+        self.assertEqual('annik', users[0].username)
 
     def test_login(self):
         """Check if login work"""
         self.app.userdb.add_user('tom', 'password')
-        self.assertEqual('tom', self.app.userdb.login('tom', 'password'))
+        self.assertIsNotNone(self.app.userdb.login('tom', 'password'))
         self.assertFalse(self.app.userdb.login('tom', 'invalid'))
 
     def login_with_invalid_password(self):
@@ -179,20 +162,20 @@ class UserManagerSQLiteTest(AppTestCase):
         self.app.userdb.add_user('Charlie', 'password')
         self.app.userdb.add_user('Bernard', 'password')
         self.app.userdb.add_user('Kim', 'password')
-        users = list(self.app.userdb.list_obj())
+        users = list(self.app.userdb.list())
         self.assertEqual(3, len(users))
 
     def test_set_password_update(self):
         self.app.userdb.add_user('annik', 'password')
         self.assertFalse(self.app.userdb.set_password('annik', 'new_password'))
         # Check new credentials
-        self.assertEqual('annik', self.app.userdb.login('annik', 'new_password'))
+        self.assertIsNotNone(self.app.userdb.login('annik', 'new_password'))
 
     def test_set_password_with_old_password(self):
         self.app.userdb.add_user('john', 'password')
         self.app.userdb.set_password('john', 'new_password', old_password='password')
         # Check new credentials
-        self.assertEqual('john', self.app.userdb.login('john', 'new_password'))
+        self.assertIsNotNone(self.app.userdb.login('john', 'new_password'))
 
     def test_set_password_with_invalid_old_password(self):
         self.app.userdb.add_user('foo', 'password')
@@ -264,19 +247,23 @@ class UserManagerSQLiteLdapTest(AppTestCase):
     def test_add_user_to_sqlite(self):
         """Add user to local database."""
         self.app.userdb.add_user('joe', 'password')
-        self.assertEqual('joe', self.app.userdb.login('joe', 'password'))
+        user = self.app.userdb.login('joe', 'password')
+        self.assertIsNotNone(user)
+        self.assertEqual('joe', user.username)
 
     def test_add_user_to_ldap(self):
         """Add user to LDAP."""
         self.app.userdb.add_user('karl', 'password')
-        self.assertEqual('karl', self.app.userdb.login('karl', 'password'))
+        user = self.app.userdb.login('karl', 'password')
+        self.assertIsNotNone(user)
+        self.assertEqual('karl', user.username)
 
     def test_delete_user(self):
         """Create then delete a user."""
         # Create user
         self.app.userdb.add_user('vicky')
         self.assertTrue(self.app.userdb.exists('vicky'))
-        self.assertEquals('vicky', self.app.userdb.login('vicky', 'password'))
+        self.assertIsNotNone(self.app.userdb.login('vicky', 'password'))
         # Delete user.
         self.assertTrue(self.app.userdb.delete_user('vicky'))
         self.assertFalse(self.app.userdb.exists('vicky'))
@@ -292,49 +279,44 @@ class UserManagerSQLiteLdapTest(AppTestCase):
         self.assertFalse(self.app.userdb.exists('invalid'))
 
     def test_get_set(self):
-        user = 'larry'
-        self.app.userdb.add_user(user, 'password')
+        username = 'larry'
+        user = self.app.userdb.add_user(username, 'password')
 
-        email = self.app.userdb.get_email(user)
-        repos = self.app.userdb.get_repos(user)
-        user_root = self.app.userdb.get_user_root(user)
-        is_admin = self.app.userdb.is_admin(user)
-        self.assertEqual('', email)
-        self.assertEqual([], repos)
-        self.assertEqual('', user_root)
-        self.assertEqual(False, is_admin)
+        self.assertEqual('', user.email)
+        self.assertEqual([], user.repos)
+        self.assertEqual('', user.user_root)
+        self.assertEqual(False, user.is_admin)
 
-        self.app.userdb.set_user_root(user, '/backups/')
-        self.app.userdb.set_is_admin(user, True)
-        self.app.userdb.set_email(user, 'larry@gmail.com')
-        self.app.userdb.set_repos(user, ['/backups/computer/', '/backups/laptop/'])
+        user.user_root = '/backups/'
+        user.is_admin = True
+        user.email = 'larry@gmail.com'
+        user.repos = ['/backups/computer/', '/backups/laptop/']
 
-        email = self.app.userdb.get_email(user)
-        repos = self.app.userdb.get_repos(user)
-        user_root = self.app.userdb.get_user_root(user)
-        self.assertEqual('larry@gmail.com', email)
-        self.assertEqual(['/backups/computer/', '/backups/laptop/'], repos)
-        self.assertEqual('/backups/', user_root)
+        user = self.app.userdb.get_user_obj(username)
+        self.assertEqual('larry@gmail.com', user.email)
+        self.assertEqual(['/backups/computer/', '/backups/laptop/'], user.repos)
+        self.assertEqual('/backups/', user.user_root)
 
     def test_list(self):
-        self.assertEqual([], self.app.userdb.list())
+        self.assertEqual([], list(self.app.userdb.list()))
         self.app.userdb.add_user('annik')
-        self.assertEqual(['annik'], self.app.userdb.list())
+        users = list(self.app.userdb.list())
+        self.assertEqual('annik', users[0].username)
 
     def test_login(self):
         """Check if login work"""
         self.app.userdb.add_user('tom', 'password')
-        self.assertEqual('tom', self.app.userdb.login('tom', 'password'))
-        self.assertFalse(self.app.userdb.login('tom', 'invalid'))
+        self.assertIsNotNone(self.app.userdb.login('tom', 'password'))
+        self.assertIsNone(self.app.userdb.login('tom', 'invalid'))
 
     def test_login_with_invalid_password(self):
         self.app.userdb.add_user('jeff', 'password')
-        self.assertFalse(self.app.userdb.login('jeff', 'invalid'))
+        self.assertIsNone(self.app.userdb.login('jeff', 'invalid'))
         # password is case sensitive
-        self.assertFalse(self.app.userdb.login('jeff', 'Password'))
+        self.assertIsNone(self.app.userdb.login('jeff', 'Password'))
         # Match entire password
-        self.assertFalse(self.app.userdb.login('jeff', 'pass'))
-        self.assertFalse(self.app.userdb.login('jeff', ''))
+        self.assertIsNone(self.app.userdb.login('jeff', 'pass'))
+        self.assertIsNone(self.app.userdb.login('jeff', ''))
 
     def test_login_with_invalid_user(self):
         """Check if login work"""
@@ -349,33 +331,27 @@ class UserManagerSQLiteLdapTest(AppTestCase):
         self.assertFalse(self.app.userdb.exists('tony'))
         self.app.cfg.set_config('AddMissingUser', 'true')
         try:
-            self.app.userdb.login('tony', 'password')
+            user = self.app.userdb.login('tony', 'password')
             self.assertTrue(self.app.userdb.exists('tony'))
-            self.assertFalse(self.app.userdb.is_admin('tony'))
+            self.assertFalse(user.is_admin)
         finally:
             self.app.cfg.set_config('AddMissingUser', 'false')
 
-    def test_set_invalid_user(self):
+    def test_get_user_invalid(self):
         with self.assertRaises(InvalidUserError):
-            self.app.userdb.set_user_root('invalid', '/backups/')
-        with self.assertRaises(InvalidUserError):
-            self.app.userdb.set_is_admin('invalid', True)
-        with self.assertRaises(InvalidUserError):
-            self.app.userdb.set_email('invalid', 'larry@gmail.com')
-        with self.assertRaises(InvalidUserError):
-            self.app.userdb.set_repos('invalid', ['/backups/computer/', '/backups/laptop/'])
+            self.app.userdb.get_user_obj('invalid')
 
     def test_set_password_update(self):
         self.app.userdb.add_user('annik')
         self.assertFalse(self.app.userdb.set_password('annik', 'new_password'))
         # Check new credentials
-        self.assertEqual('annik', self.app.userdb.login('annik', 'new_password'))
+        self.assertIsNotNone(self.app.userdb.login('annik', 'new_password'))
 
     def test_set_password_with_old_password(self):
         self.app.userdb.add_user('john')
         self.app.userdb.set_password('john', 'new_password', old_password='password')
         # Check new credentials
-        self.assertEqual('john', self.app.userdb.login('john', 'new_password'))
+        self.assertIsNotNone(self.app.userdb.login('john', 'new_password'))
 
     def test_set_password_with_invalid_old_password(self):
         self.app.userdb.add_user('foo')

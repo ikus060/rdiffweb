@@ -19,6 +19,7 @@
 SQLite UserDB backend used to store users data and credentials
 into a SQLite database.
 """
+
 from __future__ import unicode_literals
 
 from builtins import str
@@ -28,6 +29,7 @@ from threading import RLock
 from rdiffweb.core import InvalidUserError
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPasswordStore, IDatabase
+from rdiffweb.user import UserObject
 
 
 try:
@@ -148,6 +150,8 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         logger.info("adding new user [%s]", username)
         query = "INSERT INTO users (Username) values (?)"
         self._execute_query(query, (username,))
+        # Return UserObject
+        return UserObject(self, username)
 
     def delete_user(self, username):
         """

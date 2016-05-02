@@ -125,24 +125,15 @@ class RdiffwebApp(Application):
         if plugin_obj.get_templatesdir():
             self.templates.add_templatesdir(plugin_obj.get_templatesdir())
 
-    def __get_currentuser(self):
+    @property
+    def currentuser(self):
         """
         Get the current user.
         """
         try:
-            username = cherrypy.session['username']  # @UndefinedVariable
+            return cherrypy.session['user']  # @UndefinedVariable
         except:
-            username = False
-        if not username:
             return None
-
-        # Check if object already exists.
-        if not hasattr(cherrypy.request, 'user'):
-            cherrypy.request.user = self.userdb.get_user_obj(username)
-        return cherrypy.request.user  # @UndefinedVariable
-
-    # TODO Should be a cherrypy.tool, to set `cherrypy.request.user` directly.
-    currentuser = property(fget=__get_currentuser)
 
     def error_page(self, **kwargs):
         """

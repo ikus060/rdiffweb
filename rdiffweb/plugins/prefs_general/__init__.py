@@ -98,7 +98,7 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         username = self.app.currentuser.username
         email = kwargs['email']
         _logger.info("updating user [%s] email [%s]", username, email)
-        self.app.userdb.set_email(username, kwargs['email'])
+        self.app.currentuser.email = kwargs['email']
 
         return {'success': _("Profile updated successfully.")}
 

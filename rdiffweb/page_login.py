@@ -73,14 +73,14 @@ class LoginPage(page_main.MainPage):
         params = dict()
         logger.debug("check credentials for [%s]", login)
         try:
-            username = self.app.userdb.login(login, password)
+            user = self.app.userdb.login(login, password)
         except:
             logger.exception("fail to validate user credential.")
             params["warning"] = _("Fail to validate user credential.")
         else:
-            if username:
+            if user:
                 # Login successful
-                cherrypy.session['username'] = username  # @UndefinedVariable
+                cherrypy.session['user'] = user  # @UndefinedVariable
                 if not redirect or redirect.startswith("/login/"):
                     redirect = "/"
                 # The redirect url was unquoted by cherrypy, quote the
