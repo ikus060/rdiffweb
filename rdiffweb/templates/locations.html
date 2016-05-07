@@ -4,7 +4,9 @@
 {% block body %}
 <div class="container" id="locations">
     <h2>{% trans %}Repositories{% endtrans %} ({{ repos|length }})</h2>
-    {% include templates_before_content ignore missing with context %}
+    {% for t in templates_before_content %}
+    {% include t ignore missing with context %}
+    {% endfor %}
     {% if repos|length == 0 %}
 	    {% set message = _("You don't have any repositories configured.") %}
 	    {% include 'message.html' %}
