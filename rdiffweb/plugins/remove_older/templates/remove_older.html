@@ -1,0 +1,52 @@
+<!-- Delete repo. -->
+{% call macros.panel(title=_("Remove older"), class='warning') %}
+<div class="panel-body">
+  <form data-async data-target="#remove-older-status" action="/remove-older/{{ repo_name }}/" method="POST" role="form">
+  <div class="form-group">
+    <label for="encoding" class="control-label">
+        {% trans %}Keep history for:{% endtrans %}</label>
+    <select class="form-control" name="keepdays">
+      {% set remove_older_values = [
+            (-1, _("Forever")),
+            (1, _("1 day")),
+            (2, _("2 day")),
+            (3, _("3 day")),
+            (4, _("4 day")),
+            (5, _("5 day")),
+            (6, _("6 day")),
+            (7, _("1 week")),
+            (14, _("2 weeks")),
+            (21, _("3 weeks")),
+            (30, _("1 month")),
+            (60, _("2 month")),
+            (90, _("3 month")),
+            (120, _("4 month")),
+            (150, _("5 month")),
+            (180, _("6 month")),
+            (210, _("7 month")),
+            (240, _("8 month")),
+            (270, _("9 month")),
+            (300, _("10 month")),
+            (330, _("11 month")),
+            (365, _("1 year")),
+            (730, _("2 year")),
+            (1095, _("3 year")),
+            (1460, _("4 year")),
+            (1825, _("5 year")),
+      ] %}
+      {% for i in remove_older_values %}
+      <option {{ attrib(value=i[0], selected=(keepdays == i[0])) }}>{{ i[1] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <span class="help-block">
+     {% trans %}Allow you to remove the incremental backup that has been around longer than the given time. In other words, old revision of the files will be removed.{% endtrans %}
+  </span>
+  <div>
+     <button type="submit" class="btn btn-warning">{% trans %}Save changes{% endtrans %}</button>
+     <span id="remove-older-status"></span>
+  </div>
+  </form>
+</div>
+{% endcall %}
+

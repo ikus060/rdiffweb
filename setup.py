@@ -238,6 +238,7 @@ setup(
             "UpdateRepos = rdiffweb.plugins.update_repos",
             "Graphs = rdiffweb.plugins.graphs",
             "DeleteRepo = rdiffweb.plugins.delete_repo",
+            "RemoveOlder = rdiffweb.plugins.remove_older",
         ]
     },
     # new commands added and build command modified
