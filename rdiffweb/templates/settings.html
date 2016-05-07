@@ -33,6 +33,8 @@
 {% endcall %}
 
 <!-- panel content -->
-{% include templates_content ignore missing with context %}
+{% for t in templates_content %}
+{% include t ignore missing with context %}
+{% endfor %}
 
 {% endblock %}
