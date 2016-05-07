@@ -102,6 +102,22 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
                  self._get_user_id(username))
         return [row[0] for row in self._execute_query(query)]
 
+    def get_repo_attr(self, username, repo_path, key, default=None):
+        """
+        Get repository attribute.
+        """
+        assert isinstance(username, str)
+        assert isinstance(repo_path, str)
+        query = "SELECT %s FROM repos WHERE RepoPath=? AND UserID = ?" % (key,)
+        try:
+            results = self._execute_query(query, (repo_path, self._get_user_id(username)))
+            if len(results) == 0:
+                return default
+            assert len(results) == 1
+            return results[0][0]
+        except:
+            return default
+
     def get_repo_maxage(self, username, repoPath):
         assert isinstance(username, str)
         query = "SELECT MaxAge FROM repos WHERE RepoPath=? AND UserID = ?"
@@ -227,6 +243,17 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         # Update password.
         self._set_user_field(username, 'Password', self._hash_password(password))
 
+    def set_repo_attr(self, username, repo_path, key, value):
+        assert repo_path
+        assert isinstance(key, str) and key.isalpha() and key.islower()
+
+        # Add column if required.
+        self._create_column('repos', key)
+
+        # Update field.
+        query = "UPDATE repos SET %s=? WHERE RepoPath=? AND UserID = ?" % (key,)
+        self._execute_query(query, (value, repo_path, self._get_user_id(username)))
+
     def set_repo_maxage(self, username, repoPath, maxAge):
         assert isinstance(username, str)
         if repoPath not in self.get_repos(username):
@@ -339,6 +366,23 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
             self.set_password('admin', 'admin123', old_password=None)
             self.set_user_root('admin', '/backups/')
             self.set_is_admin('admin', True)
+
+    def _create_column(self, table, column):
+        """
+        Add a column to the tables.
+        """
+        # Check if column exists.
+        if column in self._get_columns(table):
+            return
+        # Add column.
+        self._execute_query('ALTER TABLE %s ADD COLUMN %s varchar(255) NOT NULL DEFAULT ""' % (table, column,))
+
+    def _get_columns(self, table):
+        """
+        List columns for the given table.
+        """
+        assert table
+        return [row[1] for row in self._execute_query("pragma table_info('%s')" % (table,))]
 
     def _get_tables(self):
         return [

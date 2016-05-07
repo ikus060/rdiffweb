@@ -61,7 +61,7 @@ class UserObject(object):
     repos = property(fget=lambda x: x._db.get_repos(x._username), fset=lambda x, y: x._db.set_repos(x._username, y))
     repo_list = property(fget=lambda x: [RepoObject(x._db, x._username, r)
                                          for r in x._db.get_repos(x._username)])
-    repo_dict = property(fget=lambda x: {r: RepoObject(x._db, x._username, r)
+    repo_dict = property(fget=lambda x: {r.strip('/'): RepoObject(x._db, x._username, r)
                                          for r in x._db.get_repos(x._username)})
 
 
@@ -85,6 +85,14 @@ class RepoObject(object):
 
     def __repr__(self):
         return 'RepoObject(db, %r, %r)' % (self._username, self._repo)
+
+    def set_attr(self, key, value):
+        assert isinstance(key, str) and key.isalpha() and key.islower()
+        self._db.set_repo_attr(self._username, self._repo, key, value)
+
+    def get_attr(self, key, default=None):
+        assert isinstance(key, str)
+        return self._db.get_repo_attr(self._username, self._repo, key, default)
 
     @property
     def name(self):
@@ -205,14 +213,12 @@ class UserManager(Component):
                 return db
         return None
 
-    def get_user_obj(self, username):
+    def get_user(self, username):
         """Return a user object."""
         db = self.find_user_database(username)
         if not db:
             raise InvalidUserError(username)
         return UserObject(db, username)
-
-    get_user = get_user_obj
 
     def _get_supporting_store(self, operation):
         """
@@ -268,7 +274,7 @@ class UserManager(Component):
             return None
         # Check if user exists in database
         try:
-            userobj = self.get_user_obj(real_user)
+            userobj = self.get_user(real_user)
             self._notify('logined', userobj.username, password)
             return userobj
         except InvalidUserError:

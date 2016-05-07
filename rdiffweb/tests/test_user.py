@@ -83,7 +83,7 @@ class UserManagerSQLiteTest(AppTestCase):
     def test_exists_with_invalid_user(self):
         self.assertFalse(self.app.userdb.exists('invalid'))
 
-    def test_get_user_obj(self):
+    def test_get_user(self):
         """
         Test user record.
         """
@@ -94,10 +94,12 @@ class UserManagerSQLiteTest(AppTestCase):
         user.email = 'bernie@gmail.com'
         user.repos = ['/backups/bernie/computer/', '/backups/bernie/laptop/']
         user.repo_list[0].maxage = -1
+        user.repo_list[0].set_attr('newattribute', 'test1')
         user.repo_list[1].maxage = 3
+        user.repo_list[1].set_attr('newattribute', 'test2')
 
         # Get user record.
-        obj = self.app.userdb.get_user_obj('bernie')
+        obj = self.app.userdb.get_user('bernie')
         self.assertIsNotNone(obj)
         self.assertEqual('bernie', obj.username)
         self.assertEqual('bernie@gmail.com', obj.email)
@@ -108,8 +110,19 @@ class UserManagerSQLiteTest(AppTestCase):
         # Get repo object
         self.assertEqual('/backups/bernie/computer/', obj.repo_list[0].name)
         self.assertEqual(-1, obj.repo_list[0].maxage)
+        self.assertEqual('test1', obj.repo_list[0].get_attr('newattribute'))
         self.assertEqual('/backups/bernie/laptop/', obj.repo_list[1].name)
         self.assertEqual(3, obj.repo_list[1].maxage)
+        self.assertEqual('test2', obj.repo_list[1].get_attr('newattribute'))
+
+    def test_get_attr_with_default(self):
+        """
+        Get repository attribute with default value.
+        """
+        user = self.app.userdb.add_user('mo', 'my-password')
+        user.repos = ['/backups/bernie/computer/']
+        value = user.repo_list[0].get_attr('newcolumn', default='coucou')
+        self.assertEqual('coucou', value)
 
     def test_get_set(self):
         user = self.app.userdb.add_user('larry', 'password')
@@ -292,7 +305,7 @@ class UserManagerSQLiteLdapTest(AppTestCase):
         user.email = 'larry@gmail.com'
         user.repos = ['/backups/computer/', '/backups/laptop/']
 
-        user = self.app.userdb.get_user_obj(username)
+        user = self.app.userdb.get_user(username)
         self.assertEqual('larry@gmail.com', user.email)
         self.assertEqual(['/backups/computer/', '/backups/laptop/'], user.repos)
         self.assertEqual('/backups/', user.user_root)
@@ -339,7 +352,7 @@ class UserManagerSQLiteLdapTest(AppTestCase):
 
     def test_get_user_invalid(self):
         with self.assertRaises(InvalidUserError):
-            self.app.userdb.get_user_obj('invalid')
+            self.app.userdb.get_user('invalid')
 
     def test_set_password_update(self):
         self.app.userdb.add_user('annik')
