@@ -1,7 +1,7 @@
 <!-- Delete repo. -->
-{% call macros.panel(title=_("Remove older"), class='warning') %}
+{% call macros.panel(title=_("Remove older"), class='default') %}
 <div class="panel-body">
-  <form data-async data-target="#remove-older-status" action="/remove-older/{{ repo_name }}/" method="POST" role="form">
+  <form data-async data-target="#keepdays-status" action="/remove-older/{{ repo_name }}/" method="POST" role="form">
   <div class="form-group">
     <label for="encoding" class="control-label">
         {% trans %}Keep history for:{% endtrans %}</label>
@@ -43,8 +43,8 @@
      {% trans %}Allow you to remove the incremental backup that has been around longer than the given time. In other words, old revision of the files will be removed.{% endtrans %}
   </span>
   <div>
-     <button type="submit" class="btn btn-warning">{% trans %}Save changes{% endtrans %}</button>
-     <span id="remove-older-status"></span>
+     <button type="submit" class="btn btn-default">{% trans %}Save changes{% endtrans %}</button>
+     <span id="keepdays-status"></span>
   </div>
   </form>
 </div>
