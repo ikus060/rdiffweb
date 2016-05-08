@@ -168,10 +168,10 @@ $('form[data-async]').on('submit', function(event) {
         url: $form.attr('action'),
         data: $form.serialize(),
         success: function(data, status) {
-            $target.html(data);
+            $target.html('<i class="icon-ok text-success"></i> ' + data);
         },
         error: function(data, status, e) {
-        	$target.html('<i class="icon-attention"></i>' + e);
+        	$target.html('<i class="icon-attention text-danger"></i> ' + e);
         },
     });
     event.preventDefault();
