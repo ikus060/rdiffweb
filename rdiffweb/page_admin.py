@@ -38,11 +38,6 @@ logger = logging.getLogger(__name__)
 class AdminPage(page_main.MainPage):
     """Administration pages. Allow to manage users database."""
 
-    def _check_user_exists(self, username):
-        """Raise an exception if the user doesn't exists."""
-        if not self.app.userdb.exists(username):
-            raise cherrypy.HTTPError(400, "The user does not exist.")
-
     def _check_user_root_dir(self, directory):
         """Raised an exception if the directory is not valid."""
         if not os.access(directory, os.F_OK) or not os.path.isdir(directory):
@@ -148,7 +143,7 @@ class AdminPage(page_main.MainPage):
             try:
                 user = self.app.userdb.get_user(username)
             except InvalidUserError:
-                raise cherrypy.HTTPError(400, "user does not exist")
+                raise cherrypy.HTTPError(400, "The user '%s' does not exist." % username)
             logger.info("updating user [%s] info", user)
             if password:
                 self.app.userdb.set_password(username, password, old_password=None)
@@ -183,7 +178,7 @@ class AdminPage(page_main.MainPage):
             try:
                 user = self.app.userdb.get_user(username)
             except InvalidUserError:
-                raise cherrypy.HTTPError(400, "user does not exist")
+                raise cherrypy.HTTPError(400, "The user '%s' does not exist." % username)
             if username == self.app.currentuser.username:
                 raise Warning("You cannot remove your own account!.")
             logger.info("deleting user [%s]", username)
