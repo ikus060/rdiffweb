@@ -31,6 +31,7 @@ import sys
 from collections import namedtuple
 from itertools import chain
 import inspect
+import datetime
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -420,6 +421,48 @@ class IDeamonPlugin(IRdiffwebPlugin):
         Called periodically.
         """
         raise NotImplementedError("run is not implemented")
+
+
+class JobPlugin(IDeamonPlugin):
+    """
+    Extends the deamon plugin to run a job once a day at fixed time.
+
+    Sub class should implement `job_execution_time` and `job_run`.
+    """
+
+    deamon_frequency = 300
+
+    job_execution_time = '23:00'
+
+    _next_execution_time = None
+
+    def deamon_run(self):
+        # Determine the next execution time.
+        if not self._next_execution_time:
+            self._next_execution_time = self._compute_next_execution_time()
+
+        # Check if task should be run.
+        now = datetime.datetime.now()
+        if now < self._next_execution_time:
+            return
+
+        # Run job.
+        try:
+            self.job_run()
+        finally:
+            self._next_execution_time = None
+
+    def _compute_next_execution_time(self):
+        """
+        Return a date time representing the next execution time.
+        """
+        now = datetime.datetime.now()
+        time_str = self.job_execution_time
+        exec_time = datetime.datetime.strptime(time_str, '%H:%M')
+        exec_time = now.replace(hour=exec_time.hour, minute=exec_time.minute, second=0, microsecond=0)
+        if exec_time < now:
+            exec_time = exec_time.replace(day=exec_time.day + 1)
+        return exec_time
 
 
 class IPasswordStore(IRdiffwebPlugin):

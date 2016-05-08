@@ -38,7 +38,7 @@ from rdiffweb import librdiff
 from rdiffweb.core import RdiffError
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import rdwTime
-from rdiffweb.rdw_plugin import IPreferencesPanelProvider, IDeamonPlugin
+from rdiffweb.rdw_plugin import IPreferencesPanelProvider, JobPlugin
 
 
 _logger = logging.getLogger(__name__)
@@ -113,12 +113,10 @@ def _utf8(self, val):
     return val.encode('utf-8')
 
 
-class NotificationPlugin(IPreferencesPanelProvider, IDeamonPlugin):
+class NotificationPlugin(IPreferencesPanelProvider, JobPlugin):
     """
     Send email notification when a repository get too old (without a backup).
     """
-
-    deamon_frequency = 60
 
     @property
     def _encryption(self):
@@ -155,38 +153,15 @@ class NotificationPlugin(IPreferencesPanelProvider, IDeamonPlugin):
         """Called by the plugin manager to setup the plugin."""
         super(NotificationPlugin, self).activate()
 
-        # Determine the next execution time.
-        self.next_execution_time = self.compute_next_execution_time()
-        _logger.info("next execution time planned at [%s]", self.next_execution_time)
+    @property
+    def job_execution_time(self):
+        return self.app.cfg.get_config('EmailNotificationTime', '23:00')
 
-    def compute_next_execution_time(self):
-        """
-        Return a date time representing the next execution time.
-        """
-        now = datetime.datetime.now()
-        notify_time_str = self.app.cfg.get_config("EmailNotificationTime", "23:00")
-        notify_time = datetime.datetime.strptime(notify_time_str, '%H:%M')
-        notify_time = now.replace(hour=notify_time.hour, minute=notify_time.minute, second=0, microsecond=0)
-        if notify_time < now:
-            notify_time = notify_time.replace(day=notify_time.day + 1)
-        return notify_time
-
-    def deamon_run(self):
+    def job_run(self):
         """
         Go trough all the repositories and users to send mail in batches.
         """
-        # Check if task should be run.
-        now = datetime.datetime.now()
-        if now < self.next_execution_time:
-            return
-
-        # Run the notification routine.
-        try:
-            self.send_notifications()
-        finally:
-            # Determine the next execution time.
-            self.next_execution_time = self.compute_next_execution_time()
-            _logger.info("next execution time planned at [%s]", self.next_execution_time)
+        self.send_notifications()
 
     def send_notifications(self):
         """
