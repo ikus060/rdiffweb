@@ -120,10 +120,10 @@ class RdiffwebApp(Application):
     def activate_plugin(self, plugin_obj):
         """Activate the given plugin object."""
         plugin_obj.app = self
-        plugin_obj.activate()
         # Add templates location to the templating engine.
         if plugin_obj.get_templatesdir():
             self.templates.add_templatesdir(plugin_obj.get_templatesdir())
+        plugin_obj.activate()
 
     @property
     def currentuser(self):
