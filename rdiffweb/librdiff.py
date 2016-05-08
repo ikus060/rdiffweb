@@ -588,6 +588,23 @@ class RdiffRepo(object):
                 if x.startswith(b"error_log.")}
         return self._error_logs_data
 
+    def execute(self, *args):
+        """
+        Execute rdiff-backup command.
+        """
+        assert all(isinstance(arg, bytes) for arg in args)
+        parms = [b'rdiff-backup']
+        parms.extend(args)
+        execution = subprocess.Popen(
+            parms, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env={})
+
+        results = {}
+        results['exitCode'] = execution.wait()
+        (results['stdout'], results['stderr']) = execution.communicate()
+        return results
+
     @property
     def _file_statistics(self):
         """Return dict of {date: filename} to represent each file statistics."""
@@ -867,19 +884,6 @@ class RdiffPath(object):
         # Return the values (so the DirEntry objects)
         return list(entriesDict.values())
 
-    def _execute(self, command, *args):
-        parms = [command]
-        parms.extend(args)
-        execution = subprocess.Popen(
-            parms, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env={})
-
-        results = {}
-        results['exitCode'] = execution.wait()
-        (results['stdout'], results['stderr']) = execution.communicate()
-        return results
-
     @property
     def existing_entries(self):
         """Return the content of the directory using a simple listdir(). This
@@ -986,8 +990,7 @@ class RdiffPath(object):
 
                 # Execute rdiff-backup to restore the data.
                 logger.info("execute rdiff-backup --restore-as-of=%s %r %r", restore_date, file_to_restore, output)
-                results = self._execute(
-                    b"rdiff-backup",
+                results = self.repo.execute(
                     b"--restore-as-of=" + str(restore_date).encode(encoding='latin1'),
                     file_to_restore,
                     output)
