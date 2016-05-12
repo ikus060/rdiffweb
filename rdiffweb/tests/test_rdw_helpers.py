@@ -96,6 +96,10 @@ class RdwTimeTest(unittest.TestCase):
         self.assertEqual(rdwTime('2014-11-02T21:04:30-04:00'),
                          rdwTime('2014-11-05T21:04:30-04:00') - datetime.timedelta(days=3))
 
+        # With datetime
+        self.assertTrue((rdwTime('2014-11-02T21:04:30Z') - rdwTime()).days < 0)
+        self.assertTrue((rdwTime() - rdwTime('2014-11-02T21:04:30Z')).days > 0)
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

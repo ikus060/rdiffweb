@@ -29,7 +29,7 @@ from future.utils import python_2_unicode_compatible
 from past.builtins import cmp
 from past.utils import old_div
 import time
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 try:
@@ -190,8 +190,14 @@ class rdwTime(object):
 
     def __sub__(self, other):
         """Support minus (-) timedelta"""
-        assert isinstance(other, timedelta)
-        return rdwTime(self.timeInSeconds - int(other.total_seconds()), self.tzOffset)
+        assert isinstance(other, timedelta) or isinstance(other, rdwTime)
+        # Sub with timedelta, return rdwTime
+        if isinstance(other, timedelta):
+            return rdwTime(self.timeInSeconds - int(other.total_seconds()), self.tzOffset)
+
+        # Sub with rdwTime, return timedelta
+        if isinstance(other, rdwTime):
+            return timedelta(seconds=self.timeInSeconds - other.timeInSeconds)
 
     def __int__(self):
         """Return this date as seconds since epoch."""
