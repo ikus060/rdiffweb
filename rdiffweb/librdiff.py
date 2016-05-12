@@ -76,6 +76,11 @@ FS_ENCODING = (sys.getfilesystemencoding() or 'utf-8').lower()
 
 
 @python_2_unicode_compatible
+class ExecuteError(Exception):
+    pass
+
+
+@python_2_unicode_compatible
 class FileError(Exception):
     pass
 
@@ -601,9 +606,13 @@ class RdiffRepo(object):
             env={})
 
         results = {}
+        output, error = execution.communicate()
         results['exitCode'] = execution.wait()
-        (results['stdout'], results['stderr']) = execution.communicate()
-        return results
+        if results['exitCode'] != 0:
+            error = error.decode(encoding=sys.getdefaultencoding(), errors='replace')
+            raise ExecuteError(error)
+
+        return (output, error)
 
     @property
     def _file_statistics(self):
@@ -990,21 +999,21 @@ class RdiffPath(object):
 
                 # Execute rdiff-backup to restore the data.
                 logger.info("execute rdiff-backup --restore-as-of=%s %r %r", restore_date, file_to_restore, output)
-                results = self.repo.execute(
-                    b"--restore-as-of=" + str(restore_date).encode(encoding='latin1'),
-                    file_to_restore,
-                    output)
+                try:
+                    self.repo.execute(
+                        b"--restore-as-of=" + str(restore_date).encode(encoding='latin1'),
+                        file_to_restore,
+                        output)
+                except ExecuteError as e:
+                    raise UnknownError('unable to restore:' + e)
                 logger.debug("restored locally completed")
 
                 # Check the result
-                if results['exitCode'] != 0 or not os.access(output, os.F_OK):
-                    error = results['stderr']
-                    error = error.decode(encoding=sys.getdefaultencoding(), errors='replace')
-                    if not error:
-                        error = '''rdiff-backup claimed success, but did not restore
-                                anything. This indicates a bug in rdiffweb. Please
-                                report this to a developer.'''
-                    raise UnknownError('unable to restore:' + error)
+                if not os.access(output, os.F_OK):
+                    error = '''rdiff-backup claimed success, but did not restore
+                            anything. This indicates a bug in rdiffweb. Please
+                            report this to a developer.'''
+                    raise UnknownError(error)
 
                 # Archive data or pipe data.
                 if os.path.isdir(output):
