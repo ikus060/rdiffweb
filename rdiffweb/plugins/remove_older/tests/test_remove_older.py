@@ -20,11 +20,13 @@ Created on May 2, 2016
 
 @author: ikus060
 """
+
 from __future__ import unicode_literals
 
 import logging
 import unittest
 
+from rdiffweb import librdiff
 from rdiffweb.test import WebCase
 
 
@@ -47,12 +49,7 @@ class RemoveOlderTest(WebCase):
         self.getPage("/remove-older/" + repo + "/", method="POST",
                      body={'keepdays': value})
 
-    # FIXME This testcases doesn't work for unknown reason.
-    # def test_check_delete(self):
-    #    self._settings(self.REPO)
-    #    self.assertInBody("Delete")
-
-    def test_remove_older(self):
+    def test_page_set_keepdays(self):
         """
         Check to delete a repo.
         """
@@ -61,6 +58,24 @@ class RemoveOlderTest(WebCase):
         # Make sure the right value is selected.
         self._settings(self.REPO)
         self.assertInBody('<option selected value="1">')
+
+    def test_remove_older(self):
+        """
+        Run remove older on testcases repository.
+        """
+        # Set keep one day.
+        self._remove_older(self.REPO, '1')
+        self.assertStatus(200)
+        # Get current user
+        user = self.app.userdb.get_user(self.USERNAME)
+        repo = user.repo_dict[self.REPO]
+        # Run the job.
+        p = self.app.plugins.get_plugin_by_name('RemoveOlderPlugin')
+        p._remove_older(user, repo, 30)
+        # Check number of history.
+        r = librdiff.RdiffRepo(user.user_root, repo.name)
+        self.assertEqual(2, len(r.get_history_entries()))
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

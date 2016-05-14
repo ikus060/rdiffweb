@@ -25,19 +25,24 @@ from __future__ import unicode_literals
 from builtins import str
 import cherrypy
 from cherrypy._cperror import HTTPRedirect
+import datetime
 import logging
 import os
 import re
 
-from rdiffweb import rdw_spider_repos, page_main
+from rdiffweb import rdw_spider_repos, page_main, librdiff
 from rdiffweb.core import RdiffError
 from rdiffweb.dispatch import poppath
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.page_main import MainPage
-from rdiffweb.rdw_plugin import IPreferencesPanelProvider, ITemplateFilterPlugin
+from rdiffweb.rdw_helpers import rdwTime
+from rdiffweb.rdw_plugin import IPreferencesPanelProvider, ITemplateFilterPlugin, \
+    IDeamonPlugin, JobPlugin
 
 
 _logger = logging.getLogger(__name__)
+
+KEEPDAYS = 'keepdays'
 
 
 @poppath()
@@ -63,12 +68,12 @@ class RemoveOlderPage(page_main.MainPage):
         r = self.app.currentuser.repo_dict[repo_obj.path]
 
         # Update the database.
-        r.set_attr('keepdays', keepdays)
+        r.set_attr(KEEPDAYS, keepdays)
 
         return _("Updated")
 
 
-class RemoveOlderPlugin(ITemplateFilterPlugin):
+class RemoveOlderPlugin(ITemplateFilterPlugin, JobPlugin):
 
     def activate(self):
         # Add page
@@ -86,4 +91,47 @@ class RemoveOlderPlugin(ITemplateFilterPlugin):
             data["templates_content"].append(template)
             # Query current data from database.
             r = self.app.currentuser.repo_dict[data['repo_path']]
-            data["keepdays"] = int(r.get_attr('keepdays', default='-1'))
+            data["keepdays"] = int(r.get_attr(KEEPDAYS, default='-1'))
+
+    @property
+    def job_execution_time(self):
+        return self.app.cfg.get_config('RemoveOlderTime', '23:00')
+
+    def job_run(self):
+        """
+        Execute the job in background.
+        """
+        # Create a generator to loop on repositories.
+        gen = (
+            (user, repo, repo.get_attr(KEEPDAYS, default='-1'))
+            for user in self.app.userdb.list()
+            for repo in user.repo_list)
+        # Filter them.
+        gen = (
+            (user, repo, keepdays)
+            for user, repo, keepdays in gen
+            if keepdays > 0)
+
+        # Loop on each repos.
+        for user, repo, keepdays in gen:
+            try:
+                self._remove_older(user, repo, keepdays)
+            except:
+                _logger.exception("fail to remove older for user [%r] repo [%r]", user, repo)
+
+    def _remove_older(self, user, repo, keepdays):
+        """
+        Take action to remove older.
+        """
+        assert keepdays > 0
+        # Get instance of the repo.
+        r = librdiff.RdiffRepo(user.user_root, repo.name)
+        # Check history date.
+        if not r.last_backup_date:
+            _logger.info("no backup dates for [%r]", r.repo_root)
+            return
+        d = rdwTime() - r.last_backup_date
+        d = d.days + keepdays
+
+        _logger.info("execute rdiff-backup --remove-older-than=%sD %r", d, r.repo_root)
+        r.execute(b'--force', b'--remove-older-than=%sD' % d, r.repo_root)
