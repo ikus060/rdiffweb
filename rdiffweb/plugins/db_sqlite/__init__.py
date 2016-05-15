@@ -111,9 +111,8 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         query = "SELECT %s FROM repos WHERE RepoPath=? AND UserID = ?" % (key,)
         try:
             results = self._execute_query(query, (repo_path, self._get_user_id(username)))
-            if len(results) == 0:
+            if len(results) == 0 or not results[0][0]:
                 return default
-            assert len(results) == 1
             return results[0][0]
         except:
             return default
