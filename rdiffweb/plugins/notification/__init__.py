@@ -253,10 +253,9 @@ class NotificationPlugin(IPreferencesPanelProvider, JobPlugin):
     def _handle_set_notification_info(self, **kwargs):
 
         # Loop trough user repo and update max age.
-        username = self.app.currentuser.username
-        for repo in self.app.currentuser.repos:
+        for repo in self.app.currentuser.repo_list:
             # Get value received for the repo.
-            value = kwargs.get(repo, None)
+            value = kwargs.get(repo.name, None)
             if value is None:
                 continue
             try:
@@ -264,7 +263,7 @@ class NotificationPlugin(IPreferencesPanelProvider, JobPlugin):
             except:
                 continue
             # Update the maxage
-            self.app.userdb.set_repo_maxage(username, repo, value)
+            repo.maxage = value
 
     def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
         # Process the parameters.
@@ -287,6 +286,8 @@ class NotificationPlugin(IPreferencesPanelProvider, JobPlugin):
 
         params.update({
             'email': self.app.currentuser.email,
-            'repos': self.app.currentuser.repo_list,
+            'repos': [
+                {'name': r.name, 'maxage': r.maxage}
+                for r in self.app.currentuser.repo_list],
         })
         return "prefs_notification.html", params
