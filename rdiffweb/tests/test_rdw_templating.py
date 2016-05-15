@@ -34,16 +34,14 @@ class TemplateManagerTest(unittest.TestCase):
         # Single value with quote
         self.assertEqual('id="val&lt;ue&quot;with&quot;qu&gt;ot&amp;e"', attrib(id='val<ue"with"qu>ot&e'))
         # Multi attribute
-        self.assertTrue(attrib(type='table', id='row') in
-                        ['type="table" id="row"', 'id="row" type="table"'])
+        self.assertEqual('id="row" type="table"', attrib(type='table', id='row'))
         # Attribute with list
         self.assertEqual('type="table container"', attrib(type=['table', 'container']))
         # Attribute with class
         self.assertEqual('class="table container"', attrib(**{'class': ['table', 'container']}))
         # Boolean expressions
         self.assertEqual('id="active"', attrib(id=[False, 'active', False]))
-        self.assertTrue(attrib(type=False, id=[False, 'active', False], data='coucou') in
-                        ['data="coucou" id="active"', 'id="active" data="coucou"'])
+        self.assertEqual('data="coucou" id="active"', attrib(type=False, id=[False, 'active', False], data='coucou'))
         active = True
         self.assertEqual('id="active"', attrib(id=[active and 'active']))
         active = False

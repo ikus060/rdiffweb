@@ -72,7 +72,7 @@ def attrib(**kwargs):
 
     first = True
     buf = StringIO()
-    for key, val in kwargs.items():
+    for key, val in sorted(kwargs.items()):
         for t in _format(key, val):
             if not first:
                 buf.write(' ')
