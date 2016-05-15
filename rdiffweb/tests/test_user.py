@@ -95,8 +95,8 @@ class UserManagerSQLiteTest(AppTestCase):
         user.repos = ['/backups/bernie/computer/', '/backups/bernie/laptop/']
         user.repo_list[0].maxage = -1
         user.repo_list[0].set_attr('newattribute', 'test1')
-        user.repo_list[1].maxage = 3
-        user.repo_list[1].set_attr('newattribute', 'test2')
+        user.get_repo('/backups/bernie/laptop/').maxage = 3
+        user.get_repo('/backups/bernie/laptop/').set_attr('newattribute', 'test2')
 
         # Get user record.
         obj = self.app.userdb.get_user('bernie')
@@ -111,9 +111,9 @@ class UserManagerSQLiteTest(AppTestCase):
         self.assertEqual('/backups/bernie/computer/', obj.repo_list[0].name)
         self.assertEqual(-1, obj.repo_list[0].maxage)
         self.assertEqual('test1', obj.repo_list[0].get_attr('newattribute'))
-        self.assertEqual('/backups/bernie/laptop/', obj.repo_list[1].name)
-        self.assertEqual(3, obj.repo_list[1].maxage)
-        self.assertEqual('test2', obj.repo_list[1].get_attr('newattribute'))
+        self.assertEqual('/backups/bernie/laptop/', obj.get_repo('/backups/bernie/laptop/').name)
+        self.assertEqual(3, obj.get_repo('/backups/bernie/laptop/').maxage)
+        self.assertEqual('test2', obj.get_repo('/backups/bernie/laptop/').get_attr('newattribute'))
 
     def test_get_attr_with_default(self):
         """
@@ -121,7 +121,7 @@ class UserManagerSQLiteTest(AppTestCase):
         """
         user = self.app.userdb.add_user('mo', 'my-password')
         user.repos = ['/backups/bernie/computer/']
-        value = user.repo_list[0].get_attr('newcolumn', default='coucou')
+        value = user.get_repo('/backups/bernie/computer/').get_attr('newcolumn', default='coucou')
         self.assertEqual('coucou', value)
 
     def test_get_set(self):
