@@ -49,7 +49,7 @@ class NotificationTest(AppTestCase):
         # Set user config
         user = self.app.userdb.get_user(self.USERNAME)
         user.email = 'test@test.com'
-        user.repo_list[0].maxage = 1
+        user.get_repo(self.REPO).maxage = 1
 
         # Get ref to notification plugin
         n = self.app.plugins.get_plugin_by_name('NotificationPlugin')
@@ -69,7 +69,7 @@ class NotificationTest(AppTestCase):
         # Set user config
         user = self.app.userdb.get_user(self.USERNAME)
         user.email = 'test@test.com'
-        user.repo_list[0].maxage = -1
+        user.get_repo(self.REPO).maxage = -1
 
         # Get ref to notification plugin
         n = self.app.plugins.get_plugin_by_name('NotificationPlugin')
