@@ -133,5 +133,7 @@ class RemoveOlderPlugin(ITemplateFilterPlugin, JobPlugin):
         d = rdwTime() - r.last_backup_date
         d = d.days + keepdays
 
-        _logger.info("execute rdiff-backup --remove-older-than=%sD %r", d, r.repo_root)
-        r.execute(b'--force', b'--remove-older-than=%sD' % d, r.repo_root)
+        _logger.info("execute rdiff-backup --force --remove-older-than=%sD %r", d, r.repo_root)
+        r.execute(b'--force',
+                  b'--remove-older-than=' + str(d).encode(encoding='latin1') + b'D',
+                  r.repo_root)
