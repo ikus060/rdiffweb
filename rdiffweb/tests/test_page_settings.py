@@ -39,41 +39,9 @@ class SettingsTest(WebCase):
     def _settings(self, repo):
         self.getPage("/settings/" + repo + "/")
 
-    def _set_encoding(self, repo, encoding):
-        self.getPage("/settings/" + repo + "/", method="POST",
-                     body={'action': 'set_encoding', 'encoding': encoding})
-
-    def _delete(self, repo, confirm_name):
-        self.getPage("/settings/" + repo + "/", method="POST",
-                     body={'action': 'delete', 'confirm_name': confirm_name})
-
-    def test_check_encoding(self):
+    def test_page(self):
         self._settings(self.REPO)
-        self.assertInBody("Character encoding")
-        self.assertInBody("utf_8")
-
-    def test_set_encoding(self):
-        """
-        Check to update the encoding.
-        """
-        self._set_encoding(self.REPO, 'cp1252')
-        self.assertInBody("cp1252")
-
-    def test_set_encoding_invalid(self):
-        """
-        Check to update the encoding.
-        """
-        self._set_encoding(self.REPO, 'invalid')
-        self.assertStatus(400)
-        self.assertInBody("invalid encoding value")
-
-    def test_set_encoding_windows_1252(self):
-        """
-        Check to update the encoding.
-        """
-        self._set_encoding(self.REPO, 'windows_1252')
         self.assertStatus(200)
-        self.assertInBody("cp1252")
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

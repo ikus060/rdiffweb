@@ -1,4 +1,5 @@
 <!-- Delete repo. -->
+{% import 'macros.html' as macros %}
 {% call macros.panel(title=_("Remove older"), class='default') %}
 <div class="panel-body">
   <form data-async data-target="#keepdays-status" action="/remove-older/{{ repo_name }}/" method="POST" role="form">

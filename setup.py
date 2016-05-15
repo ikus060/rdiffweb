@@ -239,6 +239,7 @@ setup(
             "Graphs = rdiffweb.plugins.graphs",
             "DeleteRepo = rdiffweb.plugins.delete_repo",
             "RemoveOlder = rdiffweb.plugins.remove_older",
+            "SetEncoding = rdiffweb.plugins.set_encoding",
         ]
     },
     # new commands added and build command modified
