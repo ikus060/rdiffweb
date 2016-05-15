@@ -46,7 +46,7 @@ class RemoveOlderTest(WebCase):
         self.getPage("/settings/" + repo + "/")
 
     def _remove_older(self, repo, value):
-        self.getPage("/remove-older/" + repo + "/", method="POST",
+        self.getPage("/ajax/remove-older/" + repo + "/", method="POST",
                      body={'keepdays': value})
 
     def test_page_set_keepdays(self):

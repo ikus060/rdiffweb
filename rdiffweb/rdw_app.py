@@ -44,6 +44,7 @@ from rdiffweb.page_status import StatusPage
 from rdiffweb.user import UserManager
 from future.utils import native_str
 from rdiffweb.dispatch import static
+from rdiffweb.page_main import MainPage
 
 
 # Define the logger
@@ -63,6 +64,7 @@ class Root(LocationsPage):
         self.admin = AdminPage(app)
         self.prefs = PreferencesPage(app)
         self.settings = SettingsPage(app)
+        self.ajax = MainPage(app)
 
         # Register static dir.
         static_dir = pkg_resources.resource_filename('rdiffweb', 'static')  # @UndefinedVariable

@@ -77,7 +77,7 @@ class RemoveOlderPlugin(ITemplateFilterPlugin, JobPlugin):
 
     def activate(self):
         # Add page
-        self.app.root.remove_older = RemoveOlderPage(self.app)
+        self.app.root.ajax.remove_older = RemoveOlderPage(self.app)
         # Call original
         ITemplateFilterPlugin.activate(self)
 

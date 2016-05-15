@@ -83,7 +83,7 @@ class SetEncodingPlugin(ITemplateFilterPlugin, JobPlugin):
 
     def activate(self):
         # Add page
-        self.app.root.set_encoding = SetEncodingPage(self.app)
+        self.app.root.ajax.set_encoding = SetEncodingPage(self.app)
         # Call original
         ITemplateFilterPlugin.activate(self)
 
