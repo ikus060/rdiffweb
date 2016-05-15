@@ -1,15 +1,24 @@
 {% if success %}
-<div class="alert alert-success" role="alert">
-	<strong>{% trans %}Well done!{% endtrans %}</strong> {{ success }}</div>
+<div class="alert alert-success alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	<strong>{% trans %}Well done!{% endtrans %}</strong> {{ success }}
+</div>
 {% endif %}
 {% if message %}
-<div class="alert alert-info" role="alert">{{ message }}</div>
+<div class="alert alert-info alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    {{ message }}
+</div>
 {% endif %}
 {% if warning %}
-<div class="alert alert-warning" role="alert">
-	<strong>{% trans %}Warning!{% endtrans %}</strong> {{ warning }}</div>
+<div class="alert alert-warning alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	<strong>{% trans %}Warning!{% endtrans %}</strong> {{ warning }}
+</div>
 {% endif %}
 {% if error %}
-<div class="alert alert-danger" role="alert">
-	<strong>{% trans %}Error!{% endtrans %}</strong> {{ error }}</div>
+<div class="alert alert-danger alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	<strong>{% trans %}Error!{% endtrans %}</strong> {{ error }}
+</div>
 {% endif %}
