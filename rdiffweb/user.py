@@ -18,13 +18,15 @@
 
 from __future__ import unicode_literals
 
-from builtins import str
+from builtins import str, bytes
 from future.utils import python_2_unicode_compatible
+from future.utils.surrogateescape import encodefilename
 import logging
 
 from rdiffweb.core import Component, InvalidUserError, RdiffError
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPasswordStore, IDatabase, IUserChangeListener
+from rdiffweb.page_main import normpath
 
 
 # Define the logger
@@ -54,6 +56,20 @@ class UserObject(object):
     def username(self):
         return self._username
 
+    def get_repo(self, name):
+        """
+        Return the repository identified as `name`.
+        `name` may be a bytes string or unicode string.
+        """
+        assert isinstance(name, str) or isinstance(name, bytes)
+        if isinstance(name, str):
+            name = encodefilename(name)
+        name = normpath(name)
+        for r in self._db.get_repos(self._username):
+            if name == normpath(encodefilename(r)):
+                return RepoObject(self._db, self._username, r)
+        raise KeyError(name)
+
     # Declare properties
     is_admin = property(fget=lambda x: x._db.is_admin(x._username), fset=lambda x, y: x._db.set_is_admin(x._username, y))
     email = property(fget=lambda x: x._db.get_email(x._username), fset=lambda x, y: x._db.set_email(x._username, y))
@@ -61,8 +77,6 @@ class UserObject(object):
     repos = property(fget=lambda x: x._db.get_repos(x._username), fset=lambda x, y: x._db.set_repos(x._username, y))
     repo_list = property(fget=lambda x: [RepoObject(x._db, x._username, r)
                                          for r in x._db.get_repos(x._username)])
-    repo_dict = property(fget=lambda x: {r.strip('/'): RepoObject(x._db, x._username, r)
-                                         for r in x._db.get_repos(x._username)})
 
 
 @python_2_unicode_compatible

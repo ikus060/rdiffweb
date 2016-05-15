@@ -65,7 +65,7 @@ class RemoveOlderPage(page_main.MainPage):
         repo_obj = self.validate_user_path(path)[0]
 
         # Get repository object from user database.
-        r = self.app.currentuser.repo_dict[repo_obj.path]
+        r = self.app.currentuser.get_repo(repo_obj.path)
 
         # Update the database.
         r.set_attr(KEEPDAYS, keepdays)
@@ -90,7 +90,7 @@ class RemoveOlderPlugin(ITemplateFilterPlugin, JobPlugin):
             template = self.app.templates.get_template("remove_older.html")
             data["templates_content"].append(template)
             # Query current data from database.
-            r = self.app.currentuser.repo_dict[data['repo_path']]
+            r = self.app.currentuser.get_repo(data['repo_path'])
             data["keepdays"] = int(r.get_attr(KEEPDAYS, default='-1'))
 
     @property

@@ -68,7 +68,7 @@ class RemoveOlderTest(WebCase):
         self.assertStatus(200)
         # Get current user
         user = self.app.userdb.get_user(self.USERNAME)
-        repo = user.repo_dict[self.REPO]
+        repo = user.get_repo(self.REPO)
         # Run the job.
         p = self.app.plugins.get_plugin_by_name('RemoveOlderPlugin')
         p._remove_older(user, repo, 30)
