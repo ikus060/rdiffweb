@@ -22,9 +22,11 @@ from __future__ import unicode_literals
 import binascii
 import cherrypy
 from cherrypy._cpcompat import base64_decode
+from cherrypy._cperror import HTTPError
 from future.utils import native_str
 import logging
 
+from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import quote_url
 
 
@@ -40,6 +42,12 @@ def authform():
     if cherrypy.session.get("user"):  # @UndefinedVariable
         # page passes credentials; allow to be processed
         return False
+
+    # If browser requesting text/plain. It's probably an Ajax call, don't
+    # redirect and raise an exception.
+    mtype = cherrypy.tools.accept.callable(['text/html', 'text/plain'])  # @UndefinedVariable
+    if mtype == 'text/plain':
+        raise HTTPError(403, _("Not logged in"))
 
     # Sending the redirect URL
     redirect = cherrypy.request.path_info
@@ -87,4 +95,3 @@ def authbasic(checkpassword):
     raise cherrypy.HTTPError(401, "You are not authorized to access that resource")
 
 cherrypy.tools.authbasic = cherrypy._cptools.HandlerTool(authbasic)
-

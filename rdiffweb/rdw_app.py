@@ -144,6 +144,11 @@ class RdiffwebApp(Application):
         # Log exception.
         logger.exception(kwargs.get('message', ''))
 
+        # Check expected response type.
+        mtype = cherrypy.tools.accept.callable(['text/html', 'text/plain'])  # @UndefinedVariable
+        if mtype == 'text/plain':
+            return kwargs.get('message')
+
         # Try to get more page
         parms = {}
         try:

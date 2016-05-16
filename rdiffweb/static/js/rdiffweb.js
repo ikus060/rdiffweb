@@ -164,6 +164,9 @@ $('form[data-async]').on('submit', function(event) {
     var $form = $(this);
     var $target = $($form.attr('data-target'));
     $.ajax({
+    	headers: { 
+            Accept: "text/plain; charset=utf-8",
+        },
         type: $form.attr('method'),
         url: $form.attr('action'),
         data: $form.serialize(),
@@ -171,7 +174,7 @@ $('form[data-async]').on('submit', function(event) {
             $target.html('<i class="icon-ok text-success"></i> ' + data);
         },
         error: function(data, status, e) {
-        	$target.html('<i class="icon-attention text-danger"></i> ' + e);
+        	$target.html('<i class="icon-attention text-danger"></i> ' + data.responseText);
         },
     });
     event.preventDefault();
