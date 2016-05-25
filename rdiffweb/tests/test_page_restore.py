@@ -68,12 +68,14 @@ class RestoreTest(WebCase):
 
     maxDiff = None
 
-    def _restore(self, repo, path, date, usetar):
+    def _restore(self, repo, path, date, usetar, kind=None):
         url = "/restore/" + repo + "/" + path
         if date:
             url += '?date=' + date
         if usetar:
             url += '&usetar=T'
+        if kind:
+            url += '&kind=%s' % kind
         self.getPage(url)
 
     def test_broken_encoding(self):
@@ -106,8 +108,9 @@ class RestoreTest(WebCase):
         self._restore(self.REPO, "Char%20%3B090%20to%20quote/Data/", "1414921853", True)
         self.assertBody("Bring me some Data !\n")
 
-    def test_root_as_tar(self):
+    def test_root_as_tar_gz(self):
         self._restore(self.REPO, "", "1414871387", True)
+        self.assertStatus(200)
         # Build expected files list
         expected = {}
         expected["Répertoire Supprimé"] = 0
@@ -132,8 +135,9 @@ class RestoreTest(WebCase):
         #  Compare the tables.
         self.assertEqual(expected, actual)
 
-    def test_root_as_tar_recent(self):
+    def test_root_as_tar_gz_recent(self):
         self._restore(self.REPO, "", "1415221507", True)
+        self.assertStatus(200)
         #  Read the content as tar.gz with UTF8 encoding.
         expected = {}
         if PY3:
@@ -171,6 +175,7 @@ class RestoreTest(WebCase):
 
     def test_root_as_zip(self):
         self._restore(self.REPO, "", "1414871387", False)
+        self.assertStatus(200)
         #  Read the content as tar.gz with UTF8 encoding.
         expected = {}
         expected["Répertoire Supprimé/"] = 0
@@ -196,6 +201,7 @@ class RestoreTest(WebCase):
 
     def test_root_as_zip_recent(self):
         self._restore(self.REPO, "", "1415221507", False)
+        self.assertStatus(200)
         #  Read the content as tar.gz with UTF8 encoding.
         expected = {}
         expected["Fichier avec non asci char �velyne M�re.txt"] = 18
@@ -227,6 +233,36 @@ class RestoreTest(WebCase):
         t.close()
         #  Compare the tables.
         self.assertEqual(expected, actual)
+
+    def test_root_as_tar_bz2(self):
+        self._restore(self.REPO, "", '1415221507', False, 'tar.bz2')
+        self.assertStatus(200)
+        #  Read content as tar.gz.
+        actual = {}
+        t = tarfile.open(mode='r:bz2', fileobj=io.BytesIO(self.body))
+        for m in t.getmembers():
+            name = m.name
+            if isinstance(name, bytes):
+                name = name.decode('utf8', 'replace')
+            actual[name] = m.size
+        t.close()
+        #  Compare the tables.
+        self.assertEqual(18, len(actual))
+
+    def test_root_as_tar(self):
+        self._restore(self.REPO, "", '1415221507', False, 'tar')
+        self.assertStatus(200)
+        #  Read content as tar.gz.
+        actual = {}
+        t = tarfile.open(mode='r', fileobj=io.BytesIO(self.body))
+        for m in t.getmembers():
+            name = m.name
+            if isinstance(name, bytes):
+                name = name.decode('utf8', 'replace')
+            actual[name] = m.size
+        t.close()
+        #  Compare the tables.
+        self.assertEqual(18, len(actual))
 
     def test_subdirectory(self):
         self._restore(self.REPO, "R%C3%A9pertoire%20Existant/", "1414871475", True)

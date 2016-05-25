@@ -31,6 +31,7 @@ from rdiffweb import rdw_helpers
 import rdiffweb
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import quote_url
+from rdiffweb.archiver import ARCHIVERS
 
 
 # Define the logger
@@ -65,10 +66,11 @@ class RestorePage(page_main.MainPage):
 
     @cherrypy.expose
     @cherrypy.tools.gzip(on=False)
-    def index(self, path=b"", date="", usetar=""):
+    def index(self, path=b"", date=None, kind=None, usetar=None):
         assert isinstance(path, bytes)
         assert isinstance(date, str)
-        assert isinstance(usetar, str)
+        assert kind is None or kind in ARCHIVERS
+        assert usetar is None or isinstance(usetar, str)
 
         logger.debug("restoring [%r][%s]", path, date)
 
@@ -93,8 +95,8 @@ class RestorePage(page_main.MainPage):
             raise cherrypy.HTTPError(500, _("""A backup is currently in progress to this repository. Restores are disabled until this backup is complete."""))
 
         # Determine the kind.
-        kind = 'zip'
-        if usetar:
+        kind = kind or 'zip'
+        if usetar is not None:
             kind = 'tar.gz'
 
         # Restore file(s)

@@ -171,7 +171,7 @@ def url_for_history(repo):
     return ''.join(url)
 
 
-def url_for_restore(repo, path, date, usetar=False):
+def url_for_restore(repo, path, date, kind=None):
     assert isinstance(repo, bytes)
     assert isinstance(path, bytes)
     assert isinstance(date, rdw_helpers.rdwTime)
@@ -188,8 +188,8 @@ def url_for_restore(repo, path, date, usetar=False):
     # Append date
     url.append("?date=")
     url.append(str(date.getSeconds()))
-    if usetar:
-        url.append("&usetar=T")
+    if kind:
+        url.append("&kind=%s" % kind)
     return ''.join(url)
 
 
