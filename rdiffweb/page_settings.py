@@ -39,7 +39,7 @@ class SettingsPage(page_main.MainPage):
 
     @cherrypy.expose
     def index(self, path=b""):
-        assert isinstance(path, bytes)
+        self.assertIsInstance(path, bytes)
 
         _logger.debug("repo settings [%r]", path)
 

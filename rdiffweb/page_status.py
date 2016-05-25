@@ -58,8 +58,8 @@ class StatusPage(page_main.MainPage):
 
     @cherrypy.expose
     def entry(self, path_b=b"", date=""):
-        assert isinstance(path_b, bytes)
-        assert isinstance(date, str)
+        self.assertIsInstance(path_b, bytes)
+        self.assertIsInstance(date, str)
         # Validate date
         try:
             entry_time = rdw_helpers.rdwTime(int(date))

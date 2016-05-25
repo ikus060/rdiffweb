@@ -49,9 +49,9 @@ KEEPDAYS = 'keepdays'
 class RemoveOlderPage(page_main.MainPage):
 
     @cherrypy.expose()
-    def index(self, path, keepdays):
-        assert isinstance(path, bytes)
-        assert keepdays
+    def index(self, path=b"", keepdays=None):
+        self.assertIsInstance(path, bytes)
+        self.assertTrue(keepdays)
         _logger.debug("repo settings [%r]", path)
 
         # Get new value

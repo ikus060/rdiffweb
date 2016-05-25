@@ -83,8 +83,8 @@ class AdminPage(page_main.MainPage):
         if not self.app.currentuser or not self.app.currentuser.is_admin:
             raise cherrypy.HTTPError(403)
 
-        assert isinstance(userfilter, str)
-        assert isinstance(usersearch, str)
+        self.assertIsInstance(userfilter, str)
+        self.assertIsInstance(usersearch, str)
 
         # If we're just showing the initial page, just do that
         params = {}

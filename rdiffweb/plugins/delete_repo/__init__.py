@@ -44,10 +44,11 @@ _logger = logging.getLogger(__name__)
 class DeleteRepoPage(MainPage):
 
     @cherrypy.expose
-    def index(self, path, **kwargs):
+    def index(self, path=b"", **kwargs):
         """
         Delete the repository.
         """
+        self.assertIsInstance(path, bytes)
         _logger.debug("repo delete [%r]", path)
 
         # Check user permissions

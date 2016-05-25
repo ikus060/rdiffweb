@@ -37,9 +37,9 @@ class LoginPage(page_main.MainPage):
     @cherrypy.expose
     @cherrypy.config(**{'tools.authform.on': False})
     def index(self, redirect="", login="", password=""):
-        assert isinstance(redirect, str)
-        assert isinstance(login, str)
-        assert isinstance(password, str)
+        self.assertIsInstance(redirect, str)
+        self.assertIsInstance(login, str)
+        self.assertIsInstance(password, str)
 
         # when parameters are sent using post, redirect URL doesn't need to be
         # quoted.

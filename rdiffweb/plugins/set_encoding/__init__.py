@@ -54,8 +54,8 @@ class SetEncodingPage(page_main.MainPage):
         """
         Update repository encoding via Ajax.
         """
-        assert isinstance(path, bytes)
-        assert new_encoding
+        self.assertIsInstance(path, bytes)
+        self.assertTrue(new_encoding)
 
         _logger.debug("update repo [%r] settings [%r]", path, new_encoding)
 

@@ -36,7 +36,7 @@ class HistoryPage(page_main.MainPage):
 
     @cherrypy.expose
     def index(self, path=b""):
-        assert isinstance(path, bytes)
+        self.assertIsInstance(path, bytes)
 
         logger.debug("history [%r]", path)
 

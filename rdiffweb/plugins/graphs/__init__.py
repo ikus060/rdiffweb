@@ -129,8 +129,8 @@ class GraphsPage(page_main.MainPage):
         """
         Called to show every graphs
         """
-        assert isinstance(path, bytes)
-        assert isinstance(graph, bytes)
+        self.assertIsInstance(path, bytes)
+        self.assertIsInstance(graph, bytes)
         graph = graph.decode('ascii', 'replace')
 
         # check if data should be shown.

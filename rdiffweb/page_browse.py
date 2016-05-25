@@ -44,8 +44,8 @@ class BrowsePage(page_main.MainPage):
 
     @cherrypy.expose
     def index(self, path=b"", restore=""):
-        assert isinstance(path, bytes)
-        assert isinstance(restore, str)
+        self.assertIsInstance(path, bytes)
+        self.assertIsInstance(restore, str)
         restore = bool(restore)
 
         logger.debug("browsing [%r]", path)
