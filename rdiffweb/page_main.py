@@ -140,6 +140,7 @@ class MainPage(Component):
         parms = {
             "is_login": True,
             "version": self.app.get_version(),
+            "extra_head_templates": [],
         }
         if self.app.currentuser:
             parms['username'] = self.app.currentuser.username
