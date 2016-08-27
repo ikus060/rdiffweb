@@ -159,8 +159,10 @@ def start():
         elif option in ['--profile']:
             profile = True
         elif option in ['--profile-path']:
+            profile = True
             profile_path = value
         elif option in ['--profile-aggregated']:
+            profile = True
             profile_aggregated = True
 
     # Open config file before opening the apps.
@@ -219,6 +221,7 @@ def start():
         app = ProfilingApplication(app, profile_path, profile_aggregated)
         if profile_aggregated:
             global_config['server.thread_pool'] = 1
+            global_config['server.thread_pool_max'] = 1
 
     # Start web server
     cherrypy.quickstart(app)
