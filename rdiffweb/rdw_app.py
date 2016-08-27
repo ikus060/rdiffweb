@@ -35,8 +35,6 @@ from rdiffweb.page_admin import AdminPage
 from rdiffweb.page_browse import BrowsePage
 from rdiffweb.page_history import HistoryPage
 from rdiffweb.page_locations import LocationsPage
-from rdiffweb.page_login import LoginPage
-from rdiffweb.page_logout import LogoutPage
 from rdiffweb.page_prefs import PreferencesPage
 from rdiffweb.page_restore import RestorePage
 from rdiffweb.page_settings import SettingsPage
@@ -55,8 +53,6 @@ class Root(LocationsPage):
 
     def __init__(self, app):
         LocationsPage.__init__(self, app)
-        self.login = LoginPage(app)
-        self.logout = LogoutPage(app)
         self.browse = BrowsePage(app)
         self.restore = RestorePage(app)
         self.history = HistoryPage(app)
@@ -132,10 +128,7 @@ class RdiffwebApp(Application):
         """
         Get the current user.
         """
-        try:
-            return cherrypy.session['user']  # @UndefinedVariable
-        except:
-            return None
+        return cherrypy.serving.request.login
 
     def error_page(self, **kwargs):
         """

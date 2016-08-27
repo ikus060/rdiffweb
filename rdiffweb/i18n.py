@@ -236,7 +236,8 @@ class I18nTool(cherrypy.Tool):
         self._point = 'before_handler'
         self.callable = load_translation
         # Make sure, session tool (priority 50) is loaded before
-        self._priority = 100
+        # Make sure to run before AuthFormTool (priority 70)
+        self._priority = 60
 
     def _setup(self):
         c = cherrypy.request.config

@@ -20,13 +20,16 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import binascii
+from builtins import str
 import cherrypy
 from cherrypy._cpcompat import base64_decode
-from cherrypy._cperror import HTTPError
+from cherrypy._cptools import HandlerTool
 from future.utils import native_str
 import logging
 
+from rdiffweb.exceptions import Warning
 from rdiffweb.i18n import ugettext as _
+from rdiffweb.page_main import MainPage
 from rdiffweb.rdw_helpers import quote_url
 
 
@@ -34,32 +37,150 @@ from rdiffweb.rdw_helpers import quote_url
 logger = logging.getLogger(__name__)
 
 
-def authform():
+class AuthFormTool(HandlerTool):
+    """
+    Tool used to control authentication to various ressources.
+    """
+    session_key = 'user'
 
-    """Filter used to redirect user to login page if not logged in."""
+    def __init__(self):
+        HandlerTool.__init__(self, self.run, name='authform')
+        # Make sure to run after session tool (priority 50)
+        # Make sure to run after i18n tool (priority 60)
+        self._priority = 70
 
-    # Check if logged-in.
-    if cherrypy.session.get("user"):  # @UndefinedVariable
-        # page passes credentials; allow to be processed
-        return False
+    def check_username_and_password(self, username, password):
+        """Validate user credentials."""
+        logger.debug("check credentials for [%s]", username)
+        try:
+            userobj = cherrypy.request.app.userdb.login(username, password)  # @UndefinedVariable
+        except:
+            logger.exception("fail to validate user credential.",)
+            raise Warning(_("Fail to validate user credential."))
+        if not userobj:
+            logger.warning("invalid username or password")
+            raise Warning(_("Invalid username or password."))
+        return userobj
 
-    # If browser requesting text/plain. It's probably an Ajax call, don't
-    # redirect and raise an exception.
-    mtype = cherrypy.tools.accept.callable(['text/html', 'text/plain'])  # @UndefinedVariable
-    if mtype == 'text/plain':
-        raise HTTPError(403, _("Not logged in"))
+    def do_check(self):
+        """Assert username. Raise redirect, or return True if request handled."""
+        request = cherrypy.serving.request
+        response = cherrypy.serving.response
 
-    # Sending the redirect URL
-    redirect = cherrypy.request.path_info
-    if cherrypy.request.query_string:
-        redirect = redirect + native_str("?") + cherrypy.request.query_string
-    redirect = native_str("?redirect=") + quote_url(redirect)
+        if not self.is_login():
+            url = cherrypy.url(qs=request.query_string)
 
-    # write login page
-    logger.debug("user not logged in, redirect to /login/")
-    raise cherrypy.HTTPRedirect(native_str("/login/") + redirect)
+            # If browser requesting text/plain. It's probably an Ajax call, don't
+            # redirect and raise an exception.
+            mtype = cherrypy.tools.accept.callable(['text/html', 'text/plain'])  # @UndefinedVariable
+            if mtype == 'text/plain':
+                logger.debug('No username, requesting plain text, routing to 403 error from_page %(url)r', locals())
+                raise cherrypy.HTTPError(403, _("Not logged in"))
 
-cherrypy.tools.authform = cherrypy._cptools.HandlerTool(authform)
+            logger.debug('No username, routing to login_screen with from_page %(url)r', locals())
+            response.body = self.login_screen(url)
+            if "Content-Length" in response.headers:
+                # Delete Content-Length header so finalize() recalcs it.
+                del response.headers["Content-Length"]
+            return True
+
+        # Define the value of request.login to later in code we can reuse it.
+        username = cherrypy.session[self.session_key]  # @UndefinedVariable
+        userobj = cherrypy.request.app.userdb.get_user(username)  # @UndefinedVariable
+        if not userobj:
+            raise cherrypy.HTTPError(403)
+        logger.debug('Setting request.login to %r', userobj)
+        cherrypy.serving.request.login = userobj
+
+    def do_login(self, login, password, redirect=b'/', **kwargs):
+        """Login. May raise redirect, or return True if request handled."""
+        response = cherrypy.serving.response
+        try:
+            userobj = self.check_username_and_password(login, password)
+        except Warning as e:
+            body = self.login_screen(redirect, login, str(e))
+            response.body = body
+            if "Content-Length" in response.headers:
+                # Delete Content-Length header so finalize() recalcs it.
+                del response.headers["Content-Length"]
+            return True
+        # User successfully login.
+        logger.debug('Setting request.login to %r', userobj)
+        cherrypy.serving.request.login = userobj
+        cherrypy.session[self.session_key] = userobj.username  # @UndefinedVariable
+        self.on_login(userobj.username)
+        logger.debug('Redirect user to %r', redirect or b"/")
+        raise cherrypy.HTTPRedirect(redirect or b"/")
+
+    def do_logout(self, redirect=b'/', **kwargs):
+        """Logout. May raise redirect, or return True if request handled."""
+        sess = cherrypy.session  # @UndefinedVariable
+        username = sess.get(self.session_key)
+        sess[self.session_key] = None
+        cherrypy.serving.request.login = None
+        if username:
+            self.on_logout(username)
+        raise cherrypy.HTTPRedirect(redirect)
+
+    def is_login(self):
+        """Validate if the current user session is login."""
+        username = cherrypy.session.get(self.session_key)  # @UndefinedVariable
+        return username is not None
+
+    def login_screen(self, redirect=b'/', username='', error_msg='', **kwargs):
+        app = cherrypy.request.app
+        main_page = MainPage(app)
+
+        # Re-encode the redirect for display in HTML
+        redirect = quote_url(redirect, safe=";/?:@&=+$,%")
+
+        params = {
+            'redirect': redirect,
+            'login': username,
+            'warning': error_msg
+        }
+
+        # Add welcome message to params. Try to load translated message.
+        params["welcome_msg"] = app.cfg.get_config("WelcomeMsg")
+        if hasattr(cherrypy.response, 'i18n'):
+            lang = cherrypy.response.i18n._lang
+            params["welcome_msg"] = app.cfg.get_config("WelcomeMsg[%s]" % (lang), params["welcome_msg"])
+
+        return main_page._compile_template("login.html", **params).encode("utf-8")
+
+    def on_login(self, username):
+        """Called when user is login."""
+        pass
+
+    def on_logout(self, username):
+        """Called when user is logout."""
+        pass
+
+    def run(self):
+        """Called to execute this tool."""
+        request = cherrypy.serving.request
+        response = cherrypy.serving.response
+
+        path = request.path_info
+        if path.startswith(native_str('/login')):
+            if request.method != 'POST':
+                response.headers['Allow'] = "POST"
+                logger.info('do_login requires POST')
+                # Redirect to / instead of showing error.
+                raise cherrypy.HTTPRedirect(b'/')
+            logger.info('routing %(path)r to do_login', locals())
+            return self.do_login(**request.params)
+
+        elif path.startswith(native_str('/logout')):
+            logger.info('routing %(path)r to do_logout', locals())
+            return self.do_logout(**request.params)
+
+        # No special path, validate session.
+        logger.info('No special path, running do_check')
+        return self.do_check()
+
+
+cherrypy.tools.authform = AuthFormTool()
 
 
 def authbasic(checkpassword):

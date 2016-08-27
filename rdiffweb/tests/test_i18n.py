@@ -130,25 +130,25 @@ class TestI18nWebCase(WebCase):
 
     def testLanguage_WithUnknown(self):
         #  Query the page without login-in
-        self.getPage("/login/", headers=[("Accept-Language", "es")])
+        self.getPage("/", headers=[("Accept-Language", "es")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "en")
         self.assertInBody("Sign in")
 
     def testLanguage_En(self):
-        self.getPage("/login/", headers=[("Accept-Language", "en-US,en;q=0.8")])
+        self.getPage("/", headers=[("Accept-Language", "en-US,en;q=0.8")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "en")
         self.assertInBody("Sign in")
 
     def testLanguage_EnFr(self):
-        self.getPage("/login/", headers=[("Accept-Language", "en-US,en;q=0.8,fr-CA;q=0.8")])
+        self.getPage("/", headers=[("Accept-Language", "en-US,en;q=0.8,fr-CA;q=0.8")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "en")
         self.assertInBody("Sign in")
 
     def testLanguage_Fr(self):
-        self.getPage("/login/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
+        self.getPage("/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "fr")
         self.assertInBody("Se connecter")

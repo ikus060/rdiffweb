@@ -35,9 +35,17 @@ class LoginPageTest(WebCase):
         """
         Make sure the login page can be rendered without error.
         """
-        self.getPage('/login/')
+        self.getPage('/')
         self.assertStatus('200 OK')
         self.assertInBody('login')
+
+    def test_getpage_with_plaintext(self):
+        """
+        Requesting plain text without being authenticated should return a 403
+        error instead of login form.
+        """
+        self.getPage('/', headers=[("Accept", "text/plain")])
+        self.assertStatus('403 Forbidden')
 
     def test_getpage_with_redirect_get(self):
         """
@@ -45,8 +53,8 @@ class LoginPageTest(WebCase):
         """
         #  Query the page without login-in
         self.getPage('/browse/' + self.REPO + '/DIR%EF%BF%BD/')
-        self.assertStatus('303 See Other')
-        self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=/browse/' + self.REPO + '/DIR%EF%BF%BD/')
+        self.assertStatus('200 OK')
+        self.assertInBody(self.baseurl + '/browse/' + self.REPO + '/DIR%EF%BF%BD/')
 
     def test_getpage_with_broken_encoding(self):
         """
@@ -54,8 +62,8 @@ class LoginPageTest(WebCase):
         """
         #  Query the page without login-in
         self.getPage('/restore/' + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt/?date=1454448640')
-        self.assertStatus('303 See Other')
-        self.assertHeader('Location', self.baseurl + '/login/?redirect=/restore/' + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt/%3Fdate%3D1454448640')
+        self.assertStatus('200 OK')
+        self.assertInBody(self.baseurl + '/restore/' + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt/?date=1454448640')
 
     def test_getpage_with_redirect_post(self):
         """
@@ -63,23 +71,23 @@ class LoginPageTest(WebCase):
         """
         b = {'login': 'admin',
              'password': 'invalid',
-             'redirect': '/browse/' + self.REPO + '/DIR%EF%BF%BD/'}
+             'redirect': self.baseurl + '/browse/' + self.REPO + '/DIR%EF%BF%BD/'}
         self.getPage('/login/', method='POST', body=b)
         self.assertStatus('200 OK')
         self.assertInBody('id="form-login"')
-        self.assertInBody('value="/browse/' + self.REPO + '/DIR%EF%BF%BD/"')
+        self.assertInBody(self.baseurl + '/browse/' + self.REPO + '/DIR%EF%BF%BD/"')
 
     def test_getpage_with_querystring_redirect_get(self):
         """
         Check if unauthenticated users are redirect properly to login page.
         """
         self.getPage('/browse/' + self.REPO + '/?restore=T')
-        self.assertStatus('303 See Other')
-        self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=/browse/' + self.REPO + '/%3Frestore%3DT')
+        self.assertStatus('200 OK')
+        self.assertInBody(self.baseurl + '/browse/' + self.REPO + '/?restore=T')
 
         self.getPage('/restore/' + self.REPO + '/?date=1414871387&usetar=T')
-        self.assertStatus('303 See Other')
-        self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=/restore/' + self.REPO + '/%3Fdate%3D1414871387%26usetar%3DT')
+        self.assertStatus('200 OK')
+        self.assertInBody(self.baseurl + '/restore/' + self.REPO + '/?date=1414871387&amp;usetar=T')
 
     def test_getpage_with_redirection(self):
         """
@@ -92,6 +100,14 @@ class LoginPageTest(WebCase):
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/restore/' + self.REPO + '/?date=1414871387&usetar=T')
 
+    def test_getpage_without_username(self):
+        """
+        Check if error 405 is raised when requesting /login without a username.
+        """
+        self.getPage('/login/', method='GET')
+        self.assertStatus('303 See Other')
+        self.assertHeaderItemValue('Location', self.baseurl + '/')
+
     def test_getpage_with_empty_password(self):
         """
         Check if authentication is failing without a password.
@@ -101,14 +117,6 @@ class LoginPageTest(WebCase):
         self.getPage('/login/', method='POST', body=b)
         self.assertStatus('200 OK')
         self.assertInBody('Invalid username or password.')
-
-    def test_index_with_redirect(self):
-        """
-        Make sure to property encode/decode redirect url.
-        """
-        data = self.app.root.login.index(redirect='/browse/' + self.REPO + '/dir\u2713/')
-        self.assertIn('/browse/' + self.REPO + '/dir%E2%9C%93/', data)
-
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
