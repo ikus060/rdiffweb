@@ -118,11 +118,11 @@ class MainPage(Component):
 
             return (repo_obj, path_obj)
 
-        except AccessDeniedError:
-            logger.warning("access is denied %r", user_root_b + repo_b, exc_info=1)
+        except AccessDeniedError as e:
+            logger.warning("access is denied", exc_info=1)
             raise cherrypy.HTTPError(404)
-        except DoesNotExistError:
-            logger.warning("doesn't exists %r", user_root_b + repo_b, exc_info=1)
+        except DoesNotExistError as e:
+            logger.warning("doesn't exists", exc_info=1)
             raise cherrypy.HTTPError(404)
 
     def _is_submit(self):

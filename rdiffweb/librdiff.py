@@ -554,7 +554,7 @@ class RdiffRepo(object):
         if (not os.access(self.data_path, os.F_OK) or
                 not os.path.isdir(self.data_path)):
             logger.error("repository [%r] doesn't exists", self.repo_root)
-            raise DoesNotExistError()
+            raise DoesNotExistError("%r" % self.repo_root)
 
     @property
     def data_entries(self):
@@ -818,16 +818,17 @@ class RdiffPath(object):
     def _check(self):
         """Check if the path is valid within the a repository."""
 
+        path_to_check = os.path.join(self.repo_root, self.path)
+
         # Make sure it'S not a subdirectory of "rdiff-backup-data"
         if self.path.startswith(RDIFF_BACKUP_DATA):
-            raise AccessDeniedError()
+            raise AccessDeniedError(path_to_check)
 
         # Make sure there are no symlinks in the path
-        path_to_check = os.path.join(self.repo_root, self.path)
         while True:
             path_to_check = path_to_check.rstrip(b"/")
             if os.path.islink(path_to_check):
-                raise AccessDeniedError()
+                raise AccessDeniedError(path_to_check)
 
             (path_to_check, filename) = os.path.split(path_to_check)
             if not filename:
@@ -848,8 +849,8 @@ class RdiffPath(object):
                 increments = []
 
             if not increments:
-                logger.error("repository [%r] doesn't exists", self.path)
-                raise DoesNotExistError()
+                logger.error("path [%r] doesn't exists", path_to_check)
+                raise DoesNotExistError(path_to_check)
 
     @property
     def dir_entries(self):
