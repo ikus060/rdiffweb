@@ -211,7 +211,7 @@ class build(build_):
 install_requires = [
     "CherryPy>=3.2.2",
     "Jinja2>=2.6",
-    "babel>=0.9",
+    "babel>=1.3",
     "future>=0.15.2",
 ]
 if PY2:
@@ -253,7 +253,7 @@ setup(
     install_requires=install_requires,
     # required packages for build process
     setup_requires=[
-        "babel>=0.9",
+        "babel>=1.3",
     ],
     # requirement for testing
     tests_require=[
