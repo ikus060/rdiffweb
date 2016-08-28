@@ -98,7 +98,43 @@ file in `/etc/apache2/sites-available/rdiffweb`.
             Allow from all
         </Location>
     </VirtualHost>
+
+## Configure nginx (optional)
+
+You may need an nginx server in case:
+ 
+ * you need to serve multiple web services from the same IP;
+ * you need more security (like HTTP + SSL).
+ 
+This section doesn't explain how to install and configure your Apache server.
+This is out-of-scope. The following is only provided as a suggestion and is in
+no way a complete reference.
+
+See `/extras/nginx` folder for more examples.
+
+**Reverse proxy configuration**
     
+    location /rdiffweb {
+        rewrite ^([^\?#]*/)([^\?#\./]+)([\?#].*)?$ $1$2/$3 permanent;
+        # substitute with rdiffweb url
+        proxy_pass http://127.0.0.1:18080/;
+        # for https
+        #proxy_redirect      http://example.com https://example.com/rdiffweb;
+        proxy_set_header        Host $host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+        proxy_set_header Accept-Encoding "";
+        # rewrite internal links
+        sub_filter 'href="/' 'href="/rdiffweb/';
+        sub_filter 'src="/' 'src="/rdiffweb/';
+        sub_filter 'action="/' 'action="/rdiffweb/';
+        sub_filter "url(\'/static" "url(\'/rdiffweb/static";
+        sub_filter_types "*";
+        sub_filter_once off;
+    }
+
+
 # Configuration
 
 ## Authentication
