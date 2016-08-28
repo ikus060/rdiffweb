@@ -103,9 +103,9 @@ class TemplateManagerTest(unittest.TestCase):
             url_for_history('testcases')
 
     def test_url_for_restore(self):
-        self.assertEqual('/restore/testcases/?date=1414967021', url_for_restore(b'testcases', path=b'', date=rdwTime(1414967021)))
-        self.assertEqual('/restore/testcases/Revisions/?date=1414967021', url_for_restore(b'testcases', path=b'Revisions', date=rdwTime(1414967021)))
-        self.assertEqual('/restore/testcases/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/?date=1414967021',
+        self.assertEqual('/restore/testcases?date=1414967021', url_for_restore(b'testcases', path=b'', date=rdwTime(1414967021)))
+        self.assertEqual('/restore/testcases/Revisions?date=1414967021', url_for_restore(b'testcases', path=b'Revisions', date=rdwTime(1414967021)))
+        self.assertEqual('/restore/testcases/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial?date=1414967021',
                          url_for_restore(b'testcases', path=b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial', date=rdwTime(1414967021)))
         # Check if failing with unicode
         with self.assertRaises(AssertionError):

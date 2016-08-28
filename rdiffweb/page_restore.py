@@ -66,7 +66,7 @@ class RestorePage(page_main.MainPage):
 
     @cherrypy.expose
     @cherrypy.tools.gzip(on=False)
-    def index(self, path=b"", date=None, kind=None, usetar=None):
+    def default(self, path=b"", date=None, kind=None, usetar=None):
         self.assertIsInstance(path, bytes)
         self.assertIsInstance(date, str)
         self.assertTrue(kind is None or kind in ARCHIVERS)

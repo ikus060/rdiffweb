@@ -69,7 +69,7 @@ class BrowsePageTest(WebCase):
         self._browse(self.REPO, "")
         #  Fichier @ <root>
         self.assertInBody("Fichier @ &lt;root&gt;")
-        self.assertInBody("/Fichier%20%40%20%3Croot%3E/?date=")
+        self.assertInBody("/Fichier%20%40%20%3Croot%3E?date=")
         #  Répertoire (@vec) {càraçt#èrë} $épêcial
         self.assertInBody("Répertoire (@vec) {càraçt#èrë} $épêcial")
         self.assertInBody("/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/")
@@ -78,7 +78,7 @@ class BrowsePageTest(WebCase):
         self.assertInBody("/test%5Ctest/")
         #  <F!chïer> (@vec) {càraçt#èrë} $épêcial
         self.assertInBody("&lt;F!chïer&gt; (@vec) {càraçt#èrë} $épêcial")
-        self.assertInBody("/%3CF%21ch%C3%AFer%3E%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/?date=")
+        self.assertInBody("/%3CF%21ch%C3%AFer%3E%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial?date=")
         #  Répertoire Existant
         self.assertInBody("Répertoire Existant")
         self.assertInBody("/R%C3%A9pertoire%20Existant/")
@@ -101,7 +101,7 @@ class BrowsePageTest(WebCase):
         self._browse(self.REPO, "", True)
         self.assertInBody("Download")
         self.assertInBody("2014-11-05 16:05")
-        self.assertInBody("/restore/" + self.REPO + "/?date=1415221507")
+        self.assertInBody("/restore/" + self.REPO + "?date=1415221507")
 
     def test_sub_directory_deleted(self):
         """
@@ -127,7 +127,7 @@ class BrowsePageTest(WebCase):
         self.assertInBody("ZIP")
         self.assertInBody("TAR.GZ")
         self.assertInBody("2014-11-01 15:51")
-        self.assertInBody("/restore/" + self.REPO + "/R%C3%A9pertoire%20Supprim%C3%A9/?date=1414871475")
+        self.assertInBody("/restore/" + self.REPO + "/R%C3%A9pertoire%20Supprim%C3%A9?date=1414871475")
 
     def test_sub_directory_exists(self):
         """

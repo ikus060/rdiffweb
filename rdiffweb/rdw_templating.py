@@ -180,11 +180,10 @@ def url_for_restore(repo, path, date, kind=None):
     if repo:
         repo = repo.rstrip(b"/")
         url.append(rdw_helpers.quote_url(repo))
-        url.append("/")
     if len(path) > 0:
+        url.append("/")
         path = path.rstrip(b"/")
         url.append(rdw_helpers.quote_url(path))
-        url.append("/")
     # Append date
     url.append("?date=")
     url.append(str(date.getSeconds()))

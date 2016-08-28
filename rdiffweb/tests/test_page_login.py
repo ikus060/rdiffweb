@@ -61,9 +61,9 @@ class LoginPageTest(WebCase):
         Check encoding of redirect url when send using GET method.
         """
         #  Query the page without login-in
-        self.getPage('/restore/' + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt/?date=1454448640')
+        self.getPage('/restore/' + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt?date=1454448640')
         self.assertStatus('200 OK')
-        self.assertInBody(self.baseurl + '/restore/' + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt/?date=1454448640')
+        self.assertInBody(self.baseurl + '/restore/' + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt?date=1454448640')
 
     def test_getpage_with_redirect_post(self):
         """
@@ -85,9 +85,9 @@ class LoginPageTest(WebCase):
         self.assertStatus('200 OK')
         self.assertInBody(self.baseurl + '/browse/' + self.REPO + '/?restore=T')
 
-        self.getPage('/restore/' + self.REPO + '/?date=1414871387&usetar=T')
+        self.getPage('/restore/' + self.REPO + '?date=1414871387&usetar=T')
         self.assertStatus('200 OK')
-        self.assertInBody(self.baseurl + '/restore/' + self.REPO + '/?date=1414871387&amp;usetar=T')
+        self.assertInBody(self.baseurl + '/restore/' + self.REPO + '?date=1414871387&amp;usetar=T')
 
     def test_getpage_with_redirection(self):
         """
@@ -95,10 +95,10 @@ class LoginPageTest(WebCase):
         """
         b = {'login': 'admin',
              'password': 'admin123',
-             'redirect': '/restore/' + self.REPO + '/?date=1414871387&usetar=T'}
+             'redirect': '/restore/' + self.REPO + '?date=1414871387&usetar=T'}
         self.getPage('/login/', method='POST', body=b)
         self.assertStatus('303 See Other')
-        self.assertHeaderItemValue('Location', self.baseurl + '/restore/' + self.REPO + '/?date=1414871387&usetar=T')
+        self.assertHeaderItemValue('Location', self.baseurl + '/restore/' + self.REPO + '?date=1414871387&usetar=T')
 
     def test_getpage_without_username(self):
         """
