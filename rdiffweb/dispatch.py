@@ -80,7 +80,7 @@ def poppath(*args, **kwargs):
         path = []
         while len(vpath) > 0:
             path.append(unquote_url(vpath.pop(0)))
-        cherrypy.request.params['path'] = b"/".join(path)
+        parms['path'] = b"/".join(path)
 
         if handler is not None:
             if handler_call:

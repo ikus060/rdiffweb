@@ -19,34 +19,38 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import logging
+import os
+import sys
+
 from cherrypy import Application
 import cherrypy
 from cherrypy.process.plugins import Monitor
-import logging
-import os
+from future.utils import native_str
 import pkg_resources
-
 from rdiffweb import filter_authentication  # @UnusedImport
 from rdiffweb import i18n  # @UnusedImport
 from rdiffweb import rdw_config
 from rdiffweb import rdw_plugin
 from rdiffweb import rdw_templating
+from rdiffweb.dispatch import static
 from rdiffweb.page_admin import AdminPage
 from rdiffweb.page_browse import BrowsePage
 from rdiffweb.page_history import HistoryPage
 from rdiffweb.page_locations import LocationsPage
+from rdiffweb.page_main import MainPage
 from rdiffweb.page_prefs import PreferencesPage
 from rdiffweb.page_restore import RestorePage
 from rdiffweb.page_settings import SettingsPage
 from rdiffweb.page_status import StatusPage
 from rdiffweb.user import UserManager
-from future.utils import native_str
-from rdiffweb.dispatch import static
-from rdiffweb.page_main import MainPage
 
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
+
+PY3 = sys.version_info[0] == 3
 
 
 class Root(LocationsPage):
@@ -103,6 +107,13 @@ class RdiffwebApp(Application):
                 'error_page.default': self.error_page,
             },
         }
+
+        # To work around the new behaviour in CherryPy >= 5.5.0, force usage of
+        # ISO-8859-1 encoding for URL. This avoid any conversion of the
+        # URL into UTF-8.
+        if PY3 and cherrypy.__version__ >= "5.5.0":
+            config[native_str('/')]["request.uri_encoding"] = "ISO-8859-1"
+
         self._setup_session_storage(config)
         Application.__init__(self, root=Root(self), config=config)
 
