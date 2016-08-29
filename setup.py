@@ -35,6 +35,7 @@ from distutils.command.build import build as build_
 from distutils.dist import DistributionMetadata
 from distutils.log import error, info
 from distutils.util import split_quoted
+from setuptools.command.test import test as TestCommand
 import os
 from string import Template
 import subprocess
@@ -207,6 +208,29 @@ class build(build_):
     sub_commands.insert(0, ('compile_all_catalogs', None))
     sub_commands.insert(0, ('filltmpl', None))
 
+
+class tox(TestCommand):
+    user_options = [('tox-args=', 'a', "Arguments to pass to tox")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.tox_args = None
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        # import here, cause outside the eggs aren't loaded
+        import tox
+        import shlex
+        args = self.tox_args
+        if args:
+            args = shlex.split(self.tox_args)
+        errno = tox.cmdline(args=args)
+        sys.exit(errno)
+
 # Compute requirements
 install_requires = [
     "CherryPy>=3.2.2",
@@ -248,6 +272,7 @@ setup(
         'compile_all_catalogs': compile_all_catalogs,
         'filltmpl': fill_template,
         'build_less': build_less,
+        'tox': tox,
     },
     templates=['sonar-project.properties.in'],
     install_requires=install_requires,
@@ -257,7 +282,10 @@ setup(
     ],
     # requirement for testing
     tests_require=[
+        "tox",
         "mock>=1.3.0",
+        "funcsigs>=0.4",
+        "coverage>=4.0.1",
         "mockldap>=0.2.6",
         "pycrypto>=2.6.1",
     ]
