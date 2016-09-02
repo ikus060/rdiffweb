@@ -53,6 +53,13 @@ class MainPage(Component):
         if not value:
             raise cherrypy.HTTPError(400, message)
 
+    def assertIsInt(self, value, message=None):
+        """Raise HTTP Error if the value is not an integer"""
+        try:
+            int(value)
+        except:
+            raise cherrypy.HTTPError(400, message)
+
     def assertIsInstance(self, value, cls, message=None):
         """Raise HTTP error if value is not cls."""
         if not isinstance(value, cls):

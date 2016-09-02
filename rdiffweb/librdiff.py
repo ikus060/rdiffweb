@@ -652,7 +652,8 @@ class RdiffRepo(object):
     def get_history_entries(self,
                             numLatestEntries=-1,
                             earliestDate=None,
-                            latestDate=None):
+                            latestDate=None,
+                            reverse=False):
         """Returns a list of HistoryEntry's
         earliestDate and latestDate are inclusive."""
 
@@ -665,8 +666,11 @@ class RdiffRepo(object):
         logger.debug("get history entries for [%r]", self.repo_root)
 
         entries = []
-        for backup_date in self.backup_dates:
-            # compare local times because of discrepency between client/server
+        # Take care of reverse
+        backup_dates = reversed(self.backup_dates) if reverse else self.backup_dates
+        # Loop to dates
+        for backup_date in backup_dates:
+            # compare local times because of discrepancy between client/server
             # time zones
             if earliestDate and backup_date < earliestDate:
                 continue

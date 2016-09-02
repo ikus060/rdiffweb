@@ -12,7 +12,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for entry in history_entries | reverse %}
+        {% for entry in history_entries %}
         <tr {% if entry.errors %}
             class="danger"
             {% elif entry.in_progress %}
@@ -46,4 +46,13 @@
         {% endfor %}
     </tbody>
 </table>
+
+{% if limit == history_entries|count %}
+<nav aria-label="...">
+  <ul class="pager">
+    <li><a href="?limit={{ limit * 2 }}"><i class="icon-down-dir"></i> {% trans %}Show more...{% endtrans %}</a></li>
+  </ul>
+</nav>
+{% endif %}
+
 {% endblock %}

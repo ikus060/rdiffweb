@@ -23,6 +23,7 @@ Created on Dec 29, 2015
 
 from __future__ import unicode_literals
 
+from future.builtins import str
 import logging
 import unittest
 
@@ -37,22 +38,25 @@ class HistoryPageTest(WebCase):
 
     reset_testcases = True
 
-    def _history(self, repo):
-        return self.getPage("/history/" + repo + "/")
+    def _history(self, repo, limit=None):
+        url = "/history/" + repo + "/"
+        if limit:
+            url += "?limit=%s" % limit
+        return self.getPage(url)
 
     def test_history(self):
         self._history(self.REPO)
-        self.assertInBody("2014-11-01 20:51:18")
-        self.assertInBody("2014-11-01 20:18:11")
-        self.assertInBody("2014-11-01 20:12:45")
-        self.assertInBody("2014-11-01 18:07:19")
-        self.assertInBody("2014-11-01 16:30:50")
-        self.assertInBody("2014-11-01 16:30:22")
-        self.assertInBody("2014-11-01 15:51:29")
-        self.assertInBody("2014-11-01 15:51:15")
-        self.assertInBody("2014-11-01 15:50:48")
-        self.assertInBody("2014-11-01 15:50:26")
-        self.assertInBody("2014-11-01 15:49:47")
+        # New
+        self.assertInBody("2016-02-02 16:30:40")
+        # Old
+        self.assertInBody("2014-11-02 09:50:53")
+        self.assertInBody("Show more")
+
+    def test_history_with_limit(self):
+        self._history(self.REPO, 10)
+        self.assertInBody("Show more")
+        self._history(self.REPO, 50)
+        self.assertNotInBody("Show more")
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

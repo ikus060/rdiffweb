@@ -35,8 +35,10 @@ logger = logging.getLogger(__name__)
 class HistoryPage(page_main.MainPage):
 
     @cherrypy.expose
-    def index(self, path=b""):
+    def index(self, path=b"", limit='10', **kwargs):
         self.assertIsInstance(path, bytes)
+        self.assertIsInt(limit)
+        limit = int(limit)
 
         logger.debug("history [%r]", path)
 
@@ -44,9 +46,10 @@ class HistoryPage(page_main.MainPage):
         assert isinstance(repo_obj, librdiff.RdiffRepo)
 
         parms = {
+            "limit": limit,
             "repo_name": repo_obj.display_name,
             "repo_path": repo_obj.path,
-            "history_entries": repo_obj.get_history_entries()
+            "history_entries": repo_obj.get_history_entries(numLatestEntries=limit, reverse=True)
         }
 
         return self._compile_template("history.html", **parms)
