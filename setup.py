@@ -284,7 +284,6 @@ setup(
     tests_require=[
         "tox",
         "mock>=1.3.0",
-        "funcsigs>=0.4",
         "coverage>=4.0.1",
         "mockldap>=0.2.6",
         "pycrypto>=2.6.1",
