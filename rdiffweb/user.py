@@ -309,7 +309,7 @@ class UserManager(Component):
         # Check if user exists in database
         try:
             userobj = self.get_user(real_user)
-            self._notify('logined', userobj.username, password)
+            self._notify('logined', real_user, password)
             return userobj
         except InvalidUserError:
             # Check if user may be added.
@@ -318,7 +318,7 @@ class UserManager(Component):
                 return None
             # Create user
             userobj = self.add_user(real_user)
-            self._notify('logined', user, password)
+            self._notify('logined', real_user, password)
             return userobj
 
     def set_password(self, user, password, old_password=None):

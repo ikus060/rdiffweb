@@ -123,6 +123,18 @@ How are you?
 Here is the link you wanted."""
         self.assertEqual(expected, html2plaintext(html))
 
+    def test_email_changed(self):
+        # Get ref to notification plugin
+        n = self.app.plugins.get_plugin_by_name('NotificationPlugin')
+        self.assertIsNotNone(n)
+        n.send_mail = MagicMock()
+
+        # Set user config
+        user = self.app.userdb.get_user(self.USERNAME)
+        user.email = 'test@test.com'
+
+        # Expect it to be called.
+        n.send_mail.assert_called_once_with(ANY, 'Email address changed', 'email_changed.html')
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
