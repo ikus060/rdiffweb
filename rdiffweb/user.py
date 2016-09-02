@@ -37,7 +37,11 @@ logger = logging.getLogger(__name__)
 class UserObject(object):
     """Represent an instance of user."""
 
-    def __init__(self, db, username):
+    def __init__(self, userdb, db, username):
+        assert userdb
+        assert db
+        assert username
+        self._userdb = userdb
         self._db = db
         self._username = username
 
@@ -48,9 +52,6 @@ class UserObject(object):
 
     def __str__(self):
         return 'UserObject[%s]' % self._username
-
-    def __repr__(self):
-        return 'UserObject(db, %r)' % self._username
 
     @property
     def username(self):
@@ -70,11 +71,24 @@ class UserObject(object):
                 return RepoObject(self._db, self._username, r)
         raise KeyError(name)
 
+    def set_attr(self, key, value):
+        """Used to define an attribute"""
+        self.set_attrs(**{key: value})
+
+    def set_attrs(self, **kwargs):
+        """Used to define multiple attributes at once."""
+        for key, value in kwargs.items():
+            if key in ['is_admin', 'email', 'user_root', 'repos']:
+                setter = getattr(self._db, 'set_%s' % key)
+                setter(self._username, value)
+        # Call notification listener
+        self._userdb._notify('attr_changed', self._username, kwargs)
+
     # Declare properties
-    is_admin = property(fget=lambda x: x._db.is_admin(x._username), fset=lambda x, y: x._db.set_is_admin(x._username, y))
-    email = property(fget=lambda x: x._db.get_email(x._username), fset=lambda x, y: x._db.set_email(x._username, y))
-    user_root = property(fget=lambda x: x._db.get_user_root(x._username), fset=lambda x, y: x._db.set_user_root(x._username, y))
-    repos = property(fget=lambda x: x._db.get_repos(x._username), fset=lambda x, y: x._db.set_repos(x._username, y))
+    is_admin = property(fget=lambda x: x._db.is_admin(x._username), fset=lambda x, y: x.set_attr('is_admin', y))
+    email = property(fget=lambda x: x._db.get_email(x._username), fset=lambda x, y: x.set_attr('email', y))
+    user_root = property(fget=lambda x: x._db.get_user_root(x._username), fset=lambda x, y: x.set_attr('user_root', y))
+    repos = property(fget=lambda x: x._db.get_repos(x._username), fset=lambda x, y: x.set_attr('repos', y))
     repo_list = property(fget=lambda x: [RepoObject(x._db, x._username, r)
                                          for r in x._db.get_repos(x._username)])
 
@@ -101,8 +115,14 @@ class RepoObject(object):
         return 'RepoObject(db, %r, %r)' % (self._username, self._repo)
 
     def set_attr(self, key, value):
-        assert isinstance(key, str) and key.isalpha() and key.islower()
-        self._db.set_repo_attr(self._username, self._repo, key, value)
+        """Used to define an attribute to the repository."""
+        self.set_attrs(**{key: value})
+
+    def set_attrs(self, **kwargs):
+        """Used to define multiple attribute to a repository"""
+        for key, value in kwargs.items():
+            assert isinstance(key, str) and key.isalpha() and key.islower()
+            self._db.set_repo_attr(self._username, self._repo, key, value)
 
     def get_attr(self, key, default=None):
         assert isinstance(key, str)
@@ -155,7 +175,7 @@ class UserManager(Component):
         # Find a database where to add the user
         db = self._get_supporting_database('add_user')
         logger.debug("adding new user [%s] to database [%s]", user, db)
-        userobj = db.add_user(user)
+        db.add_user(user)
         self._notify('added', user, password)
         # Find a password store where to set password
         if password:
@@ -166,7 +186,7 @@ class UserManager(Component):
                 self.set_password(user, password)
 
         # Return user object
-        return userobj
+        return UserObject(self, db, user)
 
     def delete_user(self, user):
         """
@@ -232,7 +252,7 @@ class UserManager(Component):
         db = self.find_user_database(username)
         if not db:
             raise InvalidUserError(username)
-        return UserObject(db, username)
+        return UserObject(self, db, username)
 
     def _get_supporting_store(self, operation):
         """
@@ -261,7 +281,7 @@ class UserManager(Component):
         # TODO Add criteria as required.
         for db in self._databases:
             for username in db.list():
-                yield UserObject(db, username)
+                yield UserObject(self, db, username)
 
     def login(self, user, password):
         """

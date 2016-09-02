@@ -165,8 +165,6 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         logger.info("adding new user [%s]", username)
         query = "INSERT INTO users (Username) values (?)"
         self._execute_query(query, (username,))
-        # Return UserObject
-        return UserObject(self, username)
 
     def delete_user(self, username):
         """

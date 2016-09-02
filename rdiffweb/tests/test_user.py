@@ -27,10 +27,12 @@ from __future__ import unicode_literals
 
 from builtins import str
 import logging
+from mock import MagicMock
 from mockldap import MockLdap
 import unittest
 
 from rdiffweb.core import InvalidUserError
+from rdiffweb.rdw_plugin import IUserChangeListener
 from rdiffweb.test import AppTestCase
 
 
@@ -47,23 +49,39 @@ def _ldap_user(name, password='password'):
 
 class UserManagerSQLiteTest(AppTestCase):
 
+    def setUp(self):
+        AppTestCase.setUp(self)
+        self.mlistener = IUserChangeListener()
+        self.mlistener.user_added = MagicMock()
+        self.mlistener.user_attr_changed = MagicMock()
+        self.mlistener.user_deleted = MagicMock()
+        self.mlistener.user_logined = MagicMock()
+        self.mlistener.user_password_changed = MagicMock()
+        self.app.plugins._register_plugin('MockUserChangeListener', [self.mlistener.CATEGORY], self.mlistener)
+
     def test_add_user(self):
         """Add user to database."""
         user = self.app.userdb.add_user('joe')
         self.assertIsNotNone(user)
         self.assertTrue(self.app.userdb.exists('joe'))
+        # Check if listener called
+        self.mlistener.user_added.assert_called_once_with('joe', None)
 
     def test_add_user_with_duplicate(self):
         """Add user to database."""
         self.app.userdb.add_user('denise')
         with self.assertRaises(ValueError):
             self.app.userdb.add_user('denise')
+        # Check if listener called
+        self.mlistener.user_added.assert_called_once_with('denise', None)
 
     def test_add_user_with_password(self):
         """Add user to database with password."""
         self.app.userdb.add_user('jo', 'password')
         self.assertTrue(self.app.userdb.exists('jo'))
         self.assertTrue(self.app.userdb.login('jo', 'password'))
+        # Check if listener called
+        self.mlistener.user_added.assert_called_once_with('jo', 'password')
 
     def test_delete_user(self):
         # Create user
@@ -72,9 +90,13 @@ class UserManagerSQLiteTest(AppTestCase):
         # Delete user
         self.assertTrue(self.app.userdb.delete_user('vicky'))
         self.assertFalse(self.app.userdb.exists('vicky'))
+        # Check if listener called
+        self.mlistener.user_deleted.assert_called_once_with('vicky')
 
     def test_delete_user_with_invalid_user(self):
         self.assertFalse(self.app.userdb.delete_user('eve'))
+        # Check if listener called
+        self.mlistener.user_deleted.assert_not_called()
 
     def test_exists(self):
         self.app.userdb.add_user('bob', 'password')
@@ -133,9 +155,13 @@ class UserManagerSQLiteTest(AppTestCase):
         self.assertEqual(False, user.is_admin)
 
         user.user_root = '/backups/'
+        self.mlistener.user_attr_changed.assert_called_with('larry', {'user_root': '/backups/'})
         user.is_admin = True
+        self.mlistener.user_attr_changed.assert_called_with('larry', {'is_admin': True})
         user.email = 'larry@gmail.com'
+        self.mlistener.user_attr_changed.assert_called_with('larry', {'email': 'larry@gmail.com'})
         user.repos = ['/backups/computer/', '/backups/laptop/']
+        self.mlistener.user_attr_changed.assert_called_with('larry', {'repos': ['/backups/computer/', '/backups/laptop/']})
 
         self.assertEqual('larry@gmail.com', user.email)
         self.assertEqual(['/backups/computer/', '/backups/laptop/'], user.repos)
@@ -154,6 +180,8 @@ class UserManagerSQLiteTest(AppTestCase):
         self.app.userdb.add_user('tom', 'password')
         self.assertIsNotNone(self.app.userdb.login('tom', 'password'))
         self.assertFalse(self.app.userdb.login('tom', 'invalid'))
+        # Check if listener called
+        self.mlistener.user_logined.assert_called_once_with('tom', 'password')
 
     def login_with_invalid_password(self):
         self.app.userdb.add_user('jeff', 'password')
@@ -163,10 +191,14 @@ class UserManagerSQLiteTest(AppTestCase):
         # Match entire password
         self.assertFalse(self.app.userdb.login('jeff', 'pass'))
         self.assertFalse(self.app.userdb.login('jeff', ''))
+        # Check if listener called
+        self.mlistener.user_logined.assert_not_called()
 
     def test_login_with_invalid_user(self):
         """Check if login work"""
         self.assertIsNone(self.app.userdb.login('josh', 'password'))
+        # Check if listener called
+        self.mlistener.user_logined.assert_not_called()
 
     def test_search(self):
         """
@@ -183,22 +215,30 @@ class UserManagerSQLiteTest(AppTestCase):
         self.assertFalse(self.app.userdb.set_password('annik', 'new_password'))
         # Check new credentials
         self.assertIsNotNone(self.app.userdb.login('annik', 'new_password'))
+        # Check if listener called
+        self.mlistener.user_password_changed.assert_called_once_with('annik', 'new_password')
 
     def test_set_password_with_old_password(self):
         self.app.userdb.add_user('john', 'password')
         self.app.userdb.set_password('john', 'new_password', old_password='password')
         # Check new credentials
         self.assertIsNotNone(self.app.userdb.login('john', 'new_password'))
+        # Check if listener called
+        self.mlistener.user_password_changed.assert_called_once_with('john', 'new_password')
 
     def test_set_password_with_invalid_old_password(self):
         self.app.userdb.add_user('foo', 'password')
         with self.assertRaises(ValueError):
             self.app.userdb.set_password('foo', 'new_password', old_password='invalid')
+        # Check if listener called
+        self.mlistener.user_password_changed.assert_not_called()
 
     def test_set_password_update_not_exists(self):
         """Expect error when trying to update password of invalid user."""
         with self.assertRaises(InvalidUserError):
             self.assertFalse(self.app.userdb.set_password('bar', 'new_password'))
+        # Check if listener called
+        self.mlistener.user_password_changed.assert_not_called()
 
 
 class UserManagerSQLiteLdapTest(AppTestCase):
