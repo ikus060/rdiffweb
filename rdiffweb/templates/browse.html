@@ -79,7 +79,7 @@
         </div>
     </div>
     <ul class="list-group">
-        {% for restore_date in restore_dates | reverse %}
+        {% for restore_date in restore_dates %}
         <li class="list-group-item clearfix">
             <i class="icon-archive"></i>
             {{ restore_date | datetime }}
@@ -119,5 +119,12 @@
         {% endfor %}
     </ul>
 </div>
+{% if limit == restore_dates|count %}
+<nav aria-label="...">
+  <ul class="pager">
+    <li><a href="?restore=T&limit={{ limit * 2 }}"><i class="icon-down-dir"></i> {% trans %}Show more...{% endtrans %}</a></li>
+  </ul>
+</nav>
+{% endif %}
 {% endif %}
 {% endblock %}

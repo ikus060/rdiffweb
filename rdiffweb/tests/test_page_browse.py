@@ -100,8 +100,9 @@ class BrowsePageTest(WebCase):
         """
         self._browse(self.REPO, "", True)
         self.assertInBody("Download")
-        self.assertInBody("2014-11-05 16:05")
+        self.assertInBody("2016-02-02 16:30")
         self.assertInBody("/restore/" + self.REPO + "?date=1415221507")
+        self.assertInBody("Show more")
 
     def test_sub_directory_deleted(self):
         """
@@ -153,7 +154,7 @@ class BrowsePageTest(WebCase):
         self.assertInBody("Download")
         self.assertInBody("ZIP")
         self.assertInBody("TAR.GZ")
-        self.assertInBody("2014-11-05 16:05")
+        self.assertInBody("2016-02-02 16:30")
 
     def test_sub_directory_with_encoding(self):
         """

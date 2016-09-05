@@ -43,10 +43,12 @@ class BrowsePage(page_main.MainPage):
     repository."""
 
     @cherrypy.expose
-    def index(self, path=b"", restore=""):
+    def index(self, path=b"", restore="", limit='10'):
         self.assertIsInstance(path, bytes)
         self.assertIsInstance(restore, str)
+        self.assertIsInt(limit)
         restore = bool(restore)
+        limit = int(limit)
 
         logger.debug("browsing [%r]", path)
 
@@ -54,10 +56,10 @@ class BrowsePage(page_main.MainPage):
         (repo_obj, path_obj) = self.validate_user_path(path)
 
         # Build the parameters
-        parms = self._get_parms_for_page(repo_obj, path_obj, restore)
+        parms = self._get_parms_for_page(repo_obj, path_obj, restore, limit)
         return self._compile_template("browse.html", **parms)
 
-    def _get_parms_for_page(self, repo_obj, path_obj, restore):
+    def _get_parms_for_page(self, repo_obj, path_obj, restore, limit):
         assert isinstance(repo_obj, librdiff.RdiffRepo)
         assert isinstance(path_obj, librdiff.RdiffPath)
 
@@ -81,12 +83,13 @@ class BrowsePage(page_main.MainPage):
         dir_entries = []
         restore_dates = []
         if restore:
-            restore_dates = path_obj.restore_dates
+            restore_dates = path_obj.restore_dates[:-limit - 1:-1]
         else:
             # Get list of actual directory entries
-            dir_entries = path_obj.dir_entries
+            dir_entries = path_obj.dir_entries[::-1]
 
-        return {"repo_name": repo_obj.display_name,
+        return {"limit": limit,
+                "repo_name": repo_obj.display_name,
                 "repo_path": repo_obj.path,
                 "path": path_obj.path,
                 "dir_entries": dir_entries,
