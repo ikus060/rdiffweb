@@ -251,3 +251,17 @@ with `--profile-path`. You may visualize the data with:
 
     snakeviz rdiffweb_0001.prof
     
+
+# Less & CSS(s)
+
+For deployment reason, we need to pre-compile less file into css file.
+
+    python setup.py build_less
+    
+# Javascript
+
+Any changes to javascript file need to be manually compiled into .min.js.
+
+    python setup.py minify_js
+ 
+    
