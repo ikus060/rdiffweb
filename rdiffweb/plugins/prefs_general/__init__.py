@@ -65,7 +65,7 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
 
         # Check if confirmation is valid.
         if kwargs['new'] != kwargs['confirm']:
-            return {'error': _("The new password and its confirmation does not matches.")}
+            return {'error': _("The new password and its confirmation do not match.")}
 
         # Update user password
         user = self.app.currentuser.username
@@ -93,7 +93,7 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
 
         # Update the user's email
         if not self.app.currentuser:
-            raise RdiffError(_("invalid state"))
+            raise RdiffError("invalid state")
 
         username = self.app.currentuser.username
         email = kwargs['email']

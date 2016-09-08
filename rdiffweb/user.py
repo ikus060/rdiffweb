@@ -329,12 +329,13 @@ class UserManager(Component):
         # Try to update the user password.
         store = self.find_user_store(user)
         if store and not store.supports('set_password'):
-            raise RdiffError(_("""The authentication backend for user %s does
-            not support setting the password""" % user))
+            logger.warn("authentication backend for user [%s] does not support changing the password", user)
+            raise RdiffError(_("You cannot change the user's password."))
         elif not store:
             store = self._get_supporting_store('set_password')
         if not store:
-            raise RdiffError(_("none of the IPasswordStore supports setting the password"))
+            logger.warn("none of the IPasswordStore supports setting the password")
+            raise RdiffError(_("You cannot change the user's password."))
         store.set_password(user, password, old_password)
         self._notify('password_changed', user, password)
 
