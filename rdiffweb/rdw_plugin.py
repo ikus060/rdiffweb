@@ -274,7 +274,7 @@ class PluginManager(object):
                 plugin_name = plugin_name.decode('ascii')
             # Make sure the element is not an interface too.
             # FIXME figure-out a different way to exclude interface.
-            if plugin_name.startswith('I'):
+            if plugin_name.startswith('I') or plugin_name in ['JobPlugin']:
                 continue
             # Get categories
             categories = [c.CATEGORY for c in element.__bases__ if hasattr(c, 'CATEGORY')]
