@@ -129,7 +129,8 @@ def check_publickey(data):
     m = PATTERN_LINE.match(data)
     if m:
         key = KeySplit(lineno=False, options=False, keytype=m.group(2), key=m.group(3), comment=m.group(4))
-    return key
+        return key
+    raise ValueError("invalid public key")
 
 
 def create_file(filename):

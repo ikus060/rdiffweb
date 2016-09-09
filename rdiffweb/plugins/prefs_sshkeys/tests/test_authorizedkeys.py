@@ -90,6 +90,10 @@ class AuthorizedKeysTest(unittest.TestCase):
         self.assertTrue(key.key.startswith('AAAAB3NzaC1kc3MAAACBAM8gRuUD+MFPy'))
         self.assertEqual('ikus060@ikus060-t530', key.comment)
 
+    def test_check_publickey_with_invalid(self):
+        with self.assertRaises(ValueError):
+            authorizedkeys.check_publickey('123445342')
+
     def test_exists(self):
         filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable
         # Check if key exists.

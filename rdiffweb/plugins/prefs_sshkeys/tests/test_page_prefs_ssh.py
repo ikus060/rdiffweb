@@ -67,6 +67,15 @@ class SSHKeysTest(WebCase):
         self._add_ssh_key("test@mysshkey", "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAYQCyJWg3VAcBpOgjtkKGl3QB5mTGsFkoi5T7nx2o8MuXY+jHpXE+SIFap7C4w6uxYlJEQpcu/YaEdj6174ZK+8p8y2/HxQ08izVOA7hQdElX2wh5xP0OsCQDRJwC4Sb3Ny8= ikus060@ikus060-t530")
         self.assertInBody("SSH key is too short")
 
+    def test_invalid(self):
+        # Delete existing keys
+        self._list_ssh_keys()
+        while self.body.count(b'Delete') > 0:
+            self._delete_ssh_key("1")
+        # Add key
+        self._add_ssh_key("test@mysshkey", "lkjasdfoiuwerlk")
+        self.assertInBody("Invalid SSH key.")
+
     def test_add_delete(self):
         # Delete existing keys
         self._list_ssh_keys()

@@ -56,11 +56,13 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
         """
         Called to add a new key to an authorized_keys file.
         """
-        if 'key' not in kwargs:
-            raise RdiffWarning(_("Key is missing."))
+        assert 'key' in kwargs, "key is missing"
 
         # Validate the content of the key.
-        key = authorizedkeys.check_publickey(kwargs['key'])
+        try:
+            key = authorizedkeys.check_publickey(kwargs['key'])
+        except:
+            raise RdiffWarning(_("Invalid SSH key."))
 
         # Check if already exists
         if authorizedkeys.exists(filename, key):
