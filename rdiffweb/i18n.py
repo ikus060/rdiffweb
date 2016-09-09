@@ -133,6 +133,15 @@ def get_accept_languages():
     return langs
 
 
+def get_current_lang():
+    """
+    Return the lang being currently served to the user.
+    """
+    if not hasattr(cherrypy.response, "i18n"):
+        return "en"
+    return cherrypy.response.i18n._lang
+
+
 def get_localedirs():
     """
     Return a list of locales directory where to search for mo files. This

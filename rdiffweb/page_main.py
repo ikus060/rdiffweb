@@ -26,6 +26,7 @@ import logging
 import os.path
 
 from rdiffweb.core import Component
+from rdiffweb.i18n import get_current_lang
 from rdiffweb.librdiff import RdiffRepo, AccessDeniedError, DoesNotExistError
 from rdiffweb.rdw_plugin import ITemplateFilterPlugin
 
@@ -145,13 +146,16 @@ class MainPage(Component):
         value.
         """
         parms = {
-            "is_login": True,
+            "lang": get_current_lang(),
             "version": self.app.get_version(),
             "extra_head_templates": [],
         }
         if self.app.currentuser:
-            parms['username'] = self.app.currentuser.username
-            parms['is_admin'] = self.app.currentuser.is_admin
+            parms.update({
+                "is_login": False,
+                'username': self.app.currentuser.username,
+                'is_admin': self.app.currentuser.is_admin,
+            })
 
         # Append custom branding
         parms["header_logo"] = hasattr(self.app.root.static, "header_logo")

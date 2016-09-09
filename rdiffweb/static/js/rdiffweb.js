@@ -179,3 +179,11 @@ $('form[data-async]').on('submit', function(event) {
     });
     event.preventDefault();
 })
+
+/**
+ * Add form validation where applicable.
+ */
+$('form[data-validate]').validate({
+	errorClass : "text-danger",
+	validClass : "valid"
+});
