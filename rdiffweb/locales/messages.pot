@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.9.1.dev1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-09-08 11:33-0400\n"
+"POT-Creation-Date: 2016-09-09 14:00-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,9 +17,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: rdiffweb/core.py:44
+#: rdiffweb/core.py:47
 #, python-format
-msgid "user %s doesn't exists"
+msgid "User %s doesn't exists."
 msgstr ""
 
 #: rdiffweb/filter_authentication.py:59
@@ -34,29 +34,34 @@ msgstr ""
 msgid "Not logged in"
 msgstr ""
 
-#: rdiffweb/page_admin.py:44
+#: rdiffweb/page_admin.py:43
 #, python-format
 msgid "User root directory %s is not accessible!"
 msgstr ""
 
-#: rdiffweb/page_admin.py:153
+#: rdiffweb/page_admin.py:101 rdiffweb/plugins/notification/__init__.py:309
+#: rdiffweb/plugins/prefs_general/__init__.py:131
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:126
+msgid "Unknown error"
+msgstr ""
+
+#: rdiffweb/page_admin.py:154
 msgid "User information modified successfully."
 msgstr ""
 
-#: rdiffweb/page_admin.py:162
-#, python-format
-msgid "The user %s already exists."
-msgstr ""
-
-#: rdiffweb/page_admin.py:164
+#: rdiffweb/page_admin.py:163
 msgid "The username is invalid."
 msgstr ""
 
-#: rdiffweb/page_admin.py:175
+#: rdiffweb/page_admin.py:174
 msgid "User added successfully."
 msgstr ""
 
-#: rdiffweb/page_admin.py:186
+#: rdiffweb/page_admin.py:179
+msgid "You cannot remove your own account!."
+msgstr ""
+
+#: rdiffweb/page_admin.py:182
 msgid "User account removed."
 msgstr ""
 
@@ -78,7 +83,7 @@ msgstr ""
 
 #: rdiffweb/user.py:174
 #, python-format
-msgid "user %s already exists"
+msgid "User %s already exists."
 msgstr ""
 
 #: rdiffweb/user.py:333 rdiffweb/user.py:338
@@ -86,13 +91,13 @@ msgid "You cannot change the user's password."
 msgstr ""
 
 #: rdiffweb/plugins/db_sqlite/__init__.py:234
-#: rdiffweb/plugins/ldap_auth/__init__.py:242
-msgid "password can't be empty"
+#: rdiffweb/plugins/ldap_auth/__init__.py:248
+msgid "Password can't be empty."
 msgstr ""
 
 #: rdiffweb/plugins/db_sqlite/__init__.py:238
-#: rdiffweb/plugins/ldap_auth/__init__.py:249
-msgid "wrong password"
+#: rdiffweb/plugins/ldap_auth/__init__.py:255
+msgid "Wrong password."
 msgstr ""
 
 #: rdiffweb/plugins/delete_repo/templates/delete_repo.html:3
@@ -187,13 +192,18 @@ msgstr ""
 msgid "Average time to complete backup."
 msgstr ""
 
-#: rdiffweb/plugins/ldap_auth/__init__.py:245
+#: rdiffweb/plugins/ldap_auth/__init__.py:173
+#, python-format
+msgid "An LDAP error occurred: %s"
+msgstr ""
+
+#: rdiffweb/plugins/ldap_auth/__init__.py:251
 msgid "LDAP users are not allowed to change their password."
 msgstr ""
 
-#: rdiffweb/plugins/ldap_auth/__init__.py:258
+#: rdiffweb/plugins/ldap_auth/__init__.py:264
 #, python-format
-msgid "user %s not found)"
+msgid "User %s not found."
 msgstr ""
 
 #: rdiffweb/plugins/notification/__init__.py:188
@@ -203,12 +213,6 @@ msgstr ""
 #: rdiffweb/plugins/notification/__init__.py:221
 #: rdiffweb/plugins/notification/__init__.py:275
 msgid "Notification"
-msgstr ""
-
-#: rdiffweb/plugins/notification/__init__.py:309
-#: rdiffweb/plugins/prefs_general/__init__.py:133
-#: rdiffweb/plugins/prefs_sshkeys/__init__.py:126
-msgid "Unknown error"
 msgstr ""
 
 #: rdiffweb/plugins/notification/templates/email_changed.html:5
@@ -318,15 +322,15 @@ msgid "Profile"
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:60
-msgid "current password is missing"
+msgid "Current password is missing."
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:62
-msgid "new password is missing"
+msgid "New password is missing."
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:64
-msgid "confirmation password is missing"
+msgid "Confirmation password is missing."
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:68
@@ -338,7 +342,7 @@ msgid "Password updated successfully."
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:82
-msgid "email is undefined"
+msgid "Email is undefined."
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:86
@@ -346,14 +350,14 @@ msgid "Email update is not supported."
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:92
-msgid "invalid email"
+msgid "Invalid email."
 msgstr ""
 
-#: rdiffweb/plugins/prefs_general/__init__.py:103
+#: rdiffweb/plugins/prefs_general/__init__.py:101
 msgid "Profile updated successfully."
 msgstr ""
 
-#: rdiffweb/plugins/prefs_general/__init__.py:110
+#: rdiffweb/plugins/prefs_general/__init__.py:108
 msgid "Repositories successfully updated."
 msgstr ""
 
@@ -410,21 +414,16 @@ msgstr ""
 msgid "SSH Keys"
 msgstr ""
 
-#: rdiffweb/plugins/prefs_sshkeys/__init__.py:60
-#: rdiffweb/plugins/prefs_sshkeys/__init__.py:96
-msgid "key is missing"
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:65
+msgid "Invalid SSH key."
 msgstr ""
 
-#: rdiffweb/plugins/prefs_sshkeys/__init__.py:67
-msgid "SSH key already exists"
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:69
+msgid "SSH key already exists."
 msgstr ""
 
-#: rdiffweb/plugins/prefs_sshkeys/__init__.py:71
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:73
 msgid "SSH key is too short. RSA key of at least 2048 bits is required."
-msgstr ""
-
-#: rdiffweb/plugins/prefs_sshkeys/__init__.py:100
-msgid "key is invalid"
 msgstr ""
 
 #: rdiffweb/plugins/prefs_sshkeys/__init__.py:138
@@ -469,12 +468,12 @@ msgid ""
 "rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-sha2-nistp521'."
 msgstr ""
 
-#: rdiffweb/plugins/remove_older/__init__.py:62
+#: rdiffweb/plugins/remove_older/__init__.py:61
 msgid "Invalid value"
 msgstr ""
 
-#: rdiffweb/plugins/remove_older/__init__.py:73
-#: rdiffweb/plugins/set_encoding/__init__.py:79
+#: rdiffweb/plugins/remove_older/__init__.py:72
+#: rdiffweb/plugins/set_encoding/__init__.py:78
 msgid "Updated"
 msgstr ""
 
@@ -557,7 +556,7 @@ msgid ""
 "removed."
 msgstr ""
 
-#: rdiffweb/plugins/set_encoding/__init__.py:68
+#: rdiffweb/plugins/set_encoding/__init__.py:67
 msgid "invalid encoding value"
 msgstr ""
 
