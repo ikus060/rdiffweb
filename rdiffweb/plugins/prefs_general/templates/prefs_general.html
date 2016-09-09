@@ -57,20 +57,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% if supports_set_password %}
 {% call macros.panel(title=_("Change password")) %}
 <div class="panel-body">
-<form action="#" method="post" role="form" class="clearfix" >
+<form action="#" method="post" role="form" class="clearfix" data-validate>
     <div class="form-group">
         <label for="current" class="control-label">
             {% trans %}Current password{% endtrans %}</label>
         <div>
             <input class="form-control" type="password" name="current"
-                id="current" />
+                id="current" required />
         </div>
     </div>
     <div class="form-group">
         <label for="new" class="control-label">
             {% trans %}New password{% endtrans %}</label>
         <div>
-            <input class="form-control" type="password" name="new" id="new" />
+            <input class="form-control" type="password" name="new" id="new" required />
         </div>
     </div>
     <div class="form-group">
@@ -78,7 +78,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             {% trans %}Confirm new password{% endtrans %}</label>
         <div>
         <input class="form-control" type="password" name="confirm"
-            id="confirm" />
+            id="confirm" data-rule-equalto="#new" required/>
         </div>
     </div>
     <input type="hidden" name="action" value="set_password" />
