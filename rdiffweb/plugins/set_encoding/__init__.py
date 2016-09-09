@@ -38,7 +38,7 @@ from rdiffweb.i18n import ugettext as _
 from rdiffweb.page_main import MainPage
 from rdiffweb.rdw_helpers import rdwTime
 from rdiffweb.rdw_plugin import IPreferencesPanelProvider, ITemplateFilterPlugin, \
-    IDeamonPlugin, JobPlugin
+    IDeamonPlugin
 
 
 _logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class SetEncodingPage(page_main.MainPage):
         return _("Updated")
 
 
-class SetEncodingPlugin(ITemplateFilterPlugin, JobPlugin):
+class SetEncodingPlugin(ITemplateFilterPlugin):
 
     def activate(self):
         # Add page
