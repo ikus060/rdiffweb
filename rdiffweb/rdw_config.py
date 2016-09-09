@@ -197,3 +197,35 @@ class Configuration(object):
             for key, value in list(self._cache.items()):
                 f.write('%s=%s' % (key, value))
                 f.write('\n')
+
+
+class Option(object):
+
+    def __init__(self, key, default="", doc=None):
+        self.key = key
+        self.default = default
+        self.doc = doc
+
+    def __get__(self, instance, owner):
+        """
+        Return a property to wrap the given option.
+        """
+        return instance.app.cfg.get_config(self.key, self.default)
+
+
+class IntOption(Option):
+
+    def __get__(self, instance, owner):
+        """
+        Return a property to wrap the given option.
+        """
+        return instance.app.cfg.get_config_int(self.key, self.default)
+
+
+class BoolOption(Option):
+
+    def __get__(self, instance, owner):
+        """
+        Return a property to wrap the given option.
+        """
+        return instance.app.cfg.get_config_bool(self.key, self.default)
