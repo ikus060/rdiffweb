@@ -25,6 +25,8 @@ LDAP directory. It would be difficult to create a new LDAP user, as the
 creation of a LDAP user requires properties which are not made available
 to the LDAP plugin.
 """
+# Define the logger
+
 from __future__ import unicode_literals
 
 from builtins import bytes
@@ -34,10 +36,10 @@ import logging
 
 from rdiffweb.core import RdiffError
 from rdiffweb.i18n import ugettext as _
+from rdiffweb.rdw_config import Option, BoolOption, IntOption
 from rdiffweb.rdw_plugin import IPasswordStore
 
 
-# Define the logger
 logger = logging.getLogger(__name__)
 
 
@@ -47,59 +49,23 @@ class LdapPasswordStore(IPasswordStore):
 
     This implementation assume the LDAP is using the system encoding."""
 
+    uri = Option("LdapUri", doc="Get Ldap URI")
+    base_dn = Option("LdapBaseDn", "", doc="Get Base DN")
+    scope = Option("LdapScope", "subtree")
+    tls = BoolOption("LdapTls", "false", doc="Check if TLs is enabled")
+    attribute = Option("LdapAttribute", "uid", doc="Get attribute")
+    filter = Option("LdapFilter", "(objectClass=*)")
+    bind_dn = Option("LdapBindDn", "")
+    bind_password = Option("LdapBindPassword", "")
+    version = IntOption("LdapVersion", "3")
+    network_timeout = IntOption("LdapNetworkTimeout", "100")
+    timeout = IntOption("LdapTimeout", "300")
+    encoding = Option("LdapEncoding", "utf-8", doc="Get default LdapEncoding")
+    allow_password_change = BoolOption("LdapAllowPasswordChange", "false", doc="Check if password change are allowed.")
+
     def activate(self):
         """Called by the plugin manager to setup the plugin."""
         super(IPasswordStore, self).activate()
-
-        # Get Ldap URI
-        self.uri = self.app.cfg.get_config(
-            "LdapUri", "")
-        if not self.uri:
-            raise "LdapUri must be define in configuration"
-        # Check if TLs is enabled
-        self.tls = self.app.cfg.get_config_bool(
-            "LdapTls", "false")
-        # Get Base DN
-        self.base_dn = self.app.cfg.get_config(
-            "LdapBaseDn", "")
-        if not self.base_dn:
-            raise "LdapBaseDn must be define in configuration"
-        # Get attribute
-        self.attribute = self.app.cfg.get_config(
-            "LdapAttribute", "uid")
-        # Get Scope
-        self.scope = self.app.cfg.get_config(
-            "LdapScope", "subtree")
-        if self.scope == "base":
-            self.scope = ldap.SCOPE_BASE
-        elif self.scope == "onelevel":
-            self.scope = ldap.SCOPE_ONELEVEL
-        else:
-            self.scope = ldap.SCOPE_SUBTREE
-        # Filter
-        self.filter = self.app.cfg.get_config(
-            "LdapFilter", "(objectClass=*)")
-        # Bind Dn
-        self.bind_dn = self.app.cfg.get_config(
-            "LdapBindDn", "")
-        # Bind password
-        self.bind_password = self.app.cfg.get_config(
-            "LdapBindPassword", "")
-        # Get Version
-        self.version = self.app.cfg.get_config_int(
-            "LdapVersion", "3")
-        # Get Network timeout
-        self.network_timeout = self.app.cfg.get_config_int(
-            "LdapNetworkTimeout", "100")
-        # Get Timeout
-        self.timeout = self.app.cfg.get_config_int(
-            "LdapTimeout", "300")
-        # Check if password change are allowed.
-        self.allow_password_change = self.app.cfg.get_config_bool(
-            "LdapAllowPasswordChange", "false")
-        # Get default LdapEncoding
-        self.encoding = self.app.cfg.get_config(
-            "LdapEncoding", "utf-8")
 
     def are_valid_credentials(self, username, password):
         """Check if the given credential as valid according to LDAP."""
@@ -138,6 +104,15 @@ class LdapPasswordStore(IPasswordStore):
 
         """Reusable method to run LDAP operation."""
 
+        assert self.uri, "LdapUri must be define in configuration"
+        assert self.base_dn, "LdapBaseDn must be define in configuration"
+        if self.scope == "base":
+            scope = ldap.SCOPE_BASE
+        elif self.scope == "onelevel":
+            scope = ldap.SCOPE_ONELEVEL
+        else:
+            scope = ldap.SCOPE_SUBTREE
+
         # try STARTLS if configured
         if self.tls:
             ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
@@ -160,9 +135,9 @@ class LdapPasswordStore(IPasswordStore):
             search_filter = "(&{}({}={}))".format(
                 self.filter, self.attribute, username)
             logger.debug("search ldap server: {}/{}?{}?{}?{}".format(
-                self.uri, self.base_dn, self.attribute, self.scope,
+                self.uri, self.base_dn, self.attribute, scope,
                 search_filter))
-            r = l.search_s(self.base_dn, self.scope, search_filter)
+            r = l.search_s(self.base_dn, scope, search_filter)
 
             # Execute operation
             return function(l, r)
