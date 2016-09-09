@@ -24,12 +24,13 @@ from __future__ import unicode_literals
 
 from builtins import str
 import cherrypy
-from cherrypy._cperror import HTTPRedirect
+from cherrypy._cperror import HTTPRedirect, HTTPError
 import logging
 import os
 import re
 
 from rdiffweb import rdw_spider_repos
+from rdiffweb.core import RdiffError
 from rdiffweb.dispatch import poppath
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.page_main import MainPage
@@ -54,10 +55,10 @@ class DeleteRepoPage(MainPage):
         repo_obj = self.validate_user_path(path)[0]
 
         # Validate the name
-        confirm_name = kwargs.get('confirm_name')
+        confirm_name = kwargs.get('confirm_name', None)
         if confirm_name != repo_obj.display_name:
             _logger.info("bad confirmation %r != %r", confirm_name, repo_obj.display_name)
-            raise HTTPRedirect("/")
+            raise HTTPError(400, "bad confirmation")
 
         # Update the repository encoding
         _logger.info("deleting repository [%s]", repo_obj)

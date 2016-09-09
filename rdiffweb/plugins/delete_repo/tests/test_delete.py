@@ -44,8 +44,11 @@ class DeleteRepoTest(WebCase):
         self.getPage("/settings/" + repo + "/")
 
     def _delete(self, repo, confirm_name):
+        body = {}
+        if confirm_name is not None:
+            body.update({'confirm_name': confirm_name})
         self.getPage("/delete/" + repo + "/", method="POST",
-                     body={'confirm_name': confirm_name})
+                     body=body)
 
     # FIXME This testcases doesn't work for unknown reason.
     # def test_check_delete(self):
@@ -65,7 +68,15 @@ class DeleteRepoTest(WebCase):
         """
         self._delete(self.REPO, 'wrong')
         # TODO Make sure the repository is not delete
-        self.assertStatus(303)
+        self.assertStatus(400)
+
+    def test_delete_without_confirm(self):
+        """
+        Check failure to delete a repo with wrong confirmation.
+        """
+        self._delete(self.REPO, None)
+        # TODO Make sure the repository is not delete
+        self.assertStatus(400)
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

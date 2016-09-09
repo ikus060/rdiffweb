@@ -13,8 +13,9 @@
 {% endcall %}
 
 <!-- Delete Modal -->
-<form action="/delete/{{ repo_name }}/" method="post" role="form" class="clearfix" >
+<form data-validate action="/delete/{{ repo_name }}/" method="post" role="form" class="clearfix" >
 <input type="hidden" name="action" value="delete" />
+<input type="hidden" id="repo_name" name="repo_name" value="{{ repo_name }}" />
 {% call macros.modal_dialog('delete-repo-modal', _('Confirmation required'), _('Confirm'), class="danger") %}
 <p class="lead text-danger">
   {% trans %}You are going to remove {{ repo_name }}. Removed repository CANNOT be restored! Are you ABSOLUTELY sure?{% endtrans %}
@@ -24,7 +25,7 @@
   {% trans %}Please type {{ repo_name }} to proceed or close this modal to cancel{% endtrans %}
 </p>
 <div class="form-group">
-   <input class="form-control" id="confirm_name" name="confirm_name" type="text" value="">
+   <input class="form-control" id="confirm_name" name="confirm_name" type="text" value="" data-rule-equalto="#repo_name" required >
 </div>
 {% endcall %}
 </form>
