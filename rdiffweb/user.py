@@ -71,9 +71,9 @@ class UserObject(object):
                 return RepoObject(self._db, self._username, r)
         raise KeyError(name)
 
-    def set_attr(self, key, value):
+    def set_attr(self, key, value, notify=True):
         """Used to define an attribute"""
-        self.set_attrs(**{key: value})
+        self.set_attrs(**{key: value, 'notify': notify})
 
     def set_attrs(self, **kwargs):
         """Used to define multiple attributes at once."""
@@ -82,7 +82,9 @@ class UserObject(object):
                 setter = getattr(self._db, 'set_%s' % key)
                 setter(self._username, value)
         # Call notification listener
-        self._userdb._notify('attr_changed', self._username, kwargs)
+        if kwargs.get('notify', True):
+            del kwargs['notify']
+            self._userdb._notify('attr_changed', self._username, kwargs)
 
     # Declare properties
     is_admin = property(fget=lambda x: x._db.is_admin(x._username), fset=lambda x, y: x.set_attr('is_admin', y))
