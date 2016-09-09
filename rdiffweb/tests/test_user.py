@@ -31,7 +31,7 @@ from mock import MagicMock
 from mockldap import MockLdap
 import unittest
 
-from rdiffweb.core import InvalidUserError
+from rdiffweb.core import InvalidUserError, RdiffError
 from rdiffweb.rdw_plugin import IUserChangeListener
 from rdiffweb.test import AppTestCase
 
@@ -70,7 +70,7 @@ class UserManagerSQLiteTest(AppTestCase):
     def test_add_user_with_duplicate(self):
         """Add user to database."""
         self.app.userdb.add_user('denise')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RdiffError):
             self.app.userdb.add_user('denise')
         # Check if listener called
         self.mlistener.user_added.assert_called_once_with('denise', None)
@@ -228,7 +228,7 @@ class UserManagerSQLiteTest(AppTestCase):
 
     def test_set_password_with_invalid_old_password(self):
         self.app.userdb.add_user('foo', 'password')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RdiffError):
             self.app.userdb.set_password('foo', 'new_password', old_password='invalid')
         # Check if listener called
         self.mlistener.user_password_changed.assert_not_called()
@@ -408,7 +408,7 @@ class UserManagerSQLiteLdapTest(AppTestCase):
 
     def test_set_password_with_invalid_old_password(self):
         self.app.userdb.add_user('foo')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RdiffError):
             self.app.userdb.set_password('foo', 'new_password', old_password='invalid')
 
     def test_set_password_update_not_exists(self):

@@ -168,10 +168,16 @@ class LdapPasswordStore(IPasswordStore):
             return function(l, r)
         except ldap.LDAPError as e:
             l.unbind_s()
+            # Handle the LDAP exception and build a nice user message.
             logger.warning('ldap error', exc_info=1)
-            if hasattr(e, 'message') and isinstance(e.message, dict) and 'desc' in e.message:
-                raise RdiffError(e.message['desc'])
-            raise RdiffError(str(e))
+            msg = _("An LDAP error occurred: %s")
+            ldap_msg = str(e)
+            if hasattr(e, 'message') and isinstance(e.message, dict):
+                if 'desc' in e.message:
+                    ldap_msg = e.message['desc']
+                if 'info' in e.message:
+                    ldap_msg = e.message['info']
+            raise RdiffError(msg % ldap_msg)
 
     def has_password(self, username):
         """Check if the user exists in LDAP"""
@@ -239,14 +245,14 @@ class LdapPasswordStore(IPasswordStore):
 
         # Do nothing if password is empty
         if not password:
-            raise ValueError(_("password can't be empty"))
+            raise RdiffError(_("Password can't be empty."))
         # Check if users are allowed to change their password in LDAP.
         if not self.allow_password_change:
             raise RdiffError(_("LDAP users are not allowed to change their password."))
 
         # Check if old_password id valid
         if old_password and not self.are_valid_credentials(username, old_password):
-            raise ValueError(_("wrong password"))
+            raise RdiffError(_("Wrong password."))
 
         # Update the username password of the given user. If possible.
         return self._set_password_in_ldap(username, old_password, password)
@@ -255,7 +261,7 @@ class LdapPasswordStore(IPasswordStore):
 
         def change_passwd(l, r):
             if len(r) != 1:
-                raise ValueError(_("user %s not found)" % (username,)))
+                raise RdiffError(_("User %s not found." % (username,)))
             # Bind using the user credentials. Throws an exception in case of
             # error.
             if old_password is not None:

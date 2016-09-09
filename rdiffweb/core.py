@@ -19,30 +19,42 @@
 from __future__ import unicode_literals
 
 from builtins import object
-from builtins import str
+from builtins import bytes
 
 from rdiffweb.i18n import ugettext as _
 
 
 class RdiffError(Exception):
     """
-    Standard exception raised by Rdiffweb.
+    Standard exception raised by Rdiffweb. The error message is usually
+    displayed to the web interface. Make sure the error message is translated.
     """
 
     def __init__(self, message):
-        assert isinstance(message, str)
+        assert message
+        if isinstance(message, bytes):
+            message = message.decode('utf-8', 'replace')
         super(RdiffError, self).__init__(message)
         self.message = message
 
 
-class InvalidUserError(Exception):
+class InvalidUserError(RdiffError):
     """
     Raised when calling a method with an invalid username.
     """
 
     def __init__(self, user):
-        super(InvalidUserError, self).__init__(_("user %s doesn't exists" % (user,)))
+        super(InvalidUserError, self).__init__(_("User %s doesn't exists." % (user,)))
 
+
+class RdiffWarning(RdiffError):
+    """
+    Generic exception to be used in rdiffweb to show warning message. Those
+    exception are not expected to reach the default page handler. The page
+    should handler this kind of exception and show a warning message to the
+    user.
+    """
+    pass
 
 class Component(object):
 

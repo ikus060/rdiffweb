@@ -60,12 +60,8 @@ NoValue=#This is a setting with no value
 
     def test_get_config_badparms(self):
         self.write_good_file()
-        try:
+        with self.assertRaises(AssertionError):
             self.config.get_config("setting=")
-        except ValueError:
-            pass
-        else:
-            assert(False)
 
     def test_get_config_spaces_in_value(self):
         self.write_good_file()

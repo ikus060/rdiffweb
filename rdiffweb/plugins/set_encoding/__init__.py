@@ -32,7 +32,6 @@ import os
 import re
 
 from rdiffweb import rdw_spider_repos, page_main, librdiff
-from rdiffweb.core import RdiffError
 from rdiffweb.dispatch import poppath
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.page_main import MainPage

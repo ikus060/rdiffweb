@@ -63,19 +63,19 @@ class PrefsTest(WebCase):
 
     def test_change_email_with_invalid_email(self):
         self._set_profile_info("@test.com")
-        self.assertInBody("invalid email")
+        self.assertInBody("Invalid email")
 
         self._set_profile_info("test.com")
-        self.assertInBody("invalid email")
+        self.assertInBody("Invalid email")
 
         self._set_profile_info("test")
-        self.assertInBody("invalid email")
+        self.assertInBody("Invalid email")
 
         self._set_profile_info("test@te_st.com")
-        self.assertInBody("invalid email")
+        self.assertInBody("Invalid email")
 
         self._set_profile_info("test@test.com, test2@test.com")
-        self.assertInBody("invalid email")
+        self.assertInBody("Invalid email")
 
     def test_change_password(self):
         self._set_password(self.PASSWORD, "newpass", "newpass")
@@ -86,11 +86,11 @@ class PrefsTest(WebCase):
 
     def test_change_password_with_wrong_confirmation(self):
         self._set_password(self.PASSWORD, "t", "a")
-        self.assertInBody("The new password and its confirmation does not matches.")
+        self.assertInBody("The new password and its confirmation do not match.")
 
     def test_change_password_with_wrong_password(self):
         self._set_password("oups", "t", "t")
-        self.assertInBody("wrong password")
+        self.assertInBody("Wrong password")
 
     def test_invalid_pref(self):
         """

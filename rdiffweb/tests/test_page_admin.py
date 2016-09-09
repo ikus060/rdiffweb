@@ -133,7 +133,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         self._add_user("test1", "test1@test.com", "test1", "/var/backups/", False)
         self._add_user("test1", "test1@test.com", "test1", "/var/backups/", False)
-        self.assertInBody("The user test1 already exists.")
+        self.assertInBody("User test1 already exists.")
 
     def test_add_user_with_invalid_root_directory(self):
         """
@@ -152,7 +152,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure to delete invalid username.
         """
         self._delete_user("test3")
-        self.assertInBody("The user &#39;test3&#39; does not exist.")
+        self.assertInBody("User test3 doesn&#39;t exists.")
 
     def test_delete_our_self(self):
         """
@@ -180,7 +180,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure trying to update invalid user.
         """
         self._edit_user("test4", "test1@test.com", "test1", "/var/backups/", False)
-        self.assertInBody("The user &#39;test4&#39; does not exist.")
+        self.assertInBody("User test4 doesn&#39;t exists.")
 
     def test_userfilter(self):
         """

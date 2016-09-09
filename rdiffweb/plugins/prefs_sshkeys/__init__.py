@@ -15,7 +15,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 Plugins to allows users to configure the SSH keys using the web
 interface. Basically it's a UI for `~/.ssh/authorized_keys`. For this
@@ -32,6 +31,7 @@ from datetime import date
 import logging
 import os
 
+from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPreferencesPanelProvider
 
@@ -57,18 +57,18 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
         Called to add a new key to an authorized_keys file.
         """
         if 'key' not in kwargs:
-            raise ValueError(_("key is missing"))
+            raise RdiffWarning(_("Key is missing."))
 
         # Validate the content of the key.
         key = authorizedkeys.check_publickey(kwargs['key'])
 
         # Check if already exists
         if authorizedkeys.exists(filename, key):
-            raise ValueError(_("SSH key already exists"))
+            raise RdiffWarning(_("SSH key already exists."))
 
         # Check size.
         if key.size and key.size < 2048:
-            raise ValueError(_("SSH key is too short. RSA key of at least 2048 bits is required."))
+            raise RdiffWarning(_("SSH key is too short. RSA key of at least 2048 bits is required."))
 
         # Add comment to the key.
         comment = key.comment
@@ -92,12 +92,8 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
         """
 
         # Check if key is valid.
-        if 'key' not in kwargs:
-            raise ValueError(_("key is missing"))
-        try:
-            lineno = int(kwargs['key'])
-        except ValueError:
-            raise ValueError(_("key is invalid"))
+        assert 'key' in kwargs, "key is missing"
+        lineno = int(kwargs['key'])
 
         # Remove the key
         _logger.info("removing key [%s] from [%s]", lineno, filename)
@@ -119,7 +115,9 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
                     self._handle_add(filename, **kwargs)
                 elif action == 'delete':
                     self._handle_delete(filename, **kwargs)
-            except ValueError as e:
+            except RdiffWarning as e:
+                params['warning'] = str(e)
+            except RdiffError as e:
                 params['error'] = str(e)
             except Exception as e:
                 _logger.warning("unknown error processing action", exc_info=True)

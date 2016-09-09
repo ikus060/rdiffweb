@@ -35,7 +35,7 @@ import time
 from xml.etree.ElementTree import fromstring, tostring
 
 from rdiffweb import librdiff
-from rdiffweb.core import RdiffError
+from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import rdwTime
 from rdiffweb.rdw_plugin import IPreferencesPanelProvider, JobPlugin, \
@@ -300,9 +300,9 @@ class NotificationPlugin(IPreferencesPanelProvider, JobPlugin, IUserChangeListen
                 else:
                     _logger.info("unknown action: %s", action)
                     raise cherrypy.NotFound("Unknown action")
+            except RdiffWarning as e:
+                params['warning'] = str(e)
             except RdiffError as e:
-                params['error'] = str(e)
-            except ValueError as e:
                 params['error'] = str(e)
             except Exception as e:
                 _logger.warning("unknown error processing action", exc_info=True)

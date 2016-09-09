@@ -30,7 +30,7 @@ import os
 import re
 
 from rdiffweb import rdw_spider_repos
-from rdiffweb.core import RdiffError
+from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPreferencesPanelProvider
 
@@ -57,11 +57,11 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         Called when changing user password.
         """
         if 'current' not in kwargs or not kwargs['current']:
-            raise ValueError(_("current password is missing"))
+            raise RdiffWarning(_("Current password is missing."))
         if 'new' not in kwargs or not kwargs['new']:
-            raise ValueError(_("new password is missing"))
+            raise RdiffWarning(_("New password is missing."))
         if 'confirm' not in kwargs or not kwargs['confirm']:
-            raise ValueError(_("confirmation password is missing"))
+            raise RdiffWarning(_("Confirmation password is missing."))
 
         # Check if confirmation is valid.
         if kwargs['new'] != kwargs['confirm']:
@@ -79,7 +79,7 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         """
         # Check data.
         if 'email' not in kwargs:
-            raise ValueError(_("email is undefined"))
+            raise RdiffWarning(_("Email is undefined."))
 
         # Check if email update is supported
         if not self.app.userdb.supports('set_email'):
@@ -89,12 +89,10 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         # return an empty string if the email is not valid. This RFC also accept
         # local email address without '@'. So we add verification for '@'
         if not PATTERN_EMAIL.match(kwargs['email'].lower()):
-            raise ValueError(_("invalid email"))
+            raise RdiffWarning(_("Invalid email."))
 
         # Update the user's email
-        if not self.app.currentuser:
-            raise RdiffError("invalid state")
-
+        assert self.app.currentuser
         username = self.app.currentuser.username
         email = kwargs['email']
         _logger.info("updating user [%s] email [%s]", username, email)
@@ -124,9 +122,9 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
                 else:
                     _logger.info("unknown action: %s", action)
                     raise cherrypy.NotFound("Unknown action")
+            except RdiffWarning as e:
+                params['warning'] = str(e)
             except RdiffError as e:
-                params['error'] = str(e)
-            except ValueError as e:
                 params['error'] = str(e)
             except Exception as e:
                 _logger.warning("unknown error processing action", exc_info=True)

@@ -27,7 +27,7 @@ from cherrypy._cptools import HandlerTool
 from future.utils import native_str
 import logging
 
-from rdiffweb.exceptions import Warning
+from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.page_main import MainPage
 from rdiffweb.rdw_helpers import quote_url
@@ -56,10 +56,10 @@ class AuthFormTool(HandlerTool):
             userobj = cherrypy.request.app.userdb.login(username, password)  # @UndefinedVariable
         except:
             logger.exception("fail to validate user credential.",)
-            raise Warning(_("Fail to validate user credential."))
+            raise RdiffWarning(_("Fail to validate user credential."))
         if not userobj:
             logger.warning("invalid username or password")
-            raise Warning(_("Invalid username or password."))
+            raise RdiffWarning(_("Invalid username or password."))
         return userobj
 
     def do_check(self):
@@ -97,7 +97,7 @@ class AuthFormTool(HandlerTool):
         response = cherrypy.serving.response
         try:
             userobj = self.check_username_and_password(login, password)
-        except Warning as e:
+        except RdiffError as e:
             body = self.login_screen(redirect, login, str(e))
             response.body = body
             if "Content-Length" in response.headers:

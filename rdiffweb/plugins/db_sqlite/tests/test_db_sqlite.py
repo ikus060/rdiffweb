@@ -25,7 +25,7 @@ from __future__ import unicode_literals
 
 import unittest
 
-from rdiffweb.core import InvalidUserError
+from rdiffweb.core import InvalidUserError, RdiffError
 from rdiffweb.test import AppTestCase
 
 
@@ -149,7 +149,7 @@ class SQLiteUserDBTest(AppTestCase):
 
     def test_set_password_with_invalid_old_password(self):
         self.db.add_user('foo')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RdiffError):
             self.db.set_password('foo', 'new_password', old_password='invalid')
 
     def test_set_password_update_not_exists(self):

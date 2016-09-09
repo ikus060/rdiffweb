@@ -26,7 +26,7 @@ from builtins import str
 import logging
 from threading import RLock
 
-from rdiffweb.core import InvalidUserError
+from rdiffweb.core import InvalidUserError, RdiffError
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPasswordStore, IDatabase
 from rdiffweb.user import UserObject
@@ -231,11 +231,11 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
         assert old_password is None or isinstance(old_password, str)
         assert isinstance(password, str)
         if not password:
-            raise ValueError(_("password can't be empty"))
+            raise RdiffError(_("Password can't be empty."))
 
         # Check old password value.
         if old_password and not self.are_valid_credentials(username, old_password):
-            raise ValueError(_("wrong password"))
+            raise RdiffError(_("Wrong password."))
 
         # Update password.
         self._set_user_field(username, 'Password', self._hash_password(password))
@@ -253,8 +253,7 @@ class SQLiteUserDB(IPasswordStore, IDatabase):
 
     def set_repo_maxage(self, username, repoPath, maxAge):
         assert isinstance(username, str)
-        if repoPath not in self.get_repos(username):
-            raise ValueError
+        assert repoPath in self.get_repos(username)
         query = "UPDATE repos SET MaxAge=? WHERE RepoPath=? AND UserID = ?"
         self._execute_query(query, (maxAge, repoPath, self._get_user_id(username)))
 

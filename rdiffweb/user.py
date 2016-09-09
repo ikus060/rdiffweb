@@ -171,7 +171,7 @@ class UserManager(Component):
         # Check if user already exists.
         db = self.find_user_database(user)
         if db:
-            raise ValueError(_("user %s already exists" % (user,)))
+            raise RdiffError(_("User %s already exists." % (user,)))
         # Find a database where to add the user
         db = self._get_supporting_database('add_user')
         logger.debug("adding new user [%s] to database [%s]", user, db)

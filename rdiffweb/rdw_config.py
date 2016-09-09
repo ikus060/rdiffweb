@@ -74,8 +74,7 @@ class Configuration(object):
         """Get the configuration value corresponding to key."""
         assert isinstance(key, str)
         # Raise error if key contains equals(=)
-        if ('=' in key):
-            raise ValueError("key contains =")
+        assert '=' not in key, "key contains ="
 
         # Read the configuration file if required.
         self._parse_if_needed()
@@ -182,8 +181,7 @@ class Configuration(object):
         assert isinstance(key, str)
         assert isinstance(value, str)
         # Raise error if key contains equals(=)
-        if ('=' in key):
-            raise ValueError("key contains =")
+        assert '=' not in key, "key contains ="
         # Read file if required
         self._parse_if_needed()
         # Update the cache

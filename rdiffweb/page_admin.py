@@ -26,8 +26,7 @@ import os
 
 from rdiffweb import page_main
 from rdiffweb import rdw_spider_repos
-from rdiffweb.core import InvalidUserError
-from rdiffweb.exceptions import Warning
+from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.i18n import ugettext as _
 
 
@@ -41,7 +40,7 @@ class AdminPage(page_main.MainPage):
     def _check_user_root_dir(self, directory):
         """Raised an exception if the directory is not valid."""
         if not os.access(directory, os.F_OK) or not os.path.isdir(directory):
-            raise Warning(_("User root directory %s is not accessible!") % directory)
+            raise RdiffWarning(_("User root directory %s is not accessible!") % directory)
 
     @cherrypy.expose
     def index(self):
@@ -93,8 +92,13 @@ class AdminPage(page_main.MainPage):
                 params = self._users_handle_action(action, username,
                                                    email, password, user_root,
                                                    is_admin)
-            except Warning as e:
+            except RdiffWarning as e:
                 params['warning'] = str(e)
+            except RdiffError as e:
+                params['error'] = str(e)
+            except Exception as e:
+                logger.warning("unknown error", exc_info=True)
+                params['error'] = _("Unknown error")
 
         # Get page parameters
         params.update(
@@ -140,10 +144,7 @@ class AdminPage(page_main.MainPage):
 
         # Fork the behaviour according to the action.
         if action == "edit":
-            try:
-                user = self.app.userdb.get_user(username)
-            except InvalidUserError:
-                raise cherrypy.HTTPError(400, "The user '%s' does not exist." % username)
+            user = self.app.userdb.get_user(username)
             logger.info("updating user [%s] info", user)
             if password:
                 self.app.userdb.set_password(username, password, old_password=None)
@@ -158,10 +159,8 @@ class AdminPage(page_main.MainPage):
 
         elif action == "add":
 
-            if self.app.userdb.exists(username):
-                raise Warning(_("The user %s already exists.") % (username))
-            elif username == "":
-                raise Warning(_("The username is invalid."))
+            if username == "":
+                raise RdiffWarning(_("The username is invalid."))
             logger.info("adding user [%s]", username)
 
             user = self.app.userdb.add_user(username, password)
@@ -175,12 +174,9 @@ class AdminPage(page_main.MainPage):
             success = _("User added successfully.")
 
         if action == "delete":
-            try:
-                user = self.app.userdb.get_user(username)
-            except InvalidUserError:
-                raise cherrypy.HTTPError(400, "The user '%s' does not exist." % username)
+            user = self.app.userdb.get_user(username)
             if username == self.app.currentuser.username:
-                raise Warning("You cannot remove your own account!.")
+                raise RdiffWarning(_("You cannot remove your own account!."))
             logger.info("deleting user [%s]", username)
             self.app.userdb.delete_user(user)
             success = _("User account removed.")
