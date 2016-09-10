@@ -33,6 +33,7 @@ from builtins import bytes
 from builtins import str
 import ldap
 import logging
+import time
 
 from rdiffweb.core import RdiffError
 from rdiffweb.i18n import ugettext as _
@@ -62,6 +63,7 @@ class LdapPasswordStore(IPasswordStore):
     timeout = IntOption("LdapTimeout", "300")
     encoding = Option("LdapEncoding", "utf-8", doc="Get default LdapEncoding")
     allow_password_change = BoolOption("LdapAllowPasswordChange", "false", doc="Check if password change are allowed.")
+    check_shadow_expire = BoolOption("LdapCheckShadowExpire", "false", doc="Enable verification of Shadow Expire.")
 
     def activate(self):
         """Called by the plugin manager to setup the plugin."""
@@ -83,6 +85,16 @@ class LdapPasswordStore(IPasswordStore):
             l.simple_bind_s(r[0][0], password)
             l.unbind_s()
             logger.info("user [%s] found in LDAP", username)
+
+            # Verify the shadow expire
+            shadow_expire = self._attr_shadow_expire(r)
+            if self.check_shadow_expire and shadow_expire:
+                # Convert nb. days into seconds.
+                shadow_expire = shadow_expire * 24 * 60 * 60
+                if shadow_expire < time.time():
+                    logger.warn("user account %s expired: %s", username, shadow_expire)
+                    raise RdiffError(_('User account %s expired.' % username))
+
             # Return the username
             return self._decode(r[0][1][self.attribute][0])
 
@@ -90,8 +102,31 @@ class LdapPasswordStore(IPasswordStore):
         try:
             return self._execute(username, check_crendential)
         except:
-            logger.exception("can't validate credentials")
+            logger.exception("can't validate user [%s] credentials", username)
             return False
+
+    def _attr(self, r, attr):
+        if isinstance(attr, list):
+            return dict([(x, r[0][1][x])
+                         for x in attr
+                         if x in r[0][1]])
+        elif attr in r[0][1]:
+            if isinstance(r[0][1][attr], list):
+                return [self._decode(x)
+                        for x in r[0][1][attr]]
+            else:
+                return self._decode(r[0][1][attr])
+        return None
+
+    def _attr_shadow_expire(self, r):
+        """Get Shadow Expire value from `r`."""
+        # get Shadow expire value
+        shadow_expire = self._attr(r, 'shadowExpire')
+        if not shadow_expire:
+            return None
+        if isinstance(shadow_expire, list):
+            shadow_expire = shadow_expire[0]
+        return int(shadow_expire)
 
     def _decode(self, value):
         """If required, decode the given bytes str into unicode."""
@@ -193,17 +228,7 @@ class LdapPasswordStore(IPasswordStore):
             if len(r) != 1:
                 logger.warning("user [%s] not found", username)
                 return ""
-            if isinstance(attr, list):
-                return dict([(x, r[0][1][x])
-                             for x in attr
-                             if x in r[0][1]])
-            elif attr in r[0][1]:
-                if isinstance(r[0][1][attr], list):
-                    return [self._decode(x)
-                            for x in r[0][1][attr]]
-                else:
-                    return self._decode(r[0][1][attr])
-            return None
+            return self._attr(r, attr)
 
         # Execute the LDAP operation
         try:
