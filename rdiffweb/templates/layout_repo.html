@@ -3,29 +3,8 @@
 <div class="container-fluid repohead">
     <div class="container">
     
-    <!-- Breadcrumb -->
-    <h1>
-    <ol class="breadcrumb">
-    <li>
-        <a href="/">{% trans %}Repositories{% endtrans %}</a>
-    </li>
-    {% if parents %}
-    {% for parent in parents %}
-    <li class="active">
-        <a href="{{ url_for_browse(repo_path, parent.path) }}">
-            {{ parent.name }}
-        </a>
-    </li>
-    {% endfor %}
-    {% elif repo_path %}
-    <li class="active">
-        <a href="{{ url_for_browse(repo_path) }}">
-            {{ repo_name }}
-        </a>
-    </li>    
-    {% endif%}
-    </ol>
-    </h1>
+    <!-- Title -->
+    <h2>{{ repo_name }}</h2>
     
     <!-- Repo Nav -->
 	{% set repo_nav_bar = [

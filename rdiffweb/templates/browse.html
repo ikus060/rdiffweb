@@ -3,6 +3,19 @@
 {% set active_repo_page=restore_dates and 'restore' or 'browse' %}
 {% block title %}{% trans %}Files{% endtrans %}{% endblock %}
 {% block content %}
+
+<ol class="pagination pagination-sm">
+    {% if parents %}
+    {% for parent in parents %}
+    <li class="">
+        <a href="{{ url_for_browse(repo_path, parent.path) }}">
+            {{ parent.name }}
+        </a>
+    </li>
+    {% endfor %}
+    {% endif%}
+</ol>
+
 {% if not restore_dates %}
 <table id="files" class="sortable table">
     <thead>
