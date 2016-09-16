@@ -30,7 +30,7 @@ from future.utils import native_str
 import pkg_resources
 from rdiffweb import filter_authentication  # @UnusedImport
 from rdiffweb import i18n  # @UnusedImport
-from rdiffweb import rdw_config
+from rdiffweb import rdw_config, page_main
 from rdiffweb import rdw_plugin
 from rdiffweb import rdw_templating
 from rdiffweb.dispatch import static
@@ -153,19 +153,14 @@ class RdiffwebApp(Application):
         if mtype == 'text/plain':
             return kwargs.get('message')
 
-        # Try to get more page
-        parms = {}
+        # Try to build a nice error page.
         try:
-            if self.currentuser:
-                parms['is_login'] = True
-                parms['username'] = self.currentuser.username
-                parms['is_admin'] = self.currentuser.is_admin
+            page = page_main.MainPage(cherrypy.request.app)
+            return page._compile_template('error_page_default.html', **kwargs)
         except:
             pass
-
-        # Build the error page.
-        parms.update(kwargs)
-        return self.templates.compile_template('error_page_default.html', **parms)
+        # If failing, send the raw error message.
+        return kwargs.get('message')
 
     def get_version(self):
         """
