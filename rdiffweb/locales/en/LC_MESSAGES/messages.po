@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.7.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-09-08 11:33-0400\n"
+"POT-Creation-Date: 2016-09-19 16:18-0400\n"
 "PO-Revision-Date: 2015-04-25 15:18-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -17,9 +17,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: rdiffweb/core.py:44
+#: rdiffweb/core.py:47
 #, python-format
-msgid "user %s doesn't exists"
+msgid "User %s doesn't exists."
 msgstr ""
 
 #: rdiffweb/filter_authentication.py:59
@@ -34,29 +34,34 @@ msgstr ""
 msgid "Not logged in"
 msgstr ""
 
-#: rdiffweb/page_admin.py:44
+#: rdiffweb/page_admin.py:43
 #, python-format
 msgid "User root directory %s is not accessible!"
 msgstr ""
 
-#: rdiffweb/page_admin.py:153
+#: rdiffweb/page_admin.py:101 rdiffweb/plugins/notification/__init__.py:309
+#: rdiffweb/plugins/prefs_general/__init__.py:131
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:126
+msgid "Unknown error"
+msgstr ""
+
+#: rdiffweb/page_admin.py:154
 msgid "User information modified successfully."
 msgstr ""
 
-#: rdiffweb/page_admin.py:162
-#, python-format
-msgid "The user %s already exists."
-msgstr ""
-
-#: rdiffweb/page_admin.py:164
+#: rdiffweb/page_admin.py:163
 msgid "The username is invalid."
 msgstr ""
 
-#: rdiffweb/page_admin.py:175
+#: rdiffweb/page_admin.py:174
 msgid "User added successfully."
 msgstr ""
 
-#: rdiffweb/page_admin.py:186
+#: rdiffweb/page_admin.py:179
+msgid "You cannot remove your own account!."
+msgstr ""
+
+#: rdiffweb/page_admin.py:182
 msgid "User account removed."
 msgstr ""
 
@@ -76,23 +81,23 @@ msgid ""
 "disabled until this backup is complete."
 msgstr ""
 
-#: rdiffweb/user.py:174
+#: rdiffweb/user.py:176
 #, python-format
-msgid "user %s already exists"
+msgid "User %s already exists."
 msgstr ""
 
-#: rdiffweb/user.py:333 rdiffweb/user.py:338
+#: rdiffweb/user.py:335 rdiffweb/user.py:340
 msgid "You cannot change the user's password."
 msgstr ""
 
 #: rdiffweb/plugins/db_sqlite/__init__.py:234
-#: rdiffweb/plugins/ldap_auth/__init__.py:242
-msgid "password can't be empty"
+#: rdiffweb/plugins/ldap_auth/__init__.py:248
+msgid "Password can't be empty."
 msgstr ""
 
 #: rdiffweb/plugins/db_sqlite/__init__.py:238
-#: rdiffweb/plugins/ldap_auth/__init__.py:249
-msgid "wrong password"
+#: rdiffweb/plugins/ldap_auth/__init__.py:255
+msgid "Wrong password."
 msgstr ""
 
 #: rdiffweb/plugins/delete_repo/templates/delete_repo.html:3
@@ -116,28 +121,28 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:18
+#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:19
 msgid "Confirmation required"
 msgstr ""
 
-#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:18
+#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:19
 msgid "Confirm"
 msgstr ""
 
-#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:20
+#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:21
 #, python-format
 msgid ""
 "You are going to remove %(repo_name)s. Removed repository CANNOT be "
 "restored! Are you ABSOLUTELY sure?"
 msgstr ""
 
-#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:23
+#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:24
 msgid ""
 "This action can lead to data loss. To prevent accidental actions we ask "
 "you to confirm your intention."
 msgstr ""
 
-#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:24
+#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:25
 #, python-format
 msgid "Please type %(repo_name)s to proceed or close this modal to cancel"
 msgstr ""
@@ -156,7 +161,7 @@ msgid "File count"
 msgstr ""
 
 #: rdiffweb/plugins/graphs/templates/graphs.html:17
-#: rdiffweb/templates/browse.html:11 rdiffweb/templates/history.html:10
+#: rdiffweb/templates/browse.html:24 rdiffweb/templates/history.html:10
 msgid "Size"
 msgstr ""
 
@@ -188,13 +193,23 @@ msgstr ""
 msgid "Average time to complete backup."
 msgstr ""
 
-#: rdiffweb/plugins/ldap_auth/__init__.py:245
+#: rdiffweb/plugins/ldap_auth/__init__.py:96
+#, python-format
+msgid "User account %s expired."
+msgstr ""
+
+#: rdiffweb/plugins/ldap_auth/__init__.py:183
+#, python-format
+msgid "An LDAP error occurred: %s"
+msgstr ""
+
+#: rdiffweb/plugins/ldap_auth/__init__.py:251
 msgid "LDAP users are not allowed to change their password."
 msgstr ""
 
-#: rdiffweb/plugins/ldap_auth/__init__.py:258
+#: rdiffweb/plugins/ldap_auth/__init__.py:264
 #, python-format
-msgid "user %s not found)"
+msgid "User %s not found."
 msgstr ""
 
 #: rdiffweb/plugins/notification/__init__.py:188
@@ -204,12 +219,6 @@ msgstr ""
 #: rdiffweb/plugins/notification/__init__.py:221
 #: rdiffweb/plugins/notification/__init__.py:275
 msgid "Notification"
-msgstr ""
-
-#: rdiffweb/plugins/notification/__init__.py:309
-#: rdiffweb/plugins/prefs_general/__init__.py:133
-#: rdiffweb/plugins/prefs_sshkeys/__init__.py:126
-msgid "Unknown error"
 msgstr ""
 
 #: rdiffweb/plugins/notification/templates/email_changed.html:5
@@ -319,15 +328,15 @@ msgid "Profile"
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:60
-msgid "current password is missing"
+msgid "Current password is missing."
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:62
-msgid "new password is missing"
+msgid "New password is missing."
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:64
-msgid "confirmation password is missing"
+msgid "Confirmation password is missing."
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:68
@@ -339,7 +348,7 @@ msgid "Password updated successfully."
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:82
-msgid "email is undefined"
+msgid "Email is undefined."
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:86
@@ -347,14 +356,14 @@ msgid "Email update is not supported."
 msgstr ""
 
 #: rdiffweb/plugins/prefs_general/__init__.py:92
-msgid "invalid email"
+msgid "Invalid email."
 msgstr ""
 
-#: rdiffweb/plugins/prefs_general/__init__.py:103
+#: rdiffweb/plugins/prefs_general/__init__.py:101
 msgid "Profile updated successfully."
 msgstr ""
 
-#: rdiffweb/plugins/prefs_general/__init__.py:110
+#: rdiffweb/plugins/prefs_general/__init__.py:108
 msgid "Repositories successfully updated."
 msgstr ""
 
@@ -413,21 +422,16 @@ msgstr ""
 msgid "SSH Keys"
 msgstr ""
 
-#: rdiffweb/plugins/prefs_sshkeys/__init__.py:60
-#: rdiffweb/plugins/prefs_sshkeys/__init__.py:96
-msgid "key is missing"
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:65
+msgid "Invalid SSH key."
 msgstr ""
 
-#: rdiffweb/plugins/prefs_sshkeys/__init__.py:67
-msgid "SSH key already exists"
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:69
+msgid "SSH key already exists."
 msgstr ""
 
-#: rdiffweb/plugins/prefs_sshkeys/__init__.py:71
+#: rdiffweb/plugins/prefs_sshkeys/__init__.py:73
 msgid "SSH key is too short. RSA key of at least 2048 bits is required."
-msgstr ""
-
-#: rdiffweb/plugins/prefs_sshkeys/__init__.py:100
-msgid "key is invalid"
 msgstr ""
 
 #: rdiffweb/plugins/prefs_sshkeys/__init__.py:138
@@ -473,12 +477,12 @@ msgid ""
 "sha2-nistp521'."
 msgstr ""
 
-#: rdiffweb/plugins/remove_older/__init__.py:62
+#: rdiffweb/plugins/remove_older/__init__.py:61
 msgid "Invalid value"
 msgstr ""
 
-#: rdiffweb/plugins/remove_older/__init__.py:73
-#: rdiffweb/plugins/set_encoding/__init__.py:79
+#: rdiffweb/plugins/remove_older/__init__.py:72
+#: rdiffweb/plugins/set_encoding/__init__.py:78
 msgid "Updated"
 msgstr ""
 
@@ -561,7 +565,7 @@ msgid ""
 "will be removed."
 msgstr ""
 
-#: rdiffweb/plugins/set_encoding/__init__.py:68
+#: rdiffweb/plugins/set_encoding/__init__.py:67
 msgid "invalid encoding value"
 msgstr ""
 
@@ -707,33 +711,33 @@ msgstr ""
 msgid "Confirm deletion"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:4 rdiffweb/templates/layout_repo.html:32
+#: rdiffweb/templates/browse.html:4 rdiffweb/templates/layout_repo.html:11
 msgid "Files"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:10
+#: rdiffweb/templates/browse.html:23
 msgid "Name"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:12
+#: rdiffweb/templates/browse.html:25
 msgid "Rev."
 msgstr ""
 
-#: rdiffweb/templates/browse.html:78
+#: rdiffweb/templates/browse.html:91
 #, python-format
 msgid "Revisions (%(count)s)"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:90 rdiffweb/templates/browse.html:100
-#: rdiffweb/templates/browse.html:106 rdiffweb/templates/browse.html:112
+#: rdiffweb/templates/browse.html:103 rdiffweb/templates/browse.html:113
+#: rdiffweb/templates/browse.html:119 rdiffweb/templates/browse.html:125
 msgid "Download"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:94
+#: rdiffweb/templates/browse.html:107
 msgid "Toggle Dropdown"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:125 rdiffweb/templates/history.html:53
+#: rdiffweb/templates/browse.html:138 rdiffweb/templates/history.html:53
 msgid "Show more..."
 msgstr ""
 
@@ -745,7 +749,7 @@ msgstr ""
 msgid "Sorry, an error has occured."
 msgstr ""
 
-#: rdiffweb/templates/history.html:4 rdiffweb/templates/layout_repo.html:34
+#: rdiffweb/templates/history.html:4 rdiffweb/templates/layout_repo.html:13
 msgid "History"
 msgstr ""
 
@@ -773,8 +777,8 @@ msgstr ""
 msgid "Toggle navigation"
 msgstr ""
 
-#: rdiffweb/templates/layout.html:50 rdiffweb/templates/layout_repo.html:10
-#: rdiffweb/templates/locations.html:3 rdiffweb/templates/locations.html:6
+#: rdiffweb/templates/layout.html:50 rdiffweb/templates/locations.html:3
+#: rdiffweb/templates/locations.html:6
 msgid "Repositories"
 msgstr ""
 
@@ -795,11 +799,11 @@ msgstr ""
 msgid "Signed in as %(username)s"
 msgstr ""
 
-#: rdiffweb/templates/layout_repo.html:33
+#: rdiffweb/templates/layout_repo.html:12
 msgid "Restore folder"
 msgstr ""
 
-#: rdiffweb/templates/layout_repo.html:35 rdiffweb/templates/settings.html:4
+#: rdiffweb/templates/layout_repo.html:14 rdiffweb/templates/settings.html:4
 msgid "Settings"
 msgstr ""
 
@@ -896,4 +900,46 @@ msgstr ""
 #: rdiffweb/templates/status.html:88
 msgid "The following repositories contain errors: "
 msgstr ""
+
+#~ msgid "user %s doesn't exists"
+#~ msgstr ""
+
+#~ msgid "The user %s already exists."
+#~ msgstr ""
+
+#~ msgid "user %s already exists"
+#~ msgstr ""
+
+#~ msgid "password can't be empty"
+#~ msgstr ""
+
+#~ msgid "wrong password"
+#~ msgstr ""
+
+#~ msgid "user %s not found)"
+#~ msgstr ""
+
+#~ msgid "current password is missing"
+#~ msgstr ""
+
+#~ msgid "new password is missing"
+#~ msgstr ""
+
+#~ msgid "confirmation password is missing"
+#~ msgstr ""
+
+#~ msgid "email is undefined"
+#~ msgstr ""
+
+#~ msgid "invalid email"
+#~ msgstr ""
+
+#~ msgid "key is missing"
+#~ msgstr ""
+
+#~ msgid "SSH key already exists"
+#~ msgstr ""
+
+#~ msgid "key is invalid"
+#~ msgstr ""
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-09-09 14:00-0400\n"
+"POT-Creation-Date: 2016-09-19 16:18-0400\n"
 "PO-Revision-Date: 2014-11-14 10:00-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -85,12 +85,12 @@ msgstr ""
 "Une sauvegarde est en cours dans ce dépôt. La restauration sera "
 "désactivée jusqu'à ce que cette sauvegarde soit terminée."
 
-#: rdiffweb/user.py:174
+#: rdiffweb/user.py:176
 #, python-format
 msgid "User %s already exists."
 msgstr "L'utilisateur %s existe déjà."
 
-#: rdiffweb/user.py:333 rdiffweb/user.py:338
+#: rdiffweb/user.py:335 rdiffweb/user.py:340
 msgid "You cannot change the user's password."
 msgstr "Il vous est impossible de modifier le mot de passe de l'utilisateur."
 
@@ -127,15 +127,15 @@ msgstr "Un dépôt supprimé ne peut être restauré!"
 msgid "Delete"
 msgstr "Supprimer"
 
-#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:18
+#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:19
 msgid "Confirmation required"
 msgstr "Confirmation requise"
 
-#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:18
+#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:19
 msgid "Confirm"
 msgstr "Confirmer"
 
-#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:20
+#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:21
 #, python-format
 msgid ""
 "You are going to remove %(repo_name)s. Removed repository CANNOT be "
@@ -144,7 +144,7 @@ msgstr ""
 "Vous êtes sur le point de supprimer %(repo_name)s. Un dépôt supprimé NE "
 "PEUT être restauré! Êtes-vous certain?"
 
-#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:23
+#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:24
 msgid ""
 "This action can lead to data loss. To prevent accidental actions we ask "
 "you to confirm your intention."
@@ -152,7 +152,7 @@ msgstr ""
 "Cette action peut conduire à la perte de données. Pour éviter toutes "
 "actions accidentelles, nous vous demandons de confirmer votre intention."
 
-#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:24
+#: rdiffweb/plugins/delete_repo/templates/delete_repo.html:25
 #, python-format
 msgid "Please type %(repo_name)s to proceed or close this modal to cancel"
 msgstr "S'il vous plaît entrez %(repo_name)s pour continuer."
@@ -171,7 +171,7 @@ msgid "File count"
 msgstr "Nombre de fichiers"
 
 #: rdiffweb/plugins/graphs/templates/graphs.html:17
-#: rdiffweb/templates/browse.html:11 rdiffweb/templates/history.html:10
+#: rdiffweb/templates/browse.html:24 rdiffweb/templates/history.html:10
 msgid "Size"
 msgstr "Taille"
 
@@ -205,7 +205,12 @@ msgstr "Taille du dépôt excluant les données d'historique "
 msgid "Average time to complete backup."
 msgstr "Temps estimé pour compléter la sauvegarde"
 
-#: rdiffweb/plugins/ldap_auth/__init__.py:173
+#: rdiffweb/plugins/ldap_auth/__init__.py:96
+#, python-format
+msgid "User account %s expired."
+msgstr "Le compte de l'utilisateur %s est expiré."
+
+#: rdiffweb/plugins/ldap_auth/__init__.py:183
 #, python-format
 msgid "An LDAP error occurred: %s"
 msgstr "Une erreur LDAP s'est produite: %s"
@@ -441,7 +446,7 @@ msgstr "Clés SSH"
 
 #: rdiffweb/plugins/prefs_sshkeys/__init__.py:65
 msgid "Invalid SSH key."
-msgstr "Clé SSH valide."
+msgstr "Clé SSH invalide."
 
 #: rdiffweb/plugins/prefs_sshkeys/__init__.py:69
 msgid "SSH key already exists."
@@ -744,33 +749,33 @@ msgstr "Vous ne pouvez pas supprimer vos propres droits d'administrateur."
 msgid "Confirm deletion"
 msgstr "Confirmer la suppression"
 
-#: rdiffweb/templates/browse.html:4 rdiffweb/templates/layout_repo.html:32
+#: rdiffweb/templates/browse.html:4 rdiffweb/templates/layout_repo.html:11
 msgid "Files"
 msgstr "Fichiers"
 
-#: rdiffweb/templates/browse.html:10
+#: rdiffweb/templates/browse.html:23
 msgid "Name"
 msgstr "Nom"
 
-#: rdiffweb/templates/browse.html:12
+#: rdiffweb/templates/browse.html:25
 msgid "Rev."
 msgstr "Rév."
 
-#: rdiffweb/templates/browse.html:78
+#: rdiffweb/templates/browse.html:91
 #, python-format
 msgid "Revisions (%(count)s)"
 msgstr "Révisions (%(count)s)"
 
-#: rdiffweb/templates/browse.html:90 rdiffweb/templates/browse.html:100
-#: rdiffweb/templates/browse.html:106 rdiffweb/templates/browse.html:112
+#: rdiffweb/templates/browse.html:103 rdiffweb/templates/browse.html:113
+#: rdiffweb/templates/browse.html:119 rdiffweb/templates/browse.html:125
 msgid "Download"
 msgstr "Télécharger"
 
-#: rdiffweb/templates/browse.html:94
+#: rdiffweb/templates/browse.html:107
 msgid "Toggle Dropdown"
 msgstr "Menu déroulant"
 
-#: rdiffweb/templates/browse.html:125 rdiffweb/templates/history.html:53
+#: rdiffweb/templates/browse.html:138 rdiffweb/templates/history.html:53
 msgid "Show more..."
 msgstr "Afficher plus..."
 
@@ -782,7 +787,7 @@ msgstr "Oups!"
 msgid "Sorry, an error has occured."
 msgstr "Désolé, une erreur s'est produite."
 
-#: rdiffweb/templates/history.html:4 rdiffweb/templates/layout_repo.html:34
+#: rdiffweb/templates/history.html:4 rdiffweb/templates/layout_repo.html:13
 msgid "History"
 msgstr "Historique"
 
@@ -810,8 +815,8 @@ msgstr "Erreur"
 msgid "Toggle navigation"
 msgstr "Basculer la navigation"
 
-#: rdiffweb/templates/layout.html:50 rdiffweb/templates/layout_repo.html:10
-#: rdiffweb/templates/locations.html:3 rdiffweb/templates/locations.html:6
+#: rdiffweb/templates/layout.html:50 rdiffweb/templates/locations.html:3
+#: rdiffweb/templates/locations.html:6
 msgid "Repositories"
 msgstr "Dépôts"
 
@@ -832,11 +837,11 @@ msgstr "Déconnexion"
 msgid "Signed in as %(username)s"
 msgstr "Session ouverte sous %(username)s"
 
-#: rdiffweb/templates/layout_repo.html:33
+#: rdiffweb/templates/layout_repo.html:12
 msgid "Restore folder"
 msgstr "Restaurer répertoire"
 
-#: rdiffweb/templates/layout_repo.html:35 rdiffweb/templates/settings.html:4
+#: rdiffweb/templates/layout_repo.html:14 rdiffweb/templates/settings.html:4
 msgid "Settings"
 msgstr "Paramètres"
 
