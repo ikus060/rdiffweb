@@ -30,14 +30,12 @@
         <tr class="{% if entry.exists %}exists{% else %}notexists{% endif %}">
             <td {% if entry.isdir %}data-value="dir-{{ entry.display_name }}"
                 {% else %}data-value="file-{{ entry.display_name }}"{% endif %}>
-                <a {% if entry.isdir %}
-                    href="{{ url_for_browse(repo_path, entry.path) }}"
-                    {% else %}
-                    href="{{ url_for_restore(repo_path, entry.path, entry.last_change_date) }}"
-                    {% endif %}
-                    {% if entry.display_name | length > 45 %}
-                    title="{{ entry.display_name }}"
-                    {% endif %}>
+                <a {{ attrib(
+                        href=(entry.isdir and url_for_browse(repo_path, entry.path)) or
+                             (entry.last_change_date and url_for_restore(repo_path, entry.path, entry.last_change_date)) or
+                             "#",
+                        title=(entry.display_name | length > 45 and entry.display_name)
+                      ) }} >
                     <i {% if entry.isdir %}class="icon-folder"{% else %}class="icon-file"{% endif %}></i>
                     {% if entry.isdir %}<span class="sr-only">&lt;DIR&gt;</span>{% endif %}
                     {% if not entry.exists %}<span class="sr-only">&lt;DELETED&gt;</span>{% endif %}
