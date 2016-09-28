@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.7.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-09-19 16:18-0400\n"
+"POT-Creation-Date: 2016-09-28 19:17-0400\n"
 "PO-Revision-Date: 2015-04-25 15:18-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -560,9 +560,8 @@ msgstr ""
 
 #: rdiffweb/plugins/remove_older/templates/remove_older.html:44
 msgid ""
-"Allow you to remove the incremental backups that have been conserved "
-"longer than the given time. In other words, old revisions of the files "
-"will be removed."
+"You can parameterize the storage time of earlier versions for each "
+"repository. Changing this value may free up disk space."
 msgstr ""
 
 #: rdiffweb/plugins/set_encoding/__init__.py:67
@@ -723,21 +722,21 @@ msgstr ""
 msgid "Rev."
 msgstr ""
 
-#: rdiffweb/templates/browse.html:91
+#: rdiffweb/templates/browse.html:89
 #, python-format
 msgid "Revisions (%(count)s)"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:103 rdiffweb/templates/browse.html:113
-#: rdiffweb/templates/browse.html:119 rdiffweb/templates/browse.html:125
+#: rdiffweb/templates/browse.html:101 rdiffweb/templates/browse.html:111
+#: rdiffweb/templates/browse.html:117 rdiffweb/templates/browse.html:123
 msgid "Download"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:107
+#: rdiffweb/templates/browse.html:105
 msgid "Toggle Dropdown"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:138 rdiffweb/templates/history.html:53
+#: rdiffweb/templates/browse.html:136 rdiffweb/templates/history.html:53
 msgid "Show more..."
 msgstr ""
 
@@ -900,46 +899,4 @@ msgstr ""
 #: rdiffweb/templates/status.html:88
 msgid "The following repositories contain errors: "
 msgstr ""
-
-#~ msgid "user %s doesn't exists"
-#~ msgstr ""
-
-#~ msgid "The user %s already exists."
-#~ msgstr ""
-
-#~ msgid "user %s already exists"
-#~ msgstr ""
-
-#~ msgid "password can't be empty"
-#~ msgstr ""
-
-#~ msgid "wrong password"
-#~ msgstr ""
-
-#~ msgid "user %s not found)"
-#~ msgstr ""
-
-#~ msgid "current password is missing"
-#~ msgstr ""
-
-#~ msgid "new password is missing"
-#~ msgstr ""
-
-#~ msgid "confirmation password is missing"
-#~ msgstr ""
-
-#~ msgid "email is undefined"
-#~ msgstr ""
-
-#~ msgid "invalid email"
-#~ msgstr ""
-
-#~ msgid "key is missing"
-#~ msgstr ""
-
-#~ msgid "SSH key already exists"
-#~ msgstr ""
-
-#~ msgid "key is invalid"
-#~ msgstr ""
 
