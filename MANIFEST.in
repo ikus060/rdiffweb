@@ -17,6 +17,8 @@
 include LICENSE
 include README.md
 include MANIFEST.in
+include rdw.conf
+include babel.cfg
 
 # Include templates
 recursive-include rdiffweb/templates *.html *.xml *.txt
