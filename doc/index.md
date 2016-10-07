@@ -1,8 +1,12 @@
 # Installation
 
-## Instructions
+You may install rdiffweb in various way. We recommend you to install it from
+source as we have more experience doing it this way. Since v0.9.1, you may also
+install rdiffweb from pypi.
 
-To install rdiffweb, you need to install the the prerequisites. On Debian distribution you may proceed as follow:
+## Install from source (Recommended)
+
+To install rdiffweb, you need to install the prerequisites. On Debian distribution you may proceed as follow:
 
     sudo apt-get install python-cherrypy3 python python-pysqlite2 libsqlite3-dev python-jinja2 python-setuptools python-babel rdiff-backup
 
@@ -15,7 +19,8 @@ Then you may download a snapshot of the repository and proceed with the installa
     
 If it's the first time you are installing rdiffweb on the system, you will need to manually copy `rdw.conf` to `/etc/rdiffweb`:
 
-    sudo cp rdw.conf /etc/rdiffweb
+    sudo mkdir -p /etc/rdiffweb
+    sudo cp rdw.conf /etc/rdiffweb/
    
 You may also need to create an init script to startup rdiffweb on reboot. One is provided for Debian 7 (Wheezy):
 
@@ -37,7 +42,24 @@ On first start, you should access rdiffweb using default credentials:
  * username : admin
  * password : admin123
 
-## Configure Apache (optional)
+## Install from pypi
+
+You may install rdiffweb from pypi. First you need to install `pip` and other dependencies:
+
+    sudo apt-get install python-pip python-pysqlite2 rdiff-backup
+    sudo pip install -U pip
+
+Then you may install rdiffweb using `pip`:
+    
+    sudo pip install rdiffweb
+
+Install default configuration file.
+    
+    wget https://github.com/ikus060/rdiffweb/raw/master/rdw.conf
+    sudo mkdir -p /etc/rdiffweb
+    sudo cp rdw.conf /etc/rdiffweb/
+
+# Configure Apache - Reverse Proxy (optional)
 
 You may need an Apache server in case:
  
@@ -99,7 +121,7 @@ file in `/etc/apache2/sites-available/rdiffweb`.
         </Location>
     </VirtualHost>
 
-## Configure nginx (optional)
+# Configure nginx (optional)
 
 You may need an nginx server in case:
  
@@ -252,13 +274,13 @@ with `--profile-path`. You may visualize the data with:
     snakeviz rdiffweb_0001.prof
     
 
-# Less & CSS(s)
+## Less & CSS(s)
 
 For deployment reason, we need to pre-compile less file into css file.
 
     python setup.py build_less
     
-# Javascript
+## Javascript
 
 Any changes to javascript file need to be manually compiled into .min.js.
 
