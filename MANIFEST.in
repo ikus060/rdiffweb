@@ -25,7 +25,7 @@ recursive-include rdiffweb/templates *.html *.xml *.txt
 recursive-include rdiffweb/static *
 
 # Include plugins data
-recursive-include rdiffweb/plugins *.py *.plugin *.html
+recursive-include rdiffweb/plugins *.py *.html
 
 # Include translation file
 recursive-include rdiffweb/locales *.po *.pot *.mo
