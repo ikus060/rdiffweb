@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ lang }}">
+<html lang="{{ lang[0:2] }}">
 <head>
 {% block head %}
 <title>
@@ -79,9 +79,9 @@
 {% endblock %}
 <!-- Include rdiffweb specifics -->
 <script src="/static/js/rdiffweb.min.js"></script>
-{% if lang != "en" %}
+{% if lang and lang[0:2] != "en" %}
 <!-- Include translation for JQuery Validation -->
-<script src="/static/js/plugins/jquery.validate.{{ lang }}.js"></script>
+<script src="/static/js/plugins/jquery.validate.{{ lang[0:2] }}.js"></script>
 {% endif %}
 </body>
 </html>
