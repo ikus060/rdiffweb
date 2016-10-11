@@ -15,17 +15,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-LDAP UserDB backend used to validate credentials. This plugin will
-use SQLite database for user's data. Both, LDAP and SQLite plugin must be
-enabled.
-
-The LDAP plugin cannot create new users. Users must already exist in the
-LDAP directory. It would be difficult to create a new LDAP user, as the
-creation of a LDAP user requires properties which are not made available
-to the LDAP plugin.
-"""
-# Define the logger
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
@@ -35,11 +24,12 @@ from builtins import str
 import cherrypy
 from future.utils import iteritems
 import logging
+import pkg_resources
 
 from rdiffweb import librdiff, rdw_helpers
 from rdiffweb import page_main
 import rdiffweb
-from rdiffweb.dispatch import poppath
+from rdiffweb.dispatch import poppath, static
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import unquote_url
 from rdiffweb.rdw_plugin import IRdiffwebPlugin, ITemplateFilterPlugin
@@ -152,6 +142,11 @@ class GraphsPlugins(ITemplateFilterPlugin):
         self.app.root.graphs = GraphsPage(self.app)
         # Register function into templates
         self.app.templates.jinja_env.globals['url_for_graphs'] = url_for_graphs
+        # Add extra js to static
+        path = pkg_resources.resource_filename(__name__, 'd3.v3.js')  # @UndefinedVariable
+        self.app.root.static.d3_v3_js = static(path)
+        path = pkg_resources.resource_filename(__name__, 'd3.tip.v0.6.3.js')  # @UndefinedVariable
+        self.app.root.static.d3_tip_v0_6_3_js = static(path)
         # Call original
         IRdiffwebPlugin.activate(self)
 

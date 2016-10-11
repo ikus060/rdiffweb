@@ -30,7 +30,7 @@ recursive-include extras *
 recursive-include rdiffweb/static *
 
 # Include plugins data
-recursive-include rdiffweb/plugins *.py *.html
+recursive-include rdiffweb/plugins *.py *.html *.js
 
 # Include translation file
 recursive-include rdiffweb/locales *.po *.pot *.mo
