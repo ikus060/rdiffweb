@@ -55,10 +55,10 @@ class AuthFormTool(HandlerTool):
         try:
             userobj = cherrypy.request.app.userdb.login(username, password)  # @UndefinedVariable
         except:
-            logger.exception("fail to validate user credential.",)
+            logger.exception("fail to validate user credential")
             raise RdiffWarning(_("Fail to validate user credential."))
         if not userobj:
-            logger.warning("invalid username or password")
+            logger.warning("invalid username [%s] or password", username)
             raise RdiffWarning(_("Invalid username or password."))
         return userobj
 
@@ -74,10 +74,10 @@ class AuthFormTool(HandlerTool):
             # redirect and raise an exception.
             mtype = cherrypy.tools.accept.callable(['text/html', 'text/plain'])  # @UndefinedVariable
             if mtype == 'text/plain':
-                logger.debug('No username, requesting plain text, routing to 403 error from_page %(url)r', locals())
+                logger.debug('no username, requesting plain text, routing to 403 error from_page %(url)r', locals())
                 raise cherrypy.HTTPError(403, _("Not logged in"))
 
-            logger.debug('No username, routing to login_screen with from_page %(url)r', locals())
+            logger.debug('no username, routing to login_screen with from_page %(url)r', locals())
             response.body = self.login_screen(url)
             if "Content-Length" in response.headers:
                 # Delete Content-Length header so finalize() recalcs it.
@@ -89,7 +89,7 @@ class AuthFormTool(HandlerTool):
         userobj = cherrypy.request.app.userdb.get_user(username)  # @UndefinedVariable
         if not userobj:
             raise cherrypy.HTTPError(403)
-        logger.debug('Setting request.login to %r', userobj)
+        logger.debug('setting request.login to %r', userobj)
         cherrypy.serving.request.login = userobj
 
     def do_login(self, login, password, redirect=b'/', **kwargs):
@@ -105,11 +105,11 @@ class AuthFormTool(HandlerTool):
                 del response.headers["Content-Length"]
             return True
         # User successfully login.
-        logger.debug('Setting request.login to %r', userobj)
+        logger.debug('setting request.login to %r', userobj)
         cherrypy.serving.request.login = userobj
         cherrypy.session[self.session_key] = userobj.username  # @UndefinedVariable
         self.on_login(userobj.username)
-        logger.debug('Redirect user to %r', redirect or b"/")
+        logger.debug('redirect user to %r', redirect or b"/")
         raise cherrypy.HTTPRedirect(redirect or b"/")
 
     def do_logout(self, redirect=b'/', **kwargs):
@@ -165,7 +165,7 @@ class AuthFormTool(HandlerTool):
         if path.startswith(native_str('/login')):
             if request.method != 'POST':
                 response.headers['Allow'] = "POST"
-                logger.info('do_login requires POST')
+                logger.warn('do_login requires POST, redirect to /')
                 # Redirect to / instead of showing error.
                 raise cherrypy.HTTPRedirect(b'/')
             logger.info('routing %(path)r to do_login', locals())
@@ -176,7 +176,7 @@ class AuthFormTool(HandlerTool):
             return self.do_logout(**request.params)
 
         # No special path, validate session.
-        logger.info('No special path, running do_check')
+        logger.info('no special path, running do_check')
         return self.do_check()
 
 
