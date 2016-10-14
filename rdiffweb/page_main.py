@@ -158,7 +158,8 @@ class MainPage(Component):
             })
 
         # Append custom branding
-        parms["header_logo"] = hasattr(self.app.root.static, "header_logo")
+        if hasattr(self.app.root, "header_logo"):
+            parms["header_logo"] = '/header_logo'
         header_name = self.app.cfg.get_config("HeaderName")
         if header_name:
             parms["header_name"] = header_name

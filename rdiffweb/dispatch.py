@@ -32,6 +32,15 @@ import os
 from rdiffweb.rdw_helpers import unquote_url
 
 
+def empty():
+
+    @cherrypy.expose
+    def handler():
+        return None
+
+    return handler
+
+
 def poppath(*args, **kwargs):
     """
     A decorator for _cp_dispatch
@@ -124,6 +133,8 @@ def static(path):
             return None
         filename = os.path.join(path, *args)
         assert filename.startswith(path)
+        if not os.path.isfile(filename):
+            return None
         return serve_file(filename, content_type)
 
     return handler

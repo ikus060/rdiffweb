@@ -29,7 +29,7 @@ import pkg_resources
 from rdiffweb import librdiff, rdw_helpers
 from rdiffweb import page_main
 import rdiffweb
-from rdiffweb.dispatch import poppath, static
+from rdiffweb.dispatch import poppath
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_helpers import unquote_url
 from rdiffweb.rdw_plugin import IRdiffwebPlugin, ITemplateFilterPlugin
@@ -142,11 +142,6 @@ class GraphsPlugins(ITemplateFilterPlugin):
         self.app.root.graphs = GraphsPage(self.app)
         # Register function into templates
         self.app.templates.jinja_env.globals['url_for_graphs'] = url_for_graphs
-        # Add extra js to static
-        path = pkg_resources.resource_filename(__name__, 'd3.v3.js')  # @UndefinedVariable
-        self.app.root.static.d3_v3_js = static(path)
-        path = pkg_resources.resource_filename(__name__, 'd3.tip.v0.6.3.js')  # @UndefinedVariable
-        self.app.root.static.d3_tip_v0_6_3_js = static(path)
         # Call original
         IRdiffwebPlugin.activate(self)
 

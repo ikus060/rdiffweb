@@ -19,31 +19,31 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import logging
-import os
-import sys
-
 from cherrypy import Application
 import cherrypy
 from cherrypy.process.plugins import Monitor
 from future.utils import native_str
+import logging
+import os
 import pkg_resources
+import sys
+
 from rdiffweb import filter_authentication  # @UnusedImport
 from rdiffweb import i18n  # @UnusedImport
 from rdiffweb import rdw_config, page_main
 from rdiffweb import rdw_plugin
 from rdiffweb import rdw_templating
-from rdiffweb.dispatch import static
+from rdiffweb.dispatch import static, empty
 from rdiffweb.page_admin import AdminPage
 from rdiffweb.page_browse import BrowsePage
 from rdiffweb.page_history import HistoryPage
 from rdiffweb.page_locations import LocationsPage
-from rdiffweb.page_main import MainPage
 from rdiffweb.page_prefs import PreferencesPage
 from rdiffweb.page_restore import RestorePage
 from rdiffweb.page_settings import SettingsPage
 from rdiffweb.page_status import StatusPage
 from rdiffweb.user import UserManager
+from rdiffweb.page_main import MainPage
 
 
 # Define the logger
@@ -64,7 +64,7 @@ class Root(LocationsPage):
         self.admin = AdminPage(app)
         self.prefs = PreferencesPage(app)
         self.settings = SettingsPage(app)
-        self.ajax = MainPage(app)
+        self.ajax = empty()
 
         # Register static dir.
         static_dir = pkg_resources.resource_filename('rdiffweb', 'static')  # @UndefinedVariable
@@ -78,7 +78,7 @@ class Root(LocationsPage):
         # Register header_logo
         header_logo = app.cfg.get_config("HeaderLogo")
         if header_logo:
-            self.static.header_logo = static(header_logo)
+            self.header_logo = static(header_logo)
 
 
 class RdiffwebApp(Application):
@@ -89,7 +89,7 @@ class RdiffwebApp(Application):
         # Initialise the configuration
         self.load_config(configfile)
 
-        # Initialise the template enginge.
+        # Initialise the template engine.
         self.templates = rdw_templating.TemplateManager()
 
         # Initialise the plugins
@@ -129,9 +129,6 @@ class RdiffwebApp(Application):
     def activate_plugin(self, plugin_obj):
         """Activate the given plugin object."""
         plugin_obj.app = self
-        # Add templates location to the templating engine.
-        if plugin_obj.get_templatesdir():
-            self.templates.add_templatesdir(plugin_obj.get_templatesdir())
         plugin_obj.activate()
 
     @property
@@ -184,33 +181,6 @@ class RdiffwebApp(Application):
         tempdir = self.cfg.get_config("TempDir", default="")
         if tempdir:
             os.environ["TMPDIR"] = tempdir
-
-    def _setup_header_logo(self, config):
-        """
-        Used to add an entry to the page setting if the FavIcon configuration is
-        defined.
-        """
-        header_logo = self.cfg.get_config("HeaderLogo")
-        if not header_logo:
-            return
-        # Append custom header logo
-        if (not os.path.exists(header_logo) or
-                not os.path.isfile(header_logo) or
-                not os.access(header_logo, os.R_OK)):
-            logger.warning(
-                "path define by HeaderLogo doesn't exists: %s", header_logo)
-            return
-
-        logger.info("use custom header logo: %s", header_logo)
-        basename = os.path.basename(header_logo)
-        self.header_logo = '/%s' % (basename)
-        config.update({
-            native_str(self.header_logo): {
-                'tools.staticfile.on': True,
-                'tools.staticfile.filename': header_logo,
-                'tools.authform.on': False,
-            }
-        })
 
     def _setup_session_storage(self, config):
         # Configure session storage.

@@ -21,17 +21,19 @@ from __future__ import unicode_literals
 from builtins import bytes
 from builtins import object
 from builtins import str
+from collections import namedtuple
+import datetime
 from glob import glob
 import imp
+import inspect
 import logging
 import os
 from pkg_resources import working_set, Environment
 import pkg_resources
 import sys
-from collections import namedtuple
-from itertools import chain
-import inspect
-import datetime
+
+from rdiffweb.dispatch import static
+
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -325,8 +327,18 @@ class IRdiffwebPlugin(object):
     CATEGORY = "Undefined"
 
     def activate(self):
-        logger.info("activate plugin object [%s]",
-                    self.__class__.__name__)
+        logger.info("activate plugin object [%s]", self.__class__.__name__)
+
+        # Add templates location to the templating engine.
+        template_dir = self.get_templatesdir()
+        if template_dir:
+            self.app.templates.add_templatesdir(template_dir)
+
+        # Add static dir if available using the module name.
+        static_dir = self.get_staticdir()
+        if static_dir:
+            name = self.__class__.__module__.split('.')[-1]
+            setattr(self.app.root, name + '_static', static(static_dir))
 
     def deactivate(self):
         logger.info("deactivate plugin object [%s]",
@@ -348,6 +360,15 @@ class IRdiffwebPlugin(object):
         """
         if pkg_resources.resource_isdir(self.__module__, 'templates'):  # @UndefinedVariable
             return pkg_resources.resource_filename(self.__module__, 'templates')  # @UndefinedVariable
+        return False
+
+    def get_staticdir(self):
+        """
+        Return the location of the static directory. Default implementation
+        return the "static" directory if exists. Otherwise return None.
+        """
+        if pkg_resources.resource_isdir(self.__module__, 'static'):  # @UndefinedVariable
+            return pkg_resources.resource_filename(self.__module__, 'static')  # @UndefinedVariable
         return False
 
 

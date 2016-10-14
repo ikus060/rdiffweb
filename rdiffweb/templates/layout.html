@@ -14,8 +14,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {% if version %}<meta name="app-version" content="{{ version }}">{% endif %}
 <meta name="application-name" content="{{ header_name }}"/>
-<link rel="mask-icon" sizes="any" href="/static/favicon.svg" color="#ffffff">
-<link rel="stylesheet" href="/static/main.css" type="text/css">
+<link rel="stylesheet" href="{{ main_css or '/static/main.css' }}" type="text/css">
 <link rel="shortcut icon" href="/favicon.ico" >
 {% if rssLink %}<link rel="alternate" type="application/rss+xml" href="{{ rssLink }}" title="{{ rssTitle }}" />{% endif %}
 {% include extra_head_templates ignore missing with context %}
@@ -35,13 +34,13 @@
             <!-- Header_logo -->
             <a class="navbar-brand" href="/">
             {% if header_logo %}
-            <img src="/static/header_logo" style="display: inline">
+            <img src="{{ header_logo }}" style="display: inline">
             {% else %}
             <i class="icon-rdiffweb"></i>
             {% endif %}
             <!-- /Header_logo -->
             <!-- Header_name -->
-            {% if header_name %}{{ header_name }}{% else %}rdiffweb{% endif %}
+            {{ header_name or 'rdiffweb' }}
             <!-- /Header_name -->
             </a>
         </div>
