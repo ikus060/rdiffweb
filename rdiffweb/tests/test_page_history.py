@@ -23,7 +23,6 @@ Created on Dec 29, 2015
 
 from __future__ import unicode_literals
 
-from future.builtins import str
 import logging
 import unittest
 
@@ -47,9 +46,9 @@ class HistoryPageTest(WebCase):
     def test_history(self):
         self._history(self.REPO)
         # New
-        self.assertInBody("2016-02-02 16:30:40")
+        self.assertInBody("2016-02-02 16:30")
         # Old
-        self.assertInBody("2014-11-02 09:50:53")
+        self.assertInBody("2014-11-02 09:50")
         self.assertInBody("Show more")
 
     def test_history_with_limit(self):

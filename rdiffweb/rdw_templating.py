@@ -173,14 +173,14 @@ def url_for_history(repo):
 
 def url_for_restore(repo, path, date, kind=None):
     assert isinstance(repo, bytes)
-    assert isinstance(path, bytes)
+    assert path is None or isinstance(path, bytes)
     assert isinstance(date, rdw_helpers.rdwTime)
     url = []
     url.append("/restore/")
     if repo:
         repo = repo.rstrip(b"/")
         url.append(rdw_helpers.quote_url(repo))
-    if len(path) > 0:
+    if path:
         url.append("/")
         path = path.rstrip(b"/")
         url.append(rdw_helpers.quote_url(path))

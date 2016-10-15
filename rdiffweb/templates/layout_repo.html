@@ -8,9 +8,8 @@
     
     <!-- Repo Nav -->
 	{% set repo_nav_bar = [
-	    ('browse', _('Files'), url_for_browse(repo_path, path), 'icon-docs'),
-	    ('restore', _('Restore folder'), url_for_browse(repo_path, path, restore=True), 'icon-file-archive'),
-	    ('history', _('History'), url_for_history(repo_path), 'icon-history'),
+	    ('browse', _('Files'), url_for_browse(repo_path), 'icon-docs'),
+	    ('history', _('Restore Repository'), url_for_history(repo_path), 'icon-history'),
 	    ('settings', _('Settings'), url_for_settings(repo_path), 'icon-cog-alt'),
 	] -%}
 	{% if repo_nav_bar_extras %}

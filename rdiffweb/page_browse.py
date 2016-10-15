@@ -89,6 +89,7 @@ class BrowsePage(page_main.MainPage):
                 "repo_path": repo_obj.path,
                 "path": path_obj.path,
                 "dir_entries": dir_entries,
+                "isdir": path_obj.isdir,
                 "parents": parents,
                 "restore_dates": restore_dates,
                 "warning": warning}

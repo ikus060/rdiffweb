@@ -1,58 +1,75 @@
 {% extends 'layout_repo.html' %}
 {% set active_page='repo' %}
 {% set active_repo_page='history' %}
-{% block title %}{% trans %}History{% endtrans %}{% endblock %}
+{% block title %}{% trans %}History{% endtrans %}{% endblock%} 
 {% block content %}
-<table class="table">
-    <thead>
-        <tr>
-            <th id="date">{% trans %}Date{% endtrans %}</th>
-            <th id="size">{% trans %}Size{% endtrans %}</th>
-            <th id="result">{% trans %}Result{% endtrans %}</th>
-        </tr>
-    </thead>
-    <tbody>
+
+<div class="panel panel-default spacer">
+    <ul class="list-group">
         {% for entry in history_entries %}
-        <tr {% if entry.errors %}
-            class="danger"
-            {% elif entry.in_progress %}
-            class="warning"
-            {% endif %}>
-            <td class="icon-history" data-value="{{ entry.date }}">
-                {{ entry.date | datetime }}
-            </td>
-            <td data-value="{{ entry.size }}">
-                {{ entry.size | filesize }}
-            </td>
-            <td>
-                {% if not entry.errors %}
-                {% if entry.in_progress %}
-                {% trans %}In progress{% endtrans %}
-                {% else %}
-                {% trans %}Success{% endtrans %}
-                {% endif %}
-                {% else %}
-                {% trans %}Error{% endtrans %}
-                {% endif %}
-            </td>
-        </tr>
-        {% if entry.errors %}
-        <tr class="danger">
-            <td colspan="4">
-                <p>{{ entry.errors }}</p>
-            </td>
-        </tr>
-        {% endif %}
+        <li class="list-group-item clearfix">
+            <i class="icon-archive"></i> {{ entry.date | datetime }}
+
+            <!-- Size -->
+            <span>({{ entry.size | filesize }})</span>
+
+            <!-- Status Label -->
+            {% if entry.has_errors %}
+            <span class="label label-danger">{% trans %}Error(s){% endtrans %}</span>
+            <a data-toggle="collapse" href="#errors{{loop.index}}" aria-expanded="false" aria-controls="#errors{{loop.index}}">Show error(s)</a>
+            {% elif entry.in_progress %} <span class="label label-info">{% trans %}In progress{% endtrans %}</span> {% endif %}
+
+            <div class="pull-right">
+
+                <div class="btn-group">
+                    <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for_restore(repo_path, None, entry.date) }}">
+                        <i class="icon-download"></i> <span>{% trans %}Download{% endtrans %}</span>
+                    </a>
+                    <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="caret"></span> <span class="sr-only">{% trans %}Toggle Dropdown{% endtrans %}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right-xs" role="menu" aria-labelledby="menu1">
+                        <li>
+                            <a rel="nofollow" href="{{ url_for_restore(repo_path, None, entry.date) }}">
+                                <i class="icon-download"></i> <span>{% trans %}Download{% endtrans %} ZIP</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a rel="nofollow" href="{{ url_for_restore(repo_path, None, entry.date, 'tar.gz') }}">
+                                <i class="icon-download"></i> <span>{% trans %}Download{% endtrans %} TAR.GZ</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a rel="nofollow" href="{{ url_for_restore(repo_path, None, entry.date, 'tar.bz2') }}">
+                                <i class="icon-download"></i> <span>{% trans %}Download{% endtrans %} TAR.BZ2</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+
+            {% if entry.has_errors %}
+            <div id="errors{{loop.index}}" class="collapse">
+                <div class="clearfix"></div>
+                <div class="spacer"></div>
+                <div class="well">{{ entry.errors }}</div>
+            </div>
+            {% endif %}
+
+        </li>
         {% endfor %}
-    </tbody>
-</table>
+    </ul>
+</div>
 
 {% if limit == history_entries|count %}
 <nav aria-label="...">
-  <ul class="pager">
-    <li><a href="?limit={{ limit * 2 }}"><i class="icon-down-dir"></i> {% trans %}Show more...{% endtrans %}</a></li>
-  </ul>
+    <ul class="pager">
+        <li>
+            <a href="?limit={{ limit * 2 }}">
+                <i class="icon-down-dir"></i> {% trans %}Show more...{% endtrans %}
+            </a>
+        </li>
+    </ul>
 </nav>
-{% endif %}
-
-{% endblock %}
+{% endif %} {% endblock %}

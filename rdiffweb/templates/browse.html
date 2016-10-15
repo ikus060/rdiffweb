@@ -1,14 +1,14 @@
 {% extends 'layout_repo.html' %}
 {% set active_page='repo' %}
-{% set active_repo_page=restore_dates and 'restore' or 'browse' %}
+{% set active_repo_page='browse' %}
 {% block title %}{% trans %}Files{% endtrans %}{% endblock %}
 {% block content %}
 
 <ol class="pagination pagination-sm">
     {% if parents %}
     {% for parent in parents %}
-    <li class="">
-        <a href="{{ url_for_browse(repo_path, parent.path) }}">
+    <li {{ attrib(class=loop.last and 'active') }}>
+        <a {{ attrib(href=loop.last and "#" or url_for_browse(repo_path, parent.path)) }}>
             {{ parent.name }}
         </a>
     </li>
@@ -21,8 +21,8 @@
     <thead>
         <tr>
             <th id="name" class="sortable" data-type="dir">{% trans %}Name{% endtrans %}</th>
-            <th id="size" class="sortable" data-type="int">{% trans %}Size{% endtrans %}</th>
-            <th id="last-revision" class="sortable" data-type="int">{% trans %}Rev.{% endtrans %}</th>
+            <th id="size" class="sortable col-md-2" data-type="int">{% trans %}Size{% endtrans %}</th>
+            <th id="last-revision" class="sortable col-md-2" data-type="int"><span class="hidden-sm hidden-md hidden-lg">{% trans %}Ver.{% endtrans %}</span><span class="hidden-xs">{% trans %}Previous version(s){% endtrans %}</span></th>
         </tr>
     </thead>
     <tbody>
@@ -48,13 +48,8 @@
                 {% endif %}
             </td>
             <td data-value="{{ entry.last_change_date and entry.last_change_date.getSeconds() }}">
-                {% if entry.isdir %}
-                <span class="hidden-xs">
-                    {{ entry.last_change_date | datetime }}
-                </span>
-                {% elif ( entry.change_dates | length ) > 1 %}
                 <div class="dropdown">
-                    <button class="btn btn-link dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">
+                    <button class="btn btn-link dropdown-toggle btn-block" type="button" id="menu1" data-toggle="dropdown">
                         <span class="hidden-xs">
                             {{ entry.last_change_date | datetime }}
                         </span>
@@ -62,38 +57,33 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-right-xs" role="menu" aria-labelledby="menu1">
-                        {% for change_date in entry.change_dates | reverse %}
+                        {% for change_date in entry.change_dates[:-6:-1] %}
                         <li>
                             <a href="{{ url_for_restore(repo_path, entry.path, change_date) }}">
                                 <!-- File date -->
+                                <i class="icon-download"></i>
                                 {{ change_date | datetime }}
                             </a>
                         </li>
                         {% endfor %}
+                        <li>
+                            <a href="{{ url_for_browse(repo_path, entry.path, restore=true) }}">{% trans %}Show more...{% endtrans %}</a>
+                        </li>
                     </ul>
                 </div>
-                {% else %}
-                <span class="hidden-xs">
-                    {{ entry.last_change_date | datetime }}
-                </span>
-                {% endif %}
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 {% else %}
-<div class="panel panel-default spacer">
-    <div class="panel-heading clearfix">
-        <div class="panel-title pull-left">
-            {% trans count=restore_dates|length %}Revisions ({{ count }}){% endtrans %}
-        </div>
-    </div>
+<div class="panel panel-default">
     <ul class="list-group">
         {% for restore_date in restore_dates %}
         <li class="list-group-item clearfix">
-            <i class="icon-archive"></i>
+            <i {% if isdir %}class="icon-folder"{% else %}class="icon-file"{% endif %}></i>
             {{ restore_date | datetime }}
+            {% if isdir %}
             <div class="pull-right">
               <div class="btn-group">
                 <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for_restore(repo_path, path, restore_date) }}">
@@ -126,6 +116,14 @@
                 </ul>
               </div>
             </div>
+            {% else %}
+            <div class="pull-right">
+                <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for_restore(repo_path, path, restore_date) }}">
+                  <i class="icon-download"></i>
+                  <span>{% trans %}Download{% endtrans %}</span>
+                </a>
+            </div>
+            {% endif %}
         </li>
         {% endfor %}
     </ul>
