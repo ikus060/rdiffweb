@@ -145,6 +145,7 @@ class DirEntry(object):
             self._isdir = os.path.isdir(self.full_path)
         else:
             # Check if increments is a directory
+            self._isdir = False
             for increment in self._increments:
                 if increment.is_missing:
                     # Ignore missing increment...
@@ -259,12 +260,17 @@ class HistoryEntry(object):
             return 0
 
     @property
+    def has_errors(self):
+        """Check if the history has errors."""
+        return not self._repo._error_logs[self.date].is_empty
+
+    @property
     def errors(self):
         """Return error messages."""
         try:
-            self._repo._error_logs[self.date].read()
+            return self._repo._error_logs[self.date].read()
         except KeyError:
-            return ""
+            return b""
 
     @property
     def increment_size(self):
@@ -328,6 +334,9 @@ class IncrementEntry(object):
     def read(self):
         """Read the error file and return it's content. Raise exception if the
         file can't be read."""
+        # To avoid opening n empty file, check the file size first.
+        if self.is_empty:
+            return b''
         return self._open().read()
 
     @property
@@ -368,6 +377,14 @@ class IncrementEntry(object):
             if filename.endswith(suffix):
                 return filename[:-len(suffix)]
         return filename
+
+    @property
+    def is_empty(self):
+        """
+        Check if the increment entry is empty.
+        """
+        fn = os.path.join(self.repo.data_path, self.name)
+        return os.path.getsize(fn) == 0
 
     def __str__(self):
         return self.name

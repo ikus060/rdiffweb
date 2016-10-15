@@ -15,19 +15,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from __future__ import unicode_literals
-
-from builtins import bytes
-
-import pkg_resources
-import unittest
-
-from rdiffweb.librdiff import RdiffPath, FileStatisticsEntry, RdiffRepo, \
-    DirEntry, IncrementEntry, SessionStatisticsEntry
-import os
-from rdiffweb.rdw_helpers import rdwTime
-import encodings
-
 """
 Created on Oct 3, 2015
 
@@ -35,6 +22,18 @@ Module used to test the librdiff.
 
 @author: Patrik Dufresne
 """
+
+from __future__ import unicode_literals
+
+from builtins import bytes
+import encodings
+import os
+import pkg_resources
+import unittest
+
+from rdiffweb.librdiff import RdiffPath, FileStatisticsEntry, RdiffRepo, \
+    DirEntry, IncrementEntry, SessionStatisticsEntry, HistoryEntry
+from rdiffweb.rdw_helpers import rdwTime
 
 
 class MockRdiffRepo(RdiffRepo):
@@ -190,6 +189,19 @@ class FileStatisticsEntryTest(unittest.TestCase):
         entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data.gz')
         size = entry.get_source_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(286, size)
+
+
+class HistoryEntryTest(unittest.TestCase):
+
+    def setUp(self):
+        self.repo = MockRdiffRepo()
+        self.root_path = self.repo.root_path
+
+    def test_errors(self):
+        increment = IncrementEntry(self.root_path, b'error_log.2015-11-19T07:27:46-05:00.data')
+        entry = HistoryEntry(self.repo, increment.date)
+        self.assertTrue(entry.has_errors)
+        self.assertEqual('SpecialFileError home/coucou Socket error: AF_UNIX path too long', entry.errors)
 
 
 class RdiffRepoTest(unittest.TestCase):
