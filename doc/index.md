@@ -80,6 +80,11 @@ no way a complete reference.
     
 **Basic configuration**
 
+Enable the `proxy`module as follow:
+
+    sudo a2enmod proxy
+    sudo a2enmod proxy_http
+
 Add the following to your Apache configuration. It's recommended to create a 
 file in `/etc/apache2/sites-available/rdiffweb`.
 
@@ -128,7 +133,7 @@ You may need an nginx server in case:
  * you need to serve multiple web services from the same IP;
  * you need more security (like HTTP + SSL).
  
-This section doesn't explain how to install and configure your Apache server.
+This section doesn't explain how to install and configure your Nginx server.
 This is out-of-scope. The following is only provided as a suggestion and is in
 no way a complete reference.
 
