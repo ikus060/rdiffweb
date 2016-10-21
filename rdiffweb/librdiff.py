@@ -229,20 +229,6 @@ class DirEntry(object):
         # It's too long. Unless change_date is define.
         return self.change_dates[-1]
 
-    @property
-    def restore_dates(self):
-        """
-        Return a sorted (old to new) list of valid restore date for the given directory
-        entry.
-        """
-        # Don't allow restores before the dir existed.
-        # If the dir has been deleted, don't allow restores after its deletion
-        return [
-            x
-            for x in self._repo.backup_dates
-            if (x >= self.first_change_date and
-                (self.exists or x <= self.last_change_date))]
-
 
 class HistoryEntry(object):
 
@@ -1093,4 +1079,4 @@ class RdiffPath(object):
         entries = [x for x in repo_path.dir_entries if x.name == name]
         if not entries:
             raise DoesNotExistError()
-        return entries[0].restore_dates
+        return entries[0].change_dates
