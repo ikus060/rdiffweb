@@ -63,8 +63,8 @@ RDIFF_BACKUP_DATA = b"rdiff-backup-data"
 # Size to be read from gzip
 CHUNK_SIZE = 1024 * 1024
 
-# Constant for the increments folder name.
-INCREMENTS = os.path.join(RDIFF_BACKUP_DATA, b"increments")
+# Increment folder name.
+INCREMENTS = b"increments"
 
 # Zip file extension
 ZIP_SUFFIX = b".zip"
@@ -107,32 +107,82 @@ class DirEntry(object):
     """Includes name, isDir, fileSize, exists, and dict (changeDates) of sorted
     local dates when backed up"""
 
-    def __init__(self, repo_path, name, exists, increments):
-        assert isinstance(repo_path, RdiffPath)
-        assert isinstance(name, bytes)
+    def __init__(self, parent, path, exists, increments):
+        assert isinstance(parent, RdiffRepo) or isinstance(parent, DirEntry)
+        assert isinstance(path, bytes)
 
         # Keep reference to the path and repo object.
-        self._repo = repo_path.repo
-        # Keep reference to this entry name.
-        self.name = name
-        # Relative path to the directory entry
-        self.path = os.path.join(
-            repo_path.path,
-            name)
+        if isinstance(parent, RdiffRepo):
+            self._repo = weakref.proxy(parent)
+            self.path = path
+        else:
+            self._repo = parent._repo
+            # Relative path to the repository.
+            self.path = os.path.normpath(os.path.join(parent.path, path))
         # Absolute path to the directory
-        self.full_path = os.path.join(
-            self._repo.repo_root,
-            repo_path.path,
-            name)
+        self.full_path = os.path.normpath(os.path.join(self._repo.full_path, self.path))
+        # May need to compute our own state if not provided.
         self.exists = exists
         # Store the increments sorted by date.
         # See self.last_change_date()
         self._increments = sorted(increments, key=lambda x: x.date)
 
     @property
+    def dir_entries(self):
+        """Get directory entries for the current path. It is similar to
+        listdir() but for rdiff-backup."""
+
+        logger.debug("get directory entries for [%r]", self.full_path)
+
+        # Group increments by filename
+        grouped_increment_entries = rdw_helpers.groupby(
+            self._repo._get_increment_entries(self.path), lambda x: x.filename)
+
+        # Check if the directory exists. It may not exist if
+        # it has been delete
+        existing_entries = []
+        if os.path.isdir(self.full_path) and os.access(self.full_path, os.F_OK):
+            # Get entries from directory structure
+            existing_entries = os.listdir(self.full_path)
+            # Remove "rdiff-backup-data" directory
+            if self.path == b'':
+                existing_entries.remove(RDIFF_BACKUP_DATA)
+
+        # Process each increment entries and combine this with the existing
+        # entries
+        entriesDict = {}
+        for filename, increments in iteritems(grouped_increment_entries):
+            # Check if filename exists
+            exists = filename in existing_entries
+            # Create DirEntry to represent the item
+            new_entry = DirEntry(
+                self,
+                filename,
+                exists,
+                increments)
+            entriesDict[filename] = new_entry
+
+        # Then add existing entries
+        for filename in existing_entries:
+            # Check if the entry was created by increments entry
+            if filename in entriesDict:
+                continue
+            # The entry doesn't exists (mostly because it ever change). So
+            # create a DirEntry to represent it
+            new_entry = DirEntry(
+                self,
+                filename,
+                True,
+                [])
+            entriesDict[filename] = new_entry
+
+        # Return the values (so the DirEntry objects)
+        return list(entriesDict.values())
+
+    @property
     def display_name(self):
         """Return the most human readable filename. Without quote."""
-        value = self._repo.unquote(self.name)
+        value = self._repo.unquote(os.path.basename(self.path))
         return self._repo._decode(value)
 
     @property
@@ -180,6 +230,10 @@ class DirEntry(object):
         Return a list of dates when this item has changes. Represent the
         previous revision. From old to new.
         """
+        # Exception for root path, use backups dates.
+        if self.path == b'':
+            return self._repo.backup_dates
+
         # Return previous computed value
         if hasattr(self, '_change_dates'):
             return self._change_dates
@@ -229,6 +283,12 @@ class DirEntry(object):
         # It's too long. Unless change_date is define.
         return self.change_dates[-1]
 
+    def restore(self, restore_date, kind='zip'):
+        """
+        Restore the file identified by this directory entry.
+        """
+        return self._repo.restore(self.path, restore_date, kind)
+
 
 class HistoryEntry(object):
 
@@ -277,23 +337,21 @@ class IncrementEntry(object):
     SUFFIXES = [b".missing", b".snapshot.gz", b".snapshot",
                 b".diff.gz", b".data.gz", b".data", b".dir", b".diff"]
 
-    def __init__(self, repo_path, name):
+    def __init__(self, parent, name):
         """Default constructor for an increment entry. User must provide the
             repository directory and an entry name. The entry name correspond
             to an error_log.* filename."""
-        assert isinstance(repo_path, RdiffPath)
+        assert isinstance(parent, DirEntry) or isinstance(parent, RdiffRepo)
         assert isinstance(name, bytes)
         # Keep reference to the current path.
-        self.repo_path = weakref.proxy(repo_path)
-        # The given entry name may has quote charater, replace them
+        if isinstance(parent, RdiffRepo):
+            self.repo = weakref.proxy(parent)
+        else:
+            self.repo = parent._repo
+        # The given entry name may has quote character, replace them
         self.name = name
         # Calculate the date of the increment.
         self.date = IncrementEntry.extract_date(self.name)
-
-    @property
-    def repo(self):
-        # Get reference to the repository location.
-        return self.repo_path.repo
 
     @staticmethod
     def extract_date(filename):
@@ -314,8 +372,8 @@ class IncrementEntry(object):
         """Should be used to open the increment file. This method handle
         compressed vs not-compressed file."""
         if self._is_compressed:
-            return gzip.open(os.path.join(self.repo.data_path, self.name), mode)
-        return open(os.path.join(self.repo.data_path, self.name), mode)
+            return gzip.open(os.path.join(self.repo._data_path, self.name), mode)
+        return open(os.path.join(self.repo._data_path, self.name), mode)
 
     def read(self):
         """Read the error file and return it's content. Raise exception if the
@@ -369,7 +427,7 @@ class IncrementEntry(object):
         """
         Check if the increment entry is empty.
         """
-        fn = os.path.join(self.repo.data_path, self.name)
+        fn = os.path.join(self.repo._data_path, self.name)
         return os.path.getsize(fn) == 0
 
     def __str__(self):
@@ -424,7 +482,7 @@ class FileStatisticsEntry(IncrementEntry):
         # Open file are compress.
         if self._is_compressed:
             line = None
-            fullfn = os.path.join(self.repo.data_path, self.name)
+            fullfn = os.path.join(self.repo._data_path, self.name)
             in_file = gzip.open(fullfn, 'r')
             decompress = zlib.decompressobj(-zlib.MAX_WBITS)
             try:
@@ -521,16 +579,16 @@ class RdiffRepo(object):
             path = encodefilename(path)
         assert isinstance(user_root, bytes)
         assert isinstance(path, bytes)
-        self.encoding = encodings.search_function(FS_ENCODING)
-        assert self.encoding
-        self.user_root = user_root.rstrip(b"/")
+        self._encoding = encodings.search_function(FS_ENCODING)
+        assert self._encoding
         self.path = path.strip(b"/")
-        self.repo_root = os.path.join(self.user_root, self.path)
-        self.root_path = RdiffPath(weakref.proxy(self))
+        self.full_path = os.path.normpath(os.path.join(user_root, path))
 
         # The location of rdiff-backup-data directory.
-        self.data_path = os.path.join(self.repo_root, RDIFF_BACKUP_DATA)
-        assert isinstance(self.data_path, bytes)
+        self._data_path = os.path.join(self.full_path, RDIFF_BACKUP_DATA)
+        assert isinstance(self._data_path, bytes)
+        self._increment_path = os.path.join(self._data_path, INCREMENTS)
+        self._hint_file = os.path.join(self._data_path, b"rdiffweb")
 
         # Check if the object is valid.
         self._check()
@@ -544,55 +602,48 @@ class RdiffRepo(object):
         sorted from old to new (ascending order). To identify dates,
         'mirror_metadata' file located in rdiff-backup-data are used."""
         if not hasattr(self, '_backup_dates'):
-            logger.debug("get backup dates for [%r]", self.repo_root)
+            logger.debug("get backup dates for [%r]", self.full_path)
             self._backup_dates = sorted([
                 IncrementEntry.extract_date(x)
-                for x in self.data_entries
+                for x in self._data_entries
                 if x.startswith(b"mirror_metadata")])
         return self._backup_dates
 
     def _check(self):
         """Check if the repository exists."""
         # Make sure repoRoot is a valid rdiff-backup repository
-        if (not os.access(self.data_path, os.F_OK) or
-                not os.path.isdir(self.data_path)):
-            logger.error("repository [%r] doesn't exists", self.repo_root)
-            raise DoesNotExistError("%r" % self.repo_root)
+        if (not os.access(self._data_path, os.F_OK) or
+                not os.path.isdir(self._data_path)):
+            logger.error("repository [%r] doesn't exists", self.full_path)
+            raise DoesNotExistError(self.full_path)
 
     @property
-    def data_entries(self):
-        """Return list of folder and file located directly in
-        rdiff-backup-data folder. Each file represent a data entry."""
-
-        # Get entries from increment data.
-        return os.listdir(self.data_path)
+    def _data_entries(self):
+        return os.listdir(self._data_path)
 
     def delete(self):
         """Delete the repository permanently."""
         # Not sure if error should be ignored.
-        shutil.rmtree(self.repo_root)
+        shutil.rmtree(self.full_path)
 
     @property
     def display_name(self):
         """Return the most human representation of the repository name."""
-        # NOTE : path may be empty, so return a simpel string.
-        if not self.path:
-            name_b = os.path.basename(self.user_root)
-            return self._decode(name_b)
-        return self._decode(self.path)
+        # NOTE : path may be empty, so return a simple string.
+        return self._decode(os.path.basename(self.full_path))
 
     def _decode(self, value, errors='replace'):
         """Used to decode a repository path into unicode."""
         assert isinstance(value, bytes)
-        return self.encoding.decode(value, errors)[0]
+        return self._encoding.decode(value, errors)[0]
 
     @property
     def _error_logs(self):
         """Return dict of {date: IncrementEntry} to represent each file statistics."""
         if not hasattr(self, '_error_logs_data'):
             self._error_logs_data = {
-                IncrementEntry.extract_date(x): IncrementEntry(self.root_path, x)
-                for x in self.data_entries
+                IncrementEntry.extract_date(x): IncrementEntry(self, x)
+                for x in self._data_entries
                 if x.startswith(b"error_log.")}
         return self._error_logs_data
 
@@ -623,7 +674,7 @@ class RdiffRepo(object):
         if not hasattr(self, '_file_statistics_data'):
             self._file_statistics_data = {
                 IncrementEntry.extract_date(x): x
-                for x in self.data_entries
+                for x in self._data_entries
                 if x.startswith(b"file_statistics.")}
         return self._file_statistics_data
 
@@ -631,7 +682,7 @@ class RdiffRepo(object):
         """
         Return the interface encoding value.
         """
-        return self.encoding.name
+        return self._encoding.name
 
     def get_file_statistic(self, date):
         """Return the file statistic for the given date.
@@ -645,7 +696,7 @@ class RdiffRepo(object):
         try:
             value = self._file_statistics[date]
             if not isinstance(value, FileStatisticsEntry):
-                entry = FileStatisticsEntry(self.root_path, value)
+                entry = FileStatisticsEntry(self, value)
                 self._file_statistics[date] = entry
                 return entry
             return self._file_statistics[date]
@@ -666,7 +717,7 @@ class RdiffRepo(object):
         assert (latestDate is None or
                 isinstance(latestDate, rdw_helpers.rdwTime))
 
-        logger.debug("get history entries for [%r]", self.repo_root)
+        logger.debug("get history entries for [%r]", self.full_path)
 
         entries = []
         # Take care of reverse
@@ -688,13 +739,57 @@ class RdiffRepo(object):
 
         return entries
 
+    def _get_increment_entries(self, path):
+        """
+        Get the increment entries for the current path. This path is located
+        under rdiff-backup-data/increments.
+        """
+        # Compute increment directory location.
+        p = os.path.join(self._increment_path, path.strip(b'/'))
+        assert p.startswith(self.full_path)
+
+        # Check if increment directory exists. The path may not exists if
+        # the folder always exists and never changed.
+        if not os.access(p, os.F_OK):
+            return []
+
+        # List content of the increment directory.
+        # Ignore sub-directories.
+        entries = [
+            IncrementEntry(self, x)
+            for x in os.listdir(p)
+            if not os.path.isdir(os.path.join(p, x))]
+        return entries
+
     def get_path(self, path):
-        """Return a new instance of RdiffPath to represent the given path."""
+        """Return a new instance of DirEntry to represent the given path."""
         assert isinstance(path, bytes)
+        path = os.path.normpath(path.strip(b"/"))
+
         # Get if the path request is the root path.
-        if len(path.strip(b"/")) == 0:
-            return self.root_path
-        return RdiffPath(weakref.proxy(self), path)
+        if path == b'.':
+            return DirEntry(self, b'', True, [])
+
+        # Remove access to rdiff-backup-data directory.
+        if path.startswith(RDIFF_BACKUP_DATA):
+            raise AccessDeniedError(path)
+
+        # Make sure the normalized path is part of the repo.
+        p = os.path.normpath(os.path.join(self.full_path, path))
+        if not p.startswith(self.full_path):
+            raise AccessDeniedError(path)
+
+        # Check if path exists or has increment. If not raise an exception.
+        exists = os.path.exists(p)
+        fn = os.path.basename(path)
+        increments = [e for e in self._get_increment_entries(os.path.dirname(path))
+                      if e.filename == fn]
+        if not exists and not increments:
+            logger.error("path [%r] doesn't exists", path)
+            raise DoesNotExistError(path)
+
+        # Create a directory entry.
+        return DirEntry(self, path, exists, increments)
 
     @property
     def in_progress(self):
@@ -702,14 +797,14 @@ class RdiffRepo(object):
         # Filter the files to keep current_mirror.* files
         current_mirrors = [
             x
-            for x in self.data_entries
+            for x in self._data_entries
             if x.startswith(b"current_mirror.")]
 
         pid_re = re.compile(b"^PID\s*([0-9]+)", re.I | re.M)
 
         def extract_pid(current_mirror):
             """Return process ID from a current mirror marker, if any"""
-            entry = IncrementEntry(self.root_path, current_mirror)
+            entry = IncrementEntry(self, current_mirror)
             match = pid_re.search(entry.read())
             if not match:
                 return None
@@ -738,7 +833,6 @@ class RdiffRepo(object):
     @property
     def last_backup_date(self):
         """Return the last known backup dates."""
-
         if len(self.backup_dates) > 0:
             return self.backup_dates[-1]
         return None
@@ -748,249 +842,45 @@ class RdiffRepo(object):
         to provide hint to rdiffweb related to locale. At first, it's used to
         define an encoding."""
 
-        hint_file = os.path.join(self.data_path, b"rdiffweb")
-        if not os.access(hint_file, os.F_OK) or os.path.isdir(hint_file):
+        if not os.access(self._hint_file, os.F_OK) or os.path.isdir(self._hint_file):
             return
 
-        # Read rdiffweb file asconfiguration file.
-        config = Configuration(hint_file)
+        # Read rdiffweb file as configuration file.
+        config = Configuration(self._hint_file)
         name = config.get_config('encoding', default=FS_ENCODING)
-        self.encoding = encodings.search_function(name.lower())
-        if not self.encoding:
-            encodings.search_function(FS_ENCODING)
-        assert self.encoding
+        self._encoding = encodings.search_function(name.lower())
+        if not self._encoding:
+            self._encoding = encodings.search_function(FS_ENCODING)
+        assert self._encoding
 
-    @property
-    def session_statistics(self):
-        """Return list of IncrementEntry to represent each sessions
-        statistics."""
-        if not hasattr(self, '_session_statistics_data'):
-            data = (
-                SessionStatisticsEntry(self.root_path, x)
-                for x in sorted(self.data_entries)
-                if x.startswith(b"session_statistics."))
-            self._session_statistics_data = OrderedDict([(x.date, x) for x in data])
-        return self._session_statistics_data
-
-    def set_encoding(self, name):
-        """
-        Change the encoding of the repository.
-        """
-        # Check if the given name if valid encoding.
-        encoding = encodings.search_function(name.lower())
-        assert encoding is not None
-        # Need to update the 'rdiffweb' file
-        hint_file = os.path.join(self.data_path, b"rdiffweb")
-        logger.debug("writing hints for [%r]", self.repo_root)
-        config = Configuration(hint_file)
-        config.set_config('encoding', name)
-        config.save()
-        # Also update current encoding.
-        self.encoding = encoding
-
-    def unquote(self, name):
-        """Remove quote from the given name."""
-        assert isinstance(name, bytes)
-
-        # This function just gives back the original text if it can decode it
-        def unquoted_char(match):
-            """For each ;000 return the corresponding byte."""
-            if not len(match.group()) == 4:
-                return match.group
-            try:
-                return bytes([int(match.group()[1:])])
-            except:
-                return match.group
-        # Remove quote using regex
-        return re.sub(b";[0-9]{3}", unquoted_char, name, re.S)
-
-    def __str__(self):
-        return "%r" % (self.repo_root,)
-
-
-class RdiffPath(object):
-
-    """Represent an rdiff-backup repository. Either a root, a path or a file."""
-
-    def __init__(self, repo, path=b""):
-        assert isinstance(repo, RdiffRepo)
-        assert isinstance(path, bytes)
-        self.repo = repo
-        self.path = path.strip(b"/")
-        self._decode = self.repo._decode
-
-        # Check if the object is valid
-        self._check()
-
-    def _check(self):
-        """Check if the path is valid within the a repository."""
-
-        path_to_check = os.path.join(self.repo_root, self.path)
-
-        # Make sure it'S not a subdirectory of "rdiff-backup-data"
-        if self.path.startswith(RDIFF_BACKUP_DATA):
-            raise AccessDeniedError(path_to_check)
-
-        # Make sure there are no symlinks in the path
-        while True:
-            path_to_check = path_to_check.rstrip(b"/")
-            if os.path.islink(path_to_check):
-                raise AccessDeniedError(path_to_check)
-
-            (path_to_check, filename) = os.path.split(path_to_check)
-            if not filename:
-                break
-
-        # Make sure that the folder/file exists somewhere - either in the
-        # current folder, or in the incrementsDir
-        if not os.access(os.path.join(self.repo_root, self.path), os.F_OK):
-            (parent_folder, filename) = os.path.split(
-                os.path.join(self.repo_root, INCREMENTS, self.path))
-            try:
-                increments = [
-                    x
-                    for x in os.listdir(parent_folder)
-                    if x.startswith(filename)]
-            except OSError:
-                logger.exception("fail to list increments for [%r]", parent_folder)
-                increments = []
-
-            if not increments:
-                logger.error("path [%r] doesn't exists", path_to_check)
-                raise DoesNotExistError(path_to_check)
-
-    @property
-    def dir_entries(self):
-        """Get directory entries for the current path. It is similar to
-        listdir() but for rdiff-backup."""
-
-        logger.debug("get directory entries for [%r]", self.full_path)
-
-        # Group increments by filename
-        grouped_increment_entries = rdw_helpers.groupby(
-            self._create_increment_entries(), lambda x: x.filename)
-
-        # Process each increment entries and combine this with the existing
-        # entries
-        entriesDict = {}
-        for filename, increments in iteritems(grouped_increment_entries):
-            # Check if filename exists
-            exists = filename in self.existing_entries
-            # Create DirEntry to represent the item
-            new_entry = DirEntry(
-                self,
-                filename,
-                exists,
-                increments)
-            entriesDict[filename] = new_entry
-
-        # Then add existing entries
-        for filename in self.existing_entries:
-            # Check if the entry was created by increments entry
-            if filename in entriesDict:
-                continue
-            # The entry doesn't exists (mostly because it ever change). So
-            # create a DirEntry to represent it
-            new_entry = DirEntry(
-                self,
-                filename,
-                True,
-                [])
-            entriesDict[filename] = new_entry
-
-        # Return the values (so the DirEntry objects)
-        return list(entriesDict.values())
-
-    @property
-    def existing_entries(self):
-        """Return the content of the directory using a simple listdir(). This
-        represent the last known backup. Thus it return existing entries."""
-
-        if not hasattr(self, '_existing_entries'):
-            logger.debug("get existing entries for [%r]", self.full_path)
-
-            # Check if the directory exists. It may not exist if
-            # it has been delete
-            self._existing_entries = []
-            if os.access(self.full_path, os.F_OK):
-                # Get entries from directory structure
-                self._existing_entries = os.listdir(self.full_path)
-
-                # Remove "rdiff-backup-data" directory
-                if self.path == b'':
-                    self._existing_entries.remove(RDIFF_BACKUP_DATA)
-
-        return self._existing_entries
-
-    @property
-    def increments_path(self):
-        """Get the increment path for the current path. This path is located
-            under rdiff-backup-data/increments"""
-        return os.path.join(self.repo.repo_root, INCREMENTS, self.path)
-
-    @property
-    def full_path(self):
-        """return the canonical path to the current path. Basically,
-            return absolute path"""
-        return os.path.join(self.repo_root, self.path)
-
-    def _create_increment_entries(self):
-        """
-        Return all the increment entries for this path.
-        each entry represent a 'file' in the sub-directory structure under
-        rdiff-backup-data/increments
-        """
-
-        logger.debug("get increments entries for [%r]", self.increments_path)
-
-        # Check if increment directory exists. The path may not exists if
-        # the folder always exists and never changed.
-        if not os.access(self.increments_path, os.F_OK):
-            return list()
-
-        # List content of the increment directory.
-        # Ignore sub-directories.
-        increment_entries = [
-            IncrementEntry(self, x)
-            for x in os.listdir(self.increments_path)
-            if not os.path.isdir(os.path.join(self.increments_path, x))]
-        return increment_entries
-
-    @property
-    def repo_root(self):
-        """return the repository path"""
-        return self.repo.repo_root
-
-    def restore(self, name, restore_date, kind='zip'):
+    def restore(self, path, restore_date, kind='zip'):
         """Used to restore the given file located in this path."""
-        assert isinstance(name, bytes)
+        assert isinstance(path, bytes)
         assert isinstance(restore_date, rdw_helpers.rdwTime) or isinstance(restore_date, int)
         assert kind in ARCHIVERS
-        name = name.lstrip(b"/")
+        path = path.strip(b"/")
 
         # Determine the file name to be restore (from rdiff-backup
         # point of view).
-        file_to_restore = os.path.join(self.full_path, name)
-        file_to_restore = self.repo.unquote(file_to_restore)
+        file_to_restore = os.path.join(self.full_path, path)
+        file_to_restore = self.unquote(file_to_restore)
 
         # Convert the date into epoch.
         if isinstance(restore_date, rdw_helpers.rdwTime):
             restore_date = restore_date.getSeconds()
 
         # Define a nice filename for the archive or file to be created.
-        if name == b"" and self.path == b"":
-            filename = "root." + kind
+        if path == b"":
+            filename = "%s.%s" % (self.display_name, kind)
         else:
-            if self.path != b"":
-                filename_b = os.path.basename(self.path)
-            if name != b"":
-                filename_b = name
+            if path != b"":
+                filename_b = os.path.basename(path)
             # Unquote the filename (remove ;090).
-            filename_b = self.repo.unquote(filename_b)
+            filename_b = self.unquote(filename_b)
             # Decode string as repo encoding.
             filename = self._decode(filename_b)
             # Append archive extention if a directory
-            entry = next((d for d in self.dir_entries if d.name == name), None)
+            entry = self.get_path(path)
             if entry and entry.isdir:
                 filename = filename + '.' + kind
 
@@ -1008,7 +898,7 @@ class RdiffPath(object):
                 # Execute rdiff-backup to restore the data.
                 logger.info("execute rdiff-backup --restore-as-of=%s %r %r", restore_date, file_to_restore, output)
                 try:
-                    self.repo.execute(
+                    self.execute(
                         b"--restore-as-of=" + str(restore_date).encode(encoding='latin1'),
                         file_to_restore,
                         output)
@@ -1025,7 +915,7 @@ class RdiffPath(object):
 
                 # Archive data or pipe data.
                 if os.path.isdir(output):
-                    archive(output, fdst, kind=kind, encoding=self.repo.get_encoding())
+                    archive(output, fdst, kind=kind, encoding=self.get_encoding())
                 else:
                     # Pipe the content of the file.
                     with io.open(output, 'rb') as fsrc:
@@ -1060,23 +950,51 @@ class RdiffPath(object):
             raise e
 
     @property
-    def restore_dates(self):
+    def session_statistics(self):
+        """Return list of IncrementEntry to represent each sessions
+        statistics."""
+        if not hasattr(self, '_session_statistics_data'):
+            data = (
+                SessionStatisticsEntry(self, x)
+                for x in sorted(self._data_entries)
+                if x.startswith(b"session_statistics."))
+            self._session_statistics_data = OrderedDict([(x.date, x) for x in data])
+        return self._session_statistics_data
 
-        """Get list of date to be restored for current path. From old to
-        new."""
+    def set_encoding(self, name):
+        """
+        Change the encoding of the repository.
+        """
+        # Check if the given name if valid encoding.
+        encoding = encodings.search_function(name.lower())
+        assert encoding is not None
+        # Get encoding name (as unicode)
+        name = encoding.name
+        if not isinstance(name, str):
+            name = name.decode('ascii')
+        # Need to update the 'rdiffweb' file
+        logger.debug("writing hints for [%r]", self.full_path)
+        config = Configuration(self._hint_file)
+        config.set_config('encoding', name)
+        config.save()
+        # Also update current encoding.
+        self._encoding = encoding
 
-        logger.debug("get restore dates for [%r]", self.full_path)
+    def unquote(self, name):
+        """Remove quote from the given name."""
+        assert isinstance(name, bytes)
 
-        # If root directory return all dates.
-        if self.path == b"":
-            return self.repo.backup_dates
+        # This function just gives back the original text if it can decode it
+        def unquoted_char(match):
+            """For each ;000 return the corresponding byte."""
+            if not len(match.group()) == 4:
+                return match.group
+            try:
+                return bytes([int(match.group()[1:])])
+            except:
+                return match.group
+        # Remove quote using regex
+        return re.sub(b";[0-9]{3}", unquoted_char, name, re.S)
 
-        # Get reference to parent path
-        (parent_path, name) = os.path.split(self.path)
-        repo_path = RdiffPath(self.repo, parent_path)
-
-        # Get entries specific to the given name
-        entries = [x for x in repo_path.dir_entries if x.name == name]
-        if not entries:
-            raise DoesNotExistError()
-        return entries[0].change_dates
+    def __str__(self):
+        return "%r" % (self.full_path,)

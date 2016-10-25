@@ -25,11 +25,9 @@ import cherrypy
 import logging
 import os
 
-from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb.dispatch import poppath
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import unquote_url
 
 
 # Define the logger
@@ -60,8 +58,6 @@ class BrowsePage(page_main.MainPage):
         return self._compile_template("browse.html", **parms)
 
     def _get_parms_for_page(self, repo_obj, path_obj, restore, limit):
-        assert isinstance(repo_obj, librdiff.RdiffRepo)
-        assert isinstance(path_obj, librdiff.RdiffPath)
 
         # Build "parent directories" links
         # TODO This Should to me elsewhere. It contains logic related to librdiff encoding.
@@ -83,7 +79,7 @@ class BrowsePage(page_main.MainPage):
         dir_entries = []
         restore_dates = []
         if restore:
-            restore_dates = path_obj.restore_dates[:-limit - 1:-1]
+            restore_dates = path_obj.change_dates[:-limit - 1:-1]
         else:
             # Get list of actual directory entries
             dir_entries = path_obj.dir_entries[::-1]

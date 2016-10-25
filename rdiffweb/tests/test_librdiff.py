@@ -26,30 +26,32 @@ Module used to test the librdiff.
 from __future__ import unicode_literals
 
 from builtins import bytes
-import encodings
+from future.utils import native_str
 import os
 import pkg_resources
+import shutil
+import tarfile
+import tempfile
 import unittest
 
-from rdiffweb.librdiff import RdiffPath, FileStatisticsEntry, RdiffRepo, \
-    DirEntry, IncrementEntry, SessionStatisticsEntry, HistoryEntry
+from rdiffweb.librdiff import FileStatisticsEntry, RdiffRepo, \
+    DirEntry, IncrementEntry, SessionStatisticsEntry, HistoryEntry, \
+    AccessDeniedError, DoesNotExistError
 from rdiffweb.rdw_helpers import rdwTime
 
 
 class MockRdiffRepo(RdiffRepo):
 
     def __init__(self):
-        self.encoding = encodings.search_function('utf-8')
-        assert self.encoding
-        self.repo_root = bytes(pkg_resources.resource_filename('rdiffweb', 'tests'), encoding='utf-8')  # @UndefinedVariable
-        self.data_path = os.path.join(self.repo_root, b'rdiff-backup-data')
-        self.root_path = MockRdiffPath(self)
+        p = bytes(pkg_resources.resource_filename('rdiffweb', 'tests'), encoding='utf-8')  # @UndefinedVariable
+        RdiffRepo.__init__(self, os.path.dirname(p), os.path.basename(p))
+        self.root_path = MockDirEntry(self)
 
 
-class MockRdiffPath(RdiffPath):
+class MockDirEntry(DirEntry):
 
     def __init__(self, repo):
-        self.repo = repo
+        self._repo = repo
         self.path = b''
 
 
@@ -74,6 +76,7 @@ class IncrementEntryTest(unittest.TestCase):
         increment = IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz')
         self.assertEqual(rdwTime(1414967021), increment.date)
         self.assertEqual(b'my_filename.txt', increment.filename)
+        self.assertIsNotNone(increment.repo)
 
 
 class DirEntryTest(unittest.TestCase):
@@ -87,6 +90,13 @@ class DirEntryTest(unittest.TestCase):
             1415221495, 1415221507]
         self.repo._backup_dates = [rdwTime(x) for x in backup_dates]
         self.root_path = self.repo.root_path
+
+    def test_init(self):
+        entry = DirEntry(self.root_path, b'my_filename.txt', False, [])
+        self.assertFalse(entry.isdir)
+        self.assertFalse(entry.exists)
+        self.assertEqual(os.path.join(b'my_filename.txt'), entry.path)
+        self.assertEqual(os.path.join(self.repo.full_path, b'my_filename.txt'), entry.full_path)
 
     def test_change_dates(self):
         """Check if dates are properly sorted."""
@@ -116,29 +126,6 @@ class DirEntryTest(unittest.TestCase):
              rdwTime(1415059497),
              rdwTime(1415221507)],
             entry.change_dates)
-
-    def test_restore_dates(self):
-        increments = [
-            IncrementEntry(self.root_path, b'my_dir.2014-11-05T16:04:30-05:00.dir'),
-            IncrementEntry(self.root_path, b'my_dir.2014-11-05T16:04:55-05:00.dir')]
-        entry = DirEntry(self.root_path, b'my_dir', False, increments)
-        self.assertEqual(
-            [rdwTime(1415221470),
-             rdwTime(1415221495),
-             ],
-            entry.restore_dates)
-
-    def test_restore_dates_with_exists(self):
-        increments = [
-            IncrementEntry(self.root_path, b'my_dir.2014-11-05T16:04:30-05:00.dir'),
-            IncrementEntry(self.root_path, b'my_dir.2014-11-05T16:04:55-05:00.dir')]
-        entry = DirEntry(self.root_path, b'my_dir', True, increments)
-        self.assertEqual(
-            [rdwTime(1415221470),
-             rdwTime(1415221495),
-             rdwTime(1415221507),
-             ],
-            entry.restore_dates)
 
     def test_display_name(self):
         """Check if display name is unquoted and unicode."""
@@ -207,8 +194,84 @@ class HistoryEntryTest(unittest.TestCase):
 class RdiffRepoTest(unittest.TestCase):
 
     def setUp(self):
-        self.repo = MockRdiffRepo()
-        self.root_path = self.repo.root_path
+        # Extract 'testcases.tar.gz'
+        testcases = pkg_resources.resource_filename('rdiffweb.tests', 'testcases.tar.gz')  # @UndefinedVariable
+        self.temp_dir = str(tempfile.mkdtemp(prefix='rdiffweb_tests_'))
+        tarfile.open(testcases).extractall(native_str(self.temp_dir))
+        # Define location of testcases
+        self.testcases_dir = os.path.join(self.temp_dir, 'testcases')
+        self.repo = RdiffRepo(self.temp_dir, 'testcases')
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_dir, True)
+
+    def test_init(self):
+        self.assertEqual('testcases', self.repo.display_name)
+
+    def test_get_path_root(self):
+        dir_entry = self.repo.get_path(b"/")
+        self.assertEqual('', dir_entry.display_name)
+        self.assertEqual(b'', dir_entry.path)
+        self.assertEqual(self.testcases_dir, dir_entry.full_path)
+        self.assertEqual(True, dir_entry.isdir)
+        self.assertTrue(len(dir_entry.dir_entries) > 0)
+        self.assertTrue(len(dir_entry.change_dates) > 1)
+
+    def test_get_path_subdirectory(self):
+        dir_entry = self.repo.get_path(b"Subdirectory")
+        self.assertEqual('Subdirectory', dir_entry.display_name)
+        self.assertEqual(b'Subdirectory', dir_entry.path)
+        self.assertEqual(os.path.join(self.testcases_dir, b'Subdirectory'), dir_entry.full_path)
+        self.assertEqual(True, dir_entry.isdir)
+        self.assertTrue(len(dir_entry.dir_entries) > 0)
+        self.assertTrue(len(dir_entry.change_dates) > 1)
+
+    def test_get_path_subfile(self):
+        dir_entry = self.repo.get_path(b"Revisions/Data")
+        self.assertEqual('Data', dir_entry.display_name)
+        self.assertEqual(b'Revisions/Data', dir_entry.path)
+        self.assertEqual(os.path.join(self.testcases_dir, b'Revisions/Data'), dir_entry.full_path)
+        self.assertEqual(False, dir_entry.isdir)
+        self.assertEqual([], dir_entry.dir_entries)
+        self.assertTrue(len(dir_entry.change_dates) > 1)
+
+    def test_get_path_rdiff_backup_data(self):
+        with self.assertRaises(AccessDeniedError):
+            self.repo.get_path(b'rdiff-backup-data')
+
+    def test_get_path_invalid(self):
+        with self.assertRaises(DoesNotExistError):
+            self.repo.get_path(b'invalide')
+
+    def test_get_path_broken_symlink(self):
+        dir_entry = self.repo.get_path(b'BrokenSymlink')
+        self.assertIsNotNone(dir_entry)
+
+    def test_in_progress(self):
+        self.assertFalse(self.repo.in_progress)
+
+    def test_restore_file(self):
+        filename, stream = self.repo.restore(b"Revisions/Data", restore_date=1454448640, kind='zip')
+        self.assertEqual('Data', filename)
+        data = stream.read()
+        self.assertEqual(b'Version3\n', data)
+
+    def test_restore_subdirectory(self):
+        filename, stream = self.repo.restore(b"Revisions/", restore_date=1454448640, kind='zip')
+        self.assertEqual('Revisions.zip', filename)
+        data = stream.read()
+        self.assertTrue(data)
+
+    def test_restore_root(self):
+        filename, stream = self.repo.restore(b"/", restore_date=1454448640, kind='zip')
+        self.assertEqual('testcases.zip', filename)
+        data = stream.read()
+        self.assertTrue(data)
+
+    def test_set_encoding(self):
+        self.repo.set_encoding("cp1252")
+        self.repo = RdiffRepo(self.temp_dir, 'testcases')
+        self.assertEqual("cp1252", self.repo.get_encoding())
 
     def test_unquote(self):
         self.assertEqual(b'Char ;090 to quote', self.repo.unquote(b'Char ;059090 to quote'))

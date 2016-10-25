@@ -74,12 +74,6 @@ class RestorePage(page_main.MainPage):
 
         logger.debug("restoring [%r][%s]", path, date)
 
-        # The path wont have leading and trailing "/".
-        (path, file_b) = os.path.split(path)
-        if not path:
-            path = file_b
-            file_b = b""
-
         # Check user access to repo / path.
         (repo_obj, path_obj) = self.validate_user_path(path)
 
@@ -100,7 +94,7 @@ class RestorePage(page_main.MainPage):
             kind = 'tar.gz'
 
         # Restore file(s)
-        filename, fileobj = path_obj.restore(file_b, int(date), kind=kind)
+        filename, fileobj = path_obj.restore(int(date), kind=kind)
 
         # Define content-disposition.
         cherrypy.response.headers["Content-Disposition"] = self._content_disposition(filename)
