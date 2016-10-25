@@ -89,7 +89,7 @@ class AuthFormTool(HandlerTool):
         userobj = cherrypy.request.app.userdb.get_user(username)  # @UndefinedVariable
         if not userobj:
             raise cherrypy.HTTPError(403)
-        logger.debug('setting request.login to %r', userobj)
+        logger.debug('setting request.login to %s', userobj)
         cherrypy.serving.request.login = userobj
 
     def do_login(self, login, password, redirect=b'/', **kwargs):
@@ -105,7 +105,7 @@ class AuthFormTool(HandlerTool):
                 del response.headers["Content-Length"]
             return True
         # User successfully login.
-        logger.debug('setting request.login to %r', userobj)
+        logger.debug('setting request.login to %s', userobj)
         cherrypy.serving.request.login = userobj
         cherrypy.session[self.session_key] = userobj.username  # @UndefinedVariable
         self.on_login(userobj.username)
