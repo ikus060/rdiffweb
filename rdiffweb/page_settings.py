@@ -20,14 +20,11 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from builtins import bytes
-from builtins import str
 import cherrypy
-import encodings
 import logging
 
 from rdiffweb import page_main
 from rdiffweb.dispatch import poppath
-from rdiffweb.i18n import ugettext as _
 
 
 # Define the logger
