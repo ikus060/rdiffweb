@@ -23,7 +23,7 @@
 <!-- Panel to set user info. -->
 {% call macros.panel(title=_("Character encoding"), class='default') %}
 <div class="panel-body">
-  <form action="/ajax/set-encoding/{{ repo_name }}/" method="POST" role="form" class="clearfix" data-async data-target="#new-encoding-status">
+  <form action="/ajax/set-encoding/{{ repo_path }}/" method="POST" role="form" class="clearfix" data-async data-target="#new-encoding-status">
     <div class="form-group">
         <label for="encoding" class="control-label">
             {% trans %}Encoding{% endtrans %}</label>
