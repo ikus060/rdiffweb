@@ -48,6 +48,7 @@ class CheckLinkTest(WebCase):
         """
         Crawl all the pages to find broken links.
         """
+        ignore = ['/restore/testcases/BrokenSymlink.*', '/browse/testcases/BrokenSymlink.*']
         done = set(['#', '/logout/'])
         todo = OrderedDict()
         todo["/"] = "/"
@@ -64,7 +65,7 @@ class CheckLinkTest(WebCase):
                 newpage = newpage.replace("&amp;", "&")
                 if newpage.startswith("?"):
                     newpage = re.sub("\\?.*", "", page) + newpage
-                if newpage not in done:
+                if newpage not in done and not any(re.match(i, newpage) for i in ignore):
                     todo[newpage] = page
 
 if __name__ == "__main__":

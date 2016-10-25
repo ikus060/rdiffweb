@@ -23,7 +23,6 @@ from builtins import bytes
 import cherrypy
 from future.utils.surrogateescape import encodefilename
 import logging
-import os.path
 
 from rdiffweb.core import Component
 from rdiffweb.i18n import get_current_lang
@@ -102,19 +101,6 @@ class MainPage(Component):
         # Get reference to user_root
         user_root_b = encodefilename(self.app.currentuser.user_root)
 
-        # Check path vs real path value
-        full_path_b = os.path.join(user_root_b, path_b.lstrip(b'/')).rstrip(b"/")
-        real_path_b = os.path.realpath(full_path_b).rstrip(b"/")
-        if full_path_b != real_path_b:
-            # We can safely assume the realpath contains a symbolic link. If
-            # the symbolic link is valid, we display the content of the "real"
-            # path.
-            if real_path_b.startswith(os.path.join(user_root_b, repo_b)):
-                path_b = os.path.relpath(real_path_b, user_root_b)
-            else:
-                logger.warning("access is denied [%r] vs [%r]", full_path_b, real_path_b)
-                raise cherrypy.HTTPError(404)
-
         try:
             # Get reference to the repository (this ensure the repository does
             # exists and is valid.)
@@ -126,10 +112,10 @@ class MainPage(Component):
 
             return (repo_obj, path_obj)
 
-        except AccessDeniedError as e:
+        except AccessDeniedError:
             logger.warning("access is denied", exc_info=1)
             raise cherrypy.HTTPError(404)
-        except DoesNotExistError as e:
+        except DoesNotExistError:
             logger.warning("doesn't exists", exc_info=1)
             raise cherrypy.HTTPError(404)
 

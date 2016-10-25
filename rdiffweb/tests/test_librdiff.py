@@ -216,7 +216,7 @@ class RdiffRepoTest(unittest.TestCase):
         self.temp_dir = str(tempfile.mkdtemp(prefix='rdiffweb_tests_'))
         tarfile.open(testcases).extractall(native_str(self.temp_dir))
         # Define location of testcases
-        self.testcases_dir = os.path.join(self.temp_dir, 'testcases')
+        self.testcases_dir = os.path.normpath(os.path.join(self.temp_dir, 'testcases'))
         self.repo = RdiffRepo(self.temp_dir, 'testcases')
 
     def tearDown(self):
@@ -261,8 +261,8 @@ class RdiffRepoTest(unittest.TestCase):
             self.repo.get_path(b'invalide')
 
     def test_get_path_broken_symlink(self):
-        dir_entry = self.repo.get_path(b'BrokenSymlink')
-        self.assertIsNotNone(dir_entry)
+        with self.assertRaises(DoesNotExistError):
+            self.repo.get_path(b'BrokenSymlink')
 
     def test_in_progress(self):
         self.assertFalse(self.repo.in_progress)

@@ -57,6 +57,9 @@ PY3 = sys.version_info[0] == 3
 # Define the logger
 logger = logging.getLogger(__name__)
 
+# Rdiffweb config file (hints)
+RDIFFWEB_CONF = b"rdiffweb"
+
 # Constant for the rdiff-backup-data folder name.
 RDIFF_BACKUP_DATA = b"rdiff-backup-data"
 
@@ -93,6 +96,10 @@ class DoesNotExistError(FileError):
     pass
 
 
+class SymLinkAccessDeniedError(FileError):
+    pass
+
+
 class UnknownError(FileError):
     pass
 
@@ -115,7 +122,7 @@ class DirEntry(object):
         else:
             self._repo = parent._repo
             # Relative path to the repository.
-            self.path = os.path.normpath(os.path.join(parent.path, path))
+            self.path = os.path.join(parent.path, path)
         # Absolute path to the directory
         self.full_path = os.path.normpath(os.path.join(self._repo.full_path, self.path))
         # May need to compute our own state if not provided.
@@ -579,13 +586,13 @@ class RdiffRepo(object):
         self._encoding = encodings.search_function(FS_ENCODING)
         assert self._encoding
         self.path = path.strip(b"/")
-        self.full_path = os.path.normpath(os.path.join(user_root, path))
+        self.full_path = os.path.realpath(os.path.join(user_root, path))
 
         # The location of rdiff-backup-data directory.
         self._data_path = os.path.join(self.full_path, RDIFF_BACKUP_DATA)
         assert isinstance(self._data_path, bytes)
         self._increment_path = os.path.join(self._data_path, INCREMENTS)
-        self._hint_file = os.path.join(self._data_path, b"rdiffweb")
+        self._hint_file = os.path.join(self._data_path, RDIFFWEB_CONF)
 
         # Check if the object is valid.
         self._check()
@@ -772,13 +779,13 @@ class RdiffRepo(object):
             raise AccessDeniedError(path)
 
         # Make sure the normalized path is part of the repo.
-        p = os.path.normpath(os.path.join(self.full_path, path))
+        p = os.path.realpath(os.path.join(self.full_path, path))
         if not p.startswith(self.full_path):
-            raise AccessDeniedError(path)
+            raise SymLinkAccessDeniedError(path)
 
         # Check if path exists or has increment. If not raise an exception.
         exists = os.path.exists(p)
-        fn = os.path.basename(path)
+        fn = os.path.basename(p)
         increments = [e for e in self._get_increment_entries(os.path.dirname(path))
                       if e.filename == fn]
         if not exists and not increments:
