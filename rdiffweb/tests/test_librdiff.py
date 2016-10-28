@@ -36,7 +36,7 @@ import unittest
 
 from rdiffweb.librdiff import FileStatisticsEntry, RdiffRepo, \
     DirEntry, IncrementEntry, SessionStatisticsEntry, HistoryEntry, \
-    AccessDeniedError, DoesNotExistError
+    AccessDeniedError, DoesNotExistError, FileError, UnknownError
 from rdiffweb.rdw_helpers import rdwTime
 
 
@@ -146,6 +146,23 @@ class DirEntryTest(unittest.TestCase):
             IncrementEntry(self.root_path, b'my_file.2014-11-05T16:04:30-05:00.dir')]
         entry = DirEntry(self.root_path, b'my_file', False, increments)
         self.assertEqual(0, entry.file_size)
+
+
+class FileErrorTest(unittest.TestCase):
+
+    def test_init(self):
+
+        e = FileError('some/path')
+        self.assertEqual('some/path', str(e))
+
+        e = DoesNotExistError('some/path')
+        self.assertEqual('some/path', str(e))
+
+        e = AccessDeniedError('some/path')
+        self.assertEqual('some/path', str(e))
+
+        e = UnknownError('some/path')
+        self.assertEqual('some/path', str(e))
 
 
 class FileStatisticsEntryTest(unittest.TestCase):

@@ -85,17 +85,14 @@ class FileError(Exception):
     pass
 
 
-@python_2_unicode_compatible
 class AccessDeniedError(FileError):
     pass
 
 
-@python_2_unicode_compatible
 class DoesNotExistError(FileError):
     pass
 
 
-@python_2_unicode_compatible
 class UnknownError(FileError):
     pass
 
