@@ -221,7 +221,7 @@ class RdiffRepoTest(unittest.TestCase):
         self.repo = RdiffRepo(self.temp_dir, b'testcases')
 
     def tearDown(self):
-        shutil.rmtree(self.temp_dir, True)
+        shutil.rmtree(self.temp_dir.encode('utf8'), True)
 
     def test_init(self):
         self.assertEqual('testcases', self.repo.display_name)
@@ -278,6 +278,13 @@ class RdiffRepoTest(unittest.TestCase):
 
     def test_restore_file(self):
         filename, stream = self.repo.restore(b"Revisions/Data", restore_date=1454448640, kind='zip')
+        self.assertEqual('Data', filename)
+        data = stream.read()
+        self.assertEqual(b'Version3\n', data)
+
+    def test_restore_direntry(self):
+        entry = self.repo.get_path(b"Revisions/Data")
+        filename, stream = self.repo.restore(entry, restore_date=1454448640, kind='zip')
         self.assertEqual('Data', filename)
         data = stream.read()
         self.assertEqual(b'Version3\n', data)

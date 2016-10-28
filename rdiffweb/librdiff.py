@@ -291,7 +291,7 @@ class DirEntry(object):
         """
         Restore the file identified by this directory entry.
         """
-        return self._repo.restore(self.path, restore_date, kind)
+        return self._repo.restore(self, restore_date, kind)
 
 
 class HistoryEntry(object):
@@ -859,11 +859,18 @@ class RdiffRepo(object):
 
     def restore(self, path, restore_date, kind='zip'):
         """Used to restore the given file located in this path."""
-        assert isinstance(path, bytes)
+        assert isinstance(path, bytes) or isinstance(path, DirEntry)
         assert isinstance(restore_date, rdw_helpers.rdwTime) or isinstance(restore_date, int)
         assert kind in ARCHIVERS
-        path = path.strip(b"/")
 
+        # Get the info we need from DirEntry
+        if isinstance(path, DirEntry):
+            entry = path
+            path = path.path
+        else:
+            path = path.strip(b"/")
+            entry = None
+            
         # Determine the file name to be restore (from rdiff-backup
         # point of view).
         file_to_restore = os.path.join(self.full_path, path)
@@ -877,14 +884,13 @@ class RdiffRepo(object):
         if path == b"":
             filename = "%s.%s" % (self.display_name, kind)
         else:
-            if path != b"":
-                filename_b = os.path.basename(path)
+            filename_b = os.path.basename(path)
             # Unquote the filename (remove ;090).
             filename_b = self.unquote(filename_b)
             # Decode string as repo encoding.
             filename = self._decode(filename_b)
             # Append archive extention if a directory
-            entry = self.get_path(path)
+            entry = entry or self.get_path(path)
             if entry and entry.isdir:
                 filename = filename + '.' + kind
 
