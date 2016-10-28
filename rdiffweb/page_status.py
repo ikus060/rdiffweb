@@ -166,7 +166,7 @@ class StatusPage(page_main.MainPage):
                                 "size": backup.size,
                                 "errors": backup.errors} for backup in backups]
             except librdiff.FileError:
-                logging.exception("invalid user path %s" % repo)
+                logger.exception("invalid user path %s" % repo)
 
         allBackups.sort(key=lambda x: x["date"])
         failedBackups = [x for x in allBackups if x["errors"]]

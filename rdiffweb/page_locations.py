@@ -65,7 +65,7 @@ class LocationsPage(page_main.MainPage):
                 last_backup_date = repo_obj.last_backup_date
                 failed = False
             except librdiff.FileError:
-                logging.exception("invalid user path %s" % user_repo)
+                logger.exception("invalid user path %s" % user_repo)
                 path = b''
                 name = user_repo
                 in_progress = False
