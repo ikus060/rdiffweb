@@ -318,9 +318,9 @@ class HistoryEntry(object):
     def errors(self):
         """Return error messages."""
         try:
-            return self._repo._error_logs[self.date].read()
+            return self._repo._decode(self._repo._error_logs[self.date].read())
         except KeyError:
-            return b""
+            return ""
 
     @property
     def increment_size(self):

@@ -213,11 +213,12 @@ class RdiffRepoTest(unittest.TestCase):
     def setUp(self):
         # Extract 'testcases.tar.gz'
         testcases = pkg_resources.resource_filename('rdiffweb.tests', 'testcases.tar.gz')  # @UndefinedVariable
-        self.temp_dir = str(tempfile.mkdtemp(prefix='rdiffweb_tests_'))
+        self.temp_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_')
         tarfile.open(testcases).extractall(native_str(self.temp_dir))
         # Define location of testcases
         self.testcases_dir = os.path.normpath(os.path.join(self.temp_dir, 'testcases'))
-        self.repo = RdiffRepo(self.temp_dir, 'testcases')
+        self.testcases_dir = self.testcases_dir.encode('utf8')
+        self.repo = RdiffRepo(self.temp_dir, b'testcases')
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir, True)
