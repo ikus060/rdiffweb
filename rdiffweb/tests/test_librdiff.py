@@ -225,6 +225,14 @@ class RdiffRepoTest(unittest.TestCase):
     def test_init(self):
         self.assertEqual('testcases', self.repo.display_name)
 
+    def test_init_with_absolute(self):
+        self.repo = RdiffRepo(self.temp_dir, '/testcases')
+        self.assertEqual('testcases', self.repo.display_name)
+
+    def test_init_with_invalid(self):
+        with self.assertRaises(DoesNotExistError):
+            RdiffRepo(self.temp_dir, '/invalid')
+
     def test_get_path_root(self):
         dir_entry = self.repo.get_path(b"/")
         self.assertEqual('', dir_entry.display_name)

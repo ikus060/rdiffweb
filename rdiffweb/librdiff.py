@@ -586,7 +586,7 @@ class RdiffRepo(object):
         self._encoding = encodings.search_function(FS_ENCODING)
         assert self._encoding
         self.path = path.strip(b"/")
-        self.full_path = os.path.realpath(os.path.join(user_root, path))
+        self.full_path = os.path.realpath(os.path.join(user_root, self.path))
 
         # The location of rdiff-backup-data directory.
         self._data_path = os.path.join(self.full_path, RDIFF_BACKUP_DATA)
