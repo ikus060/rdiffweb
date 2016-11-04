@@ -825,7 +825,7 @@ msgstr "État"
 
 #: rdiffweb/templates/layout.html:52 rdiffweb/templates/prefs.html:3
 msgid "User settings"
-msgstr "Paramètres de l'utilisateur"
+msgstr "Paramètres"
 
 #: rdiffweb/templates/layout.html:67
 msgid "Logout"
