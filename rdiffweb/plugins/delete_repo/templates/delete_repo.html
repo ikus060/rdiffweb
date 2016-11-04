@@ -18,11 +18,11 @@
 <input type="hidden" id="repo_name" name="repo_name" value="{{ repo_name }}" />
 {% call macros.modal_dialog('delete-repo-modal', _('Confirmation required'), _('Confirm'), class="danger") %}
 <p class="lead text-danger">
-  {% trans %}You are going to remove {{ repo_name }}. Removed repository CANNOT be restored! Are you ABSOLUTELY sure?{% endtrans %}
+  {% trans %}You are going to remove <b>{{ repo_name }}</b>. Removed repository CANNOT be restored! Are you ABSOLUTELY sure?{% endtrans %}
 </p>
 <p>
   {% trans %}This action can lead to data loss. To prevent accidental actions we ask you to confirm your intention.{% endtrans %}<br/>
-  {% trans %}Please type {{ repo_name }} to proceed or close this modal to cancel{% endtrans %}
+  {% trans %}Please type <b>{{ repo_name }}</b> to proceed or close this modal to cancel{% endtrans %}
 </p>
 <div class="form-group">
    <input class="form-control" id="confirm_name" name="confirm_name" type="text" value="" data-rule-equalto="#repo_name" required >
