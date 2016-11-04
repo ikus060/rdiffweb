@@ -2,7 +2,7 @@
 {% import 'macros.html' as macros %}
 {% call macros.panel(title=_("Remove older"), class='default') %}
 <div class="panel-body">
-  <form data-async data-target="#keepdays-status" action="/ajax/remove-older/{{ repo_name }}/" method="POST" role="form">
+  <form data-async data-target="#keepdays-status" action="/ajax/remove-older/{{ repo_path }}/" method="POST" role="form">
   <div class="form-group">
     <label for="encoding" class="control-label">
         {% trans %}Keep history for:{% endtrans %}</label>

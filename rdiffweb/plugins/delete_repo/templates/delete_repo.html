@@ -13,7 +13,7 @@
 {% endcall %}
 
 <!-- Delete Modal -->
-<form data-validate action="/delete/{{ repo_name }}/" method="post" role="form" class="clearfix" >
+<form data-validate action="/delete/{{ repo_path }}/" method="post" role="form" class="clearfix" >
 <input type="hidden" name="action" value="delete" />
 <input type="hidden" id="repo_name" name="repo_name" value="{{ repo_name }}" />
 {% call macros.modal_dialog('delete-repo-modal', _('Confirmation required'), _('Confirm'), class="danger") %}
