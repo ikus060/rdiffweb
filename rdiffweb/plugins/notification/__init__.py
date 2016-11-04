@@ -187,6 +187,17 @@ class NotificationPlugin(IPreferencesPanelProvider, JobPlugin, IUserChangeListen
         # If the email attributes was changed, send a mail notification.
         self.send_mail(userobj, _("Email address changed"), "email_changed.html")
 
+    def user_password_changed(self, username, password):
+        """
+        Implementation of IUserChangeListener interface.
+        """
+
+        # get User object (to get email)
+        userobj = self.app.userdb.get_user(username)
+        assert userobj
+        # If the email attributes was changed, send a mail notification.
+        self.send_mail(userobj, _("Password changed"), "password_changed.html")
+
     def send_notifications(self):
         """
         Loop trough all the user repository and send notifications.
@@ -228,6 +239,9 @@ class NotificationPlugin(IPreferencesPanelProvider, JobPlugin, IUserChangeListen
         """
         # Build email from template.
         parms = {'user': to_user}
+        header_name = self.app.cfg.get_config("HeaderName")
+        if header_name:
+            parms["header_name"] = header_name
         parms.update(kwargs)
 
         # Compile both template.
