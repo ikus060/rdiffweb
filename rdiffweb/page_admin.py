@@ -150,7 +150,9 @@ class AdminPage(page_main.MainPage):
                 self.app.userdb.set_password(username, password, old_password=None)
             user.user_root = user_root
             user.is_admin = is_admin
-            user.email = email
+            # Avoid updating the email fields is it didn'T changed. see pdsl/minarca#187
+            if email != user.email:
+                user.email = email
             success = _("User information modified successfully.")
 
             # Check and update user directory
