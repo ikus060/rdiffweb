@@ -355,22 +355,7 @@ class IncrementEntry(object):
         # The given entry name may has quote character, replace them
         self.name = name
         # Calculate the date of the increment.
-        self.date = IncrementEntry.extract_date(self.name)
-
-    @staticmethod
-    def extract_date(filename):
-        """
-        Extract date from rdiff-backup filenames.
-        """
-        # Remove suffix from filename
-        filename = IncrementEntry._remove_suffix(filename)
-        # Remove prefix from filename
-        date_string = filename.rsplit(b".", 1)[-1]
-        try:
-            return rdw_helpers.rdwTime(date_string.decode())
-        except:
-            logger.warn('fail to parse date [%r]', date_string, exc_info=1)
-            return None
+        self.date = self.repo._extract_date(self.name)
 
     def _open(self, mode='rb'):
         """Should be used to open the increment file. This method handle
@@ -608,7 +593,7 @@ class RdiffRepo(object):
         if not hasattr(self, '_backup_dates'):
             logger.debug("get backup dates for [%r]", self.full_path)
             self._backup_dates = sorted([
-                IncrementEntry.extract_date(x)
+                self._extract_date(x)
                 for x in self._data_entries
                 if x.startswith(b"mirror_metadata")])
         return self._backup_dates
@@ -646,7 +631,7 @@ class RdiffRepo(object):
         """Return dict of {date: IncrementEntry} to represent each file statistics."""
         if not hasattr(self, '_error_logs_data'):
             self._error_logs_data = {
-                IncrementEntry.extract_date(x): IncrementEntry(self, x)
+                self._extract_date(x): IncrementEntry(self, x)
                 for x in self._data_entries
                 if x.startswith(b"error_log.")}
         return self._error_logs_data
@@ -672,12 +657,28 @@ class RdiffRepo(object):
 
         return (output, error)
 
+    def _extract_date(self, filename):
+        """
+        Extract date from rdiff-backup filenames.
+        """
+        # Remove suffix from filename
+        filename = IncrementEntry._remove_suffix(filename)
+        # Remove prefix from filename
+        date_string = filename.rsplit(b".", 1)[-1]
+        # Unquote string
+        date_string = self.unquote(date_string)
+        try:
+            return rdw_helpers.rdwTime(date_string.decode())
+        except:
+            logger.warn('fail to parse date [%r]', date_string, exc_info=1)
+            return None
+
     @property
     def _file_statistics(self):
         """Return dict of {date: filename} to represent each file statistics."""
         if not hasattr(self, '_file_statistics_data'):
             self._file_statistics_data = {
-                IncrementEntry.extract_date(x): x
+                self._extract_date(x): x
                 for x in self._data_entries
                 if x.startswith(b"file_statistics.")}
         return self._file_statistics_data

@@ -67,10 +67,6 @@ class IncrementEntryTest(unittest.TestCase):
         self.repo._backup_dates = [rdwTime(x) for x in backup_dates]
         self.root_path = self.repo.root_path
 
-    def test_extract_date(self):
-
-        self.assertEqual(rdwTime(1414967021), IncrementEntry.extract_date(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'))
-
     def test_init(self):
 
         increment = IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz')
@@ -222,6 +218,14 @@ class RdiffRepoTest(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir.encode('utf8'), True)
+
+    def test_extract_date(self):
+
+        self.assertEqual(rdwTime(1414967021), self.repo._extract_date(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'))
+
+        # Check if date with quoted characther are proerply parsed.
+        # On NTFS, colon (:) are not supported.
+        self.assertEqual(rdwTime(1483443123), self.repo._extract_date(b'my_filename.txt.2017-01-03T06;05832;05803-05;05800.diff.gz'))
 
     def test_init(self):
         self.assertEqual('testcases', self.repo.display_name)
