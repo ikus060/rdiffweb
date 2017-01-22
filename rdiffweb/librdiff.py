@@ -260,6 +260,7 @@ class DirEntry(object):
 
         # If the directory exists, add the last known backup date.
         if (self.exists and
+                self._repo.last_backup_date and
                 self._repo.last_backup_date not in self._change_dates):
             self._change_dates.append(self._repo.last_backup_date)
 
@@ -270,8 +271,8 @@ class DirEntry(object):
 
     @property
     def first_change_date(self):
-        """Return first change date."""
-        return self.change_dates[0]
+        """Return first change date or False."""
+        return self.change_dates and self.change_dates[0]
 
     def _get_first_backup_after_date(self, date):
         """ Iterates the mirror_metadata files in the rdiff data dir """
@@ -283,9 +284,8 @@ class DirEntry(object):
 
     @property
     def last_change_date(self):
-        # Avoid using change_date if not already computed.
-        # It's too long. Unless change_date is define.
-        return self.change_dates[-1]
+        """Return last change date or False."""
+        return self.change_dates and self.change_dates[-1]
 
     def restore(self, restore_date, kind='zip'):
         """

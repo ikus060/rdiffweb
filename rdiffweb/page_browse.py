@@ -75,6 +75,8 @@ class BrowsePage(page_main.MainPage):
         warning = ""
         if repo_obj.in_progress:
             warning = _("""A backup is currently in progress to this repository. The displayed data may be inconsistent.""")
+        elif not repo_obj.last_backup_date:
+            warning = _("""Initial backup was interrupted during the process. The displayed data may be inconsistent.""")
 
         dir_entries = []
         restore_dates = []

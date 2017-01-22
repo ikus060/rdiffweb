@@ -48,6 +48,7 @@
                 {% endif %}
             </td>
             <td data-value="{{ entry.last_change_date and entry.last_change_date.getSeconds() }}">
+                {% if entry.change_dates %}
                 <div class="dropdown">
                     <button class="btn btn-link dropdown-toggle btn-block" type="button" id="menu1" data-toggle="dropdown">
                         <span class="hidden-xs">
@@ -71,6 +72,7 @@
                         </li>
                     </ul>
                 </div>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}

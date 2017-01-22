@@ -25,6 +25,7 @@ import logging
 from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb.dispatch import poppath
+from rdiffweb.i18n import ugettext as _
 
 
 # Define the logger
@@ -45,11 +46,19 @@ class HistoryPage(page_main.MainPage):
         repo_obj = self.validate_user_path(path)[0]
         assert isinstance(repo_obj, librdiff.RdiffRepo)
 
+        # Set up warning about in-progress backups, if necessary
+        warning = ""
+        if repo_obj.in_progress:
+            warning = _("""A backup is currently in progress to this repository. The displayed data may be inconsistent.""")
+        elif not repo_obj.last_backup_date:
+            warning = _("""Initial backup was interrupted during the process. The displayed data may be inconsistent.""")
+
         parms = {
             "limit": limit,
             "repo_name": repo_obj.display_name,
             "repo_path": repo_obj.path,
-            "history_entries": repo_obj.get_history_entries(numLatestEntries=limit, reverse=True)
+            "history_entries": repo_obj.get_history_entries(numLatestEntries=limit, reverse=True),
+            "warning": warning,
         }
 
         return self._compile_template("history.html", **parms)
