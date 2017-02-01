@@ -641,12 +641,19 @@ class RdiffRepo(object):
         Execute rdiff-backup command.
         """
         assert all(isinstance(arg, bytes) for arg in args)
+        # Need to explicitly export some environment variable. Do not export
+        # all of them otherwise it also export some python environment variable
+        # and might brake rdiff-backup execution.
+        env = {}
+        if os.environ.get('TMPDIR'):
+            env['TMPDIR'] = os.environ['TMPDIR']
+
         parms = [b'rdiff-backup']
         parms.extend(args)
         execution = subprocess.Popen(
             parms, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            env={})
+            env=env)
 
         results = {}
         output, error = execution.communicate()
@@ -871,7 +878,7 @@ class RdiffRepo(object):
         else:
             path = path.strip(b"/")
             entry = None
-            
+
         # Determine the file name to be restore (from rdiff-backup
         # point of view).
         file_to_restore = os.path.join(self.full_path, path)
