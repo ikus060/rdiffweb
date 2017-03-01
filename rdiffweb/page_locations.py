@@ -24,7 +24,7 @@ import logging
 
 from rdiffweb import librdiff
 from rdiffweb import page_main
-from rdiffweb.i18n import ugettext as _
+from future.utils.surrogateescape import encodefilename
 
 
 # Define the logger
@@ -66,14 +66,15 @@ class LocationsPage(page_main.MainPage):
                 failed = False
             except librdiff.FileError:
                 logger.exception("invalid user path %s" % user_repo)
-                path = b''
-                name = user_repo
+                path = encodefilename(user_repo.strip('/'))
+                name = user_repo.strip('/').split('/')[-1]
                 in_progress = False
                 last_backup_date = 0
                 failed = True
             # Create an entry to represent the repository
             repos.append({
                 "path": path,
+                "path_split": user_repo.strip('/').split('/'),
                 "name": name,
                 "last_backup_date": last_backup_date,
                 'in_progress': in_progress,

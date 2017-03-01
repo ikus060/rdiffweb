@@ -11,40 +11,46 @@
 	    {% set message = _("You don't have any repositories configured.") %}
 	    {% include 'message.html' %}
     {% else %}
-	<ul class="list-group" itemscope itemtype="http://schema.org/ItemList">
-		{% for repo in repos %}
-		<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem"
-            {% if repo.failed %}
-	            class="list-group-item list-group-item-danger clearfix"
-	            {% elif repo.in_progress%}
-	            class="list-group-item list-group-item-warning clearfix"
-	            {% else %}
-	            class="list-group-item clearfix"
-	            {% endif %}>
-			<span class="h4">
-				{% if repo.failed %}
-		            <i class="icon-cube"></i>
-		            <span itemprop="name">{{ repo.name }}</span>
-	            {% else %}
-		            <a itemprop="item" href="{{ url_for_browse(repo.path) }}">
-	                <i class="icon-cube"></i>
-	                <span itemprop="name">{{ repo.name }}</span>
-		            </a>
-	            {% endif %}
-            </span>
-            
-            <div class="pull-right">
-			<span class="light">
-				{% if repo.failed %}{% trans %}Error{% endtrans %}
-	            {% elif repo.in_progress %}{% trans %}In progress{% endtrans %}
-	            {% else %}{% trans %}Last backup: {% endtrans %}
-	            <time datetime="{{ repo.last_backup_date | datetime }}" itemprop="lastBackupDate">{{ repo.last_backup_date | datetime }}</time>
-	            {% endif %}
-			</span>
-			</div>
-		</li>
-		{% endfor %}
-	</ul>
+    {# Try to organize the repositories as a hierarchy #}
+    {% set repos_hierarchy = {} %}
+    {% for repo in repos|sort(attribute='path') %}
+      {% set h = repos_hierarchy %}
+      {% for p in repo.path_split %}
+        {% set h = h.setdefault(p, repo if loop.last else {})  %}
+      {% endfor %}    
+    {% endfor %}
+    <div class="list-group" itemscope itemtype="http://schema.org/ItemList">
+    {% for name, repo in repos_hierarchy.items() recursive %}
+
+        {% if not repo.get('path') %}
+        <div class="list-group-item">
+          <div class="list-group-item-heading">
+            {% set is_desktop = repo.keys()[0]|length == 1 %}
+            <i class="{% if is_desktop %}icon-laptop{% else %}icon-box{% endif %}"></i> {{ name }}
+          </div>
+          <div class="list-group" id="{{ outer_name }}{{ name }}">
+          {{ loop(repo.items()) }}
+          </div>
+        </div>
+        {% else %}
+        <a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.in_progress and 'list-group-item-warning']) }}
+            href="{{ url_for_browse(repo.path) }}" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+          <meta itemprop="name" content="{{ repo.path }}" />
+          <i class="icon-hdd"></i>
+          {{ repo.name }}{% if repo.name|length==1 %}:\{% endif %}
+          <span class="pull-right light">
+              {% if repo.failed %}{% trans %}Error{% endtrans %}
+              {% elif repo.in_progress %}{% trans %}In progress{% endtrans %}
+              {% else %}{% trans %}Last backup: {% endtrans %}
+              <time datetime="{{ repo.last_backup_date | datetime }}" itemprop="lastBackupDate">{{ repo.last_backup_date | datetime }}</time>
+              {% endif %}
+          </span>
+        </a>
+        {% endif %}
+        
+    {% endfor %}
+    </div>
+
     {% endif %}
 </div>
 {% endblock %}
