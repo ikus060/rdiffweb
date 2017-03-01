@@ -104,7 +104,7 @@ class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
         """
         Called to refresh the user repos.
         """
-        rdw_spider_repos.find_repos_for_user(self.app.currentuser.username, self.app.userdb)
+        rdw_spider_repos.find_repos_for_user(self.app.currentuser)
         return {'success': _("Repositories successfully updated.")}
 
     def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable

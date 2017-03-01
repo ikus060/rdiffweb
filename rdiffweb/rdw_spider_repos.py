@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 RDIFF_BACKUP_DATA = "rdiff-backup-data"
 
 
-def _find_repos(path, depth=3):
+def _find_repos(path, depth=5):
     # TODO Should be a configuration
     # Limit the depthness
     if depth <= 0:
@@ -54,15 +54,14 @@ def _find_repos(path, depth=3):
                 logger.warning('skip invalid directory name %r/%r', path, entry)
 
 
-def find_repos_for_user(user, userdb):
-    logger.debug("find repos for [%s]", user)
-    user_root = userdb.get_user(user).user_root
-    repo_paths = list(_find_repos(user_root))
+def find_repos_for_user(user):
+    logger.debug("find repos for %s", user)
+    repo_paths = list(_find_repos(user.user_root))
 
     def striproot(path):
-        if not path[len(user_root):]:
+        if not path[len(user.user_root):]:
             return "/"
-        return path[len(user_root):]
+        return path[len(user.user_root):]
     repo_paths = list(map(striproot, repo_paths))
-    logger.debug("set user [%s] repos: %s ", user, repo_paths)
-    userdb.get_user(user).repos = repo_paths
+    logger.debug("set %s repos: %s ", user, repo_paths)
+    user.repos = repo_paths

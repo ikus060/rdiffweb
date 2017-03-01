@@ -64,7 +64,7 @@ class UpdateReposPlugin(IDeamonPlugin):
 
             users = user_db.list()
             for user in users:
-                find_repos_for_user(user, user_db)
+                find_repos_for_user(user)
 
         except:
             _logger.exception("fail to update user repos")

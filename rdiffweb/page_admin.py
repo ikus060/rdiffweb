@@ -157,7 +157,7 @@ class AdminPage(page_main.MainPage):
 
             # Check and update user directory
             self._check_user_root_dir(user_root)
-            rdw_spider_repos.find_repos_for_user(username, self.app.userdb)
+            rdw_spider_repos.find_repos_for_user(user)
 
         elif action == "add":
 
@@ -172,7 +172,7 @@ class AdminPage(page_main.MainPage):
 
             # Check and update user directory
             self._check_user_root_dir(user_root)
-            rdw_spider_repos.find_repos_for_user(username, self.app.userdb)
+            rdw_spider_repos.find_repos_for_user(user)
             success = _("User added successfully.")
 
         if action == "delete":
