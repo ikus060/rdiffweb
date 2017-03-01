@@ -234,7 +234,6 @@ class tox(TestCommand):
 install_requires = [
     "CherryPy>=3.2.2",
     "Jinja2>=2.6",
-    "babel>=0.9.6",
     "future>=0.15.2",
 ]
 if PY2:
