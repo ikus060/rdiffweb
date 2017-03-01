@@ -34,6 +34,7 @@ from rdiffweb import i18n  # @UnusedImport
 from rdiffweb import rdw_config, page_main
 from rdiffweb import rdw_plugin
 from rdiffweb import rdw_templating
+from rdiffweb.api import ApiPage
 from rdiffweb.dispatch import static, empty
 from rdiffweb.page_admin import AdminPage
 from rdiffweb.page_browse import BrowsePage
@@ -66,7 +67,7 @@ class Root(LocationsPage):
         self.admin = AdminPage(app)
         self.prefs = PreferencesPage(app)
         self.settings = SettingsPage(app)
-        self.ajax = empty()
+        self.api = ApiPage(app)
 
         # Register static dir.
         static_dir = pkg_resources.resource_filename('rdiffweb', 'static')  # @UndefinedVariable

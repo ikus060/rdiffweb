@@ -29,6 +29,7 @@ from builtins import str, delattr
 import cherrypy
 from cherrypy.test import helper
 from future.utils import native_str
+import json
 import os
 import pkg_resources
 import shutil
@@ -216,6 +217,11 @@ class WebCase(helper.CPWebCase):
         if hasattr(self, 'cookies') and self.cookies:
             headers.extend(self.cookies)
         helper.CPWebCase.getPage(self, url, headers, method, body, protocol)
+
+    def getJson(self, *args, **kwargs):
+        self.getPage(*args, **kwargs)
+        self.assertStatus(200)
+        return json.loads(self.body.decode('utf8'))
 
     def _login(self, username=USERNAME, password=PASSWORD):
         self.getPage("/login/", method='POST', body={'login': username, 'password': password})

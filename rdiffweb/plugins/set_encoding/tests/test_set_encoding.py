@@ -44,7 +44,7 @@ class SetEncodingTest(WebCase):
         self.getPage("/settings/" + repo + "/")
 
     def _set_encoding(self, repo, encoding):
-        self.getPage("/ajax/set-encoding/" + repo + "/", method="POST",
+        self.getPage("/api/set-encoding/" + repo + "/", method="POST",
                      body={'new_encoding': encoding})
 
     def test_check_encoding(self):
