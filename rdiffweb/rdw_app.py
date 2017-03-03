@@ -44,6 +44,7 @@ from rdiffweb.page_settings import SettingsPage
 from rdiffweb.page_status import StatusPage
 from rdiffweb.user import UserManager
 from rdiffweb.page_main import MainPage
+from rdiffweb.librdiff import DoesNotExistError, AccessDeniedError
 
 
 # Define the logger
@@ -105,6 +106,7 @@ class RdiffwebApp(Application):
                 'tools.gzip.on': True,
                 'tools.sessions.on': True,
                 'error_page.default': self.error_page,
+                'request.error_response': self.error_response,
             },
         }
 
@@ -158,6 +160,17 @@ class RdiffwebApp(Application):
             pass
         # If failing, send the raw error message.
         return kwargs.get('message')
+
+    def error_response(self):
+        """
+        Called when ever an exception reach cherrypy core. This implementation
+        will convert the exception into the right HTTP Error.
+        """
+        code = 500
+        t = sys.exc_info()[0]
+        if t in [AccessDeniedError, DoesNotExistError]:
+            code = 404
+        cherrypy.HTTPError(code).set_response()
 
     def get_version(self):
         """

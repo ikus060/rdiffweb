@@ -96,28 +96,20 @@ class MainPage(Component):
         if repo_b is None:
             # No repo matches
             logger.error("user doesn't have access to [%r]", path_b)
-            raise cherrypy.HTTPError(404)
+            raise DoesNotExistError(path_b)
 
         # Get reference to user_root
         user_root_b = encodefilename(self.app.currentuser.user_root)
 
-        try:
-            # Get reference to the repository (this ensure the repository does
-            # exists and is valid.)
-            repo_obj = RdiffRepo(user_root_b, repo_b)
+        # Get reference to the repository (this ensure the repository does
+        # exists and is valid.)
+        repo_obj = RdiffRepo(user_root_b, repo_b)
 
-            # Get reference to the path.
-            path_b = path_b[len(repo_b):]
-            path_obj = repo_obj.get_path(path_b)
+        # Get reference to the path.
+        path_b = path_b[len(repo_b):]
+        path_obj = repo_obj.get_path(path_b)
 
-            return (repo_obj, path_obj)
-
-        except AccessDeniedError:
-            logger.warning("access is denied", exc_info=1)
-            raise cherrypy.HTTPError(404)
-        except DoesNotExistError:
-            logger.warning("doesn't exists", exc_info=1)
-            raise cherrypy.HTTPError(404)
+        return (repo_obj, path_obj)
 
     def _is_submit(self):
         """
