@@ -235,6 +235,7 @@ install_requires = [
     "CherryPy>=3.2.2",
     "Jinja2>=2.6",
     "future>=0.15.2",
+    "psutil>=2.1.1",
 ]
 if PY2:
     install_requires.extend(["pysqlite>=2.6.3"])

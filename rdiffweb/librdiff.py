@@ -45,6 +45,7 @@ import zlib
 from rdiffweb import rdw_helpers
 from rdiffweb.archiver import archive, ARCHIVERS
 from rdiffweb.rdw_config import Configuration
+import psutil
 
 
 try:
@@ -823,23 +824,15 @@ class RdiffRepo(object):
             else:
                 return int(match.group(1))
 
-        def pid_running(pid):
-            """True if we know if process with pid is currently running"""
-            try:
-                os.kill(pid, 0)
-            except OSError as e:
-                if e.errno == errno.ESRCH:
-                    return False
-                else:
-                    logger.warning("unable to check if PID %d still running", pid)
-                    return False
-            return True
-
         # Read content of the file and check if pid still exists
         for current_mirror in current_mirrors:
             pid = extract_pid(current_mirror)
-            if pid and pid_running(pid):
-                return True
+            try:
+                p = psutil.Process(pid)
+                if 'rdiff-backup' in p.cmdline():
+                    return True
+            except psutil.NoSuchProcess:
+                pass
         return False
 
     @property
