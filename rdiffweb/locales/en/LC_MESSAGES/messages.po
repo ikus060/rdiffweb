@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.7.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-09-28 19:17-0400\n"
+"POT-Creation-Date: 2017-03-03 08:13-0500\n"
 "PO-Revision-Date: 2015-04-25 15:18-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -39,43 +39,49 @@ msgstr ""
 msgid "User root directory %s is not accessible!"
 msgstr ""
 
-#: rdiffweb/page_admin.py:101 rdiffweb/plugins/notification/__init__.py:309
+#: rdiffweb/page_admin.py:101 rdiffweb/plugins/notification/__init__.py:323
 #: rdiffweb/plugins/prefs_general/__init__.py:131
 #: rdiffweb/plugins/prefs_sshkeys/__init__.py:126
 msgid "Unknown error"
 msgstr ""
 
-#: rdiffweb/page_admin.py:154
+#: rdiffweb/page_admin.py:156
 msgid "User information modified successfully."
 msgstr ""
 
-#: rdiffweb/page_admin.py:163
+#: rdiffweb/page_admin.py:165
 msgid "The username is invalid."
 msgstr ""
 
-#: rdiffweb/page_admin.py:174
+#: rdiffweb/page_admin.py:176
 msgid "User added successfully."
 msgstr ""
 
-#: rdiffweb/page_admin.py:179
+#: rdiffweb/page_admin.py:181
 msgid "You cannot remove your own account!."
 msgstr ""
 
-#: rdiffweb/page_admin.py:182
+#: rdiffweb/page_admin.py:184
 msgid "User account removed."
 msgstr ""
 
-#: rdiffweb/page_browse.py:81
+#: rdiffweb/page_browse.py:77 rdiffweb/page_history.py:52
 msgid ""
 "A backup is currently in progress to this repository. The displayed data "
 "may be inconsistent."
 msgstr ""
 
-#: rdiffweb/page_restore.py:91 rdiffweb/page_status.py:68
+#: rdiffweb/page_browse.py:79 rdiffweb/page_history.py:54
+msgid ""
+"Initial backup was interrupted during the process. The displayed data may"
+" be inconsistent."
+msgstr ""
+
+#: rdiffweb/page_restore.py:85 rdiffweb/page_status.py:68
 msgid "Invalid date."
 msgstr ""
 
-#: rdiffweb/page_restore.py:95
+#: rdiffweb/page_restore.py:89
 msgid ""
 "A backup is currently in progress to this repository. Restores are "
 "disabled until this backup is complete."
@@ -132,8 +138,8 @@ msgstr ""
 #: rdiffweb/plugins/delete_repo/templates/delete_repo.html:21
 #, python-format
 msgid ""
-"You are going to remove %(repo_name)s. Removed repository CANNOT be "
-"restored! Are you ABSOLUTELY sure?"
+"You are going to remove <b>%(repo_name)s</b>. Removed repository CANNOT "
+"be restored! Are you ABSOLUTELY sure?"
 msgstr ""
 
 #: rdiffweb/plugins/delete_repo/templates/delete_repo.html:24
@@ -144,32 +150,32 @@ msgstr ""
 
 #: rdiffweb/plugins/delete_repo/templates/delete_repo.html:25
 #, python-format
-msgid "Please type %(repo_name)s to proceed or close this modal to cancel"
+msgid "Please type <b>%(repo_name)s</b> to proceed or close this modal to cancel"
 msgstr ""
 
-#: rdiffweb/plugins/graphs/__init__.py:163
+#: rdiffweb/plugins/graphs/__init__.py:153
 #: rdiffweb/plugins/graphs/templates/graphs.html:5
 msgid "Graphs"
 msgstr ""
 
-#: rdiffweb/plugins/graphs/templates/graphs.html:15
+#: rdiffweb/plugins/graphs/templates/graphs.html:18
 msgid "Activities"
 msgstr ""
 
-#: rdiffweb/plugins/graphs/templates/graphs.html:16
+#: rdiffweb/plugins/graphs/templates/graphs.html:19
 msgid "File count"
 msgstr ""
 
-#: rdiffweb/plugins/graphs/templates/graphs.html:17
-#: rdiffweb/templates/browse.html:24 rdiffweb/templates/history.html:10
+#: rdiffweb/plugins/graphs/templates/graphs.html:20
+#: rdiffweb/templates/browse.html:24
 msgid "Size"
 msgstr ""
 
-#: rdiffweb/plugins/graphs/templates/graphs.html:18
+#: rdiffweb/plugins/graphs/templates/graphs.html:21
 msgid "Elapsed Time"
 msgstr ""
 
-#: rdiffweb/plugins/graphs/templates/graphs.html:19
+#: rdiffweb/plugins/graphs/templates/graphs.html:22
 msgid "Errors"
 msgstr ""
 
@@ -216,19 +222,35 @@ msgstr ""
 msgid "Email address changed"
 msgstr ""
 
-#: rdiffweb/plugins/notification/__init__.py:221
-#: rdiffweb/plugins/notification/__init__.py:275
+#: rdiffweb/plugins/notification/__init__.py:199
+msgid "Password changed"
+msgstr ""
+
+#: rdiffweb/plugins/notification/__init__.py:232
+#: rdiffweb/plugins/notification/__init__.py:289
 msgid "Notification"
 msgstr ""
 
 #: rdiffweb/plugins/notification/templates/email_changed.html:5
 #: rdiffweb/plugins/notification/templates/email_notification.html:5
+#: rdiffweb/plugins/notification/templates/password_changed.html:5
 #, python-format
 msgid "Hey %(username)s,"
 msgstr ""
 
 #: rdiffweb/plugins/notification/templates/email_changed.html:7
-msgid "You are receiving this email to confirm your new email address."
+#: rdiffweb/plugins/notification/templates/password_changed.html:7
+#, python-format
+msgid ""
+"You recently changed the email address associated with your "
+"%(header_name)s account."
+msgstr ""
+
+#: rdiffweb/plugins/notification/templates/email_changed.html:9
+#: rdiffweb/plugins/notification/templates/password_changed.html:9
+msgid ""
+"If you did not make this change and believe your account has been "
+"compromised, please contact your administrator."
 msgstr ""
 
 #: rdiffweb/plugins/notification/templates/email_notification.html:7
@@ -719,25 +741,28 @@ msgid "Name"
 msgstr ""
 
 #: rdiffweb/templates/browse.html:25
-msgid "Rev."
+msgid "Ver."
 msgstr ""
 
-#: rdiffweb/templates/browse.html:89
-#, python-format
-msgid "Revisions (%(count)s)"
+#: rdiffweb/templates/browse.html:25
+msgid "Previous version(s)"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:101 rdiffweb/templates/browse.html:111
-#: rdiffweb/templates/browse.html:117 rdiffweb/templates/browse.html:123
+#: rdiffweb/templates/browse.html:71 rdiffweb/templates/browse.html:136
+#: rdiffweb/templates/history.html:70
+msgid "Show more..."
+msgstr ""
+
+#: rdiffweb/templates/browse.html:93 rdiffweb/templates/browse.html:103
+#: rdiffweb/templates/browse.html:109 rdiffweb/templates/browse.html:115
+#: rdiffweb/templates/browse.html:125 rdiffweb/templates/history.html:26
+#: rdiffweb/templates/history.html:34 rdiffweb/templates/history.html:39
+#: rdiffweb/templates/history.html:44
 msgid "Download"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:105
+#: rdiffweb/templates/browse.html:97 rdiffweb/templates/history.html:29
 msgid "Toggle Dropdown"
-msgstr ""
-
-#: rdiffweb/templates/browse.html:136 rdiffweb/templates/history.html:53
-msgid "Show more..."
 msgstr ""
 
 #: rdiffweb/templates/error_page_default.html:8
@@ -748,28 +773,16 @@ msgstr ""
 msgid "Sorry, an error has occured."
 msgstr ""
 
-#: rdiffweb/templates/history.html:4 rdiffweb/templates/layout_repo.html:13
+#: rdiffweb/templates/history.html:4
 msgid "History"
 msgstr ""
 
-#: rdiffweb/templates/history.html:9
-msgid "Date"
+#: rdiffweb/templates/history.html:18
+msgid "Error(s)"
 msgstr ""
 
-#: rdiffweb/templates/history.html:11
-msgid "Result"
-msgstr ""
-
-#: rdiffweb/templates/history.html:30 rdiffweb/templates/locations.html:39
+#: rdiffweb/templates/history.html:20 rdiffweb/templates/locations.html:43
 msgid "In progress"
-msgstr ""
-
-#: rdiffweb/templates/history.html:32
-msgid "Success"
-msgstr ""
-
-#: rdiffweb/templates/history.html:35 rdiffweb/templates/locations.html:38
-msgid "Error"
 msgstr ""
 
 #: rdiffweb/templates/layout.html:31
@@ -799,10 +812,10 @@ msgid "Signed in as %(username)s"
 msgstr ""
 
 #: rdiffweb/templates/layout_repo.html:12
-msgid "Restore folder"
+msgid "Restore Repository"
 msgstr ""
 
-#: rdiffweb/templates/layout_repo.html:14 rdiffweb/templates/settings.html:4
+#: rdiffweb/templates/layout_repo.html:13 rdiffweb/templates/settings.html:4
 msgid "Settings"
 msgstr ""
 
@@ -810,7 +823,11 @@ msgstr ""
 msgid "You don't have any repositories configured."
 msgstr ""
 
-#: rdiffweb/templates/locations.html:40
+#: rdiffweb/templates/locations.html:42
+msgid "Error"
+msgstr ""
+
+#: rdiffweb/templates/locations.html:44
 msgid "Last backup: "
 msgstr ""
 
@@ -899,4 +916,31 @@ msgstr ""
 #: rdiffweb/templates/status.html:88
 msgid "The following repositories contain errors: "
 msgstr ""
+
+#~ msgid ""
+#~ msgstr ""
+
+#~ msgid "Please type %(repo_name)s to proceed or close this modal to cancel"
+#~ msgstr ""
+
+#~ msgid "You are receiving this email to confirm your new email address."
+#~ msgstr ""
+
+#~ msgid "Rev."
+#~ msgstr ""
+
+#~ msgid "Revisions (%(count)s)"
+#~ msgstr ""
+
+#~ msgid "Date"
+#~ msgstr ""
+
+#~ msgid "Result"
+#~ msgstr ""
+
+#~ msgid "Success"
+#~ msgstr ""
+
+#~ msgid "Restore folder"
+#~ msgstr ""
 

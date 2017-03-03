@@ -1,13 +1,13 @@
 # French translations for rdiffweb.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2017 Rdiffweb Community
 # This file is distributed under the same license as the rdiffweb project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
+# Patrik Dufresne <support@patrikdufresne.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-09-28 19:17-0400\n"
+"POT-Creation-Date: 2017-03-03 08:13-0500\n"
 "PO-Revision-Date: 2014-11-14 10:00-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -39,33 +39,33 @@ msgstr "Pas connecté"
 msgid "User root directory %s is not accessible!"
 msgstr "Le répertoire racine %s de l'utilisateur n'est pas disponible!"
 
-#: rdiffweb/page_admin.py:101 rdiffweb/plugins/notification/__init__.py:309
+#: rdiffweb/page_admin.py:101 rdiffweb/plugins/notification/__init__.py:323
 #: rdiffweb/plugins/prefs_general/__init__.py:131
 #: rdiffweb/plugins/prefs_sshkeys/__init__.py:126
 msgid "Unknown error"
 msgstr "Une erreur inconnue s'est produite."
 
-#: rdiffweb/page_admin.py:154
+#: rdiffweb/page_admin.py:156
 msgid "User information modified successfully."
 msgstr "Information utilisateur modifié avec succès."
 
-#: rdiffweb/page_admin.py:163
+#: rdiffweb/page_admin.py:165
 msgid "The username is invalid."
 msgstr "Le nom d'utilisateur est invalide."
 
-#: rdiffweb/page_admin.py:174
+#: rdiffweb/page_admin.py:176
 msgid "User added successfully."
 msgstr "Utilisateur ajouté avec succès."
 
-#: rdiffweb/page_admin.py:179
+#: rdiffweb/page_admin.py:181
 msgid "You cannot remove your own account!."
 msgstr "Vous ne pouvez pas supprimer vos propres compte utilisateur."
 
-#: rdiffweb/page_admin.py:182
+#: rdiffweb/page_admin.py:184
 msgid "User account removed."
 msgstr "Le compte utilisateur a été effacé."
 
-#: rdiffweb/page_browse.py:81
+#: rdiffweb/page_browse.py:77 rdiffweb/page_history.py:52
 msgid ""
 "A backup is currently in progress to this repository. The displayed data "
 "may be inconsistent."
@@ -73,11 +73,19 @@ msgstr ""
 "Une sauvegarde est en cours dans ce dépôt. Les données affichées peuvent "
 "ne pas correspondre."
 
-#: rdiffweb/page_restore.py:91 rdiffweb/page_status.py:68
+#: rdiffweb/page_browse.py:79 rdiffweb/page_history.py:54
+msgid ""
+"Initial backup was interrupted during the process. The displayed data may"
+" be inconsistent."
+msgstr ""
+"Une sauvegarde est en cours dans ce dépôt. Les données affichées peuvent "
+"ne pas correspondre."
+
+#: rdiffweb/page_restore.py:85 rdiffweb/page_status.py:68
 msgid "Invalid date."
 msgstr "Date non valide."
 
-#: rdiffweb/page_restore.py:95
+#: rdiffweb/page_restore.py:89
 msgid ""
 "A backup is currently in progress to this repository. Restores are "
 "disabled until this backup is complete."
@@ -138,11 +146,11 @@ msgstr "Confirmer"
 #: rdiffweb/plugins/delete_repo/templates/delete_repo.html:21
 #, python-format
 msgid ""
-"You are going to remove %(repo_name)s. Removed repository CANNOT be "
-"restored! Are you ABSOLUTELY sure?"
+"You are going to remove <b>%(repo_name)s</b>. Removed repository CANNOT "
+"be restored! Are you ABSOLUTELY sure?"
 msgstr ""
-"Vous êtes sur le point de supprimer %(repo_name)s. Un dépôt supprimé NE "
-"PEUT être restauré! Êtes-vous certain?"
+"Vous êtes sur le point de supprimer <b>%(repo_name)s</b>. Un dépôt "
+"supprimé NE PEUT être restauré! Êtes-vous certain?"
 
 #: rdiffweb/plugins/delete_repo/templates/delete_repo.html:24
 msgid ""
@@ -154,32 +162,32 @@ msgstr ""
 
 #: rdiffweb/plugins/delete_repo/templates/delete_repo.html:25
 #, python-format
-msgid "Please type %(repo_name)s to proceed or close this modal to cancel"
-msgstr "S'il vous plaît entrez %(repo_name)s pour continuer."
+msgid "Please type <b>%(repo_name)s</b> to proceed or close this modal to cancel"
+msgstr "S'il vous plaît entrez <b>%(repo_name)s</b> pour continuer."
 
-#: rdiffweb/plugins/graphs/__init__.py:163
+#: rdiffweb/plugins/graphs/__init__.py:153
 #: rdiffweb/plugins/graphs/templates/graphs.html:5
 msgid "Graphs"
 msgstr "Graphiques"
 
-#: rdiffweb/plugins/graphs/templates/graphs.html:15
+#: rdiffweb/plugins/graphs/templates/graphs.html:18
 msgid "Activities"
 msgstr "Activités"
 
-#: rdiffweb/plugins/graphs/templates/graphs.html:16
+#: rdiffweb/plugins/graphs/templates/graphs.html:19
 msgid "File count"
 msgstr "Nombre de fichiers"
 
-#: rdiffweb/plugins/graphs/templates/graphs.html:17
-#: rdiffweb/templates/browse.html:24 rdiffweb/templates/history.html:10
+#: rdiffweb/plugins/graphs/templates/graphs.html:20
+#: rdiffweb/templates/browse.html:24
 msgid "Size"
 msgstr "Taille"
 
-#: rdiffweb/plugins/graphs/templates/graphs.html:18
+#: rdiffweb/plugins/graphs/templates/graphs.html:21
 msgid "Elapsed Time"
 msgstr "Temps écoulé"
 
-#: rdiffweb/plugins/graphs/templates/graphs.html:19
+#: rdiffweb/plugins/graphs/templates/graphs.html:22
 msgid "Errors"
 msgstr "Erreurs"
 
@@ -228,22 +236,40 @@ msgstr "L'utilisateur %s est introuvable."
 msgid "Email address changed"
 msgstr "Adresse courriel modifiée"
 
-#: rdiffweb/plugins/notification/__init__.py:221
-#: rdiffweb/plugins/notification/__init__.py:275
+#: rdiffweb/plugins/notification/__init__.py:199
+msgid "Password changed"
+msgstr "Modification de mot de passe"
+
+#: rdiffweb/plugins/notification/__init__.py:232
+#: rdiffweb/plugins/notification/__init__.py:289
 msgid "Notification"
 msgstr "Notification"
 
 #: rdiffweb/plugins/notification/templates/email_changed.html:5
 #: rdiffweb/plugins/notification/templates/email_notification.html:5
+#: rdiffweb/plugins/notification/templates/password_changed.html:5
 #, python-format
 msgid "Hey %(username)s,"
 msgstr "Bonjour %(username)s"
 
 #: rdiffweb/plugins/notification/templates/email_changed.html:7
-msgid "You are receiving this email to confirm your new email address."
+#: rdiffweb/plugins/notification/templates/password_changed.html:7
+#, python-format
+msgid ""
+"You recently changed the email address associated with your "
+"%(header_name)s account."
 msgstr ""
-"Vous recevez ce message pour confirmer la modification de votre adresse "
-"de courriel"
+"Vous avez récemment modifié l'adresse e-mail associée à votre compte "
+"%(header_name)s."
+
+#: rdiffweb/plugins/notification/templates/email_changed.html:9
+#: rdiffweb/plugins/notification/templates/password_changed.html:9
+msgid ""
+"If you did not make this change and believe your account has been "
+"compromised, please contact your administrator."
+msgstr ""
+"Si vous n'avez pas effectué ce changement et que votre compte a été "
+"compromis, veuillez contacter votre administrateur."
 
 #: rdiffweb/plugins/notification/templates/email_notification.html:7
 msgid ""
@@ -757,26 +783,29 @@ msgid "Name"
 msgstr "Nom"
 
 #: rdiffweb/templates/browse.html:25
-msgid "Rev."
-msgstr "Rév."
+msgid "Ver."
+msgstr "Ver."
 
-#: rdiffweb/templates/browse.html:89
-#, python-format
-msgid "Revisions (%(count)s)"
-msgstr "Révisions (%(count)s)"
+#: rdiffweb/templates/browse.html:25
+msgid "Previous version(s)"
+msgstr "Version précédente(s)"
 
-#: rdiffweb/templates/browse.html:101 rdiffweb/templates/browse.html:111
-#: rdiffweb/templates/browse.html:117 rdiffweb/templates/browse.html:123
+#: rdiffweb/templates/browse.html:71 rdiffweb/templates/browse.html:136
+#: rdiffweb/templates/history.html:70
+msgid "Show more..."
+msgstr "Afficher plus..."
+
+#: rdiffweb/templates/browse.html:93 rdiffweb/templates/browse.html:103
+#: rdiffweb/templates/browse.html:109 rdiffweb/templates/browse.html:115
+#: rdiffweb/templates/browse.html:125 rdiffweb/templates/history.html:26
+#: rdiffweb/templates/history.html:34 rdiffweb/templates/history.html:39
+#: rdiffweb/templates/history.html:44
 msgid "Download"
 msgstr "Télécharger"
 
-#: rdiffweb/templates/browse.html:105
+#: rdiffweb/templates/browse.html:97 rdiffweb/templates/history.html:29
 msgid "Toggle Dropdown"
 msgstr "Menu déroulant"
-
-#: rdiffweb/templates/browse.html:136 rdiffweb/templates/history.html:53
-msgid "Show more..."
-msgstr "Afficher plus..."
 
 #: rdiffweb/templates/error_page_default.html:8
 msgid "Oops!"
@@ -786,29 +815,17 @@ msgstr "Oups!"
 msgid "Sorry, an error has occured."
 msgstr "Désolé, une erreur s'est produite."
 
-#: rdiffweb/templates/history.html:4 rdiffweb/templates/layout_repo.html:13
+#: rdiffweb/templates/history.html:4
 msgid "History"
 msgstr "Historique"
 
-#: rdiffweb/templates/history.html:9
-msgid "Date"
-msgstr "Date"
+#: rdiffweb/templates/history.html:18
+msgid "Error(s)"
+msgstr "Erreur(s)"
 
-#: rdiffweb/templates/history.html:11
-msgid "Result"
-msgstr "Résultat"
-
-#: rdiffweb/templates/history.html:30 rdiffweb/templates/locations.html:39
+#: rdiffweb/templates/history.html:20 rdiffweb/templates/locations.html:43
 msgid "In progress"
 msgstr "Sauvegarde en cours"
-
-#: rdiffweb/templates/history.html:32
-msgid "Success"
-msgstr "Succès"
-
-#: rdiffweb/templates/history.html:35 rdiffweb/templates/locations.html:38
-msgid "Error"
-msgstr "Erreur"
 
 #: rdiffweb/templates/layout.html:31
 msgid "Toggle navigation"
@@ -837,10 +854,10 @@ msgid "Signed in as %(username)s"
 msgstr "Session ouverte sous %(username)s"
 
 #: rdiffweb/templates/layout_repo.html:12
-msgid "Restore folder"
-msgstr "Restaurer répertoire"
+msgid "Restore Repository"
+msgstr "Restaurer le dépôt"
 
-#: rdiffweb/templates/layout_repo.html:14 rdiffweb/templates/settings.html:4
+#: rdiffweb/templates/layout_repo.html:13 rdiffweb/templates/settings.html:4
 msgid "Settings"
 msgstr "Paramètres"
 
@@ -848,7 +865,11 @@ msgstr "Paramètres"
 msgid "You don't have any repositories configured."
 msgstr "Vous n'avez pas de dépôts configurés."
 
-#: rdiffweb/templates/locations.html:40
+#: rdiffweb/templates/locations.html:42
+msgid "Error"
+msgstr "Erreur"
+
+#: rdiffweb/templates/locations.html:44
 msgid "Last backup: "
 msgstr "Dernière sauvegarde : "
 
