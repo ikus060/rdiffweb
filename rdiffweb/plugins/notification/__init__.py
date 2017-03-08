@@ -249,8 +249,8 @@ class NotificationPlugin(IPreferencesPanelProvider, JobPlugin, IUserChangeListen
         text = html2plaintext(html)
 
         # Record the MIME types of both parts - text/plain and text/html.
-        part1 = MIMEText(text, 'plain')
-        part2 = MIMEText(html, 'html')
+        part1 = MIMEText(text, 'plain', 'utf8')
+        part2 = MIMEText(html, 'html', 'utf8')
 
         email_from = self.app.cfg.get_config("HeaderName", 'rdiffweb')
         if self._email_from:
