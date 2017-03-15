@@ -81,6 +81,10 @@ class Root(LocationsPage):
         if header_logo:
             self.header_logo = static(header_logo)
 
+        # Register robots.txt
+        robots_txt = pkg_resources.resource_filename('rdiffweb', 'static/robots.txt')  # @UndefinedVariable
+        self.robots_txt = static(robots_txt)
+
 
 class RdiffwebApp(Application):
     """This class represent the application context."""
