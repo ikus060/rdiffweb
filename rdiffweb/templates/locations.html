@@ -15,7 +15,7 @@
     {% set repos_hierarchy = {} %}
     {% for repo in repos|sort(attribute='path') %}
       {% set h = repos_hierarchy %}
-      {% for p in repo.path_split %}
+      {% for p in repo.name_split %}
         {% set h = h.setdefault(p, repo if loop.last else {})  %}
       {% endfor %}    
     {% endfor %}
@@ -37,7 +37,7 @@
             href="{{ url_for_browse(repo.path) }}" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
           <meta itemprop="name" content="{{ repo.path }}" />
           <i class="icon-hdd"></i>
-          {{ repo.name }}{% if repo.name|length==1 %}:\{% endif %}
+          {{ name }}{% if name|length==1 %}:\{% endif %}
           <span class="pull-right light">
               {% if repo.status[0] != 'ok' %}
               <span data-toggle="tooltip" data-placement="left" title="{{ repo.status[1] }}"><i class="icon-attention"></i></span>

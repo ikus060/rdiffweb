@@ -620,7 +620,9 @@ class RdiffRepo(object):
     def display_name(self):
         """Return the most human representation of the repository name."""
         # NOTE : path may be empty, so return a simple string.
-        return self._decode(os.path.basename(self.full_path))
+        if self.path:
+            return self._decode(self.unquote(self.path))
+        return self._decode(self.unquote(os.path.basename(self.full_path)))
 
     def _decode(self, value, errors='replace'):
         """Used to decode a repository path into unicode."""

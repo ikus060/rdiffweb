@@ -66,14 +66,13 @@ class LocationsPage(page_main.MainPage):
             except librdiff.FileError:
                 logger.exception("invalid user path %s" % user_repo)
                 path = encodefilename(user_repo.strip('/'))
-                name = user_repo.strip('/').split('/')[-1]
+                name = user_repo.strip('/')
                 status = ('failed', _('The repository cannot be found or is badly damaged.'))
                 last_backup_date = 0
             # Create an entry to represent the repository
             repos.append({
                 "path": path,
-                "path_split": user_repo.strip('/').split('/'),
-                "name": name,
+                "name_split": name.strip('/').split('/'),
                 "last_backup_date": last_backup_date,
                 'status': status,
             })
