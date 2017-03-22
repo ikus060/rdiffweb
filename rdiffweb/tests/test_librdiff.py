@@ -277,8 +277,10 @@ class RdiffRepoTest(unittest.TestCase):
         with self.assertRaises(DoesNotExistError):
             self.repo.get_path(b'BrokenSymlink')
 
-    def test_in_progress(self):
-        self.assertFalse(self.repo.in_progress)
+    def test_status(self):
+        status = self.repo.status
+        self.assertEqual('ok', status[0])
+        self.assertEqual('', status[1])
 
     def test_restore_file(self):
         filename, stream = self.repo.restore(b"Revisions/Data", restore_date=1454448640, kind='zip')

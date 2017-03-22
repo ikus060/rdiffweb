@@ -47,11 +47,10 @@ class HistoryPage(page_main.MainPage):
         assert isinstance(repo_obj, librdiff.RdiffRepo)
 
         # Set up warning about in-progress backups, if necessary
-        warning = ""
-        if repo_obj.in_progress:
-            warning = _("""A backup is currently in progress to this repository. The displayed data may be inconsistent.""")
-        elif not repo_obj.last_backup_date:
-            warning = _("""Initial backup was interrupted during the process. The displayed data may be inconsistent.""")
+        warning = False
+        status = repo_obj.status
+        if status[0] != 'ok':
+            warning = status[1] + ' ' + _("The displayed data may be inconsistent.")
 
         parms = {
             "limit": limit,

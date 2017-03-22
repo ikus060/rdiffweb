@@ -33,15 +33,16 @@
           </div>
         </div>
         {% else %}
-        <a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.in_progress and 'list-group-item-warning']) }}
+        <a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }}
             href="{{ url_for_browse(repo.path) }}" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
           <meta itemprop="name" content="{{ repo.path }}" />
           <i class="icon-hdd"></i>
           {{ repo.name }}{% if repo.name|length==1 %}:\{% endif %}
           <span class="pull-right light">
-              {% if repo.failed %}{% trans %}Error{% endtrans %}
-              {% elif repo.in_progress %}{% trans %}In progress{% endtrans %}
-              {% else %}{% trans %}Last backup: {% endtrans %}
+              {% if repo.status[0] != 'ok' %}
+              <span data-toggle="tooltip" data-placement="left" title="{{ repo.status[1] }}"><i class="icon-attention"></i></span>
+              {% endif %}
+              {% if repo.last_backup_date %}{% trans %}Last backup: {% endtrans %}
               <time datetime="{{ repo.last_backup_date | datetime }}" itemprop="lastBackupDate">{{ repo.last_backup_date | datetime }}</time>
               {% endif %}
           </span>

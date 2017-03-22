@@ -24,7 +24,6 @@ from builtins import str
 import cherrypy
 from cherrypy.lib.static import _serve_fileobj
 import logging
-import os
 
 from rdiffweb import page_main
 from rdiffweb import rdw_helpers
@@ -85,8 +84,9 @@ class RestorePage(page_main.MainPage):
             raise cherrypy.HTTPError(400, _("Invalid date."))
 
         # Get if backup in progress
-        if repo_obj.in_progress:
-            raise cherrypy.HTTPError(500, _("""A backup is currently in progress to this repository. Restores are disabled until this backup is complete."""))
+        status = repo_obj.status
+        if status[0] != 'ok':
+            raise cherrypy.HTTPError(500, _(status[1] + ' ' + _("""Restores are disabled.""")))
 
         # Determine the kind.
         kind = kind or 'zip'

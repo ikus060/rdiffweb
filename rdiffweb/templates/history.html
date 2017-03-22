@@ -17,7 +17,7 @@
             {% if entry.has_errors %}
             <span class="label label-danger">{% trans %}Error(s){% endtrans %}</span>
             <a data-toggle="collapse" href="#errors{{loop.index}}" aria-expanded="false" aria-controls="#errors{{loop.index}}">Show error(s)</a>
-            {% elif entry.in_progress %} <span class="label label-info">{% trans %}In progress{% endtrans %}</span> {% endif %}
+            {% endif %}
 
             <div class="pull-right">
 

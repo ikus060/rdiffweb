@@ -25,7 +25,6 @@ from builtins import object
 from builtins import str
 from collections import OrderedDict
 import encodings
-import errno
 from future.utils import iteritems
 from future.utils import python_2_unicode_compatible
 from future.utils.surrogateescape import encodefilename
@@ -33,6 +32,7 @@ import gzip
 import io
 import logging
 import os
+import psutil
 import re
 from shutil import copyfileobj
 import shutil
@@ -44,8 +44,8 @@ import zlib
 
 from rdiffweb import rdw_helpers
 from rdiffweb.archiver import archive, ARCHIVERS
+from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_config import Configuration
-import psutil
 
 
 try:
@@ -256,7 +256,7 @@ class DirEntry(object):
             if not increment.is_snapshot and increment.is_missing:
                 change_date = self._get_first_backup_after_date(change_date)
 
-            if change_date not in self._change_dates:
+            if change_date and change_date not in self._change_dates:
                 self._change_dates.append(change_date)
 
         # If the directory exists, add the last known backup date.
@@ -805,37 +805,6 @@ class RdiffRepo(object):
         return DirEntry(self, path, exists, increments)
 
     @property
-    def in_progress(self):
-        """Check if a backup is in progress for the current repo."""
-        # Filter the files to keep current_mirror.* files
-        current_mirrors = [
-            x
-            for x in self._data_entries
-            if x.startswith(b"current_mirror.")]
-
-        pid_re = re.compile(b"^PID\s*([0-9]+)", re.I | re.M)
-
-        def extract_pid(current_mirror):
-            """Return process ID from a current mirror marker, if any"""
-            entry = IncrementEntry(self, current_mirror)
-            match = pid_re.search(entry.read())
-            if not match:
-                return None
-            else:
-                return int(match.group(1))
-
-        # Read content of the file and check if pid still exists
-        for current_mirror in current_mirrors:
-            pid = extract_pid(current_mirror)
-            try:
-                p = psutil.Process(pid)
-                if 'rdiff-backup' in p.cmdline():
-                    return True
-            except psutil.NoSuchProcess:
-                pass
-        return False
-
-    @property
     def last_backup_date(self):
         """Return the last known backup dates."""
         if len(self.backup_dates) > 0:
@@ -913,8 +882,8 @@ class RdiffRepo(object):
                         b"--restore-as-of=" + str(restore_date).encode(encoding='latin1'),
                         file_to_restore,
                         output)
-                except ExecuteError as e:
-                    raise UnknownError('unable to restore:' + e)
+                except ExecuteError:
+                    raise UnknownError('unable to restore')
                 logger.debug("restored locally completed")
 
                 # Check the result
@@ -959,6 +928,43 @@ class RdiffRepo(object):
             # Then re-raise issue
             logger.error('fail to create new thread', exc_info=1)
             raise e
+
+    @property
+    def status(self):
+        """Check if a backup is in progress for the current repo."""
+        # Filter the files to keep current_mirror.* files
+        current_mirrors = [
+            x
+            for x in self._data_entries
+            if x.startswith(b"current_mirror.")]
+
+        pid_re = re.compile(b"^PID\s*([0-9]+)", re.I | re.M)
+
+        def extract_pid(current_mirror):
+            """Return process ID from a current mirror marker, if any"""
+            entry = IncrementEntry(self, current_mirror)
+            match = pid_re.search(entry.read())
+            if not match:
+                return None
+            else:
+                return int(match.group(1))
+
+        # Read content of the file and check if pid still exists
+        for current_mirror in current_mirrors:
+            pid = extract_pid(current_mirror)
+            try:
+                p = psutil.Process(pid)
+                if any('rdiff-backup' in c for c in p.cmdline()):
+                    return ('in_progress', _('A backup is currently in progress to this repository.'))
+            except psutil.NoSuchProcess:
+                logger.debug('pid [%s] does not exists', pid)
+                pass
+        # If multiple current_mirror file exists and none of them are associated to a PID, this mean the last backup was interrupted.
+        # Also, if the last backup date is undefined, this mean the first initial backup was interrupted.
+        if len(current_mirrors) > 1 or not self.last_backup_date:
+            return ('interrupted', _('The previous backup seams to have failed.'))
+
+        return ('ok', '')
 
     @property
     def session_statistics(self):

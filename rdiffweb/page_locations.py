@@ -61,24 +61,21 @@ class LocationsPage(page_main.MainPage):
                 repo_obj = librdiff.RdiffRepo(user_root, user_repo)
                 path = repo_obj.path
                 name = repo_obj.display_name
-                in_progress = repo_obj.in_progress
+                status = repo_obj.status
                 last_backup_date = repo_obj.last_backup_date
-                failed = False
             except librdiff.FileError:
                 logger.exception("invalid user path %s" % user_repo)
                 path = encodefilename(user_repo.strip('/'))
                 name = user_repo.strip('/').split('/')[-1]
-                in_progress = False
+                status = ('failed', _('The repository cannot be found or is badly damaged.'))
                 last_backup_date = 0
-                failed = True
             # Create an entry to represent the repository
             repos.append({
                 "path": path,
                 "path_split": user_repo.strip('/').split('/'),
                 "name": name,
                 "last_backup_date": last_backup_date,
-                'in_progress': in_progress,
-                'failed': failed
+                'status': status,
             })
         params = {
             "repos": repos,
