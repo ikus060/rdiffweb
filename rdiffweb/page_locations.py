@@ -25,6 +25,7 @@ import logging
 from rdiffweb import librdiff
 from rdiffweb import page_main
 from future.utils.surrogateescape import encodefilename
+from rdiffweb.i18n import ugettext as _
 
 
 # Define the logger
