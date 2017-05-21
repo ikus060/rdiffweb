@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from cherrypy import Application
 import cherrypy
 from cherrypy.process.plugins import Monitor
+from distutils.version import LooseVersion
 from future.utils import native_str
 import logging
 import os
@@ -117,7 +118,7 @@ class RdiffwebApp(Application):
         # To work around the new behaviour in CherryPy >= 5.5.0, force usage of
         # ISO-8859-1 encoding for URL. This avoid any conversion of the
         # URL into UTF-8.
-        if PY3 and cherrypy.__version__ >= "5.5.0":
+        if PY3 and LooseVersion(cherrypy.__version__) >= LooseVersion("5.5.0"):
             config[native_str('/')]["request.uri_encoding"] = "ISO-8859-1"
 
         self._setup_session_storage(config)
