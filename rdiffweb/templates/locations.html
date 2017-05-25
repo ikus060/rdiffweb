@@ -22,7 +22,7 @@
     <div class="list-group" itemscope itemtype="http://schema.org/ItemList">
     {% for name, repo in repos_hierarchy.items() recursive %}
 
-        {% if not repo.get('path') %}
+        {% if repo.get('path') is none %}
         <div class="list-group-item">
           <div class="list-group-item-heading">
             {% set is_desktop = repo.keys()[0]|length == 1 %}
