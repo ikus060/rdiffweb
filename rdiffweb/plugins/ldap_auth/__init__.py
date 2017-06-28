@@ -56,6 +56,9 @@ class LdapPasswordStore(IPasswordStore):
     tls = BoolOption("LdapTls", "false", doc="Check if TLs is enabled")
     attribute = Option("LdapAttribute", "uid", doc="Get attribute")
     filter = Option("LdapFilter", "(objectClass=*)")
+    require_group = Option("LdapRequiredGroup")
+    group_attribute = Option("LDAPGroupAttribute", "member")
+    group_attribute_is_dn = BoolOption("LDAPGroupAttributeIsDN", "true")
     bind_dn = Option("LdapBindDn", "")
     bind_password = Option("LdapBindPassword", "")
     version = IntOption("LdapVersion", "3")
@@ -83,20 +86,31 @@ class LdapPasswordStore(IPasswordStore):
             # Bind using the user credentials. Throws an exception in case of
             # error.
             l.simple_bind_s(r[0][0], password)
-            l.unbind_s()
-            logger.info("user [%s] found in LDAP", username)
+            try:
+                logger.info("user [%s] found in LDAP", username)
 
-            # Verify the shadow expire
-            shadow_expire = self._attr_shadow_expire(r)
-            if self.check_shadow_expire and shadow_expire:
-                # Convert nb. days into seconds.
-                shadow_expire = shadow_expire * 24 * 60 * 60
-                if shadow_expire < time.time():
-                    logger.warn("user account %s expired: %s", username, shadow_expire)
-                    raise RdiffError(_('User account %s expired.' % username))
+                # Verify the shadow expire
+                if self.check_shadow_expire:
+                    shadow_expire = self._attr_shadow_expire(r)
+                    # Convert nb. days into seconds.
+                    if shadow_expire and shadow_expire * 24 * 60 * 60 < time.time():
+                        logger.warn("user account %s expired: %s", username, shadow_expire)
+                        raise RdiffError(_('User account %s expired.' % username))
 
+                # Get username
+                dn = r[0][0]
+                new_username = self._decode(r[0][1][self.attribute][0])
+
+                # Verify if the user is member of the required group
+                if self.require_group:
+                    value = dn if self.group_attribute_is_dn else new_username
+                    logger.info("check if user [%s] is member of [%s]", value, self.require_group)
+                    if not l.compare_s(self.require_group, self.group_attribute, value):
+                        raise RdiffError(_('Permissions denied for user account %s.' % username))
+            finally:
+                l.unbind_s()
             # Return the username
-            return self._decode(r[0][1][self.attribute][0])
+            return new_username
 
         # Execute the LDAP operation
         try:

@@ -50,12 +50,16 @@ class UserManagerLdapTest(AppTestCase):
     people = ('ou=People,dc=nodomain', {
         'ou': ['People'],
         'objectClass': ['organizationalUnit']})
+    groups = ('ou=Groups,dc=nodomain', {
+        'ou': ['Groups'],
+        'objectClass': ['organizationalUnit']})
 
     # This is the content of our mock LDAP directory. It takes the form
     # {dn: {attr: [value, ...], ...}, ...}.
     directory = dict([
         basedn,
         people,
+        groups,
         _ldap_user('admin'),
         _ldap_user('annik'),
         _ldap_user('bob'),
@@ -69,7 +73,9 @@ class UserManagerLdapTest(AppTestCase):
 
     enabled_plugins = ['Ldap']
 
-    default_config = {'LdapAllowPasswordChange': 'true'}
+    default_config = {
+        'LdapAllowPasswordChange': 'true',
+    }
 
     @classmethod
     def setUpClass(cls):
@@ -213,6 +219,88 @@ class UserManagerLdapNoPasswordChangeTest(AppTestCase):
         """Expect error when trying to update password of invalid user."""
         with self.assertRaises(RdiffError):
             self.assertFalse(self.ldapstore.set_password('bar', 'new_password'))
+
+
+class UserManagerLdapWithRequiredGroupTest(AppTestCase):
+    """
+    Test for required group for LDAP with posix schema.
+    """
+
+    basedn = ('dc=nodomain', {
+        'dc': ['nodomain'],
+        'o': ['nodomain']})
+    people = ('ou=People,dc=nodomain', {
+        'ou': ['People'],
+        'objectClass': ['organizationalUnit']})
+    groups = ('ou=Groups,dc=nodomain', {
+        'ou': ['Groups'],
+        'objectClass': ['organizationalUnit']})
+    rdiffweb_group = ('cn=rdiffweb,ou=Groups,dc=nodomain', {
+        'memberUid': ['jeff', 'mike'],
+        'objectClass': ['posixGroup']})
+
+    # This is the content of our mock LDAP directory. It takes the form
+    # {dn: {attr: [value, ...], ...}, ...}.
+    directory = dict([
+        basedn,
+        people,
+        groups,
+        rdiffweb_group,
+        _ldap_user('jeff'),
+        _ldap_user('mike'),
+        _ldap_user('bob'),
+    ])
+
+    enabled_plugins = ['Ldap']
+
+    default_config = {
+        'LdapAllowPasswordChange': 'true',
+        'LdapRequiredGroup': 'cn=rdiffweb,ou=Groups,dc=nodomain',
+        'LDAPGroupAttribute': 'memberUid',
+        'LDAPGroupAttributeIsDN': 'false',
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        # We only need to create the MockLdap instance once. The content we
+        # pass in will be used for all LDAP connections.
+        cls.mockldap = MockLdap(cls.directory)
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.mockldap
+
+    def setUp(self):
+        AppTestCase.setUp(self)
+        # Mock LDAP
+        self.mockldap.start()
+        self.ldapobj = self.mockldap['ldap://localhost/']
+        # Get reference to LdapStore
+        self.ldapstore = self.app.userdb._password_stores[0]
+
+    def tearDown(self):
+        # Stop patching ldap.initialize and reset state.
+        self.mockldap.stop()
+        del self.ldapobj
+        AppTestCase.tearDown(self)
+
+    def test_are_valid_credentials(self):
+        self.assertEquals('mike', self.ldapstore.are_valid_credentials('mike', 'password'))
+        self.assertEquals('jeff', self.ldapstore.are_valid_credentials('jeff', 'password'))
+
+    def test_are_valid_credentials_with_invalid_password(self):
+        self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'invalid'))
+        # password is case sensitive
+        self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'Password'))
+        # Match entire password
+        self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'pass'))
+        self.assertFalse(self.ldapstore.are_valid_credentials('jeff', ''))
+
+    def test_are_valid_credentials_with_invalid_user(self):
+        self.assertIsNone(self.ldapstore.are_valid_credentials('josh', 'password'))
+
+    def test_are_valid_credentials_missing_group(self):
+        self.assertFalse(self.ldapstore.are_valid_credentials('bob', 'password'))
 
 
 if __name__ == "__main__":
