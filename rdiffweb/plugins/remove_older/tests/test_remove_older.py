@@ -24,9 +24,11 @@ Created on May 2, 2016
 from __future__ import unicode_literals
 
 import logging
+from mock import MagicMock
 import unittest
 
 from rdiffweb import librdiff
+from rdiffweb.plugins.remove_older import KEEPDAYS
 from rdiffweb.test import WebCase
 
 
@@ -58,12 +60,16 @@ class RemoveOlderTest(WebCase):
         # Make sure the right value is selected.
         self._settings(self.REPO)
         self.assertInBody('<option selected value="1">')
+        # Also check if the value is updated in database
+        user = self.app.userdb.get_user(self.USERNAME)
+        repo = user.get_repo(self.REPO)
+        keepdays = repo.get_attr(KEEPDAYS, default='-1')
+        self.assertEqual('1', keepdays)
 
     def test_remove_older(self):
         """
         Run remove older on testcases repository.
         """
-        # Set keep one day.
         self._remove_older(self.REPO, '1')
         self.assertStatus(200)
         # Get current user
@@ -75,6 +81,60 @@ class RemoveOlderTest(WebCase):
         # Check number of history.
         r = librdiff.RdiffRepo(user.user_root, repo.name)
         self.assertEqual(2, len(r.get_history_entries()))
+
+    def test_remove_older_with_unicode(self):
+        """
+        Test if exception is raised when calling _remove_oler with a keepdays
+        as unicode value.
+        """
+        # Get current user
+        user = self.app.userdb.get_user(self.USERNAME)
+        repo = user.get_repo(self.REPO)
+        # Run the job.
+        p = self.app.plugins.get_plugin_by_name('RemoveOlderPlugin')
+        with self.assertRaises(AssertionError):
+            p._remove_older(user, repo, '30')
+
+
+class RemoveOlderTestWithMock(WebCase):
+
+    login = True
+
+    reset_app = True
+
+    reset_testcases = True
+
+    @classmethod
+    def setup_server(cls):
+        WebCase.setup_server(enabled_plugins=['SQLite', 'RemoveOlder'])
+
+    def test_job_run_without_keepdays(self):
+        """
+        Test execution of job run.
+        """
+        # Mock the call to _remove_older to make verification.
+        p = self.app.plugins.get_plugin_by_name('RemoveOlderPlugin')
+        p._remove_older = MagicMock()
+        # Call the job.
+        p.job_run()
+        # Check if _remove_older was called
+        p._remove_older.assert_not_called()
+
+    def test_job_run_with_keepdays(self):
+        """
+        Test execution of job run.
+        """
+        # Mock the call to _remove_older to make verification.
+        p = self.app.plugins.get_plugin_by_name('RemoveOlderPlugin')
+        p._remove_older = MagicMock()
+        # Set a keepdays
+        user = self.app.userdb.get_user(self.USERNAME)
+        repo = user.get_repo(self.REPO)
+        repo.set_attr(KEEPDAYS, '30')
+        # Call the job.
+        p.job_run()
+        # Check if _remove_older was called
+        p._remove_older.assert_called_once_with(user, repo, 30)
 
 
 if __name__ == "__main__":

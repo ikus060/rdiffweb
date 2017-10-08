@@ -102,26 +102,23 @@ class RemoveOlderPlugin(ITemplateFilterPlugin, JobPlugin):
         """
         # Create a generator to loop on repositories.
         gen = (
-            (user, repo, repo.get_attr(KEEPDAYS, default='-1'))
+            (user, repo, int(repo.get_attr(KEEPDAYS)))
             for user in self.app.userdb.list()
-            for repo in user.repo_list)
-        # Filter them.
-        gen = (
-            (user, repo, keepdays)
-            for user, repo, keepdays in gen
-            if keepdays > 0)
+            for repo in user.repo_list
+            if int(repo.get_attr(KEEPDAYS, default='-1')) > 0)
 
         # Loop on each repos.
         for user, repo, keepdays in gen:
             try:
                 self._remove_older(user, repo, keepdays)
-            except:
+            except BaseException:
                 _logger.exception("fail to remove older for user [%r] repo [%r]", user, repo)
 
     def _remove_older(self, user, repo, keepdays):
         """
         Take action to remove older.
         """
+        assert isinstance(keepdays, int)
         assert keepdays > 0
         # Get instance of the repo.
         r = librdiff.RdiffRepo(user.user_root, repo.name)
