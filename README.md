@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ikus060/rdiffweb.svg?branch=master)](https://travis-ci.org/ikus060/rdiffweb)
+
 rdiffweb
 ========
 Release under GPLv3
