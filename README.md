@@ -8,4 +8,4 @@ application is to ease the management of backups and quickly restore your data.
 
 # Installation
 
-Installation steps are detailed in [Documentation](doc/index.md#installation).
+Installation steps are detailed in [Documentation](http://www.patrikdufresne.com/en/rdiffweb/doc/#installation).
