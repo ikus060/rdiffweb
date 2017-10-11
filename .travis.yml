@@ -3,5 +3,7 @@ language: python
 python:
     - "2.7"
     - "3.4"
+before_install:
+    - sudo apt-get install python-pysqlite2 rdiff-backup
 install: pip install tox-travis
 script: tox
