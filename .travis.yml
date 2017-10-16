@@ -6,6 +6,10 @@ python:
 env:
     - TMPDIR=/var/tmp
 before_install:
+    # Enforce timezone
+    - echo 'Canada/Eastern' | sudo tee /etc/timezone
+    - sudo dpkg-reconfigure --frontend noninteractive tzdata
+    # Install requirements
     - sudo apt-get install python-pysqlite2 rdiff-backup
 install: pip install tox-travis
 script: tox
