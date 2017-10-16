@@ -3,6 +3,8 @@ language: python
 python:
     - "2.7"
     - "3.4"
+env:
+    - TMPDIR=/var/tmp
 before_install:
     - sudo apt-get install python-pysqlite2 rdiff-backup
 install: pip install tox-travis
