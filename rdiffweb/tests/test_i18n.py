@@ -45,7 +45,7 @@ class Test(unittest.TestCase):
     def test_load_translation(self):
         # Load default translation
         t = i18n.get_translation()
-        self.assertTrue(isinstance(t, gettext.GNUTranslations))
+        self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("en", t._lang)
 
     def test_load_translation_with_accept_language_fr(self):
@@ -53,7 +53,7 @@ class Test(unittest.TestCase):
         cherrypy.request.headers["Accept-Language"] = "fr_CA,fr,en_en_US"
         # Load default translation
         t = i18n.get_translation()
-        self.assertTrue(isinstance(t, gettext.GNUTranslations))
+        self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("fr", t._lang)
 
     def test_load_translation_with_accept_language_unknown(self):
@@ -61,13 +61,13 @@ class Test(unittest.TestCase):
         cherrypy.request.headers["Accept-Language"] = "br_CA"
         # Load default translation
         t = i18n.get_translation()
-        self.assertTrue(isinstance(t, gettext.GNUTranslations))
+        self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("en", t._lang)
 
     def test_translation_with_fr(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["fr"])
-        self.assertTrue(isinstance(t, gettext.GNUTranslations))
+        self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("fr", t._lang)
         # Test translation object
         self.assertEqual("Modifier", t.gettext("Edit"))
@@ -78,28 +78,28 @@ class Test(unittest.TestCase):
     def test_translation_with_en(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["en"])
-        self.assertTrue(isinstance(t, gettext.GNUTranslations))
+        self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("en", t._lang)
         pass
 
     def test_translation_with_en_us(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["en_US"])
-        self.assertTrue(isinstance(t, gettext.GNUTranslations))
+        self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("en", t._lang)
         pass
 
     def test_translation_with_fr_ca(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["fr_CA"])
-        self.assertTrue(isinstance(t, gettext.GNUTranslations))
+        self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("fr", t._lang)
         pass
 
     def test_translation_with_en_fr(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["en", "fr"])
-        self.assertTrue(isinstance(t, gettext.GNUTranslations))
+        self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("en", t._lang)
         # Test translation object
         self.assertEqual("Edit", t.gettext("Edit"))
@@ -110,7 +110,7 @@ class Test(unittest.TestCase):
     def test_translation_with_fr_en(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["fr", "en"])
-        self.assertTrue(isinstance(t, gettext.GNUTranslations))
+        self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("fr", t._lang)
         # Test translation object
         self.assertEqual("Modifier", t.gettext("Edit"))
@@ -119,7 +119,7 @@ class Test(unittest.TestCase):
     def test_translation_with_unknown(self):
         # Get trans
         t = i18n._translation("messages", [self.mo_dir], ["br"])
-        self.assertTrue(isinstance(t, gettext.NullTranslations))
+        self.assertIsInstance(t, gettext.NullTranslations)
         self.assertEqual("en_US", t._lang)
         pass
 
