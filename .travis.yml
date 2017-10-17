@@ -12,4 +12,5 @@ before_install:
     # Install requirements
     - sudo apt-get install python-pysqlite2 rdiff-backup
 install: pip install tox-travis
-script: tox
+# Need to compile the catalogs before running the test
+script: python setup.py compile_all_catalogs tox
