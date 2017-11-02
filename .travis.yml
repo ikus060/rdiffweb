@@ -3,14 +3,37 @@ language: python
 python:
     - "2.7"
     - "3.4"
+
 env:
+  global:
     - TMPDIR=/var/tmp
+  matrix:
+    - CHERRYPY=3.2
+    - CHERRYPY=3.5
+    - CHERRYPY=4
+    - CHERRYPY=5
+    - CHERRYPY=6
+    - CHERRYPY=7
+    - CHERRYPY=8
+    - CHERRYPY=9
+    - CHERRYPY=10
+    - CHERRYPY=11
+
+# Make sure to exclude python3.4 + CherryPy 3.2.2
+# This configuration is not supported.
+matrix:
+  exclude: 
+  - python: "3.4"
+    env: CHERRYPY=3.2
+    
 before_install:
     # Enforce timezone
     - echo 'Canada/Eastern' | sudo tee /etc/timezone
     - sudo dpkg-reconfigure --frontend noninteractive tzdata
     # Install requirements
     - sudo apt-get install python-pysqlite2 rdiff-backup
-install: pip install tox-travis
+    - sudo pip install tox-travis
 # Need to compile the catalogs before running the test
-script: python setup.py compile_all_catalogs tox
+script:
+ - python setup.py compile_all_catalogs
+ - tox
