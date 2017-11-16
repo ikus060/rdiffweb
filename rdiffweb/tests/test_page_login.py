@@ -23,6 +23,7 @@ Created on Dec 26, 2015
 
 from __future__ import unicode_literals
 
+from base64 import b64encode
 import logging
 import unittest
 
@@ -41,11 +42,11 @@ class LoginPageTest(WebCase):
 
     def test_getpage_with_plaintext(self):
         """
-        Requesting plain text without being authenticated should return a 403
-        error instead of login form.
+        Requesting plain text without being authenticated should show the login form.
         """
         self.getPage('/', headers=[("Accept", "text/plain")])
-        self.assertStatus('403 Forbidden')
+        self.assertStatus('200 OK')
+        self.assertInBody('login')
 
     def test_getpage_with_redirect_get(self):
         """
@@ -102,7 +103,7 @@ class LoginPageTest(WebCase):
 
     def test_getpage_without_username(self):
         """
-        Check if error 405 is raised when requesting /login without a username.
+        Check if error   is raised when requesting /login without a username.
         """
         self.getPage('/login/', method='GET')
         self.assertStatus('303 See Other')
@@ -117,6 +118,75 @@ class LoginPageTest(WebCase):
         self.getPage('/login/', method='POST', body=b)
         self.assertStatus('200 OK')
         self.assertInBody('Invalid username or password.')
+
+    def test_getapi_without_authorization(self):
+        """
+        Check if 401 is return when authorization is not provided.
+        """
+        self.getPage('/api/')
+        self.assertStatus('401 Unauthorized')
+
+    def test_getapi_without_username(self):
+        """
+        Check if error 403 is raised when requesting /login without a username.
+        """
+        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b":admin123").decode('ascii'))])
+        self.assertStatus('403 Forbidden')
+
+    def test_getapi_with_empty_password(self):
+        """
+        Check if 401 is return when authorization is not provided.
+        """
+        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:").decode('ascii'))])
+        self.assertStatus('403 Forbidden')
+
+    def test_getapi_with_authorization(self):
+        """
+        Check if 200 is return when authorization is not provided.
+        """
+        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))])
+        self.assertStatus('200 OK')
+
+    def test_getapi_with_session(self):
+        """
+        Check if 200 is return when authorization is not provided.
+        """
+        b = {'login': 'admin',
+             'password': 'admin123'}
+        self.getPage('/login/', method='POST', body=b)
+        self.assertStatus('303 See Other')
+        self.getPage('/')
+        self.assertStatus('200 OK')
+        # Get api using the same session.
+        self.getPage('/api/')
+        self.assertStatus('200 OK')
+
+
+class LogoutPageTest(WebCase):
+
+    def test_getpage_without_login(self):
+        # Accessing logout page directly will redirect to "/".
+        self.getPage('/logout/')
+        self.assertStatus('303 See Other')
+        self.assertHeaderItemValue('Location', self.baseurl + '/')
+
+    def test_getpage_with_login(self):
+        # Login
+        b = {'login': 'admin', 'password': 'admin123'}
+        self.getPage('/login/', method='POST', body=b)
+        self.assertStatus('303 See Other')
+        # Get content of a page.
+        self.getPage("/prefs/")
+        self.assertStatus('200 OK')
+        # Then logout
+        self.getPage('/logout/')
+        self.assertStatus('303 See Other')
+        self.assertHeaderItemValue('Location', self.baseurl + '/')
+        # Get content of a page.
+        self.getPage("/prefs/")
+        self.assertStatus('200 OK')
+        self.assertInBody('login')
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
