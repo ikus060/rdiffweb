@@ -84,9 +84,9 @@ class RestorePage(page_main.MainPage):
             raise cherrypy.HTTPError(400, _("Invalid date."))
 
         # Get if backup in progress
-        status = repo_obj.status
-        if status[0] != 'ok':
-            raise cherrypy.HTTPError(500, _(status[1] + ' ' + _("""Restores are disabled.""")))
+        # status = repo_obj.status
+        # if status[0] != 'ok':
+        #    raise cherrypy.HTTPError(500, _(status[1] + ' ' + _("""Restores are disabled.""")))
 
         # Determine the kind.
         kind = kind or 'zip'
