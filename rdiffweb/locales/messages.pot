@@ -1,37 +1,41 @@
 # Translations template for rdiffweb.
-# Copyright (C) 2017 ORGANIZATION
+# Copyright (C) 2018 ORGANIZATION
 # This file is distributed under the same license as the rdiffweb project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: rdiffweb 0.9.4.dev1\n"
+"Project-Id-Version: rdiffweb 0.10.5.dev1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-03-03 08:13-0500\n"
+"POT-Creation-Date: 2018-01-30 15:45-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.3\n"
+"Generated-By: Babel 2.4.0\n"
 
 #: rdiffweb/core.py:47
 #, python-format
 msgid "User %s doesn't exists."
 msgstr ""
 
-#: rdiffweb/filter_authentication.py:59
+#: rdiffweb/filter_authentication.py:52
 msgid "Fail to validate user credential."
 msgstr ""
 
-#: rdiffweb/filter_authentication.py:62
+#: rdiffweb/filter_authentication.py:55
 msgid "Invalid username or password."
 msgstr ""
 
-#: rdiffweb/filter_authentication.py:78
-msgid "Not logged in"
+#: rdiffweb/librdiff.py:960
+msgid "A backup is currently in progress to this repository."
+msgstr ""
+
+#: rdiffweb/librdiff.py:967
+msgid "The previous backup seams to have failed."
 msgstr ""
 
 #: rdiffweb/page_admin.py:43
@@ -65,26 +69,16 @@ msgstr ""
 msgid "User account removed."
 msgstr ""
 
-#: rdiffweb/page_browse.py:77 rdiffweb/page_history.py:52
-msgid ""
-"A backup is currently in progress to this repository. The displayed data may "
-"be inconsistent."
+#: rdiffweb/page_browse.py:78 rdiffweb/page_history.py:53
+msgid "The displayed data may be inconsistent."
 msgstr ""
 
-#: rdiffweb/page_browse.py:79 rdiffweb/page_history.py:54
-msgid ""
-"Initial backup was interrupted during the process. The displayed data may be "
-"inconsistent."
+#: rdiffweb/page_locations.py:71
+msgid "The repository cannot be found or is badly damaged."
 msgstr ""
 
-#: rdiffweb/page_restore.py:85 rdiffweb/page_status.py:68
+#: rdiffweb/page_restore.py:84 rdiffweb/page_status.py:68
 msgid "Invalid date."
-msgstr ""
-
-#: rdiffweb/page_restore.py:89
-msgid ""
-"A backup is currently in progress to this repository. Restores are disabled "
-"until this backup is complete."
 msgstr ""
 
 #: rdiffweb/user.py:176
@@ -97,12 +91,12 @@ msgid "You cannot change the user's password."
 msgstr ""
 
 #: rdiffweb/plugins/db_sqlite/__init__.py:234
-#: rdiffweb/plugins/ldap_auth/__init__.py:248
+#: rdiffweb/plugins/ldap_auth/__init__.py:262
 msgid "Password can't be empty."
 msgstr ""
 
 #: rdiffweb/plugins/db_sqlite/__init__.py:238
-#: rdiffweb/plugins/ldap_auth/__init__.py:255
+#: rdiffweb/plugins/ldap_auth/__init__.py:269
 msgid "Wrong password."
 msgstr ""
 
@@ -198,21 +192,26 @@ msgstr ""
 msgid "Average time to complete backup."
 msgstr ""
 
-#: rdiffweb/plugins/ldap_auth/__init__.py:96
+#: rdiffweb/plugins/ldap_auth/__init__.py:98
 #, python-format
 msgid "User account %s expired."
 msgstr ""
 
-#: rdiffweb/plugins/ldap_auth/__init__.py:183
+#: rdiffweb/plugins/ldap_auth/__init__.py:109
+#, python-format
+msgid "Permissions denied for user account %s."
+msgstr ""
+
+#: rdiffweb/plugins/ldap_auth/__init__.py:197
 #, python-format
 msgid "An LDAP error occurred: %s"
 msgstr ""
 
-#: rdiffweb/plugins/ldap_auth/__init__.py:251
+#: rdiffweb/plugins/ldap_auth/__init__.py:265
 msgid "LDAP users are not allowed to change their password."
 msgstr ""
 
-#: rdiffweb/plugins/ldap_auth/__init__.py:264
+#: rdiffweb/plugins/ldap_auth/__init__.py:278
 #, python-format
 msgid "User %s not found."
 msgstr ""
@@ -766,16 +765,12 @@ msgstr ""
 msgid "Sorry, an error has occured."
 msgstr ""
 
-#: rdiffweb/templates/history.html:4
-msgid "History"
+#: rdiffweb/templates/history.html:4 rdiffweb/templates/layout_repo.html:12
+msgid "Restore Repository"
 msgstr ""
 
 #: rdiffweb/templates/history.html:18
 msgid "Error(s)"
-msgstr ""
-
-#: rdiffweb/templates/history.html:20 rdiffweb/templates/locations.html:43
-msgid "In progress"
 msgstr ""
 
 #: rdiffweb/templates/layout.html:31
@@ -804,10 +799,6 @@ msgstr ""
 msgid "Signed in as %(username)s"
 msgstr ""
 
-#: rdiffweb/templates/layout_repo.html:12
-msgid "Restore Repository"
-msgstr ""
-
 #: rdiffweb/templates/layout_repo.html:13 rdiffweb/templates/settings.html:4
 msgid "Settings"
 msgstr ""
@@ -816,11 +807,7 @@ msgstr ""
 msgid "You don't have any repositories configured."
 msgstr ""
 
-#: rdiffweb/templates/locations.html:42
-msgid "Error"
-msgstr ""
-
-#: rdiffweb/templates/locations.html:44
+#: rdiffweb/templates/locations.html:45
 msgid "Last backup: "
 msgstr ""
 
