@@ -57,10 +57,10 @@ class TarArchiver(object):
 
         # Open the tar archive with the right method.
         if isinstance(dest, str):
-            self.z = tarfile.open(name=dest, mode=mode)
+            self.z = tarfile.open(name=dest, mode=mode, encoding='UTF8')
             self.fileobj = None
         else:
-            self.z = tarfile.open(fileobj=dest, mode=mode)
+            self.z = tarfile.open(fileobj=dest, mode=mode, encoding='UTF8')
             self.fileobj = dest
 
     def addfile(self, filename, arcname):
