@@ -242,7 +242,7 @@ if PY2:
 
 setup(
     name='rdiffweb',
-    version='0.10.5',
+    version='0.10.6.dev1',
     description='A web interface to rdiff-backup repositories',
     author='Patrik Dufresne',
     author_email='info@patrikdufresne.com',
