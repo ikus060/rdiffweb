@@ -461,16 +461,15 @@ class FileStatisticsEntry(IncrementEntry):
     def _search(self, path):
         """
         This function search for a file entry in the file_statistics compress
-        file. Since python gzip seams to be 2 time slower, we directly use
-        zgrep to search the file. If zgrep is not available, fallback to
-        python implementation.
+        file. Since python gzip.open() seams to be 2 time slower, we directly use
+        zlib library on python2.
         """
         logger.debug("read file_statistics [%r]", self.name)
 
         path += b' '
 
         # Open file are compress.
-        if self._is_compressed:
+        if not PY3 and self._is_compressed:
             line = None
             fullfn = os.path.join(self.repo._data_path, self.name)
             in_file = gzip.open(fullfn, 'r')
