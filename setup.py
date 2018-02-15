@@ -233,7 +233,7 @@ class tox(TestCommand):
 # Compute requirements
 install_requires = [
     "CherryPy>=3.2.2",
-    "Jinja2>=2.6",
+    "Jinja2>=2.6,<=2.8.1",
     "future>=0.15.2",
     "psutil>=2.1.1",
 ]
