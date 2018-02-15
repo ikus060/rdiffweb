@@ -25,8 +25,7 @@ from future.utils.surrogateescape import encodefilename
 import logging
 
 from rdiffweb.core import Component
-from rdiffweb.i18n import get_current_lang
-from rdiffweb.librdiff import RdiffRepo, AccessDeniedError, DoesNotExistError
+from rdiffweb.librdiff import RdiffRepo, DoesNotExistError
 from rdiffweb.rdw_plugin import ITemplateFilterPlugin
 
 
@@ -123,8 +122,9 @@ class MainPage(Component):
         This method should be used by subclasses to provide default template
         value.
         """
+        loc = cherrypy.response.i18n.locale
         parms = {
-            "lang": get_current_lang(),
+            "lang": loc.language,
             "version": self.app.get_version(),
             "extra_head_templates": [],
         }

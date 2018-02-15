@@ -15,43 +15,115 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""Internationalization and Localization for CherryPy
+
+**Tested with CherryPy 3.1.2**
+
+This tool provides locales and loads translations based on the
+HTTP-ACCEPT-LANGUAGE header. If no header is send or the given language
+is not supported by the application, it falls back to
+`tools.I18nTool.default`. Set `default` to the native language used in your
+code for strings, so you must not provide a .mo file for it.
+
+The tool uses `babel<http://babel.edgewall.org>`_ for localization and
+handling translations. Within your Python code you can use four functions
+defined in this module and the loaded locale provided as
+`cherrypy.response.i18n.locale`.
+
+Example::
+
+    from i18n_tool import ugettext as _, ungettext
+
+    class MyController(object):
+        @cherrypy.expose
+        def index(self):
+            loc = cherrypy.response.i18n.locale
+            s1 = _(u'Translateable string')
+            s2 = ungettext(u'There is one string.',
+                           u'There are more strings.', 2)
+            return u'<br />'.join([s1, s2, loc.display_name])
+
+If you have code (e.g. database models) that is executed before the response
+object is available, use the *_lazy functions to mark the strings
+translateable. They will be translated later on, when the text is used (and
+hopefully the response object is available then).
+
+Example::
+
+    from i18n_tool import ugettext_lazy
+
+    class Model:
+        def __init__(self):
+            name = ugettext_lazy(u'Name of the model')
+
+For your templates read the documentation of your template engine how to
+integrate babel with it. I think `Genshi<http://genshi.edgewall.org>`_ and
+`Jinja 2<http://jinja.pocoo.org`_ support it out of the box.
+
+
+Settings for the CherryPy configuration::
+
+    [/]
+    tools.I18nTool.on = True
+    tools.I18nTool.default = Your language with territory (e.g. 'en_US')
+    tools.I18nTool.mo_dir = Directory holding the locale directories
+    tools.I18nTool.domain = Your gettext domain (e.g. application name)
+
+The mo_dir must contain subdirectories named with the language prefix
+for all translations, containing a LC_MESSAGES dir with the compiled
+catalog file in it.
+
+Example::
+
+    [/]
+    tools.I18nTool.on = True
+    tools.I18nTool.default = 'en_US'
+    tools.I18nTool.mo_dir = '/home/user/web/myapp/i18n'
+    tools.I18nTool.domain = 'myapp'
+
+    Now the tool will look for a file called myapp.mo in
+    /home/user/web/myapp/i18n/en/LC_MESSACES/
+    or generic: <mo_dir>/<language>/LC_MESSAGES/<domain>.mo
+
+That's it.
+
+:License: BSD
+:Author: Thorsten Weimann <thorsten.weimann (at) gmx (dot) net>
+:Date: 2010-02-08
 """
-This module is used to load the appropriate translation for rdiffweb
-application. Current implementation uses the HTTP Accept-Language header
-to determine the best translation to be used for the current user. When
-not found, this module default to use the `DefaultLanguage`as define by
-the configuration of rdiffweb.
 
-This module allows to switch the domain and language of use when processing a
-request. This it mostly used to handle plugin translation.
-
-To use the translation module in python code:
-
-    from rdiffweb.i18n import ugettext as _
-    ...
-    _("my message")
-
-See `rdw_templating`.
-"""
 from __future__ import unicode_literals
 
 import cherrypy
-import copy
-import gettext
-import logging
-import os
-import pkg_resources
+from babel.core import Locale, UnknownLocaleError
+from babel.support import Translations
 
+try:
+    # Python 2.6 and above
+    from collections import namedtuple
+    Lang = namedtuple('Lang', 'locale trans')
+except ImportError:
 
-_logger = logging.getLogger(__name__)
+    # Python 2.5
+    class Lang(object):
+
+        def __init__(self, locale, trans):
+            self.locale = locale
+            self.trans = trans
 
 # Cache for Translations and Locale objects
-_translations = {}
+_languages = {}
 
 
+# Exception
+class ImproperlyConfigured(Exception):
+    """Raised if no known locale were found."""
+
+
+# Public translation functions
 def ugettext(message):
-    """
-    Standard translation function. You can use it in all your exposed
+    """Standard translation function. You can use it in all your exposed
     methods and everywhere where the response object is available.
 
     :parameters:
@@ -63,7 +135,7 @@ def ugettext(message):
     """
     if not hasattr(cherrypy.response, "i18n"):
         return message
-    return cherrypy.response.i18n.ugettext(message)
+    return cherrypy.response.i18n.trans.ugettext(message)
 
 
 def ungettext(singular, plural, num):
@@ -83,169 +155,102 @@ def ungettext(singular, plural, num):
     """
     if not hasattr(cherrypy.response, "i18n"):
         return singular
-    return cherrypy.response.i18n.ungettext(singular, plural, num)
+    return cherrypy.response.i18n.trans.ungettext(singular, plural, num)
 
 
-def _find(domain, localedirs, languages):
+def load_translation(langs, dirname, domain):
+    """Loads the first existing translations for known locale and saves the
+    `Lang` object in a global cache for faster lookup on the next request.
+
+    :parameters:
+        langs : List
+            List of languages as returned by `parse_accept_language_header`.
+        dirname : String
+            Directory of the translations (`tools.I18nTool.mo_dir`).
+            Might be a list of directories.
+        domain : String
+            Gettext domain of the catalog (`tools.I18nTool.domain`).
+
+    :returns: Lang object with two attributes (Lang.trans = the translations
+              object, Lang.locale = the corresponding Locale object).
+    :rtype: Lang
+    :raises: ImproperlyConfigured if no locale where known.
     """
-    Replacement for gettext.find() to search in multiple directory. This
-    function return tuples for each mo file found: (lang, translation).
+    if not isinstance(dirname, (list, tuple)):
+        dirname = [dirname]
+    locale = None
+    trans = None
+    for lang in langs:
+        short = lang[:2].lower()
+        try:
+            locale = Locale.parse(lang)
+            if (domain, short) in _languages:
+                return _languages[(domain, short)]
+            # Get all translation from all directories.
+            trans = None
+            for d in dirname:
+                t = Translations.load(d, short, domain)
+                if not isinstance(t, Translations):
+                    continue
+                if trans:
+                    trans.add_fallback(t)
+                else:
+                    trans = t
+        except (ValueError, UnknownLocaleError):
+            continue
+        # If the translation was found, exit loop
+        if isinstance(trans, Translations):
+            break
+    if locale is None:
+        raise ImproperlyConfigured('Default locale not known.')
+    _languages[(domain, short)] = res = Lang(locale, trans)
+    return res
+
+
+def get_lang(mo_dir, default, domain):
+    """Main function which will be invoked during the request by `I18nTool`.
+    If the SessionTool is on and has a lang key, this language get the
+    highest priority. Default language get the lowest priority.
+    The `Lang` object will be saved as `cherrypy.response.i18n` and the
+    language string will also saved as `cherrypy.session['_lang_']` (if
+    SessionTool is on).
+
+    :parameters:
+        mo_dir : String
+            `tools.I18nTool.mo_dir`
+        default : String
+            `tools.I18nTool.default`
+        domain : String
+            `tools.I18nTool.domain`
     """
-    # now normalize and expand the languages
-    nelangs = []
-    for lang in languages:
-        for nelang in gettext._expand_lang(lang):
-            if nelang not in nelangs:
-                nelangs.append(nelang)
-    # select a language
-    result = []
-    for lang in nelangs:
-        for localedir in localedirs:
-            mofile = os.path.join(localedir, lang, 'LC_MESSAGES', '%s.mo' % domain)
-            if os.path.exists(mofile):
-                entry = (lang, mofile)
-                result.append(entry)
-    return result
+    langs = [x.value.replace('-', '_') for x in
+             cherrypy.request.headers.elements('Accept-Language')]
+    sessions_on = cherrypy.request.config.get('tools.sessions.on', False)
+    if sessions_on and cherrypy.session.get('_lang_', ''):  # @UndefinedVariable
+        langs.insert(0, cherrypy.session.get('_lang_', '__'))  # @UndefinedVariable
+    langs.append(default)
+    loc = load_translation(langs, mo_dir, domain)
+    cherrypy.response.i18n = loc
+    if sessions_on:
+        cherrypy.session['_lang_'] = str(loc.locale)  # @UndefinedVariable
 
 
-def get_accept_languages():
-    """
-    Return ordered list of accepted languages for the current request.
-
-    The `DefaultLanguage` get the lowest priority.
-    """
-    # Determine default language.
-    default = "en_US"
-    if cherrypy.request.app:
-        app = cherrypy.request.app
-        default = app.cfg.get_config("DefaultLanguage", default)
-
-    # Determine the language to be used according to accept-language.
-    langs = list()
-    for l in cherrypy.request.headers.elements('Accept-Language'):
-        l = l.value.replace('-', '_')
-        if l not in langs:
-            langs.append(l)
-
-    if default not in langs:
-        langs.append(default)
-
-    return langs
-
-
-def get_current_lang():
-    """
-    Return the lang being currently served to the user.
-    """
-    if not hasattr(cherrypy.response, "i18n"):
-        return "en"
-    return cherrypy.response.i18n._lang
-
-
-def get_localedirs():
-    """
-    Return a list of locales directory where to search for mo files. This
-    include locales from plugins.
-    """
-    localesdirs = [
-        pkg_resources.resource_filename(__package__, 'locales')  # @UndefinedVariable
-    ]
-    if cherrypy.request.app:
-        app = cherrypy.request.app
-        # Get more directory from app plugins.
-        for p in app.plugins.get_all_plugins():
-            if p.get_localesdir():
-                localesdirs.append(p.get_localesdir())
-    return localesdirs
-
-
-def get_translation(domain="messages"):
-    """
-    Return a translation object for the given `domain`. This method is similar
-    to gettext.translation. The localdir is determine using package and plugins
-    path, the language to look at is determine using the HTTP Accept-Language.
-    """
-    # Search for an appropriate translation.
-    return _translation(domain, get_localedirs(), get_accept_languages())
-
-
-def load_translation():
-    """
-    Main function which will be invoked during the request by `I18nTool`.
-    The translation object will be saved as `cherrypy.response.i18n`.
-    """
-    # Store the translation into the cherrypy context.
-    cherrypy.response.i18n = get_translation()
-
-
-def _translation(domain, localedirs=None, languages=None):
-    """
-    Replacement for gettext.translation(). Return the best matching translation
-    object for the given `domain`. This method search in localesdirs for a
-    translation file (.mo) matching the `languages`.
-
-    Return a null translation object if a translation matching `languages`
-    can't be found.
-    """
-
-    # Use our internal find function to lookup for translation.
-    mofiles = _find(domain, localedirs, languages)
-
-    # Lookup the mo files.
-    result = None
-    for lang, mofile in mofiles:
-        # Search the cache to avoid parsing the same file again.
-        key = os.path.abspath(mofile)
-        t = _translations.get(key)
-        if t is None:
-            with open(mofile, 'rb') as fp:
-                t = _translations.setdefault(key, gettext.GNUTranslations(fp))
-        # Copy the translation object to allow setting fallbacks. All other
-        # instance data is shared with the cached object.
-        t = copy.copy(t)
-        if result is None:
-            t._lang = lang
-            result = t
-        else:
-            result.add_fallback(t)
-
-    # Add null translation as fallback
-    if result is None:
-        t = gettext.NullTranslations()
-        t._lang = "en_US"
-        result = t
-
-    # For py2/py3 compatibility (patch ugettext).
-    if not hasattr(result, 'ugettext'):
-        result.ugettext = result.gettext
-    if not hasattr(result, 'ungettext'):
-        result.ungettext = result.ngettext
-    return result
-
-
-def _set_content_lang():
-    """
-    Sets the Content-Language response header (if not already set) to the
+def set_lang():
+    """Sets the Content-Language response header (if not already set) to the
     language of `cherrypy.response.i18n.locale`.
     """
-    # Just to make it clear, this is to properly reply to the client telling
-    # them the language used in the content.
-    if ('Content-Language' not in cherrypy.response.headers and
-            hasattr(cherrypy.response, 'i18n')):
-        cherrypy.response.headers['Content-Language'] = cherrypy.response.i18n._lang
+    if 'Content-Language' not in cherrypy.response.headers:
+        cherrypy.response.headers['Content-Language'] = str(cherrypy.response.i18n.locale)
 
 
 class I18nTool(cherrypy.Tool):
-    """
-    Tool to load the appropriate translation.
-    """
+    """Tool to integrate babel translations in CherryPy."""
 
     def __init__(self):
         self._name = 'i18n'
         self._point = 'before_handler'
-        self.callable = load_translation
+        self.callable = get_lang
         # Make sure, session tool (priority 50) is loaded before
-        # Make sure to run before AuthFormTool (priority 70)
         self._priority = 60
 
     def _setup(self):
@@ -254,7 +259,7 @@ class I18nTool(cherrypy.Tool):
            c.get('tools.staticfile.on', False):
             return
         cherrypy.Tool._setup(self)
-        cherrypy.request.hooks.attach('before_finalize', _set_content_lang)
+        cherrypy.request.hooks.attach('before_finalize', set_lang)
 
 
 cherrypy.tools.i18n = I18nTool()

@@ -107,6 +107,9 @@ class RdiffwebApp(Application):
             native_str('/'): {
                 'tools.authform.on': True,
                 'tools.i18n.on': True,
+                'tools.i18n.default': 'en_US',
+                'tools.i18n.mo_dir': self._localedirs(),
+                'tools.i18n.domain': 'messages',
                 'tools.encode.on': True,
                 'tools.encode.encoding': 'utf-8',
                 'tools.gzip.on': True,
@@ -200,6 +203,20 @@ class RdiffwebApp(Application):
         tempdir = self.cfg.get_config("TempDir", default="")
         if tempdir:
             os.environ["TMPDIR"] = tempdir
+
+    def _localedirs(self):
+        """
+        Return a list of locales directory where to search for mo files. This
+        include locales from plugins.
+        """
+        localesdirs = [
+            pkg_resources.resource_filename('rdiffweb', 'locales')  # @UndefinedVariable
+        ]
+        # Get more directory from app plugins.
+        for p in self.plugins.get_all_plugins():
+            if p.get_localesdir():
+                localesdirs.append(p.get_localesdir())
+        return localesdirs
 
     def _setup_session_storage(self, config):
         # Configure session storage.

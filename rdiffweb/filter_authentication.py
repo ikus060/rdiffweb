@@ -159,7 +159,7 @@ class AuthFormTool(BaseAuth):
         # Add welcome message to params. Try to load translated message.
         params["welcome_msg"] = app.cfg.get_config("WelcomeMsg")
         if hasattr(cherrypy.response, 'i18n'):
-            lang = cherrypy.response.i18n._lang
+            lang = cherrypy.response.i18n.locale.language
             params["welcome_msg"] = app.cfg.get_config("WelcomeMsg[%s]" % (lang), params["welcome_msg"])
 
         return main_page._compile_template("login.html", **params).encode("utf-8")

@@ -25,6 +25,7 @@ Module used to test the i18n tools. Check if translation are properly loaded.
 
 from __future__ import unicode_literals
 
+from cherrypy import _cpconfig
 import cherrypy
 import gettext
 import pkg_resources
@@ -38,37 +39,46 @@ class Test(unittest.TestCase):
 
     def setUp(self):
         self.mo_dir = pkg_resources.resource_filename('rdiffweb', 'locales')  # @UndefinedVariable
+        cherrypy.request.config = _cpconfig.Config()
 
     def tearDown(self):
         pass
 
     def test_load_translation(self):
         # Load default translation
-        t = i18n.get_translation()
+        i18n.get_lang(self.mo_dir, 'en_US', 'messages')
+        t = cherrypy.response.i18n.trans
+        l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
-        self.assertEqual("en", t._lang)
+        self.assertEqual("en", l.language)
 
     def test_load_translation_with_accept_language_fr(self):
         # Mock a header
         cherrypy.request.headers["Accept-Language"] = "fr_CA,fr,en_en_US"
         # Load default translation
-        t = i18n.get_translation()
+        i18n.get_lang(self.mo_dir, 'en_US', 'messages')
+        t = cherrypy.response.i18n.trans
+        l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
-        self.assertEqual("fr", t._lang)
+        self.assertEqual("fr", l.language)
 
     def test_load_translation_with_accept_language_unknown(self):
         # Mock a header
         cherrypy.request.headers["Accept-Language"] = "br_CA"
         # Load default translation
-        t = i18n.get_translation()
+        i18n.get_lang(self.mo_dir, 'en_US', 'messages')
+        t = cherrypy.response.i18n.trans
+        l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
-        self.assertEqual("en", t._lang)
+        self.assertEqual("en", l.language)
 
     def test_translation_with_fr(self):
         # Get trans
-        t = i18n._translation("messages", [self.mo_dir], ["fr"])
+        i18n.get_lang(self.mo_dir, 'fr', 'messages')
+        t = cherrypy.response.i18n.trans
+        l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
-        self.assertEqual("fr", t._lang)
+        self.assertEqual("fr", l.language)
         # Test translation object
         self.assertEqual("Modifier", t.gettext("Edit"))
         # Check if the translation fallback
@@ -77,30 +87,38 @@ class Test(unittest.TestCase):
 
     def test_translation_with_en(self):
         # Get trans
-        t = i18n._translation("messages", [self.mo_dir], ["en"])
+        i18n.get_lang(self.mo_dir, 'en', 'messages')
+        t = cherrypy.response.i18n.trans
+        l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
-        self.assertEqual("en", t._lang)
+        self.assertEqual("en", l.language)
         pass
 
     def test_translation_with_en_us(self):
         # Get trans
-        t = i18n._translation("messages", [self.mo_dir], ["en_US"])
+        i18n.get_lang(self.mo_dir, 'en_US', 'messages')
+        t = cherrypy.response.i18n.trans
+        l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
-        self.assertEqual("en", t._lang)
+        self.assertEqual("en", l.language)
         pass
 
     def test_translation_with_fr_ca(self):
         # Get trans
-        t = i18n._translation("messages", [self.mo_dir], ["fr_CA"])
+        i18n.get_lang(self.mo_dir, 'fr_CA', 'messages')
+        t = cherrypy.response.i18n.trans
+        l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
-        self.assertEqual("fr", t._lang)
+        self.assertEqual("fr", l.language)
         pass
 
     def test_translation_with_en_fr(self):
         # Get trans
-        t = i18n._translation("messages", [self.mo_dir], ["en", "fr"])
+        i18n.get_lang(self.mo_dir, 'en', 'messages')
+        t = cherrypy.response.i18n.trans
+        l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
-        self.assertEqual("en", t._lang)
+        self.assertEqual("en", l.language)
         # Test translation object
         self.assertEqual("Edit", t.gettext("Edit"))
         # Check if the translation fallback
@@ -109,18 +127,13 @@ class Test(unittest.TestCase):
 
     def test_translation_with_fr_en(self):
         # Get trans
-        t = i18n._translation("messages", [self.mo_dir], ["fr", "en"])
+        i18n.get_lang(self.mo_dir, 'fr', 'messages')
+        t = cherrypy.response.i18n.trans
+        l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
-        self.assertEqual("fr", t._lang)
+        self.assertEqual("fr", l.language)
         # Test translation object
         self.assertEqual("Modifier", t.gettext("Edit"))
-        pass
-
-    def test_translation_with_unknown(self):
-        # Get trans
-        t = i18n._translation("messages", [self.mo_dir], ["br"])
-        self.assertIsInstance(t, gettext.NullTranslations)
-        self.assertEqual("en_US", t._lang)
         pass
 
 
@@ -132,25 +145,25 @@ class TestI18nWebCase(WebCase):
         #  Query the page without login-in
         self.getPage("/", headers=[("Accept-Language", "es")])
         self.assertStatus('200 OK')
-        self.assertHeaderItemValue("Content-Language", "en")
+        self.assertHeaderItemValue("Content-Language", "en_US")
         self.assertInBody("Sign in")
 
     def testLanguage_En(self):
         self.getPage("/", headers=[("Accept-Language", "en-US,en;q=0.8")])
         self.assertStatus('200 OK')
-        self.assertHeaderItemValue("Content-Language", "en")
+        self.assertHeaderItemValue("Content-Language", "en_US")
         self.assertInBody("Sign in")
 
     def testLanguage_EnFr(self):
         self.getPage("/", headers=[("Accept-Language", "en-US,en;q=0.8,fr-CA;q=0.8")])
         self.assertStatus('200 OK')
-        self.assertHeaderItemValue("Content-Language", "en")
+        self.assertHeaderItemValue("Content-Language", "en_US")
         self.assertInBody("Sign in")
 
     def testLanguage_Fr(self):
         self.getPage("/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
         self.assertStatus('200 OK')
-        self.assertHeaderItemValue("Content-Language", "fr")
+        self.assertHeaderItemValue("Content-Language", "fr_CA")
         self.assertInBody("Se connecter")
 
 

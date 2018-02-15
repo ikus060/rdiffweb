@@ -162,6 +162,7 @@ install_requires = [
     "Jinja2>=2.6,<=2.8.1",
     "future>=0.15.2",
     "psutil>=2.1.1",
+    "babel>=0.9.6",
 ]
 if PY2:
     install_requires.extend(["pysqlite>=2.6.3"])
