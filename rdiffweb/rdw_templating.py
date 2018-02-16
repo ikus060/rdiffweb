@@ -33,7 +33,6 @@ from rdiffweb import i18n
 from rdiffweb import librdiff
 from rdiffweb import rdw_helpers
 
-
 # Define the logger
 logger = logging.getLogger(__name__)
 
@@ -95,15 +94,10 @@ def do_filter(sequence, attribute_name):
 
 def do_format_datetime(value, dateformat='%Y-%m-%d %H:%M'):
     """Used to format an epoch into local time."""
-
     if not value:
         return ""
-
-    if isinstance(value, librdiff.RdiffTime):
-        value = value.getSeconds()
-
-    # TODO Try to figure out the time zone name (it's a )
-    return time.strftime(dateformat, time.localtime(value))
+    assert isinstance(value, librdiff.RdiffTime)
+    return value.strftime(dateformat)
 
 
 def do_format_filesize(value, binary=True):
@@ -186,7 +180,7 @@ def url_for_restore(repo, path, date, kind=None):
         url.append(rdw_helpers.quote_url(path))
     # Append date
     url.append("?date=")
-    url.append(str(date.getSeconds()))
+    url.append(str(date.epoch()))
     if kind:
         url.append("&kind=%s" % kind)
     return ''.join(url)
@@ -213,7 +207,7 @@ def url_for_status_entry(date, repo=None):
         url.append("/")
     if date:
         url.append("?date=")
-        url.append(str(date.getSeconds()))
+        url.append(str(date.epoch()))
     return ''.join(url)
 
 

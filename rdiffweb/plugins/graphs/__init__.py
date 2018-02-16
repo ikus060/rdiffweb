@@ -83,7 +83,7 @@ class GraphsPage(page_main.MainPage):
             yield '\n'
             # Content
             for d, s in iteritems(repo_obj.session_statistics):
-                yield str(d.getSeconds())
+                yield str(d.epoch())
                 for attr in attrs:
                     yield ','
                     yield str(getattr(s, attr))

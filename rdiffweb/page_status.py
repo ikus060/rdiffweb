@@ -22,13 +22,13 @@ from __future__ import unicode_literals
 from builtins import bytes
 from builtins import str
 import cherrypy
+from datetime import timedelta
 import logging
 
 from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb import rdw_helpers
 from rdiffweb.rdw_helpers import unquote_url
-
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -122,23 +122,19 @@ class StatusPage(page_main.MainPage):
 
         # Set the start and end time to be the start and end of the day,
         # respectively, to get all entries for that day
-        startTime = librdiff.RdiffTime()
-        startTime.timeInSeconds = date.timeInSeconds
-        startTime.tzOffset = date.tzOffset
-        startTime.setTime(0, 0, 0)
+        startTime = librdiff.RdiffTime(date)
+        startTime.set_time(0, 0, 0)
 
-        endTime = librdiff.RdiffTime()
-        endTime.timeInSeconds = date.timeInSeconds
-        endTime.tzOffset = date.tzOffset
-        endTime.setTime(23, 59, 59)
+        endTime = librdiff.RdiffTime(date)
+        endTime.set_time(23, 59, 59)
 
         return self._getUserMessages(userRepos, True, False,
                                      startTime, endTime)
 
     def _get_recent_user_messages(self, failuresOnly):
         user_repos = self.app.currentuser.repos
-        asOfDate = librdiff.RdiffTime()
-        asOfDate.initFromMidnightUTC(-5)
+
+        asOfDate = librdiff.RdiffTime() - timedelta(days=5)
 
         return self._getUserMessages(user_repos, not failuresOnly, True,
                                      asOfDate, None)
@@ -176,7 +172,7 @@ class StatusPage(page_main.MainPage):
         if successfulBackups:
             lastSuccessDate = successfulBackups[0]["date"]
         successfulBackups = rdw_helpers.groupby(
-            successfulBackups, lambda x: x["date"].getLocalDaysSinceEpoch())
+            successfulBackups, lambda x: x["date"].get_local_day_since_epoch())
 
         userMessages = []
 

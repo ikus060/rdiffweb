@@ -23,8 +23,6 @@ for (z in axisCherrypy) {
                     deleteDir()
                      // Checkout 
                     checkout scm
-                    echo 'Enforce timezone for tests to work.'
-                    sh 'ln -snf /usr/share/zoneinfo/America/Montreal /etc/localtime && echo "America/Montreal" > /etc/timezone'
                     echo 'Upgrade python and install dependencies to avoid compiling from sources.'
                     sh 'apt-get update && apt-get -qq install python-pysqlite2 libldap2-dev libsasl2-dev rdiff-backup node-less'
                     sh 'pip install pip setuptools tox --upgrade'

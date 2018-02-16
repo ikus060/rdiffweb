@@ -376,21 +376,26 @@ class RdiffTimeTest(unittest.TestCase):
         Check various constructor.
         """
         t0 = RdiffTime()
-        self.assertAlmostEqual(int(time.time()), t0.timeInSeconds, delta=5000)
+        self.assertAlmostEqual(int(time.time()), t0.epoch(), delta=5000)
 
         t1 = RdiffTime(1415221470)
-        self.assertEqual(1415221470, t1.timeInSeconds)
+        self.assertEqual(1415221470, t1.epoch())
 
         t2 = RdiffTime('2014-11-05T21:04:30Z')
-        self.assertEqual(1415221470, t2.timeInSeconds)
+        self.assertEqual(1415221470, t2.epoch())
+
+        t3 = RdiffTime('2014-11-05T16:04:30-05:00')
+        self.assertEqual(1415221470, t3.epoch())
 
     def test_int(self):
         """Check if int(RdiffTime) return expected value."""
         self.assertEqual(1415221470, int(RdiffTime(1415221470)))
+        self.assertEqual(1415217870, int(RdiffTime(1415221470, 3600)))
 
     def test_str(self):
         """Check if __str__ is working."""
-        self.assertEqual('2014-11-05 21:04:30', str(RdiffTime(1415221470)))
+        self.assertEqual('2014-11-05 21:04:30Z', str(RdiffTime(1415221470)))
+        self.assertEqual('2014-11-05 21:04:30+01:00', str(RdiffTime(1415221470, 3600)))
 
     def test_sub(self):
         """Check if addition with timedelta is working as expected."""

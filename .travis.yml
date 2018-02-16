@@ -30,9 +30,6 @@ matrix:
     env: CHERRYPY=3.2
     
 before_install:
-    # Enforce timezone
-    - echo 'Canada/Eastern' | sudo tee /etc/timezone
-    - sudo dpkg-reconfigure --frontend noninteractive tzdata
     # Install requirements
     - sudo apt-get install python-pysqlite2 rdiff-backup
     - sudo pip install tox-travis
