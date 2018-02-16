@@ -24,13 +24,14 @@ from builtins import object
 from builtins import str
 from io import StringIO
 from jinja2 import Environment, PackageLoader
+from jinja2.filters import do_mark_safe
 from jinja2.loaders import ChoiceLoader, FileSystemLoader
 import logging
 import time
 
 from rdiffweb import i18n
+from rdiffweb import librdiff
 from rdiffweb import rdw_helpers
-from jinja2.filters import do_mark_safe
 
 
 # Define the logger
@@ -98,7 +99,7 @@ def do_format_datetime(value, dateformat='%Y-%m-%d %H:%M'):
     if not value:
         return ""
 
-    if isinstance(value, rdw_helpers.rdwTime):
+    if isinstance(value, librdiff.RdiffTime):
         value = value.getSeconds()
 
     # TODO Try to figure out the time zone name (it's a )
@@ -173,7 +174,7 @@ def url_for_history(repo):
 def url_for_restore(repo, path, date, kind=None):
     assert isinstance(repo, bytes)
     assert path is None or isinstance(path, bytes)
-    assert isinstance(date, rdw_helpers.rdwTime)
+    assert isinstance(date, librdiff.RdiffTime)
     url = []
     url.append("/restore/")
     if repo:
@@ -202,7 +203,7 @@ def url_for_settings(repo):
 
 
 def url_for_status_entry(date, repo=None):
-    assert isinstance(date, rdw_helpers.rdwTime)
+    assert isinstance(date, librdiff.RdiffTime)
     url = []
     url.append("/status/entry/")
     if repo:

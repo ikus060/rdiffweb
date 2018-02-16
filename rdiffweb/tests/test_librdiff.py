@@ -26,18 +26,20 @@ Module used to test the librdiff.
 from __future__ import unicode_literals
 
 from builtins import bytes
+from builtins import str
+import datetime
 from future.utils import native_str
 import os
 import pkg_resources
 import shutil
 import tarfile
 import tempfile
+import time
 import unittest
 
 from rdiffweb.librdiff import FileStatisticsEntry, RdiffRepo, \
     DirEntry, IncrementEntry, SessionStatisticsEntry, HistoryEntry, \
-    AccessDeniedError, DoesNotExistError, FileError, UnknownError
-from rdiffweb.rdw_helpers import rdwTime
+    AccessDeniedError, DoesNotExistError, FileError, UnknownError, RdiffTime
 
 
 class MockRdiffRepo(RdiffRepo):
@@ -64,13 +66,13 @@ class IncrementEntryTest(unittest.TestCase):
             1414873850, 1414879639, 1414887165, 1414887491, 1414889478, 1414937803,
             1414939853, 1414967021, 1415047607, 1415059497, 1415221262, 1415221470,
             1415221495, 1415221507]
-        self.repo._backup_dates = [rdwTime(x) for x in backup_dates]
+        self.repo._backup_dates = [RdiffTime(x) for x in backup_dates]
         self.root_path = self.repo.root_path
 
     def test_init(self):
 
         increment = IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz')
-        self.assertEqual(rdwTime(1414967021), increment.date)
+        self.assertEqual(RdiffTime(1414967021), increment.date)
         self.assertEqual(b'my_filename.txt', increment.filename)
         self.assertIsNotNone(increment.repo)
 
@@ -84,7 +86,7 @@ class DirEntryTest(unittest.TestCase):
             1414873850, 1414879639, 1414887165, 1414887491, 1414889478, 1414937803,
             1414939853, 1414967021, 1415047607, 1415059497, 1415221262, 1415221470,
             1415221495, 1415221507]
-        self.repo._backup_dates = [rdwTime(x) for x in backup_dates]
+        self.repo._backup_dates = [RdiffTime(x) for x in backup_dates]
         self.root_path = self.repo.root_path
 
     def test_init(self):
@@ -103,9 +105,9 @@ class DirEntryTest(unittest.TestCase):
         entry = DirEntry(self.root_path, b'my_filename.txt', False, increments)
 
         self.assertEqual(
-            [rdwTime(1414939853),
-             rdwTime(1414967021),
-             rdwTime(1415059497)],
+            [RdiffTime(1414939853),
+             RdiffTime(1414967021),
+             RdiffTime(1415059497)],
             entry.change_dates)
 
     def test_change_dates_with_exists(self):
@@ -117,10 +119,10 @@ class DirEntryTest(unittest.TestCase):
         entry = DirEntry(self.root_path, b'my_filename.txt', True, increments)
 
         self.assertEqual(
-            [rdwTime(1414939853),
-             rdwTime(1414967021),
-             rdwTime(1415059497),
-             rdwTime(1415221507)],
+            [RdiffTime(1414939853),
+             RdiffTime(1414967021),
+             RdiffTime(1415059497),
+             RdiffTime(1415221507)],
             entry.change_dates)
 
     def test_display_name(self):
@@ -221,11 +223,11 @@ class RdiffRepoTest(unittest.TestCase):
 
     def test_extract_date(self):
 
-        self.assertEqual(rdwTime(1414967021), self.repo._extract_date(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'))
+        self.assertEqual(RdiffTime(1414967021), self.repo._extract_date(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'))
 
         # Check if date with quoted characther are proerply parsed.
         # On NTFS, colon (:) are not supported.
-        self.assertEqual(rdwTime(1483443123), self.repo._extract_date(b'my_filename.txt.2017-01-03T06;05832;05803-05;05800.diff.gz'))
+        self.assertEqual(RdiffTime(1483443123), self.repo._extract_date(b'my_filename.txt.2017-01-03T06;05832;05803-05;05800.diff.gz'))
 
     def test_init(self):
         self.assertEqual('testcases', self.repo.display_name)
@@ -345,6 +347,63 @@ class SessionStatisticsEntryTest(unittest.TestCase):
         self.assertEqual(0, entry.incrementfilesize)
         self.assertEqual(3636731, entry.totaldestinationsizechange)
         self.assertEqual(0, entry.errors)
+
+
+class RdiffTimeTest(unittest.TestCase):
+
+    def test_add(self):
+        """Check if addition with timedelta is working as expected."""
+        # Without timezone
+        self.assertEqual(RdiffTime('2014-11-08T21:04:30Z'),
+                         RdiffTime('2014-11-05T21:04:30Z') + datetime.timedelta(days=3))
+        # With timezone
+        self.assertEqual(RdiffTime('2014-11-08T21:04:30-04:00'),
+                         RdiffTime('2014-11-05T21:04:30-04:00') + datetime.timedelta(days=3))
+
+    def test_compare(self):
+        """Check behaviour of comparison operator operator."""
+
+        self.assertTrue(RdiffTime('2014-11-07T21:04:30-04:00') < RdiffTime('2014-11-08T21:04:30Z'))
+        self.assertTrue(RdiffTime('2014-11-08T21:04:30Z') < RdiffTime('2014-11-08T21:50:30Z'))
+        self.assertFalse(RdiffTime('2014-11-08T22:04:30Z') < RdiffTime('2014-11-08T21:50:30Z'))
+
+        self.assertFalse(RdiffTime('2014-11-07T21:04:30-04:00') > RdiffTime('2014-11-08T21:04:30Z'))
+        self.assertFalse(RdiffTime('2014-11-08T21:04:30Z') > RdiffTime('2014-11-08T21:50:30Z'))
+        self.assertTrue(RdiffTime('2014-11-08T22:04:30Z') > RdiffTime('2014-11-08T21:50:30Z'))
+
+    def test_init(self):
+        """
+        Check various constructor.
+        """
+        t0 = RdiffTime()
+        self.assertAlmostEqual(int(time.time()), t0.timeInSeconds, delta=5000)
+
+        t1 = RdiffTime(1415221470)
+        self.assertEqual(1415221470, t1.timeInSeconds)
+
+        t2 = RdiffTime('2014-11-05T21:04:30Z')
+        self.assertEqual(1415221470, t2.timeInSeconds)
+
+    def test_int(self):
+        """Check if int(RdiffTime) return expected value."""
+        self.assertEqual(1415221470, int(RdiffTime(1415221470)))
+
+    def test_str(self):
+        """Check if __str__ is working."""
+        self.assertEqual('2014-11-05 21:04:30', str(RdiffTime(1415221470)))
+
+    def test_sub(self):
+        """Check if addition with timedelta is working as expected."""
+        # Without timezone
+        self.assertEqual(RdiffTime('2014-11-02T21:04:30Z'),
+                         RdiffTime('2014-11-05T21:04:30Z') - datetime.timedelta(days=3))
+        # With timezone
+        self.assertEqual(RdiffTime('2014-11-02T21:04:30-04:00'),
+                         RdiffTime('2014-11-05T21:04:30-04:00') - datetime.timedelta(days=3))
+
+        # With datetime
+        self.assertTrue((RdiffTime('2014-11-02T21:04:30Z') - RdiffTime()).days < 0)
+        self.assertTrue((RdiffTime() - RdiffTime('2014-11-02T21:04:30Z')).days > 0)
 
 
 if __name__ == "__main__":

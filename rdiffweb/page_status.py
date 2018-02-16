@@ -19,8 +19,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from builtins import str
 from builtins import bytes
+from builtins import str
 import cherrypy
 import logging
 
@@ -62,7 +62,7 @@ class StatusPage(page_main.MainPage):
         self.assertIsInstance(date, str)
         # Validate date
         try:
-            entry_time = rdw_helpers.rdwTime(int(date))
+            entry_time = librdiff.RdiffTime(int(date))
         except:
             logger.exception("invalid date")
             raise cherrypy.HTTPError(400, _("Invalid date."))
@@ -122,12 +122,12 @@ class StatusPage(page_main.MainPage):
 
         # Set the start and end time to be the start and end of the day,
         # respectively, to get all entries for that day
-        startTime = rdw_helpers.rdwTime()
+        startTime = librdiff.RdiffTime()
         startTime.timeInSeconds = date.timeInSeconds
         startTime.tzOffset = date.tzOffset
         startTime.setTime(0, 0, 0)
 
-        endTime = rdw_helpers.rdwTime()
+        endTime = librdiff.RdiffTime()
         endTime.timeInSeconds = date.timeInSeconds
         endTime.tzOffset = date.tzOffset
         endTime.setTime(23, 59, 59)
@@ -137,7 +137,7 @@ class StatusPage(page_main.MainPage):
 
     def _get_recent_user_messages(self, failuresOnly):
         user_repos = self.app.currentuser.repos
-        asOfDate = rdw_helpers.rdwTime()
+        asOfDate = librdiff.RdiffTime()
         asOfDate.initFromMidnightUTC(-5)
 
         return self._getUserMessages(user_repos, not failuresOnly, True,

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from future.builtins import str
 import unittest
 
-from rdiffweb.rdw_helpers import rdwTime
+from rdiffweb.librdiff import RdiffTime
 from rdiffweb.rdw_templating import do_format_filesize, url_for_browse, \
     url_for_history, url_for_restore, attrib
 
@@ -103,13 +103,13 @@ class TemplateManagerTest(unittest.TestCase):
             url_for_history('testcases')
 
     def test_url_for_restore(self):
-        self.assertEqual('/restore/testcases?date=1414967021', url_for_restore(b'testcases', path=b'', date=rdwTime(1414967021)))
-        self.assertEqual('/restore/testcases/Revisions?date=1414967021', url_for_restore(b'testcases', path=b'Revisions', date=rdwTime(1414967021)))
+        self.assertEqual('/restore/testcases?date=1414967021', url_for_restore(b'testcases', path=b'', date=RdiffTime(1414967021)))
+        self.assertEqual('/restore/testcases/Revisions?date=1414967021', url_for_restore(b'testcases', path=b'Revisions', date=RdiffTime(1414967021)))
         self.assertEqual('/restore/testcases/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial?date=1414967021',
-                         url_for_restore(b'testcases', path=b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial', date=rdwTime(1414967021)))
+                         url_for_restore(b'testcases', path=b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial', date=RdiffTime(1414967021)))
         # Check if failing with unicode
         with self.assertRaises(AssertionError):
-            url_for_restore('testcases', path='', date=rdwTime(1414967021))
+            url_for_restore('testcases', path='', date=RdiffTime(1414967021))
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

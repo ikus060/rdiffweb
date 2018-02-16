@@ -21,9 +21,12 @@ from __future__ import unicode_literals
 
 import bisect
 from builtins import bytes
+from builtins import map
 from builtins import object
 from builtins import str
+import calendar
 from collections import OrderedDict
+from datetime import timedelta
 import encodings
 from future.utils import iteritems
 from future.utils import python_2_unicode_compatible
@@ -32,6 +35,8 @@ import gzip
 import io
 import logging
 import os
+from past.builtins import cmp
+from past.utils import old_div
 import psutil
 import re
 from shutil import copyfileobj
@@ -39,6 +44,7 @@ import shutil
 import sys
 import tempfile
 import threading
+import time
 import weakref
 import zlib
 
@@ -46,7 +52,6 @@ from rdiffweb import rdw_helpers
 from rdiffweb.archiver import archive, ARCHIVERS
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_config import Configuration
-
 
 try:
     import subprocess32 as subprocess  # @UnresolvedImport @UnusedImport
@@ -104,6 +109,166 @@ class SymLinkAccessDeniedError(FileError):
 class UnknownError(FileError):
     pass
 
+
+@python_2_unicode_compatible
+class RdiffTime(object):
+
+    """Time information has two components: the local time, stored in GMT as
+    seconds since Epoch, and the timezone, stored as a seconds offset. Since
+    the server may not be in the same timezone as the user, we cannot rely on
+    the built-in localtime() functions, but look at the rdiff-backup string
+    for timezone information.  As a general rule, we always display the
+    "local" time, but pass the timezone information on to rdiff-backup, so
+    it can restore to the correct state"""
+
+    def __init__(self, value=None, tz_offset=None):
+        assert value is None or isinstance(value, int) or isinstance(value, str)
+        if value is None:
+            # Get GMT time.
+            self.timeInSeconds = int(time.time())
+            self.tzOffset = tz_offset or 0
+        elif isinstance(value, int):
+            self.timeInSeconds = value
+            self.tzOffset = tz_offset or 0
+        else:
+            self._initFromString(value)
+
+    def initFromMidnightUTC(self, daysFromToday):
+        self.timeInSeconds = time.time()
+        self.timeInSeconds -= self.timeInSeconds % (24 * 60 * 60)
+        self.timeInSeconds += daysFromToday * 24 * 60 * 60
+        self.tzOffset = 0
+
+    def _initFromString(self, timeString):
+        try:
+            date, daytime = timeString[:19].split("T")
+            year, month, day = list(map(int, date.split("-")))
+            hour, minute, second = list(map(int, daytime.split(":")))
+            assert 1900 < year < 2100, year
+            assert 1 <= month <= 12
+            assert 1 <= day <= 31
+            assert 0 <= hour <= 23
+            assert 0 <= minute <= 59
+            assert 0 <= second <= 61  # leap seconds
+
+            timetuple = (year, month, day, hour, minute, second, -1, -1, 0)
+            self.timeInSeconds = calendar.timegm(timetuple)
+            self.tzOffset = self._tzdtoseconds(timeString[19:])
+            self.getTimeZoneString()  # to get assertions there
+
+        except (TypeError, ValueError, AssertionError):
+            raise ValueError(timeString)
+
+    def getLocalDaysSinceEpoch(self):
+        return self.getLocalSeconds() // (24 * 60 * 60)
+
+    def getLocalSeconds(self):
+        return self.timeInSeconds
+
+    def getSeconds(self):
+        return self.timeInSeconds - self.tzOffset
+
+    def getDisplayString(self):
+        value = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(self.getLocalSeconds()))
+        if isinstance(value, bytes):
+            value = value.decode(encoding='latin1')
+        return value
+
+    def getTimeZoneString(self):
+        if self.tzOffset:
+            tzinfo = self._getTimeZoneDisplayInfo()
+            return "%s%s:%s" % (tzinfo["plusMinus"], tzinfo["hours"], tzinfo["minutes"])
+        else:
+            return "Z"
+
+    def setTime(self, hour, minute, second):
+        year = time.gmtime(self.timeInSeconds)[0]
+        month = time.gmtime(self.timeInSeconds)[1]
+        day = time.gmtime(self.timeInSeconds)[2]
+        self.timeInSeconds = calendar.timegm(
+            (year, month, day, hour, minute, second, -1, -1, 0))
+
+    def _getTimeZoneDisplayInfo(self):
+        hours, minutes = divmod(old_div(abs(self.tzOffset), 60), 60)
+        assert 0 <= hours <= 23
+        assert 0 <= minutes <= 59
+
+        if self.tzOffset > 0:
+            plusMinus = "+"
+        else:
+            plusMinus = "-"
+        return {"plusMinus": plusMinus,
+                "hours": "%02d" % hours,
+                "minutes": "%02d" % minutes}
+
+    def _tzdtoseconds(self, tzd):
+        """Given w3 compliant TZD, converts it to number of seconds from UTC"""
+        if tzd == "Z":
+            return 0
+        assert len(tzd) == 6  # only accept forms like +08:00 for now
+        assert (tzd[0] == "-" or tzd[0] == "+") and tzd[3] == ":"
+
+        if tzd[0] == "+":
+            plusMinus = 1
+        else:
+            plusMinus = -1
+
+        return plusMinus * 60 * (60 * int(tzd[1:3]) + int(tzd[4:]))
+
+    def __add__(self, other):
+        """Support plus (+) timedelta"""
+        assert isinstance(other, timedelta)
+        return RdiffTime(self.timeInSeconds + int(other.total_seconds()), self.tzOffset)
+
+    def __sub__(self, other):
+        """Support minus (-) timedelta"""
+        assert isinstance(other, timedelta) or isinstance(other, RdiffTime)
+        # Sub with timedelta, return RdiffTime
+        if isinstance(other, timedelta):
+            return RdiffTime(self.timeInSeconds - int(other.total_seconds()), self.tzOffset)
+
+        # Sub with RdiffTime, return timedelta
+        if isinstance(other, RdiffTime):
+            return timedelta(seconds=self.timeInSeconds - other.timeInSeconds)
+
+    def __int__(self):
+        """Return this date as seconds since epoch."""
+        return self.timeInSeconds
+
+    def __lt__(self, other):
+        assert isinstance(other, RdiffTime)
+        return self.getSeconds() < other.getSeconds()
+
+    def __le__(self, other):
+        assert isinstance(other, RdiffTime)
+        return self.getSeconds() <= other.getSeconds()
+
+    def __gt__(self, other):
+        assert isinstance(other, RdiffTime)
+        return self.getSeconds() > other.getSeconds()
+
+    def __ge__(self, other):
+        assert isinstance(other, RdiffTime)
+        return self.getSeconds() >= other.getSeconds()
+
+    def __cmp__(self, other):
+        assert isinstance(other, RdiffTime)
+        return cmp(self.getSeconds(), other.getSeconds())
+
+    def __eq__(self, other):
+        return (isinstance(other, RdiffTime) and
+                self.getSeconds() == other.getSeconds())
+
+    def __hash__(self):
+        return hash(self.getSeconds())
+
+    def __str__(self):
+        """return utf-8 string"""
+        return self.getDisplayString()
+
+    def __repr__(self):
+        """return second since epoch"""
+        return str(self.getSeconds())
 
 # Interfaced objects #
 
@@ -299,7 +464,7 @@ class HistoryEntry(object):
 
     def __init__(self, repo, date):
         assert isinstance(repo, RdiffRepo)
-        assert isinstance(date, rdw_helpers.rdwTime)
+        assert isinstance(date, RdiffTime)
         self._repo = weakref.proxy(repo)
         self.date = date
 
@@ -677,7 +842,7 @@ class RdiffRepo(object):
         # Unquote string
         date_string = self.unquote(date_string)
         try:
-            return rdw_helpers.rdwTime(date_string.decode())
+            return RdiffTime(date_string.decode())
         except:
             logger.warn('fail to parse date [%r]', date_string, exc_info=1)
             return None
@@ -727,9 +892,9 @@ class RdiffRepo(object):
 
         assert isinstance(numLatestEntries, int)
         assert (earliestDate is None or
-                isinstance(earliestDate, rdw_helpers.rdwTime))
+                isinstance(earliestDate, RdiffTime))
         assert (latestDate is None or
-                isinstance(latestDate, rdw_helpers.rdwTime))
+                isinstance(latestDate, RdiffTime))
 
         logger.debug("get history entries for [%r]", self.full_path)
 
@@ -831,7 +996,7 @@ class RdiffRepo(object):
     def restore(self, path, restore_date, kind='zip'):
         """Used to restore the given file located in this path."""
         assert isinstance(path, bytes) or isinstance(path, DirEntry)
-        assert isinstance(restore_date, rdw_helpers.rdwTime) or isinstance(restore_date, int)
+        assert isinstance(restore_date, RdiffTime) or isinstance(restore_date, int)
         assert kind in ARCHIVERS
 
         # Get the info we need from DirEntry
@@ -848,7 +1013,7 @@ class RdiffRepo(object):
         file_to_restore = self.unquote(file_to_restore)
 
         # Convert the date into epoch.
-        if isinstance(restore_date, rdw_helpers.rdwTime):
+        if isinstance(restore_date, RdiffTime):
             restore_date = restore_date.getSeconds()
 
         # Define a nice filename for the archive or file to be created.

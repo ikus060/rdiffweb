@@ -26,12 +26,11 @@ from cherrypy.lib.static import _serve_fileobj
 import logging
 
 from rdiffweb import page_main
-from rdiffweb import rdw_helpers
 import rdiffweb
-from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import quote_url
 from rdiffweb.archiver import ARCHIVERS
-
+from rdiffweb.i18n import ugettext as _
+from rdiffweb.librdiff import RdiffTime
+from rdiffweb.rdw_helpers import quote_url
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -78,7 +77,7 @@ class RestorePage(page_main.MainPage):
 
         # Get the restore date
         try:
-            rdw_helpers.rdwTime(int(date))
+            RdiffTime(int(date))
         except:
             logger.warning("invalid date %s", date)
             raise cherrypy.HTTPError(400, _("Invalid date."))

@@ -37,7 +37,6 @@ from xml.etree.ElementTree import fromstring, tostring
 from rdiffweb import librdiff
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import rdwTime
 from rdiffweb.rdw_plugin import IPreferencesPanelProvider, JobPlugin, \
     IUserChangeListener
 
@@ -203,7 +202,7 @@ class NotificationPlugin(IPreferencesPanelProvider, JobPlugin, IUserChangeListen
         Loop trough all the user repository and send notifications.
         """
 
-        now = rdwTime()
+        now = librdiff.RdiffTime()
 
         def _user_repos():
             """Return a generator trought user repos to be notified."""

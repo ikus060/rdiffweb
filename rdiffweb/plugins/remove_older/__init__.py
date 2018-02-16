@@ -34,7 +34,6 @@ from rdiffweb import rdw_spider_repos, page_main, librdiff
 from rdiffweb.dispatch import poppath
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.page_main import MainPage
-from rdiffweb.rdw_helpers import rdwTime
 from rdiffweb.rdw_plugin import IPreferencesPanelProvider, ITemplateFilterPlugin, \
     IDeamonPlugin, JobPlugin
 
@@ -126,7 +125,7 @@ class RemoveOlderPlugin(ITemplateFilterPlugin, JobPlugin):
         if not r.last_backup_date:
             _logger.info("no backup dates for [%r]", r.full_path)
             return
-        d = rdwTime() - r.last_backup_date
+        d = librdiff.RdiffTime() - r.last_backup_date
         d = d.days + keepdays
 
         _logger.info("execute rdiff-backup --force --remove-older-than=%sD %r", d, r.full_path)
