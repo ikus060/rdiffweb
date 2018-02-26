@@ -169,7 +169,7 @@ if PY2:
 
 setup(
     name='rdiffweb',
-    version='0.10.6.dev1',
+    use_scm_version=True,
     description='A web interface to rdiff-backup repositories',
     author='Patrik Dufresne',
     author_email='info@patrikdufresne.com',
@@ -202,6 +202,7 @@ setup(
     # required packages for build process
     setup_requires=[
         "babel>=0.9.6",
+        "setuptools_scm",
     ],
     # requirement for testing
     tests_require=[

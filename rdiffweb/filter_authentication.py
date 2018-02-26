@@ -184,7 +184,7 @@ class AuthFormTool(BaseAuth):
             return self.do_logout(**request.params)
 
         # No special path, validate session.
-        logger.info('no special path, running do_check')
+        logger.debug('no special path, running do_check')
         return self.do_check()
 
 
