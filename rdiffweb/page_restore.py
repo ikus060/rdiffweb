@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from builtins import bytes
 from builtins import str
 import cherrypy
-from cherrypy.lib.static import _serve_fileobj
+from cherrypy.lib.static import _serve_fileobj, mimetypes
 import logging
 
 from rdiffweb import page_main
@@ -36,31 +36,43 @@ from rdiffweb.rdw_helpers import quote_url
 logger = logging.getLogger(__name__)
 
 
+def _content_disposition(filename):
+    """
+    Try to generate the best content-disposition value to support most browser.
+    """
+    assert isinstance(filename, str)
+    # Provide hint filename. Try to follow recommendation at
+    # http://greenbytes.de/tech/tc2231/
+    # I choose to only provide filename if the filename is a simple ascii
+    # file without special character. Otherwise, we provide filename*
+
+    # 1. Used quoted filename for ascii filename.
+    try:
+        filename.encode('ascii')
+        # Some char are not decoded properly by user agent.
+        if not any(c in filename for c in [';', '%', '\\']):
+            return 'attachment; filename="%s"' % filename
+    except:
+        pass
+    # 3. Define filename* as encoded UTF8 (replace invalid char)
+    filename_utf8 = filename.encode('utf-8', 'replace')
+    return 'attachment; filename*=UTF-8\'\'%s' % quote_url(filename_utf8, safe='?')
+
+
+def _content_type(filename):
+    """
+    Using filename, try to guess the content-type.
+    """
+    ext = ''
+    i = filename.rfind('.')
+    if i != -1:
+        ext = filename[i:].lower()
+    return mimetypes.types_map.get(ext, "application/octet-stream")  # @UndefinedVariable
+
+
 @rdiffweb.dispatch.poppath()
 class RestorePage(page_main.MainPage):
     _cp_config = {"response.stream": True, "response.timeout": 3000}
-
-    def _content_disposition(self, filename):
-        """
-        Try to generate the best content-disposition value to support most browser.
-        """
-        assert isinstance(filename, str)
-        # Provide hint filename. Try to follow recommendation at
-        # http://greenbytes.de/tech/tc2231/
-        # I choose to only provide filename if the filename is a simple ascii
-        # file without special character. Otherwise, we provide filename*
-
-        # 1. Used quoted filename for ascii filename.
-        try:
-            filename.encode('ascii')
-            # Some char are not decoded properly by user agent.
-            if not any(c in filename for c in [';', '%', '\\']):
-                return 'attachment; filename="%s"' % filename
-        except:
-            pass
-        # 3. Define filename* as encoded UTF8 (replace invalid char)
-        filename_utf8 = filename.encode('utf-8', 'replace')
-        return 'attachment; filename*=UTF-8\'\'%s' % quote_url(filename_utf8, safe='?')
 
     @cherrypy.expose
     @cherrypy.tools.gzip(on=False)
@@ -96,7 +108,13 @@ class RestorePage(page_main.MainPage):
         filename, fileobj = path_obj.restore(int(date), kind=kind)
 
         # Define content-disposition.
-        cherrypy.response.headers["Content-Disposition"] = self._content_disposition(filename)
+        cherrypy.response.headers["Content-Disposition"] = _content_disposition(filename)
+
+        # Set content-type based on filename extension
+        content_type = _content_type(filename)
+        cherrypy.response.headers['Content-Type'] = content_type
 
         # Stream the data.
-        return _serve_fileobj(fileobj, content_type=None, content_length=None)
+        # Make use of _serve_fileobj() because the fsstat() function on a pipe
+        # return a size of 0 for Content-Length. This behavior brake all the flow.
+        return _serve_fileobj(fileobj, content_type=content_type, content_length=None)

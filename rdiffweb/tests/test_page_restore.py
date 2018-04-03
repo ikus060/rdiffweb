@@ -30,6 +30,7 @@ import tarfile
 import unittest
 import zipfile
 
+from rdiffweb.page_restore import _content_disposition
 from rdiffweb.test import WebCase, AppTestCase
 
 
@@ -47,15 +48,15 @@ class RestorePageTest(AppTestCase):
         Check value generated for different content-disposition.
         """
         # Simple ascii
-        self.assertEqual('attachment; filename="foo.bar"', self.page._content_disposition("foo.bar"))
+        self.assertEqual('attachment; filename="foo.bar"', _content_disposition("foo.bar"))
         # ISO-8859-1 > UTF-8
-        self.assertEqual("attachment; filename*=UTF-8''foo-%C3%A4.html", self.page._content_disposition("foo-ä.html"))
+        self.assertEqual("attachment; filename*=UTF-8''foo-%C3%A4.html", _content_disposition("foo-ä.html"))
         # Ascii filename with %
-        self.assertEqual("attachment; filename*=UTF-8''foo-%2541.html", self.page._content_disposition("foo-%41.html"))
+        self.assertEqual("attachment; filename*=UTF-8''foo-%2541.html", _content_disposition("foo-%41.html"))
         # Ascii filename with ;
-        self.assertEqual("attachment; filename*=UTF-8''foo-%3B41.html", self.page._content_disposition("foo-;41.html"))
+        self.assertEqual("attachment; filename*=UTF-8''foo-%3B41.html", _content_disposition("foo-;41.html"))
         # Ascii filename with \
-        self.assertEqual("attachment; filename*=UTF-8''foo-%5C41.html", self.page._content_disposition("foo-\\41.html"))
+        self.assertEqual("attachment; filename*=UTF-8''foo-%5C41.html", _content_disposition("foo-\\41.html"))
 
 
 class RestoreTest(WebCase):
@@ -82,10 +83,12 @@ class RestoreTest(WebCase):
         self._restore(self.REPO, "Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt/", "1415221507", True)
         self.assertBody("Centers the value\n")
         self.assertHeader('Content-Disposition', 'attachment; filename*=UTF-8\'\'Fichier%20avec%20non%20asci%20char%20%EF%BF%BDvelyne%20M%EF%BF%BDre.txt')
+        self.assertHeader('Content-Type', 'text/plain;charset=utf-8')
 
         self._restore(self.REPO, "DIR%EF%BF%BD/Data/", "1415059497", True)
         self.assertBody("My Data !\n")
         self.assertHeader('Content-Disposition', 'attachment; filename="Data"')
+        self.assertHeader('Content-Type', 'application/octet-stream')
 
     def test_quoted(self):
         """
@@ -93,6 +96,7 @@ class RestoreTest(WebCase):
         """
         self._restore(self.REPO, "Char%20%3B059090%20to%20quote/", "1415221507", True)
         self.assertHeader('Content-Disposition', 'attachment; filename*=UTF-8\'\'Char%20%3B090%20to%20quote.tar.gz')
+        self.assertHeader('Content-Type', 'application/x-gzip')
 
     def test_file(self):
         """
@@ -100,17 +104,20 @@ class RestoreTest(WebCase):
         """
         self._restore(self.REPO, "Fichier%20%40%20%3Croot%3E/", "1414921853", True)
         self.assertInBody("Ajout d'info")
+        self.assertHeader('Content-Type', 'application/octet-stream')
 
     def test_with_quoted_path(self):
         """
-        Restore file with wuoted path.
+        Restore file with quoted path.
         """
         self._restore(self.REPO, "Char%20%3B090%20to%20quote/Data/", "1414921853", True)
         self.assertBody("Bring me some Data !\n")
+        self.assertHeader('Content-Type', 'application/octet-stream')
 
     def test_root_as_tar_gz(self):
         self._restore(self.REPO, "", "1414871387", True)
         self.assertStatus(200)
+        self.assertHeader('Content-Type', 'application/x-gzip')
         # Build expected files list
         expected = {}
         expected["Répertoire Supprimé"] = 0
@@ -138,6 +145,7 @@ class RestoreTest(WebCase):
     def test_root_as_tar_gz_recent(self):
         self._restore(self.REPO, "", "1415221507", True)
         self.assertStatus(200)
+        self.assertHeader('Content-Type', 'application/x-gzip')
         #  Read the content as tar.gz with UTF8 encoding.
         expected = {}
         if PY3:
@@ -176,6 +184,7 @@ class RestoreTest(WebCase):
     def test_root_as_zip(self):
         self._restore(self.REPO, "", "1414871387", False)
         self.assertStatus(200)
+        self.assertHeader('Content-Type', 'application/zip')
         #  Read the content as tar.gz with UTF8 encoding.
         expected = {}
         expected["Répertoire Supprimé/"] = 0
@@ -202,6 +211,7 @@ class RestoreTest(WebCase):
     def test_root_as_zip_recent(self):
         self._restore(self.REPO, "", "1415221507", False)
         self.assertStatus(200)
+        self.assertHeader('Content-Type', 'application/zip')
         #  Read the content as tar.gz with UTF8 encoding.
         expected = {}
         expected["Fichier avec non asci char �velyne M�re.txt"] = 18
@@ -237,6 +247,7 @@ class RestoreTest(WebCase):
     def test_root_as_tar_bz2(self):
         self._restore(self.REPO, "", '1415221507', False, 'tar.bz2')
         self.assertStatus(200)
+        self.assertHeader('Content-Type', 'application/x-bzip2')
         #  Read content as tar.gz.
         actual = {}
         t = tarfile.open(mode='r:bz2', fileobj=io.BytesIO(self.body))
@@ -252,6 +263,7 @@ class RestoreTest(WebCase):
     def test_root_as_tar(self):
         self._restore(self.REPO, "", '1415221507', False, 'tar')
         self.assertStatus(200)
+        self.assertHeader('Content-Type', 'application/x-tar')
         #  Read content as tar.gz.
         actual = {}
         t = tarfile.open(mode='r', fileobj=io.BytesIO(self.body))
@@ -266,6 +278,7 @@ class RestoreTest(WebCase):
 
     def test_subdirectory(self):
         self._restore(self.REPO, "R%C3%A9pertoire%20Existant/", "1414871475", True)
+        self.assertHeader('Content-Type', 'application/x-gzip')
         #  Read the content as tar.gz with UTF8 encoding.
         expected = {}
         expected["Untitled Empty Text File"] = 0
@@ -285,6 +298,7 @@ class RestoreTest(WebCase):
 
     def test_subdirectory_deleted(self):
         self._restore(self.REPO, "R%C3%A9pertoire%20Supprim%C3%A9/", "1414871475", True)
+        self.assertHeader('Content-Type', 'application/x-gzip')
         #  Read the content as tar.gz with UTF8 encoding.
         expected = {}
         expected["Untitled Empty Text File"] = 21
@@ -305,10 +319,13 @@ class RestoreTest(WebCase):
     def test_with_revisions(self):
         self._restore(self.REPO, "Revisions/Data/", "1415221470", True)
         self.assertBody("Version1\n")
+        self.assertHeader('Content-Type', 'application/octet-stream')
         self._restore(self.REPO, "Revisions/Data/", "1415221495", True)
         self.assertBody("Version2\n")
+        self.assertHeader('Content-Type', 'application/octet-stream')
         self._restore(self.REPO, "Revisions/Data/", "1415221507", True)
         self.assertBody("Version3\n")
+        self.assertHeader('Content-Type', 'application/octet-stream')
 
     def test_invalid_date(self):
         self._restore(self.REPO, "Revisions/Data/", "1415221a470", True)
