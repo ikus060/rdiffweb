@@ -39,7 +39,7 @@ publish_nexus:
 publish_pypi:
   stage: publish
   only:
-  - master
+  - tags
   script:
   - pip install wheel twine --upgrade
   - python setup.py sdist bdist_wheel
