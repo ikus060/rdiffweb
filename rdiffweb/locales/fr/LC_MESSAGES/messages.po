@@ -1,5 +1,5 @@
 # French translations for rdiffweb.
-# Copyright (C) 2017 Rdiffweb Community
+# Copyright (C) 2018 Rdiffweb Community
 # This file is distributed under the same license as the rdiffweb project.
 # Patrik Dufresne <support@patrikdufresne.com>, 2017.
 #

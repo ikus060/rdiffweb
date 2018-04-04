@@ -1,5 +1,5 @@
 # Russian translations for rdiffweb.
-# Copyright (C) 2015 ORGANIZATION
+# Copyright (C) 2018 ORGANIZATION
 # This file is distributed under the same license as the rdiffweb project.
 # Evgeny S Maksimov <me@vragam.net>, 2015.
 #
