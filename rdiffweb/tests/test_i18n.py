@@ -143,7 +143,7 @@ class TestI18nWebCase(WebCase):
 
     def testLanguage_WithUnknown(self):
         #  Query the page without login-in
-        self.getPage("/", headers=[("Accept-Language", "es")])
+        self.getPage("/", headers=[("Accept-Language", "it")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "en_US")
         self.assertInBody("Sign in")

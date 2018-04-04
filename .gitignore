@@ -24,9 +24,6 @@ pip-log.txt
 coverage*.xml
 nosetests*.xml
 
-#Translations
-*.mo
-
 #Mr Developer
 .mr.developer.cfg
 /node_modules/
