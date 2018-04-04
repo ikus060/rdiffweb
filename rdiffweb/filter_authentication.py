@@ -44,7 +44,7 @@ class BaseAuth(HandlerTool):
 
     def check_username_and_password(self, username, password):
         """Validate user credentials."""
-        logger.debug("check credentials for [%s]", username)
+        logger.info("check credentials for [%s]", username)
         try:
             userobj = cherrypy.request.app.userdb.login(username, password)  # @UndefinedVariable
         except:
@@ -176,11 +176,11 @@ class AuthFormTool(BaseAuth):
                 logger.warn('do_login requires POST, redirect to /')
                 # Redirect to / instead of showing error.
                 raise cherrypy.HTTPRedirect(b'/')
-            logger.info('routing %(path)r to do_login', locals())
+            logger.debug('routing %(path)r to do_login', locals())
             return self.do_login(**request.params)
 
         elif path.startswith(native_str('/logout')):
-            logger.info('routing %(path)r to do_logout', locals())
+            logger.debug('routing %(path)r to do_logout', locals())
             return self.do_logout(**request.params)
 
         # No special path, validate session.
