@@ -40,3 +40,4 @@ nosetests*.xml
 /sonar-project.properties
 .tox
 .pydevproject
+/htmlcov/

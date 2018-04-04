@@ -3,29 +3,98 @@ image: ikus060/docker-debian-py2-py3:stretch
 stages:
 - test
 - publish
+- pages
 
 # Upgrade python and install dependencies to avoid compiling from sources.
 before_script:
 - apt-get update && apt-get -qq install python-pysqlite2 libldap2-dev libsasl2-dev rdiff-backup node-less
 - pip install pip setuptools --upgrade
 
-# TODO Split this by python version and OS.
-test_py27:
+.tox:  &tox
   stage: test
   script:
   - pip install tox nose coverage --upgrade
-  - python setup.py build
-  - export TOXENV=`tox --listenvs | grep "^py27" | tr '\n' ','`
-  - tox --sitepackages
+  - tox -e $CI_JOB_NAME --sitepackages
+  artifacts:
+    paths:
+    - .coverage.$CI_JOB_NAME
+    expire_in: 1 day
+
+py27-cherrypy35: 
+  <<: *tox
   
-test_py3: 
-  stage: test
-  script:
-  - pip install tox nose coverage --upgrade
-  - python setup.py build
-  - export TOXENV=`tox --listenvs | grep "^py3" | tr '\n' ','`
-  - tox --sitepackages
+py27-cherrypy4: 
+  <<: *tox
   
+py27-cherrypy5: 
+  <<: *tox
+  
+py27-cherrypy6: 
+  <<: *tox
+  
+py27-cherrypy7: 
+  <<: *tox
+  
+py27-cherrypy8: 
+  <<: *tox
+  
+py27-cherrypy9: 
+  <<: *tox
+  
+py27-cherrypy10: 
+  <<: *tox
+  
+py27-cherrypy11: 
+  <<: *tox
+  
+py27-cherrypy12: 
+  <<: *tox
+  
+py27-cherrypy13:  
+  <<: *tox
+  
+py27-cherrypy14: 
+  <<: *tox
+  
+py3-cherrypy35: 
+  <<: *tox
+  
+py3-cherrypy4: 
+  <<: *tox
+  
+py3-cherrypy5: 
+  <<: *tox
+  
+py3-cherrypy6: 
+  <<: *tox
+  
+py3-cherrypy7: 
+  <<: *tox
+  
+py3-cherrypy8: 
+  <<: *tox
+  
+py3-cherrypy9: 
+  <<: *tox
+  
+py3-cherrypy10: 
+  <<: *tox
+  
+py3-cherrypy11: 
+  <<: *tox
+  
+py3-cherrypy12: 
+  <<: *tox
+  
+py3-cherrypy13: 
+  <<: *tox
+  
+py3-cherrypy14: 
+  <<: *tox
+  
+py27-cherrypy32: 
+  <<: *tox
+
 # TODO Publish coverage repport
 # TODO Publish testcases repport
 
@@ -51,3 +120,23 @@ github_push:
   - git push --force https://${GITHUB_USR}:${GITHUB_PWD}@github.com/ikus060/rdiffweb.git refs/remotes/origin/${CI_COMMIT_REF_NAME}:refs/heads/${CI_COMMIT_REF_NAME}
   - git push https://${GITHUB_USR}:${GITHUB_PWD}@github.com/ikus060/rdiffweb.git --tags
   
+coverage:
+  stage: publish
+  script:
+  - coverage combine .coverage.*
+  - coverage html
+  coverage: '/TOTAL.*(\d+%)/'
+  artifacts:
+    paths:
+      - htmlcov/
+
+pages:
+  stage: pages
+  dependencies:
+    - coverage
+  script:
+    - mv htmlcov/ public/
+  artifacts:
+    paths:
+      - public
+    expire_in: 15 days
