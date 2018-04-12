@@ -23,10 +23,13 @@ Created on Jan 29, 2015
 
 from __future__ import unicode_literals
 
+import datetime
+from mock.mock import Mock, MagicMock
 import unittest
 
+from rdiffweb import rdw_plugin
 from rdiffweb.rdw_config import Configuration
-from rdiffweb.rdw_plugin import PluginManager
+from rdiffweb.rdw_plugin import PluginManager, JobPlugin
 
 
 class PluginManagerTest(unittest.TestCase):
@@ -49,6 +52,40 @@ class PluginManagerTest(unittest.TestCase):
         self.assertEqual('http://www.patrikdufresne.com/en/rdiffweb/', infos[0].url)
         self.assertEqual(True, plugin_info.enabled)
         self.assertEqual('GPLv3', plugin_info.copyright)
+
+
+class JobPluginTest(unittest.TestCase):
+
+    def test_get_next_execution_time(self):
+        """
+        Check JobPLugin execution time.
+        """
+        p = JobPlugin()
+        p.job_execution_time = '2:00'
+        t = p._get_next_execution_time()
+        self.assertIsInstance(t, datetime.datetime)
+
+    def test_get_next_execution_time_invalid(self):
+        """
+        Check JobPLugin execution time with invalid value.
+        """
+        p = JobPlugin()
+        p.job_execution_time = '390'
+        t1 = p._get_next_execution_time()
+        p.job_execution_time = '23:00'
+        t2 = p._get_next_execution_time()
+        self.assertEqual(t1, t2)
+
+    def test_deamon_run(self):
+        """
+        Check JobPlugin execution.
+        """
+        rdw_plugin.time.sleep = MagicMock()
+        p = JobPlugin()
+        p.job_execution_time = '23:00'
+        p.job_run = lambda: "c"
+        p.deamon_run()
+        assert rdw_plugin.time.sleep.called
 
 
 if __name__ == "__main__":

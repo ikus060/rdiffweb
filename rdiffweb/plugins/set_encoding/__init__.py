@@ -35,9 +35,7 @@ from rdiffweb import rdw_spider_repos, page_main, librdiff
 from rdiffweb.dispatch import poppath
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.page_main import MainPage
-from rdiffweb.rdw_plugin import IPreferencesPanelProvider, ITemplateFilterPlugin, \
-    IDeamonPlugin
-
+from rdiffweb.rdw_plugin import IPreferencesPanelProvider, ITemplateFilterPlugin
 
 _logger = logging.getLogger(__name__)
 

@@ -31,13 +31,12 @@ import os
 from pkg_resources import working_set, Environment
 import pkg_resources
 import sys
+import time
 
 from rdiffweb.dispatch import static
 
-
 # Define logger for this module
 logger = logging.getLogger(__name__)
-
 
 PluginInfo = namedtuple(
     'PluginInfo',
@@ -430,12 +429,11 @@ class IDeamonPlugin(IRdiffwebPlugin):
     """
     CATEGORY = "Daemon"
 
-    @property
-    def deamon_frequency(self):
-        """
-        Return the frequency of the deamon plugin in seconds.
-        """
-        raise NotImplementedError("frequency is not implemented")
+    """
+    Return the frequency in seconds of execution for this demaon plugin. Default: 60 seconds.
+    This value cannot be changed once the plugin is started.
+    """
+    deamon_frequency = 60
 
     def deamon_run(self):
         """
@@ -451,35 +449,44 @@ class JobPlugin(IDeamonPlugin):
     Sub class should implement `job_execution_time` and `job_run`.
     """
 
-    deamon_frequency = 300
-
     job_execution_time = '23:00'
 
     _next_execution_time = None
 
     def deamon_run(self):
-        # Determine the next execution time.
-        if not self._next_execution_time:
-            self._next_execution_time = self._compute_next_execution_time()
-
-        # Check if task should be run.
-        now = datetime.datetime.now()
-        if now < self._next_execution_time:
-            return
-
+        self._wait()
         # Run job.
         try:
             self.job_run()
         finally:
             self._next_execution_time = None
 
-    def _compute_next_execution_time(self):
+    def job_run(self):
+        """
+        Sub-class should implement this function.
+        """
+        raise NotImplementedError("job_run is not implemented")
+
+    def _wait(self):
+        """
+        Sleep until time to execute the job.
+        """
+        now = datetime.datetime.now()
+        t = self._get_next_execution_time()
+        time.sleep(t - now)
+
+    def _get_next_execution_time(self):
         """
         Return a date time representing the next execution time.
         """
+        try:
+            time_str = self.job_execution_time
+            exec_time = datetime.datetime.strptime(time_str, '%H:%M')
+        except:
+            logger.error("invalid execution time [%s], check your config. Using default value.", self.job_execution_time)
+            exec_time = datetime.datetime.strptime("23:00", '%H:%M')
+
         now = datetime.datetime.now()
-        time_str = self.job_execution_time
-        exec_time = datetime.datetime.strptime(time_str, '%H:%M')
         exec_time = now.replace(hour=exec_time.hour, minute=exec_time.minute, second=0, microsecond=0)
         if exec_time < now:
             exec_time = exec_time.replace(day=exec_time.day + 1)
