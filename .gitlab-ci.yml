@@ -116,6 +116,8 @@ publish_pypi:
   
 github_push:
   stage: publish
+  only:
+  - branches
   script:
   - git push --force https://${GITHUB_USR}:${GITHUB_PWD}@github.com/ikus060/rdiffweb.git refs/remotes/origin/${CI_COMMIT_REF_NAME}:refs/heads/${CI_COMMIT_REF_NAME}
   - git push https://${GITHUB_USR}:${GITHUB_PWD}@github.com/ikus060/rdiffweb.git --tags
