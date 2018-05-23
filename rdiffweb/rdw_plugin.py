@@ -473,7 +473,7 @@ class JobPlugin(IDeamonPlugin):
         """
         now = datetime.datetime.now()
         t = self._get_next_execution_time()
-        time.sleep(t - now)
+        time.sleep((t - now).seconds)
 
     def _get_next_execution_time(self):
         """
