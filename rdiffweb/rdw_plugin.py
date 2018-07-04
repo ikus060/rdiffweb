@@ -489,7 +489,7 @@ class JobPlugin(IDeamonPlugin):
         now = datetime.datetime.now()
         exec_time = now.replace(hour=exec_time.hour, minute=exec_time.minute, second=0, microsecond=0)
         if exec_time < now:
-            exec_time = exec_time.replace(day=exec_time.day + 1)
+            exec_time = exec_time + datetime.timedelta(days=1)
         return exec_time
 
 
