@@ -54,6 +54,12 @@ py27-cherrypy13:
   
 py27-cherrypy14: 
   <<: *tox
+
+py27-cherrypy15: 
+  <<: *tox
+  
+py27-cherrypy16: 
+  <<: *tox
   
 py3-cherrypy35: 
   <<: *tox
@@ -89,6 +95,12 @@ py3-cherrypy13:
   <<: *tox
   
 py3-cherrypy14: 
+  <<: *tox
+
+py3-cherrypy15: 
+  <<: *tox
+  
+py3-cherrypy16: 
   <<: *tox
   
 py27-cherrypy32: 

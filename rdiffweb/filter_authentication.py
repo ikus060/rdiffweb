@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 import binascii
 from builtins import str
 import cherrypy
-from cherrypy._cpcompat import base64_decode
 from cherrypy._cptools import HandlerTool
 from future.utils import native_str
 import logging
@@ -31,11 +30,22 @@ from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.page_main import MainPage
 from rdiffweb.rdw_helpers import quote_url
-from cherrypy.lib import httpauth
-
+import base64
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
+
+def base64_decode(params):
+    bytes_params = base64.b64decode(params.encode('ascii'))
+    decoded_params = bytes_params.decode('ascii', errors='replace')
+    for e in ['utf-8', 'ISO-8859-1']:
+        try:
+            decoded_params = bytes_params.decode(e)
+            break
+        except ValueError:
+            pass
+    return decoded_params
 
 
 class BaseAuth(HandlerTool):
@@ -195,6 +205,7 @@ class BasicAuth(BaseAuth):
     """
     Tool used to control authentication to various ressources.
     """
+
     def __init__(self):
         BaseAuth.__init__(self, self.run, name='authbasic')
         # Make sure to run before authform (priority 71)
@@ -226,7 +237,9 @@ class BasicAuth(BaseAuth):
         logger.info('no authorization header, running is_login')
         if not self.is_login():
             # Inform the user-agent this path is protected.
-            cherrypy.serving.response.headers['www-authenticate'] = httpauth.basicAuth('rdiffweb')
+            cherrypy.serving.response.headers['www-authenticate'] = (
+                'Basic realm="%s"%s' % ('rdiffweb', 'utf-8')
+            )
             raise cherrypy.HTTPError(401, "You are not authorized to access that resource")
 
 

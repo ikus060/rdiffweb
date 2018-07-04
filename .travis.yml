@@ -21,6 +21,8 @@ env:
     - CHERRYPY=12
     - CHERRYPY=13
     - CHERRYPY=14
+    - CHERRYPY=15
+    - CHERRYPY=16
 
 # Make sure to exclude python3.4 + CherryPy 3.2.2
 # This configuration is not supported.
