@@ -3,7 +3,6 @@ image: ikus060/docker-debian-py2-py3:stretch
 stages:
 - test
 - publish
-- pages
 
 # Upgrade python and install dependencies to avoid compiling from sources.
 before_script:
@@ -55,6 +54,12 @@ py27-cherrypy13:
   
 py27-cherrypy14: 
   <<: *tox
+
+py27-cherrypy15: 
+  <<: *tox
+  
+py27-cherrypy16: 
+  <<: *tox
   
 py3-cherrypy35: 
   <<: *tox
@@ -91,6 +96,12 @@ py3-cherrypy13:
   
 py3-cherrypy14: 
   <<: *tox
+
+py3-cherrypy15: 
+  <<: *tox
+  
+py3-cherrypy16: 
+  <<: *tox
   
 py27-cherrypy32: 
   <<: *tox
@@ -121,24 +132,4 @@ github_push:
   script:
   - git push --force https://${GITHUB_USR}:${GITHUB_PWD}@github.com/ikus060/rdiffweb.git refs/remotes/origin/${CI_COMMIT_REF_NAME}:refs/heads/${CI_COMMIT_REF_NAME}
   - git push https://${GITHUB_USR}:${GITHUB_PWD}@github.com/ikus060/rdiffweb.git --tags
-  
-coverage:
-  stage: publish
-  script:
-  - coverage combine .coverage.*
-  - coverage html
-  coverage: '/TOTAL.*(\d+%)/'
-  artifacts:
-    paths:
-      - htmlcov/
 
-pages:
-  stage: pages
-  dependencies:
-    - coverage
-  script:
-    - mv htmlcov/ public/
-  artifacts:
-    paths:
-      - public
-    expire_in: 15 days
