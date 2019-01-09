@@ -54,7 +54,7 @@ class BaseAuth(HandlerTool):
 
     def check_username_and_password(self, username, password):
         """Validate user credentials."""
-        logger.info("check credentials for [%s]", username)
+        logger.debug("check credentials for [%s]", username)
         try:
             userobj = cherrypy.request.app.userdb.login(username, password)  # @UndefinedVariable
         except:
@@ -183,7 +183,7 @@ class AuthFormTool(BaseAuth):
         if path.startswith(native_str('/login')):
             if request.method != 'POST':
                 response.headers['Allow'] = "POST"
-                logger.warn('do_login requires POST, redirect to /')
+                logger.debug('/login requires POST, redirect to /')
                 # Redirect to / instead of showing error.
                 raise cherrypy.HTTPRedirect(b'/')
             logger.debug('routing %(path)r to do_login', locals())
@@ -194,7 +194,6 @@ class AuthFormTool(BaseAuth):
             return self.do_logout(**request.params)
 
         # No special path, validate session.
-        logger.debug('no special path, running do_check')
         return self.do_check()
 
 
@@ -224,7 +223,7 @@ class BasicAuth(BaseAuth):
                 if scheme.lower() == 'basic':
                     # Validate user credential.
                     login, password = base64_decode(params).split(':', 1)
-                    logger.info('routing %(path)r to do_login', locals())
+                    logger.debug('routing %(path)r to do_login', locals())
                     try:
                         return self.do_login(login, password)
                     except RdiffError as e:
@@ -234,7 +233,7 @@ class BasicAuth(BaseAuth):
             except (ValueError, binascii.Error):
                 raise cherrypy.HTTPError(400, 'Bad Request')
 
-        logger.info('no authorization header, running is_login')
+        logger.debug('no authorization header, running is_login')
         if not self.is_login():
             # Inform the user-agent this path is protected.
             cherrypy.serving.response.headers['www-authenticate'] = (

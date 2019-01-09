@@ -240,7 +240,7 @@ class LdapPasswordStore(IPasswordStore):
 
         def fetch_user_email(l, r):  # @UnusedVariable
             if len(r) != 1:
-                logger.warning("user [%s] not found", username)
+                logger.warning("user [%s] not found in LDAP", username)
                 return ""
             return self._attr(r, attr)
 
