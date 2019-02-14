@@ -1,13 +1,18 @@
-image: ikus060/docker-debian-py2-py3:stretch
+image: $DOCKER_REGISTRY/pdsl/rdiffweb-build
 
 stages:
+- prebuild
 - test
 - publish
 
-# Upgrade python and install dependencies to avoid compiling from sources.
-before_script:
-- apt-get update && apt-get -qq install python-pysqlite2 libldap2-dev libsasl2-dev rdiff-backup node-less
-- pip install pip setuptools --upgrade
+prebuild-docker-image:
+  image: docker:stable
+  stage: prebuild
+  script:
+  - docker login $DOCKER_REGISTRY -u $DOCKER_USR -p $DOCKER_PWD
+  - docker build -t rdiffweb-build extras/prebuild
+  - docker tag rdiffweb-build $DOCKER_REGISTRY/pdsl/rdiffweb-build
+  - docker push $DOCKER_REGISTRY/pdsl/rdiffweb-build
 
 .tox:  &tox
   stage: test
@@ -124,12 +129,3 @@ publish_pypi:
   - pip install wheel twine --upgrade
   - python setup.py sdist bdist_wheel
   - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
-  
-github_push:
-  stage: publish
-  only:
-  - branches
-  script:
-  - git push --force https://${GITHUB_USR}:${GITHUB_PWD}@github.com/ikus060/rdiffweb.git refs/remotes/origin/${CI_COMMIT_REF_NAME}:refs/heads/${CI_COMMIT_REF_NAME}
-  - git push https://${GITHUB_USR}:${GITHUB_PWD}@github.com/ikus060/rdiffweb.git --tags
-
