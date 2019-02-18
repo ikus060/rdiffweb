@@ -173,15 +173,15 @@ def start():
     if not os.path.isfile(configfile):
         print("configuration file %s doesn't exists" % configfile, file=sys.stderr)
         exit(1)
-    tmp_cfg = rdw_config.Configuration(configfile)
-    log_file = args.get('log_file', None) or tmp_cfg.get_config('LogFile', False)
-    log_access_file = args.get('log_access_file', None) or tmp_cfg.get_config('LogAccessFile', None)
+    cfg = rdw_config.Configuration(configfile)
+    log_file = args.get('log_file', None) or cfg.get_config('LogFile', False)
+    log_access_file = args.get('log_access_file', None) or cfg.get_config('LogAccessFile', None)
     if args.get('debug', False):
         environment = 'development'
         log_level = "DEBUG"
     else:
-        environment = tmp_cfg.get_config('Environment', 'production')
-        log_level = tmp_cfg.get_config('LogLevel', 'INFO')
+        environment = cfg.get_config('Environment', 'production')
+        log_level = cfg.get_config('LogLevel', 'INFO')
 
     # Configure logging
     setup_logging(
@@ -193,7 +193,7 @@ def start():
     logger.info("START")
 
     # Create App.
-    app = rdw_app.RdiffwebApp(configfile)
+    app = rdw_app.RdiffwebApp(cfg)
 
     # Get configuration
     serverHost = app.cfg.get_config("ServerHost", default=b"0.0.0.0")

@@ -31,11 +31,11 @@ import sys
 
 from rdiffweb import filter_authentication  # @UnusedImport
 from rdiffweb import i18n  # @UnusedImport
-from rdiffweb import rdw_config, page_main
+from rdiffweb import page_main
 from rdiffweb import rdw_plugin
 from rdiffweb import rdw_templating
 from rdiffweb.api import ApiPage
-from rdiffweb.dispatch import static, empty
+from rdiffweb.dispatch import static, empty  # @UnusedImport
 from rdiffweb.page_admin import AdminPage
 from rdiffweb.page_browse import BrowsePage
 from rdiffweb.page_history import HistoryPage
@@ -45,13 +45,11 @@ from rdiffweb.page_restore import RestorePage
 from rdiffweb.page_settings import SettingsPage
 from rdiffweb.page_status import StatusPage
 from rdiffweb.user import UserManager
-from rdiffweb.page_main import MainPage
+from rdiffweb.page_main import MainPage  # @UnusedImport
 from rdiffweb.librdiff import DoesNotExistError, AccessDeniedError
-
 
 # Define the logger
 logger = logging.getLogger(__name__)
-
 
 PY3 = sys.version_info[0] == 3
 
@@ -91,10 +89,16 @@ class Root(LocationsPage):
 class RdiffwebApp(Application):
     """This class represent the application context."""
 
-    def __init__(self, configfile=None):
+    def __init__(self, cfg):
 
         # Initialise the configuration
-        self.load_config(configfile)
+        assert cfg
+        self.cfg = cfg
+        
+        # Define TEMP env
+        tempdir = self.cfg.get_config("TempDir", default="")
+        if tempdir:
+            os.environ["TMPDIR"] = tempdir
 
         # Initialise the template engine.
         self.templates = rdw_templating.TemplateManager()
@@ -194,15 +198,6 @@ class RdiffwebApp(Application):
         except:
             self._version = "DEV"
         return self._version
-
-    def load_config(self, configfile=None):
-        """Called during app creating to load the configuration from file."""
-        self.cfg = rdw_config.Configuration(configfile)
-
-        # Define TEMP env
-        tempdir = self.cfg.get_config("TempDir", default="")
-        if tempdir:
-            os.environ["TMPDIR"] = tempdir
 
     def _localedirs(self):
         """
