@@ -7,6 +7,7 @@ import time
 
 from builtins import str
 from cherrypy.process.plugins import Monitor
+from rdiffweb.rdw_spider_repos import find_repos_for_user
 
 
 _logger = logging.getLogger(__name__)
@@ -113,3 +114,40 @@ class RemoveOlder(Deamon):
         r.execute(b'--force',
                   b'--remove-older-than=' + str(d).encode(encoding='latin1') + b'D',
                   r.full_path)
+        
+
+class UpdateRepos(Deamon):
+    """
+    Plugin to refresh user repos.
+    """
+
+    def __init__(self, bus, app):
+        self.app = app
+        Deamon.__init__(self, bus);
+
+    @property
+    def deamon_frequency(self):
+        """
+        Return the frequency to update user repo. Default to 15min.
+        """
+        value = self.app.cfg.get_config_bool("autoUpdateRepos", "15")
+        if value <= 0:
+            value = 15
+        return value * 60
+
+    def deamon_run(self):
+        """
+        Refresh the user repository
+        """
+        try:
+
+            user_db = self.app.userdb
+            if not user_db.supports('set_repos'):
+                return
+
+            users = user_db.list()
+            for user in users:
+                find_repos_for_user(user)
+
+        except:
+            _logger.exception("fail to update user repos")

@@ -185,7 +185,6 @@ setup(
             "Ldap = rdiffweb.plugins.ldap_auth",
             "UserPrefsGeneral = rdiffweb.plugins.prefs_general",
             "UserPrefsSSHKeys = rdiffweb.plugins.prefs_sshkeys",
-            "UpdateRepos = rdiffweb.plugins.update_repos",
             "Graphs = rdiffweb.plugins.graphs",
             "DeleteRepo = rdiffweb.plugins.delete_repo",
         ]
