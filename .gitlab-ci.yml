@@ -4,6 +4,7 @@ stages:
 - prebuild
 - test
 - publish
+- deploy
 
 prebuild-docker-image:
   image: docker:stable
@@ -129,3 +130,47 @@ publish_pypi:
   - pip install wheel twine --upgrade
   - python setup.py sdist bdist_wheel
   - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
+  
+rdiffweb_deploy_staging: 
+  stage: deploy
+  image: ikus060/ansible
+  environment:
+    name: staging
+    url: https://sestican.patrikdufresne.com
+  variables:
+    ANSIBLE_HOST_KEY_CHECKING: "False"
+  before_script:
+  - eval $(ssh-agent -s)
+  - echo "$SESTICAN_ROOT_PRIVATEKEY" | tr -d '\r' | ssh-add - > /dev/null
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  script:
+  - python ./setup.py --version
+  - export RDIFFWEB_VERSION=$(python ./setup.py --version)
+  - git clone "http://${GITLAB_USR}:${GITLAB_PWD}@git.patrikdufresne.com/pdsl/ansible-config.git"
+  - cd ansible-config
+  - ansible-playbook minarca.yml -i pdsl --extra-vars "ansible_user=root rdiffweb_version=$RDIFFWEB_VERSION rdiffweb_default_repositories=true" --limit sestican
+
+rdiffweb_deploy_prod:
+  stage: deploy
+  when: manual
+  only:
+  - tags
+  image: ikus060/ansible
+  environment:
+    name: prod
+    url: https://www.minarca.net
+  variables:
+    ANSIBLE_HOST_KEY_CHECKING: "False"
+  before_script:
+  - eval $(ssh-agent -s)
+  - echo "$RANCULOS_ROOT_PRIVATEKEY" | tr -d '\r' | ssh-add - > /dev/null
+  - echo "$MERCOR_ROOT_PRIVATEKEY"   | tr -d '\r' | ssh-add - > /dev/null
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  script:
+  - python ./setup.py --version
+  - export RDIFFWEB_VERSION=$(python ./setup.py --version)
+  - git clone "http://${GITLAB_USR}:${GITLAB_PWD}@git.patrikdufresne.com/pdsl/ansible-config.git"
+  - cd ansible-config
+  - ansible-playbook minarca.yml -i pdsl --extra-vars "ansible_user=root rdiffweb_version=$RDIFFWEB_VERSION" --limit ranculos,mercor

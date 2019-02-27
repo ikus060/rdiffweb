@@ -301,6 +301,8 @@ class UserManager(Component):
         assert password is None or isinstance(user, str)
         # Validate the credentials
         logger.debug("validating user [%s] credentials", user)
+        if not self._password_stores:
+            logger.warn("not password store available to validate user credentials")
         real_user = False
         for store in self._password_stores:
             real_user = store.are_valid_credentials(user, password)

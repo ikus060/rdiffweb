@@ -37,8 +37,8 @@ import tarfile
 import tempfile
 import unittest
 
+from rdiffweb import rdw_config
 from rdiffweb.rdw_app import RdiffwebApp
-
 
 try:
     from urllib.parse import urlencode  # @UnresolvedImport @UnusedImport
@@ -47,14 +47,33 @@ except:
 
 
 class MockRdiffwebApp(RdiffwebApp):
+
     def __init__(self, enabled_plugins=['SQLite'], default_config={}):
         assert enabled_plugins is None or isinstance(enabled_plugins, list)
         self.enabled_plugins = enabled_plugins
         assert default_config is None or isinstance(default_config, dict)
         self.default_config = default_config
 
+        # Define config
+        cfg = rdw_config.Configuration()
+        for plugin_name in self.enabled_plugins:
+            cfg.set_config('%sEnabled' % plugin_name, 'True')
+
+        # database in memory
+        if 'SQLite' in self.enabled_plugins:
+            self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
+            cfg.set_config('SQLiteDBFile', os.path.join(self.database_dir, 'rdiffweb.tmp.db'))
+
+        if 'Ldap' in self.enabled_plugins:
+            cfg.set_config('LdapUri', '__default__')
+            cfg.set_config('LdapBaseDn', 'dc=nodomain')
+
+        # Set config
+        for key, val in list(self.default_config.items()):
+            cfg.set_config(key, val)
+
         # Call parent constructor
-        RdiffwebApp.__init__(self)
+        RdiffwebApp.__init__(self, cfg)
 
     def clear_db(self):
         if hasattr(self, 'database_dir'):
@@ -65,26 +84,6 @@ class MockRdiffwebApp(RdiffwebApp):
         if hasattr(self, 'testcases'):
             shutil.rmtree(native_str(self.testcases))
             delattr(self, 'testcases')
-
-    def load_config(self, configfile=None):
-        RdiffwebApp.load_config(self, None)
-
-        # Enabled given plugins
-        for plugin_name in self.enabled_plugins:
-            self.cfg.set_config('%sEnabled' % plugin_name, 'True')
-
-        # database in memory
-        if 'SQLite' in self.enabled_plugins:
-            self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
-            self.cfg.set_config('SQLiteDBFile', os.path.join(self.database_dir, 'rdiffweb.tmp.db'))
-
-        if 'Ldap' in self.enabled_plugins:
-            self.cfg.set_config('LdapUri', '__default__')
-            self.cfg.set_config('LdapBaseDn', 'dc=nodomain')
-
-        # Set config
-        for key, val in list(self.default_config.items()):
-            self.cfg.set_config(key, val)
 
     def reset(self, username=None, password=None):
         """

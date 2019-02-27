@@ -16,12 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import cherrypy
 from future.builtins import str
 import getopt
 import logging
+import os
 import sys
 import tempfile
 import threading
@@ -29,7 +31,6 @@ import traceback
 
 from rdiffweb import rdw_app, rdw_config
 from rdiffweb.rdw_profiler import ProfilingApplication
-
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -117,6 +118,7 @@ def setup_logging(log_file, log_access_file, level):
     # Configure default log file.
     if log_file:
         assert isinstance(log_file, str)
+        print("continue logging to %s" % log_file)
         logging.basicConfig(filename=log_file, level=level, format=logformat)
     else:
         logging.basicConfig(level=level, format=logformat)
@@ -124,6 +126,7 @@ def setup_logging(log_file, log_access_file, level):
     # Configure access log file.
     if log_access_file:
         assert isinstance(log_access_file, str)
+        print("continue logging access to %s" % log_access_file)
         logging.root.handlers[0].addFilter(NotFilter("cherrypy.access"))
     logging.root.handlers[0].addFilter(ContextFilter())
 
@@ -167,15 +170,18 @@ def start():
 
     # Open config file before opening the apps.
     configfile = args.get('config', '/etc/rdiffweb/rdw.conf')
-    tmp_cfg = rdw_config.Configuration(configfile)
-    log_file = args.get('log_file', None) or tmp_cfg.get_config('LogFile', False)
-    log_access_file = args.get('log_access_file', None) or tmp_cfg.get_config('LogAccessFile', False)
+    if not os.path.isfile(configfile):
+        print("configuration file %s doesn't exists" % configfile, file=sys.stderr)
+        exit(1)
+    cfg = rdw_config.Configuration(configfile)
+    log_file = args.get('log_file', None) or cfg.get_config('LogFile', False)
+    log_access_file = args.get('log_access_file', None) or cfg.get_config('LogAccessFile', None)
     if args.get('debug', False):
         environment = 'development'
         log_level = "DEBUG"
     else:
-        environment = tmp_cfg.get_config('Environment', 'production')
-        log_level = tmp_cfg.get_config('LogLevel', 'INFO')
+        environment = cfg.get_config('Environment', 'production')
+        log_level = cfg.get_config('LogLevel', 'INFO')
 
     # Configure logging
     setup_logging(
@@ -187,10 +193,10 @@ def start():
     logger.info("START")
 
     # Create App.
-    app = rdw_app.RdiffwebApp(configfile)
+    app = rdw_app.RdiffwebApp(cfg)
 
     # Get configuration
-    serverHost = app.cfg.get_config("ServerHost", default="0.0.0.0")
+    serverHost = app.cfg.get_config("ServerHost", default=b"0.0.0.0")
     serverPort = app.cfg.get_config_int("ServerPort", default="8080")
     # Get SSL configuration (if any)
     sslCertificate = app.cfg.get_config("SslCertificate")
