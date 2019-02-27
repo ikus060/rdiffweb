@@ -25,11 +25,13 @@ from __future__ import unicode_literals
 
 import logging
 from mock import MagicMock
+from rdiffweb import librdiff
+from rdiffweb.test import WebCase
 import unittest
 
-from rdiffweb import librdiff
-from rdiffweb.plugins.remove_older import KEEPDAYS
-from rdiffweb.test import WebCase
+import cherrypy
+
+from rdiffweb.rdw_deamon import RemoveOlder
 
 
 class RemoveOlderTest(WebCase):
@@ -63,8 +65,8 @@ class RemoveOlderTest(WebCase):
         # Also check if the value is updated in database
         user = self.app.userdb.get_user(self.USERNAME)
         repo = user.get_repo(self.REPO)
-        keepdays = repo.get_attr(KEEPDAYS, default='-1')
-        self.assertEqual('1', keepdays)
+        keepdays = repo.keepdays
+        self.assertEqual(1, keepdays)
 
     def test_remove_older(self):
         """
@@ -76,7 +78,7 @@ class RemoveOlderTest(WebCase):
         user = self.app.userdb.get_user(self.USERNAME)
         repo = user.get_repo(self.REPO)
         # Run the job.
-        p = self.app.plugins.get_plugin_by_name('RemoveOlderPlugin')
+        p = RemoveOlder(cherrypy.engine, self.app)
         p._remove_older(user, repo, 30)
         # Check number of history.
         r = librdiff.RdiffRepo(user.user_root, repo.name)
@@ -91,9 +93,8 @@ class RemoveOlderTest(WebCase):
         user = self.app.userdb.get_user(self.USERNAME)
         repo = user.get_repo(self.REPO)
         # Run the job.
-        p = self.app.plugins.get_plugin_by_name('RemoveOlderPlugin')
         with self.assertRaises(AssertionError):
-            p._remove_older(user, repo, '30')
+            RemoveOlder(cherrypy.engine, self.app)._remove_older(user, repo, '30')
 
 
 class RemoveOlderTestWithMock(WebCase):
@@ -106,14 +107,14 @@ class RemoveOlderTestWithMock(WebCase):
 
     @classmethod
     def setup_server(cls):
-        WebCase.setup_server(enabled_plugins=['SQLite', 'RemoveOlder'])
+        WebCase.setup_server(enabled_plugins=['SQLite'])
 
     def test_job_run_without_keepdays(self):
         """
         Test execution of job run.
         """
         # Mock the call to _remove_older to make verification.
-        p = self.app.plugins.get_plugin_by_name('RemoveOlderPlugin')
+        p = RemoveOlder(cherrypy.engine, self.app)
         p._remove_older = MagicMock()
         # Call the job.
         p.job_run()
@@ -125,12 +126,12 @@ class RemoveOlderTestWithMock(WebCase):
         Test execution of job run.
         """
         # Mock the call to _remove_older to make verification.
-        p = self.app.plugins.get_plugin_by_name('RemoveOlderPlugin')
+        p = RemoveOlder(cherrypy.engine, self.app)
         p._remove_older = MagicMock()
         # Set a keepdays
         user = self.app.userdb.get_user(self.USERNAME)
         repo = user.get_repo(self.REPO)
-        repo.set_attr(KEEPDAYS, '30')
+        repo.keepdays = 30
         # Call the job.
         p.job_run()
         # Check if _remove_older was called

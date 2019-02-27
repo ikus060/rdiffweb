@@ -42,11 +42,12 @@ from rdiffweb.page_history import HistoryPage
 from rdiffweb.page_locations import LocationsPage
 from rdiffweb.page_prefs import PreferencesPage
 from rdiffweb.page_restore import RestorePage
-from rdiffweb.page_settings import SettingsPage, SetEncodingPage
+from rdiffweb.page_settings import SettingsPage, SetEncodingPage, RemoveOlderPage
 from rdiffweb.page_status import StatusPage
 from rdiffweb.user import UserManager
 from rdiffweb.page_main import MainPage  # @UnusedImport
 from rdiffweb.librdiff import DoesNotExistError, AccessDeniedError
+from rdiffweb.rdw_deamon import RemoveOlder
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -67,6 +68,7 @@ class Root(LocationsPage):
         self.settings = SettingsPage(app)
         self.api = ApiPage(app)
         self.api.set_encoding = SetEncodingPage(app)
+        self.api.remove_older = RemoveOlderPage(app)
 
         # Register static dir.
         static_dir = pkg_resources.resource_filename('rdiffweb', 'static')  # @UndefinedVariable

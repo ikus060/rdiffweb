@@ -28,7 +28,6 @@ from rdiffweb.i18n import ugettext as _
 from builtins import bytes
 import cherrypy
 
-
 # Define the logger
 _logger = logging.getLogger(__name__)
 
@@ -44,6 +43,7 @@ class SettingsPage(page_main.MainPage):
 
         # Check user permissions
         repo_obj = self.validate_user_path(path)[0]
+        r = self.app.currentuser.get_repo(repo_obj.path)
 
         # Get page data.
         params = {
@@ -51,6 +51,7 @@ class SettingsPage(page_main.MainPage):
             'repo_path': repo_obj.path,
             'templates_content': [],
             'current_encoding': encodings.normalize_encoding(repo_obj.get_encoding()),
+            'keepdays': r.keepdays,
         }
         
         # Generate page.
@@ -86,5 +87,33 @@ class SetEncodingPage(page_main.MainPage):
         # Update the repository encoding
         _logger.info("updating repository [%s] encoding [%s]", repo_obj, new_encoding)
         repo_obj.set_encoding(new_encoding)
+
+        return _("Updated")
+    
+    
+@poppath()
+class RemoveOlderPage(page_main.MainPage):
+
+    @cherrypy.expose()
+    def index(self, path=b"", keepdays=None):
+        self.assertIsInstance(path, bytes)
+        self.assertTrue(keepdays)
+        _logger.debug("repo settings [%r]", path)
+
+        # Get new value
+        try:
+            keepdays = int(keepdays)
+        except:
+            _logger.warning("invalid keepdays value %r", keepdays)
+            raise cherrypy.HTTPError(400, _("Invalid value"))
+
+        # Check user permissions
+        repo_obj = self.validate_user_path(path)[0]
+
+        # Get repository object from user database.
+        r = self.app.currentuser.get_repo(repo_obj.path)
+
+        # Update the database.
+        r.keepdays = keepdays
 
         return _("Updated")

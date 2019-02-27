@@ -31,6 +31,7 @@ import traceback
 
 from rdiffweb import rdw_app, rdw_config
 from rdiffweb.rdw_profiler import ProfilingApplication
+from rdiffweb.rdw_deamon import RemoveOlder
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -228,6 +229,9 @@ def start():
         if profile_aggregated:
             global_config['server.thread_pool'] = 1
             global_config['server.thread_pool_max'] = 1
+
+    # Start deamons
+    RemoveOlder(cherrypy.engine, app).subscribe()
 
     # Start web server
     cherrypy.quickstart(app)

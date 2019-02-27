@@ -135,6 +135,7 @@ class RepoObject(object):
         return self._repo
 
     maxage = property(fget=lambda x: x._db.get_repo_maxage(x._username, x._repo), fset=lambda x, y: x._db.set_repo_maxage(x._username, x._repo, y))
+    keepdays = property(fget=lambda x: int(x.get_attr('keepdays', default='-1')), fset=lambda x, y: x.set_attr('keepdays', int(y)))
 
 
 class UserManager(Component):
