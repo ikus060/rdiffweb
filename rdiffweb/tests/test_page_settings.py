@@ -20,12 +20,12 @@ Created on Jan 1, 2016
 
 @author: ikus060
 """
+
 from __future__ import unicode_literals
 
 import logging
-import unittest
-
 from rdiffweb.test import WebCase
+import unittest
 
 
 class SettingsTest(WebCase):
@@ -42,6 +42,7 @@ class SettingsTest(WebCase):
     def test_page(self):
         self._settings(self.REPO)
         self.assertStatus(200)
+        
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

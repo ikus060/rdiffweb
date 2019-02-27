@@ -54,7 +54,7 @@ class SetEncodingTest(WebCase):
 
     def test_set_encoding(self):
         """
-        Check to update the encoding.
+        Check to update the encoding with cp1252.
         """
         self._set_encoding(self.REPO, 'cp1252')
         self.assertStatus(200)
@@ -65,7 +65,7 @@ class SetEncodingTest(WebCase):
 
     def test_set_encoding_invalid(self):
         """
-        Check to update the encoding.
+        Check to update the encoding with invalid value.
         """
         self._set_encoding(self.REPO, 'invalid')
         self.assertStatus(400)
@@ -73,7 +73,7 @@ class SetEncodingTest(WebCase):
 
     def test_set_encoding_windows_1252(self):
         """
-        Check to update the encoding.
+        Check to update the encoding with windows 1252.
         """
         # Update encoding
         self._set_encoding(self.REPO, 'windows_1252')

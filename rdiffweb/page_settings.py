@@ -19,12 +19,14 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from builtins import bytes
-import cherrypy
+import encodings
 import logging
-
 from rdiffweb import page_main
 from rdiffweb.dispatch import poppath
+from rdiffweb.i18n import ugettext as _
+
+from builtins import bytes
+import cherrypy
 
 
 # Define the logger
@@ -48,7 +50,41 @@ class SettingsPage(page_main.MainPage):
             'repo_name': repo_obj.display_name,
             'repo_path': repo_obj.path,
             'templates_content': [],
+            'current_encoding': encodings.normalize_encoding(repo_obj.get_encoding()),
         }
-
+        
         # Generate page.
         return self._compile_template("settings.html", **params)
+    
+    
+@poppath()
+class SetEncodingPage(page_main.MainPage):
+    
+    @cherrypy.expose()
+    def index(self, path=b'', new_encoding=None):
+        """
+        Update repository encoding via Ajax.
+        """
+        self.assertIsInstance(path, bytes)
+        self.assertTrue(new_encoding)
+
+        _logger.debug("update repo [%r] settings [%r]", path, new_encoding)
+
+        # Check user permissions
+        repo_obj = self.validate_user_path(path)[0]
+
+        # Validate the encoding value
+        new_codec = encodings.search_function(new_encoding.lower())
+        if not new_codec:
+            raise cherrypy.HTTPError(400, _("invalid encoding value"))
+
+        new_encoding = new_codec.name
+        if not isinstance(new_encoding, str):
+            # Python 2
+            new_encoding = new_encoding.decode('ascii')
+
+        # Update the repository encoding
+        _logger.info("updating repository [%s] encoding [%s]", repo_obj, new_encoding)
+        repo_obj.set_encoding(new_encoding)
+
+        return _("Updated")
