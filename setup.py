@@ -186,7 +186,6 @@ setup(
             "UserPrefsGeneral = rdiffweb.plugins.prefs_general",
             "UserPrefsSSHKeys = rdiffweb.plugins.prefs_sshkeys",
             "Graphs = rdiffweb.plugins.graphs",
-            "DeleteRepo = rdiffweb.plugins.delete_repo",
         ]
     },
     # new commands added and build command modified

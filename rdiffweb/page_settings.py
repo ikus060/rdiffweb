@@ -117,3 +117,35 @@ class RemoveOlderPage(page_main.MainPage):
         r.keepdays = keepdays
 
         return _("Updated")
+
+    
+@poppath()
+class DeleteRepoPage(page_main.MainPage):
+
+    @cherrypy.expose
+    def index(self, path=b"", **kwargs):
+        """
+        Delete the repository.
+        """
+        self.assertIsInstance(path, bytes)
+        _logger.debug("repo delete [%r]", path)
+
+        # Check user permissions
+        repo_obj = self.validate_user_path(path)[0]
+
+        # Validate the name
+        confirm_name = kwargs.get('confirm_name', None)
+        if confirm_name != repo_obj.display_name:
+            _logger.info("bad confirmation %r != %r", confirm_name, repo_obj.display_name)
+            raise cherrypy.HTTPError(400, "bad confirmation")
+
+        # Update the repository encoding
+        _logger.info("deleting repository [%s]", repo_obj)
+        repo_obj.delete()
+
+        # Refresh repository list
+        repos = self.app.currentuser.repos
+        r = self.app.currentuser.get_repo(repo_obj.path)
+        repos.remove(r.name)
+        self.app.currentuser.repos = repos
+        raise cherrypy.HTTPRedirect("/")
