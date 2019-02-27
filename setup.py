@@ -185,7 +185,6 @@ setup(
             "Ldap = rdiffweb.plugins.ldap_auth",
             "UserPrefsGeneral = rdiffweb.plugins.prefs_general",
             "UserPrefsSSHKeys = rdiffweb.plugins.prefs_sshkeys",
-            "Graphs = rdiffweb.plugins.graphs",
         ]
     },
     # new commands added and build command modified

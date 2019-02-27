@@ -55,7 +55,7 @@ class RemoveOlderTest(WebCase):
 
     def test_page_set_keepdays(self):
         """
-        Check to delete a repo.
+        Set keepdays.
         """
         self._remove_older(self.REPO, '1')
         self.assertStatus(200)

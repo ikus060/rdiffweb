@@ -19,37 +19,20 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import logging
+from rdiffweb import librdiff
+from rdiffweb import page_main
+from rdiffweb.dispatch import poppath
+from rdiffweb.i18n import ugettext as _
+from rdiffweb.rdw_plugin import IRdiffwebPlugin, ITemplateFilterPlugin
+
 from builtins import bytes
 from builtins import str
 import cherrypy
 from future.utils import iteritems
-import logging
-import pkg_resources
-
-from rdiffweb import librdiff, rdw_helpers
-from rdiffweb import page_main
-import rdiffweb
-from rdiffweb.dispatch import poppath
-from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_helpers import unquote_url
-from rdiffweb.rdw_plugin import IRdiffwebPlugin, ITemplateFilterPlugin
 
 
 _logger = logging.getLogger(__name__)
-
-
-def url_for_graphs(repo, graph=''):
-    """
-    Build a URL to display graphs for the given repo.
-    """
-    assert isinstance(repo, bytes)
-    url = []
-    url.append("/graphs/%s/" % (graph))
-    if repo:
-        repo = repo.rstrip(b"/")
-        url.append(rdw_helpers.quote_url(repo))
-        url.append("/")
-    return ''.join(url)
 
 
 @poppath('graph')
@@ -130,24 +113,3 @@ class GraphsPage(page_main.MainPage):
             return self._page(path, graph, **kwargs)
         # Raise error.
         raise cherrypy.NotFound()
-
-
-class GraphsPlugins(ITemplateFilterPlugin):
-    """
-    Plugin to display repository graphs.
-    """
-
-    def activate(self):
-        # Register new handler to show graphs.
-        self.app.root.graphs = GraphsPage(self.app)
-        # Register function into templates
-        self.app.templates.jinja_env.globals['url_for_graphs'] = url_for_graphs
-        # Call original
-        IRdiffwebPlugin.activate(self)
-
-    def filter_data(self, template_name, data):
-
-        if data.get('repo_path'):
-            # Add our graph item in repo_nav_bar
-            # id, label, url, icon
-            data.setdefault('repo_nav_bar_extras', []).append(('graphs', _('Graphs'), url_for_graphs(data.get('repo_path'), 'activities'), 'icon-chart-bar'))

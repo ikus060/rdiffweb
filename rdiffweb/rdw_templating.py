@@ -211,6 +211,20 @@ def url_for_status_entry(date, repo=None):
     return ''.join(url)
 
 
+def url_for_graphs(repo, graph=''):
+    """
+    Build a URL to display graphs for the given repo.
+    """
+    assert isinstance(repo, bytes)
+    url = []
+    url.append("/graphs/%s/" % (graph))
+    if repo:
+        repo = repo.rstrip(b"/")
+        url.append(rdw_helpers.quote_url(repo))
+        url.append("/")
+    return ''.join(url)
+
+
 class TemplateManager(object):
     """
     Uses to generate HTML page from template using Jinja2 templating.
@@ -245,6 +259,8 @@ class TemplateManager(object):
         self.jinja_env.globals['url_for_restore'] = url_for_restore
         self.jinja_env.globals['url_for_settings'] = url_for_settings
         self.jinja_env.globals['url_for_status_entry'] = url_for_status_entry
+        self.jinja_env.globals['url_for_graphs'] = url_for_graphs
+        
 
     def add_templatesdir(self, templates_dir):
         """

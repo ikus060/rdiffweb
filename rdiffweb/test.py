@@ -229,3 +229,4 @@ class WebCase(helper.CPWebCase):
     def test_gc(self):
         "Override test_gc to skip the test."
         # Disable gc check (because it randomly fail).
+        pass

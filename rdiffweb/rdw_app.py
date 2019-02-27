@@ -19,16 +19,9 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from cherrypy import Application
-import cherrypy
-from cherrypy.process.plugins import Monitor
 from distutils.version import LooseVersion
-from future.utils import native_str
 import logging
 import os
-import pkg_resources
-import sys
-
 from rdiffweb import filter_authentication  # @UnusedImport
 from rdiffweb import i18n  # @UnusedImport
 from rdiffweb import page_main
@@ -36,18 +29,28 @@ from rdiffweb import rdw_plugin
 from rdiffweb import rdw_templating
 from rdiffweb.api import ApiPage
 from rdiffweb.dispatch import static, empty  # @UnusedImport
+from rdiffweb.librdiff import DoesNotExistError, AccessDeniedError
 from rdiffweb.page_admin import AdminPage
 from rdiffweb.page_browse import BrowsePage
 from rdiffweb.page_history import HistoryPage
 from rdiffweb.page_locations import LocationsPage
+from rdiffweb.page_main import MainPage  # @UnusedImport
 from rdiffweb.page_prefs import PreferencesPage
 from rdiffweb.page_restore import RestorePage
 from rdiffweb.page_settings import SettingsPage, SetEncodingPage, RemoveOlderPage, \
     DeleteRepoPage
 from rdiffweb.page_status import StatusPage
 from rdiffweb.user import UserManager
-from rdiffweb.page_main import MainPage  # @UnusedImport
-from rdiffweb.librdiff import DoesNotExistError, AccessDeniedError
+import sys
+
+from cherrypy import Application
+import cherrypy
+from cherrypy.process.plugins import Monitor
+from future.utils import native_str
+import pkg_resources
+
+from rdiffweb.page_graphs import GraphsPage
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -70,6 +73,7 @@ class Root(LocationsPage):
         self.api.set_encoding = SetEncodingPage(app)
         self.api.remove_older = RemoveOlderPage(app)
         self.delete = DeleteRepoPage(app)
+        self.graphs = GraphsPage(app)
 
         # Register static dir.
         static_dir = pkg_resources.resource_filename('rdiffweb', 'static')  # @UndefinedVariable
