@@ -28,6 +28,7 @@ from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_plugin import IPasswordStore, IUserChangeListener
 from rdiffweb.page_main import normpath
 from rdiffweb.user_sqlite import SQLiteUserDB
+from rdiffweb.user_ldap_auth import LdapPasswordStore
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -147,6 +148,7 @@ class UserManager(Component):
     def __init__(self, app):
         Component.__init__(self, app)
         self._database = SQLiteUserDB(app) 
+        self._password_stores = [self._database, LdapPasswordStore(app)]
 
     @property
     def _allow_add_user(self):
@@ -156,11 +158,6 @@ class UserManager(Component):
     def _change_listeners(self):
         """Return list of IUserChangeListener"""
         return self.app.plugins.get_plugins_of_category(IUserChangeListener.CATEGORY)
-
-    @property
-    def _password_stores(self):
-        """Return all configured password store."""
-        return self.app.plugins.get_plugins_of_category(IPasswordStore.CATEGORY) + [self._database]
 
     def add_user(self, user, password=None):
         """

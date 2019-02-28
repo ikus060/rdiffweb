@@ -23,13 +23,15 @@ Created on Oct 17, 2015
 
 from __future__ import unicode_literals
 
-from builtins import str
 import logging
-from mockldap import MockLdap
-import unittest
-
 from rdiffweb.core import RdiffError
 from rdiffweb.test import AppTestCase
+import unittest
+
+from builtins import str
+from mockldap import MockLdap
+
+from rdiffweb.user_ldap_auth import LdapPasswordStore
 
 
 def _ldap_user(name, password='password'):
@@ -93,7 +95,8 @@ class UserManagerLdapTest(AppTestCase):
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
         # Get reference to LdapStore
-        self.ldapstore = self.app.userdb._password_stores[0]
+        self.ldapstore = self.app.userdb._password_stores[1]
+        self.assertTrue(isinstance(self.ldapstore, LdapPasswordStore))
 
     def tearDown(self):
         # Stop patching ldap.initialize and reset state.
@@ -117,10 +120,12 @@ class UserManagerLdapTest(AppTestCase):
 
     def test_delete_user(self):
         # Delete_user is not supported by LdapPlugin.
-        self.assertFalse(self.ldapstore.delete_user('vicky'))
+        with self.assertRaises(AttributeError):
+            self.ldapstore.delete_user('vicky')
 
     def test_delete_user_with_invalid_user(self):
-        self.assertFalse(self.ldapstore.delete_user('eve'))
+        with self.assertRaises(AttributeError):
+            self.ldapstore.delete_user('eve')
 
     def test_get_user_attr(self):
         self.assertEquals(['bob'], self.ldapstore.get_user_attr('bob', 'uid'))
@@ -276,7 +281,8 @@ class UserManagerLdapWithRequiredGroupTest(AppTestCase):
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
         # Get reference to LdapStore
-        self.ldapstore = self.app.userdb._password_stores[0]
+        self.ldapstore = self.app.userdb._password_stores[1]
+        self.assertTrue(isinstance(self.ldapstore, LdapPasswordStore))
 
     def tearDown(self):
         # Stop patching ldap.initialize and reset state.

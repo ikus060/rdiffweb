@@ -30,21 +30,6 @@ import unittest
 from rdiffweb.test import WebCase
 
 
-class PluginsTestAsAdmin(WebCase):
-    """
-    Plugin to verify admin plugin page as Admin.
-    """
-
-    login = True
-
-    reset_app = True
-
-    def test_plugins_List(self):
-        self.getPage("/admin/plugins/")
-        self.assertInBody('Ldap')
-        self.assertInBody('SQLite')
-
-
 class PluginsTestAsUser(WebCase):
     """
     Plugin to verify admin plugin page as user.

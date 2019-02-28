@@ -38,13 +38,12 @@ import time
 from rdiffweb.core import RdiffError
 from rdiffweb.i18n import ugettext as _
 from rdiffweb.rdw_config import Option, BoolOption, IntOption
-from rdiffweb.rdw_plugin import IPasswordStore
-
+#
 
 logger = logging.getLogger(__name__)
 
 
-class LdapPasswordStore(IPasswordStore):
+class LdapPasswordStore():
 
     """Wrapper for LDAP authentication.
 
@@ -68,9 +67,8 @@ class LdapPasswordStore(IPasswordStore):
     allow_password_change = BoolOption("LdapAllowPasswordChange", "false", doc="Check if password change are allowed.")
     check_shadow_expire = BoolOption("LdapCheckShadowExpire", "false", doc="Enable verification of Shadow Expire.")
 
-    def activate(self):
-        """Called by the plugin manager to setup the plugin."""
-        super(IPasswordStore, self).activate()
+    def __init__(self, app):
+        self.app = app
 
     def are_valid_credentials(self, username, password):
         """Check if the given credential as valid according to LDAP."""
