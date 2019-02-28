@@ -48,7 +48,7 @@ except:
 
 class MockRdiffwebApp(RdiffwebApp):
 
-    def __init__(self, enabled_plugins=['SQLite'], default_config={}):
+    def __init__(self, enabled_plugins=[], default_config={}):
         assert enabled_plugins is None or isinstance(enabled_plugins, list)
         self.enabled_plugins = enabled_plugins
         assert default_config is None or isinstance(default_config, dict)
@@ -60,9 +60,8 @@ class MockRdiffwebApp(RdiffwebApp):
             cfg.set_config('%sEnabled' % plugin_name, 'True')
 
         # database in memory
-        if 'SQLite' in self.enabled_plugins:
-            self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
-            cfg.set_config('SQLiteDBFile', os.path.join(self.database_dir, 'rdiffweb.tmp.db'))
+        self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
+        cfg.set_config('SQLiteDBFile', os.path.join(self.database_dir, 'rdiffweb.tmp.db'))
 
         if 'Ldap' in self.enabled_plugins:
             cfg.set_config('LdapUri', '__default__')
@@ -94,7 +93,7 @@ class MockRdiffwebApp(RdiffwebApp):
             self.userdb.delete_user(user)
 
         # Create new user admin
-        if self.userdb.supports('add_user') and username and password:
+        if username and password:
             user = self.userdb.add_user(username, password)
             user.is_admin = True
 

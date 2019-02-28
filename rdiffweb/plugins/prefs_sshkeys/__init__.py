@@ -69,7 +69,7 @@ class SSHKeysPlugin(IPreferencesPanelProvider):
             raise RdiffWarning(_("SSH key already exists."))
 
         # Check size.
-        if key.size and key.size < 2048:
+        if key.size < 2048:
             raise RdiffWarning(_("SSH key is too short. RSA key of at least 2048 bits is required."))
 
         # Add comment to the key.

@@ -163,6 +163,7 @@ install_requires = [
     "future>=0.15.2",
     "psutil>=2.1.1",
     "babel>=0.9.6",
+    "pycrypto>=2.6.1",
 ]
 if PY2:
     install_requires.extend(["pysqlite>=2.6.3"])
@@ -181,7 +182,6 @@ setup(
         "console_scripts": ["rdiffweb = rdiffweb.main:start"],
         "rdiffweb.plugins": [
             "EmailNotification = rdiffweb.plugins.notification",
-            "SQLite = rdiffweb.plugins.db_sqlite",
             "Ldap = rdiffweb.plugins.ldap_auth",
             "UserPrefsGeneral = rdiffweb.plugins.prefs_general",
             "UserPrefsSSHKeys = rdiffweb.plugins.prefs_sshkeys",
@@ -204,6 +204,5 @@ setup(
         "mock>=1.3.0",
         "coverage>=4.0.1",
         "mockldap>=0.2.6",
-        "pycrypto>=2.6.1",
     ]
 )

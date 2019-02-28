@@ -24,34 +24,11 @@ Created on Jan 29, 2015
 from __future__ import unicode_literals
 
 import datetime
-from mock.mock import Mock, MagicMock
+from mock.mock import MagicMock
 import unittest
 
 from rdiffweb import rdw_plugin
-from rdiffweb.rdw_config import Configuration
-from rdiffweb.rdw_plugin import PluginManager, JobPlugin
-
-
-class PluginManagerTest(unittest.TestCase):
-
-    def test_get_plugin_infos_with_egg(self):
-        """
-        Check plugin information.
-        """
-        # Enable a single plugin.
-        config = Configuration()
-        config.set_config('SQLiteEnabled', 'true')
-        plugins = PluginManager(config)
-        infos = plugins.get_plugin_infos()
-        # Check result.
-        self.assertTrue(len(infos) > 0)
-        plugin_info = next((i for i in infos if i.name == 'SQLite'), None)
-        self.assertEqual('SQLite', plugin_info.name)
-        # self.assertEqual('SQLite', plugin_info.version)
-        self.assertEqual('Patrik Dufresne', plugin_info.author)
-        self.assertEqual('http://www.patrikdufresne.com/en/rdiffweb/', infos[0].url)
-        self.assertEqual(True, plugin_info.enabled)
-        self.assertEqual('GPLv3', plugin_info.copyright)
+from rdiffweb.rdw_plugin import JobPlugin
 
 
 class JobPluginTest(unittest.TestCase):

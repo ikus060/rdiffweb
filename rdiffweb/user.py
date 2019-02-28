@@ -25,9 +25,9 @@ import logging
 
 from rdiffweb.core import Component, InvalidUserError, RdiffError
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_plugin import IPasswordStore, IDatabase, IUserChangeListener
+from rdiffweb.rdw_plugin import IPasswordStore, IUserChangeListener
 from rdiffweb.page_main import normpath
-
+from rdiffweb.user_sqlite import SQLiteUserDB
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -146,15 +146,11 @@ class UserManager(Component):
 
     def __init__(self, app):
         Component.__init__(self, app)
+        self._database = SQLiteUserDB(app) 
 
     @property
     def _allow_add_user(self):
         return self.app.cfg.get_config_bool("AddMissingUser", "false")
-
-    @property
-    def _databases(self):
-        """Return all configured database."""
-        return self.app.plugins.get_plugins_of_category(IDatabase.CATEGORY)
 
     @property
     def _change_listeners(self):
@@ -164,7 +160,7 @@ class UserManager(Component):
     @property
     def _password_stores(self):
         """Return all configured password store."""
-        return self.app.plugins.get_plugins_of_category(IPasswordStore.CATEGORY)
+        return self.app.plugins.get_plugins_of_category(IPasswordStore.CATEGORY) + [self._database]
 
     def add_user(self, user, password=None):
         """
@@ -172,24 +168,18 @@ class UserManager(Component):
         """
         assert password is None or isinstance(password, str)
         # Check if user already exists.
-        db = self.find_user_database(user)
-        if db:
+        if self._database.exists(user):
             raise RdiffError(_("User %s already exists." % (user,)))
         # Find a database where to add the user
-        db = self._get_supporting_database('add_user')
-        logger.debug("adding new user [%s] to database [%s]", user, db)
-        db.add_user(user)
+        logger.debug("adding new user [%s]", user)
+        self._database.add_user(user)
         self._notify('added', user, password)
         # Find a password store where to set password
         if password:
-            # Check if database support set password, otherwise try to set password as usual.
-            if hasattr(db, 'set_password'):
-                db.set_password(user, password)
-            else:
-                self.set_password(user, password)
+            self._database.set_password(user, password)
 
         # Return user object
-        return UserObject(self, db, user)
+        return UserObject(self, self._database, user)
 
     def delete_user(self, user):
         """
@@ -202,10 +192,9 @@ class UserManager(Component):
             user = user.username
         result = False
         # Delete user from database (required).
-        db = self.find_user_database(user)
-        if db:
-            logger.info("deleting user [%s] from database [%s]", user, db)
-            result |= db.delete_user(user)
+        if self._database.exists(user):
+            logger.info("deleting user [%s] from database", user)
+            result |= self._database.delete_user(user)
         if not result:
             return result
         # Delete credentials from password store (optional).
@@ -222,7 +211,7 @@ class UserManager(Component):
 
         Return True if the user exists. False otherwise.
         """
-        return self.find_user_database(user) is not None
+        return self._database.exists(user)
 
     def find_user_store(self, user):
         """
@@ -233,29 +222,18 @@ class UserManager(Component):
         """
         assert isinstance(user, str)
         for store in self._password_stores:
-            if store.has_password(user):
-                return store
+            try:
+                if store.has_password(user):
+                    return store
+            except:
+                pass
         return None
 
-    def find_user_database(self, user):
-        """
-        Locates which database contains the user specified.
-
-        If the user isn't found in any IDatabase in the chain, None is
-        returned.
-        """
-        assert isinstance(user, str)
-        for db in self._databases:
-            if db.exists(user):
-                return db
-        return None
-
-    def get_user(self, username):
+    def get_user(self, user):
         """Return a user object."""
-        db = self.find_user_database(username)
-        if not db:
-            raise InvalidUserError(username)
-        return UserObject(self, db, username)
+        if not self.exists(user):
+            raise InvalidUserError(user)
+        return UserObject(self, self._database, user)
 
     def _get_supporting_store(self, operation):
         """
@@ -268,23 +246,11 @@ class UserManager(Component):
                 return store
         return None
 
-    def _get_supporting_database(self, operation):
-        """
-        Returns the IDatabase that implements the specified operation.
-
-        None is returned if no supporting store can be found.
-        """
-        for db in self._databases:
-            if db.supports(operation):
-                return db
-        return None
-
     def list(self):
         """Search users database. Return a generator of user object."""
         # TODO Add criteria as required.
-        for db in self._databases:
-            for username in db.list():
-                yield UserObject(self, db, username)
+        for username in self._database.list():
+            yield UserObject(self, self._database, username)
 
     def login(self, user, password):
         """
@@ -328,8 +294,7 @@ class UserManager(Component):
 
     def set_password(self, user, password, old_password=None):
         # Check if user exists in database
-        db = self.find_user_database(user)
-        if not db:
+        if not self.exists(user):
             raise InvalidUserError(user)
         # Try to update the user password.
         store = self.find_user_store(user)
@@ -356,13 +321,12 @@ class UserManager(Component):
                 store = self.find_user_store(user)
                 return store is not None and store.supports(operation)
             else:
-                db = self.find_user_database(user)
-                return db is not None and db.supports(operation)
+                return self._database.supports(operation)
         else:
             if operation in ['set_password']:
                 return self._get_supporting_store(operation) is not None
             else:
-                return self._get_supporting_database(operation) is not None
+                return self._database.supports(operation)
 
     def _notify(self, mod, *args):
         mod = '_'.join(['user', mod])

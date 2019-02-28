@@ -92,12 +92,9 @@ class KeySplit(namedtuple('KeySplit', 'lineno options keytype key comment')):
         Return the size of the key or crypto is available. Otherwise return
         an estimate of the size.
         """
-        try:
-            from Crypto.PublicKey import RSA
-            rsakey = RSA.importKey("%s %s" % (self.keytype, self.key))
-            return rsakey.size() + 1
-        except ImportError:
-            return False
+        from Crypto.PublicKey import RSA  # @UnresolvedImport
+        rsakey = RSA.importKey("%s %s" % (self.keytype, self.key))
+        return rsakey.size() + 1
 
 
 def add(filename, key):

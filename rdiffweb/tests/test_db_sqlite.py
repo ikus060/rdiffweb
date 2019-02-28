@@ -36,7 +36,7 @@ class SQLiteUserDBTest(AppTestCase):
     def setUp(self):
         AppTestCase.setUp(self)
         # Get reference to SQLite database
-        self.db = self.app.userdb._databases[0]
+        self.db = self.app.userdb._database
 
     def test_add_user(self):
         """Add user to database."""
