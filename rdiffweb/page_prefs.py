@@ -18,13 +18,13 @@
 
 from __future__ import unicode_literals
 
-from builtins import str
 import cherrypy
 import logging
 
 from rdiffweb import page_main
-from rdiffweb import rdw_plugin
-
+from rdiffweb.notification import NotificationPref
+from rdiffweb.pref_general import PrefsGeneralPanelProvider
+from rdiffweb.pref_sshkeys import SSHKeysPlugin
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -32,60 +32,36 @@ logger = logging.getLogger(__name__)
 
 @cherrypy.popargs('panelid')
 class PreferencesPage(page_main.MainPage):
+    
+    def __init__(self, app):
+        self.app = app
+        # Create the panels.
+        l = [PrefsGeneralPanelProvider(app), SSHKeysPlugin(app), NotificationPref(app)]
+        self.panels = [(x.panel_id, x.panel_name) for x in l]
+        self.providers = {x.panel_id: x for x in l}
 
     @cherrypy.expose
     def index(self, panelid=None, **kwargs):
         if isinstance(panelid, bytes):
             panelid = panelid.decode('ascii')
 
-        # Get the panels
-        panels, providers = self._get_panels()
-
-        # Sort the panels to have a deterministic order. (Place general panel first)
-        panels.sort(key=lambda p: (-1 if p[0] == 'general' else 0, p[1]))
-
         # Select the right panelid. Default to the first one if not define by url.
-        template = None
-        params = dict()
-        if panels:
-            panelid = panelid or panels[0][0]
+        panelid = panelid or self.panels[0][0]
 
-            # Search the panelid within our providers.
-            provider = providers.get(panelid)
-            if not provider:
-                raise cherrypy.HTTPError(404)
+        # Search the panelid within our providers.
+        provider = self.providers.get(panelid)
+        if not provider:
+            raise cherrypy.HTTPError(404)
 
-            # Render the page.
-            template, params = provider.render_prefs_panel(panelid, **kwargs)
+        # Render the page.
+        template, params = provider.render_prefs_panel(panelid, **kwargs)
 
         # Create a params with a default panelid.
         params.update({
-            "panels": panels,
+            "panels": self.panels,
             "active_panelid": panelid,
             "template_content": template,
         })
 
         return self._compile_template("prefs.html", **params)
 
-    def _get_panels(self):
-        """
-        List all the panels available.
-        """
-        panels = list()
-        providers = dict()
-
-        # List panels
-        def add_panelid(x):
-            p = list(x.get_prefs_panels() or [])
-            for panelid, panelname in p:
-                assert isinstance(panelid, str)
-                assert isinstance(panelname, str)
-                panels.append((panelid, panelname))
-                providers[panelid] = x
-
-        # Add panel entry for each plugins.
-        self.app.plugins.run(
-            add_panelid,
-            rdw_plugin.IPreferencesPanelProvider.CATEGORY)
-
-        return panels, providers

@@ -26,14 +26,11 @@ from __future__ import unicode_literals
 from builtins import str
 import cherrypy
 import logging
-import os
 import re
 
 from rdiffweb import rdw_spider_repos
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_plugin import IPreferencesPanelProvider
-
 
 PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
 
@@ -41,16 +38,17 @@ PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
 _logger = logging.getLogger(__name__)
 
 
-class PrefsGeneralPanelProvider(IPreferencesPanelProvider):
+class PrefsGeneralPanelProvider():
     """
     Plugin to change user profile and password.
     """
 
-    def get_prefs_panels(self):
-        """
-        Return a single page.
-        """
-        yield ('general', _('Profile'))
+    panel_id = 'general'
+    
+    panel_name = _('Profile')
+    
+    def __init__(self, app):
+        self.app = app
 
     def _handle_set_password(self, **kwargs):
         """

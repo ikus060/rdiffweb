@@ -73,9 +73,8 @@ class UserManagerLdapTest(AppTestCase):
         _ldap_user('vicky'),
     ])
 
-    enabled_plugins = ['Ldap']
-
     default_config = {
+        'LdapEnabled': 'true',
         'LdapAllowPasswordChange': 'true',
     }
 
@@ -180,9 +179,10 @@ class UserManagerLdapNoPasswordChangeTest(AppTestCase):
         _ldap_user('john'),
     ])
 
-    enabled_plugins = ['Ldap']
-
-    default_config = {'LdapAllowPasswordChange': 'false'}
+    default_config = {
+        'LdapEnabled': 'true',
+        'LdapAllowPasswordChange': 'false'
+    }
 
     @classmethod
     def setUpClass(cls):
@@ -256,9 +256,8 @@ class UserManagerLdapWithRequiredGroupTest(AppTestCase):
         _ldap_user('bob'),
     ])
 
-    enabled_plugins = ['Ldap']
-
     default_config = {
+        'LdapEnabled': 'true',
         'LdapAllowPasswordChange': 'true',
         'LdapRequiredGroup': 'cn=rdiffweb,ou=Groups,dc=nodomain',
         'LDAPGroupAttribute': 'memberUid',

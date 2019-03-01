@@ -26,31 +26,28 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from builtins import str
-import cherrypy
-from datetime import date
 import logging
 import os
 
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_plugin import IPreferencesPanelProvider
 
-from . import authorizedkeys
-
+from rdiffweb import authorizedkeys
 
 _logger = logging.getLogger(__name__)
 
 
-class SSHKeysPlugin(IPreferencesPanelProvider):
+class SSHKeysPlugin():
     """
     Plugin to configure SSH keys.
     """
 
-    def get_prefs_panels(self):
-        """
-        Return a single page.
-        """
-        yield ('sshkeys', _('SSH Keys'))
+    panel_id = 'sshkeys'
+    
+    panel_name = _('SSH Keys')
+    
+    def __init__(self, app):
+        self.app = app
 
     def _handle_add(self, filename, **kwargs):
         """

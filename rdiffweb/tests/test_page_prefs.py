@@ -37,10 +37,6 @@ class PrefsTest(WebCase):
 
     reset_app = True
 
-    @classmethod
-    def setup_server(cls):
-        WebCase.setup_server(enabled_plugins=['SQLite', 'UserPrefsGeneral'])
-
     def _set_password(self, current, new_password, confirm):
         b = {'action': 'set_password',
              'current': current,

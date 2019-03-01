@@ -21,25 +21,20 @@ User can control the notification period.
 """
 from __future__ import unicode_literals
 
-from builtins import str
-import cherrypy
 import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.utils import formatdate
 import logging
-import os
-import re
-import smtplib
-import time
-from xml.etree.ElementTree import fromstring, tostring
-
 from rdiffweb import librdiff
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_plugin import IPreferencesPanelProvider, JobPlugin, \
-    IUserChangeListener
+from rdiffweb.user import IUserChangeListener
+import re
+import smtplib
+from xml.etree.ElementTree import fromstring, tostring
 
+from builtins import str
+import cherrypy
 
 _logger = logging.getLogger(__name__)
 
@@ -113,7 +108,59 @@ def _utf8(self, val):
     return val.encode('utf-8')
 
 
-class NotificationPlugin(IPreferencesPanelProvider, JobPlugin, IUserChangeListener):
+class NotificationPref():
+
+    panel_id = 'notification'
+    
+    panel_name = _('Notification')
+    
+    def __init__(self, app):
+        self.app = app
+    
+    def _handle_set_notification_info(self, **kwargs):
+
+        # Loop trough user repo and update max age.
+        for repo in self.app.currentuser.repo_list:
+            # Get value received for the repo.
+            value = kwargs.get(repo.name, None)
+            if value is None:
+                continue
+            try:
+                value = int(value)
+            except:
+                continue
+            # Update the maxage
+            repo.maxage = value
+
+    def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
+        # Process the parameters.
+        params = dict()
+        action = kwargs.get('action')
+        if action:
+            try:
+                if action == "set_notification_info":
+                    self._handle_set_notification_info(**kwargs)
+                else:
+                    _logger.info("unknown action: %s", action)
+                    raise cherrypy.NotFound("Unknown action")
+            except RdiffWarning as e:
+                params['warning'] = str(e)
+            except RdiffError as e:
+                params['error'] = str(e)
+            except Exception as e:
+                _logger.warning("unknown error processing action", exc_info=True)
+                params['error'] = _("Unknown error")
+
+        params.update({
+            'email': self.app.currentuser.email,
+            'repos': [
+                {'name': r.name, 'maxage': r.maxage}
+                for r in self.app.currentuser.repo_list],
+        })
+        return "prefs_notification.html", params
+
+
+class NotificationPlugin(IUserChangeListener):
     """
     Send email notification when a repository get too old (without a backup).
     """
@@ -280,51 +327,4 @@ class NotificationPlugin(IPreferencesPanelProvider, JobPlugin, IUserChangeListen
         finally:
             if conn is not None:
                 conn.quit()
-
-    def get_prefs_panels(self):
-        """
-        Return a single page.
-        """
-        yield ('notification', _('Notification'))
-
-    def _handle_set_notification_info(self, **kwargs):
-
-        # Loop trough user repo and update max age.
-        for repo in self.app.currentuser.repo_list:
-            # Get value received for the repo.
-            value = kwargs.get(repo.name, None)
-            if value is None:
-                continue
-            try:
-                value = int(value)
-            except:
-                continue
-            # Update the maxage
-            repo.maxage = value
-
-    def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
-        # Process the parameters.
-        params = dict()
-        action = kwargs.get('action')
-        if action:
-            try:
-                if action == "set_notification_info":
-                    self._handle_set_notification_info(**kwargs)
-                else:
-                    _logger.info("unknown action: %s", action)
-                    raise cherrypy.NotFound("Unknown action")
-            except RdiffWarning as e:
-                params['warning'] = str(e)
-            except RdiffError as e:
-                params['error'] = str(e)
-            except Exception as e:
-                _logger.warning("unknown error processing action", exc_info=True)
-                params['error'] = _("Unknown error")
-
-        params.update({
-            'email': self.app.currentuser.email,
-            'repos': [
-                {'name': r.name, 'maxage': r.maxage}
-                for r in self.app.currentuser.repo_list],
-        })
-        return "prefs_notification.html", params
+    

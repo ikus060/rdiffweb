@@ -40,10 +40,6 @@ class CheckLinkTest(WebCase):
 
     reset_testcases = True
 
-    @classmethod
-    def setup_server(cls,):
-        WebCase.setup_server(enabled_plugins=['SQLite', 'UserPrefsGeneral', 'UserPrefsSSHKeys'])
-
     def test_links(self):
         """
         Crawl all the pages to find broken links.
@@ -67,6 +63,7 @@ class CheckLinkTest(WebCase):
                     newpage = re.sub("\\?.*", "", page) + newpage
                 if newpage not in done and not any(re.match(i, newpage) for i in ignore):
                     todo[newpage] = page
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

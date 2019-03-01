@@ -33,7 +33,7 @@ import shutil
 import tempfile
 import unittest
 
-from rdiffweb.plugins.prefs_sshkeys import authorizedkeys
+from rdiffweb import authorizedkeys
 
 
 class AuthorizedKeysTest(unittest.TestCase):

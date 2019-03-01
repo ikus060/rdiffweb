@@ -25,13 +25,37 @@ import logging
 
 from rdiffweb.core import Component, InvalidUserError, RdiffError
 from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_plugin import IPasswordStore, IUserChangeListener
 from rdiffweb.page_main import normpath
 from rdiffweb.user_sqlite import SQLiteUserDB
 from rdiffweb.user_ldap_auth import LdapPasswordStore
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
+
+class IUserChangeListener():
+    """
+    A listener to receive user changes event.
+    """
+
+    def __init__(self, app):
+        self.app = app
+        self.app.userdb.add_change_listener(self)
+
+    def user_added(self, user, password):
+        """New user (account) created."""
+
+    def user_attr_changed(self, user, attrs={}):
+        """User attribute changed."""
+
+    def user_deleted(self, user):
+        """User and related account information have been deleted."""
+
+    def user_logined(self, user, password):
+        """User successfully logged into rdiffweb."""
+
+    def user_password_changed(self, user, password):
+        """Password changed."""
 
 
 @python_2_unicode_compatible
@@ -149,15 +173,17 @@ class UserManager(Component):
         Component.__init__(self, app)
         self._database = SQLiteUserDB(app) 
         self._password_stores = [self._database, LdapPasswordStore(app)]
+        self._change_listeners = []
 
     @property
     def _allow_add_user(self):
         return self.app.cfg.get_config_bool("AddMissingUser", "false")
 
-    @property
-    def _change_listeners(self):
-        """Return list of IUserChangeListener"""
-        return self.app.plugins.get_plugins_of_category(IUserChangeListener.CATEGORY)
+    def add_change_listener(self, listener):
+        self._change_listeners.append(listener)
+
+    def remove_change_listener(self, listener):
+        self._change_listeners.remove(listener)
 
     def add_user(self, user, password=None):
         """

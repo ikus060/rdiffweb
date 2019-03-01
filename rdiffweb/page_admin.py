@@ -61,20 +61,6 @@ class AdminPage(page_main.MainPage):
         return self._compile_template("admin.html", **params)
 
     @cherrypy.expose
-    def plugins(self):
-        """
-        Display the plugins page. Listing all the plugin.
-        """
-        # Check if user is an administrator
-        if not self.app.currentuser or not self.app.currentuser.is_admin:
-            raise cherrypy.HTTPError(403)
-
-        params = {
-            "plugins": self.app.plugins.get_plugin_infos()
-        }
-        return self._compile_template("admin_plugins.html", **params)
-
-    @cherrypy.expose
     def users(self, userfilter=u"", usersearch=u"", action=u"", username=u"",
               email=u"", password=u"", user_root=u"", is_admin=u""):
 

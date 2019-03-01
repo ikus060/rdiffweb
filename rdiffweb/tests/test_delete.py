@@ -36,10 +36,6 @@ class DeleteRepoTest(WebCase):
 
     reset_testcases = True
 
-    @classmethod
-    def setup_server(cls):
-        WebCase.setup_server(enabled_plugins=['SQLite', 'DeleteRepo'])
-
     def _settings(self, repo):
         self.getPage("/settings/" + repo + "/")
 
@@ -77,6 +73,7 @@ class DeleteRepoTest(WebCase):
         self._delete(self.REPO, None)
         # TODO Make sure the repository is not delete
         self.assertStatus(400)
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

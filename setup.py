@@ -180,12 +180,7 @@ setup(
     include_package_data=True,
     entry_points={
         "console_scripts": ["rdiffweb = rdiffweb.main:start"],
-        "rdiffweb.plugins": [
-            "EmailNotification = rdiffweb.plugins.notification",
-            "Ldap = rdiffweb.plugins.ldap_auth",
-            "UserPrefsGeneral = rdiffweb.plugins.prefs_general",
-            "UserPrefsSSHKeys = rdiffweb.plugins.prefs_sshkeys",
-        ]
+        "rdiffweb.plugins": []
     },
     # new commands added and build command modified
     cmdclass={

@@ -32,7 +32,7 @@ from mockldap import MockLdap
 import unittest
 
 from rdiffweb.core import InvalidUserError, RdiffError
-from rdiffweb.rdw_plugin import IUserChangeListener
+from rdiffweb.user import IUserChangeListener
 from rdiffweb.test import AppTestCase
 
 
@@ -51,13 +51,12 @@ class UserManagerSQLiteTest(AppTestCase):
 
     def setUp(self):
         AppTestCase.setUp(self)
-        self.mlistener = IUserChangeListener()
+        self.mlistener = IUserChangeListener(self.app)
         self.mlistener.user_added = MagicMock()
         self.mlistener.user_attr_changed = MagicMock()
         self.mlistener.user_deleted = MagicMock()
         self.mlistener.user_logined = MagicMock()
         self.mlistener.user_password_changed = MagicMock()
-        self.app.plugins._register_plugin('MockUserChangeListener', [self.mlistener.CATEGORY], self.mlistener)
 
     def test_add_user(self):
         """Add user to database."""
@@ -268,9 +267,10 @@ class UserManagerSQLiteLdapTest(AppTestCase):
         _ldap_user('vicky'),
     ])
 
-    enabled_plugins = ['Ldap', 'SQLite']
-
-    default_config = {'LdapAllowPasswordChange': 'true'}
+    default_config = {
+        'LdapEnabled': 'true',
+        'LdapAllowPasswordChange': 'true'
+    }
 
     @classmethod
     def setUpClass(cls):
@@ -422,6 +422,7 @@ class UserManagerSQLiteLdapTest(AppTestCase):
         self.assertTrue(self.app.userdb.supports('set_email'))
         self.assertTrue(self.app.userdb.supports('set_password', 'annik'))
         self.assertTrue(self.app.userdb.supports('set_email', 'annik'))
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

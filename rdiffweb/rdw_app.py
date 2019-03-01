@@ -25,7 +25,6 @@ import os
 from rdiffweb import filter_authentication  # @UnusedImport
 from rdiffweb import i18n  # @UnusedImport
 from rdiffweb import page_main
-from rdiffweb import rdw_plugin
 from rdiffweb import rdw_templating
 from rdiffweb.api import ApiPage
 from rdiffweb.dispatch import static, empty  # @UnusedImport
@@ -50,7 +49,6 @@ from future.utils import native_str
 import pkg_resources
 
 from rdiffweb.page_graphs import GraphsPage
-
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -111,16 +109,13 @@ class RdiffwebApp(Application):
         # Initialise the template engine.
         self.templates = rdw_templating.TemplateManager()
 
-        # Initialise the plugins
-        self.plugins = rdw_plugin.PluginManager(self.cfg)
-
         # Initialise the application
         config = {
             native_str('/'): {
                 'tools.authform.on': True,
                 'tools.i18n.on': True,
                 'tools.i18n.default': 'en_US',
-                'tools.i18n.mo_dir': self._localedirs(),
+                'tools.i18n.mo_dir': pkg_resources.resource_filename('rdiffweb', 'locales'),  # @UndefinedVariable
                 'tools.i18n.domain': 'messages',
                 'tools.encode.on': True,
                 'tools.encode.encoding': 'utf-8',
@@ -140,14 +135,8 @@ class RdiffwebApp(Application):
         self._setup_session_storage(config)
         Application.__init__(self, root=Root(self), config=config)
 
-        # Activate every loaded plugin
-        self.plugins.run(lambda x: self.activate_plugin(x))
-
         # create user manager
         self.userdb = UserManager(self)
-
-        # Start deamon plugins
-        self._start_deamons()
 
     def activate_plugin(self, plugin_obj):
         """Activate the given plugin object."""
@@ -207,20 +196,6 @@ class RdiffwebApp(Application):
             self._version = "DEV"
         return self._version
 
-    def _localedirs(self):
-        """
-        Return a list of locales directory where to search for mo files. This
-        include locales from plugins.
-        """
-        localesdirs = [
-            pkg_resources.resource_filename('rdiffweb', 'locales')  # @UndefinedVariable
-        ]
-        # Get more directory from app plugins.
-        for p in self.plugins.get_all_plugins():
-            if p.get_localesdir():
-                localesdirs.append(p.get_localesdir())
-        return localesdirs
-
     def _setup_session_storage(self, config):
         # Configure session storage.
         session_storage = self.cfg.get_config("SessionStorage")
@@ -239,17 +214,3 @@ class RdiffwebApp(Application):
             'tools.sessions.storage_type': True,
             'tools.sessions.storage_path': session_dir,
         })
-
-    def _start_deamons(self):
-        """
-        Start deamon plugins
-        """
-        logger.debug("starting daemon plugins")
-
-        def start_deamon(p):
-            Monitor(cherrypy.engine,
-                    p.deamon_run,
-                    frequency=p.deamon_frequency,
-                    name=p.__class__.__name__).subscribe()
-
-        self.plugins.run(start_deamon, category='Daemon')

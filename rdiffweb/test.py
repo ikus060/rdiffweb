@@ -48,28 +48,22 @@ except:
 
 class MockRdiffwebApp(RdiffwebApp):
 
-    def __init__(self, enabled_plugins=[], default_config={}):
-        assert enabled_plugins is None or isinstance(enabled_plugins, list)
-        self.enabled_plugins = enabled_plugins
+    def __init__(self, default_config={}):
         assert default_config is None or isinstance(default_config, dict)
         self.default_config = default_config
 
         # Define config
         cfg = rdw_config.Configuration()
-        for plugin_name in self.enabled_plugins:
-            cfg.set_config('%sEnabled' % plugin_name, 'True')
+        for key, val in list(self.default_config.items()):
+            cfg.set_config(key, val)
 
         # database in memory
         self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
         cfg.set_config('SQLiteDBFile', os.path.join(self.database_dir, 'rdiffweb.tmp.db'))
 
-        if 'Ldap' in self.enabled_plugins:
+        if cfg.get_config_bool('LdapEnabled', 'False'):
             cfg.set_config('LdapUri', '__default__')
             cfg.set_config('LdapBaseDn', 'dc=nodomain')
-
-        # Set config
-        for key, val in list(self.default_config.items()):
-            cfg.set_config(key, val)
 
         # Call parent constructor
         RdiffwebApp.__init__(self, cfg)
@@ -114,8 +108,6 @@ class MockRdiffwebApp(RdiffwebApp):
 
 class AppTestCase(unittest.TestCase):
 
-    enabled_plugins = ['SQLite']
-
     default_config = {}
 
     reset_app = True
@@ -129,7 +121,7 @@ class AppTestCase(unittest.TestCase):
     PASSWORD = None
 
     def setUp(self):
-        self.app = MockRdiffwebApp(self.enabled_plugins, self.default_config)
+        self.app = MockRdiffwebApp(self.default_config)
         if self.reset_app:
             self.app.reset(self.USERNAME, self.PASSWORD)
         if self.reset_testcases:
@@ -174,8 +166,8 @@ class WebCase(helper.CPWebCase):
         app.clear_db()
 
     @classmethod
-    def setup_server(cls, enabled_plugins=['SQLite'], default_config={}):
-        app = MockRdiffwebApp(enabled_plugins, default_config)
+    def setup_server(cls, default_config={}):
+        app = MockRdiffwebApp(default_config)
         cherrypy.tree.mount(app)
 
     def setUp(self):

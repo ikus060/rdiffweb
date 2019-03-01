@@ -40,10 +40,6 @@ class SSHKeysTest(WebCase):
     # Enable testcases to define a user_root
     reset_testcases = True
 
-    @classmethod
-    def setup_server(cls):
-        WebCase.setup_server(enabled_plugins=['SQLite', 'UserPrefsSSHKeys'])
-
     def _delete_ssh_key(self, key):
         b = {'action': 'delete',
              'key': key}

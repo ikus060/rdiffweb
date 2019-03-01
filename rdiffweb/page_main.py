@@ -19,19 +19,16 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import logging
+from rdiffweb.core import Component
+from rdiffweb.librdiff import RdiffRepo, DoesNotExistError
+
 from builtins import bytes
 import cherrypy
 from future.utils.surrogateescape import encodefilename
-import logging
-
-from rdiffweb.core import Component
-from rdiffweb.librdiff import RdiffRepo, DoesNotExistError
-from rdiffweb.rdw_plugin import ITemplateFilterPlugin
-
 
 # Define the logger
 logger = logging.getLogger(__name__)
-
 
 SEP = b'/'
 
@@ -144,10 +141,5 @@ class MainPage(Component):
 
         # Append template parameters.
         parms.update(kwargs)
-
-        # Filter params using plugins
-        self.app.plugins.run(
-            lambda x: x.filter_data(template_name, parms),
-            category=ITemplateFilterPlugin.CATEGORY)
 
         return self.app.templates.compile_template(template_name, **parms)

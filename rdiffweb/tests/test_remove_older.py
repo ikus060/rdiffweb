@@ -42,10 +42,6 @@ class RemoveOlderTest(WebCase):
 
     reset_testcases = True
 
-    @classmethod
-    def setup_server(cls):
-        WebCase.setup_server(enabled_plugins=['SQLite', 'RemoveOlder'])
-
     def _settings(self, repo):
         self.getPage("/settings/" + repo + "/")
 
@@ -104,10 +100,6 @@ class RemoveOlderTestWithMock(WebCase):
     reset_app = True
 
     reset_testcases = True
-
-    @classmethod
-    def setup_server(cls):
-        WebCase.setup_server(enabled_plugins=['SQLite'])
 
     def test_job_run_without_keepdays(self):
         """

@@ -36,10 +36,6 @@ class SettingsTest(WebCase):
 
     reset_testcases = True
 
-    @classmethod
-    def setup_server(cls):
-        WebCase.setup_server(enabled_plugins=['SQLite', 'Graphs'])
-
     def _stats(self, repo):
         return self.getPage("/graphs/data/" + repo + "/")
 
@@ -72,6 +68,7 @@ class SettingsTest(WebCase):
 1454448640,1454448640.0,1454448640.93,0.93,25,3667068,22,3667068,6,14869,3,14869,2,0,0,11,2915,2915,0
 """
         self.assertEquals(expected, self.body)
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

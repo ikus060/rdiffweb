@@ -37,10 +37,6 @@ class APITest(WebCase):
 
     reset_testcases = True
 
-    @classmethod
-    def setup_server(cls):
-        WebCase.setup_server(enabled_plugins=['SQLite'])
-
     def test_get_currentuser(self):
         data = self.getJson('/api/currentuser/')
         self.assertEqual(data.get('username'), 'admin')

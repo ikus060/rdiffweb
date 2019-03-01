@@ -36,10 +36,6 @@ class SetEncodingTest(WebCase):
 
     reset_testcases = True
 
-    @classmethod
-    def setup_server(cls):
-        WebCase.setup_server(enabled_plugins=['SQLite', 'SetEncoding'])
-
     def _settings(self, repo):
         self.getPage("/settings/" + repo + "/")
 
@@ -82,6 +78,7 @@ class SetEncodingTest(WebCase):
         # Get back encoding.
         self._settings(self.REPO)
         self.assertInBody('selected value="cp1252"')
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

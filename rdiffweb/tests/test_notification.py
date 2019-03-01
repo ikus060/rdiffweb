@@ -26,13 +26,11 @@ from __future__ import unicode_literals
 from mock import MagicMock, ANY, patch
 import unittest
 
-from rdiffweb.plugins.notification import html2plaintext
+from rdiffweb.notification import html2plaintext, NotificationPlugin
 from rdiffweb.test import AppTestCase
 
 
 class NotificationTest(AppTestCase):
-
-    enabled_plugins = ['SQLite', 'EmailNotification']
 
     USERNAME = 'admin'
 
@@ -52,7 +50,7 @@ class NotificationTest(AppTestCase):
         user.get_repo(self.REPO).maxage = 1
 
         # Get ref to notification plugin
-        n = self.app.plugins.get_plugin_by_name('NotificationPlugin')
+        n = NotificationPlugin(self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
 
@@ -72,7 +70,7 @@ class NotificationTest(AppTestCase):
         user.get_repo(self.REPO).maxage = -1
 
         # Get ref to notification plugin
-        n = self.app.plugins.get_plugin_by_name('NotificationPlugin')
+        n = NotificationPlugin(self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
 
@@ -86,7 +84,7 @@ class NotificationTest(AppTestCase):
         """
         Check email template generation.
         """
-        with patch('rdiffweb.plugins.notification.smtplib') as patcher:
+        with patch('rdiffweb.notification.smtplib') as patcher:
             # Set user config
             user = self.app.userdb.get_user(self.USERNAME)
             user.email = 'test@test.com'
@@ -98,7 +96,7 @@ class NotificationTest(AppTestCase):
             self.app.cfg.set_config('EmailEncryption', 'starttls')
 
             # Get ref to notification plugin
-            n = self.app.plugins.get_plugin_by_name('NotificationPlugin')
+            n = NotificationPlugin(self.app)
             self.assertIsNotNone(n)
             n.send_mail(user, 'subject', 'email_notification.html')
 
@@ -125,7 +123,7 @@ Here is the link you wanted."""
 
     def test_email_changed(self):
         # Get ref to notification plugin
-        n = self.app.plugins.get_plugin_by_name('NotificationPlugin')
+        n = NotificationPlugin(self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
 
@@ -134,7 +132,7 @@ Here is the link you wanted."""
         user.email = 'test@test.com'
 
         # Expect it to be called.
-        n.send_mail.assert_called_once_with(ANY, 'Email address changed', 'email_changed.html')
+        n.send_mail.assert_called_once_with(ANY, ANY, 'email_changed.html')
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

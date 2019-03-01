@@ -23,8 +23,6 @@ import logging
 from rdiffweb import librdiff
 from rdiffweb import page_main
 from rdiffweb.dispatch import poppath
-from rdiffweb.i18n import ugettext as _
-from rdiffweb.rdw_plugin import IRdiffwebPlugin, ITemplateFilterPlugin
 
 from builtins import bytes
 from builtins import str
