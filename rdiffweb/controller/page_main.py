@@ -19,78 +19,12 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import logging
-
-from builtins import bytes
-import cherrypy
-from future.utils.surrogateescape import encodefilename
-
 from rdiffweb.controller import Controller
-from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError
 
-
-# Define the logger
-logger = logging.getLogger(__name__)
-
-SEP = b'/'
-
-
-def normpath(val):
-    "Normalize path value"
-    if not val.endswith(SEP):
-        val += SEP
-    if val.startswith(SEP):
-        val = val[1:]
-    return val
+import cherrypy
 
 
 class MainPage(Controller):
-
-    # TODO Should be moved to different location. e.g.: user.py
-    def validate_user_path(self, path_b):
-        '''
-        Takes a path relative to the user's root dir and validates that it
-        is valid and within the user's root.
-
-        Uses bytes path to avoid any data lost in encoding/decoding.
-        '''
-        assert isinstance(path_b, bytes)
-
-        # Add a ending slash (/) to avoid matching wrong repo. Ref #56
-        path_b = normpath(path_b)
-
-        # NOTE: a blank path is allowed, since the user root directory might be
-        # a repository.
-
-        logger.debug("checking user access to path %r", path_b)
-
-        # Get reference to user repos (as bytes)
-        user_repos = [
-            normpath(encodefilename(r))
-            for r in self.app.currentuser.repos]
-
-        # Check if any of the repos matches the given path.
-        repo_b = next((
-            user_repo
-            for user_repo in user_repos
-            if path_b.startswith(user_repo)), None)
-        if repo_b is None:
-            # No repo matches
-            logger.error("user doesn't have access to [%r]", path_b)
-            raise DoesNotExistError(path_b)
-
-        # Get reference to user_root
-        user_root_b = encodefilename(self.app.currentuser.user_root)
-
-        # Get reference to the repository (this ensure the repository does
-        # exists and is valid.)
-        repo_obj = RdiffRepo(user_root_b, repo_b)
-
-        # Get reference to the path.
-        path_b = path_b[len(repo_b):]
-        path_obj = repo_obj.get_path(path_b)
-
-        return (repo_obj, path_obj)
 
     def _is_submit(self):
         """

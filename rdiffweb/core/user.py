@@ -19,7 +19,6 @@
 from __future__ import unicode_literals
 
 import logging
-from rdiffweb.controller.page_main import normpath
 from rdiffweb.core import InvalidUserError, RdiffError
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.user_ldap_auth import LdapPasswordStore
@@ -28,10 +27,21 @@ from rdiffweb.core.user_sqlite import SQLiteUserDB
 from builtins import str, bytes
 from future.utils import python_2_unicode_compatible
 from future.utils.surrogateescape import encodefilename
-
+from rdiffweb.core.librdiff import RdiffRepo
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
+SEP = b'/'
+
+
+def normpath(val):
+    "Normalize path value"
+    if not val.endswith(SEP):
+        val += SEP
+    if val.startswith(SEP):
+        val = val[1:]
+    return val
 
 
 class IUserChangeListener():
@@ -96,6 +106,23 @@ class UserObject(object):
             if name == normpath(encodefilename(r)):
                 return RepoObject(self._db, self._username, r)
         raise KeyError(name)
+    
+    def get_repo_path(self, path):
+        """
+        Return a the repository identified by the given `path`.
+        """
+        assert isinstance(path, str) or isinstance(path, bytes)
+        if isinstance(path, str):
+            path = encodefilename(path)
+        path = normpath(path)
+        user_root = encodefilename(self.user_root)
+        for r in self._db.get_repos(self._username):
+            repo = normpath(encodefilename(r))
+            if path.startswith(repo):                
+                repo_obj = RdiffRepo(user_root, repo)
+                path_obj = repo_obj.get_path(path[len(repo):])
+                return (repo_obj, path_obj)
+        raise KeyError(path)
 
     def set_attr(self, key, value, notify=True):
         """Used to define an attribute"""
