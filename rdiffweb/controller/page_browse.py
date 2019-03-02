@@ -21,14 +21,13 @@ from __future__ import unicode_literals
 
 import logging
 import os
+from rdiffweb.controller import page_main, validate_isinstance, validate_int
+from rdiffweb.controller.dispatch import poppath
+from rdiffweb.core.i18n import ugettext as _
 
 from builtins import bytes
 from builtins import str
 import cherrypy
-
-from rdiffweb.controller import page_main
-from rdiffweb.controller.dispatch import poppath
-from rdiffweb.core.i18n import ugettext as _
 
 
 # Define the logger
@@ -43,9 +42,9 @@ class BrowsePage(page_main.MainPage):
 
     @cherrypy.expose
     def index(self, path=b"", restore="", limit='10'):
-        self.assertIsInstance(path, bytes)
-        self.assertIsInstance(restore, str)
-        self.assertIsInt(limit)
+        validate_isinstance(path, bytes)
+        validate_isinstance(restore, str)
+        validate_int(limit)
         restore = bool(restore)
         limit = int(limit)
 

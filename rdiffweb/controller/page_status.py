@@ -21,15 +21,15 @@ from __future__ import unicode_literals
 
 from datetime import timedelta
 import logging
+from rdiffweb.controller import page_main, validate_isinstance
+from rdiffweb.core import librdiff
+from rdiffweb.core import rdw_helpers
+from rdiffweb.core.rdw_helpers import unquote_url
 
 from builtins import bytes
 from builtins import str
 import cherrypy
 
-from rdiffweb.controller import page_main
-from rdiffweb.core import librdiff
-from rdiffweb.core import rdw_helpers
-from rdiffweb.core.rdw_helpers import unquote_url
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -59,8 +59,8 @@ class StatusPage(page_main.MainPage):
 
     @cherrypy.expose
     def entry(self, path_b=b"", date=""):
-        self.assertIsInstance(path_b, bytes)
-        self.assertIsInstance(date, str)
+        validate_isinstance(path_b, bytes)
+        validate_isinstance(date, str)
         # Validate date
         try:
             entry_time = librdiff.RdiffTime(int(date))

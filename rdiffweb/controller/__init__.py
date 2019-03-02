@@ -21,6 +21,24 @@ from __future__ import unicode_literals
 import cherrypy
 
 
+def validate(value, message=None):
+    """Raise HTTP error if value is not true."""
+    if not value:
+        raise cherrypy.HTTPError(400, message)
+
+def validate_int(value, message=None):
+    """Raise HTTP Error if the value is not an integer"""
+    try:
+        int(value)
+    except:
+        raise cherrypy.HTTPError(400, message)
+
+def validate_isinstance(value, cls, message=None):
+    """Raise HTTP error if value is not cls."""
+    if not isinstance(value, cls):
+        raise cherrypy.HTTPError(400, message)
+
+
 class Controller(object):
 
     @property

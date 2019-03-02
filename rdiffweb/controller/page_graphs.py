@@ -26,7 +26,7 @@ from builtins import str
 import cherrypy
 from future.utils import iteritems
 
-from rdiffweb.controller import page_main
+from rdiffweb.controller import page_main, validate_isinstance
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core import librdiff
 
@@ -101,8 +101,8 @@ class GraphsPage(page_main.MainPage):
         """
         Called to show every graphs
         """
-        self.assertIsInstance(path, bytes)
-        self.assertIsInstance(graph, bytes)
+        validate_isinstance(path, bytes)
+        validate_isinstance(graph, bytes)
         graph = graph.decode('ascii', 'replace')
 
         # check if data should be shown.

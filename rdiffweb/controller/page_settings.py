@@ -21,13 +21,12 @@ from __future__ import unicode_literals
 
 import encodings
 import logging
+from rdiffweb.controller import page_main, validate_isinstance, validate
+from rdiffweb.controller.dispatch import poppath
+from rdiffweb.core.i18n import ugettext as _
 
 from builtins import bytes
 import cherrypy
-
-from rdiffweb.controller import page_main
-from rdiffweb.controller.dispatch import poppath
-from rdiffweb.core.i18n import ugettext as _
 
 
 # Define the logger
@@ -39,7 +38,7 @@ class SettingsPage(page_main.MainPage):
 
     @cherrypy.expose
     def index(self, path=b""):
-        self.assertIsInstance(path, bytes)
+        validate_isinstance(path, bytes)
 
         _logger.debug("repo settings [%r]", path)
 
@@ -68,8 +67,8 @@ class SetEncodingPage(page_main.MainPage):
         """
         Update repository encoding via Ajax.
         """
-        self.assertIsInstance(path, bytes)
-        self.assertTrue(new_encoding)
+        validate_isinstance(path, bytes)
+        validate(new_encoding)
 
         _logger.debug("update repo [%r] settings [%r]", path, new_encoding)
 
@@ -98,8 +97,8 @@ class RemoveOlderPage(page_main.MainPage):
 
     @cherrypy.expose()
     def index(self, path=b"", keepdays=None):
-        self.assertIsInstance(path, bytes)
-        self.assertTrue(keepdays)
+        validate_isinstance(path, bytes)
+        validate(keepdays)
         _logger.debug("repo settings [%r]", path)
 
         # Get new value
@@ -129,7 +128,7 @@ class DeleteRepoPage(page_main.MainPage):
         """
         Delete the repository.
         """
-        self.assertIsInstance(path, bytes)
+        validate_isinstance(path, bytes)
         _logger.debug("repo delete [%r]", path)
 
         # Check user permissions

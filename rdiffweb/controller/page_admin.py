@@ -21,14 +21,13 @@ from __future__ import unicode_literals
 
 import logging
 import os
+from rdiffweb.controller import page_main, validate_isinstance
+from rdiffweb.core import RdiffError, RdiffWarning
+from rdiffweb.core import rdw_spider_repos
+from rdiffweb.core.i18n import ugettext as _
 
 from builtins import str
 import cherrypy
-
-from rdiffweb.controller import page_main
-from rdiffweb.core import rdw_spider_repos
-from rdiffweb.core import RdiffError, RdiffWarning
-from rdiffweb.core.i18n import ugettext as _
 
 
 # Define the logger
@@ -69,8 +68,8 @@ class AdminPage(page_main.MainPage):
         if not self.app.currentuser or not self.app.currentuser.is_admin:
             raise cherrypy.HTTPError(403)
 
-        self.assertIsInstance(userfilter, str)
-        self.assertIsInstance(usersearch, str)
+        validate_isinstance(userfilter, str)
+        validate_isinstance(usersearch, str)
 
         # If we're just showing the initial page, just do that
         params = {}

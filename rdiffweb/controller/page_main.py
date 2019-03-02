@@ -46,23 +46,6 @@ def normpath(val):
 
 class MainPage(Controller):
 
-    def assertTrue(self, value, message=None):
-        """Raise HTTP error if value is not true."""
-        if not value:
-            raise cherrypy.HTTPError(400, message)
-
-    def assertIsInt(self, value, message=None):
-        """Raise HTTP Error if the value is not an integer"""
-        try:
-            int(value)
-        except:
-            raise cherrypy.HTTPError(400, message)
-
-    def assertIsInstance(self, value, cls, message=None):
-        """Raise HTTP error if value is not cls."""
-        if not isinstance(value, cls):
-            raise cherrypy.HTTPError(400, message)
-
     # TODO Should be moved to different location. e.g.: user.py
     def validate_user_path(self, path_b):
         '''

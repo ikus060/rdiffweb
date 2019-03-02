@@ -21,18 +21,17 @@ from __future__ import unicode_literals
 
 import logging
 import rdiffweb
+from rdiffweb.controller import page_main, validate_isinstance, validate
+from rdiffweb.controller.dispatch import poppath
+from rdiffweb.core.archiver import ARCHIVERS
+from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.librdiff import RdiffTime
+from rdiffweb.core.rdw_helpers import quote_url
 
 from builtins import bytes
 from builtins import str
 import cherrypy
 from cherrypy.lib.static import _serve_fileobj, mimetypes
-
-from rdiffweb.controller import page_main
-from rdiffweb.core.archiver import ARCHIVERS
-from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.rdw_helpers import quote_url
-from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.controller.dispatch import poppath
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -79,10 +78,10 @@ class RestorePage(page_main.MainPage):
     @cherrypy.expose
     @cherrypy.tools.gzip(on=False)
     def default(self, path=b"", date=None, kind=None, usetar=None):
-        self.assertIsInstance(path, bytes)
-        self.assertIsInstance(date, str)
-        self.assertTrue(kind is None or kind in ARCHIVERS)
-        self.assertTrue(usetar is None or isinstance(usetar, str))
+        validate_isinstance(path, bytes)
+        validate_isinstance(date, str)
+        validate(kind is None or kind in ARCHIVERS)
+        validate(usetar is None or isinstance(usetar, str))
 
         logger.debug("restoring [%r][%s]", path, date)
 
