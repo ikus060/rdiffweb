@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2019 rdiffweb contributors
 #
@@ -13,24 +15,36 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Created on Jan 1, 2016
 
-include LICENSE
-include README.md
-include MANIFEST.in
-include rdw.conf
-include babel.cfg
+@author: Patrik Dufresne <info@patrikdufresne.com>
+"""
 
-# Include templates
-recursive-include rdiffweb/templates *.html *.xml *.txt
+from __future__ import unicode_literals
 
-# Include static Web files
-recursive-include extras *
+import logging
+from rdiffweb.test import WebCase
+import unittest
 
-# Include static Web files
-recursive-include rdiffweb/static *
 
-# Include plugins data
-recursive-include rdiffweb/plugins *.py *.html *.js
+class SettingsTest(WebCase):
 
-# Include translation file
-recursive-include rdiffweb/locales *.po *.pot *.mo
+    login = True
+
+    reset_app = True
+
+    reset_testcases = True
+
+    def _settings(self, repo):
+        self.getPage("/settings/" + repo + "/")
+
+    def test_page(self):
+        self._settings(self.REPO)
+        self.assertStatus(200)
+        
+
+if __name__ == "__main__":
+    # import sys;sys.argv = ['', 'Test.testName']
+    logging.basicConfig(level=logging.DEBUG)
+    unittest.main()

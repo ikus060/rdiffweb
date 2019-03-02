@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2018 rdiffweb contributors
+# Copyright (C) 2019 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,9 +29,10 @@ import tempfile
 import threading
 import traceback
 
-from rdiffweb import rdw_app, rdw_config
-from rdiffweb.rdw_profiler import ProfilingApplication
-from rdiffweb.rdw_deamon import RemoveOlder, UpdateRepos
+from rdiffweb import rdw_app
+from rdiffweb.core import rdw_config
+from rdiffweb.core.rdw_profiler import ProfilingApplication
+from rdiffweb.core.rdw_deamon import RemoveOlder, UpdateRepos
 
 # Define logger for this module
 logger = logging.getLogger(__name__)

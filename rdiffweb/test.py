@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2018 rdiffweb contributors
+# Copyright (C) 2019 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ Created on Oct 14, 2015
 
 Mock class for testing.
 
-@author: ikus060
+@author: Patrik Dufresne <info@patrikdufresne.com>
 """
 
 from __future__ import unicode_literals
@@ -37,7 +37,7 @@ import tarfile
 import tempfile
 import unittest
 
-from rdiffweb import rdw_config
+from rdiffweb.core import rdw_config
 from rdiffweb.rdw_app import RdiffwebApp
 
 try:
