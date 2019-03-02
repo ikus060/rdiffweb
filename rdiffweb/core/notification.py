@@ -33,7 +33,7 @@ from builtins import str
 import cherrypy
 
 from rdiffweb.core import librdiff
-from rdiffweb.core.core import RdiffError, RdiffWarning
+from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.user import IUserChangeListener
 

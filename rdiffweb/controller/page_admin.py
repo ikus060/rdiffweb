@@ -27,7 +27,7 @@ import cherrypy
 
 from rdiffweb.controller import page_main
 from rdiffweb.core import rdw_spider_repos
-from rdiffweb.core.core import RdiffError, RdiffWarning
+from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core.i18n import ugettext as _
 
 

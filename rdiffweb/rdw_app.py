@@ -59,19 +59,18 @@ PY3 = sys.version_info[0] == 3
 class Root(LocationsPage):
 
     def __init__(self, app):
-        LocationsPage.__init__(self, app)
-        self.browse = BrowsePage(app)
-        self.restore = RestorePage(app)
-        self.history = HistoryPage(app)
-        self.status = StatusPage(app)
-        self.admin = AdminPage(app)
-        self.prefs = PreferencesPage(app)
-        self.settings = SettingsPage(app)
-        self.api = ApiPage(app)
-        self.api.set_encoding = SetEncodingPage(app)
-        self.api.remove_older = RemoveOlderPage(app)
-        self.delete = DeleteRepoPage(app)
-        self.graphs = GraphsPage(app)
+        self.browse = BrowsePage()
+        self.restore = RestorePage()
+        self.history = HistoryPage()
+        self.status = StatusPage()
+        self.admin = AdminPage()
+        self.prefs = PreferencesPage()
+        self.settings = SettingsPage()
+        self.api = ApiPage()
+        self.api.set_encoding = SetEncodingPage()
+        self.api.remove_older = RemoveOlderPage()
+        self.delete = DeleteRepoPage()
+        self.graphs = GraphsPage()
 
         # Register static dir.
         static_dir = pkg_resources.resource_filename('rdiffweb', 'static')  # @UndefinedVariable
@@ -164,7 +163,7 @@ class RdiffwebApp(Application):
 
         # Try to build a nice error page.
         try:
-            page = page_main.MainPage(cherrypy.request.app)
+            page = page_main.MainPage()
             return page._compile_template('error_page_default.html', **kwargs)
         except:
             pass

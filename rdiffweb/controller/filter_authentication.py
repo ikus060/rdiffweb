@@ -29,7 +29,7 @@ from cherrypy._cptools import HandlerTool
 from future.utils import native_str
 
 from rdiffweb.controller.page_main import MainPage
-from rdiffweb.core.core import RdiffError, RdiffWarning
+from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_helpers import quote_url
 
@@ -157,7 +157,7 @@ class AuthFormTool(BaseAuth):
 
     def login_screen(self, redirect=b'/', username='', error_msg='', **kwargs):
         app = cherrypy.request.app
-        main_page = MainPage(app)
+        main_page = MainPage()
 
         # Re-encode the redirect for display in HTML
         redirect = quote_url(redirect, safe=";/?:@&=+$,%")
@@ -213,7 +213,9 @@ class BasicAuth(BaseAuth):
         self._priority = 70
 
     def run(self):
-        """Filter used to restrict access to resource via HTTP basic auth."""
+        """
+        Filter used to restrict access to resource via HTTP basic auth.
+        """
 
         # Proceed with basic authentication.
         request = cherrypy.serving.request
@@ -225,9 +227,10 @@ class BasicAuth(BaseAuth):
                 if scheme.lower() == 'basic':
                     # Validate user credential.
                     login, password = base64_decode(params).split(':', 1)
-                    logger.debug('routing %(path)r to do_login', locals())
                     try:
-                        return self.do_login(login, password)
+                        self.do_login(login, password)
+                        # Return False to call default page handler.
+                        return False
                     except RdiffError as e:
                         logger.info('basic auth fail for user: %s', login, exc_info=1)
                         raise cherrypy.HTTPError(403)

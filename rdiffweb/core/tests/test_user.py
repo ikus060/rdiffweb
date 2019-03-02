@@ -31,7 +31,7 @@ from mock import MagicMock
 from mockldap import MockLdap
 import unittest
 
-from rdiffweb.core.core import InvalidUserError, RdiffError
+from rdiffweb.core import InvalidUserError, RdiffError
 from rdiffweb.core.user import IUserChangeListener
 from rdiffweb.test import AppTestCase
 

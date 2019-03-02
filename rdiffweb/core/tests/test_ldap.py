@@ -30,7 +30,7 @@ import unittest
 from builtins import str
 from mockldap import MockLdap
 
-from rdiffweb.core.core import RdiffError
+from rdiffweb.core import RdiffError
 from rdiffweb.core.user_ldap_auth import LdapPasswordStore
 
 

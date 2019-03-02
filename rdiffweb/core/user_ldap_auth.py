@@ -35,7 +35,7 @@ import ldap
 import logging
 import time
 
-from rdiffweb.core.core import RdiffError
+from rdiffweb.core import RdiffError
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_config import Option, BoolOption, IntOption
 #

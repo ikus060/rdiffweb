@@ -23,17 +23,16 @@ Created on Nov 16, 2017
 
 from __future__ import unicode_literals
 
-import cherrypy
 import logging
+from rdiffweb.controller import Controller
 
-from rdiffweb.core.core import Component
-
+import cherrypy
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-class ApiCurrentuser(Component):
+class ApiCurrentuser(Controller):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -57,14 +56,12 @@ class ApiCurrentuser(Component):
 
 
 @cherrypy.config(**{'tools.authform.on': False, 'tools.i18n.on': False, 'tools.authbasic.on': True, 'tools.sessions.on': True, 'error_page.default': False})
-class ApiPage(Component):
+class ApiPage(Controller):
     """
     This class provide a restful API to access some of the rdiffweb resources.
     """
-
-    def __init__(self, app):
-        Component.__init__(self, app)
-        self.currentuser = ApiCurrentuser(app)
+    
+    currentuser = ApiCurrentuser()
 
     @cherrypy.expose
     @cherrypy.tools.json_out()

@@ -21,36 +21,22 @@ User can control the notification period.
 """
 from __future__ import unicode_literals
 
-import datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 import logging
-import re
-import smtplib
-from xml.etree.ElementTree import fromstring, tostring
+from rdiffweb.controller import Controller
+from rdiffweb.core import RdiffError, RdiffWarning
+from rdiffweb.core.i18n import ugettext as _
 
 from builtins import str
 import cherrypy
 
-from rdiffweb.core import librdiff
-from rdiffweb.core.core import RdiffError, RdiffWarning
-from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.user import IUserChangeListener
-
-
 _logger = logging.getLogger(__name__)
 
 
-
-
-class NotificationPref():
+class NotificationPref(Controller):
 
     panel_id = 'notification'
     
     panel_name = _('Notification')
-    
-    def __init__(self, app):
-        self.app = app
     
     def _handle_set_notification_info(self, **kwargs):
 

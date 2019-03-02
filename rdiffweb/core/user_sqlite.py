@@ -26,7 +26,7 @@ from builtins import str
 import logging
 from threading import RLock
 
-from rdiffweb.core.core import InvalidUserError, RdiffError
+from rdiffweb.core import InvalidUserError, RdiffError
 from rdiffweb.core.i18n import ugettext as _
 
 try:

@@ -27,17 +27,18 @@ from __future__ import unicode_literals
 
 import logging
 import os
+from rdiffweb.controller import Controller
+from rdiffweb.core import RdiffError, RdiffWarning
+from rdiffweb.core import authorizedkeys
+from rdiffweb.core.i18n import ugettext as _
 
 from builtins import str
 
-from rdiffweb.core import authorizedkeys
-from rdiffweb.core.core import RdiffError, RdiffWarning
-from rdiffweb.core.i18n import ugettext as _
 
 _logger = logging.getLogger(__name__)
 
 
-class SSHKeysPlugin():
+class SSHKeysPlugin(Controller):
     """
     Plugin to configure SSH keys.
     """
@@ -46,9 +47,6 @@ class SSHKeysPlugin():
     
     panel_name = _('SSH Keys')
     
-    def __init__(self, app):
-        self.app = app
-
     def _handle_add(self, filename, **kwargs):
         """
         Called to add a new key to an authorized_keys file.

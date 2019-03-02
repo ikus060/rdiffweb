@@ -15,7 +15,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 Default preference page to show general user information. It allows user
 to change password ans refresh it's repository view.
@@ -24,14 +23,14 @@ to change password ans refresh it's repository view.
 from __future__ import unicode_literals
 
 import logging
+from rdiffweb.controller import Controller
+from rdiffweb.core import RdiffError, RdiffWarning
+from rdiffweb.core import rdw_spider_repos
+from rdiffweb.core.i18n import ugettext as _
 import re
 
 from builtins import str
 import cherrypy
-
-from rdiffweb.core import rdw_spider_repos
-from rdiffweb.core.core import RdiffError, RdiffWarning
-from rdiffweb.core.i18n import ugettext as _
 
 
 PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
@@ -40,7 +39,7 @@ PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
 _logger = logging.getLogger(__name__)
 
 
-class PrefsGeneralPanelProvider():
+class PrefsGeneralPanelProvider(Controller):
     """
     Plugin to change user profile and password.
     """
@@ -49,9 +48,6 @@ class PrefsGeneralPanelProvider():
     
     panel_name = _('Profile')
     
-    def __init__(self, app):
-        self.app = app
-
     def _handle_set_password(self, **kwargs):
         """
         Called when changing user password.

@@ -23,22 +23,22 @@ Created on Nov 16, 2017
 
 from __future__ import unicode_literals
 
+from base64 import b64encode
 import logging
-import unittest
-
 from rdiffweb.test import WebCase
+import unittest
 
 
 class APITest(WebCase):
 
-    login = True
-
     reset_app = True
 
     reset_testcases = True
+    
+    headers = [("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))]
 
     def test_get_currentuser(self):
-        data = self.getJson('/api/currentuser/')
+        data = self.getJson('/api/currentuser/', headers=self.headers)
         self.assertEqual(data.get('username'), 'admin')
         self.assertEqual(data.get('is_admin'), True)
         self.assertEqual(data.get('email'), '')
@@ -48,7 +48,7 @@ class APITest(WebCase):
         self.assertEqual(data.get('repos'), ['testcases/'])
 
     def test_get_currentuser_repos(self):
-        data = self.getJson('/api/currentuser/repos')
+        data = self.getJson('/api/currentuser/repos', headers=self.headers)
         self.assertEqual(data, ['testcases/'])
 
 

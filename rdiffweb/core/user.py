@@ -18,16 +18,17 @@
 
 from __future__ import unicode_literals
 
+import logging
+from rdiffweb.controller.page_main import normpath
+from rdiffweb.core import InvalidUserError, RdiffError
+from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.user_ldap_auth import LdapPasswordStore
+from rdiffweb.core.user_sqlite import SQLiteUserDB
+
 from builtins import str, bytes
 from future.utils import python_2_unicode_compatible
 from future.utils.surrogateescape import encodefilename
-import logging
 
-from rdiffweb.core.core import Component, InvalidUserError, RdiffError
-from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.controller.page_main import normpath
-from rdiffweb.core.user_sqlite import SQLiteUserDB
-from rdiffweb.core.user_ldap_auth import LdapPasswordStore
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -163,14 +164,14 @@ class RepoObject(object):
     keepdays = property(fget=lambda x: int(x.get_attr('keepdays', default='-1')), fset=lambda x, y: x.set_attr('keepdays', int(y)))
 
 
-class UserManager(Component):
+class UserManager():
     """
     This class handle all user operation. This class is greatly inspired from
     TRAC account manager class.
     """
 
     def __init__(self, app):
-        Component.__init__(self, app)
+        self.app = app
         self._database = SQLiteUserDB(app) 
         self._password_stores = [self._database, LdapPasswordStore(app)]
         self._change_listeners = []

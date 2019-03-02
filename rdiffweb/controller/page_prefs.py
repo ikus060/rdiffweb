@@ -35,10 +35,9 @@ logger = logging.getLogger(__name__)
 @cherrypy.popargs('panelid')
 class PreferencesPage(page_main.MainPage):
     
-    def __init__(self, app):
-        self.app = app
+    def __init__(self):
         # Create the panels.
-        l = [PrefsGeneralPanelProvider(app), SSHKeysPlugin(app), NotificationPref(app)]
+        l = [PrefsGeneralPanelProvider(), SSHKeysPlugin(), NotificationPref()]
         self.panels = [(x.panel_id, x.panel_name) for x in l]
         self.providers = {x.panel_id: x for x in l}
 

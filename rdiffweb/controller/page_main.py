@@ -25,7 +25,7 @@ from builtins import bytes
 import cherrypy
 from future.utils.surrogateescape import encodefilename
 
-from rdiffweb.core.core import Component
+from rdiffweb.controller import Controller
 from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError
 
 
@@ -44,7 +44,7 @@ def normpath(val):
     return val
 
 
-class MainPage(Component):
+class MainPage(Controller):
 
     def assertTrue(self, value, message=None):
         """Raise HTTP error if value is not true."""
