@@ -33,7 +33,6 @@ from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_helpers import quote_url
 
-
 # Define the logger
 logger = logging.getLogger(__name__)
 
@@ -128,7 +127,7 @@ class AuthFormTool(BaseAuth):
         if not self.is_login():
             url = cherrypy.url(qs=request.query_string)
             logger.debug('no username, routing to login_screen with from_page %(url)r', locals())
-            response.body = self.login_screen(url)
+            response.body = LoginPage().index(url)
             if "Content-Length" in response.headers:
                 # Delete Content-Length header so finalize() recalcs it.
                 del response.headers["Content-Length"]
@@ -140,7 +139,7 @@ class AuthFormTool(BaseAuth):
         try:
             super(AuthFormTool, self).do_login(login, password, **kwargs)
         except RdiffError as e:
-            body = self.login_screen(redirect, login, str(e))
+            body = LoginPage().index(redirect, login, str(e))
             response.body = body
             if "Content-Length" in response.headers:
                 # Delete Content-Length header so finalize() recalcs it.
@@ -154,27 +153,6 @@ class AuthFormTool(BaseAuth):
         """Logout. May raise redirect, or return True if request handled."""
         super(AuthFormTool, self).do_logout(**kwargs)
         raise cherrypy.HTTPRedirect(redirect)
-
-    def login_screen(self, redirect=b'/', username='', error_msg='', **kwargs):
-        app = cherrypy.request.app
-        main_page = Controller()
-
-        # Re-encode the redirect for display in HTML
-        redirect = quote_url(redirect, safe=";/?:@&=+$,%")
-
-        params = {
-            'redirect': redirect,
-            'login': username,
-            'warning': error_msg
-        }
-
-        # Add welcome message to params. Try to load translated message.
-        params["welcome_msg"] = app.cfg.get_config("WelcomeMsg")
-        if hasattr(cherrypy.response, 'i18n'):
-            lang = cherrypy.response.i18n.locale.language
-            params["welcome_msg"] = app.cfg.get_config("WelcomeMsg[%s]" % (lang), params["welcome_msg"])
-
-        return main_page._compile_template("login.html", **params).encode("utf-8")
 
     def run(self):
         """Called to execute this tool."""
@@ -248,3 +226,27 @@ class BasicAuth(BaseAuth):
 
 
 cherrypy.tools.authbasic = BasicAuth()
+
+
+class LoginPage(Controller):
+    """
+    This page is used by the authentication to display enter a user/pass.
+    """
+    
+    def index(self, redirect=b'/', username='', error_msg='', **kwargs):
+        # Re-encode the redirect for display in HTML
+        redirect = quote_url(redirect, safe=";/?:@&=+$,%")
+
+        params = {
+            'redirect': redirect,
+            'login': username,
+            'warning': error_msg
+        }
+
+        # Add welcome message to params. Try to load translated message.
+        params["welcome_msg"] = self.app.cfg.get_config("WelcomeMsg")
+        if hasattr(cherrypy.response, 'i18n'):
+            lang = cherrypy.response.i18n.locale.language
+            params["welcome_msg"] = self.app.cfg.get_config("WelcomeMsg[%s]" % (lang), params["welcome_msg"])
+
+        return self._compile_template("login.html", **params).encode("utf-8")
