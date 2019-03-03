@@ -21,16 +21,13 @@ include rdw.conf
 include babel.cfg
 
 # Include templates
-recursive-include rdiffweb/templates *.html *.xml *.txt
+recursive-include rdiffweb/templates *
 
 # Include static Web files
 recursive-include extras *
 
 # Include static Web files
 recursive-include rdiffweb/static *
-
-# Include plugins data
-recursive-include rdiffweb/plugins *.py *.html *.js
 
 # Include translation file
 recursive-include rdiffweb/locales *.po *.pot *.mo
