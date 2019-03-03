@@ -22,15 +22,8 @@ from __future__ import unicode_literals
 from distutils.version import LooseVersion
 import logging
 import os
-import sys
-
-from cherrypy import Application
-import cherrypy
-from future.utils import native_str
-import pkg_resources
-
+from rdiffweb.controller import Controller
 from rdiffweb.controller import filter_authentication  # @UnusedImport
-from rdiffweb.controller import page_main
 from rdiffweb.controller.api import ApiPage
 from rdiffweb.controller.dispatch import static, empty  # @UnusedImport
 from rdiffweb.controller.page_admin import AdminPage
@@ -38,7 +31,6 @@ from rdiffweb.controller.page_browse import BrowsePage
 from rdiffweb.controller.page_graphs import GraphsPage
 from rdiffweb.controller.page_history import HistoryPage
 from rdiffweb.controller.page_locations import LocationsPage
-from rdiffweb.controller.page_main import MainPage  # @UnusedImport
 from rdiffweb.controller.page_prefs import PreferencesPage
 from rdiffweb.controller.page_restore import RestorePage
 from rdiffweb.controller.page_settings import SettingsPage, SetEncodingPage, RemoveOlderPage, \
@@ -48,6 +40,12 @@ from rdiffweb.core import i18n  # @UnusedImport
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.librdiff import DoesNotExistError, AccessDeniedError
 from rdiffweb.core.user import UserManager
+import sys
+
+from cherrypy import Application
+import cherrypy
+from future.utils import native_str
+import pkg_resources
 
 
 # Define the logger
@@ -163,7 +161,7 @@ class RdiffwebApp(Application):
 
         # Try to build a nice error page.
         try:
-            page = page_main.MainPage()
+            page = Controller()
             return page._compile_template('error_page_default.html', **kwargs)
         except:
             pass

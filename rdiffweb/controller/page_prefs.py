@@ -22,7 +22,7 @@ import logging
 
 import cherrypy
 
-from rdiffweb.controller import page_main
+from rdiffweb.controller import Controller
 from rdiffweb.controller.pref_general import PrefsGeneralPanelProvider
 from rdiffweb.controller.pref_sshkeys import SSHKeysPlugin
 from rdiffweb.controller.pref_notification import NotificationPref
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 @cherrypy.popargs('panelid')
-class PreferencesPage(page_main.MainPage):
+class PreferencesPage(Controller):
     
     def __init__(self):
         # Create the panels.

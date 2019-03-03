@@ -28,7 +28,7 @@ import cherrypy
 from cherrypy._cptools import HandlerTool
 from future.utils import native_str
 
-from rdiffweb.controller.page_main import MainPage
+from rdiffweb.controller import Controller
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_helpers import quote_url
@@ -157,7 +157,7 @@ class AuthFormTool(BaseAuth):
 
     def login_screen(self, redirect=b'/', username='', error_msg='', **kwargs):
         app = cherrypy.request.app
-        main_page = MainPage()
+        main_page = Controller()
 
         # Re-encode the redirect for display in HTML
         redirect = quote_url(redirect, safe=";/?:@&=+$,%")

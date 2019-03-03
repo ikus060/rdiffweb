@@ -23,7 +23,7 @@ import logging
 
 import cherrypy
 
-from rdiffweb.controller import page_main, validate_isinstance, validate_int
+from rdiffweb.controller import Controller, validate_isinstance, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core import librdiff
 from rdiffweb.core.i18n import ugettext as _
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 @poppath()
-class HistoryPage(page_main.MainPage):
+class HistoryPage(Controller):
 
     @cherrypy.expose
     def index(self, path=b"", limit='10', **kwargs):

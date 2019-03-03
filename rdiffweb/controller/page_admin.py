@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
-from rdiffweb.controller import page_main, validate_isinstance
+from rdiffweb.controller import Controller, validate_isinstance
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core import rdw_spider_repos
 from rdiffweb.core.i18n import ugettext as _
@@ -34,7 +34,7 @@ import cherrypy
 logger = logging.getLogger(__name__)
 
 
-class AdminPage(page_main.MainPage):
+class AdminPage(Controller):
     """Administration pages. Allow to manage users database."""
 
     def _check_user_root_dir(self, directory):

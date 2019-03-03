@@ -62,6 +62,43 @@ class Controller(object):
         """
         return cherrypy.serving.request.login
     
+    def _compile_template(self, template_name, **kwargs):
+        """
+        Used to generate a standard HTML page using the given template.
+        This method should be used by subclasses to provide default template
+        value.
+        """
+        loc = cherrypy.response.i18n.locale
+        parms = {
+            "lang": loc.language,
+            "version": self.app.get_version(),
+            "extra_head_templates": [],
+        }
+        if self.currentuser:
+            parms.update({
+                "is_login": False,
+                'username': self.currentuser.username,
+                'is_admin': self.currentuser.is_admin,
+            })
+
+        # Append custom branding
+        if hasattr(self.app.root, "header_logo"):
+            parms["header_logo"] = '/header_logo'
+        header_name = self.app.cfg.get_config("HeaderName")
+        if header_name:
+            parms["header_name"] = header_name
+
+        # Append template parameters.
+        parms.update(kwargs)
+
+        return self.app.templates.compile_template(template_name, **parms)
+    
+    def _is_submit(self):
+        """
+        Check if the cherrypy request is a POST.
+        """
+        return cherrypy.request.method == "POST"
+    
     def validate_user_path(self, path_b):
         '''
         Takes a path relative to the user's root dir and validates that it

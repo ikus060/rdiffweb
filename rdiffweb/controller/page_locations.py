@@ -24,7 +24,7 @@ import logging
 import cherrypy
 from future.utils.surrogateescape import encodefilename
 
-from rdiffweb.controller import page_main
+from rdiffweb.controller import Controller
 from rdiffweb.core import librdiff
 from rdiffweb.core.i18n import ugettext as _
 
@@ -33,7 +33,7 @@ from rdiffweb.core.i18n import ugettext as _
 logger = logging.getLogger(__name__)
 
 
-class LocationsPage(page_main.MainPage):
+class LocationsPage(Controller):
     """
     Shows the repository page. Will show all available destination
     backup directories. This is the root (/) page.

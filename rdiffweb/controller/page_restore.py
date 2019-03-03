@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 import logging
 import rdiffweb
-from rdiffweb.controller import page_main, validate_isinstance, validate
+from rdiffweb.controller import Controller, validate_isinstance, validate
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.archiver import ARCHIVERS
 from rdiffweb.core.i18n import ugettext as _
@@ -72,7 +72,7 @@ def _content_type(filename):
 
 
 @poppath()
-class RestorePage(page_main.MainPage):
+class RestorePage(Controller):
     _cp_config = {"response.stream": True, "response.timeout": 3000}
 
     @cherrypy.expose

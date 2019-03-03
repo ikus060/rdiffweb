@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 import encodings
 import logging
-from rdiffweb.controller import page_main, validate_isinstance, validate
+from rdiffweb.controller import Controller, validate_isinstance, validate
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.i18n import ugettext as _
 
@@ -34,7 +34,7 @@ _logger = logging.getLogger(__name__)
 
 
 @poppath()
-class SettingsPage(page_main.MainPage):
+class SettingsPage(Controller):
 
     @cherrypy.expose
     def index(self, path=b""):
@@ -60,7 +60,7 @@ class SettingsPage(page_main.MainPage):
     
     
 @poppath()
-class SetEncodingPage(page_main.MainPage):
+class SetEncodingPage(Controller):
     
     @cherrypy.expose()
     def index(self, path=b'', new_encoding=None):
@@ -93,7 +93,7 @@ class SetEncodingPage(page_main.MainPage):
     
     
 @poppath()
-class RemoveOlderPage(page_main.MainPage):
+class RemoveOlderPage(Controller):
 
     @cherrypy.expose()
     def index(self, path=b"", keepdays=None):
@@ -121,7 +121,7 @@ class RemoveOlderPage(page_main.MainPage):
 
     
 @poppath()
-class DeleteRepoPage(page_main.MainPage):
+class DeleteRepoPage(Controller):
 
     @cherrypy.expose
     def index(self, path=b"", **kwargs):

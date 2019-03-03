@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
-from rdiffweb.controller import page_main, validate_isinstance, validate_int
+from rdiffweb.controller import Controller, validate_isinstance, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.i18n import ugettext as _
 
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 @poppath()
-class BrowsePage(page_main.MainPage):
+class BrowsePage(Controller):
 
     """This contoller provide a browser view to the user. It displays file in a
     repository."""

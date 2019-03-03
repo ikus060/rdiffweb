@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from datetime import timedelta
 import logging
-from rdiffweb.controller import page_main, validate_isinstance
+from rdiffweb.controller import Controller, validate_isinstance
 from rdiffweb.core import librdiff
 from rdiffweb.core import rdw_helpers
 from rdiffweb.core.rdw_helpers import unquote_url
@@ -35,7 +35,7 @@ import cherrypy
 logger = logging.getLogger(__name__)
 
 
-class StatusPage(page_main.MainPage):
+class StatusPage(Controller):
 
     def _cp_dispatch(self, vpath):
         """Used to handle permalink URL.

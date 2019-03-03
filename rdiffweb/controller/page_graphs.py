@@ -26,7 +26,7 @@ from builtins import str
 import cherrypy
 from future.utils import iteritems
 
-from rdiffweb.controller import page_main, validate_isinstance
+from rdiffweb.controller import Controller, validate_isinstance
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core import librdiff
 
@@ -35,7 +35,7 @@ _logger = logging.getLogger(__name__)
 
 
 @poppath('graph')
-class GraphsPage(page_main.MainPage):
+class GraphsPage(Controller):
 
     def _data(self, path, **kwargs):
         assert isinstance(path, bytes)
