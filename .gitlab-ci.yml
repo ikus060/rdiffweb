@@ -67,6 +67,9 @@ py27-cherrypy15:
 py27-cherrypy16: 
   <<: *tox
   
+py27-cherrypy17: 
+  <<: *tox
+  
 py3-cherrypy35: 
   <<: *tox
   
@@ -109,8 +112,12 @@ py3-cherrypy15:
 py3-cherrypy16: 
   <<: *tox
   
-py27-cherrypy32: 
+py3-cherrypy17: 
   <<: *tox
+
+py3-cherrypy18: 
+  <<: *tox
+
 
 # TODO Publish coverage repport
 # TODO Publish testcases repport
