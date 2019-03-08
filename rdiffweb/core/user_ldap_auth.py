@@ -37,7 +37,7 @@ import time
 
 from rdiffweb.core import RdiffError
 from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.rdw_config import Option, BoolOption, IntOption
+from rdiffweb.core.config import Option, BoolOption, IntOption
 #
 
 logger = logging.getLogger(__name__)

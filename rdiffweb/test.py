@@ -25,20 +25,20 @@ Mock class for testing.
 
 from __future__ import unicode_literals
 
-from builtins import str, delattr
-import cherrypy
-from cherrypy.test import helper
-from future.utils import native_str
 import json
 import os
-import pkg_resources
+from rdiffweb.rdw_app import RdiffwebApp
 import shutil
 import tarfile
 import tempfile
 import unittest
 
-from rdiffweb.core import rdw_config
-from rdiffweb.rdw_app import RdiffwebApp
+from builtins import str, delattr
+import cherrypy
+from cherrypy.test import helper
+from future.utils import native_str
+import pkg_resources
+
 
 try:
     from urllib.parse import urlencode  # @UnresolvedImport @UnusedImport
@@ -52,21 +52,16 @@ class MockRdiffwebApp(RdiffwebApp):
         assert default_config is None or isinstance(default_config, dict)
         self.default_config = default_config
 
-        # Define config
-        cfg = rdw_config.Configuration()
-        for key, val in list(self.default_config.items()):
-            cfg.set_config(key, val)
-
         # database in memory
         self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
-        cfg.set_config('SQLiteDBFile', os.path.join(self.database_dir, 'rdiffweb.tmp.db'))
+        default_config['SQLiteDBFile'] = os.path.join(self.database_dir, 'rdiffweb.tmp.db')
 
-        if cfg.get_config_bool('LdapEnabled', 'False'):
-            cfg.set_config('LdapUri', '__default__')
-            cfg.set_config('LdapBaseDn', 'dc=nodomain')
+        if default_config.get('LdapEnabled', 'False').lower() in ['true', 'yes']:
+            default_config['LdapUri'] = '__default__'
+            default_config['LdapBaseDn'] = 'dc=nodomain'
 
         # Call parent constructor
-        RdiffwebApp.__init__(self, cfg)
+        RdiffwebApp.__init__(self, cfg=default_config)
 
     def clear_db(self):
         if hasattr(self, 'database_dir'):

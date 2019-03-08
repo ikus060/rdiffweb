@@ -38,6 +38,7 @@ from rdiffweb.controller.page_settings import SettingsPage, SetEncodingPage, Rem
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import i18n  # @UnusedImport
 from rdiffweb.core import rdw_templating
+from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import DoesNotExistError, AccessDeniedError
 from rdiffweb.core.user import UserManager
 import sys
@@ -47,7 +48,6 @@ import cherrypy
 from future.utils import native_str
 import pkg_resources
 
-
 # Define the logger
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ PY3 = sys.version_info[0] == 3
 
 class Root(LocationsPage):
 
-    def __init__(self, app):
+    def __init__(self):
         self.browse = BrowsePage()
         self.restore = RestorePage()
         self.history = HistoryPage()
@@ -74,16 +74,6 @@ class Root(LocationsPage):
         static_dir = pkg_resources.resource_filename('rdiffweb', 'static')  # @UndefinedVariable
         self.static = static(static_dir)
 
-        # Register favicon.ico
-        default_favicon = pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico')  # @UndefinedVariable
-        favicon = app.cfg.get_config("Favicon", default_favicon)
-        self.favicon_ico = static(favicon)
-
-        # Register header_logo
-        header_logo = app.cfg.get_config("HeaderLogo")
-        if header_logo:
-            self.header_logo = static(header_logo)
-
         # Register robots.txt
         robots_txt = pkg_resources.resource_filename('rdiffweb', 'static/robots.txt')  # @UndefinedVariable
         self.robots_txt = static(robots_txt)
@@ -92,19 +82,20 @@ class Root(LocationsPage):
 class RdiffwebApp(Application):
     """This class represent the application context."""
 
-    def __init__(self, cfg):
+    _favicon = Option('Favicon', default=pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico'))  # @UndefinedVariable
+    
+    _header_logo = Option('HeaderLogo')
+    
+    _tempdir = Option('TempDir')
 
-        # Initialise the configuration
-        assert cfg
-        self.cfg = cfg
+    def __init__(self, cfg={}):
+        self.cfg = {k.lower(): v for k, v in cfg.items()}
         
-        # Define TEMP env
-        tempdir = self.cfg.get_config("TempDir", default="")
-        if tempdir:
-            os.environ["TMPDIR"] = tempdir
-
         # Initialise the template engine.
         self.templates = rdw_templating.TemplateManager()
+
+        # Get some config
+        session_path = self.cfg.get("sessiondir", None)
 
         # Initialise the application
         config = {
@@ -120,6 +111,8 @@ class RdiffwebApp(Application):
                 'tools.sessions.on': True,
                 'error_page.default': self.error_page,
                 'request.error_response': self.error_response,
+                'tools.sessions.storage_type': 'file' if session_path else 'ram',
+                'tools.sessions.storage_path': session_path,
             },
         }
 
@@ -129,8 +122,19 @@ class RdiffwebApp(Application):
         if PY3 and LooseVersion(cherrypy.__version__) >= LooseVersion("5.5.0"):
             config[native_str('/')]["request.uri_encoding"] = "ISO-8859-1"
 
-        self._setup_session_storage(config)
-        Application.__init__(self, root=Root(self), config=config)
+        # Initialize the application
+        Application.__init__(self, root=Root(), config=config)
+        
+        # Register favicon.ico
+        self.root.favicon_ico = static(self._favicon)
+        
+        # Register header_logo
+        if self._header_logo:
+            self.root.header_logo = static(self._header_logo)
+        
+        # Define TEMP env
+        if self._tempdir:
+            os.environ["TMPDIR"] = self._tempdir
 
         # create user manager
         self.userdb = UserManager(self)
@@ -192,22 +196,3 @@ class RdiffwebApp(Application):
         except:
             self._version = "DEV"
         return self._version
-
-    def _setup_session_storage(self, config):
-        # Configure session storage.
-        session_storage = self.cfg.get_config("SessionStorage")
-        session_dir = self.cfg.get_config("SessionDir")
-        if session_storage.lower() != "disk":
-            return
-
-        if (not os.path.exists(session_dir) or
-                not os.path.isdir(session_dir) or
-                not os.access(session_dir, os.W_OK)):
-            return
-
-        logger.info("Setting session mode to disk in directory %s", session_dir)
-        config.update({
-            'tools.sessions.on': True,
-            'tools.sessions.storage_type': True,
-            'tools.sessions.storage_path': session_dir,
-        })

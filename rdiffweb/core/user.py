@@ -28,6 +28,7 @@ from builtins import str, bytes
 from future.utils import python_2_unicode_compatible
 from future.utils.surrogateescape import encodefilename
 from rdiffweb.core.librdiff import RdiffRepo
+from rdiffweb.core.config import BoolOption
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -196,16 +197,14 @@ class UserManager():
     This class handle all user operation. This class is greatly inspired from
     TRAC account manager class.
     """
+    
+    _allow_add_user = BoolOption("AddMissingUser", False)
 
     def __init__(self, app):
         self.app = app
         self._database = SQLiteUserDB(app) 
         self._password_stores = [self._database, LdapPasswordStore(app)]
         self._change_listeners = []
-
-    @property
-    def _allow_add_user(self):
-        return self.app.cfg.get_config_bool("AddMissingUser", "false")
 
     def add_change_listener(self, listener):
         self._change_listeners.append(listener)

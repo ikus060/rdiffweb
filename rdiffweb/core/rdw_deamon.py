@@ -2,14 +2,14 @@ from __future__ import unicode_literals
 
 import datetime
 import logging
+from rdiffweb.core import librdiff
+from rdiffweb.core.rdw_spider_repos import find_repos_for_user
 import time
 
 from builtins import str
 from cherrypy.process.plugins import Monitor
 
-from rdiffweb.core import librdiff
-from rdiffweb.core.rdw_spider_repos import find_repos_for_user
-
+from rdiffweb.core.config import Option
 
 _logger = logging.getLogger(__name__)
 
@@ -70,13 +70,15 @@ class Deamon(Monitor):
 
 class RemoveOlder(Deamon):
 
+    _remove_older_time = Option('RemoveOlderTime', '23:00')
+
     def __init__(self, bus, app):
         self.app = app
         Deamon.__init__(self, bus);
         
     @property
     def job_execution_time(self):
-        return self.app.cfg.get_config('RemoveOlderTime', '23:00')
+        return self._remove_older_time
 
     def job_run(self):
         """

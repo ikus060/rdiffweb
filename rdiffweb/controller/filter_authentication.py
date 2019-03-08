@@ -32,6 +32,7 @@ from rdiffweb.controller import Controller
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_helpers import quote_url
+from rdiffweb.core.config import Option
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -233,6 +234,8 @@ class LoginPage(Controller):
     This page is used by the authentication to display enter a user/pass.
     """
     
+    _welcome_msg = Option("WelcomeMsg")
+    
     def index(self, redirect=b'/', username='', error_msg='', **kwargs):
         # Re-encode the redirect for display in HTML
         redirect = quote_url(redirect, safe=";/?:@&=+$,%")
@@ -244,9 +247,9 @@ class LoginPage(Controller):
         }
 
         # Add welcome message to params. Try to load translated message.
-        params["welcome_msg"] = self.app.cfg.get_config("WelcomeMsg")
+        params["welcome_msg"] = self._welcome_msg
         if hasattr(cherrypy.response, 'i18n'):
             lang = cherrypy.response.i18n.locale.language
-            params["welcome_msg"] = self.app.cfg.get_config("WelcomeMsg[%s]" % (lang), params["welcome_msg"])
+            params["welcome_msg"] = Option("WelcomeMsg[%s]" % (lang), default=params["welcome_msg"]).get()
 
         return self._compile_template("login.html", **params).encode("utf-8")

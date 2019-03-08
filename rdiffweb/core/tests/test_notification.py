@@ -90,10 +90,10 @@ class NotificationTest(AppTestCase):
             user.email = 'test@test.com'
 
             # Set email config
-            self.app.cfg.set_config('EmailHost', 'smtp.gmail.com:587')
-            self.app.cfg.set_config('EmailUsername', 'test@test.com')
-            self.app.cfg.set_config('EmailPassword', 'test1234')
-            self.app.cfg.set_config('EmailEncryption', 'starttls')
+            self.app.cfg['EmailHost'] = 'smtp.gmail.com:587'
+            self.app.cfg['EmailUsername'] = 'test@test.com'
+            self.app.cfg['EmailPassword'] = 'test1234'
+            self.app.cfg['EmailEncryption'] = 'starttls'
 
             # Get ref to notification plugin
             n = NotificationPlugin(self.app)
@@ -133,6 +133,7 @@ Here is the link you wanted."""
 
         # Expect it to be called.
         n.send_mail.assert_called_once_with(ANY, ANY, 'email_changed.html')
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

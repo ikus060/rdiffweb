@@ -22,12 +22,14 @@ into a SQLite database.
 
 from __future__ import unicode_literals
 
-from builtins import str
 import logging
-from threading import RLock
-
 from rdiffweb.core import InvalidUserError, RdiffError
 from rdiffweb.core.i18n import ugettext as _
+from threading import RLock
+
+from builtins import str
+
+from rdiffweb.core.config import Option
 
 try:
     # Python 2.5+
@@ -44,6 +46,8 @@ logger = logging.getLogger(__name__)
 
 class SQLiteUserDB():
 
+    _db_file = Option("SQLiteDBFile", "/etc/rdiffweb/rdw.db")
+
     def _bool(self, val):
         return str(val).lower() in ['true', '1']
 
@@ -51,12 +55,10 @@ class SQLiteUserDB():
         """
         Called by the plugin manager to setup the plugin.
         """
+        self.app = app
 
         # Declare a lock.
         self.create_tables_lock = RLock()
-
-        # Get database location.
-        self._db_file = app.cfg.get_config("SQLiteDBFile", "/etc/rdiffweb/rdw.db")
         self._user_root_cache = {}
         self._create_or_update()
 
@@ -321,11 +323,7 @@ class SQLiteUserDB():
             import sqlite3
         except ImportError:
             from pysqlite2 import dbapi2 as sqlite3
-
-        connect_path = self._db_file
-        if not connect_path:
-            connect_path = ":memory:"
-        conn = sqlite3.connect(connect_path)
+        conn = sqlite3.connect(self._db_file)
         conn.isolation_level = None
         return conn
 
@@ -336,7 +334,6 @@ class SQLiteUserDB():
 
         # To avoid re-creating the table twice.
         with self.create_tables_lock:
-
             # Check if tables exists, if not created them.
             if self._get_tables():
                 return

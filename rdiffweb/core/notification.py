@@ -19,12 +19,17 @@
 Plugin used to send email to users when their repository is getting too old.
 User can control the notification period.
 """
+
 from __future__ import unicode_literals
 
 import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import logging
+from rdiffweb.core import RdiffError, RdiffWarning
+from rdiffweb.core import librdiff
+from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.user import IUserChangeListener
 import re
 import smtplib
 from xml.etree.ElementTree import fromstring, tostring
@@ -32,10 +37,7 @@ from xml.etree.ElementTree import fromstring, tostring
 from builtins import str
 import cherrypy
 
-from rdiffweb.core import librdiff
-from rdiffweb.core import RdiffError, RdiffWarning
-from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.user import IUserChangeListener
+from rdiffweb.core.config import Option
 
 _logger = logging.getLogger(__name__)
 
@@ -113,37 +115,20 @@ class NotificationPlugin(IUserChangeListener):
     """
     Send email notification when a repository get too old (without a backup).
     """
+    
+    _encryption = Option('EmailEncryption', 'none')
 
-    @property
-    def _encryption(self):
-        return self.app.cfg.get_config('EmailEncryption', 'none')
+    _email_host = Option('EmailHost', _get_func=lambda x: x.partition(':')[0])
 
-    @property
-    def _email_host(self):
-        value = self.app.cfg.get_config('EmailHost')
-        value = value.partition(':')[0]
-        return value
+    _email_port = Option('EmailHost', _get_func=lambda x: int(x.partition(':')[2]))
 
-    @property
-    def _email_port(self):
-        value = self.app.cfg.get_config('EmailHost')
-        value = value.partition(':')[2]
-        try:
-            return int(value)
-        except:
-            return 0
+    _email_from = Option('EmailSender')
 
-    @property
-    def _email_from(self):
-        return self.app.cfg.get_config('EmailSender', self.app.cfg.get_config('EmailFrom'))
+    _smtp_username = Option('EmailUsername', None)
 
-    @property
-    def _smtp_username(self):
-        return self.app.cfg.get_config('EmailUsername', None)
-
-    @property
-    def _smtp_password(self):
-        return self.app.cfg.get_config('EmailPassword', None)
+    _smtp_password = Option('EmailPassword', None)
+    
+    _header_name = Option("HeaderName", "rdiffweb")
 
     def activate(self):
         """Called by the plugin manager to setup the plugin."""
@@ -234,9 +219,9 @@ class NotificationPlugin(IUserChangeListener):
         """
         # Build email from template.
         parms = {'user': to_user}
-        header_name = self.app.cfg.get_config("HeaderName")
-        if header_name:
-            parms["header_name"] = header_name
+        
+        if self._header_name:
+            parms["header_name"] = self._header_name
         parms.update(kwargs)
 
         # Compile both template.
@@ -247,7 +232,7 @@ class NotificationPlugin(IUserChangeListener):
         part1 = MIMEText(text, 'plain', 'utf8')
         part2 = MIMEText(html, 'html', 'utf8')
 
-        email_from = self.app.cfg.get_config("HeaderName", 'rdiffweb')
+        email_from = self._header_name
         if self._email_from:
             email_from += " <%s>" % self._email_from
 

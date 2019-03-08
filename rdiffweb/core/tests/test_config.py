@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import os
 import unittest
 
-from rdiffweb.core.rdw_config import Configuration, SettingsError
+from rdiffweb.core.config import read_config, write_config
 
 
 class ConfigurationTest(unittest.TestCase):
@@ -45,78 +45,74 @@ NoValue=#This is a setting with no value
         f = open(self.config_file_path, "w")
         f.write(self.good_config_text)
         f.close()
-        self.config = Configuration(self.config_file_path)
+        self.config = read_config(self.config_file_path)
 
     def write_bad_file(self, bad_setting_num):
         self.write_good_file()
         f = open(self.config_file_path, "w")
         f.write(self.bad_config_texts[bad_setting_num])
         f.close()
-        self.config = Configuration(self.config_file_path)
+        self.config = read_config(self.config_file_path)
 
     def tearDown(self):
         if (os.access(self.config_file_path, os.F_OK)):
             os.remove(self.config_file_path)
 
-    def test_get_config_badparms(self):
-        self.write_good_file()
-        with self.assertRaises(AssertionError):
-            self.config.get_config("setting=")
-
     def test_get_config_spaces_in_value(self):
         self.write_good_file()
-        self.assertEqual("is a setting with spaces", self.config.get_config("SpacesValue"))
+        self.assertEqual("is a setting with spaces", self.config.get("spacesvalue"))
 
     def test_get_config_spaces_in_setting(self):
         self.write_good_file()
-        self.assertEqual("withspaces", self.config.get_config("spaces setting"))
+        self.assertEqual("withspaces", self.config.get("spaces setting"))
 
     def test_get_config_comment_in_value(self):
         self.write_good_file()
-        self.assertEqual("Value", self.config.get_config("CommentInValue"))
+        self.assertEqual("Value", self.config.get("commentinvalue"))
 
     def test_get_config_emptyvalue(self):
         self.write_good_file()
-        self.assertEqual("", self.config.get_config("NoValue"))
+        self.assertEqual("", self.config.get("novalue"))
 
     def test_get_config_case_insensitivity(self):
         self.write_good_file()
-        self.assertEqual("Value", self.config.get_config("commentinvalue"))
+        self.assertEqual("Value", self.config.get("commentinvalue"))
 
     def test_get_config_missingsetting(self):
         self.write_good_file()
-        self.assertEqual("", self.config.get_config("SettingThatDoesntExist"))
+        self.assertEqual(None, self.config.get("settingthatdoesntexist"))
 
     def test_get_config_badfile(self):
-        self.write_bad_file(0)
         try:
-            self.config.get_config("SpacesValue")
-        except SettingsError:
+            self.write_bad_file(0)
+            self.config.get("spacesvalue")
+        except:
             pass
         else:
             assert(False)
 
         self.write_bad_file(1)
-        value = self.config.get_config("This")
+        value = self.config.get("this")
         self.assertEqual("more=than one equals", value)
 
     def test_set_config(self):
         self.write_good_file()
-        self.config.set_config('new_key', 'new_value')
-        self.config.save()
+        self.config['new_key'] = 'new_value'
+        write_config(self.config, self.config_file_path)
         # re-read the config file
-        self.config2 = Configuration(self.config_file_path)
+        self.config2 = read_config(self.config_file_path)
         # Check value.
-        self.assertEqual('new_value', self.config2.get_config('new_key'))
+        self.assertEqual('new_value', self.config2.get('new_key'))
 
     def test_set_config_uppercase(self):
         self.write_good_file()
-        self.config.set_config('NewKey', 'new_value')
-        self.config.save()
+        self.config['NewKey'] = 'new_value'
+        write_config(self.config, self.config_file_path)
         # re-read the config file
-        self.config2 = Configuration(self.config_file_path)
+        self.config2 = read_config(self.config_file_path)
         # Check value.
-        self.assertEqual('new_value', self.config2.get_config('newkey'))
+        self.assertEqual('new_value', self.config2.get('newkey'))
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

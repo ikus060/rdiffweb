@@ -30,9 +30,9 @@ import threading
 import traceback
 
 from rdiffweb import rdw_app
-from rdiffweb.core import rdw_config
 from rdiffweb.core.rdw_profiler import ProfilingApplication
 from rdiffweb.core.rdw_deamon import RemoveOlder, UpdateRepos
+from rdiffweb.core.config import read_config
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -172,18 +172,15 @@ def start():
 
     # Open config file before opening the apps.
     configfile = args.get('config', '/etc/rdiffweb/rdw.conf')
-    if not os.path.isfile(configfile):
-        print("configuration file %s doesn't exists" % configfile, file=sys.stderr)
-        exit(1)
-    cfg = rdw_config.Configuration(configfile)
-    log_file = args.get('log_file', None) or cfg.get_config('LogFile', False)
-    log_access_file = args.get('log_access_file', None) or cfg.get_config('LogAccessFile', None)
+    cfg = read_config(configfile)
+    log_file = args.get('log_file', None) or cfg.get('logfile', False)
+    log_access_file = args.get('log_access_file', None) or cfg.get('logaccessfile', None)
     if args.get('debug', False):
         environment = 'development'
         log_level = "DEBUG"
     else:
-        environment = cfg.get_config('Environment', 'production')
-        log_level = cfg.get_config('LogLevel', 'INFO')
+        environment = cfg.get('environment', 'production')
+        log_level = cfg.get('loglevel', 'INFO')
 
     # Configure logging
     setup_logging(
@@ -198,11 +195,11 @@ def start():
     app = rdw_app.RdiffwebApp(cfg)
 
     # Get configuration
-    serverHost = app.cfg.get_config("ServerHost", default=b"0.0.0.0")
-    serverPort = app.cfg.get_config_int("ServerPort", default="8080")
+    serverHost = cfg.get("serverhost", b"0.0.0.0")
+    serverPort = int(cfg.get("serverport", "8080"))
     # Get SSL configuration (if any)
-    sslCertificate = app.cfg.get_config("SslCertificate")
-    sslPrivateKey = app.cfg.get_config("SslPrivateKey")
+    sslCertificate = cfg.get("sslcertificate")
+    sslPrivateKey = cfg.get("sslprivatekey")
 
     global_config = cherrypy._cpconfig.environments.get(environment, {})
     global_config.update({

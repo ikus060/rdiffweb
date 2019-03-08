@@ -24,6 +24,7 @@ from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError
 from builtins import bytes
 import cherrypy
 from future.utils.surrogateescape import encodefilename
+from rdiffweb.core.config import Option
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -50,6 +51,8 @@ def validate_isinstance(value, cls, message=None):
 
 
 class Controller(object):
+
+    _header_name = Option("HeaderName")
 
     @property
     def app(self):
@@ -84,9 +87,8 @@ class Controller(object):
         # Append custom branding
         if hasattr(self.app.root, "header_logo"):
             parms["header_logo"] = '/header_logo'
-        header_name = self.app.cfg.get_config("HeaderName")
-        if header_name:
-            parms["header_name"] = header_name
+        if self._header_name:
+            parms["header_name"] = self._header_name
 
         # Append template parameters.
         parms.update(kwargs)
