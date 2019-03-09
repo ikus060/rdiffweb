@@ -50,7 +50,6 @@ class SettingsPage(Controller):
         params = {
             'repo_name': repo_obj.display_name,
             'repo_path': repo_obj.path,
-            'templates_content': [],
             'current_encoding': encodings.normalize_encoding(repo_obj.get_encoding()),
             'keepdays': r.keepdays,
         }

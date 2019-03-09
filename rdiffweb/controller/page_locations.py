@@ -80,7 +80,6 @@ class LocationsPage(Controller):
             })
         params = {
             "repos": repos,
-            "templates_before_content": list(),
         }
 
         # Return the complete list of params.
