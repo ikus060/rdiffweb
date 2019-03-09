@@ -83,7 +83,7 @@ class SQLiteUserDB():
             "SELECT Password, Username FROM users WHERE Username = ?",
             (username,))
         if not len(results):
-            return None
+            return False
         if results[0][0] == self._hash_password(password):
             return results[0][1]
         return False
@@ -134,13 +134,6 @@ class SQLiteUserDB():
 
         return self._user_root_cache[username]
 
-    def has_password(self, username):
-        """Check if the given user has a password in database."""
-        try:
-            return bool(self._get_user_field(username, "Password"))
-        except InvalidUserError:
-            return False
-
     def is_admin(self, username):
         assert isinstance(username, str)
         value = self._get_user_field(username, "IsAdmin")
@@ -154,14 +147,18 @@ class SQLiteUserDB():
         users = [x[0] for x in self._execute_query(query)]
         return users
 
-    def add_user(self, username):
+    def add_user(self, username, password=None):
         """
         Add a new username to this userdb.
         """
         assert isinstance(username, str)
         logger.info("adding new user [%s]", username)
-        query = "INSERT INTO users (Username) values (?)"
-        self._execute_query(query, (username,))
+        if password:
+            query = "INSERT INTO users (Username, Password) values (?, ?)"
+            self._execute_query(query, (username, self._hash_password(password)))
+        else:
+            query = "INSERT INTO users (Username) values (?)"
+            self._execute_query(query, (username,))
 
     def delete_user(self, username):
         """
@@ -350,8 +347,7 @@ class SQLiteUserDB():
                 conn.close()
 
             # Create admin user
-            self.add_user('admin')
-            self.set_password('admin', 'admin123', old_password=None)
+            self.add_user('admin', 'admin123')
             self.set_user_root('admin', '/backups/')
             self.set_is_admin('admin', True)
 
@@ -393,6 +389,3 @@ UserID int(11) NOT NULL,
 RepoPath varchar (255) NOT NULL,
 MaxAge tinyint NOT NULL DEFAULT 0)"""
         ]
-
-    def supports(self, operation):
-        return hasattr(self, operation)

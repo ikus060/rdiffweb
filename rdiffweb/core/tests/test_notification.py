@@ -123,6 +123,7 @@ Here is the link you wanted."""
 
     def test_email_changed(self):
         # Get ref to notification plugin
+        self.app.cfg['emailsendchangednotification'] = 'True'
         n = NotificationPlugin(self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()

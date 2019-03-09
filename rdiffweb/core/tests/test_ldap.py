@@ -94,7 +94,7 @@ class UserManagerLdapTest(AppTestCase):
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
         # Get reference to LdapStore
-        self.ldapstore = self.app.userdb._password_stores[1]
+        self.ldapstore = self.app.userdb._password_stores[0]
         self.assertTrue(isinstance(self.ldapstore, LdapPasswordStore))
 
     def tearDown(self):
@@ -104,7 +104,10 @@ class UserManagerLdapTest(AppTestCase):
         AppTestCase.tearDown(self)
 
     def test_are_valid_credentials(self):
-        self.assertEquals('mike', self.ldapstore.are_valid_credentials('mike', 'password'))
+        
+        username, attrs = self.ldapstore.are_valid_credentials('mike', 'password')
+        self.assertEquals('mike', username)
+        self.assertEquals(attrs, {'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'], 'userPassword': ['password'], 'uid': ['mike'], 'cn': ['mike']})
 
     def test_are_valid_credentials_with_invalid_password(self):
         self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'invalid'))
@@ -125,20 +128,6 @@ class UserManagerLdapTest(AppTestCase):
     def test_delete_user_with_invalid_user(self):
         with self.assertRaises(AttributeError):
             self.ldapstore.delete_user('eve')
-
-    def test_get_user_attr(self):
-        self.assertEquals(['bob'], self.ldapstore.get_user_attr('bob', 'uid'))
-        self.assertEquals(['bob'], self.ldapstore.get_user_attr('bob', 'cn'))
-        self.assertEquals(['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
-                          self.ldapstore.get_user_attr('bob', 'objectClass'))
-        self.assertEquals({u'uid': ['bob'], u'cn': ['bob']},
-                          self.ldapstore.get_user_attr('bob', ['uid', 'cn']))
-
-    def test_has_password(self):
-        self.assertTrue(self.ldapstore.has_password('bob'))
-
-    def test_has_password_with_invalid_user(self):
-        self.assertFalse(self.ldapstore.has_password('invalid'))
 
     def test_set_password_not_found(self):
         with self.assertRaises(RdiffError):
@@ -280,7 +269,7 @@ class UserManagerLdapWithRequiredGroupTest(AppTestCase):
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
         # Get reference to LdapStore
-        self.ldapstore = self.app.userdb._password_stores[1]
+        self.ldapstore = self.app.userdb._password_stores[0]
         self.assertTrue(isinstance(self.ldapstore, LdapPasswordStore))
 
     def tearDown(self):
@@ -290,8 +279,10 @@ class UserManagerLdapWithRequiredGroupTest(AppTestCase):
         AppTestCase.tearDown(self)
 
     def test_are_valid_credentials(self):
-        self.assertEquals('mike', self.ldapstore.are_valid_credentials('mike', 'password'))
-        self.assertEquals('jeff', self.ldapstore.are_valid_credentials('jeff', 'password'))
+        username, attrs = self.ldapstore.are_valid_credentials('mike', 'password')
+        self.assertEquals('mike', username)
+        username, attrs = self.ldapstore.are_valid_credentials('jeff', 'password')
+        self.assertEquals('jeff', username)
 
     def test_are_valid_credentials_with_invalid_password(self):
         self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'invalid'))

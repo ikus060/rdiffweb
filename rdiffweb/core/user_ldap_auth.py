@@ -74,6 +74,9 @@ class LdapPasswordStore():
         """Check if the given credential as valid according to LDAP."""
         assert isinstance(username, str)
         assert isinstance(password, str)
+        # Skip validation if LdapUri is not provided
+        if not self.uri:
+            return False
 
         def check_crendential(l, r):
             # Check results
@@ -108,7 +111,7 @@ class LdapPasswordStore():
             finally:
                 l.unbind_s()
             # Return the username
-            return new_username
+            return new_username, r[0][1]
 
         # Execute the LDAP operation
         try:
@@ -201,7 +204,7 @@ class LdapPasswordStore():
                     ldap_msg = e.message['info']
             raise RdiffError(msg % ldap_msg)
 
-    def has_password(self, username):
+    def exists(self, username):
         """Check if the user exists in LDAP"""
 
         def check_user_exists(l, r):  # @UnusedVariable
@@ -216,39 +219,6 @@ class LdapPasswordStore():
         # Execute the LDAP operation
         return self._execute(username, check_user_exists)
 
-    def get_email(self, username):
-        """Get user mail."""
-        logger.debug("get email for user [%s]", username)
-        value = self.get_user_attr(username, 'mail')
-        if value:
-            return value[0]
-        return None
-
-    def get_home_dir(self, username):
-        """Get user home directory."""
-        logger.debug("get email for user [%s]", username)
-        value = self.get_user_attr(username, 'homeDirectory')
-        if isinstance(value, list):
-            value = value[0]
-        return value
-
-    def get_user_attr(self, username, attr):
-        """Get user attributes."""
-        assert isinstance(username, str)
-
-        def fetch_user_email(l, r):  # @UnusedVariable
-            if len(r) != 1:
-                logger.warning("user [%s] not found in LDAP", username)
-                return ""
-            return self._attr(r, attr)
-
-        # Execute the LDAP operation
-        try:
-            return self._execute(username, fetch_user_email)
-        except:
-            logger.exception("can't get user email")
-            return ""
-
     def set_password(self, username, password, old_password=None):
         """Update the password of the given user."""
         assert isinstance(username, str)
@@ -260,6 +230,7 @@ class LdapPasswordStore():
             raise RdiffError(_("Password can't be empty."))
         # Check if users are allowed to change their password in LDAP.
         if not self.allow_password_change:
+            logger.warn("authentication backend for user [%s] does not support changing the password", username)
             raise RdiffError(_("LDAP users are not allowed to change their password."))
 
         # Check if old_password id valid
@@ -287,8 +258,3 @@ class LdapPasswordStore():
         # Execute the LDAP operation
         logger.debug("updating password for [%s] in LDAP", username)
         return self._execute(username, change_passwd)
-
-    def supports(self, operation):
-        if operation == 'set_password':
-            return self.allow_password_change
-        return hasattr(self, operation)

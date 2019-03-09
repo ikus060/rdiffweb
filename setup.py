@@ -157,16 +157,25 @@ class build(build_):
 
 
 # Compute requirements
-install_requires = [
-    "CherryPy>=3.5",
-    "Jinja2>=2.6,<=2.8.1",
-    "future>=0.15.2",
-    "psutil>=2.1.1",
-    "babel>=0.9.6",
-    "pycrypto>=2.6.1",
-]
 if PY2:
-    install_requires.extend(["pysqlite>=2.6.3"])
+    install_requires = [
+        "CherryPy>=3.5,<17.0",
+        "Jinja2>=2.6,<=2.8.1",
+        "future>=0.15.2",
+        "psutil>=2.1.1",
+        "babel>=0.9.6",
+        "pycrypto>=2.6.1",
+        "pysqlite>=2.6.3",
+    ]
+else:
+    install_requires = [
+        "CherryPy>=3.5",
+        "Jinja2>=2.6,<=2.8.1",
+        "future>=0.15.2",
+        "psutil>=2.1.1",
+        "babel>=0.9.6",
+        "pycrypto>=2.6.1",
+    ]
 
 setup(
     name='rdiffweb',
@@ -199,5 +208,6 @@ setup(
         "mock>=1.3.0",
         "coverage>=4.0.1",
         "mockldap>=0.2.6",
+        "pytest",
     ]
 )

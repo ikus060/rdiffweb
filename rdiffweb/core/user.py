@@ -19,16 +19,18 @@
 from __future__ import unicode_literals
 
 import logging
+import os
 from rdiffweb.core import InvalidUserError, RdiffError
+from rdiffweb.core.config import BoolOption
 from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.librdiff import RdiffRepo
 from rdiffweb.core.user_ldap_auth import LdapPasswordStore
 from rdiffweb.core.user_sqlite import SQLiteUserDB
 
 from builtins import str, bytes
 from future.utils import python_2_unicode_compatible
 from future.utils.surrogateescape import encodefilename
-from rdiffweb.core.librdiff import RdiffRepo
-from rdiffweb.core.config import BoolOption
+import pkg_resources
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -54,20 +56,41 @@ class IUserChangeListener():
         self.app = app
         self.app.userdb.add_change_listener(self)
 
-    def user_added(self, user, password):
+    def user_added(self, userobj, attrs):
         """New user (account) created."""
 
-    def user_attr_changed(self, user, attrs={}):
+    def user_attr_changed(self, username, attrs={}):
         """User attribute changed."""
 
     def user_deleted(self, user):
         """User and related account information have been deleted."""
 
-    def user_logined(self, user, password):
+    def user_logined(self, userobj, attrs):
         """User successfully logged into rdiffweb."""
 
     def user_password_changed(self, user, password):
         """Password changed."""
+
+
+class IUserQuota():
+    """
+    Extension point to get user quotas
+    """
+    
+    def get_disk_usage(self, userobj):
+        """
+        Return the user disk space.
+        """
+
+    def get_disk_quota(self, userobj, value):
+        """
+        Return the current user's quota.
+        """
+
+    def set_disk_quota(self, userobj, value):
+        """
+        Sets the user's quota.
+        """
 
 
 @python_2_unicode_compatible
@@ -138,7 +161,49 @@ class UserObject(object):
         # Call notification listener
         if kwargs.get('notify', True):
             del kwargs['notify']
-            self._userdb._notify('attr_changed', self._username, kwargs)
+            self._userdb._notify('user_attr_changed', self._username, kwargs)
+
+    @property
+    def disk_usage(self):
+        
+        # Check quota
+        for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserQuota'):  # @UndefinedVariable
+            try:
+                cls = entry_point.load()
+                cls().get_disk_usage(self)
+            except:
+                logger.warning('IuserQuota [%s] fail to run', entry_point, exc_info=1)
+        
+        # Fall back to disk spaces.
+        # Get the value from os and store in session.
+        try:
+            statvfs = os.statvfs(self.user_root)
+            return {  # @UndefinedVariable
+                'avail': statvfs.f_frsize * statvfs.f_bavail,
+                'used': statvfs.f_frsize * (statvfs.f_blocks - statvfs.f_bavail),
+                'size': statvfs.f_frsize * statvfs.f_blocks}
+        except:
+            return None
+
+    def set_disk_quota(self, value):
+        """
+        Sets usr's quota using one of the IUserQuota. If none available, raise an exception.
+        """
+        for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserQuota'):  # @UndefinedVariable
+            cls = entry_point.load()
+            cls(self._userdb.app).set_disk_quota(self, value)
+        
+    def get_disk_quota(self):
+        """
+        Get user's quota using one of the IUserQuota. If none available, raise an exception.
+        """
+        for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserQuota'):  # @UndefinedVariable
+            try:
+                cls = entry_point.load()
+                return cls(self._userdb.app).get_disk_quota(self)
+            except:
+                logger.warning('IuserQuota [%s] fail to run', entry_point, exc_info=1)
+        return 0
 
     # Declare properties
     is_admin = property(fget=lambda x: x._db.is_admin(x._username), fset=lambda x, y: x.set_attr('is_admin', y))
@@ -147,7 +212,8 @@ class UserObject(object):
     repos = property(fget=lambda x: x._db.get_repos(x._username), fset=lambda x, y: x.set_attr('repos', y))
     repo_list = property(fget=lambda x: [RepoObject(x._db, x._username, r)
                                          for r in x._db.get_repos(x._username)])
-
+    disk_quota = property(get_disk_quota, set_disk_quota)
+    
 
 @python_2_unicode_compatible
 class RepoObject(object):
@@ -202,9 +268,17 @@ class UserManager():
 
     def __init__(self, app):
         self.app = app
-        self._database = SQLiteUserDB(app) 
-        self._password_stores = [self._database, LdapPasswordStore(app)]
+        self._database = SQLiteUserDB(app)
+        self._password_stores = [LdapPasswordStore(app)]
         self._change_listeners = []
+        
+        # Register entry point.
+        for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserChangeListener'):  # @UndefinedVariable
+            cls = entry_point.load()
+            # Creating the listener should register it self.But let make sure of it. 
+            listener = cls(self.app)
+            if listener not in self._change_listeners:
+                self._change_listeners.append(listener)
 
     def add_change_listener(self, listener):
         self._change_listeners.append(listener)
@@ -212,7 +286,7 @@ class UserManager():
     def remove_change_listener(self, listener):
         self._change_listeners.remove(listener)
 
-    def add_user(self, user, password=None):
+    def add_user(self, user, password=None, attrs=None):
         """
         Used to add a new user with an optional password.
         """
@@ -222,14 +296,11 @@ class UserManager():
             raise RdiffError(_("User %s already exists." % (user,)))
         # Find a database where to add the user
         logger.debug("adding new user [%s]", user)
-        self._database.add_user(user)
-        self._notify('added', user, password)
-        # Find a password store where to set password
-        if password:
-            self._database.set_password(user, password)
-
+        self._database.add_user(user, password)
+        userobj = UserObject(self, self._database, user)
+        self._notify('user_added', userobj, attrs)
         # Return user object
-        return UserObject(self, self._database, user)
+        return userobj
 
     def delete_user(self, user):
         """
@@ -247,12 +318,7 @@ class UserManager():
             result |= self._database.delete_user(user)
         if not result:
             return result
-        # Delete credentials from password store (optional).
-        store = self.find_user_store(user)
-        if hasattr(store, 'delete_user'):
-            logger.info("deleting user [%s] from password store [%s]", user, store)
-            result |= store.delete_user(user)
-        self._notify('deleted', user)
+        self._notify('user_deleted', user)
         return True
 
     def exists(self, user):
@@ -263,38 +329,11 @@ class UserManager():
         """
         return self._database.exists(user)
 
-    def find_user_store(self, user):
-        """
-        Locates which store contains the user specified.
-
-        If the user isn't found in any IPasswordStore in the chain, None is
-        returned.
-        """
-        assert isinstance(user, str)
-        for store in self._password_stores:
-            try:
-                if store.has_password(user):
-                    return store
-            except:
-                pass
-        return None
-
     def get_user(self, user):
         """Return a user object."""
         if not self.exists(user):
             raise InvalidUserError(user)
         return UserObject(self, self._database, user)
-
-    def _get_supporting_store(self, operation):
-        """
-        Returns the IPasswordStore that implements the specified operation.
-
-        None is returned if no supporting store can be found.
-        """
-        for store in self._password_stores:
-            if store.supports(operation):
-                return store
-        return None
 
     def list(self):
         """Search users database. Return a generator of user object."""
@@ -318,72 +357,56 @@ class UserManager():
         assert password is None or isinstance(user, str)
         # Validate the credentials
         logger.debug("validating user [%s] credentials", user)
-        if not self._password_stores:
-            logger.warn("not password store available to validate user credentials")
-        real_user = False
-        for store in self._password_stores:
-            real_user = store.are_valid_credentials(user, password)
-            if real_user:
-                break
-        if not real_user:
+        for store in self._password_stores + [self._database]:
+            try:
+                valid = store.are_valid_credentials(user, password)
+                if valid:
+                    break
+            except:
+                pass
+        if not valid:
             return None
+        # Get real username and external attributes.
+        # Some password store provide extra attributes.
+        if isinstance(valid, str):
+            real_user, attrs = valid, None
+        else:
+            real_user, attrs = valid
         # Check if user exists in database
         try:
             userobj = self.get_user(real_user)
-            self._notify('logined', real_user, password)
-            return userobj
         except InvalidUserError:
             # Check if user may be added.
             if not self._allow_add_user:
                 logger.info("user [%s] not found in database", real_user)
                 return None
             # Create user
-            userobj = self.add_user(real_user)
-            self._notify('logined', real_user, password)
-            return userobj
+            userobj = self.add_user(real_user, attrs=attrs)
+        self._notify('user_logined', userobj, attrs)
+        return userobj
 
-    def set_password(self, user, password, old_password=None):
+    def set_password(self, username, password, old_password=None):
         # Check if user exists in database
-        if not self.exists(user):
-            raise InvalidUserError(user)
+        if not self.exists(username):
+            raise InvalidUserError(username)
         # Try to update the user password.
-        store = self.find_user_store(user)
-        if store and not store.supports('set_password'):
-            logger.warn("authentication backend for user [%s] does not support changing the password", user)
-            raise RdiffError(_("You cannot change the user's password."))
-        elif not store:
-            store = self._get_supporting_store('set_password')
-        if not store:
-            logger.warn("none of the IPasswordStore supports setting the password")
-            raise RdiffError(_("You cannot change the user's password."))
-        store.set_password(user, password, old_password)
-        self._notify('password_changed', user, password)
-
-    def supports(self, operation, user=None):
-        """
-        Check if the users password store or user database supports the given operation.
-        """
-        assert isinstance(operation, str)
-        assert user is None or isinstance(user, str)
-
-        if user:
-            if operation in ['set_password']:
-                store = self.find_user_store(user)
-                return store is not None and store.supports(operation)
-            else:
-                return self._database.supports(operation)
-        else:
-            if operation in ['set_password']:
-                return self._get_supporting_store(operation) is not None
-            else:
-                return self._database.supports(operation)
+        for store in self._password_stores:
+            try:
+                valid = store.are_valid_credentials(username, old_password)
+                if valid:
+                    store.set_password(username, password, old_password)
+                    return
+            except:
+                pass
+        # Fallback to database
+        self._database.set_password(username, password, old_password)
+        self._notify('user_password_changed', username, password)
 
     def _notify(self, mod, *args):
-        mod = '_'.join(['user', mod])
         for listener in self._change_listeners:
             # Support divergent account change listener implementations too.
             try:
-                logger.debug('call [%s] [%s]', listener.__class__.__name__, mod)
+                logger.debug('notify [%s] [%s]', listener.__class__.__name__, mod)
                 getattr(listener, mod)(*args)
             except:
                 logger.warning(

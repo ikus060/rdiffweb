@@ -20,14 +20,14 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import logging
-
-import cherrypy
-from future.utils.surrogateescape import encodefilename
-
+import os
 from rdiffweb.controller import Controller
 from rdiffweb.core import librdiff
 from rdiffweb.core.i18n import ugettext as _
 
+import cherrypy
+from future.utils.surrogateescape import encodefilename
+import pkg_resources
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -80,6 +80,7 @@ class LocationsPage(Controller):
             })
         params = {
             "repos": repos,
+            "disk_usage": self.app.currentuser.disk_usage,
         }
 
         # Return the complete list of params.

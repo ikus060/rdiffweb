@@ -77,10 +77,6 @@ class PrefsGeneralPanelProvider(Controller):
         if 'email' not in kwargs:
             raise RdiffWarning(_("Email is undefined."))
 
-        # Check if email update is supported
-        if not self.app.userdb.supports('set_email'):
-            return {'error': _("Email update is not supported.")}
-
         # Parse the email value to extract a valid email. The following method
         # return an empty string if the email is not valid. This RFC also accept
         # local email address without '@'. So we add verification for '@'
@@ -126,10 +122,7 @@ class PrefsGeneralPanelProvider(Controller):
                 _logger.warning("unknown error processing action", exc_info=True)
                 params['error'] = _("Unknown error")
 
-        user = self.app.currentuser.username
         params.update({
             'email': self.app.currentuser.email,
-            'supports_set_email': self.app.userdb.supports('set_email', user),
-            'supports_set_password': self.app.userdb.supports('set_password', user),
         })
         return "prefs_general.html", params

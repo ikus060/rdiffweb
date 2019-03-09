@@ -58,7 +58,7 @@ class SQLiteUserDBTest(AppTestCase):
         self.assertFalse(self.db.are_valid_credentials('jeff', ''))
 
     def test_are_valid_credentials_with_invalid_user(self):
-        self.assertIsNone(self.db.are_valid_credentials('josh', 'password'))
+        self.assertFalse(self.db.are_valid_credentials('josh', 'password'))
 
     def test_delete_user(self):
         # Create user
@@ -110,13 +110,6 @@ class SQLiteUserDBTest(AppTestCase):
             self.db.get_repos('invalid')
         with self.assertRaises(InvalidUserError):
             self.db.get_user_root('invalid')
-
-    def test_has_password(self):
-
-        self.db.add_user('carol')
-        self.assertFalse(self.db.has_password('carol'))
-        self.db.set_password('carol', 'password')
-        self.assertTrue(self.db.has_password('carol'))
 
     def test_list(self):
         self.app.userdb.add_user('annik')
