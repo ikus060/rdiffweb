@@ -182,12 +182,8 @@ class RdiffwebApp(Application):
         """
         Get the current running version (using package info).
         """
-        # Use a cached version
-        if hasattr(self, "_version"):
-            return self._version
         # Get version.
         try:
-            self._version = pkg_resources.get_distribution("rdiffweb").version
+            return pkg_resources.get_distribution("rdiffweb").version
         except:
-            self._version = "DEV"
-        return self._version
+            return "DEV"
