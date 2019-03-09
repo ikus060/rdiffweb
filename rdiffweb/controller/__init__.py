@@ -75,7 +75,6 @@ class Controller(object):
         parms = {
             "lang": loc.language,
             "version": self.app.get_version(),
-            "extra_head_templates": [],
         }
         if self.currentuser:
             parms.update({
