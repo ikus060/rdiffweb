@@ -28,6 +28,7 @@ from email.mime.text import MIMEText
 import logging
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core import librdiff
+from rdiffweb.core.config import Option, BoolOption
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.user import IUserChangeListener
 import re
@@ -36,8 +37,6 @@ from xml.etree.ElementTree import fromstring, tostring
 
 from builtins import str
 import cherrypy
-
-from rdiffweb.core.config import Option
 
 _logger = logging.getLogger(__name__)
 
@@ -129,15 +128,12 @@ class NotificationPlugin(IUserChangeListener):
     _smtp_password = Option('EmailPassword', None)
     
     _header_name = Option("HeaderName", "rdiffweb")
+    
+    _send_change_notification = BoolOption("EmailSendChangedNotification", False)
 
-    def activate(self):
-        """Called by the plugin manager to setup the plugin."""
-        super(NotificationPlugin, self).activate()
-
-        # If notification are disabled, delete the handler.
-        notify = self.app.cfg.get_config_bool('EmailSendChangedNotification', False)
-        if not notify:
-            del self.user_attr_changed
+    def __init__(self, app):
+        self.app = app
+        self.app.userdb.add_change_listener(self)
 
     @property
     def job_execution_time(self):
@@ -157,6 +153,9 @@ class NotificationPlugin(IUserChangeListener):
         """
         Implementation of IUserChangeListener interface.
         """
+        if not self._send_change_notification:
+            return
+        
         # Leave if the mail was not changed.
         if 'email' not in attrs:
             return
