@@ -139,11 +139,6 @@ class RdiffwebApp(Application):
         # create user manager
         self.userdb = UserManager(self)
 
-    def activate_plugin(self, plugin_obj):
-        """Activate the given plugin object."""
-        plugin_obj.app = self
-        plugin_obj.activate()
-
     @property
     def currentuser(self):
         """
