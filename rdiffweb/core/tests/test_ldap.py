@@ -74,7 +74,8 @@ class UserManagerLdapTest(AppTestCase):
     ])
 
     default_config = {
-        'LdapEnabled': 'true',
+        'LdapUri': '__default__',
+        'LdapBaseDn': 'dc=nodomain',
         'LdapAllowPasswordChange': 'true',
     }
 
@@ -169,7 +170,8 @@ class UserManagerLdapNoPasswordChangeTest(AppTestCase):
     ])
 
     default_config = {
-        'LdapEnabled': 'true',
+        'LdapUri': '__default__',
+        'LdapBaseDn': 'dc=nodomain',
         'LdapAllowPasswordChange': 'false'
     }
 
@@ -246,7 +248,8 @@ class UserManagerLdapWithRequiredGroupTest(AppTestCase):
     ])
 
     default_config = {
-        'LdapEnabled': 'true',
+        'LdapUri': '__default__',
+        'LdapBaseDn': 'dc=nodomain',
         'LdapAllowPasswordChange': 'true',
         'LdapRequiredGroup': 'cn=rdiffweb,ou=Groups,dc=nodomain',
         'LDAPGroupAttribute': 'memberUid',

@@ -55,11 +55,7 @@ class MockRdiffwebApp(RdiffwebApp):
         # database in memory
         self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
         default_config['SQLiteDBFile'] = os.path.join(self.database_dir, 'rdiffweb.tmp.db')
-
-        if default_config.get('LdapEnabled', 'False').lower() in ['true', 'yes']:
-            default_config['LdapUri'] = '__default__'
-            default_config['LdapBaseDn'] = 'dc=nodomain'
-
+        
         # Call parent constructor
         RdiffwebApp.__init__(self, cfg=default_config)
 

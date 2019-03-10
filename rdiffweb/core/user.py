@@ -170,7 +170,7 @@ class UserObject(object):
         for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserQuota'):  # @UndefinedVariable
             try:
                 cls = entry_point.load()
-                cls().get_disk_usage(self)
+                cls(self._userdb.app).get_disk_usage(self)
             except:
                 logger.warning('IuserQuota [%s] fail to run', entry_point, exc_info=1)
         
@@ -406,7 +406,7 @@ class UserManager():
         for listener in self._change_listeners:
             # Support divergent account change listener implementations too.
             try:
-                logger.debug('notify [%s] [%s]', listener.__class__.__name__, mod)
+                logger.debug('notify %s#%s()', listener.__class__.__name__, mod)
                 getattr(listener, mod)(*args)
             except:
                 logger.warning(

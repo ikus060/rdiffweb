@@ -269,7 +269,8 @@ class UserManagerSQLiteLdapTest(AppTestCase):
     ])
 
     default_config = {
-        'LdapEnabled': 'true',
+        'LdapUri': '__default__',
+        'LdapBaseDn': 'dc=nodomain',
         'LdapAllowPasswordChange': 'true'
     }
 
