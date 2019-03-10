@@ -3,6 +3,7 @@ image: $DOCKER_REGISTRY/pdsl/rdiffweb-build
 stages:
 - prebuild
 - test
+- sonar
 - publish
 - deploy
 
@@ -22,7 +23,8 @@ prebuild-docker-image:
   - tox -e $CI_JOB_NAME --sitepackages
   artifacts:
     paths:
-    - .coverage.$CI_JOB_NAME
+    - coverage-*.xml
+    - nosetests-*.xml
     expire_in: 1 day
 
 py27-cherrypy35: 
@@ -118,9 +120,11 @@ py3-cherrypy17:
 py3-cherrypy18: 
   <<: *tox
 
-
-# TODO Publish coverage repport
-# TODO Publish testcases repport
+sonar:
+  stage: sonar
+  image: ikus060/sonar-runner
+  script:
+  - sonar-runner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.exclusions=rdiffweb/controller/tests/**,rdiffweb/core/tests/**,rdiffweb/test.py -Dsonar.sources=.
 
 publish_nexus:
   stage: publish
