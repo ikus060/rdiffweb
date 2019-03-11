@@ -193,7 +193,7 @@ class SQLiteUserDB():
         assert isinstance(email, str)
         self._set_user_field(username, 'UserEmail', email)
 
-    def set_repos(self, username, repoPaths):
+    def set_repos(self, username, repo_paths):
         assert isinstance(username, str)
         if not self.exists(username):
             raise InvalidUserError(username)
@@ -201,22 +201,22 @@ class SQLiteUserDB():
 
         # We don't want to just delete and recreate the repos, since that
         # would lose notification information.
-        existingRepos = self.get_repos(username)
-        reposToDelete = [x for x in existingRepos if x not in repoPaths]
-        reposToAdd = [x for x in repoPaths if x not in existingRepos]
+        existing_repos = self.get_repos(username)
+        repos_to_delete = [x for x in existing_repos if x not in repo_paths]
+        repos_to_add = [x for x in repo_paths if x not in existing_repos]
 
         # delete any obsolete repos
-        for repo in reposToDelete:
+        for repo in repos_to_delete:
             query = "DELETE FROM repos WHERE UserID=? AND RepoPath=?"
             self._execute_query(query, (user_id, repo))
 
         # add in new repos
         query = "INSERT INTO repos (UserID, RepoPath) values (?, ?)"
-        repoPaths = [[user_id, repo] for repo in reposToAdd]
+        repo_paths = [[user_id, repo] for repo in repos_to_add]
         conn = self._connect()
         try:
             cursor = conn.cursor()
-            cursor.executemany(query, repoPaths)
+            cursor.executemany(query, repo_paths)
         finally:
             conn.close()
 
@@ -245,11 +245,11 @@ class SQLiteUserDB():
         query = "UPDATE repos SET %s=? WHERE RepoPath=? AND UserID = ?" % (key,)
         self._execute_query(query, (value, repo_path, self._get_user_id(username)))
 
-    def set_repo_maxage(self, username, repoPath, maxAge):
+    def set_repo_maxage(self, username, repo_path, max_age):
         assert isinstance(username, str)
-        assert repoPath in self.get_repos(username)
+        assert repo_path in self.get_repos(username)
         query = "UPDATE repos SET MaxAge=? WHERE RepoPath=? AND UserID = ?"
-        self._execute_query(query, (maxAge, repoPath, self._get_user_id(username)))
+        self._execute_query(query, (max_age, repo_path, self._get_user_id(username)))
 
     def set_user_root(self, username, user_root):
         assert isinstance(username, str)
@@ -267,17 +267,17 @@ class SQLiteUserDB():
         assert self.exists(username)
         return self._get_user_field(username, 'UserID')
 
-    def _get_user_field(self, username, fieldName):
+    def _get_user_field(self, username, fieldname):
         if not self.exists(username):
             raise InvalidUserError(username)
-        query = "SELECT " + fieldName + " FROM users WHERE Username = ?"
+        query = "SELECT " + fieldname + " FROM users WHERE Username = ?"
         results = self._execute_query(query, (username,))
         assert len(results) == 1
         return results[0][0]
 
-    def _set_user_field(self, username, fieldName, value):
+    def _set_user_field(self, username, fieldname, value):
         assert isinstance(username, str)
-        assert isinstance(fieldName, str)
+        assert isinstance(fieldname, str)
         assert isinstance(value, str) or isinstance(value, bool) or isinstance(value, int)
 
         if not self.exists(username):
@@ -287,7 +287,7 @@ class SQLiteUserDB():
                 value = '1'
             else:
                 value = '0'
-        query = 'UPDATE users SET ' + fieldName + '=? WHERE Username=?'
+        query = 'UPDATE users SET ' + fieldname + '=? WHERE Username=?'
         self._execute_query(query, (value, username))
 
     def _hash_password(self, password):
