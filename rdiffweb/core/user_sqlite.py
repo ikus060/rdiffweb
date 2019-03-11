@@ -180,13 +180,9 @@ class SQLiteUserDB():
         assert isinstance(username, str)
         if not self.exists(username):
             raise InvalidUserError(username)
-        if is_admin:
-            admin_int = 1
-        else:
-            admin_int = 0
         self._execute_query(
             "UPDATE users SET IsAdmin = ? WHERE Username = ?",
-            (admin_int, username))
+            (bool(is_admin), username))
 
     def set_email(self, username, email):
         assert isinstance(username, str)
