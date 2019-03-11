@@ -432,6 +432,10 @@ class UserManagerSQLiteLdapTest(AppTestCase):
         with self.assertRaises(InvalidUserError):
             self.assertFalse(self.app.userdb.set_password('bar', 'new_password'))
 
+    def test_set_password_empty(self):
+        """Expect error when trying to update password of invalid user."""
+        with self.assertRaises(RdiffError):
+            self.assertFalse(self.app.userdb.set_password('john', ''))
 
 class UserManagerWithAdmin(AppTestCase):
     
