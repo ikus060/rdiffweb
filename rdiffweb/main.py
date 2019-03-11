@@ -23,14 +23,12 @@ import cherrypy
 from future.builtins import str
 import getopt
 import logging
-import os
 import sys
 import tempfile
 import threading
 import traceback
 
 from rdiffweb import rdw_app
-from rdiffweb.core.rdw_profiler import ProfilingApplication
 from rdiffweb.core.rdw_deamon import RemoveOlder, UpdateRepos
 from rdiffweb.core.config import read_config
 
@@ -137,17 +135,10 @@ def start():
     """Start rdiffweb deamon."""
     # Parse command line options
     args = {}
-    profile = False
-    profile_path = '/tmp'
-    profile_aggregated = False
-
     opts = getopt.getopt(
         sys.argv[1:],
         'vdrf:', [
             'debug',
-            'profile',
-            'profile-path=',
-            'profile-aggregated',
             'log-file=',
             'log-access-file=',
             'config=',
@@ -161,14 +152,6 @@ def start():
             args['log_access_file'] = value
         elif option in ['-f', '--config']:
             args['config'] = value
-        elif option in ['--profile']:
-            profile = True
-        elif option in ['--profile-path']:
-            profile = True
-            profile_path = value
-        elif option in ['--profile-aggregated']:
-            profile = True
-            profile_aggregated = True
 
     # Open config file before opening the apps.
     configfile = args.get('config', '/etc/rdiffweb/rdw.conf')
@@ -220,13 +203,6 @@ def start():
     # Add a custom signal handler
     cherrypy.engine.signal_handler.handlers['SIGUSR2'] = debug_dump_mem
     cherrypy.engine.signal_handler.handlers['SIGABRT'] = debug_dump_thread
-
-    # Create application wrapper if profiling is enabled.
-    if profile or profile_aggregated:
-        app = ProfilingApplication(app, profile_path, profile_aggregated)
-        if profile_aggregated:
-            global_config['server.thread_pool'] = 1
-            global_config['server.thread_pool_max'] = 1
 
     # Start deamons
     RemoveOlder(cherrypy.engine, app).subscribe()
