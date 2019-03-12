@@ -44,7 +44,7 @@ class HistoryPage(Controller):
 
         logger.debug("history [%r]", path)
 
-        repo_obj = self.validate_user_path(path)[0]
+        repo_obj = self.app.currentuser.get_repo_path(path)[0]
         assert isinstance(repo_obj, librdiff.RdiffRepo)
 
         # Set up warning about in-progress backups, if necessary

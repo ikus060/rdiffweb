@@ -100,21 +100,3 @@ class Controller(object):
         """
         return cherrypy.request.method == "POST"
     
-    def validate_user_path(self, path_b):
-        '''
-        Takes a path relative to the user's root dir and validates that it
-        is valid and within the user's root.
-    
-        Uses bytes path to avoid any data lost in encoding/decoding.
-        '''
-        # NOTE: a blank path is allowed, since the user root directory might be
-        # a repository.
-        logger.debug("checking user access to path %r", path_b)
-    
-        # Query database for a matching repository.
-        try:
-            return self.app.currentuser.get_repo_path(path_b)
-        except KeyError:
-            # No repo matches
-            logger.error("user doesn't have access to [%r]", path_b)
-            raise DoesNotExistError(path_b)

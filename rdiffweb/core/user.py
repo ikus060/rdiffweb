@@ -23,7 +23,7 @@ import os
 from rdiffweb.core import InvalidUserError, RdiffError
 from rdiffweb.core.config import BoolOption
 from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.librdiff import RdiffRepo
+from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError
 from rdiffweb.core.user_ldap_auth import LdapPasswordStore
 from rdiffweb.core.user_sqlite import SQLiteUserDB
 
@@ -129,7 +129,7 @@ class UserObject(object):
         for r in self._db.get_repos(self._username):
             if name == normpath(encodefilename(r)):
                 return RepoObject(self._db, self._username, r)
-        raise KeyError(name)
+        raise DoesNotExistError(name)
     
     def get_repo_path(self, path):
         """
@@ -146,7 +146,7 @@ class UserObject(object):
                 repo_obj = RdiffRepo(user_root, repo)
                 path_obj = repo_obj.get_path(path[len(repo):])
                 return (repo_obj, path_obj)
-        raise KeyError(path)
+        raise DoesNotExistError(path)
 
     def set_attr(self, key, value, notify=True):
         """Used to define an attribute"""

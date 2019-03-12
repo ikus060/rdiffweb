@@ -276,7 +276,7 @@ class DirEntry(object):
 
         # Keep reference to the path and repo object.
         if isinstance(parent, RdiffRepo):
-            self._repo = weakref.proxy(parent)
+            self._repo = parent
             self.path = path
         else:
             self._repo = parent._repo

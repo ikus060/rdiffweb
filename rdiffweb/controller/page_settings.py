@@ -43,7 +43,7 @@ class SettingsPage(Controller):
         _logger.debug("repo settings [%r]", path)
 
         # Check user permissions
-        repo_obj = self.validate_user_path(path)[0]
+        repo_obj = self.app.currentuser.get_repo_path(path)[0]
         r = self.app.currentuser.get_repo(repo_obj.path)
 
         # Get page data.
@@ -72,7 +72,7 @@ class SetEncodingPage(Controller):
         _logger.debug("update repo [%r] settings [%r]", path, new_encoding)
 
         # Check user permissions
-        repo_obj = self.validate_user_path(path)[0]
+        repo_obj = self.app.currentuser.get_repo_path(path)[0]
 
         # Validate the encoding value
         new_codec = encodings.search_function(new_encoding.lower())
@@ -108,7 +108,7 @@ class RemoveOlderPage(Controller):
             raise cherrypy.HTTPError(400, _("Invalid value"))
 
         # Check user permissions
-        repo_obj = self.validate_user_path(path)[0]
+        repo_obj = self.app.currentuser.get_repo_path(path)[0]
 
         # Get repository object from user database.
         r = self.app.currentuser.get_repo(repo_obj.path)
@@ -131,7 +131,7 @@ class DeleteRepoPage(Controller):
         _logger.debug("repo delete [%r]", path)
 
         # Check user permissions
-        repo_obj = self.validate_user_path(path)[0]
+        repo_obj = self.app.currentuser.get_repo_path(path)[0]
 
         # Validate the name
         confirm_name = kwargs.get('confirm_name', None)

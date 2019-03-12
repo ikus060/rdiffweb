@@ -51,7 +51,7 @@ class BrowsePage(Controller):
         logger.debug("browsing [%r]", path)
 
         # Check user access to the given repo & path
-        (repo_obj, path_obj) = self.validate_user_path(path)
+        (repo_obj, path_obj) = self.app.currentuser.get_repo_path(path)
 
         # Build the parameters
         parms = self._get_parms_for_page(repo_obj, path_obj, restore, limit)

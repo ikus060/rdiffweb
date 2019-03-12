@@ -20,7 +20,6 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import logging
-import rdiffweb
 from rdiffweb.controller import Controller, validate_isinstance, validate
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.archiver import ARCHIVERS
@@ -86,7 +85,7 @@ class RestorePage(Controller):
         logger.debug("restoring [%r][%s]", path, date)
 
         # Check user access to repo / path.
-        (repo_obj, path_obj) = self.validate_user_path(path)
+        path_obj = self.app.currentuser.get_repo_path(path)[1]
 
         # Get the restore date
         try:

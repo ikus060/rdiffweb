@@ -44,7 +44,7 @@ class GraphsPage(Controller):
 
         # Check user permissions
         try:
-            repo_obj = self.validate_user_path(path)[0]
+            repo_obj = self.app.currentuser.get_repo_path(path)[0]
         except librdiff.FileError as e:
             _logger.exception("invalid user path [%r]", path)
             return self._compile_error_template(str(e))
@@ -81,7 +81,7 @@ class GraphsPage(Controller):
 
         # Check user permissions
         try:
-            repo_obj = self.validate_user_path(path)[0]
+            repo_obj = self.app.currentuser.get_repo_path(path)[0]
         except librdiff.FileError as e:
             _logger.exception("invalid user path [%r]", path)
             return self._compile_error_template(str(e))
