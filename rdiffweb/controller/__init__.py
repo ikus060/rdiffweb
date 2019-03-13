@@ -52,7 +52,9 @@ def validate_isinstance(value, cls, message=None):
 
 class Controller(object):
 
-    _header_name = Option("HeaderName")
+    _header_name = Option("HeaderName", "rdiffweb")
+    
+    _default_theme = Option("DefaultTheme", "default")
 
     @property
     def app(self):
@@ -86,8 +88,8 @@ class Controller(object):
         # Append custom branding
         if hasattr(self.app.root, "header_logo"):
             parms["header_logo"] = '/header_logo'
-        if self._header_name:
-            parms["header_name"] = self._header_name
+        parms["header_name"] = self._header_name
+        parms["theme"] = self._default_theme
 
         # Append template parameters.
         parms.update(kwargs)
