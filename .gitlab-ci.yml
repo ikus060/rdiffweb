@@ -126,20 +126,36 @@ sonar:
   script:
   - sonar-runner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.exclusions=rdiffweb/controller/tests/**,rdiffweb/core/tests/**,rdiffweb/test.py -Dsonar.sources=.
 
-publish_nexus:
+publish_nexus_py2:
   stage: publish
   script:
-  - pip install wheel twine --upgrade
-  - python setup.py sdist bdist_wheel
+  - pip2 install wheel twine --upgrade
+  - python2 setup.py sdist bdist_wheel
   - twine upload dist/* -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
 
-publish_pypi:
+publish_nexus_py3:
+  stage: publish
+  script:
+  - pip3 install wheel twine --upgrade
+  - python3 setup.py sdist bdist_wheel
+  - twine upload dist/* -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
+
+publish_pypi_py2:
   stage: publish
   only:
   - tags
   script:
-  - pip install wheel twine --upgrade
-  - python setup.py sdist bdist_wheel
+  - pip3 install wheel twine --upgrade
+  - python3 setup.py sdist bdist_wheel
+  - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
+  
+publish_pypi_py3:
+  stage: publish
+  only:
+  - tags
+  script:
+  - pip3 install wheel twine --upgrade
+  - python3 setup.py sdist bdist_wheel
   - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
   
 rdiffweb_deploy_staging: 
