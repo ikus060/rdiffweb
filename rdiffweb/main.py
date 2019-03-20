@@ -19,18 +19,22 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import cherrypy
-from future.builtins import str
 import getopt
 import logging
+from rdiffweb import rdw_app
+from rdiffweb.core.config import read_config
+from rdiffweb.core.rdw_deamon import RemoveOlder, UpdateRepos
+import sys
 import sys
 import tempfile
 import threading
 import traceback
 
-from rdiffweb import rdw_app
-from rdiffweb.core.rdw_deamon import RemoveOlder, UpdateRepos
-from rdiffweb.core.config import read_config
+import cherrypy
+from future.builtins import str
+
+PY2 = sys.version_info[0] == 2
+nativestr = bytes if PY2 else str
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -178,7 +182,7 @@ def start():
     app = rdw_app.RdiffwebApp(cfg)
 
     # Get configuration
-    serverHost = cfg.get("serverhost", b"0.0.0.0")
+    serverHost = nativestr(cfg.get("serverhost", "127.0.0.1"))
     serverPort = int(cfg.get("serverport", "8080"))
     # Get SSL configuration (if any)
     sslCertificate = cfg.get("sslcertificate")
