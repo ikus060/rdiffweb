@@ -30,6 +30,7 @@ from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core import librdiff
 from rdiffweb.core.config import Option, BoolOption
 from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.rdw_deamon import Deamon
 from rdiffweb.core.user import IUserChangeListener
 import re
 import smtplib
@@ -110,7 +111,7 @@ def _utf8(self, val):
     return val.encode('utf-8')
 
 
-class NotificationPlugin(IUserChangeListener):
+class NotificationPlugin(Deamon, IUserChangeListener):
     """
     Send email notification when a repository get too old (without a backup).
     """
@@ -122,6 +123,8 @@ class NotificationPlugin(IUserChangeListener):
     _email_port = Option('EmailHost', _get_func=lambda x: int(x.partition(':')[2]))
 
     _email_from = Option('EmailSender')
+    
+    _email_notification_time = Option('EmailNotificationTime', '23:00')
 
     _smtp_username = Option('EmailUsername', None)
 
@@ -130,17 +133,17 @@ class NotificationPlugin(IUserChangeListener):
     _header_name = Option("HeaderName", "rdiffweb")
     
     _send_change_notification = BoolOption("EmailSendChangedNotification", False)
+    
+    
 
-    def __init__(self, app):
+    def __init__(self, bus, app):
         self.app = app
         self.app.userdb.add_change_listener(self)
+        Deamon.__init__(self, bus)
 
     @property
     def job_execution_time(self):
-        """
-        Implementation of JobPlugin interface.
-        """
-        return self.app.cfg.get_config('EmailNotificationTime', '23:00')
+        return self._email_notification_time
 
     def job_run(self):
         """

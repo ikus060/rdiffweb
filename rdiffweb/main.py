@@ -32,6 +32,7 @@ import traceback
 
 import cherrypy
 from future.builtins import str
+from rdiffweb.core.notification import NotificationPlugin
 
 PY2 = sys.version_info[0] == 2
 nativestr = bytes if PY2 else str
@@ -211,6 +212,7 @@ def start():
     # Start deamons
     RemoveOlder(cherrypy.engine, app).subscribe()
     UpdateRepos(cherrypy.engine, app).subscribe()
+    NotificationPlugin(cherrypy.engine, app).subscribe()
 
     # Start web server
     cherrypy.quickstart(app)

@@ -144,12 +144,7 @@ class UpdateRepos(Deamon):
         """
         try:
 
-            user_db = self.app.userdb
-            if not user_db.supports('set_repos'):
-                return
-
-            users = user_db.list()
-            for user in users:
+            for user in self.app.userdb.list():
                 find_repos_for_user(user)
 
         except:

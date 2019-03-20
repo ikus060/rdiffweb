@@ -50,7 +50,7 @@ class NotificationTest(AppTestCase):
         user.get_repo(self.REPO).maxage = 1
 
         # Get ref to notification plugin
-        n = NotificationPlugin(self.app)
+        n = NotificationPlugin(bus=MagicMock(), app=self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
 
@@ -70,7 +70,8 @@ class NotificationTest(AppTestCase):
         user.get_repo(self.REPO).maxage = -1
 
         # Get ref to notification plugin
-        n = NotificationPlugin(self.app)
+        bus = MagicMock()
+        n = NotificationPlugin(bus, self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
 
@@ -96,7 +97,8 @@ class NotificationTest(AppTestCase):
             self.app.cfg['EmailEncryption'] = 'starttls'
 
             # Get ref to notification plugin
-            n = NotificationPlugin(self.app)
+            bus = MagicMock()
+            n = NotificationPlugin(bus, self.app)
             self.assertIsNotNone(n)
             n.send_mail(user, 'subject', 'email_notification.html')
 
@@ -124,7 +126,7 @@ Here is the link you wanted."""
     def test_email_changed(self):
         # Get ref to notification plugin
         self.app.cfg['emailsendchangednotification'] = 'True'
-        n = NotificationPlugin(self.app)
+        n = NotificationPlugin(bus=MagicMock(), app=self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
 
