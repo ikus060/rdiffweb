@@ -469,15 +469,24 @@ class HistoryEntry(object):
     @property
     def has_errors(self):
         """Check if the history has errors."""
-        return not self._repo._error_logs[self.date].is_empty
+        try:
+            return not self._repo._error_logs[self.date].is_empty
+        except KeyError:
+            return False
 
     @property
     def errors(self):
         """Return error messages."""
+        # Get error log entry
         try:
-            return self._repo._decode(self._repo._error_logs[self.date].read())
+            entry = self._repo._error_logs[self.date]
         except KeyError:
             return ""
+        # Read the error log entry.
+        try:
+            return self._repo._decode(entry.read())
+        except:
+            return "Error reading log file: " + self._repo._decode(entry.name)
 
     @property
     def increment_size(self):
