@@ -170,7 +170,7 @@ class UserObject(object):
         for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserQuota'):  # @UndefinedVariable
             try:
                 cls = entry_point.load()
-                cls(self._userdb.app).get_disk_usage(self)
+                return cls(self._userdb.app).get_disk_usage(self)
             except:
                 logger.warning('IuserQuota [%s] fail to run', entry_point, exc_info=1)
         
