@@ -205,6 +205,12 @@ class HistoryEntryTest(unittest.TestCase):
         self.assertTrue(entry.has_errors)
         self.assertEqual('SpecialFileError home/coucou Socket error: AF_UNIX path too long', entry.errors)
 
+    def test_errors_invalid_gz(self):
+        increment = IncrementEntry(self.root_path, b'error_log.2019-05-22T09:19:09-04:00.data.gz')
+        entry = HistoryEntry(self.repo, increment.date)
+        self.assertTrue(entry.has_errors)
+        self.assertEqual('Error reading log file: error_log.2019-05-22T09:19:09-04:00.data.gz', entry.errors)
+
 
 class RdiffRepoTest(unittest.TestCase):
 
