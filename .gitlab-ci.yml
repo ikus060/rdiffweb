@@ -3,7 +3,6 @@ image: $DOCKER_REGISTRY/pdsl/rdiffweb-build
 stages:
 - prebuild
 - test
-- sonar
 - publish
 - deploy
 
@@ -120,11 +119,19 @@ py3-cherrypy17:
 py3-cherrypy18: 
   <<: *tox
 
-sonar:
-  stage: sonar
+publish:sonar:master:
+  stage: publish
   image: ikus060/sonar-runner
+  only:
+  - master
   script:
   - sonar-runner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.exclusions=rdiffweb/controller/tests/**,rdiffweb/core/tests/**,rdiffweb/test.py -Dsonar.sources=.
+
+publish:sonar:dev:
+  stage: publish
+  image: ikus060/sonar-runner
+  script:
+  - sonar-runner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.exclusions=rdiffweb/controller/tests/**,rdiffweb/core/tests/**,rdiffweb/test.py -Dsonar.sources=.
 
 publish_nexus_py2:
   stage: publish
