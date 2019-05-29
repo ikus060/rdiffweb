@@ -17,6 +17,8 @@ prebuild-docker-image:
 
 .tox:  &tox
   stage: test
+  variables:
+    PIP_INDEX_URL: https://nexus.patrikdufresne.com/repository/pypi-proxy/simple/
   script:
   - pip install tox nose coverage --upgrade
   - tox -e $CI_JOB_NAME --sitepackages
