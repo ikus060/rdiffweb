@@ -34,7 +34,6 @@ from rdiffweb.core.i18n import ugettext as _
 
 from builtins import str
 
-
 _logger = logging.getLogger(__name__)
 
 
@@ -47,61 +46,34 @@ class SSHKeysPlugin(Controller):
     
     panel_name = _('SSH Keys')
     
-    def _handle_add(self, filename, **kwargs):
+    def _handle_add(self, **kwargs):
         """
         Called to add a new key to an authorized_keys file.
         """
         assert 'key' in kwargs, "key is missing"
 
-        # Validate the content of the key.
+        # Add the key to the current user.
         try:
-            key = authorizedkeys.check_publickey(kwargs['key'])
+            self.app.currentuser.add_authorizedkey(key=kwargs['key'], comment=kwargs.get('title', None))
+        except ValueError as e:
+            _logger.warn("error adding ssh key", exc_info=1)
+            raise RdiffWarning(e.message)
         except:
-            raise RdiffWarning(_("Invalid SSH key."))
+            _logger.warn("error adding ssh key", exc_info=1)
+            raise RdiffWarning(_("Unknown error while adding the SSH Key"))
 
-        # Check if already exists
-        if authorizedkeys.exists(filename, key):
-            raise RdiffWarning(_("SSH key already exists."))
-
-        # Check size.
-        if key.size < 2048:
-            raise RdiffWarning(_("SSH key is too short. RSA key of at least 2048 bits is required."))
-
-        # Add comment to the key.
-        comment = key.comment
-        if 'title' in kwargs:
-            comment = kwargs['title'].strip()
-
-        key = authorizedkeys.KeySplit(
-            lineno=key.lineno,
-            options=key.options,
-            keytype=key.keytype,
-            key=key.key,
-            comment=comment)
-
-        # Add key to file
-        _logger.info("add key [%s] to [%s]", key, filename)
-        authorizedkeys.add(filename, key)
-
-    def _handle_delete(self, filename, **kwargs):
+    def _handle_delete(self, **kwargs):
         """
         Called for delete a key from an authorized_keys file.
         """
-
-        # Check if key is valid.
-        assert 'key' in kwargs, "key is missing"
-        lineno = int(kwargs['key'])
-
-        # Remove the key
-        _logger.info("removing key [%s] from [%s]", lineno, filename)
-        authorizedkeys.remove(filename, lineno)
+        assert kwargs.get('key') , "key is missing"
+        try:
+            self.app.currentuser.remove_authorizedkey(key=kwargs['key'])
+        except:
+            _logger.warn("error removing ssh key", exc_info=1)
+            raise RdiffWarning(_("Unknown error while removing the SSH Key"))
 
     def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
-        # Get user root directory
-        filename = None
-        user_root = self.app.currentuser.user_root
-        if user_root:
-            filename = os.path.join(user_root, '.ssh', 'authorized_keys')
 
         # Handle action
         params = {}
@@ -109,31 +81,23 @@ class SSHKeysPlugin(Controller):
             try:
                 action = kwargs['action']
                 if action == 'add':
-                    self._handle_add(filename, **kwargs)
+                    self._handle_add(**kwargs)
                 elif action == 'delete':
-                    self._handle_delete(filename, **kwargs)
+                    self._handle_delete(**kwargs)
             except RdiffWarning as e:
                 params['warning'] = str(e)
             except RdiffError as e:
                 params['error'] = str(e)
-            except Exception as e:
-                _logger.warning("unknown error processing action", exc_info=True)
-                params['error'] = _("Unknown error")
 
         # Get SSH keys if file exists.
         params["sshkeys"] = []
-        if filename:
-            try:
-                params["sshkeys"] = [
-                    {'title': key.comment or (key.keytype + ' ' + key.key[:18]),
-                     'fingerprint': key.fingerprint,
-                     'lineno': key.lineno}
-                    for key in authorizedkeys.read(filename)]
-            except IOError:
-                params['error'] = _("error reading SSH keys file")
-                _logger.warning("error reading SSH keys file [%s]", filename)
-        else:
+        try:
+            params["sshkeys"] = [
+                {'title': key.comment or (key.keytype + ' ' + key.key[:18]),
+                 'fingerprint': key.fingerprint}
+                for key in self.app.currentuser.authorizedkeys]
+        except IOError:
             params['error'] = _("error reading SSH keys file")
-            _logger.warning("SSH keys file [%s] is not accessible", filename)
+            _logger.warning("error reading SSH keys", exc_info=1)
 
         return "prefs_sshkeys.html", params

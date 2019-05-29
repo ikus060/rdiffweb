@@ -25,16 +25,18 @@ Module to test `user` module.
 
 from __future__ import unicode_literals
 
+from io import open
 import logging
-from mock import MagicMock
+import os
 from rdiffweb.core import InvalidUserError, RdiffError
 from rdiffweb.core.user import IUserChangeListener
 from rdiffweb.test import AppTestCase
 import unittest
 
-from mockldap import MockLdap
-
 from builtins import str
+from mock import MagicMock
+from mockldap import MockLdap
+import pkg_resources
 
 
 def _ldap_user(name, password='password'):
@@ -437,6 +439,7 @@ class UserManagerSQLiteLdapTest(AppTestCase):
         with self.assertRaises(RdiffError):
             self.assertFalse(self.app.userdb.set_password('john', ''))
 
+
 class UserManagerWithAdmin(AppTestCase):
     
     reset_testcases = True
@@ -463,6 +466,108 @@ class UserManagerWithAdmin(AppTestCase):
         self.assertIn('avail', disk_usage)
         self.assertIn('used', disk_usage)
         self.assertIn('size', disk_usage)
+
+        
+class UserManagerSSHKeys(AppTestCase):
+    """
+    Testcases for ssh key management.
+    """
+    reset_testcases = True
+
+    REPO = 'testcases/'
+
+    USERNAME = 'admin'
+
+    PASSWORD = 'admin123'
+    
+    def _read_ssh_key(self):
+        """Readthe pub key from test packages"""
+        filename = pkg_resources.resource_filename(__name__, 'test_publickey_ssh_rsa.pub')  # @UndefinedVariable
+        with open(filename, 'r', encoding='utf8') as f: 
+            return f.readline()
+        
+    def _read_authorized_keys(self):
+        """Read the content of test_authorized_keys"""
+        filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable
+        with open(filename, 'r', encoding='utf8') as f: 
+            return f.read()
+   
+    def test_add_authorizedkey_without_file(self):
+        """
+        Add an ssh key for a user without an authorizedkey file.
+        """
+        # Read the pub key
+        key = self._read_ssh_key()
+        # Add the key to the user
+        userobj = self.app.userdb.get_user(self.USERNAME)
+        userobj.add_authorizedkey(key)
+        
+        # validate
+        keys = list(userobj.authorizedkeys)
+        self.assertEqual(1, len(keys), "expecting one key")
+        self.assertEqual("3c:99:ed:a7:82:a8:71:09:2c:15:3d:78:4a:8c:11:99", keys[0].fingerprint)
+
+    def test_add_authorizedkey_with_file(self):
+        """
+        Add an ssh key for a user with an authorizedkey file.
+        """
+        userobj = self.app.userdb.get_user(self.USERNAME)
+
+        # Create empty authorized_keys file
+        os.mkdir(os.path.join(userobj.user_root, '.ssh'))
+        filename = os.path.join(userobj.user_root, '.ssh', 'authorized_keys')
+        open(filename, 'a').close()
+        
+        # Read the pub key
+        key = self._read_ssh_key()
+        userobj.add_authorizedkey(key)
+        
+        # Validate
+        with open(filename, 'r') as fh:
+            self.assertEqual(key, fh.read())
+            
+    def test_remove_authorizedkey_without_file(self):
+        """
+        Remove an ssh key for a user without authorizedkey file.
+        """
+        # Update user with ssh keys.
+        data = self._read_authorized_keys()
+        userobj = self.app.userdb.get_user(self.USERNAME)
+        userobj.set_attr('authorizedkeys', data)
+        
+        # Get the keys
+        keys = list(userobj.authorizedkeys)
+        self.assertEqual(5, len(keys))
+        
+        # Remove a key
+        userobj.remove_authorizedkey("9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
+
+        # Validate
+        keys = list(userobj.authorizedkeys)
+        self.assertEqual(4, len(keys))
+        
+    def test_remove_authorizedkey_with_file(self):
+        """
+        Remove an ssh key for a user with authorizedkey file.
+        """
+        # Create authorized_keys file
+        data = self._read_authorized_keys()
+        userobj = self.app.userdb.get_user(self.USERNAME)
+        os.mkdir(os.path.join(userobj.user_root, '.ssh'))
+        filename = os.path.join(userobj.user_root, '.ssh', 'authorized_keys')
+        with open(filename, 'w') as f :
+            f.write(data)
+        
+        # Get the keys
+        keys = list(userobj.authorizedkeys)
+        self.assertEqual(5, len(keys))
+        
+        # Remove a key
+        userobj.remove_authorizedkey("9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
+
+        # Validate
+        keys = list(userobj.authorizedkeys)
+        self.assertEqual(4, len(keys))
 
 
 if __name__ == "__main__":

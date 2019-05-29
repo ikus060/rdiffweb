@@ -18,9 +18,11 @@
 
 from __future__ import unicode_literals
 
+from io import StringIO
+from io import open
 import logging
 import os
-from rdiffweb.core import InvalidUserError, RdiffError
+from rdiffweb.core import InvalidUserError, RdiffError, authorizedkeys
 from rdiffweb.core.config import BoolOption
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError
@@ -31,6 +33,7 @@ from builtins import str, bytes
 from future.utils import python_2_unicode_compatible
 from future.utils.surrogateescape import encodefilename
 import pkg_resources
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -154,13 +157,13 @@ class UserObject(object):
 
     def set_attrs(self, **kwargs):
         """Used to define multiple attributes at once."""
+        notify = kwargs.pop('notify', True)
         for key, value in kwargs.items():
-            if key in ['is_admin', 'email', 'user_root', 'repos']:
-                setter = getattr(self._db, 'set_%s' % key)
-                setter(self._username, value)
+            assert key in ['is_admin', 'email', 'user_root', 'repos', 'authorizedkeys']
+            setter = getattr(self._db, 'set_%s' % key)
+            setter(self._username, value)
         # Call notification listener
-        if kwargs.get('notify', True):
-            del kwargs['notify']
+        if notify:
             self._userdb._notify('user_attr_changed', self._username, kwargs)
 
     @property
@@ -204,12 +207,93 @@ class UserObject(object):
             except:
                 logger.warning('IuserQuota [%s] fail to run', entry_point, exc_info=1)
         return 0
+    
+    def get_authorizedkeys(self):
+        """
+        Return an iterator on the authorized key. Either from his
+        `authorized_keys` file if it exists or from database.
+        """
+        # If a filename exists, use it by default.
+        filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
+        if os.path.isfile(filename):
+            return authorizedkeys.read(filename)
+        
+        # Also look in database.
+        data = self._db.get_authorizedkeys(self._username)
+        return authorizedkeys.read(StringIO(data))
+        
+    def add_authorizedkey(self, key, comment=None):
+        """
+        Add the given key to the user. Adding the key to his `authorized_keys`
+        file if it exists and adding it to database.
+        """
+        # Parse and validate ssh key
+        assert key
+        try:
+            key = authorizedkeys.check_publickey(key)
+        except ValueError:
+            raise ValueError(_("Invalid SSH key."))
+        
+        if comment:
+            key = authorizedkeys.AuthorizedKey(
+                options=key.options,
+                keytype=key.keytype,
+                key=key.key,
+                comment=comment)
+        
+        # If a filename exists, use it by default.
+        filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
+        if os.path.isfile(filename):
+            with open(filename, mode="r+", encoding='utf-8') as fh:
+                if authorizedkeys.exists(fh, key):
+                    raise ValueError(_("SSH key already exists"))
+                logger.info("add key [%s] to [%s]", key, self.username)
+                authorizedkeys.add(fh, key)
+                fh.seek(0, 0)
+                data = fh.read()
+        else:
+            # Also look in database.
+            data = self._db.get_authorizedkeys(self._username)
+            fh = StringIO(data)
+            if authorizedkeys.exists(fh, key):
+                raise ValueError(_("SSH key already exists."))
+            # Add key to file
+            logger.info("add key [%s] to [%s]", key, self.username)
+            fh = StringIO(data)
+            authorizedkeys.add(fh, key)
+            data = fh.getvalue()
+        self.set_attr('authorizedkeys', data)
+        
+    def remove_authorizedkey(self, key):
+        """
+        Remove the given key from the user. Remove the key from his
+        `authorized_keys` file if it exists and from database database.
+        
+        `key` should define a fingerprint
+        """
+        # If a filename exists, use it by default.
+        filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
+        if os.path.isfile(filename):
+            with open(filename, mode='r+', encoding='utf-8') as fh:
+                logger.info("removing key [%s] from [%s]", key, self.username)
+                authorizedkeys.remove(fh, key)
+                fh.seek(0, 0)
+                data = fh.read()
+        else:
+            # Also look in database.
+            data = self._db.get_authorizedkeys(self._username)
+            fh = StringIO(data)
+            logger.info("removing key [%s] from [%s]", key, self.username)
+            authorizedkeys.remove(fh, key)
+            data = fh.getvalue()
+        self.set_attr('authorizedkeys', data)
 
     # Declare properties
     is_admin = property(fget=lambda x: x._db.is_admin(x._username), fset=lambda x, y: x.set_attr('is_admin', y))
     email = property(fget=lambda x: x._db.get_email(x._username), fset=lambda x, y: x.set_attr('email', y))
     user_root = property(fget=lambda x: x._db.get_user_root(x._username), fset=lambda x, y: x.set_attr('user_root', y))
     repos = property(fget=lambda x: x._db.get_repos(x._username), fset=lambda x, y: x.set_attr('repos', y))
+    authorizedkeys = property(fget=lambda x: x.get_authorizedkeys())
     repo_list = property(fget=lambda x: [RepoObject(x._db, x._username, r)
                                          for r in x._db.get_repos(x._username)])
     disk_quota = property(get_disk_quota, set_disk_quota)

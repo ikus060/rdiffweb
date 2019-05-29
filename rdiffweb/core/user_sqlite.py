@@ -134,6 +134,14 @@ class SQLiteUserDB():
 
         return self._user_root_cache[username]
 
+    def get_authorizedkeys(self, username):
+        assert isinstance(username, str)
+        if not self.exists(username):
+            raise InvalidUserError(username)
+        # Create column if needed
+        self._create_column('users', 'authorizedkeys', 'clob')
+        return self._get_user_field(username, "authorizedkeys")
+
     def is_admin(self, username):
         assert isinstance(username, str)
         value = self._get_user_field(username, "IsAdmin")
@@ -259,6 +267,13 @@ class SQLiteUserDB():
             "UPDATE users SET UserRoot=? WHERE Username = ?",
             (user_root, username))
 
+    def set_authorizedkeys(self, username, sshkeys):
+        assert isinstance(username, str)
+        assert isinstance(sshkeys, str)
+        # Create column if needed
+        self._create_column('users', 'authorizedkeys', 'clob')
+        self._set_user_field(username, 'authorizedkeys', sshkeys)
+
     def _get_user_id(self, username):
         assert self.exists(username)
         return self._get_user_field(username, 'UserID')
@@ -347,7 +362,7 @@ class SQLiteUserDB():
             self.set_user_root('admin', '/backups/')
             self.set_is_admin('admin', True)
 
-    def _create_column(self, table, column):
+    def _create_column(self, table, column, datatype='varchar(255)'):
         """
         Add a column to the tables.
         """
@@ -355,7 +370,7 @@ class SQLiteUserDB():
         if column in self._get_columns(table):
             return
         # Add column.
-        self._execute_query('ALTER TABLE %s ADD COLUMN %s varchar(255) NOT NULL DEFAULT ""' % (table, column,))
+        self._execute_query('ALTER TABLE %s ADD COLUMN %s %s NOT NULL DEFAULT ""' % (table, column, datatype,))
 
     def _get_columns(self, table):
         """

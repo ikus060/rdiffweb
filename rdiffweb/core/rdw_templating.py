@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 
 from io import StringIO
 import logging
-import time
+from rdiffweb.core import i18n
+from rdiffweb.core import librdiff
+from rdiffweb.core import rdw_helpers
 
 from builtins import bytes
 from builtins import object
@@ -29,10 +31,6 @@ from builtins import str
 from jinja2 import Environment, PackageLoader
 from jinja2.filters import do_mark_safe
 from jinja2.loaders import ChoiceLoader, FileSystemLoader
-
-from rdiffweb.core import i18n
-from rdiffweb.core import librdiff
-from rdiffweb.core import rdw_helpers
 
 
 # Define the logger

@@ -25,7 +25,6 @@ from rdiffweb import rdw_app
 from rdiffweb.core.config import read_config
 from rdiffweb.core.rdw_deamon import RemoveOlder, UpdateRepos
 import sys
-import sys
 import tempfile
 import threading
 import traceback

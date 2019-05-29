@@ -155,6 +155,12 @@ class SQLiteUserDBTest(AppTestCase):
         self.db.set_repos("kim", [])
         self.assertEquals([], self.db.get_repos('kim'))
 
+    def test_set_authorizedkeys(self):
+        self.db.add_user('kim')
+        value = "This should be a very long clob with sshkeys"
+        self.db.set_authorizedkeys("kim", value)
+        self.assertEquals(value, self.db.get_authorizedkeys('kim'))
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
