@@ -54,6 +54,7 @@ class BrowsePageTest(WebCase):
         """
         self.getPage("/")
         self.assertInBody(self.REPO)
+        self.assertInBody('<meta itemprop="name" content="testcases" />')
 
     def test_WithRelativePath(self):
         """

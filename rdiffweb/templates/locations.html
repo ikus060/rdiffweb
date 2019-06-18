@@ -57,7 +57,7 @@
         {% else %}
         <a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }}
             href="{{ url_for_browse(repo.path) }}" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-          <meta itemprop="name" content="{{ repo.path }}" />
+          <meta itemprop="name" content="{{ repo.path.decode('utf-8', 'replace') }}" />
           <i class="icon-hdd"></i>
           {{ name }}{% if name|length==1 %}:\{% endif %}
           <span class="pull-right light">
