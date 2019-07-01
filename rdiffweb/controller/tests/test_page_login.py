@@ -128,17 +128,24 @@ class LoginPageTest(WebCase):
 
     def test_getapi_without_username(self):
         """
-        Check if error 403 is raised when requesting /login without a username.
+        Check if error 401 is raised when requesting /login without a username.
         """
         self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b":admin123").decode('ascii'))])
-        self.assertStatus('403 Forbidden')
+        self.assertStatus('401 Unauthorized')
 
     def test_getapi_with_empty_password(self):
         """
         Check if 401 is return when authorization is not provided.
         """
         self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:").decode('ascii'))])
-        self.assertStatus('403 Forbidden')
+        self.assertStatus('401 Unauthorized')
+        
+    def test_getapi_with_invalid_password(self):
+        """
+        Check if 401 is return when authorization is not provided.
+        """
+        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:invalid").decode('ascii'))])
+        self.assertStatus('401 Unauthorized')
 
     def test_getapi_with_authorization(self):
         """

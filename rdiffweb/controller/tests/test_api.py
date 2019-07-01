@@ -47,10 +47,6 @@ class APITest(WebCase):
         self.assertIn('/tmp/rdiffweb_tests', data.get('user_root'))
         self.assertEqual(data.get('repos'), ['testcases/'])
 
-    def test_get_currentuser_repos(self):
-        data = self.getJson('/api/currentuser/repos', headers=self.headers)
-        self.assertEqual(data, ['testcases/'])
-
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

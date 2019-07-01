@@ -212,7 +212,10 @@ class BasicAuth(BaseAuth):
                         return False
                     except RdiffError as e:
                         logger.info('basic auth fail for user: %s', login, exc_info=1)
-                        raise cherrypy.HTTPError(403)
+                        cherrypy.serving.response.headers['www-authenticate'] = (
+                            'Basic realm="%s"%s' % ('rdiffweb', 'utf-8')
+                        )
+                        raise cherrypy.HTTPError(401)
 
             except (ValueError, binascii.Error):
                 raise cherrypy.HTTPError(400, 'Bad Request')
@@ -223,7 +226,7 @@ class BasicAuth(BaseAuth):
             cherrypy.serving.response.headers['www-authenticate'] = (
                 'Basic realm="%s"%s' % ('rdiffweb', 'utf-8')
             )
-            raise cherrypy.HTTPError(401, "You are not authorized to access that resource")
+            raise cherrypy.HTTPError(401)
 
 
 cherrypy.tools.authbasic = BasicAuth()
