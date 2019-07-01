@@ -208,6 +208,6 @@ setup(
         "mock>=1.3.0",
         "coverage>=4.0.1",
         "mockldap>=0.2.6",
-        "pytest",
+        "pytest<5.0.0",
     ]
 )
