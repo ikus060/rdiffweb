@@ -116,38 +116,25 @@ class UserManagerSQLiteTest(AppTestCase):
         user.user_root = '/backups/bernie/'
         user.is_admin = True
         user.email = 'bernie@gmail.com'
-        user.repos = ['/backups/bernie/computer/', '/backups/bernie/laptop/']
-        user.repo_list[0].maxage = -1
-        user.repo_list[0].set_attr('newattribute', 'test1')
-        user.get_repo('/backups/bernie/laptop/').maxage = 3
-        user.get_repo('/backups/bernie/laptop/').set_attr('newattribute', 'test2')
+        user.repos = ['computer', 'laptop']
+        user.repo_objs[0].maxage = -1
+        user.get_repo('laptop').maxage = 3
 
         # Get user record.
         obj = self.app.userdb.get_user('bernie')
         self.assertIsNotNone(obj)
         self.assertEqual('bernie', obj.username)
         self.assertEqual('bernie@gmail.com', obj.email)
-        self.assertEqual(['/backups/bernie/computer/', '/backups/bernie/laptop/'], obj.repos)
+        self.assertEqual(['computer', 'laptop'], obj.repos)
         self.assertEqual('/backups/bernie/', obj.user_root)
         self.assertEqual(True, obj.is_admin)
 
         # Get repo object
-        self.assertEqual('/backups/bernie/computer/', obj.repo_list[0].name)
-        self.assertEqual(-1, obj.repo_list[0].maxage)
-        self.assertEqual('test1', obj.repo_list[0].get_attr('newattribute'))
-        self.assertEqual('/backups/bernie/laptop/', obj.get_repo('/backups/bernie/laptop/').name)
-        self.assertEqual(3, obj.get_repo('/backups/bernie/laptop/').maxage)
-        self.assertEqual('test2', obj.get_repo('/backups/bernie/laptop/').get_attr('newattribute'))
-
-    def test_get_attr_with_default(self):
-        """
-        Get repository attribute with default value.
-        """
-        user = self.app.userdb.add_user('mo', 'my-password')
-        user.repos = ['/backups/bernie/computer/']
-        value = user.get_repo('/backups/bernie/computer/').get_attr('newcolumn', default='coucou')
-        self.assertEqual('coucou', value)
-
+        self.assertEqual('computer', obj.repo_objs[0].name)
+        self.assertEqual(-1, obj.repo_objs[0].maxage)
+        self.assertEqual('laptop', obj.get_repo('laptop').name)
+        self.assertEqual(3, obj.get_repo('laptop').maxage)
+        
     def test_get_set(self):
         user = self.app.userdb.add_user('larry', 'password')
 
@@ -162,11 +149,11 @@ class UserManagerSQLiteTest(AppTestCase):
         self.mlistener.user_attr_changed.assert_called_with('larry', {'is_admin': True})
         user.email = 'larry@gmail.com'
         self.mlistener.user_attr_changed.assert_called_with('larry', {'email': 'larry@gmail.com'})
-        user.repos = ['/backups/computer/', '/backups/laptop/']
-        self.mlistener.user_attr_changed.assert_called_with('larry', {'repos': ['/backups/computer/', '/backups/laptop/']})
+        user.repos = ['computer', 'laptop']
+        self.mlistener.user_attr_changed.assert_called_with('larry', {'repos': ['computer', 'laptop']})
 
         self.assertEqual('larry@gmail.com', user.email)
-        self.assertEqual(['/backups/computer/', '/backups/laptop/'], user.repos)
+        self.assertEqual(['computer', 'laptop'], user.repos)
         self.assertEqual('/backups/', user.user_root)
         self.assertEqual(True, user.is_admin)
 
@@ -358,11 +345,11 @@ class UserManagerSQLiteLdapTest(AppTestCase):
         user.user_root = '/backups/'
         user.is_admin = True
         user.email = 'larry@gmail.com'
-        user.repos = ['/backups/computer/', '/backups/laptop/']
+        user.repos = ['computer', 'laptop']
 
         user = self.app.userdb.get_user(username)
         self.assertEqual('larry@gmail.com', user.email)
-        self.assertEqual(['/backups/computer/', '/backups/laptop/'], user.repos)
+        self.assertEqual(['computer', 'laptop'], user.repos)
         self.assertEqual('/backups/', user.user_root)
 
     def test_list(self):
@@ -467,7 +454,7 @@ class UserManagerWithAdmin(AppTestCase):
         self.assertIn('used', disk_usage)
         self.assertIn('size', disk_usage)
 
-        
+
 class UserManagerSSHKeys(AppTestCase):
     """
     Testcases for ssh key management.
@@ -568,6 +555,71 @@ class UserManagerSSHKeys(AppTestCase):
         # Validate
         keys = list(userobj.authorizedkeys)
         self.assertEqual(4, len(keys))
+
+
+class UserObjectTest(AppTestCase):
+    """Testcases for UserObject"""
+    
+    reset_testcases = True
+
+    REPO = 'testcases/'
+
+    USERNAME = 'admin'
+
+    PASSWORD = 'admin123'
+    
+    def test_set_get_repos(self):
+        userobj = self.app.userdb.get_user(self.USERNAME)
+        self.assertEquals(['testcases'], userobj.repos)
+        
+        # Test empty list
+        userobj.repos = []
+        self.assertEquals([], userobj.repos)
+        
+        # Test with leading & ending "/"
+        userobj.repos = ["/testcases/"]
+        self.assertEquals(["testcases"], userobj.repos)
+        self.assertEqual(1, len(userobj.repo_objs))
+        self.assertEqual("testcases", userobj.repo_objs[0].name)
+
+
+class RepoObjectTest(AppTestCase):
+    """Testcases for RepoObject."""
+    
+    reset_testcases = True
+
+    REPO = 'testcases/'
+
+    USERNAME = 'admin'
+
+    PASSWORD = 'admin123'
+
+    def test_set_get_encoding(self):
+        userobj = self.app.userdb.get_user(self.USERNAME)
+        repo_obj = userobj.get_repo(self.REPO)
+        repo_obj.encoding = "cp1252"
+        self.assertEqual("cp1252", repo_obj.encoding)
+        # Check with invalid value.
+        with self.assertRaises(ValueError):
+            repo_obj.encoding = "invalid"
+            
+    def test_set_get_maxage(self):
+        userobj = self.app.userdb.get_user(self.USERNAME)
+        repo_obj = userobj.get_repo(self.REPO)
+        repo_obj.maxage = 10
+        self.assertEqual(10, repo_obj.maxage)
+        # Check with invalid value.
+        with self.assertRaises(ValueError):
+            repo_obj.maxage = "invalid"
+
+    def test_set_get_keepdays(self):
+        userobj = self.app.userdb.get_user(self.USERNAME)
+        repo_obj = userobj.get_repo(self.REPO)
+        repo_obj.keepdays = 10
+        self.assertEqual(10, repo_obj.keepdays)
+        # Check with invalid value.
+        with self.assertRaises(ValueError):
+            repo_obj.keepdays = "invalid"
 
 
 if __name__ == "__main__":

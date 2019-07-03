@@ -46,11 +46,6 @@ class DeleteRepoTest(WebCase):
         self.getPage("/delete/" + repo + "/", method="POST",
                      body=body)
 
-    # FIXME This testcases doesn't work for unknown reason.
-    # def test_check_delete(self):
-    #    self._settings(self.REPO)
-    #    self.assertInBody("Delete")
-
     def test_delete(self):
         """
         Check to delete a repo.

@@ -92,7 +92,7 @@ class MockRdiffwebApp(RdiffwebApp):
         # Register repository
         for user in self.userdb.list():
             user.user_root = new
-            user.repos = ['testcases/']
+            user.repos = ['testcases']
 
         self.testcases = new
 

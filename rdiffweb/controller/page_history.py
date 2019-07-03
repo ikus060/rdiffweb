@@ -25,7 +25,6 @@ import cherrypy
 
 from rdiffweb.controller import Controller, validate_isinstance, validate_int
 from rdiffweb.controller.dispatch import poppath
-from rdiffweb.core import librdiff
 from rdiffweb.core.i18n import ugettext as _
 
 
@@ -39,13 +38,9 @@ class HistoryPage(Controller):
     @cherrypy.expose
     def index(self, path=b"", limit='10', **kwargs):
         validate_isinstance(path, bytes)
-        validate_int(limit)
-        limit = int(limit)
+        limit = validate_int(limit)
 
-        logger.debug("history [%r]", path)
-
-        repo_obj = self.app.currentuser.get_repo_path(path)[0]
-        assert isinstance(repo_obj, librdiff.RdiffRepo)
+        repo_obj = self.app.currentuser.get_repo(path)
 
         # Set up warning about in-progress backups, if necessary
         warning = False

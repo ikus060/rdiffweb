@@ -52,8 +52,6 @@ import psutil
 from rdiffweb.core import rdw_helpers
 from rdiffweb.core.archiver import archive, ARCHIVERS
 from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.config import write_config, read_config
-
 
 try:
     import subprocess32 as subprocess  # @UnresolvedImport @UnusedImport
@@ -64,9 +62,6 @@ PY3 = sys.version_info[0] == 3
 
 # Define the logger
 logger = logging.getLogger(__name__)
-
-# Rdiffweb config file (hints)
-RDIFFWEB_CONF = b"rdiffweb"
 
 # Constant for the rdiff-backup-data folder name.
 RDIFF_BACKUP_DATA = b"rdiff-backup-data"
@@ -253,7 +248,7 @@ class RdiffTime(object):
 
     def __str__(self):
         """return utf-8 string"""
-        value = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(self._time_seconds))
+        value = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(self._time_seconds))
         if isinstance(value, bytes):
             value = value.decode(encoding='latin1')
         return value + self._tz_str()
@@ -261,6 +256,8 @@ class RdiffTime(object):
     def __repr__(self):
         """return second since epoch"""
         return "RdiffTime('" + str(self) + "')"
+    
+    __json__ = __str__
 
 # Interfaced objects #
 
@@ -728,14 +725,14 @@ class RdiffRepo(object):
 
     """Represent one rdiff-backup repository."""
 
-    def __init__(self, user_root, path):
+    def __init__(self, user_root, path, encoding=FS_ENCODING):
         if isinstance(user_root, str):
             user_root = encodefilename(user_root)
         if isinstance(path, str):
             path = encodefilename(path)
         assert isinstance(user_root, bytes)
         assert isinstance(path, bytes)
-        self._encoding = encodings.search_function(FS_ENCODING)
+        self._encoding = encodings.search_function(encoding)
         assert self._encoding
         self.path = path.strip(b"/")
         self.full_path = os.path.realpath(os.path.join(user_root, self.path))
@@ -744,13 +741,6 @@ class RdiffRepo(object):
         self._data_path = os.path.join(self.full_path, RDIFF_BACKUP_DATA)
         assert isinstance(self._data_path, bytes)
         self._increment_path = os.path.join(self._data_path, INCREMENTS)
-        self._hint_file = os.path.join(self._data_path, RDIFFWEB_CONF)
-
-        # Check if the object is valid.
-        self._check()
-
-        # Check if the repository has hint for rdiffweb.
-        self._load_hints()
 
     @property
     def backup_dates(self):
@@ -765,17 +755,13 @@ class RdiffRepo(object):
                 if x.startswith(b"mirror_metadata")])
         return self._backup_dates
 
-    def _check(self):
-        """Check if the repository exists."""
-        # Make sure repoRoot is a valid rdiff-backup repository
-        if (not os.access(self._data_path, os.F_OK) or
-                not os.path.isdir(self._data_path)):
-            logger.error("repository [%r] doesn't exists", self.full_path)
-            raise DoesNotExistError(self.full_path)
-
     @property
     def _data_entries(self):
-        return os.listdir(self._data_path)
+        try:
+            return os.listdir(self._data_path)
+        except:
+            # Return empty list when the directory can't be access.
+            return []
 
     def delete(self):
         """Delete the repository permanently."""
@@ -858,12 +844,6 @@ class RdiffRepo(object):
                 for x in self._data_entries
                 if x.startswith(b"file_statistics.")}
         return self._file_statistics_data
-
-    def get_encoding(self):
-        """
-        Return the interface encoding value.
-        """
-        return self._encoding.name
 
     def get_file_statistic(self, date):
         """Return the file statistic for the given date.
@@ -979,22 +959,6 @@ class RdiffRepo(object):
             return self.backup_dates[-1]
         return None
 
-    def _load_hints(self):
-        """For different purpose, a repository may contains an "rdiffweb" file
-        to provide hint to rdiffweb related to locale. At first, it's used to
-        define an encoding."""
-
-        if not os.access(self._hint_file, os.F_OK) or os.path.isdir(self._hint_file):
-            return
-
-        # Read rdiffweb file as configuration file.
-        config = read_config(self._hint_file)
-        name = config.get('encoding', FS_ENCODING)
-        self._encoding = encodings.search_function(name.lower())
-        if not self._encoding:
-            self._encoding = encodings.search_function(FS_ENCODING)
-        assert self._encoding
-
     def restore(self, path, restore_date, kind='zip'):
         """Used to restore the given file located in this path."""
         assert isinstance(path, bytes) or isinstance(path, DirEntry)
@@ -1063,7 +1027,7 @@ class RdiffRepo(object):
 
                 # Archive data or pipe data.
                 if os.path.isdir(output):
-                    archive(output, fdst, kind=kind, encoding=self.get_encoding())
+                    archive(output, fdst, kind=kind, encoding=self._encoding.name)
                 else:
                     # Pipe the content of the file.
                     with io.open(output, 'rb') as fsrc:
@@ -1100,6 +1064,13 @@ class RdiffRepo(object):
     @property
     def status(self):
         """Check if a backup is in progress for the current repo."""
+
+        # Check if the repository exists.
+        # Make sure repoRoot is a valid rdiff-backup repository
+        if (not os.access(self._data_path, os.F_OK) or
+                not os.path.isdir(self._data_path)):
+            return ('failed', _('The repository cannot be found or is badly damaged.'))
+        
         # Filter the files to keep current_mirror.* files
         current_mirrors = [
             x
@@ -1145,23 +1116,6 @@ class RdiffRepo(object):
                 if x.startswith(b"session_statistics."))
             self._session_statistics_data = OrderedDict([(x.date, x) for x in data])
         return self._session_statistics_data
-
-    def set_encoding(self, name):
-        """
-        Change the encoding of the repository.
-        """
-        # Check if the given name if valid encoding.
-        encoding = encodings.search_function(name.lower())
-        assert encoding is not None
-        # Get encoding name (as unicode)
-        name = encoding.name
-        if not isinstance(name, str):
-            name = name.decode('ascii')
-        # Need to update the 'rdiffweb' file
-        logger.debug("writing hints for [%r]", self.full_path)
-        write_config({'encoding': name}, self._hint_file)
-        # Also update current encoding.
-        self._encoding = encoding
 
     def unquote(self, name):
         """Remove quote from the given name."""

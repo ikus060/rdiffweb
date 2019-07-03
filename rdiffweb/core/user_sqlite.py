@@ -114,13 +114,6 @@ class SQLiteUserDB():
         except:
             return default
 
-    def get_repo_maxage(self, username, repoPath):
-        assert isinstance(username, str)
-        query = "SELECT MaxAge FROM repos WHERE RepoPath=? AND UserID = ?"
-        results = self._execute_query(query, (repoPath, self._get_user_id(username)))
-        assert len(results) == 1
-        return int(results[0][0])
-
     def get_email(self, username):
         assert isinstance(username, str)
         return self._get_user_field(username, "UserEmail")
@@ -249,12 +242,6 @@ class SQLiteUserDB():
         query = "UPDATE repos SET %s=? WHERE RepoPath=? AND UserID = ?" % (key,)
         self._execute_query(query, (value, repo_path, self._get_user_id(username)))
 
-    def set_repo_maxage(self, username, repo_path, max_age):
-        assert isinstance(username, str)
-        assert repo_path in self.get_repos(username)
-        query = "UPDATE repos SET MaxAge=? WHERE RepoPath=? AND UserID = ?"
-        self._execute_query(query, (max_age, repo_path, self._get_user_id(username)))
-
     def set_user_root(self, username, user_root):
         assert isinstance(username, str)
         assert isinstance(user_root, str)
@@ -367,7 +354,7 @@ class SQLiteUserDB():
         Add a column to the tables.
         """
         # Check if column exists.
-        if column in self._get_columns(table):
+        if column.lower() in self._get_columns(table):
             return
         # Add column.
         self._execute_query('ALTER TABLE %s ADD COLUMN %s %s NOT NULL DEFAULT ""' % (table, column, datatype,))
@@ -377,7 +364,7 @@ class SQLiteUserDB():
         List columns for the given table.
         """
         assert table
-        return [row[1] for row in self._execute_query("pragma table_info('%s')" % (table,))]
+        return [row[1].lower() for row in self._execute_query("pragma table_info('%s')" % (table,))]
 
     def _get_tables(self):
         return [
@@ -398,5 +385,6 @@ RestoreFormat tinyint NOT NULL DEFAULT TRUE)""",
 RepoID integer primary key autoincrement,
 UserID int(11) NOT NULL,
 RepoPath varchar (255) NOT NULL,
-MaxAge tinyint NOT NULL DEFAULT 0)"""
+MaxAge tinyint NOT NULL DEFAULT 0,
+Encoding varchar (50))"""
         ]

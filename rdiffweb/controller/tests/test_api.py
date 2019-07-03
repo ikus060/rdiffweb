@@ -37,15 +37,24 @@ class APITest(WebCase):
     
     headers = [("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))]
 
+    def test_get_index(self):
+        data = self.getJson('/api/', headers=self.headers)
+        self.assertIsNotNone(data.get('version'))
+
     def test_get_currentuser(self):
         data = self.getJson('/api/currentuser/', headers=self.headers)
         self.assertEqual(data.get('username'), 'admin')
-        self.assertEqual(data.get('is_admin'), True)
         self.assertEqual(data.get('email'), '')
         # This value change on every execution.
-        # self.assertEqual(data.get('user_root'), 'admin')
-        self.assertIn('/tmp/rdiffweb_tests', data.get('user_root'))
-        self.assertEqual(data.get('repos'), ['testcases/'])
+        self.assertEqual(1, len(data.get('repos')))
+        repo = data.get('repos')[0]
+        self.assertEqual(repo.get('keepdays'), -1)
+        self.assertEqual(repo.get('last_backup_date'), '2016-02-02T16:30:40-05:00')
+        self.assertEqual(repo.get('status'), 'ok')
+        self.assertEqual(repo.get('display_name'), 'testcases')
+        self.assertEqual(repo.get('encoding'), 'utf_8')
+        self.assertEqual(repo.get('name'), 'testcases')
+        self.assertEqual(repo.get('maxage'), 0)
 
 
 if __name__ == "__main__":

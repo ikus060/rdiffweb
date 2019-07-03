@@ -32,7 +32,6 @@ from jinja2 import Environment, PackageLoader
 from jinja2.filters import do_mark_safe
 from jinja2.loaders import ChoiceLoader, FileSystemLoader
 
-
 # Define the logger
 logger = logging.getLogger(__name__)
 
@@ -128,6 +127,28 @@ def do_format_filesize(value, binary=True):
             if size < unit:
                 return '%.1f %s' % ((base * size / unit), prefix)
         return '%.1f %s' % ((base * size / unit), prefix)
+
+
+def url_for(endpoint, *args, **kwargs):
+    """
+    Generate a url for the given endpoint, path (*args) with parameters (**kwargs)
+    """
+    url = []
+    url.append("/" + endpoint + "/")
+    for chunk in args:
+        if isinstance(chunk, bytes):
+            chunk = chunk.rstrip(b"/")
+            url.append(rdw_helpers.quote_url(chunk))
+            url.append("/")
+        else:
+            chunk = chunk.rstrip("/")
+            url.append(chunk)
+            url.append("/")
+    if kwargs:
+        url.append("?")
+    for key, value in kwargs:
+        url.append("%s=%s" % (key, value))
+    return ''.join(url)
 
 
 def url_for_browse(repo, path=None, restore=False):
@@ -254,13 +275,13 @@ class TemplateManager(object):
 
         # Register method
         self.jinja_env.globals['attrib'] = attrib
+        self.jinja_env.globals['url_for'] = url_for
         self.jinja_env.globals['url_for_browse'] = url_for_browse
         self.jinja_env.globals['url_for_history'] = url_for_history
         self.jinja_env.globals['url_for_restore'] = url_for_restore
         self.jinja_env.globals['url_for_settings'] = url_for_settings
         self.jinja_env.globals['url_for_status_entry'] = url_for_status_entry
         self.jinja_env.globals['url_for_graphs'] = url_for_graphs
-        
 
     def add_templatesdir(self, templates_dir):
         """

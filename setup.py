@@ -33,11 +33,7 @@ if PY2 and not sys.version_info >= (2, 7):
 from distutils.cmd import Command
 from distutils.command.build import build as build_
 from distutils.dist import DistributionMetadata
-from distutils.log import error, info
-from distutils.util import split_quoted
-from setuptools.command.test import test as TestCommand
 import os
-from string import Template
 import subprocess
 
 try:

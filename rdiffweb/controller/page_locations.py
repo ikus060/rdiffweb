@@ -20,14 +20,9 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import logging
-import os
-from rdiffweb.controller import Controller
-from rdiffweb.core import librdiff
-from rdiffweb.core.i18n import ugettext as _
 
 import cherrypy
-from future.utils.surrogateescape import encodefilename
-import pkg_resources
+from rdiffweb.controller import Controller
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -41,47 +36,16 @@ class LocationsPage(Controller):
 
     @cherrypy.expose
     def index(self):
-        logger.debug("browsing locations")
-
         # Get page params
-        params = self._get_parms_for_page()
-
+        params = {
+            "repos": [{
+                "path": repo_obj.path,
+                "name_split": repo_obj.display_name.strip('/').split('/'),
+                "last_backup_date": repo_obj.last_backup_date,
+                'status': repo_obj.status,
+            } for repo_obj in self.app.currentuser.repo_objs],
+            "disk_usage": self.app.currentuser.disk_usage,
+        }
         # Render the page.
         return self._compile_template("locations.html", **params)
 
-    def _get_parms_for_page(self):
-        """
-        Build the params for the locations templates.
-        """
-        # Get user's locations.
-        user_root = self.app.currentuser.user_root
-        user_repos = self.app.currentuser.repos
-        repos = []
-        for user_repo in user_repos:
-            try:
-                # Get reference to a repo object
-                repo_obj = librdiff.RdiffRepo(user_root, user_repo)
-                path = repo_obj.path
-                name = repo_obj.display_name
-                status = repo_obj.status
-                last_backup_date = repo_obj.last_backup_date
-            except librdiff.FileError:
-                logger.exception("invalid user path %s" % user_repo)
-                path = encodefilename(user_repo.strip('/'))
-                name = user_repo.strip('/')
-                status = ('failed', _('The repository cannot be found or is badly damaged.'))
-                last_backup_date = 0
-            # Create an entry to represent the repository
-            repos.append({
-                "path": path,
-                "name_split": name.strip('/').split('/'),
-                "last_backup_date": last_backup_date,
-                'status': status,
-            })
-        params = {
-            "repos": repos,
-            "disk_usage": self.app.currentuser.disk_usage,
-        }
-
-        # Return the complete list of params.
-        return params

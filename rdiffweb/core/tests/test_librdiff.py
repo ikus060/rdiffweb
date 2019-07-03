@@ -243,8 +243,11 @@ class RdiffRepoTest(unittest.TestCase):
         self.assertEqual('testcases', self.repo.display_name)
 
     def test_init_with_invalid(self):
-        with self.assertRaises(DoesNotExistError):
-            RdiffRepo(self.temp_dir, '/invalid')
+        self.repo = RdiffRepo(self.temp_dir, 'invalid')
+        self.assertEqual('failed', self.repo.status[0])
+        self.assertEqual(None, self.repo.last_backup_date)
+        self.assertEqual(b'invalid', self.repo.path)
+        self.assertEqual('invalid', self.repo.display_name)
 
     def test_get_path_root(self):
         dir_entry = self.repo.get_path(b"/")
@@ -314,11 +317,6 @@ class RdiffRepoTest(unittest.TestCase):
         self.assertEqual('testcases.zip', filename)
         data = stream.read()
         self.assertTrue(data)
-
-    def test_set_encoding(self):
-        self.repo.set_encoding("cp1252")
-        self.repo = RdiffRepo(self.temp_dir, 'testcases')
-        self.assertEqual("cp1252", self.repo.get_encoding())
 
     def test_unquote(self):
         self.assertEqual(b'Char ;090 to quote', self.repo.unquote(b'Char ;059090 to quote'))
@@ -400,8 +398,8 @@ class RdiffTimeTest(unittest.TestCase):
 
     def test_str(self):
         """Check if __str__ is working."""
-        self.assertEqual('2014-11-05 21:04:30Z', str(RdiffTime(1415221470)))
-        self.assertEqual('2014-11-05 21:04:30+01:00', str(RdiffTime(1415221470, 3600)))
+        self.assertEqual('2014-11-05T21:04:30Z', str(RdiffTime(1415221470)))
+        self.assertEqual('2014-11-05T21:04:30+01:00', str(RdiffTime(1415221470, 3600)))
 
     def test_sub(self):
         """Check if addition with timedelta is working as expected."""

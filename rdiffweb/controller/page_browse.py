@@ -44,9 +44,8 @@ class BrowsePage(Controller):
     def index(self, path=b"", restore="", limit='10'):
         validate_isinstance(path, bytes)
         validate_isinstance(restore, str)
-        validate_int(limit)
+        limit = validate_int(limit)
         restore = bool(restore)
-        limit = int(limit)
 
         logger.debug("browsing [%r]", path)
 

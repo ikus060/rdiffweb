@@ -178,7 +178,8 @@ class RdiffwebApp(Application):
             code = 404
         cherrypy.HTTPError(code).set_response()
 
-    def get_version(self):
+    @property
+    def version(self):
         """
         Get the current running version (using package info).
         """

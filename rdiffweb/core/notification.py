@@ -195,7 +195,7 @@ class NotificationPlugin(Deamon, IUserChangeListener):
                     continue
                 # Identify old repo for current user.
                 old_repos = []
-                for repo in user.repo_list:
+                for repo in user.repo_objs:
                     # Check if repo has age configured (in days)
                     maxage = repo.maxage
                     if not maxage or maxage <= 0:

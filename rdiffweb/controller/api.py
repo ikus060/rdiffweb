@@ -20,51 +20,63 @@ Created on Nov 16, 2017
 
 @author: Patrik Dufresne
 """
+# Define the logger
 
 from __future__ import unicode_literals
 
 import logging
-from rdiffweb.controller import Controller
 
 import cherrypy
+from rdiffweb.controller import Controller
 
-# Define the logger
+
+try: import simplejson as json
+except ImportError: import json
+
 logger = logging.getLogger(__name__)
 
 
-class ApiCurrentuser(Controller):
-
-    @cherrypy.expose
-    @cherrypy.tools.json_out()
-    def repos(self):
-        """
-        Return the list of repositories.
-        """
-        return self.app.currentuser.repos
-
-    @cherrypy.expose
-    @cherrypy.tools.json_out()
-    def index(self):
-        u = self.app.currentuser
-        return {
-            "is_admin": u.is_admin,
-            "email": u.email,
-            "user_root": u.user_root,
-            "repos": u.repos,
-            "username": u.username,
-        }
+def json_handler(*args, **kwargs):
+    """Custom json handle to convert RdiffDate to str."""
+    value = cherrypy.serving.request._json_inner_handler(*args, **kwargs)
+    
+    def default(o):
+        if hasattr(o, '__json__'):
+            return o.__json__()
+        raise TypeError(repr(o) + " is not JSON serializable")
+    
+    encode = json.JSONEncoder(default=default, ensure_ascii=False).iterencode
+    for chunk in encode(value):
+        yield chunk.encode('utf-8')
 
 
+@cherrypy.tools.json_out(handler=json_handler)
 @cherrypy.config(**{'tools.authform.on': False, 'tools.i18n.on': False, 'tools.authbasic.on': True, 'tools.sessions.on': True, 'error_page.default': False})
 class ApiPage(Controller):
     """
     This class provide a restful API to access some of the rdiffweb resources.
     """
     
-    currentuser = ApiCurrentuser()
-
     @cherrypy.expose
-    @cherrypy.tools.json_out()
+    def currentuser(self):
+        u = self.app.currentuser
+        return {
+            "email": u.email,
+            "username": u.username,
+            "repos": [{
+                # Database fields.
+                "name": repo_obj.name,
+                "maxage": repo_obj.maxage,
+                "keepdays": repo_obj.keepdays,
+                # Repository fields.
+                "display_name": repo_obj.display_name,
+                "last_backup_date": repo_obj.last_backup_date,
+                "status": repo_obj.status[0],
+                "encoding": repo_obj.encoding} for repo_obj in u.repo_objs],
+        }
+        
+    @cherrypy.expose
     def index(self):
-        return "ok"
-
+        return {
+            "version": self.app.version,
+        }

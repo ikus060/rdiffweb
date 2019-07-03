@@ -41,7 +41,7 @@ class NotificationPref(Controller):
     def _handle_set_notification_info(self, **kwargs):
 
         # Loop trough user repo and update max age.
-        for repo in self.app.currentuser.repo_list:
+        for repo in self.app.currentuser.repo_objs:
             # Get value received for the repo.
             value = kwargs.get(repo.name, None)
             if value is None:
@@ -76,7 +76,7 @@ class NotificationPref(Controller):
             'email': self.app.currentuser.email,
             'repos': [
                 {'name': r.name, 'maxage': r.maxage}
-                for r in self.app.currentuser.repo_list],
+                for r in self.app.currentuser.repo_objs],
         })
         return "prefs_notification.html", params
 

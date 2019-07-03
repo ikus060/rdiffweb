@@ -18,22 +18,23 @@
 
 from __future__ import unicode_literals
 
+from builtins import str, bytes
+import encodings
 from io import StringIO
 from io import open
 import logging
 import os
-from rdiffweb.core import InvalidUserError, RdiffError, authorizedkeys
-from rdiffweb.core.config import BoolOption
-from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError
-from rdiffweb.core.user_ldap_auth import LdapPasswordStore
-from rdiffweb.core.user_sqlite import SQLiteUserDB
 
-from builtins import str, bytes
-from future.utils import python_2_unicode_compatible
-from future.utils.surrogateescape import encodefilename
 import pkg_resources
 
+from future.utils import python_2_unicode_compatible
+from future.utils.surrogateescape import encodefilename
+from rdiffweb.core import InvalidUserError, RdiffError, authorizedkeys
+from rdiffweb.core.config import BoolOption, read_config
+from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, FS_ENCODING
+from rdiffweb.core.user_ldap_auth import LdapPasswordStore
+from rdiffweb.core.user_sqlite import SQLiteUserDB
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -129,9 +130,9 @@ class UserObject(object):
         if isinstance(name, str):
             name = encodefilename(name)
         name = normpath(name)
-        for r in self._db.get_repos(self._username):
+        for r in self._get_repos():
             if name == normpath(encodefilename(r)):
-                return RepoObject(self._db, self._username, r)
+                return RepoObject(self, r)
         raise DoesNotExistError(name)
     
     def get_repo_path(self, path):
@@ -142,14 +143,17 @@ class UserObject(object):
         if isinstance(path, str):
             path = encodefilename(path)
         path = normpath(path)
-        user_root = encodefilename(self.user_root)
-        for r in self._db.get_repos(self._username):
+        for r in self._get_repos():
             repo = normpath(encodefilename(r))
             if path.startswith(repo):                
-                repo_obj = RdiffRepo(user_root, repo)
+                repo_obj = RepoObject(self, r)
                 path_obj = repo_obj.get_path(path[len(repo):])
                 return (repo_obj, path_obj)
         raise DoesNotExistError(path)
+
+    def _get_repos(self):
+        """Return list of repository name."""
+        return [r.strip('/') for r in self._db.get_repos(self._username)]
 
     def set_attr(self, key, value, notify=True):
         """Used to define an attribute"""
@@ -292,54 +296,88 @@ class UserObject(object):
     is_admin = property(fget=lambda x: x._db.is_admin(x._username), fset=lambda x, y: x.set_attr('is_admin', y))
     email = property(fget=lambda x: x._db.get_email(x._username), fset=lambda x, y: x.set_attr('email', y))
     user_root = property(fget=lambda x: x._db.get_user_root(x._username), fset=lambda x, y: x.set_attr('user_root', y))
-    repos = property(fget=lambda x: x._db.get_repos(x._username), fset=lambda x, y: x.set_attr('repos', y))
+    repos = property(_get_repos, fset=lambda x, y: x.set_attr('repos', y))
     authorizedkeys = property(fget=lambda x: x.get_authorizedkeys())
-    repo_list = property(fget=lambda x: [RepoObject(x._db, x._username, r)
-                                         for r in x._db.get_repos(x._username)])
+    repo_objs = property(fget=lambda x: [x.get_repo(name) for name in x.repos])
     disk_quota = property(get_disk_quota, set_disk_quota)
     
 
 @python_2_unicode_compatible
-class RepoObject(object):
+class RepoObject(RdiffRepo):
     """Represent a repository."""
 
-    def __init__(self, db, username, repo):
-        self._db = db
-        self._username = username
+    def __init__(self, user_obj, repo):
+        assert isinstance(repo, str)
         self._repo = repo
+        self._user_obj = user_obj
+        RdiffRepo.__init__(self, user_obj.user_root, repo)
+        self._encoding = encodings.search_function(self.encoding)
 
     def __eq__(self, other):
         return (isinstance(other, RepoObject) and
-                self._username == other._username and
-                self._repo == other._repo and
-                self._db == other._db)
+                self._user_obj.username == other._user_obj._username and
+                self._repo == other._repo)
 
     def __str__(self):
-        return 'RepoObject[%s]' % self._username
+        return 'RepoObject[%s, %s]' % (self._user_obj.username, self._repo)
 
     def __repr__(self):
-        return 'RepoObject(db, %r, %r)' % (self._username, self._repo)
+        return 'RepoObject(%r, %r)' % (self._user_obj, self._repo)
 
-    def set_attr(self, key, value):
+    def _set_attr(self, key, value):
         """Used to define an attribute to the repository."""
-        self.set_attrs(**{key: value})
+        self._set_attrs(**{key: value})
 
-    def set_attrs(self, **kwargs):
+    def _set_attrs(self, **kwargs):
         """Used to define multiple attribute to a repository"""
         for key, value in kwargs.items():
             assert isinstance(key, str) and key.isalpha() and key.islower()
-            self._db.set_repo_attr(self._username, self._repo, key, value)
+            self._user_obj._db.set_repo_attr(self._user_obj._username, self._repo, key, value)
 
-    def get_attr(self, key, default=None):
+    def _get_attr(self, key, default=None):
         assert isinstance(key, str)
-        return self._db.get_repo_attr(self._username, self._repo, key, default)
+        return self._user_obj._db.get_repo_attr(self._user_obj._username, self._repo, key, default)
 
     @property
     def name(self):
         return self._repo
+    
+    def _get_encoding(self):
+        """Return the repository encoding in a normalized format (lowercase and replace - by _)."""
+        # For backward compatibility, look into the database and fallback to
+        # the rdiffweb config file in the repo.
+        default = encodings.normalize_encoding(FS_ENCODING)
+        encoding = self._get_attr('encoding')
+        if encoding:
+            return encodings.normalize_encoding(encoding.lower())
+        conf_file = os.path.join(self._data_path, b'rdiffweb')
+        if os.access(conf_file, os.F_OK) and os.path.isfile(conf_file):
+            config = read_config(conf_file)
+            return encodings.normalize_encoding(config.get('encoding', default))
+        return default
+        
+    def _set_encoding(self, value):
+        """Change the repository encoding"""
+        # Validate if the value is a valid encoding before updating the database.
+        codec = encodings.search_function(value)
+        if not codec:
+            raise ValueError(_('invalid encoding %s') % value)
+        
+        logger.info("updating repository %s encoding %s", self, codec.name)
+        self._set_attr('encoding', codec.name)
+        self._encoding = codec
 
-    maxage = property(fget=lambda x: x._db.get_repo_maxage(x._username, x._repo), fset=lambda x, y: x._db.set_repo_maxage(x._username, x._repo, y))
-    keepdays = property(fget=lambda x: int(x.get_attr('keepdays', default='-1')), fset=lambda x, y: x.set_attr('keepdays', int(y)))
+    def delete(self):
+        """Properly remove the given repository by updating the user's repositories."""
+        repos = self._user_obj.repos
+        repos.remove(self._repo)
+        logger.info("deleting repository %s", self)
+        RdiffRepo.delete(self)
+        self._user_obj.repos = repos
+
+    encoding = property(_get_encoding, _set_encoding)
+    maxage = property(fget=lambda x: int(x._get_attr('maxage', default='0')), fset=lambda x, y: x._set_attr('maxage', int(y)))
+    keepdays = property(fget=lambda x: int(x._get_attr('keepdays', default='-1')), fset=lambda x, y: x._set_attr('keepdays', int(y)))
 
 
 class UserManager():

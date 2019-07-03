@@ -18,13 +18,14 @@
 
 from __future__ import unicode_literals
 
-import logging
-from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError
-
 from builtins import bytes
+import logging
+
 import cherrypy
 from future.utils.surrogateescape import encodefilename
 from rdiffweb.core.config import Option
+from rdiffweb.core.librdiff import RdiffRepo
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -39,7 +40,7 @@ def validate(value, message=None):
 def validate_int(value, message=None):
     """Raise HTTP Error if the value is not an integer"""
     try:
-        int(value)
+        return int(value)
     except:
         raise cherrypy.HTTPError(400, message)
 
@@ -76,7 +77,6 @@ class Controller(object):
         loc = cherrypy.response.i18n.locale
         parms = {
             "lang": loc.language,
-            "version": self.app.get_version(),
         }
         if self.currentuser:
             parms.update({

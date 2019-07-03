@@ -72,7 +72,7 @@ class StatusPage(Controller):
             userMessages = self._get_user_messages_for_day(entry_time)
         else:
             # Validate repo parameter
-            repo_obj = self.app.currentuser.get_repo_path(path_b)[0]
+            repo_obj = self.app.currentuser.get_repo(path_b)
 
             userMessages = self._getUserMessages(
                 [repo_obj.path], False, True, entry_time, entry_time)

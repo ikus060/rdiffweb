@@ -19,7 +19,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import encodings
 import logging
 from rdiffweb.controller import Controller, validate_isinstance, validate
 from rdiffweb.controller.dispatch import poppath
@@ -27,7 +26,6 @@ from rdiffweb.core.i18n import ugettext as _
 
 from builtins import bytes
 import cherrypy
-
 
 # Define the logger
 _logger = logging.getLogger(__name__)
@@ -39,21 +37,14 @@ class SettingsPage(Controller):
     @cherrypy.expose
     def index(self, path=b""):
         validate_isinstance(path, bytes)
-
-        _logger.debug("repo settings [%r]", path)
-
-        # Check user permissions
-        repo_obj = self.app.currentuser.get_repo_path(path)[0]
-        r = self.app.currentuser.get_repo(repo_obj.path)
-
+        repo_obj = self.app.currentuser.get_repo(path)
         # Get page data.
         params = {
             'repo_name': repo_obj.display_name,
             'repo_path': repo_obj.path,
-            'current_encoding': encodings.normalize_encoding(repo_obj.get_encoding()),
-            'keepdays': r.keepdays,
+            'current_encoding': repo_obj.encoding,
+            'keepdays': repo_obj.keepdays,
         }
-        
         # Generate page.
         return self._compile_template("settings.html", **params)
     
@@ -68,26 +59,11 @@ class SetEncodingPage(Controller):
         """
         validate_isinstance(path, bytes)
         validate(new_encoding)
-
-        _logger.debug("update repo [%r] settings [%r]", path, new_encoding)
-
-        # Check user permissions
-        repo_obj = self.app.currentuser.get_repo_path(path)[0]
-
-        # Validate the encoding value
-        new_codec = encodings.search_function(new_encoding.lower())
-        if not new_codec:
+        repo_obj = self.app.currentuser.get_repo(path)
+        try:
+            repo_obj.encoding = new_encoding
+        except ValueError:
             raise cherrypy.HTTPError(400, _("invalid encoding value"))
-
-        new_encoding = new_codec.name
-        if not isinstance(new_encoding, str):
-            # Python 2
-            new_encoding = new_encoding.decode('ascii')
-
-        # Update the repository encoding
-        _logger.info("updating repository [%s] encoding [%s]", repo_obj, new_encoding)
-        repo_obj.set_encoding(new_encoding)
-
         return _("Updated")
     
     
@@ -98,23 +74,16 @@ class RemoveOlderPage(Controller):
     def index(self, path=b"", keepdays=None):
         validate_isinstance(path, bytes)
         validate(keepdays)
-        _logger.debug("repo settings [%r]", path)
-
-        # Get new value
-        try:
-            keepdays = int(keepdays)
-        except:
-            _logger.warning("invalid keepdays value %r", keepdays)
-            raise cherrypy.HTTPError(400, _("Invalid value"))
-
-        # Check user permissions
-        repo_obj = self.app.currentuser.get_repo_path(path)[0]
 
         # Get repository object from user database.
-        r = self.app.currentuser.get_repo(repo_obj.path)
+        r = self.app.currentuser.get_repo(path)
 
         # Update the database.
-        r.keepdays = keepdays
+        try:
+            r.keepdays = keepdays
+        except ValueError:
+            _logger.warning("invalid keepdays value %r", keepdays)
+            raise cherrypy.HTTPError(400, _("Invalid value"))            
 
         return _("Updated")
 
@@ -128,24 +97,17 @@ class DeleteRepoPage(Controller):
         Delete the repository.
         """
         validate_isinstance(path, bytes)
-        _logger.debug("repo delete [%r]", path)
 
         # Check user permissions
-        repo_obj = self.app.currentuser.get_repo_path(path)[0]
+        repo_obj = self.app.currentuser.get_repo(path)
 
         # Validate the name
         confirm_name = kwargs.get('confirm_name', None)
         if confirm_name != repo_obj.display_name:
             _logger.info("bad confirmation %r != %r", confirm_name, repo_obj.display_name)
-            raise cherrypy.HTTPError(400, "bad confirmation")
-
-        # Update the repository encoding
-        _logger.info("deleting repository [%s]", repo_obj)
-        repo_obj.delete()
+            raise cherrypy.HTTPError(400)
 
         # Refresh repository list
-        repos = self.app.currentuser.repos
-        r = self.app.currentuser.get_repo(repo_obj.path)
-        repos.remove(r.name)
-        self.app.currentuser.repos = repos
+        repo_obj.delete()
+
         raise cherrypy.HTTPRedirect("/")

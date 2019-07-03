@@ -198,7 +198,6 @@ class BasicAuth(BaseAuth):
 
         # Proceed with basic authentication.
         request = cherrypy.serving.request
-        path = request.path_info
         ah = request.headers.get('authorization')
         if ah:
             try:
@@ -210,7 +209,7 @@ class BasicAuth(BaseAuth):
                         self.do_login(login, password)
                         # Return False to call default page handler.
                         return False
-                    except RdiffError as e:
+                    except RdiffError:
                         logger.info('basic auth fail for user: %s', login, exc_info=1)
                         cherrypy.serving.response.headers['www-authenticate'] = (
                             'Basic realm="%s"%s' % ('rdiffweb', 'utf-8')
