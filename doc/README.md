@@ -1,0 +1,1 @@
+Content of this directory is used to generate documentation on http://www.patrikdufresne.com/rdiffweb
