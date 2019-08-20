@@ -400,7 +400,7 @@ class DirEntry(object):
             return self._change_dates
 
         # Compute the dates
-        self._change_dates = []
+        change_dates = set()
         for increment in self._increments:
             # Skip "invisible" increments
             if not increment.has_suffix:
@@ -412,18 +412,17 @@ class DirEntry(object):
             if not increment.is_snapshot and increment.is_missing:
                 change_date = self._get_first_backup_after_date(change_date)
 
-            if change_date and change_date not in self._change_dates:
-                self._change_dates.append(change_date)
+            if change_date:
+                change_dates.add(change_date)
 
         # If the directory exists, add the last known backup date.
-        if (self.exists and
-                self._repo.last_backup_date and
-                self._repo.last_backup_date not in self._change_dates):
-            self._change_dates.append(self._repo.last_backup_date)
+        if self.exists and self._repo.last_backup_date:
+            change_dates.add(self._repo.last_backup_date)
 
         # No need to sort the change date since increments are already sorted.
 
         # Return the list of dates.
+        self._change_dates = sorted(change_dates)
         return self._change_dates
 
     @property

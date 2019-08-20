@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/ikus060/rdiffweb.svg?branch=master)](https://travis-ci.org/ikus060/rdiffweb)
+[![Build Status](https://git.patrikdufresne.com/pdsl/rdiffweb/badges/master/pipeline.svg)](https://git.patrikdufresne.com/pdsl/rdiffweb/pipelinesb)
+
 
 rdiffweb
 ========
