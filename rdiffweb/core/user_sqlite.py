@@ -62,6 +62,19 @@ class SQLiteUserDB():
         self._user_root_cache = {}
         self._create_or_update()
 
+    def add_authorizedkey(self, username, fingerprint, key):
+        assert isinstance(username, str)
+        assert fingerprint
+        assert key
+        
+        # Query user
+        user_id = self._get_user_id(username)
+        if not user_id:
+            raise InvalidUserError(username)
+        
+        self._execute_query(
+            "INSERT INTO sshkeys (UserID, Fingerprint, Key) values (?, ?, ?)", (user_id, fingerprint, key))
+
     def exists(self, username):
         """
         Check if `username` exists.
@@ -131,9 +144,9 @@ class SQLiteUserDB():
         assert isinstance(username, str)
         if not self.exists(username):
             raise InvalidUserError(username)
-        # Create column if needed
-        self._create_column('users', 'authorizedkeys', 'clob')
-        return self._get_user_field(username, "authorizedkeys")
+        query = ("SELECT Key FROM sshkeys WHERE UserID = %d" % 
+                 self._get_user_id(username))
+        return [row[0] for row in self._execute_query(query)]
 
     def is_admin(self, username):
         assert isinstance(username, str)
@@ -176,6 +189,18 @@ class SQLiteUserDB():
         self._execute_query("DELETE FROM users WHERE Username = ?",
                             (username,))
         return True
+
+    def remove_authorizedkey(self, username, fingerprint):
+        assert isinstance(username, str)
+        assert fingerprint
+
+        # Query user
+        user_id = self._get_user_id(username)
+        if not user_id:
+            raise InvalidUserError(username)
+        
+        self._execute_query(
+            "DELETE FROM sshkeys WHERE UserID= ? AND Fingerprint = ?", (user_id, fingerprint))
 
     def set_is_admin(self, username, is_admin):
         assert isinstance(username, str)
@@ -235,9 +260,6 @@ class SQLiteUserDB():
         assert repo_path
         assert isinstance(key, str) and key.isalpha() and key.islower()
 
-        # Add column if required.
-        self._create_column('repos', key)
-
         # Update field.
         query = "UPDATE repos SET %s=? WHERE RepoPath=? AND UserID = ?" % (key,)
         self._execute_query(query, (value, repo_path, self._get_user_id(username)))
@@ -253,13 +275,6 @@ class SQLiteUserDB():
         self._execute_query(
             "UPDATE users SET UserRoot=? WHERE Username = ?",
             (user_root, username))
-
-    def set_authorizedkeys(self, username, sshkeys):
-        assert isinstance(username, str)
-        assert isinstance(sshkeys, str)
-        # Create column if needed
-        self._create_column('users', 'authorizedkeys', 'clob')
-        self._set_user_field(username, 'authorizedkeys', sshkeys)
 
     def _get_user_id(self, username):
         assert self.exists(username)
@@ -330,24 +345,49 @@ class SQLiteUserDB():
         # To avoid re-creating the table twice.
         with self.create_tables_lock:
             # Check if tables exists, if not created them.
-            if self._get_tables():
-                return
-
+            tables = self._get_tables()
+            
             # Create the tables.
             conn = self._connect()
+            cursor = conn.cursor()
             try:
-                cursor = conn.cursor()
-                cursor.execute("BEGIN TRANSACTION")
-                for statement in self._get_create_statements():
-                    cursor.execute(statement)
-                cursor.execute("COMMIT TRANSACTION")
+                if not tables:
+                    cursor.execute("BEGIN TRANSACTION")
+                    cursor.execute("""create table users (
+UserID integer primary key autoincrement,
+Username varchar (50) unique NOT NULL,
+Password varchar (40) NOT NULL DEFAULT "",
+UserRoot varchar (255) NOT NULL DEFAULT "",
+IsAdmin tinyint NOT NULL DEFAULT FALSE,
+UserEmail varchar (255) NOT NULL DEFAULT "",
+RestoreFormat tinyint NOT NULL DEFAULT TRUE)""")
+                    cursor.execute("""create table repos (
+RepoID integer primary key autoincrement,
+UserID int(11) NOT NULL,
+RepoPath varchar (255) NOT NULL,
+MaxAge tinyint NOT NULL DEFAULT 0,
+Encoding varchar (50))""")
+                    cursor.execute("COMMIT TRANSACTION")
+
+                # Create `keepdays` columns in repos
+                self._create_column('repos', 'keepdays')
+                
+                # Create table for ssh Keys
+                if 'sshkeys' not in tables:
+                    cursor.execute("""create table sshkeys (
+Fingerprint primary key,
+Key clob UNIQUE,
+UserID int(11) NOT NULL)""")
+                
+
+                # Create admin user                
+                if not tables:
+                    self.add_user('admin', 'admin123')
+                    self.set_user_root('admin', '/backups/')
+                    self.set_is_admin('admin', True)
+                
             finally:
                 conn.close()
-
-            # Create admin user
-            self.add_user('admin', 'admin123')
-            self.set_user_root('admin', '/backups/')
-            self.set_is_admin('admin', True)
 
     def _create_column(self, table, column, datatype='varchar(255)'):
         """
@@ -370,21 +410,3 @@ class SQLiteUserDB():
         return [
             column[0] for column in
             self._execute_query('select name from sqlite_master where type="table"')]
-
-    def _get_create_statements(self):
-        return [
-            """create table users (
-UserID integer primary key autoincrement,
-Username varchar (50) unique NOT NULL,
-Password varchar (40) NOT NULL DEFAULT "",
-UserRoot varchar (255) NOT NULL DEFAULT "",
-IsAdmin tinyint NOT NULL DEFAULT FALSE,
-UserEmail varchar (255) NOT NULL DEFAULT "",
-RestoreFormat tinyint NOT NULL DEFAULT TRUE)""",
-            """create table repos (
-RepoID integer primary key autoincrement,
-UserID int(11) NOT NULL,
-RepoPath varchar (255) NOT NULL,
-MaxAge tinyint NOT NULL DEFAULT 0,
-Encoding varchar (50))"""
-        ]

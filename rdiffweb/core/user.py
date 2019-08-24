@@ -163,7 +163,7 @@ class UserObject(object):
         """Used to define multiple attributes at once."""
         notify = kwargs.pop('notify', True)
         for key, value in kwargs.items():
-            assert key in ['is_admin', 'email', 'user_root', 'repos', 'authorizedkeys']
+            assert key in ['is_admin', 'email', 'user_root', 'repos']
             setter = getattr(self._db, 'set_%s' % key)
             setter(self._username, value)
         # Call notification listener
@@ -220,11 +220,12 @@ class UserObject(object):
         # If a filename exists, use it by default.
         filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
         if os.path.isfile(filename):
-            return authorizedkeys.read(filename)
+            for k in authorizedkeys.read(filename):
+                yield k
         
         # Also look in database.
-        data = self._db.get_authorizedkeys(self._username)
-        return authorizedkeys.read(StringIO(data))
+        for k in self._db.get_authorizedkeys(self._username):
+            yield authorizedkeys.check_publickey(k)
         
     def add_authorizedkey(self, key, comment=None):
         """
@@ -237,13 +238,12 @@ class UserObject(object):
             key = authorizedkeys.check_publickey(key)
         except ValueError:
             raise ValueError(_("Invalid SSH key."))
-        
-        if comment:
-            key = authorizedkeys.AuthorizedKey(
-                options=key.options,
-                keytype=key.keytype,
-                key=key.key,
-                comment=comment)
+        # Remove option, replace comments.
+        key = authorizedkeys.AuthorizedKey(
+            options=None,
+            keytype=key.keytype,
+            key=key.key,
+            comment=comment or key.comment)
         
         # If a filename exists, use it by default.
         filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
@@ -251,46 +251,33 @@ class UserObject(object):
             with open(filename, mode="r+", encoding='utf-8') as fh:
                 if authorizedkeys.exists(fh, key):
                     raise ValueError(_("SSH key already exists"))
-                logger.info("add key [%s] to [%s]", key, self.username)
+                logger.info("add key [%s] to [%s] authorized_keys", key, self.username)
                 authorizedkeys.add(fh, key)
-                fh.seek(0, 0)
-                data = fh.read()
         else:
             # Also look in database.
-            data = self._db.get_authorizedkeys(self._username)
-            fh = StringIO(data)
-            if authorizedkeys.exists(fh, key):
-                raise ValueError(_("SSH key already exists."))
-            # Add key to file
-            logger.info("add key [%s] to [%s]", key, self.username)
-            fh = StringIO(data)
-            authorizedkeys.add(fh, key)
-            data = fh.getvalue()
-        self.set_attr('authorizedkeys', data)
+            logger.info("add key [%s] to [%s] database", key, self.username)
+            self._db.add_authorizedkey(
+                self._username,
+                fingerprint=key.fingerprint,
+                key=key.getvalue())
+        self._userdb._notify('user_attr_changed', self._username, {'authorizedkeys': True })
         
-    def remove_authorizedkey(self, key):
+    def remove_authorizedkey(self, fingerprint):
         """
         Remove the given key from the user. Remove the key from his
         `authorized_keys` file if it exists and from database database.
-        
-        `key` should define a fingerprint
         """
         # If a filename exists, use it by default.
         filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
         if os.path.isfile(filename):
             with open(filename, mode='r+', encoding='utf-8') as fh:
-                logger.info("removing key [%s] from [%s]", key, self.username)
-                authorizedkeys.remove(fh, key)
-                fh.seek(0, 0)
-                data = fh.read()
+                logger.info("removing key [%s] from [%s] authorized_keys", fingerprint, self.username)
+                authorizedkeys.remove(fh, fingerprint)
         else:
             # Also look in database.
-            data = self._db.get_authorizedkeys(self._username)
-            fh = StringIO(data)
-            logger.info("removing key [%s] from [%s]", key, self.username)
-            authorizedkeys.remove(fh, key)
-            data = fh.getvalue()
-        self.set_attr('authorizedkeys', data)
+            logger.info("removing key [%s] from [%s] database", fingerprint, self.username)
+            self._db.remove_authorizedkey(self._username, fingerprint)
+        self._userdb._notify('user_attr_changed', self._username, {'authorizedkeys': True })
 
     # Declare properties
     is_admin = property(fget=lambda x: x._db.is_admin(x._username), fset=lambda x, y: x.set_attr('is_admin', y))

@@ -155,11 +155,12 @@ class SQLiteUserDBTest(AppTestCase):
         self.db.set_repos("kim", [])
         self.assertEquals([], self.db.get_repos('kim'))
 
-    def test_set_authorizedkeys(self):
+    def test_add_authorizedkey(self):
         self.db.add_user('kim')
+        fingerprint = "12345678"
         value = "This should be a very long clob with sshkeys"
-        self.db.set_authorizedkeys("kim", value)
-        self.assertEquals(value, self.db.get_authorizedkeys('kim'))
+        self.db.add_authorizedkey("kim", fingerprint, value)
+        self.assertEquals([value], self.db.get_authorizedkeys('kim'))
 
 
 if __name__ == "__main__":

@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Created on Oct 14, 2015
 
@@ -25,18 +26,20 @@ Module to test `user` module.
 
 from __future__ import unicode_literals
 
+from _io import StringIO
+from builtins import str
 from io import open
 import logging
+from mock import MagicMock
 import os
-from rdiffweb.core import InvalidUserError, RdiffError
-from rdiffweb.core.user import IUserChangeListener
-from rdiffweb.test import AppTestCase
 import unittest
 
-from builtins import str
-from mock import MagicMock
 from mockldap import MockLdap
 import pkg_resources
+
+from rdiffweb.core import InvalidUserError, RdiffError, authorizedkeys
+from rdiffweb.core.user import IUserChangeListener
+from rdiffweb.test import AppTestCase
 
 
 def _ldap_user(name, password='password'):
@@ -520,18 +523,22 @@ class UserManagerSSHKeys(AppTestCase):
         # Update user with ssh keys.
         data = self._read_authorized_keys()
         userobj = self.app.userdb.get_user(self.USERNAME)
-        userobj.set_attr('authorizedkeys', data)
+        for k in authorizedkeys.read(StringIO(data)):
+            try:
+                userobj.add_authorizedkey(k.getvalue())
+            except:
+                pass
         
         # Get the keys
         keys = list(userobj.authorizedkeys)
-        self.assertEqual(5, len(keys))
+        self.assertEqual(2, len(keys))
         
         # Remove a key
         userobj.remove_authorizedkey("9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
 
         # Validate
         keys = list(userobj.authorizedkeys)
-        self.assertEqual(4, len(keys))
+        self.assertEqual(1, len(keys))
         
     def test_remove_authorizedkey_with_file(self):
         """
