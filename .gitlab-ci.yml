@@ -151,8 +151,8 @@ publish_pypi_py2:
   only:
   - tags
   script:
-  - pip3 install wheel twine --upgrade
-  - python3 setup.py sdist bdist_wheel
+  - pip2 install wheel twine --upgrade
+  - python2 setup.py sdist bdist_wheel
   - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
   
 publish_pypi_py3:
