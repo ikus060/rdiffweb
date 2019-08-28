@@ -1,5 +1,5 @@
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2018 rdiffweb contributors
+# Copyright (C) 2019 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,16 +21,13 @@ include rdw.conf
 include babel.cfg
 
 # Include templates
-recursive-include rdiffweb/templates *.html *.xml *.txt
+recursive-include rdiffweb/templates *
 
 # Include static Web files
 recursive-include extras *
 
 # Include static Web files
 recursive-include rdiffweb/static *
-
-# Include plugins data
-recursive-include rdiffweb/plugins *.py *.html *.js
 
 # Include translation file
 recursive-include rdiffweb/locales *.po *.pot *.mo

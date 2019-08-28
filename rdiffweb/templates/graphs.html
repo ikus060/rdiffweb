@@ -1,0 +1,36 @@
+{% extends 'layout_repo.html' %}
+{% set active_page='repo' %}
+{% set active_repo_page='graphs' %}
+{% import 'macros.html' as macros %}
+{% block title %}{% trans %}Graphs{% endtrans %}{% endblock %}
+{% block content %}
+<script src="/static/d3.v3.js"></script>
+<script src="/static/d3.tip.v0.6.3.js"></script>
+
+<div class="spacer"></div>
+
+<div class="container">
+
+    {% include 'message.html' %}
+
+    <!-- Graphs navigation -->
+    {% set graph_nav_bar = [
+        ('activities', _('Activities'), url_for_graphs(repo_path, 'activities')),
+        ('files', _('File count'), url_for_graphs(repo_path, 'files')),
+        ('sizes', _('Size'), url_for_graphs(repo_path, 'sizes')),
+        ('times', _('Elapsed Time'), url_for_graphs(repo_path, 'times')),
+        ('errors', _('Errors'), url_for_graphs(repo_path, 'errors')),
+    ] -%}
+	<div class="btn-group" role="group" aria-label="...">
+	  {% for item in graph_nav_bar %}
+	  <a {{ attrib(href=item[2], type='button', class=['btn', 'btn-default', active_graph_page==item[0] and 'active']) }}>{{ item[1] }}</a>
+	  {% endfor %}
+	</div>
+	
+	<!-- Include graph -->
+	<div class="graph-area">
+	{% block graph_body %}{% endblock %}
+	</div>
+	
+</div>
+{% endblock %}

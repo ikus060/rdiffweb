@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2018 rdiffweb contributors
+# Copyright (C) 2019 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,18 +19,22 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import cherrypy
-from future.builtins import str
 import getopt
 import logging
-import os
+from rdiffweb import rdw_app
+from rdiffweb.core.config import read_config
+from rdiffweb.core.rdw_deamon import RemoveOlder, UpdateRepos
 import sys
 import tempfile
 import threading
 import traceback
 
-from rdiffweb import rdw_app, rdw_config
-from rdiffweb.rdw_profiler import ProfilingApplication
+import cherrypy
+from future.builtins import str
+from rdiffweb.core.notification import NotificationPlugin
+
+PY2 = sys.version_info[0] == 2
+nativestr = bytes if PY2 else str
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -135,17 +139,10 @@ def start():
     """Start rdiffweb deamon."""
     # Parse command line options
     args = {}
-    profile = False
-    profile_path = '/tmp'
-    profile_aggregated = False
-
     opts = getopt.getopt(
         sys.argv[1:],
         'vdrf:', [
             'debug',
-            'profile',
-            'profile-path=',
-            'profile-aggregated',
             'log-file=',
             'log-access-file=',
             'config=',
@@ -159,29 +156,18 @@ def start():
             args['log_access_file'] = value
         elif option in ['-f', '--config']:
             args['config'] = value
-        elif option in ['--profile']:
-            profile = True
-        elif option in ['--profile-path']:
-            profile = True
-            profile_path = value
-        elif option in ['--profile-aggregated']:
-            profile = True
-            profile_aggregated = True
 
     # Open config file before opening the apps.
     configfile = args.get('config', '/etc/rdiffweb/rdw.conf')
-    if not os.path.isfile(configfile):
-        print("configuration file %s doesn't exists" % configfile, file=sys.stderr)
-        exit(1)
-    cfg = rdw_config.Configuration(configfile)
-    log_file = args.get('log_file', None) or cfg.get_config('LogFile', False)
-    log_access_file = args.get('log_access_file', None) or cfg.get_config('LogAccessFile', None)
+    cfg = read_config(configfile)
+    log_file = args.get('log_file', None) or cfg.get('logfile', False)
+    log_access_file = args.get('log_access_file', None) or cfg.get('logaccessfile', None)
     if args.get('debug', False):
         environment = 'development'
         log_level = "DEBUG"
     else:
-        environment = cfg.get_config('Environment', 'production')
-        log_level = cfg.get_config('LogLevel', 'INFO')
+        environment = cfg.get('environment', 'production')
+        log_level = cfg.get('loglevel', 'INFO')
 
     # Configure logging
     setup_logging(
@@ -196,11 +182,11 @@ def start():
     app = rdw_app.RdiffwebApp(cfg)
 
     # Get configuration
-    serverHost = app.cfg.get_config("ServerHost", default=b"0.0.0.0")
-    serverPort = app.cfg.get_config_int("ServerPort", default="8080")
+    serverHost = nativestr(cfg.get("serverhost", "127.0.0.1"))
+    serverPort = int(cfg.get("serverport", "8080"))
     # Get SSL configuration (if any)
-    sslCertificate = app.cfg.get_config("SslCertificate")
-    sslPrivateKey = app.cfg.get_config("SslPrivateKey")
+    sslCertificate = cfg.get("sslcertificate")
+    sslPrivateKey = cfg.get("sslprivatekey")
 
     global_config = cherrypy._cpconfig.environments.get(environment, {})
     global_config.update({
@@ -222,12 +208,10 @@ def start():
     cherrypy.engine.signal_handler.handlers['SIGUSR2'] = debug_dump_mem
     cherrypy.engine.signal_handler.handlers['SIGABRT'] = debug_dump_thread
 
-    # Create application wrapper if profiling is enabled.
-    if profile or profile_aggregated:
-        app = ProfilingApplication(app, profile_path, profile_aggregated)
-        if profile_aggregated:
-            global_config['server.thread_pool'] = 1
-            global_config['server.thread_pool_max'] = 1
+    # Start deamons
+    RemoveOlder(cherrypy.engine, app).subscribe()
+    UpdateRepos(cherrypy.engine, app).subscribe()
+    NotificationPlugin(cherrypy.engine, app).subscribe()
 
     # Start web server
     cherrypy.quickstart(app)

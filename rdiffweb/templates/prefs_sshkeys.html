@@ -1,0 +1,102 @@
+{#
+Rdiffweb SSHKeys plugins
+
+Copyright (C) 2018 Patrik Dufresne Service Logiciel
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#}
+
+<div class="spacer"/>
+
+{% include 'message.html' %}
+
+{% import 'macros.html' as macros %}
+
+<!-- List of ssh keys -->
+<div class="panel panel-default"
+     itemscope itemtype="http://schema.org/ItemList">
+    
+    <div class="panel-heading clearfix">
+        <span itemprop="name">{% trans %}SSH Keys{% endtrans %}</span>
+        (<span itemprop="numberOfItems">{{ sshkeys | length }}</span>)
+        
+        <!-- Add button -->
+        <div class="btn-group pull-right">
+            <button type="button" class="btn btn-success btn-xs" data-toggle="modal" data-target="#add-sshkey-modal">
+                <i class="icon-plus"></i>
+                {% trans %}Add SSH key{% endtrans %}
+            </button>
+        </div>
+    </div>
+    <!-- /.panel-heading -->
+    
+    <div class="panel-body">
+        <p class="light">
+            {% trans %}SSH keys allow you to establish a secure connection between your computer and this backup system. This is a list of SSH keys associated with your account. Remove any keys that you do not recognize.{% endtrans %}
+        </p>
+    </div>
+    
+    <!-- List of keys-->
+    <ul class="list-group">
+        {% for key in sshkeys %}
+        <li class="list-group-item clearfix" itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+            <div class="pull-right">
+                {# Delete button with confirmation. #}
+                {{ macros.delete_confirm(
+                       label=_('Delete'),
+                       message=_('Are you sure ?'),
+                       hiddens={
+                           'action': 'delete',
+                           'key': key.fingerprint,
+                       }) }}
+            </div>
+            <meta itemprop="id" content="{{ key.lineno }}" />
+            <strong class="list-group-item-heading" itemprop="name">
+                {{ key.title }}
+            </strong>
+            <p class="list-group-item-text" itemprop="fingerprint">{{ key.fingerprint }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    <!-- /.list-group -->
+    
+</div>
+
+{# Dialog to create SSH key. #}
+{% call macros.modal_dialog('add-sshkey-modal',_('Add SSH key'), _('Add SSH key')) %}
+    <input type="hidden" name="action" value="add" >
+    <div class="form-group">
+        <label class="col-sm-2 control-label" for="title">
+            {% trans %}Title{% endtrans %}</label>
+        <div class="col-sm-10">
+	        <input type="text" name="title" value="" id="title"
+	            class="form-control">
+	        <p class="help-block">
+	            {% trans %}The title is an optional description to identify the key. e.g.: bob@thinkpad-t530{% endtrans %}
+	        </p>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label" for="publickey">
+            {% trans %}Key{% endtrans %}</label>
+        <div class="col-sm-10">
+	        <textarea name="key" id="key"
+	            class="form-control" rows="10" required ></textarea>
+	        <p class="help-block">
+	            {% trans %}Enter a SSH public key. It should start with 'ssh-dss', 'ssh-ed25519', 'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-sha2-nistp521'.{% endtrans %}
+	        </p>
+        </div>
+    </div>
+{% endcall %}

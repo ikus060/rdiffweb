@@ -1,4 +1,4 @@
-image: $DOCKER_REGISTRY/pdsl/rdiffweb-build
+image: $DOCKER_REGISTRY/pdsl/rdiffweb-build:$CI_PIPELINE_IID
 
 stages:
 - prebuild
@@ -12,17 +12,17 @@ prebuild-docker-image:
   script:
   - docker login $DOCKER_REGISTRY -u $DOCKER_USR -p $DOCKER_PWD
   - docker build -t rdiffweb-build extras/prebuild
-  - docker tag rdiffweb-build $DOCKER_REGISTRY/pdsl/rdiffweb-build
-  - docker push $DOCKER_REGISTRY/pdsl/rdiffweb-build
+  - docker tag rdiffweb-build $DOCKER_REGISTRY/pdsl/rdiffweb-build:$CI_PIPELINE_IID
+  - docker push $DOCKER_REGISTRY/pdsl/rdiffweb-build:$CI_PIPELINE_IID
 
 .tox:  &tox
   stage: test
   script:
-  - pip install tox nose coverage --upgrade
   - tox -e $CI_JOB_NAME --sitepackages
   artifacts:
     paths:
-    - .coverage.$CI_JOB_NAME
+    - coverage-*.xml
+    - nosetests-*.xml
     expire_in: 1 day
 
 py27-cherrypy35: 
@@ -67,6 +67,9 @@ py27-cherrypy15:
 py27-cherrypy16: 
   <<: *tox
   
+py27-cherrypy17: 
+  <<: *tox
+  
 py3-cherrypy35: 
   <<: *tox
   
@@ -109,26 +112,56 @@ py3-cherrypy15:
 py3-cherrypy16: 
   <<: *tox
   
-py27-cherrypy32: 
+py3-cherrypy17: 
   <<: *tox
 
-# TODO Publish coverage repport
-# TODO Publish testcases repport
+py3-cherrypy18: 
+  <<: *tox
 
-publish_nexus:
+publish:sonar:master:
+  stage: publish
+  image: ikus060/sonar-runner
+  only:
+  - master
+  script:
+  - sonar-runner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.exclusions=rdiffweb/controller/tests/**,rdiffweb/core/tests/**,rdiffweb/test.py -Dsonar.sources=.
+
+publish:sonar:dev:
+  stage: publish
+  image: ikus060/sonar-runner
+  script:
+  - sonar-runner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.exclusions=rdiffweb/controller/tests/**,rdiffweb/core/tests/**,rdiffweb/test.py -Dsonar.sources=.
+
+publish_nexus_py2:
   stage: publish
   script:
-  - pip install wheel twine --upgrade
-  - python setup.py sdist bdist_wheel
+  - pip2 install wheel twine --upgrade
+  - python2 setup.py sdist bdist_wheel
   - twine upload dist/* -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
 
-publish_pypi:
+publish_nexus_py3:
+  stage: publish
+  script:
+  - pip3 install wheel twine --upgrade
+  - python3 setup.py sdist bdist_wheel
+  - twine upload dist/* -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
+
+publish_pypi_py2:
   stage: publish
   only:
   - tags
   script:
-  - pip install wheel twine --upgrade
-  - python setup.py sdist bdist_wheel
+  - pip2 install wheel twine --upgrade
+  - python2 setup.py sdist bdist_wheel
+  - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
+  
+publish_pypi_py3:
+  stage: publish
+  only:
+  - tags
+  script:
+  - pip3 install wheel twine --upgrade
+  - python3 setup.py sdist bdist_wheel
   - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
   
 rdiffweb_deploy_staging: 
@@ -150,27 +183,3 @@ rdiffweb_deploy_staging:
   - git clone "http://${GITLAB_USR}:${GITLAB_PWD}@git.patrikdufresne.com/pdsl/ansible-config.git"
   - cd ansible-config
   - ansible-playbook minarca.yml -i pdsl --extra-vars "ansible_user=root rdiffweb_version=$RDIFFWEB_VERSION rdiffweb_default_repositories=true" --limit sestican
-
-rdiffweb_deploy_prod:
-  stage: deploy
-  when: manual
-  only:
-  - tags
-  image: ikus060/ansible
-  environment:
-    name: prod
-    url: https://www.minarca.net
-  variables:
-    ANSIBLE_HOST_KEY_CHECKING: "False"
-  before_script:
-  - eval $(ssh-agent -s)
-  - echo "$RANCULOS_ROOT_PRIVATEKEY" | tr -d '\r' | ssh-add - > /dev/null
-  - echo "$MERCOR_ROOT_PRIVATEKEY"   | tr -d '\r' | ssh-add - > /dev/null
-  - mkdir -p ~/.ssh
-  - chmod 700 ~/.ssh
-  script:
-  - python ./setup.py --version
-  - export RDIFFWEB_VERSION=$(python ./setup.py --version)
-  - git clone "http://${GITLAB_USR}:${GITLAB_PWD}@git.patrikdufresne.com/pdsl/ansible-config.git"
-  - cd ansible-config
-  - ansible-playbook minarca.yml -i pdsl --extra-vars "ansible_user=root rdiffweb_version=$RDIFFWEB_VERSION" --limit ranculos,mercor

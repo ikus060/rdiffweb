@@ -7,18 +7,14 @@
 {% if title %}{{ title }}{% endif %}
 {% endblock title %}
  - 
-{% if header_name %}{{ header_name }}{% else %}rdiffweb{% endif %}
+{{ header_name }}
 </title>
 <meta charset="utf-8">
 <meta name="robots" content="noindex">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-{% if version %}<meta name="app-version" content="{{ version }}">{% endif %}
-<meta name="application-name" content="{{ header_name }}"/>
-<link rel="stylesheet" href="{{ main_css or '/static/main.css' }}" type="text/css">
+<link rel="stylesheet" href="/static/{{ theme }}.css" type="text/css">
 <link rel="shortcut icon" href="/favicon.ico" >
-{% if rssLink %}<link rel="alternate" type="application/rss+xml" href="{{ rssLink }}" title="{{ rssTitle }}" />{% endif %}
-{% include extra_head_templates ignore missing with context %}
 {% endblock head %}
 </head>
 <body>
@@ -41,7 +37,7 @@
             {% endif %}
             <!-- /Header_logo -->
             <!-- Header_name -->
-            {{ header_name or 'rdiffweb' }}
+            {{ header_name }}
             <!-- /Header_name -->
             </a>
         </div>

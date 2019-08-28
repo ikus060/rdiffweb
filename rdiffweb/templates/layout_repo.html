@@ -11,10 +11,8 @@
 	    ('browse', _('Files'), url_for_browse(repo_path), 'icon-docs'),
 	    ('history', _('Restore Repository'), url_for_history(repo_path), 'icon-history'),
 	    ('settings', _('Settings'), url_for_settings(repo_path), 'icon-cog-alt'),
+	    ('graphs', _('Graphs'), url_for_graphs(repo_path, 'activities'), 'icon-chart-bar')
 	] -%}
-	{% if repo_nav_bar_extras %}
-    {{ repo_nav_bar.extend(repo_nav_bar_extras) or "" }}
-    {% endif %}
     <ul class="nav nav-tabs" role="navigation">
     {% for item in repo_nav_bar %}
     <li {{ attrib(class=active_repo_page==item[0] and "active") }} >

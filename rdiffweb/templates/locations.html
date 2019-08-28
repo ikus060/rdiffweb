@@ -4,9 +4,31 @@
 {% block body %}
 <div class="container" id="locations">
     <h2>{% trans %}Repositories{% endtrans %} ({{ repos|length }})</h2>
-    {% for t in templates_before_content %}
-    {% include t ignore missing with context %}
-    {% endfor %}
+    
+    <!-- disk usage/quota -->
+    {% if disk_usage %}
+    <div itemscope itemtype="https://schema.org/Filesystem" class="well well-sm">
+	  <meta itemprop="freeSpace" content="{{ disk_usage.avail }}" />
+	  <meta itemprop="occupiedSpace" content="{{ disk_usage.used }}" />
+	  <meta itemprop="totalSpace" content="{{ disk_usage.size }}" />
+	  {% set used_pct = disk_usage.used / disk_usage.size * 100 %}
+	  {% set used_str = disk_usage.used | filesize %}
+	  {% set size_str = disk_usage.size | filesize %}
+	  {% set avail_str = disk_usage.avail | filesize %}
+	  <b>{% trans %}Usage{% endtrans %}</b>
+	  {{ used_str }} {% trans %}used{% endtrans %} | {{ size_str }} {% trans %}total{% endtrans %} | {{ avail_str }} {% trans %}free{% endtrans %}
+	  <div class="progress">
+	    <div class="progress-bar {% if used_pct > 90 %}progress-bar-warning{% else %}progress-bar-success{% endif %}"
+	         role="progressbar"
+	         aria-valuenow="{{ used_pct }}"
+	         aria-valuemin="0"
+	         aria-valuemax="100"
+	         style="width: {{ used_pct }}%">
+	    </div>
+	  </div>
+	</div>
+	{% endif %}
+    
     {% if repos|length == 0 %}
 	    {% set message = _("You don't have any repositories configured.") %}
 	    {% include 'message.html' %}
@@ -35,7 +57,7 @@
         {% else %}
         <a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }}
             href="{{ url_for_browse(repo.path) }}" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-          <meta itemprop="name" content="{{ repo.path }}" />
+          <meta itemprop="name" content="{{ repo.path.decode('utf-8', 'replace') }}" />
           <i class="icon-hdd"></i>
           {{ name }}{% if name|length==1 %}:\{% endif %}
           <span class="pull-right light">
