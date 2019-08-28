@@ -1,2 +1,0 @@
-# 0.10.9
- * Better error handling when error.log file are not valid gzip file

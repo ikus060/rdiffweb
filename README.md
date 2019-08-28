@@ -68,3 +68,24 @@ Bug reports should be reported on the Rdiffweb development web site at https://g
 ## Professional support
 
 Professional support for Rdiffweb is available by contacting [Patrik Dufresne Service Logiciel](http://www.patrikdufresne.com/en/support/#form).
+
+# Changelog
+
+## 1.0.0
+ * Improve performance of librdiff
+ * Add new RESTful api
+ * Return the right HTTP 401 or 402 error code for authentication
+ * Fix bug introduce by upgrade to Jinja2 + python3
+ * Store ssh keys in database and disk
+ * Add support for theme (default, orange)
+ * Remove deprecated profiling code
+ * Add disk usage support / quota
+ * Add support of cherrypy v18
+ * Drop support of cherrypy v3.2.2
+ * Add wsgi entry point
+ * Replace the plugins architecture to ease implementation
+ * Numerous bug fixes
+
+## 0.10.9
+ * Better error handling when error.log file are not valid gzip file
+
