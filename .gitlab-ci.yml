@@ -3,6 +3,7 @@ image: $DOCKER_REGISTRY/pdsl/rdiffweb-build:$CI_PIPELINE_IID
 stages:
 - prebuild
 - test
+- package
 - publish
 - deploy
 
@@ -118,6 +119,23 @@ py3-cherrypy17:
 py3-cherrypy18: 
   <<: *tox
 
+package:py2: 
+  stage: package
+  script:
+  - python2 setup.py sdist bdist_wheel
+  artifacts:
+    paths: 
+    - dist/*.tar.gz
+    - dist/*.whl
+    
+package:py3: 
+  stage: package
+  script:
+  - python3 setup.py sdist bdist_wheel
+  artifacts:
+    paths:
+    - dist/*.whl
+
 publish:sonar:master:
   stage: publish
   image: ikus060/sonar-runner
@@ -132,36 +150,18 @@ publish:sonar:dev:
   script:
   - sonar-runner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.exclusions=rdiffweb/controller/tests/**,rdiffweb/core/tests/**,rdiffweb/test.py -Dsonar.sources=.
 
-publish_nexus_py2:
-  stage: publish
-  script:
-  - pip2 install wheel twine --upgrade
-  - python2 setup.py sdist bdist_wheel
-  - twine upload dist/* -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
-
-publish_nexus_py3:
+publish_nexus:
   stage: publish
   script:
   - pip3 install wheel twine --upgrade
-  - python3 setup.py sdist bdist_wheel
   - twine upload dist/* -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
 
-publish_pypi_py2:
-  stage: publish
-  only:
-  - tags
-  script:
-  - pip2 install wheel twine --upgrade
-  - python2 setup.py sdist bdist_wheel
-  - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
-  
-publish_pypi_py3:
+publish_pypi:
   stage: publish
   only:
   - tags
   script:
   - pip3 install wheel twine --upgrade
-  - python3 setup.py sdist bdist_wheel
   - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
   
 rdiffweb_deploy_staging: 
