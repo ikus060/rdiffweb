@@ -33,7 +33,7 @@ class ControllerTest(WebCase):
 
     @classmethod
     def setup_server(cls):
-        WebCase.setup_server(default_config={'HeaderName':'MyTest', 'DefaultTheme':'orange'})
+        WebCase.setup_server(default_config={'HeaderName':'MyTest'})
 
     def test_headername(self):
         """
@@ -42,6 +42,20 @@ class ControllerTest(WebCase):
         self.getPage("/")
         self.assertInBody('MyTest')
         
+    def test_theme(self):
+        """
+        Check if the theme is properly configure. 
+        """
+        self.getPage("/")
+        self.assertInBody('/static/default.css')
+
+
+class ControllerThemeTest(WebCase):
+
+    @classmethod
+    def setup_server(cls):
+        WebCase.setup_server(default_config={'DefaultTheme':'orange'})
+
     def test_theme(self):
         """
         Check if the theme is properly configure. 
