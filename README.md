@@ -71,7 +71,8 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
 
 # Changelog
 
-## 1.0.0
+## 1.0.0 
+ * Make repository removal more robust
  * Improve performance of librdiff
  * Add new RESTful api
  * Return the right HTTP 401 or 402 error code for authentication
