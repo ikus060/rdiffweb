@@ -61,6 +61,10 @@ You should read the [Documentation](./doc/installation.md) to properly install r
 
 # Support
 
+## Mailing list
+
+Rdiffweb users should use the Rdiffweb mailing list. To subscribe, go to https://groups.google.com/forum/#!forum/rdiffweb
+
 ## Bug Reports
 
 Bug reports should be reported on the Rdiffweb development web site at https://github.com/ikus060/rdiffweb/issues
