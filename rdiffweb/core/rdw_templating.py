@@ -217,10 +217,10 @@ def url_for_settings(repo):
     return ''.join(url)
 
 
-def url_for_status_entry(date, repo=None):
+def url_for_status(date, repo=None):
     assert isinstance(date, librdiff.RdiffTime)
     url = []
-    url.append("/status/entry/")
+    url.append("/status/")
     if repo:
         assert isinstance(repo, bytes)
         repo = repo.rstrip(b"/")
@@ -280,7 +280,7 @@ class TemplateManager(object):
         self.jinja_env.globals['url_for_history'] = url_for_history
         self.jinja_env.globals['url_for_restore'] = url_for_restore
         self.jinja_env.globals['url_for_settings'] = url_for_settings
-        self.jinja_env.globals['url_for_status_entry'] = url_for_status_entry
+        self.jinja_env.globals['url_for_status'] = url_for_status
         self.jinja_env.globals['url_for_graphs'] = url_for_graphs
 
     def add_templatesdir(self, templates_dir):
