@@ -142,8 +142,9 @@ class AdminPage(Controller):
             success = _("User information modified successfully.")
 
             # Check and update user directory
-            self._check_user_root_dir(user_root)
-            rdw_spider_repos.find_repos_for_user(user)
+            if user.user_root:
+                self._check_user_root_dir(user.user_root)
+                rdw_spider_repos.find_repos_for_user(user)
 
         elif action == "add":
 
@@ -152,13 +153,15 @@ class AdminPage(Controller):
             logger.info("adding user [%s]", username)
 
             user = self.app.userdb.add_user(username, password)
-            user.user_root = user_root
+            if user_root:
+                user.user_root = user_root
             user.is_admin = is_admin
             user.email = email
 
             # Check and update user directory
-            self._check_user_root_dir(user_root)
-            rdw_spider_repos.find_repos_for_user(user)
+            if user.user_root:
+                self._check_user_root_dir(user.user_root)
+                rdw_spider_repos.find_repos_for_user(user)
             success = _("User added successfully.")
 
         if action == "delete":

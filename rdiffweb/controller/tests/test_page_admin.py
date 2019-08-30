@@ -147,6 +147,19 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.assertNotInBody("User added successfully.")
         self.assertInBody("User root directory /var/invalid/ is not accessible!")
 
+    def test_add_without_email(self):
+        #  Add user to be listed
+        self._add_user("test2", None, "test2", "/var/backups/", False)
+        self.assertInBody("User added successfully.")
+
+    def test_add_without_user_root(self):
+        #  Add user to be listed
+        self._add_user("test6", None, "test6", None, False)
+        self.assertInBody("User added successfully.")
+        
+        user = self.app.userdb.get_user('test6')
+        self.assertEquals('', user.user_root)
+
     def test_delete_user_with_not_existing_username(self):
         """
         Verify failure to delete invalid username.

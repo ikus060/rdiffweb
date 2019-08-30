@@ -383,7 +383,6 @@ UserID int(11) NOT NULL)""")
                 # Create admin user                
                 if not tables:
                     self.add_user('admin', 'admin123')
-                    self.set_user_root('admin', '/backups/')
                     self.set_is_admin('admin', True)
                 
             finally:
