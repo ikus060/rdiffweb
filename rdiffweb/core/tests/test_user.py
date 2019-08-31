@@ -147,13 +147,13 @@ class UserManagerSQLiteTest(AppTestCase):
         self.assertEqual(False, user.is_admin)
 
         user.user_root = '/backups/'
-        self.mlistener.user_attr_changed.assert_called_with('larry', {'user_root': '/backups/'})
+        self.mlistener.user_attr_changed.assert_called_with(user, {'user_root': '/backups/'})
         user.is_admin = True
-        self.mlistener.user_attr_changed.assert_called_with('larry', {'is_admin': True})
+        self.mlistener.user_attr_changed.assert_called_with(user, {'is_admin': True})
         user.email = 'larry@gmail.com'
-        self.mlistener.user_attr_changed.assert_called_with('larry', {'email': 'larry@gmail.com'})
+        self.mlistener.user_attr_changed.assert_called_with(user, {'email': 'larry@gmail.com'})
         user.repos = ['computer', 'laptop']
-        self.mlistener.user_attr_changed.assert_called_with('larry', {'repos': ['computer', 'laptop']})
+        self.mlistener.user_attr_changed.assert_called_with(user, {'repos': ['computer', 'laptop']})
 
         self.assertEqual('larry@gmail.com', user.email)
         self.assertEqual(['computer', 'laptop'], user.repos)

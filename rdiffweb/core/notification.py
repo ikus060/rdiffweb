@@ -152,7 +152,7 @@ class NotificationPlugin(Deamon, IUserChangeListener):
         """
         self.send_notifications()
 
-    def user_attr_changed(self, username, attrs={}):
+    def user_attr_changed(self, userobj, attrs={}):
         """
         Implementation of IUserChangeListener interface.
         """
@@ -163,9 +163,6 @@ class NotificationPlugin(Deamon, IUserChangeListener):
         if 'email' not in attrs:
             return
 
-        # get User object (to get email)
-        userobj = self.app.userdb.get_user(username)
-        assert userobj
         # If the email attributes was changed, send a mail notification.
         self.send_mail(userobj, _("Email address changed"), "email_changed.html")
 

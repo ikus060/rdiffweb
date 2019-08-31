@@ -63,7 +63,7 @@ class IUserChangeListener():
     def user_added(self, userobj, attrs):
         """New user (account) created."""
 
-    def user_attr_changed(self, username, attrs={}):
+    def user_attr_changed(self, userobj, attrs={}):
         """User attribute changed."""
 
     def user_deleted(self, user):
@@ -168,7 +168,7 @@ class UserObject(object):
             setter(self._username, value)
         # Call notification listener
         if notify:
-            self._userdb._notify('user_attr_changed', self._username, kwargs)
+            self._userdb._notify('user_attr_changed', self, kwargs)
 
     @property
     def disk_usage(self):
@@ -260,7 +260,7 @@ class UserObject(object):
                 self._username,
                 fingerprint=key.fingerprint,
                 key=key.getvalue())
-        self._userdb._notify('user_attr_changed', self._username, {'authorizedkeys': True })
+        self._userdb._notify('user_attr_changed', self, {'authorizedkeys': True })
         
     def remove_authorizedkey(self, fingerprint):
         """
@@ -277,7 +277,7 @@ class UserObject(object):
             # Also look in database.
             logger.info("removing key [%s] from [%s] database", fingerprint, self.username)
             self._db.remove_authorizedkey(self._username, fingerprint)
-        self._userdb._notify('user_attr_changed', self._username, {'authorizedkeys': True })
+        self._userdb._notify('user_attr_changed', self, {'authorizedkeys': True })
 
     # Declare properties
     is_admin = property(fget=lambda x: x._db.is_admin(x._username), fset=lambda x, y: x.set_attr('is_admin', y))
