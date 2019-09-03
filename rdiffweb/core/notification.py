@@ -133,8 +133,6 @@ class NotificationPlugin(Deamon, IUserChangeListener):
     _header_name = Option("HeaderName", "rdiffweb")
     
     _send_change_notification = BoolOption("EmailSendChangedNotification", False)
-    
-    
 
     def __init__(self, bus, app):
         self.app = app
@@ -162,6 +160,10 @@ class NotificationPlugin(Deamon, IUserChangeListener):
         # Leave if the mail was not changed.
         if 'email' not in attrs:
             return
+        
+        if not userobj.email:
+            logging.info("can't sent mail to user [%s] without an email", userobj.username)
+            return
 
         # If the email attributes was changed, send a mail notification.
         self.send_mail(userobj, _("Email address changed"), "email_changed.html")
@@ -174,6 +176,11 @@ class NotificationPlugin(Deamon, IUserChangeListener):
         # get User object (to get email)
         userobj = self.app.userdb.get_user(username)
         assert userobj
+        
+        if not userobj.email:
+            logging.info("can't sent mail to user [%s] without an email", userobj.username)
+            return
+        
         # If the email attributes was changed, send a mail notification.
         self.send_mail(userobj, _("Password changed"), "password_changed.html")
 
@@ -216,6 +223,10 @@ class NotificationPlugin(Deamon, IUserChangeListener):
         `user` user object where to send the email.
         ``
         """
+        # Verify if the users as an email.
+        assert to_user
+        assert to_user.email
+        
         # Build email from template.
         parms = {'user': to_user}
         

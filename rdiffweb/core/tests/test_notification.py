@@ -137,6 +137,22 @@ Here is the link you wanted."""
         # Expect it to be called.
         n.send_mail.assert_called_once_with(ANY, ANY, 'email_changed.html')
 
+    def test_password_change_notification(self):
+        # Set user config
+        user = self.app.userdb.get_user(self.USERNAME)
+        user.email = 'test@test.com'
+        
+        # Get ref to notification plugin
+        self.app.cfg['emailsendchangednotification'] = 'True'
+        n = NotificationPlugin(bus=MagicMock(), app=self.app)
+        self.assertIsNotNone(n)
+        n.send_mail = MagicMock()
+
+        # Change password
+        self.app.userdb.set_password(self.USERNAME, 'new_password')
+
+        # Expect it to be called.
+        n.send_mail.assert_called_once_with(ANY, ANY, 'password_changed.html')
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
