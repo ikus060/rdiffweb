@@ -39,15 +39,6 @@ class RdiffError(Exception):
         self.message = message
 
 
-class InvalidUserError(RdiffError):
-    """
-    Raised when calling a method with an invalid username.
-    """
-
-    def __init__(self, user):
-        super(InvalidUserError, self).__init__(_("User %s doesn't exists." % (user,)))
-
-
 class RdiffWarning(RdiffError):
     """
     Generic exception to be used in rdiffweb to show warning message. Those

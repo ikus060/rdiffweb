@@ -82,9 +82,6 @@ class AdminPage(Controller):
                 params['warning'] = str(e)
             except RdiffError as e:
                 params['error'] = str(e)
-            except Exception as e:
-                logger.warning("unknown error", exc_info=True)
-                params['error'] = _("Unknown error")
 
         # Get page parameters
         params.update(

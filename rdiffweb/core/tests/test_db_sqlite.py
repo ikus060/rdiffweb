@@ -25,7 +25,7 @@ from __future__ import unicode_literals
 
 import unittest
 
-from rdiffweb.core import InvalidUserError, RdiffError
+from rdiffweb.core import RdiffError
 from rdiffweb.test import AppTestCase
 
 
@@ -104,11 +104,11 @@ class SQLiteUserDBTest(AppTestCase):
         self.assertEqual('/backups/', user_root)
 
     def test_get_invalid_user(self):
-        with self.assertRaises(InvalidUserError):
+        with self.assertRaises(AssertionError):
             self.db.get_email('invalid')
-        with self.assertRaises(InvalidUserError):
+        with self.assertRaises(AssertionError):
             self.db.get_repos('invalid')
-        with self.assertRaises(InvalidUserError):
+        with self.assertRaises(AssertionError):
             self.db.get_user_root('invalid')
 
     def test_list(self):
@@ -118,13 +118,13 @@ class SQLiteUserDBTest(AppTestCase):
         self.assertEqual('annik', users[0].username)
 
     def test_set_invalid_user(self):
-        with self.assertRaises(InvalidUserError):
+        with self.assertRaises(AssertionError):
             self.db.set_user_root('invalid', '/backups/')
-        with self.assertRaises(InvalidUserError):
+        with self.assertRaises(AssertionError):
             self.db.set_is_admin('invalid', True)
-        with self.assertRaises(InvalidUserError):
+        with self.assertRaises(AssertionError):
             self.db.set_email('invalid', 'larry@gmail.com')
-        with self.assertRaises(InvalidUserError):
+        with self.assertRaises(AssertionError):
             self.db.set_repos('invalid', ['/backups/computer/', '/backups/laptop/'])
 
     def test_set_password_update(self):
@@ -147,7 +147,7 @@ class SQLiteUserDBTest(AppTestCase):
 
     def test_set_password_update_not_exists(self):
         """Expect error when trying to update password of invalid user."""
-        with self.assertRaises(InvalidUserError):
+        with self.assertRaises(AssertionError):
             self.assertFalse(self.db.set_password('bar', 'new_password'))
 
     def test_set_repos_empty(self):

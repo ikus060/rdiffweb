@@ -37,7 +37,7 @@ import unittest
 from mockldap import MockLdap
 import pkg_resources
 
-from rdiffweb.core import InvalidUserError, RdiffError, authorizedkeys
+from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.user import IUserChangeListener
 from rdiffweb.test import AppTestCase
 
@@ -227,8 +227,8 @@ class UserManagerSQLiteTest(AppTestCase):
 
     def test_set_password_update_not_exists(self):
         """Expect error when trying to update password of invalid user."""
-        with self.assertRaises(InvalidUserError):
-            self.assertFalse(self.app.userdb.set_password('bar', 'new_password'))
+        with self.assertRaises(AssertionError):
+            self.app.userdb.set_password('bar', 'new_password')
         # Check if listener called
         self.mlistener.user_password_changed.assert_not_called()
 
@@ -399,8 +399,7 @@ class UserManagerSQLiteLdapTest(AppTestCase):
             self.app.cfg['addmissinguser'] = 'false'
 
     def test_get_user_invalid(self):
-        with self.assertRaises(InvalidUserError):
-            self.app.userdb.get_user('invalid')
+        self.assertIsNone(self.app.userdb.get_user('invalid'))
 
     def test_set_password_update(self):
         self.app.userdb.add_user('annik')
@@ -421,7 +420,7 @@ class UserManagerSQLiteLdapTest(AppTestCase):
 
     def test_set_password_update_not_exists(self):
         """Expect error when trying to update password of invalid user."""
-        with self.assertRaises(InvalidUserError):
+        with self.assertRaises(AssertionError):
             self.assertFalse(self.app.userdb.set_password('bar', 'new_password'))
 
     def test_set_password_empty(self):

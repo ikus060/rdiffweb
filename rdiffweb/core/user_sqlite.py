@@ -23,7 +23,7 @@ into a SQLite database.
 from __future__ import unicode_literals
 
 import logging
-from rdiffweb.core import InvalidUserError, RdiffError
+from rdiffweb.core import RdiffError
 from rdiffweb.core.i18n import ugettext as _
 from threading import RLock
 
@@ -59,7 +59,6 @@ class SQLiteUserDB():
 
         # Declare a lock.
         self.create_tables_lock = RLock()
-        self._user_root_cache = {}
         self._create_or_update()
 
     def add_authorizedkey(self, username, fingerprint, key):
@@ -69,9 +68,7 @@ class SQLiteUserDB():
         
         # Query user
         user_id = self._get_user_id(username)
-        if not user_id:
-            raise InvalidUserError(username)
-        
+        assert user_id, "user [%s] doesn't exists" % username
         self._execute_query(
             "INSERT INTO sshkeys (UserID, Fingerprint, Key) values (?, ?, ?)", (user_id, fingerprint, key))
 
@@ -106,8 +103,7 @@ class SQLiteUserDB():
         Get list of repos for the given `username`.
         """
         assert isinstance(username, str)
-        if not self.exists(username):
-            raise InvalidUserError(username)
+        assert self.exists(username), "user [%s] doesn't exists" % username
         query = ("SELECT RepoPath FROM repos WHERE UserID = %d" % 
                  self._get_user_id(username))
         return [row[0] for row in self._execute_query(query)]
@@ -134,18 +130,13 @@ class SQLiteUserDB():
     def get_user_root(self, username):
         """Get user root directory."""
         assert isinstance(username, str)
-
-        if username not in self._user_root_cache:
-            self._user_root_cache[username] = self._get_user_field(username, "UserRoot")
-
-        return self._user_root_cache[username]
+        return self._get_user_field(username, "UserRoot")
 
     def get_authorizedkeys(self, username):
         assert isinstance(username, str)
-        if not self.exists(username):
-            raise InvalidUserError(username)
-        query = ("SELECT Key FROM sshkeys WHERE UserID = %d" % 
-                 self._get_user_id(username))
+        user_id = self._get_user_id(username)
+        assert user_id, "user [%s] doesn't exists" % username
+        query = ("SELECT Key FROM sshkeys WHERE UserID = %d" % user_id)
         return [row[0] for row in self._execute_query(query)]
 
     def is_admin(self, username):
@@ -196,16 +187,13 @@ class SQLiteUserDB():
 
         # Query user
         user_id = self._get_user_id(username)
-        if not user_id:
-            raise InvalidUserError(username)
-        
+        assert user_id, "user [%s] doesn't exists" % username
         self._execute_query(
             "DELETE FROM sshkeys WHERE UserID= ? AND Fingerprint = ?", (user_id, fingerprint))
 
     def set_is_admin(self, username, is_admin):
         assert isinstance(username, str)
-        if not self.exists(username):
-            raise InvalidUserError(username)
+        assert self.exists(username), "user [%s] doesn't exists" % username
         self._execute_query(
             "UPDATE users SET IsAdmin = ? WHERE Username = ?",
             (bool(is_admin), username))
@@ -217,9 +205,8 @@ class SQLiteUserDB():
 
     def set_repos(self, username, repo_paths):
         assert isinstance(username, str)
-        if not self.exists(username):
-            raise InvalidUserError(username)
         user_id = self._get_user_id(username)
+        assert user_id, "user [%s] doesn't exists" % username
 
         # We don't want to just delete and recreate the repos, since that
         # would lose notification information.
@@ -267,34 +254,22 @@ class SQLiteUserDB():
     def set_user_root(self, username, user_root):
         assert isinstance(username, str)
         assert isinstance(user_root, str)
-        if not self.exists(username):
-            raise InvalidUserError(username)
-        # Remove the user from the cache before
-        # updating the database.
-        self._user_root_cache.pop(username, None)
-        self._execute_query(
-            "UPDATE users SET UserRoot=? WHERE Username = ?",
-            (user_root, username))
+        self._set_user_field(username, 'UserRoot', user_root)
 
     def _get_user_id(self, username):
-        assert self.exists(username)
         return self._get_user_field(username, 'UserID')
 
     def _get_user_field(self, username, fieldname):
-        if not self.exists(username):
-            raise InvalidUserError(username)
         query = "SELECT " + fieldname + " FROM users WHERE Username = ?"
         results = self._execute_query(query, (username,))
-        assert len(results) == 1
+        assert len(results) == 1, "user [%s] doesn't exists" % username
         return results[0][0]
 
     def _set_user_field(self, username, fieldname, value):
         assert isinstance(username, str)
         assert isinstance(fieldname, str)
         assert isinstance(value, str) or isinstance(value, bool) or isinstance(value, int)
-
-        if not self.exists(username):
-            raise InvalidUserError(username)
+        assert self.exists(username), "user [%s] doesn't exists" % username
         if isinstance(value, bool):
             if value:
                 value = '1'
@@ -378,7 +353,6 @@ Encoding varchar (50))""")
 Fingerprint primary key,
 Key clob UNIQUE,
 UserID int(11) NOT NULL)""")
-                
 
                 # Create admin user                
                 if not tables:

@@ -29,7 +29,7 @@ import pkg_resources
 
 from future.utils import python_2_unicode_compatible
 from future.utils.surrogateescape import encodefilename
-from rdiffweb.core import InvalidUserError, RdiffError, authorizedkeys
+from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.config import BoolOption, read_config
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, FS_ENCODING
@@ -446,7 +446,7 @@ class UserManager():
     def get_user(self, user):
         """Return a user object."""
         if not self.exists(user):
-            raise InvalidUserError(user)
+            return None
         return UserObject(self, self._database, user)
 
     def list(self):
@@ -487,22 +487,18 @@ class UserManager():
         else:
             real_user, attrs = valid
         # Check if user exists in database
-        try:
-            userobj = self.get_user(real_user)
-        except InvalidUserError:
-            # Check if user may be added.
-            if not self._allow_add_user:
+        userobj = self.get_user(real_user)
+        if not userobj:
+            if self._allow_add_user:
+                # Create user
+                userobj = self.add_user(real_user, attrs=attrs)
+            else:
                 logger.info("user [%s] not found in database", real_user)
                 return None
-            # Create user
-            userobj = self.add_user(real_user, attrs=attrs)
         self._notify('user_logined', userobj, attrs)
         return userobj
 
     def set_password(self, username, password, old_password=None):
-        # Check if user exists in database
-        if not self.exists(username):
-            raise InvalidUserError(username)
         # Try to update the user password.
         for store in self._password_stores:
             try:

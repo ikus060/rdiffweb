@@ -165,7 +165,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure to delete invalid username.
         """
         self._delete_user("test3")
-        self.assertInBody("User test3 doesn&#39;t exists.")
+        self.assertStatus(500)
 
     def test_delete_our_self(self):
         """
@@ -193,7 +193,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure trying to update invalid user.
         """
         self._edit_user("test4", "test1@test.com", "test1", "/var/backups/", False)
-        self.assertInBody("User test4 doesn&#39;t exists.")
+        self.assertStatus(500)
 
     def test_userfilter(self):
         """
