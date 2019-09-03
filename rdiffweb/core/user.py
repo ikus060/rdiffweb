@@ -385,11 +385,14 @@ class UserManager():
         
         # Register entry point.
         for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserChangeListener'):  # @UndefinedVariable
-            cls = entry_point.load()
-            # Creating the listener should register it self.But let make sure of it. 
-            listener = cls(self.app)
-            if listener not in self._change_listeners:
-                self._change_listeners.append(listener)
+            try:
+                cls = entry_point.load()
+                # Creating the listener should register it self.But let make sure of it. 
+                listener = cls(self.app)
+                if listener not in self._change_listeners:
+                    self._change_listeners.append(listener)
+            except:
+                logging.error("IUserChangeListener [%s] fail to load", entry_point)
 
     def add_change_listener(self, listener):
         self._change_listeners.append(listener)
