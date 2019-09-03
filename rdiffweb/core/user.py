@@ -174,23 +174,25 @@ class UserObject(object):
     def disk_usage(self):
         
         # Check quota
-        for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserQuota'):  # @UndefinedVariable
+        entry_point = next(pkg_resources.iter_entry_points('rdiffweb.IUserQuota'), None)  # @UndefinedVariable
+        if entry_point:
             try:
                 cls = entry_point.load()
                 return cls(self._userdb.app).get_disk_usage(self)
             except:
                 logger.warning('IuserQuota [%s] fail to run', entry_point, exc_info=1)
-        
-        # Fall back to disk spaces.
-        # Get the value from os and store in session.
-        try:
-            statvfs = os.statvfs(self.user_root)
-            return {  # @UndefinedVariable
-                'avail': statvfs.f_frsize * statvfs.f_bavail,
-                'used': statvfs.f_frsize * (statvfs.f_blocks - statvfs.f_bavail),
-                'size': statvfs.f_frsize * statvfs.f_blocks}
-        except:
-            return None
+                return None
+        else:
+            # Fall back to disk spaces.
+            # Get the value from os and store in session.
+            try:
+                statvfs = os.statvfs(self.user_root)
+                return {  # @UndefinedVariable
+                    'avail': statvfs.f_frsize * statvfs.f_bavail,
+                    'used': statvfs.f_frsize * (statvfs.f_blocks - statvfs.f_bavail),
+                    'size': statvfs.f_frsize * statvfs.f_blocks}
+            except:
+                return None
 
     def set_disk_quota(self, value):
         """
