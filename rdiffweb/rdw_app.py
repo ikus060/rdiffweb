@@ -53,6 +53,10 @@ logger = logging.getLogger(__name__)
 
 PY3 = sys.version_info[0] == 3
 
+# Enabled tools.proxy only for version < 5 or > 10
+# From version 5 to 10, a bug in cherrypy is breaking creation of base url.
+CP_PROXY = not (5 <= int(cherrypy.__version__.split('.')[0]) <= 10)
+
 
 class Root(LocationsPage):
 
@@ -109,6 +113,7 @@ class RdiffwebApp(Application):
                 'tools.encode.encoding': 'utf-8',
                 'tools.gzip.on': True,
                 'tools.sessions.on': True,
+                'tools.proxy.on':  CP_PROXY,
                 'error_page.default': self.error_page,
                 'request.error_response': self.error_response,
                 'tools.sessions.storage_type': 'file' if session_path else 'ram',
