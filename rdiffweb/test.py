@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2018 rdiffweb contributors
+# Copyright (C) 2019 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,25 +20,25 @@ Created on Oct 14, 2015
 
 Mock class for testing.
 
-@author: ikus060
+@author: Patrik Dufresne <info@patrikdufresne.com>
 """
 
 from __future__ import unicode_literals
 
-from builtins import str, delattr
-import cherrypy
-from cherrypy.test import helper
-from future.utils import native_str
 import json
 import os
-import pkg_resources
+from rdiffweb.rdw_app import RdiffwebApp
 import shutil
 import tarfile
 import tempfile
 import unittest
 
-from rdiffweb import rdw_config
-from rdiffweb.rdw_app import RdiffwebApp
+from builtins import str, delattr
+import cherrypy
+from cherrypy.test import helper
+from future.utils import native_str
+import pkg_resources
+
 
 try:
     from urllib.parse import urlencode  # @UnresolvedImport @UnusedImport
@@ -48,32 +48,16 @@ except:
 
 class MockRdiffwebApp(RdiffwebApp):
 
-    def __init__(self, enabled_plugins=['SQLite'], default_config={}):
-        assert enabled_plugins is None or isinstance(enabled_plugins, list)
-        self.enabled_plugins = enabled_plugins
+    def __init__(self, default_config={}):
         assert default_config is None or isinstance(default_config, dict)
         self.default_config = default_config
 
-        # Define config
-        cfg = rdw_config.Configuration()
-        for plugin_name in self.enabled_plugins:
-            cfg.set_config('%sEnabled' % plugin_name, 'True')
-
         # database in memory
-        if 'SQLite' in self.enabled_plugins:
-            self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
-            cfg.set_config('SQLiteDBFile', os.path.join(self.database_dir, 'rdiffweb.tmp.db'))
-
-        if 'Ldap' in self.enabled_plugins:
-            cfg.set_config('LdapUri', '__default__')
-            cfg.set_config('LdapBaseDn', 'dc=nodomain')
-
-        # Set config
-        for key, val in list(self.default_config.items()):
-            cfg.set_config(key, val)
-
+        self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
+        default_config['SQLiteDBFile'] = os.path.join(self.database_dir, 'rdiffweb.tmp.db')
+        
         # Call parent constructor
-        RdiffwebApp.__init__(self, cfg)
+        RdiffwebApp.__init__(self, cfg=default_config)
 
     def clear_db(self):
         if hasattr(self, 'database_dir'):
@@ -94,7 +78,7 @@ class MockRdiffwebApp(RdiffwebApp):
             self.userdb.delete_user(user)
 
         # Create new user admin
-        if self.userdb.supports('add_user') and username and password:
+        if username and password:
             user = self.userdb.add_user(username, password)
             user.is_admin = True
 
@@ -108,14 +92,12 @@ class MockRdiffwebApp(RdiffwebApp):
         # Register repository
         for user in self.userdb.list():
             user.user_root = new
-            user.repos = ['testcases/']
+            user.repos = ['testcases']
 
         self.testcases = new
 
 
 class AppTestCase(unittest.TestCase):
-
-    enabled_plugins = ['SQLite']
 
     default_config = {}
 
@@ -130,7 +112,7 @@ class AppTestCase(unittest.TestCase):
     PASSWORD = None
 
     def setUp(self):
-        self.app = MockRdiffwebApp(self.enabled_plugins, self.default_config)
+        self.app = MockRdiffwebApp(self.default_config)
         if self.reset_app:
             self.app.reset(self.USERNAME, self.PASSWORD)
         if self.reset_testcases:
@@ -175,8 +157,8 @@ class WebCase(helper.CPWebCase):
         app.clear_db()
 
     @classmethod
-    def setup_server(cls, enabled_plugins=['SQLite'], default_config={}):
-        app = MockRdiffwebApp(enabled_plugins, default_config)
+    def setup_server(cls, default_config={}):
+        app = MockRdiffwebApp(default_config)
         cherrypy.tree.mount(app)
 
     def setUp(self):
@@ -229,3 +211,4 @@ class WebCase(helper.CPWebCase):
     def test_gc(self):
         "Override test_gc to skip the test."
         # Disable gc check (because it randomly fail).
+        pass

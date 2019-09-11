@@ -41,3 +41,4 @@ nosetests*.xml
 .tox
 .pydevproject
 /htmlcov/
+/.env/

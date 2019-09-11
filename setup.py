@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2018 rdiffweb contributors
+# Copyright (C) 2019 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,11 +33,7 @@ if PY2 and not sys.version_info >= (2, 7):
 from distutils.cmd import Command
 from distutils.command.build import build as build_
 from distutils.dist import DistributionMetadata
-from distutils.log import error, info
-from distutils.util import split_quoted
-from setuptools.command.test import test as TestCommand
 import os
-from string import Template
 import subprocess
 
 try:
@@ -157,40 +153,47 @@ class build(build_):
 
 
 # Compute requirements
-install_requires = [
-    "CherryPy>=3.2.2",
-    "Jinja2>=2.6,<=2.8.1",
-    "future>=0.15.2",
-    "psutil>=2.1.1",
-    "babel>=0.9.6",
-]
 if PY2:
-    install_requires.extend(["pysqlite>=2.6.3"])
+    install_requires = [
+        "CherryPy>=3.5,<17.0",
+        "Jinja2>=2.6,<=2.8.1",
+        "future>=0.15.2",
+        "psutil>=2.1.1",
+        "babel>=0.9.6",
+        "pysqlite>=2.6.3",
+        "python-ldap",
+    ]
+else:
+    install_requires = [
+        "CherryPy>=3.5",
+        "Jinja2>=2.6,<=2.8.1",
+        "future>=0.15.2",
+        "psutil>=2.1.1",
+        "babel>=0.9.6",
+        "python-ldap",
+    ]
+
+
+long_description_content_type = long_description = None
+with open(os.path.join(os.path.dirname(__file__), 'README.md')) as f:
+    long_description = f.read()
+    long_description_content_type = 'text/markdown'
 
 setup(
     name='rdiffweb',
     use_scm_version=True,
     description='A web interface to rdiff-backup repositories',
+    long_description=long_description,
+    long_description_content_type=long_description_content_type,
     author='Patrik Dufresne',
     author_email='info@patrikdufresne.com',
-    url='http://www.patrikdufresne.com/en/rdiffweb/',
+    url='https://github.com/ikus060/rdiffweb',
     license="GPLv3",
     packages=['rdiffweb'],
     include_package_data=True,
     entry_points={
         "console_scripts": ["rdiffweb = rdiffweb.main:start"],
-        "rdiffweb.plugins": [
-            "EmailNotification = rdiffweb.plugins.notification",
-            "SQLite = rdiffweb.plugins.db_sqlite",
-            "Ldap = rdiffweb.plugins.ldap_auth",
-            "UserPrefsGeneral = rdiffweb.plugins.prefs_general",
-            "UserPrefsSSHKeys = rdiffweb.plugins.prefs_sshkeys",
-            "UpdateRepos = rdiffweb.plugins.update_repos",
-            "Graphs = rdiffweb.plugins.graphs",
-            "DeleteRepo = rdiffweb.plugins.delete_repo",
-            "RemoveOlder = rdiffweb.plugins.remove_older",
-            "SetEncoding = rdiffweb.plugins.set_encoding",
-        ]
+        "rdiffweb.plugins": []
     },
     # new commands added and build command modified
     cmdclass={
@@ -209,6 +212,19 @@ setup(
         "mock>=1.3.0",
         "coverage>=4.0.1",
         "mockldap>=0.2.6",
-        "pycrypto>=2.6.1",
-    ]
+        "pytest<5.0.0",
+    ],
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Framework :: CherryPy',
+    ],
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4',
 )

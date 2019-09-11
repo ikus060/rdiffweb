@@ -3,24 +3,10 @@
 {% block title %}{% trans %}Status{% endtrans %}{% endblock %}
 {% block body %}
 <div class="container">
-    <h2>
-        <!-- title -->
-        {{ title }}
-        <!-- /title -->
-        {% if feedLink %}
-        <!-- feedLink -->
-        <small class="pull-right">
-            <a href="{{ feedLink }}">
-                {% trans %}Subscribe{% endtrans %}
-                <i class="icon-rss"></i>
-            </a>
-        </small>
-        <!-- /link  -->
-        {% endif %}
-    </h2>
+    <h2>{{ title }}</h2>
 
     <ul class="nav nav-pills">
-        <li class="{% if not failuresOnly and not isEntry %}active{% endif %}">
+        <li class="{% if not failuresOnly %}active{% endif %}">
             <a href="/status/?">{% trans %}Show all{% endtrans %}</a>
         </li>
         <li class="{% if failuresOnly %}active{% endif %}">
@@ -46,7 +32,7 @@
     {%if message.is_success %}
     <!--StartIncludeIf:isSuccess-->
     <h3 class="backupStatus_success">
-        <a href="{{ url_for_status_entry(message.date) }}">
+        <a href="{{ url_for_status(message.date) }}">
             {% trans %}Successful backups for {% endtrans %}{{ message.date | datetime }}
         </a>
     </h3>
@@ -69,7 +55,7 @@
     {% else %}
     <!--StartDeleteIf:isSuccess-->
     <h3 class="backupStatus_failure">
-        <a href="{{ url_for_status_entry(message.date) }}">{% trans %}Backup completed with errors:{% endtrans %}
+        <a href="{{ url_for_status(message.date) }}">{% trans %}Backup completed with errors:{% endtrans %}
             {{ message.repo_name }}</a>
     </h3>
     <div>
