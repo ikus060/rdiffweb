@@ -45,7 +45,7 @@ Use the following credential to login:
 
 ## Installation
 
-For detailed installation steps, take a look at the [Documentation](./doc/installation.md).
+For detailed installation steps, take a look at the [Documentation](https://github.com/ikus060/rdiffweb/blob/master/doc/installation.md).
 
 ## Current Build Status
 
@@ -57,7 +57,7 @@ For detailed installation steps, take a look at the [Documentation](./doc/instal
 
 You may download rdiffweb from [pypi](https://pypi.org/project/rdiffweb/).
 
-You should read the [Documentation](./doc/installation.md) to properly install rdiffweb in your environment.
+You should read the [Documentation](https://github.com/ikus060/rdiffweb/blob/master/doc/index.md) to properly install rdiffweb in your environment.
 
 # Support
 
