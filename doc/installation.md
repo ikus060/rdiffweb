@@ -7,7 +7,7 @@ from Pypi repository. It's the official supported way to install rdiffweb.
 
 To install rdiffweb from pypi, you need to install `pip` and other dependencies:
 
-    sudo apt-get install python-pysqlite2 libldap2-dev libsasl2-dev rdiff-backup
+    sudo apt-get install python-dev python-pysqlite2 libldap2-dev libsasl2-dev rdiff-backup build-essential
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
     sudo python get-pip.py
 
