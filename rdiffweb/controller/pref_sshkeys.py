@@ -55,9 +55,9 @@ class SSHKeysPlugin(Controller):
             self.app.currentuser.add_authorizedkey(key=kwargs['key'], comment=kwargs.get('title', None))
         except ValueError as e:
             _logger.warn("error adding ssh key", exc_info=1)
-            raise RdiffWarning(e.message)
+            raise RdiffWarning(str(e))
         except:
-            _logger.warn("error adding ssh key", exc_info=1)
+            _logger.error("error adding ssh key", exc_info=1)
             raise RdiffWarning(_("Unknown error while adding the SSH Key"))
 
     def _handle_delete(self, **kwargs):

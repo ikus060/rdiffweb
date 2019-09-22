@@ -22,14 +22,18 @@ into a SQLite database.
 
 from __future__ import unicode_literals
 
+from builtins import str
 import logging
-from rdiffweb.core import RdiffError
-from rdiffweb.core.i18n import ugettext as _
 from threading import RLock
 
-from builtins import str
-
+from rdiffweb.core import RdiffError
 from rdiffweb.core.config import Option
+from rdiffweb.core.i18n import ugettext as _
+
+try:
+    import sqlite3
+except ImportError:
+    from pysqlite2 import dbapi2 as sqlite3
 
 try:
     # Python 2.5+
@@ -69,8 +73,11 @@ class SQLiteUserDB():
         # Query user
         user_id = self._get_user_id(username)
         assert user_id, "user [%s] doesn't exists" % username
-        self._execute_query(
-            "INSERT INTO sshkeys (UserID, Fingerprint, Key) values (?, ?, ?)", (user_id, fingerprint, key))
+        try:
+            self._execute_query(
+                "INSERT INTO sshkeys (UserID, Fingerprint, Key) values (?, ?, ?)", (user_id, fingerprint, key))
+        except sqlite3.IntegrityError:  # @UndefinedVariable
+            raise ValueError(_("Duplicate key. This key already exists or is associated to another user."))
 
     def exists(self, username):
         """
@@ -304,10 +311,6 @@ class SQLiteUserDB():
         """
         Called to create a new connection to database.
         """
-        try:
-            import sqlite3
-        except ImportError:
-            from pysqlite2 import dbapi2 as sqlite3
         conn = sqlite3.connect(self._db_file)
         conn.isolation_level = None
         return conn

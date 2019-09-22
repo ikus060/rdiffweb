@@ -236,9 +236,8 @@ class UserObject(object):
         """
         # Parse and validate ssh key
         assert key
-        try:
-            key = authorizedkeys.check_publickey(key)
-        except ValueError:
+        key = authorizedkeys.check_publickey(key)
+        if not key:
             raise ValueError(_("Invalid SSH key."))
         # Remove option, replace comments.
         key = authorizedkeys.AuthorizedKey(

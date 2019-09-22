@@ -149,7 +149,7 @@ def check_publickey(data):
         key = AuthorizedKey(options=False, keytype=m.group(2), key=m.group(3), comment=m.group(4))
         key.fingerprint
         return key
-    raise ValueError("invalid public key")
+    return None
 
 
 def exists(fn, key):
