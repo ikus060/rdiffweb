@@ -26,10 +26,8 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import logging
-import os
 from rdiffweb.controller import Controller
 from rdiffweb.core import RdiffError, RdiffWarning
-from rdiffweb.core import authorizedkeys
 from rdiffweb.core.i18n import ugettext as _
 
 from builtins import str
@@ -57,9 +55,9 @@ class SSHKeysPlugin(Controller):
             self.app.currentuser.add_authorizedkey(key=kwargs['key'], comment=kwargs.get('title', None))
         except ValueError as e:
             _logger.warn("error adding ssh key", exc_info=1)
-            raise RdiffWarning(e.message)
+            raise RdiffWarning(str(e))
         except:
-            _logger.warn("error adding ssh key", exc_info=1)
+            _logger.error("error adding ssh key", exc_info=1)
             raise RdiffWarning(_("Unknown error while adding the SSH Key"))
 
     def _handle_delete(self, **kwargs):
@@ -68,7 +66,7 @@ class SSHKeysPlugin(Controller):
         """
         assert kwargs.get('key') , "key is missing"
         try:
-            self.app.currentuser.remove_authorizedkey(key=kwargs['key'])
+            self.app.currentuser.remove_authorizedkey(kwargs['key'])
         except:
             _logger.warn("error removing ssh key", exc_info=1)
             raise RdiffWarning(_("Unknown error while removing the SSH Key"))

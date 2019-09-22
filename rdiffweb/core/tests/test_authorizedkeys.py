@@ -93,8 +93,7 @@ class AuthorizedKeysTest(unittest.TestCase):
         self.assertEqual('2b:28:92:b5:75:85:42:35:99:5d:bf:a5:f1:fb:a6:71', key.fingerprint)
 
     def test_check_publickey_with_invalid(self):
-        with self.assertRaises(ValueError):
-            authorizedkeys.check_publickey('123445342')
+        self.assertIsNone(authorizedkeys.check_publickey('123445342'))
 
     def test_exists(self):
         filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable

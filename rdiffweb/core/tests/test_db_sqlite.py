@@ -65,11 +65,12 @@ class SQLiteUserDBTest(AppTestCase):
         self.db.add_user('vicky')
         self.assertTrue(self.db.exists('vicky'))
         # Delete user
-        self.assertTrue(self.db.delete_user('vicky'))
+        self.db.delete_user('vicky')
         self.assertFalse(self.db.exists('vicky'))
 
     def test_delete_user_with_invalid_user(self):
-        self.assertFalse(self.db.delete_user('eve'))
+        with self.assertRaises(AssertionError):
+            self.db.delete_user('eve')
 
     def test_exists(self):
         self.db.add_user('bob')

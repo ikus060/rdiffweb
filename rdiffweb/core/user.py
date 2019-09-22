@@ -236,9 +236,8 @@ class UserObject(object):
         """
         # Parse and validate ssh key
         assert key
-        try:
-            key = authorizedkeys.check_publickey(key)
-        except ValueError:
+        key = authorizedkeys.check_publickey(key)
+        if not key:
             raise ValueError(_("Invalid SSH key."))
         # Remove option, replace comments.
         key = authorizedkeys.AuthorizedKey(
@@ -425,13 +424,9 @@ class UserManager():
         """
         if hasattr(user, 'username'):
             user = user.username
-        result = False
         # Delete user from database (required).
-        if self._database.exists(user):
-            logger.info("deleting user [%s] from database", user)
-            result |= self._database.delete_user(user)
-        if not result:
-            return result
+        logger.info("deleting user [%s] from database", user)
+        self._database.delete_user(user)
         self._notify('user_deleted', user)
         return True
 
