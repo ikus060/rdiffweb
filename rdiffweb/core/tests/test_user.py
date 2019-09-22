@@ -99,7 +99,8 @@ class UserManagerSQLiteTest(AppTestCase):
         self.mlistener.user_deleted.assert_called_once_with('vicky')
 
     def test_delete_user_with_invalid_user(self):
-        self.assertFalse(self.app.userdb.delete_user('eve'))
+        with self.assertRaises(AssertionError):
+            self.app.userdb.delete_user('eve')
         # Check if listener called
         self.mlistener.user_deleted.assert_not_called()
 
@@ -327,7 +328,8 @@ class UserManagerSQLiteLdapTest(AppTestCase):
         self.assertFalse(self.app.userdb.exists('vicky'))
 
     def test_delete_user_with_invalid_user(self):
-        self.assertFalse(self.app.userdb.delete_user('eve'))
+        with self.assertRaises(AssertionError):
+            self.app.userdb.delete_user('eve')
 
     def test_exists(self):
         """Check if user doesn't exists when only in LDAP."""

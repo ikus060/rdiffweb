@@ -425,13 +425,9 @@ class UserManager():
         """
         if hasattr(user, 'username'):
             user = user.username
-        result = False
         # Delete user from database (required).
-        if self._database.exists(user):
-            logger.info("deleting user [%s] from database", user)
-            result |= self._database.delete_user(user)
-        if not result:
-            return result
+        logger.info("deleting user [%s] from database", user)
+        self._database.delete_user(user)
         self._notify('user_deleted', user)
         return True
 

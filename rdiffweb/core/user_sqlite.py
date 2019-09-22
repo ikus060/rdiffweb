@@ -170,16 +170,16 @@ class SQLiteUserDB():
         Delete the given `username`.
         """
         assert isinstance(username, str)
+        
         # Check if user exists
-        if not self.exists(username):
-            return False
+        user_id = self._get_user_id(username)
+        assert user_id, "user [%s] doesn't exists" % username
+        
         # Delete user
         logger.info("deleting user [%s]", username)
-        self._execute_query("DELETE FROM repos WHERE UserID=%d" % 
-                            self._get_user_id(username))
-        self._execute_query("DELETE FROM users WHERE Username = ?",
-                            (username,))
-        return True
+        self._execute_query("DELETE FROM repos WHERE UserID=?", (user_id,))
+        self._execute_query("DELETE FROM sshkeys WHERE UserID=?", (user_id,))
+        self._execute_query("DELETE FROM users WHERE UserID = ?", (user_id,))
 
     def remove_authorizedkey(self, username, fingerprint):
         assert isinstance(username, str)
