@@ -75,6 +75,11 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
 
 # Changelog
 
+## 1.0.1
+ * Update installation documentation 
+ * Fix removal of SSH Key
+ * Return meaningful error to the user trying to add an existing SSH key
+
 ## 1.0.0 
  * Make repository removal more robust
  * Improve performance of librdiff
