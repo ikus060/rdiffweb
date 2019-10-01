@@ -30,7 +30,7 @@ import pkg_resources
 from future.utils import python_2_unicode_compatible
 from future.utils.surrogateescape import encodefilename
 from rdiffweb.core import RdiffError, authorizedkeys
-from rdiffweb.core.config import BoolOption, read_config
+from rdiffweb.core.config import BoolOption, read_config, Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, FS_ENCODING
 from rdiffweb.core.user_ldap_auth import LdapPasswordStore
@@ -375,6 +375,7 @@ class UserManager():
     """
     
     _allow_add_user = BoolOption("AddMissingUser", False)
+    _admin_user = Option("AdminUser", "admin")
 
     def __init__(self, app):
         self.app = app
@@ -392,6 +393,11 @@ class UserManager():
                     self._change_listeners.append(listener)
             except:
                 logging.error("IUserChangeListener [%s] fail to load", entry_point)
+        
+        # Check if admin user exists. If not, created it.
+        if not self.exists(self._admin_user):
+            userobj = self.add_user(self._admin_user, 'admin123')
+            userobj.is_admin = True
 
     def add_change_listener(self, listener):
         self._change_listeners.append(listener)
@@ -424,6 +430,10 @@ class UserManager():
         """
         if hasattr(user, 'username'):
             user = user.username
+            
+        if user == self._admin_user:
+            raise ValueError(_("can't delete admin user"))
+            
         # Delete user from database (required).
         logger.info("deleting user [%s] from database", user)
         self._database.delete_user(user)

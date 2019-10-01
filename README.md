@@ -75,6 +75,10 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
 
 # Changelog
 
+## 1.0.2
+ * Create "admin" user if missing
+ * Update french translation
+
 ## 1.0.1
  * Update installation documentation 
  * Fix removal of SSH Key
