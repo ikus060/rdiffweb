@@ -74,8 +74,8 @@ class MockRdiffwebApp(RdiffwebApp):
         Reset the application. Delete all data from database.
         """
         # Delete all user from database
-        for user in self.userdb.list():
-            self.userdb.delete_user(user)
+        for user in self.userdb._database.list():
+            self.userdb._database.delete_user(user)
 
         # Create new user admin
         if username and password:

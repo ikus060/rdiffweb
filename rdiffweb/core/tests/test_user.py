@@ -88,6 +88,11 @@ class UserManagerSQLiteTest(AppTestCase):
         # Check if listener called
         self.mlistener.user_added.assert_called_once_with(userobj, None)
 
+    def test_delete_admin_user(self):
+        # Trying to delete admin user should raise an error.
+        with self.assertRaises(ValueError):
+            self.app.userdb.delete_user('admin')
+
     def test_delete_user(self):
         # Create user
         self.app.userdb.add_user('vicky', 'password')
