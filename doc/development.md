@@ -8,11 +8,17 @@ Reference http://babel.edgewall.org/wiki/Documentation/setup.html
 rdiffweb may be translated using `.po` files. This section describe briefly
 how to translate rdiffweb. It's not a complete instruction set, it's merely a reminder.
 
-Extract the strings to be translated.
+Extract the strings to be translated:
 
-    ./setup.py extract_messages --output-file rdiffweb/locales/messages.pot
+    python setup.py extract_messages --output-file rdiffweb/locales/messages.pot
 
-    ./setup.py compile_catalog --directory rdiffweb/locales --locale fr
+Create a new translation:
+
+    python setup.py init_catalog --local fr
+    
+Update an existing translation:
+
+    python setup.py update_catalog --local fr
 
 ## Running tests
 
