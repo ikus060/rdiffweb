@@ -23,7 +23,7 @@ import getopt
 import logging
 from rdiffweb import rdw_app
 from rdiffweb.core.config import read_config
-from rdiffweb.core.rdw_deamon import RemoveOlder, UpdateRepos
+from rdiffweb.core.rdw_deamon import RemoveOlder
 import sys
 import tempfile
 import threading
@@ -210,7 +210,6 @@ def start():
 
     # Start deamons
     RemoveOlder(cherrypy.engine, app).subscribe()
-    UpdateRepos(cherrypy.engine, app).subscribe()
     NotificationPlugin(cherrypy.engine, app).subscribe()
 
     # Start web server
