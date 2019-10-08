@@ -75,16 +75,19 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
 
 # Changelog
 
-## 1.0.2
+## 1.0.3 (2019-10-04)
+ * Removing the auto update repos
+
+## 1.0.2 (2019-10-01)
  * Create "admin" user if missing
  * Update french translation
 
-## 1.0.1
+## 1.0.1 (2019-09-22)
  * Update installation documentation 
  * Fix removal of SSH Key
  * Return meaningful error to the user trying to add an existing SSH key
 
-## 1.0.0 
+## 1.0.0 (2019-09-11)
  * Make repository removal more robust
  * Improve performance of librdiff
  * Add new RESTful api
@@ -100,6 +103,6 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
  * Replace the plugins architecture to ease implementation
  * Numerous bug fixes
 
-## 0.10.9
+## 0.10.9 (2019-05-22)
  * Better error handling when error.log file are not valid gzip file
 
