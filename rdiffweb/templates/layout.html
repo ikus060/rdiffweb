@@ -42,29 +42,27 @@
             </a>
         </div>
         {% if username %}
-        {% set nav_bar = [
-            ('repo', _('Repositories'), '/'),
-            ('status', _('Status'), '/status/'),
-            ('settings', _('User settings'), '/prefs/'),
-        ] -%}
-        {% if nav_bar_extras %}
-        {{ nav_bar.extend(nav_bar_extras) or "" }}
-        {% endif %}
-        {% if is_admin %}
-        {{ nav_bar.append(('admin', _('Admin area'), '/admin/')) or "" }}
-        {% endif %}
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
-                {% for item in nav_bar %}
-                <li {{ attrib(class=active_page==item[0] and "active") }}><a href="{{ item[2] }}">{{ item[1] }}</a></li>
-                {% endfor %}
+                <li {{ attrib(class=active_page=='repo' and "active") }}><a href="/">{% trans %}Repositories{% endtrans %}</a></li>
+                <li {{ attrib(class=active_page=='status' and "active") }}><a href="/status/">{% trans %}Status{% endtrans %}</a></li>
+                {% if is_admin %}
+                <li {{ attrib(class=active_page=='admin' and "active") }}><a href="/admin/">{% trans %}Admin area{% endtrans %}</a></li>
+                {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="/logout/">{% trans %}Logout{% endtrans %}</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="icon-user"></i> {{ username }} <span class="caret"></span></a>
+			        <ul class="dropdown-menu">
+			            <li class="dropdown-header">{% trans %}Signed in as {{ username }}{% endtrans %}</li>
+			            <li role="separator" class="divider"></li>
+			            <li><a href="/prefs/general/">Profile</a></li>
+			            <li><a href="/prefs/notification/">Notifications</a></li>
+			            <li role="separator" class="divider"></li>
+			            <li><a href="/logout/">{% trans %}Logout{% endtrans %}</a></li>
+			          </ul>
+                </li>
             </ul>
-            <p class="navbar-text navbar-right hidden-xs hidden-sm hidden-md">
-                {% trans %}Signed in as {{ username }}{% endtrans %}
-            </p>
         </div>
         {% endif %}
     </div>
