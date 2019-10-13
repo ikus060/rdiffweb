@@ -156,7 +156,7 @@ class build(build_):
 if PY2:
     install_requires = [
         "CherryPy>=3.5,<17.0",
-        "Jinja2>=2.6,<=2.8.1",
+        "Jinja2>=2.6,<2.9",
         "future>=0.15.2",
         "psutil>=2.1.1",
         "babel>=0.9.6",
@@ -166,7 +166,7 @@ if PY2:
 else:
     install_requires = [
         "CherryPy>=3.5",
-        "Jinja2>=2.6,<=2.8.1",
+        "Jinja2>=2.6,!=2.9",
         "future>=0.15.2",
         "psutil>=2.1.1",
         "babel>=0.9.6",
