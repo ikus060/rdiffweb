@@ -1,5 +1,8 @@
 image: $DOCKER_REGISTRY/pdsl/rdiffweb-build:$CI_PIPELINE_IID
 
+variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
 stages:
 - prebuild
 - test
@@ -20,6 +23,10 @@ prebuild-docker-image:
   stage: test
   script:
   - tox -e $CI_JOB_NAME --sitepackages
+  cache:
+    key: ${CI_JOB_NAME}
+    paths:
+      - .cache/pip
   artifacts:
     paths:
     - coverage-*.xml
