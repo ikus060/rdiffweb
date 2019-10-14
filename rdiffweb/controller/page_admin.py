@@ -19,19 +19,44 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+from builtins import str
 import logging
 import os
+
+import cherrypy
 from rdiffweb.controller import Controller, validate_isinstance
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core import rdw_spider_repos
+from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
-
-from builtins import str
-import cherrypy
-
+import subprocess
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
+
+def get_log_files(app):
+    """
+    Return a list of log files to be shown in admin area.
+    """
+    logfiles = [app.cfg.get('logfile'), app.cfg.get('logaccessfile')]
+    logfiles = [fn for fn in logfiles if fn]
+    return [os.path.basename(fn) for fn in logfiles]
+
+
+def get_log_data(app, logfile, num=2000):
+    """
+    Return a list of log files to be shown in admin area.
+    """
+    logfiles = [app.cfg.get('logfile'), app.cfg.get('logaccessfile')]
+    logfiles = [fn for fn in logfiles if fn]
+    for fn in logfiles:
+        if logfile == os.path.basename(fn):
+            try:
+                return subprocess.check_output(['tail', '-n', str(num), fn]).decode('utf-8')
+            except:
+                logging.exception('fail to get log file content')
+                return "Error getting file content"
 
 
 class AdminPage(Controller):
@@ -43,7 +68,7 @@ class AdminPage(Controller):
             raise RdiffWarning(_("User root directory %s is not accessible!") % directory)
 
     @cherrypy.expose
-    def index(self):
+    def default(self):
 
         # Check if user is an administrator
         if not self.app.currentuser or not self.app.currentuser.is_admin:
@@ -59,6 +84,32 @@ class AdminPage(Controller):
                   "repo_count": repo_count}
 
         return self._compile_template("admin.html", **params)
+
+    @cherrypy.expose
+    def logs(self, filename=u""):
+        
+        # Check if user is an administrator
+        if not self.app.currentuser or not self.app.currentuser.is_admin:
+            raise cherrypy.HTTPError(403)
+        
+        # Check if the filename is valid.
+        data = ""
+        logfiles = get_log_files(self.app)
+        if logfiles:
+            if not filename:
+                filename = logfiles[0]
+                
+            if filename not in logfiles:
+                raise cherrypy.HTTPError(404)
+            
+            data = get_log_data(self.app, filename)
+        
+        params = {
+            "filename": filename,
+            "logfiles": logfiles,
+            "data":  data,
+        }
+        return self._compile_template("admin_logs.html", **params)
 
     @cherrypy.expose
     def users(self, userfilter=u"", usersearch=u"", action=u"", username=u"",

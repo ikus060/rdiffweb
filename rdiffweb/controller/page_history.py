@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 class HistoryPage(Controller):
 
     @cherrypy.expose
-    def index(self, path=b"", limit='10', **kwargs):
+    def default(self, path=b"", limit='10', **kwargs):
         validate_isinstance(path, bytes)
         limit = validate_int(limit)
 

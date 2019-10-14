@@ -25,6 +25,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
+import os
 import unittest
 
 from rdiffweb.test import WebCase
@@ -250,6 +251,43 @@ class AdminUsersAsUserTest(AbstractAdminTest):
         """
         self.getPage("/admin/users/")
         self.assertStatus(403)
+
+
+class AdminLogsTest(WebCase):
+
+    login = True
+
+    def test_no_logs(self):
+        self.app.cfg['logfile'] = None
+        self.app.cfg['logaccessfile'] = None
+        
+        self.getPage("/admin/logs/")
+        self.assertStatus(200)
+        self.assertInBody("No log files")
+
+    def test_logs(self):
+        self.app.cfg['logfile'] = './rdiffweb.log'
+        self.app.cfg['logaccessfile'] = './rdiffweb-access.log'
+        
+        with open('./rdiffweb.log', 'w') as f:
+            f.write("content of log file")
+        
+        self.getPage("/admin/logs/")
+        self.assertStatus(200)
+        self.assertInBody("rdiffweb.log")
+        self.assertInBody("content of log file")
+        self.assertInBody("rdiffweb-access.log")
+        
+        os.remove('./rdiffweb.log')
+        
+    def test_logs_with_no_file(self):
+        self.app.cfg['logfile'] = './rdiffweb.log'
+        self.app.cfg['logaccessfile'] = './rdiffweb-access.log'
+        
+        self.getPage("/admin/logs/")
+        self.assertStatus(200)
+        self.assertInBody("rdiffweb.log")
+        self.assertInBody("Error getting file content")
 
 
 if __name__ == "__main__":

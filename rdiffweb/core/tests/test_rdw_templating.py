@@ -23,7 +23,7 @@ import unittest
 
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.rdw_templating import do_format_filesize, url_for_browse, \
-    url_for_history, url_for_restore, attrib
+    url_for_history, url_for_restore, attrib, url_for
 
 
 class TemplateManagerTest(unittest.TestCase):
@@ -84,6 +84,18 @@ class TemplateManagerTest(unittest.TestCase):
         # Round to one decimal
         self.assertEqual(do_format_filesize(1024 * 1024 * 1024 * 1024 * 120, True), "120.0 TiB")
 
+    def test_url_for(self):
+        # Check backward compatibility
+        self.assertEqual('/browse', url_for('browse'))
+        self.assertEqual('/browse/testcases', url_for('browse', b'testcases'))
+        self.assertEqual('/browse/testcases/Revisions', url_for('browse', b'testcases', b'Revisions'))
+        self.assertEqual('/browse/testcases/Revisions?restore=T', url_for('browse', b'testcases', b'Revisions', restore='T'))
+        self.assertEqual('/browse/testcases/Revisions?restore=True', url_for('browse', b'testcases', b'Revisions', restore=True))
+        self.assertEqual('/browse/testcases/R%C3%A9pertoire', url_for('browse', b'testcases', b'R\xc3\xa9pertoire'))
+        # Check if multi path is supported.
+        self.assertEqual('/admin/logs', url_for('admin/logs'))
+        self.assertEqual('/admin/logs/backup.log', url_for('admin/logs', 'backup.log'))
+        
     def test_url_for_browse(self):
         """Check creation of url"""
         self.assertEqual('/browse/testcases/', url_for_browse(b'testcases'))

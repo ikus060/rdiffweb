@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 import datetime
 import logging
 from rdiffweb.core import librdiff
-from rdiffweb.core.rdw_spider_repos import find_repos_for_user
 import time
 
 from builtins import str
