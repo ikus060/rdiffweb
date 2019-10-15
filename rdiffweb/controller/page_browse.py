@@ -41,7 +41,7 @@ class BrowsePage(Controller):
     repository."""
 
     @cherrypy.expose
-    def index(self, path=b"", restore="", limit='10'):
+    def default(self, path=b"", restore="", limit='10'):
         validate_isinstance(path, bytes)
         validate_isinstance(restore, str)
         limit = validate_int(limit)

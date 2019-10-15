@@ -134,19 +134,21 @@ def url_for(endpoint, *args, **kwargs):
     Generate a url for the given endpoint, path (*args) with parameters (**kwargs)
     """
     url = []
-    url.append("/" + endpoint + "/")
-    for chunk in args:
-        if isinstance(chunk, bytes):
-            chunk = chunk.rstrip(b"/")
-            url.append(rdw_helpers.quote_url(chunk))
-            url.append("/")
-        else:
-            chunk = chunk.rstrip("/")
-            url.append(chunk)
-            url.append("/")
+    endpoint = endpoint.strip("/")
+    url.append("/" + endpoint)
+    if args:
+        for chunk in args:
+            if isinstance(chunk, bytes):
+                chunk = chunk.rstrip(b"/")
+                url.append("/")
+                url.append(rdw_helpers.quote_url(chunk))
+            else:
+                chunk = chunk.rstrip("/")
+                url.append("/")
+                url.append(chunk)
     if kwargs:
         url.append("?")
-    for key, value in kwargs:
+    for key, value in kwargs.items():
         url.append("%s=%s" % (key, value))
     return ''.join(url)
 

@@ -239,7 +239,7 @@ def set_lang():
     """Sets the Content-Language response header (if not already set) to the
     language of `cherrypy.response.i18n.locale`.
     """
-    if 'Content-Language' not in cherrypy.response.headers:
+    if hasattr(cherrypy.response, 'i18n') and 'Content-Language' not in cherrypy.response.headers:
         cherrypy.response.headers['Content-Language'] = str(cherrypy.response.i18n.locale)
 
 
