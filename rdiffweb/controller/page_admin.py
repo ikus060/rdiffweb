@@ -27,7 +27,6 @@ import cherrypy
 from rdiffweb.controller import Controller, validate_isinstance
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core import rdw_spider_repos
-from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 import subprocess
 

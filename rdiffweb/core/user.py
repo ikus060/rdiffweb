@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from builtins import str, bytes
 import encodings
-from io import StringIO
 from io import open
 import logging
 import os

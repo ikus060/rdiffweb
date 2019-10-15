@@ -87,9 +87,7 @@ def setup_logging(log_file, log_access_file, level):
             self.nlen = len(name)
 
         def filter(self, record):
-            if self.nlen == 0:
-                return 0
-            elif self.name == record.name:
+            if self.nlen == 0 or self.name == record.name:
                 return 0
             elif record.name.find(self.name, 0, self.nlen) != 0:
                 return 1
@@ -220,5 +218,4 @@ def start():
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
     start()

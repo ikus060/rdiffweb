@@ -23,8 +23,6 @@ is greatly inspired from Mercurial archival module.
 from __future__ import unicode_literals
 
 import codecs
-from future.builtins import bytes
-from future.builtins import str
 from itertools import chain
 import logging
 import os
@@ -35,6 +33,9 @@ import tarfile
 import time
 from zipfile import ZipFile, ZipInfo, ZIP_STORED, ZIP64_LIMIT, crc32, zlib, \
     ZIP_DEFLATED
+
+from future.builtins import bytes
+from future.builtins import str
 
 
 logger = logging.getLogger(__name__)
@@ -336,5 +337,4 @@ def main():
         archive(src, f, decode=lambda name: name.decode('utf8', 'replace'), kind=kind)
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
     main()
