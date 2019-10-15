@@ -22,22 +22,21 @@ User can control the notification period.
 
 from __future__ import unicode_literals
 
+from builtins import str
 import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import logging
-from rdiffweb.core import RdiffError, RdiffWarning
+import re
+import smtplib
+from xml.etree.ElementTree import fromstring, tostring
+
 from rdiffweb.core import librdiff
 from rdiffweb.core.config import Option, BoolOption
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_deamon import Deamon
 from rdiffweb.core.user import IUserChangeListener
-import re
-import smtplib
-from xml.etree.ElementTree import fromstring, tostring
 
-from builtins import str
-import cherrypy
 
 _logger = logging.getLogger(__name__)
 
@@ -250,7 +249,6 @@ class NotificationPlugin(Deamon, IUserChangeListener):
         msg['Subject'] = subject
         msg['From'] = email_from
         msg['To'] = to_user.email
-        # msg['Date'] = formatdate(localtime=True)
         msg.attach(part1)
         msg.attach(part2)
 

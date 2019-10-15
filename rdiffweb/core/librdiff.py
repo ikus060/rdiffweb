@@ -31,7 +31,6 @@ import os
 import re
 from shutil import copyfileobj
 import shutil
-import stat
 import sys
 import tempfile
 import threading
