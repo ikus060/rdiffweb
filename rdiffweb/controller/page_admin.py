@@ -140,7 +140,7 @@ class AdminPage(Controller):
         for fn in logfiles:
             if logfile == os.path.basename(fn):
                 try:
-                    return subprocess.check_output(['tail', '-n', str(num), fn]).decode('utf-8')
+                    return subprocess.check_output(['tail', '-n', str(num), fn], stderr=subprocess.STDOUT).decode('utf-8')
                 except:
                     logging.exception('fail to get log file content')
                     return "Error getting file content"
