@@ -38,12 +38,7 @@ class LocationsPage(Controller):
     def index(self):
         # Get page params
         params = {
-            "repos": [{
-                "path": repo_obj.path,
-                "name_split": repo_obj.display_name.strip('/').split('/'),
-                "last_backup_date": repo_obj.last_backup_date,
-                'status': repo_obj.status,
-            } for repo_obj in self.app.currentuser.repo_objs],
+            "repos": self.app.currentuser.repo_objs,
             "disk_usage": self.app.currentuser.disk_usage,
         }
         # Render the page.

@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% include 'message.html' %}
 
-{% import 'macros.html' as macros %}
+{% from 'include/modal_dialog.html' import modal_dialog, delete_confirm_data %}
 
 <!-- List of ssh keys -->
 <div class="panel panel-default"
@@ -54,7 +54,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 itemtype="http://schema.org/ListItem">
             <div class="pull-right">
                 {# Delete button with confirmation. #}
-                {{ macros.delete_confirm(
+                {{ delete_confirm_data(
                        label=_('Delete'),
                        message=_('Are you sure ?'),
                        hiddens={
@@ -75,7 +75,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 </div>
 
 {# Dialog to create SSH key. #}
-{% call macros.modal_dialog('add-sshkey-modal',_('Add SSH key'), _('Add SSH key')) %}
+{% call modal_dialog('add-sshkey-modal',_('Add SSH key'), _('Add SSH key')) %}
     <input type="hidden" name="action" value="add" >
     <div class="form-group">
         <label class="col-sm-2 control-label" for="title">

@@ -3,7 +3,7 @@
 {% set admin_nav_active="users" %}
 {% block content %}
 	
-{% import 'macros.html' as macros with context %}
+{% from 'include/modal_dialog.html' import modal_dialog, delete_confirm_data, modal_confirm %}
 
 <div class="row">
 
@@ -82,7 +82,7 @@
                         {% trans %}Edit{% endtrans %}</button>
 
                     {# Delete button with confirmation. #}
-                    {{ macros.delete_confirm(
+                    {{ delete_confirm_data(
                            label=_('Delete'),
                            message=_('Are you sure ?'),
                            hiddens={
@@ -101,7 +101,7 @@
 </div>
 
 {# Dialog to create new user. #}
-{% call macros.modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
+{% call modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
     <input type="hidden" name="action" value="add" >
     <div class="alert alert-info" role="alert">
     {% trans %}To create an LDAP user, use the same username. You may leave the email and password empty.{% endtrans %}
@@ -154,7 +154,7 @@
 {# Dialogs to edit user. #}
 {% for user in filtered_users|sort(attribute='username') %}
 {% set modalid = "edit-user-" + user.username + "-modal" %}
-{% call macros.modal_dialog(modalid, _('Edit user %(name)s', name=user.username),
+{% call modal_dialog(modalid, _('Edit user %(name)s', name=user.username),
 		_('Save changes')) %}
     <input type="hidden" name="action" value="edit" >
     <input type="hidden" name="username" value="{{ user.username }}" >
@@ -211,6 +211,6 @@
 {% endfor %}
 
 {# Create a deletion dialog. #}
-{{ macros.data_confirm_modal(title=_('Confirm deletion'), submit=_('Delete')) }}
+{{ modal_confirm(title=_('Confirm deletion'), submit=_('Delete')) }}
 
 {% endblock %}

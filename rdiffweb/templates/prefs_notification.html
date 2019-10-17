@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% include 'message.html' %}
 
-{% import 'macros.html' as macros %}
+{% from 'include/panel.html' import panel %}
 
 {# Dropdown select for notification #}
 {% macro dropdown(id, value) -%}
@@ -43,7 +43,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {%- endmacro %}
 
 <!-- Panel to set notification info -->
-{% call macros.panel(title=_("Notification settings")) %}
+{% call panel(title=_("Notification settings")) %}
 <div class="panel-body">
 <form action="#" method="post" role="form" class="clearfix" >
     <div class="form-group">

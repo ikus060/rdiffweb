@@ -21,10 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% include 'message.html' %}
 
-{% import 'macros.html' as macros %}
+{% from 'include/panel.html' import panel %}
 
 <!-- Panel to set user info. -->
-{% call macros.panel(title=_("General information")) %}
+{% call panel(title=_("General information")) %}
 <div class="panel-body">
 <form action="#" method="post" role="form" class="clearfix" >
     <div class="form-group">
@@ -53,7 +53,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcall %}
 
 <!-- Panel to change password. -->
-{% call macros.panel(title=_("Change password")) %}
+{% call panel(title=_("Change password")) %}
 <div class="panel-body">
 <form action="#" method="post" role="form" class="clearfix" data-validate>
     <div class="form-group">
@@ -90,7 +90,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcall %}
 
 <!-- Panel to refresh repository list. -->
-{% call macros.panel(title=_("Refresh")) %}
+{% call panel(title=_("Refresh")) %}
 <div class="panel-body">
 <form action="#" method="post" role="form">
     <input type="hidden" name="action" value="update_repos" />

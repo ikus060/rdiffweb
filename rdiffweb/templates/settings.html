@@ -1,5 +1,6 @@
 {% extends 'layout_repo.html' %}
-{% import 'macros.html' as macros %}
+{% from 'include/panel.html' import panel %}
+{% from 'include/modal_dialog.html' import modal_dialog %}
 {% set active_page='repo' %}
 {% set active_repo_page='settings' %}
 {% block title %}{% trans %}Settings{% endtrans %}{% endblock %}
@@ -29,7 +30,7 @@
     "utf_8_sig"]%}
 
 <!-- Panel to set user info. -->
-{% call macros.panel(title=_("Character encoding"), class='default') %}
+{% call panel(title=_("Character encoding"), class='default') %}
 <div class="panel-body">
   <form action="/api/set-encoding/{{ repo_path }}/" method="POST" role="form" class="clearfix" data-async data-target="#new-encoding-status">
     <div class="form-group">
@@ -53,7 +54,7 @@
 {% endcall %}
 
 <!-- Delete repo. -->
-{% call macros.panel(title=_("Remove older"), class='default') %}
+{% call panel(title=_("Remove older"), class='default') %}
 <div class="panel-body">
   <form data-async data-target="#keepdays-status" action="/api/remove-older/{{ repo_path }}/" method="POST" role="form">
   <div class="form-group">
@@ -105,8 +106,7 @@
 {% endcall %}
 
 <!-- Delete repo. -->
-{% import 'macros.html' as macros %}
-{% call macros.panel(title=_("Delete repository"), class='danger') %}
+{% call panel(title=_("Delete repository"), class='danger') %}
 <div class="panel-body">
   <span class="help-block">
      {% trans %}Removing the repository will permanantly delete all related resources including files, history, status etc.{% endtrans %}<br/>
@@ -122,7 +122,7 @@
 <form data-validate action="{{ url_for('delete', repo_path) }}" method="post" role="form" class="clearfix" >
 <input type="hidden" name="action" value="delete" />
 <input type="hidden" id="repo_name" name="repo_name" value="{{ repo_name }}" />
-{% call macros.modal_dialog('delete-repo-modal', _('Confirmation required'), _('Confirm'), class="danger") %}
+{% call modal_dialog('delete-repo-modal', _('Confirmation required'), _('Confirm'), class="danger") %}
 <p class="lead text-danger">
   {% trans %}You are going to remove <b>{{ repo_name }}</b>. Removed repository CANNOT be restored! Are you ABSOLUTELY sure?{% endtrans %}
 </p>
