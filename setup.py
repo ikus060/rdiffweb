@@ -177,6 +177,19 @@ else:
         "python-ldap",
     ]
 
+setup_requires=[
+    "babel>=0.9.6",
+    "setuptools_scm",
+    "minify",
+]
+tests_require=[
+    "mock>=1.3.0",
+    "coverage>=4.0.1",
+    "mockldap>=0.2.6",
+    "pytest<5.0.0",
+]
+extras_require={'tox': tests_require}
+
 long_description_content_type = long_description = None
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as f:
     long_description = f.read()
@@ -206,18 +219,10 @@ setup(
     },
     install_requires=install_requires,
     # required packages for build process
-    setup_requires=[
-        "babel>=0.9.6",
-        "minify",
-        "setuptools_scm",
-    ],
+    setup_requires=setup_requires,
     # requirement for testing
-    tests_require=[
-        "mock>=1.3.0",
-        "coverage>=4.0.1",
-        "mockldap>=0.2.6",
-        "pytest<5.0.0",
-    ],
+    tests_require=tests_require,
+    extras_require=extras_require,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: System Administrators',

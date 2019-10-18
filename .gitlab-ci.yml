@@ -2,6 +2,7 @@ image: $DOCKER_REGISTRY/pdsl/rdiffweb-build:$CI_PIPELINE_IID
 
 variables:
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+    PIP_INDEX_URL: https://nexus.patrikdufresne.com/repository/pypi-proxy/simple/
 
 stages:
 - prebuild
