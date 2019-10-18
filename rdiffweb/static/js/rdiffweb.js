@@ -118,46 +118,6 @@ function getPrefValue(key, defaultValue) {
 }
 
 /**
- * Create confirmation dialog on the fly.
- */
-$(function() {
-	$('button[data-confirm]').click(function(ev) {
-		// Get reference to the form
-		var formid = $(this).attr('data-target');
-		if(formid) {
-			form = $(formid);
-		} else {
-			form = $(this).closest('form');
-		}
-		if(!form.length){
-			return false;
-		}
-		// Get the message to be displayed.
-		var message = $(this).attr('data-confirm');
-		// Get reference to modal dialog.
-		var modal = $('#data-confirm-modal');
-		if(modal.length){
-			// Replace message content
-			modal.find('.modal-body').text(message);
-			// Hook an event to submit the form.
-			modal.find('button[type=submit]').click(function(ev) {
-				form.submit();
-				return false;
-			});
-			// Show the modal dialog
-			modal.modal({show:true});
-		} else {
-			// Default to use javascript confirm function if the
-			// modal dialog doesn't exists.
-			if(confirm(message)){
-				form.submit();
-			}
-		}
-		return false;
-	});
-});
-
-/**
  * Handle flexible Ajax form submit.
  */
 $('form[data-async]').on('submit', function(event) {
@@ -183,7 +143,6 @@ $('form[data-async]').on('submit', function(event) {
 /**
  * Add form validation where applicable.
  */
-$('form[data-validate]').validate({
-	errorClass : "text-danger",
-	validClass : "valid"
-});
+jQuery.validator.addMethod("equalValue", function(value, element, parameters) {
+    return value == parameters;
+}, "Enter the same value.");

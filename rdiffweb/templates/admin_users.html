@@ -3,7 +3,7 @@
 {% set admin_nav_active="users" %}
 {% block content %}
 	
-{% from 'include/modal_dialog.html' import modal_dialog, delete_confirm_data, modal_confirm %}
+{% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
 
 <div class="row">
 
@@ -76,20 +76,11 @@
                     <span class="light">
                         {{ user.user_root }}
                     </span>
-                    <button type="button" class="btn btn-default btn-xs"
+                    <button type="button" class="btn btn-default"
                             data-toggle="modal"
                             data-target="#edit-user-{{ user.username }}-modal">
                         {% trans %}Edit{% endtrans %}</button>
-
-                    {# Delete button with confirmation. #}
-                    {{ delete_confirm_data(
-                           label=_('Delete'),
-                           message=_('Are you sure ?'),
-                           hiddens={
-                               'action': 'delete',
-                               'username':user.username,
-                           }) }}
-
+                    {{ button_confirm(label=_('Delete'), target="#delete-user-modal", action="delete", username=user.username) }}
                 </div>
             </li>
             {% endfor %}
@@ -210,7 +201,12 @@
 {% endcall %}
 {% endfor %}
 
-{# Create a deletion dialog. #}
-{{ modal_confirm(title=_('Confirm deletion'), submit=_('Delete')) }}
+<!-- Delete User Modal -->
+{{ modal_confirm(
+    id='delete-user-modal',
+    title=_('Delete User'),
+    message=_("Are you sure you want to delete this User?"),
+    fields=['action', 'username'],
+    submit=_('Delete')) }}
 
 {% endblock %}

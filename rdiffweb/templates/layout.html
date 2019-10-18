@@ -67,15 +67,18 @@
         {% endif %}
     </div>
 </div>
-<!-- /.navbar -->
-{% block body %}
 
-{% endblock %}
 <!-- Include rdiffweb specifics -->
 <script src="/static/js/rdiffweb.min.js"></script>
 {% if lang and lang[0:2] != "en" %}
 <!-- Include translation for JQuery Validation -->
 <script src="/static/js/plugins/jquery.validate.{{ lang[0:2] }}.js"></script>
 {% endif %}
+
+<!-- /.navbar -->
+{% block body %}
+
+{% endblock %}
+
 </body>
 </html>

@@ -205,6 +205,7 @@ setup(
     # required packages for build process
     setup_requires=[
         "babel>=0.9.6",
+        "minify",
         "setuptools_scm",
     ],
     # requirement for testing

@@ -35,9 +35,13 @@ _logger = logging.getLogger(__name__)
 class SettingsPage(Controller):
 
     @cherrypy.expose
-    def index(self, path=b""):
+    def index(self, path=b"", action=None, **kwargs):
         validate_isinstance(path, bytes)
         repo_obj = self.app.currentuser.get_repo(path)
+        
+        if action == 'delete':
+            self.delete(repo_obj, **kwargs)
+        
         # Get page data.
         params = {
             'repo_name': repo_obj.display_name,
@@ -47,6 +51,21 @@ class SettingsPage(Controller):
         }
         # Generate page.
         return self._compile_template("settings.html", **params)
+    
+    def delete(self, repo_obj, **kwargs):
+        """
+        Delete the repository.
+        """
+        # Validate the name
+        confirm = kwargs.get('confirm', None)
+        if confirm != repo_obj.display_name:
+            _logger.info("bad confirmation %r != %r", confirm, repo_obj.display_name)
+            raise cherrypy.HTTPError(400)
+
+        # Refresh repository list
+        repo_obj.delete()
+
+        raise cherrypy.HTTPRedirect("/")
     
     
 @poppath()
@@ -86,28 +105,3 @@ class RemoveOlderPage(Controller):
             raise cherrypy.HTTPError(400, _("Invalid value"))            
 
         return _("Updated")
-
-    
-@poppath()
-class DeleteRepoPage(Controller):
-
-    @cherrypy.expose
-    def index(self, path=b"", **kwargs):
-        """
-        Delete the repository.
-        """
-        validate_isinstance(path, bytes)
-
-        # Check user permissions
-        repo_obj = self.app.currentuser.get_repo(path)
-
-        # Validate the name
-        confirm_name = kwargs.get('confirm_name', None)
-        if confirm_name != repo_obj.display_name:
-            _logger.info("bad confirmation %r != %r", confirm_name, repo_obj.display_name)
-            raise cherrypy.HTTPError(400)
-
-        # Refresh repository list
-        repo_obj.delete()
-
-        raise cherrypy.HTTPRedirect("/")

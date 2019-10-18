@@ -1,6 +1,6 @@
 {% extends 'layout_repo.html' %}
 {% from 'include/panel.html' import panel %}
-{% from 'include/modal_dialog.html' import modal_dialog %}
+{% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
 {% set active_page='repo' %}
 {% set active_repo_page='settings' %}
 {% block title %}{% trans %}Settings{% endtrans %}{% endblock %}
@@ -113,27 +113,18 @@
      <b>{% trans %}Removed repository cannot be restored!{% endtrans %}</b>
   </span>
   <div>
-     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#delete-repo-modal">{% trans %}Delete{% endtrans %}</button>
+     {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", action="delete", repo_name=repo_name) }}
   </div>
 </div>
 {% endcall %}
 
-<!-- Delete Modal -->
-<form data-validate action="{{ url_for('delete', repo_path) }}" method="post" role="form" class="clearfix" >
-<input type="hidden" name="action" value="delete" />
-<input type="hidden" id="repo_name" name="repo_name" value="{{ repo_name }}" />
-{% call modal_dialog('delete-repo-modal', _('Confirmation required'), _('Confirm'), class="danger") %}
-<p class="lead text-danger">
-  {% trans %}You are going to remove <b>{{ repo_name }}</b>. Removed repository CANNOT be restored! Are you ABSOLUTELY sure?{% endtrans %}
-</p>
-<p>
-  {% trans %}This action can lead to data loss. To prevent accidental actions we ask you to confirm your intention.{% endtrans %}<br/>
-  {% trans %}Please type <b>{{ repo_name }}</b> to proceed or close this modal to cancel{% endtrans %}
-</p>
-<div class="form-group">
-   <input class="form-control" id="confirm_name" name="confirm_name" type="text" value="" data-rule-equalto="#repo_name" required >
-</div>
-{% endcall %}
-</form>
+<!-- Delete Repo Modal -->
+{{ modal_confirm(
+    id='delete-repo-modal',
+    title=_('Confirmation required'),
+    message=_("You are about to permanently delete this repository. Deleted repository CANNOT be restored! Are you ABSOLUTELY sure?"),
+    fields=['action', 'repo_name'],
+    submit=_('Delete'),
+    confirm_field='repo_name') }}
 
 {% endblock %}
