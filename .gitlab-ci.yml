@@ -185,8 +185,9 @@ rdiffweb_deploy_demo:
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
   script:
-  - export RDIFFWEB_VERSION=$(python ./setup.py --version)
   - python ./setup.py --version
+  - export RDIFFWEB_VERSION=$(python ./setup.py --version)
+  - echo RDIFFWEB_VERSION=$RDIFFWEB_VERSION
   - git clone "http://${GITLAB_USR}:${GITLAB_PWD}@git.patrikdufresne.com/pdsl/ansible-config.git"
   - cd ansible-config
   - ansible-playbook rdiffweb.yml -i pdsl --extra-vars "ansible_user=root rdiffweb_version=$RDIFFWEB_VERSION rdiffweb_default_repositories=true" --limit arbuc

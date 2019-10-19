@@ -1,0 +1,8 @@
+{# Repo list #}
+{% macro empty(icon, title) -%}
+   <div class="jumbotron text-center">
+	 <p class="h1"><i class="{{icon}}"></i></p>
+	 <p class="h1">{{title}}</p>
+	 {{ caller() }}
+   </div>
+{%- endmacro %}

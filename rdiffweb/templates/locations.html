@@ -1,7 +1,56 @@
 {% extends 'layout.html' %}
+{% from 'include/empty.html' import empty %}
 {% set active_page='repo' %}
 {% block title %}{% trans %}Repositories{% endtrans %}{% endblock %}
 {% block body %}
+
+{% macro repo_list_item(repo)%}
+<a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }}
+    href="{{ url_for_browse(repo.path) }}" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+  <meta itemprop="name" content="{{ repo.path.decode('utf-8', 'replace') }}" />
+  <i class="icon-hdd"></i>
+  {% set name = repo.display_name.split('/')[-1] %}
+  {{ name }}{% if name|length==1 %}:\{% endif %}
+  <span class="pull-right light">
+      {% if repo.status[0] != 'ok' %}
+      <span data-toggle="tooltip" data-placement="left" title="{{ repo.status[1] }}"><i class="icon-attention"></i></span>
+      {% endif %}
+      {% if repo.last_backup_date %}{% trans %}Last backup: {% endtrans %}
+      <time datetime="{{ repo.last_backup_date | datetime }}" itemprop="lastBackupDate">{{ repo.last_backup_date | datetime }}</time>
+      {% endif %}
+  </span>
+</a>
+{% endmacro %}
+
+{# Repo Tree #}
+{% macro repo_tree(repos) -%}
+  {% if repos|length == 0 %}
+    {% call empty('icon-box', 'No repositories') %}
+      <p>{% trans %}You don't have any repositories configured.{% endtrans %}</p>
+    {% endcall %}
+  {% else %}
+    <div class="list-group" itemscope itemtype="http://schema.org/ItemList">
+    {% for name, data in create_repo_tree(repos).items() recursive %}
+      {% if data.items %}
+        {# Data is a list of children #}
+        <div class="list-group-item">
+          <div class="list-group-item-heading">
+            {% set is_desktop = data.keys()[0]|length == 1 %}
+            <i class="{% if is_desktop %}icon-laptop{% else %}icon-box{% endif %}"></i> {{ name }}
+          </div>
+          <div class="list-group" id="{{ outer_name }}{{ name }}">
+          {{ loop(data.items()) }}
+          </div>
+        </div>
+      {% else %}
+        {# Data is a repo #}
+        {{ repo_list_item(data) }}
+      {% endif %}
+    {% endfor %}
+    </div>
+  {% endif %}
+{%- endmacro %}
+
 <div class="container" id="locations">
     <h2>{% trans %}Repositories{% endtrans %} ({{ repos|length }})</h2>
     
@@ -28,52 +77,8 @@
 	  </div>
 	</div>
 	{% endif %}
-    
-    {% if repos|length == 0 %}
-	    {% set message = _("You don't have any repositories configured.") %}
-	    {% include 'message.html' %}
-    {% else %}
-    {# Try to organize the repositories as a hierarchy #}
-    {% set repos_hierarchy = {} %}
-    {% for repo in repos|sort(attribute='path') %}
-      {% set h = repos_hierarchy %}
-      {% for p in repo.name_split %}
-        {% set h = h.setdefault(p, repo if loop.last else {})  %}
-      {% endfor %}    
-    {% endfor %}
-    <div class="list-group" itemscope itemtype="http://schema.org/ItemList">
-    {% for name, repo in repos_hierarchy.items() recursive %}
 
-        {% if repo.get('path') is none %}
-        <div class="list-group-item">
-          <div class="list-group-item-heading">
-            {% set is_desktop = repo.keys()[0]|length == 1 %}
-            <i class="{% if is_desktop %}icon-laptop{% else %}icon-box{% endif %}"></i> {{ name }}
-          </div>
-          <div class="list-group" id="{{ outer_name }}{{ name }}">
-          {{ loop(repo.items()) }}
-          </div>
-        </div>
-        {% else %}
-        <a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }}
-            href="{{ url_for_browse(repo.path) }}" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-          <meta itemprop="name" content="{{ repo.path.decode('utf-8', 'replace') }}" />
-          <i class="icon-hdd"></i>
-          {{ name }}{% if name|length==1 %}:\{% endif %}
-          <span class="pull-right light">
-              {% if repo.status[0] != 'ok' %}
-              <span data-toggle="tooltip" data-placement="left" title="{{ repo.status[1] }}"><i class="icon-attention"></i></span>
-              {% endif %}
-              {% if repo.last_backup_date %}{% trans %}Last backup: {% endtrans %}
-              <time datetime="{{ repo.last_backup_date | datetime }}" itemprop="lastBackupDate">{{ repo.last_backup_date | datetime }}</time>
-              {% endif %}
-          </span>
-        </a>
-        {% endif %}
-        
-    {% endfor %}
-    </div>
+    {{ repo_tree(repos) }}
 
-    {% endif %}
 </div>
 {% endblock %}

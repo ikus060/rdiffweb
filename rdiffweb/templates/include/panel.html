@@ -1,0 +1,7 @@
+{# Bootstrap panel #}
+{% macro panel(title, class='default') -%}
+<div class="panel panel-{{ class }}">
+    <div class="panel-heading">{{ title }}</div>
+    {{ caller() }}
+</div>
+{%- endmacro %}

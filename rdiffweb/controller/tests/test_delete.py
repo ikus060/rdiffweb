@@ -39,11 +39,12 @@ class DeleteRepoTest(WebCase):
     def _settings(self, repo):
         self.getPage("/settings/" + repo + "/")
 
-    def _delete(self, repo, confirm_name):
+    def _delete(self, repo, confirm):
         body = {}
-        if confirm_name is not None:
-            body.update({'confirm_name': confirm_name})
-        self.getPage("/delete/" + repo + "/", method="POST",
+        body.update({'action': 'delete'})
+        if confirm is not None:
+            body.update({'confirm': confirm})
+        self.getPage("/settings/" + repo + "/", method="POST",
                      body=body)
 
     def test_delete(self):

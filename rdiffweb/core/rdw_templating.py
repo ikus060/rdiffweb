@@ -31,6 +31,7 @@ from builtins import str
 from jinja2 import Environment, PackageLoader
 from jinja2.filters import do_mark_safe
 from jinja2.loaders import ChoiceLoader, FileSystemLoader
+from collections import OrderedDict
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -127,6 +128,21 @@ def do_format_filesize(value, binary=True):
             if size < unit:
                 return '%.1f %s' % ((base * size / unit), prefix)
         return '%.1f %s' % ((base * size / unit), prefix)
+
+
+def create_repo_tree(repos):
+    """
+    Organise the repositories into a tree.
+    """
+    repos = sorted(repos, key=lambda r:r.display_name)
+    repo_tree = OrderedDict()
+    for repo in repos:
+        h = repo_tree
+        key = repo.display_name.strip('/').split('/')
+        for p in key[:-1]:
+            h = h.setdefault(p, {})
+        h[key[-1]] = repo
+    return repo_tree
 
 
 def url_for(endpoint, *args, **kwargs):
@@ -277,6 +293,7 @@ class TemplateManager(object):
 
         # Register method
         self.jinja_env.globals['attrib'] = attrib
+        self.jinja_env.globals['create_repo_tree'] = create_repo_tree
         self.jinja_env.globals['url_for'] = url_for
         self.jinja_env.globals['url_for_browse'] = url_for_browse
         self.jinja_env.globals['url_for_history'] = url_for_history

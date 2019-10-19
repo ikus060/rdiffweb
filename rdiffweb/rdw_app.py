@@ -33,8 +33,7 @@ from rdiffweb.controller.page_history import HistoryPage
 from rdiffweb.controller.page_locations import LocationsPage
 from rdiffweb.controller.page_prefs import PreferencesPage
 from rdiffweb.controller.page_restore import RestorePage
-from rdiffweb.controller.page_settings import SettingsPage, SetEncodingPage, RemoveOlderPage, \
-    DeleteRepoPage
+from rdiffweb.controller.page_settings import SettingsPage, SetEncodingPage, RemoveOlderPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import i18n  # @UnusedImport
 from rdiffweb.core import rdw_templating
@@ -71,7 +70,6 @@ class Root(LocationsPage):
         self.api = ApiPage()
         self.api.set_encoding = SetEncodingPage()
         self.api.remove_older = RemoveOlderPage()
-        self.delete = DeleteRepoPage()
         self.graphs = GraphsPage()
 
         # Register static dir.

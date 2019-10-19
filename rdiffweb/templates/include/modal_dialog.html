@@ -1,0 +1,75 @@
+{% macro modal_dialog(id, title, submit='Submit', class="primary") -%}
+<div class="modal fade" id="{{ id }}" tabindex="-1" role="dialog"
+    aria-labelledby="{{ id }}-title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="#" method="post" role="form" autocomplete="off"
+                class="form-horizontal">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span><span class="sr-only">{% trans %}Close{% endtrans %}</span>
+                    </button>
+                    <h4 class="modal-title" id="{{ id }}-title">{{ title }}</h4>
+                </div>
+                <div class="modal-body">{{ caller() }}</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default"
+                        data-dismiss="modal">{% trans %}Close{% endtrans %}</button>
+                    <button type="submit" class="btn btn-{{ class }}">{{ submit }}</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+{%- endmacro %}
+
+{# USAGE: #}
+{# button_confirm(label=_('Delete'), target="#delete-sshkey-modal", action="delete", key=key.fingerprint) #}
+{# modal_confirm(id='delete-sshkey-modal', title=_('Delete SSH key'), message=_("Are you sure?"), fields=['action', 'key'], submit=_('Delete')) #}
+
+{# Button to confirm deletion. #}
+{% macro button_confirm(label, target, class='btn-danger') -%}
+<button type="button" class="btn {{ class }}" data-toggle="modal" data-target="{{target}}"{%for k,v in kwargs.items()%} data-{{k}}="{{v}}"{%endfor%}>{{ label }}</button>
+{%- endmacro %}
+
+{# modal dialog for confirmation #}
+{# confirm_field, define the data field to be validated. #}
+{% macro modal_confirm(id, title, message, fields, submit, confirm_field=None) -%}
+{% call modal_dialog(id, title, submit, class='danger') %}
+{% for f in fields %}
+<input type="hidden" name="{{f}}" value="" >
+{% endfor %}
+<p {% if confirm_field %}class="lead text-danger"{%endif%}>{{message}}</p>
+{% if confirm_field %}
+<p>
+  {% trans %}This action can lead to data loss. To prevent accidental actions we ask you to confirm your intention.{% endtrans %}<br/>
+  {% trans %}Please type <b id="{{id}}-confirm-placeholder"></b> to proceed or close this modal to cancel.{% endtrans %}
+</p>
+<input type="hidden" id="{{id}}-confirm-value" value="">
+<input class="form-control" name="confirm" type="text" value="" required>
+{% endif %}
+{% endcall%}
+<script>
+$('#{{id}}').on('show.bs.modal', function (event) {
+  var button = $(event.relatedTarget); // Button that triggered the modal
+  var modal = $(this);
+  // Extract info from data-* attributes
+  {% for f in fields %}
+  var value = button.data('{{f}}');
+  modal.find(".modal-body input[name='{{f}}']").val(value);
+  {% endfor %}
+  {% if confirm_field %}
+  modal.find("#{{id}}-confirm-placeholder").text(value);
+  modal.find("#{{id}}-confirm-value").text(value);
+  modal.find("form").validate({
+    rules : {
+        confirm : { equalValue : value }
+    }
+});
+  {% endif%}
+})
+</script>
+{%- endmacro %}

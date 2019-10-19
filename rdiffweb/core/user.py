@@ -475,7 +475,7 @@ class UserManager():
         assert password is None or isinstance(user, str)
         # Validate the credentials
         logger.debug("validating user [%s] credentials", user)
-        for store in self._password_stores + [self._database]:
+        for store in [self._database] + self._password_stores:
             try:
                 valid = store.are_valid_credentials(user, password)
                 if valid:
