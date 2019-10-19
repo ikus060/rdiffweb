@@ -7,9 +7,10 @@
 
 <div class="container">
 {# Navigation bar for Administration #}
+<div class="row">
 <ul class="nav nav-tabs" role="tablist">
     <li {% if not admin_nav_active %}class="active"{% endif %}>
-        <a href="{{ url_for('admin') }}">{% trans %}General info{% endtrans %}</a>
+        <a href="{{ url_for('admin') }}">{% trans %}Overview{% endtrans %}</a>
     </li>
     <li {% if admin_nav_active=="users"%}class="active"{% endif %}>
         <a href="{{ url_for('admin/users') }}">{% trans %}Users{% endtrans %}</a>
@@ -17,27 +18,35 @@
     <li {% if admin_nav_active=="logs"%}class="active"{% endif %}>
         <a href="{{ url_for('admin/logs') }}">{% trans %}Logs{% endtrans %}</a>
     </li>
-</ul>  
+    <li {% if admin_nav_active=="sysinfo"%}class="active"{% endif %}>
+        <a href="{{ url_for('admin/sysinfo') }}">{% trans %}System Info{% endtrans %}</a>
+    </li>
+</ul>
 {% include 'message.html' %}
-
 <div class="spacer"></div>
+</div>
 
 {% block content %}
-<div class="row spacer">
+<div class="row">
     <div class="col-md-6">
         <div class="well clearfix">
-        <h1 class="text-center">{{ user_count }} 
-            <small>{% trans %}users{% endtrans %}</small></h1>
+          <h2 class="text-center">
+            <a href={{ url_for('admin/users') }}>
+            {% trans %}Users:{% endtrans %} {{ user_count }}
+            </a>
+          </h2>
         </div>  
     </div>
     <div class="col-md-6">
         <div class="well">
-        <h1 class="text-center">{{ repo_count }}
-            <small>{% trans %}repositories{% endtrans %}</small></h1>
+          <h2 class="text-center">
+            {% trans %}Repositories:{% endtrans %} {{ repo_count }}
+          </h1>
         </div>
     </div>
 </div>
 {% endblock %}
+
 <!-- /.container -->
 </div>
 

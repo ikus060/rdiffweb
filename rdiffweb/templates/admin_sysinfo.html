@@ -1,0 +1,70 @@
+{% extends 'admin.html' %}
+{% block title %}{% trans %}System Info{% endtrans %}{% endblock %}
+{% set admin_nav_active="sysinfo" %}
+{% block content %}
+    
+{% import 'macros.html' as macros with context %}
+
+<div class="row">
+
+    <div class="col-md-6">
+        <h3>{% trans %}Application Config{% endtrans %}</h3>
+        <div class="list-group">
+          {% for k, v in cfg.items() %}
+          <a href="#" class="list-group-item">
+            <h4 class="list-group-item-heading">{{k}}</h4>
+            <p class="list-group-item-text">{{v}}</p>
+          </a>
+          {% endfor %}
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <h3>{% trans %}System usage{% endtrans %}</h3>
+        <div class="list-group">
+          {% for k, v in hwinfo %}
+          <a href="#" class="list-group-item">
+            <h4 class="list-group-item-heading">{{k}}</h4>
+            <p class="list-group-item-text">{{v}}</p>
+          </a>
+          {% endfor %}
+        </div>
+        
+        <h3>{% trans %}Operating System Info{% endtrans %}</h3>
+        <div class="list-group">
+          {% for k, v in osinfo %}
+          <a href="#" class="list-group-item">
+            <h4 class="list-group-item-heading">{{k}}</h4>
+            <p class="list-group-item-text">{{v}}</p>
+          </a>
+          {% endfor %}
+        </div>
+        
+        <h3>{% trans %}Dependencies Version{% endtrans %}</h3>
+        <div class="list-group">
+          {% for k, v in ldapinfo %}
+          <a href="#" class="list-group-item">
+            <h4 class="list-group-item-heading">{{k}}</h4>
+            <p class="list-group-item-text">{{v}}</p>
+          </a>
+          {% endfor %}
+        </div>
+    </div>
+
+    <div class="col-md-12">
+	    <h3>{% trans %}Python Info{% endtrans %}</h3>
+	    <div class="list-group">
+	      {% for k, v in pyinfo %}
+	      <a href="#" class="list-group-item">
+	        <h4 class="list-group-item-heading">{{k}}</h4>
+	        <p class="list-group-item-text">{{v}}</p>
+	      </a>
+	      {% endfor %}
+	    </div>
+    </div>
+    
+<!-- /.row -->
+</div>
+
+{% endblock %}
+

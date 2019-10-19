@@ -20,51 +20,130 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from builtins import str
+import grp
 import logging
 import os
+import platform
+import pwd
+import subprocess
+import sys
+import tempfile
 
 import cherrypy
+import psutil
+
 from rdiffweb.controller import Controller, validate_isinstance
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core import rdw_spider_repos
+from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
-import subprocess
+from rdiffweb.core.rdw_templating import do_format_filesize as filesize
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-def get_log_files(app):
-    """
-    Return a list of log files to be shown in admin area.
-    """
-    logfiles = [app.cfg.get('logfile'), app.cfg.get('logaccessfile')]
-    logfiles = [fn for fn in logfiles if fn]
-    return [os.path.basename(fn) for fn in logfiles]
+def get_pyinfo():
+    if platform.dist()[0] != '' and platform.dist()[1] != '':
+        yield _('OS Version'), '%s %s (%s %s)' % (platform.system(), platform.release(), platform.dist()[0].capitalize(), platform.dist()[1])
+    else:
+        yield _('OS Version'), '%s %s' % (platform.system(), platform.release())
+    if hasattr(os, 'path'): yield _('OS Path'), os.environ['PATH']
+    if hasattr(sys, 'version'): yield _('Python Version'), ''.join(sys.version)
+    if hasattr(sys, 'subversion'): yield _('Python Subversion'), ', '.join(sys.subversion)
+    if hasattr(sys, 'prefix'): yield _('Python Prefix'), sys.prefix
+    if hasattr(sys, 'executable'): yield _('Python Executable'), sys.executable
+    if hasattr(sys, 'path'): yield _('Python Path'), ', '.join(sys.path)
 
 
-def get_log_data(app, logfile, num=2000):
-    """
-    Return a list of log files to be shown in admin area.
-    """
-    logfiles = [app.cfg.get('logfile'), app.cfg.get('logaccessfile')]
-    logfiles = [fn for fn in logfiles if fn]
-    for fn in logfiles:
-        if logfile == os.path.basename(fn):
-            try:
-                return subprocess.check_output(['tail', '-n', str(num), fn]).decode('utf-8')
-            except:
-                logging.exception('fail to get log file content')
-                return "Error getting file content"
+def get_osinfo():
+    
+    def gr_name(gid):
+        try:
+            return grp.getgrgid(gid).gr_name
+        except:
+            return
 
+    def pw_name(uid):
+        try:
+            return pwd.getpwuid(os.getuid()).pw_name
+        except:
+            return
+    
+    if hasattr(sys, 'getfilesystemencoding'): yield _('File System Encoding'), sys.getfilesystemencoding()
+    if hasattr(os, 'getcwd'):
+        yield _('Current Working Directory'), os.getcwd()
+    if hasattr(os, 'getegid'):
+        yield _('Effective Group'), '%s (%s)' % (os.getegid(), gr_name(os.getegid()))
+    if hasattr(os, 'geteuid'):
+        yield _('Effective User'), '%s (%s)' % (os.geteuid(), pw_name(os.geteuid))
+    if hasattr(os, 'getgid'):
+        yield _('Group'), '%s (%s)' % (os.getgid(), gr_name(os.getgid()))
+    if hasattr(os, 'getuid'):
+        yield _('User'), '%s (%s)' % (os.getuid(), gr_name(os.getuid()))
+    if hasattr(os, 'getgroups'):
+        yield _('Group Membership'), ', '.join(['%s (%s)' % (gid, gr_name(gid)) for gid in os.getgroups()])
+    try:
+        if hasattr(os, 'getpid') and hasattr(os, 'getppid'):
+            yield _('Process ID'), ('%s (parent: %s)' % (os.getpid(), os.getppid()))
+    except:
+        pass
+
+
+def get_hwinfo():
+    if hasattr(os, 'getloadavg'):
+        yield _('Load Average'), ', '.join(map(str, map(lambda x: round(x, 2), os.getloadavg())))
+    yield _('CPU Count'), psutil.cpu_count()
+    meminfo = psutil.virtual_memory()
+    yield _('Memory usage'), '%s / %s' % (filesize(meminfo.used), filesize(meminfo.total))
+
+
+def get_pkginfo():
+    import jinja2
+    yield _('Jinja2 Version'), getattr(jinja2, '__version__')
+    yield _('CherryPy Version'), getattr(cherrypy, '__version__')
+    from rdiffweb.core.user_sqlite import sqlite3  # @UnresolvedImport
+    yield _('SQLite Version'), getattr(sqlite3, 'version')
+    try:
+        import ldap
+        yield _('LDAP Version'), getattr(ldap, '__version__')
+        yield _('LDAP SASL Support (Cyrus-SASL)'), ldap.SASL_AVAIL  # @UndefinedVariable
+        yield _('LDAP TLS Support (OpenSSL)'), ldap.TLS_AVAIL  # @UndefinedVariable
+    except:
+        pass
 
 class AdminPage(Controller):
     """Administration pages. Allow to manage users database."""
+
+    logfile = Option('logfile')
+    logaccessfile = Option('logaccessfile')
 
     def _check_user_root_dir(self, directory):
         """Raised an exception if the directory is not valid."""
         if not os.access(directory, os.F_OK) or not os.path.isdir(directory):
             raise RdiffWarning(_("User root directory %s is not accessible!") % directory)
+
+    def _get_log_files(self):
+        """
+        Return a list of log files to be shown in admin area.
+        """
+        logfiles = [self.logfile, self.logaccessfile]
+        logfiles = [fn for fn in logfiles if fn]
+        return [os.path.basename(fn) for fn in logfiles]
+    
+    def _get_log_data(self, logfile, num=2000):
+        """
+        Return a list of log files to be shown in admin area.
+        """
+        logfiles = [self.logfile, self.logaccessfile]
+        logfiles = [fn for fn in logfiles if fn]
+        for fn in logfiles:
+            if logfile == os.path.basename(fn):
+                try:
+                    return subprocess.check_output(['tail', '-n', str(num), fn], stderr=subprocess.STDOUT).decode('utf-8')
+                except:
+                    logging.exception('fail to get log file content')
+                    return "Error getting file content"
 
     @cherrypy.expose
     def default(self):
@@ -93,7 +172,7 @@ class AdminPage(Controller):
         
         # Check if the filename is valid.
         data = ""
-        logfiles = get_log_files(self.app)
+        logfiles = self._get_log_files()
         if logfiles:
             if not filename:
                 filename = logfiles[0]
@@ -101,7 +180,7 @@ class AdminPage(Controller):
             if filename not in logfiles:
                 raise cherrypy.HTTPError(404)
             
-            data = get_log_data(self.app, filename)
+            data = self._get_log_data(filename)
         
         params = {
             "filename": filename,
@@ -139,6 +218,27 @@ class AdminPage(Controller):
 
         # Build users page
         return self._compile_template("admin_users.html", **params)
+
+    @cherrypy.expose
+    def sysinfo(self):
+        
+        # Check if user is an administrator
+        if not self.app.currentuser or not self.app.currentuser.is_admin:
+            raise cherrypy.HTTPError(403)
+        
+        params = {
+            # Config
+            "cfg": {
+                k: '********' if 'password' in k else v
+                for k, v in self.app.cfg.items()},
+            # System Info entries
+            "pyinfo": list(get_pyinfo()),
+            "osinfo": list(get_osinfo()),
+            "hwinfo": list(get_hwinfo()),
+            "ldapinfo": list(get_pkginfo()),
+        }
+        
+        return self._compile_template("admin_sysinfo.html", **params)
 
     def _users_get_params_for_page(self, userfilter, usersearch):
         users = [{"username": user.username,

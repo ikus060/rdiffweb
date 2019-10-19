@@ -290,6 +290,16 @@ class AdminLogsTest(WebCase):
         self.assertInBody("Error getting file content")
 
 
+class AdminSysinfoTest(WebCase):
+
+    login = True
+    
+    def test_sysinfo(self):
+        self.getPage("/admin/sysinfo")
+        self.assertStatus(200)
+        self.assertInBody("Operating System Info")
+        self.assertInBody("Python Info")
+
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     logging.basicConfig(level=logging.DEBUG)
