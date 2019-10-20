@@ -134,6 +134,10 @@ class SQLiteUserDB():
         assert isinstance(username, str)
         return self._get_user_field(username, "UserEmail")
 
+    def get_password(self, username):
+        assert isinstance(username, str)
+        return self._get_user_field(username, "Password")
+
     def get_user_root(self, username):
         """Get user root directory."""
         assert isinstance(username, str)
@@ -151,12 +155,24 @@ class SQLiteUserDB():
         value = self._get_user_field(username, "IsAdmin")
         return self._bool(value)
 
-    def list(self):
+    def users(self, search=None, filter=None):
         """
         Return a list of username.
         """
-        query = "SELECT UserName FROM users"
-        users = [x[0] for x in self._execute_query(query)]
+        if search:
+            search = '%' + search.replace('%', '').replace('_', '') + '%'
+            query = "SELECT UserName FROM users WHERE Username LIKE ? OR UserEmail LIKE ?"
+            users = [x[0] for x in self._execute_query(query, (search, search,))]
+        else:
+            query = "SELECT UserName FROM users"
+            if filter:
+                if filter == 'admins':
+                    query += ' WHERE IsAdmin == 1'
+                elif filter == 'ldap':
+                    query += ' WHERE Password == ""'
+                else:
+                    return []
+            users = [x[0] for x in self._execute_query(query)]
         return users
 
     def add_user(self, username, password=None):

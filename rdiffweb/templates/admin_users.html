@@ -4,60 +4,28 @@
 {% block content %}
 	
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
+{% from 'include/search.html' import search_bar %}
 
+{% call search_bar(
+    search_placeholder=_('Search by name, email or username'),
+    filters=[('',_('All')), ('admins', _('Admins')), ('ldap', _('LDAP'))],
+    filter=filter,
+    search=search) %}
+<div class="pull-right">
+    <button type="button" class="btn btn-success" data-toggle="modal"
+        data-target="#add-user-modal">{% trans %}Add user{% endtrans %}</button>
+</div>
+{% endcall %}
+
+<!-- Users View -->
 <div class="row">
-
-    <div class="col-md-3">
-        <div class="user-filter">
-            <ul class="nav nav-pills nav-stacked">
-                <li {% if userfilter == "" %}class="active"{% endif %}>
-                    <a href="?userfilter=">
-                        {% trans %}Active users{% endtrans %}
-                        <span class="badge">{{ users|length }}</span>
-                    </a>
-                </li>
-                <li {% if userfilter == "admins" %}class="active"{% endif %}>
-                    <a href="?userfilter=admins">
-                        {% trans %}Admin users{% endtrans %}
-                        <span class="badge">{{ users|filter("is_admin")|length }}</span>
-                    </a>
-                </li>
-            </ul>
-            <hr>
-            <form accept-charset="UTF-8" action=""
-                    class="clearfix" method="get" role="form">
-                <div class="form-group">
-                    <label class="sr-only" for="name">{% trans %}Search user{% endtrans %}</label>
-                    <input class="form-control" id="usersearch" name="usersearch"
-                            placeholder="{% trans %}Name, email or username{% endtrans %}"
-                            value="{{ usersearch }}"
-                            type="search">
-                </div>
-                <button class="btn btn-primary pull-right"
-                        type="submit">
-                    <i class="icon-search"></i> {% trans %}Search{% endtrans %}
-                </button>
-            </form>
-            <hr>
-        </div>
-    </div>
+    <div class="col-md-12">
     
-    <div class="col-md-9">
+    {% if users %}
     <div class="panel panel-default">
-        <div class="panel-heading clearfix">
-            <div class="panel-title pull-left">
-                {% trans %}Users{% endtrans %} ({{ users | length }})
-            </div>
-            <div class="btn-group pull-right">
-                <button type="button" class="btn btn-success btn-xs"
-                        data-toggle="modal"
-                        data-target="#add-user-modal"><i class="icon-plus"></i>
-                    {% trans %}Add user{% endtrans %}</button>
-            </div>
-        </div>
         <ul class="list-group">
         	{# List filtered user by name. #}
-            {% for user in filtered_users|sort(attribute='username') %}
+            {% for user in users|sort(attribute='username') %}
             <li class="list-group-item clearfix">
                 {{ user.username }}
                 {% if user.email %}
@@ -67,6 +35,9 @@
                 {% endif%}
                 {% if user.is_admin %}
                 <span class="label label-info">{% trans %}Admin{% endtrans %}</span>
+                {% endif %}
+                {% if user.is_ldap %}
+                <span class="label label-default">{% trans %}LDAP{% endtrans %}</span>
                 {% endif %}
                 {% if user.username == username %}
                 <span class="label label-success">{% trans %}It's you{% endtrans %}</span>
@@ -87,7 +58,9 @@
         </ul>
     </div>
     </div>
-
+    {% else %}
+    <p class="text-center">{% trans %}No users found{% endtrans%}</p>
+    {% endif %}
 <!-- /.row -->
 </div>
 
@@ -143,7 +116,7 @@
 {% endcall %}
 
 {# Dialogs to edit user. #}
-{% for user in filtered_users|sort(attribute='username') %}
+{% for user in users|sort(attribute='username') %}
 {% set modalid = "edit-user-" + user.username + "-modal" %}
 {% call modal_dialog(modalid, _('Edit user %(name)s', name=user.username),
 		_('Save changes')) %}

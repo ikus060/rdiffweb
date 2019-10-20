@@ -166,13 +166,43 @@ class UserManagerSQLiteTest(AppTestCase):
         self.assertEqual('/backups/', user.user_root)
         self.assertEqual(True, user.is_admin)
 
-    def test_list(self):
-        self.assertEqual([], list(self.app.userdb.list()))
+    def test_users(self):
+        self.assertEqual([], list(self.app.userdb.users()))
         self.app.userdb.add_user('annik')
-        users = list(self.app.userdb.list())
+        users = list(self.app.userdb.users())
         self.assertEqual(1, len(users))
         self.assertEqual('annik', users[0].username)
 
+    def test_users_with_search(self):
+        self.assertEqual([], list(self.app.userdb.users()))
+        self.app.userdb.add_user('annik')
+        self.app.userdb.add_user('tom')
+        self.app.userdb.add_user('jeff')
+        self.app.userdb.add_user('josh')
+        users = list(self.app.userdb.users(search='j'))
+        self.assertEqual(2, len(users))
+        self.assertEqual('jeff', users[0].username)
+        self.assertEqual('josh', users[1].username)
+        
+    def test_users_with_filter_admins(self):
+        self.assertEqual([], list(self.app.userdb.users()))
+        self.app.userdb.add_user('annik').is_admin = True
+        self.app.userdb.add_user('tom').is_admin = True
+        self.app.userdb.add_user('jeff')
+        self.app.userdb.add_user('josh')
+        users = list(self.app.userdb.users(filter='admins'))
+        self.assertEqual(2, len(users))
+        self.assertEqual('annik', users[0].username)
+        self.assertEqual('tom', users[1].username)
+        
+    def test_users_with_filter_ldap(self):
+        self.assertEqual([], list(self.app.userdb.users()))
+        self.app.userdb.add_user('annik', 'coucou')
+        self.app.userdb.add_user('tom')
+        users = list(self.app.userdb.users(filter='ldap'))
+        self.assertEqual(1, len(users))
+        self.assertEqual('tom', users[0].username)
+        
     def test_login(self):
         """Check if login work"""
         userobj = self.app.userdb.add_user('tom', 'password')
@@ -205,7 +235,7 @@ class UserManagerSQLiteTest(AppTestCase):
         self.app.userdb.add_user('Charlie', 'password')
         self.app.userdb.add_user('Bernard', 'password')
         self.app.userdb.add_user('Kim', 'password')
-        users = list(self.app.userdb.list())
+        users = list(self.app.userdb.users())
         self.assertEqual(3, len(users))
 
     def test_set_password_update(self):
@@ -363,9 +393,9 @@ class UserManagerSQLiteLdapTest(AppTestCase):
         self.assertEqual('/backups/', user.user_root)
 
     def test_list(self):
-        self.assertEqual([], list(self.app.userdb.list()))
+        self.assertEqual([], list(self.app.userdb.users()))
         self.app.userdb.add_user('annik')
-        users = list(self.app.userdb.list())
+        users = list(self.app.userdb.users())
         self.assertEqual('annik', users[0].username)
 
     def test_login(self):

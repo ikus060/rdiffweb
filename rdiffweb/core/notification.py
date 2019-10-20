@@ -192,7 +192,7 @@ class NotificationPlugin(Deamon, IUserChangeListener):
 
         def _user_repos():
             """Return a generator trought user repos to be notified."""
-            for user in self.app.userdb.list():
+            for user in self.app.userdb.users():
                 # Check if user has email.
                 if not user.email:
                     continue

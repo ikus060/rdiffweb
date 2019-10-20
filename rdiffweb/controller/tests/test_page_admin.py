@@ -90,7 +90,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
             self.assertNotInBody("/var/backups/")
             self.assertInBody("/tmp/")
             #  Check with filters
-            self.getPage("/admin/users/?userfilter=admins")
+            self.getPage("/admin/users/?filter=admins")
             self.assertInBody("test2")
         finally:
             self._delete_user("test2")
@@ -114,7 +114,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
             self.assertNotInBody("/var/backups/")
             self.assertInBody("/tmp/")
             # Check with filter
-            self.getPage("/admin/users/?userfilter=admins")
+            self.getPage("/admin/users/?filter=admins")
             self.assertInBody("Éric")
         finally:
             self._delete_user("Éric")
@@ -196,20 +196,20 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self._edit_user("test4", "test1@test.com", "test1", "/var/backups/", False)
         self.assertStatus(500)
 
-    def test_userfilter(self):
+    def test_filter(self):
         """
         Check if admin filter is working.
         """
-        self.getPage("/admin/users/?userfilter=admins")
+        self.getPage("/admin/users/?filter=admins")
         self.assertNotInBody("test1")
 
     def test_usersearch(self):
         """
         Check if user search is working.
         """
-        self.getPage("/admin/users/?usersearch=tes")
+        self.getPage("/admin/users?search=tes")
         self.assertInBody("test1")
-        self.getPage("/admin/users/?usersearch=coucou")
+        self.getPage("/admin/users?search=coucou")
         self.assertNotInBody("test1")
 
 

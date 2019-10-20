@@ -154,6 +154,11 @@ class UserObject(object):
         """Return list of repository name."""
         return [r.strip('/') for r in self._db.get_repos(self._username)]
 
+    @property
+    def is_ldap(self):
+        """Return True if this user is an LDAP user. (with a password)"""
+        return not self._db.get_password(self._username)
+
     def set_attr(self, key, value, notify=True):
         """Used to define an attribute"""
         self.set_attrs(**{key: value, 'notify': notify})
@@ -453,10 +458,15 @@ class UserManager():
             return None
         return UserObject(self, self._database, user)
 
-    def list(self):
-        """Search users database. Return a generator of user object."""
+    def users(self, search=None, filter=None):
+        """
+        Search users database. Return a generator of user object.
+        
+        search: Define a search term to look into email or username.
+        filter: Define a search filter: admins, ldap
+        """
         # TODO Add criteria as required.
-        for username in self._database.list():
+        for username in self._database.users(search, filter):
             yield UserObject(self, self._database, username)
 
     def login(self, user, password):
