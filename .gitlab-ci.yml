@@ -33,6 +33,36 @@ prebuild-docker-image:
     - nosetests-*.xml
     expire_in: 1 day
 
+py27-jinja26: 
+  <<: *tox
+
+py27-jinja27: 
+  <<: *tox
+
+py27-jinja28: 
+  <<: *tox
+
+py27-jinja29: 
+  <<: *tox
+
+py27-jinja210: 
+  <<: *tox
+  
+py3-jinja26: 
+  <<: *tox
+
+py3-jinja27: 
+  <<: *tox
+
+py3-jinja28: 
+  <<: *tox
+
+py3-jinja29: 
+  <<: *tox
+
+py3-jinja210: 
+  <<: *tox
+
 py27-cherrypy35: 
   <<: *tox
   
