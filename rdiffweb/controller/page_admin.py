@@ -112,6 +112,8 @@ def get_pkginfo():
     except:
         pass
 
+
+@cherrypy.tools.is_admin()
 class AdminPage(Controller):
     """Administration pages. Allow to manage users database."""
 
@@ -148,10 +150,6 @@ class AdminPage(Controller):
     @cherrypy.expose
     def default(self):
 
-        # Check if user is an administrator
-        if not self.app.currentuser or not self.app.currentuser.is_admin:
-            raise cherrypy.HTTPError(403)
-
         user_count = 0
         repo_count = 0
         for user in self.app.userdb.users():
@@ -165,10 +163,6 @@ class AdminPage(Controller):
 
     @cherrypy.expose
     def logs(self, filename=u""):
-        
-        # Check if user is an administrator
-        if not self.app.currentuser or not self.app.currentuser.is_admin:
-            raise cherrypy.HTTPError(403)
         
         # Check if the filename is valid.
         data = ""
@@ -192,10 +186,6 @@ class AdminPage(Controller):
     @cherrypy.expose
     def users(self, filter=u"", search=u"", action=u"", username=u"",
               email=u"", password=u"", user_root=u"", is_admin=u""):
-
-        # Check if user is an administrator
-        if not self.app.currentuser or not self.app.currentuser.is_admin:
-            raise cherrypy.HTTPError(403)
 
         validate_isinstance(filter, str)
         validate_isinstance(search, str)
@@ -222,10 +212,6 @@ class AdminPage(Controller):
 
     @cherrypy.expose
     def sysinfo(self):
-        
-        # Check if user is an administrator
-        if not self.app.currentuser or not self.app.currentuser.is_admin:
-            raise cherrypy.HTTPError(403)
         
         params = {
             "version": self.app.version,

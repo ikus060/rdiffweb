@@ -61,13 +61,6 @@ class Controller(object):
     def app(self):
         return cherrypy.request.app
     
-    @property
-    def currentuser(self):
-        """
-        Get the current user.
-        """
-        return cherrypy.serving.request.login
-    
     def _compile_template(self, template_name, **kwargs):
         """
         Used to generate a standard HTML page using the given template.
@@ -78,11 +71,11 @@ class Controller(object):
         parms = {
             "lang": loc.language,
         }
-        if self.currentuser:
+        if self.app.currentuser:
             parms.update({
                 "is_login": False,
-                'username': self.currentuser.username,
-                'is_admin': self.currentuser.is_admin,
+                'username': self.app.currentuser.username,
+                'is_admin': self.app.currentuser.is_admin,
             })
 
         # Append custom branding
