@@ -112,11 +112,19 @@ class SQLiteUserDBTest(AppTestCase):
         with self.assertRaises(AssertionError):
             self.db.get_user_root('invalid')
 
-    def test_list(self):
+    def test_users(self):
         self.app.userdb.add_user('annik')
-        users = list(self.app.userdb.list())
+        users = list(self.db.users())
         self.assertEqual(1, len(users))
-        self.assertEqual('annik', users[0].username)
+        self.assertEqual('annik', users[0])
+
+    def test_users_with_search(self):
+        self.app.userdb.add_user('annik')
+        self.app.userdb.add_user('kim')
+        self.app.userdb.add_user('john')
+        users = list(self.db.users(search='k'))
+        self.assertEqual(2, len(users))
+        self.assertEqual(['annik', 'kim'], users)
 
     def test_set_invalid_user(self):
         with self.assertRaises(AssertionError):

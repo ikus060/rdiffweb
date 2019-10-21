@@ -86,7 +86,7 @@ class RemoveOlder(Deamon):
         # Create a generator to loop on repositories.
         gen = (
             (user, repo, int(repo.keepdays))
-            for user in self.app.userdb.list()
+            for user in self.app.userdb.users()
             for repo in user.repo_objs
             if int(repo.keepdays) > 0)
 

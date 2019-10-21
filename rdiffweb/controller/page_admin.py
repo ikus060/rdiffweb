@@ -154,7 +154,7 @@ class AdminPage(Controller):
 
         user_count = 0
         repo_count = 0
-        for user in self.app.userdb.list():
+        for user in self.app.userdb.users():
             user_count += 1
             repo_count += len(user.repos)
 
@@ -190,15 +190,15 @@ class AdminPage(Controller):
         return self._compile_template("admin_logs.html", **params)
 
     @cherrypy.expose
-    def users(self, userfilter=u"", usersearch=u"", action=u"", username=u"",
+    def users(self, filter=u"", search=u"", action=u"", username=u"",
               email=u"", password=u"", user_root=u"", is_admin=u""):
 
         # Check if user is an administrator
         if not self.app.currentuser or not self.app.currentuser.is_admin:
             raise cherrypy.HTTPError(403)
 
-        validate_isinstance(userfilter, str)
-        validate_isinstance(usersearch, str)
+        validate_isinstance(filter, str)
+        validate_isinstance(search, str)
 
         # If we're just showing the initial page, just do that
         params = {}
@@ -212,9 +212,10 @@ class AdminPage(Controller):
             except RdiffError as e:
                 params['error'] = str(e)
 
-        # Get page parameters
-        params.update(
-            self._users_get_params_for_page(userfilter, usersearch))
+        params.update({
+            "filter": filter,
+            "search": search,
+            "users": list(self.app.userdb.users(search=search, filter=filter))})
 
         # Build users page
         return self._compile_template("admin_users.html", **params)
@@ -240,28 +241,6 @@ class AdminPage(Controller):
         
         return self._compile_template("admin_sysinfo.html", **params)
 
-    def _users_get_params_for_page(self, userfilter, usersearch):
-        users = [{"username": user.username,
-                  "email": user.email,
-                  "is_admin": user.is_admin,
-                  "user_root": user.user_root,
-                  } for user in self.app.userdb.list()]
-
-        # Apply the filters.
-        filtered_users = users
-        if userfilter == "admins":
-            filtered_users = [x for x in filtered_users if x["is_admin"]]
-        # Apply the search.
-        if usersearch:
-            filtered_users = [x for x in filtered_users
-                              if usersearch in x["username"] or
-                              usersearch in x["email"]]
-
-        return {"userfilter": userfilter,
-                "usersearch": usersearch,
-                "filtered_users": filtered_users,
-                "users": users}
-
     def _users_handle_action(self, action, username, email, password,
                              user_root, is_admin):
 
@@ -273,7 +252,7 @@ class AdminPage(Controller):
             # Don't allow the user to changes it's "admin" state.
             is_admin = self.app.currentuser.is_admin
 
-        is_admin = str(is_admin).lower() in ['true', '1']
+        is_admin = str(is_admin).lower() in ['on', 'true', '1']
 
         # Fork the behaviour according to the action.
         if action == "edit":
