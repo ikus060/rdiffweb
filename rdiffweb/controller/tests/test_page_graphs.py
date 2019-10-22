@@ -36,11 +36,28 @@ class SettingsTest(WebCase):
 
     reset_testcases = True
 
-    def _stats(self, repo):
-        return self.getPage("/graphs/data/" + repo + "/")
+    def test_activities(self):
+        self.getPage("/graphs/activities/" + self.REPO + "/")
+        self.assertStatus('200 OK')
 
-    def test_stats(self):
-        self._stats(self.REPO)
+    def test_errors(self):
+        self.getPage("/graphs/errors/" + self.REPO + "/")
+        self.assertStatus('200 OK')
+
+    def test_files(self):
+        self.getPage("/graphs/files/" + self.REPO + "/")
+        self.assertStatus('200 OK')
+
+    def test_sizes(self):
+        self.getPage("/graphs/sizes/" + self.REPO + "/")
+        self.assertStatus('200 OK')
+
+    def test_times(self):
+        self.getPage("/graphs/times/" + self.REPO + "/")
+        self.assertStatus('200 OK')
+
+    def test_data(self):
+        self.getPage("/graphs/data/" + self.REPO + "/")
         self.assertStatus('200 OK')
         # Check header
         expected = b"""date,starttime,endtime,elapsedtime,sourcefiles,sourcefilesize,mirrorfiles,mirrorfilesize,newfiles,newfilesize,deletedfiles,deletedfilesize,changedfiles,changedsourcesize,changedmirrorsize,incrementfiles,incrementfilesize,totaldestinationsizechange,errors

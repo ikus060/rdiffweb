@@ -40,7 +40,6 @@ class StatusPage(Controller):
 
     @cherrypy.expose
     def default(self, path=b"", date="", failures=""):
-        validate_isinstance(path, bytes)
         validate_isinstance(date, str)
         
         # Validate date
@@ -63,7 +62,7 @@ class StatusPage(Controller):
         if path:
             user_repos = [self.app.currentuser.get_repo(path)]
         else:
-            user_repos = self.app.currentuser.repos
+            user_repos = self.app.currentuser.repo_objs
         
         failuresOnly = failures != ""
         messages = self._getUserMessages(user_repos, not failuresOnly, True, startTime, endTime)
@@ -80,23 +79,14 @@ class StatusPage(Controller):
                          earliest_date,
                          latest_date):
 
-        user_root = self.app.currentuser.user_root
-
         repoErrors = []
         allBackups = []
-        for repo in repos:
-            repo = repo.lstrip("/")
-            try:
-                repo_obj = librdiff.RdiffRepo(user_root, repo)
-                backups = repo_obj.get_history_entries(-1, earliest_date,
-                                                       latest_date)
-                allBackups += [{"repo_path": repo_obj.path,
-                                "repo_name": repo_obj.display_name,
-                                "date": backup.date,
-                                "size": backup.size,
-                                "errors": backup.errors} for backup in backups]
-            except librdiff.FileError:
-                logger.exception("invalid user path %s" % repo)
+        for repo_obj in repos:
+            backups = repo_obj.get_history_entries(-1, earliest_date, latest_date)
+            allBackups += [{"repo": repo_obj,
+                            "date": backup.date,
+                            "size": backup.size,
+                            "errors": backup.errors} for backup in backups]
 
         allBackups.sort(key=lambda x: x["date"])
         failedBackups = [x for x in allBackups if x["errors"]]

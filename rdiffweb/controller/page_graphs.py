@@ -37,18 +37,7 @@ _logger = logging.getLogger(__name__)
 @poppath('graph')
 class GraphsPage(Controller):
 
-    def _data(self, path, **kwargs):
-        assert isinstance(path, bytes)
-
-        _logger.debug("repo stats [%r]", path)
-
-        # Check user permissions
-        try:
-            repo_obj = self.app.currentuser.get_repo(path)
-        except librdiff.FileError as e:
-            _logger.exception("invalid user path [%r]", path)
-            return self._compile_error_template(str(e))
-
+    def _data(self, repo_obj, **kwargs):
         attrs = [
             'starttime', 'endtime', 'elapsedtime', 'sourcefiles', 'sourcefilesize',
             'mirrorfiles', 'mirrorfilesize', 'newfiles', 'newfilesize', 'deletedfiles',
@@ -73,42 +62,31 @@ class GraphsPage(Controller):
 
         return func()
 
-    def _page(self, path, graph, **kwargs):
+    def _page(self, repo_obj, graph, **kwargs):
         """
         Generic method to show graphs.
         """
-        _logger.debug("repo graphs [%r][%r]", graph, path)
-
-        # Check user permissions
-        try:
-            repo_obj = self.app.currentuser.get_repo(path)
-        except librdiff.FileError as e:
-            _logger.exception("invalid user path [%r]", path)
-            return self._compile_error_template(str(e))
-
         # Check if any action to process.
         params = {
-            'repo_name': repo_obj.display_name,
-            'repo_path': repo_obj.path,
+            'repo': repo_obj,
             'graphs': graph,
         }
-
         # Generate page.
         return self._compile_template("graphs_%s.html" % graph, **params)
 
     @cherrypy.expose
-    def index(self, graph, path, **kwargs):
+    def default(self, graph, path, **kwargs):
         """
         Called to show every graphs
         """
-        validate_isinstance(path, bytes)
         validate_isinstance(graph, bytes)
         graph = graph.decode('ascii', 'replace')
+        repo_obj = self.app.currentuser.get_repo(path)
 
         # check if data should be shown.
         if graph == 'data':
-            return self._data(path, **kwargs)
+            return self._data(repo_obj, **kwargs)
         elif graph in ['activities', 'errors', 'files', 'sizes', 'times']:
-            return self._page(path, graph, **kwargs)
+            return self._page(repo_obj, graph, **kwargs)
         # Raise error.
         raise cherrypy.NotFound()

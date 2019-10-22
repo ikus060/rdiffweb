@@ -42,22 +42,14 @@ class BrowsePage(Controller):
 
     @cherrypy.expose
     def default(self, path=b"", restore="", limit='10'):
-        validate_isinstance(path, bytes)
         validate_isinstance(restore, str)
         limit = validate_int(limit)
         restore = bool(restore)
-
-        logger.debug("browsing [%r]", path)
 
         # Check user access to the given repo & path
         (repo_obj, path_obj) = self.app.currentuser.get_repo_path(path)
 
         # Build the parameters
-        parms = self._get_parms_for_page(repo_obj, path_obj, restore, limit)
-        return self._compile_template("browse.html", **parms)
-
-    def _get_parms_for_page(self, repo_obj, path_obj, restore, limit):
-
         # Build "parent directories" links
         # TODO This Should to me elsewhere. It contains logic related to librdiff encoding.
         parents = []
@@ -84,12 +76,12 @@ class BrowsePage(Controller):
             # Get list of actual directory entries
             dir_entries = path_obj.dir_entries[::-1]
 
-        return {"limit": limit,
-                "repo_name": repo_obj.display_name,
-                "repo_path": repo_obj.path,
-                "path": path_obj.path,
-                "dir_entries": dir_entries,
-                "isdir": path_obj.isdir,
-                "parents": parents,
-                "restore_dates": restore_dates,
-                "warning": warning}
+        parms = {
+            "repo" : repo_obj,
+            "path" : path_obj,
+            "limit": limit,
+            "dir_entries": dir_entries,
+            "parents": parents,
+            "restore_dates": restore_dates,
+            "warning": warning}
+        return self._compile_template("browse.html", **parms)

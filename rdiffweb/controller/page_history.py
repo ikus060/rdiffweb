@@ -23,7 +23,7 @@ import logging
 
 import cherrypy
 
-from rdiffweb.controller import Controller, validate_isinstance, validate_int
+from rdiffweb.controller import Controller, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.i18n import ugettext as _
 
@@ -37,7 +37,6 @@ class HistoryPage(Controller):
 
     @cherrypy.expose
     def default(self, path=b"", limit='10', **kwargs):
-        validate_isinstance(path, bytes)
         limit = validate_int(limit)
 
         repo_obj = self.app.currentuser.get_repo(path)
@@ -50,8 +49,7 @@ class HistoryPage(Controller):
 
         parms = {
             "limit": limit,
-            "repo_name": repo_obj.display_name,
-            "repo_path": repo_obj.path,
+            "repo": repo_obj,
             "history_entries": repo_obj.get_history_entries(numLatestEntries=limit, reverse=True),
             "warning": warning,
         }

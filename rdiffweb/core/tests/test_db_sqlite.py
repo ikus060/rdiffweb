@@ -107,8 +107,7 @@ class SQLiteUserDBTest(AppTestCase):
     def test_get_invalid_user(self):
         with self.assertRaises(AssertionError):
             self.db.get_email('invalid')
-        with self.assertRaises(AssertionError):
-            self.db.get_repos('invalid')
+        self.assertEqual([],self.db.get_repos('invalid'))
         with self.assertRaises(AssertionError):
             self.db.get_user_root('invalid')
 

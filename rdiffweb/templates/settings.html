@@ -32,7 +32,7 @@
 <!-- Panel to set user info. -->
 {% call panel(title=_("Character encoding"), class='default') %}
 <div class="panel-body">
-  <form action="/api/set-encoding/{{ repo_path }}/" method="POST" role="form" class="clearfix" data-async data-target="#new-encoding-status">
+  <form action="{{ url_for('settings', repo) }}" method="POST" role="form" class="clearfix" data-async data-target="#new-encoding-status">
     <div class="form-group">
         <label for="encoding" class="control-label">
             {% trans %}Encoding{% endtrans %}</label>
@@ -56,7 +56,7 @@
 <!-- Delete repo. -->
 {% call panel(title=_("Remove older"), class='default') %}
 <div class="panel-body">
-  <form data-async data-target="#keepdays-status" action="/api/remove-older/{{ repo_path }}/" method="POST" role="form">
+  <form data-async data-target="#keepdays-status" action="{{ url_for('settings', repo) }}" method="POST" role="form">
   <div class="form-group">
     <label for="encoding" class="control-label">
         {% trans %}Keep history for:{% endtrans %}</label>
@@ -113,7 +113,7 @@
      <b>{% trans %}Removed repository cannot be restored!{% endtrans %}</b>
   </span>
   <div>
-     {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", action="delete", repo_name=repo_name) }}
+     {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", action="delete", repo_name=repo.display_name) }}
   </div>
 </div>
 {% endcall %}

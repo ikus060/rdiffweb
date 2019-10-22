@@ -14,6 +14,45 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Save a preference data into the local storage if available.
+ * 
+ * @param {Object} key
+ * 		the preference key
+ * @param {Object} value
+ * 		the preference value
+ */
+function setPrefValue(key, value) {
+	if(typeof(localStorage)!=="undefined") {
+		localStorage['pref.' + key] = value;
+	}
+}
+
+/**
+ * Get the preference data from the local storage.
+ * @param {Object} key
+ * 		the preference key
+ * @param {Object} defaultValue
+ * 		the default value if the value is not available in the local storage
+ */
+function getPrefValue(key, defaultValue) {
+	if(typeof(localStorage)!=="undefined") {
+		if(typeof(localStorage['pref.' + key])==="string") {
+			return localStorage['pref.' + key];
+		}
+	}
+	return defaultValue;
+}
+
+/**
+ * Add form validation where applicable.
+ */
+jQuery.validator.addMethod("equalValue", function(value, element, parameters) {
+    return value == parameters;
+}, "Enter the same value.");
+
+$(document).ready(function() {
+
 // Table sorting
 $("table.sortable thead th.sortable").each(function(){
 	
@@ -88,36 +127,6 @@ $("table.sortable thead th.sortable").each(function(){
 });
 
 /**
- * Save a preference data into the local storage if available.
- * 
- * @param {Object} key
- * 		the preference key
- * @param {Object} value
- * 		the preference value
- */
-function setPrefValue(key, value) {
-	if(typeof(localStorage)!=="undefined") {
-		localStorage['pref.' + key] = value;
-	}
-}
-
-/**
- * Get the preference data from the local storage.
- * @param {Object} key
- * 		the preference key
- * @param {Object} defaultValue
- * 		the default value if the value is not available in the local storage
- */
-function getPrefValue(key, defaultValue) {
-	if(typeof(localStorage)!=="undefined") {
-		if(typeof(localStorage['pref.' + key])==="string") {
-			return localStorage['pref.' + key];
-		}
-	}
-	return defaultValue;
-}
-
-/**
  * Handle flexible Ajax form submit.
  */
 $('form[data-async]').on('submit', function(event) {
@@ -140,9 +149,4 @@ $('form[data-async]').on('submit', function(event) {
     event.preventDefault();
 })
 
-/**
- * Add form validation where applicable.
- */
-jQuery.validator.addMethod("equalValue", function(value, element, parameters) {
-    return value == parameters;
-}, "Enter the same value.");
+});

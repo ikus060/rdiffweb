@@ -4,14 +4,14 @@
     <div class="container">
     
     <!-- Title -->
-    <h2>{{ repo_name }}</h2>
+    <h2>{{ repo.display_name }}</h2>
     
     <!-- Repo Nav -->
 	{% set repo_nav_bar = [
-	    ('browse', _('Files'), url_for_browse(repo_path), 'icon-docs'),
-	    ('history', _('Restore Repository'), url_for_history(repo_path), 'icon-history'),
-	    ('settings', _('Settings'), url_for_settings(repo_path), 'icon-cog-alt'),
-	    ('graphs', _('Graphs'), url_for_graphs(repo_path, 'activities'), 'icon-chart-bar')
+	    ('browse', _('Files'), url_for('browse', repo), 'icon-docs'),
+	    ('history', _('Restore Repository'), url_for('history', repo), 'icon-history'),
+	    ('settings', _('Settings'), url_for('settings', repo), 'icon-cog-alt'),
+	    ('graphs', _('Graphs'), url_for('graphs', 'activities', repo), 'icon-chart-bar')
 	] -%}
     <ul class="nav nav-tabs" role="navigation">
     {% for item in repo_nav_bar %}

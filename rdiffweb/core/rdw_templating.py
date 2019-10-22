@@ -149,119 +149,38 @@ def url_for(endpoint, *args, **kwargs):
     """
     Generate a url for the given endpoint, path (*args) with parameters (**kwargs)
     """
-    url = []
-    endpoint = endpoint.strip("/")
-    url.append("/" + endpoint)
-    if args:
-        for chunk in args:
-            if isinstance(chunk, bytes):
-                chunk = chunk.rstrip(b"/")
-                url.append("/")
-                url.append(rdw_helpers.quote_url(chunk))
-            else:
-                chunk = chunk.rstrip("/")
-                url.append("/")
-                url.append(chunk)
-    if kwargs:
-        url.append("?")
-    for key, value in kwargs.items():
-        url.append("%s=%s" % (key, value))
-    return ''.join(url)
-
-
-def url_for_browse(repo, path=None, restore=False):
-    """Generate an URL for browse controller."""
-    # Make sure the URL end with a "/" otherwise cherrypy does an internal
-    # redirection.
-    assert isinstance(repo, bytes)
-    assert isinstance(path, bytes) or not path
-    if not path:
-        path = b''
-    url = []
-    url.append("/browse/")
-    if repo:
-        repo = repo.rstrip(b"/")
-        url.append(rdw_helpers.quote_url(repo))
-        url.append("/")
-    if len(path) > 0:
-        path = path.rstrip(b"/")
-        url.append(rdw_helpers.quote_url(path))
-        url.append("/")
-    if restore:
-        url.append("?")
-        url.append("restore=T")
-    return ''.join(url)
-
-
-def url_for_history(repo):
-    assert isinstance(repo, bytes)
-    url = []
-    url.append("/history/")
-    if repo:
-        repo = repo.rstrip(b"/")
-        url.append(rdw_helpers.quote_url(repo))
-        url.append("/")
-    return ''.join(url)
-
-
-def url_for_restore(repo, path, date, kind=None):
-    assert isinstance(repo, bytes)
-    assert path is None or isinstance(path, bytes)
-    assert isinstance(date, librdiff.RdiffTime)
-    url = []
-    url.append("/restore/")
-    if repo:
-        repo = repo.rstrip(b"/")
-        url.append(rdw_helpers.quote_url(repo))
-    if path:
-        url.append("/")
-        path = path.rstrip(b"/")
-        url.append(rdw_helpers.quote_url(path))
-    # Append date
-    url.append("?date=")
-    url.append(str(date.epoch()))
-    if kind:
-        url.append("&kind=%s" % kind)
-    return ''.join(url)
-
-
-def url_for_settings(repo):
-    url = []
-    url.append("/settings/")
-    if repo:
-        repo = repo.rstrip(b"/")
-        url.append(rdw_helpers.quote_url(repo))
-        url.append("/")
-    return ''.join(url)
-
-
-def url_for_status(date, repo=None):
-    assert isinstance(date, librdiff.RdiffTime)
-    url = []
-    url.append("/status/")
-    if repo:
-        assert isinstance(repo, bytes)
-        repo = repo.rstrip(b"/")
-        url.append(rdw_helpers.quote_url(repo))
-        url.append("/")
-    if date:
-        url.append("?date=")
-        url.append(str(date.epoch()))
-    return ''.join(url)
-
-
-def url_for_graphs(repo, graph=''):
-    """
-    Build a URL to display graphs for the given repo.
-    """
-    assert isinstance(repo, bytes)
-    url = []
-    url.append("/graphs/%s/" % (graph))
-    if repo:
-        repo = repo.rstrip(b"/")
-        url.append(rdw_helpers.quote_url(repo))
-        url.append("/")
-    return ''.join(url)
+    url = "/" + endpoint.strip("/")
+    for chunk in args:
+        if not chunk:
+            continue
+        if hasattr(chunk, 'user') and hasattr(chunk, 'path'):
+            # This is a RepoObject
+            url += "/"
+            url += chunk.user.username
+            url += "/"
+            url += rdw_helpers.quote_url(chunk.path.strip(b"/"))
+        elif hasattr(chunk, 'path'):
+            # This is a DirEntry
+            if chunk.path:
+                url += "/"
+                url += rdw_helpers.quote_url(chunk.path.strip(b"/"))
+        elif chunk and isinstance(chunk, bytes):
+            url += "/"
+            url += rdw_helpers.quote_url(chunk.strip(b"/"))
+        elif chunk and isinstance(chunk, str):
+            url += "/"
+            url += chunk.rstrip("/")
+        else:
+            raise ValueError('invalid positional arguments, url_for accept str, bytes or RepoPath: %r' % chunk)
+    first_args = True
+    # Sort the arguments to have predictable results.
+    for key, value in sorted(kwargs.items()):
+        url += "?" if first_args else "&"
+        first_args = False
+        if hasattr(value, 'epoch'):
+            value = value.epoch()        
+        url += "%s=%s" % (key, value)
+    return url
 
 
 class TemplateManager(object):
@@ -295,12 +214,6 @@ class TemplateManager(object):
         self.jinja_env.globals['attrib'] = attrib
         self.jinja_env.globals['create_repo_tree'] = create_repo_tree
         self.jinja_env.globals['url_for'] = url_for
-        self.jinja_env.globals['url_for_browse'] = url_for_browse
-        self.jinja_env.globals['url_for_history'] = url_for_history
-        self.jinja_env.globals['url_for_restore'] = url_for_restore
-        self.jinja_env.globals['url_for_settings'] = url_for_settings
-        self.jinja_env.globals['url_for_status'] = url_for_status
-        self.jinja_env.globals['url_for_graphs'] = url_for_graphs
 
     def add_templatesdir(self, templates_dir):
         """

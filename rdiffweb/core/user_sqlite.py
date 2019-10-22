@@ -110,16 +110,13 @@ class SQLiteUserDB():
         Get list of repos for the given `username`.
         """
         assert isinstance(username, str)
-        assert self.exists(username), "user [%s] doesn't exists" % username
-        query = ("SELECT RepoPath FROM repos WHERE UserID = %d" % 
-                 self._get_user_id(username))
-        return [row[0] for row in self._execute_query(query)]
+        query = "SELECT RepoPath FROM repos, users WHERE repos.UserID = users.UserID AND Username = ?"
+        return [row[0] for row in self._execute_query(query, (username,))]
 
     def get_repo_attr(self, username, repo_path, key, default=None):
         """
         Get repository attribute.
         """
-        assert isinstance(username, str)
         assert isinstance(repo_path, str)
         query = "SELECT %s FROM repos WHERE RepoPath=? AND UserID = ?" % (key,)
         try:
@@ -365,6 +362,7 @@ Encoding varchar (50))""")
 
                 # Create `keepdays` columns in repos
                 self._create_column('repos', 'keepdays')
+                self._create_column('repos', 'encoding', datatype='varchar(30)')
                 
                 # Create table for ssh Keys
                 if 'sshkeys' not in tables:

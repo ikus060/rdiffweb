@@ -46,8 +46,18 @@ class RemoveOlderTest(WebCase):
         self.getPage("/settings/" + repo + "/")
 
     def _remove_older(self, repo, value):
-        self.getPage("/api/remove-older/" + repo + "/", method="POST",
-                     body={'keepdays': value})
+        self.getPage("/settings/" + repo + "/", method="POST", body={'keepdays': value})
+
+    def test_page_api_set_remove_older(self):
+        """
+        Check if /api/remove-older/ is still working.
+        """
+        self.getPage("/api/remove-older/" + self.REPO + "/", method="POST", body={'keepdays': '4'})
+        self.assertStatus(200)
+        # Check results
+        user = self.app.userdb.get_user(self.USERNAME)
+        repo = user.get_repo(self.REPO)
+        self.assertEqual(4, repo.keepdays)
 
     def test_page_set_keepdays(self):
         """
