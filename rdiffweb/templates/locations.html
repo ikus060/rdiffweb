@@ -6,7 +6,7 @@
 
 {% macro repo_list_item(repo)%}
 <a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }}
-    href="{{ url_for_browse(repo.path) }}" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+    href="{{ url_for('browse', repo) }}" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
   <meta itemprop="name" content="{{ repo.path.decode('utf-8', 'replace') }}" />
   <i class="icon-hdd"></i>
   {% set name = repo.display_name.split('/')[-1] %}

@@ -18,12 +18,13 @@
 
 from __future__ import unicode_literals
 
-from future.builtins import str
 import unittest
 
+from future.builtins import str
+
 from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.core.rdw_templating import do_format_filesize, url_for_browse, \
-    url_for_history, url_for_restore, attrib, url_for
+from rdiffweb.core.rdw_templating import do_format_filesize, attrib, url_for
+from rdiffweb.test import AppTestCase
 
 
 class TemplateManagerTest(unittest.TestCase):
@@ -89,39 +90,55 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual('/browse', url_for('browse'))
         self.assertEqual('/browse/testcases', url_for('browse', b'testcases'))
         self.assertEqual('/browse/testcases/Revisions', url_for('browse', b'testcases', b'Revisions'))
+        self.assertEqual('/browse/testcases/Revisions?restore=1', url_for('browse', b'testcases', b'Revisions', restore=1))
         self.assertEqual('/browse/testcases/Revisions?restore=T', url_for('browse', b'testcases', b'Revisions', restore='T'))
         self.assertEqual('/browse/testcases/Revisions?restore=True', url_for('browse', b'testcases', b'Revisions', restore=True))
         self.assertEqual('/browse/testcases/R%C3%A9pertoire', url_for('browse', b'testcases', b'R\xc3\xa9pertoire'))
         # Check if multi path is supported.
         self.assertEqual('/admin/logs', url_for('admin/logs'))
         self.assertEqual('/admin/logs/backup.log', url_for('admin/logs', 'backup.log'))
-        
+
+
+class UrlForTest(AppTestCase):
+
+    reset_testcases = True
+    
+    USERNAME = 'admin'
+
+    PASSWORD = 'password'
+
     def test_url_for_browse(self):
         """Check creation of url"""
-        self.assertEqual('/browse/testcases/', url_for_browse(b'testcases'))
-        self.assertEqual('/browse/testcases/Revisions/', url_for_browse(b'testcases', path=b'Revisions'))
-        self.assertEqual('/browse/testcases/Revisions/?restore=T', url_for_browse(b'testcases', path=b'Revisions', restore=True))
-        self.assertEqual('/browse/testcases/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/',
-                         url_for_browse(b'testcases', path=b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial'))
-        # Check if failing with unicode
-        with self.assertRaises(AssertionError):
-            url_for_browse('testcases')
+        repo = self.app.userdb.get_user('admin').get_repo(self.REPO)
+        self.assertEqual('/browse/admin/testcases', url_for('browse', repo))
+        self.assertEqual('/browse/admin/testcases/Revisions', url_for('browse', repo, b'Revisions'))
+        self.assertEqual('/browse/admin/testcases/Revisions?restore=True', url_for('browse', repo, b'Revisions', restore=True))
+        self.assertEqual('/browse/admin/testcases/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial',
+                         url_for('browse', repo, b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial'))
+
+    def test_url_for_graphs(self):
+        repo = self.app.userdb.get_user('admin').get_repo(self.REPO)
+        self.assertEqual('/graphs/files/admin/testcases', url_for('graphs', 'files', repo))
 
     def test_url_for_history(self):
         """Check creation of url"""
-        self.assertEqual('/history/testcases/', url_for_history(b'testcases'))
-        # Check if failing with unicode
-        with self.assertRaises(AssertionError):
-            url_for_history('testcases')
+        repo = self.app.userdb.get_user('admin').get_repo(self.REPO)
+        self.assertEqual('/history/admin/testcases', url_for('history', repo))
 
     def test_url_for_restore(self):
-        self.assertEqual('/restore/testcases?date=1414967021', url_for_restore(b'testcases', path=b'', date=RdiffTime(1414967021)))
-        self.assertEqual('/restore/testcases/Revisions?date=1414967021', url_for_restore(b'testcases', path=b'Revisions', date=RdiffTime(1414967021)))
-        self.assertEqual('/restore/testcases/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial?date=1414967021',
-                         url_for_restore(b'testcases', path=b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial', date=RdiffTime(1414967021)))
-        # Check if failing with unicode
-        with self.assertRaises(AssertionError):
-            url_for_restore('testcases', path='', date=RdiffTime(1414967021))
+        repo = self.app.userdb.get_user('admin').get_repo(self.REPO)
+        self.assertEqual('/restore/admin/testcases?date=1414967021', url_for('restore', repo, date=RdiffTime(1414967021)))
+        self.assertEqual('/restore/admin/testcases?date=1414967021', url_for('restore', repo, b'', date=RdiffTime(1414967021)))
+        self.assertEqual('/restore/admin/testcases?date=1414967021&kind=tar.gz', url_for('restore', repo, b'', date=RdiffTime(1414967021), kind='tar.gz'))
+        self.assertEqual('/restore/admin/testcases/Revisions?date=1414967021', url_for('restore', repo, b'Revisions', date=RdiffTime(1414967021)))
+        self.assertEqual('/restore/admin/testcases/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial?date=1414967021',
+                         url_for('restore', repo, b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial', date=RdiffTime(1414967021)))
+
+    def test_url_for_status(self):
+        repo = self.app.userdb.get_user('admin').get_repo(self.REPO)
+        self.assertEqual('/status?date=1414967021', url_for('status', date=RdiffTime(1414967021)))
+        self.assertEqual('/status/admin/testcases?date=1414967021', url_for('status', repo, date=RdiffTime(1414967021)))
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

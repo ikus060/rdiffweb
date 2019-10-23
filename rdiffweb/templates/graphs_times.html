@@ -76,7 +76,7 @@ var svg = d3.select("#graph")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.csv("{{ url_for_graphs(repo_path, 'data') }}", type, function(error, csv_data) {
+d3.csv("{{ url_for('graphs', 'data', repo) }}", type, function(error, csv_data) {
   if (error) throw error;
 
   // Define a temporary X axis to figure out grouping.

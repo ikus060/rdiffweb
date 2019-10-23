@@ -22,7 +22,7 @@
             <div class="pull-right">
 
                 <div class="btn-group">
-                    <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for_restore(repo_path, None, entry.date) }}">
+                    <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for('restore', repo, date=entry.date) }}">
                         <i class="icon-download"></i> <span>{% trans %}Download{% endtrans %}</span>
                     </a>
                     <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -30,17 +30,17 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-right-xs" role="menu" aria-labelledby="menu1">
                         <li>
-                            <a rel="nofollow" href="{{ url_for_restore(repo_path, None, entry.date) }}">
+                            <a rel="nofollow" href="{{ url_for('restore', repo, date=entry.date) }}">
                                 <i class="icon-download"></i> <span>{% trans %}Download{% endtrans %} ZIP</span>
                             </a>
                         </li>
                         <li>
-                            <a rel="nofollow" href="{{ url_for_restore(repo_path, None, entry.date, 'tar.gz') }}">
+                            <a rel="nofollow" href="{{ url_for('restore', repo, date=entry.date, kind='tar.gz') }}">
                                 <i class="icon-download"></i> <span>{% trans %}Download{% endtrans %} TAR.GZ</span>
                             </a>
                         </li>
                         <li>
-                            <a rel="nofollow" href="{{ url_for_restore(repo_path, None, entry.date, 'tar.bz2') }}">
+                            <a rel="nofollow" href="{{ url_for('restore', repo, date=entry.date, kind='tar.bz2') }}">
                                 <i class="icon-download"></i> <span>{% trans %}Download{% endtrans %} TAR.BZ2</span>
                             </a>
                         </li>

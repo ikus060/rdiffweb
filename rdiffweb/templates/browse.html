@@ -8,7 +8,7 @@
     {% if parents %}
     {% for parent in parents %}
     <li {{ attrib(class=loop.last and 'active') }}>
-        <a {{ attrib(href=loop.last and "#" or url_for_browse(repo_path, parent.path)) }}>
+        <a {{ attrib(href=loop.last and "#" or url_for('browse', repo, parent.path)) }}>
             {{ parent.name }}
         </a>
     </li>
@@ -31,8 +31,8 @@
             <td {% if entry.isdir %}data-value="dir-{{ entry.display_name }}"
                 {% else %}data-value="file-{{ entry.display_name }}"{% endif %}>
                 <a {{ attrib(
-                        href=(entry.isdir and url_for_browse(repo_path, entry.path)) or
-                             (entry.last_change_date and url_for_restore(repo_path, entry.path, entry.last_change_date)) or
+                        href=(entry.isdir and url_for('browse', repo, entry.path)) or
+                             (entry.last_change_date and url_for('restore', repo, entry.path, date=entry.last_change_date)) or
                              "#",
                         title=(entry.display_name | length > 45 and entry.display_name)
                       ) }} >
@@ -60,7 +60,7 @@
                     <ul class="dropdown-menu dropdown-menu-right-xs" role="menu" aria-labelledby="menu1">
                         {% for change_date in entry.change_dates[:-6:-1] %}
                         <li>
-                            <a href="{{ url_for_restore(repo_path, entry.path, change_date) }}">
+                            <a href="{{ url_for('restore', repo, entry.path, date=change_date) }}">
                                 <!-- File date -->
                                 <i class="icon-download"></i>
                                 {{ change_date | datetime }}
@@ -68,7 +68,7 @@
                         </li>
                         {% endfor %}
                         <li>
-                            <a href="{{ url_for_browse(repo_path, entry.path, restore=true) }}">{% trans %}Show more...{% endtrans %}</a>
+                            <a href="{{ url_for('browse', repo, entry.path, restore=1) }}">{% trans %}Show more...{% endtrans %}</a>
                         </li>
                     </ul>
                 </div>
@@ -83,12 +83,12 @@
     <ul class="list-group">
         {% for restore_date in restore_dates %}
         <li class="list-group-item clearfix">
-            <i {% if isdir %}class="icon-folder"{% else %}class="icon-file"{% endif %}></i>
+            <i {% if path.isdir %}class="icon-folder"{% else %}class="icon-file"{% endif %}></i>
             {{ restore_date | datetime }}
-            {% if isdir %}
+            {% if path.isdir %}
             <div class="pull-right">
               <div class="btn-group">
-                <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for_restore(repo_path, path, restore_date) }}">
+                <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date) }}">
                   <i class="icon-download"></i>
                   <span>{% trans %}Download{% endtrans %}</span>
                 </a>
@@ -98,19 +98,19 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-right-xs" role="menu" aria-labelledby="menu1">
                 <li>
-                  <a rel="nofollow" href="{{ url_for_restore(repo_path, path, restore_date) }}">
+                  <a rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date) }}">
                     <i class="icon-download"></i>
                     <span>{% trans %}Download{% endtrans %} ZIP</span>
                   </a>
                 </li>
                 <li>
-                  <a rel="nofollow" href="{{ url_for_restore(repo_path, path, restore_date, 'tar.gz') }}">
+                  <a rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date, kind='tar.gz') }}">
                     <i class="icon-download"></i>
                     <span>{% trans %}Download{% endtrans %} TAR.GZ</span>
                   </a>
                 </li>
                 <li>
-                  <a rel="nofollow" href="{{ url_for_restore(repo_path, path, restore_date, 'tar.bz2') }}">
+                  <a rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date, kind='tar.bz2') }}">
                     <i class="icon-download"></i>
                     <span>{% trans %}Download{% endtrans %} TAR.BZ2</span>
                   </a>
@@ -120,7 +120,7 @@
             </div>
             {% else %}
             <div class="pull-right">
-                <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for_restore(repo_path, path, restore_date) }}">
+                <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date) }}">
                   <i class="icon-download"></i>
                   <span>{% trans %}Download{% endtrans %}</span>
                 </a>

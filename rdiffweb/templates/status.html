@@ -32,7 +32,7 @@
     {%if message.is_success %}
     <!--StartIncludeIf:isSuccess-->
     <h3 class="backupStatus_success">
-        <a href="{{ url_for_status(message.date) }}">
+        <a href="{{ url_for('status', date=message.date) }}">
             {% trans %}Successful backups for {% endtrans %}{{ message.date | datetime }}
         </a>
     </h3>
@@ -42,7 +42,7 @@
             {% for backup in message.backups %}
             <!--StartRepeat:backups-->
             <li>
-                <a class="statusRepoLink" href="{{ url_for_browse(backup.repo_path) }}">
+                <a class="statusRepoLink" href="{{ url_for('browse', backup.repo) }}">
                 {{ backup.date | datetime }} -
                 {{ backup.repo_name }} - 
                 {{ backup.size | filesize }}</a>
@@ -55,7 +55,7 @@
     {% else %}
     <!--StartDeleteIf:isSuccess-->
     <h3 class="backupStatus_failure">
-        <a href="{{ url_for_status(message.date) }}">{% trans %}Backup completed with errors:{% endtrans %}
+        <a href="{{ url_for('status', date=message.date) }}">{% trans %}Backup completed with errors:{% endtrans %}
             {{ message.repo_name }}</a>
     </h3>
     <div>

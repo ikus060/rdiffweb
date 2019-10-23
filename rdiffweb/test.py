@@ -105,7 +105,7 @@ class AppTestCase(unittest.TestCase):
 
     reset_testcases = False
 
-    REPO = 'testcases/'
+    REPO = 'admin/testcases'
 
     USERNAME = None
 
@@ -131,7 +131,7 @@ class WebCase(helper.CPWebCase):
     Helper class for the rdiffweb test suite.
     """
 
-    REPO = 'testcases'
+    REPO = 'admin/testcases'
 
     USERNAME = 'admin'
 

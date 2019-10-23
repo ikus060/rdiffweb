@@ -51,7 +51,7 @@ class DeleteRepoTest(WebCase):
         """
         Check to delete a repo.
         """
-        self._delete(self.REPO, self.REPO)
+        self._delete(self.REPO, 'testcases')
         self.assertStatus(303)
 
     def test_delete_wrong_confirm(self):

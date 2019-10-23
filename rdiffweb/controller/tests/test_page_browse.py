@@ -73,19 +73,19 @@ class BrowsePageTest(WebCase):
         self.assertInBody("/Fichier%20%40%20%3Croot%3E?date=")
         #  Répertoire (@vec) {càraçt#èrë} $épêcial
         self.assertInBody("Répertoire (@vec) {càraçt#èrë} $épêcial")
-        self.assertInBody("/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/")
+        self.assertInBody("/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial")
         #  test\test
         self.assertInBody("test\\test")
-        self.assertInBody("/test%5Ctest/")
+        self.assertInBody("/test%5Ctest")
         #  <F!chïer> (@vec) {càraçt#èrë} $épêcial
         self.assertInBody("&lt;F!chïer&gt; (@vec) {càraçt#èrë} $épêcial")
         self.assertInBody("/%3CF%21ch%C3%AFer%3E%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial?date=")
         #  Répertoire Existant
         self.assertInBody("Répertoire Existant")
-        self.assertInBody("/R%C3%A9pertoire%20Existant/")
+        self.assertInBody("/R%C3%A9pertoire%20Existant")
         #  Répertoire Supprimé
         self.assertInBody("Répertoire Supprimé")
-        self.assertInBody("/R%C3%A9pertoire%20Supprim%C3%A9/")
+        self.assertInBody("/R%C3%A9pertoire%20Supprim%C3%A9")
         #  Quoted folder
         self.assertInBody("Char Z to quote")
         self.assertInBody("/Char%20%3B090%20to%20quote")
@@ -213,18 +213,18 @@ class BrowsePageTest(WebCase):
         """
         # Change the user setting to match single repo.
         user = self.app.userdb.get_user(self.USERNAME)
-        user.user_root = os.path.join(self.app.testcases, self.REPO)
+        user.user_root = os.path.join(self.app.testcases, 'testcases')
         user.repos = ['']
         # Check if listing locations is working
         self.getPage('/')
         self.assertStatus('200 OK')
-        self.assertInBody(self.REPO)
+        self.assertInBody('testcases')
         # Check if browsing is working.
-        self.getPage('/browse/')
+        self.getPage('/browse/admin')
         self.assertStatus('200 OK')
         self.assertInBody('Files')
         # Check sub directory browsing
-        self.getPage('/browse/Revisions/')
+        self.getPage('/browse/admin/Revisions/')
         self.assertStatus('200 OK')
         self.assertInBody('Files')
 

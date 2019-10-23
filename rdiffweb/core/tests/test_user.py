@@ -127,7 +127,7 @@ class UserManagerSQLiteTest(AppTestCase):
         user.email = 'bernie@gmail.com'
         user.repos = ['computer', 'laptop']
         user.repo_objs[0].maxage = -1
-        user.get_repo('laptop').maxage = 3
+        user.get_repo('bernie/laptop').maxage = 3
 
         # Get user record.
         obj = self.app.userdb.get_user('bernie')
@@ -141,8 +141,8 @@ class UserManagerSQLiteTest(AppTestCase):
         # Get repo object
         self.assertEqual('computer', obj.repo_objs[0].name)
         self.assertEqual(-1, obj.repo_objs[0].maxage)
-        self.assertEqual('laptop', obj.get_repo('laptop').name)
-        self.assertEqual(3, obj.get_repo('laptop').maxage)
+        self.assertEqual('laptop', obj.get_repo('bernie/laptop').name)
+        self.assertEqual(3, obj.get_repo('bernie/laptop').maxage)
         
     def test_get_set(self):
         user = self.app.userdb.add_user('larry', 'password')
@@ -630,8 +630,6 @@ class RepoObjectTest(AppTestCase):
     """Testcases for RepoObject."""
     
     reset_testcases = True
-
-    REPO = 'testcases/'
 
     USERNAME = 'admin'
 

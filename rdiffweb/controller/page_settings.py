@@ -20,11 +20,10 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import logging
-from rdiffweb.controller import Controller, validate_isinstance, validate
+from rdiffweb.controller import Controller, validate, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.i18n import ugettext as _
 
-from builtins import bytes
 import cherrypy
 
 # Define the logger
@@ -35,24 +34,24 @@ _logger = logging.getLogger(__name__)
 class SettingsPage(Controller):
 
     @cherrypy.expose
-    def index(self, path=b"", action=None, **kwargs):
-        validate_isinstance(path, bytes)
+    def default(self, path=b"", action=None, **kwargs):
         repo_obj = self.app.currentuser.get_repo(path)
-        
         if action == 'delete':
-            self.delete(repo_obj, **kwargs)
-        
+            self._delete(repo_obj, **kwargs)
+        if kwargs.get('keepdays'):
+            return self._remove_older(repo_obj, **kwargs)
+        elif kwargs.get('new_encoding'):
+            return self._set_encoding(repo_obj, **kwargs)
         # Get page data.
         params = {
-            'repo_name': repo_obj.display_name,
-            'repo_path': repo_obj.path,
+            'repo': repo_obj,
             'current_encoding': repo_obj.encoding,
             'keepdays': repo_obj.keepdays,
         }
         # Generate page.
         return self._compile_template("settings.html", **params)
     
-    def delete(self, repo_obj, **kwargs):
+    def _delete(self, repo_obj, **kwargs):
         """
         Delete the repository.
         """
@@ -66,42 +65,25 @@ class SettingsPage(Controller):
         repo_obj.delete()
 
         raise cherrypy.HTTPRedirect("/")
-    
-    
-@poppath()
-class SetEncodingPage(Controller):
-    
-    @cherrypy.expose()
-    def index(self, path=b'', new_encoding=None):
+
+    def _set_encoding(self, repo_obj, new_encoding=None):
         """
         Update repository encoding via Ajax.
         """
-        validate_isinstance(path, bytes)
         validate(new_encoding)
-        repo_obj = self.app.currentuser.get_repo(path)
         try:
             repo_obj.encoding = new_encoding
         except ValueError:
             raise cherrypy.HTTPError(400, _("invalid encoding value"))
         return _("Updated")
-    
-    
-@poppath()
-class RemoveOlderPage(Controller):
 
-    @cherrypy.expose()
-    def index(self, path=b"", keepdays=None):
-        validate_isinstance(path, bytes)
-        validate(keepdays)
-
-        # Get repository object from user database.
-        r = self.app.currentuser.get_repo(path)
-
+    def _remove_older(self, repo_obj, keepdays=None):
+        validate_int(keepdays)
         # Update the database.
         try:
-            r.keepdays = keepdays
+            repo_obj.keepdays = keepdays
         except ValueError:
-            _logger.warning("invalid keepdays value %r", keepdays)
+            _logger.warning("invalid keepdays value %repo_obj", keepdays)
             raise cherrypy.HTTPError(400, _("Invalid value"))            
 
         return _("Updated")

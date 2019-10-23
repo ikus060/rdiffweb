@@ -40,13 +40,24 @@ class SetEncodingTest(WebCase):
         self.getPage("/settings/" + repo + "/")
 
     def _set_encoding(self, repo, encoding):
-        self.getPage("/api/set-encoding/" + repo + "/", method="POST",
+        self.getPage("/settings/" + repo + "/", method="POST",
                      body={'new_encoding': encoding})
 
     def test_check_encoding(self):
         self._settings(self.REPO)
         self.assertInBody("Character encoding")
         self.assertInBody('selected value="utf_8"')
+
+    def test_api_set_encoding(self):
+        """
+        Check if /api/set-encoding/ is still working.
+        """
+        self.getPage("/api/set-encoding/" + self.REPO + "/", method="POST", body={'new_encoding': 'cp1252'})
+        self.assertStatus(200)
+        # Check results
+        user = self.app.userdb.get_user(self.USERNAME)
+        repo = user.get_repo(self.REPO)
+        self.assertEqual('cp1252', repo.encoding)
 
     def test_set_encoding(self):
         """

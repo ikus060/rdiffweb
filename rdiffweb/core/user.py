@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2019 rdiffweb contributors
@@ -18,7 +17,7 @@
 
 from __future__ import unicode_literals
 
-from builtins import str, bytes
+from builtins import str
 import encodings
 from io import open
 import logging
@@ -31,7 +30,8 @@ from future.utils.surrogateescape import encodefilename
 from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.config import BoolOption, read_config, Option
 from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, FS_ENCODING
+from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, FS_ENCODING, \
+    AccessDeniedError
 from rdiffweb.core.user_ldap_auth import LdapPasswordStore
 from rdiffweb.core.user_sqlite import SQLiteUserDB
 
@@ -48,6 +48,21 @@ def normpath(val):
     if val.startswith(SEP):
         val = val[1:]
     return val
+
+
+def split_path(path):
+    "Split the given path into <username> / <path>"
+    # First part is the username
+    if not path:
+        raise DoesNotExistError()
+    if isinstance(path, str):
+        path = encodefilename(path)
+    path = path.strip(b'/')
+    if b'/' in path:
+        username, path = path.split(b'/', 1)
+        return username.decode('utf-8'), path
+    else:
+        return path.decode('utf-8'), b''
 
 
 class IUserChangeListener():
@@ -125,11 +140,14 @@ class UserObject(object):
         Return the repository identified as `name`.
         `name` may be a bytes string or unicode string.
         """
-        assert isinstance(name, str) or isinstance(name, bytes)
-        if isinstance(name, str):
-            name = encodefilename(name)
+        username, name = split_path(name)
+        
+        # Check if user has permissions to access this path
+        if username != self._username and not self.is_admin:
+            raise DoesNotExistError(name)
+            
         name = normpath(name)
-        for r in self._get_repos():
+        for r in self._get_repos(username):
             if name == normpath(encodefilename(r)):
                 return RepoObject(self, r)
         raise DoesNotExistError(name)
@@ -138,11 +156,14 @@ class UserObject(object):
         """
         Return a the repository identified by the given `path`.
         """
-        assert isinstance(path, str) or isinstance(path, bytes)
-        if isinstance(path, str):
-            path = encodefilename(path)
+        username, path = split_path(path)
+
+        # Check if user has permissions to access this path
+        if username != self._username and not self.is_admin:
+            raise AccessDeniedError(path)
+            
         path = normpath(path)
-        for r in self._get_repos():
+        for r in self._get_repos(username):
             repo = normpath(encodefilename(r))
             if path.startswith(repo):                
                 repo_obj = RepoObject(self, r)
@@ -150,9 +171,9 @@ class UserObject(object):
                 return (repo_obj, path_obj)
         raise DoesNotExistError(path)
 
-    def _get_repos(self):
+    def _get_repos(self, username=None):
         """Return list of repository name."""
-        return [r.strip('/') for r in self._db.get_repos(self._username)]
+        return [r.strip('/') for r in self._db.get_repos(username or self._username)]
 
     @property
     def is_ldap(self):
@@ -290,7 +311,7 @@ class UserObject(object):
     user_root = property(fget=lambda x: x._db.get_user_root(x._username), fset=lambda x, y: x.set_attr('user_root', y))
     repos = property(_get_repos, fset=lambda x, y: x.set_attr('repos', y))
     authorizedkeys = property(fget=lambda x: x.get_authorizedkeys())
-    repo_objs = property(fget=lambda x: [x.get_repo(name) for name in x.repos])
+    repo_objs = property(fget=lambda x: [RepoObject(x, name) for name in x.repos])
     disk_quota = property(get_disk_quota, set_disk_quota)
     
 
@@ -302,16 +323,17 @@ class RepoObject(RdiffRepo):
         assert isinstance(repo, str)
         self._repo = repo
         self._user_obj = user_obj
+        self._username = self._user_obj._username
         RdiffRepo.__init__(self, user_obj.user_root, repo)
         self._encoding = encodings.search_function(self.encoding)
 
     def __eq__(self, other):
         return (isinstance(other, RepoObject) and
-                self._user_obj.username == other._user_obj._username and
+                self._username == other._username and
                 self._repo == other._repo)
 
     def __str__(self):
-        return 'RepoObject[%s, %s]' % (self._user_obj.username, self._repo)
+        return 'RepoObject[%s, %s]' % (self._username, self._repo)
 
     def __repr__(self):
         return 'RepoObject(%r, %r)' % (self._user_obj, self._repo)
@@ -324,15 +346,19 @@ class RepoObject(RdiffRepo):
         """Used to define multiple attribute to a repository"""
         for key, value in kwargs.items():
             assert isinstance(key, str) and key.isalpha() and key.islower()
-            self._user_obj._db.set_repo_attr(self._user_obj._username, self._repo, key, value)
+            self._user_obj._db.set_repo_attr(self._username, self._repo, key, value)
 
     def _get_attr(self, key, default=None):
         assert isinstance(key, str)
-        return self._user_obj._db.get_repo_attr(self._user_obj._username, self._repo, key, default)
+        return self._user_obj._db.get_repo_attr(self._username, self._repo, key, default)
 
     @property
     def name(self):
         return self._repo
+    
+    @property
+    def user(self):
+        return self._user_obj
     
     def _get_encoding(self):
         """Return the repository encoding in a normalized format (lowercase and replace - by _)."""
