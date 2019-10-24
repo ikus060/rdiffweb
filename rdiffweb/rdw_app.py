@@ -46,6 +46,7 @@ from cherrypy import Application
 import cherrypy
 from future.utils import native_str
 import pkg_resources
+from collections import namedtuple
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -192,3 +193,13 @@ class RdiffwebApp(Application):
             return pkg_resources.get_distribution("rdiffweb").version
         except:
             return "DEV"
+    
+    @property
+    def plugins(self):
+        """
+        Return list of plugins.
+        """
+        RiffwebPlugin = namedtuple('RiffwebPlugin', ['name', 'version'])
+        for group in ['rdiffweb.IUserQuota', 'rdiffweb.IUserChangeListener']:
+            for e in pkg_resources.iter_entry_points(group):
+                yield RiffwebPlugin(name=e.name, version=e.dist)
