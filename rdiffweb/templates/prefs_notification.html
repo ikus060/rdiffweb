@@ -22,25 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% include 'message.html' %}
 
 {% from 'include/panel.html' import panel %}
-
-{# Dropdown select for notification #}
-{% macro dropdown(id, value) -%}
-                               
-  <select class="form-control" {{ attrib(id=id, name=id) }}>
-    <option value="-1" {{ attrib(selected=value == -1) }}>{% trans %}disabled{% endtrans %}</option>
-    <option value="1" {{ attrib(selected=value == 1) }}>{% trans %}1 day{% endtrans %}</option>
-    <option value="2"  {{ attrib(selected=value == 2) }}>{% trans %}2 days{% endtrans %}</option>
-    <option value="3"  {{ attrib(selected=value == 3) }}>{% trans %}3 days{% endtrans %}</option>
-    <option value="4"  {{ attrib(selected=value == 4) }}>{% trans %}4 days{% endtrans %}</option>
-    <option value="5"  {{ attrib(selected=value == 5) }}>{% trans %}5 days{% endtrans %}</option>
-    <option value="6"  {{ attrib(selected=value == 6) }}>{% trans %}6 days{% endtrans %}</option>
-    <option value="7"  {{ attrib(selected=value == 7) }}>{% trans %}1 week{% endtrans %}</option>
-    <option value="14" {{ attrib(selected=value == 14) }}>{% trans %}2 weeks{% endtrans %}</option>
-    <option value="21" {{ attrib(selected=value == 21) }}>{% trans %}3 weeks{% endtrans %}</option>
-    <option value="28" {{ attrib(selected=value == 28) }}>{% trans %}4 weeks{% endtrans %}</option>
-    <option value="31" {{ attrib(selected=value == 31) }}>{% trans %}1 month{% endtrans %}</option>
-  </select>
-{%- endmacro %}
+{% from 'include/widget.html' import maxage_dropdown %}
 
 <!-- Panel to set notification info -->
 {% call panel(title=_("Notification settings")) %}
@@ -64,7 +46,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <div class="form-group" >
             <label for="{{ repo.name }}" class="col-sm-2 control-label">{{ repo.name }}</label>
             <div class="col-sm-10">
-            {{ dropdown(id=repo.name, value=repo.maxage) }}
+            {{ maxage_dropdown(class="form-control", id=repo.name, name=repo.name, value=repo.maxage) }}
             </div>
         </div>
         {% endfor %}

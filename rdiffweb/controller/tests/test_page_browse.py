@@ -227,6 +227,33 @@ class BrowsePageTest(WebCase):
         self.getPage('/browse/admin/Revisions/')
         self.assertStatus('200 OK')
         self.assertInBody('Files')
+        
+    def test_as_another_user(self):
+        # Create a nother user with admin right
+        user_obj = self.app.userdb.add_user('anotheruser', 'password')
+        user_obj.user_root = self.app.testcases
+        user_obj.repos = ['testcases']
+        self.getPage('/browse/admin')
+        self.assertStatus('404 Not Found')
+        
+        # Browse admin's repos
+        self.getPage('/browse/anotheruser')
+        self.assertStatus('404 Not Found')
+        self.getPage('/browse/anotheruser/testcases')
+        self.assertStatus('200 OK')
+        self.getPage('/browse/anotheruser/testcases/Revisions/')
+        self.assertStatus('200 OK')
+        
+        # Remove admin right
+        admin = self.app.userdb.get_user('admin')
+        admin.is_admin = 0
+        
+        # Browse admin's repos
+        self.getPage('/browse/anotheruser/testcases')
+        self.assertStatus('403 Forbidden')
+        self.getPage('/browse/anotheruser/testcases/Revisions/')
+        self.assertStatus('403 Forbidden')
+        
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

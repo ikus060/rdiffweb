@@ -1,14 +1,14 @@
 {# Bootstrap panel #}
-{% macro search_bar(search_placeholder=None, filters=[], filter='', search='') -%}
+{% macro search_bar(search_placeholder=None, criterias=[], criteria='', search='') -%}
 <!-- Search / Filters -->
 <div class="row">
      <div class="col-md-12">
         {{ caller() }}
-        {% if filters %}
+        {% if criterias %}
         <ul class="nav nav-pills">
-            {% for key, label in filters %}
-            <li {% if filter == key %}class="active"{% endif %}>
-                <a href="?filter={{key}}">{{label}}</a>
+            {% for key, label in criterias %}
+            <li {% if criteria == key %}class="active"{% endif %}>
+                <a href="?criteria={{key}}">{{label}}</a>
             </li>
             {% endfor %}
         </ul>

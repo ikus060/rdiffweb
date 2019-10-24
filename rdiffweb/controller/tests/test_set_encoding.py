@@ -46,7 +46,7 @@ class SetEncodingTest(WebCase):
     def test_check_encoding(self):
         self._settings(self.REPO)
         self.assertInBody("Character encoding")
-        self.assertInBody('selected value="utf_8"')
+        self.assertInBody('selected value="utf-8"')
 
     def test_api_set_encoding(self):
         """
@@ -66,6 +66,7 @@ class SetEncodingTest(WebCase):
         self._set_encoding(self.REPO, 'cp1252')
         self.assertStatus(200)
         self.assertInBody("Updated")
+        self.assertEquals('cp1252', self.app.userdb.get_user(self.USERNAME).get_repo(self.REPO).encoding)
         # Get back encoding.
         self._settings(self.REPO)
         self.assertInBody('selected value="cp1252"')
@@ -89,6 +90,25 @@ class SetEncodingTest(WebCase):
         # Get back encoding.
         self._settings(self.REPO)
         self.assertInBody('selected value="cp1252"')
+        self.assertEquals('cp1252', self.app.userdb.get_user(self.USERNAME).get_repo(self.REPO).encoding)
+        
+    def test_as_another_user(self):
+        # Create a nother user with admin right
+        user_obj = self.app.userdb.add_user('anotheruser', 'password')
+        user_obj.user_root = self.app.testcases
+        user_obj.repos = ['testcases']
+        
+        self._set_encoding('anotheruser/testcases', 'cp1252')
+        self.assertStatus('200 OK')
+        self.assertEquals('cp1252', user_obj.get_repo('anotheruser/testcases').encoding)
+        
+        # Remove admin right
+        admin = self.app.userdb.get_user('admin')
+        admin.is_admin = 0
+        
+        # Browse admin's repos
+        self._set_encoding('anotheruser/testcases', 'utf-8')
+        self.assertStatus('403 Forbidden')
 
 
 if __name__ == "__main__":

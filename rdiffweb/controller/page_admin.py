@@ -27,12 +27,11 @@ import platform
 import pwd
 import subprocess
 import sys
-import tempfile
 
 import cherrypy
 import psutil
 
-from rdiffweb.controller import Controller, validate_isinstance
+from rdiffweb.controller import Controller
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core import rdw_spider_repos
 from rdiffweb.core.config import Option
@@ -184,11 +183,8 @@ class AdminPage(Controller):
         return self._compile_template("admin_logs.html", **params)
 
     @cherrypy.expose
-    def users(self, filter=u"", search=u"", action=u"", username=u"",
+    def users(self, criteria=u"", search=u"", action=u"", username=u"",
               email=u"", password=u"", user_root=u"", is_admin=u""):
-
-        validate_isinstance(filter, str)
-        validate_isinstance(search, str)
 
         # If we're just showing the initial page, just do that
         params = {}
@@ -203,12 +199,26 @@ class AdminPage(Controller):
                 params['error'] = str(e)
 
         params.update({
-            "filter": filter,
+            "criteria": criteria,
             "search": search,
-            "users": list(self.app.userdb.users(search=search, filter=filter))})
+            "users": list(self.app.userdb.users(search=search, criteria=criteria))})
 
         # Build users page
         return self._compile_template("admin_users.html", **params)
+
+    @cherrypy.expose
+    def repos(self, criteria=u"", search=u""):
+        params = {
+            "criteria": criteria,
+            "search": search,
+            "repos": list(self.app.userdb.repos(search=search, criteria=criteria))
+        }
+        return self._compile_template("admin_repos.html", **params)
+
+    @cherrypy.expose
+    def repos_edit(self):
+        params = {}
+        return self._compile_template("admin_repo_edit.html", **params)        
 
     @cherrypy.expose
     def sysinfo(self):

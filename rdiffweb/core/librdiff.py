@@ -946,7 +946,7 @@ class RdiffRepo(object):
 
         # Remove access to rdiff-backup-data directory.
         if path.startswith(RDIFF_BACKUP_DATA):
-            raise AccessDeniedError(path)
+            raise DoesNotExistError(path)
 
         # Make sure the normalized path is part of the repo.
         p = os.path.realpath(os.path.join(self.full_path, path))

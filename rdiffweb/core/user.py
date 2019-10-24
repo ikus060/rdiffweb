@@ -144,12 +144,13 @@ class UserObject(object):
         
         # Check if user has permissions to access this path
         if username != self._username and not self.is_admin:
-            raise DoesNotExistError(name)
+            raise AccessDeniedError(name)
             
         name = normpath(name)
         for r in self._get_repos(username):
             if name == normpath(encodefilename(r)):
-                return RepoObject(self, r)
+                user_obj = self if username == self._username else UserObject(self._userdb, self._db, username)
+                return RepoObject(user_obj, r)
         raise DoesNotExistError(name)
     
     def get_repo_path(self, path):
@@ -165,8 +166,9 @@ class UserObject(object):
         path = normpath(path)
         for r in self._get_repos(username):
             repo = normpath(encodefilename(r))
-            if path.startswith(repo):                
-                repo_obj = RepoObject(self, r)
+            if path.startswith(repo):     
+                user_obj = self if username == self._username else UserObject(self._userdb, self._db, username)
+                repo_obj = RepoObject(user_obj, r)
                 path_obj = repo_obj.get_path(path[len(repo):])
                 return (repo_obj, path_obj)
         raise DoesNotExistError(path)
@@ -325,7 +327,7 @@ class RepoObject(RdiffRepo):
         self._user_obj = user_obj
         self._username = self._user_obj._username
         RdiffRepo.__init__(self, user_obj.user_root, repo)
-        self._encoding = encodings.search_function(self.encoding)
+        self._encoding = self._get_encoding()
 
     def __eq__(self, other):
         return (isinstance(other, RepoObject) and
@@ -357,22 +359,31 @@ class RepoObject(RdiffRepo):
         return self._repo
     
     @property
-    def user(self):
-        return self._user_obj
+    def owner(self):
+        return self._user_obj.username
     
     def _get_encoding(self):
         """Return the repository encoding in a normalized format (lowercase and replace - by _)."""
         # For backward compatibility, look into the database and fallback to
         # the rdiffweb config file in the repo.
-        default = encodings.normalize_encoding(FS_ENCODING)
         encoding = self._get_attr('encoding')
         if encoding:
-            return encodings.normalize_encoding(encoding.lower())
-        conf_file = os.path.join(self._data_path, b'rdiffweb')
-        if os.access(conf_file, os.F_OK) and os.path.isfile(conf_file):
-            config = read_config(conf_file)
-            return encodings.normalize_encoding(config.get('encoding', default))
-        return default
+            return encodings.search_function(encoding.lower())
+        
+        # Read encoding value from obsolete config file.
+        try:
+            conf_file = os.path.join(self._data_path, b'rdiffweb')
+            if os.access(conf_file, os.F_OK) and os.path.isfile(conf_file):
+                config = read_config(conf_file)
+                os.remove(conf_file)
+                encoding = config.get('encoding')
+                if encoding:
+                    return encodings.search_function(encoding)
+        except:
+            logger.exception("fail to get repo encoding from file")
+        
+        # Fallback to default encoding.
+        return encodings.search_function(FS_ENCODING)
         
     def _set_encoding(self, value):
         """Change the repository encoding"""
@@ -393,7 +404,7 @@ class RepoObject(RdiffRepo):
         RdiffRepo.delete(self)
         self._user_obj.repos = repos
 
-    encoding = property(_get_encoding, _set_encoding)
+    encoding = property(lambda x: x._encoding.name, _set_encoding)
     maxage = property(fget=lambda x: int(x._get_attr('maxage', default='0')), fset=lambda x, y: x._set_attr('maxage', int(y)))
     keepdays = property(fget=lambda x: int(x._get_attr('keepdays', default='-1')), fset=lambda x, y: x._set_attr('keepdays', int(y)))
 
@@ -484,16 +495,29 @@ class UserManager():
             return None
         return UserObject(self, self._database, user)
 
-    def users(self, search=None, filter=None):
+    def users(self, search=None, criteria=None):
         """
         Search users database. Return a generator of user object.
         
         search: Define a search term to look into email or username.
-        filter: Define a search filter: admins, ldap
+        criteria: Define a search filter: admins, ldap
         """
         # TODO Add criteria as required.
-        for username in self._database.users(search, filter):
+        for username in self._database.users(search, criteria):
             yield UserObject(self, self._database, username)
+
+    def repos(self, search=None, criteria=None):
+        """
+        Quick listing of all the repository object for all user.
+        
+        search: Define a search term to look into path, email or username.
+        criteria: Define a search filter: ok, failed, interrupted, in_progress
+        """
+        for username, repo in self._database.repos(search, criteria):
+            user_obj = UserObject(self, self._database, username)
+            repo_obj = RepoObject(user_obj, repo)
+            if not criteria or criteria == repo_obj.status[0]:
+                yield repo_obj
 
     def login(self, user, password):
         """

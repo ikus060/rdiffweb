@@ -39,13 +39,14 @@ class DeleteRepoTest(WebCase):
     def _settings(self, repo):
         self.getPage("/settings/" + repo + "/")
 
-    def _delete(self, repo, confirm):
+    def _delete(self, repo, confirm, **kwargs):
         body = {}
         body.update({'action': 'delete'})
         if confirm is not None:
             body.update({'confirm': confirm})
-        self.getPage("/settings/" + repo + "/", method="POST",
-                     body=body)
+        if kwargs:
+            body.update(kwargs)
+        self.getPage("/settings/" + repo + "/", method="POST", body=body)
 
     def test_delete(self):
         """
@@ -53,6 +54,7 @@ class DeleteRepoTest(WebCase):
         """
         self._delete(self.REPO, 'testcases')
         self.assertStatus(303)
+        self.assertEqual([], self.app.userdb.get_user('admin').repos)
 
     def test_delete_wrong_confirm(self):
         """
@@ -61,6 +63,7 @@ class DeleteRepoTest(WebCase):
         self._delete(self.REPO, 'wrong')
         # TODO Make sure the repository is not delete
         self.assertStatus(400)
+        self.assertEqual(['testcases'], self.app.userdb.get_user('admin').repos)
 
     def test_delete_without_confirm(self):
         """
@@ -69,6 +72,24 @@ class DeleteRepoTest(WebCase):
         self._delete(self.REPO, None)
         # TODO Make sure the repository is not delete
         self.assertStatus(400)
+        self.assertEqual(['testcases'], self.app.userdb.get_user('admin').repos)
+        
+    def test_as_another_user(self):
+        """
+        From admin user delete anotehr user repo.
+        """
+        # Create a nother user with admin right
+        user_obj = self.app.userdb.add_user('anotheruser', 'password')
+        user_obj.user_root = self.app.testcases
+        user_obj.repos = ['testcases']
+        
+        self._delete('anotheruser/testcases', 'testcases', redirect='/admin/repos/')
+        self.assertStatus(303)
+        location = self.assertHeader('Location')
+        self.assertTrue(location.endswith('/admin/repos/'))
+        
+        # Check database update
+        self.assertEqual([], user_obj.repos)
 
 
 if __name__ == "__main__":

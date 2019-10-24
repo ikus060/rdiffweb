@@ -184,22 +184,22 @@ class UserManagerSQLiteTest(AppTestCase):
         self.assertEqual('jeff', users[0].username)
         self.assertEqual('josh', users[1].username)
         
-    def test_users_with_filter_admins(self):
+    def test_users_with_criteria_admins(self):
         self.assertEqual([], list(self.app.userdb.users()))
         self.app.userdb.add_user('annik').is_admin = True
         self.app.userdb.add_user('tom').is_admin = True
         self.app.userdb.add_user('jeff')
         self.app.userdb.add_user('josh')
-        users = list(self.app.userdb.users(filter='admins'))
+        users = list(self.app.userdb.users(criteria='admins'))
         self.assertEqual(2, len(users))
         self.assertEqual('annik', users[0].username)
         self.assertEqual('tom', users[1].username)
         
-    def test_users_with_filter_ldap(self):
+    def test_users_with_criteria_ldap(self):
         self.assertEqual([], list(self.app.userdb.users()))
         self.app.userdb.add_user('annik', 'coucou')
         self.app.userdb.add_user('tom')
-        users = list(self.app.userdb.users(filter='ldap'))
+        users = list(self.app.userdb.users(criteria='ldap'))
         self.assertEqual(1, len(users))
         self.assertEqual('tom', users[0].username)
         
@@ -227,6 +227,18 @@ class UserManagerSQLiteTest(AppTestCase):
         self.assertIsNone(self.app.userdb.login('josh', 'password'))
         # Check if listener called
         self.mlistener.user_logined.assert_not_called()
+
+    def test_repos(self):
+        self.assertEqual([], list(self.app.userdb.repos()))
+        user_obj = self.app.userdb.add_user('annik')
+        user_obj.repos = ['laptop', 'desktop']
+        user_obj = self.app.userdb.add_user('kim')
+        user_obj.repos = ['repo1']
+        
+        data = list(self.app.userdb.repos())
+        self.assertEqual(3, len(data))
+        self.assertEqual('annik', data[0].owner)
+        self.assertEqual('laptop', data[0].name)
 
     def test_search(self):
         """

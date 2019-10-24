@@ -1,0 +1,62 @@
+{% extends 'admin.html' %}
+{% block title %}{% trans %}User management{% endtrans %}{% endblock %}
+{% set admin_nav_active="repos" %}
+{% block content %}
+{% from 'include/empty.html' import empty %}
+{% from 'include/search.html' import search_bar %}
+{% from 'include/modal_dialog.html' import button_confirm, modal_confirm %}
+
+{% call search_bar(
+    search_placeholder=_('Search by name or path'),
+    criterias=[('',_('All')), ('ok', _('Healthy')), ('failed', _('Failed')), ('interrupted', _('Interrupted')), ('in_progress', _('In progress'))],
+    criteria=criteria,
+    search=search) %}
+{% endcall %}
+
+<div class="row">
+
+  <div class="col-md-12">
+      {% if repos %}
+        <div class="list-group">
+        {% for repo in repos %}
+			<div {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }}>
+			  <strong>
+			     <a href="{{ url_for('browse', repo) }}">
+			     {% if repo.status[0] != 'ok' %}<i class="icon-attention"></i>{% else %}<i class="icon-box"></i>{% endif %}
+			     {{ repo.display_name }}</a>
+			  </strong>
+			  <span class="pull-right">
+                <a class="btn btn-default" href="{{ url_for('settings', repo) }}" role="button">{% trans %}Settings{% endtrans %}</a>
+                {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", redirect=url_for('admin/repos'), url=url_for('settings', repo), action="delete", confirm=repo.display_name) }}
+              </span>
+			  {% if repo.status[0] != 'ok' %}
+			  <br/>{{ repo.status[1] }}
+			  {% endif %}
+			  <br/>
+			  {% trans %}Owner: {% endtrans %}{{repo.owner}}
+			  {% if repo.last_backup_date %}
+			  <br/>
+			  {% trans %}Last backup: {% endtrans %}
+              <time datetime="{{ repo.last_backup_date | datetime }}">{{ repo.last_backup_date | datetime }}</time>
+              {% endif %}
+			</div>
+        {% endfor %}
+        </div>
+      {% else %}
+      <p class="text-center">{% trans %}No repository found{% endtrans%}</p>
+      {% endif %}
+  </div>
+
+<!-- /.row -->
+</div>
+
+<!-- Delete Repo Modal -->
+{{ modal_confirm(
+    id='delete-repo-modal',
+    title=_('Confirmation required'),
+    message=_("You are about to permanently delete this repository. Deleted repository CANNOT be restored! Are you ABSOLUTELY sure?"),
+    fields=['redirect', 'action'],
+    submit=_('Delete'),
+    confirm_field='confirm') }}
+
+{% endblock %}
