@@ -228,6 +228,8 @@ class AdminPage(Controller):
             raise cherrypy.HTTPError(403)
         
         params = {
+            "version": self.app.version,
+            "plugins": self.app.plugins,
             # Config
             "cfg": {
                 k: '********' if 'password' in k else v
