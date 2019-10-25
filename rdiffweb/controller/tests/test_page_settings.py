@@ -59,6 +59,14 @@ class SettingsTest(WebCase):
         self.getPage("/settings/anotheruser/testcases")
         self.assertStatus('403 Forbidden')
         
+    def test_set_maxage(self):
+        self.getPage("/settings/" + self.REPO + "/", method="POST",
+            body={'maxage': '4'})
+        self.assertStatus(200)
+        # Check database update
+        repo_obj = self.app.userdb.get_user('admin').get_repo(self.REPO)
+        self.assertEqual(4, repo_obj.maxage)
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
