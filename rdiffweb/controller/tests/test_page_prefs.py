@@ -36,6 +36,8 @@ class PrefsTest(WebCase):
     login = True
 
     reset_app = True
+    
+    reset_testcases = True
 
     def _set_password(self, current, new_password, confirm):
         b = {'action': 'set_password',
@@ -47,10 +49,6 @@ class PrefsTest(WebCase):
     def _set_profile_info(self, email):
         b = {'action': 'set_profile_info',
              'email': email}
-        return self.getPage(self.PREFS, method='POST', body=b)
-
-    def _update_repos(self):
-        b = {'action': 'update_repos'}
         return self.getPage(self.PREFS, method='POST', body=b)
 
     def test_change_email(self):
@@ -96,8 +94,25 @@ class PrefsTest(WebCase):
         self.assertStatus(404)
 
     def test_update_repos(self):
-        self._update_repos()
+        
+        user_obj = self.app.userdb.get_user(self.USERNAME)
+        user_obj.repos = []
+        
+        self.getPage(self.PREFS, method='POST', body={'action': 'update_repos'})
+        self.assertStatus(200)
+        # Check database update.
         self.assertInBody("Repositories successfully updated.")
+        
+        self.assertEqual(2, len(user_obj.repos))
+        self.assertIn('testcases', user_obj.repos)
+        self.assertIn('broker-repo', user_obj.repos)
+        
+    def test_update_notification(self):
+        self.getPage("/prefs/notification/", method='POST', body={'action':'set_notification_info', 'testcases':'7'})
+        self.assertStatus(200)
+        # Check database update
+        repo_obj = self.app.userdb.get_user(self.USERNAME).get_repo(self.REPO)
+        self.assertEqual(7, repo_obj.maxage)
 
 
 if __name__ == "__main__":
