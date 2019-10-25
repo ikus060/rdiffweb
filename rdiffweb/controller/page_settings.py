@@ -89,10 +89,5 @@ class SettingsPage(Controller):
     def _remove_older(self, repo_obj, keepdays=None, **kwargs):
         validate_int(keepdays)
         # Update the database.
-        try:
-            repo_obj.keepdays = keepdays
-        except ValueError:
-            _logger.warning("invalid keepdays value %repo_obj", keepdays)
-            raise cherrypy.HTTPError(400, _("Invalid value"))            
-
+        repo_obj.keepdays = keepdays
         return _("Updated")
