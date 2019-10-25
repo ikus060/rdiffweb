@@ -53,8 +53,7 @@ def normpath(val):
 def split_path(path):
     "Split the given path into <username> / <path>"
     # First part is the username
-    if not path:
-        raise DoesNotExistError()
+    assert path
     if isinstance(path, str):
         path = encodefilename(path)
     path = path.strip(b'/')
