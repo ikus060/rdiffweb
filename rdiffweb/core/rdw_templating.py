@@ -215,14 +215,6 @@ class TemplateManager(object):
         self.jinja_env.globals['create_repo_tree'] = create_repo_tree
         self.jinja_env.globals['url_for'] = url_for
 
-    def add_templatesdir(self, templates_dir):
-        """
-        Add a new templates directory.
-        """
-        # Add a new template location to the list of loaders.
-        loaders = self.jinja_env.loader.loaders
-        loaders.append(FileSystemLoader(templates_dir))
-
     def compile_template(self, template_name, **kwargs):
         """Very simple implementation to render template using jinja2.
             `templateName`
@@ -237,12 +229,3 @@ class TemplateManager(object):
         data = template.render(kwargs)
         logger.log(1, "template [%s] compiled", template_name)
         return data
-
-    def get_template(self, template_name):
-        """
-        Return a reference to the given template identify by `template_name`.
-        This method is commonly used by plugins. If the `template_name` is not
-        found an error is raised.
-        """
-        # Simply use the jinja env to return reference to template.
-        return self.jinja_env.get_template(template_name)
