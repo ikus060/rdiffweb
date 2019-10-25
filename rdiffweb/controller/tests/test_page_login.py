@@ -38,7 +38,7 @@ class LoginPageTest(WebCase):
         """
         self.getPage('/')
         self.assertStatus('200 OK')
-        self.assertInBody('login')
+        self.assertInBody('Enter your username and password to log in.')
 
     def test_getpage_with_plaintext(self):
         """
@@ -46,7 +46,7 @@ class LoginPageTest(WebCase):
         """
         self.getPage('/', headers=[("Accept", "text/plain")])
         self.assertStatus('200 OK')
-        self.assertInBody('login')
+        self.assertInBody('Enter your username and password to log in.')
 
     def test_getpage_with_redirect_get(self):
         """
@@ -118,6 +118,14 @@ class LoginPageTest(WebCase):
         self.getPage('/login/', method='POST', body=b)
         self.assertStatus('200 OK')
         self.assertInBody('Invalid username or password.')
+
+    def test_getpage_admin(self):
+        """
+        Access to admin area without session should redirect to login page.
+        """
+        self.getPage('/admin/')
+        self.assertStatus('200 OK')
+        self.assertInBody('Enter your username and password to log in.')
 
     def test_getapi_without_authorization(self):
         """
