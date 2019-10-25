@@ -384,7 +384,7 @@ class RepoObject(RdiffRepo):
     def _set_encoding(self, value):
         """Change the repository encoding"""
         # Validate if the value is a valid encoding before updating the database.
-        codec = encodings.search_function(value)
+        codec = encodings.search_function(value.lower())
         if not codec:
             raise ValueError(_('invalid encoding %s') % value)
         

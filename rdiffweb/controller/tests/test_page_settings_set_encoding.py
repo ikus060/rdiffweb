@@ -70,6 +70,18 @@ class SetEncodingTest(WebCase):
         # Get back encoding.
         self._settings(self.REPO)
         self.assertInBody('selected value="cp1252"')
+        
+    def test_set_encoding_capital_case(self):
+        """
+        Check to update the encoding with US-ASCII.
+        """
+        self._set_encoding(self.REPO, 'US-ASCII')
+        self.assertStatus(200)
+        self.assertInBody("Updated")
+        self.assertEquals('ascii', self.app.userdb.get_user(self.USERNAME).get_repo(self.REPO).encoding)
+        # Get back encoding.
+        self._settings(self.REPO)
+        self.assertInBody('selected value="ascii"')
 
     def test_set_encoding_invalid(self):
         """
