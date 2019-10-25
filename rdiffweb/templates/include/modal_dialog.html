@@ -48,25 +48,27 @@
   {% trans %}This action can lead to data loss. To prevent accidental actions we ask you to confirm your intention.{% endtrans %}<br/>
   {% trans %}Please type <b id="{{id}}-confirm-placeholder"></b> to proceed or close this modal to cancel.{% endtrans %}
 </p>
-<input type="hidden" id="{{id}}-confirm-value" value="">
-<input class="form-control" name="confirm" type="text" value="" required>
+<input class="form-control" name="{{confirm_field}}" type="text" value="" required>
 {% endif %}
 {% endcall%}
 <script>
 $('#{{id}}').on('show.bs.modal', function (event) {
   var button = $(event.relatedTarget); // Button that triggered the modal
   var modal = $(this);
+  var url = button.data('url');
+  modal.find("form").attr('action', url);
+  
   // Extract info from data-* attributes
   {% for f in fields %}
   var value = button.data('{{f}}');
   modal.find(".modal-body input[name='{{f}}']").val(value);
   {% endfor %}
   {% if confirm_field %}
-  modal.find("#{{id}}-confirm-placeholder").text(value);
-  modal.find("#{{id}}-confirm-value").text(value);
+  var confirm_value = button.data('{{confirm_field}}');
+  modal.find("#{{id}}-confirm-placeholder").text(confirm_value);
   modal.find("form").validate({
     rules : {
-        confirm : { equalValue : value }
+        confirm : { equalValue : confirm_value }
     }
 });
   {% endif%}

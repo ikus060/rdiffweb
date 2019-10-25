@@ -15,6 +15,9 @@
     <li {% if admin_nav_active=="users"%}class="active"{% endif %}>
         <a href="{{ url_for('admin/users') }}">{% trans %}Users{% endtrans %}</a>
     </li>
+    <li {% if admin_nav_active=="repos"%}class="active"{% endif %}>
+        <a href="{{ url_for('admin/repos') }}">{% trans %}Repositories{% endtrans %}</a>
+    </li>
     <li {% if admin_nav_active=="logs"%}class="active"{% endif %}>
         <a href="{{ url_for('admin/logs') }}">{% trans %}Logs{% endtrans %}</a>
     </li>
@@ -40,7 +43,9 @@
     <div class="col-md-6">
         <div class="well">
           <h2 class="text-center">
+            <a href={{ url_for('admin/repos') }}>
             {% trans %}Repositories:{% endtrans %} {{ repo_count }}
+            </a>
           </h1>
         </div>
     </div>

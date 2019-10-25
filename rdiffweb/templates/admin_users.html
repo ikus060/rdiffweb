@@ -8,8 +8,8 @@
 
 {% call search_bar(
     search_placeholder=_('Search by name, email or username'),
-    filters=[('',_('All')), ('admins', _('Admins')), ('ldap', _('LDAP'))],
-    filter=filter,
+    criterias=[('',_('All')), ('admins', _('Admins')), ('ldap', _('LDAP'))],
+    criteria=criteria,
     search=search) %}
 <div class="pull-right">
     <button type="button" class="btn btn-success" data-toggle="modal"

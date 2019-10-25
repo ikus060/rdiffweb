@@ -152,25 +152,39 @@ class SQLiteUserDB():
         value = self._get_user_field(username, "IsAdmin")
         return self._bool(value)
 
-    def users(self, search=None, filter=None):
+    def users(self, search=None, criteria=None):
         """
         Return a list of username.
         """
+        query = "SELECT UserName FROM users"
+        args = ()
         if search:
             search = '%' + search.replace('%', '').replace('_', '') + '%'
-            query = "SELECT UserName FROM users WHERE Username LIKE ? OR UserEmail LIKE ?"
-            users = [x[0] for x in self._execute_query(query, (search, search,))]
-        else:
-            query = "SELECT UserName FROM users"
-            if filter:
-                if filter == 'admins':
-                    query += ' WHERE IsAdmin == 1'
-                elif filter == 'ldap':
-                    query += ' WHERE Password == ""'
-                else:
-                    return []
-            users = [x[0] for x in self._execute_query(query)]
-        return users
+            query += " WHERE Username LIKE ? OR UserEmail LIKE ?"
+            args = (search, search,)
+        if criteria:
+            query += ' AND' if search else ' WHERE'
+            if criteria == 'admins':
+                query += ' IsAdmin == 1'
+            elif criteria == 'ldap':
+                query += ' Password == ""'
+            else:
+                return
+        for x in self._execute_query(query, args):
+            yield x[0]
+
+    def repos(self, search=None, criteria=None):
+        """
+        Return list of repositories.
+        """
+        query = "SELECT UserName, RepoPath FROM users, repos WHERE repos.UserID = users.UserID"
+        args = ()
+        if search:
+            search = '%' + search.replace('%', '').replace('_', '') + '%'
+            query += " AND (RepoPath LIKE ? OR Username LIKE ? OR UserEmail LIKE ?)"
+            args = [search, search, search]
+        for x in self._execute_query(query, args):
+            yield x[0], x[1]
 
     def add_user(self, username, password=None):
         """

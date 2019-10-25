@@ -33,7 +33,6 @@ import zipfile
 from rdiffweb.controller.page_restore import _content_disposition
 from rdiffweb.test import WebCase, AppTestCase
 
-
 PY3 = sys.version_info[0] == 3
 
 
@@ -330,6 +329,25 @@ class RestoreTest(WebCase):
     def test_invalid_date(self):
         self._restore(self.REPO, "Revisions/Data/", "1415221a470", True)
         self.assertStatus(400)
+        
+    def test_as_another_user(self):
+        # Create a nother user with admin right
+        user_obj = self.app.userdb.add_user('anotheruser', 'password')
+        user_obj.user_root = self.app.testcases
+        user_obj.repos = ['testcases']
+        
+        self._restore("anotheruser/testcases", "Fichier%20%40%20%3Croot%3E/", "1414921853", True)
+        self.assertStatus('200 OK')
+        self.assertInBody("Ajout d'info")
+        
+        # Remove admin right
+        admin = self.app.userdb.get_user('admin')
+        admin.is_admin = 0
+        
+        # Browse admin's repos
+        self._restore("anotheruser/testcases", "Fichier%20%40%20%3Croot%3E/", "1414921853", True)
+        self.assertStatus('403 Forbidden')
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

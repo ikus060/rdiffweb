@@ -52,7 +52,7 @@ class APITest(WebCase):
         self.assertEqual(repo.get('last_backup_date'), '2016-02-02T16:30:40-05:00')
         self.assertEqual(repo.get('status'), 'ok')
         self.assertEqual(repo.get('display_name'), 'testcases')
-        self.assertEqual(repo.get('encoding'), 'utf_8')
+        self.assertEqual(repo.get('encoding'), 'utf-8')
         self.assertEqual(repo.get('name'), 'testcases')
         self.assertEqual(repo.get('maxage'), 0)
 

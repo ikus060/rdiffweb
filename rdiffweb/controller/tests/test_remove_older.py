@@ -102,6 +102,24 @@ class RemoveOlderTest(WebCase):
         with self.assertRaises(AssertionError):
             RemoveOlder(cherrypy.engine, self.app)._remove_older(user, repo, '30')
 
+    def test_as_another_user(self):
+        # Create a nother user with admin right
+        user_obj = self.app.userdb.add_user('anotheruser', 'password')
+        user_obj.user_root = self.app.testcases
+        user_obj.repos = ['testcases']
+        
+        self._remove_older('anotheruser/testcases', '1')
+        self.assertStatus('200 OK')
+        self.assertEquals(1, user_obj.get_repo('anotheruser/testcases').keepdays)
+        
+        # Remove admin right
+        admin = self.app.userdb.get_user('admin')
+        admin.is_admin = 0
+        
+        # Browse admin's repos
+        self._remove_older('anotheruser/testcases', '2')
+        self.assertStatus('403 Forbidden')
+
 
 class RemoveOlderTestWithMock(WebCase):
 

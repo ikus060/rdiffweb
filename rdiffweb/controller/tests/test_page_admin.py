@@ -90,7 +90,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
             self.assertNotInBody("/var/backups/")
             self.assertInBody("/tmp/")
             #  Check with filters
-            self.getPage("/admin/users/?filter=admins")
+            self.getPage("/admin/users/?criteria=admins")
             self.assertInBody("test2")
         finally:
             self._delete_user("test2")
@@ -114,7 +114,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
             self.assertNotInBody("/var/backups/")
             self.assertInBody("/tmp/")
             # Check with filter
-            self.getPage("/admin/users/?filter=admins")
+            self.getPage("/admin/users/?criteria=admins")
             self.assertInBody("Éric")
         finally:
             self._delete_user("Éric")
@@ -196,14 +196,14 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self._edit_user("test4", "test1@test.com", "test1", "/var/backups/", False)
         self.assertStatus(500)
 
-    def test_filter(self):
+    def test_criteria(self):
         """
-        Check if admin filter is working.
+        Check if admin criteria is working.
         """
-        self.getPage("/admin/users/?filter=admins")
+        self.getPage("/admin/users/?criteria=admins")
         self.assertNotInBody("test1")
 
-    def test_usersearch(self):
+    def test_search(self):
         """
         Check if user search is working.
         """
@@ -245,11 +245,18 @@ class AdminUsersAsUserTest(AbstractAdminTest):
         self._edit_user("test", "test1@test.com", "test", "/var/invalid/", False)
         self.assertStatus(403)
 
-    def test_list(self):
+    def test_users(self):
         """
         Check if listing user is forbidden.
         """
-        self.getPage("/admin/users/")
+        self.getPage("/admin/users")
+        self.assertStatus(403)
+        
+    def test_repos(self):
+        """
+        Check if listing user is forbidden.
+        """
+        self.getPage("/admin/repos")
         self.assertStatus(403)
 
 
@@ -290,6 +297,41 @@ class AdminLogsTest(WebCase):
         self.assertInBody("Error getting file content")
 
 
+class AdminReposTest(WebCase):
+
+    login = True
+    
+    reset_testcases = True
+    
+    def test_repos(self):
+        self.getPage("/admin/repos")
+        self.assertStatus(200)
+        
+    def test_repos_with_search(self):
+        # Search something that exists
+        self.getPage("/admin/repos?search=test")
+        self.assertStatus(200)
+        self.assertInBody(self.REPO)
+        
+        # Search something that doesn't exists
+        self.getPage("/admin/repos?search=coucou")
+        self.assertStatus(200)
+        self.assertNotInBody(self.REPO)
+        self.assertInBody("No repository found")
+        
+    def test_repos_with_criteria(self):
+        # Search something that exists
+        self.getPage("/admin/repos?criteria=ok")
+        self.assertStatus(200)
+        self.assertInBody(self.REPO)
+
+        # Search something that exists
+        self.getPage("/admin/repos?criteria=failed")
+        self.assertStatus(200)
+        self.assertNotInBody(self.REPO)
+        self.assertInBody("No repository found")
+        
+
 class AdminSysinfoTest(WebCase):
 
     login = True
@@ -299,6 +341,7 @@ class AdminSysinfoTest(WebCase):
         self.assertStatus(200)
         self.assertInBody("Operating System Info")
         self.assertInBody("Python Info")
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

@@ -24,6 +24,7 @@ import logging
 import os
 from rdiffweb.controller import Controller
 from rdiffweb.controller import filter_authentication  # @UnusedImport
+from rdiffweb.controller import filter_authorization  # @UnusedImport
 from rdiffweb.controller.api import ApiPage
 from rdiffweb.controller.dispatch import static, empty  # @UnusedImport
 from rdiffweb.controller.page_admin import AdminPage
@@ -179,8 +180,10 @@ class RdiffwebApp(Application):
         """
         code = 500
         t = sys.exc_info()[0]
-        if t in [AccessDeniedError, DoesNotExistError]:
+        if t == DoesNotExistError:
             code = 404
+        elif t == AccessDeniedError:
+            code = 403
         cherrypy.HTTPError(code).set_response()
 
     @property

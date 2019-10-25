@@ -277,7 +277,7 @@ class RdiffRepoTest(unittest.TestCase):
         self.assertTrue(len(dir_entry.change_dates) > 1)
 
     def test_get_path_rdiff_backup_data(self):
-        with self.assertRaises(AccessDeniedError):
+        with self.assertRaises(DoesNotExistError):
             self.repo.get_path(b'rdiff-backup-data')
 
     def test_get_path_invalid(self):

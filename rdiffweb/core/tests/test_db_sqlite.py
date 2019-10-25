@@ -107,7 +107,7 @@ class SQLiteUserDBTest(AppTestCase):
     def test_get_invalid_user(self):
         with self.assertRaises(AssertionError):
             self.db.get_email('invalid')
-        self.assertEqual([],self.db.get_repos('invalid'))
+        self.assertEqual([], self.db.get_repos('invalid'))
         with self.assertRaises(AssertionError):
             self.db.get_user_root('invalid')
 
@@ -124,6 +124,30 @@ class SQLiteUserDBTest(AppTestCase):
         users = list(self.db.users(search='k'))
         self.assertEqual(2, len(users))
         self.assertEqual(['annik', 'kim'], users)
+
+    def test_repos(self):
+        self.app.userdb.add_user('kim')
+        self.db.set_repos("kim", ['repo1', 'repo2'])
+        repos = list(self.db.repos())
+        self.assertEqual(2, len(repos))
+        self.assertEqual(('kim', 'repo1'), repos[0])
+        self.assertEqual(('kim', 'repo2'), repos[1])
+
+    def test_repos_with_search(self):
+        self.app.userdb.add_user('annik')
+        self.db.set_repos("annik", ['coucou1', 'repo1'])
+        self.app.userdb.add_user('kim')
+        self.db.set_repos("kim", ['coucou2', 'repo2'])
+        # Search in repo name
+        repos = list(self.db.repos(search='cou'))
+        self.assertEqual(2, len(repos))
+        self.assertEqual(('annik', 'coucou1'), repos[0])
+        self.assertEqual(('kim', 'coucou2'), repos[1])
+        # Search in username
+        repos = list(self.db.repos(search='annik'))
+        self.assertEqual(2, len(repos))
+        self.assertEqual(('annik', 'coucou1'), repos[0])
+        self.assertEqual(('annik', 'repo1'), repos[1])
 
     def test_set_invalid_user(self):
         with self.assertRaises(AssertionError):

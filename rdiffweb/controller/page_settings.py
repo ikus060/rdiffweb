@@ -42,31 +42,32 @@ class SettingsPage(Controller):
             return self._remove_older(repo_obj, **kwargs)
         elif kwargs.get('new_encoding'):
             return self._set_encoding(repo_obj, **kwargs)
+        elif kwargs.get('maxage'):
+            return self._set_maxage(repo_obj, **kwargs)
         # Get page data.
         params = {
             'repo': repo_obj,
-            'current_encoding': repo_obj.encoding,
             'keepdays': repo_obj.keepdays,
         }
         # Generate page.
         return self._compile_template("settings.html", **params)
     
-    def _delete(self, repo_obj, **kwargs):
+    def _delete(self, repo_obj, confirm=None, redirect='/', **kwargs):
         """
         Delete the repository.
         """
         # Validate the name
-        confirm = kwargs.get('confirm', None)
+        validate(confirm)
         if confirm != repo_obj.display_name:
-            _logger.info("bad confirmation %r != %r", confirm, repo_obj.display_name)
+            _logger.debug("do not delete repo, bad confirmation %r != %r", confirm, repo_obj.display_name)
             raise cherrypy.HTTPError(400)
 
         # Refresh repository list
         repo_obj.delete()
 
-        raise cherrypy.HTTPRedirect("/")
+        raise cherrypy.HTTPRedirect(redirect)
 
-    def _set_encoding(self, repo_obj, new_encoding=None):
+    def _set_encoding(self, repo_obj, new_encoding=None, **kwargs):
         """
         Update repository encoding via Ajax.
         """
@@ -76,8 +77,16 @@ class SettingsPage(Controller):
         except ValueError:
             raise cherrypy.HTTPError(400, _("invalid encoding value"))
         return _("Updated")
+    
+    def _set_maxage(self, repo_obj, maxage=None, **kwargs):
+        """
+        Update repository maxage via Ajax.
+        """
+        validate_int(maxage)
+        repo_obj.maxage = maxage
+        return _("Updated")
 
-    def _remove_older(self, repo_obj, keepdays=None):
+    def _remove_older(self, repo_obj, keepdays=None, **kwargs):
         validate_int(keepdays)
         # Update the database.
         try:

@@ -1,6 +1,7 @@
 {% extends 'layout_repo.html' %}
 {% from 'include/panel.html' import panel %}
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
+{% from 'include/widget.html' import maxage_dropdown, encoding_dropdown %}
 {% set active_page='repo' %}
 {% set active_repo_page='settings' %}
 {% block title %}{% trans %}Settings{% endtrans %}{% endblock %}
@@ -8,45 +9,19 @@
 
 <div class="spacer"></div>
 
-{% set encodings = [
-    "ascii", "big5", "big5hkscs", "cp037", "cp424", "cp437",
-    "cp500", "cp720", "cp737", "cp775", "cp850", "cp852", "cp855",
-    "cp856", "cp857", "cp858", "cp860", "cp861", "cp862", "cp863",
-    "cp864", "cp865", "cp866", "cp869", "cp874", "cp875", "cp932",
-    "cp949", "cp950", "cp1006", "cp1026", "cp1140", "cp1250",
-    "cp1251", "cp1252", "cp1253", "cp1254", "cp1255", "cp1256",
-    "cp1257", "cp1258", "euc_jp", "euc_jis_2004", "euc_jisx0213",
-    "euc_kr", "gb2312", "gbk", "gb18030", "hz", "iso2022_jp",
-    "iso2022_jp_1", "iso2022_jp_2", "iso2022_jp_2004",
-    "iso2022_jp_3", "iso2022_jp_ext", "iso2022_kr", "latin_1",
-    "iso8859_2", "iso8859_3", "iso8859_4", "iso8859_5",
-    "iso8859_6", "iso8859_7", "iso8859_8", "iso8859_9",
-    "iso8859_10", "iso8859_13", "iso8859_14", "iso8859_15",
-    "iso8859_16", "johab", "koi8_r", "koi8_u", "mac_cyrillic",
-    "mac_greek", "mac_iceland", "mac_latin2", "mac_roman",
-    "mac_turkish", "ptcp154", "shift_jis", "shift_jis_2004",
-    "shift_jisx0213", "utf_32", "utf_32_be", "utf_32_le",
-    "utf_16", "utf_16_be", "utf_16_le", "utf_7", "utf_8",
-    "utf_8_sig"]%}
-
 <!-- Panel to set user info. -->
 {% call panel(title=_("Character encoding"), class='default') %}
 <div class="panel-body">
   <form action="{{ url_for('settings', repo) }}" method="POST" role="form" class="clearfix" data-async data-target="#new-encoding-status">
-    <div class="form-group">
-        <label for="encoding" class="control-label">
-            {% trans %}Encoding{% endtrans %}</label>
-        <select class="form-control" name="new_encoding" id="new_encoding">
-          {% for encoding in encodings %}
-          <option {{ attrib(selected=(current_encoding == encoding), value=encoding) }}>{{ encoding }}</option>
-          {% endfor %}
-        </select>
-    </div>
     <span class="help-block">
         {% trans %}This value may need to be changed if your files are not displayed with the right characters. This is very common for non-english speaker.{% endtrans %}
     </span>
+    <div class="form-group">
+        <label for="encoding" class="control-label sr-only">{% trans %}Encoding{% endtrans %}</label>
+        {{ encoding_dropdown(class="form-control", name="new_encoding", id="new_encoding", value=repo.encoding) }}
+    </div>
     <div>
-        <button type="submit" class="btn btn-default">{% trans %}Save changes{% endtrans %}</button>
+        <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
         <span id="new-encoding-status"></span>
     </div>
   </form>
@@ -57,9 +32,11 @@
 {% call panel(title=_("Remove older"), class='default') %}
 <div class="panel-body">
   <form data-async data-target="#keepdays-status" action="{{ url_for('settings', repo) }}" method="POST" role="form">
+  <span class="help-block">
+     {% trans %}You can parameterize the storage time of earlier versions for each repository. Changing this value may free up disk space.{% endtrans %}
+  </span>
   <div class="form-group">
-    <label for="encoding" class="control-label">
-        {% trans %}Keep history for:{% endtrans %}</label>
+    <label for="encoding" class="control-label sr-only">{% trans %}Keep history for:{% endtrans %}</label>
     <select class="form-control" name="keepdays">
       {% set remove_older_values = [
             (-1, _("Forever")),
@@ -94,12 +71,28 @@
       {% endfor %}
     </select>
   </div>
-  <span class="help-block">
-     {% trans %}You can parameterize the storage time of earlier versions for each repository. Changing this value may free up disk space.{% endtrans %}
-  </span>
   <div>
-     <button type="submit" class="btn btn-default">{% trans %}Save changes{% endtrans %}</button>
+     <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
      <span id="keepdays-status"></span>
+  </div>
+  </form>
+</div>
+{% endcall %}
+
+<!-- Delete repo. -->
+{% call panel(title=_("Notification"), class='default') %}
+<div class="panel-body">
+  <form data-async data-target="#maxage-status" action="{{ url_for('settings', repo) }}" method="POST" role="form">
+  <span class="help-block">
+     {% trans %}An email notification will be sent if backup is inactive for the given period of time.{% endtrans %}
+  </span>
+  <div class="form-group">
+    <label for="maxage" class="control-label sr-only">{% trans %}Notify after{% endtrans %}</label>
+    {{ maxage_dropdown(class="form-control", name="maxage", value=repo.maxage)}}
+  </div>
+  <div>
+     <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
+     <span id="maxage-status"></span>
   </div>
   </form>
 </div>
@@ -113,7 +106,7 @@
      <b>{% trans %}Removed repository cannot be restored!{% endtrans %}</b>
   </span>
   <div>
-     {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", action="delete", repo_name=repo.display_name) }}
+     {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", action="delete", confirm=repo.display_name) }}
   </div>
 </div>
 {% endcall %}
@@ -123,8 +116,8 @@
     id='delete-repo-modal',
     title=_('Confirmation required'),
     message=_("You are about to permanently delete this repository. Deleted repository CANNOT be restored! Are you ABSOLUTELY sure?"),
-    fields=['action', 'repo_name'],
+    fields=['action'],
     submit=_('Delete'),
-    confirm_field='repo_name') }}
+    confirm_field='confirm') }}
 
 {% endblock %}

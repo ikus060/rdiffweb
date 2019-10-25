@@ -57,6 +57,24 @@ class HistoryPageTest(WebCase):
         self._history(self.REPO, 50)
         self.assertNotInBody("Show more")
 
+    def test_as_another_user(self):
+        # Create a nother user with admin right
+        user_obj = self.app.userdb.add_user('anotheruser', 'password')
+        user_obj.user_root = self.app.testcases
+        user_obj.repos = ['testcases']
+        
+        self.getPage("/history/anotheruser/testcases")
+        self.assertStatus('200 OK')
+        
+        # Remove admin right
+        admin = self.app.userdb.get_user('admin')
+        admin.is_admin = 0
+        
+        # Browse admin's repos
+        self.getPage("/history/anotheruser/testcases")
+        self.assertStatus('403 Forbidden')
+
+
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     logging.basicConfig(level=logging.DEBUG)

@@ -36,12 +36,28 @@ class SettingsTest(WebCase):
 
     reset_testcases = True
 
-    def _settings(self, repo):
-        self.getPage("/settings/" + repo + "/")
-
     def test_page(self):
-        self._settings(self.REPO)
+        self.getPage("/settings/" + self.REPO)
+        self.assertInBody("Character encoding")
         self.assertStatus(200)
+        
+    def test_as_another_user(self):
+        # Create a nother user with admin right
+        user_obj = self.app.userdb.add_user('anotheruser', 'password')
+        user_obj.user_root = self.app.testcases
+        user_obj.repos = ['testcases']
+        
+        self.getPage("/settings/anotheruser/testcases")
+        self.assertInBody("Character encoding")
+        self.assertStatus('200 OK')
+        
+        # Remove admin right
+        admin = self.app.userdb.get_user('admin')
+        admin.is_admin = 0
+        
+        # Browse admin's repos
+        self.getPage("/settings/anotheruser/testcases")
+        self.assertStatus('403 Forbidden')
         
 
 if __name__ == "__main__":

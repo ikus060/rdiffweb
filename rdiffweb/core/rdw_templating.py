@@ -153,10 +153,10 @@ def url_for(endpoint, *args, **kwargs):
     for chunk in args:
         if not chunk:
             continue
-        if hasattr(chunk, 'user') and hasattr(chunk, 'path'):
+        if hasattr(chunk, 'owner') and hasattr(chunk, 'path'):
             # This is a RepoObject
             url += "/"
-            url += chunk.user.username
+            url += chunk.owner
             url += "/"
             url += rdw_helpers.quote_url(chunk.path.strip(b"/"))
         elif hasattr(chunk, 'path'):
