@@ -336,9 +336,6 @@ class RepoObject(RdiffRepo):
     def __str__(self):
         return 'RepoObject[%s, %s]' % (self._username, self._repo)
 
-    def __repr__(self):
-        return 'RepoObject(%r, %r)' % (self._user_obj, self._repo)
-
     def _set_attr(self, key, value):
         """Used to define an attribute to the repository."""
         self._set_attrs(**{key: value})
