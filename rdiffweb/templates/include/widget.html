@@ -1,7 +1,7 @@
 {# Dropdown select for notification #}
 {% macro maxage_dropdown(value=-1) -%}
   <select {{ attrib(**kwargs) }}>
-    <option value="-1" {{ attrib(selected=value == -1) }}>{% trans %}disabled{% endtrans %}</option>
+    <option value="0" {{ attrib(selected=value == 0) }}>{% trans %}disabled{% endtrans %}</option>
     <option value="1" {{ attrib(selected=value == 1) }}>{% trans %}1 day{% endtrans %}</option>
     <option value="2"  {{ attrib(selected=value == 2) }}>{% trans %}2 days{% endtrans %}</option>
     <option value="3"  {{ attrib(selected=value == 3) }}>{% trans %}3 days{% endtrans %}</option>

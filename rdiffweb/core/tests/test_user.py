@@ -643,6 +643,17 @@ class UserObjectTest(AppTestCase):
         self.assertEquals(["testcases"], userobj.repos)
         self.assertEqual(1, len(userobj.repo_objs))
         self.assertEqual("testcases", userobj.repo_objs[0].name)
+        
+        # Make sure we get a repo
+        repo_obj = userobj.get_repo('admin/testcases')
+        self.assertEquals("testcases", repo_obj.name)
+        repo_obj.maxage = 10
+        self.assertEquals(10, repo_obj.maxage)
+        
+        # Make sure we get a repo_path
+        repo_obj, path_obj = userobj.get_repo_path('admin/testcases')
+        repo_obj.maxage = 7
+        self.assertEquals(7, repo_obj.maxage)
 
 
 class RepoObjectTest(AppTestCase):

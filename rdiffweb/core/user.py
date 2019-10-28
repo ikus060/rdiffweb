@@ -146,7 +146,7 @@ class UserObject(object):
             raise AccessDeniedError(name)
             
         name = normpath(name)
-        for r in self._get_repos(username):
+        for r in self._db.get_repos(username):
             if name == normpath(encodefilename(r)):
                 user_obj = self if username == self._username else UserObject(self._userdb, self._db, username)
                 return RepoObject(user_obj, r)
@@ -163,7 +163,7 @@ class UserObject(object):
             raise AccessDeniedError(path)
             
         path = normpath(path)
-        for r in self._get_repos(username):
+        for r in self._db.get_repos(username):
             repo = normpath(encodefilename(r))
             if path.startswith(repo):     
                 user_obj = self if username == self._username else UserObject(self._userdb, self._db, username)
@@ -171,10 +171,6 @@ class UserObject(object):
                 path_obj = repo_obj.get_path(path[len(repo):])
                 return (repo_obj, path_obj)
         raise DoesNotExistError(path)
-
-    def _get_repos(self, username=None):
-        """Return list of repository name."""
-        return [r.strip('/') for r in self._db.get_repos(username or self._username)]
 
     @property
     def is_ldap(self):
@@ -310,9 +306,9 @@ class UserObject(object):
     is_admin = property(fget=lambda x: x._db.is_admin(x._username), fset=lambda x, y: x.set_attr('is_admin', y))
     email = property(fget=lambda x: x._db.get_email(x._username), fset=lambda x, y: x.set_attr('email', y))
     user_root = property(fget=lambda x: x._db.get_user_root(x._username), fset=lambda x, y: x.set_attr('user_root', y))
-    repos = property(_get_repos, fset=lambda x, y: x.set_attr('repos', y))
+    repos = property(fget=lambda x: [r.strip('/') for r in x._db.get_repos(x._username)], fset=lambda x, y: x.set_attr('repos', y))
     authorizedkeys = property(fget=lambda x: x.get_authorizedkeys())
-    repo_objs = property(fget=lambda x: [RepoObject(x, name) for name in x.repos])
+    repo_objs = property(fget=lambda x: [RepoObject(x, r) for r in x._db.get_repos(x._username)])
     disk_quota = property(get_disk_quota, set_disk_quota)
     
 
@@ -352,7 +348,7 @@ class RepoObject(RdiffRepo):
 
     @property
     def name(self):
-        return self._repo
+        return self._repo.strip('/')
     
     @property
     def owner(self):
@@ -411,12 +407,13 @@ class UserManager():
     TRAC account manager class.
     """
     
+    _db_file = Option("SQLiteDBFile", "/etc/rdiffweb/rdw.db")
     _allow_add_user = BoolOption("AddMissingUser", False)
     _admin_user = Option("AdminUser", "admin")
 
     def __init__(self, app):
         self.app = app
-        self._database = SQLiteUserDB(app)
+        self._database = SQLiteUserDB(self._db_file)
         self._password_stores = [LdapPasswordStore(app)]
         self._change_listeners = []
         
