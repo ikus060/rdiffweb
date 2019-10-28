@@ -19,6 +19,7 @@
 from __future__ import print_function
 
 import sys
+from distutils.errors import DistutilsExecError
 PY2 = sys.version_info[0] == 2
 
 # Check running python version.
@@ -139,7 +140,10 @@ class build_less(Command):
                 destination = os.path.join(self.output_dir, os.path.basename(destination))
             args.append(destination)
             # Execute command line.
-            subprocess.call(args)
+            try:
+                subprocess.check_call(args)
+            except:
+                raise DistutilsExecError('fail to compile .less files into ' + f)
 
 
 class build(build_):
@@ -172,7 +176,6 @@ else:
         "babel>=0.9.6",
         "python-ldap",
     ]
-
 
 long_description_content_type = long_description = None
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as f:

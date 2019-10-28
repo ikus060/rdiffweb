@@ -216,11 +216,6 @@ class AdminPage(Controller):
         return self._compile_template("admin_repos.html", **params)
 
     @cherrypy.expose
-    def repos_edit(self):
-        params = {}
-        return self._compile_template("admin_repo_edit.html", **params)        
-
-    @cherrypy.expose
     def sysinfo(self):
         
         params = {

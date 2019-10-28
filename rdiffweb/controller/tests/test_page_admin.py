@@ -295,6 +295,13 @@ class AdminLogsTest(WebCase):
         self.assertStatus(200)
         self.assertInBody("rdiffweb.log")
         self.assertInBody("Error getting file content")
+        
+    def test_logs_with_invalid_file(self):
+        self.app.cfg['logfile'] = './rdiffweb.log'
+        self.app.cfg['logaccessfile'] = './rdiffweb-access.log'
+        
+        self.getPage("/admin/logs/invalid")
+        self.assertStatus(404)
 
 
 class AdminReposTest(WebCase):

@@ -53,8 +53,7 @@ def normpath(val):
 def split_path(path):
     "Split the given path into <username> / <path>"
     # First part is the username
-    if not path:
-        raise DoesNotExistError()
+    assert path
     if isinstance(path, str):
         path = encodefilename(path)
     path = path.strip(b'/')
@@ -337,9 +336,6 @@ class RepoObject(RdiffRepo):
     def __str__(self):
         return 'RepoObject[%s, %s]' % (self._username, self._repo)
 
-    def __repr__(self):
-        return 'RepoObject(%r, %r)' % (self._user_obj, self._repo)
-
     def _set_attr(self, key, value):
         """Used to define an attribute to the repository."""
         self._set_attrs(**{key: value})
@@ -388,7 +384,7 @@ class RepoObject(RdiffRepo):
     def _set_encoding(self, value):
         """Change the repository encoding"""
         # Validate if the value is a valid encoding before updating the database.
-        codec = encodings.search_function(value)
+        codec = encodings.search_function(value.lower())
         if not codec:
             raise ValueError(_('invalid encoding %s') % value)
         

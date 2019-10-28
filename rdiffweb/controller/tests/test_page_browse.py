@@ -191,6 +191,10 @@ class BrowsePageTest(WebCase):
         self._browse("invalid/", "")
         self.assertStatus(404)
         self.assertInBody("Not Found")
+        
+        self._browse("admin/invalid/", "")
+        self.assertStatus(404)
+        self.assertInBody("Not Found")
 
     def test_invalid_path(self):
         """

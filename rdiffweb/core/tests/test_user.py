@@ -203,6 +203,13 @@ class UserManagerSQLiteTest(AppTestCase):
         self.assertEqual(1, len(users))
         self.assertEqual('tom', users[0].username)
         
+    def test_users_with_criteria_invalid(self):
+        self.assertEqual([], list(self.app.userdb.users()))
+        self.app.userdb.add_user('annik', 'coucou')
+        self.app.userdb.add_user('tom')
+        users = list(self.app.userdb.users(criteria='invalid'))
+        self.assertEqual(0, len(users))
+        
     def test_login(self):
         """Check if login work"""
         userobj = self.app.userdb.add_user('tom', 'password')
