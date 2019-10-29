@@ -30,7 +30,6 @@ from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core import librdiff
 from rdiffweb.core import rdw_helpers
 
-
 # Define the logger
 logger = logging.getLogger(__name__)
 
@@ -108,9 +107,7 @@ class StatusPage(Controller):
                     {"is_success": False,
                      "date": date,
                      "repoErrors": [],
-                     "backups": [],
-                     "repo_path": job["repo_path"],
-                     "repo_name": job["repo_name"]})
+                     "backups": []})
                 userMessages.append(job)
 
         # generate success messages (publish date is most recent backup date)
