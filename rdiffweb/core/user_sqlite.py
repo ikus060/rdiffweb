@@ -27,7 +27,6 @@ import logging
 from threading import RLock
 
 from rdiffweb.core import RdiffError
-from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 
 try:
@@ -50,17 +49,14 @@ logger = logging.getLogger(__name__)
 
 class SQLiteUserDB():
 
-    _db_file = Option("SQLiteDBFile", "/etc/rdiffweb/rdw.db")
-
     def _bool(self, val):
         return str(val).lower() in ['true', '1']
 
-    def __init__(self, app):
+    def __init__(self, db_file):
         """
         Called by the plugin manager to setup the plugin.
         """
-        self.app = app
-
+        self._db_file = db_file
         # Declare a lock.
         self.create_tables_lock = RLock()
         self._create_or_update()
@@ -119,13 +115,10 @@ class SQLiteUserDB():
         """
         assert isinstance(repo_path, str)
         query = "SELECT %s FROM repos WHERE RepoPath=? AND UserID = ?" % (key,)
-        try:
-            results = self._execute_query(query, (repo_path, self._get_user_id(username)))
-            if len(results) == 0 or not results[0][0]:
-                return default
-            return results[0][0]
-        except:
+        results = self._execute_query(query, (repo_path, self._get_user_id(username)))
+        if len(results) == 0 or not results[0][0]:
             return default
+        return results[0][0]
 
     def get_email(self, username):
         assert isinstance(username, str)
@@ -228,7 +221,7 @@ class SQLiteUserDB():
     def set_is_admin(self, username, is_admin):
         assert isinstance(username, str)
         assert self.exists(username), "user [%s] doesn't exists" % username
-        self._execute_query(
+        assert self._execute_query(
             "UPDATE users SET IsAdmin = ? WHERE Username = ?",
             (bool(is_admin), username))
 
@@ -283,7 +276,7 @@ class SQLiteUserDB():
 
         # Update field.
         query = "UPDATE repos SET %s=? WHERE RepoPath=? AND UserID = ?" % (key,)
-        self._execute_query(query, (value, repo_path, self._get_user_id(username)))
+        assert self._execute_query(query, (value, repo_path, self._get_user_id(username)))
 
     def set_user_root(self, username, user_root):
         assert isinstance(username, str)
@@ -310,7 +303,7 @@ class SQLiteUserDB():
             else:
                 value = '0'
         query = 'UPDATE users SET ' + fieldname + '=? WHERE Username=?'
-        self._execute_query(query, (value, username))
+        assert self._execute_query(query, (value, username))
 
     def _hash_password(self, password):
         # At this point the password should be unicode. We converted it into
@@ -324,12 +317,19 @@ class SQLiteUserDB():
         return value
 
     def _execute_query(self, query, args=()):
+        """
+        Execute the query and return the rows for a SELECT statement. Otherwise
+        return the number of row affected for an UPDATE or DELETE statement.
+        """
         assert isinstance(query, str)
         conn = self._connect()
         try:
             cursor = conn.cursor()
             cursor.execute(query, args)
-            results = cursor.fetchall()
+            if query.startswith("UPDATE"):
+                results = cursor.rowcount
+            else:
+                results = cursor.fetchall()
         finally:
             conn.close()
         return results

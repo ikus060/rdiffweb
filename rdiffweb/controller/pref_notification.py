@@ -22,12 +22,9 @@ User can control the notification period.
 from __future__ import unicode_literals
 
 import logging
-from rdiffweb.controller import Controller
-from rdiffweb.core import RdiffError, RdiffWarning
-from rdiffweb.core.i18n import ugettext as _
 
-from builtins import str
-import cherrypy
+from rdiffweb.controller import Controller, validate_int
+from rdiffweb.core.i18n import ugettext as _
 
 _logger = logging.getLogger(__name__)
 
@@ -44,39 +41,18 @@ class NotificationPref(Controller):
         for repo in self.app.currentuser.repo_objs:
             # Get value received for the repo.
             value = kwargs.get(repo.name, None)
-            if value is None:
-                continue
-            try:
-                value = int(value)
-            except:
-                continue
-            # Update the maxage
-            repo.maxage = value
+            if value:
+                # Update the maxage
+                repo.maxage = validate_int(value)
 
-    def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
+    def render_prefs_panel(self, panelid, action=None, **kwargs):  # @UnusedVariable
         # Process the parameters.
-        params = dict()
-        action = kwargs.get('action')
-        if action:
-            try:
-                if action == "set_notification_info":
-                    self._handle_set_notification_info(**kwargs)
-                else:
-                    _logger.info("unknown action: %s", action)
-                    raise cherrypy.NotFound("Unknown action")
-            except RdiffWarning as e:
-                params['warning'] = str(e)
-            except RdiffError as e:
-                params['error'] = str(e)
-            except Exception as e:
-                _logger.warning("unknown error processing action", exc_info=True)
-                params['error'] = _("Unknown error")
+        if action == "set_notification_info":
+            self._handle_set_notification_info(**kwargs)
 
-        params.update({
+        params = {
             'email': self.app.currentuser.email,
-            'repos': [
-                {'name': r.name, 'maxage': r.maxage}
-                for r in self.app.currentuser.repo_objs],
-        })
+            'repos': self.app.currentuser.repo_objs,
+        }
         return "prefs_notification.html", params
 
