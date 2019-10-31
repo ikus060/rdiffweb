@@ -208,6 +208,13 @@ class SQLiteUserDB():
         self._execute_query("DELETE FROM sshkeys WHERE UserID=?", (user_id,))
         self._execute_query("DELETE FROM users WHERE UserID = ?", (user_id,))
 
+    def delete_repo(self, username, repo):
+        # Query user
+        user_id = self._get_user_id(username)
+        assert user_id, "user [%s] doesn't exists" % username
+        assert self._execute_query(
+            "DELETE FROM repos WHERE UserID= ? AND RepoPath = ?", (user_id, repo))
+
     def remove_authorizedkey(self, username, fingerprint):
         assert isinstance(username, str)
         assert fingerprint
@@ -326,10 +333,11 @@ class SQLiteUserDB():
         try:
             cursor = conn.cursor()
             cursor.execute(query, args)
-            if query.startswith("UPDATE"):
-                results = cursor.rowcount
-            else:
+            # We want to return either the rowcount or the list or record.
+            if cursor.rowcount < 0:
                 results = cursor.fetchall()
+            else:
+                results = cursor.rowcount
         finally:
             conn.close()
         return results
@@ -408,4 +416,4 @@ UserID int(11) NOT NULL)""")
     def _get_tables(self):
         return [
             column[0] for column in
-            self._execute_query('select name from sqlite_master where type="table"')]
+            self._execute_query('SELECT name FROM sqlite_master WHERE type="table"')]

@@ -56,6 +56,12 @@ class DeleteRepoTest(WebCase):
         self.assertStatus(303)
         self.assertEqual([], self.app.userdb.get_user('admin').repos)
 
+    def test_delete_with_slash(self):
+        self.app.userdb.get_user('admin').repos = ['/testcases']
+        self._delete(self.REPO, 'testcases')
+        self.assertStatus(303)
+        self.assertEqual([], self.app.userdb.get_user('admin').repos)
+
     def test_delete_wrong_confirm(self):
         """
         Check failure to delete a repo with wrong confirmation.

@@ -390,11 +390,9 @@ class RepoObject(RdiffRepo):
 
     def delete(self):
         """Properly remove the given repository by updating the user's repositories."""
-        repos = self._user_obj.repos
-        repos.remove(self._repo)
         logger.info("deleting repository %s", self)
-        RdiffRepo.delete(self)
-        self._user_obj.repos = repos
+        self._user_obj._db.delete_repo(self._user_obj._username, self._repo)
+        RdiffRepo.delete(self)        
 
     encoding = property(lambda x: x._encoding.name, _set_encoding)
     maxage = property(fget=lambda x: int(x._get_attr('maxage', default='0')), fset=lambda x, y: x._set_attr('maxage', int(y)))
