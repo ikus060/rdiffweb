@@ -75,6 +75,28 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
 
 # Changelog
 
+## 1.1.0 (2019-10-31)
+
+This release focus on improving the admin area and building the fundation for repository access control list (ACL).
+
+ * Update documentation from PDSL web site
+ * Improve the navigation bar layout
+ * Update the login page headline
+ * Update jinja2 version to allow 2.10.x
+ * Show server log in admin area
+ * Reduce code smell
+ * Add System information in admin area
+ * Validate credential using local database before LDAP
+ * Reffactoring templates macros
+ * Enhance user's view search bar
+ * Change repository URL to username/repopath
+ * Add System information in admin area
+ * Improve testcases
+ * Clean-up obsolete code
+ * Fix issue with captital case encoding name
+ * Fix compilation of less files
+ * Fix google font import
+
 ## 1.0.3 (2019-10-04)
  * Removing the auto update repos
 
