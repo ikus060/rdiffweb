@@ -63,10 +63,8 @@ class PrefsGeneralPanelProvider(Controller):
             return {'error': _("The new password and its confirmation do not match.")}
 
         # Update user password
-        user = self.app.currentuser.username
-        _logger.info("updating user [%s] password", user)
         try:
-            self.app.store.set_password(user, kwargs['new'], old_password=kwargs['current'])
+            self.app.currentuser.set_password(kwargs['new'], old_password=kwargs['current'])
             return {'success': _("Password updated successfully.")}
         except ValueError as e:
             return {'warning': str(e)}

@@ -245,7 +245,7 @@ class AdminPage(Controller):
             user = self.app.store.get_user(username)
             logger.info("updating user [%s] info", user)
             if password:
-                self.app.store.set_password(username, password, old_password=None)
+                user.set_password(password, old_password=None)
             user.user_root = user_root
             user.is_admin = is_admin
             # Avoid updating the email fields is it didn'T changed. see pdsl/minarca#187

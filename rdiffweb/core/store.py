@@ -36,7 +36,6 @@ from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, FS_ENCODING, \
     AccessDeniedError
 from rdiffweb.core.store_sqlite import SQLiteBackend
 
-
 try:
     # Python 2.5+
     from hashlib import sha1 as sha
@@ -220,7 +219,7 @@ class UserObject(object):
             self._record[key] = value
         # Call notification listener
         if notify:
-            self._store._notify('user_attr_changed', self, {obj_key: value})
+            self._store._notify('user_attr_changed', self, {obj_key: value})                
 
     def _set_repos(self, repo_paths):
     
@@ -365,6 +364,31 @@ class UserObject(object):
             assert deleted
         self._store._notify('user_attr_changed', self, {'authorizedkeys': True })
 
+    def set_password(self, password, old_password=None):
+        """
+        Change the user's password. Raise a ValueError if the username or
+        the password are invalid.
+        """
+        assert isinstance(password, str)
+        assert old_password is None or isinstance(old_password, str)
+        if not password:
+            raise ValueError("password can't be empty")
+
+        # Try to update the user password in LDAP
+        for store in self._store._password_stores:
+            try:
+                valid = store.are_valid_credentials(self.username, old_password)
+                if valid:
+                    store.set_password(self.username, password, old_password)
+                    return
+            except:
+                pass
+        # Fallback to database
+        if old_password and self._get_attr('password') != _hash_password(old_password):
+            raise ValueError(_("Wrong password"))
+        self._set_attr('password', 'password', _hash_password(password))
+        self._store._notify('user_password_changed', self.username, password)
+
     # Declare properties
     userid = property(fget=lambda x: x._get_attr('userid'))
     is_admin = property(fget=lambda x: x._get_attr('isadmin'), fset=lambda x, y: x._set_attr('is_admin', 'isadmin', y))
@@ -375,7 +399,7 @@ class UserObject(object):
     authorizedkeys = property(fget=lambda x: x.get_authorizedkeys())
     repo_objs = property(fget=lambda x: [RepoObject(x, r) for r in x._get_repos()])
     disk_quota = property(get_disk_quota, set_disk_quota)
-    
+
 
 @python_2_unicode_compatible
 class RepoObject(RdiffRepo):
@@ -665,36 +689,6 @@ class Store():
                 return None
         self._notify('user_logined', userobj, attrs)
         return userobj
-
-    def set_password(self, username, password, old_password=None):
-        """
-        Change the user's password. Raise a ValueError if the username or
-        the password are invalid.
-        """
-        assert isinstance(username, str)
-        assert isinstance(password, str)
-        assert old_password is None or isinstance(old_password, str)
-        if not password:
-            raise ValueError("password can't be empty")
-
-        # Try to update the user password in LDAP
-        for store in self._password_stores:
-            try:
-                valid = store.are_valid_credentials(username, old_password)
-                if valid:
-                    store.set_password(username, password, old_password)
-                    return
-            except:
-                pass
-        # Fallback to database
-        record = self._database.findone('users', username=username)
-        if not record:
-            raise ValueError(_("user doesn't exists"))
-        if old_password and record['password'] != _hash_password(old_password):
-            raise ValueError(_("Wrong password"))
-        updated = self._database.updateone('users', username=username, password=_hash_password(password))
-        assert updated, "password update failed"
-        self._notify('user_password_changed', username, password)
 
     def _notify(self, mod, *args):
         for listener in self._change_listeners:

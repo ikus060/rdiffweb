@@ -149,7 +149,7 @@ Here is the link you wanted."""
         n.send_mail = MagicMock()
 
         # Change password
-        self.app.store.set_password(self.USERNAME, 'new_password')
+        user.set_password('new_password')
 
         # Expect it to be called.
         n.send_mail.assert_called_once_with(ANY, ANY, 'password_changed.html')

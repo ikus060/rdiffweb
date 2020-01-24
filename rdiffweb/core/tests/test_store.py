@@ -253,32 +253,25 @@ class StoreSQLiteTest(AppTestCase):
         self.assertEqual(3, len(users))
 
     def test_set_password_update(self):
-        self.app.store.add_user('annik', 'password')
-        self.assertFalse(self.app.store.set_password('annik', 'new_password'))
+        userobj = self.app.store.add_user('annik', 'password')
+        userobj.set_password('new_password')
         # Check new credentials
         self.assertIsNotNone(self.app.store.login('annik', 'new_password'))
         # Check if listener called
         self.mlistener.user_password_changed.assert_called_once_with('annik', 'new_password')
 
     def test_set_password_with_old_password(self):
-        self.app.store.add_user('john', 'password')
-        self.app.store.set_password('john', 'new_password', old_password='password')
+        userobj = self.app.store.add_user('john', 'password')
+        userobj.set_password('new_password', old_password='password')
         # Check new credentials
         self.assertIsNotNone(self.app.store.login('john', 'new_password'))
         # Check if listener called
         self.mlistener.user_password_changed.assert_called_once_with('john', 'new_password')
 
     def test_set_password_with_invalid_old_password(self):
-        self.app.store.add_user('foo', 'password')
+        userobj = self.app.store.add_user('foo', 'password')
         with self.assertRaises(ValueError):
-            self.app.store.set_password('foo', 'new_password', old_password='invalid')
-        # Check if listener called
-        self.mlistener.user_password_changed.assert_not_called()
-
-    def test_set_password_update_not_exists(self):
-        """Expect error when trying to update password of invalid user."""
-        with self.assertRaises(ValueError):
-            self.app.store.set_password('bar', 'new_password')
+            userobj.set_password('new_password', old_password='invalid')
         # Check if listener called
         self.mlistener.user_password_changed.assert_not_called()
 
@@ -448,31 +441,27 @@ class StoreWithLdapTest(AppTestCase):
         self.assertIsNone(self.app.store.get_user('invalid'))
 
     def test_set_password_update(self):
-        self.app.store.add_user('annik')
-        self.assertFalse(self.app.store.set_password('annik', 'new_password'))
+        userobj = self.app.store.add_user('annik')
+        self.assertFalse(userobj.set_password('new_password'))
         # Check new credentials
         self.assertIsNotNone(self.app.store.login('annik', 'new_password'))
 
     def test_set_password_with_old_password(self):
-        self.app.store.add_user('john')
-        self.app.store.set_password('john', 'new_password', old_password='password')
+        userobj = self.app.store.add_user('john')
+        userobj.set_password('new_password', old_password='password')
         # Check new credentials
         self.assertIsNotNone(self.app.store.login('john', 'new_password'))
 
     def test_set_password_with_invalid_old_password(self):
-        self.app.store.add_user('foo')
+        userobj = self.app.store.add_user('foo')
         with self.assertRaises(ValueError):
-            self.app.store.set_password('foo', 'new_password', old_password='invalid')
-
-    def test_set_password_update_not_exists(self):
-        """Expect error when trying to update password of invalid user."""
-        with self.assertRaises(ValueError):
-            self.assertFalse(self.app.store.set_password('bar', 'new_password'))
+            userobj.set_password('new_password', old_password='invalid')
 
     def test_set_password_empty(self):
         """Expect error when trying to update password of invalid user."""
+        userobj = self.app.store.add_user('john')
         with self.assertRaises(ValueError):
-            self.assertFalse(self.app.store.set_password('john', ''))
+            self.assertFalse(userobj.set_password(''))
 
 
 class StoreWithAdmin(AppTestCase):
