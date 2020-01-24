@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import logging
 from threading import RLock
+import sys
 
 try:
     import sqlite3
@@ -32,6 +33,23 @@ logger = logging.getLogger(__name__)
 # List of tables
 _TABLES = ['users', 'repos', 'sshkeys']
 
+# Check if python2
+PY2 = sys.version_info[0] == 2
+
+
+def _dict_factory(cursor, row):
+    """
+    Returning an object that can also access columns by name.
+    """
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        col = col[0].decode('utf8').lower() if PY2 else col[0].lower()
+        # For SQLite <= 3.16.2 tinyint default value are return as string.
+        if col in ['isadmin', 'restoreformat']:
+            d[col] = 1 if row[idx] == 1 or row[idx] == 'TRUE' else 0
+        else:
+            d[col] = row[idx]
+    return d
 
 def _validate_model(model):
     if model not in _TABLES:
@@ -144,16 +162,12 @@ UserID int(11) NOT NULL)""")
 
     def _fetchall(self, sql, args=[]):
         conn = self._connect()
+        conn.row_factory = _dict_factory
         try:
             cursor = conn.cursor()
             cursor.execute(sql, args)
             # We want to return either the rowcount or the list or record.
-            rows = cursor.fetchall()
-            cols = [col[0].lower() for col in cursor.description]
-            if rows:
-                return [dict(zip(cols, row)) for row in rows]
-            else:
-                return []
+            return cursor.fetchall()
         finally:
             conn.close()
             
