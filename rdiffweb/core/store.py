@@ -230,7 +230,7 @@ class UserObject(object):
         # delete any obsolete repos
         repos_to_delete = [x for x in existing_repos if x.get('repopath') not in repo_paths]
         for repo in repos_to_delete:
-            deleted = self._db.deleteone('repos', **repo)
+            deleted = self._db.deleteone('repos', repoid=repo['repoid'])
             assert deleted, 'fail to delete repo'
 
         # add in new repos

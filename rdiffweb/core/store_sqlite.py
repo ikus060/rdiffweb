@@ -38,6 +38,15 @@ def _validate_model(model):
         raise ValueError(model + " is not a valid table name")
 
 
+def _where(fields):
+    """
+    Create the WHERE clause from the given fields.
+    """
+    if not fields:
+        return ""
+    return " WHERE " + ' AND '.join(['%s = ?' % f for f in fields])
+
+
 class SQLiteBackend():
     """
     SQLite data base backend to do CRUD operation.
@@ -174,62 +183,49 @@ UserID int(11) NOT NULL)""")
         Return the number of record matching the given model and criteria.
         """
         _validate_model(model)
-        if kwargs:
-            query = "SELECT COUNT(*) as count FROM " + model + " WHERE " + ' AND '.join(['%s = ?' % k for k in kwargs.keys()])
-            return self._fetchall(query, list(kwargs.values()))[0]['count']
-        else:
-            query = "SELECT COUNT(*) as count FROM " + model
-            return self._fetchall(query)[0]['count']
+        query = "SELECT COUNT(*) as count FROM " + model + _where(kwargs.keys())
+        return self._fetchall(query, list(kwargs.values()))[0]['count']
 
     def delete(self, model, **kwargs):
         _validate_model(model)
-        if kwargs:
-            query = "DELETE FROM " + model + " WHERE " + ' AND '.join(['%s = ?' % k for k in kwargs.keys()])
-            return self._rowcount(query, list(kwargs.values()))
-        else:
-            query = "DELETE FROM " + model
-            return self._rowcount(query, [])
+        query = "DELETE FROM " + model + _where(kwargs.keys())
+        return self._rowcount(query, list(kwargs.values()))
     
     def deleteone(self, model, **kwargs):
         _validate_model(model)
-        keys = self._get_id(model, **kwargs)
-        query = "DELETE FROM " + model + " WHERE " + ' AND '.join(['%s = ?' % k for k in keys]) + " LIMIT 1"
-        return self._rowcount(query, [kwargs.get(k) for k in keys])
+        query = "DELETE FROM " + model + _where(kwargs.keys()) + " LIMIT 1"
+        return self._rowcount(query, list(kwargs.values()))
+    
+    def find(self, model, **kwargs):
+        _validate_model(model)
+        query = "SELECT * FROM " + model + _where(kwargs.keys())
+        return self._fetchall(query, list(kwargs.values()))
     
     def findone(self, model, **kwargs):
         _validate_model(model)
-        query = "SELECT * FROM " + model + " WHERE " + ' AND '.join(['%s = ?' % x for x in kwargs.keys()]) + " LIMIT 1"
+        query = "SELECT * FROM " + model + _where(kwargs.keys()) + " LIMIT 1"
         record = self._fetchall(query, list(kwargs.values()))
         if record:
             return record[0]
         return None
         
-    def find(self, model, **kwargs):
-        _validate_model(model)
-        if kwargs:
-            query = "SELECT * FROM " + model + " WHERE " + ' AND '.join(['%s = ?' % x for x in kwargs.keys()])
-            return self._fetchall(query, list(kwargs.values()))
-        else:
-            query = "SELECT * FROM " + model
-            return self._fetchall(query)
- 
     def insert(self, model, **kwargs):
         _validate_model(model)
         query = "INSERT INTO " + model + " (" + ','.join(kwargs.keys()) + ") values (" + ','.join('?' * len(kwargs)) + ")"
         return self._rowcount(query, args=list(kwargs.values()))
         
-    def search(self, model, value, *fields):
+    def search(self, model, value, *in_fields):
         """
-        Search the `value` in the `fields`.
+        Search the `value` in the `in_fields`.
         """
         _validate_model(model)
         value = '%' + value.replace('%', '').replace('_', '') + '%'
         # Build the query
-        query = "SELECT * FROM " + model + " WHERE " + ' OR '.join(['%s LIKE ?' % x for x in fields])
+        query = "SELECT * FROM " + model + " WHERE " + ' OR '.join(['%s LIKE ?' % x for x in in_fields])
         # Make a JOIN for repos model.
         if model == 'repos':
-            query = "SELECT * FROM users, repos WHERE repos.UserID = users.UserID AND " + ' OR '.join(['%s LIKE ?' % x for x in fields])
-        return self._fetchall(query, [value] * len(fields))
+            query = "SELECT * FROM users, repos WHERE repos.UserID = users.UserID AND " + ' OR '.join(['%s LIKE ?' % x for x in in_fields])
+        return self._fetchall(query, [value] * len(in_fields))
         
     def updateone(self, model, **kwargs):
         """
@@ -238,5 +234,5 @@ UserID int(11) NOT NULL)""")
         _validate_model(model)
         # Get model identity
         keys = self._get_id(model, **kwargs)
-        query = "UPDATE " + model + " SET " + ', '.join(['%s=?' % k for k in kwargs.keys() if k not in keys]) + " WHERE " + ' AND '.join(['%s = ?' % k for k in keys]) + " LIMIT 1"
+        query = "UPDATE " + model + " SET " + ', '.join(['%s=?' % k for k in kwargs.keys() if k not in keys]) + _where(keys) + " LIMIT 1"
         return self._rowcount(query, [v for k, v in kwargs.items() if k not in keys] + [kwargs.get(k) for k in keys])
