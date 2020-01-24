@@ -19,9 +19,17 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+from collections import namedtuple
 from distutils.version import LooseVersion
 import logging
 import os
+import sys
+
+from cherrypy import Application
+import cherrypy
+from future.utils import native_str
+import pkg_resources
+
 from rdiffweb.controller import Controller
 from rdiffweb.controller import filter_authentication  # @UnusedImport
 from rdiffweb.controller import filter_authorization  # @UnusedImport
@@ -40,14 +48,8 @@ from rdiffweb.core import i18n  # @UnusedImport
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import DoesNotExistError, AccessDeniedError
-from rdiffweb.core.user import UserManager
-import sys
+from rdiffweb.core.store import Store
 
-from cherrypy import Application
-import cherrypy
-from future.utils import native_str
-import pkg_resources
-from collections import namedtuple
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -143,7 +145,7 @@ class RdiffwebApp(Application):
             os.environ["TMPDIR"] = self._tempdir
 
         # create user manager
-        self.userdb = UserManager(self)
+        self.store = Store(self)
 
     @property
     def currentuser(self):

@@ -109,7 +109,7 @@ class UrlForTest(AppTestCase):
 
     def test_url_for_browse(self):
         """Check creation of url"""
-        repo = self.app.userdb.get_user('admin').get_repo(self.REPO)
+        repo = self.app.store.get_user('admin').get_repo(self.REPO)
         self.assertEqual('/browse/admin/testcases', url_for('browse', repo))
         self.assertEqual('/browse/admin/testcases/Revisions', url_for('browse', repo, b'Revisions'))
         self.assertEqual('/browse/admin/testcases/Revisions?restore=True', url_for('browse', repo, b'Revisions', restore=True))
@@ -117,16 +117,16 @@ class UrlForTest(AppTestCase):
                          url_for('browse', repo, b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial'))
 
     def test_url_for_graphs(self):
-        repo = self.app.userdb.get_user('admin').get_repo(self.REPO)
+        repo = self.app.store.get_user('admin').get_repo(self.REPO)
         self.assertEqual('/graphs/files/admin/testcases', url_for('graphs', 'files', repo))
 
     def test_url_for_history(self):
         """Check creation of url"""
-        repo = self.app.userdb.get_user('admin').get_repo(self.REPO)
+        repo = self.app.store.get_user('admin').get_repo(self.REPO)
         self.assertEqual('/history/admin/testcases', url_for('history', repo))
 
     def test_url_for_restore(self):
-        repo = self.app.userdb.get_user('admin').get_repo(self.REPO)
+        repo = self.app.store.get_user('admin').get_repo(self.REPO)
         self.assertEqual('/restore/admin/testcases?date=1414967021', url_for('restore', repo, date=RdiffTime(1414967021)))
         self.assertEqual('/restore/admin/testcases?date=1414967021', url_for('restore', repo, b'', date=RdiffTime(1414967021)))
         self.assertEqual('/restore/admin/testcases?date=1414967021&kind=tar.gz', url_for('restore', repo, b'', date=RdiffTime(1414967021), kind='tar.gz'))
@@ -135,7 +135,7 @@ class UrlForTest(AppTestCase):
                          url_for('restore', repo, b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial', date=RdiffTime(1414967021)))
 
     def test_url_for_status(self):
-        repo = self.app.userdb.get_user('admin').get_repo(self.REPO)
+        repo = self.app.store.get_user('admin').get_repo(self.REPO)
         self.assertEqual('/status?date=1414967021', url_for('status', date=RdiffTime(1414967021)))
         self.assertEqual('/status/admin/testcases?date=1414967021', url_for('status', repo, date=RdiffTime(1414967021)))
 

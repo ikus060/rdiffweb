@@ -22,18 +22,26 @@ import encodings
 from io import open
 import logging
 import os
-
-import pkg_resources
+import sqlite3
 
 from future.utils import python_2_unicode_compatible
 from future.utils.surrogateescape import encodefilename
+import pkg_resources
+
 from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.config import BoolOption, read_config, Option
 from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.ldap_auth import LdapPasswordStore
 from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, FS_ENCODING, \
     AccessDeniedError
-from rdiffweb.core.user_ldap_auth import LdapPasswordStore
-from rdiffweb.core.user_sqlite import SQLiteUserDB
+from rdiffweb.core.store_sqlite import SQLiteBackend
+
+
+try:
+    # Python 2.5+
+    from hashlib import sha1 as sha
+except ImportError:
+    from sha import new as sha
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -64,6 +72,18 @@ def split_path(path):
         return path.decode('utf-8'), b''
 
 
+def _hash_password(password):
+    # At this point the password should be unicode. We converted it into
+    # system encoding.
+    password_b = password.encode('utf8')
+    hasher = sha()
+    hasher.update(password_b)
+    value = hasher.hexdigest()
+    if isinstance(value, bytes):
+        value = value.decode(encoding='latin1')
+    return value
+
+
 class IUserChangeListener():
     """
     A listener to receive user changes event.
@@ -71,7 +91,7 @@ class IUserChangeListener():
 
     def __init__(self, app):
         self.app = app
-        self.app.userdb.add_change_listener(self)
+        self.app.store.add_change_listener(self)
 
     def user_added(self, userobj, attrs):
         """New user (account) created."""
@@ -114,25 +134,26 @@ class IUserQuota():
 class UserObject(object):
     """Represent an instance of user."""
 
-    def __init__(self, userdb, db, username):
-        assert userdb
-        assert db
-        assert username
-        self._userdb = userdb
-        self._db = db
-        self._username = username
+    def __init__(self, store, data):
+        """
+        Create a new UserObject from a username or a record.
+        """
+        assert store
+        assert isinstance(data, int) or isinstance(data, dict)
+        self._store = store
+        self._db = store._database
+        if isinstance(data, str):
+            self._record = None
+            self._userid = data
+        else:
+            self._record = data
+            self._userid = data['userid']
 
     def __eq__(self, other):
-        return (isinstance(other, UserObject) and
-                self._username == other._username and
-                self._db == other._db)
+        return isinstance(other, UserObject) and self._userid == other._userid
 
     def __str__(self):
-        return 'UserObject[%s]' % self._username
-
-    @property
-    def username(self):
-        return self._username
+        return 'UserObject(%s)' % self._userid
 
     def get_repo(self, name):
         """
@@ -142,13 +163,16 @@ class UserObject(object):
         username, name = split_path(name)
         
         # Check if user has permissions to access this path
-        if username != self._username and not self.is_admin:
+        if username != self.username and not self.is_admin:
             raise AccessDeniedError(name)
             
         name = normpath(name)
-        for r in self._db.get_repos(username):
+        for r in self._get_repos():
             if name == normpath(encodefilename(r)):
-                user_obj = self if username == self._username else UserObject(self._userdb, self._db, username)
+                if username == self.username:
+                    user_obj = self
+                else:
+                    user_obj = self._store.get_user(username)
                 return RepoObject(user_obj, r)
         raise DoesNotExistError(name)
     
@@ -159,14 +183,17 @@ class UserObject(object):
         username, path = split_path(path)
 
         # Check if user has permissions to access this path
-        if username != self._username and not self.is_admin:
+        if username != self.username and not self.is_admin:
             raise AccessDeniedError(path)
             
         path = normpath(path)
-        for r in self._db.get_repos(username):
+        for r in self._get_repos():
             repo = normpath(encodefilename(r))
-            if path.startswith(repo):     
-                user_obj = self if username == self._username else UserObject(self._userdb, self._db, username)
+            if path.startswith(repo):
+                if username == self.username:
+                    user_obj = self
+                else:
+                    user_obj = self._store.get_user(username)
                 repo_obj = RepoObject(user_obj, r)
                 path_obj = repo_obj.get_path(path[len(repo):])
                 return (repo_obj, path_obj)
@@ -175,22 +202,53 @@ class UserObject(object):
     @property
     def is_ldap(self):
         """Return True if this user is an LDAP user. (with a password)"""
-        return not self._db.get_password(self._username)
+        return not self._get_attr('password')
 
-    def set_attr(self, key, value, notify=True):
+    def _get_attr(self, key):
+        """Return user's attribute"""
+        assert key in ['userid', 'username', 'isadmin', 'useremail', 'userroot', 'password'], "invalid attribute: " + key
+        if not self._record:
+            self._record = self._db.findone('users', userid=self._userid)
+        return self._record[key]
+
+    def _set_attr(self, obj_key, key, value, notify=True):
         """Used to define an attribute"""
-        self.set_attrs(**{key: value, 'notify': notify})
-
-    def set_attrs(self, **kwargs):
-        """Used to define multiple attributes at once."""
-        notify = kwargs.pop('notify', True)
-        for key, value in kwargs.items():
-            assert key in ['is_admin', 'email', 'user_root', 'repos']
-            setter = getattr(self._db, 'set_%s' % key)
-            setter(self._username, value)
+        assert key in ['isadmin', 'useremail', 'userroot', 'password'], "invalid attribute: " + key
+        updated = self._db.updateone('users', userid=self._userid, **{key: value})
+        assert updated, 'update failed'
+        if self._record:
+            self._record[key] = value
         # Call notification listener
         if notify:
-            self._userdb._notify('user_attr_changed', self, kwargs)
+            self._store._notify('user_attr_changed', self, {obj_key: value})
+
+    def _set_repos(self, repo_paths):
+    
+        # We don't want to just delete and recreate the repos, since that
+        # would lose notification information.
+        existing_repos = self._db.find('repos', userid=self._userid)
+
+        # delete any obsolete repos
+        repos_to_delete = [x for x in existing_repos if x.get('repopath') not in repo_paths]
+        for repo in repos_to_delete:
+            deleted = self._db.deleteone('repos', **repo)
+            assert deleted, 'fail to delete repo'
+
+        # add in new repos
+        existing_repos = map(lambda x: x.get('repopath'), existing_repos)
+        for repo in repo_paths:
+            if repo not in existing_repos:
+                inserted = self._db.insert('repos', userid=self._userid, repopath=repo)
+                assert inserted
+            
+        self._store._notify('user_attr_changed', self, {'repos': repo_paths})
+
+    def _get_repos(self):
+        """
+        Get list of repos for the given `username`.
+        """
+        rows = self._db.find('repos', userid=self._userid)
+        return [row['repopath'] for row in rows]
 
     @property
     def disk_usage(self):
@@ -200,7 +258,7 @@ class UserObject(object):
         if entry_point:
             try:
                 cls = entry_point.load()
-                return cls(self._userdb.app).get_disk_usage(self)
+                return cls(self._store.app).get_disk_usage(self)
             except:
                 logger.warning('IuserQuota [%s] fail to run', entry_point, exc_info=1)
                 return None
@@ -222,7 +280,7 @@ class UserObject(object):
         """
         for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserQuota'):  # @UndefinedVariable
             cls = entry_point.load()
-            cls(self._userdb.app).set_disk_quota(self, value)
+            cls(self._store.app).set_disk_quota(self, value)
         
     def get_disk_quota(self):
         """
@@ -231,7 +289,7 @@ class UserObject(object):
         for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserQuota'):  # @UndefinedVariable
             try:
                 cls = entry_point.load()
-                return cls(self._userdb.app).get_disk_quota(self)
+                return cls(self._store.app).get_disk_quota(self)
             except:
                 logger.warning('IuserQuota [%s] fail to run', entry_point, exc_info=1)
         return 0
@@ -248,8 +306,8 @@ class UserObject(object):
                 yield k
         
         # Also look in database.
-        for k in self._db.get_authorizedkeys(self._username):
-            yield authorizedkeys.check_publickey(k)
+        for record in self._db.find('sshkeys', userid=self._userid):
+            yield authorizedkeys.check_publickey(record['key'])
         
     def add_authorizedkey(self, key, comment=None):
         """
@@ -279,11 +337,15 @@ class UserObject(object):
         else:
             # Also look in database.
             logger.info("add key [%s] to [%s] database", key, self.username)
-            self._db.add_authorizedkey(
-                self._username,
-                fingerprint=key.fingerprint,
-                key=key.getvalue())
-        self._userdb._notify('user_attr_changed', self, {'authorizedkeys': True })
+            try:
+                inserted = self._db.insert('sshkeys',
+                    userid=self._userid,
+                    fingerprint=key.fingerprint,
+                    key=key.getvalue())
+                assert inserted
+            except sqlite3.IntegrityError:  # @UndefinedVariable
+                raise ValueError(_("Duplicate key. This key already exists or is associated to another user."))
+        self._store._notify('user_attr_changed', self, {'authorizedkeys': True })
         
     def remove_authorizedkey(self, fingerprint):
         """
@@ -299,16 +361,19 @@ class UserObject(object):
         else:
             # Also look in database.
             logger.info("removing key [%s] from [%s] database", fingerprint, self.username)
-            self._db.remove_authorizedkey(self._username, fingerprint)
-        self._userdb._notify('user_attr_changed', self, {'authorizedkeys': True })
+            deleted = self._db.delete('sshkeys', userid=self._userid, fingerprint=fingerprint)
+            assert deleted
+        self._store._notify('user_attr_changed', self, {'authorizedkeys': True })
 
     # Declare properties
-    is_admin = property(fget=lambda x: x._db.is_admin(x._username), fset=lambda x, y: x.set_attr('is_admin', y))
-    email = property(fget=lambda x: x._db.get_email(x._username), fset=lambda x, y: x.set_attr('email', y))
-    user_root = property(fget=lambda x: x._db.get_user_root(x._username), fset=lambda x, y: x.set_attr('user_root', y))
-    repos = property(fget=lambda x: [r.strip('/') for r in x._db.get_repos(x._username)], fset=lambda x, y: x.set_attr('repos', y))
+    userid = property(fget=lambda x: x._get_attr('userid'))
+    is_admin = property(fget=lambda x: x._get_attr('isadmin'), fset=lambda x, y: x._set_attr('is_admin', 'isadmin', y))
+    email = property(fget=lambda x: x._get_attr('useremail'), fset=lambda x, y: x._set_attr('email', 'useremail', y))
+    user_root = property(fget=lambda x: x._get_attr('userroot'), fset=lambda x, y: x._set_attr('user_root', 'userroot', y))
+    username = property(fget=lambda x: x._get_attr('username'))
+    repos = property(fget=lambda x: list(map(lambda y: y.strip('/'), x._get_repos())), fset=lambda x, y: x._set_repos(y))
     authorizedkeys = property(fget=lambda x: x.get_authorizedkeys())
-    repo_objs = property(fget=lambda x: [RepoObject(x, r) for r in x._db.get_repos(x._username)])
+    repo_objs = property(fget=lambda x: [RepoObject(x, r) for r in x._get_repos()])
     disk_quota = property(get_disk_quota, set_disk_quota)
     
 
@@ -316,35 +381,47 @@ class UserObject(object):
 class RepoObject(RdiffRepo):
     """Represent a repository."""
 
-    def __init__(self, user_obj, repo):
-        assert isinstance(repo, str)
-        self._repo = repo
+    def __init__(self, user_obj, data):
+        assert user_obj
+        assert isinstance(data, str) or isinstance(data, dict)
+        self._db = user_obj._db
         self._user_obj = user_obj
-        self._username = self._user_obj._username
-        RdiffRepo.__init__(self, user_obj.user_root, repo)
+        self._userid = user_obj._userid
+        if isinstance(data, str):
+            self._repo = data
+            self._record = None
+        else:
+            self._repo = data['repopath']
+            self._record = data
+        RdiffRepo.__init__(self, user_obj.user_root, self._repo)
         self._encoding = self._get_encoding()
 
     def __eq__(self, other):
         return (isinstance(other, RepoObject) and
-                self._username == other._username and
+                self._userid == other._userid and
                 self._repo == other._repo)
 
     def __str__(self):
-        return 'RepoObject[%s, %s]' % (self._username, self._repo)
+        return 'RepoObject[%s, %s]' % (self._userid, self._repo)
 
     def _set_attr(self, key, value):
         """Used to define an attribute to the repository."""
-        self._set_attrs(**{key: value})
-
-    def _set_attrs(self, **kwargs):
-        """Used to define multiple attribute to a repository"""
-        for key, value in kwargs.items():
-            assert isinstance(key, str) and key.isalpha() and key.islower()
-            self._user_obj._db.set_repo_attr(self._username, self._repo, key, value)
+        assert key in ['encoding', 'maxage', 'keepdays'], 'invalid attribute:' + key
+        if key in ['maxage', 'keepdays']:
+            value = int(value)
+        updated = self._db.updateone('repos', **{'userid': self._userid, 'repopath': self._repo, key: value})
+        assert updated, 'update failed'
+        if self._record:
+            self._record[key] = value
 
     def _get_attr(self, key, default=None):
-        assert isinstance(key, str)
-        return self._user_obj._db.get_repo_attr(self._username, self._repo, key, default)
+        assert key in ['encoding', 'maxage', 'keepdays'], 'invalid attribute:' + key
+        if not self._record:
+            self._record = self._db.findone('repos', userid=self._userid, repopath=self._repo)
+        value = self._record.get(key, default)
+        if key in ['maxage', 'keepdays']:
+            return int(value) if value else default
+        return value
 
     @property
     def name(self):
@@ -391,18 +468,18 @@ class RepoObject(RdiffRepo):
     def delete(self):
         """Properly remove the given repository by updating the user's repositories."""
         logger.info("deleting repository %s", self)
-        self._user_obj._db.delete_repo(self._user_obj._username, self._repo)
-        RdiffRepo.delete(self)        
+        rowcount = self._db.delete('repos', userid=self._userid, repopath=self._repo)
+        assert rowcount, 'fail to delete repository'
+        RdiffRepo.delete(self)
 
     encoding = property(lambda x: x._encoding.name, _set_encoding)
-    maxage = property(fget=lambda x: int(x._get_attr('maxage', default='0')), fset=lambda x, y: x._set_attr('maxage', int(y)))
-    keepdays = property(fget=lambda x: int(x._get_attr('keepdays', default='-1')), fset=lambda x, y: x._set_attr('keepdays', int(y)))
+    maxage = property(fget=lambda x: x._get_attr('maxage', default=0), fset=lambda x, y: x._set_attr('maxage', y))
+    keepdays = property(fget=lambda x: x._get_attr('keepdays', default=-1), fset=lambda x, y: x._set_attr('keepdays', y))
 
 
-class UserManager():
+class Store():
     """
-    This class handle all user operation. This class is greatly inspired from
-    TRAC account manager class.
+    This class handle all data storage operations.
     """
     
     _db_file = Option("SQLiteDBFile", "/etc/rdiffweb/rdw.db")
@@ -411,7 +488,7 @@ class UserManager():
 
     def __init__(self, app):
         self.app = app
-        self._database = SQLiteUserDB(self._db_file)
+        self._database = SQLiteBackend(self._db_file)
         self._password_stores = [LdapPasswordStore(app)]
         self._change_listeners = []
         
@@ -427,7 +504,7 @@ class UserManager():
                 logging.error("IUserChangeListener [%s] fail to load", entry_point)
         
         # Check if admin user exists. If not, created it.
-        if not self.exists(self._admin_user):
+        if not self.get_user(self._admin_user):
             userobj = self.add_user(self._admin_user, 'admin123')
             userobj.is_admin = True
 
@@ -443,48 +520,65 @@ class UserManager():
         """
         assert password is None or isinstance(password, str)
         # Check if user already exists.
-        if self._database.exists(user):
+        if self.get_user(user):
             raise RdiffError(_("User %s already exists." % (user,)))
+        
         # Find a database where to add the user
         logger.debug("adding new user [%s]", user)
-        self._database.add_user(user, password)
-        userobj = UserObject(self, self._database, user)
+        if password:
+            inserted = self._database.insert('users', username=user, password=_hash_password(password))
+        else:
+            inserted = self._database.insert('users', username=user, password='')
+        assert inserted
+        record = self._database.findone('users', username=user)
+        userobj = UserObject(self, record)
         self._notify('user_added', userobj, attrs)
         # Return user object
         return userobj
+
+    def count_users(self):
+        return self._database.count('users')
+
+    def count_repos(self):
+        return self._database.count('repos')
 
     def delete_user(self, user):
         """
         Delete the given user from password store.
 
-        Return True if the user was deleted. Return False if the user didn't
-        exists.
+        Return True if the user was deleted.
+        Return False if the user didn't exists.
+        Raise a ValueError when trying to delete the admin user.
         """
-        if hasattr(user, 'username'):
-            user = user.username
-            
-        if user == self._admin_user:
+        # Get the username from the arguments
+        assert user
+        assert hasattr(user, 'userid') or isinstance(user, str)
+        username = user.username if hasattr(user, 'userid') else user 
+        
+        # Query database for user
+        userobj = self.get_user(username)
+        if not userobj:
+            return False
+        
+        # Make sure we are not trying to delete the admin user.
+        if userobj.username == self._admin_user:
             raise ValueError(_("can't delete admin user"))
             
         # Delete user from database (required).
-        logger.info("deleting user [%s] from database", user)
-        self._database.delete_user(user)
+        logger.info("deleting user [%s] from database", userobj.username)
+        self._database.delete('sshkeys', userid=userobj.userid)
+        self._database.delete('repos', userid=userobj.userid)
+        deleted = self._database.deleteone('users', userid=userobj.userid)
+        assert deleted, 'fail to delete user'
         self._notify('user_deleted', user)
         return True
 
-    def exists(self, user):
-        """
-        Verify if the given user exists in our database.
-
-        Return True if the user exists. False otherwise.
-        """
-        return self._database.exists(user)
-
     def get_user(self, user):
         """Return a user object."""
-        if not self.exists(user):
-            return None
-        return UserObject(self, self._database, user)
+        record = self._database.findone('users', username=user)
+        if record:
+            return UserObject(self, record)
+        return None
 
     def users(self, search=None, criteria=None):
         """
@@ -493,10 +587,20 @@ class UserManager():
         search: Define a search term to look into email or username.
         criteria: Define a search filter: admins, ldap
         """
-        # TODO Add criteria as required.
-        for username in self._database.users(search, criteria):
-            yield UserObject(self, self._database, username)
-
+        if search:
+            users = self._database.search('users', search, 'username', 'useremail')
+        elif criteria:
+            if criteria == 'admins':
+                users = self._database.find('users', isadmin=1)
+            elif criteria == 'ldap':
+                users = self._database.find('users', password='')
+            else:
+                return
+        else:
+            users = self._database.find('users')
+        for record in users:
+            yield UserObject(self, record)
+            
     def repos(self, search=None, criteria=None):
         """
         Quick listing of all the repository object for all user.
@@ -504,9 +608,15 @@ class UserManager():
         search: Define a search term to look into path, email or username.
         criteria: Define a search filter: ok, failed, interrupted, in_progress
         """
-        for username, repo in self._database.repos(search, criteria):
-            user_obj = UserObject(self, self._database, username)
-            repo_obj = RepoObject(user_obj, repo)
+        if search:
+            repos = self._database.search('repos', search, 'RepoPath', 'username', 'useremail')
+        else:
+            repos = self._database.find('repos')
+            
+        for record in repos:
+            user_record = self._database.findone('users', userid=record['userid'])
+            user_obj = UserObject(self, user_record)
+            repo_obj = RepoObject(user_obj, record)
             if not criteria or criteria == repo_obj.status[0]:
                 yield repo_obj
 
@@ -524,9 +634,16 @@ class UserManager():
         """
         assert isinstance(user, str)
         assert password is None or isinstance(user, str)
-        # Validate the credentials
+        # Validate credential using database first.
         logger.debug("validating user [%s] credentials", user)
-        for store in [self._database] + self._password_stores:
+        record = self._database.findone('users', username=user)
+        if record and record['password'] == _hash_password(password):
+            userobj = UserObject(self, record)
+            self._notify('user_logined', userobj, None)
+            return userobj
+            
+        # Fallback to LDAP
+        for store in self._password_stores:
             try:
                 valid = store.are_valid_credentials(user, password)
                 if valid:
@@ -536,11 +653,7 @@ class UserManager():
         if not valid:
             return None
         # Get real username and external attributes.
-        # Some password store provide extra attributes.
-        if isinstance(valid, str):
-            real_user, attrs = valid, None
-        else:
-            real_user, attrs = valid
+        real_user, attrs = valid
         # Check if user exists in database
         userobj = self.get_user(real_user)
         if not userobj:
@@ -554,7 +667,17 @@ class UserManager():
         return userobj
 
     def set_password(self, username, password, old_password=None):
-        # Try to update the user password.
+        """
+        Change the user's password. Raise a ValueError if the username or
+        the password are invalid.
+        """
+        assert isinstance(username, str)
+        assert isinstance(password, str)
+        assert old_password is None or isinstance(old_password, str)
+        if not password:
+            raise ValueError("password can't be empty")
+
+        # Try to update the user password in LDAP
         for store in self._password_stores:
             try:
                 valid = store.are_valid_credentials(username, old_password)
@@ -564,7 +687,13 @@ class UserManager():
             except:
                 pass
         # Fallback to database
-        self._database.set_password(username, password, old_password)
+        record = self._database.findone('users', username=username)
+        if not record:
+            raise ValueError(_("user doesn't exists"))
+        if old_password and record['password'] != _hash_password(old_password):
+            raise ValueError(_("Wrong password"))
+        updated = self._database.updateone('users', username=username, password=_hash_password(password))
+        assert updated, "password update failed"
         self._notify('user_password_changed', username, password)
 
     def _notify(self, mod, *args):

@@ -95,7 +95,7 @@ class PrefsTest(WebCase):
 
     def test_update_repos(self):
         
-        user_obj = self.app.userdb.get_user(self.USERNAME)
+        user_obj = self.app.store.get_user(self.USERNAME)
         user_obj.repos = []
         
         self.getPage(self.PREFS, method='POST', body={'action': 'update_repos'})
@@ -111,7 +111,7 @@ class PrefsTest(WebCase):
         self.getPage("/prefs/notification/", method='POST', body={'action':'set_notification_info', 'testcases':'7'})
         self.assertStatus(200)
         # Check database update
-        repo_obj = self.app.userdb.get_user(self.USERNAME).get_repo(self.REPO)
+        repo_obj = self.app.store.get_user(self.USERNAME).get_repo(self.REPO)
         self.assertEqual(7, repo_obj.maxage)
 
 

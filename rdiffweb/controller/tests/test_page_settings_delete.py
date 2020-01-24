@@ -54,13 +54,13 @@ class DeleteRepoTest(WebCase):
         """
         self._delete(self.REPO, 'testcases')
         self.assertStatus(303)
-        self.assertEqual([], self.app.userdb.get_user('admin').repos)
+        self.assertEqual([], self.app.store.get_user('admin').repos)
 
     def test_delete_with_slash(self):
-        self.app.userdb.get_user('admin').repos = ['/testcases']
+        self.app.store.get_user('admin').repos = ['/testcases']
         self._delete(self.REPO, 'testcases')
         self.assertStatus(303)
-        self.assertEqual([], self.app.userdb.get_user('admin').repos)
+        self.assertEqual([], self.app.store.get_user('admin').repos)
 
     def test_delete_wrong_confirm(self):
         """
@@ -69,7 +69,7 @@ class DeleteRepoTest(WebCase):
         self._delete(self.REPO, 'wrong')
         # TODO Make sure the repository is not delete
         self.assertStatus(400)
-        self.assertEqual(['testcases'], self.app.userdb.get_user('admin').repos)
+        self.assertEqual(['testcases'], self.app.store.get_user('admin').repos)
 
     def test_delete_without_confirm(self):
         """
@@ -78,14 +78,14 @@ class DeleteRepoTest(WebCase):
         self._delete(self.REPO, None)
         # TODO Make sure the repository is not delete
         self.assertStatus(400)
-        self.assertEqual(['testcases'], self.app.userdb.get_user('admin').repos)
+        self.assertEqual(['testcases'], self.app.store.get_user('admin').repos)
         
     def test_as_another_user(self):
         """
         From admin user delete anotehr user repo.
         """
         # Create a nother user with admin right
-        user_obj = self.app.userdb.add_user('anotheruser', 'password')
+        user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
         user_obj.repos = ['testcases']
         

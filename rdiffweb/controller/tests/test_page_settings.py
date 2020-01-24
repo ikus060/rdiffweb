@@ -43,7 +43,7 @@ class SettingsTest(WebCase):
         
     def test_as_another_user(self):
         # Create a nother user with admin right
-        user_obj = self.app.userdb.add_user('anotheruser', 'password')
+        user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
         user_obj.repos = ['testcases']
         
@@ -52,7 +52,7 @@ class SettingsTest(WebCase):
         self.assertStatus('200 OK')
         
         # Remove admin right
-        admin = self.app.userdb.get_user('admin')
+        admin = self.app.store.get_user('admin')
         admin.is_admin = 0
         
         # Browse admin's repos
@@ -64,7 +64,7 @@ class SettingsTest(WebCase):
             body={'maxage': '4'})
         self.assertStatus(200)
         # Check database update
-        repo_obj = self.app.userdb.get_user('admin').get_repo(self.REPO)
+        repo_obj = self.app.store.get_user('admin').get_repo(self.REPO)
         self.assertEqual(4, repo_obj.maxage)
 
 

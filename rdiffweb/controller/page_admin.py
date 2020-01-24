@@ -101,7 +101,7 @@ def get_pkginfo():
     import jinja2
     yield _('Jinja2 Version'), getattr(jinja2, '__version__')
     yield _('CherryPy Version'), getattr(cherrypy, '__version__')
-    from rdiffweb.core.user_sqlite import sqlite3  # @UnresolvedImport
+    from rdiffweb.core.store_sqlite import sqlite3  # @UnresolvedImport
     yield _('SQLite Version'), getattr(sqlite3, 'version')
     try:
         import ldap
@@ -148,15 +148,8 @@ class AdminPage(Controller):
 
     @cherrypy.expose
     def default(self):
-
-        user_count = 0
-        repo_count = 0
-        for user in self.app.userdb.users():
-            user_count += 1
-            repo_count += len(user.repos)
-
-        params = {"user_count": user_count,
-                  "repo_count": repo_count}
+        params = {"user_count": self.app.store.count_users(),
+                  "repo_count": self.app.store.count_repos()}
 
         return self._compile_template("admin.html", **params)
 
@@ -201,7 +194,7 @@ class AdminPage(Controller):
         params.update({
             "criteria": criteria,
             "search": search,
-            "users": list(self.app.userdb.users(search=search, criteria=criteria))})
+            "users": list(self.app.store.users(search=search, criteria=criteria))})
 
         # Build users page
         return self._compile_template("admin_users.html", **params)
@@ -211,7 +204,7 @@ class AdminPage(Controller):
         params = {
             "criteria": criteria,
             "search": search,
-            "repos": list(self.app.userdb.repos(search=search, criteria=criteria))
+            "repos": list(self.app.store.repos(search=search, criteria=criteria))
         }
         return self._compile_template("admin_repos.html", **params)
 
@@ -249,10 +242,10 @@ class AdminPage(Controller):
 
         # Fork the behaviour according to the action.
         if action == "edit":
-            user = self.app.userdb.get_user(username)
+            user = self.app.store.get_user(username)
             logger.info("updating user [%s] info", user)
             if password:
-                self.app.userdb.set_password(username, password, old_password=None)
+                self.app.store.set_password(username, password, old_password=None)
             user.user_root = user_root
             user.is_admin = is_admin
             # Avoid updating the email fields is it didn'T changed. see pdsl/minarca#187
@@ -271,7 +264,7 @@ class AdminPage(Controller):
                 raise RdiffWarning(_("The username is invalid."))
             logger.info("adding user [%s]", username)
 
-            user = self.app.userdb.add_user(username, password)
+            user = self.app.store.add_user(username, password)
             if user_root:
                 user.user_root = user_root
             user.is_admin = is_admin
@@ -284,12 +277,13 @@ class AdminPage(Controller):
             success = _("User added successfully.")
 
         if action == "delete":
-            user = self.app.userdb.get_user(username)
             if username == self.app.currentuser.username:
-                raise RdiffWarning(_("You cannot remove your own account!."))
+                raise RdiffWarning(_("You cannot remove your own account!"))
             logger.info("deleting user [%s]", username)
-            self.app.userdb.delete_user(user)
-            success = _("User account removed.")
+            if not self.app.store.delete_user(username):
+                raise RdiffWarning(_("User doesn't exists!"))
+            else:
+                success = _("User account removed.")
 
         # Return messages
         return {'success': success}

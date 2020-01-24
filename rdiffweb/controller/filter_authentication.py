@@ -58,7 +58,7 @@ class BaseAuth(HandlerTool):
         """Validate user credentials."""
         logger.debug("check credentials for [%s]", username)
         try:
-            userobj = cherrypy.request.app.userdb.login(username, password)  # @UndefinedVariable
+            userobj = cherrypy.request.app.store.login(username, password)  # @UndefinedVariable
         except:
             logger.exception("fail to validate user credential")
             raise RdiffWarning(_("Fail to validate user credential."))
@@ -93,7 +93,7 @@ class BaseAuth(HandlerTool):
         username = cherrypy.session.get(self.session_key)  # @UndefinedVariable
         if not username:
             return False
-        userobj = cherrypy.request.app.userdb.get_user(username)  # @UndefinedVariable
+        userobj = cherrypy.request.app.store.get_user(username)  # @UndefinedVariable
         if not userobj:
             return False
         logger.debug('setting request.login to %s', userobj)

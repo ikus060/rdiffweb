@@ -38,7 +38,7 @@ from mockldap import MockLdap
 import pkg_resources
 
 from rdiffweb.core import RdiffError, authorizedkeys
-from rdiffweb.core.user import IUserChangeListener
+from rdiffweb.core.store import IUserChangeListener
 from rdiffweb.test import AppTestCase
 
 
@@ -53,7 +53,7 @@ def _ldap_user(name, password='password'):
         'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']})
 
 
-class UserManagerSQLiteTest(AppTestCase):
+class StoreSQLiteTest(AppTestCase):
 
     def setUp(self):
         AppTestCase.setUp(self)
@@ -66,62 +66,55 @@ class UserManagerSQLiteTest(AppTestCase):
 
     def test_add_user(self):
         """Add user to database."""
-        userobj = self.app.userdb.add_user('joe')
+        userobj = self.app.store.add_user('joe')
         self.assertIsNotNone(userobj)
-        self.assertTrue(self.app.userdb.exists('joe'))
+        self.assertIsNotNone(self.app.store.get_user('joe'))
         # Check if listener called
         self.mlistener.user_added.assert_called_once_with(userobj, None)
 
     def test_add_user_with_duplicate(self):
         """Add user to database."""
-        userobj = self.app.userdb.add_user('denise')
+        userobj = self.app.store.add_user('denise')
         with self.assertRaises(RdiffError):
-            self.app.userdb.add_user('denise')
+            self.app.store.add_user('denise')
         # Check if listener called
         self.mlistener.user_added.assert_called_once_with(userobj, None)
 
     def test_add_user_with_password(self):
         """Add user to database with password."""
-        userobj = self.app.userdb.add_user('jo', 'password')
-        self.assertTrue(self.app.userdb.exists('jo'))
-        self.assertTrue(self.app.userdb.login('jo', 'password'))
+        userobj = self.app.store.add_user('jo', 'password')
+        self.assertIsNotNone(self.app.store.get_user('jo'))
+        self.assertTrue(self.app.store.login('jo', 'password'))
         # Check if listener called
         self.mlistener.user_added.assert_called_once_with(userobj, None)
 
     def test_delete_admin_user(self):
         # Trying to delete admin user should raise an error.
+        self.app.store.add_user('admin')
         with self.assertRaises(ValueError):
-            self.app.userdb.delete_user('admin')
+            self.app.store.delete_user('admin')
 
     def test_delete_user(self):
         # Create user
-        self.app.userdb.add_user('vicky', 'password')
-        self.assertTrue(self.app.userdb.exists('vicky'))
+        self.app.store.add_user('vicky', 'password')
+        self.assertIsNotNone(self.app.store.get_user('vicky'))
         # Delete user
-        self.assertTrue(self.app.userdb.delete_user('vicky'))
-        self.assertFalse(self.app.userdb.exists('vicky'))
+        self.assertTrue(self.app.store.delete_user('vicky'))
+        self.assertIsNone(self.app.store.get_user('vicky'))
         # Check if listener called
         self.mlistener.user_deleted.assert_called_once_with('vicky')
 
     def test_delete_user_with_invalid_user(self):
-        with self.assertRaises(AssertionError):
-            self.app.userdb.delete_user('eve')
+        self.assertFalse(self.app.store.delete_user('eve'))
         # Check if listener called
         self.mlistener.user_deleted.assert_not_called()
-
-    def test_exists(self):
-        self.app.userdb.add_user('bob', 'password')
-        self.assertTrue(self.app.userdb.exists('bob'))
-
-    def test_exists_with_invalid_user(self):
-        self.assertFalse(self.app.userdb.exists('invalid'))
 
     def test_get_user(self):
         """
         Test user record.
         """
         # Create new user
-        user = self.app.userdb.add_user('bernie', 'my-password')
+        user = self.app.store.add_user('bernie', 'my-password')
         user.user_root = '/backups/bernie/'
         user.is_admin = True
         user.email = 'bernie@gmail.com'
@@ -130,7 +123,7 @@ class UserManagerSQLiteTest(AppTestCase):
         user.get_repo('bernie/laptop').maxage = 3
 
         # Get user record.
-        obj = self.app.userdb.get_user('bernie')
+        obj = self.app.store.get_user('bernie')
         self.assertIsNotNone(obj)
         self.assertEqual('bernie', obj.username)
         self.assertEqual('bernie@gmail.com', obj.email)
@@ -145,7 +138,7 @@ class UserManagerSQLiteTest(AppTestCase):
         self.assertEqual(3, obj.get_repo('bernie/laptop').maxage)
         
     def test_get_set(self):
-        user = self.app.userdb.add_user('larry', 'password')
+        user = self.app.store.add_user('larry', 'password')
 
         self.assertEqual('', user.email)
         self.assertEqual([], user.repos)
@@ -167,82 +160,84 @@ class UserManagerSQLiteTest(AppTestCase):
         self.assertEqual(True, user.is_admin)
 
     def test_users(self):
-        self.assertEqual([], list(self.app.userdb.users()))
-        self.app.userdb.add_user('annik')
-        users = list(self.app.userdb.users())
+        self.assertEqual([], list(self.app.store.users()))
+        self.app.store.add_user('annik')
+        users = list(self.app.store.users())
         self.assertEqual(1, len(users))
         self.assertEqual('annik', users[0].username)
+        self.assertEqual(1, self.app.store.count_users())
 
     def test_users_with_search(self):
-        self.assertEqual([], list(self.app.userdb.users()))
-        self.app.userdb.add_user('annik')
-        self.app.userdb.add_user('tom')
-        self.app.userdb.add_user('jeff')
-        self.app.userdb.add_user('josh')
-        users = list(self.app.userdb.users(search='j'))
+        self.assertEqual([], list(self.app.store.users()))
+        self.app.store.add_user('annik')
+        self.app.store.add_user('tom')
+        self.app.store.add_user('jeff')
+        self.app.store.add_user('josh')
+        users = list(self.app.store.users(search='j'))
         self.assertEqual(2, len(users))
         self.assertEqual('jeff', users[0].username)
         self.assertEqual('josh', users[1].username)
+        self.assertEqual(4, self.app.store.count_users())
         
     def test_users_with_criteria_admins(self):
-        self.assertEqual([], list(self.app.userdb.users()))
-        self.app.userdb.add_user('annik').is_admin = True
-        self.app.userdb.add_user('tom').is_admin = True
-        self.app.userdb.add_user('jeff')
-        self.app.userdb.add_user('josh')
-        users = list(self.app.userdb.users(criteria='admins'))
+        self.assertEqual([], list(self.app.store.users()))
+        self.app.store.add_user('annik').is_admin = True
+        self.app.store.add_user('tom').is_admin = True
+        self.app.store.add_user('jeff')
+        self.app.store.add_user('josh')
+        users = list(self.app.store.users(criteria='admins'))
         self.assertEqual(2, len(users))
         self.assertEqual('annik', users[0].username)
         self.assertEqual('tom', users[1].username)
         
     def test_users_with_criteria_ldap(self):
-        self.assertEqual([], list(self.app.userdb.users()))
-        self.app.userdb.add_user('annik', 'coucou')
-        self.app.userdb.add_user('tom')
-        users = list(self.app.userdb.users(criteria='ldap'))
+        self.assertEqual([], list(self.app.store.users()))
+        self.app.store.add_user('annik', 'coucou')
+        self.app.store.add_user('tom')
+        users = list(self.app.store.users(criteria='ldap'))
         self.assertEqual(1, len(users))
         self.assertEqual('tom', users[0].username)
         
     def test_users_with_criteria_invalid(self):
-        self.assertEqual([], list(self.app.userdb.users()))
-        self.app.userdb.add_user('annik', 'coucou')
-        self.app.userdb.add_user('tom')
-        users = list(self.app.userdb.users(criteria='invalid'))
+        self.assertEqual([], list(self.app.store.users()))
+        self.app.store.add_user('annik', 'coucou')
+        self.app.store.add_user('tom')
+        users = list(self.app.store.users(criteria='invalid'))
         self.assertEqual(0, len(users))
         
     def test_login(self):
         """Check if login work"""
-        userobj = self.app.userdb.add_user('tom', 'password')
-        self.assertIsNotNone(self.app.userdb.login('tom', 'password'))
-        self.assertFalse(self.app.userdb.login('tom', 'invalid'))
+        userobj = self.app.store.add_user('tom', 'password')
+        self.assertIsNotNone(self.app.store.login('tom', 'password'))
+        self.assertFalse(self.app.store.login('tom', 'invalid'))
         # Check if listener called
         self.mlistener.user_logined.assert_called_once_with(userobj, None)
 
     def login_with_invalid_password(self):
-        self.app.userdb.add_user('jeff', 'password')
-        self.assertFalse(self.app.userdb.login('jeff', 'invalid'))
+        self.app.store.add_user('jeff', 'password')
+        self.assertFalse(self.app.store.login('jeff', 'invalid'))
         # password is case sensitive
-        self.assertFalse(self.app.userdb.login('jeff', 'Password'))
+        self.assertFalse(self.app.store.login('jeff', 'Password'))
         # Match entire password
-        self.assertFalse(self.app.userdb.login('jeff', 'pass'))
-        self.assertFalse(self.app.userdb.login('jeff', ''))
+        self.assertFalse(self.app.store.login('jeff', 'pass'))
+        self.assertFalse(self.app.store.login('jeff', ''))
         # Check if listener called
         self.mlistener.user_logined.assert_not_called()
 
     def test_login_with_invalid_user(self):
         """Check if login work"""
-        self.assertIsNone(self.app.userdb.login('josh', 'password'))
+        self.assertIsNone(self.app.store.login('josh', 'password'))
         # Check if listener called
         self.mlistener.user_logined.assert_not_called()
 
     def test_repos(self):
-        self.assertEqual([], list(self.app.userdb.repos()))
-        user_obj = self.app.userdb.add_user('annik')
+        self.assertEqual([], list(self.app.store.repos()))
+        user_obj = self.app.store.add_user('annik')
         user_obj.repos = ['laptop', 'desktop']
-        user_obj = self.app.userdb.add_user('kim')
+        user_obj = self.app.store.add_user('kim')
         user_obj.repos = ['repo1']
         
-        data = list(self.app.userdb.repos())
+        data = list(self.app.store.repos())
         self.assertEqual(3, len(data))
         self.assertEqual('annik', data[0].owner)
         self.assertEqual('laptop', data[0].name)
@@ -251,44 +246,44 @@ class UserManagerSQLiteTest(AppTestCase):
         """
         Check if search is working.
         """
-        self.app.userdb.add_user('Charlie', 'password')
-        self.app.userdb.add_user('Bernard', 'password')
-        self.app.userdb.add_user('Kim', 'password')
-        users = list(self.app.userdb.users())
+        self.app.store.add_user('Charlie', 'password')
+        self.app.store.add_user('Bernard', 'password')
+        self.app.store.add_user('Kim', 'password')
+        users = list(self.app.store.users())
         self.assertEqual(3, len(users))
 
     def test_set_password_update(self):
-        self.app.userdb.add_user('annik', 'password')
-        self.assertFalse(self.app.userdb.set_password('annik', 'new_password'))
+        self.app.store.add_user('annik', 'password')
+        self.assertFalse(self.app.store.set_password('annik', 'new_password'))
         # Check new credentials
-        self.assertIsNotNone(self.app.userdb.login('annik', 'new_password'))
+        self.assertIsNotNone(self.app.store.login('annik', 'new_password'))
         # Check if listener called
         self.mlistener.user_password_changed.assert_called_once_with('annik', 'new_password')
 
     def test_set_password_with_old_password(self):
-        self.app.userdb.add_user('john', 'password')
-        self.app.userdb.set_password('john', 'new_password', old_password='password')
+        self.app.store.add_user('john', 'password')
+        self.app.store.set_password('john', 'new_password', old_password='password')
         # Check new credentials
-        self.assertIsNotNone(self.app.userdb.login('john', 'new_password'))
+        self.assertIsNotNone(self.app.store.login('john', 'new_password'))
         # Check if listener called
         self.mlistener.user_password_changed.assert_called_once_with('john', 'new_password')
 
     def test_set_password_with_invalid_old_password(self):
-        self.app.userdb.add_user('foo', 'password')
-        with self.assertRaises(RdiffError):
-            self.app.userdb.set_password('foo', 'new_password', old_password='invalid')
+        self.app.store.add_user('foo', 'password')
+        with self.assertRaises(ValueError):
+            self.app.store.set_password('foo', 'new_password', old_password='invalid')
         # Check if listener called
         self.mlistener.user_password_changed.assert_not_called()
 
     def test_set_password_update_not_exists(self):
         """Expect error when trying to update password of invalid user."""
-        with self.assertRaises(AssertionError):
-            self.app.userdb.set_password('bar', 'new_password')
+        with self.assertRaises(ValueError):
+            self.app.store.set_password('bar', 'new_password')
         # Check if listener called
         self.mlistener.user_password_changed.assert_not_called()
 
 
-class UserManagerSQLiteLdapTest(AppTestCase):
+class StoreWithLdapTest(AppTestCase):
 
     basedn = ('dc=nodomain', {
         'dc': ['nodomain'],
@@ -338,7 +333,7 @@ class UserManagerSQLiteLdapTest(AppTestCase):
         # Original setup
         AppTestCase.setUp(self)
         # Get reference to LdapStore
-        self.ldapstore = self.app.userdb._password_stores[0]
+        self.ldapstore = self.app.store._password_stores[0]
         # Create fake listener
         self.mlistener = IUserChangeListener(self.app)
         self.mlistener.user_added = MagicMock()
@@ -355,8 +350,8 @@ class UserManagerSQLiteLdapTest(AppTestCase):
 
     def test_add_user_to_sqlite(self):
         """Add user to local database."""
-        self.app.userdb.add_user('joe', 'password')
-        userobj = self.app.userdb.login('joe', 'password')
+        self.app.store.add_user('joe', 'password')
+        userobj = self.app.store.login('joe', 'password')
         self.assertIsNotNone(userobj)
         self.assertEqual('joe', userobj.username)
         # Check if listener called
@@ -364,8 +359,8 @@ class UserManagerSQLiteLdapTest(AppTestCase):
 
     def test_add_user_to_ldap(self):
         """Add user to LDAP."""
-        self.app.userdb.add_user('karl', 'password')
-        userobj = self.app.userdb.login('karl', 'password')
+        self.app.store.add_user('karl', 'password')
+        userobj = self.app.store.login('karl', 'password')
         self.assertIsNotNone(userobj)
         self.assertEqual('karl', userobj.username)
         # Check if listener called
@@ -374,27 +369,22 @@ class UserManagerSQLiteLdapTest(AppTestCase):
     def test_delete_user(self):
         """Create then delete a user."""
         # Create user
-        self.app.userdb.add_user('vicky')
-        self.assertTrue(self.app.userdb.exists('vicky'))
-        self.assertIsNotNone(self.app.userdb.login('vicky', 'password'))
+        self.app.store.add_user('vicky')
+        self.assertIsNotNone(self.app.store.get_user('vicky'))
+        self.assertIsNotNone(self.app.store.login('vicky', 'password'))
         # Delete user.
-        self.assertTrue(self.app.userdb.delete_user('vicky'))
-        self.assertFalse(self.app.userdb.exists('vicky'))
+        self.assertTrue(self.app.store.delete_user('vicky'))
+        self.assertIsNone(self.app.store.get_user('vicky'))
 
     def test_delete_user_with_invalid_user(self):
-        with self.assertRaises(AssertionError):
-            self.app.userdb.delete_user('eve')
+        self.assertFalse(self.app.store.delete_user('eve'))
 
-    def test_exists(self):
-        """Check if user doesn't exists when only in LDAP."""
-        self.assertFalse(self.app.userdb.exists('bob'))
-
-    def test_exists_with_invalid_user(self):
-        self.assertFalse(self.app.userdb.exists('invalid'))
+    def test_get_user_with_invalid_user(self):
+        self.assertIsNone(self.app.store.get_user('invalid'))
 
     def test_get_set(self):
         username = 'larry'
-        user = self.app.userdb.add_user(username, 'password')
+        user = self.app.store.add_user(username, 'password')
 
         self.assertEqual('', user.email)
         self.assertEqual([], user.repos)
@@ -406,47 +396,47 @@ class UserManagerSQLiteLdapTest(AppTestCase):
         user.email = 'larry@gmail.com'
         user.repos = ['computer', 'laptop']
 
-        user = self.app.userdb.get_user(username)
+        user = self.app.store.get_user(username)
         self.assertEqual('larry@gmail.com', user.email)
         self.assertEqual(['computer', 'laptop'], user.repos)
         self.assertEqual('/backups/', user.user_root)
 
     def test_list(self):
-        self.assertEqual([], list(self.app.userdb.users()))
-        self.app.userdb.add_user('annik')
-        users = list(self.app.userdb.users())
+        self.assertEqual([], list(self.app.store.users()))
+        self.app.store.add_user('annik')
+        users = list(self.app.store.users())
         self.assertEqual('annik', users[0].username)
 
     def test_login(self):
         """Check if login work"""
-        self.app.userdb.add_user('tom', 'password')
-        self.assertIsNotNone(self.app.userdb.login('tom', 'password'))
-        self.assertIsNone(self.app.userdb.login('tom', 'invalid'))
+        self.app.store.add_user('tom', 'password')
+        self.assertIsNotNone(self.app.store.login('tom', 'password'))
+        self.assertIsNone(self.app.store.login('tom', 'invalid'))
 
     def test_login_with_invalid_password(self):
-        self.app.userdb.add_user('jeff', 'password')
-        self.assertIsNone(self.app.userdb.login('jeff', 'invalid'))
+        self.app.store.add_user('jeff', 'password')
+        self.assertIsNone(self.app.store.login('jeff', 'invalid'))
         # password is case sensitive
-        self.assertIsNone(self.app.userdb.login('jeff', 'Password'))
+        self.assertIsNone(self.app.store.login('jeff', 'Password'))
         # Match entire password
-        self.assertIsNone(self.app.userdb.login('jeff', 'pass'))
-        self.assertIsNone(self.app.userdb.login('jeff', ''))
+        self.assertIsNone(self.app.store.login('jeff', 'pass'))
+        self.assertIsNone(self.app.store.login('jeff', ''))
 
     def test_login_with_invalid_user(self):
         """Check if login work"""
-        self.assertIsNone(self.app.userdb.login('josh', 'password'))
+        self.assertIsNone(self.app.store.login('josh', 'password'))
 
     def test_login_with_invalid_user_in_ldap(self):
         """Check if login work"""
-        self.assertIsNone(self.app.userdb.login('kim', 'password'))
+        self.assertIsNone(self.app.store.login('kim', 'password'))
 
     def test_login_with_create_user(self):
         """Check if login create the user in database if user exists in LDAP"""
-        self.assertFalse(self.app.userdb.exists('tony'))
+        self.assertIsNone(self.app.store.get_user('tony'))
         self.app.cfg['addmissinguser'] = 'true'
         try:
-            userobj = self.app.userdb.login('tony', 'password')
-            self.assertTrue(self.app.userdb.exists('tony'))
+            userobj = self.app.store.login('tony', 'password')
+            self.assertIsNotNone(self.app.store.get_user('tony'))
             self.assertFalse(userobj.is_admin)
             # Check listener
             self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
@@ -455,37 +445,37 @@ class UserManagerSQLiteLdapTest(AppTestCase):
             self.app.cfg['addmissinguser'] = 'false'
 
     def test_get_user_invalid(self):
-        self.assertIsNone(self.app.userdb.get_user('invalid'))
+        self.assertIsNone(self.app.store.get_user('invalid'))
 
     def test_set_password_update(self):
-        self.app.userdb.add_user('annik')
-        self.assertFalse(self.app.userdb.set_password('annik', 'new_password'))
+        self.app.store.add_user('annik')
+        self.assertFalse(self.app.store.set_password('annik', 'new_password'))
         # Check new credentials
-        self.assertIsNotNone(self.app.userdb.login('annik', 'new_password'))
+        self.assertIsNotNone(self.app.store.login('annik', 'new_password'))
 
     def test_set_password_with_old_password(self):
-        self.app.userdb.add_user('john')
-        self.app.userdb.set_password('john', 'new_password', old_password='password')
+        self.app.store.add_user('john')
+        self.app.store.set_password('john', 'new_password', old_password='password')
         # Check new credentials
-        self.assertIsNotNone(self.app.userdb.login('john', 'new_password'))
+        self.assertIsNotNone(self.app.store.login('john', 'new_password'))
 
     def test_set_password_with_invalid_old_password(self):
-        self.app.userdb.add_user('foo')
-        with self.assertRaises(RdiffError):
-            self.app.userdb.set_password('foo', 'new_password', old_password='invalid')
+        self.app.store.add_user('foo')
+        with self.assertRaises(ValueError):
+            self.app.store.set_password('foo', 'new_password', old_password='invalid')
 
     def test_set_password_update_not_exists(self):
         """Expect error when trying to update password of invalid user."""
-        with self.assertRaises(AssertionError):
-            self.assertFalse(self.app.userdb.set_password('bar', 'new_password'))
+        with self.assertRaises(ValueError):
+            self.assertFalse(self.app.store.set_password('bar', 'new_password'))
 
     def test_set_password_empty(self):
         """Expect error when trying to update password of invalid user."""
-        with self.assertRaises(RdiffError):
-            self.assertFalse(self.app.userdb.set_password('john', ''))
+        with self.assertRaises(ValueError):
+            self.assertFalse(self.app.store.set_password('john', ''))
 
 
-class UserManagerWithAdmin(AppTestCase):
+class StoreWithAdmin(AppTestCase):
     
     reset_testcases = True
 
@@ -499,21 +489,21 @@ class UserManagerWithAdmin(AppTestCase):
         """
         Just make a call to the function.
         """
-        userobj = self.app.userdb.get_user(self.USERNAME)
+        userobj = self.app.store.get_user(self.USERNAME)
         userobj.disk_quota
 
     def test_disk_usage(self):
         """
         Just make a call to the function.
         """
-        userobj = self.app.userdb.get_user(self.USERNAME)
+        userobj = self.app.store.get_user(self.USERNAME)
         disk_usage = userobj.disk_usage
         self.assertIn('avail', disk_usage)
         self.assertIn('used', disk_usage)
         self.assertIn('size', disk_usage)
 
 
-class UserManagerSSHKeys(AppTestCase):
+class StoreTestSSHKeys(AppTestCase):
     """
     Testcases for ssh key management.
     """
@@ -544,7 +534,7 @@ class UserManagerSSHKeys(AppTestCase):
         # Read the pub key
         key = self._read_ssh_key()
         # Add the key to the user
-        userobj = self.app.userdb.get_user(self.USERNAME)
+        userobj = self.app.store.get_user(self.USERNAME)
         userobj.add_authorizedkey(key)
         
         # validate
@@ -556,7 +546,7 @@ class UserManagerSSHKeys(AppTestCase):
         """
         Add an ssh key for a user with an authorizedkey file.
         """
-        userobj = self.app.userdb.get_user(self.USERNAME)
+        userobj = self.app.store.get_user(self.USERNAME)
 
         # Create empty authorized_keys file
         os.mkdir(os.path.join(userobj.user_root, '.ssh'))
@@ -577,7 +567,7 @@ class UserManagerSSHKeys(AppTestCase):
         """
         # Update user with ssh keys.
         data = self._read_authorized_keys()
-        userobj = self.app.userdb.get_user(self.USERNAME)
+        userobj = self.app.store.get_user(self.USERNAME)
         for k in authorizedkeys.read(StringIO(data)):
             try:
                 userobj.add_authorizedkey(k.getvalue())
@@ -601,7 +591,7 @@ class UserManagerSSHKeys(AppTestCase):
         """
         # Create authorized_keys file
         data = self._read_authorized_keys()
-        userobj = self.app.userdb.get_user(self.USERNAME)
+        userobj = self.app.store.get_user(self.USERNAME)
         os.mkdir(os.path.join(userobj.user_root, '.ssh'))
         filename = os.path.join(userobj.user_root, '.ssh', 'authorized_keys')
         with open(filename, 'w') as f :
@@ -631,7 +621,7 @@ class UserObjectTest(AppTestCase):
     PASSWORD = 'admin123'
     
     def test_set_get_repos(self):
-        userobj = self.app.userdb.get_user(self.USERNAME)
+        userobj = self.app.store.get_user(self.USERNAME)
         self.assertEquals(['testcases'], userobj.repos)
         
         # Test empty list
@@ -666,7 +656,7 @@ class RepoObjectTest(AppTestCase):
     PASSWORD = 'admin123'
 
     def test_set_get_encoding(self):
-        userobj = self.app.userdb.get_user(self.USERNAME)
+        userobj = self.app.store.get_user(self.USERNAME)
         repo_obj = userobj.get_repo(self.REPO)
         repo_obj.encoding = "cp1252"
         self.assertEqual("cp1252", repo_obj.encoding)
@@ -675,7 +665,7 @@ class RepoObjectTest(AppTestCase):
             repo_obj.encoding = "invalid"
             
     def test_set_get_maxage(self):
-        userobj = self.app.userdb.get_user(self.USERNAME)
+        userobj = self.app.store.get_user(self.USERNAME)
         repo_obj = userobj.get_repo(self.REPO)
         repo_obj.maxage = 10
         self.assertEqual(10, repo_obj.maxage)
@@ -684,7 +674,7 @@ class RepoObjectTest(AppTestCase):
             repo_obj.maxage = "invalid"
 
     def test_set_get_keepdays(self):
-        userobj = self.app.userdb.get_user(self.USERNAME)
+        userobj = self.app.store.get_user(self.USERNAME)
         repo_obj = userobj.get_repo(self.REPO)
         repo_obj.keepdays = 10
         self.assertEqual(10, repo_obj.keepdays)

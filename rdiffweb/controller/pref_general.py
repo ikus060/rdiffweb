@@ -32,7 +32,6 @@ import re
 from builtins import str
 import cherrypy
 
-
 PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
 
 # Define the logger
@@ -66,8 +65,11 @@ class PrefsGeneralPanelProvider(Controller):
         # Update user password
         user = self.app.currentuser.username
         _logger.info("updating user [%s] password", user)
-        self.app.userdb.set_password(user, kwargs['new'], old_password=kwargs['current'])
-        return {'success': _("Password updated successfully.")}
+        try:
+            self.app.store.set_password(user, kwargs['new'], old_password=kwargs['current'])
+            return {'success': _("Password updated successfully.")}
+        except ValueError as e:
+            return {'warning': str(e)}
 
     def _handle_set_profile_info(self, **kwargs):
         """

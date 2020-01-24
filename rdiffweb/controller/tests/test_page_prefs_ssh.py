@@ -57,7 +57,7 @@ class SSHKeysTest(WebCase):
 
     def test_add(self):
         # Delete existing keys
-        user = self.app.userdb.get_user('admin')
+        user = self.app.store.get_user('admin')
         for key in user.authorizedkeys:
             user.remove_authorizedkey(key.fingerprint)
         self.assertEquals(0, len(list(user.authorizedkeys)))
@@ -74,7 +74,7 @@ class SSHKeysTest(WebCase):
 
     def test_add_duplicate(self):
         # Delete existing keys
-        user = self.app.userdb.get_user('admin')
+        user = self.app.store.get_user('admin')
         for key in user.authorizedkeys:
             user.remove_authorizedkey(key.fingerprint)
         self.assertEquals(0, len(list(user.authorizedkeys)))
@@ -82,6 +82,7 @@ class SSHKeysTest(WebCase):
         # Add a new key
         self._add_ssh_key("test@mysshkey", "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530")
         self.assertStatus('200 OK')
+        self.assertNotInBody("Duplicate key.")
         self.assertEquals(1, len(list(user.authorizedkeys)))
         
         # Add a new key
@@ -92,7 +93,7 @@ class SSHKeysTest(WebCase):
 
     def test_add_invalid(self):
         # Delete existing keys
-        user = self.app.userdb.get_user('admin')
+        user = self.app.store.get_user('admin')
         for key in user.authorizedkeys:
             user.remove_authorizedkey(key.fingerprint)
             
@@ -103,7 +104,7 @@ class SSHKeysTest(WebCase):
 
     def test_delete(self):
         # Delete existing keys
-        user = self.app.userdb.get_user('admin')
+        user = self.app.store.get_user('admin')
         for key in user.authorizedkeys:
             user.remove_authorizedkey(key.fingerprint)
         self.assertEquals(0, len(list(user.authorizedkeys)))
@@ -120,7 +121,7 @@ class SSHKeysTest(WebCase):
 
     def test_delete_invalid(self):
         # Delete existing keys
-        user = self.app.userdb.get_user('admin')
+        user = self.app.store.get_user('admin')
         for key in user.authorizedkeys:
             user.remove_authorizedkey(key.fingerprint)
         self.assertEquals(0, len(list(user.authorizedkeys)))

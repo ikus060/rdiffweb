@@ -45,7 +45,7 @@ class NotificationTest(AppTestCase):
         Run the notification and check if mails are sent
         """
         # Set user config
-        user = self.app.userdb.get_user(self.USERNAME)
+        user = self.app.store.get_user(self.USERNAME)
         user.email = 'test@test.com'
         user.get_repo(self.REPO).maxage = 1
 
@@ -65,7 +65,7 @@ class NotificationTest(AppTestCase):
         Run the notification and check if mails are sent
         """
         # Set user config
-        user = self.app.userdb.get_user(self.USERNAME)
+        user = self.app.store.get_user(self.USERNAME)
         user.email = 'test@test.com'
         user.get_repo(self.REPO).maxage = -1
 
@@ -87,7 +87,7 @@ class NotificationTest(AppTestCase):
         """
         with patch('rdiffweb.core.notification.smtplib') as patcher:
             # Set user config
-            user = self.app.userdb.get_user(self.USERNAME)
+            user = self.app.store.get_user(self.USERNAME)
             user.email = 'test@test.com'
 
             # Set email config
@@ -131,7 +131,7 @@ Here is the link you wanted."""
         n.send_mail = MagicMock()
 
         # Set user config
-        user = self.app.userdb.get_user(self.USERNAME)
+        user = self.app.store.get_user(self.USERNAME)
         user.email = 'test@test.com'
 
         # Expect it to be called.
@@ -139,7 +139,7 @@ Here is the link you wanted."""
 
     def test_password_change_notification(self):
         # Set user config
-        user = self.app.userdb.get_user(self.USERNAME)
+        user = self.app.store.get_user(self.USERNAME)
         user.email = 'test@test.com'
         
         # Get ref to notification plugin
@@ -149,7 +149,7 @@ Here is the link you wanted."""
         n.send_mail = MagicMock()
 
         # Change password
-        self.app.userdb.set_password(self.USERNAME, 'new_password')
+        self.app.store.set_password(self.USERNAME, 'new_password')
 
         # Expect it to be called.
         n.send_mail.assert_called_once_with(ANY, ANY, 'password_changed.html')
