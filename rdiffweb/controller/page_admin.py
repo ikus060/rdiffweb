@@ -279,11 +279,11 @@ class AdminPage(Controller):
         if action == "delete":
             if username == self.app.currentuser.username:
                 raise RdiffWarning(_("You cannot remove your own account!"))
-            logger.info("deleting user [%s]", username)
-            if not self.app.store.delete_user(username):
+            user = self.app.store.get_user(username)
+            if not user:
                 raise RdiffWarning(_("User doesn't exists!"))
-            else:
-                success = _("User account removed.")
+            user.delete()
+            success = _("User account removed.")
 
         # Return messages
         return {'success': success}

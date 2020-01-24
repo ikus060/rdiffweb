@@ -389,6 +389,27 @@ class UserObject(object):
         self._set_attr('password', 'password', _hash_password(password))
         self._store._notify('user_password_changed', self.username, password)
 
+    def delete(self):
+        """
+        Delete the given user from password store.
+
+        Return True if the user was deleted.
+        Return False if the user didn't exists.
+        Raise a ValueError when trying to delete the admin user.
+        """
+        # Make sure we are not trying to delete the admin user.
+        if self.username == self._store._admin_user:
+            raise ValueError(_("can't delete admin user"))
+            
+        # Delete user from database (required).
+        logger.info("deleting user [%s] from database", self.username)
+        self._db.delete('sshkeys', userid=self._userid)
+        self._db.delete('repos', userid=self._userid)
+        deleted = self._db.deleteone('users', userid=self._userid)
+        assert deleted, 'fail to delete user'
+        self._store._notify('user_deleted', self.username)
+        return True
+
     # Declare properties
     userid = property(fget=lambda x: x._get_attr('userid'))
     is_admin = property(fget=lambda x: x._get_attr('isadmin'), fset=lambda x, y: x._set_attr('is_admin', 'isadmin', y))
@@ -565,37 +586,6 @@ class Store():
 
     def count_repos(self):
         return self._database.count('repos')
-
-    def delete_user(self, user):
-        """
-        Delete the given user from password store.
-
-        Return True if the user was deleted.
-        Return False if the user didn't exists.
-        Raise a ValueError when trying to delete the admin user.
-        """
-        # Get the username from the arguments
-        assert user
-        assert hasattr(user, 'userid') or isinstance(user, str)
-        username = user.username if hasattr(user, 'userid') else user 
-        
-        # Query database for user
-        userobj = self.get_user(username)
-        if not userobj:
-            return False
-        
-        # Make sure we are not trying to delete the admin user.
-        if userobj.username == self._admin_user:
-            raise ValueError(_("can't delete admin user"))
-            
-        # Delete user from database (required).
-        logger.info("deleting user [%s] from database", userobj.username)
-        self._database.delete('sshkeys', userid=userobj.userid)
-        self._database.delete('repos', userid=userobj.userid)
-        deleted = self._database.deleteone('users', userid=userobj.userid)
-        assert deleted, 'fail to delete user'
-        self._notify('user_deleted', user)
-        return True
 
     def get_user(self, user):
         """Return a user object."""

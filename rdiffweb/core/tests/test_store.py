@@ -90,24 +90,19 @@ class StoreSQLiteTest(AppTestCase):
 
     def test_delete_admin_user(self):
         # Trying to delete admin user should raise an error.
-        self.app.store.add_user('admin')
+        userobj = self.app.store.add_user('admin')
         with self.assertRaises(ValueError):
-            self.app.store.delete_user('admin')
+            userobj.delete()
 
     def test_delete_user(self):
         # Create user
-        self.app.store.add_user('vicky', 'password')
+        userobj = self.app.store.add_user('vicky', 'password')
         self.assertIsNotNone(self.app.store.get_user('vicky'))
         # Delete user
-        self.assertTrue(self.app.store.delete_user('vicky'))
+        userobj.delete()
         self.assertIsNone(self.app.store.get_user('vicky'))
         # Check if listener called
         self.mlistener.user_deleted.assert_called_once_with('vicky')
-
-    def test_delete_user_with_invalid_user(self):
-        self.assertFalse(self.app.store.delete_user('eve'))
-        # Check if listener called
-        self.mlistener.user_deleted.assert_not_called()
 
     def test_get_user(self):
         """
@@ -362,15 +357,12 @@ class StoreWithLdapTest(AppTestCase):
     def test_delete_user(self):
         """Create then delete a user."""
         # Create user
-        self.app.store.add_user('vicky')
+        userobj = self.app.store.add_user('vicky')
         self.assertIsNotNone(self.app.store.get_user('vicky'))
         self.assertIsNotNone(self.app.store.login('vicky', 'password'))
         # Delete user.
-        self.assertTrue(self.app.store.delete_user('vicky'))
+        self.assertTrue(userobj.delete())
         self.assertIsNone(self.app.store.get_user('vicky'))
-
-    def test_delete_user_with_invalid_user(self):
-        self.assertFalse(self.app.store.delete_user('eve'))
 
     def test_get_user_with_invalid_user(self):
         self.assertIsNone(self.app.store.get_user('invalid'))
