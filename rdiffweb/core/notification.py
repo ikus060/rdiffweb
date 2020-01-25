@@ -35,7 +35,7 @@ from rdiffweb.core import librdiff
 from rdiffweb.core.config import Option, BoolOption
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_deamon import Deamon
-from rdiffweb.core.user import IUserChangeListener
+from rdiffweb.core.store import IUserChangeListener
 
 
 _logger = logging.getLogger(__name__)
@@ -135,7 +135,7 @@ class NotificationPlugin(Deamon, IUserChangeListener):
 
     def __init__(self, bus, app):
         self.app = app
-        self.app.userdb.add_change_listener(self)
+        self.app.store.add_change_listener(self)
         Deamon.__init__(self, bus)
 
     @property
@@ -173,7 +173,7 @@ class NotificationPlugin(Deamon, IUserChangeListener):
         """
 
         # get User object (to get email)
-        userobj = self.app.userdb.get_user(username)
+        userobj = self.app.store.get_user(username)
         assert userobj
         
         if not userobj.email:
@@ -192,7 +192,7 @@ class NotificationPlugin(Deamon, IUserChangeListener):
 
         def _user_repos():
             """Return a generator trought user repos to be notified."""
-            for user in self.app.userdb.users():
+            for user in self.app.store.users():
                 # Check if user has email.
                 if not user.email:
                     continue

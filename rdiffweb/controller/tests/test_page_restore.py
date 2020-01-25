@@ -332,7 +332,7 @@ class RestoreTest(WebCase):
         
     def test_as_another_user(self):
         # Create a nother user with admin right
-        user_obj = self.app.userdb.add_user('anotheruser', 'password')
+        user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
         user_obj.repos = ['testcases']
         
@@ -341,7 +341,7 @@ class RestoreTest(WebCase):
         self.assertInBody("Ajout d'info")
         
         # Remove admin right
-        admin = self.app.userdb.get_user('admin')
+        admin = self.app.store.get_user('admin')
         admin.is_admin = 0
         
         # Browse admin's repos

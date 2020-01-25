@@ -55,7 +55,7 @@ class RemoveOlderTest(WebCase):
         self.getPage("/api/remove-older/" + self.REPO + "/", method="POST", body={'keepdays': '4'})
         self.assertStatus(200)
         # Check results
-        user = self.app.userdb.get_user(self.USERNAME)
+        user = self.app.store.get_user(self.USERNAME)
         repo = user.get_repo(self.REPO)
         self.assertEqual(4, repo.keepdays)
 
@@ -69,7 +69,7 @@ class RemoveOlderTest(WebCase):
         self._settings(self.REPO)
         self.assertInBody('<option selected value="1">')
         # Also check if the value is updated in database
-        user = self.app.userdb.get_user(self.USERNAME)
+        user = self.app.store.get_user(self.USERNAME)
         repo = user.get_repo(self.REPO)
         keepdays = repo.keepdays
         self.assertEqual(1, keepdays)
@@ -81,7 +81,7 @@ class RemoveOlderTest(WebCase):
         self._remove_older(self.REPO, '1')
         self.assertStatus(200)
         # Get current user
-        user = self.app.userdb.get_user(self.USERNAME)
+        user = self.app.store.get_user(self.USERNAME)
         repo = user.get_repo(self.REPO)
         # Run the job.
         p = RemoveOlder(cherrypy.engine, self.app)
@@ -96,7 +96,7 @@ class RemoveOlderTest(WebCase):
         as unicode value.
         """
         # Get current user
-        user = self.app.userdb.get_user(self.USERNAME)
+        user = self.app.store.get_user(self.USERNAME)
         repo = user.get_repo(self.REPO)
         # Run the job.
         with self.assertRaises(AssertionError):
@@ -104,7 +104,7 @@ class RemoveOlderTest(WebCase):
 
     def test_as_another_user(self):
         # Create a nother user with admin right
-        user_obj = self.app.userdb.add_user('anotheruser', 'password')
+        user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
         user_obj.repos = ['testcases']
         
@@ -113,7 +113,7 @@ class RemoveOlderTest(WebCase):
         self.assertEquals(1, user_obj.get_repo('anotheruser/testcases').keepdays)
         
         # Remove admin right
-        admin = self.app.userdb.get_user('admin')
+        admin = self.app.store.get_user('admin')
         admin.is_admin = 0
         
         # Browse admin's repos
@@ -149,7 +149,7 @@ class RemoveOlderTestWithMock(WebCase):
         p = RemoveOlder(cherrypy.engine, self.app)
         p._remove_older = MagicMock()
         # Set a keepdays
-        user = self.app.userdb.get_user(self.USERNAME)
+        user = self.app.store.get_user(self.USERNAME)
         repo = user.get_repo(self.REPO)
         repo.keepdays = 30
         # Call the job.

@@ -73,13 +73,14 @@ class MockRdiffwebApp(RdiffwebApp):
         """
         Reset the application. Delete all data from database.
         """
-        # Delete all user from database
-        for user in self.userdb._database.users():
-            self.userdb._database.delete_user(user)
+        # Delete all data from database directly.
+        self.store._database.delete('users')
+        self.store._database.delete('repos')
+        self.store._database.delete('sshkeys')
 
         # Create new user admin
         if username and password:
-            user = self.userdb.add_user(username, password)
+            user = self.store.add_user(username, password)
             user.is_admin = True
 
     def reset_testcases(self):
@@ -90,7 +91,7 @@ class MockRdiffwebApp(RdiffwebApp):
         tarfile.open(testcases).extractall(native_str(new))
 
         # Register repository
-        for user in self.userdb.users():
+        for user in self.store.users():
             user.user_root = new
             user.repos = ['testcases']
 

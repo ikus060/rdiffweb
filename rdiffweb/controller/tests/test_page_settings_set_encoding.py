@@ -55,7 +55,7 @@ class SetEncodingTest(WebCase):
         self.getPage("/api/set-encoding/" + self.REPO + "/", method="POST", body={'new_encoding': 'cp1252'})
         self.assertStatus(200)
         # Check results
-        user = self.app.userdb.get_user(self.USERNAME)
+        user = self.app.store.get_user(self.USERNAME)
         repo = user.get_repo(self.REPO)
         self.assertEqual('cp1252', repo.encoding)
 
@@ -66,7 +66,7 @@ class SetEncodingTest(WebCase):
         self._set_encoding(self.REPO, 'cp1252')
         self.assertStatus(200)
         self.assertInBody("Updated")
-        self.assertEquals('cp1252', self.app.userdb.get_user(self.USERNAME).get_repo(self.REPO).encoding)
+        self.assertEquals('cp1252', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
         # Get back encoding.
         self._settings(self.REPO)
         self.assertInBody('selected value="cp1252"')
@@ -78,7 +78,7 @@ class SetEncodingTest(WebCase):
         self._set_encoding(self.REPO, 'US-ASCII')
         self.assertStatus(200)
         self.assertInBody("Updated")
-        self.assertEquals('ascii', self.app.userdb.get_user(self.USERNAME).get_repo(self.REPO).encoding)
+        self.assertEquals('ascii', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
         # Get back encoding.
         self._settings(self.REPO)
         self.assertInBody('selected value="ascii"')
@@ -102,11 +102,11 @@ class SetEncodingTest(WebCase):
         # Get back encoding.
         self._settings(self.REPO)
         self.assertInBody('selected value="cp1252"')
-        self.assertEquals('cp1252', self.app.userdb.get_user(self.USERNAME).get_repo(self.REPO).encoding)
+        self.assertEquals('cp1252', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
         
     def test_as_another_user(self):
         # Create a nother user with admin right
-        user_obj = self.app.userdb.add_user('anotheruser', 'password')
+        user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
         user_obj.repos = ['testcases']
         
@@ -115,7 +115,7 @@ class SetEncodingTest(WebCase):
         self.assertEquals('cp1252', user_obj.get_repo('anotheruser/testcases').encoding)
         
         # Remove admin right
-        admin = self.app.userdb.get_user('admin')
+        admin = self.app.store.get_user('admin')
         admin.is_admin = 0
         
         # Browse admin's repos

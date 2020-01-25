@@ -158,7 +158,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self._add_user("test6", None, "test6", None, False)
         self.assertInBody("User added successfully.")
         
-        user = self.app.userdb.get_user('test6')
+        user = self.app.store.get_user('test6')
         self.assertEquals('', user.user_root)
 
     def test_delete_user_with_not_existing_username(self):
@@ -166,7 +166,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure to delete invalid username.
         """
         self._delete_user("test3")
-        self.assertStatus(500)
+        self.assertInBody("User doesn&#39;t exists!")
 
     def test_delete_our_self(self):
         """
@@ -221,7 +221,7 @@ class AdminUsersAsUserTest(AbstractAdminTest):
     def setUp(self):
         WebCase.setUp(self)
         # Add test user
-        self.app.userdb.add_user('test', 'test123')
+        self.app.store.add_user('test', 'test123')
         self._login('test', 'test123')
 
     def test_add_user(self):

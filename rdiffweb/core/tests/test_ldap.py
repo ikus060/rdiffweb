@@ -23,15 +23,15 @@ Created on Oct 17, 2015
 
 from __future__ import unicode_literals
 
+from builtins import str
 import logging
-from rdiffweb.test import AppTestCase
 import unittest
 
-from builtins import str
 from mockldap import MockLdap
 
 from rdiffweb.core import RdiffError
-from rdiffweb.core.user_ldap_auth import LdapPasswordStore
+from rdiffweb.core.ldap_auth import LdapPasswordStore
+from rdiffweb.test import AppTestCase
 
 
 def _ldap_user(name, password='password'):
@@ -95,7 +95,7 @@ class UserManagerLdapTest(AppTestCase):
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
         # Get reference to LdapStore
-        self.ldapstore = self.app.userdb._password_stores[0]
+        self.ldapstore = self.app.store._password_stores[0]
         self.assertTrue(isinstance(self.ldapstore, LdapPasswordStore))
 
     def tearDown(self):
@@ -191,7 +191,7 @@ class UserManagerLdapNoPasswordChangeTest(AppTestCase):
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
         # Get reference to LdapStore
-        self.ldapstore = self.app.userdb._password_stores[0]
+        self.ldapstore = self.app.store._password_stores[0]
 
     def tearDown(self):
         # Stop patching ldap.initialize and reset state.
@@ -272,7 +272,7 @@ class UserManagerLdapWithRequiredGroupTest(AppTestCase):
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
         # Get reference to LdapStore
-        self.ldapstore = self.app.userdb._password_stores[0]
+        self.ldapstore = self.app.store._password_stores[0]
         self.assertTrue(isinstance(self.ldapstore, LdapPasswordStore))
 
     def tearDown(self):
