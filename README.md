@@ -75,6 +75,17 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
 
 # Changelog
 
+## 1.2.0 (2020-01-30)
+
+This release focus on improving the database layers for better extendability to add more type of data and to support more databases backend like postgresql in the near future.
+
+ * Add explicit testing for Debian Stretch & Buster
+ * Change the persistence layers
+   * Minimize number of SQL queries
+   * Add object lazy loading
+   * Add object data caching
+ * Fix bugs with SQLite <= 3.16 (Debian Stretch)
+
 ## 1.1.0 (2019-10-31)
 
 This release focus on improving the admin area and building the fundation for repository access control list (ACL).
