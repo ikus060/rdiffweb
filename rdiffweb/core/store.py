@@ -547,7 +547,8 @@ class Store():
                     self._change_listeners.append(listener)
             except:
                 logging.error("IUserChangeListener [%s] fail to load", entry_point)
-        
+    
+    def create_admin_user(self):
         # Check if admin user exists. If not, created it.
         if not self.get_user(self._admin_user):
             userobj = self.add_user(self._admin_user, 'admin123')
