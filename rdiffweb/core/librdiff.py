@@ -937,7 +937,8 @@ class RdiffRepo(object):
 
     def get_path(self, path):
         """Return a new instance of DirEntry to represent the given path."""
-        assert isinstance(path, bytes)
+        if isinstance(path, str):
+            path = encodefilename(path)
         path = os.path.normpath(path.strip(b"/"))
 
         # Get if the path request is the root path.

@@ -233,14 +233,18 @@ class BrowsePageTest(WebCase):
         self.assertInBody('Files')
         
     def test_as_another_user(self):
-        # Create a nother user with admin right
+        # Remove our repo
+        admin = self.app.store.get_user('admin')
+        admin.repos = []
+        
+        # Create an another user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
         user_obj.repos = ['testcases']
         self.getPage('/browse/admin')
         self.assertStatus('404 Not Found')
         
-        # Browse admin's repos
+        # Browse other user's repos
         self.getPage('/browse/anotheruser')
         self.assertStatus('404 Not Found')
         self.getPage('/browse/anotheruser/testcases')
@@ -252,7 +256,7 @@ class BrowsePageTest(WebCase):
         admin = self.app.store.get_user('admin')
         admin.is_admin = 0
         
-        # Browse admin's repos
+        # Browse other user's repos
         self.getPage('/browse/anotheruser/testcases')
         self.assertStatus('403 Forbidden')
         self.getPage('/browse/anotheruser/testcases/Revisions/')
