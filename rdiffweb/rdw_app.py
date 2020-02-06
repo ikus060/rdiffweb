@@ -146,6 +146,7 @@ class RdiffwebApp(Application):
 
         # create user manager
         self.store = Store(self)
+        self.store.create_admin_user()
 
     @property
     def currentuser(self):
