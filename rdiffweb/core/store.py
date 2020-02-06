@@ -25,7 +25,7 @@ import os
 import sqlite3
 
 from future.utils import python_2_unicode_compatible
-from future.utils.surrogateescape import encodefilename
+from future.utils.surrogateescape import encodefilename, decodefilename
 import pkg_resources
 
 from rdiffweb.core import RdiffError, authorizedkeys
@@ -49,7 +49,11 @@ SEP = b'/'
 
 
 def normpath(val):
-    "Normalize path value"
+    """
+    Normalize path value.
+    Remove leading /
+    Add ending /
+    """
     if not val.endswith(SEP):
         val += SEP
     if val.startswith(SEP):
@@ -57,8 +61,10 @@ def normpath(val):
     return val
 
 
-def split_path(path):
-    "Split the given path into <username> / <path>"
+def _split_path(path):
+    """
+    Split the given path into <username as str> / <path as bytes>
+    """
     # First part is the username
     assert path
     if isinstance(path, str):
@@ -159,44 +165,54 @@ class UserObject(object):
         Return the repository identified as `name`.
         `name` may be a bytes string or unicode string.
         """
-        username, name = split_path(name)
+        username, name = _split_path(name)
+        name = decodefilename(name)
         
         # Check if user has permissions to access this path
         if username != self.username and not self.is_admin:
             raise AccessDeniedError(name)
+        
+        # Get the userid associated to the username.
+        user_obj = self
+        userid = self._userid
+        if username != self.username:
+            row = self._db.findone('users', username=username)
+            if not row:
+                raise DoesNotExistError(name)
+            userid = row['userid']
+            user_obj = UserObject(self._store, row)
             
-        name = normpath(name)
-        for r in self._get_repos():
-            if name == normpath(encodefilename(r)):
-                if username == self.username:
-                    user_obj = self
-                else:
-                    user_obj = self._store.get_user(username)
-                return RepoObject(user_obj, r)
-        raise DoesNotExistError(name)
+        # Search the repo with and without leading "/"
+        row = (self._db.findone('repos', userid=userid, repopath=name)
+               or self._db.findone('repos', userid=userid, repopath="/" + name)
+               or self._db.findone('repos', userid=userid, repopath=name + "/")
+               or self._db.findone('repos', userid=userid, repopath="/" + name + "/"))
+        if not row:
+            raise DoesNotExistError(name)
+        return RepoObject(user_obj, row)
     
     def get_repo_path(self, path):
         """
         Return a the repository identified by the given `path`.
         """
-        username, path = split_path(path)
-
-        # Check if user has permissions to access this path
-        if username != self.username and not self.is_admin:
-            raise AccessDeniedError(path)
-            
-        path = normpath(path)
-        for r in self._get_repos():
-            repo = normpath(encodefilename(r))
-            if path.startswith(repo):
-                if username == self.username:
-                    user_obj = self
-                else:
-                    user_obj = self._store.get_user(username)
-                repo_obj = RepoObject(user_obj, r)
-                path_obj = repo_obj.get_path(path[len(repo):])
-                return (repo_obj, path_obj)
-        raise DoesNotExistError(path)
+        assert isinstance(path, bytes) or isinstance(path, str)
+        sep = b'/' if isinstance(path, bytes) else '/'
+        path = path.strip(sep) + sep
+        # Since we don't know which part of the "path" is the repopath,
+        # we need to do multiple search.
+        try:
+            startpos = 0
+            while True:
+                pos = path.index(sep, startpos)
+                try:
+                    repo_obj = self.get_repo(path[:pos])
+                    path_obj = repo_obj.get_path(path[pos + 1:])
+                    return repo_obj, path_obj
+                except DoesNotExistError:
+                    # continue looping
+                    startpos = pos + 1
+        except ValueError:
+            raise DoesNotExistError(path)
 
     @property
     def is_ldap(self):
@@ -244,7 +260,7 @@ class UserObject(object):
 
     def _get_repos(self):
         """
-        Get list of repos for the given `username`.
+        Get list of repos for the current `username`.
         """
         rows = self._db.find('repos', userid=self._userid)
         return [row['repopath'] for row in rows]
