@@ -21,9 +21,8 @@ from __future__ import unicode_literals
 
 import getopt
 import logging
-from rdiffweb import rdw_app
-from rdiffweb.core.config import read_config
-from rdiffweb.core.rdw_deamon import RemoveOlder
+import logging.config
+import logging.handlers
 import sys
 import tempfile
 import threading
@@ -31,7 +30,12 @@ import traceback
 
 import cherrypy
 from future.builtins import str
+
+from rdiffweb import rdw_app
+from rdiffweb.core.config import read_config
 from rdiffweb.core.notification import NotificationPlugin
+from rdiffweb.core.rdw_deamon import RemoveOlder
+
 
 PY2 = sys.version_info[0] == 2
 nativestr = bytes if PY2 else str
@@ -75,30 +79,17 @@ def setup_logging(log_file, log_access_file, level):
     Called by `start()` to configure the logging system
     """
     assert isinstance(logging.getLevelName(level), int)
-
-    class NotFilter(logging.Filter):
-
-        """
-        Negate logging filter
-        """
-
-        def __init__(self, name=''):
-            self.name = name
-            self.nlen = len(name)
-
-        def filter(self, record):
-            if self.nlen == 0 or self.name == record.name:
-                return 0
-            elif record.name.find(self.name, 0, self.nlen) != 0:
-                return 1
-            return not (record.name[self.nlen] == ".")
-
+    
     class ContextFilter(logging.Filter):
         """
-        This is a filter which injects contextual information into the log.
+        Filter the cherrypy record to remove the leading date. Also add more
+        context information like ip address and username.
         """
-
         def filter(self, record):
+            # Remove the leading date for cherrypy error.
+            if record.msg.startswith('cherrypy.error'):
+                record.msg = record.msg[23:]
+            # Get the IP
             try:
                 if hasattr(cherrypy, 'serving'):
                     request = cherrypy.serving.request
@@ -108,29 +99,51 @@ def setup_logging(log_file, log_access_file, level):
                     if 'X-Forwarded-For' in request.headers:
                         record.ip = request.headers['X-Forwarded-For']
             except:
-                record.ip = "none"
+                record.ip = "unknown"
+            # Get the username
             try:
-                record.user = cherrypy.session['user'].username  # @UndefinedVariable
+                record.user = cherrypy.session['user']  # @UndefinedVariable
             except:
-                record.user = "none"
+                record.user = "anonymous"
             return True
 
-    logformat = '[%(asctime)s][%(levelname)-7s][%(ip)s][%(user)s][%(threadName)s][%(name)s] %(message)s'
-    level = logging.getLevelName(level)
-    # Configure default log file.
-    if log_file:
-        assert isinstance(log_file, str)
-        print("continue logging to %s" % log_file)
-        logging.basicConfig(filename=log_file, level=level, format=logformat)
-    else:
-        logging.basicConfig(level=level, format=logformat)
+    cherrypy.config.update({'log.screen': False,
+                            'log.access_file': '',
+                            'log.error_file': ''})
+    cherrypy.engine.unsubscribe('graceful', cherrypy.log.reopen_files)
 
-    # Configure access log file.
+    # Create default formatter
+    fmt = logging.Formatter("[%(asctime)s][%(levelname)-7s][%(ip)s][%(user)s][%(threadName)s][%(name)s] %(message)s")
+
+    # Declare / create all logger
+    logger = logging.getLogger('')
+    logger.level = logging.getLevelName(level)
+    cherrypy_access = logging.getLogger('cherrypy.access')
+    cherrypy_access.propagate = False
+    cherrypy_error = logging.getLogger('cherrypy.error')
+    cherrypy_error.propagate = False
+    
+    # Configure default logger
+    if log_file:
+        print("continue logging to %s" % log_file)
+        default_handler = logging.handlers.RotatingFileHandler(log_file, maxBytes=10485760, backupCount=20)
+    else:
+        default_handler = logging.StreamHandler(sys.stdout)
+    default_handler.addFilter(ContextFilter())
+    default_handler.setFormatter(fmt)
+    logger.addHandler(default_handler)
+    
+    # Configure cherrypy access logger
     if log_access_file:
-        assert isinstance(log_access_file, str)
-        print("continue logging access to %s" % log_access_file)
-        logging.root.handlers[0].addFilter(NotFilter("cherrypy.access"))
-    logging.root.handlers[0].addFilter(ContextFilter())
+        handler = logging.handlers.RotatingFileHandler(log_access_file, maxBytes=10485760, backupCount=20)
+        cherrypy_access.addHandler(handler)
+    
+    # Configure cherrypy error logger
+    if log_file:
+        cherrypy_error.addHandler(default_handler)
+    else:
+        handler = logging.StreamHandler(sys.stdout)
+        cherrypy_error.addHandler(handler)
 
 
 def start():
@@ -173,9 +186,6 @@ def start():
         log_access_file=log_access_file,
         level=log_level)
 
-    # Log startup
-    logger.info("START")
-
     # Create App.
     app = rdw_app.RdiffwebApp(cfg)
 
@@ -195,8 +205,6 @@ def start():
         'server.ssl_private_key': sslPrivateKey,
         # Set maximum POST size to 2MiB, for security.
         'server.max_request_body_size': 2097152,
-        'log.screen': False,
-        'log.access_file': log_access_file,
         'server.environment': environment,
     })
 
