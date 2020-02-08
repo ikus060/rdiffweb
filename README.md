@@ -75,6 +75,13 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
 
 # Changelog
 
+## 1.2.1 (2020-02-08)
+Little bug fix following the previous release
+
+ * Fix 404 error when trying to access other users repo as admin
+ * Fix logging format for cherrypy logs to matches rdiffweb format
+ * Add log rotation by default
+
 ## 1.2.0 (2020-01-30)
 
 This release focus on improving the database layers for better extendability to add more type of data and to support more databases backend like postgresql in the near future.
