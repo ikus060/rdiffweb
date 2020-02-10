@@ -20,9 +20,14 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import bisect
+from builtins import bytes
+from builtins import map
+from builtins import object
+from builtins import str
 import calendar
 from collections import OrderedDict
 from datetime import timedelta
+from distutils import spawn
 import encodings
 import gzip
 import io
@@ -38,10 +43,6 @@ import time
 import weakref
 import zlib
 
-from builtins import bytes
-from builtins import map
-from builtins import object
-from builtins import str
 from future.utils import iteritems
 from future.utils import python_2_unicode_compatible
 from future.utils.surrogateescape import encodefilename
@@ -52,6 +53,7 @@ import psutil
 from rdiffweb.core import rdw_helpers
 from rdiffweb.core.archiver import archive, ARCHIVERS
 from rdiffweb.core.i18n import ugettext as _
+
 
 try:
     import subprocess32 as subprocess  # @UnresolvedImport @UnusedImport
@@ -816,7 +818,7 @@ class RdiffRepo(object):
         if os.environ.get('TMPDIR'):
             env['TMPDIR'] = os.environ['TMPDIR']
 
-        parms = [b'rdiff-backup']
+        parms = [spawn.find_executable('rdiff-backup')]
         parms.extend(args)
         execution = subprocess.Popen(
             parms, stdout=subprocess.PIPE,
