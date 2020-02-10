@@ -167,6 +167,17 @@ py3-sid-cherrypy8-jinja210:
   variables:
     TOXENV: py3-cherrypy8-jinja210
 
+py3-rdiff-backup2:
+  <<: *tox
+  image: ikus060/docker-debian-py2-py3:sid
+  variables:
+    TOXENV: py3-cherrypy8-jinja210
+  script:
+  - apt -y autoremove rdiff-backup
+  - apt -y install  librsync-dev
+  - pip3 install rdiff-backup==1.9.1b0
+  - tox --sitepackages
+
 package:py2: 
   stage: package
   script:
