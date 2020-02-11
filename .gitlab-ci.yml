@@ -65,18 +65,6 @@ py3-jinja210:
 py27-cherrypy35: 
   <<: *tox
   
-py27-cherrypy4: 
-  <<: *tox
-  
-py27-cherrypy5: 
-  <<: *tox
-  
-py27-cherrypy6: 
-  <<: *tox
-  
-py27-cherrypy7: 
-  <<: *tox
-  
 py27-cherrypy8: 
   <<: *tox
   
@@ -108,18 +96,6 @@ py27-cherrypy17:
   <<: *tox
   
 py3-cherrypy35: 
-  <<: *tox
-  
-py3-cherrypy4: 
-  <<: *tox
-  
-py3-cherrypy5: 
-  <<: *tox
-  
-py3-cherrypy6: 
-  <<: *tox
-  
-py3-cherrypy7: 
   <<: *tox
   
 py3-cherrypy8: 
