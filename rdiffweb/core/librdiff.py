@@ -54,7 +54,6 @@ from rdiffweb.core import rdw_helpers
 from rdiffweb.core.archiver import archive, ARCHIVERS
 from rdiffweb.core.i18n import ugettext as _
 
-
 try:
     import subprocess32 as subprocess  # @UnresolvedImport @UnusedImport
 except:
@@ -748,21 +747,17 @@ class RdiffRepo(object):
         """Return a list of dates when backup was executed. This list is
         sorted from old to new (ascending order). To identify dates,
         'mirror_metadata' file located in rdiff-backup-data are used."""
-        if not hasattr(self, '_backup_dates'):
+        if not hasattr(self, '_backup_dates_data'):
             logger.debug("get backup dates for [%r]", self.full_path)
-            self._backup_dates = sorted([
+            self._backup_dates_data = sorted([
                 self._extract_date(x)
-                for x in self._data_entries
-                if x.startswith(b"mirror_metadata")])
-        return self._backup_dates
+                for x in self._get_entries(b'mirror_metadata')])
+        return self._backup_dates_data
 
     @property
-    def _data_entries(self):
-        try:
-            return os.listdir(self._data_path)
-        except:
-            # Return empty list when the directory can't be access.
-            return []
+    def _current_mirrors(self):
+        """Return list of current_mirrors file"""
+        return sorted([x for x in self._get_entries(b'current_mirror')])
 
     def delete(self):
         """Delete the repository permanently."""
@@ -802,8 +797,7 @@ class RdiffRepo(object):
         if not hasattr(self, '_error_logs_data'):
             self._error_logs_data = {
                 self._extract_date(x): IncrementEntry(self, x)
-                for x in self._data_entries
-                if x.startswith(b"error_log.")}
+                for x in self._get_entries(b'error_log')}
         return self._error_logs_data
 
     def execute(self, *args):
@@ -856,9 +850,25 @@ class RdiffRepo(object):
         if not hasattr(self, '_file_statistics_data'):
             self._file_statistics_data = {
                 self._extract_date(x): x
-                for x in self._data_entries
-                if x.startswith(b"file_statistics.")}
+                for x in self._get_entries(b'file_statistics')}
         return self._file_statistics_data
+
+    def _get_entries(self, prefix):
+        if not hasattr(self, '_entries_data'):
+            self._entries_data = {}
+            try:
+                entries = os.listdir(self._data_path)
+            except:
+                entries = []
+            for e in entries:
+                try:
+                    key = e[:e.index(b'.')]
+                    if key in [b'file_statistics', b'session_statistics', b'current_mirror', b'mirror_metadata', b'error_log']:
+                        l = self._entries_data.setdefault(key, [])
+                        l.append(e)
+                except:
+                    pass
+        return self._entries_data.get(prefix, [])
 
     def get_file_statistic(self, date):
         """Return the file statistic for the given date.
@@ -971,8 +981,8 @@ class RdiffRepo(object):
     @property
     def last_backup_date(self):
         """Return the last known backup dates."""
-        if len(self.backup_dates) > 0:
-            return self.backup_dates[-1]
+        if len(self._current_mirrors) > 0:
+            return self._extract_date(self._current_mirrors[-1])
         return None
 
     def restore(self, path, restore_date, kind='zip'):
@@ -1090,12 +1100,6 @@ class RdiffRepo(object):
             self._status = ('failed', _('The repository cannot be found or is badly damaged.'))
             return self._status
         
-        # Filter the files to keep current_mirror.* files
-        current_mirrors = [
-            x
-            for x in self._data_entries
-            if x.startswith(b"current_mirror.")]
-
         pid_re = re.compile(b"^PID\s*([0-9]+)", re.I | re.M)
 
         def extract_pid(current_mirror):
@@ -1108,7 +1112,7 @@ class RdiffRepo(object):
                 return int(match.group(1))
 
         # Read content of the file and check if pid still exists
-        for current_mirror in current_mirrors:
+        for current_mirror in self._current_mirrors:
             pid = extract_pid(current_mirror)
             try:
                 p = psutil.Process(pid)
@@ -1120,7 +1124,7 @@ class RdiffRepo(object):
                 pass
         # If multiple current_mirror file exists and none of them are associated to a PID, this mean the last backup was interrupted.
         # Also, if the last backup date is undefined, this mean the first initial backup was interrupted.
-        if len(current_mirrors) > 1 or not self.last_backup_date:
+        if len(self._current_mirrors) > 1 or not self.last_backup_date:
             self._status = ('interrupted', _('The previous backup seams to have failed.'))
             return self._status
 
@@ -1134,8 +1138,7 @@ class RdiffRepo(object):
         if not hasattr(self, '_session_statistics_data'):
             data = (
                 SessionStatisticsEntry(self, x)
-                for x in sorted(self._data_entries)
-                if x.startswith(b"session_statistics."))
+                for x in sorted(self._get_entries(b'session_statistics')))
             self._session_statistics_data = OrderedDict([(x.date, x) for x in data])
         return self._session_statistics_data
 

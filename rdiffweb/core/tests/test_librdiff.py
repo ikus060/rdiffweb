@@ -105,9 +105,8 @@ class DirEntryTest(unittest.TestCase):
         entry = DirEntry(self.root_path, b'my_filename.txt', False, increments)
 
         self.assertEqual(
-            [RdiffTime(1414939853),
-             RdiffTime(1414967021),
-             RdiffTime(1415059497)],
+            [RdiffTime('2014-11-02T17:23:41-05:00'),
+             RdiffTime('2014-11-03T19:04:57-05:00')],
             entry.change_dates)
 
     def test_change_dates_with_exists(self):
@@ -119,10 +118,8 @@ class DirEntryTest(unittest.TestCase):
         entry = DirEntry(self.root_path, b'my_filename.txt', True, increments)
 
         self.assertEqual(
-            [RdiffTime(1414939853),
-             RdiffTime(1414967021),
-             RdiffTime(1415059497),
-             RdiffTime(1415221507)],
+            [RdiffTime('2014-11-02T17:23:41-05:00'),
+             RdiffTime('2014-11-03T19:04:57-05:00')],
             entry.change_dates)
 
     def test_display_name(self):
