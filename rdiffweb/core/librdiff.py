@@ -1080,12 +1080,15 @@ class RdiffRepo(object):
     @property
     def status(self):
         """Check if a backup is in progress for the current repo."""
+        if hasattr(self, '_status'):
+            return self._status
 
         # Check if the repository exists.
         # Make sure repoRoot is a valid rdiff-backup repository
         if (not os.access(self._data_path, os.F_OK) or
                 not os.path.isdir(self._data_path)):
-            return ('failed', _('The repository cannot be found or is badly damaged.'))
+            self._status = ('failed', _('The repository cannot be found or is badly damaged.'))
+            return self._status
         
         # Filter the files to keep current_mirror.* files
         current_mirrors = [
@@ -1110,16 +1113,19 @@ class RdiffRepo(object):
             try:
                 p = psutil.Process(pid)
                 if any('rdiff-backup' in c for c in p.cmdline()):
-                    return ('in_progress', _('A backup is currently in progress to this repository.'))
+                    self._status = ('in_progress', _('A backup is currently in progress to this repository.'))
+                    return self._status
             except psutil.NoSuchProcess:
                 logger.debug('pid [%s] does not exists', pid)
                 pass
         # If multiple current_mirror file exists and none of them are associated to a PID, this mean the last backup was interrupted.
         # Also, if the last backup date is undefined, this mean the first initial backup was interrupted.
         if len(current_mirrors) > 1 or not self.last_backup_date:
-            return ('interrupted', _('The previous backup seams to have failed.'))
+            self._status = ('interrupted', _('The previous backup seams to have failed.'))
+            return self._status
 
-        return ('ok', '')
+        self._status = ('ok', '')
+        return self._status
 
     @property
     def session_statistics(self):
