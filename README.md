@@ -75,7 +75,23 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
 
 # Changelog
 
+## 1.2.2 (2020-03-05)
+
+This release provides little improvement to the v1.2.x including official support of rdiff-backup v2.0.0.
+
+ * Enhance the repository to invite users to refresh the repository when the view is empty.
+ * Support rdiff-backup v2.0.0
+ * Deprecate support for cherrypy 4, 5, 6 and 7
+ * Improve loading of repository data (cache status and entries)
+ * Restore compatibility with SQLite 3.7 (CentOS7)
+
+Known issues:
+
+ * Filename encoding in tar.gz and zip file might not be accurate if you are running Python 3.6 (CentOS7)
+
+
 ## 1.2.1 (2020-02-08)
+
 Little bug fix following the previous release
 
  * Fix 404 error when trying to access other users repo as admin
