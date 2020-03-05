@@ -1,26 +1,48 @@
 # Rdiffweb Installation
 
+# Install rdiffweb on Linux
+
 You may install rdiffweb in various ways. It's recommended to install rdiffweb
-from Pypi repository. It's the official supported way to install rdiffweb.
+from pypi repository. It's the official supported way to install rdiffweb as of
+now until a PPA is provided.
 
-To install rdiffweb from pypi, you need to install `pip` and other dependencies:
+To install rdiffweb from pypi, you need to install `pip`, `rdiff-backup` other dependencies:
 
-    sudo apt-get install python-dev python-pysqlite2 libldap2-dev libsasl2-dev rdiff-backup build-essential
+**Ubuntu/Debian:**
+
+    sudo apt update
+    sudo apt install python-dev python-pysqlite2 libldap2-dev libsasl2-dev rdiff-backup build-essential curl
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
     sudo python get-pip.py
+    
+**RedHat7/CentOS7:**
+
+    sudo yum install epel-release
+    sudo yum install python3-devel sqlite-devel openldap-devel rdiff-backup gcc
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    sudo python3 get-pip.py
+    
+**RedHat8/CentOS8:**
+*Note: rdiff-backup is not provided by RedHat or CentOS repo. You must install a beta release from pypi*
+
+    sudo yum install epel-release
+    sudo yum install python3-devel sqlite-devel openldap-devel gcc
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    sudo python3 get-pip.py
+    sudo pip install --pre rdiff-backup
 
 Then you may install rdiffweb using `pip`:
 
-    sudo pip install rdiffweb
+    sudo pip3 install rdiffweb
 
 Install default configuration file.
 
     sudo mkdir -p /etc/rdiffweb 
-    wget -O /etc/rdiffweb/rdw.conf https://github.com/ikus060/rdiffweb/raw/master/rdw.conf
+    sudo curl https://github.com/ikus060/rdiffweb/raw/master/rdw.conf -o /etc/rdiffweb/rdw.conf
     
 If needed, create a service unit to manage rdiffweb as a service:
 
-    sudo wget -O /etc/systemd/system/rdiffweb.service https://raw.githubusercontent.com/ikus060/rdiffweb/master/extras/systemd/rdiffweb.service
+    sudo curl https://raw.githubusercontent.com/ikus060/rdiffweb/master/extras/systemd/rdiffweb.service -o /etc/systemd/system/rdiffweb.service
     sudo systemctl daemon-reload
     sudo service rdiffweb start
 
