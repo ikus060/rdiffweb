@@ -62,72 +62,9 @@ py3-jinja29:
 py3-jinja210: 
   <<: *tox
 
-py27-cherrypy35: 
-  <<: *tox
-  
-py27-cherrypy8: 
-  <<: *tox
-  
-py27-cherrypy9: 
-  <<: *tox
-  
-py27-cherrypy10: 
-  <<: *tox
-  
-py27-cherrypy11: 
-  <<: *tox
-  
-py27-cherrypy12: 
-  <<: *tox
-  
-py27-cherrypy13:  
-  <<: *tox
-  
-py27-cherrypy14: 
-  <<: *tox
-
-py27-cherrypy15: 
-  <<: *tox
-  
-py27-cherrypy16: 
-  <<: *tox
-  
 py27-cherrypy17: 
   <<: *tox
   
-py3-cherrypy35: 
-  <<: *tox
-  
-py3-cherrypy8: 
-  <<: *tox
-  
-py3-cherrypy9: 
-  <<: *tox
-  
-py3-cherrypy10: 
-  <<: *tox
-  
-py3-cherrypy11: 
-  <<: *tox
-  
-py3-cherrypy12: 
-  <<: *tox
-  
-py3-cherrypy13: 
-  <<: *tox
-  
-py3-cherrypy14: 
-  <<: *tox
-
-py3-cherrypy15: 
-  <<: *tox
-  
-py3-cherrypy16: 
-  <<: *tox
-  
-py3-cherrypy17: 
-  <<: *tox
-
 py3-cherrypy18: 
   <<: *tox
 
@@ -175,9 +112,48 @@ py3-rdiff-backup2:
   script:
   - apt -y autoremove rdiff-backup
   - apt -y install  librsync-dev
-  - pip3 install rdiff-backup==1.9.1b0
+  - pip3 install --pre rdiff-backup
   - tox --sitepackages
+  
+py2-centos7:
+  <<: *tox
+  image: centos:7
+  variables:
+    TOXENV: py2-cherrypy17-jinja210
+  before_script:
+  - yum install -y epel-release
+  - yum install -y python-devel sqlite-devel openldap-devel rdiff-backup gcc git
+  - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+  - python get-pip.py
+  - pip install setuptools virtualenv nose coverage tox --upgrade
 
+py3-centos7:
+  <<: *tox
+  image: centos:7
+  allow_failure: true
+  variables:
+    TOXENV: py3-cherrypy18-jinja210
+  before_script:
+  - yum install -y epel-release
+  - yum install -y python3-devel sqlite-devel openldap-devel rdiff-backup gcc git
+  - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+  - python3 get-pip.py
+  - pip3 install setuptools virtualenv nose coverage tox --upgrade
+
+py3-centos8:
+  <<: *tox
+  image: centos:8
+  allow_failure: true
+  variables:
+    TOXENV: py3-cherrypy18-jinja210
+  before_script:
+  - yum install -y epel-release
+  - yum install -y python3-devel sqlite-devel openldap-devel gcc git
+  - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+  - python3 get-pip.py
+  - pip3 install setuptools virtualenv nose coverage tox --upgrade
+  - pip3 install --pre rdiff-backup
+  
 package:py2: 
   stage: package
   script:

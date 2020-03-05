@@ -25,19 +25,20 @@ Mock class for testing.
 
 from __future__ import unicode_literals
 
+from builtins import str, delattr
 import json
 import os
-from rdiffweb.rdw_app import RdiffwebApp
 import shutil
-import tarfile
+import subprocess
 import tempfile
 import unittest
 
-from builtins import str, delattr
 import cherrypy
 from cherrypy.test import helper
 from future.utils import native_str
 import pkg_resources
+
+from rdiffweb.rdw_app import RdiffwebApp
 
 
 try:
@@ -88,7 +89,7 @@ class MockRdiffwebApp(RdiffwebApp):
         # Extract 'testcases.tar.gz'
         testcases = pkg_resources.resource_filename('rdiffweb.tests', 'testcases.tar.gz')  # @UndefinedVariable
         new = str(tempfile.mkdtemp(prefix='rdiffweb_tests_'))
-        tarfile.open(testcases).extractall(native_str(new))
+        subprocess.check_call(['tar','-zxf', testcases], cwd=new)
 
         # Register repository
         for user in self.store.users():
