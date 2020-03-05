@@ -112,7 +112,7 @@ py3-rdiff-backup2:
   script:
   - apt -y autoremove rdiff-backup
   - apt -y install  librsync-dev
-  - pip3 install rdiff-backup==1.9.1b0
+  - pip3 install --pre rdiff-backup
   - tox --sitepackages
 
 package:py2: 
