@@ -77,7 +77,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
     def test_add_edit_delete(self):
         #  Add user to be listed
-        self._add_user("test2", "test2@test.com", "test2", "/var/backups/", False)
+        self._add_user("test2", "test2@test.com", "test2", "/home/", False)
         try:
             self.assertInBody("User added successfully.")
             self.assertInBody("test2")
@@ -87,7 +87,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
             self.assertInBody("User information modified successfully.")
             self.assertInBody("test2")
             self.assertInBody("chaned@test.com")
-            self.assertNotInBody("/var/backups/")
+            self.assertNotInBody("/home/")
             self.assertInBody("/tmp/")
             #  Check with filters
             self.getPage("/admin/users/?criteria=admins")
@@ -101,7 +101,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Check creation of user with non-ascii char.
         """
-        self._add_user("Éric", "éric@test.com", "Éric", "/var/backups/", False)
+        self._add_user("Éric", "éric@test.com", "Éric", "/home/", False)
         try:
             self.assertInBody("User added successfully.")
             self.assertInBody("Éric")
@@ -111,7 +111,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
             self.assertInBody("User information modified successfully.")
             self.assertInBody("Éric")
             self.assertInBody("eric.létourno@test.com")
-            self.assertNotInBody("/var/backups/")
+            self.assertNotInBody("/home/")
             self.assertInBody("/tmp/")
             # Check with filter
             self.getPage("/admin/users/?criteria=admins")
@@ -125,15 +125,15 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Verify failure trying to create user without username.
         """
-        self._add_user("", "test1@test.com", "test1", "/var/backups/", False)
+        self._add_user("", "test1@test.com", "test1", "/tmp/", False)
         self.assertInBody("The username is invalid.")
 
     def test_add_user_with_existing_username(self):
         """
         Verify failure trying to add the same user.
         """
-        self._add_user("test1", "test1@test.com", "test1", "/var/backups/", False)
-        self._add_user("test1", "test1@test.com", "test1", "/var/backups/", False)
+        self._add_user("test1", "test1@test.com", "test1", "/tmp/", False)
+        self._add_user("test1", "test1@test.com", "test1", "/tmp/", False)
         self.assertInBody("User test1 already exists.")
 
     def test_add_user_with_invalid_root_directory(self):
@@ -150,7 +150,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
     def test_add_without_email(self):
         #  Add user to be listed
-        self._add_user("test2", None, "test2", "/var/backups/", False)
+        self._add_user("test2", None, "test2", "/tmp/", False)
         self.assertInBody("User added successfully.")
 
     def test_add_without_user_root(self):
@@ -193,7 +193,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Verify failure trying to update invalid user.
         """
-        self._edit_user("test4", "test1@test.com", "test1", "/var/backups/", False)
+        self._edit_user("test4", "test1@test.com", "test1", "/tmp/", False)
         self.assertStatus(500)
 
     def test_criteria(self):
@@ -228,7 +228,7 @@ class AdminUsersAsUserTest(AbstractAdminTest):
         """
         Check if adding user is forbidden.
         """
-        self._add_user("test2", "test2@test.com", "test2", "/var/backups/", False)
+        self._add_user("test2", "test2@test.com", "test2", "/tmp/", False)
         self.assertStatus(403)
 
     def test_delete_user(self):
