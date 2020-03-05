@@ -62,72 +62,9 @@ py3-jinja29:
 py3-jinja210: 
   <<: *tox
 
-py27-cherrypy35: 
-  <<: *tox
-  
-py27-cherrypy8: 
-  <<: *tox
-  
-py27-cherrypy9: 
-  <<: *tox
-  
-py27-cherrypy10: 
-  <<: *tox
-  
-py27-cherrypy11: 
-  <<: *tox
-  
-py27-cherrypy12: 
-  <<: *tox
-  
-py27-cherrypy13:  
-  <<: *tox
-  
-py27-cherrypy14: 
-  <<: *tox
-
-py27-cherrypy15: 
-  <<: *tox
-  
-py27-cherrypy16: 
-  <<: *tox
-  
 py27-cherrypy17: 
   <<: *tox
   
-py3-cherrypy35: 
-  <<: *tox
-  
-py3-cherrypy8: 
-  <<: *tox
-  
-py3-cherrypy9: 
-  <<: *tox
-  
-py3-cherrypy10: 
-  <<: *tox
-  
-py3-cherrypy11: 
-  <<: *tox
-  
-py3-cherrypy12: 
-  <<: *tox
-  
-py3-cherrypy13: 
-  <<: *tox
-  
-py3-cherrypy14: 
-  <<: *tox
-
-py3-cherrypy15: 
-  <<: *tox
-  
-py3-cherrypy16: 
-  <<: *tox
-  
-py3-cherrypy17: 
-  <<: *tox
-
 py3-cherrypy18: 
   <<: *tox
 
