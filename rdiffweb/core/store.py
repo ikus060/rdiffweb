@@ -229,7 +229,7 @@ class UserObject(object):
     def _set_attr(self, obj_key, key, value, notify=True):
         """Used to define an attribute"""
         assert key in ['isadmin', 'useremail', 'userroot', 'password'], "invalid attribute: " + key
-        updated = self._db.updateone('users', userid=self._userid, **{key: value})
+        updated = self._db.update('users', userid=self._userid, **{key: value})
         assert updated, 'update failed'
         if self._record:
             self._record[key] = value
@@ -246,7 +246,7 @@ class UserObject(object):
         # delete any obsolete repos
         repos_to_delete = [x for x in existing_repos if x.get('repopath') not in repo_paths]
         for repo in repos_to_delete:
-            deleted = self._db.deleteone('repos', repoid=repo['repoid'])
+            deleted = self._db.delete('repos', repoid=repo['repoid'])
             assert deleted, 'fail to delete repo'
 
         # add in new repos
@@ -421,7 +421,7 @@ class UserObject(object):
         logger.info("deleting user [%s] from database", self.username)
         self._db.delete('sshkeys', userid=self._userid)
         self._db.delete('repos', userid=self._userid)
-        deleted = self._db.deleteone('users', userid=self._userid)
+        deleted = self._db.delete('users', userid=self._userid)
         assert deleted, 'fail to delete user'
         self._store._notify('user_deleted', self.username)
         return True
@@ -470,7 +470,7 @@ class RepoObject(RdiffRepo):
         assert key in ['encoding', 'maxage', 'keepdays'], 'invalid attribute:' + key
         if key in ['maxage', 'keepdays']:
             value = int(value)
-        updated = self._db.updateone('repos', **{'userid': self._userid, 'repopath': self._repo, key: value})
+        updated = self._db.update('repos', **{'userid': self._userid, 'repopath': self._repo, key: value})
         assert updated, 'update failed'
         if self._record:
             self._record[key] = value

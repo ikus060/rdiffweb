@@ -205,11 +205,6 @@ UserID int(11) NOT NULL)""")
         query = "DELETE FROM " + model + _where(kwargs.keys())
         return self._rowcount(query, list(kwargs.values()))
     
-    def deleteone(self, model, **kwargs):
-        _validate_model(model)
-        query = "DELETE FROM " + model + _where(kwargs.keys()) + " LIMIT 1"
-        return self._rowcount(query, list(kwargs.values()))
-    
     def find(self, model, **kwargs):
         _validate_model(model)
         query = "SELECT * FROM " + model + _where(kwargs.keys())
@@ -241,12 +236,12 @@ UserID int(11) NOT NULL)""")
             query = "SELECT * FROM users, repos WHERE repos.UserID = users.UserID AND " + ' OR '.join(['%s LIKE ?' % x for x in in_fields])
         return self._fetchall(query, [value] * len(in_fields))
         
-    def updateone(self, model, **kwargs):
+    def update(self, model, **kwargs):
         """
         Update a single object identified using the modelid.
         """
         _validate_model(model)
         # Get model identity
         keys = self._get_id(model, **kwargs)
-        query = "UPDATE " + model + " SET " + ', '.join(['%s=?' % k for k in kwargs.keys() if k not in keys]) + _where(keys) + " LIMIT 1"
+        query = "UPDATE " + model + " SET " + ', '.join(['%s=?' % k for k in kwargs.keys() if k not in keys]) + _where(keys)
         return self._rowcount(query, [v for k, v in kwargs.items() if k not in keys] + [kwargs.get(k) for k in keys])
