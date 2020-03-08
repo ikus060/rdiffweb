@@ -27,21 +27,15 @@ from builtins import str
 import calendar
 from collections import OrderedDict
 from datetime import timedelta
-from distutils import spawn
 import encodings
 import gzip
-import io
 import logging
 import os
 import re
-from shutil import copyfileobj
 import shutil
 import sys
-import tempfile
-import threading
 import time
 import weakref
-import zlib
 
 from future.utils import iteritems
 from future.utils import python_2_unicode_compatible
@@ -51,15 +45,10 @@ from past.utils import old_div
 import psutil
 
 from rdiffweb.core import rdw_helpers
-from rdiffweb.core.archiver import archive, ARCHIVERS
 from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.restore import call_restore
+import subprocess
 
-try:
-    import subprocess32 as subprocess  # @UnresolvedImport @UnusedImport
-except:
-    import subprocess  # @Reimport
-
-PY3 = sys.version_info[0] == 3
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -67,17 +56,8 @@ logger = logging.getLogger(__name__)
 # Constant for the rdiff-backup-data folder name.
 RDIFF_BACKUP_DATA = b"rdiff-backup-data"
 
-# Size to be read from gzip
-CHUNK_SIZE = 1024 * 1024
-
 # Increment folder name.
 INCREMENTS = b"increments"
-
-# Zip file extension
-ZIP_SUFFIX = b".zip"
-
-# Tar gz extension
-TARGZ_SUFFIX = b".tar.gz"
 
 FS_ENCODING = (sys.getfilesystemencoding() or 'utf-8').lower()
 
@@ -257,7 +237,7 @@ class RdiffTime(object):
     def __repr__(self):
         """return second since epoch"""
         return "RdiffTime('" + str(self) + "')"
-    
+
     __json__ = __str__
 
 # Interfaced objects #
@@ -343,6 +323,8 @@ class DirEntry(object):
     @property
     def display_name(self):
         """Return the most human readable filename. Without quote."""
+        if self.path == b'':
+            return self._repo.display_name
         value = self._repo.unquote(os.path.basename(self.path))
         return self._repo._decode(value)
 
@@ -443,11 +425,28 @@ class DirEntry(object):
         """Return last change date or False."""
         return self.change_dates and self.change_dates[-1]
 
-    def restore(self, restore_date, kind='zip'):
+    def restore(self, restore_as_of, kind):
         """
-        Restore the file identified by this directory entry.
+        Restore the current directory entry into a fileobj containing the
+        file content of the directory compressed into an archive.
+        
+        Return a filename and a fileobj.
         """
-        return self._repo.restore(self, restore_date, kind)
+        assert restore_as_of, "restore_as_of must be defined"
+
+        # Define a nice filename for the archive or file to be created.
+        # TODO The current entry might be a directory, but it may have been a file.
+        if self.path == b"" or self.isdir:
+            kind = kind or 'zip'
+            filename = "%s.%s" % (self.display_name, kind)
+        else:
+            kind = 'raw'
+            filename = self.display_name
+
+        # Restore data using a subprocess.
+        path = os.path.join(self._repo.full_path, self._repo.unquote(self.path))
+        fh = call_restore(path, restore_as_of, self._repo._encoding.name, kind)
+        return filename, fh
 
 
 class HistoryEntry(object):
@@ -632,37 +631,11 @@ class FileStatisticsEntry(IncrementEntry):
 
         path += b' '
 
-        # Open file are compress.
-        if not PY3 and self._is_compressed:
-            line = None
-            fullfn = os.path.join(self.repo._data_path, self.name)
-            in_file = gzip.open(fullfn, 'r')
-            decompress = zlib.decompressobj(-zlib.MAX_WBITS)
-            try:
-                in_file._read_gzip_header()
-
-                while 1:
-                    buf = in_file.fileobj.read(CHUNK_SIZE)
-                    if not buf:
-                        break
-                    if not line:
-                        d_buf = decompress.decompress(buf)
-                    else:
-                        d_buf = line + decompress.decompress(buf)
-
-                    # Search beginning of a line matching our filename
-                    for line in io.BytesIO(d_buf):
-                        if line.startswith(path):
-                            break
-            finally:
-                in_file.fileobj.close()
-                decompress = None
-        else:
-            with self._open() as f:
-                for line in f:
-                    if not line.startswith(path):
-                        continue
-                    break
+        with self._open() as f:
+            for line in f:
+                if not line.startswith(path):
+                    continue
+                break
 
         # Split the line into array
         data = line.rstrip(b'\r\n').rsplit(b' ', 4)
@@ -761,7 +734,7 @@ class RdiffRepo(object):
 
     def delete(self):
         """Delete the repository permanently."""
-        
+
         # Try to change the permissions of the file or directory to delete them.
         def handle_error(func, path, exc_info):
             if exc_info[0] == PermissionError:
@@ -772,12 +745,12 @@ class RdiffRepo(object):
                     os.chmod(path, 0o0600)
                 return shutil.rmtree(path, onerror=handle_error)
             raise
-        
+
         try:
             shutil.rmtree(self.full_path, onerror=handle_error)
         except:
             logger.warn('fail to delete repo', exc_info=1)
-            
+
     @property
     def display_name(self):
         """Return the most human representation of the repository name."""
@@ -799,34 +772,6 @@ class RdiffRepo(object):
                 self._extract_date(x): IncrementEntry(self, x)
                 for x in self._get_entries(b'error_log')}
         return self._error_logs_data
-
-    def execute(self, *args):
-        """
-        Execute rdiff-backup command.
-        """
-        assert all(isinstance(arg, bytes) for arg in args)
-        # Need to explicitly export some environment variable. Do not export
-        # all of them otherwise it also export some python environment variable
-        # and might brake rdiff-backup execution.
-        env = {}
-        if os.environ.get('TMPDIR'):
-            env['TMPDIR'] = os.environ['TMPDIR']
-
-        parms = [spawn.find_executable('rdiff-backup')]
-        parms.extend(args)
-        execution = subprocess.Popen(
-            parms, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env=env)
-
-        results = {}
-        output, error = execution.communicate()
-        results['exitCode'] = execution.wait()
-        if results['exitCode'] != 0:
-            error = error.decode(encoding=sys.getdefaultencoding(), errors='replace')
-            raise ExecuteError(error)
-
-        return (output, error)
 
     def _extract_date(self, filename):
         """
@@ -961,10 +906,12 @@ class RdiffRepo(object):
         if path.startswith(RDIFF_BACKUP_DATA):
             raise DoesNotExistError(path)
 
-        # Make sure the normalized path is part of the repo.
+        # Resolve symlink to make sure we do not leave the repo
+        # and to break symlink loops.
         p = os.path.realpath(os.path.join(self.full_path, path))
         if not p.startswith(self.full_path):
             raise SymLinkAccessDeniedError(path)
+        path = os.path.relpath(p, self.full_path)
 
         # Check if path exists or has increment. If not raise an exception.
         exists = os.path.exists(p)
@@ -985,107 +932,9 @@ class RdiffRepo(object):
             return self._extract_date(self._current_mirrors[-1])
         return None
 
-    def restore(self, path, restore_date, kind='zip'):
-        """Used to restore the given file located in this path."""
-        assert isinstance(path, bytes) or isinstance(path, DirEntry)
-        assert isinstance(restore_date, RdiffTime) or isinstance(restore_date, int)
-        assert kind in ARCHIVERS
-
-        # Get the info we need from DirEntry
-        if isinstance(path, DirEntry):
-            entry = path
-            path = path.path
-        else:
-            path = path.strip(b"/")
-            entry = None
-
-        # Determine the file name to be restore (from rdiff-backup
-        # point of view).
-        file_to_restore = os.path.join(self.full_path, path)
-        file_to_restore = self.unquote(file_to_restore)
-
-        # Convert the date into epoch.
-        if isinstance(restore_date, RdiffTime):
-            restore_date = restore_date.epoch()
-
-        # Define a nice filename for the archive or file to be created.
-        if path == b"":
-            filename = "%s.%s" % (self.display_name, kind)
-        else:
-            filename_b = os.path.basename(path)
-            # Unquote the filename (remove ;090).
-            filename_b = self.unquote(filename_b)
-            # Decode string as repo encoding.
-            filename = self._decode(filename_b)
-            # Append archive extention if a directory
-            entry = entry or self.get_path(path)
-            if entry and entry.isdir:
-                filename = filename + '.' + kind
-
-        # Generate a temporary location used to restore data.
-        output = tempfile.mkdtemp(prefix='rdiffweb_restore_')
-        if isinstance(output, str):
-            output = output.encode(encoding=FS_ENCODING)
-
-        # Asynchronously create an archive if multiple file.
-        def _async(fdst):
-            try:
-                # Change thread name
-                threading.currentThread().name = 'Restore' + threading.currentThread().name
-
-                # Execute rdiff-backup to restore the data.
-                logger.info("execute rdiff-backup --restore-as-of=%s %r %r", restore_date, file_to_restore, output)
-                try:
-                    self.execute(
-                        b"--restore-as-of=" + str(restore_date).encode(encoding='latin1'),
-                        file_to_restore,
-                        output)
-                except ExecuteError:
-                    raise UnknownError('unable to restore')
-                logger.debug("restored locally completed")
-
-                # Check the result
-                if not os.access(output, os.F_OK):
-                    error = '''rdiff-backup claimed success, but did not restore
-                            anything. This indicates a bug in rdiffweb. Please
-                            report this to a developer.'''
-                    raise UnknownError(error)
-
-                # Archive data or pipe data.
-                if os.path.isdir(output):
-                    archive(output, fdst, kind=kind, encoding=self._encoding.name)
-                else:
-                    # Pipe the content of the file.
-                    with io.open(output, 'rb') as fsrc:
-                        copyfileobj(fsrc, fdst)
-                logger.debug("restore completed")
-            except:
-                logger.error('restore failed', exc_info=1)
-            finally:
-                # Make sure to close pipe.
-                fdst.close()
-                # Clean up temp file or dir.
-                if os.path.isdir(output):
-                    shutil.rmtree(output, ignore_errors=True)
-                elif os.path.exists(output):
-                    os.remove(output)
-
-        # Start new thread.
-        rfd, wfd = os.pipe()
-        r = io.open(rfd, 'rb')
-        w = io.open(wfd, 'wb')
-        try:
-            thread = threading.Thread(target=_async, args=(w,))
-            thread.start()
-            # Return one of a stream.
-            return filename, r
-        except Exception as e:
-            # If creation of thread fail, close pipe.
-            r.close()
-            w.close()
-            # Then re-raise issue
-            logger.error('fail to create new thread', exc_info=1)
-            raise e
+    def remove_older(self, remove_older_than):
+        logger.info("execute rdiff-backup --force --remove-older-than=%sD %r", remove_older_than, self.full_path)
+        subprocess.call([b'rdiff-backup', b'--force', b'--remove-older-than=' + str(remove_older_than).encode(encoding='latin1') + b'D', self.full_path])
 
     @property
     def status(self):
@@ -1099,7 +948,7 @@ class RdiffRepo(object):
                 not os.path.isdir(self._data_path)):
             self._status = ('failed', _('The repository cannot be found or is badly damaged.'))
             return self._status
-        
+
         pid_re = re.compile(b"^PID\s*([0-9]+)", re.I | re.M)
 
         def extract_pid(current_mirror):

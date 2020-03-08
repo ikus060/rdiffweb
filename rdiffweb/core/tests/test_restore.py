@@ -25,10 +25,8 @@ Test archiver module.
 
 from __future__ import unicode_literals
 
-from future.builtins import str
 import io
 import os
-import shutil
 import sys
 import tarfile
 import tempfile
@@ -36,16 +34,19 @@ import threading
 import unittest
 from zipfile import ZipFile
 
-from rdiffweb.core.archiver import archive
+from future.builtins import str
+
+from rdiffweb.core.restore import restore, call_restore
 from rdiffweb.test import AppTestCase
+
 
 PY3 = sys.version_info[0] == 3
 
 EXPECTED = {}
 EXPECTED["이루마 YIRUMA - River Flows in You.mp3"] = 3636731
-EXPECTED["Char ;059090 to quote/"] = 0
-EXPECTED["Char ;059090 to quote/Untitled Testcase.doc"] = 14848
-EXPECTED["Char ;059090 to quote/Data"] = 21
+EXPECTED["Char ;090 to quote/"] = 0
+EXPECTED["Char ;090 to quote/Untitled Testcase.doc"] = 14848
+EXPECTED["Char ;090 to quote/Data"] = 21
 EXPECTED["DIR�/"] = 0
 EXPECTED["DIR�/Data"] = 10
 EXPECTED["test\\test/"] = 0
@@ -78,12 +79,15 @@ else:
     TAR_EXPECTED["Fichier avec non asci char �velyne M�re.txt"] = 18
 
 
-def archive_async(*args, **kwargs):
-    thread = threading.Thread(target=archive, args=args, kwargs=kwargs)
+def restore_async(*args, **kwargs):
+    """
+    Run the restore into a separate thread to avoid blocking on pipe.
+    """
+    thread = threading.Thread(target=restore, args=args, kwargs=kwargs)
     thread.start()
 
 
-class ArchiverTest(AppTestCase):
+class RestoreTest(AppTestCase):
 
     maxDiff = None
 
@@ -91,10 +95,6 @@ class ArchiverTest(AppTestCase):
 
     def setUp(self):
         AppTestCase.setUp(self)
-
-        # Remove rdiff-backup-data directory
-        path = os.path.join(self.app.testcases.encode('ascii'), b'testcases', b'rdiff-backup-data')
-        shutil.rmtree(path)
 
         # Define path to be archived
         self.path = os.path.join(self.app.testcases.encode('ascii'), b'testcases')
@@ -109,7 +109,7 @@ class ArchiverTest(AppTestCase):
             # If a stream is provided, dump it a file. ZipFile doesn't read file from a stream.
             if not isinstance(filename, str):
                 f = filename
-                filename = new_filename = tempfile.mktemp(prefix='rdiffweb_test_archiver_', suffix='.zip')
+                filename = new_filename = tempfile.mktemp(prefix='rdiffweb_test_restore_archiver_', suffix='.zip')
                 with io.open(new_filename, 'wb') as out:
                     byte = f.read(4096)
                     while byte:
@@ -170,41 +170,78 @@ class ArchiverTest(AppTestCase):
             for expected_file in expected_files:
                 self.assertIn(expected_file, actual)
 
-    def test_pipe_zip_file(self):
+    def test_cmdline(self):
+        # Test the command line call.
+        fh = call_restore(self.path, restore_as_of=1454448640, encoding='utf-8', kind='zip')
+        self.assertInZip(ZIP_EXPECTED, fh)
+
+    def test_restore_pipe_zip_file(self):
         """
         Check creation of a zip trough a pipe.
         """
         rfd, wfd = os.pipe()
         # Run archiver
-        archive_async(self.path, io.open(wfd, 'wb'), encoding='utf-8', kind='zip')
+        restore_async(self.path, restore_as_of=1454448640, dest=io.open(wfd, 'wb'), encoding='utf-8', kind='zip')
         # Check result.
         self.assertInZip(ZIP_EXPECTED, io.open(rfd, 'rb'))
 
-    def test_zip_file(self):
+    def test_restore_raw_singlefile(self):
+        # Define path to be archived
+        filename = tempfile.mktemp(prefix='rdiffweb_test_restore_archiver_')
+        try:
+            # Run archiver
+            with open(filename, 'wb') as f:
+                restore(os.path.join(self.path, b'Fichier @ <root>') , restore_as_of=1454448640, dest=f, encoding='utf-8', kind='raw')
+            # Check result.
+            with open(filename, 'rb') as f:
+                self.assertEqual(f.read(), b"Ajout d'info\n")
+        finally:
+            os.remove(filename)
+            
+    def test_restore_raw_quote_vs_unquote(self):
+        # Define path to be archived
+        filename = tempfile.mktemp(prefix='rdiffweb_test_restore_archiver_')
+        try:
+            # Run archiver
+            with open(filename, 'wb') as f:
+                restore(os.path.join(self.path, b'Char ;090 to quote', b'Data') , restore_as_of=1454448640, dest=f, encoding='utf-8', kind='raw')
+            # Check result.
+            with open(filename, 'rb') as f:
+                self.assertEqual(f.read(), b"Bring me some Data !\n")
+            # Run archiver
+            with open(filename, 'wb') as f:
+                restore(os.path.join(self.path, b'Char Z to quote', b'Data') , restore_as_of=1414921853, dest=f, encoding='utf-8', kind='raw')
+            # Check result.
+            with open(filename, 'rb') as f:
+                self.assertEqual(f.read(), b"Bring me some Data !\n")
+        finally:
+            os.remove(filename)
+
+    def test_restore_zip_file(self):
         """
         Check creation of a zipfile.
         """
         # Define path to be archived
-        filename = tempfile.mktemp(prefix='rdiffweb_test_archiver_', suffix='.zip')
+        filename = tempfile.mktemp(prefix='rdiffweb_test_restore_archiver_', suffix='.zip')
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                archive(self.path, f, encoding='utf-8', kind='zip')
+                restore(self.path, restore_as_of=1454448640, dest=f, encoding='utf-8', kind='zip')
             # Check result.
             self.assertInZip(ZIP_EXPECTED, filename)
         finally:
             os.remove(filename)
 
-    def test_zip_file_cp1252(self):
+    def test_restore_zip_file_cp1252(self):
         """
         Check if archiver support different encoding.
         """
         # Define path to be archived
-        filename = tempfile.mktemp(prefix='rdiffweb_test_archiver_', suffix='.zip')
+        filename = tempfile.mktemp(prefix='rdiffweb_test_restore_archiver_', suffix='.zip')
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                archive(self.path, f, encoding='cp1252', kind='zip')
+                restore(self.path, restore_as_of=1454448640, dest=f, encoding='cp1252', kind='zip')
             # Check result.
             expected = {
                 "Fichier avec non asci char Évelyne Mère.txt": 18,
@@ -213,39 +250,39 @@ class ArchiverTest(AppTestCase):
         finally:
             os.remove(filename)
 
-    def test_pipe_tar_file(self):
+    def test_restore_pipe_tar_file(self):
         """
         Check creation of tar.gz.
         """
         rfd, wfd = os.pipe()
         # Run archiver
-        archive_async(self.path, io.open(wfd, 'wb'), encoding='utf-8', kind='tar')
+        restore_async(self.path, restore_as_of=1454448640, dest=io.open(wfd, 'wb'), encoding='utf-8', kind='tar')
         # Check result.
         self.assertInTar(TAR_EXPECTED, io.open(rfd, 'rb'), mode='r|')
 
-    def test_tar_file(self):
+    def test_restore_tar_file(self):
         """
         Check creation of tar.gz.
         """
-        filename = tempfile.mktemp(prefix='rdiffweb_test_archiver_', suffix='.tar')
+        filename = tempfile.mktemp(prefix='rdiffweb_test_restore_archiver_', suffix='.tar')
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                archive(self.path, f, encoding='utf-8', kind='tar')
+                restore(self.path, restore_as_of=1454448640, dest=f, encoding='utf-8', kind='tar')
             # Check result.
             self.assertInTar(TAR_EXPECTED, filename)
         finally:
             os.remove(filename)
 
-    def test_tar_file_cp1252(self):
+    def test_restore_tar_file_cp1252(self):
         """
         Check if archiver support different encoding.
         """
-        filename = tempfile.mktemp(prefix='rdiffweb_test_archiver_', suffix='.tar')
+        filename = tempfile.mktemp(prefix='rdiffweb_test_restore_archiver_', suffix='.tar')
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                archive(self.path, f, encoding='cp1252', kind='tar')
+                restore(self.path, restore_as_of=1454448640, dest=f, encoding='cp1252', kind='tar')
             # Check result.
             expected = {
                 "Fichier avec non asci char Évelyne Mère.txt": 18,
@@ -254,49 +291,49 @@ class ArchiverTest(AppTestCase):
         finally:
             os.remove(filename)
 
-    def test_pipe_tar_gz_file(self):
+    def test_restore_pipe_tar_gz_file(self):
         """
         Check creation of tar.gz.
         """
         rfd, wfd = os.pipe()
         # Run archiver
-        archive_async(self.path, io.open(wfd, 'wb'), encoding='utf-8', kind='tar.gz')
+        restore_async(self.path, restore_as_of=1454448640, dest=io.open(wfd, 'wb'), encoding='utf-8', kind='tar.gz')
         # Check result.
         self.assertInTar(TAR_EXPECTED, io.open(rfd, 'rb'), mode='r|gz')
 
-    def test_tar_gz_file(self):
+    def test_restore_tar_gz_file(self):
         """
         Check creation of tar.gz.
         """
-        filename = tempfile.mktemp(prefix='rdiffweb_test_archiver_', suffix='.tar.gz')
+        filename = tempfile.mktemp(prefix='rdiffweb_test_restore_archiver_', suffix='.tar.gz')
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                archive(self.path, f, encoding='utf-8', kind='tar.gz')
+                restore(self.path, restore_as_of=1454448640, dest=f, encoding='utf-8', kind='tar.gz')
             # Check result.
             self.assertInTar(TAR_EXPECTED, filename)
         finally:
             os.remove(filename)
 
-    def test_pipe_tar_bz2_file(self):
+    def test_restore_pipe_tar_bz2_file(self):
         """
         Check creation of tar.gz.
         """
         rfd, wfd = os.pipe()
         # Run archiver
-        archive_async(self.path, io.open(wfd, 'wb'), encoding='utf-8', kind='tar.bz2')
+        restore_async(self.path, restore_as_of=1454448640, dest=io.open(wfd, 'wb'), encoding='utf-8', kind='tar.bz2')
         # Check result.
         self.assertInTar(TAR_EXPECTED, io.open(rfd, 'rb') , mode='r|bz2')
 
-    def test_tar_bz2_file(self):
+    def test_restore_tar_bz2_file(self):
         """
         Check creation of tar.bz2.
         """
-        filename = tempfile.mktemp(prefix='rdiffweb_test_archiver_', suffix='.tar.bz2')
+        filename = tempfile.mktemp(prefix='rdiffweb_test_restore_archiver_', suffix='.tar.bz2')
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                archive(self.path, f, encoding='utf-8', kind='tar.bz2')
+                restore(self.path, restore_as_of=1454448640, dest=f, encoding='utf-8', kind='tar.bz2')
             # Check result.
             self.assertInTar(TAR_EXPECTED, filename)
         finally:

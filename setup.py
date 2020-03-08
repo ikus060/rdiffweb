@@ -208,7 +208,10 @@ setup(
     packages=['rdiffweb'],
     include_package_data=True,
     entry_points={
-        "console_scripts": ["rdiffweb = rdiffweb.main:start"],
+        "console_scripts": [
+            "rdiffweb = rdiffweb.main:start",
+            "rdiffweb-restore = rdiffweb.core.restore:main",
+        ],
         "rdiffweb.plugins": []
     },
     # new commands added and build command modified

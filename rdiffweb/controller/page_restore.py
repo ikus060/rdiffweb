@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import logging
 from rdiffweb.controller import Controller, validate_isinstance, validate
 from rdiffweb.controller.dispatch import poppath
-from rdiffweb.core.archiver import ARCHIVERS
+from rdiffweb.core.restore import ARCHIVERS
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.rdw_helpers import quote_url
@@ -82,8 +82,6 @@ class RestorePage(Controller):
         validate(kind is None or kind in ARCHIVERS)
         validate(usetar is None or isinstance(usetar, str))
 
-        logger.debug("restoring [%r][%s]", path, date)
-
         # Check user access to repo / path.
         path_obj = self.app.currentuser.get_repo_path(path)[1]
 
@@ -99,8 +97,6 @@ class RestorePage(Controller):
         # if status[0] != 'ok':
         #    raise cherrypy.HTTPError(500, _(status[1] + ' ' + _("""Restores are disabled.""")))
 
-        # Determine the kind.
-        kind = kind or 'zip'
         if usetar is not None:
             kind = 'tar.gz'
 

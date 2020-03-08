@@ -105,6 +105,13 @@ class BrowsePageTest(WebCase):
         self.assertInBody("/restore/" + self.REPO + "?date=1415221507")
         self.assertInBody("Show more")
 
+    def test_loop_symlink(self):
+        """
+        Browse a symlink.
+        """
+        self._browse(self.REPO, "Subdirectory/LoopSymlink/LoopSymlink/")
+        self.assertNotInBody("LoopSymlink/LoopSymlink", "")
+
     def test_sub_directory_deleted(self):
         """
         Browse to a sub directory being deleted.
@@ -191,7 +198,7 @@ class BrowsePageTest(WebCase):
         self._browse("invalid/", "")
         self.assertStatus(404)
         self.assertInBody("Not Found")
-        
+
         self._browse("admin/invalid/", "")
         self.assertStatus(404)
         self.assertInBody("Not Found")
@@ -231,19 +238,19 @@ class BrowsePageTest(WebCase):
         self.getPage('/browse/admin/Revisions/')
         self.assertStatus('200 OK')
         self.assertInBody('Files')
-        
+
     def test_as_another_user(self):
         # Remove our repo
         admin = self.app.store.get_user('admin')
         admin.repos = []
-        
+
         # Create an another user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
         user_obj.repos = ['testcases']
         self.getPage('/browse/admin')
         self.assertStatus('404 Not Found')
-        
+
         # Browse other user's repos
         self.getPage('/browse/anotheruser')
         self.assertStatus('404 Not Found')
@@ -251,17 +258,17 @@ class BrowsePageTest(WebCase):
         self.assertStatus('200 OK')
         self.getPage('/browse/anotheruser/testcases/Revisions/')
         self.assertStatus('200 OK')
-        
+
         # Remove admin right
         admin = self.app.store.get_user('admin')
         admin.is_admin = 0
-        
+
         # Browse other user's repos
         self.getPage('/browse/anotheruser/testcases')
         self.assertStatus('403 Forbidden')
         self.getPage('/browse/anotheruser/testcases/Revisions/')
         self.assertStatus('403 Forbidden')
-        
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
