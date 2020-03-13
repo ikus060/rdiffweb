@@ -248,7 +248,7 @@ class RdiffRepoTest(unittest.TestCase):
 
     def test_get_path_root(self):
         dir_entry = self.repo.get_path(b"/")
-        self.assertEqual('', dir_entry.display_name)
+        self.assertEqual('testcases', dir_entry.display_name)
         self.assertEqual(b'', dir_entry.path)
         self.assertEqual(self.testcases_dir, dir_entry.full_path)
         self.assertEqual(True, dir_entry.isdir)
@@ -291,26 +291,19 @@ class RdiffRepoTest(unittest.TestCase):
         self.assertEqual('', status[1])
 
     def test_restore_file(self):
-        filename, stream = self.repo.restore(b"Revisions/Data", restore_date=1454448640, kind='zip')
-        self.assertEqual('Data', filename)
-        data = stream.read()
-        self.assertEqual(b'Version3\n', data)
-
-    def test_restore_direntry(self):
-        entry = self.repo.get_path(b"Revisions/Data")
-        filename, stream = self.repo.restore(entry, restore_date=1454448640, kind='zip')
+        filename, stream = self.repo.get_path(b"Revisions/Data").restore(restore_as_of=1454448640, kind='zip')
         self.assertEqual('Data', filename)
         data = stream.read()
         self.assertEqual(b'Version3\n', data)
 
     def test_restore_subdirectory(self):
-        filename, stream = self.repo.restore(b"Revisions/", restore_date=1454448640, kind='zip')
+        filename, stream = self.repo.get_path(b"Revisions/").restore(restore_as_of=1454448640, kind='zip')
         self.assertEqual('Revisions.zip', filename)
         data = stream.read()
         self.assertTrue(data)
 
     def test_restore_root(self):
-        filename, stream = self.repo.restore(b"/", restore_date=1454448640, kind='zip')
+        filename, stream = self.repo.get_path(b"/").restore(restore_as_of=1454448640, kind='zip')
         self.assertEqual('testcases.zip', filename)
         data = stream.read()
         self.assertTrue(data)

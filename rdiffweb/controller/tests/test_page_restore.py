@@ -105,11 +105,22 @@ class RestoreTest(WebCase):
         self.assertInBody("Ajout d'info")
         self.assertHeader('Content-Type', 'application/octet-stream')
 
-    def test_with_quoted_path(self):
+    def test_with_quoted_vs_unquoted_path(self):
         """
         Restore file with quoted path.
         """
+        # Char Z to quote
         self._restore(self.REPO, "Char%20%3B090%20to%20quote/Data/", "1414921853", True)
+        self.assertBody("Bring me some Data !\n")
+        self.assertHeader('Content-Type', 'application/octet-stream')
+
+        # Char ;090 to quote
+        self._restore(self.REPO, "Char%20%3B059090%20to%20quote/Data/", "1454448640", True)
+        self.assertBody("Bring me some Data !\n")
+        self.assertHeader('Content-Type', 'application/octet-stream')
+
+        # Char ;059090 to quote
+        self._restore(self.REPO, "Char%20%3B059059090%20to%20quote/Data/", "1453304541", True)
         self.assertBody("Bring me some Data !\n")
         self.assertHeader('Content-Type', 'application/octet-stream')
 
@@ -329,21 +340,21 @@ class RestoreTest(WebCase):
     def test_invalid_date(self):
         self._restore(self.REPO, "Revisions/Data/", "1415221a470", True)
         self.assertStatus(400)
-        
+
     def test_as_another_user(self):
         # Create a nother user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
         user_obj.repos = ['testcases']
-        
+
         self._restore("anotheruser/testcases", "Fichier%20%40%20%3Croot%3E/", "1414921853", True)
         self.assertStatus('200 OK')
         self.assertInBody("Ajout d'info")
-        
+
         # Remove admin right
         admin = self.app.store.get_user('admin')
         admin.is_admin = 0
-        
+
         # Browse admin's repos
         self._restore("anotheruser/testcases", "Fichier%20%40%20%3Croot%3E/", "1414921853", True)
         self.assertStatus('403 Forbidden')
