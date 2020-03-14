@@ -11,14 +11,14 @@ To install rdiffweb from pypi, you need to install `pip`, `rdiff-backup` other d
 **Ubuntu/Debian:**
 
     sudo apt update
-    sudo apt install python-dev python-pysqlite2 libldap2-dev libsasl2-dev rdiff-backup build-essential curl
+    sudo apt install python-dev libldap2-dev libsasl2-dev rdiff-backup build-essential curl
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
     sudo python get-pip.py
     
 **RedHat7/CentOS7:**
 
     sudo yum install epel-release
-    sudo yum install python3-devel sqlite-devel openldap-devel rdiff-backup gcc
+    sudo yum install python3-devel openldap-devel rdiff-backup gcc
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
     sudo python3 get-pip.py
     
@@ -26,7 +26,7 @@ To install rdiffweb from pypi, you need to install `pip`, `rdiff-backup` other d
 *Note: rdiff-backup is not provided by RedHat or CentOS repo. You must install a beta release from pypi*
 
     sudo yum install epel-release
-    sudo yum install python3-devel sqlite-devel openldap-devel gcc
+    sudo yum install python3-devel openldap-devel gcc
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
     sudo python3 get-pip.py
     sudo pip install --pre rdiff-backup

@@ -164,7 +164,6 @@ if PY2:
         "future>=0.15.2",
         "psutil>=2.1.1",
         "babel>=0.9.6",
-        "pysqlite>=2.6.3",
         "python-ldap",
     ]
 else:
