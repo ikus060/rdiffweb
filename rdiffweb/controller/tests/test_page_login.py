@@ -53,18 +53,18 @@ class LoginPageTest(WebCase):
         Check encoding of redirect url when send using GET method.
         """
         #  Query the page without login-in
-        self.getPage('/browse/' + self.REPO + '/DIR%EF%BF%BD/')
+        self.getPage('/browse/' + self.USERNAME + "/" + self.REPO + '/DIR%EF%BF%BD/')
         self.assertStatus('200 OK')
-        self.assertInBody(self.baseurl + '/browse/' + self.REPO + '/DIR%EF%BF%BD/')
+        self.assertInBody(self.baseurl + '/browse/' + self.USERNAME + "/" + self.REPO + '/DIR%EF%BF%BD/')
 
     def test_getpage_with_broken_encoding(self):
         """
         Check encoding of redirect url when send using GET method.
         """
         #  Query the page without login-in
-        self.getPage('/restore/' + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt?date=1454448640')
+        self.getPage('/restore/' + self.USERNAME + "/" + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt?date=1454448640')
         self.assertStatus('200 OK')
-        self.assertInBody(self.baseurl + '/restore/' + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt?date=1454448640')
+        self.assertInBody(self.baseurl + '/restore/' + self.USERNAME + "/" + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt?date=1454448640')
 
     def test_getpage_with_redirect_post(self):
         """
@@ -147,7 +147,7 @@ class LoginPageTest(WebCase):
         """
         self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:").decode('ascii'))])
         self.assertStatus('401 Unauthorized')
-        
+
     def test_getapi_with_invalid_password(self):
         """
         Check if 401 is return when authorization is not provided.

@@ -59,7 +59,7 @@ class StatusPage(Controller):
         
         # Limit the scope to the given path.
         if path:
-            user_repos = [self.app.currentuser.get_repo(path)]
+            user_repos = [self.app.store.get_repo(path)]
         else:
             user_repos = self.app.currentuser.repo_objs
         

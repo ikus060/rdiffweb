@@ -20,11 +20,13 @@ Created on Jan 1, 2016
 
 @author: Patrik Dufresne <info@patrikdufresne.com>
 """
+
 from __future__ import unicode_literals
 
 import logging
 import unittest
 
+from rdiffweb.core.store import DEFAULT_REPO_ENCODING
 from rdiffweb.test import WebCase
 
 
@@ -36,23 +38,30 @@ class SetEncodingTest(WebCase):
 
     reset_testcases = True
 
-    def _settings(self, repo):
-        self.getPage("/settings/" + repo + "/")
+    def _settings(self, user, repo):
+        self.getPage("/settings/" + user + "/" + repo + "/")
 
-    def _set_encoding(self, repo, encoding):
-        self.getPage("/settings/" + repo + "/", method="POST",
+    def _set_encoding(self, user, repo, encoding):
+        self.getPage("/settings/" + user + "/" + repo + "/", method="POST",
                      body={'new_encoding': encoding})
 
-    def test_check_encoding(self):
-        self._settings(self.REPO)
+    def test_check_default_encoding(self):
+        # Default encoding for testcases is utf-8 because 'rdiffweb' file enforce the value.
+        self._settings('admin', 'testcases')
         self.assertInBody("Character encoding")
         self.assertInBody('selected value="utf-8"')
+        # Default encoding for broker-repo is the default system encoding.
+        user = self.app.store.get_user(self.USERNAME)
+        user.add_repo('broker-repo')
+        self._settings('admin', 'broker-repo')
+        self.assertInBody("Character encoding")
+        self.assertInBody('selected value="%s"' % DEFAULT_REPO_ENCODING)
 
     def test_api_set_encoding(self):
         """
         Check if /api/set-encoding/ is still working.
         """
-        self.getPage("/api/set-encoding/" + self.REPO + "/", method="POST", body={'new_encoding': 'cp1252'})
+        self.getPage("/api/set-encoding/admin/testcases/", method="POST", body={'new_encoding': 'cp1252'})
         self.assertStatus(200)
         # Check results
         user = self.app.store.get_user(self.USERNAME)
@@ -63,31 +72,31 @@ class SetEncodingTest(WebCase):
         """
         Check to update the encoding with cp1252.
         """
-        self._set_encoding(self.REPO, 'cp1252')
+        self._set_encoding('admin', 'testcases', 'cp1252')
         self.assertStatus(200)
         self.assertInBody("Updated")
         self.assertEquals('cp1252', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
         # Get back encoding.
-        self._settings(self.REPO)
+        self._settings('admin', 'testcases')
         self.assertInBody('selected value="cp1252"')
-        
+
     def test_set_encoding_capital_case(self):
         """
         Check to update the encoding with US-ASCII.
         """
-        self._set_encoding(self.REPO, 'US-ASCII')
+        self._set_encoding('admin', 'testcases', 'US-ASCII')
         self.assertStatus(200)
         self.assertInBody("Updated")
         self.assertEquals('ascii', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
         # Get back encoding.
-        self._settings(self.REPO)
+        self._settings('admin', 'testcases')
         self.assertInBody('selected value="ascii"')
 
     def test_set_encoding_invalid(self):
         """
         Check to update the encoding with invalid value.
         """
-        self._set_encoding(self.REPO, 'invalid')
+        self._set_encoding('admin', 'testcases', 'invalid')
         self.assertStatus(400)
         self.assertInBody("invalid encoding value")
 
@@ -96,30 +105,30 @@ class SetEncodingTest(WebCase):
         Check to update the encoding with windows 1252.
         """
         # Update encoding
-        self._set_encoding(self.REPO, 'windows_1252')
+        self._set_encoding('admin', 'testcases', 'windows_1252')
         self.assertStatus(200)
         self.assertInBody("Updated")
         # Get back encoding.
-        self._settings(self.REPO)
+        self._settings('admin', 'testcases')
         self.assertInBody('selected value="cp1252"')
         self.assertEquals('cp1252', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
-        
+
     def test_as_another_user(self):
         # Create a nother user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
-        user_obj.repos = ['testcases']
-        
-        self._set_encoding('anotheruser/testcases', 'cp1252')
+        user_obj.add_repo('testcases')
+
+        self._set_encoding('anotheruser', 'testcases', 'cp1252')
         self.assertStatus('200 OK')
-        self.assertEquals('cp1252', user_obj.get_repo('anotheruser/testcases').encoding)
-        
+        self.assertEquals('cp1252', user_obj.get_repo('testcases').encoding)
+
         # Remove admin right
         admin = self.app.store.get_user('admin')
         admin.is_admin = 0
-        
+
         # Browse admin's repos
-        self._set_encoding('anotheruser/testcases', 'utf-8')
+        self._set_encoding('anotheruser', 'testcases', 'utf-8')
         self.assertStatus('403 Forbidden')
 
 

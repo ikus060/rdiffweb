@@ -308,6 +308,8 @@ class AdminReposTest(WebCase):
 
     login = True
     
+    reset_app = True
+    
     reset_testcases = True
     
     def test_repos(self):

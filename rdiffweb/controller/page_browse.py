@@ -25,7 +25,6 @@ from rdiffweb.controller import Controller, validate_isinstance, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.i18n import ugettext as _
 
-from builtins import bytes
 from builtins import str
 import cherrypy
 
@@ -47,7 +46,7 @@ class BrowsePage(Controller):
         restore = bool(restore)
 
         # Check user access to the given repo & path
-        (repo_obj, path_obj) = self.app.currentuser.get_repo_path(path)
+        (repo_obj, path_obj) = self.app.store.get_repo_path(path)
 
         # Build the parameters
         # Build "parent directories" links

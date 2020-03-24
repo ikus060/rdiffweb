@@ -15,7 +15,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 Created on Oct 14, 2015
 
@@ -30,14 +29,15 @@ from _io import StringIO
 from builtins import str
 from io import open
 import logging
-from mock import MagicMock
 import os
 import unittest
 
+from mock import MagicMock
 from mockldap import MockLdap
 import pkg_resources
 
 from rdiffweb.core import RdiffError, authorizedkeys
+from rdiffweb.core.librdiff import AccessDeniedError
 from rdiffweb.core.store import IUserChangeListener
 from rdiffweb.test import AppTestCase
 
@@ -53,7 +53,7 @@ def _ldap_user(name, password='password'):
         'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']})
 
 
-class StoreSQLiteTest(AppTestCase):
+class StoreTest(AppTestCase):
 
     def setUp(self):
         AppTestCase.setUp(self)
@@ -104,6 +104,27 @@ class StoreSQLiteTest(AppTestCase):
         # Check if listener called
         self.mlistener.user_deleted.assert_called_once_with('vicky')
 
+    def test_get_repo(self):
+        user = self.app.store.add_user('bernie', 'my-password')
+        user.user_root = '/backups/bernie/'
+        repo_obj = user.add_repo('test')
+
+        # Get as bernie
+        repo_obj2 = self.app.store.get_repo('bernie/test', user)
+        self.assertEqual(repo_obj2.name, repo_obj.name)
+        self.assertEqual(repo_obj2.owner, repo_obj.owner)
+
+        # Get as otheruser
+        other = self.app.store.add_user('other')
+        with self.assertRaises(AccessDeniedError):
+            self.app.store.get_repo('bernie/test', other)
+
+        # Get as admin
+        other.is_admin = True
+        repo_obj3 = self.app.store.get_repo('bernie/test', other)
+        self.assertEqual(repo_obj3.name, repo_obj.name)
+        self.assertEqual(repo_obj3.owner, repo_obj.owner)
+
     def test_get_user(self):
         """
         Test user record.
@@ -113,9 +134,10 @@ class StoreSQLiteTest(AppTestCase):
         user.user_root = '/backups/bernie/'
         user.is_admin = True
         user.email = 'bernie@gmail.com'
-        user.repos = ['computer', 'laptop']
+        user.add_repo('computer')
+        user.add_repo('laptop')
         user.repo_objs[0].maxage = -1
-        user.get_repo('bernie/laptop').maxage = 3
+        user.get_repo('laptop').maxage = 3
 
         # Get user record.
         obj = self.app.store.get_user('bernie')
@@ -129,9 +151,9 @@ class StoreSQLiteTest(AppTestCase):
         # Get repo object
         self.assertEqual('computer', obj.repo_objs[0].name)
         self.assertEqual(-1, obj.repo_objs[0].maxage)
-        self.assertEqual('laptop', obj.get_repo('bernie/laptop').name)
-        self.assertEqual(3, obj.get_repo('bernie/laptop').maxage)
-        
+        self.assertEqual('laptop', obj.get_repo('laptop').name)
+        self.assertEqual(3, obj.get_repo('laptop').maxage)
+
     def test_get_set(self):
         user = self.app.store.add_user('larry', 'password')
 
@@ -142,12 +164,16 @@ class StoreSQLiteTest(AppTestCase):
 
         user.user_root = '/backups/'
         self.mlistener.user_attr_changed.assert_called_with(user, {'user_root': '/backups/'})
+        self.mlistener.user_attr_changed.reset_mock()
         user.is_admin = True
         self.mlistener.user_attr_changed.assert_called_with(user, {'is_admin': True})
+        self.mlistener.user_attr_changed.reset_mock()
         user.email = 'larry@gmail.com'
         self.mlistener.user_attr_changed.assert_called_with(user, {'email': 'larry@gmail.com'})
-        user.repos = ['computer', 'laptop']
-        self.mlistener.user_attr_changed.assert_called_with(user, {'repos': ['computer', 'laptop']})
+        self.mlistener.user_attr_changed.reset_mock()
+        user.add_repo('computer')
+        user.add_repo('laptop')
+        self.mlistener.user_attr_changed.assert_not_called()
 
         self.assertEqual('larry@gmail.com', user.email)
         self.assertEqual(['computer', 'laptop'], user.repos)
@@ -173,7 +199,7 @@ class StoreSQLiteTest(AppTestCase):
         self.assertEqual('jeff', users[0].username)
         self.assertEqual('josh', users[1].username)
         self.assertEqual(4, self.app.store.count_users())
-        
+
     def test_users_with_criteria_admins(self):
         self.assertEqual([], list(self.app.store.users()))
         self.app.store.add_user('annik').is_admin = True
@@ -184,7 +210,7 @@ class StoreSQLiteTest(AppTestCase):
         self.assertEqual(2, len(users))
         self.assertEqual('annik', users[0].username)
         self.assertEqual('tom', users[1].username)
-        
+
     def test_users_with_criteria_ldap(self):
         self.assertEqual([], list(self.app.store.users()))
         self.app.store.add_user('annik', 'coucou')
@@ -192,14 +218,14 @@ class StoreSQLiteTest(AppTestCase):
         users = list(self.app.store.users(criteria='ldap'))
         self.assertEqual(1, len(users))
         self.assertEqual('tom', users[0].username)
-        
+
     def test_users_with_criteria_invalid(self):
         self.assertEqual([], list(self.app.store.users()))
         self.app.store.add_user('annik', 'coucou')
         self.app.store.add_user('tom')
         users = list(self.app.store.users(criteria='invalid'))
         self.assertEqual(0, len(users))
-        
+
     def test_login(self):
         """Check if login work"""
         userobj = self.app.store.add_user('tom', 'password')
@@ -228,10 +254,11 @@ class StoreSQLiteTest(AppTestCase):
     def test_repos(self):
         self.assertEqual([], list(self.app.store.repos()))
         user_obj = self.app.store.add_user('annik')
-        user_obj.repos = ['laptop', 'desktop']
+        user_obj.add_repo('laptop')
+        user_obj.add_repo('desktop')
         user_obj = self.app.store.add_user('kim')
-        user_obj.repos = ['repo1']
-        
+        user_obj.add_repo('repo1')
+
         data = list(self.app.store.repos())
         self.assertEqual(3, len(data))
         self.assertEqual('annik', data[0].owner)
@@ -379,7 +406,8 @@ class StoreWithLdapTest(AppTestCase):
         user.user_root = '/backups/'
         user.is_admin = True
         user.email = 'larry@gmail.com'
-        user.repos = ['computer', 'laptop']
+        user.add_repo('computer')
+        user.add_repo('laptop')
 
         user = self.app.store.get_user(username)
         self.assertEqual('larry@gmail.com', user.email)
@@ -457,7 +485,7 @@ class StoreWithLdapTest(AppTestCase):
 
 
 class StoreWithAdmin(AppTestCase):
-    
+
     reset_testcases = True
 
     REPO = 'testcases/'
@@ -465,7 +493,7 @@ class StoreWithAdmin(AppTestCase):
     USERNAME = 'admin'
 
     PASSWORD = 'admin123'
-    
+
     def test_disk_quota(self):
         """
         Just make a call to the function.
@@ -495,19 +523,19 @@ class StoreTestSSHKeys(AppTestCase):
     USERNAME = 'admin'
 
     PASSWORD = 'admin123'
-    
+
     def _read_ssh_key(self):
         """Readthe pub key from test packages"""
         filename = pkg_resources.resource_filename(__name__, 'test_publickey_ssh_rsa.pub')  # @UndefinedVariable
-        with open(filename, 'r', encoding='utf8') as f: 
+        with open(filename, 'r', encoding='utf8') as f:
             return f.readline()
-        
+
     def _read_authorized_keys(self):
         """Read the content of test_authorized_keys"""
         filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable
-        with open(filename, 'r', encoding='utf8') as f: 
+        with open(filename, 'r', encoding='utf8') as f:
             return f.read()
-   
+
     def test_add_authorizedkey_without_file(self):
         """
         Add an ssh key for a user without an authorizedkey file.
@@ -517,7 +545,7 @@ class StoreTestSSHKeys(AppTestCase):
         # Add the key to the user
         userobj = self.app.store.get_user(self.USERNAME)
         userobj.add_authorizedkey(key)
-        
+
         # validate
         keys = list(userobj.authorizedkeys)
         self.assertEqual(1, len(keys), "expecting one key")
@@ -533,16 +561,16 @@ class StoreTestSSHKeys(AppTestCase):
         os.mkdir(os.path.join(userobj.user_root, '.ssh'))
         filename = os.path.join(userobj.user_root, '.ssh', 'authorized_keys')
         open(filename, 'a').close()
-        
+
         # Read the pub key
         key = self._read_ssh_key()
         userobj.add_authorizedkey(key)
-        
+
         # Validate
         with open(filename, 'r') as fh:
             self.assertEqual(key, fh.read())
-            
-    def test_remove_authorizedkey_without_file(self):
+
+    def test_delete_authorizedkey_without_file(self):
         """
         Remove an ssh key for a user without authorizedkey file.
         """
@@ -554,19 +582,19 @@ class StoreTestSSHKeys(AppTestCase):
                 userobj.add_authorizedkey(k.getvalue())
             except:
                 pass
-        
+
         # Get the keys
         keys = list(userobj.authorizedkeys)
         self.assertEqual(2, len(keys))
-        
+
         # Remove a key
-        userobj.remove_authorizedkey("9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
+        userobj.delete_authorizedkey("9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
 
         # Validate
         keys = list(userobj.authorizedkeys)
         self.assertEqual(1, len(keys))
-        
-    def test_remove_authorizedkey_with_file(self):
+
+    def test_delete_authorizedkey_with_file(self):
         """
         Remove an ssh key for a user with authorizedkey file.
         """
@@ -577,13 +605,13 @@ class StoreTestSSHKeys(AppTestCase):
         filename = os.path.join(userobj.user_root, '.ssh', 'authorized_keys')
         with open(filename, 'w') as f :
             f.write(data)
-        
+
         # Get the keys
         keys = list(userobj.authorizedkeys)
         self.assertEqual(5, len(keys))
-        
+
         # Remove a key
-        userobj.remove_authorizedkey("9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
+        userobj.delete_authorizedkey("9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
 
         # Validate
         keys = list(userobj.authorizedkeys)
@@ -592,7 +620,7 @@ class StoreTestSSHKeys(AppTestCase):
 
 class UserObjectTest(AppTestCase):
     """Testcases for UserObject"""
-    
+
     reset_testcases = True
 
     REPO = 'testcases/'
@@ -600,36 +628,62 @@ class UserObjectTest(AppTestCase):
     USERNAME = 'admin'
 
     PASSWORD = 'admin123'
-    
-    def test_set_get_repos(self):
+
+    def test_add_repo(self):
         userobj = self.app.store.get_user(self.USERNAME)
         self.assertEquals(['testcases'], userobj.repos)
         
-        # Test empty list
-        userobj.repos = []
-        self.assertEquals([], userobj.repos)
+        # Existing repo
+        with self.assertRaises(ValueError):
+            userobj.add_repo('testcases')
+        with self.assertRaises(ValueError):
+            userobj.add_repo('/testcases')
+        with self.assertRaises(ValueError):
+            userobj.add_repo('testcases/')
+        with self.assertRaises(ValueError):
+            userobj.add_repo('/testcases/') 
+            
+        # Create repo
+        repo_obj = userobj.add_repo('laptop')
+        self.assertEqual('laptop', repo_obj.name)
         
+        # Create repo
+        repo_obj = userobj.add_repo('/desktop')
+        self.assertEqual('desktop', repo_obj.name)
+        
+        # Create repo
+        repo_obj = userobj.add_repo('/server/')
+        self.assertEqual('server', repo_obj.name)
+            
+    def test_set_get_repos(self):
+        userobj = self.app.store.get_user(self.USERNAME)
+        self.assertEquals(['testcases'], userobj.repos)
+
+        # Test empty list
+        userobj.get_repo('testcases').delete()
+        self.assertEquals([], userobj.repos)
+
         # Test with leading & ending "/"
-        userobj.repos = ["/testcases/"]
+        userobj.add_repo("/testcases/")
         self.assertEquals(["testcases"], userobj.repos)
         self.assertEqual(1, len(userobj.repo_objs))
         self.assertEqual("testcases", userobj.repo_objs[0].name)
-        
+
         # Make sure we get a repo
-        repo_obj = userobj.get_repo('admin/testcases')
+        repo_obj = userobj.get_repo('testcases')
         self.assertEquals("testcases", repo_obj.name)
         repo_obj.maxage = 10
         self.assertEquals(10, repo_obj.maxage)
-        
+
         # Make sure we get a repo_path
-        repo_obj, path_obj = userobj.get_repo_path('admin/testcases')
+        repo_obj = userobj.get_repo('testcases')
         repo_obj.maxage = 7
         self.assertEquals(7, repo_obj.maxage)
 
 
 class RepoObjectTest(AppTestCase):
     """Testcases for RepoObject."""
-    
+
     reset_testcases = True
 
     USERNAME = 'admin'
@@ -644,7 +698,7 @@ class RepoObjectTest(AppTestCase):
         # Check with invalid value.
         with self.assertRaises(ValueError):
             repo_obj.encoding = "invalid"
-            
+
     def test_set_get_maxage(self):
         userobj = self.app.store.get_user(self.USERNAME)
         repo_obj = userobj.get_repo(self.REPO)

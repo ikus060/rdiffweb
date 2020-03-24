@@ -59,8 +59,6 @@ RDIFF_BACKUP_DATA = b"rdiff-backup-data"
 # Increment folder name.
 INCREMENTS = b"increments"
 
-FS_ENCODING = (sys.getfilesystemencoding() or 'utf-8').lower()
-
 
 @python_2_unicode_compatible
 class ExecuteError(Exception):
@@ -698,13 +696,14 @@ class RdiffRepo(object):
 
     """Represent one rdiff-backup repository."""
 
-    def __init__(self, user_root, path, encoding=FS_ENCODING):
+    def __init__(self, user_root, path, encoding):
         if isinstance(user_root, str):
             user_root = encodefilename(user_root)
         if isinstance(path, str):
             path = encodefilename(path)
         assert isinstance(user_root, bytes)
         assert isinstance(path, bytes)
+        assert encoding
         self._encoding = encodings.search_function(encoding)
         assert self._encoding
         self.path = path.strip(b"/")

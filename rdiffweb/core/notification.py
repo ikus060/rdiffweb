@@ -204,9 +204,8 @@ class NotificationPlugin(Deamon, IUserChangeListener):
                     if not maxage or maxage <= 0:
                         continue
                     # Check repo age.
-                    r = librdiff.RdiffRepo(user.user_root, repo.name)
-                    if r.last_backup_date < (now - datetime.timedelta(days=maxage)):
-                        old_repos.append(r)
+                    if repo.last_backup_date < (now - datetime.timedelta(days=maxage)):
+                        old_repos.append(repo)
                 # Return an item only if user had old repo
                 if old_repos:
                     yield user, old_repos

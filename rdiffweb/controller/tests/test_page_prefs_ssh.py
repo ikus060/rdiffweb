@@ -59,7 +59,7 @@ class SSHKeysTest(WebCase):
         # Delete existing keys
         user = self.app.store.get_user('admin')
         for key in user.authorizedkeys:
-            user.remove_authorizedkey(key.fingerprint)
+            user.delete_authorizedkey(key.fingerprint)
         self.assertEquals(0, len(list(user.authorizedkeys)))
         
         # Add a new key
@@ -76,7 +76,7 @@ class SSHKeysTest(WebCase):
         # Delete existing keys
         user = self.app.store.get_user('admin')
         for key in user.authorizedkeys:
-            user.remove_authorizedkey(key.fingerprint)
+            user.delete_authorizedkey(key.fingerprint)
         self.assertEquals(0, len(list(user.authorizedkeys)))
         
         # Add a new key
@@ -95,7 +95,7 @@ class SSHKeysTest(WebCase):
         # Delete existing keys
         user = self.app.store.get_user('admin')
         for key in user.authorizedkeys:
-            user.remove_authorizedkey(key.fingerprint)
+            user.delete_authorizedkey(key.fingerprint)
             
         # Add key
         self._add_ssh_key("test@mysshkey", "lkjasdfoiuwerlk")
@@ -106,7 +106,7 @@ class SSHKeysTest(WebCase):
         # Delete existing keys
         user = self.app.store.get_user('admin')
         for key in user.authorizedkeys:
-            user.remove_authorizedkey(key.fingerprint)
+            user.delete_authorizedkey(key.fingerprint)
         self.assertEquals(0, len(list(user.authorizedkeys)))
         
         # Add a new key
@@ -123,7 +123,7 @@ class SSHKeysTest(WebCase):
         # Delete existing keys
         user = self.app.store.get_user('admin')
         for key in user.authorizedkeys:
-            user.remove_authorizedkey(key.fingerprint)
+            user.delete_authorizedkey(key.fingerprint)
         self.assertEquals(0, len(list(user.authorizedkeys)))
         
         # Add a new key

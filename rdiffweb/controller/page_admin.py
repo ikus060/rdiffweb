@@ -33,7 +33,6 @@ import psutil
 
 from rdiffweb.controller import Controller
 from rdiffweb.core import RdiffError, RdiffWarning
-from rdiffweb.core import rdw_spider_repos
 from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_templating import do_format_filesize as filesize
@@ -256,7 +255,7 @@ class AdminPage(Controller):
             # Check and update user directory
             if user.user_root:
                 self._check_user_root_dir(user.user_root)
-                rdw_spider_repos.find_repos_for_user(user)
+                user.update_repos()
 
         elif action == "add":
 
@@ -273,7 +272,7 @@ class AdminPage(Controller):
             # Check and update user directory
             if user.user_root:
                 self._check_user_root_dir(user.user_root)
-                rdw_spider_repos.find_repos_for_user(user)
+                user.update_repos()
             success = _("User added successfully.")
 
         if action == "delete":

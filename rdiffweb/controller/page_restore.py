@@ -83,7 +83,7 @@ class RestorePage(Controller):
         validate(usetar is None or isinstance(usetar, str))
 
         # Check user access to repo / path.
-        path_obj = self.app.currentuser.get_repo_path(path)[1]
+        path_obj = self.app.store.get_repo_path(path)[1]
 
         # Get the restore date
         try:

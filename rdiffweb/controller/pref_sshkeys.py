@@ -66,7 +66,7 @@ class SSHKeysPlugin(Controller):
         """
         assert kwargs.get('key') , "key is missing"
         try:
-            self.app.currentuser.remove_authorizedkey(kwargs['key'])
+            self.app.currentuser.delete_authorizedkey(kwargs['key'])
         except:
             _logger.warn("error removing ssh key", exc_info=1)
             raise RdiffWarning(_("Unknown error while removing the SSH Key"))

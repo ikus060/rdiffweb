@@ -78,9 +78,11 @@ class SQLiteBackendTest(AppTestCase):
 
     def test_search_with_repos(self):
         annik = self.app.store.add_user('annik')
-        annik.repos = ['coucou1', 'repo1']
+        annik.add_repo('coucou1')
+        annik.add_repo('repo1')
         kim = self.app.store.add_user('kim')
-        kim.repos = ['coucou2', 'repo2']
+        kim.add_repo('coucou2')
+        kim.add_repo('repo2')
         
         # Search in repo name
         repos = list(self.db.search('repos', 'cou', 'repopath'))

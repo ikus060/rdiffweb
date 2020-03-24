@@ -42,17 +42,17 @@ class RemoveOlderTest(WebCase):
 
     reset_testcases = True
 
-    def _settings(self, repo):
-        self.getPage("/settings/" + repo + "/")
+    def _settings(self, user, repo):
+        self.getPage("/settings/" + user + "/" + repo + "/")
 
-    def _remove_older(self, repo, value):
-        self.getPage("/settings/" + repo + "/", method="POST", body={'keepdays': value})
+    def _remove_older(self, user, repo, value):
+        self.getPage("/settings/" + user + "/" + repo + "/", method="POST", body={'keepdays': value})
 
     def test_page_api_set_remove_older(self):
         """
         Check if /api/remove-older/ is still working.
         """
-        self.getPage("/api/remove-older/" + self.REPO + "/", method="POST", body={'keepdays': '4'})
+        self.getPage("/api/remove-older/" + self.USERNAME + "/" + self.REPO + "/", method="POST", body={'keepdays': '4'})
         self.assertStatus(200)
         # Check results
         user = self.app.store.get_user(self.USERNAME)
@@ -60,13 +60,11 @@ class RemoveOlderTest(WebCase):
         self.assertEqual(4, repo.keepdays)
 
     def test_page_set_keepdays(self):
-        """
-        Set keepdays.
-        """
-        self._remove_older(self.REPO, '1')
+        self._remove_older(self.USERNAME, self.REPO, '1')
         self.assertStatus(200)
         # Make sure the right value is selected.
-        self._settings(self.REPO)
+        self._settings(self.USERNAME, self.REPO)
+        self.assertStatus(200)
         self.assertInBody('<option selected value="1">')
         # Also check if the value is updated in database
         user = self.app.store.get_user(self.USERNAME)
@@ -78,46 +76,35 @@ class RemoveOlderTest(WebCase):
         """
         Run remove older on testcases repository.
         """
-        self._remove_older(self.REPO, '1')
+        self._remove_older('admin', 'testcases', '1')
         self.assertStatus(200)
         # Get current user
         user = self.app.store.get_user(self.USERNAME)
         repo = user.get_repo(self.REPO)
+        repo.keepdays = 30
         # Run the job.
         p = RemoveOlder(cherrypy.engine, self.app)
-        p._remove_older(user, repo, 30)
+        p._remove_older(repo)
         # Check number of history.
-        r = librdiff.RdiffRepo(user.user_root, repo.name)
-        self.assertEqual(2, len(r.get_history_entries()))
-
-    def test_remove_older_with_unicode(self):
-        """
-        Test if exception is raised when calling _remove_oler with a keepdays
-        as unicode value.
-        """
-        # Get current user
-        user = self.app.store.get_user(self.USERNAME)
         repo = user.get_repo(self.REPO)
-        # Run the job.
-        with self.assertRaises(AssertionError):
-            RemoveOlder(cherrypy.engine, self.app)._remove_older(user, repo, '30')
+        self.assertEqual(2, len(repo.get_history_entries()))
 
     def test_as_another_user(self):
         # Create a nother user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
-        user_obj.repos = ['testcases']
-        
-        self._remove_older('anotheruser/testcases', '1')
+        user_obj.add_repo('testcases')
+
+        self._remove_older('anotheruser', 'testcases', '1')
         self.assertStatus('200 OK')
-        self.assertEquals(1, user_obj.get_repo('anotheruser/testcases').keepdays)
-        
+        self.assertEquals(1, user_obj.get_repo('testcases').keepdays)
+
         # Remove admin right
         admin = self.app.store.get_user('admin')
         admin.is_admin = 0
-        
+
         # Browse admin's repos
-        self._remove_older('anotheruser/testcases', '2')
+        self._remove_older('anotheruser', 'testcases', '2')
         self.assertStatus('403 Forbidden')
 
 
@@ -136,10 +123,14 @@ class RemoveOlderTestWithMock(WebCase):
         # Mock the call to _remove_older to make verification.
         p = RemoveOlder(cherrypy.engine, self.app)
         p._remove_older = MagicMock()
+        # Set a keepdays
+        user = self.app.store.get_user(self.USERNAME)
+        repo = user.get_repo(self.REPO)
+        repo.keepdays = 0
         # Call the job.
         p.job_run()
         # Check if _remove_older was called
-        p._remove_older.assert_not_called()
+        p._remove_older.assert_called_once_with(repo)
 
     def test_job_run_with_keepdays(self):
         """
@@ -155,7 +146,7 @@ class RemoveOlderTestWithMock(WebCase):
         # Call the job.
         p.job_run()
         # Check if _remove_older was called
-        p._remove_older.assert_called_once_with(user, repo, 30)
+        p._remove_older.assert_called_once_with(repo)
 
 
 if __name__ == "__main__":
