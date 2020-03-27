@@ -46,7 +46,7 @@ class MockRdiffRepo(RdiffRepo):
 
     def __init__(self):
         p = bytes(pkg_resources.resource_filename('rdiffweb.core', 'tests'), encoding='utf-8')  # @UndefinedVariable
-        RdiffRepo.__init__(self, os.path.dirname(p), os.path.basename(p))
+        RdiffRepo.__init__(self, os.path.dirname(p), os.path.basename(p), encoding='utf-8')
         self.root_path = MockDirEntry(self)
 
 
@@ -219,7 +219,7 @@ class RdiffRepoTest(unittest.TestCase):
         # Define location of testcases
         self.testcases_dir = os.path.normpath(os.path.join(self.temp_dir, 'testcases'))
         self.testcases_dir = self.testcases_dir.encode('utf8')
-        self.repo = RdiffRepo(self.temp_dir, b'testcases')
+        self.repo = RdiffRepo(self.temp_dir, b'testcases', encoding='utf-8')
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir.encode('utf8'), True)
@@ -236,11 +236,11 @@ class RdiffRepoTest(unittest.TestCase):
         self.assertEqual('testcases', self.repo.display_name)
 
     def test_init_with_absolute(self):
-        self.repo = RdiffRepo(self.temp_dir, '/testcases')
+        self.repo = RdiffRepo(self.temp_dir, '/testcases', encoding='utf-8')
         self.assertEqual('testcases', self.repo.display_name)
 
     def test_init_with_invalid(self):
-        self.repo = RdiffRepo(self.temp_dir, 'invalid')
+        self.repo = RdiffRepo(self.temp_dir, 'invalid',encoding='utf-8')
         self.assertEqual('failed', self.repo.status[0])
         self.assertEqual(None, self.repo.last_backup_date)
         self.assertEqual(b'invalid', self.repo.path)

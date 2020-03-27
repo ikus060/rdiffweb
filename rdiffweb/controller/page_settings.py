@@ -35,7 +35,7 @@ class SettingsPage(Controller):
 
     @cherrypy.expose
     def default(self, path=b"", action=None, **kwargs):
-        repo_obj = self.app.currentuser.get_repo(path)
+        repo_obj = self.app.store.get_repo(path)
         if action == 'delete':
             self._delete(repo_obj, **kwargs)
         if kwargs.get('keepdays'):

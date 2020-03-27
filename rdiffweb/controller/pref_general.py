@@ -25,7 +25,6 @@ from __future__ import unicode_literals
 import logging
 from rdiffweb.controller import Controller
 from rdiffweb.core import RdiffError, RdiffWarning
-from rdiffweb.core import rdw_spider_repos
 from rdiffweb.core.i18n import ugettext as _
 import re
 
@@ -96,7 +95,7 @@ class PrefsGeneralPanelProvider(Controller):
         """
         Called to refresh the user repos.
         """
-        rdw_spider_repos.find_repos_for_user(self.app.currentuser)
+        self.app.currentuser.update_repos()
         return {'success': _("Repositories successfully updated.")}
 
     def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable

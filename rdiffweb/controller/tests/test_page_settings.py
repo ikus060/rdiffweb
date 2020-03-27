@@ -37,30 +37,30 @@ class SettingsTest(WebCase):
     reset_testcases = True
 
     def test_page(self):
-        self.getPage("/settings/" + self.REPO)
+        self.getPage("/settings/" + self.USERNAME + "/" + self.REPO)
         self.assertInBody("Character encoding")
         self.assertStatus(200)
-        
+
     def test_as_another_user(self):
         # Create a nother user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
-        user_obj.repos = ['testcases']
-        
+        user_obj.add_repo('testcases')
+
         self.getPage("/settings/anotheruser/testcases")
         self.assertInBody("Character encoding")
         self.assertStatus('200 OK')
-        
+
         # Remove admin right
         admin = self.app.store.get_user('admin')
         admin.is_admin = 0
-        
+
         # Browse admin's repos
         self.getPage("/settings/anotheruser/testcases")
         self.assertStatus('403 Forbidden')
-        
+
     def test_set_maxage(self):
-        self.getPage("/settings/" + self.REPO + "/", method="POST",
+        self.getPage("/settings/" + self.USERNAME + "/" + self.REPO + "/", method="POST",
             body={'maxage': '4'})
         self.assertStatus(200)
         # Check database update

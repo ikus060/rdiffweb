@@ -39,7 +39,7 @@ class HistoryPage(Controller):
     def default(self, path=b"", limit='10', **kwargs):
         limit = validate_int(limit)
 
-        repo_obj = self.app.currentuser.get_repo(path)
+        repo_obj = self.app.store.get_repo(path)
 
         # Set up warning about in-progress backups, if necessary
         warning = False

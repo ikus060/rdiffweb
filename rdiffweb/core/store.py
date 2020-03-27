@@ -18,11 +18,13 @@
 from __future__ import unicode_literals
 
 from builtins import str
+import codecs
 import encodings
 from io import open
 import logging
 import os
 import sqlite3
+import sys
 
 from future.utils import python_2_unicode_compatible
 from future.utils.surrogateescape import encodefilename, decodefilename
@@ -32,9 +34,10 @@ from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.config import BoolOption, read_config, Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.ldap_auth import LdapPasswordStore
-from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, FS_ENCODING, \
+from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, \
     AccessDeniedError
 from rdiffweb.core.store_sqlite import SQLiteBackend
+
 
 try:
     # Python 2.5+
@@ -46,6 +49,10 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 SEP = b'/'
+
+MAX_DEPTH = 5
+
+DEFAULT_REPO_ENCODING = codecs.lookup((sys.getfilesystemencoding() or 'utf-8').lower()).name
 
 
 def normpath(val):
@@ -118,7 +125,7 @@ class IUserQuota():
     """
     Extension point to get user quotas
     """
-    
+
     def get_disk_usage(self, userobj):
         """
         Return the user disk space.
@@ -154,120 +161,106 @@ class UserObject(object):
             self._record = data
             self._userid = data['userid']
 
-    def __eq__(self, other):
-        return isinstance(other, UserObject) and self._userid == other._userid
-
-    def __str__(self):
-        return 'UserObject(%s)' % self._userid
-
-    def get_repo(self, name):
+    def add_authorizedkey(self, key, comment=None):
         """
-        Return the repository identified as `name`.
-        `name` may be a bytes string or unicode string.
+        Add the given key to the user. Adding the key to his `authorized_keys`
+        file if it exists and adding it to database.
         """
-        username, name = _split_path(name)
-        name = decodefilename(name)
-        
-        # Check if user has permissions to access this path
-        if username != self.username and not self.is_admin:
-            raise AccessDeniedError(name)
-        
-        # Get the userid associated to the username.
-        user_obj = self
-        userid = self._userid
-        if username != self.username:
-            row = self._db.findone('users', username=username)
-            if not row:
-                raise DoesNotExistError(name)
-            userid = row['userid']
-            user_obj = UserObject(self._store, row)
-            
-        # Search the repo with and without leading "/"
-        row = (self._db.findone('repos', userid=userid, repopath=name)
-               or self._db.findone('repos', userid=userid, repopath="/" + name)
-               or self._db.findone('repos', userid=userid, repopath=name + "/")
-               or self._db.findone('repos', userid=userid, repopath="/" + name + "/"))
-        if not row:
-            raise DoesNotExistError(name)
-        return RepoObject(user_obj, row)
-    
-    def get_repo_path(self, path):
-        """
-        Return a the repository identified by the given `path`.
-        """
-        assert isinstance(path, bytes) or isinstance(path, str)
-        sep = b'/' if isinstance(path, bytes) else '/'
-        path = path.strip(sep) + sep
-        # Since we don't know which part of the "path" is the repopath,
-        # we need to do multiple search.
-        try:
-            startpos = 0
-            while True:
-                pos = path.index(sep, startpos)
-                try:
-                    repo_obj = self.get_repo(path[:pos])
-                    path_obj = repo_obj.get_path(path[pos + 1:])
-                    return repo_obj, path_obj
-                except DoesNotExistError:
-                    # continue looping
-                    startpos = pos + 1
-        except ValueError:
-            raise DoesNotExistError(path)
+        # Parse and validate ssh key
+        assert key
+        key = authorizedkeys.check_publickey(key)
+        if not key:
+            raise ValueError(_("Invalid SSH key."))
+        # Remove option, replace comments.
+        key = authorizedkeys.AuthorizedKey(
+            options=None,
+            keytype=key.keytype,
+            key=key.key,
+            comment=comment or key.comment)
 
-    @property
-    def is_ldap(self):
-        """Return True if this user is an LDAP user. (with a password)"""
-        return not self._get_attr('password')
-
-    def _get_attr(self, key):
-        """Return user's attribute"""
-        assert key in ['userid', 'username', 'isadmin', 'useremail', 'userroot', 'password'], "invalid attribute: " + key
-        if not self._record:
-            self._record = self._db.findone('users', userid=self._userid)
-        return self._record[key]
-
-    def _set_attr(self, obj_key, key, value, notify=True):
-        """Used to define an attribute"""
-        assert key in ['isadmin', 'useremail', 'userroot', 'password'], "invalid attribute: " + key
-        updated = self._db.update('users', userid=self._userid, **{key: value})
-        assert updated, 'update failed'
-        if self._record:
-            self._record[key] = value
-        # Call notification listener
-        if notify:
-            self._store._notify('user_attr_changed', self, {obj_key: value})                
-
-    def _set_repos(self, repo_paths):
-    
-        # We don't want to just delete and recreate the repos, since that
-        # would lose notification information.
-        existing_repos = self._db.find('repos', userid=self._userid)
-
-        # delete any obsolete repos
-        repos_to_delete = [x for x in existing_repos if x.get('repopath') not in repo_paths]
-        for repo in repos_to_delete:
-            deleted = self._db.delete('repos', repoid=repo['repoid'])
-            assert deleted, 'fail to delete repo'
-
-        # add in new repos
-        existing_repos = map(lambda x: x.get('repopath'), existing_repos)
-        for repo in repo_paths:
-            if repo not in existing_repos:
-                inserted = self._db.insert('repos', userid=self._userid, repopath=repo)
+        # If a filename exists, use it by default.
+        filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
+        if os.path.isfile(filename):
+            with open(filename, mode="r+", encoding='utf-8') as fh:
+                if authorizedkeys.exists(fh, key):
+                    raise ValueError(_("SSH key already exists"))
+                logger.info("add key [%s] to [%s] authorized_keys", key, self.username)
+                authorizedkeys.add(fh, key)
+        else:
+            # Also look in database.
+            logger.info("add key [%s] to [%s] database", key, self.username)
+            try:
+                inserted = self._db.insert('sshkeys',
+                    userid=self._userid,
+                    fingerprint=key.fingerprint,
+                    key=key.getvalue())
                 assert inserted
-            
-        self._store._notify('user_attr_changed', self, {'repos': repo_paths})
+            except sqlite3.IntegrityError:  # @UndefinedVariable
+                raise ValueError(_("Duplicate key. This key already exists or is associated to another user."))
+        self._store._notify('user_attr_changed', self, {'authorizedkeys': True })
 
-    def _get_repos(self):
+    def add_repo(self, repopath):
         """
-        Get list of repos for the current `username`.
+        Add a Repo for the current user.
         """
-        rows = self._db.find('repos', userid=self._userid)
-        return [row['repopath'] for row in rows]
+        assert isinstance(repopath, bytes) or isinstance(repopath, str)
+        if isinstance(repopath, bytes):
+            repopath = decodefilename(repopath)
+        repopath = repopath.strip('/')
+
+        # Check if the repopath already exists.
+        try:
+            self.get_repo(repopath)
+            raise ValueError('repo already exists: %s' % repopath)
+        except DoesNotExistError:
+            pass
+
+        # Create entry in database
+        assert self._db.insert('repos', userid=self._userid, repopath=repopath)
+        return self.get_repo(repopath)
+
+    def delete(self):
+        """
+        Delete the given user from password store.
+
+        Return True if the user was deleted.
+        Return False if the user didn't exists.
+        Raise a ValueError when trying to delete the admin user.
+        """
+        # Make sure we are not trying to delete the admin user.
+        if self.username == self._store._admin_user:
+            raise ValueError(_("can't delete admin user"))
+
+        # Delete user from database (required).
+        logger.info("deleting user [%s] from database", self.username)
+        self._db.delete('sshkeys', userid=self._userid)
+        self._db.delete('repos', userid=self._userid)
+        deleted = self._db.delete('users', userid=self._userid)
+        assert deleted, 'fail to delete user'
+        self._store._notify('user_deleted', self.username)
+        return True
+
+    def delete_authorizedkey(self, fingerprint):
+        """
+        Remove the given key from the user. Remove the key from his
+        `authorized_keys` file if it exists and from database database.
+        """
+        # If a filename exists, use it by default.
+        filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
+        if os.path.isfile(filename):
+            with open(filename, mode='r+', encoding='utf-8') as fh:
+                logger.info("removing key [%s] from [%s] authorized_keys", fingerprint, self.username)
+                authorizedkeys.remove(fh, fingerprint)
+        else:
+            # Also look in database.
+            logger.info("removing key [%s] from [%s] database", fingerprint, self.username)
+            deleted = self._db.delete('sshkeys', userid=self._userid, fingerprint=fingerprint)
+            assert deleted
+        self._store._notify('user_attr_changed', self, {'authorizedkeys': True })
 
     @property
     def disk_usage(self):
-        
+
         # Check quota
         entry_point = next(pkg_resources.iter_entry_points('rdiffweb.IUserQuota'), None)  # @UndefinedVariable
         if entry_point:
@@ -289,15 +282,35 @@ class UserObject(object):
             except:
                 return None
 
-    def set_disk_quota(self, value):
+    def __eq__(self, other):
+        return isinstance(other, UserObject) and self._userid == other._userid
+
+    def __str__(self):
+        return 'UserObject(%s)' % self._userid
+
+    def _get_attr(self, key):
+        """Return user's attribute"""
+        assert key in ['userid', 'username', 'isadmin', 'useremail', 'userroot', 'password'], "invalid attribute: " + key
+        if not self._record:
+            self._record = self._db.findone('users', userid=self._userid)
+        return self._record[key]
+
+    def _get_authorizedkeys(self):
         """
-        Sets usr's quota using one of the IUserQuota. If none available, raise an exception.
+        Return an iterator on the authorized key. Either from his
+        `authorized_keys` file if it exists or from database.
         """
-        for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserQuota'):  # @UndefinedVariable
-            cls = entry_point.load()
-            cls(self._store.app).set_disk_quota(self, value)
-        
-    def get_disk_quota(self):
+        # If a filename exists, use it by default.
+        filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
+        if os.path.isfile(filename):
+            for k in authorizedkeys.read(filename):
+                yield k
+
+        # Also look in database.
+        for record in self._db.find('sshkeys', userid=self._userid):
+            yield authorizedkeys.check_publickey(record['key'])
+
+    def _get_disk_quota(self):
         """
         Get user's quota using one of the IUserQuota. If none available, raise an exception.
         """
@@ -308,77 +321,55 @@ class UserObject(object):
             except:
                 logger.warning('IuserQuota [%s] fail to run', entry_point, exc_info=1)
         return 0
-    
-    def get_authorizedkeys(self):
+
+    def get_repo(self, repopath):
         """
-        Return an iterator on the authorized key. Either from his
-        `authorized_keys` file if it exists or from database.
+        Return a repo object.
         """
-        # If a filename exists, use it by default.
-        filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
-        if os.path.isfile(filename):
-            for k in authorizedkeys.read(filename):
-                yield k
-        
-        # Also look in database.
-        for record in self._db.find('sshkeys', userid=self._userid):
-            yield authorizedkeys.check_publickey(record['key'])
-        
-    def add_authorizedkey(self, key, comment=None):
+        assert isinstance(repopath, bytes) or isinstance(repopath, str)
+        if isinstance(repopath, bytes):
+            repopath = decodefilename(repopath)
+        repopath = repopath.strip('/')
+
+        # Search the repo with and without leading "/"
+        row = (self._db.findone('repos', userid=self.userid, repopath=repopath)
+               or self._db.findone('repos', userid=self.userid, repopath="/" + repopath)
+               or self._db.findone('repos', userid=self.userid, repopath=repopath + "/")
+               or self._db.findone('repos', userid=self.userid, repopath="/" + repopath + "/"))
+        if not row:
+            raise DoesNotExistError(repopath)
+        return RepoObject(self, row)
+
+    def _get_repos(self):
         """
-        Add the given key to the user. Adding the key to his `authorized_keys`
-        file if it exists and adding it to database.
+        Get list of repos for the current `username`.
         """
-        # Parse and validate ssh key
-        assert key
-        key = authorizedkeys.check_publickey(key)
-        if not key:
-            raise ValueError(_("Invalid SSH key."))
-        # Remove option, replace comments.
-        key = authorizedkeys.AuthorizedKey(
-            options=None,
-            keytype=key.keytype,
-            key=key.key,
-            comment=comment or key.comment)
-        
-        # If a filename exists, use it by default.
-        filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
-        if os.path.isfile(filename):
-            with open(filename, mode="r+", encoding='utf-8') as fh:
-                if authorizedkeys.exists(fh, key):
-                    raise ValueError(_("SSH key already exists"))
-                logger.info("add key [%s] to [%s] authorized_keys", key, self.username)
-                authorizedkeys.add(fh, key)
-        else:
-            # Also look in database.
-            logger.info("add key [%s] to [%s] database", key, self.username)
-            try:
-                inserted = self._db.insert('sshkeys',
-                    userid=self._userid,
-                    fingerprint=key.fingerprint,
-                    key=key.getvalue())
-                assert inserted
-            except sqlite3.IntegrityError:  # @UndefinedVariable
-                raise ValueError(_("Duplicate key. This key already exists or is associated to another user."))
-        self._store._notify('user_attr_changed', self, {'authorizedkeys': True })
-        
-    def remove_authorizedkey(self, fingerprint):
+        rows = self._db.find('repos', userid=self._userid)
+        return [row['repopath'] for row in rows]
+
+    @property
+    def is_ldap(self):
+        """Return True if this user is an LDAP user. (with a password)"""
+        return not self._get_attr('password')
+
+    def _set_attr(self, obj_key, key, value, notify=True):
+        """Used to define an attribute"""
+        assert key in ['isadmin', 'useremail', 'userroot', 'password'], "invalid attribute: " + key
+        updated = self._db.update('users', userid=self._userid, **{key: value})
+        assert updated, 'update failed'
+        if self._record:
+            self._record[key] = value
+        # Call notification listener
+        if notify:
+            self._store._notify('user_attr_changed', self, {obj_key: value})
+
+    def _set_disk_quota(self, value):
         """
-        Remove the given key from the user. Remove the key from his
-        `authorized_keys` file if it exists and from database database.
+        Sets usr's quota using one of the IUserQuota. If none available, raise an exception.
         """
-        # If a filename exists, use it by default.
-        filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
-        if os.path.isfile(filename):
-            with open(filename, mode='r+', encoding='utf-8') as fh:
-                logger.info("removing key [%s] from [%s] authorized_keys", fingerprint, self.username)
-                authorizedkeys.remove(fh, fingerprint)
-        else:
-            # Also look in database.
-            logger.info("removing key [%s] from [%s] database", fingerprint, self.username)
-            deleted = self._db.delete('sshkeys', userid=self._userid, fingerprint=fingerprint)
-            assert deleted
-        self._store._notify('user_attr_changed', self, {'authorizedkeys': True })
+        for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserQuota'):  # @UndefinedVariable
+            cls = entry_point.load()
+            cls(self._store.app).set_disk_quota(self, value)
 
     def set_password(self, password, old_password=None):
         """
@@ -405,26 +396,25 @@ class UserObject(object):
         self._set_attr('password', 'password', _hash_password(password))
         self._store._notify('user_password_changed', self.username, password)
 
-    def delete(self):
+    def update_repos(self):
         """
-        Delete the given user from password store.
+        Refresh the users repositories.
+        """
 
-        Return True if the user was deleted.
-        Return False if the user didn't exists.
-        Raise a ValueError when trying to delete the admin user.
-        """
-        # Make sure we are not trying to delete the admin user.
-        if self.username == self._store._admin_user:
-            raise ValueError(_("can't delete admin user"))
-            
-        # Delete user from database (required).
-        logger.info("deleting user [%s] from database", self.username)
-        self._db.delete('sshkeys', userid=self._userid)
-        self._db.delete('repos', userid=self._userid)
-        deleted = self._db.delete('users', userid=self._userid)
-        assert deleted, 'fail to delete user'
-        self._store._notify('user_deleted', self.username)
-        return True
+        def _onerror(error):
+            logger.error('error updating user [%s] repos' % self.username, exc_info=1)
+
+        user_root = encodefilename(self.user_root)
+        for root, dirs, unused_files in os.walk(user_root, _onerror):
+            for name in dirs:
+                if name == b'rdiff-backup-data':
+                    repopath = os.path.relpath(root, start=user_root)
+                    try:
+                        self.get_repo(repopath)
+                    except DoesNotExistError:
+                        self.add_repo(repopath)
+            if root.count(SEP) - user_root.count(SEP) >= MAX_DEPTH:
+                del dirs[:]
 
     # Declare properties
     userid = property(fget=lambda x: x._get_attr('userid'))
@@ -432,10 +422,10 @@ class UserObject(object):
     email = property(fget=lambda x: x._get_attr('useremail'), fset=lambda x, y: x._set_attr('email', 'useremail', y))
     user_root = property(fget=lambda x: x._get_attr('userroot'), fset=lambda x, y: x._set_attr('user_root', 'userroot', y))
     username = property(fget=lambda x: x._get_attr('username'))
-    repos = property(fget=lambda x: list(map(lambda y: y.strip('/'), x._get_repos())), fset=lambda x, y: x._set_repos(y))
-    authorizedkeys = property(fget=lambda x: x.get_authorizedkeys())
+    repos = property(fget=lambda x: list(map(lambda y: y.strip('/'), x._get_repos())))
+    authorizedkeys = property(fget=lambda x: x._get_authorizedkeys())
     repo_objs = property(fget=lambda x: [RepoObject(x, r) for r in x._get_repos()])
-    disk_quota = property(get_disk_quota, set_disk_quota)
+    disk_quota = property(_get_disk_quota, _set_disk_quota)
 
 
 @python_2_unicode_compatible
@@ -454,7 +444,7 @@ class RepoObject(RdiffRepo):
         else:
             self._repo = data['repopath']
             self._record = data
-        RdiffRepo.__init__(self, user_obj.user_root, self._repo)
+        RdiffRepo.__init__(self, user_obj.user_root, self._repo, encoding=DEFAULT_REPO_ENCODING)
         self._encoding = self._get_encoding()
 
     def __eq__(self, other):
@@ -485,13 +475,17 @@ class RepoObject(RdiffRepo):
         return value
 
     @property
-    def name(self):
+    def displayname(self):
         return self._repo.strip('/')
-    
+
+    @property
+    def name(self):
+        return self._repo
+
     @property
     def owner(self):
         return self._user_obj.username
-    
+
     def _get_encoding(self):
         """Return the repository encoding in a normalized format (lowercase and replace - by _)."""
         # For backward compatibility, look into the database and fallback to
@@ -499,29 +493,28 @@ class RepoObject(RdiffRepo):
         encoding = self._get_attr('encoding')
         if encoding:
             return encodings.search_function(encoding.lower())
-        
+
         # Read encoding value from obsolete config file.
         try:
             conf_file = os.path.join(self._data_path, b'rdiffweb')
             if os.access(conf_file, os.F_OK) and os.path.isfile(conf_file):
                 config = read_config(conf_file)
-                os.remove(conf_file)
                 encoding = config.get('encoding')
                 if encoding:
                     return encodings.search_function(encoding)
         except:
             logger.exception("fail to get repo encoding from file")
-        
+
         # Fallback to default encoding.
-        return encodings.search_function(FS_ENCODING)
-        
+        return encodings.search_function(DEFAULT_REPO_ENCODING)
+
     def _set_encoding(self, value):
         """Change the repository encoding"""
         # Validate if the value is a valid encoding before updating the database.
         codec = encodings.search_function(value.lower())
         if not codec:
             raise ValueError(_('invalid encoding %s') % value)
-        
+
         logger.info("updating repository %s encoding %s", self, codec.name)
         self._set_attr('encoding', codec.name)
         self._encoding = codec
@@ -542,7 +535,7 @@ class Store():
     """
     This class handle all data storage operations.
     """
-    
+
     _db_file = Option("SQLiteDBFile", "/etc/rdiffweb/rdw.db")
     _allow_add_user = BoolOption("AddMissingUser", False)
     _admin_user = Option("AdminUser", "admin")
@@ -552,18 +545,18 @@ class Store():
         self._database = SQLiteBackend(self._db_file)
         self._password_stores = [LdapPasswordStore(app)]
         self._change_listeners = []
-        
+
         # Register entry point.
         for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserChangeListener'):  # @UndefinedVariable
             try:
                 cls = entry_point.load()
-                # Creating the listener should register it self.But let make sure of it. 
+                # Creating the listener should register it self.But let make sure of it.
                 listener = cls(self.app)
                 if listener not in self._change_listeners:
                     self._change_listeners.append(listener)
             except:
                 logging.error("IUserChangeListener [%s] fail to load", entry_point)
-    
+
     def create_admin_user(self):
         # Check if admin user exists. If not, created it.
         if not self.get_user(self._admin_user):
@@ -584,7 +577,7 @@ class Store():
         # Check if user already exists.
         if self.get_user(user):
             raise RdiffError(_("User %s already exists." % (user,)))
-        
+
         # Find a database where to add the user
         logger.debug("adding new user [%s]", user)
         if password:
@@ -603,6 +596,52 @@ class Store():
 
     def count_repos(self):
         return self._database.count('repos')
+
+    def get_repo(self, name, as_user=None):
+        """
+        Return the repository identified as `name`.
+        `name` should be <username>/<repopath>
+        """
+        username, repopath = _split_path(name)
+        repopath = decodefilename(repopath)
+
+        # Check permissions
+        as_user = as_user or self.app.currentuser
+        assert as_user, "as_user or current user must be defined"
+        if username != as_user.username and not as_user.is_admin:
+            raise AccessDeniedError(name)
+
+        # Get the userid associated to the username.
+        user_obj = self.get_user(username)
+        if not user_obj:
+            raise DoesNotExistError(name)
+
+        # Get the repo object.
+        return user_obj.get_repo(repopath)
+
+    def get_repo_path(self, path, as_user=None):
+        """
+        Return a the repository identified by the given `path`.
+        `path` should be <username>/<repopath>/<subdir>
+        """
+        assert isinstance(path, bytes) or isinstance(path, str)
+        sep = b'/' if isinstance(path, bytes) else '/'
+        path = path.strip(sep) + sep
+        # Since we don't know which part of the "path" is the repopath,
+        # we need to do multiple search.
+        try:
+            startpos = 0
+            while True:
+                pos = path.index(sep, startpos)
+                try:
+                    repo_obj = self.get_repo(path[:pos], as_user)
+                    path_obj = repo_obj.get_path(path[pos + 1:])
+                    return repo_obj, path_obj
+                except DoesNotExistError:
+                    # continue looping
+                    startpos = pos + 1
+        except ValueError:
+            raise DoesNotExistError(path)
 
     def get_user(self, user):
         """Return a user object."""
@@ -631,7 +670,7 @@ class Store():
             users = self._database.find('users')
         for record in users:
             yield UserObject(self, record)
-            
+
     def repos(self, search=None, criteria=None):
         """
         Quick listing of all the repository object for all user.
@@ -643,7 +682,7 @@ class Store():
             repos = self._database.search('repos', search, 'RepoPath', 'username', 'useremail')
         else:
             repos = self._database.find('repos')
-            
+
         for record in repos:
             user_record = self._database.findone('users', userid=record['userid'])
             user_obj = UserObject(self, user_record)
@@ -672,7 +711,7 @@ class Store():
             userobj = UserObject(self, record)
             self._notify('user_logined', userobj, None)
             return userobj
-            
+
         # Fallback to LDAP
         for store in self._password_stores:
             try:

@@ -96,7 +96,8 @@ class PrefsTest(WebCase):
     def test_update_repos(self):
         
         user_obj = self.app.store.get_user(self.USERNAME)
-        user_obj.repos = []
+        self.app.store._database.delete('repos')
+        self.assertEqual(0, len(user_obj.repos))
         
         self.getPage(self.PREFS, method='POST', body={'action': 'update_repos'})
         self.assertStatus(200)

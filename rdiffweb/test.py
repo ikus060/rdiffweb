@@ -56,7 +56,7 @@ class MockRdiffwebApp(RdiffwebApp):
         # database in memory
         self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
         default_config['SQLiteDBFile'] = os.path.join(self.database_dir, 'rdiffweb.tmp.db')
-        
+
         # Call parent constructor
         RdiffwebApp.__init__(self, cfg=default_config)
 
@@ -89,12 +89,12 @@ class MockRdiffwebApp(RdiffwebApp):
         # Extract 'testcases.tar.gz'
         testcases = pkg_resources.resource_filename('rdiffweb.tests', 'testcases.tar.gz')  # @UndefinedVariable
         new = str(tempfile.mkdtemp(prefix='rdiffweb_tests_'))
-        subprocess.check_call(['tar','-zxf', testcases], cwd=new)
+        subprocess.check_call(['tar', '-zxf', testcases], cwd=new)
 
         # Register repository
         for user in self.store.users():
             user.user_root = new
-            user.repos = ['testcases']
+            user.add_repo('testcases')
 
         self.testcases = new
 
@@ -107,7 +107,7 @@ class AppTestCase(unittest.TestCase):
 
     reset_testcases = False
 
-    REPO = 'admin/testcases'
+    REPO = 'testcases'
 
     USERNAME = None
 
@@ -118,6 +118,7 @@ class AppTestCase(unittest.TestCase):
         if self.reset_app:
             self.app.reset(self.USERNAME, self.PASSWORD)
         if self.reset_testcases:
+            assert self.reset_app, 'reset_app must be True when reset_testcases is True'
             self.app.reset_testcases()
         unittest.TestCase.setUp(self)
 
@@ -133,7 +134,7 @@ class WebCase(helper.CPWebCase):
     Helper class for the rdiffweb test suite.
     """
 
-    REPO = 'admin/testcases'
+    REPO = 'testcases'
 
     USERNAME = 'admin'
 
@@ -168,6 +169,7 @@ class WebCase(helper.CPWebCase):
         if self.reset_app:
             self.app.reset(self.USERNAME, self.PASSWORD)
         if self.reset_testcases:
+            assert self.reset_app, 'reset_app must be True when reset_testcases is True'
             self.app.reset_testcases()
         if self.login:
             self._login()

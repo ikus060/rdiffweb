@@ -19,16 +19,15 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import logging
-
 from builtins import bytes
 from builtins import str
+import logging
+
 import cherrypy
 from future.utils import iteritems
 
 from rdiffweb.controller import Controller, validate_isinstance
 from rdiffweb.controller.dispatch import poppath
-from rdiffweb.core import librdiff
 
 
 _logger = logging.getLogger(__name__)
@@ -81,7 +80,7 @@ class GraphsPage(Controller):
         """
         validate_isinstance(graph, bytes)
         graph = graph.decode('ascii', 'replace')
-        repo_obj = self.app.currentuser.get_repo(path)
+        repo_obj = self.app.store.get_repo(path)
 
         # check if data should be shown.
         if graph == 'data':

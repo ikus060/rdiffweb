@@ -37,27 +37,27 @@ class SettingsTest(WebCase):
     reset_testcases = True
 
     def test_activities(self):
-        self.getPage("/graphs/activities/" + self.REPO + "/")
+        self.getPage("/graphs/activities/" + self.USERNAME + "/" + self.REPO + "/")
         self.assertStatus('200 OK')
 
     def test_errors(self):
-        self.getPage("/graphs/errors/" + self.REPO + "/")
+        self.getPage("/graphs/errors/" + self.USERNAME + "/" + self.REPO + "/")
         self.assertStatus('200 OK')
 
     def test_files(self):
-        self.getPage("/graphs/files/" + self.REPO + "/")
+        self.getPage("/graphs/files/" + self.USERNAME + "/" + self.REPO + "/")
         self.assertStatus('200 OK')
 
     def test_sizes(self):
-        self.getPage("/graphs/sizes/" + self.REPO + "/")
+        self.getPage("/graphs/sizes/" + self.USERNAME + "/" + self.REPO + "/")
         self.assertStatus('200 OK')
 
     def test_times(self):
-        self.getPage("/graphs/times/" + self.REPO + "/")
+        self.getPage("/graphs/times/" + self.USERNAME + "/" + self.REPO + "/")
         self.assertStatus('200 OK')
 
     def test_data(self):
-        self.getPage("/graphs/data/" + self.REPO + "/")
+        self.getPage("/graphs/data/" + self.USERNAME + "/" + self.REPO + "/")
         self.assertStatus('200 OK')
         # Check header
         expected = b"""date,starttime,endtime,elapsedtime,sourcefiles,sourcefilesize,mirrorfiles,mirrorfilesize,newfiles,newfilesize,deletedfiles,deletedfilesize,changedfiles,changedsourcesize,changedmirrorsize,incrementfiles,incrementfilesize,totaldestinationsizechange,errors
@@ -90,20 +90,20 @@ class SettingsTest(WebCase):
         # Create a nother user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
-        user_obj.repos = ['testcases']
-        
+        user_obj.add_repo('testcases')
+
         self.getPage("/graphs/activities/anotheruser/testcases")
         self.assertStatus('200 OK')
         self.assertInBody("Activities")
-        
+
         # Remove admin right
         admin = self.app.store.get_user('admin')
         admin.is_admin = 0
-        
+
         # Browse admin's repos
         self.getPage("/graphs/activities/anotheruser/testcases")
         self.assertStatus('403 Forbidden')
-        
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

@@ -84,32 +84,25 @@ class RemoveOlder(Deamon):
         Execute the job in background.
         """
         # Create a generator to loop on repositories.
-        gen = (
-            (user, repo, int(repo.keepdays))
-            for user in self.app.store.users()
-            for repo in user.repo_objs
-            if int(repo.keepdays) > 0)
-
         # Loop on each repos.
-        for user, repo, keepdays in gen:
+        for repo in self.app.store.repos():
             try:
-                self._remove_older(user, repo, keepdays)
+                self._remove_older(repo)
             except BaseException:
-                _logger.exception("fail to remove older for user [%r] repo [%r]", user, repo)
+                _logger.exception("fail to remove older for user [%r] repo [%r]", repo.owner, repo)
 
-    def _remove_older(self, user, repo, keepdays):
+    def _remove_older(self, repo):
         """
         Take action to remove older.
         """
-        assert isinstance(keepdays, int)
-        assert keepdays > 0
-        # Get instance of the repo.
-        r = librdiff.RdiffRepo(user.user_root, repo.name)
-        # Check history date.
-        if not r.last_backup_date:
-            _logger.info("no backup dates for [%r]", r.full_path)
+        assert repo
+        if repo.keepdays <= 0:
             return
-        d = librdiff.RdiffTime() - r.last_backup_date
-        d = d.days + keepdays
+        # Check history date.
+        if not repo.last_backup_date:
+            _logger.info("no backup dates for [%r]", repo.full_path)
+            return
+        d = librdiff.RdiffTime() - repo.last_backup_date
+        d = d.days + repo.keepdays
 
-        r.remove_older(d)
+        repo.remove_older(d)

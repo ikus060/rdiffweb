@@ -42,8 +42,8 @@ class BrowsePageTest(WebCase):
     def tearDown(self):
         WebCase.tearDown(self)
 
-    def _browse(self, repo, path, restore=False):
-        url = "/browse/" + repo + "/" + path
+    def _browse(self, user, repo, path, restore=False):
+        url = "/browse/" + user + "/" + repo + "/" + path
         if restore:
             url = url + "?restore=T"
         self.getPage(url)
@@ -60,14 +60,14 @@ class BrowsePageTest(WebCase):
         """
         Check if relative path are resolved.
         """
-        self._browse(self.REPO, "../%s/Revisions/../../%s/" % (self.REPO, self.REPO,))
+        self._browse(self.USERNAME, self.REPO, "../%s/Revisions/../../%s/" % (self.REPO, self.REPO,))
         self.assertInBody("")
 
     def test_root(self):
         """
         Browse repository root.
         """
-        self._browse(self.REPO, "")
+        self._browse(self.USERNAME, self.REPO, "")
         #  Fichier @ <root>
         self.assertInBody("Fichier @ &lt;root&gt;")
         self.assertInBody("/Fichier%20%40%20%3Croot%3E?date=")
@@ -99,24 +99,24 @@ class BrowsePageTest(WebCase):
         """
         Browse root restore page.
         """
-        self._browse(self.REPO, "", True)
+        self._browse(self.USERNAME, self.REPO, "", True)
         self.assertInBody("Download")
         self.assertInBody("2016-02-02 16:30")
-        self.assertInBody("/restore/" + self.REPO + "?date=1415221507")
+        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "?date=1415221507")
         self.assertInBody("Show more")
 
     def test_loop_symlink(self):
         """
         Browse a symlink.
         """
-        self._browse(self.REPO, "Subdirectory/LoopSymlink/LoopSymlink/")
+        self._browse(self.USERNAME, self.REPO, "Subdirectory/LoopSymlink/LoopSymlink/")
         self.assertNotInBody("LoopSymlink/LoopSymlink", "")
 
     def test_sub_directory_deleted(self):
         """
         Browse to a sub directory being deleted.
         """
-        self._browse(self.REPO, "R%C3%A9pertoire%20Supprim%C3%A9/")
+        self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Supprim%C3%A9/")
         self.assertInBody("Untitled Empty Text File")
         self.assertInBody("Untitled Empty Text File 2")
         self.assertInBody("Untitled Empty Text File 3")
@@ -131,18 +131,18 @@ class BrowsePageTest(WebCase):
         """
         Browse to restore page of a deleted directory.
         """
-        self._browse(self.REPO, "R%C3%A9pertoire%20Supprim%C3%A9/", True)
+        self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Supprim%C3%A9/", True)
         self.assertInBody("Download")
         self.assertInBody("ZIP")
         self.assertInBody("TAR.GZ")
         self.assertInBody("2014-11-01 15:51")
-        self.assertInBody("/restore/" + self.REPO + "/R%C3%A9pertoire%20Supprim%C3%A9?date=1414871475")
+        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "/R%C3%A9pertoire%20Supprim%C3%A9?date=1414871475")
 
     def test_sub_directory_exists(self):
         """
         Browse to a sub directory.
         """
-        self._browse(self.REPO, "R%C3%A9pertoire%20Existant/")
+        self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Existant/")
         self.assertInBody("Fichier supprimé")
         self.assertInBody("Untitled Empty Text File")
         self.assertInBody("Untitled Empty Text File 2")
@@ -151,14 +151,14 @@ class BrowsePageTest(WebCase):
         """
         Browse to a sub directory containing special chars.
         """
-        self._browse(self.REPO, "R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/")
+        self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/")
         self.assertInBody("Untitled Testcase.doc")
 
     def test_sub_directory_with_special_chars_restore(self):
         """
         Browse to restore page of a sub directory containing special chars.
         """
-        self._browse(self.REPO, "R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/", True)
+        self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/", True)
         self.assertInBody("Download")
         self.assertInBody("ZIP")
         self.assertInBody("TAR.GZ")
@@ -168,7 +168,7 @@ class BrowsePageTest(WebCase):
         """
         Browse to sub directory with non-ascii.
         """
-        self._browse(self.REPO, "R%C3%A9pertoire%20Existant/")
+        self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Existant/")
         self.assertInBody("Répertoire Existant")
 
     def test_quoted_path(self):
@@ -177,7 +177,7 @@ class BrowsePageTest(WebCase):
         """
         #  Char ;090 to quote
         #  Char Z to quote
-        self._browse(self.REPO, "Char%20%3B090%20to%20quote/")
+        self._browse(self.USERNAME, self.REPO, "Char%20%3B090%20to%20quote/")
         #  browser location
         self.assertInBody("Char Z to quote")
         #  Content of the folder
@@ -191,15 +191,15 @@ class BrowsePageTest(WebCase):
         """
         Browse to an invalid repository.
         """
-        self._browse("/invalid/", "")
+        self.getPage('/browse/invalid')
         self.assertStatus(404)
         self.assertInBody("Not Found")
 
-        self._browse("invalid/", "")
+        self.getPage('/browse/invalid/')
         self.assertStatus(404)
         self.assertInBody("Not Found")
 
-        self._browse("admin/invalid/", "")
+        self.getPage('/browse/admin/invalid/')
         self.assertStatus(404)
         self.assertInBody("Not Found")
 
@@ -207,14 +207,14 @@ class BrowsePageTest(WebCase):
         """
         Browse to an invalid path.
         """
-        self._browse(self.REPO, "invalid/")
+        self._browse(self.USERNAME, self.REPO, "invalid/")
         self.assertStatus(404)
 
     def test_with_rdiffbackupdata(self):
         """
         Verify if rdiff-backup-data is not accessible.
         """
-        self._browse(self.REPO, "rdiff-backup-data/")
+        self._browse(self.USERNAME, self.REPO, "rdiff-backup-data/")
         self.assertStatus(404)
         self.assertInBody("Not Found")
 
@@ -225,7 +225,7 @@ class BrowsePageTest(WebCase):
         # Change the user setting to match single repo.
         user = self.app.store.get_user(self.USERNAME)
         user.user_root = os.path.join(self.app.testcases, 'testcases')
-        user.repos = ['']
+        user.add_repo('')
         # Check if listing locations is working
         self.getPage('/')
         self.assertStatus('200 OK')
@@ -239,15 +239,11 @@ class BrowsePageTest(WebCase):
         self.assertStatus('200 OK')
         self.assertInBody('Files')
 
-    def test_as_another_user(self):
-        # Remove our repo
-        admin = self.app.store.get_user('admin')
-        admin.repos = []
-
+    def test_browse_with_permissions(self):
         # Create an another user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
-        user_obj.repos = ['testcases']
+        user_obj.add_repo('testcases')
         self.getPage('/browse/admin')
         self.assertStatus('404 Not Found')
 
@@ -259,7 +255,8 @@ class BrowsePageTest(WebCase):
         self.getPage('/browse/anotheruser/testcases/Revisions/')
         self.assertStatus('200 OK')
 
-        # Remove admin right
+    def test_browse_without_permissions(self):
+        # Remove our repo
         admin = self.app.store.get_user('admin')
         admin.is_admin = 0
 
