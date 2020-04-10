@@ -632,7 +632,7 @@ class UserObjectTest(AppTestCase):
     def test_add_repo(self):
         userobj = self.app.store.get_user(self.USERNAME)
         self.assertEquals(['testcases'], userobj.repos)
-        
+
         # Existing repo
         with self.assertRaises(ValueError):
             userobj.add_repo('testcases')
@@ -641,20 +641,20 @@ class UserObjectTest(AppTestCase):
         with self.assertRaises(ValueError):
             userobj.add_repo('testcases/')
         with self.assertRaises(ValueError):
-            userobj.add_repo('/testcases/') 
-            
+            userobj.add_repo('/testcases/')
+
         # Create repo
         repo_obj = userobj.add_repo('laptop')
         self.assertEqual('laptop', repo_obj.name)
-        
+
         # Create repo
         repo_obj = userobj.add_repo('/desktop')
         self.assertEqual('desktop', repo_obj.name)
-        
+
         # Create repo
         repo_obj = userobj.add_repo('/server/')
         self.assertEqual('server', repo_obj.name)
-            
+
     def test_set_get_repos(self):
         userobj = self.app.store.get_user(self.USERNAME)
         self.assertEquals(['testcases'], userobj.repos)

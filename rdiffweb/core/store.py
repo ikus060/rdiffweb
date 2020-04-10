@@ -36,14 +36,8 @@ from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.ldap_auth import LdapPasswordStore
 from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, \
     AccessDeniedError
+from rdiffweb.core.passwd import check_password, hash_password
 from rdiffweb.core.store_sqlite import SQLiteBackend
-
-
-try:
-    # Python 2.5+
-    from hashlib import sha1 as sha
-except ImportError:
-    from sha import new as sha
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -82,18 +76,6 @@ def _split_path(path):
         return username.decode('utf-8'), path
     else:
         return path.decode('utf-8'), b''
-
-
-def _hash_password(password):
-    # At this point the password should be unicode. We converted it into
-    # system encoding.
-    password_b = password.encode('utf8')
-    hasher = sha()
-    hasher.update(password_b)
-    value = hasher.hexdigest()
-    if isinstance(value, bytes):
-        value = value.decode(encoding='latin1')
-    return value
 
 
 class IUserChangeListener():
@@ -391,9 +373,9 @@ class UserObject(object):
             except:
                 pass
         # Fallback to database
-        if old_password and self._get_attr('password') != _hash_password(old_password):
+        if old_password and not check_password(old_password, self.hash_password):
             raise ValueError(_("Wrong password"))
-        self._set_attr('password', 'password', _hash_password(password))
+        self.hash_password = hash_password(password)
         self._store._notify('user_password_changed', self.username, password)
 
     def update_repos(self):
@@ -426,6 +408,7 @@ class UserObject(object):
     authorizedkeys = property(fget=lambda x: x._get_authorizedkeys())
     repo_objs = property(fget=lambda x: [RepoObject(x, r) for r in x._get_repos()])
     disk_quota = property(_get_disk_quota, _set_disk_quota)
+    hash_password = property(fget=lambda x: x._get_attr('password'), fset=lambda x, y: x._set_attr('password', 'password', y))
 
 
 @python_2_unicode_compatible
@@ -581,7 +564,7 @@ class Store():
         # Find a database where to add the user
         logger.debug("adding new user [%s]", user)
         if password:
-            inserted = self._database.insert('users', username=user, password=_hash_password(password))
+            inserted = self._database.insert('users', username=user, password=hash_password(password))
         else:
             inserted = self._database.insert('users', username=user, password='')
         assert inserted
@@ -706,35 +689,27 @@ class Store():
         assert password is None or isinstance(user, str)
         # Validate credential using database first.
         logger.debug("validating user [%s] credentials", user)
-        record = self._database.findone('users', username=user)
-        if record and record['password'] == _hash_password(password):
-            userobj = UserObject(self, record)
+        userobj = self.get_user(user)
+        if userobj and userobj.hash_password:
+            if not check_password(password, userobj.hash_password):
+                return None
             self._notify('user_logined', userobj, None)
             return userobj
 
         # Fallback to LDAP
-        for store in self._password_stores:
-            try:
-                valid = store.are_valid_credentials(user, password)
-                if valid:
-                    break
-            except:
-                pass
-        if not valid:
-            return None
-        # Get real username and external attributes.
-        real_user, attrs = valid
-        # Check if user exists in database
-        userobj = self.get_user(real_user)
-        if not userobj:
-            if self._allow_add_user:
-                # Create user
-                userobj = self.add_user(real_user, attrs=attrs)
-            else:
-                logger.info("user [%s] not found in database", real_user)
-                return None
-        self._notify('user_logined', userobj, attrs)
-        return userobj
+        if userobj or self._allow_add_user:
+            for store in self._password_stores:
+                try:
+                    valid = store.are_valid_credentials(user, password)
+                    if valid:
+                        real_user, attrs = valid
+                        if not userobj:
+                            userobj = self.add_user(real_user, attrs=attrs)
+                        self._notify('user_logined', userobj, attrs)
+                        return userobj
+                except:
+                    logger.warn('fail to validate credentials', exc_info=1)
+        return None
 
     def _notify(self, mod, *args):
         for listener in self._change_listeners:
