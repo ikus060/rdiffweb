@@ -19,13 +19,18 @@
 from __future__ import unicode_literals
 
 from builtins import bytes
+from collections import namedtuple
 import logging
+import os
 
 import cherrypy
 from future.utils.surrogateescape import encodefilename
+import pkg_resources
+
+import rdiffweb
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import RdiffRepo
-from collections import namedtuple
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -113,6 +118,11 @@ class Controller(object):
         # Append custom branding
         if hasattr(self.app.root, "header_logo"):
             parms["header_logo"] = '/header_logo'
+
+        # Check if theme exists.
+        default_theme_css = pkg_resources.resource_filename('rdiffweb', 'static/%s.css' % self._default_theme)
+        if not os.access(default_theme_css, os.F_OK):
+            logger.warn("invalid DefaultTheme value, %s doesn't exists" % default_theme_css)
 
         # Append template parameters.
         parms.update(kwargs)
