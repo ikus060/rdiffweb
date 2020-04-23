@@ -56,6 +56,12 @@ class BrowsePageTest(WebCase):
         self.assertInBody(self.REPO)
         self.assertInBody('<meta itemprop="name" content="testcases" />')
 
+    def test_locations_with_broken_tree(self):
+        userobj = self.app.store.get_user(self.USERNAME)
+        userobj.add_repo('testcases/broker-repo')
+        userobj.add_repo('testcases/testcases')
+        self.getPage("/")
+
     def test_WithRelativePath(self):
         """
         Check if relative path are resolved.

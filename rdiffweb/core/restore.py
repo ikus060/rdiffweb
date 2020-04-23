@@ -340,7 +340,7 @@ def _readerthread(stderr):
     Read stderr and pipe each line to logger.
     """
     for line in stderr:
-        logger.info(line)
+        logger.info(line.decode(FS_ENCODING, 'replace').strip('\n'))
     stderr.close()
 
 

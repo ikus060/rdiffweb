@@ -32,6 +32,7 @@ from jinja2 import Environment, PackageLoader
 from jinja2.filters import do_mark_safe
 from jinja2.loaders import ChoiceLoader, FileSystemLoader
 from collections import OrderedDict
+from rdiffweb.core.store import RepoObject
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -140,6 +141,8 @@ def create_repo_tree(repos):
         h = repo_tree
         key = repo.display_name.strip('/').split('/')
         for p in key[:-1]:
+            if p in h and isinstance(h[p], RepoObject):
+                h[p] = {'.': h[p]}
             h = h.setdefault(p, {})
         h[key[-1]] = repo
     return repo_tree
@@ -178,7 +181,7 @@ def url_for(endpoint, *args, **kwargs):
         url += "?" if first_args else "&"
         first_args = False
         if hasattr(value, 'epoch'):
-            value = value.epoch()        
+            value = value.epoch()
         url += "%s=%s" % (key, value)
     return url
 
