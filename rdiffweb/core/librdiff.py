@@ -284,7 +284,7 @@ class DirEntry(object):
             # Get entries from directory structure
             existing_entries = os.listdir(self.full_path)
             # Remove "rdiff-backup-data" directory
-            if self.path == b'':
+            if self.path == b'' and RDIFF_BACKUP_DATA in existing_entries:
                 existing_entries.remove(RDIFF_BACKUP_DATA)
 
         # Process each increment entries and combine this with the existing
