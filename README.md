@@ -75,6 +75,14 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
 
 # Changelog
 
+## 1.3.2 (2020-04-23)
+
+This minor releases fixed issues found while testing release 1.3.0.
+
+ * Fix lookup of executable rdiff-backup and rdiffweb-restore to search in current virtualenv first
+ * Fix repository view when multiple repo path are conflicting
+ * Fix logging of rdiffweb-restore subprocess
+
 ## 1.3.1 (2020-04-10)
 
 This minor release enforces security of the password stored in rdiffweb database to make use of a better encryption using SSHA.
