@@ -63,6 +63,9 @@ TOKEN = b'Processing changed file '
 # File System encoding.
 FS_ENCODING = (sys.getfilesystemencoding() or 'utf-8').lower()
 
+# PATH for executable lookup
+PATH = path = os.path.dirname(sys.executable) + os.pathsep + os.environ['PATH']
+
 
 class TarArchiver(object):
     """
@@ -384,7 +387,7 @@ def restore(restore, restore_as_of, kind, encoding, dest, log=logger.info):
     # Search full path location of rdiff-backup.
     # To work around issue related to different PATH
     rdiff_backup_path = spawn.find_executable('rdiff-backup')
-    assert rdiff_backup_path
+    assert rdiff_backup_path, "can't find `rdiff-backup` executable in PATH: " + PATH
     rdiff_backup_path = rdiff_backup_path.encode(FS_ENCODING)
 
     # Need to explicitly export some environment variable. Do not export
@@ -454,10 +457,9 @@ def call_restore(path, restore_as_of, encoding, kind):
     assert encoding
 
     # Lookup the executable.
-    cmd = spawn.find_executable('rdiffweb-restore')
-    assert bin, "can't find `rdiffweb-restore` executable in PATH"
-    if isinstance(cmd, str):
-        cmd = cmd.encode(FS_ENCODING)
+    cmd = spawn.find_executable('rdiffweb-restore', PATH)
+    assert cmd, "can't find `rdiffweb-restore` executable in PATH: " + PATH
+    cmd = cmd.encode(FS_ENCODING)
 
     # Call the process.
     cmdline = [cmd, b'--restore-as-of', str(restore_as_of).encode('latin'), b'--encoding', encoding, b'--kind', kind, path, b'-']

@@ -75,15 +75,22 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
 
 # Changelog
 
+## 1.3.1 (2020-04-10)
+
+This minor release enforces security of the password stored in rdiffweb database to make use of a better encryption using SSHA.
+Only new passwords will make use of the SSHA scheme.
+
+ * Enforce password encryption by using SSHA scheme #88
+
 ## 1.3.0 (2020-04-07)
 
-This release focus on improvementing the restore of big archives. The download should be much faster to start. Major enhancement was made to offload the processing outside the web server. And all of this is still compatible with rdiff-backup v1.2.8 and the latest v2.0.0.
+This release focuses on improving the restore of big archives. The download should be much faster to start. Major enhancement was made to offload the processing outside the web server. And all of this is still compatible with rdiff-backup v1.2.8 and the latest v2.0.0.
 
  * Restore file and folder in a subprocess to make the download start faster
  * Fix encoding of archive on Python3.6 (CentOS 7) by using PAX format
  * Add support to restore files and folders using rdiff-backup2
  * Remove obsolete dependencies `pysqlite2`
- * Fix issue creating duplicate entries of repository in database
+ * Fix issue creating duplicate entries of repository in the database
 
 ## 1.2.2 (2020-03-05)
 
