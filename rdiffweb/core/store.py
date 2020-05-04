@@ -319,7 +319,7 @@ class UserObject(object):
                or self._db.findone('repos', userid=self.userid, repopath=repopath + "/")
                or self._db.findone('repos', userid=self.userid, repopath="/" + repopath + "/"))
         if not row:
-            raise DoesNotExistError(repopath)
+            raise DoesNotExistError(self.userid, repopath)
         return RepoObject(self, row)
 
     def _get_repos(self):
@@ -391,6 +391,8 @@ class UserObject(object):
             for name in dirs:
                 if name == b'rdiff-backup-data':
                     repopath = os.path.relpath(root, start=user_root)
+                    # Handle special scenario when the repo is the user_root
+                    repopath = b'' if repopath == b'.' else repopath
                     try:
                         self.get_repo(repopath)
                     except DoesNotExistError:

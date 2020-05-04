@@ -231,7 +231,7 @@ class BrowsePageTest(WebCase):
         # Change the user setting to match single repo.
         user = self.app.store.get_user(self.USERNAME)
         user.user_root = os.path.join(self.app.testcases, 'testcases')
-        user.add_repo('')
+        user.update_repos()
         # Check if listing locations is working
         self.getPage('/')
         self.assertStatus('200 OK')
