@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Created on Dec 30, 2015
 
@@ -28,13 +29,14 @@ import logging
 import os
 import unittest
 
+from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 from rdiffweb.test import WebCase
 
 
 class AbstractAdminTest(WebCase):
     """Class to regroup command method to test admin page."""
 
-    def _add_user(self, username=None, email=None, password=None, user_root=None, is_admin=None):
+    def _add_user(self, username=None, email=None, password=None, user_root=None, role=None):
         b = {}
         b['action'] = 'add'
         if username is not None:
@@ -45,11 +47,11 @@ class AbstractAdminTest(WebCase):
             b['password'] = password
         if user_root is not None:
             b['user_root'] = user_root
-        if is_admin is not None:
-            b['is_admin'] = str(bool(is_admin)).lower()
+        if role is not None:
+            b['role'] = str(role)
         self.getPage("/admin/users/", method='POST', body=b)
 
-    def _edit_user(self, username=None, email=None, password=None, user_root=None, is_admin=None):
+    def _edit_user(self, username=None, email=None, password=None, user_root=None, role=None):
         b = {}
         b['action'] = 'edit'
         if username is not None:
@@ -60,8 +62,8 @@ class AbstractAdminTest(WebCase):
             b['password'] = password
         if user_root is not None:
             b['user_root'] = user_root
-        if is_admin is not None:
-            b['is_admin'] = str(bool(is_admin)).lower()
+        if role is not None:
+            b['role'] = str(role)
         self.getPage("/admin/users/", method='POST', body=b)
 
     def _delete_user(self, username='test1'):
@@ -75,15 +77,26 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
     login = True
 
+    def test_add_user_with_role(self):
+        #  Add user to be listed
+        self._add_user("admin_role", "admin_role@test.com", "test2", "/home/", ADMIN_ROLE)
+        self.assertEqual(ADMIN_ROLE, self.app.store.get_user('admin_role').role)
+
+        self._add_user("maintainer_role", "maintainer_role@test.com", "test2", "/home/", MAINTAINER_ROLE)
+        self.assertEqual(MAINTAINER_ROLE, self.app.store.get_user('maintainer_role').role)
+
+        self._add_user("user_role", "user_role@test.com", "test2", "/home/", USER_ROLE)
+        self.assertEqual(USER_ROLE, self.app.store.get_user('user_role').role)
+
     def test_add_edit_delete(self):
         #  Add user to be listed
-        self._add_user("test2", "test2@test.com", "test2", "/home/", False)
+        self._add_user("test2", "test2@test.com", "test2", "/home/", USER_ROLE)
         try:
             self.assertInBody("User added successfully.")
             self.assertInBody("test2")
             self.assertInBody("test2@test.com")
             #  Update user
-            self._edit_user("test2", "chaned@test.com", "new-password", "/tmp/", True)
+            self._edit_user("test2", "chaned@test.com", "new-password", "/tmp/", ADMIN_ROLE)
             self.assertInBody("User information modified successfully.")
             self.assertInBody("test2")
             self.assertInBody("chaned@test.com")
@@ -101,13 +114,13 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Check creation of user with non-ascii char.
         """
-        self._add_user("Éric", "éric@test.com", "Éric", "/home/", False)
+        self._add_user("Éric", "éric@test.com", "Éric", "/home/", USER_ROLE)
         try:
             self.assertInBody("User added successfully.")
             self.assertInBody("Éric")
             self.assertInBody("éric@test.com")
             # Update user
-            self._edit_user("Éric", "eric.létourno@test.com", "écureuil", "/tmp/", True)
+            self._edit_user("Éric", "eric.létourno@test.com", "écureuil", "/tmp/", ADMIN_ROLE)
             self.assertInBody("User information modified successfully.")
             self.assertInBody("Éric")
             self.assertInBody("eric.létourno@test.com")
@@ -125,15 +138,15 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Verify failure trying to create user without username.
         """
-        self._add_user("", "test1@test.com", "test1", "/tmp/", False)
+        self._add_user("", "test1@test.com", "test1", "/tmp/", USER_ROLE)
         self.assertInBody("The username is invalid.")
 
     def test_add_user_with_existing_username(self):
         """
         Verify failure trying to add the same user.
         """
-        self._add_user("test1", "test1@test.com", "test1", "/tmp/", False)
-        self._add_user("test1", "test1@test.com", "test1", "/tmp/", False)
+        self._add_user("test1", "test1@test.com", "test1", "/tmp/", USER_ROLE)
+        self._add_user("test1", "test1@test.com", "test1", "/tmp/", USER_ROLE)
         self.assertInBody("User test1 already exists.")
 
     def test_add_user_with_invalid_root_directory(self):
@@ -144,20 +157,20 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
             self._delete_user("test5")
         except:
             pass
-        self._add_user("test5", "test1@test.com", "test5", "/var/invalid/", False)
+        self._add_user("test5", "test1@test.com", "test5", "/var/invalid/", USER_ROLE)
         self.assertNotInBody("User added successfully.")
         self.assertInBody("User root directory /var/invalid/ is not accessible!")
 
     def test_add_without_email(self):
         #  Add user to be listed
-        self._add_user("test2", None, "test2", "/tmp/", False)
+        self._add_user("test2", None, "test2", "/tmp/", USER_ROLE)
         self.assertInBody("User added successfully.")
 
     def test_add_without_user_root(self):
         #  Add user to be listed
-        self._add_user("test6", None, "test6", None, False)
+        self._add_user("test6", None, "test6", None, USER_ROLE)
         self.assertInBody("User added successfully.")
-        
+
         user = self.app.store.get_user('test6')
         self.assertEquals('', user.user_root)
 
@@ -179,7 +192,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Verify failure trying to update user with invalid path.
         """
-        self._edit_user("test1", "test1@test.com", "test", "/var/invalid/", False)
+        self._edit_user("test1", "test1@test.com", "test", "/var/invalid/", USER_ROLE)
         self.assertNotInBody("User added successfully.")
         self.assertInBody("User root directory /var/invalid/ is not accessible!")
 
@@ -193,7 +206,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Verify failure trying to update invalid user.
         """
-        self._edit_user("test4", "test1@test.com", "test1", "/tmp/", False)
+        self._edit_user("test4", "test1@test.com", "test1", "/tmp/", USER_ROLE)
         self.assertStatus(500)
 
     def test_criteria(self):
@@ -228,7 +241,7 @@ class AdminUsersAsUserTest(AbstractAdminTest):
         """
         Check if adding user is forbidden.
         """
-        self._add_user("test2", "test2@test.com", "test2", "/tmp/", False)
+        self._add_user("test2", "test2@test.com", "test2", "/tmp/", USER_ROLE)
         self.assertStatus(403)
 
     def test_delete_user(self):
@@ -242,7 +255,7 @@ class AdminUsersAsUserTest(AbstractAdminTest):
         """
         Check if editing user is forbidden.
         """
-        self._edit_user("test", "test1@test.com", "test", "/var/invalid/", False)
+        self._edit_user("test", "test1@test.com", "test", "/var/invalid/", USER_ROLE)
         self.assertStatus(403)
 
     def test_users(self):
@@ -251,7 +264,7 @@ class AdminUsersAsUserTest(AbstractAdminTest):
         """
         self.getPage("/admin/users")
         self.assertStatus(403)
-        
+
     def test_repos(self):
         """
         Check if listing user is forbidden.
@@ -267,7 +280,7 @@ class AdminLogsTest(WebCase):
     def test_no_logs(self):
         self.app.cfg['logfile'] = None
         self.app.cfg['logaccessfile'] = None
-        
+
         self.getPage("/admin/logs/")
         self.assertStatus(200)
         self.assertInBody("No log files")
@@ -275,31 +288,31 @@ class AdminLogsTest(WebCase):
     def test_logs(self):
         self.app.cfg['logfile'] = './rdiffweb.log'
         self.app.cfg['logaccessfile'] = './rdiffweb-access.log'
-        
+
         with open('./rdiffweb.log', 'w') as f:
             f.write("content of log file")
-        
+
         self.getPage("/admin/logs/")
         self.assertStatus(200)
         self.assertInBody("rdiffweb.log")
         self.assertInBody("content of log file")
         self.assertInBody("rdiffweb-access.log")
-        
+
         os.remove('./rdiffweb.log')
-        
+
     def test_logs_with_no_file(self):
         self.app.cfg['logfile'] = './rdiffweb.log'
         self.app.cfg['logaccessfile'] = './rdiffweb-access.log'
-        
+
         self.getPage("/admin/logs/")
         self.assertStatus(200)
         self.assertInBody("rdiffweb.log")
         self.assertInBody("Error getting file content")
-        
+
     def test_logs_with_invalid_file(self):
         self.app.cfg['logfile'] = './rdiffweb.log'
         self.app.cfg['logaccessfile'] = './rdiffweb-access.log'
-        
+
         self.getPage("/admin/logs/invalid")
         self.assertStatus(404)
 
@@ -307,27 +320,27 @@ class AdminLogsTest(WebCase):
 class AdminReposTest(WebCase):
 
     login = True
-    
+
     reset_app = True
-    
+
     reset_testcases = True
-    
+
     def test_repos(self):
         self.getPage("/admin/repos")
         self.assertStatus(200)
-        
+
     def test_repos_with_search(self):
         # Search something that exists
         self.getPage("/admin/repos?search=test")
         self.assertStatus(200)
         self.assertInBody(self.REPO)
-        
+
         # Search something that doesn't exists
         self.getPage("/admin/repos?search=coucou")
         self.assertStatus(200)
         self.assertNotInBody(self.REPO)
         self.assertInBody("No repository found")
-        
+
     def test_repos_with_criteria(self):
         # Search something that exists
         self.getPage("/admin/repos?criteria=ok")
@@ -339,12 +352,12 @@ class AdminReposTest(WebCase):
         self.assertStatus(200)
         self.assertNotInBody(self.REPO)
         self.assertInBody("No repository found")
-        
+
 
 class AdminSysinfoTest(WebCase):
 
     login = True
-    
+
     def test_sysinfo(self):
         self.getPage("/admin/sysinfo")
         self.assertStatus(200)

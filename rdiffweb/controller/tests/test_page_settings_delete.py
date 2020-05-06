@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Created on Apr 10, 2016
 
@@ -25,6 +26,7 @@ from __future__ import unicode_literals
 import logging
 import unittest
 
+from rdiffweb.core.store import MAINTAINER_ROLE, USER_ROLE
 from rdiffweb.test import WebCase
 
 
@@ -82,11 +84,8 @@ class DeleteRepoTest(WebCase):
         self.assertStatus(400)
         self.assertEqual(['testcases'], self.app.store.get_user('admin').repos)
 
-    def test_as_another_user(self):
-        """
-        From admin user delete anotehr user repo.
-        """
-        # Create a nother user with admin right
+    def test_delete_as_admin(self):
+        # Create a another user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
         user_obj.add_repo('testcases')
@@ -98,6 +97,42 @@ class DeleteRepoTest(WebCase):
 
         # Check database update
         self.assertEqual([], user_obj.repos)
+
+    def test_delete_as_maintainer(self):
+        # Create a another user with maintainer right
+        user_obj = self.app.store.add_user('maintainer', 'password')
+        user_obj.user_root = self.app.testcases
+        user_obj.add_repo('testcases')
+        user_obj.role = MAINTAINER_ROLE
+        
+        # Login as maintainer
+        self._login('maintainer', 'password')
+        
+        # Try to delete own own repo
+        self._delete('maintainer', 'testcases', 'testcases', redirect='/admin/repos/')
+        self.assertStatus(303)
+        location = self.assertHeader('Location')
+        self.assertTrue(location.endswith('/admin/repos/'))
+
+        # Check database update
+        self.assertEqual([], user_obj.repos)
+
+    def test_delete_as_user(self):
+        # Create a another user with maintainer right
+        user_obj = self.app.store.add_user('user', 'password')
+        user_obj.user_root = self.app.testcases
+        user_obj.add_repo('testcases')
+        user_obj.role = USER_ROLE
+
+        # Login as maintainer
+        self._login('user', 'password')
+        
+        # Try to delete own own repo
+        self._delete('user', 'testcases', 'testcases', redirect='/admin/repos/')
+        self.assertStatus(403)
+
+        # Check database update
+        self.assertEqual(['testcases'], user_obj.repos)
 
 
 if __name__ == "__main__":

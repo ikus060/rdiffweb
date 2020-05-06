@@ -63,6 +63,7 @@ class SQLiteBackendTest(AppTestCase):
         self.assertEqual({'isadmin': 0,
             'password': '',
             'restoreformat': 1,
+            'role': 10,
             'useremail': '',
             'userid': 2,
             'username': 'annik',

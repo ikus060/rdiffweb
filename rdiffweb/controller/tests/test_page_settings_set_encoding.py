@@ -26,7 +26,7 @@ from __future__ import unicode_literals
 import logging
 import unittest
 
-from rdiffweb.core.store import DEFAULT_REPO_ENCODING
+from rdiffweb.core.store import DEFAULT_REPO_ENCODING, USER_ROLE
 from rdiffweb.test import WebCase
 
 
@@ -125,7 +125,7 @@ class SetEncodingTest(WebCase):
 
         # Remove admin right
         admin = self.app.store.get_user('admin')
-        admin.is_admin = 0
+        admin.role = USER_ROLE
 
         # Browse admin's repos
         self._set_encoding('anotheruser', 'testcases', 'utf-8')

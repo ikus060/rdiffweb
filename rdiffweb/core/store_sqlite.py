@@ -23,6 +23,8 @@ import sqlite3
 import sys
 from threading import RLock
 
+from rdiffweb.core.store import ADMIN_ROLE, USER_ROLE
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -47,6 +49,7 @@ def _dict_factory(cursor, row):
         else:
             d[col] = row[idx]
     return d
+
 
 def _validate_model(model):
     if model not in _TABLES:
@@ -75,7 +78,7 @@ class SQLiteBackend():
         # Declare a lock.
         self.create_tables_lock = RLock()
         self._create_or_update()
-        
+
     def _get_id(self, model, **kwargs):
         """
         Return the primary key fields of the given model.
@@ -92,7 +95,7 @@ class SQLiteBackend():
         elif 'sshkeys' == model:
             return ['fingerprint']
         return None
-    
+
     def _connect(self):
         """
         Called to create a new connection to database.
@@ -110,7 +113,7 @@ class SQLiteBackend():
         with self.create_tables_lock:
             # Check if tables exists, if not created them.
             tables = self._get_tables()
-            
+
             # Create the tables.
             conn = self._connect()
             cursor = conn.cursor()
@@ -136,13 +139,19 @@ Encoding varchar (50))""")
                 # Create `keepdays` columns in repos
                 self._create_column('repos', 'keepdays')
                 self._create_column('repos', 'encoding', datatype='varchar(30)')
-                
+
                 # Create table for ssh Keys
                 if 'sshkeys' not in tables:
                     cursor.execute("""create table sshkeys (
 Fingerprint primary key,
 Key clob UNIQUE,
 UserID int(11) NOT NULL)""")
+
+                # Create column for roles using "isadmin" column. Keep the
+                # original column in case we need to revert to previous version. 
+                if 'role'.lower() not in self._get_columns('users'):
+                    self._rowcount('ALTER TABLE users ADD COLUMN role tinyint NOT NULL DEFAULT "%s"' % (USER_ROLE,))
+                    cursor.execute('UPDATE users SET role = %s WHERE isadmin=1' % (ADMIN_ROLE,))
 
             finally:
                 conn.close()
@@ -167,7 +176,7 @@ UserID int(11) NOT NULL)""")
             return cursor.fetchall()
         finally:
             conn.close()
-            
+
     def _get_columns(self, table):
         """
         List columns for the given table.
@@ -180,7 +189,7 @@ UserID int(11) NOT NULL)""")
             record['name'] for record in
             self._fetchall('SELECT name FROM sqlite_master WHERE type="table"')]
 
-    def _rowcount(self, sql, args=[]): 
+    def _rowcount(self, sql, args=[]):
         conn = self._connect()
         try:
             cursor = conn.cursor()
@@ -201,12 +210,12 @@ UserID int(11) NOT NULL)""")
         _validate_model(model)
         query = "DELETE FROM " + model + _where(kwargs.keys())
         return self._rowcount(query, list(kwargs.values()))
-    
+
     def find(self, model, **kwargs):
         _validate_model(model)
         query = "SELECT * FROM " + model + _where(kwargs.keys())
         return self._fetchall(query, list(kwargs.values()))
-    
+
     def findone(self, model, **kwargs):
         _validate_model(model)
         query = "SELECT * FROM " + model + _where(kwargs.keys()) + " LIMIT 1"
@@ -214,12 +223,12 @@ UserID int(11) NOT NULL)""")
         if record:
             return record[0]
         return None
-        
+
     def insert(self, model, **kwargs):
         _validate_model(model)
         query = "INSERT INTO " + model + " (" + ','.join(kwargs.keys()) + ") values (" + ','.join('?' * len(kwargs)) + ")"
         return self._rowcount(query, args=list(kwargs.values()))
-        
+
     def search(self, model, value, *in_fields):
         """
         Search the `value` in the `in_fields`.
@@ -232,7 +241,7 @@ UserID int(11) NOT NULL)""")
         if model == 'repos':
             query = "SELECT * FROM users, repos WHERE repos.UserID = users.UserID AND " + ' OR '.join(['%s LIKE ?' % x for x in in_fields])
         return self._fetchall(query, [value] * len(in_fields))
-        
+
     def update(self, model, **kwargs):
         """
         Update a single object identified using the modelid.

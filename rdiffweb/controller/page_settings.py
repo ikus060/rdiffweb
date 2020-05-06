@@ -20,11 +20,14 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import logging
-from rdiffweb.controller import Controller, validate, validate_int
-from rdiffweb.controller.dispatch import poppath
-from rdiffweb.core.i18n import ugettext as _
 
 import cherrypy
+
+from rdiffweb.controller import Controller, validate, validate_int
+from rdiffweb.controller.dispatch import poppath
+from rdiffweb.controller.filter_authorization import is_maintainer
+from rdiffweb.core.i18n import ugettext as _
+
 
 # Define the logger
 _logger = logging.getLogger(__name__)
@@ -56,6 +59,7 @@ class SettingsPage(Controller):
         """
         Delete the repository.
         """
+        is_maintainer()
         # Validate the name
         validate(confirm)
         if confirm != repo_obj.display_name:
@@ -87,6 +91,7 @@ class SettingsPage(Controller):
         return _("Updated")
 
     def _remove_older(self, repo_obj, keepdays=None, **kwargs):
+        is_maintainer()
         validate_int(keepdays)
         # Update the database.
         repo_obj.keepdays = keepdays

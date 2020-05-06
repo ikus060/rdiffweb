@@ -18,8 +18,16 @@
 
 from __future__ import print_function
 
-import sys
+from distutils.cmd import Command
+from distutils.command.build import build as build_
+from distutils.dist import DistributionMetadata
 from distutils.errors import DistutilsExecError
+from io import open
+import os
+import subprocess
+import sys
+
+
 PY2 = sys.version_info[0] == 2
 
 # Check running python version.
@@ -31,11 +39,6 @@ if PY2 and not sys.version_info >= (2, 7):
     print('python version 2.7 is required.')
     sys.exit(1)
 
-from distutils.cmd import Command
-from distutils.command.build import build as build_
-from distutils.dist import DistributionMetadata
-import os
-import subprocess
 
 try:
     from setuptools import setup
@@ -190,7 +193,7 @@ tests_require=[
 extras_require={'tox': tests_require}
 
 long_description_content_type = long_description = None
-with open(os.path.join(os.path.dirname(__file__), 'README.md')) as f:
+with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
     long_description_content_type = 'text/markdown'
 

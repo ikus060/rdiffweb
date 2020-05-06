@@ -35,6 +35,8 @@
                 {% endif%}
                 {% if user.is_admin %}
                 <span class="label label-info">{% trans %}Admin{% endtrans %}</span>
+                {% elif user.is_maintainer %}
+                <span class="label label-info">{% trans %}Maintainer{% endtrans %}</span>
                 {% endif %}
                 {% if user.is_ldap %}
                 <span class="label label-default">{% trans %}LDAP{% endtrans %}</span>
@@ -104,13 +106,20 @@
         </div>
     </div>
 	<div class="form-group">
-    	<div class="col-sm-offset-3 col-sm-7">
-	        <div class="checkbox">
-	            <label>
-	                <input type="checkbox" name="is_admin">
-	                {% trans %}Is administrator{% endtrans %}
-	            </label>
-            </div>
+        <label class="col-sm-3 control-label" for="user-root">
+            {% trans %}User Role{% endtrans %}</label>
+    	<div class="col-sm-7">
+	    <select class="form-control" name="role">
+	      {% set role_values = [
+	            (0, _("Admin")),
+	            (5, _("Maintainer")),
+	            (10, _("User")),
+	      ] %}
+	      {% for value,display_name in role_values %}
+	      <option {{ attrib(value=value, selected=(value==10)) }}>{{ display_name }}</option>
+	      {% endfor %}
+	    </select>
+    	<span class="help-block">{% trans %}Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo.{% endtrans %}</span>
         </div>
     </div>
 {% endcall %}
@@ -151,24 +160,20 @@
         </div>
     </div>
     <div class="form-group">
-    	<div class="col-sm-offset-3 col-sm-7">
-	        <div class="checkbox">
-	            <label>
-	                <input type="checkbox" name="is_admin"
-	                		{% if user.is_admin%}
-	                		checked="checked"
-	                		{% endif %}
-	                		{% if user.username == username %}
-	                		disabled="disabled"
-	                		{% endif %}>
-	                {% trans %}Is administrator{% endtrans %}
-	            </label>
-	            {% if user.username == username %}
-	            <p class="help-block">
-	            	{% trans %}You cannot remove your own admin rights.{% endtrans %}
-	            </p>
-	            {% endif %}
-            </div>
+        <label class="col-sm-3 control-label" for="user-root">
+            {% trans %}User Role{% endtrans %}</label>
+        <div class="col-sm-7">
+        <select class="form-control" name="role" {% if user.username == username %}disabled="disabled"{% endif %}>
+          {% set role_values = [
+                (0, _("Admin")),
+                (5, _("Maintainer")),
+                (10, _("User")),
+          ] %}
+          {% for value,display_name in role_values %}
+          <option {{ attrib(value=value, selected=(user.role == value)) }}>{{ display_name }}</option>
+          {% endfor %}
+        </select>
+        <span class="help-block">{% trans %}Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo.{% endtrans %}</span>
         </div>
     </div>
 {% endcall %}
