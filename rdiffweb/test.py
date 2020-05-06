@@ -38,6 +38,7 @@ from cherrypy.test import helper
 from future.utils import native_str
 import pkg_resources
 
+from rdiffweb.core.store import ADMIN_ROLE
 from rdiffweb.rdw_app import RdiffwebApp
 
 
@@ -82,7 +83,7 @@ class MockRdiffwebApp(RdiffwebApp):
         # Create new user admin
         if username and password:
             user = self.store.add_user(username, password)
-            user.is_admin = True
+            user.role = ADMIN_ROLE
 
     def reset_testcases(self):
         """Extract testcases."""

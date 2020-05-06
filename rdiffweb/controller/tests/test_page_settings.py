@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Created on Jan 1, 2016
 
@@ -24,8 +25,10 @@ Created on Jan 1, 2016
 from __future__ import unicode_literals
 
 import logging
-from rdiffweb.test import WebCase
 import unittest
+
+from rdiffweb.core.store import USER_ROLE
+from rdiffweb.test import WebCase
 
 
 class SettingsTest(WebCase):
@@ -53,7 +56,7 @@ class SettingsTest(WebCase):
 
         # Remove admin right
         admin = self.app.store.get_user('admin')
-        admin.is_admin = 0
+        admin.role = USER_ROLE
 
         # Browse admin's repos
         self.getPage("/settings/anotheruser/testcases")

@@ -37,7 +37,6 @@ from rdiffweb.core.ldap_auth import LdapPasswordStore
 from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, \
     AccessDeniedError
 from rdiffweb.core.passwd import check_password, hash_password
-from rdiffweb.core.store_sqlite import SQLiteBackend
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -47,6 +46,12 @@ SEP = b'/'
 MAX_DEPTH = 5
 
 DEFAULT_REPO_ENCODING = codecs.lookup((sys.getfilesystemencoding() or 'utf-8').lower()).name
+
+# Define roles
+ADMIN_ROLE = 0
+MAINTAINER_ROLE = 5
+USER_ROLE = 10
+ROLES = [ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE]
 
 
 def normpath(val):
@@ -272,7 +277,7 @@ class UserObject(object):
 
     def _get_attr(self, key):
         """Return user's attribute"""
-        assert key in ['userid', 'username', 'isadmin', 'useremail', 'userroot', 'password'], "invalid attribute: " + key
+        assert key in ['userid', 'username', 'role', 'useremail', 'userroot', 'password'], "invalid attribute: " + key
         if not self._record:
             self._record = self._db.findone('users', userid=self._userid)
         return self._record[key]
@@ -334,9 +339,13 @@ class UserObject(object):
         """Return True if this user is an LDAP user. (with a password)"""
         return not self._get_attr('password')
 
+    def _is_role(self, role):
+        assert role in ROLES
+        return self._get_attr('role') <= role
+
     def _set_attr(self, obj_key, key, value, notify=True):
         """Used to define an attribute"""
-        assert key in ['isadmin', 'useremail', 'userroot', 'password'], "invalid attribute: " + key
+        assert key in ['role', 'useremail', 'userroot', 'password'], "invalid attribute: " + key
         updated = self._db.update('users', userid=self._userid, **{key: value})
         assert updated, 'update failed'
         if self._record:
@@ -402,11 +411,13 @@ class UserObject(object):
 
     # Declare properties
     userid = property(fget=lambda x: x._get_attr('userid'))
-    is_admin = property(fget=lambda x: x._get_attr('isadmin'), fset=lambda x, y: x._set_attr('is_admin', 'isadmin', y))
+    is_admin = property(fget=lambda x: x._is_role(ADMIN_ROLE))
+    is_maintainer = property(fget=lambda x: x._is_role(MAINTAINER_ROLE))
     email = property(fget=lambda x: x._get_attr('useremail'), fset=lambda x, y: x._set_attr('email', 'useremail', y))
     user_root = property(fget=lambda x: x._get_attr('userroot'), fset=lambda x, y: x._set_attr('user_root', 'userroot', y))
     username = property(fget=lambda x: x._get_attr('username'))
     repos = property(fget=lambda x: list(map(lambda y: y.strip('/'), x._get_repos())))
+    role = property(fget=lambda x: x._get_attr('role'), fset=lambda x, y: x._set_attr('role', 'role', y))
     authorizedkeys = property(fget=lambda x: x._get_authorizedkeys())
     repo_objs = property(fget=lambda x: [RepoObject(x, r) for r in x._get_repos()])
     disk_quota = property(_get_disk_quota, _set_disk_quota)
@@ -527,6 +538,7 @@ class Store():
 
     def __init__(self, app):
         self.app = app
+        from rdiffweb.core.store_sqlite import SQLiteBackend
         self._database = SQLiteBackend(self._db_file)
         self._password_stores = [LdapPasswordStore(app)]
         self._change_listeners = []
@@ -546,7 +558,7 @@ class Store():
         # Check if admin user exists. If not, created it.
         if not self.get_user(self._admin_user):
             userobj = self.add_user(self._admin_user, 'admin123')
-            userobj.is_admin = True
+            userobj.role = ADMIN_ROLE
 
     def add_change_listener(self, listener):
         self._change_listeners.append(listener)
@@ -646,7 +658,7 @@ class Store():
             users = self._database.search('users', search, 'username', 'useremail')
         elif criteria:
             if criteria == 'admins':
-                users = self._database.find('users', isadmin=1)
+                users = self._database.find('users', role=ADMIN_ROLE)
             elif criteria == 'ldap':
                 users = self._database.find('users', password='')
             else:

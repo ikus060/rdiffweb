@@ -73,9 +73,9 @@ class Controller(object):
         }
         if self.app.currentuser:
             parms.update({
-                "is_login": False,
                 'username': self.app.currentuser.username,
                 'is_admin': self.app.currentuser.is_admin,
+                'is_maintainer': self.app.currentuser.is_maintainer,
             })
 
         # Append custom branding

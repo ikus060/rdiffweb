@@ -31,5 +31,14 @@ def is_admin():
     if not cherrypy.serving.request.login or not cherrypy.serving.request.login.is_admin:
         raise cherrypy.HTTPError("403 Forbidden")
 
+def is_maintainer():
+    # Authentication may have remove the default handle to let the user login.
+    if cherrypy.serving.request.handler is None:
+        return True
+    # Otherwise, validate the permissions.
+    if not cherrypy.serving.request.login or not cherrypy.serving.request.login.is_maintainer:
+        raise cherrypy.HTTPError("403 Forbidden")
+
 # Make sure it's running after authentication (priority =  71)
 cherrypy.tools.is_admin = cherrypy.Tool('before_handler', is_admin, priority = 72)
+cherrypy.tools.is_maintainer = cherrypy.Tool('before_handler', is_maintainer, priority = 72)

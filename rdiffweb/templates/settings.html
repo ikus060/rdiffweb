@@ -37,7 +37,7 @@
   </span>
   <div class="form-group">
     <label for="encoding" class="control-label sr-only">{% trans %}Keep history for:{% endtrans %}</label>
-    <select class="form-control" name="keepdays">
+    <select class="form-control" name="keepdays" {% if not is_maintainer %}disabled{% endif %}>
       {% set remove_older_values = [
             (-1, _("Forever")),
             (1, _("1 day")),
@@ -72,9 +72,14 @@
     </select>
   </div>
   <div>
-     <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
+     <button type="submit" class="btn btn-success" {% if not is_maintainer %}disabled{% endif %}>{% trans %}Save changes{% endtrans %}</button>
      <span id="keepdays-status"></span>
   </div>
+  {% if not is_maintainer %}
+  <span class="help-block">
+     {% trans %}Ask your administrator to change this setting.{% endtrans %}
+  </span>
+  {% endif %}
   </form>
 </div>
 {% endcall %}
@@ -106,8 +111,13 @@
      <b>{% trans %}Removed repository cannot be restored!{% endtrans %}</b>
   </span>
   <div>
-     {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", action="delete", confirm=repo.display_name) }}
+     {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", action="delete", confirm=repo.display_name, disabled=not is_maintainer) }}
   </div>
+  {% if not is_maintainer %}
+  <span class="help-block">
+     {% trans %}Ask your administrator if you want to delete this repository.{% endtrans %}
+  </span>
+  {% endif %}
 </div>
 {% endcall %}
 

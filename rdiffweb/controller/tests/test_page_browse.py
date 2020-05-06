@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Created on Dec 26, 2015
 
@@ -27,6 +28,7 @@ import logging
 import os
 import unittest
 
+from rdiffweb.core.store import USER_ROLE
 from rdiffweb.test import WebCase
 
 
@@ -262,9 +264,9 @@ class BrowsePageTest(WebCase):
         self.assertStatus('200 OK')
 
     def test_browse_without_permissions(self):
-        # Remove our repo
+        # Remove admin role.
         admin = self.app.store.get_user('admin')
-        admin.is_admin = 0
+        admin.role = USER_ROLE
 
         # Browse other user's repos
         self.getPage('/browse/anotheruser/testcases')

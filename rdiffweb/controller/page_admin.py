@@ -176,7 +176,7 @@ class AdminPage(Controller):
 
     @cherrypy.expose
     def users(self, criteria=u"", search=u"", action=u"", username=u"",
-              email=u"", password=u"", user_root=u"", is_admin=u""):
+              email=u"", password=u"", user_root=u"", role=u""):
 
         # If we're just showing the initial page, just do that
         params = {}
@@ -184,7 +184,7 @@ class AdminPage(Controller):
             try:
                 params = self._users_handle_action(action, username,
                                                    email, password, user_root,
-                                                   is_admin)
+                                                   role)
             except RdiffWarning as e:
                 params['warning'] = str(e)
             except RdiffError as e:
@@ -227,17 +227,15 @@ class AdminPage(Controller):
         return self._compile_template("admin_sysinfo.html", **params)
 
     def _users_handle_action(self, action, username, email, password,
-                             user_root, is_admin):
+                             user_root, role):
 
         success = ""
 
         # We need to change values. Change them, then give back that main
         # page again, with a message
         if username == self.app.currentuser.username:
-            # Don't allow the user to changes it's "admin" state.
-            is_admin = self.app.currentuser.is_admin
-
-        is_admin = str(is_admin).lower() in ['on', 'true', '1']
+            # Don't allow the user to changes it's "role" state.
+            role = self.app.currentuser.role
 
         # Fork the behaviour according to the action.
         if action == "edit":
@@ -246,7 +244,7 @@ class AdminPage(Controller):
             if password:
                 user.set_password(password, old_password=None)
             user.user_root = user_root
-            user.is_admin = is_admin
+            user.role = role
             # Avoid updating the email fields is it didn'T changed. see pdsl/minarca#187
             if email != user.email:
                 user.email = email
@@ -266,7 +264,7 @@ class AdminPage(Controller):
             user = self.app.store.add_user(username, password)
             if user_root:
                 user.user_root = user_root
-            user.is_admin = is_admin
+            user.role = role
             user.email = email
 
             # Check and update user directory

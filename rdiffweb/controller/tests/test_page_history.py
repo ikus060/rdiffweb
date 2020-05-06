@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Created on Dec 29, 2015
 
@@ -26,6 +27,7 @@ from __future__ import unicode_literals
 import logging
 import unittest
 
+from rdiffweb.core.store import USER_ROLE
 from rdiffweb.test import WebCase
 
 
@@ -68,7 +70,7 @@ class HistoryPageTest(WebCase):
 
         # Remove admin right
         admin = self.app.store.get_user('admin')
-        admin.is_admin = 0
+        admin.role = USER_ROLE
 
         # Browse admin's repos
         self.getPage("/history/anotheruser/testcases")

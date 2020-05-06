@@ -38,7 +38,8 @@ import pkg_resources
 
 from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.librdiff import AccessDeniedError
-from rdiffweb.core.store import IUserChangeListener
+from rdiffweb.core.store import IUserChangeListener, ADMIN_ROLE, USER_ROLE,\
+    MAINTAINER_ROLE
 from rdiffweb.test import AppTestCase
 
 
@@ -120,7 +121,7 @@ class StoreTest(AppTestCase):
             self.app.store.get_repo('bernie/test', other)
 
         # Get as admin
-        other.is_admin = True
+        other.role = ADMIN_ROLE
         repo_obj3 = self.app.store.get_repo('bernie/test', other)
         self.assertEqual(repo_obj3.name, repo_obj.name)
         self.assertEqual(repo_obj3.owner, repo_obj.owner)
@@ -132,7 +133,7 @@ class StoreTest(AppTestCase):
         # Create new user
         user = self.app.store.add_user('bernie', 'my-password')
         user.user_root = '/backups/bernie/'
-        user.is_admin = True
+        user.role = ADMIN_ROLE
         user.email = 'bernie@gmail.com'
         user.add_repo('computer')
         user.add_repo('laptop')
@@ -147,6 +148,7 @@ class StoreTest(AppTestCase):
         self.assertEqual(['computer', 'laptop'], obj.repos)
         self.assertEqual('/backups/bernie/', obj.user_root)
         self.assertEqual(True, obj.is_admin)
+        self.assertEqual(ADMIN_ROLE, obj.role)
 
         # Get repo object
         self.assertEqual('computer', obj.repo_objs[0].name)
@@ -161,12 +163,13 @@ class StoreTest(AppTestCase):
         self.assertEqual([], user.repos)
         self.assertEqual('', user.user_root)
         self.assertEqual(False, user.is_admin)
+        self.assertEqual(USER_ROLE, user.role)
 
         user.user_root = '/backups/'
         self.mlistener.user_attr_changed.assert_called_with(user, {'user_root': '/backups/'})
         self.mlistener.user_attr_changed.reset_mock()
-        user.is_admin = True
-        self.mlistener.user_attr_changed.assert_called_with(user, {'is_admin': True})
+        user.role = ADMIN_ROLE
+        self.mlistener.user_attr_changed.assert_called_with(user, {'role': ADMIN_ROLE})
         self.mlistener.user_attr_changed.reset_mock()
         user.email = 'larry@gmail.com'
         self.mlistener.user_attr_changed.assert_called_with(user, {'email': 'larry@gmail.com'})
@@ -179,6 +182,7 @@ class StoreTest(AppTestCase):
         self.assertEqual(['computer', 'laptop'], user.repos)
         self.assertEqual('/backups/', user.user_root)
         self.assertEqual(True, user.is_admin)
+        self.assertEqual(ADMIN_ROLE, user.role)
 
     def test_users(self):
         self.assertEqual([], list(self.app.store.users()))
@@ -202,8 +206,8 @@ class StoreTest(AppTestCase):
 
     def test_users_with_criteria_admins(self):
         self.assertEqual([], list(self.app.store.users()))
-        self.app.store.add_user('annik').is_admin = True
-        self.app.store.add_user('tom').is_admin = True
+        self.app.store.add_user('annik').role = ADMIN_ROLE
+        self.app.store.add_user('tom').role = ADMIN_ROLE
         self.app.store.add_user('jeff')
         self.app.store.add_user('josh')
         users = list(self.app.store.users(criteria='admins'))
@@ -404,7 +408,7 @@ class StoreWithLdapTest(AppTestCase):
         self.assertEqual(False, user.is_admin)
 
         user.user_root = '/backups/'
-        user.is_admin = True
+        user.role = ADMIN_ROLE
         user.email = 'larry@gmail.com'
         user.add_repo('computer')
         user.add_repo('laptop')
@@ -451,6 +455,7 @@ class StoreWithLdapTest(AppTestCase):
             userobj = self.app.store.login('tony', 'password')
             self.assertIsNotNone(self.app.store.get_user('tony'))
             self.assertFalse(userobj.is_admin)
+            self.assertEqual(USER_ROLE, userobj.role)
             # Check listener
             self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
             self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})

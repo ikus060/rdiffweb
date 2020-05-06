@@ -31,8 +31,8 @@
 {# modal_confirm(id='delete-sshkey-modal', title=_('Delete SSH key'), message=_("Are you sure?"), fields=['action', 'key'], submit=_('Delete')) #}
 
 {# Button to confirm deletion. #}
-{% macro button_confirm(label, target, class='btn-danger') -%}
-<button type="button" class="btn {{ class }}" data-toggle="modal" data-target="{{target}}"{%for k,v in kwargs.items()%} data-{{k}}="{{v}}"{%endfor%}>{{ label }}</button>
+{% macro button_confirm(label, target, class='btn-danger', disabled=False) -%}
+<button type="button" class="btn {{ class }}" data-toggle="modal" data-target="{{target}}"{%for k,v in kwargs.items()%} data-{{k}}="{{v}}"{%endfor%} {%if disabled%}disabled{%endif%}>{{ label }}</button>
 {%- endmacro %}
 
 {# modal dialog for confirmation #}
