@@ -56,6 +56,8 @@ class TemplateManagerTest(unittest.TestCase):
 
         # Newstr
         self.assertEqual('selected="text"', attrib(selected=str('text')))
+        
+        self.assertEqual('value="0"', attrib(value=0))
 
     def test_do_format_filesize(self):
         # Test simple values

@@ -341,7 +341,10 @@ class UserObject(object):
 
     def _is_role(self, role):
         assert role in ROLES
-        return self._get_attr('role') <= role
+        try:
+            return int(self._get_attr('role')) <= role
+        except:
+            return False
 
     def _set_attr(self, obj_key, key, value, notify=True):
         """Used to define an attribute"""
@@ -417,7 +420,7 @@ class UserObject(object):
     user_root = property(fget=lambda x: x._get_attr('userroot'), fset=lambda x, y: x._set_attr('user_root', 'userroot', y))
     username = property(fget=lambda x: x._get_attr('username'))
     repos = property(fget=lambda x: list(map(lambda y: y.strip('/'), x._get_repos())))
-    role = property(fget=lambda x: x._get_attr('role'), fset=lambda x, y: x._set_attr('role', 'role', y))
+    role = property(fget=lambda x: x._get_attr('role'), fset=lambda x, y: x._set_attr('role', 'role', int(y)))
     authorizedkeys = property(fget=lambda x: x._get_authorizedkeys())
     repo_objs = property(fget=lambda x: [RepoObject(x, r) for r in x._get_repos()])
     disk_quota = property(_get_disk_quota, _set_disk_quota)

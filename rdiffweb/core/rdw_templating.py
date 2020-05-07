@@ -30,7 +30,7 @@ from builtins import object
 from builtins import str
 from jinja2 import Environment, PackageLoader
 from jinja2.filters import do_mark_safe
-from jinja2.loaders import ChoiceLoader, FileSystemLoader
+from jinja2.loaders import ChoiceLoader
 from collections import OrderedDict
 from rdiffweb.core.store import RepoObject
 
@@ -57,14 +57,14 @@ def attrib(**kwargs):
 
     def _format(key, val):
         # Don't write the attribute if value is False
-        if not val:
+        if val is False:
             return
         if val is True:
             yield str(key)
             return
         if isinstance(val, list):
             val = ' '.join([_escape(v) for v in val if v])
-        elif val:
+        else:
             val = _escape(val)
         if not val:
             return

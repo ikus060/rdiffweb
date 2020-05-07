@@ -87,6 +87,13 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
         self._add_user("user_role", "user_role@test.com", "test2", "/home/", USER_ROLE)
         self.assertEqual(USER_ROLE, self.app.store.get_user('user_role').role)
+    
+    def test_add_user_with_invalid_role(self):
+        # Invalid roles
+        self._add_user("invalid", "invalid@test.com", "test2", "/home/", 'admin')
+        self.assertStatus(400)
+        self._add_user("invalid", "invalid@test.com", "test2", "/home/", -1)
+        self.assertStatus(400)
 
     def test_add_edit_delete(self):
         #  Add user to be listed
