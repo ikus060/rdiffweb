@@ -287,7 +287,10 @@ class AdminPage(Controller):
             user = self.app.store.get_user(username)
             if not user:
                 raise RdiffWarning(_("User doesn't exists!"))
-            user.delete()
+            try:
+                user.delete()
+            except ValueError as e:
+                raise RdiffWarning(e)
             success = _("User account removed.")
 
         # Return messages
