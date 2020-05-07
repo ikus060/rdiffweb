@@ -44,7 +44,7 @@ class CheckLinkTest(WebCase):
         """
         Crawl all the pages to find broken links.
         """
-        ignore = ['/restore/admin/testcases/BrokenSymlink.*', '/browse/admin/testcases/BrokenSymlink.*']
+        ignore = ['/restore/admin/testcases/BrokenSymlink.*', '/browse/admin/testcases/BrokenSymlink.*', 'https://www.ikus-soft.com/en/rdiffweb/']
         done = set(['#', '/logout/'])
         todo = OrderedDict()
         todo["/"] = "/"

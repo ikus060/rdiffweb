@@ -26,7 +26,6 @@ from future.utils.surrogateescape import encodefilename
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import RdiffRepo
 
-
 # Define the logger
 logger = logging.getLogger(__name__)
 
@@ -54,13 +53,17 @@ def validate_isinstance(value, cls, message=None):
 class Controller(object):
 
     _header_name = Option("HeaderName", "rdiffweb")
-    
+
+    _footername = Option("FooterName", "rdiffweb")
+
+    _footerurl = Option("FooterUrl", "https://www.ikus-soft.com/en/rdiffweb/")
+
     _default_theme = Option("DefaultTheme", "default")
 
     @property
     def app(self):
         return cherrypy.request.app
-    
+
     def _compile_template(self, template_name, **kwargs):
         """
         Used to generate a standard HTML page using the given template.
@@ -70,6 +73,10 @@ class Controller(object):
         loc = cherrypy.response.i18n.locale
         parms = {
             "lang": loc.language,
+            "header_name" : self._header_name,
+            "theme" : self._default_theme,
+            "footername" : self._footername,
+            "footerurl" : self._footerurl,
         }
         if self.app.currentuser:
             parms.update({
@@ -81,17 +88,14 @@ class Controller(object):
         # Append custom branding
         if hasattr(self.app.root, "header_logo"):
             parms["header_logo"] = '/header_logo'
-        parms["header_name"] = self._header_name
-        parms["theme"] = self._default_theme
 
         # Append template parameters.
         parms.update(kwargs)
 
         return self.app.templates.compile_template(template_name, **parms)
-    
+
     def _is_submit(self):
         """
         Check if the cherrypy request is a POST.
         """
         return cherrypy.request.method == "POST"
-    
