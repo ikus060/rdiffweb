@@ -31,11 +31,12 @@ import sys
 import cherrypy
 import psutil
 
-from rdiffweb.controller import Controller
+from rdiffweb.controller import Controller, validate_int, validate
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_templating import do_format_filesize as filesize
+from rdiffweb.core.store import ROLES
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ def get_pyinfo():
 
 
 def get_osinfo():
-    
+
     def gr_name(gid):
         try:
             return grp.getgrgid(gid).gr_name
@@ -67,7 +68,7 @@ def get_osinfo():
             return pwd.getpwuid(os.getuid()).pw_name
         except:
             return
-    
+
     if hasattr(sys, 'getfilesystemencoding'): yield _('File System Encoding'), sys.getfilesystemencoding()
     if hasattr(os, 'getcwd'):
         yield _('Current Working Directory'), os.getcwd()
@@ -130,7 +131,7 @@ class AdminPage(Controller):
         logfiles = [self.logfile, self.logaccessfile]
         logfiles = [fn for fn in logfiles if fn]
         return [os.path.basename(fn) for fn in logfiles]
-    
+
     def _get_log_data(self, logfile, num=2000):
         """
         Return a list of log files to be shown in admin area.
@@ -154,19 +155,19 @@ class AdminPage(Controller):
 
     @cherrypy.expose
     def logs(self, filename=u""):
-        
+
         # Check if the filename is valid.
         data = ""
         logfiles = self._get_log_files()
         if logfiles:
             if not filename:
                 filename = logfiles[0]
-                
+
             if filename not in logfiles:
                 raise cherrypy.HTTPError(404)
-            
+
             data = self._get_log_data(filename)
-        
+
         params = {
             "filename": filename,
             "logfiles": logfiles,
@@ -209,7 +210,7 @@ class AdminPage(Controller):
 
     @cherrypy.expose
     def sysinfo(self):
-        
+
         params = {
             "version": self.app.version,
             "plugins": self.app.plugins,
@@ -223,7 +224,7 @@ class AdminPage(Controller):
             "hwinfo": list(get_hwinfo()),
             "ldapinfo": list(get_pkginfo()),
         }
-        
+
         return self._compile_template("admin_sysinfo.html", **params)
 
     def _users_handle_action(self, action, username, email, password,
@@ -239,6 +240,10 @@ class AdminPage(Controller):
 
         # Fork the behaviour according to the action.
         if action == "edit":
+            # Validation
+            validate_int(role, 'role should be an integer')
+            validate(int(role) in ROLES, 'invalid role')
+
             user = self.app.store.get_user(username)
             logger.info("updating user [%s] info", user)
             if password:
@@ -256,7 +261,10 @@ class AdminPage(Controller):
                 user.update_repos()
 
         elif action == "add":
-
+            # Validation
+            validate_int(role, 'role should be an integer')
+            validate(int(role) in ROLES, 'invalid role')
+            
             if username == "":
                 raise RdiffWarning(_("The username is invalid."))
             logger.info("adding user [%s]", username)
@@ -279,7 +287,10 @@ class AdminPage(Controller):
             user = self.app.store.get_user(username)
             if not user:
                 raise RdiffWarning(_("User doesn't exists!"))
-            user.delete()
+            try:
+                user.delete()
+            except ValueError as e:
+                raise RdiffWarning(e)
             success = _("User account removed.")
 
         # Return messages

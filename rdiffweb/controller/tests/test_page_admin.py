@@ -88,6 +88,13 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self._add_user("user_role", "user_role@test.com", "test2", "/home/", USER_ROLE)
         self.assertEqual(USER_ROLE, self.app.store.get_user('user_role').role)
 
+    def test_add_user_with_invalid_role(self):
+        # Invalid roles
+        self._add_user("invalid", "invalid@test.com", "test2", "/home/", 'admin')
+        self.assertStatus(400)
+        self._add_user("invalid", "invalid@test.com", "test2", "/home/", -1)
+        self.assertStatus(400)
+
     def test_add_edit_delete(self):
         #  Add user to be listed
         self._add_user("test2", "test2@test.com", "test2", "/home/", USER_ROLE)
@@ -187,6 +194,20 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         self._delete_user(self.USERNAME)
         self.assertInBody("You cannot remove your own account!")
+
+    def test_delete_user_admin(self):
+        """
+        Verify failure to delete our self.
+        """
+        # Create another admin user
+        self._add_user('admin2', '', 'password', '' , ADMIN_ROLE)
+        self.getPage("/logout/")
+        self._login('admin2', 'password')
+
+        # Try deleting admin user
+        self._delete_user(self.USERNAME)
+        self.assertStatus(200)
+        self.assertInBody("can&#39;t delete admin user")
 
     def test_edit_user_with_invalid_path(self):
         """
