@@ -25,6 +25,7 @@ import cherrypy
 from future.utils.surrogateescape import encodefilename
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import RdiffRepo
+from collections import namedtuple
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -48,6 +49,29 @@ def validate_isinstance(value, cls, message=None):
     """Raise HTTP error if value is not cls."""
     if not isinstance(value, cls):
         raise cherrypy.HTTPError(400, message)
+
+
+FlashMessage = namedtuple('FlashMessage', ['message', 'level'])
+
+
+def flash(message, level='info'):
+    """
+    Add a flashin message to the session.
+    """
+    assert message
+    assert level in ['info', 'error', 'warning', 'success']
+    if 'flash' not in cherrypy.session:  # @UndefinedVariable
+        cherrypy.session['flash'] = []  # @UndefinedVariable
+    flash_message = FlashMessage(message, level)
+    cherrypy.session['flash'].append(flash_message)
+
+
+def get_flashed_messages():
+    if 'flash' in cherrypy.session:  # @UndefinedVariable
+        messages = cherrypy.session['flash']  # @UndefinedVariable
+        del cherrypy.session['flash']  # @UndefinedVariable
+        return messages
+    return []
 
 
 class Controller(object):
@@ -77,6 +101,7 @@ class Controller(object):
             "theme" : self._default_theme,
             "footername" : self._footername,
             "footerurl" : self._footerurl,
+            "get_flashed_messages": get_flashed_messages,
         }
         if self.app.currentuser:
             parms.update({
@@ -94,8 +119,3 @@ class Controller(object):
 
         return self.app.templates.compile_template(template_name, **parms)
 
-    def _is_submit(self):
-        """
-        Check if the cherrypy request is a POST.
-        """
-        return cherrypy.request.method == "POST"

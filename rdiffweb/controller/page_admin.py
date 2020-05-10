@@ -30,16 +30,25 @@ import sys
 
 import cherrypy
 import psutil
+from wtforms import validators
+from wtforms.fields.core import StringField, SelectField
+from wtforms.fields.html5 import EmailField
+from wtforms.fields.simple import PasswordField
+from wtforms.form import Form
 
-from rdiffweb.controller import Controller, validate_int, validate
-from rdiffweb.core import RdiffError, RdiffWarning
+from rdiffweb.controller import Controller, flash
 from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_templating import do_format_filesize as filesize
-from rdiffweb.core.store import ROLES
+from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
+
+def _check_user_root(user_root):
+    if not os.access(user_root, os.F_OK) or not os.path.isdir(user_root):
+        flash(_("User root directory %s is not accessible!") % user_root, level='warning')
 
 
 def get_pyinfo():
@@ -112,17 +121,30 @@ def get_pkginfo():
         pass
 
 
+class UserForm(Form):
+    username = StringField(_('Username'), validators=[validators.required()])
+    email = EmailField(_('Email'), validators=[validators.optional()])
+    password = PasswordField(_('Password'))
+    user_root = StringField(_('Root directory'), description=_("Absolute path defining the location of the repositories for this user."))
+    role = SelectField(
+        _('User Role'),
+        coerce=int,
+        choices=[(ADMIN_ROLE, _("Admin")), (MAINTAINER_ROLE, _("Maintainer")), (USER_ROLE, _("User"))],
+        default=USER_ROLE,
+        description=_("Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo."))
+
+    @property
+    def error_message(self):
+        if self.errors:
+            return ' '.join(['%s: %s' % (field, ', '.join(messages)) for field, messages in self.errors.items()])
+
+
 @cherrypy.tools.is_admin()
 class AdminPage(Controller):
     """Administration pages. Allow to manage users database."""
 
     logfile = Option('logfile')
     logaccessfile = Option('logaccessfile')
-
-    def _check_user_root_dir(self, directory):
-        """Raised an exception if the directory is not valid."""
-        if not os.access(directory, os.F_OK) or not os.path.isdir(directory):
-            raise RdiffWarning(_("User root directory %s is not accessible!") % directory)
 
     def _get_log_files(self):
         """
@@ -176,25 +198,54 @@ class AdminPage(Controller):
         return self._compile_template("admin_logs.html", **params)
 
     @cherrypy.expose
-    def users(self, criteria=u"", search=u"", action=u"", username=u"",
-              email=u"", password=u"", user_root=u"", role=u""):
+    def users(self, criteria=u"", search=u"", action=u"", **kwargs):
 
         # If we're just showing the initial page, just do that
-        params = {}
-        if self._is_submit():
-            try:
-                params = self._users_handle_action(action, username,
-                                                   email, password, user_root,
-                                                   role)
-            except RdiffWarning as e:
-                params['warning'] = str(e)
-            except RdiffError as e:
-                params['error'] = str(e)
+        form = UserForm(data=kwargs)
+        if action in ["add", "edit"] and not form.validate():
+            # Since our validation using form is so smooth, this probably mean
+            # the data is completely invalid and was not entered using the form.
+            # Return 400
+            raise cherrypy.HTTPError(400, form.error_message)
+        elif action in ["add", "edit"] and form.validate():
+            if action == 'add':
+                user = self.app.store.add_user(form.username.data, form.password.data)
+            else:
+                user = self.app.store.get_user(form.username.data)
+                if form.password.data:
+                    user.set_password(form.password.data, old_password=None)
+            # Don't allow the user to changes it's "role" state.
+            if form.username.data != self.app.currentuser.username:
+                user.role = form.role.data
+            user.email = form.email.data or ''
+            if form.user_root.data:
+                user.user_root = form.user_root.data
+                _check_user_root(user.user_root)
+                user.update_repos()
+            if action == 'add':
+                flash(_("User added successfully."))
+            else:
+                flash(_("User information modified successfully."))
+        elif action == 'delete':
+            if form.username.data == self.app.currentuser.username:
+                flash(_("You cannot remove your own account!"), level='error')
+            else:
+                try:
+                    user = self.app.store.get_user(form.username.data)
+                    form = UserForm()
+                    if user:
+                        user.delete()
+                        flash(_("User account removed."))
+                    else:
+                        flash(_("User doesn't exists!"), level='warning')
+                except ValueError as e:
+                    flash(e, level='error')
 
-        params.update({
+        params = {
+            "form": form,
             "criteria": criteria,
             "search": search,
-            "users": list(self.app.store.users(search=search, criteria=criteria))})
+            "users": list(self.app.store.users(search=search, criteria=criteria))}
 
         # Build users page
         return self._compile_template("admin_users.html", **params)
@@ -226,72 +277,3 @@ class AdminPage(Controller):
         }
 
         return self._compile_template("admin_sysinfo.html", **params)
-
-    def _users_handle_action(self, action, username, email, password,
-                             user_root, role):
-
-        success = ""
-
-        # We need to change values. Change them, then give back that main
-        # page again, with a message
-        if username == self.app.currentuser.username:
-            # Don't allow the user to changes it's "role" state.
-            role = self.app.currentuser.role
-
-        # Fork the behaviour according to the action.
-        if action == "edit":
-            # Validation
-            validate_int(role, 'role should be an integer')
-            validate(int(role) in ROLES, 'invalid role')
-
-            user = self.app.store.get_user(username)
-            logger.info("updating user [%s] info", user)
-            if password:
-                user.set_password(password, old_password=None)
-            user.user_root = user_root
-            user.role = role
-            # Avoid updating the email fields is it didn'T changed. see pdsl/minarca#187
-            if email != user.email:
-                user.email = email
-            success = _("User information modified successfully.")
-
-            # Check and update user directory
-            if user.user_root:
-                self._check_user_root_dir(user.user_root)
-                user.update_repos()
-
-        elif action == "add":
-            # Validation
-            validate_int(role, 'role should be an integer')
-            validate(int(role) in ROLES, 'invalid role')
-            
-            if username == "":
-                raise RdiffWarning(_("The username is invalid."))
-            logger.info("adding user [%s]", username)
-
-            user = self.app.store.add_user(username, password)
-            if user_root:
-                user.user_root = user_root
-            user.role = role
-            user.email = email
-
-            # Check and update user directory
-            if user.user_root:
-                self._check_user_root_dir(user.user_root)
-                user.update_repos()
-            success = _("User added successfully.")
-
-        if action == "delete":
-            if username == self.app.currentuser.username:
-                raise RdiffWarning(_("You cannot remove your own account!"))
-            user = self.app.store.get_user(username)
-            if not user:
-                raise RdiffWarning(_("User doesn't exists!"))
-            try:
-                user.delete()
-            except ValueError as e:
-                raise RdiffWarning(e)
-            success = _("User account removed.")
-
-        # Return messages
-        return {'success': success}

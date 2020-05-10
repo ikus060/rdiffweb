@@ -1,3 +1,9 @@
+{% for message, level in get_flashed_messages() %}
+<div class="alert alert-{{'danger' if level == 'error' else level}} alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    {{ message }}
+</div>
+{% endfor %}
 {% if success %}
 <div class="alert alert-success alert-dismissible" role="alert">
     <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -13,12 +19,12 @@
 {% if warning %}
 <div class="alert alert-warning alert-dismissible" role="alert">
     <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	<strong>{% trans %}Warning!{% endtrans %}</strong> {{ warning }}
+	{{ warning }}
 </div>
 {% endif %}
 {% if error %}
 <div class="alert alert-danger alert-dismissible" role="alert">
     <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	<strong>{% trans %}Error!{% endtrans %}</strong> {{ error }}
+	{{ error }}
 </div>
 {% endif %}

@@ -31,6 +31,7 @@
         <p>{% trans %}Enter your username and password to log in.{% endtrans %}</p>
         <input type="text" class="form-control" placeholder="{{ _('Username') }}"
             name="login" value="{{ login }}" id="username"
+            autocorrect="off" autocapitalize="none" autocomplete="off"
             required autofocus>
         <input type="password" class="form-control" placeholder="{{ _('Password') }}"
             name="password" id="password" required>

@@ -92,52 +92,53 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         # Invalid roles
         self._add_user("invalid", "invalid@test.com", "test2", "/home/", 'admin')
         self.assertStatus(400)
+        self.assertInBody('role: Not a valid choice')
+
         self._add_user("invalid", "invalid@test.com", "test2", "/home/", -1)
         self.assertStatus(400)
+        self.assertInBody('role: Not a valid choice')
 
     def test_add_edit_delete(self):
         #  Add user to be listed
         self._add_user("test2", "test2@test.com", "test2", "/home/", USER_ROLE)
-        try:
-            self.assertInBody("User added successfully.")
-            self.assertInBody("test2")
-            self.assertInBody("test2@test.com")
-            #  Update user
-            self._edit_user("test2", "chaned@test.com", "new-password", "/tmp/", ADMIN_ROLE)
-            self.assertInBody("User information modified successfully.")
-            self.assertInBody("test2")
-            self.assertInBody("chaned@test.com")
-            self.assertNotInBody("/home/")
-            self.assertInBody("/tmp/")
-            #  Check with filters
-            self.getPage("/admin/users/?criteria=admins")
-            self.assertInBody("test2")
-        finally:
-            self._delete_user("test2")
-            self.assertInBody("User account removed.")
-            self.assertNotInBody("test2")
+        self.assertInBody("User added successfully.")
+        self.assertInBody("test2")
+        self.assertInBody("test2@test.com")
+        #  Update user
+        self._edit_user("test2", "chaned@test.com", "new-password", "/tmp/", ADMIN_ROLE)
+        self.assertInBody("User information modified successfully.")
+        self.assertInBody("test2")
+        self.assertInBody("chaned@test.com")
+        self.assertNotInBody("/home/")
+        self.assertInBody("/tmp/")
+        #  Check with filters
+        self.getPage("/admin/users/?criteria=admins")
+        self.assertInBody("test2")
+    
+        self._delete_user("test2")
+        self.assertInBody("User account removed.")
+        self.assertNotInBody("test2")
 
     def test_add_edit_delete_user_with_encoding(self):
         """
         Check creation of user with non-ascii char.
         """
         self._add_user("Éric", "éric@test.com", "Éric", "/home/", USER_ROLE)
-        try:
-            self.assertInBody("User added successfully.")
-            self.assertInBody("Éric")
-            self.assertInBody("éric@test.com")
-            # Update user
-            self._edit_user("Éric", "eric.létourno@test.com", "écureuil", "/tmp/", ADMIN_ROLE)
-            self.assertInBody("User information modified successfully.")
-            self.assertInBody("Éric")
-            self.assertInBody("eric.létourno@test.com")
-            self.assertNotInBody("/home/")
-            self.assertInBody("/tmp/")
-            # Check with filter
-            self.getPage("/admin/users/?criteria=admins")
-            self.assertInBody("Éric")
-        finally:
-            self._delete_user("Éric")
+        self.assertInBody("User added successfully.")
+        self.assertInBody("Éric")
+        self.assertInBody("éric@test.com")
+        # Update user
+        self._edit_user("Éric", "eric.létourno@test.com", "écureuil", "/tmp/", ADMIN_ROLE)
+        self.assertInBody("User information modified successfully.")
+        self.assertInBody("Éric")
+        self.assertInBody("eric.létourno@test.com")
+        self.assertNotInBody("/home/")
+        self.assertInBody("/tmp/")
+        # Check with filter
+        self.getPage("/admin/users/?criteria=admins")
+        self.assertInBody("Éric")
+
+        self._delete_user("Éric")
         self.assertInBody("User account removed.")
         self.assertNotInBody("Éric")
 
@@ -146,7 +147,8 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure trying to create user without username.
         """
         self._add_user("", "test1@test.com", "test1", "/tmp/", USER_ROLE)
-        self.assertInBody("The username is invalid.")
+        self.assertStatus(400)
+        self.assertInBody("username: This field is required.")
 
     def test_add_user_with_existing_username(self):
         """
@@ -165,7 +167,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         except:
             pass
         self._add_user("test5", "test1@test.com", "test5", "/var/invalid/", USER_ROLE)
-        self.assertNotInBody("User added successfully.")
+        self.assertInBody("User added successfully.")
         self.assertInBody("User root directory /var/invalid/ is not accessible!")
 
     def test_add_without_email(self):
