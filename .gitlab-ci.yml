@@ -1,24 +1,26 @@
 variables:
-  PIP_INDEX_URL: https://nexus.patrikdufresne.com/repository/pypi-proxy/simple/
+  DOCKER_BUILD_IMAGE: "${CI_REGISTRY_IMAGE}"
 
 stages:
 - prebuild
 - test
 - package
 - publish
-- deploy
 
 #
 # Prebuild Stage
 #
-
 .prebuild:  &prebuild
   image: docker:stable
+  services:
+    - docker:dind
   stage: prebuild
+  before_script:
+  - docker info
   script:
   - "export BUILD_PATH=extras/prebuild/${CI_JOB_NAME}"
-  - "export TAG=$DOCKER_REGISTRY/pdsl/rdiffweb-build:${CI_JOB_NAME}-$CI_PIPELINE_IID"
-  - docker login $DOCKER_REGISTRY -u $DOCKER_USR -p $DOCKER_PWD
+  - "export TAG=$DOCKER_BUILD_IMAGE:${CI_JOB_NAME}-$CI_PIPELINE_IID"
+  - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
   - docker build -t $TAG $BUILD_PATH
   - docker push $TAG
 
@@ -47,7 +49,7 @@ debian10-py3:
 # Test Stage
 #
 .tox:  &tox
-  image: $DOCKER_REGISTRY/pdsl/rdiffweb-build:${IMAGE}-$CI_PIPELINE_IID
+  image: $DOCKER_BUILD_IMAGE:${IMAGE}-$CI_PIPELINE_IID
   stage: test
   variables:
     IMAGE: debian10-py3
@@ -143,7 +145,7 @@ debian10-py3-rdiff-backup2:
   script:
   - apt -y autoremove rdiff-backup
   - apt-get update && apt -y install librsync-dev
-  - pip3 install --pre rdiff-backup
+  - pip3 install rdiff-backup
   - tox --sitepackages
   
 centos7-py2-cherrypy17-jinja210:
@@ -151,12 +153,14 @@ centos7-py2-cherrypy17-jinja210:
   variables:
     IMAGE: centos7-py2
     TOXENV: py2-cherrypy17-jinja210
+  allow_failure: true
 
 centos7-py3-cherrypy18-jinja210:
   <<: *tox
   variables:
     IMAGE: centos7-py3
     TOXENV: py3-cherrypy18-jinja210
+  allow_failure: true
 
 centos8-py3-cherrypy18-jinja210:
   <<: *tox
@@ -165,7 +169,7 @@ centos8-py3-cherrypy18-jinja210:
     TOXENV: py3-cherrypy18-jinja210
   
 package:py2: 
-  image: $DOCKER_REGISTRY/pdsl/rdiffweb-build:debian9-py2-$CI_PIPELINE_IID
+  image: $DOCKER_BUILD_IMAGE:debian9-py2-$CI_PIPELINE_IID
   stage: package
   script:
   - python2 setup.py sdist bdist_wheel
@@ -175,7 +179,7 @@ package:py2:
     - dist/*.whl
     
 package:py3: 
-  image: $DOCKER_REGISTRY/pdsl/rdiffweb-build:debian9-py3-$CI_PIPELINE_IID
+  image: $DOCKER_BUILD_IMAGE:debian9-py3-$CI_PIPELINE_IID
   stage: package
   script:
   - python3 setup.py sdist bdist_wheel
@@ -198,38 +202,17 @@ publish:sonar:dev:
   - sonar-runner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.exclusions=rdiffweb/controller/tests/**,rdiffweb/core/tests/**,rdiffweb/test.py -Dsonar.sources=.
 
 publish_nexus:
-  image: $DOCKER_REGISTRY/pdsl/rdiffweb-build:debian9-py3-$CI_PIPELINE_IID
+  image: $DOCKER_BUILD_IMAGE:debian9-py3-$CI_PIPELINE_IID
   stage: publish
   script:
   - pip3 install wheel twine --upgrade
   - twine upload dist/* -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
 
 publish_pypi:
-  image: $DOCKER_REGISTRY/pdsl/rdiffweb-build:debian9-py3-$CI_PIPELINE_IID
+  image: $DOCKER_BUILD_IMAGE:debian9-py3-$CI_PIPELINE_IID
   stage: publish
   only:
   - tags
   script:
   - pip3 install wheel twine --upgrade
   - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
-  
-rdiffweb_deploy_demo: 
-  stage: deploy
-  image: ikus060/ansible
-  environment:
-    name: staging
-    url: https://demo.patrikdufresne.com
-  variables:
-    ANSIBLE_HOST_KEY_CHECKING: "False"
-  before_script:
-  - eval $(ssh-agent -s)
-  - echo "$GITLAB_SSH_IDENTITY" | tr -d '\r' | ssh-add - > /dev/null
-  - mkdir -p ~/.ssh
-  - chmod 700 ~/.ssh
-  script:
-  - python ./setup.py --version
-  - export RDIFFWEB_VERSION=$(python ./setup.py --version)
-  - echo RDIFFWEB_VERSION=$RDIFFWEB_VERSION
-  - git clone "http://${GITLAB_USR}:${GITLAB_PWD}@git.patrikdufresne.com/pdsl/ansible-config.git"
-  - cd ansible-config
-  - ansible-playbook rdiffweb.yml -i pdsl --extra-vars "ansible_user=root rdiffweb_version=$RDIFFWEB_VERSION rdiffweb_default_repositories=true" --limit arbuc
