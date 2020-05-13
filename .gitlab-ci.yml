@@ -6,6 +6,7 @@ stages:
 - test
 - package
 - publish
+- deploy
 
 #
 # Prebuild Stage
@@ -216,3 +217,15 @@ publish_pypi:
   script:
   - pip3 install wheel twine --upgrade
   - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
+  
+deploy_rdiffweb_demo:
+  image: $DOCKER_BUILD_IMAGE:debian9-py3-$CI_PIPELINE_IID
+  stage: deploy
+  environment:
+    name: demo
+    url: https://rdiffweb-demo.ikus-soft.com/
+  script:
+  - export RDIFFWEB_VERSION=$(python3 setup.py --version)
+  - echo RDIFFWEB_VERSION=$RDIFFWEB_VERSION
+  # Call ansible
+  - curl -X POST -F token=36bae86778d901fc6b2d6453a41844 -F "ref=master" -F "variables[RDIFFWEB_VERSION]=$RDIFFWEB_VERSION" https://gitlab.com/api/v4/projects/18716492/trigger/pipeline
