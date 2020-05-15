@@ -83,6 +83,13 @@ def _split_path(path):
         return path.decode('utf-8'), b''
 
 
+class DuplicateSSHKeyError(Exception):
+    """
+    Raised by add_authorizedkey when trying to add the same SSH Key twice.
+    """
+    pass
+
+
 class IUserChangeListener():
     """
     A listener to receive user changes event.
@@ -156,8 +163,8 @@ class UserObject(object):
         # Parse and validate ssh key
         assert key
         key = authorizedkeys.check_publickey(key)
-        if not key:
-            raise ValueError(_("Invalid SSH key."))
+        assert key, "invalid ssh key"
+
         # Remove option, replace comments.
         key = authorizedkeys.AuthorizedKey(
             options=None,
@@ -170,7 +177,7 @@ class UserObject(object):
         if os.path.isfile(filename):
             with open(filename, mode="r+", encoding='utf-8') as fh:
                 if authorizedkeys.exists(fh, key):
-                    raise ValueError(_("SSH key already exists"))
+                    raise DuplicateSSHKeyError(_("SSH key already exists"))
                 logger.info("add key [%s] to [%s] authorized_keys", key, self.username)
                 authorizedkeys.add(fh, key)
         else:
@@ -183,7 +190,7 @@ class UserObject(object):
                     key=key.getvalue())
                 assert inserted
             except sqlite3.IntegrityError:  # @UndefinedVariable
-                raise ValueError(_("Duplicate key. This key already exists or is associated to another user."))
+                raise DuplicateSSHKeyError(_("Duplicate key. This key already exists or is associated to another user."))
         self._store._notify('user_attr_changed', self, {'authorizedkeys': True })
 
     def add_repo(self, repopath):

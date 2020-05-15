@@ -26,13 +26,42 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import logging
-from rdiffweb.controller import Controller
-from rdiffweb.core import RdiffError, RdiffWarning
-from rdiffweb.core.i18n import ugettext as _
 
-from builtins import str
+from wtforms import validators
+from wtforms.fields.core import StringField
+from wtforms.fields.simple import TextField
+from wtforms.form import Form
+from wtforms.validators import ValidationError
+from wtforms.widgets.core import TextArea
+
+from rdiffweb.controller import Controller, flash
+from rdiffweb.controller.filter_authorization import is_maintainer
+from rdiffweb.core import authorizedkeys
+from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.store import DuplicateSSHKeyError
+
 
 _logger = logging.getLogger(__name__)
+
+
+def validate_key(unused_form, field):
+    """Custom validator to check the SSH Key."""
+    key = authorizedkeys.check_publickey(field.data)
+    if not key:
+        raise ValidationError(_("Invalid SSH key."))
+
+
+class SSHForm(Form):
+    title = StringField(
+        _('Title'),
+        description=_('The title is an optional description to identify the key. e.g.: bob@thinkpad-t530'),
+        validators=[validators.required()])
+    key = TextField(
+        _('Key'),
+        widget=TextArea(),
+        description=_("Enter a SSH public key. It should start with 'ssh-dss', 'ssh-ed25519', 'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-sha2-nistp521'."),
+        validators=[validators.required(), validate_key])
+    fingerprint = StringField('Fingerprint')
 
 
 class SSHKeysPlugin(Controller):
@@ -41,61 +70,46 @@ class SSHKeysPlugin(Controller):
     """
 
     panel_id = 'sshkeys'
-    
+
     panel_name = _('SSH Keys')
-    
-    def _handle_add(self, **kwargs):
-        """
-        Called to add a new key to an authorized_keys file.
-        """
-        assert 'key' in kwargs, "key is missing"
 
-        # Add the key to the current user.
-        try:
-            self.app.currentuser.add_authorizedkey(key=kwargs['key'], comment=kwargs.get('title', None))
-        except ValueError as e:
-            _logger.warn("error adding ssh key", exc_info=1)
-            raise RdiffWarning(str(e))
-        except:
-            _logger.error("error adding ssh key", exc_info=1)
-            raise RdiffWarning(_("Unknown error while adding the SSH Key"))
-
-    def _handle_delete(self, **kwargs):
-        """
-        Called for delete a key from an authorized_keys file.
-        """
-        assert kwargs.get('key') , "key is missing"
-        try:
-            self.app.currentuser.delete_authorizedkey(kwargs['key'])
-        except:
-            _logger.warn("error removing ssh key", exc_info=1)
-            raise RdiffWarning(_("Unknown error while removing the SSH Key"))
-
-    def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
+    def render_prefs_panel(self, panelid, action=None, **kwargs):  # @UnusedVariable
 
         # Handle action
-        params = {}
-        if 'action' in kwargs:
+        form = SSHForm(data=kwargs)
+        if action == "add" and not form.validate():
+            for unused_field, messages in form.errors.items():
+                for message in messages:
+                    flash(message, level='warning')
+        elif action == 'add':
+            # Add the key to the current user.
             try:
-                action = kwargs['action']
-                if action == 'add':
-                    self._handle_add(**kwargs)
-                elif action == 'delete':
-                    self._handle_delete(**kwargs)
-            except RdiffWarning as e:
-                params['warning'] = str(e)
-            except RdiffError as e:
-                params['error'] = str(e)
+                self.app.currentuser.add_authorizedkey(key=form.key.data, comment=form.title.data)
+            except DuplicateSSHKeyError as e:
+                flash(str(e), level='error')
+            except:
+                flash(_("Unknown error while adding the SSH Key"), level='error')
+                _logger.error("error adding ssh key", exc_info=1)
+        elif action == 'delete':
+            is_maintainer()
+            try:
+                self.app.currentuser.delete_authorizedkey(form.fingerprint.data)
+            except:
+                flash(_("Unknown error while removing the SSH Key"), level='error')
+                _logger.warn("error removing ssh key", exc_info=1)
 
         # Get SSH keys if file exists.
-        params["sshkeys"] = []
+        params = {
+            'form': form
+        }
         try:
             params["sshkeys"] = [
                 {'title': key.comment or (key.keytype + ' ' + key.key[:18]),
                  'fingerprint': key.fingerprint}
                 for key in self.app.currentuser.authorizedkeys]
         except IOError:
-            params['error'] = _("error reading SSH keys file")
+            params["sshkeys"] = []
+            flash(_("Failed to get SSH keys"), level='error')
             _logger.warning("error reading SSH keys", exc_info=1)
 
         return "prefs_sshkeys.html", params

@@ -45,6 +45,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <p class="light">
             {% trans %}SSH keys allow you to establish a secure connection between your computer and this backup system. This is a list of SSH keys associated with your account. Remove any keys that you do not recognize.{% endtrans %}
         </p>
+        {% if not is_maintainer %}
+        <p class="light pull-right">
+            {% trans %}Ask your administrator to delete SSH Keys.{% endtrans %}
+        </p>
+        {% endif %}
     </div>
     
     <!-- List of keys-->
@@ -53,7 +58,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <li class="list-group-item clearfix" itemprop="itemListElement" itemscope
                 itemtype="http://schema.org/ListItem">
             <div class="pull-right">
-                {{ button_confirm(label=_('Delete'), target="#delete-sshkey-modal", action="delete", key=key.fingerprint) }}
+                {{ button_confirm(label=_('Delete'), target="#delete-sshkey-modal", action="delete", fingerprint=key.fingerprint, disabled=not is_maintainer) }}
             </div>
             <strong class="list-group-item-heading" itemprop="name">
                 {{ key.title }}
@@ -70,25 +75,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% call modal_dialog('add-sshkey-modal',_('Add SSH key'), _('Add SSH key')) %}
     <input type="hidden" name="action" value="add" >
     <div class="form-group">
-        <label class="col-sm-2 control-label" for="title">
-            {% trans %}Title{% endtrans %}</label>
+        {{ form.title.label(class="col-sm-2 control-label") }}
         <div class="col-sm-10">
-	        <input type="text" name="title" value="" id="title"
-	            class="form-control">
+            {{ form.title(class="form-control") }}
 	        <p class="help-block">
-	            {% trans %}The title is an optional description to identify the key. e.g.: bob@thinkpad-t530{% endtrans %}
+	            {{form.title.description}}
 	        </p>
         </div>
     </div>
     <div class="form-group">
-        <label class="col-sm-2 control-label" for="publickey">
-            {% trans %}Key{% endtrans %}</label>
+        {{ form.key.label(class="col-sm-2 control-label") }}
         <div class="col-sm-10">
-	        <textarea name="key" id="key"
-	            class="form-control" rows="10" required ></textarea>
-	        <p class="help-block">
-	            {% trans %}Enter a SSH public key. It should start with 'ssh-dss', 'ssh-ed25519', 'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-sha2-nistp521'.{% endtrans %}
-	        </p>
+            {{ form.key(class="form-control", rows="10") }}
+            <p class="help-block">
+                {{form.key.description}}
+            </p>
         </div>
     </div>
 {% endcall %}
@@ -98,5 +99,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     id='delete-sshkey-modal',
     title=_('Delete SSH key'),
     message=_("Are you sure you want to delete this SSH Key?"),
-    fields=['action', 'key'],
+    fields=['action', 'fingerprint'],
     submit=_('Delete')) }}
