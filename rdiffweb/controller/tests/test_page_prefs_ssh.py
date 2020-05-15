@@ -40,9 +40,9 @@ class SSHKeysTest(WebCase):
     # Enable testcases to define a user_root
     reset_testcases = True
 
-    def _delete_ssh_key(self, key):
+    def _delete_ssh_key(self, fingerprint):
         b = {'action': 'delete',
-             'key': key}
+             'fingerprint': fingerprint}
         self.getPage(self.PREFS_SSHKEYS, method='POST', body=b)
 
     def _add_ssh_key(self, title, key):
