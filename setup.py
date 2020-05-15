@@ -168,6 +168,7 @@ if PY2:
         "psutil>=2.1.1",
         "babel>=0.9.6",
         "python-ldap",
+        "WTForms",
     ]
 else:
     install_requires = [
@@ -177,6 +178,7 @@ else:
         "psutil>=2.1.1",
         "babel>=0.9.6",
         "python-ldap",
+        "WTForms",
     ]
 
 setup_requires=[

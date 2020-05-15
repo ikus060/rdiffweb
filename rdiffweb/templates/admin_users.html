@@ -20,11 +20,9 @@
 <!-- Users View -->
 <div class="row">
     <div class="col-md-12">
-    
     {% if users %}
     <div class="panel panel-default">
         <ul class="list-group">
-        	{# List filtered user by name. #}
             {% for user in users|sort(attribute='username') %}
             <li class="list-group-item clearfix">
                 {{ user.username }}
@@ -66,116 +64,57 @@
 <!-- /.row -->
 </div>
 
+{% macro user_form(form, id=None, user=None) %}
+<div class="alert alert-info" role="alert">
+{% trans %}To create an LDAP user, use the same username. You may leave the email and password empty.{% endtrans %}
+</div>
+{% if user%}{{ form.process(obj=user) or ''}}{%endif%}
+<div class="form-group">
+    {{form.username.label(class="col-sm-3 control-label")}}
+    <div class="col-sm-7">
+    {{form.username(class="form-control", autocorrect="off", autocapitalize="none", autocomplete="off")}}
+    </div>
+</div>
+<div class="form-group">
+    {{form.email.label(class="col-sm-3 control-label")}}
+    <div class="col-sm-7">
+    {{form.email(class="form-control")}}
+    </div>
+</div>
+<div class="form-group">
+    {{form.password.label(class="col-sm-3 control-label")}}
+    <div class="col-sm-7">
+    {{form.password(class="form-control")}}
+    </div>
+</div>
+<div class="form-group">
+    {{form.user_root.label(class="col-sm-3 control-label")}}
+    <div class="col-sm-7">
+    {{form.user_root(class="form-control")}}
+    <span class="help-block">{{form.user_root.description}}</span>
+    </div>
+</div>
+<div class="form-group">
+    {{form.role.label(class="col-sm-3 control-label")}}
+    <div class="col-sm-7">
+    {{form.role(class="form-control")}}
+    <span class="help-block">{{form.role.description}}</span>
+    </div>
+</div>
+{% endmacro %}
+
 {# Dialog to create new user. #}
 {% call modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
     <input type="hidden" name="action" value="add" >
-    <div class="alert alert-info" role="alert">
-    {% trans %}To create an LDAP user, use the same username. You may leave the email and password empty.{% endtrans %}
-    </div>
-    <div class="form-group">
-        <label class="col-sm-3 control-label" for="username">
-        	{% trans %}Username{% endtrans %}</label>
-    	<div class="col-sm-7">
-        <input type="text" name="username" value="" id="username"
-            class="form-control" required>
-        </div>
-    </div>
-	<div class="form-group">
-        <label class="col-sm-3 control-label" for="email">
-        	{% trans %}Email{% endtrans %}</label>
-    	<div class="col-sm-7">
-        <input type="text" name="email" value="" id="email"
-            class="form-control">
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-3 control-label" for="password">
-        	{% trans %}Password{% endtrans %}</label>
-    	<div class="col-sm-7">
-        <input type="password" name="password" id="password"
-            class="form-control">
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-3 control-label" for="user-root">
-        	{% trans %}Root directory{% endtrans %}</label>
-    	<div class="col-sm-7">
-        <input type="text" name="user_root" id="user-root"
-            value="{{ user_root }}" class="form-control">
-        <span class="help-block">{% trans %}Absolute path defining the location of the repositories for this user.{% endtrans %}</span>
-        </div>
-    </div>
-	<div class="form-group">
-        <label class="col-sm-3 control-label" for="user-root">
-            {% trans %}User Role{% endtrans %}</label>
-    	<div class="col-sm-7">
-	    <select class="form-control" name="role">
-	      {% set role_values = [
-	            (0, _("Admin")),
-	            (5, _("Maintainer")),
-	            (10, _("User")),
-	      ] %}
-	      {% for value,display_name in role_values %}
-	      <option {{ attrib(value=value, selected=(value==10)) }}>{{ display_name }}</option>
-	      {% endfor %}
-	    </select>
-    	<span class="help-block">{% trans %}Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo.{% endtrans %}</span>
-        </div>
-    </div>
+    {{ user_form(form=form) }}
 {% endcall %}
 
 {# Dialogs to edit user. #}
 {% for user in users|sort(attribute='username') %}
 {% set modalid = "edit-user-" + user.username + "-modal" %}
-{% call modal_dialog(modalid, _('Edit user %(name)s', name=user.username),
-		_('Save changes')) %}
+{% call modal_dialog(modalid, _('Edit user %(name)s', name=user.username), _('Save changes')) %}
     <input type="hidden" name="action" value="edit" >
-    <input type="hidden" name="username" value="{{ user.username }}" >
-    <div class="form-group">
-        <label class="col-sm-3 control-label" for="user-email-{{ loop.index }}">
-        	{% trans %}Email{% endtrans %}</label>
-    	<div class="col-sm-7">
-            <input type="text" class="form-control"
-                id="user-email-{{ loop.index }}" name="email"
-                value="{{ user.email }}" >
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-3 control-label" for="user-password-{{ loop.index }}">
-        	{% trans %}Password{% endtrans %}</label>
-    	<div class="col-sm-7">
-            <input type="password" class="form-control"
-                id="user-password-{{ loop.index }}" name="password"
-                value="" >
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-3 control-label" for="user-root-{{ loop.index }}">
-        	{% trans %}Root directory{% endtrans %}</label>
-    	<div class="col-sm-7">
-            <input type="text" class="form-control"
-                id="user-root-{{ loop.index }}" name="user_root"
-                value="{{ user.user_root }}" >
-            <span class="help-block">{% trans %}Absolute path defining the location of the repositories for this user.{% endtrans %}</span>
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-3 control-label" for="user-root">
-            {% trans %}User Role{% endtrans %}</label>
-        <div class="col-sm-7">
-        <select class="form-control" name="role" {% if user.username == username %}disabled="disabled"{% endif %}>
-          {% set role_values = [
-                (0, _("Admin")),
-                (5, _("Maintainer")),
-                (10, _("User")),
-          ] %}
-          {% for value,display_name in role_values %}
-          <option {{ attrib(value=value, selected=(user.role == value)) }}>{{ display_name }}</option>
-          {% endfor %}
-        </select>
-        <span class="help-block">{% trans %}Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo.{% endtrans %}</span>
-        </div>
-    </div>
+    {{ user_form(form=form, id=loop.idx, user=user) }}
 {% endcall %}
 {% endfor %}
 
