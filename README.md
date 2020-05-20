@@ -75,6 +75,19 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
 
 # Changelog
 
+## 1.4.0 (2020-05-20)
+
+Thanks to our sponsor, this release introduce a feature to have better control over the user's permission by defining 3 different levels of privilege: Admin, Maintainer and User. This addition allows you to have better control on what your users can or can't do.
+
+ * Fix single repository discovery when a user's home is a rdiff-backup repository
+ * [SPONSORED] Add a new setting at the user level to define the user's role. Admin,
+   Maintainer and User. Admin are allowed to do everything. Maintainer are
+   allow to browse and delete repo. Users are only allowed to browse. #94
+ * Add "Powered by" in the web interface footer #91
+ * Display a nice error message when trying to delete admin user #93
+ * Introduce usage of wtforms and flash in admin users for better form validation. #96 #97
+ * Update French translation
+
 ## 1.3.2 (2020-04-23)
 
 This minor releases fixed issues found while testing release 1.3.0.
