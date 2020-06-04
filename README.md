@@ -36,7 +36,7 @@ With its rich web interface Rdiffweb provide a notable list of features:
 
 If you quickly want to check how rdiffweb is behaving, you may try our demo server hosted on:
 
-[http://demo.patrikdufresne.com/](http://demo.patrikdufresne.com/)
+[https://rdiffweb-demo.ikus-soft.com/](https://rdiffweb-demo.ikus-soft.com/)
 
 Use the following credential to login:
 
