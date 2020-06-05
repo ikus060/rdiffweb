@@ -19,19 +19,22 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from io import StringIO
-import logging
-from rdiffweb.core import i18n
-from rdiffweb.core import librdiff
-from rdiffweb.core import rdw_helpers
-
 from builtins import bytes
 from builtins import object
 from builtins import str
+from collections import OrderedDict
+import datetime
+from io import StringIO
+import logging
+
 from jinja2 import Environment, PackageLoader
 from jinja2.filters import do_mark_safe
 from jinja2.loaders import ChoiceLoader
-from collections import OrderedDict
+
+from rdiffweb.core import i18n
+from rdiffweb.core import librdiff
+from rdiffweb.core import rdw_helpers
+from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.store import RepoObject
 
 # Define the logger
@@ -99,6 +102,29 @@ def do_format_datetime(value, dateformat='%Y-%m-%d %H:%M'):
         return ""
     assert isinstance(value, librdiff.RdiffTime)
     return value.strftime(dateformat)
+
+
+def do_format_lastupdated(value, now=None):
+    """
+    Used to format date as "Updated 10 minutes ago"
+    """
+    if not value:
+        return ""
+    assert isinstance(value, librdiff.RdiffTime)
+    now = librdiff.RdiffTime(now)
+    delta = now.epoch() - value.epoch()
+    delta = datetime.timedelta(seconds=delta)
+    if delta.days > 365:
+        return _('%d years ago') % (delta.days / 365)
+    if delta.days > 60:
+        return _('%d months ago') % (delta.days / 30)
+    if delta.days > 7:
+        return _('%d weeks ago') % (delta.days / 7)
+    elif delta.days > 1:
+        return _('%d days ago') % delta.days
+    elif delta.seconds > 3600:
+        return _('%d hours ago') % (delta.seconds / 3600)
+    return _('%d seconds ago') % delta.seconds
 
 
 def do_format_filesize(value, binary=True):
@@ -211,6 +237,7 @@ class TemplateManager(object):
         # Register filters
         self.jinja_env.filters['filter'] = do_filter
         self.jinja_env.filters['datetime'] = do_format_datetime
+        self.jinja_env.filters['lastupdated'] = do_format_lastupdated
         self.jinja_env.filters['filesize'] = do_format_filesize
 
         # Register method

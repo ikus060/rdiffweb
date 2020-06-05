@@ -36,8 +36,8 @@
 			  {% trans %}Owner: {% endtrans %}{{repo.owner}}
 			  {% if repo.last_backup_date %}
 			  <br/>
-			  {% trans %}Last backup: {% endtrans %}
-              <time datetime="{{ repo.last_backup_date | datetime }}">{{ repo.last_backup_date | datetime }}</time>
+			  {% trans %}Updated {% endtrans %}
+              <time title="{{ repo.last_backup_date | datetime }}">{{ repo.last_backup_date | lastupdated }}</time>
               {% endif %}
 			</div>
         {% endfor %}
