@@ -15,8 +15,9 @@
       {% if repo.status[0] != 'ok' %}
       <span data-toggle="tooltip" data-placement="left" title="{{ repo.status[1] }}"><i class="icon-attention"></i></span>
       {% endif %}
-      {% if repo.last_backup_date %}{% trans %}Last backup: {% endtrans %}
-      <time datetime="{{ repo.last_backup_date | datetime }}" itemprop="lastBackupDate">{{ repo.last_backup_date | datetime }}</time>
+      {% if repo.last_backup_date %}
+      {% trans %}Updated {% endtrans %}
+      <time title="{{ repo.last_backup_date | datetime }}">{{ repo.last_backup_date | lastupdated }}</time>
       {% endif %}
   </span>
 </a>
