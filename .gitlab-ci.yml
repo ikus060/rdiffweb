@@ -47,6 +47,12 @@ debian10-py2:
 debian10-py3:
   <<: *prebuild
 
+debian11-py2:
+  <<: *prebuild
+
+debian11-py3:
+  <<: *prebuild
+
 #
 # Test Stage
 #
@@ -149,7 +155,19 @@ debian10-py3-rdiff-backup2:
   - apt-get update && apt -y install librsync-dev
   - pip3 install rdiff-backup
   - tox --sitepackages
-  
+
+debian11-py2-cherrypy35-jinja210: 
+  <<: *tox
+  variables:
+    IMAGE: debian11-py2
+    TOXENV: py2-cherrypy35-jinja211
+    
+debian11-py3-cherrypy8-jinja211: 
+  <<: *tox
+  variables:
+    IMAGE: debian11-py3
+    TOXENV: py3-cherrypy8-jinja211
+
 centos7-py2-cherrypy17-jinja210:
   <<: *tox
   variables:
