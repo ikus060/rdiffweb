@@ -169,6 +169,7 @@ if PY2:
         "babel>=0.9.6",
         "python-ldap",
         "WTForms",
+        "distro",
     ]
 else:
     install_requires = [
@@ -179,6 +180,7 @@ else:
         "babel>=0.9.6",
         "python-ldap",
         "WTForms",
+        "distro",
     ]
 
 setup_requires=[
