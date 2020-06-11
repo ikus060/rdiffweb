@@ -27,6 +27,7 @@ import platform
 import pwd
 import subprocess
 import sys
+import distro
 
 import cherrypy
 import psutil
@@ -52,9 +53,10 @@ def _check_user_root(user_root):
 
 
 def get_pyinfo():
-    if platform.dist()[0] != '' and platform.dist()[1] != '':
-        yield _('OS Version'), '%s %s (%s %s)' % (platform.system(), platform.release(), platform.dist()[0].capitalize(), platform.dist()[1])
-    else:
+    try:
+        import distro
+        yield _('OS Version'), '%s %s (%s %s)' % (platform.system(), platform.release(), distro.linux_distribution()[0].capitalize(), distro.linux_distribution()[1])
+    except:
         yield _('OS Version'), '%s %s' % (platform.system(), platform.release())
     if hasattr(os, 'path'): yield _('OS Path'), os.environ['PATH']
     if hasattr(sys, 'version'): yield _('Python Version'), ''.join(sys.version)
