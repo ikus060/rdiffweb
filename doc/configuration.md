@@ -167,3 +167,5 @@ to be used with rdiffweb.
 | AdminUser | Define the name of the default admin user to be created | No | admin |
 | FavIcon | Define the FavIcon to be displayed in the browser title | No | /etc/rdiffweb/my-fav.ico |
 | TempDir | Define an alternate temp directory to be used when restoring files. | No | /retore/ |
+| MaxDepth | Define the maximum folder depthness to search into the user's root directory to find repositories. Default: 5 | No | 10 |
+

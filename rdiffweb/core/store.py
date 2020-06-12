@@ -31,7 +31,7 @@ from future.utils.surrogateescape import encodefilename, decodefilename
 import pkg_resources
 
 from rdiffweb.core import RdiffError, authorizedkeys
-from rdiffweb.core.config import BoolOption, read_config, Option
+from rdiffweb.core.config import BoolOption, read_config, Option, IntOption
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.ldap_auth import LdapPasswordStore
 from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, \
@@ -42,8 +42,6 @@ from rdiffweb.core.passwd import check_password, hash_password
 logger = logging.getLogger(__name__)
 
 SEP = b'/'
-
-MAX_DEPTH = 5
 
 DEFAULT_REPO_ENCODING = codecs.lookup((sys.getfilesystemencoding() or 'utf-8').lower()).name
 
@@ -139,7 +137,7 @@ class IUserQuota():
 @python_2_unicode_compatible
 class UserObject(object):
     """Represent an instance of user."""
-
+    
     def __init__(self, store, data):
         """
         Create a new UserObject from a username or a record.
@@ -416,7 +414,7 @@ class UserObject(object):
                         self.get_repo(repopath)
                     except DoesNotExistError:
                         self.add_repo(repopath)
-            if root.count(SEP) - user_root.count(SEP) >= MAX_DEPTH:
+            if root.count(SEP) - user_root.count(SEP) >= self._store._max_depth:
                 del dirs[:]
 
     # Declare properties
@@ -545,7 +543,8 @@ class Store():
     _db_file = Option("SQLiteDBFile", "/etc/rdiffweb/rdw.db")
     _allow_add_user = BoolOption("AddMissingUser", False)
     _admin_user = Option("AdminUser", "admin")
-
+    _max_depth = IntOption('MaxDepth', default=5)
+ 
     def __init__(self, app):
         self.app = app
         from rdiffweb.core.store_sqlite import SQLiteBackend
