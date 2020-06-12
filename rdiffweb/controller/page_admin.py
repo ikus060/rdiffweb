@@ -27,7 +27,6 @@ import platform
 import pwd
 import subprocess
 import sys
-import distro
 
 import cherrypy
 import psutil
@@ -45,11 +44,6 @@ from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 
 # Define the logger
 logger = logging.getLogger(__name__)
-
-
-def _check_user_root(user_root):
-    if not os.access(user_root, os.F_OK) or not os.path.isdir(user_root):
-        flash(_("User root directory %s is not accessible!") % user_root, level='warning')
 
 
 def get_pyinfo():
@@ -222,7 +216,8 @@ class AdminPage(Controller):
             user.email = form.email.data or ''
             if form.user_root.data:
                 user.user_root = form.user_root.data
-                _check_user_root(user.user_root)
+                if not user.valid_user_root():
+                    flash(_("User's root directory %s is not accessible!") % user.user_root, level='warning')
                 user.update_repos()
             if action == 'add':
                 flash(_("User added successfully."))

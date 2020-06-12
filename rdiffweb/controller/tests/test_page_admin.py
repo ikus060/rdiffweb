@@ -114,7 +114,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         #  Check with filters
         self.getPage("/admin/users/?criteria=admins")
         self.assertInBody("test2")
-    
+
         self._delete_user("test2")
         self.assertInBody("User account removed.")
         self.assertNotInBody("test2")
@@ -168,7 +168,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
             pass
         self._add_user("test5", "test1@test.com", "test5", "/var/invalid/", USER_ROLE)
         self.assertInBody("User added successfully.")
-        self.assertInBody("User root directory /var/invalid/ is not accessible!")
+        self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
 
     def test_add_without_email(self):
         #  Add user to be listed
@@ -217,7 +217,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         self._edit_user("test1", "test1@test.com", "test", "/var/invalid/", USER_ROLE)
         self.assertNotInBody("User added successfully.")
-        self.assertInBody("User root directory /var/invalid/ is not accessible!")
+        self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
 
     def test_list(self):
         self.getPage("/admin/users/")
@@ -247,6 +247,23 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.assertInBody("test1")
         self.getPage("/admin/users?search=coucou")
         self.assertNotInBody("test1")
+
+    def test_user_invalid_root(self):
+        # Delete all user's
+        for user in self.app.store.users():
+            if user.username != self.USERNAME:
+                user.delete()
+        # Change the user's root
+        user = self.app.store.get_user('admin')
+        user.user_root = "/invalid"
+        self.getPage("/admin/users")
+        self.assertInBody("Root directory not accessible!")
+
+        # Query the page by default
+        user = self.app.store.get_user('admin')
+        user.user_root = "/tmp/"
+        self.getPage("/admin/users")
+        self.assertNotInBody("Root directory not accessible!")
 
 
 class AdminUsersAsUserTest(AbstractAdminTest):
