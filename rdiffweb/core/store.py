@@ -213,6 +213,15 @@ class UserObject(object):
         assert self._db.insert('repos', userid=self._userid, repopath=repopath)
         return self.get_repo(repopath)
 
+    def valid_user_root(self):
+        """
+        Check if the current user_root is valid and readable
+        """
+        try:
+            return os.access(self.user_root, os.F_OK) and os.path.isdir(self.user_root)
+        except:
+            return False
+
     def delete(self):
         """
         Delete the given user from password store.

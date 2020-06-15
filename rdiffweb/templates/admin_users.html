@@ -46,6 +46,9 @@
                 <div class="pull-right">
                     <span class="light">
                         {{ user.user_root }}
+                        {% if not user.valid_user_root() %}
+                        <span class="text-danger"><i class="icon-attention"></i> {%trans%}Root directory not accessible!{% endtrans %}</span>
+                        {% endif %}
                     </span>
                     <button type="button" class="btn btn-default"
                             data-toggle="modal"

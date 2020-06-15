@@ -23,7 +23,8 @@ import unittest
 from future.builtins import str
 
 from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.core.rdw_templating import do_format_filesize, attrib, url_for
+from rdiffweb.core.rdw_templating import do_format_filesize, attrib, url_for, \
+    do_format_lastupdated
 from rdiffweb.test import AppTestCase
 
 
@@ -56,7 +57,7 @@ class TemplateManagerTest(unittest.TestCase):
 
         # Newstr
         self.assertEqual('selected="text"', attrib(selected=str('text')))
-        
+
         self.assertEqual('value="0"', attrib(value=0))
 
     def test_do_format_filesize(self):
@@ -100,11 +101,20 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual('/admin/logs', url_for('admin/logs'))
         self.assertEqual('/admin/logs/backup.log', url_for('admin/logs', 'backup.log'))
 
+    def test_do_format_lastupdated(self):
+        self.assertEqual('23 seconds ago', do_format_lastupdated(RdiffTime(value=1591978823), now=1591978846))
+        self.assertEqual('8 minutes ago', do_format_lastupdated(RdiffTime(value=1591978324), now=1591978846))
+        self.assertEqual('2 hours ago', do_format_lastupdated(RdiffTime(value=1591971646), now=1591978846))
+        self.assertEqual('2 days ago', do_format_lastupdated(RdiffTime(value=1591805524), now=1591978846))
+        self.assertEqual('4 weeks ago', do_format_lastupdated(RdiffTime(value=1589127124), now=1591978846))
+        self.assertEqual('5 months ago', do_format_lastupdated(RdiffTime(value=1578672724), now=1591978846))
+        self.assertEqual('4 years ago', do_format_lastupdated(RdiffTime(value=1452442324), now=1591978846))
+
 
 class UrlForTest(AppTestCase):
 
     reset_testcases = True
-    
+
     USERNAME = 'admin'
 
     PASSWORD = 'password'
