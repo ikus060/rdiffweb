@@ -75,6 +75,17 @@ Professional support for Rdiffweb is available by contacting [Patrik Dufresne Se
 
 # Changelog
 
+## 1.4.1 (2020-06-24)
+
+This minor release introduce official support of rdiffweb on Debian Bullseye. It also includes some usability improvements.
+
+ * Change formatting of Last Backup date for "Updated 3 weeks ago" to ease the readability
+ * Add support for Debian Bullseye
+ * Add support for Python 3.8 (#104)
+ * Add warning in the users list view when a root directory is invalid (#30)
+ * Add options to control search depthness (#1)
+ * Print a warning in the log when the "DefaultTheme" value is not valid (#90)
+
 ## 1.4.0 (2020-05-20)
 
 Thanks to our sponsor, this release introduce a feature to have better control over the user's permission by defining 3 different levels of privilege: Admin, Maintainer and User. This addition allows you to have better control on what your users can or can't do.
