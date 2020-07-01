@@ -157,7 +157,7 @@ to be used with rdiffweb.
 | LogLevel | Define the log level. ERROR, WARN, INFO, DEBUG | No | DEBUG |
 | Environment | Define the type of environment: development, production. This is used to limit the information shown to the user when an error occur. | No | production |
 | HeaderName | Define the application name displayed in the title bar and header menu. | No | My Backup |
-| DefaultTheme | Define the default theme. Either: default or orange | No | orange |
+| DefaultTheme | Define the default theme. Either: default or orange. Define the css file to be loaded in the web interface. You may manually edit a css file to customize it. the location is similar to `/usr/local/lib/python2.7/dist-packages/rdiffweb/static/`. It's preferable to contact the developer if you want a specific color scheme to be added. | No | orange |
 | WelcomeMsg | Replace the headling displayed in the login page | No | - |
 | LogFile | Define the location of the log file | No | /var/log/rdiffweb.log |
 | LogAccessFile | Define the location of the access log file | No | /var/log/rdiffweb-access.log |
@@ -167,5 +167,5 @@ to be used with rdiffweb.
 | AdminUser | Define the name of the default admin user to be created | No | admin |
 | FavIcon | Define the FavIcon to be displayed in the browser title | No | /etc/rdiffweb/my-fav.ico |
 | TempDir | Define an alternate temp directory to be used when restoring files. | No | /retore/ |
-| MaxDepth | Define the maximum folder depthness to search into the user's root directory to find repositories. Default: 5 | No | 10 |
+| MaxDepth | Define the maximum folder depthness to search into the user's root directory to find repositories. This is commonly used if you repositories are organised with multiple sub-folder. Default: 5 | No | 10 |
 
