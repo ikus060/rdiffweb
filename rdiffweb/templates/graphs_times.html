@@ -60,7 +60,12 @@ function formatTime(secs) {
    var dm = 2;
    var sizes = ['secs', 'min', 'h'];
    var i = Math.floor(Math.log(secs) / Math.log(k));
-   return (secs / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
+   var r = (secs / Math.pow(k, i)).toPrecision(dm);
+   if(i > 2 || i == 2 && r >= 24){
+      // Handle days
+      return ((secs / Math.pow(k, 2))/24).toPrecision(dm) + ' days';
+   }
+   return r + ' ' + sizes[i];
 };
 
 var margin = {top: 20, right: 50, bottom: 35, left: 50},
