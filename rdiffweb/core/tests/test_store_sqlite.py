@@ -18,7 +18,7 @@
 """
 Created on Oct 17, 2015
 
-@author: Patrik Dufresne <info@patrikdufresne.com>
+@author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
 from __future__ import unicode_literals

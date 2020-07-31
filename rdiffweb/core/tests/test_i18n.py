@@ -20,7 +20,7 @@ Created on Apr 25, 2015
 
 Module used to test the i18n tools. Check if translation are properly loaded.
 
-@author: Patrik Dufresne <info@patrikdufresne.com>
+@author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
 from __future__ import unicode_literals

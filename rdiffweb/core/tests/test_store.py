@@ -20,7 +20,7 @@ Created on Oct 14, 2015
 
 Module to test `user` module.
 
-@author: Patrik Dufresne <info@patrikdufresne.com>
+@author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
 from __future__ import unicode_literals

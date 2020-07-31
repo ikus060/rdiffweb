@@ -20,7 +20,7 @@ Created on Jan 30, 2016
 
 Test archiver module.
 
-@author: Patrik Dufresne <info@patrikdufresne.com>
+@author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
 from __future__ import unicode_literals

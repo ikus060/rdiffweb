@@ -85,7 +85,7 @@ class Controller(object):
 
     _footername = Option("FooterName", "rdiffweb")
 
-    _footerurl = Option("FooterUrl", "https://www.ikus-soft.com/en/rdiffweb/")
+    _footerurl = Option("FooterUrl", "https://rdiffweb.org/")
 
     _default_theme = Option("DefaultTheme", "default")
 
