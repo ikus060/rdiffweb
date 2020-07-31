@@ -1,6 +1,6 @@
 [Unit]
 Description=Rdiffweb Server
-Documentation=http://www.patrikdufresne.com/en/rdiffweb/
+Documentation=https://rdiffweb.org/
 
 [Service]
 ExecStart=/usr/local/bin/rdiffweb
