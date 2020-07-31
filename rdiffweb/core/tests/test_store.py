@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2019 rdiffweb contributors
+# Copyright (C) 2020 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ import pkg_resources
 
 from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.librdiff import AccessDeniedError
-from rdiffweb.core.store import IUserChangeListener, ADMIN_ROLE, USER_ROLE,\
+from rdiffweb.core.store import IUserChangeListener, ADMIN_ROLE, USER_ROLE, \
     MAINTAINER_ROLE
 from rdiffweb.test import AppTestCase
 
@@ -684,6 +684,39 @@ class UserObjectTest(AppTestCase):
         repo_obj = userobj.get_repo('testcases')
         repo_obj.maxage = 7
         self.assertEquals(7, repo_obj.maxage)
+
+    def test_update_repos_remove_slash(self):
+        # Check if "/" get removed
+        userobj = self.app.store.get_user(self.USERNAME)
+        userobj.update_repos()
+        self.assertEquals(['testcases', 'broker-repo'], userobj.repos)
+        self.app.store._database.delete('repos', userid=userobj._userid)
+        self.app.store._database.insert('repos', userid=userobj._userid, repopath='/testcases')
+        userobj.update_repos()
+        self.assertEquals(['testcases', 'broker-repo'], userobj.repos)
+
+    def test_update_repos_remove_duplicates(self):
+        # Update repos should remove duplicate entries from the database
+        # generate by previous versions.
+        userobj = self.app.store.get_user(self.USERNAME)
+        userobj.update_repos()
+        self.assertEquals(['testcases', 'broker-repo'], userobj.repos)
+        self.app.store._database.insert('repos', userid=userobj._userid, repopath='/testcases')
+        self.assertEquals(['testcases', 'broker-repo', '/testcases'], userobj.repos)
+        userobj.update_repos()
+        self.assertEquals(['testcases', 'broker-repo'], userobj.repos)
+
+    def test_update_repos_remove_nested(self):
+        # Update repos should remove duplicate entries from the database
+        # generate by previous versions.
+        userobj = self.app.store.get_user(self.USERNAME)
+        userobj.update_repos()
+        self.assertEquals(['testcases', 'broker-repo'], userobj.repos)
+        self.app.store._database.insert('repos', userid=userobj._userid, repopath='testcases/home/admin/testcases')
+        self.app.store._database.insert('repos', userid=userobj._userid, repopath='/testcases/home/admin/data')
+        self.assertEquals(['testcases', 'broker-repo', 'testcases/home/admin/testcases', '/testcases/home/admin/data'], userobj.repos)
+        userobj.update_repos()
+        self.assertEquals(['testcases', 'broker-repo'], userobj.repos)
 
 
 class RepoObjectTest(AppTestCase):
