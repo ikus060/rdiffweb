@@ -1,8 +1,6 @@
-variables:
-  DOCKER_BUILD_IMAGE: "${CI_REGISTRY_IMAGE}"
+image: ikus060/python:debian9-py3
 
 stages:
-- prebuild
 - test
 - package
 - publish
@@ -10,61 +8,21 @@ stages:
 - downstream
 
 #
-# Prebuild Stage
-#
-.prebuild:  &prebuild
-  image: docker:stable
-  services:
-    - docker:dind
-  stage: prebuild
-  before_script:
-  - docker info
-  script:
-  - "export BUILD_PATH=extras/prebuild/${CI_JOB_NAME}"
-  - "export TAG=$DOCKER_BUILD_IMAGE:${CI_JOB_NAME}-$CI_PIPELINE_IID"
-  - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
-  - docker build -t $TAG $BUILD_PATH
-  - docker push $TAG
-
-centos7-py2:
-  <<: *prebuild
-
-centos7-py3:
-  <<: *prebuild
-
-centos8-py3:
-  <<: *prebuild
-
-debian9-py2:
-  <<: *prebuild
-
-debian9-py3:
-  <<: *prebuild
-
-debian10-py2:
-  <<: *prebuild
-
-debian10-py3:
-  <<: *prebuild
-
-debian11-py2:
-  <<: *prebuild
-
-debian11-py3:
-  <<: *prebuild
-
-#
 # Test Stage
 #
 .tox:  &tox
-  image: $DOCKER_BUILD_IMAGE:${IMAGE}-$CI_PIPELINE_IID
+  image: ikus060/python:${IMAGE}
   stage: test
   variables:
     IMAGE: debian10-py3
     TOXENV: $CI_JOB_NAME
+  before_script:
+  - command -v apt && apt -yq update && apt install -yq rdiff-backup libldap2-dev libsasl2-dev
+  - command -v yum && yum install -y epel-release && yum install -y rdiff-backup openldap-devel
   script:
-  - export TOXENV=${TOXENV:-$CI_JOB_NAME} 
-  - tox --sitepackages
+  - export TOXENV=${TOXENV:-$CI_JOB_NAME}
+  - echo TOXENV=$TOXENV
+  - tox
   artifacts:
     paths:
     - coverage-*.xml
@@ -150,17 +108,19 @@ debian10-py3-rdiff-backup2:
   variables:
     IMAGE: debian10-py3
     TOXENV: py3-cherrypy8-jinja210
-  script:
-  - apt -y autoremove rdiff-backup
-  - apt-get update && apt -y install librsync-dev
+  before_script:
+  - apt-get update
+  - apt -y install librsync-dev libldap2-dev libsasl2-dev
   - pip3 install rdiff-backup
-  - tox --sitepackages
+  - tox
 
 debian11-py2-cherrypy35-jinja210: 
   <<: *tox
   variables:
     IMAGE: debian11-py2
     TOXENV: py2-cherrypy35-jinja211
+  # Debian11 is running with rdiff-backup2 and we found an encoding issue #108
+  allow_failure: true
     
 debian11-py3-cherrypy8-jinja211: 
   <<: *tox
@@ -189,20 +149,23 @@ centos8-py3-cherrypy18-jinja210:
     TOXENV: py3-cherrypy18-jinja210
   
 package:py2: 
-  image: $DOCKER_BUILD_IMAGE:debian9-py2-$CI_PIPELINE_IID
+  image: ikus060/python:debian9-py2
   stage: package
   script:
+  - pip2 install wheel
   - python2 setup.py sdist bdist_wheel
+  dependencies: []
   artifacts:
     paths: 
     - dist/*.tar.gz
     - dist/*.whl
     
 package:py3: 
-  image: $DOCKER_BUILD_IMAGE:debian9-py3-$CI_PIPELINE_IID
   stage: package
   script:
+  - pip3 install wheel
   - python3 setup.py sdist bdist_wheel
+  dependencies: []
   artifacts:
     paths:
     - dist/*.whl
@@ -222,14 +185,12 @@ publish:sonar:dev:
   - sonar-runner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.exclusions=rdiffweb/controller/tests/**,rdiffweb/core/tests/**,rdiffweb/test.py -Dsonar.sources=.
 
 publish_nexus:
-  image: $DOCKER_BUILD_IMAGE:debian9-py3-$CI_PIPELINE_IID
   stage: publish
   script:
   - pip3 install wheel twine --upgrade
   - twine upload dist/* -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
 
 publish_pypi:
-  image: $DOCKER_BUILD_IMAGE:debian9-py3-$CI_PIPELINE_IID
   stage: publish
   only:
   - tags
@@ -238,7 +199,6 @@ publish_pypi:
   - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
   
 deploy_rdiffweb_demo:
-  image: $DOCKER_BUILD_IMAGE:debian9-py3-$CI_PIPELINE_IID
   stage: deploy
   environment:
     name: demo
@@ -250,7 +210,6 @@ deploy_rdiffweb_demo:
   - curl -X POST -F token=36bae86778d901fc6b2d6453a41844 -F "ref=master" -F "variables[RDIFFWEB_VERSION]=$RDIFFWEB_VERSION" https://gitlab.com/api/v4/projects/18716492/trigger/pipeline
 
 bump_minarca_version:
-  image: $DOCKER_BUILD_IMAGE:debian9-py3-$CI_PIPELINE_IID
   stage: downstream
   only:
   - tags
