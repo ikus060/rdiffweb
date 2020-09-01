@@ -38,11 +38,11 @@ Then you may install rdiffweb using `pip`:
 Install default configuration file.
 
     sudo mkdir -p /etc/rdiffweb 
-    sudo curl https://github.com/ikus060/rdiffweb/raw/master/rdw.conf -o /etc/rdiffweb/rdw.conf
+    sudo curl -L https://github.com/ikus060/rdiffweb/raw/master/rdw.conf -o /etc/rdiffweb/rdw.conf
     
 If needed, create a service unit to manage rdiffweb as a service:
 
-    sudo curl https://raw.githubusercontent.com/ikus060/rdiffweb/master/extras/systemd/rdiffweb.service -o /etc/systemd/system/rdiffweb.service
+    sudo curl -L https://github.com/ikus060/rdiffweb/raw/master/extras/systemd/rdiffweb.service -o /etc/systemd/system/rdiffweb.service
     sudo systemctl daemon-reload
     sudo service rdiffweb start
 
