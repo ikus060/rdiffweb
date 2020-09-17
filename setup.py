@@ -186,7 +186,6 @@ else:
 setup_requires=[
     "babel>=0.9.6",
     "setuptools_scm",
-    "minify",
 ]
 tests_require=[
     "mock>=1.3.0",
