@@ -1,0 +1,8 @@
+/rdiffweb/
+/.debhelper/
+/rdiffweb.1
+/rdiffweb-restore.1
+/rdiffweb.postinst.debhelper
+/rdiffweb.prerm.debhelper
+/rdiffweb.substvars
+/debhelper-build-stamp

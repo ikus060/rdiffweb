@@ -1,0 +1,49 @@
+Source: rdiffweb
+Section: utils
+Priority: optional
+Maintainer: Patrik Dufresne <patrik@ikus-soft.com>
+Build-Depends: debhelper (>= 11),
+               dh-python,
+               python3,
+               python3-babel,
+               python3-all-dev,
+               python3-setuptools,
+               python3-setuptools-scm,
+               python3-cherrypy3,
+               python3-jinja2,
+               python3-future,
+               python3-psutil,
+               python3-babel,
+               python3-ldap,
+               python3-wtforms,
+               python3-distro,
+               help2man,
+               python3-venv
+Standards-Version: 4.4.0
+Homepage: https://www.ikus-soft.com/en/rdiffweb/
+Vcs-Git: https://gitlab.com/ikus-soft/rdiffweb.git
+Vcs-Browser: https://gitlab.com/ikus-soft/rdiffweb
+
+Package: rdiffweb
+Architecture: any
+Depends: python3 (>= 3.5),
+         python3-cheroot,
+         python3-cherrypy3,
+         python3-jinja2,
+         python3-future,
+         python3-psutil,
+         python3-babel,
+         python3-ldap,
+         python3-wtforms,
+         python3-distro,
+         libjs-bootstrap,
+         libjs-jquery,
+         ${misc:Depends},
+         ${python3:Depends},
+         ${sphinxdoc:Depends}
+Recommends: python3-setuptools
+Description: remote incremental backup
+ Rdiffweb is a web application that allows you to view repositories generated
+ by rdiff-backup. The purpose of this application is to ease the management
+ of backups and quickly restore your data with a rich and powerful web
+ interface.

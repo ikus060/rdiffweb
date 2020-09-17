@@ -1,0 +1,5 @@
+rdiffweb (1.5.0) unstable; urgency=medium
+
+  * Initial Deb package
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 18 Sep 2020 12:09:40 +0300
