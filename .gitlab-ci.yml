@@ -204,7 +204,7 @@ deploy_rdiffweb_demo:
     name: demo
     url: https://rdiffweb-demo.ikus-soft.com/
   script:
-  - export RDIFFWEB_VERSION=$(python3 setup.py --version)
+  - export RDIFFWEB_VERSION=$(python3 setup.py --version | tail -n 1)
   - echo RDIFFWEB_VERSION=$RDIFFWEB_VERSION
   # Call ansible
   - curl -X POST -F token=36bae86778d901fc6b2d6453a41844 -F "ref=master" -F "variables[RDIFFWEB_VERSION]=$RDIFFWEB_VERSION" https://gitlab.com/api/v4/projects/18716492/trigger/pipeline
@@ -214,7 +214,7 @@ bump_minarca_version:
   only:
   - tags
   script:
-  - export RDIFFWEB_VERSION=$(python3 setup.py --version)
+  - export RDIFFWEB_VERSION=$(python3 setup.py --version | tail -n 1)
   - echo RDIFFWEB_VERSION=$RDIFFWEB_VERSION
   # configure git & ssh
   - git config --global user.email "robot@ikus-soft.com"
