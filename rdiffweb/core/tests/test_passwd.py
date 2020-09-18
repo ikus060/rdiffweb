@@ -19,7 +19,6 @@ Created on Apr. 10, 2020
 
 @author: Patrik Dufresne
 '''
-from __future__ import unicode_literals
 
 import unittest
 

@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 
 import logging
 import sqlite3
@@ -31,9 +30,6 @@ logger = logging.getLogger(__name__)
 # List of tables
 _TABLES = ['users', 'repos', 'sshkeys']
 
-# Check if python2
-PY2 = sys.version_info[0] == 2
-
 
 def _dict_factory(cursor, row):
     """
@@ -41,7 +37,7 @@ def _dict_factory(cursor, row):
     """
     d = {}
     for idx, col in enumerate(cursor.description):
-        col = col[0].decode('utf8').lower() if PY2 else col[0].lower()
+        col = col[0].lower()
         # For SQLite <= 3.16.2 tinyint default value are return as string.
         if col in ['isadmin', 'restoreformat']:
             d[col] = 1 if row[idx] == 1 or row[idx] == 'TRUE' else 0

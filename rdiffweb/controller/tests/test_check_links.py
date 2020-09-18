@@ -20,9 +20,6 @@ Created on Dec 30, 2015
 @author: Patrik Dufresne
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from collections import OrderedDict
 import logging
 import re

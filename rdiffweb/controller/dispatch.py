@@ -21,11 +21,9 @@ Default page handler
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from __future__ import unicode_literals
 
 import cherrypy
 from cherrypy.lib.static import serve_file, mimetypes
-from future.builtins import str
 import os
 
 from rdiffweb.core.rdw_helpers import unquote_url

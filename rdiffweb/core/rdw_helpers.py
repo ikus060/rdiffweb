@@ -15,19 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division
-from __future__ import unicode_literals
-
-from builtins import bytes
-from builtins import str
-from future.utils import iteritems
-
-
-try:
-    from urllib.parse import quote, unquote
-except ImportError:
-    # Python 2
-    from urllib import quote, unquote
+from urllib.parse import quote, unquote
 
 
 # TODO: Move this into page_main
@@ -68,7 +56,6 @@ def unquote_url(url):
         val = val.encode(encoding='latin1')
     return val
 
-
 # Taken from ASPN:
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/259173
 
@@ -79,4 +66,3 @@ class groupby(dict):
         for value in seq:
             k = key(value)
             self.setdefault(k, []).append(value)
-    __iter__ = iteritems

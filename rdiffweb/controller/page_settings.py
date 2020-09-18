@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import logging
 
 import cherrypy
@@ -26,7 +23,6 @@ from rdiffweb.controller import Controller, validate, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.core.i18n import ugettext as _
-
 
 # Define the logger
 _logger = logging.getLogger(__name__)
@@ -53,7 +49,7 @@ class SettingsPage(Controller):
         }
         # Generate page.
         return self._compile_template("settings.html", **params)
-    
+
     def _delete(self, repo_obj, confirm=None, redirect='/', **kwargs):
         """
         Delete the repository.
@@ -80,7 +76,7 @@ class SettingsPage(Controller):
         except ValueError:
             raise cherrypy.HTTPError(400, _("invalid encoding value"))
         return _("Updated")
-    
+
     def _set_maxage(self, repo_obj, maxage=None, **kwargs):
         """
         Update repository maxage via Ajax.

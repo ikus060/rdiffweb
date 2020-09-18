@@ -21,9 +21,6 @@ plugin to work properly, the users home directory need to match a real
 user home.
 """
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import logging
 
 from wtforms import validators
@@ -38,7 +35,6 @@ from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.core import authorizedkeys
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.store import DuplicateSSHKeyError
-
 
 _logger = logging.getLogger(__name__)
 

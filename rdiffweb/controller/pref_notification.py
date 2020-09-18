@@ -18,7 +18,6 @@
 Plugin used to send email to users when their repository is getting too old.
 User can control the notification period.
 """
-from __future__ import unicode_literals
 
 import logging
 
@@ -31,9 +30,9 @@ _logger = logging.getLogger(__name__)
 class NotificationPref(Controller):
 
     panel_id = 'notification'
-    
+
     panel_name = _('Notification')
-    
+
     def _handle_set_notification_info(self, **kwargs):
 
         # Loop trough user repo and update max age.

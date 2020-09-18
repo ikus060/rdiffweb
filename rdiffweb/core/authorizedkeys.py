@@ -21,8 +21,6 @@ Created on May 12, 2015
 @author: patrik dufresne
 """
 
-from __future__ import unicode_literals
-
 import base64
 from collections import namedtuple, OrderedDict
 import hashlib
@@ -30,9 +28,6 @@ from io import open
 import logging
 import re
 import tempfile
-
-from builtins import str
-from builtins import zip
 
 _logger = logging.getLogger(__name__)
 
@@ -53,28 +48,28 @@ class AuthorizedKey(namedtuple('AuthorizedKey', 'options keytype key comment')):
 
     See http://man.he.net/man5/authorized_keys
     """
-    
+
     def __new__(cls, *args, **kwargs):
         """
         This constructor support two usages. Either a string to be parsed  or options, keytype, key, comment.
         """
         # Initialise values as None
         options, keytype, key, comment = None, None, None, None
-        
+
         # Parse the line if provided
         if len(args) == 1:
             options, keytype, key, comment = _parse_line(args[0])
-            
+
         # Override the line with keyword arguments,
         options = kwargs.get('options', options)
         keytype = kwargs.get('keytype', keytype)
         key = kwargs.get('key', key)
         comment = kwargs.get('comment', comment)
-        
+
         # Parse the options as dict
-        if isinstance(options, str): 
+        if isinstance(options, str):
             options = _parse_options(options)
-        
+
         return tuple.__new__(cls, (options, keytype, key, comment))
 
     @property
@@ -105,7 +100,7 @@ class AuthorizedKey(namedtuple('AuthorizedKey', 'options keytype key comment')):
             buf += ' '
             buf += self.comment
         return buf
-    
+
     def __bool__(self):
         return any(self)
 
@@ -239,7 +234,7 @@ def read(fn):
             key = AuthorizedKey(line)
             if key:
                 yield key
-            
+
     finally:
         # Need to close the file if we open it.
         if close_fh:
@@ -256,7 +251,7 @@ def remove(fn, fingerprint):
     """
     assert fingerprint
     fingerprint = str(fingerprint)
-    
+
     encoding = 'utf-8'
     if hasattr(fn, 'read'):
         fh = fn
@@ -279,7 +274,7 @@ def remove(fn, fingerprint):
             except:
                 # Not a valid key, so just copy the line.
                 temp.write(line.encode(encoding))
-            
+
         if not removed:
             raise ValueError(fingerprint + ' not found')
 
@@ -287,12 +282,12 @@ def remove(fn, fingerprint):
         temp.seek(0)
         fh.seek(0)
         fh.truncate()
-        
-        # Read the temp file line by line and write it back to the original file.        
+
+        # Read the temp file line by line and write it back to the original file.
         for line in temp:
             fh.write(line.decode('utf-8'))
-        
+
     finally:
         temp.close()
         if close_fh:
-            fh.close()            
+            fh.close()

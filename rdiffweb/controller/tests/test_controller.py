@@ -20,7 +20,6 @@ Created on Mar 13, 2019
 @author: Patrik Dufresne
 """
 
-from __future__ import unicode_literals
 
 import logging
 import unittest

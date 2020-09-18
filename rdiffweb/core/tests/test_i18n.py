@@ -22,7 +22,6 @@ Module used to test the i18n tools. Check if translation are properly loaded.
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from __future__ import unicode_literals
 
 from cherrypy import _cpconfig
 import cherrypy

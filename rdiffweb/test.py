@@ -22,9 +22,6 @@ Mock class for testing.
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from __future__ import unicode_literals
-
-from builtins import str, delattr
 import json
 import os
 import shutil
@@ -34,12 +31,10 @@ import unittest
 
 import cherrypy
 from cherrypy.test import helper
-from future.utils import native_str
 import pkg_resources
 
 from rdiffweb.core.store import ADMIN_ROLE
 from rdiffweb.rdw_app import RdiffwebApp
-
 
 try:
     from urllib.parse import urlencode  # @UnresolvedImport @UnusedImport
@@ -67,7 +62,7 @@ class MockRdiffwebApp(RdiffwebApp):
 
     def clear_testcases(self):
         if hasattr(self, 'testcases'):
-            shutil.rmtree(native_str(self.testcases))
+            shutil.rmtree(self.testcases)
             delattr(self, 'testcases')
 
     def reset(self, username=None, password=None):

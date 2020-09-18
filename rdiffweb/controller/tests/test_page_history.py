@@ -21,7 +21,6 @@ Created on Dec 29, 2015
 @author: Patrik Dufresne
 """
 
-from __future__ import unicode_literals
 
 import logging
 import unittest

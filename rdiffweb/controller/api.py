@@ -21,7 +21,6 @@ Created on Nov 16, 2017
 """
 # Define the logger
 
-from __future__ import unicode_literals
 
 import logging
 

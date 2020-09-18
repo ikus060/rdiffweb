@@ -19,15 +19,12 @@ Default preference page to show general user information. It allows user
 to change password ans refresh it's repository view.
 """
 
-from __future__ import unicode_literals
-
 import logging
 from rdiffweb.controller import Controller
 from rdiffweb.core import RdiffError, RdiffWarning
 from rdiffweb.core.i18n import ugettext as _
 import re
 
-from builtins import str
 import cherrypy
 
 PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
@@ -42,9 +39,9 @@ class PrefsGeneralPanelProvider(Controller):
     """
 
     panel_id = 'general'
-    
+
     panel_name = _('Profile')
-    
+
     def _handle_set_password(self, **kwargs):
         """
         Called when changing user password.

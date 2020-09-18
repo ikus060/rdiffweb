@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
-from builtins import bytes
-from builtins import object
-from builtins import str
 from collections import OrderedDict
 import datetime
 from io import StringIO

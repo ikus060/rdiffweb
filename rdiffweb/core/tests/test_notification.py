@@ -20,7 +20,6 @@ Created on Feb 13, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from __future__ import unicode_literals
 
 from mock import MagicMock, ANY, patch
 import unittest

@@ -1,13 +1,11 @@
-from __future__ import unicode_literals
 
 import datetime
 import logging
-from rdiffweb.core import librdiff
 import time
 
-from builtins import str
 from cherrypy.process.plugins import Monitor
 
+from rdiffweb.core import librdiff
 from rdiffweb.core.config import Option
 
 _logger = logging.getLogger(__name__)
@@ -23,7 +21,7 @@ class Deamon(Monitor):
     job_execution_time = '23:00'
 
     _next_execution_time = None
-    
+
     def __init__(self, bus):
         Monitor.__init__(self, bus, self.deamon_run, frequency=60, name=self.__class__.__name__)
 
@@ -74,7 +72,7 @@ class RemoveOlder(Deamon):
     def __init__(self, bus, app):
         self.app = app
         Deamon.__init__(self, bus);
-        
+
     @property
     def job_execution_time(self):
         return self._remove_older_time

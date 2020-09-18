@@ -21,10 +21,7 @@ Created on Apr. 10, 2020
 @author: patrik dufresne
 '''
 
-from __future__ import unicode_literals
-
 from base64 import b64decode, b64encode
-from builtins import str
 import hashlib
 import os
 

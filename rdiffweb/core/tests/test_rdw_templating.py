@@ -15,11 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
 import unittest
-
-from future.builtins import str
 
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.rdw_templating import do_format_filesize, attrib, url_for, \

@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import argparse
 import logging
 import logging.config
@@ -26,15 +23,11 @@ import sys
 import rdiffweb
 
 import cherrypy
-from future.builtins import str
 
 from rdiffweb import rdw_app
 from rdiffweb.core.config import read_config
 from rdiffweb.core.notification import NotificationPlugin
 from rdiffweb.core.rdw_deamon import RemoveOlder
-
-PY2 = sys.version_info[0] == 2
-nativestr = bytes if PY2 else str
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -147,7 +140,7 @@ def main(args=None):
     app = rdw_app.RdiffwebApp(cfg)
 
     # Get configuration
-    serverhost = nativestr(cfg.get("serverhost", "127.0.0.1"))
+    serverhost = cfg.get("serverhost", "127.0.0.1")
     serverport = int(cfg.get("serverport", "8080"))
     # Get SSL configuration (if any)
     sslcertificate = cfg.get("sslcertificate")

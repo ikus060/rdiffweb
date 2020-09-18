@@ -21,7 +21,6 @@ Created on Jan 1, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from __future__ import unicode_literals
 
 import io
 import logging
@@ -33,9 +32,6 @@ import zipfile
 from rdiffweb.controller.page_restore import _content_disposition
 from rdiffweb.core.store import USER_ROLE
 from rdiffweb.test import WebCase, AppTestCase
-
-
-PY3 = sys.version_info[0] == 3
 
 
 class RestorePageTest(AppTestCase):
@@ -160,10 +156,7 @@ class RestoreTest(WebCase):
         self.assertHeader('Content-Type', 'application/x-gzip')
         #  Read the content as tar.gz with UTF8 encoding.
         expected = {}
-        if PY3:
-            expected["Fichier avec non asci char \udcc9velyne M\udce8re.txt"] = 18
-        else:
-            expected["Fichier avec non asci char �velyne M�re.txt"] = 18
+        expected["Fichier avec non asci char \udcc9velyne M\udce8re.txt"] = 18
         expected["이루마 YIRUMA - River Flows in You.mp3"] = 3636731
         expected["Char ;090 to quote"] = 0
         expected["Char ;090 to quote/Untitled Testcase.doc"] = 14848

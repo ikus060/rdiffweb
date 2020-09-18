@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
 from distutils.cmd import Command
 from distutils.command.build import build as build_
 from distutils.dist import DistributionMetadata
@@ -26,18 +24,10 @@ import os
 import subprocess
 import sys
 
-
-PY2 = sys.version_info[0] == 2
-
 # Check running python version.
-if not PY2 and not sys.version_info >= (3, 4):
+if not sys.version_info >= (3, 5):
     print('python version 3.4 is required.')
     sys.exit(1)
-
-if PY2 and not sys.version_info >= (2, 7):
-    print('python version 2.7 is required.')
-    sys.exit(1)
-
 
 try:
     from setuptools import setup
@@ -159,40 +149,13 @@ class build(build_):
 
 
 # Compute requirements
-if PY2:
-    install_requires = [
-        "CherryPy>=3.5,<17.0",
-        "Jinja2>=2.6,!=2.9",
-        "future>=0.15.2",
-        "psutil>=2.1.1",
-        "babel>=0.9.6",
-        "python-ldap",
-        "WTForms",
-        "distro",
-    ]
-else:
-    install_requires = [
-        "CherryPy>=3.5",
-        "Jinja2>=2.6,!=2.9",
-        "future>=0.15.2",
-        "psutil>=2.1.1",
-        "babel>=0.9.6",
-        "python-ldap",
-        "WTForms",
-        "distro",
-    ]
-
-setup_requires=[
-    "babel>=0.9.6",
-    "setuptools_scm",
-]
-tests_require=[
+tests_require = [
     "mock>=1.3.0",
     "coverage>=4.0.1",
     "mockldap>=0.2.6",
     "pytest<5.0.0",
 ]
-extras_require={'tox': tests_require}
+extras_require = {'tox': tests_require}
 
 long_description_content_type = long_description = None
 with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf-8') as f:
@@ -224,9 +187,20 @@ setup(
         'compile_all_catalogs': compile_all_catalogs,
         'build_less': build_less,
     },
-    install_requires=install_requires,
+    install_requires=[
+        "CherryPy>=3.5",
+        "Jinja2>=2.6,!=2.9",
+        "psutil>=2.1.1",
+        "babel>=0.9.6",
+        "python-ldap",
+        "WTForms",
+        "distro",
+    ],
     # required packages for build process
-    setup_requires=setup_requires,
+    setup_requires=[
+        "babel>=0.9.6",
+        "setuptools_scm",
+    ],
     # requirement for testing
     tests_require=tests_require,
     extras_require=extras_require,
@@ -234,13 +208,11 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Framework :: CherryPy',
     ],
-    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4',
+    python_requires='!=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4',
 )

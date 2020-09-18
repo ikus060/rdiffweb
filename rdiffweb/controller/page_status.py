@@ -15,11 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
-from builtins import bytes
-from builtins import str
 from datetime import timedelta
 import logging
 
@@ -39,7 +34,7 @@ class StatusPage(Controller):
     @cherrypy.expose
     def default(self, path=b"", date="", failures=""):
         validate_isinstance(date, str)
-        
+
         # Validate date
         startTime = librdiff.RdiffTime() - timedelta(days=5)
         endTime = None
@@ -55,16 +50,16 @@ class StatusPage(Controller):
             startTime.set_time(0, 0, 0)
             endTime = librdiff.RdiffTime(date)
             endTime.set_time(23, 59, 59)
-        
+
         # Limit the scope to the given path.
         if path:
             user_repos = [self.app.store.get_repo(path)]
         else:
             user_repos = self.app.currentuser.repo_objs
-        
+
         failuresOnly = failures != ""
         messages = self._getUserMessages(user_repos, not failuresOnly, True, startTime, endTime)
-        
+
         return self._compile_template(
             "status.html",
             messages=messages,

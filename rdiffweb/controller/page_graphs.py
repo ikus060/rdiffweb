@@ -15,19 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
-from builtins import bytes
-from builtins import str
 import logging
 
 import cherrypy
-from future.utils import iteritems
 
 from rdiffweb.controller import Controller, validate_isinstance
 from rdiffweb.controller.dispatch import poppath
-
 
 _logger = logging.getLogger(__name__)
 
@@ -51,7 +44,7 @@ class GraphsPage(Controller):
                 yield attr
             yield '\n'
             # Content
-            for d, s in iteritems(repo_obj.session_statistics):
+            for d, s in repo_obj.session_statistics.items():
                 yield str(d.epoch())
                 for attr in attrs:
                     yield ','
