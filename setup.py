@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2019 rdiffweb contributors
@@ -186,7 +185,6 @@ else:
 setup_requires=[
     "babel>=0.9.6",
     "setuptools_scm",
-    "minify",
 ]
 tests_require=[
     "mock>=1.3.0",
