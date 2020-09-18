@@ -21,7 +21,6 @@ Created on May 2, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from __future__ import unicode_literals
 
 import logging
 import unittest

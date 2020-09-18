@@ -20,7 +20,6 @@ Created on Nov 16, 2017
 @author: Patrik Dufresne
 """
 
-from __future__ import unicode_literals
 
 from base64 import b64encode
 import logging

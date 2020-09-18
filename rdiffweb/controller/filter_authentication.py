@@ -15,17 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import base64
 import binascii
 import logging
 
-from builtins import str
 import cherrypy
 from cherrypy._cptools import HandlerTool
-from future.utils import native_str
 
 from rdiffweb.controller import Controller
 from rdiffweb.core import RdiffError, RdiffWarning
@@ -160,7 +155,7 @@ class AuthFormTool(BaseAuth):
         response = cherrypy.serving.response
 
         path = request.path_info
-        if path.startswith(native_str('/login')):
+        if path.startswith('/login'):
             if request.method != 'POST':
                 response.headers['Allow'] = "POST"
                 logger.debug('/login requires POST, redirect to /')
@@ -169,7 +164,7 @@ class AuthFormTool(BaseAuth):
             logger.debug('routing %(path)r to do_login', locals())
             return self.do_login(**request.params)
 
-        elif path.startswith(native_str('/logout')):
+        elif path.startswith('/logout'):
             logger.debug('routing %(path)r to do_logout', locals())
             return self.do_logout(**request.params)
 
@@ -234,9 +229,9 @@ class LoginPage(Controller):
     """
     This page is used by the authentication to display enter a user/pass.
     """
-    
+
     _welcome_msg = Option("WelcomeMsg")
-    
+
     def index(self, redirect=b'/', username='', error_msg='', **kwargs):
         # Re-encode the redirect for display in HTML
         redirect = quote_url(redirect, safe=";/?:@&=+$,%")

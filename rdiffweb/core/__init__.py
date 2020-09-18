@@ -15,13 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
-from builtins import bytes
-from builtins import object
+import cherrypy
 
 from rdiffweb.core.i18n import ugettext as _
-import cherrypy
 
 
 class RdiffError(Exception):

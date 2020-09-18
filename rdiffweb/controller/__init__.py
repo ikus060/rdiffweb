@@ -15,15 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
-from builtins import bytes
 from collections import namedtuple
 import logging
 import os
 
 import cherrypy
-from future.utils.surrogateescape import encodefilename
 import pkg_resources
 
 import rdiffweb

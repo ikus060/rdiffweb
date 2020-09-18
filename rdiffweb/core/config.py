@@ -15,15 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from io import open
 import logging
 import re
 
-from builtins import object
 from cherrypy import Application
 import cherrypy
 
@@ -40,7 +35,7 @@ def read_config(filename):
     may called this method with force=True to force the configuration to be
     read.
     """
-    
+
     if not filename:
         return {}
 
@@ -91,13 +86,13 @@ class Option(object):
         Return a property to wrap the given option.
         """
         return self.get(instance)
-    
+
     def __set__(self, instance, value):
         """
         Update the config with the new value.
         """
         self.set(value, instance)
-    
+
     def get(self, instance=None):
         """
         Return the value of this options.
@@ -112,7 +107,7 @@ class Option(object):
         if value is None:
             return self.default
         return self._get_func(value)
-    
+
     def set(self, value, instance=None):
         """
         Update the config with the new value.

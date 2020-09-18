@@ -24,13 +24,11 @@ appropriate archive usable by the target system. In few circumstances it's
 impossible to properly generate a valid filename depending of the archive types.
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import argparse
 from distutils import spawn
 import logging
 import os
+import rdiffweb
 import shutil
 import stat
 import struct
@@ -44,14 +42,7 @@ import traceback
 from zipfile import ZipFile, ZipInfo, ZIP_STORED, ZIP64_LIMIT, crc32, zlib, \
     ZIP_DEFLATED
 
-from future.builtins import bytes
-from future.builtins import str
-
-
 logger = logging.getLogger(__name__)
-
-# Detect python version.
-PY3 = sys.version_info[0] == 3
 
 # Increase the chunk size to improve performance.
 CHUNK_SIZE = 4096 * 10
@@ -90,13 +81,11 @@ class TarArchiver(object):
         # Do not create a folder "./"
         if os.path.isdir(filename) and arcname == b'.':
             return
-        # For PY3, the processing of symlink is broken when using bytes
+        # The processing of symlink is broken when using bytes
         # for files, so let convert it to unicode with surrogateescape.
-        # On PY2 let keep the path as bytes.
-        if PY3:
-            filename = filename.decode(FS_ENCODING, 'surrogateescape')
+        filename = filename.decode(FS_ENCODING, 'surrogateescape')
         # The archive name must be unicode and will be convert back to UTF8
-        arcname = arcname.decode(encoding, 'surrogateescape' if PY3 else 'replace')
+        arcname = arcname.decode(encoding, 'surrogateescape')
         # Add file to archive.
         self.z.add(filename, arcname, recursive=False)
 
@@ -257,10 +246,7 @@ class ZipArchiver(object):
 
     def __init__(self, dest, compress=True):
         compress = compress and ZIP_DEFLATED or ZIP_STORED
-        if sys.version_info < (3, 5):
-            self.z = NonSeekZipFile(dest, 'w', compress)
-        else:
-            self.z = ZipFile(dest, 'w', compress)
+        self.z = ZipFile(dest, 'w', compress)
 
     def addfile(self, filename, arcname, encoding):
         assert isinstance(filename, bytes)
@@ -273,10 +259,8 @@ class ZipArchiver(object):
         # So we silently skip them. See bug #26269 and #18595
         if os.path.islink(filename) or not (os.path.isfile(filename) or os.path.isdir(filename)):
             return
-        # For PY3, the filename need to be unicode.
-        # For PY2, let keep the filename as bytes.
-        if PY3:
-            filename = filename.decode(FS_ENCODING, 'surrogateescape')
+        # The filename need to be unicode.
+        filename = filename.decode(FS_ENCODING, 'surrogateescape')
         # The archive name must be unicode.
         # But Zip doesn',t support surrogate, so let replace invalid char.
         arcname = arcname.decode(encoding, 'replace')
@@ -358,11 +342,12 @@ def _lookup_filename(base, path):
     dirname = os.path.dirname(os.path.join(base, path))
     basename = os.path.basename(path)
     for file in os.listdir(dirname):
-        if basename == file.decode(FS_ENCODING,'replace').encode(FS_ENCODING, 'replace'):
+        if basename == file.decode(FS_ENCODING, 'replace').encode(FS_ENCODING, 'replace'):
             fullpath = os.path.join(dirname, file)
             arcname = os.path.relpath(fullpath, base)
             return fullpath, arcname
     return None, None
+
 
 def restore(restore, restore_as_of, kind, encoding, dest, log=logger.info):
     """
@@ -479,8 +464,9 @@ def main():
     parser.add_argument('--restore-as-of', type=int, required=True)
     parser.add_argument('--encoding', type=str, default='utf-8', help='Define the encoding of the repository.')
     parser.add_argument('--kind', type=str, choices=ARCHIVERS, default='zip', help='Define the type of archive to generate.')
-    parser.add_argument('restore', type=str if PY3 else bytes, help='Define the path of the file or directory to restore.')
+    parser.add_argument('restore', type=str, help='Define the path of the file or directory to restore.')
     parser.add_argument('output', type=str, default='-', help='Define the location of the archive. Default to stdout.')
+    parser.add_argument('--version', action='version', version='%(prog)s ' + rdiffweb.__version__)
     args = parser.parse_args()
     # handle encoding of the path.
     path = args.restore
@@ -488,7 +474,7 @@ def main():
         path = path.encode(FS_ENCODING, 'surrogateescape');
     # handle output
     if args.output == '-':
-        output = sys.stdout.buffer if PY3 else sys.stdout
+        output = sys.stdout.buffer
     else:
         output = open(args.output, 'wb')
     # Execute the restore.

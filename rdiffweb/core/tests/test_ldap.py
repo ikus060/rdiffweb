@@ -20,9 +20,6 @@ Created on Oct 17, 2015
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from __future__ import unicode_literals
-
-from builtins import str
 import logging
 import unittest
 
@@ -104,7 +101,7 @@ class UserManagerLdapTest(AppTestCase):
         AppTestCase.tearDown(self)
 
     def test_are_valid_credentials(self):
-        
+
         username, attrs = self.ldapstore.are_valid_credentials('mike', 'password')
         self.assertEquals('mike', username)
         self.assertEquals(attrs, {'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'], 'userPassword': ['password'], 'uid': ['mike'], 'cn': ['mike']})

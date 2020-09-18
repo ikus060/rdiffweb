@@ -24,12 +24,7 @@ LDAP directory. It would be difficult to create a new LDAP user, as the
 creation of a LDAP user requires properties which are not made available
 to the LDAP plugin.
 """
-# Define the logger
 
-from __future__ import unicode_literals
-
-from builtins import bytes
-from builtins import str
 import ldap
 import logging
 import time

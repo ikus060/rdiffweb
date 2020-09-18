@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 from collections import namedtuple
 from distutils.version import LooseVersion
 import logging
@@ -26,7 +23,6 @@ import sys
 
 from cherrypy import Application
 import cherrypy
-from future.utils import native_str
 import pkg_resources
 
 from rdiffweb.controller import Controller
@@ -48,16 +44,22 @@ from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import DoesNotExistError, AccessDeniedError
 from rdiffweb.core.store import Store
-
+import rdiffweb
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
-PY3 = sys.version_info[0] == 3
-
 # Enabled tools.proxy only for version < 5 or > 10
 # From version 5 to 10, a bug in cherrypy is breaking creation of base url.
-CP_PROXY = not (5 <= int(cherrypy.__version__.split('.')[0]) <= 10)
+cherrypy_version = cherrypy.__version__
+if cherrypy_version == 'unknown':
+    # From time to time the cheroot dependencies is broken on python3.5
+    # So default to enabling proxy. https://www.illumos.org/issues/10508
+    cp_tools_proxy_enabled = True
+    cp_uri_encoding_enabled = True
+else:
+    cp_uri_encoding_enabled = LooseVersion(cherrypy.__version__) >= LooseVersion("5.5.0")
+    cp_tools_proxy_enabled = not (5 <= int(cherrypy_version.split('.')[0]) <= 10)
 
 
 class Root(LocationsPage):
@@ -89,14 +91,14 @@ class RdiffwebApp(Application):
     """This class represent the application context."""
 
     _favicon = Option('Favicon', default=pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico'))  # @UndefinedVariable
-    
+
     _header_logo = Option('HeaderLogo')
-    
+
     _tempdir = Option('TempDir')
 
     def __init__(self, cfg={}):
         self.cfg = {k.lower(): v for k, v in cfg.items()}
-        
+
         # Initialise the template engine.
         self.templates = rdw_templating.TemplateManager()
 
@@ -105,7 +107,7 @@ class RdiffwebApp(Application):
 
         # Initialise the application
         config = {
-            native_str('/'): {
+            '/': {
                 'tools.authform.on': True,
                 'tools.i18n.on': True,
                 'tools.i18n.default': 'en_US',
@@ -115,7 +117,7 @@ class RdiffwebApp(Application):
                 'tools.encode.encoding': 'utf-8',
                 'tools.gzip.on': True,
                 'tools.sessions.on': True,
-                'tools.proxy.on':  CP_PROXY,
+                'tools.proxy.on':  cp_tools_proxy_enabled,
                 'error_page.default': self.error_page,
                 'request.error_response': self.error_response,
                 'tools.sessions.storage_type': 'file' if session_path else 'ram',
@@ -126,19 +128,19 @@ class RdiffwebApp(Application):
         # To work around the new behaviour in CherryPy >= 5.5.0, force usage of
         # ISO-8859-1 encoding for URL. This avoid any conversion of the
         # URL into UTF-8.
-        if PY3 and LooseVersion(cherrypy.__version__) >= LooseVersion("5.5.0"):
-            config[native_str('/')]["request.uri_encoding"] = "ISO-8859-1"
+        if cp_uri_encoding_enabled:
+            config['/']["request.uri_encoding"] = "ISO-8859-1"
 
         # Initialize the application
         Application.__init__(self, root=Root(), config=config)
-        
+
         # Register favicon.ico
         self.root.favicon_ico = static(self._favicon)
-        
+
         # Register header_logo
         if self._header_logo:
             self.root.header_logo = static(self._header_logo)
-        
+
         # Define TEMP env
         if self._tempdir:
             os.environ["TMPDIR"] = self._tempdir
@@ -193,12 +195,8 @@ class RdiffwebApp(Application):
         """
         Get the current running version (using package info).
         """
-        # Get version.
-        try:
-            return pkg_resources.get_distribution("rdiffweb").version
-        except:
-            return "DEV"
-    
+        return rdiffweb.__version__
+
     @property
     def plugins(self):
         """

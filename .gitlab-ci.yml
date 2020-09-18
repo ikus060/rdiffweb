@@ -29,40 +29,10 @@ stages:
     - nosetests-*.xml
     expire_in: 1 day
 
-py27-jinja26: 
-  <<: *tox
-  variables:
-    IMAGE: debian10-py2
-
-py27-jinja27: 
-  <<: *tox
-  variables:
-    IMAGE: debian10-py2
-
-py27-jinja28: 
-  <<: *tox
-  variables:
-    IMAGE: debian10-py2
-
-py27-jinja29: 
-  <<: *tox
-  variables:
-    IMAGE: debian10-py2
-
-py27-jinja210: 
-  <<: *tox
-  variables:
-    IMAGE: debian10-py2
-
-py27-cherrypy17: 
-  <<: *tox
-  variables:
-    IMAGE: debian10-py2
-
 # FIXME Downgrade setuptools for this target.
 # This is broken because of setuptools 46.0.0
-#py3-jinja26: 
-#  <<: *tox
+.py3-jinja26: 
+  <<: *tox
 
 py3-jinja27: 
   <<: *tox
@@ -79,23 +49,11 @@ py3-jinja210:
 py3-cherrypy18: 
   <<: *tox
 
-debian9-py2-cherrypy35-jinja28: 
-  <<: *tox
-  variables:
-    IMAGE: debian9-py2
-    TOXENV: py2-cherrypy35-jinja28
-
 debian9-py3-cherrypy35-jinja28: 
   <<: *tox
   variables:
     IMAGE: debian9-py3
     TOXENV: py3-cherrypy35-jinja28
-
-debian10-py2-cherrypy8-jinja210:
-  <<: *tox
-  variables:
-    IMAGE: debian10-py2
-    TOXENV: py2-cherrypy8-jinja28
 
 debian10-py3-cherrypy8-jinja210: 
   <<: *tox
@@ -114,26 +72,11 @@ debian10-py3-rdiff-backup2:
   - pip3 install rdiff-backup
   - tox
 
-debian11-py2-cherrypy35-jinja210: 
-  <<: *tox
-  variables:
-    IMAGE: debian11-py2
-    TOXENV: py2-cherrypy35-jinja211
-  # Debian11 is running with rdiff-backup2 and we found an encoding issue #108
-  allow_failure: true
-    
 debian11-py3-cherrypy8-jinja211: 
   <<: *tox
   variables:
     IMAGE: debian11-py3
     TOXENV: py3-cherrypy8-jinja211
-
-centos7-py2-cherrypy17-jinja210:
-  <<: *tox
-  variables:
-    IMAGE: centos7-py2
-    TOXENV: py2-cherrypy17-jinja210
-  allow_failure: true
 
 centos7-py3-cherrypy18-jinja210:
   <<: *tox
@@ -148,18 +91,6 @@ centos8-py3-cherrypy18-jinja210:
     IMAGE: centos8-py3
     TOXENV: py3-cherrypy18-jinja210
   
-package:py2: 
-  image: ikus060/python:debian9-py2
-  stage: package
-  script:
-  - pip2 install wheel
-  - python2 setup.py sdist bdist_wheel
-  dependencies: []
-  artifacts:
-    paths: 
-    - dist/*.tar.gz
-    - dist/*.whl
-    
 package:py3: 
   stage: package
   script:

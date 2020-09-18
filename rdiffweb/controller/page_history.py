@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import logging
 
 import cherrypy
@@ -25,7 +22,6 @@ import cherrypy
 from rdiffweb.controller import Controller, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.i18n import ugettext as _
-
 
 # Define the logger
 logger = logging.getLogger(__name__)

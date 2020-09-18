@@ -22,24 +22,16 @@ Test archiver module.
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from __future__ import unicode_literals
-
 import io
 import os
-import sys
 import tarfile
 import tempfile
 import threading
 import unittest
 from zipfile import ZipFile
 
-from future.builtins import str
-
 from rdiffweb.core.restore import restore, call_restore
 from rdiffweb.test import AppTestCase
-
-
-PY3 = sys.version_info[0] == 3
 
 EXPECTED = {}
 EXPECTED["이루마 YIRUMA - River Flows in You.mp3"] = 3636731
@@ -72,10 +64,7 @@ TAR_EXPECTED = EXPECTED.copy()
 TAR_EXPECTED["BrokenSymlink"] = 0
 TAR_EXPECTED["Subdirectory/LoopSymlink"] = 0
 TAR_EXPECTED["SymlinkToSubdirectory"] = 0
-if PY3:
-    TAR_EXPECTED["Fichier avec non asci char \udcc9velyne M\udce8re.txt"] = 18
-else:
-    TAR_EXPECTED["Fichier avec non asci char �velyne M�re.txt"] = 18
+TAR_EXPECTED["Fichier avec non asci char \udcc9velyne M\udce8re.txt"] = 18
 
 
 def restore_async(*args, **kwargs):
@@ -196,7 +185,7 @@ class RestoreTest(AppTestCase):
                 self.assertEqual(f.read(), b"Ajout d'info\n")
         finally:
             os.remove(filename)
-            
+
     def test_restore_raw_quote_vs_unquote(self):
         # Define path to be archived
         filename = tempfile.mktemp(prefix='rdiffweb_test_restore_archiver_')
@@ -340,5 +329,4 @@ class RestoreTest(AppTestCase):
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

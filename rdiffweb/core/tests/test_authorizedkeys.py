@@ -21,10 +21,6 @@ Created on May 11, 2015
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from __future__ import unicode_literals
-
-from builtins import str
-from collections import OrderedDict
 from io import open
 import os
 import pkg_resources

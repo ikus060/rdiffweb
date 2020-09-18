@@ -43,3 +43,4 @@ nosetests*.xml
 .pydevproject
 /htmlcov/
 /.env/
+/.pybuild/

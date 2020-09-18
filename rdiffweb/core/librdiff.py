@@ -15,14 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import bisect
-from builtins import bytes
-from builtins import map
-from builtins import object
-from builtins import str
 import calendar
 from collections import OrderedDict
 from datetime import timedelta
@@ -32,22 +25,15 @@ import logging
 import os
 import re
 import shutil
-import sys
 import time
 import weakref
 
-from future.utils import iteritems
-from future.utils import python_2_unicode_compatible
-from future.utils.surrogateescape import encodefilename
-from past.builtins import cmp
-from past.utils import old_div
 import psutil
 
 from rdiffweb.core import rdw_helpers
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.restore import call_restore
 import subprocess
-
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -59,12 +45,10 @@ RDIFF_BACKUP_DATA = b"rdiff-backup-data"
 INCREMENTS = b"increments"
 
 
-@python_2_unicode_compatible
 class ExecuteError(Exception):
     pass
 
 
-@python_2_unicode_compatible
 class FileError(Exception):
     pass
 
@@ -85,7 +69,6 @@ class UnknownError(FileError):
     pass
 
 
-@python_2_unicode_compatible
 class RdiffTime(object):
 
     """Time information has two components: the local time, stored in GMT as
@@ -139,7 +122,7 @@ class RdiffTime(object):
 
     def _tz_str(self):
         if self._tz_offset:
-            hours, minutes = divmod(old_div(abs(self._tz_offset), 60), 60)
+            hours, minutes = divmod(abs(self._tz_offset) // 60, 60)
             assert 0 <= hours <= 23
             assert 0 <= minutes <= 59
             if self._tz_offset > 0:
@@ -215,7 +198,7 @@ class RdiffTime(object):
 
     def __cmp__(self, other):
         assert isinstance(other, RdiffTime)
-        return cmp(self.epoch(), other.epoch())
+        return (self.epoch() > other.epoch()) - (self.epoch() < other.epoch())
 
     def __eq__(self, other):
         return (isinstance(other, RdiffTime) and
@@ -289,7 +272,7 @@ class DirEntry(object):
         # Process each increment entries and combine this with the existing
         # entries
         entriesDict = {}
-        for filename, increments in iteritems(grouped_increment_entries):
+        for filename, increments in grouped_increment_entries.items():
             # Check if filename exists
             exists = filename in existing_entries
             # Create DirEntry to represent the item
@@ -690,16 +673,15 @@ class SessionStatisticsEntry(IncrementEntry):
         return self.__dict__[name]
 
 
-@python_2_unicode_compatible
 class RdiffRepo(object):
 
     """Represent one rdiff-backup repository."""
 
     def __init__(self, user_root, path, encoding):
         if isinstance(user_root, str):
-            user_root = encodefilename(user_root)
+            user_root = os.fsencode(user_root)
         if isinstance(path, str):
-            path = encodefilename(path)
+            path = os.fsencode(path)
         assert isinstance(user_root, bytes)
         assert isinstance(path, bytes)
         assert encoding
@@ -893,7 +875,7 @@ class RdiffRepo(object):
     def get_path(self, path):
         """Return a new instance of DirEntry to represent the given path."""
         if isinstance(path, str):
-            path = encodefilename(path)
+            path = os.fsencode(path)
         path = os.path.normpath(path.strip(b"/"))
 
         # Get if the path request is the root path.

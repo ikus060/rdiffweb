@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import logging
 from rdiffweb.controller import Controller, validate_isinstance, validate
 from rdiffweb.controller.dispatch import poppath
@@ -26,8 +23,6 @@ from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.rdw_helpers import quote_url
 
-from builtins import bytes
-from builtins import str
 import cherrypy
 from cherrypy.lib.static import _serve_fileobj, mimetypes
 

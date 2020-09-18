@@ -19,9 +19,6 @@ Plugin used to send email to users when their repository is getting too old.
 User can control the notification period.
 """
 
-from __future__ import unicode_literals
-
-from builtins import str
 import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -35,7 +32,6 @@ from rdiffweb.core.config import Option, BoolOption
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_deamon import Deamon
 from rdiffweb.core.store import IUserChangeListener
-
 
 _logger = logging.getLogger(__name__)
 
@@ -113,7 +109,7 @@ class NotificationPlugin(Deamon, IUserChangeListener):
     """
     Send email notification when a repository get too old (without a backup).
     """
-    
+
     _encryption = Option('EmailEncryption', 'none')
 
     _email_host = Option('EmailHost', _get_func=lambda x: x.partition(':')[0])
@@ -121,15 +117,15 @@ class NotificationPlugin(Deamon, IUserChangeListener):
     _email_port = Option('EmailHost', _get_func=lambda x: int(x.partition(':')[2]))
 
     _email_from = Option('EmailSender')
-    
+
     _email_notification_time = Option('EmailNotificationTime', '23:00')
 
     _smtp_username = Option('EmailUsername', None)
 
     _smtp_password = Option('EmailPassword', None)
-    
+
     _header_name = Option("HeaderName", "rdiffweb")
-    
+
     _send_change_notification = BoolOption("EmailSendChangedNotification", False)
 
     def __init__(self, bus, app):
@@ -154,11 +150,11 @@ class NotificationPlugin(Deamon, IUserChangeListener):
         """
         if not self._send_change_notification:
             return
-        
+
         # Leave if the mail was not changed.
         if 'email' not in attrs:
             return
-        
+
         if not userobj.email:
             logging.info("can't sent mail to user [%s] without an email", userobj.username)
             return
@@ -174,11 +170,11 @@ class NotificationPlugin(Deamon, IUserChangeListener):
         # get User object (to get email)
         userobj = self.app.store.get_user(username)
         assert userobj
-        
+
         if not userobj.email:
             logging.info("can't sent mail to user [%s] without an email", userobj.username)
             return
-        
+
         # If the email attributes was changed, send a mail notification.
         self.send_mail(userobj, _("Password changed"), "password_changed.html")
 
@@ -223,10 +219,10 @@ class NotificationPlugin(Deamon, IUserChangeListener):
         # Verify if the users as an email.
         assert to_user
         assert to_user.email
-        
+
         # Build email from template.
         parms = {'user': to_user}
-        
+
         if self._header_name:
             parms["header_name"] = self._header_name
         parms.update(kwargs)
@@ -267,4 +263,4 @@ class NotificationPlugin(Deamon, IUserChangeListener):
         finally:
             if conn is not None:
                 conn.quit()
-    
+

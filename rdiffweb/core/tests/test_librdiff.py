@@ -22,12 +22,7 @@ Module used to test the librdiff.
 @author: Patrik Dufresne
 """
 
-from __future__ import unicode_literals
-
-from builtins import bytes
-from builtins import str
 import datetime
-from future.utils import native_str
 import os
 import pkg_resources
 import shutil
@@ -214,7 +209,7 @@ class RdiffRepoTest(unittest.TestCase):
         # Extract 'testcases.tar.gz'
         testcases = pkg_resources.resource_filename('rdiffweb.tests', 'testcases.tar.gz')  # @UndefinedVariable
         self.temp_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_')
-        tarfile.open(testcases).extractall(native_str(self.temp_dir))
+        tarfile.open(testcases).extractall(self.temp_dir)
         # Define location of testcases
         self.testcases_dir = os.path.normpath(os.path.join(self.temp_dir, 'testcases'))
         self.testcases_dir = self.testcases_dir.encode('utf8')
@@ -239,7 +234,7 @@ class RdiffRepoTest(unittest.TestCase):
         self.assertEqual('testcases', self.repo.display_name)
 
     def test_init_with_invalid(self):
-        self.repo = RdiffRepo(self.temp_dir, 'invalid',encoding='utf-8')
+        self.repo = RdiffRepo(self.temp_dir, 'invalid', encoding='utf-8')
         self.assertEqual('failed', self.repo.status[0])
         self.assertEqual(None, self.repo.last_backup_date)
         self.assertEqual(b'invalid', self.repo.path)

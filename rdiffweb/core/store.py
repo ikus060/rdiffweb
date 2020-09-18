@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
-
-from builtins import str
 import codecs
 import encodings
 from io import open
@@ -26,11 +23,9 @@ import os
 import sqlite3
 import sys
 
-from future.utils import python_2_unicode_compatible
-from future.utils.surrogateescape import encodefilename, decodefilename
 import pkg_resources
 
-from rdiffweb.core import RdiffError, authorizedkeys, rdw_helpers
+from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.config import BoolOption, read_config, Option, IntOption
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.ldap_auth import LdapPasswordStore
@@ -72,7 +67,7 @@ def _split_path(path):
     # First part is the username
     assert path
     if isinstance(path, str):
-        path = encodefilename(path)
+        path = os.fsencode(path)
     path = path.strip(b'/')
     if b'/' in path:
         username, path = path.split(b'/', 1)
@@ -134,7 +129,6 @@ class IUserQuota():
         """
 
 
-@python_2_unicode_compatible
 class UserObject(object):
     """Represent an instance of user."""
 
@@ -197,7 +191,7 @@ class UserObject(object):
         """
         assert isinstance(repopath, bytes) or isinstance(repopath, str)
         if isinstance(repopath, bytes):
-            repopath = decodefilename(repopath)
+            repopath = os.fsdecode(repopath)
         repopath = repopath.strip('/')
 
         # Check if the repopath already exists.
@@ -329,7 +323,7 @@ class UserObject(object):
         """
         assert isinstance(repopath, bytes) or isinstance(repopath, str)
         if isinstance(repopath, bytes):
-            repopath = decodefilename(repopath)
+            repopath = os.fsdecode(repopath)
         repopath = repopath.strip('/')
 
         # Search the repo with and without leading "/"
@@ -421,12 +415,12 @@ class UserObject(object):
                 self._db.delete('repos', repoid=row['repoid'])
             else:
                 prev_repo = row['repopath']
-            
+
         # Update the repositories
         def _onerror(error):
             logger.error('error updating user [%s] repos' % self.username, exc_info=1)
 
-        user_root = encodefilename(self.user_root)
+        user_root = os.fsencode(self.user_root)
         for root, dirs, unused_files in os.walk(user_root, _onerror):
             for name in dirs:
                 if name == b'rdiff-backup-data':
@@ -457,7 +451,6 @@ class UserObject(object):
     hash_password = property(fget=lambda x: x._get_attr('password'), fset=lambda x, y: x._set_attr('password', 'password', y))
 
 
-@python_2_unicode_compatible
 class RepoObject(RdiffRepo):
     """Represent a repository."""
 
@@ -636,7 +629,7 @@ class Store():
         `name` should be <username>/<repopath>
         """
         username, repopath = _split_path(name)
-        repopath = decodefilename(repopath)
+        repopath = os.fsdecode(repopath)
 
         # Check permissions
         as_user = as_user or self.app.currentuser

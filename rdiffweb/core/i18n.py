@@ -92,24 +92,13 @@ That's it.
 :Date: 2010-02-08
 """
 
-from __future__ import unicode_literals
 
 import cherrypy
 from babel.core import Locale, UnknownLocaleError
 from babel.support import Translations
 
-try:
-    # Python 2.6 and above
-    from collections import namedtuple
-    Lang = namedtuple('Lang', 'locale trans')
-except ImportError:
-
-    # Python 2.5
-    class Lang(object):
-
-        def __init__(self, locale, trans):
-            self.locale = locale
-            self.trans = trans
+from collections import namedtuple
+Lang = namedtuple('Lang', 'locale trans')
 
 # Cache for Translations and Locale objects
 _languages = {}

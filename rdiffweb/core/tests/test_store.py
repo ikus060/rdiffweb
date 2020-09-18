@@ -22,10 +22,7 @@ Module to test `user` module.
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from __future__ import unicode_literals
-
 from _io import StringIO
-from builtins import str
 from io import open
 import logging
 import os
@@ -37,8 +34,7 @@ import pkg_resources
 
 from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.librdiff import AccessDeniedError
-from rdiffweb.core.store import IUserChangeListener, ADMIN_ROLE, USER_ROLE, \
-    MAINTAINER_ROLE
+from rdiffweb.core.store import IUserChangeListener, ADMIN_ROLE, USER_ROLE
 from rdiffweb.test import AppTestCase
 
 
