@@ -213,7 +213,7 @@ setup(
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            "rdiffweb = rdiffweb.main:start",
+            "rdiffweb = rdiffweb.main:main",
             "rdiffweb-restore = rdiffweb.core.restore:main",
         ],
         "rdiffweb.plugins": []

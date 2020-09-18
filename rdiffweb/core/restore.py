@@ -31,6 +31,7 @@ import argparse
 from distutils import spawn
 import logging
 import os
+import rdiffweb
 import shutil
 import stat
 import struct
@@ -46,7 +47,6 @@ from zipfile import ZipFile, ZipInfo, ZIP_STORED, ZIP64_LIMIT, crc32, zlib, \
 
 from future.builtins import bytes
 from future.builtins import str
-
 
 logger = logging.getLogger(__name__)
 
@@ -358,11 +358,12 @@ def _lookup_filename(base, path):
     dirname = os.path.dirname(os.path.join(base, path))
     basename = os.path.basename(path)
     for file in os.listdir(dirname):
-        if basename == file.decode(FS_ENCODING,'replace').encode(FS_ENCODING, 'replace'):
+        if basename == file.decode(FS_ENCODING, 'replace').encode(FS_ENCODING, 'replace'):
             fullpath = os.path.join(dirname, file)
             arcname = os.path.relpath(fullpath, base)
             return fullpath, arcname
     return None, None
+
 
 def restore(restore, restore_as_of, kind, encoding, dest, log=logger.info):
     """
@@ -481,6 +482,7 @@ def main():
     parser.add_argument('--kind', type=str, choices=ARCHIVERS, default='zip', help='Define the type of archive to generate.')
     parser.add_argument('restore', type=str if PY3 else bytes, help='Define the path of the file or directory to restore.')
     parser.add_argument('output', type=str, default='-', help='Define the location of the archive. Default to stdout.')
+    parser.add_argument('--version', action='version', version='%(prog)s ' + rdiffweb.__version__)
     args = parser.parse_args()
     # handle encoding of the path.
     path = args.restore

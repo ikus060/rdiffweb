@@ -48,6 +48,7 @@ from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import DoesNotExistError, AccessDeniedError
 from rdiffweb.core.store import Store
+import rdiffweb
 
 
 # Define the logger
@@ -193,11 +194,7 @@ class RdiffwebApp(Application):
         """
         Get the current running version (using package info).
         """
-        # Get version.
-        try:
-            return pkg_resources.get_distribution("rdiffweb").version
-        except:
-            return "DEV"
+        return rdiffweb.__version__
     
     @property
     def plugins(self):
