@@ -95,7 +95,7 @@ That's it.
 
 import cherrypy
 from babel.core import Locale, UnknownLocaleError
-from babel.support import Translations
+from babel.support import Translations, NullTranslations
 
 from collections import namedtuple
 Lang = namedtuple('Lang', 'locale trans')
@@ -191,7 +191,7 @@ def load_translation(langs, dirname, domain):
             break
     if locale is None:
         raise ImproperlyConfigured('Default locale not known.')
-    _languages[(domain, short)] = res = Lang(locale, trans)
+    _languages[(domain, short)] = res = Lang(locale, trans or NullTranslations())
     return res
 
 
