@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from distutils.cmd import Command
-from distutils.command.build import build as build_
 from distutils.dist import DistributionMetadata
 from distutils.errors import DistutilsExecError
 from io import open
@@ -138,16 +137,6 @@ class build_less(Command):
                 raise DistutilsExecError('fail to compile .less files into ' + f)
 
 
-class build(build_):
-    """
-    This is modification of build command, compile_all_catalogs
-    is added as last/first command
-    """
-
-    sub_commands = build_.sub_commands[:]
-    sub_commands.insert(0, ('compile_all_catalogs', None))
-
-
 # Compute requirements
 tests_require = [
     "mock>=1.3.0",
@@ -183,7 +172,6 @@ setup(
     },
     # new commands added and build command modified
     cmdclass={
-        'build': build,
         'compile_all_catalogs': compile_all_catalogs,
         'build_less': build_less,
     },
