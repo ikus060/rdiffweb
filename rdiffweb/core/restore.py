@@ -50,11 +50,14 @@ CHUNK_SIZE = 4096 * 10
 # Token used by rdiff-backup
 TOKEN = b'Processing changed file '
 
-# File System encoding.
-FS_ENCODING = (sys.getfilesystemencoding() or 'utf-8').lower()
-
 # PATH for executable lookup
 PATH = path = os.path.dirname(sys.executable) + os.pathsep + os.environ['PATH']
+
+# Define the default LANG environment variable to be passed to rdiff-backup
+# restore command line to make sure the binary output stdout as utf8 otherwise
+# we end up with \x encoded characters.
+STDOUT_ENCODING = 'utf-8'
+LANG = "en_US." + STDOUT_ENCODING
 
 
 class TarArchiver(object):
@@ -68,10 +71,10 @@ class TarArchiver(object):
 
         # Open the tar archive with the right method.
         if isinstance(dest, str):
-            self.z = tarfile.open(name=dest, mode=mode, encoding='UTF8', format=tarfile.PAX_FORMAT)
+            self.z = tarfile.open(name=dest, mode=mode, encoding='UTF-8', format=tarfile.PAX_FORMAT)
             self.fileobj = None
         else:
-            self.z = tarfile.open(fileobj=dest, mode=mode, encoding='UTF8', format=tarfile.PAX_FORMAT)
+            self.z = tarfile.open(fileobj=dest, mode=mode, encoding='UTF-8', format=tarfile.PAX_FORMAT)
             self.fileobj = dest
 
     def addfile(self, filename, arcname, encoding):
@@ -83,7 +86,7 @@ class TarArchiver(object):
             return
         # The processing of symlink is broken when using bytes
         # for files, so let convert it to unicode with surrogateescape.
-        filename = filename.decode(FS_ENCODING, 'surrogateescape')
+        filename = filename.decode('ascii', 'surrogateescape')
         # The archive name must be unicode and will be convert back to UTF8
         arcname = arcname.decode(encoding, 'surrogateescape')
         # Add file to archive.
@@ -260,7 +263,7 @@ class ZipArchiver(object):
         if os.path.islink(filename) or not (os.path.isfile(filename) or os.path.isdir(filename)):
             return
         # The filename need to be unicode.
-        filename = filename.decode(FS_ENCODING, 'surrogateescape')
+        filename = filename.decode('ascii', 'surrogateescape')
         # The archive name must be unicode.
         # But Zip doesn',t support surrogate, so let replace invalid char.
         arcname = arcname.decode(encoding, 'replace')
@@ -323,7 +326,7 @@ def _readerthread(stderr):
     Read stderr and pipe each line to logger.
     """
     for line in stderr:
-        logger.info(line.decode(FS_ENCODING, 'replace').strip('\n'))
+        logger.info(line.decode(STDOUT_ENCODING, 'replace').strip('\n'))
     stderr.close()
 
 
@@ -342,7 +345,7 @@ def _lookup_filename(base, path):
     dirname = os.path.dirname(os.path.join(base, path))
     basename = os.path.basename(path)
     for file in os.listdir(dirname):
-        if basename == file.decode(FS_ENCODING, 'replace').encode(FS_ENCODING, 'replace'):
+        if basename == file.decode(STDOUT_ENCODING, 'replace').encode(STDOUT_ENCODING, 'replace'):
             fullpath = os.path.join(dirname, file)
             arcname = os.path.relpath(fullpath, base)
             return fullpath, arcname
@@ -372,17 +375,19 @@ def restore(restore, restore_as_of, kind, encoding, dest, log=logger.info):
     # To work around issue related to different PATH
     rdiff_backup_path = spawn.find_executable('rdiff-backup')
     assert rdiff_backup_path, "can't find `rdiff-backup` executable in PATH: " + PATH
-    rdiff_backup_path = rdiff_backup_path.encode(FS_ENCODING)
+    rdiff_backup_path = os.fsencode(rdiff_backup_path)
 
     # Need to explicitly export some environment variable. Do not export
     # all of them otherwise it also export some python environment variable
     # and might brake rdiff-backup process.
-    env = {}
+    env = {
+        'LANG': LANG,
+    }
     if os.environ.get('TMPDIR'):
         env['TMPDIR'] = os.environ['TMPDIR']
 
     cmd = [rdiff_backup_path , b'-v', b'5', b'--restore-as-of=' + str(restore_as_of).encode('latin'), restore, tmp_output]
-    log('executing: %r' % cmd)
+    log('executing %r with env %r' % (cmd, env))
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -443,7 +448,7 @@ def call_restore(path, restore_as_of, encoding, kind):
     # Lookup the executable.
     cmd = spawn.find_executable('rdiffweb-restore', PATH)
     assert cmd, "can't find `rdiffweb-restore` executable in PATH: " + PATH
-    cmd = cmd.encode(FS_ENCODING)
+    cmd = os.fsencode(cmd)
 
     # Call the process.
     cmdline = [cmd, b'--restore-as-of', str(restore_as_of).encode('latin'), b'--encoding', encoding, b'--kind', kind, path, b'-']
@@ -471,7 +476,7 @@ def main():
     # handle encoding of the path.
     path = args.restore
     if isinstance(path, str):
-        path = path.encode(FS_ENCODING, 'surrogateescape');
+        path = os.fsencode(path)
     # handle output
     if args.output == '-':
         output = sys.stdout.buffer
