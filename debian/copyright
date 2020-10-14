@@ -5,11 +5,6 @@ Source: https://github.com/rdiff-backup/rdiff-backup
 
 Files: *
 Copyright: 2020 Patrik Dufresne <patrik@ikus-soft.com>
-           2019 rdiffweb contributors
-License: GPL-3
-
-Files: debian/*
-Copyright: 2020 Patrik Dufresne <patrik@ikus-soft.com>
 License: GPL-3
 
 License: GPL-3
