@@ -10,6 +10,9 @@ VENV := $(shell mktemp -d)
 %:
 	dh $@ --buildsystem=pybuild --with python3
 
+execute_after_dh_auto_clean:
+	rm -f debian/rdiffweb.1 debian/rdiffweb-restore.1
+
 override_dh_auto_test:
 	echo "skipping test because of missing cherrypy dependencies #970519"
 
