@@ -1,5 +1,5 @@
 rdiffweb (1.5.0-1) unstable; urgency=medium
 
-  * Initial Deb package
+  * Initial upload to debian (Closes: #969974).
 
  -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 18 Sep 2020 12:09:40 +0300
