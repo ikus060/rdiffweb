@@ -1,5 +1,5 @@
 Source: rdiffweb
-Section: utils
+Section: web
 Priority: optional
 Maintainer: Patrik Dufresne <patrik@ikus-soft.com>
 Build-Depends: debhelper (>= 11),
