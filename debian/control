@@ -19,7 +19,7 @@ Build-Depends: debhelper-compat (= 13),
                python3-distro,
                help2man,
                python3-venv
-Standards-Version: 4.4.0
+Standards-Version: 4.5.0
 Homepage: https://www.ikus-soft.com/en/rdiffweb/
 Vcs-Git: https://gitlab.com/ikus-soft/rdiffweb.git
 Vcs-Browser: https://gitlab.com/ikus-soft/rdiffweb
