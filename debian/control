@@ -42,7 +42,7 @@ Depends: python3,
          ${python3:Depends},
          ${sphinxdoc:Depends}
 Recommends: python3-setuptools
-Description: remote incremental backup
+Description: web interface to rdiff-backup repositories
  Rdiffweb is a web application that allows you to view repositories generated
  by rdiff-backup. The purpose of this application is to ease the management
  of backups and quickly restore your data with a rich and powerful web
