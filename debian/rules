@@ -4,14 +4,15 @@ include /usr/share/dpkg/pkg-info.mk
 
 export SETUPTOOLS_SCM_PRETEND_VERSION = $(DEB_VERSION_UPSTREAM)
 
+# Nasty hack to autogenerate a manpage
+VENV := $(shell mktemp -d)
+
 %:
 	dh $@ --buildsystem=pybuild --with python3
 
 override_dh_auto_test:
 	echo "skipping test because of missing cherrypy dependencies #970519"
 
-# Nasty hack to autogenerate a manpage
-VENV:=$(shell mktemp -d)
 override_dh_installman:
 	python3 -m venv --system-site-packages $(VENV)
 	$(VENV)/bin/python setup.py build
