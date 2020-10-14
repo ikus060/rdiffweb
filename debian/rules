@@ -13,7 +13,7 @@ VENV := $(shell mktemp -d)
 override_dh_auto_test:
 	echo "skipping test because of missing cherrypy dependencies #970519"
 
-override_dh_installman:
+execute_before_dh_installman:
 	python3 -m venv --system-site-packages $(VENV)
 	$(VENV)/bin/python setup.py build
 	$(VENV)/bin/python setup.py install
@@ -25,5 +25,3 @@ override_dh_installman:
 		--no-info --version-string=$(DEB_VERSION_UPSTREAM) \
 		--name 'rdiffweb-restore' $(VENV)/bin/rdiffweb-restore
 	rm -rf $(VENV)
-
-	dh_installman
