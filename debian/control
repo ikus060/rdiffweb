@@ -19,6 +19,7 @@ Build-Depends:
  python3-setuptools-scm,
  python3-venv,
  python3-wtforms,
+Rules-Requires-Root: no
 Standards-Version: 4.5.0
 Homepage: https://www.ikus-soft.com/en/rdiffweb/
 Vcs-Git: https://gitlab.com/ikus-soft/rdiffweb.git
