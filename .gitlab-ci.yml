@@ -103,12 +103,12 @@ package:py3:
 
 package:debian: 
   stage: package
-  image: ikus060/python:debian10-py3
+  image: ikus060/python:debian11-py3
   script: |
     export BUILDDEPS=$(dpkg-checkbuilddeps 2>&1 | sed 's/dpkg-checkbuilddeps:\serror:\sUnmet build dependencies: //g' | sed 's/[\(][^)]*[\)] //g')
     echo BUILDDEPS=$BUILDDEPS
     apt update && apt -y install $BUILDDEPS
-    dpkg-buildpackage -us -uc
+    dpkg-buildpackage -b
   dependencies: []
   artifacts:
     paths:
