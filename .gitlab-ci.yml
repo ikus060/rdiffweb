@@ -3,6 +3,7 @@ image: ikus060/python:debian9-py3
 stages:
 - test
 - package
+- test-package
 - publish
 - deploy
 - downstream
@@ -112,7 +113,17 @@ package:debian:
   artifacts:
     paths:
     - rdiffweb*.deb
-
+    
+test-package:debian:
+  stage: test-package
+  image: ikus060/python:debian11-py3
+  script:
+  - apt update && apt install -y ./rdiffweb*.deb
+  - rdiffweb --version
+  - (/usr/bin/rdiffweb &)
+  - apt install -y curl
+  - curl http://localhost:8080
+  
 publish:sonar:master:
   stage: publish
   image: ikus060/sonar-runner
