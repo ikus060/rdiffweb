@@ -7,6 +7,21 @@ Files: *
 Copyright: 2019-2020 Patrik Dufresne <patrik@ikus-soft.com>
 License: GPL-3+
 
+Files: rdiffweb/static/less/bootstrap/* rdiffweb/static/js/bootstrap.min.js
+Copyright: 2011-2019, Twitter, Inc.
+           2014, jQuery Foundation and other contributors
+           2014, "Cowboy" Ben Alman, contributors
+           HTML5 Boilerplate
+           2011, Nicolas Gallagher <nicolas@nicolasgallagher.com>
+           2012, 2013, Tim Kadlec <tim@timkadlec.com>
+License-Grant:
+ Code and documentation copyright 2011-2019 Twitter, Inc.
+ Code released under the MIT license
+ <https://github.com/twbs/bootstrap/blob/master/LICENSE>.
+ Docs released under Creative Commons
+ <https://github.com/twbs/bootstrap/blob/master/docs/LICENSE>.
+License: Expat
+
 License: GPL-3+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -23,3 +38,23 @@ License: GPL-3+
  .
  The full text of the GNU General Public License version 3
  can be found in the file /usr/share/common-licenses/GPL-3.
+ 
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
+ the following conditions:
+ .
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
