@@ -1,0 +1,8 @@
+[Unit]
+Description=Rdiffweb server
+
+[Service]
+ExecStart=/usr/bin/rdiffweb
+
+[Install]
+WantedBy=multi-user.target

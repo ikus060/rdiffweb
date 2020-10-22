@@ -5,6 +5,7 @@ Maintainer: Patrik Dufresne <patrik@ikus-soft.com>
 Build-Depends:
  debhelper-compat (= 13),
  dh-python,
+ dh-systemd,
  help2man,
  python3,
  python3-all-dev,

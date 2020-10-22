@@ -3,8 +3,6 @@ why recommends on setuptools?
 
 apache configuration
 
-systemd unit file?
-
 configuration file to /etc?
 
 E: rdiffweb source: source-is-missing rdiffweb/static/js/plugins/jquery.validate.js line length is 951 characters (>512)
