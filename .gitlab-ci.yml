@@ -107,13 +107,11 @@ package:debian:
   script: |
     apt update && apt build-dep -y .
     dpkg-buildpackage -b
+    mv ../rdiffweb*.deb .
   dependencies: []
   artifacts:
     paths:
-    - ../rdiffweb*.dsc
-    - ../rdiffweb*.tar.xz
-    - ../rdiffweb*.deb
-    - ../rdiffweb*.changes
+    - rdiffweb*.deb
 
 publish:sonar:master:
   stage: publish
