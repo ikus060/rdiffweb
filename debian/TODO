@@ -3,8 +3,6 @@ why recommends on setuptools?
 
 apache configuration
 
-configuration file to /etc?
-
 E: rdiffweb source: source-is-missing rdiffweb/static/js/plugins/jquery.validate.js line length is 951 characters (>512)
 W: rdiffweb: broken-gz usr/lib/python3/dist-packages/rdiffweb/core/tests/rdiff-backup-data/error_log.2019-05-22T09:19:09-04:00.data.gz
 W: rdiffweb: embedded-javascript-library usr/lib/python3/dist-packages/rdiffweb/static/js/vendor/bootstrap.js please use libjs-bootstrap
