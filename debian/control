@@ -44,8 +44,6 @@ Depends:
  ${misc:Depends},
  ${python3:Depends},
  ${sphinxdoc:Depends},
-Recommends:
- python3-setuptools,
 Description: web interface to rdiff-backup repositories
  Rdiffweb is a web application that allows you to view repositories generated
  by rdiff-backup. The purpose of this application is to ease the management
