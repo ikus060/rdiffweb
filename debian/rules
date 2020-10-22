@@ -21,6 +21,7 @@ execute_after_dh_auto_install:
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/core/tests
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/tests
 	rm -f  debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/test.py
+	rm -rf  debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/less/
 
 execute_before_dh_installman:
 	python3 -m venv --system-site-packages $(VENV)
