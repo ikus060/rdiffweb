@@ -116,7 +116,7 @@ package:debian:
     
 test-package:debian:
   stage: test-package
-  image: ikus060/python:debian11-py3
+  image: debian:buster
   script:
   - apt update && apt install -y ./rdiffweb*.deb
   - rdiffweb --version
