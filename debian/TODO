@@ -1,7 +1,5 @@
 apache configuration
 
-review copyright
-
 E: rdiffweb source: source-is-missing rdiffweb/static/js/plugins/jquery.validate.js line length is 951 characters (>512)
 W: rdiffweb: broken-gz usr/lib/python3/dist-packages/rdiffweb/core/tests/rdiff-backup-data/error_log.2019-05-22T09:19:09-04:00.data.gz
 W: rdiffweb: privacy-breach-generic usr/lib/python3/dist-packages/rdiffweb/static/orange.css [@import url("https://fonts.googleapis.com/css?family=quicksand:400,700");] (https://fonts.googleapis.com/css?family=quicksand:400,700)
