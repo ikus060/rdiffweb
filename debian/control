@@ -1,0 +1,54 @@
+Source: rdiffweb
+Section: web
+Priority: optional
+Maintainer: Patrik Dufresne <patrik@ikus-soft.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ dh-python,
+ dh-systemd,
+ help2man,
+ python3,
+ python3-all-dev,
+ python3-babel,
+ python3-cherrypy3,
+ python3-distro,
+ python3-future,
+ python3-jinja2,
+ python3-ldap,
+ python3-psutil,
+ python3-setuptools,
+ python3-setuptools-scm,
+ python3-venv,
+ python3-wtforms,
+Rules-Requires-Root: no
+Standards-Version: 4.5.0
+Homepage: https://www.ikus-soft.com/en/rdiffweb/
+Vcs-Git: https://gitlab.com/ikus-soft/rdiffweb.git
+Vcs-Browser: https://gitlab.com/ikus-soft/rdiffweb
+
+Package: rdiffweb
+Architecture: all
+Depends:
+ libjs-bootstrap,
+ libjs-jquery,
+ libjs-d3,
+ libjs-d3-tip,
+ python3,
+ python3-babel,
+ python3-cheroot,
+ python3-cherrypy3,
+ python3-distro,
+ python3-distutils,
+ python3-future,
+ python3-jinja2,
+ python3-ldap,
+ python3-psutil,
+ python3-wtforms,
+ ${misc:Depends},
+ ${python3:Depends},
+ ${sphinxdoc:Depends},
+Description: web interface to rdiff-backup repositories
+ Rdiffweb is a web application that allows you to view repositories generated
+ by rdiff-backup. The purpose of this application is to ease the management
+ of backups and quickly restore your data with a rich and powerful web
+ interface.

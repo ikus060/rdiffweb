@@ -1,0 +1,39 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/pkg-info.mk
+
+export SETUPTOOLS_SCM_PRETEND_VERSION = $(DEB_VERSION_UPSTREAM)
+
+# Nasty hack to autogenerate a manpage
+VENV := $(shell mktemp -d)
+
+%:
+	dh $@ --buildsystem=pybuild --with python3
+
+execute_after_dh_auto_clean:
+	rm -f debian/rdiffweb.1 debian/rdiffweb-restore.1
+
+override_dh_auto_test:
+	echo "skipping test because of missing cherrypy dependencies #970519"
+
+execute_after_dh_auto_install:
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/controller/tests
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/core/tests
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/tests
+	rm -f  debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/test.py
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/less/
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/bootstrap.min.js
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/jquery.min.js
+
+execute_before_dh_installman:
+	python3 -m venv --system-site-packages $(VENV)
+	$(VENV)/bin/python setup.py build
+	$(VENV)/bin/python setup.py install
+
+	help2man -o debian/rdiffweb.1 \
+		--no-info --version-string=$(DEB_VERSION_UPSTREAM) \
+		--name 'rdiffweb' $(VENV)/bin/rdiffweb
+	help2man -o debian/rdiffweb-restore.1 \
+		--no-info --version-string=$(DEB_VERSION_UPSTREAM) \
+		--name 'rdiffweb-restore' $(VENV)/bin/rdiffweb-restore
+	rm -rf $(VENV)
