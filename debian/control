@@ -38,6 +38,7 @@ Depends:
  python3-cheroot,
  python3-cherrypy3,
  python3-distro,
+ python3-distutils,
  python3-future,
  python3-jinja2,
  python3-ldap,
