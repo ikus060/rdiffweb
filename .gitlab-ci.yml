@@ -1,5 +1,9 @@
 image: ikus060/python:debian9-py3
 
+variables:
+  APT_DEV_BULLSEYE: https://nexus.ikus-soft.com/repository/apt-dev-bullseye/
+  APT_RELEASE_BULLSEYE: https://nexus.ikus-soft.com/repository/apt-release-bullseye/
+
 stages:
 - test
 - package
@@ -106,7 +110,11 @@ package:debian:
   stage: package
   image: ikus060/python:debian11-py3
   script: |
-    apt update && apt build-dep -y .
+    set -x
+    set -e
+    export VERSION=$(python3 setup.py --version)
+    apt update && apt install -y devscripts && apt build-dep -y .
+    dch -v "$VERSION" "automated build"
     dpkg-buildpackage -b
     mv ../rdiffweb*.deb .
   dependencies: []
@@ -138,19 +146,29 @@ publish:sonar:dev:
   script:
   - sonar-runner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.exclusions=rdiffweb/controller/tests/**,rdiffweb/core/tests/**,rdiffweb/test.py -Dsonar.sources=.
 
-publish_nexus:
+publish:dev:
   stage: publish
-  script:
-  - pip3 install wheel twine --upgrade
-  - twine upload dist/* -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
+  script: |
+    set -x
+    # Publish wheel
+    pip3 install wheel twine --upgrade
+    twine upload dist/* -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
+    # Publish deb
+    export RDIFFWEB_DEB_FILE=$(ls -1 ./rdiffweb*.deb)
+    curl -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_DEV_BULLSEYE"
 
-publish_pypi:
+publish:release:
   stage: publish
   only:
   - tags
-  script:
-  - pip3 install wheel twine --upgrade
-  - twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
+  script: |
+    set -x
+    # Publish wheel
+    pip3 install wheel twine --upgrade
+    twine upload dist/* -u $PYPI_USR -p $PYPI_PWD
+    # Publish deb
+    export RDIFFWEB_DEB_FILE=$(ls -1 ./rdiffweb*.deb)
+    curl -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_RELEASE_BULLSEYE"
   
 deploy_rdiffweb_demo:
   stage: deploy
