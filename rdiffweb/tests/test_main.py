@@ -43,7 +43,7 @@ class Test(unittest.TestCase):
         with contextlib.redirect_stdout(f):
             with self.assertRaises(SystemExit):
                 main(['--version'])
-        self.assertTrue(f.getvalue().startswith('rdiffweb 1.'), msg='%s is not a version' % f.getvalue())
+        self.assertTrue(f.getvalue().startswith('rdiffweb 2.'), msg='%s is not a version' % f.getvalue())
 
 
 if __name__ == "__main__":
