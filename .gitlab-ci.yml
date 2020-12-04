@@ -151,6 +151,7 @@ publish:dev:
     set -x
     # Publish wheel
     pip3 install wheel twine --upgrade
+    python -m readme_renderer README.md -o /tmp/README.html
     twine upload dist/* -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
     # Publish deb
     export RDIFFWEB_DEB_FILE=$(ls -1 ./rdiffweb*.deb)

@@ -89,7 +89,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 * Remove execution bit (+x) on python modules
 * Provide `--help` and `--version` on `rdiffweb` executable
 * Improve cherrypy version detection
-* Do not update translation files (*.mo) during build
+* Do not update translation files (.mo) during build
 
 ## 1.5.0 (2020-06-24)
 
