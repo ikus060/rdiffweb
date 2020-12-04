@@ -88,7 +88,6 @@ centos7-py3-cherrypy18-jinja210:
   variables:
     IMAGE: centos7-py3
     TOXENV: py3-cherrypy18-jinja210
-  allow_failure: true
 
 centos8-py3-cherrypy18-jinja210:
   <<: *tox
