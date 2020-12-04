@@ -146,17 +146,16 @@ tests_require = [
 ]
 extras_require = {'tox': tests_require}
 
-long_description_content_type = long_description = None
+long_description = None
 with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
-    long_description_content_type = 'text/markdown'
 
 setup(
     name='rdiffweb',
     use_scm_version=True,
     description='A web interface to rdiff-backup repositories',
     long_description=long_description,
-    long_description_content_type=long_description_content_type,
+    long_description_content_type="text/markdown",
     author='Patrik Dufresne',
     author_email='patrik@ikus-soft.com',
     url='https://rdiffweb.org/',
