@@ -181,7 +181,7 @@ setup(
         "psutil>=2.1.1",
         "babel>=0.9.6",
         "python-ldap",
-        "WTForms",
+        "WTForms<3.0.0",
         "distro",
     ],
     # required packages for build process
