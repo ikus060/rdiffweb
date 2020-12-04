@@ -75,6 +75,22 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+# 2.0.0 (2020-12-04)
+
+* Re-implement logic to update repositories views to remove duplicates and avoid nesting repo. #107
+* Handle elapsed time of days in the graph. Thanks [Nathaniel van Diepen](https://github.com/Eeems) contributions.
+* Rebrand all link to ikus-soft.com
+* Update documentation to install rdiffweb
+* Remove obsolete minify dependency
+* Drop support for python2
+* Provide null translation if translation catalogues are not found
+* Pass a LANG environment variable to rdiff-backup restore process to fix encoding issue #112
+* Remove obsolete python shebang
+* Remove execution bit (+x) on python modules
+* Provide `--help` and `--version` on `rdiffweb` executable
+* Improve cherrypy version detection
+* Do not update translation files (*.mo) during build
+
 ## 1.5.0 (2020-06-24)
 
 This minor release introduce official support of rdiffweb on Debian Bullseye. It also includes some usability improvements.
