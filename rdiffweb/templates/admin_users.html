@@ -104,6 +104,16 @@
     <span class="help-block">{{form.role.description}}</span>
     </div>
 </div>
+
+<div class="form-group">
+    {{form.disk_quota.label(class="col-sm-3 control-label")}}
+    <div class="col-sm-7">
+    {{form.disk_quota(class="form-control", disabled=form.disk_quota.data is none)}}
+    <span class="help-block">{{form.disk_quota.description}}</span>
+    </div>
+</div>
+{% if form.disk_quota.data is not none %}
+{% endif %}
 {% endmacro %}
 
 {# Dialog to create new user. #}

@@ -57,7 +57,7 @@
     <h2>{% trans %}Repositories{% endtrans %} ({{ repos|length }})</h2>
     
     <!-- disk usage/quota -->
-    {% if disk_usage %}
+    {% if disk_usage and disk_usage.size%}
     <div itemscope itemtype="https://schema.org/Filesystem" class="well well-sm">
 	  <meta itemprop="freeSpace" content="{{ disk_usage.avail }}" />
 	  <meta itemprop="occupiedSpace" content="{{ disk_usage.used }}" />

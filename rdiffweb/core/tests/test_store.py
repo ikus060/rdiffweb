@@ -510,6 +510,10 @@ class StoreWithAdmin(AppTestCase):
         self.assertIn('avail', disk_usage)
         self.assertIn('used', disk_usage)
         self.assertIn('size', disk_usage)
+        # Make sure it's not zero (0) either.
+        self.assertNotEqual(0, disk_usage['avail'])
+        self.assertNotEqual(0, disk_usage['used'])
+        self.assertNotEqual(0, disk_usage['used'])
 
 
 class StoreTestSSHKeys(AppTestCase):
