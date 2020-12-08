@@ -25,6 +25,7 @@ from cherrypy import Application
 import cherrypy
 import pkg_resources
 
+import rdiffweb
 from rdiffweb.controller import Controller
 from rdiffweb.controller import filter_authentication  # @UnusedImport
 from rdiffweb.controller import filter_authorization  # @UnusedImport
@@ -43,8 +44,8 @@ from rdiffweb.core import i18n  # @UnusedImport
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import DoesNotExistError, AccessDeniedError
+from rdiffweb.core.quota import DefaultUserQuota
 from rdiffweb.core.store import Store
-import rdiffweb
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -96,6 +97,8 @@ class RdiffwebApp(Application):
 
     _tempdir = Option('TempDir')
 
+    _user_quota = Option('UserQuota', default="default")
+
     def __init__(self, cfg={}):
         self.cfg = {k.lower(): v for k, v in cfg.items()}
 
@@ -145,6 +148,9 @@ class RdiffwebApp(Application):
         if self._tempdir:
             os.environ["TMPDIR"] = self._tempdir
 
+        # Load UserQuota entry point
+        self.quota = self._load_quota()
+
         # create user manager
         self.store = Store(self)
         self.store.create_admin_user()
@@ -189,6 +195,22 @@ class RdiffwebApp(Application):
         elif t == AccessDeniedError:
             code = 403
         cherrypy.HTTPError(code).set_response()
+
+    def _load_quota(self):
+        """
+        Load the right quota module
+        """
+        # If a custom module define a IUserQuota, let make use of it.
+        entry_point = next(pkg_resources.iter_entry_points('rdiffweb.IUserQuota'), None)  # @UndefinedVariable
+        if entry_point:
+            try:
+                cls = entry_point.load()
+                return cls(self)
+            except:
+                logger.warning('IUserQuota [%s] fail to load, fall back to default quota', entry_point, exc_info=1)
+                return DefaultUserQuota(self)
+        # Otherwise, return default
+        return DefaultUserQuota(self)
 
     @property
     def version(self):

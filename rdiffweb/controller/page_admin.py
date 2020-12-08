@@ -26,7 +26,7 @@ import sys
 import cherrypy
 import psutil
 from wtforms import validators
-from wtforms.fields.core import StringField, SelectField
+from wtforms.fields.core import StringField, SelectField, IntegerField
 from wtforms.fields.html5 import EmailField
 from wtforms.fields.simple import PasswordField
 from wtforms.form import Form
@@ -123,6 +123,10 @@ class UserForm(Form):
         choices=[(ADMIN_ROLE, _("Admin")), (MAINTAINER_ROLE, _("Maintainer")), (USER_ROLE, _("User"))],
         default=USER_ROLE,
         description=_("Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo."))
+    disk_quota = IntegerField(
+        _('User Quota (in bytes)'),
+        validators=[validators.optional()],
+        description=_("Restrict users disk spaces."))
 
     @property
     def error_message(self):
@@ -214,6 +218,12 @@ class AdminPage(Controller):
                 if not user.valid_user_root():
                     flash(_("User's root directory %s is not accessible!") % user.user_root, level='warning')
                 user.update_repos()
+            # Try to update disk quota. Report error using flash.
+            if form.disk_quota:
+                try:
+                    user.disk_quota = int(form.disk_quota.data)
+                except Exception as e:
+                    flash(_("Failed to update user's quota: %s") % e, level='error')
             if action == 'add':
                 flash(_("User added successfully."))
             else:

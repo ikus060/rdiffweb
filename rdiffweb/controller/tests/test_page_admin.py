@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 Created on Dec 30, 2015
 
@@ -24,6 +23,7 @@ Created on Dec 30, 2015
 import logging
 import os
 import unittest
+from unittest.mock import MagicMock, ANY
 
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 from rdiffweb.test import WebCase
@@ -47,7 +47,7 @@ class AbstractAdminTest(WebCase):
             b['role'] = str(role)
         self.getPage("/admin/users/", method='POST', body=b)
 
-    def _edit_user(self, username=None, email=None, password=None, user_root=None, role=None):
+    def _edit_user(self, username=None, email=None, password=None, user_root=None, role=None, disk_quota=None):
         b = {}
         b['action'] = 'edit'
         if username is not None:
@@ -60,6 +60,8 @@ class AbstractAdminTest(WebCase):
             b['user_root'] = user_root
         if role is not None:
             b['role'] = str(role)
+        if disk_quota is not None:
+            b['disk_quota'] = str(disk_quota)
         self.getPage("/admin/users/", method='POST', body=b)
 
     def _delete_user(self, username='test1'):
@@ -260,6 +262,18 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         user.user_root = "/tmp/"
         self.getPage("/admin/users")
         self.assertNotInBody("Root directory not accessible!")
+
+    def test_get_quota(self):
+        # Mock a quota.
+        self.app.quota.get_disk_quota = MagicMock(return_value=654321)
+        self.getPage("/admin/users/?criteria=admins")
+        self.assertInBody("654321")
+
+    def test_set_quota(self):
+        # Mock a quota.
+        self.app.quota.set_disk_quota = MagicMock()
+        self._edit_user("admin", disk_quota=8765432)
+        self.app.quota.set_disk_quota.assert_called_once_with(ANY, 8765432)
 
 
 class AdminUsersAsUserTest(AbstractAdminTest):
