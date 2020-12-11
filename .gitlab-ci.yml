@@ -5,8 +5,7 @@ variables:
   APT_RELEASE_BULLSEYE: https://nexus.ikus-soft.com/repository/apt-release-bullseye/
 
 stages:
-- test
-- package
+- test-and-package
 - test-package
 - publish
 - deploy
@@ -17,7 +16,7 @@ stages:
 #
 .tox:  &tox
   image: ikus060/python:${IMAGE}
-  stage: test
+  stage: test-and-package
   variables:
     IMAGE: debian10-py3
     TOXENV: $CI_JOB_NAME
@@ -96,7 +95,7 @@ centos8-py3-cherrypy18-jinja210:
     TOXENV: py3-cherrypy18-jinja210
   
 package:py3: 
-  stage: package
+  stage: test-and-package
   script:
   - pip3 install wheel
   - python3 setup.py sdist bdist_wheel
@@ -106,7 +105,7 @@ package:py3:
     - dist/*.whl
 
 package:debian: 
-  stage: package
+  stage: test-and-package
   image: ikus060/python:debian11-py3
   script: |
     set -x
