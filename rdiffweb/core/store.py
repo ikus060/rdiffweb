@@ -32,6 +32,7 @@ from rdiffweb.core.ldap_auth import LdapPasswordStore
 from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, \
     AccessDeniedError
 from rdiffweb.core.passwd import check_password, hash_password
+from rdiffweb.core.quota import DefaultUserQuota
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -106,27 +107,6 @@ class IUserChangeListener():
 
     def user_password_changed(self, user, password):
         """Password changed."""
-
-
-class IUserQuota():
-    """
-    Extension point to get user quotas
-    """
-
-    def get_disk_usage(self, userobj):
-        """
-        Return the user disk space.
-        """
-
-    def get_disk_quota(self, userobj, value):
-        """
-        Return the current user's quota.
-        """
-
-    def set_disk_quota(self, userobj, value):
-        """
-        Sets the user's quota.
-        """
 
 
 class UserObject(object):
@@ -253,30 +233,6 @@ class UserObject(object):
             assert deleted
         self._store._notify('user_attr_changed', self, {'authorizedkeys': True })
 
-    @property
-    def disk_usage(self):
-
-        # Check quota
-        entry_point = next(pkg_resources.iter_entry_points('rdiffweb.IUserQuota'), None)  # @UndefinedVariable
-        if entry_point:
-            try:
-                cls = entry_point.load()
-                return cls(self._store.app).get_disk_usage(self)
-            except:
-                logger.warning('IuserQuota [%s] fail to run', entry_point, exc_info=1)
-                return None
-        else:
-            # Fall back to disk spaces.
-            # Get the value from os and store in session.
-            try:
-                statvfs = os.statvfs(self.user_root)
-                return {  # @UndefinedVariable
-                    'avail': statvfs.f_frsize * statvfs.f_bavail,
-                    'used': statvfs.f_frsize * (statvfs.f_blocks - statvfs.f_bavail),
-                    'size': statvfs.f_frsize * statvfs.f_blocks}
-            except:
-                return None
-
     def __eq__(self, other):
         return isinstance(other, UserObject) and self._userid == other._userid
 
@@ -304,18 +260,6 @@ class UserObject(object):
         # Also look in database.
         for record in self._db.find('sshkeys', userid=self._userid):
             yield authorizedkeys.check_publickey(record['key'])
-
-    def _get_disk_quota(self):
-        """
-        Get user's quota using one of the IUserQuota. If none available, raise an exception.
-        """
-        for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserQuota'):  # @UndefinedVariable
-            try:
-                cls = entry_point.load()
-                return cls(self._store.app).get_disk_quota(self)
-            except:
-                logger.warning('IuserQuota [%s] fail to run', entry_point, exc_info=1)
-        return 0
 
     def get_repo(self, repopath):
         """
@@ -364,14 +308,6 @@ class UserObject(object):
         # Call notification listener
         if notify:
             self._store._notify('user_attr_changed', self, {obj_key: value})
-
-    def _set_disk_quota(self, value):
-        """
-        Sets usr's quota using one of the IUserQuota. If none available, raise an exception.
-        """
-        for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserQuota'):  # @UndefinedVariable
-            cls = entry_point.load()
-            cls(self._store.app).set_disk_quota(self, value)
 
     def set_password(self, password, old_password=None):
         """
@@ -447,8 +383,9 @@ class UserObject(object):
     role = property(fget=lambda x: x._get_attr('role'), fset=lambda x, y: x._set_attr('role', 'role', int(y)))
     authorizedkeys = property(fget=lambda x: x._get_authorizedkeys())
     repo_objs = property(fget=lambda x: [RepoObject(x, r) for r in x._get_repos()])
-    disk_quota = property(_get_disk_quota, _set_disk_quota)
+    disk_quota = property(fget=lambda x: x._store.app.quota.get_disk_quota(x), fset=lambda x, y: x._store.app.quota.set_disk_quota(x, y))
     hash_password = property(fget=lambda x: x._get_attr('password'), fset=lambda x, y: x._set_attr('password', 'password', y))
+    disk_usage = property(fget=lambda x: x._store.app.quota.get_disk_usage(x))
 
 
 class RepoObject(RdiffRepo):
