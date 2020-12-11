@@ -117,6 +117,7 @@ package:debian:
     dpkg-buildpackage -b
     mv ../rdiffweb*.deb .
   dependencies: []
+  allow_failure: true
   artifacts:
     paths:
     - rdiffweb*.deb
