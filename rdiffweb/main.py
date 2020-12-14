@@ -136,39 +136,41 @@ def main(args=None):
     # Configure logging
     _setup_logging(log_file=log_file, log_access_file=log_access_file, level=log_level)
 
-    # Create App.
-    app = rdw_app.RdiffwebApp(cfg)
+    try:
+        # Create App.
+        app = rdw_app.RdiffwebApp(cfg)
 
-    # Get configuration
-    serverhost = cfg.get("serverhost", "127.0.0.1")
-    serverport = int(cfg.get("serverport", "8080"))
-    # Get SSL configuration (if any)
-    sslcertificate = cfg.get("sslcertificate")
-    sslprivatekey = cfg.get("sslprivatekey")
+        # Get configuration
+        serverhost = cfg.get("serverhost", "127.0.0.1")
+        serverport = int(cfg.get("serverport", "8080"))
+        # Get SSL configuration (if any)
+        sslcertificate = cfg.get("sslcertificate")
+        sslprivatekey = cfg.get("sslprivatekey")
 
-    global_config = cherrypy._cpconfig.environments.get(environment, {})
-    global_config.update({
-        'server.socket_host': serverhost,
-        'server.socket_port': serverport,
-        'server.log_file': log_file,
-        'server.ssl_certificate': sslcertificate,
-        'server.ssl_private_key': sslprivatekey,
-        # Set maximum POST size to 2MiB, for security.
-        'server.max_request_body_size': 2097152,
-        'server.environment': environment,
-    })
+        global_config = cherrypy._cpconfig.environments.get(environment, {})
+        global_config.update({
+            'server.socket_host': serverhost,
+            'server.socket_port': serverport,
+            'server.log_file': log_file,
+            'server.ssl_certificate': sslcertificate,
+            'server.ssl_private_key': sslprivatekey,
+            # Set maximum POST size to 2MiB, for security.
+            'server.max_request_body_size': 2097152,
+            'server.environment': environment,
+        })
 
-    cherrypy.config.update(global_config)
+        cherrypy.config.update(global_config)
 
-    # Start deamons
-    RemoveOlder(cherrypy.engine, app).subscribe()
-    NotificationPlugin(cherrypy.engine, app).subscribe()
+        # Start deamons
+        RemoveOlder(cherrypy.engine, app).subscribe()
+        NotificationPlugin(cherrypy.engine, app).subscribe()
 
-    # Start web server
-    cherrypy.quickstart(app)
-
-    # Log startup
-    logger.info("STOP")
+        # Start web server
+        cherrypy.quickstart(app)
+    except:
+        logger.exception("FAIL")
+    else:
+        logger.info("STOP")
 
 
 if __name__ == "__main__":
