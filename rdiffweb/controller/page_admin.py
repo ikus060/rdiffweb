@@ -216,7 +216,8 @@ class AdminPage(Controller):
             if form.user_root.data:
                 user.user_root = form.user_root.data
                 if not user.valid_user_root():
-                    flash(_("User's root directory %s is not accessible!") % user.user_root, level='warning')
+                    flash(_("User's root directory %s is not accessible!") % user.user_root, level='error')
+                    logger.warn("user's root directory %s is not accessible" % user.user_root)
                 user.update_repos()
             # Try to update disk quota. Report error using flash.
             if form.disk_quota:
@@ -224,6 +225,7 @@ class AdminPage(Controller):
                     user.disk_quota = int(form.disk_quota.data)
                 except Exception as e:
                     flash(_("Failed to update user's quota: %s") % e, level='error')
+                    logger.warn("failed to update user's quota", exc_info=1)
             if action == 'add':
                 flash(_("User added successfully."))
             else:
