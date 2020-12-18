@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from rdiffweb.core.config import Option
 '''
 Created on Sep. 29, 2020
 
@@ -22,9 +21,11 @@ Created on Sep. 29, 2020
 '''
 
 import logging
-import os
 import subprocess
 
+import psutil
+
+from rdiffweb.core.config import Option
 from rdiffweb.core.store import UserObject
 
 logger = logging.getLogger(__name__)
@@ -99,12 +100,7 @@ class DefaultUserQuota():
         assert isinstance(userobj, UserObject)
         # Fall back to disk spaces.
         if not self._get_usage_cmd:
-            # Get the value from os and store in session.
-            try:
-                statvfs = os.statvfs(userobj.user_root)
-                return statvfs.f_frsize * (statvfs.f_blocks - statvfs.f_bavail)
-            except:
-                return 0
+            return psutil.disk_usage('/').used
         # Execute a command to get disk usage
         try:
             used = self._exec(self._get_usage_cmd, userobj)
@@ -120,11 +116,7 @@ class DefaultUserQuota():
         assert isinstance(userobj, UserObject)
         # Fall back to disk spaces.
         if not self._get_quota_cmd:
-            try:
-                statvfs = os.statvfs(userobj.user_root)
-                return statvfs.f_frsize * statvfs.f_blocks
-            except:
-                return 0
+            return psutil.disk_usage('/').total
         # Execute a command to get disk usage
         try:
             self._exec(self._get_quota_cmd, userobj)

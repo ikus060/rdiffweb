@@ -59,9 +59,6 @@
     <!-- disk usage/quota -->
     {% if disk_usage and disk_quota %}
     <div itemscope itemtype="https://schema.org/Filesystem" class="well well-sm">
-	  <meta itemprop="freeSpace" content="{{ disk_quota - disk_usage }}" />
-	  <meta itemprop="occupiedSpace" content="{{ disk_usage }}" />
-	  <meta itemprop="totalSpace" content="{{ disk_quota }}" />
 	  {% set used_pct = disk_usage / disk_quota * 100 %}
 	  {% set used_str = disk_usage | filesize %}
 	  {% set size_str = disk_quota | filesize %}

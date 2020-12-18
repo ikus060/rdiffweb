@@ -25,6 +25,7 @@ import os
 import unittest
 from unittest.mock import MagicMock, ANY
 
+from rdiffweb.core.quota import QuotaUnsupported
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 from rdiffweb.test import WebCase
 
@@ -268,12 +269,42 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.app.quota.get_disk_quota = MagicMock(return_value=654321)
         self.getPage("/admin/users/?criteria=admins")
         self.assertInBody("654321")
+        self.assertStatus(200)
 
     def test_set_quota(self):
         # Mock a quota.
         self.app.quota.set_disk_quota = MagicMock()
         self._edit_user("admin", disk_quota=8765432)
         self.app.quota.set_disk_quota.assert_called_once_with(ANY, 8765432)
+        self.assertInBody("User&#39;s quota updated")
+        self.assertStatus(200)
+
+    def test_set_quota_empty(self):
+        # Mock a quota.
+        self.app.quota.set_disk_quota = MagicMock()
+        self._edit_user("admin", disk_quota='')
+        # Make sure quota isnot called.
+        self.app.quota.set_disk_quota.assert_not_called()
+        self.assertNotInBody("User&#39;s quota updated")
+        self.assertStatus(200)
+
+    def test_set_quota_same_value(self):
+        # Mock a quota.
+        self.app.quota.get_disk_quota = MagicMock(return_value=1234567890)
+        self.app.quota.set_disk_quota = MagicMock()
+        self._edit_user("admin", disk_quota='1234567890')
+        # Verify that set_quota is not called.
+        self.app.quota.set_disk_quota.assert_not_called()
+        self.assertNotInBody("User&#39;s quota updated")
+        self.assertStatus(200)
+
+    def test_set_quota_unsupported(self):
+        # Mock a quota.
+        self.app.quota.set_disk_quota = MagicMock(side_effect=QuotaUnsupported())
+        self._edit_user("admin", disk_quota='8765432')
+        self.app.quota.set_disk_quota.assert_called_once_with(ANY, 8765432)
+        self.assertInBody("Setting user&#39;s quota is not supported")
+        self.assertStatus(200)
 
 
 class AdminUsersAsUserTest(AbstractAdminTest):
