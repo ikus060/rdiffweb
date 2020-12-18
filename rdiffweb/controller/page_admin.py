@@ -114,6 +114,7 @@ def get_pkginfo():
 
 
 class UserForm(Form):
+    userid = StringField(_('UserID'))
     username = StringField(_('Username'), validators=[validators.required()])
     email = EmailField(_('Email'), validators=[validators.optional()])
     password = PasswordField(_('Password'))

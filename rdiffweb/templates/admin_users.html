@@ -31,6 +31,7 @@
                     ({{ user.email }})
                 </span>
                 {% endif%}
+                <span class="label label-default">#{{user.userid}}</span>
                 {% if user.is_admin %}
                 <span class="label label-info">{% trans %}Admin{% endtrans %}</span>
                 {% elif user.is_maintainer %}
