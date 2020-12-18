@@ -61,12 +61,37 @@ class QuotaTest(AppTestCase):
         """
         Just make a call to the function.
         """
-        self.quota.get_disk_usage = MagicMock(return_value={'avail':1, 'used':2, 'size':3})
+        userobj = self.app.store.get_user(self.USERNAME)
+        self.quota.get_disk_usage = MagicMock(return_value=3)
+        disk_usage = userobj.disk_usage
+        self.assertEqual(3, disk_usage)
+
+
+class DefaultQuotaTest(AppTestCase):
+
+    reset_testcases = True
+
+    REPO = 'testcases/'
+
+    USERNAME = 'admin'
+
+    PASSWORD = 'admin123'
+
+    def test_get_disk_quota(self):
+        """
+        Just make a call to the function.
+        """
+        # Get quota
+        userobj = self.app.store.get_user(self.USERNAME)
+        self.assertIsInstance(userobj.disk_quota, int)
+
+    def test_disk_usage(self):
+        """
+        Just make a call to the function.
+        """
         userobj = self.app.store.get_user(self.USERNAME)
         disk_usage = userobj.disk_usage
-        self.assertEqual(1, disk_usage['avail'])
-        self.assertEqual(2, disk_usage['used'])
-        self.assertEqual(3, disk_usage['size'])
+        self.assertIsInstance(disk_usage, int)
 
 
 if __name__ == "__main__":

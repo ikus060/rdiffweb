@@ -83,18 +83,19 @@ class DefaultUserQuota():
         # Get the value from os and store in session.
         try:
             statvfs = os.statvfs(userobj.user_root)
-            return {  # @UndefinedVariable
-                'avail': statvfs.f_frsize * statvfs.f_bavail,
-                'used': statvfs.f_frsize * (statvfs.f_blocks - statvfs.f_bavail),
-                'size': statvfs.f_frsize * statvfs.f_blocks}
+            return statvfs.f_frsize * (statvfs.f_blocks - statvfs.f_bavail)
         except:
-            return { 'avail': 0, 'used': 0, 'size': 0}
+            return 0
 
     def get_disk_quota(self, userobj):
         """
         Return the current user's quota.
         """
-        return None
+        try:
+            statvfs = os.statvfs(userobj.user_root)
+            return statvfs.f_frsize * statvfs.f_blocks
+        except:
+            return 0
 
     def set_disk_quota(self, userobj, value):
         """
