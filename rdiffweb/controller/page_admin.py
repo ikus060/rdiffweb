@@ -36,6 +36,7 @@ from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_templating import do_format_filesize as filesize
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
+from rdiffweb.core.quota import QuotaUnsupported
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -113,6 +114,7 @@ def get_pkginfo():
 
 
 class UserForm(Form):
+    userid = StringField(_('UserID'))
     username = StringField(_('Username'), validators=[validators.required()])
     email = EmailField(_('Email'), validators=[validators.optional()])
     password = PasswordField(_('Password'))
@@ -126,7 +128,11 @@ class UserForm(Form):
     disk_quota = IntegerField(
         _('User Quota'),
         validators=[validators.optional()],
-        description=_("Users disk spaces (in bytes). Set to 0 for unlimited. (in bytes)"))
+        description=_("Users disk spaces (in bytes). Set to 0 for unlimited."))
+    disk_usage = IntegerField(
+        _('Quota Used'),
+        validators=[validators.optional()],
+        description=_("Disk spaces (in bytes) used by this user."))
 
     @property
     def error_message(self):
@@ -220,9 +226,14 @@ class AdminPage(Controller):
                     logger.warn("user's root directory %s is not accessible" % user.user_root)
                 user.update_repos()
             # Try to update disk quota. Report error using flash.
-            if form.disk_quota:
+            if form.disk_quota and form.disk_quota.data:
                 try:
-                    user.disk_quota = int(form.disk_quota.data)
+                    new_quota = int(form.disk_quota.data)
+                    if user.disk_quota != new_quota:
+                        user.disk_quota = new_quota
+                        flash(_("User's quota updated"), level='success')
+                except QuotaUnsupported as e:
+                    flash(_("Setting user's quota is not supported"), level='warning')
                 except Exception as e:
                     flash(_("Failed to update user's quota: %s") % e, level='error')
                     logger.warn("failed to update user's quota", exc_info=1)

@@ -31,6 +31,7 @@
                     ({{ user.email }})
                 </span>
                 {% endif%}
+                <span class="label label-default">#{{user.userid}}</span>
                 {% if user.is_admin %}
                 <span class="label label-info">{% trans %}Admin{% endtrans %}</span>
                 {% elif user.is_maintainer %}
@@ -109,7 +110,24 @@
     {{form.disk_quota.label(class="col-sm-3 control-label")}}
     <div class="col-sm-7">
     {{form.disk_quota(class="form-control", disabled=form.disk_quota.data is none)}}
+    {% if form.disk_quota.data and form.disk_usage.data %}
     <span class="help-block">{{form.disk_quota.description}}</span>
+    {% set used_pct = form.disk_usage.data / form.disk_quota.data * 100 %}
+    {% set used_str = form.disk_usage.data | filesize %}
+    {% set size_str = form.disk_quota.data | filesize %}
+    {% set avail_str = (form.disk_quota.data - form.disk_usage.data) | filesize %}
+    <div class="progress">
+      <div class="progress-bar progress-bar-warning progress-bar-striped" role="progressbar" aria-valuenow="{{ used_pct }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ used_pct }}%">
+        {{ used_str }} {% trans %}used{% endtrans %}
+      </div>
+      <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{ used_pct }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ 100 - used_pct }}%">
+        {{ avail_str }} {% trans %}free{% endtrans %}
+      </div>
+    </div>
+    {% else %}
+    <span class="help-block">User's quota is not enabled.</span>
+    {% endif %}
+    
     </div>
 </div>
 {% if form.disk_quota.data is not none %}
