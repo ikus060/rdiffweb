@@ -32,7 +32,6 @@ from rdiffweb.core.ldap_auth import LdapPasswordStore
 from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, \
     AccessDeniedError
 from rdiffweb.core.passwd import check_password, hash_password
-from rdiffweb.core.quota import DefaultUserQuota
 
 # Define the logger
 logger = logging.getLogger(__name__)
