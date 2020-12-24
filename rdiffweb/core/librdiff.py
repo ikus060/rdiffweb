@@ -695,6 +695,9 @@ class RdiffRepo(object):
         assert isinstance(self._data_path, bytes)
         self._increment_path = os.path.join(self._data_path, INCREMENTS)
 
+        # Load repo status
+        self.status = self._check_status()
+
     @property
     def backup_dates(self):
         """Return a list of dates when backup was executed. This list is
@@ -706,11 +709,6 @@ class RdiffRepo(object):
                 self._extract_date(x)
                 for x in self._get_entries(b'mirror_metadata')])
         return self._backup_dates_data
-
-    @property
-    def _current_mirrors(self):
-        """Return list of current_mirrors file"""
-        return sorted([x for x in self._get_entries(b'current_mirror')])
 
     def delete(self):
         """Delete the repository permanently."""
@@ -778,13 +776,19 @@ class RdiffRepo(object):
                 for x in self._get_entries(b'file_statistics')}
         return self._file_statistics_data
 
-    def _get_entries(self, prefix):
+    def _get_entries(self, prefix, ignore_errors=True):
+        """
+        Return list of entries matching the given prefix.
+        """
         if not hasattr(self, '_entries_data'):
             self._entries_data = {}
             try:
                 entries = os.listdir(self._data_path)
             except:
-                entries = []
+                if ignore_errors:
+                    entries = []
+                else:
+                    raise
             for e in entries:
                 try:
                     key = e[:e.index(b'.')]
@@ -908,28 +912,17 @@ class RdiffRepo(object):
     @property
     def last_backup_date(self):
         """Return the last known backup dates."""
-        if len(self._current_mirrors) > 0:
-            return self._extract_date(self._current_mirrors[-1])
+        current_mirrors = sorted([x for x in self._get_entries(b'current_mirror')])
+        if len(current_mirrors) > 0:
+            return self._extract_date(current_mirrors[-1])
         return None
 
     def remove_older(self, remove_older_than):
         logger.info("execute rdiff-backup --force --remove-older-than=%sD %r", remove_older_than, self.full_path)
         subprocess.call([b'rdiff-backup', b'--force', b'--remove-older-than=' + str(remove_older_than).encode(encoding='latin1') + b'D', self.full_path])
 
-    @property
-    def status(self):
+    def _check_status(self):
         """Check if a backup is in progress for the current repo."""
-        if hasattr(self, '_status'):
-            return self._status
-
-        # Check if the repository exists.
-        # Make sure repoRoot is a valid rdiff-backup repository
-        if (not os.access(self._data_path, os.F_OK) or
-                not os.path.isdir(self._data_path)):
-            self._status = ('failed', _('The repository cannot be found or is badly damaged.'))
-            return self._status
-
-        pid_re = re.compile(b"^PID\s*([0-9]+)", re.I | re.M)
 
         def extract_pid(current_mirror):
             """Return process ID from a current mirror marker, if any"""
@@ -941,24 +934,36 @@ class RdiffRepo(object):
                 return int(match.group(1))
 
         # Read content of the file and check if pid still exists
-        for current_mirror in self._current_mirrors:
-            pid = extract_pid(current_mirror)
-            try:
-                p = psutil.Process(pid)
-                if any('rdiff-backup' in c for c in p.cmdline()):
-                    self._status = ('in_progress', _('A backup is currently in progress to this repository.'))
-                    return self._status
-            except psutil.NoSuchProcess:
-                logger.debug('pid [%s] does not exists', pid)
-                pass
-        # If multiple current_mirror file exists and none of them are associated to a PID, this mean the last backup was interrupted.
-        # Also, if the last backup date is undefined, this mean the first initial backup was interrupted.
-        if len(self._current_mirrors) > 1 or not self.last_backup_date:
-            self._status = ('interrupted', _('The previous backup seams to have failed.'))
-            return self._status
+        try:
+            # Check if the repository exists.
+            # Make sure repoRoot is a valid rdiff-backup repository
+            if not os.path.isdir(self._data_path):
+                return ('failed', _('The repository cannot be found or is badly damaged.'))
 
-        self._status = ('ok', '')
-        return self._status
+            pid_re = re.compile(b"^PID\s*([0-9]+)", re.I | re.M)
+
+            current_mirrors = self._get_entries(b'current_mirror', ignore_errors=False)
+            for current_mirror in current_mirrors:
+                pid = extract_pid(current_mirror)
+                try:
+                    p = psutil.Process(pid)
+                    if any('rdiff-backup' in c for c in p.cmdline()):
+                        return ('in_progress', _('A backup is currently in progress to this repository.'))
+                except psutil.NoSuchProcess:
+                    logger.debug('pid [%s] does not exists', pid)
+                    pass
+                
+            # If multiple current_mirror file exists and none of them are associated to a PID, this mean the last backup was interrupted.
+            # Also, if the last backup date is undefined, this mean the first initial backup was interrupted.
+            if len(current_mirrors) > 1 or len(current_mirrors) == 0:
+                self._status = ('interrupted', _('The previous backup seams to have failed.'))
+                return self._status
+
+        except PermissionError:
+            logger.warn('error reading current_mirror files', exc_info=1)
+            return ('failed', _("Permissions denied. Contact administrator to check repository's permissions."))
+
+        return ('ok', '')
 
     @property
     def session_statistics(self):

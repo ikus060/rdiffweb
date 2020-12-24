@@ -26,7 +26,8 @@ stages:
   script:
   - export TOXENV=${TOXENV:-$CI_JOB_NAME}
   - echo TOXENV=$TOXENV
-  - tox
+  - useradd myuser
+  - su myuser -c tox
   artifacts:
     paths:
     - coverage-*.xml
@@ -74,7 +75,6 @@ debian10-py3-rdiff-backup2:
   - apt-get update
   - apt -y install librsync-dev libldap2-dev libsasl2-dev
   - pip3 install rdiff-backup
-  - tox
 
 debian11-py3-cherrypy9-jinja211: 
   <<: *tox

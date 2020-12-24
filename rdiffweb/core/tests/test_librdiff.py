@@ -284,6 +284,28 @@ class RdiffRepoTest(unittest.TestCase):
         self.assertEqual('ok', status[0])
         self.assertEqual('', status[1])
 
+    def test_status_access_denied_current_mirror(self):
+        # Skip test if running as root. Because root as access to everything.
+        if os.geteuid() == 0:
+            return
+        # Change the permissions of the files.
+        os.chmod(os.path.join(self.testcases_dir, b'rdiff-backup-data', b'current_mirror.2016-02-02T16:30:40-05:00.data'), 0000)
+        # Create repo again to query status
+        self.repo = RdiffRepo(self.temp_dir, b'testcases', encoding='utf-8')
+        status = self.repo.status
+        self.assertEqual('failed', status[0])
+
+    def test_status_access_denied_rdiff_backup_data(self):
+        # Skip test if running as root. Because root as access to everything.
+        if os.geteuid() == 0:
+            return
+        # Change the permissions of the files.
+        os.chmod(os.path.join(self.testcases_dir, b'rdiff-backup-data'), 0000)
+        # Query status.
+        self.repo = RdiffRepo(self.temp_dir, b'testcases', encoding='utf-8')
+        status = self.repo.status
+        self.assertEqual('failed', status[0])
+
     def test_restore_file(self):
         filename, stream = self.repo.get_path(b"Revisions/Data").restore(restore_as_of=1454448640, kind='zip')
         self.assertEqual('Data', filename)
