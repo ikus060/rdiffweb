@@ -66,8 +66,8 @@ class BaseAuth(HandlerTool):
         # Validate username password. Raise an exception if invalid.
         userobj = self.check_username_and_password(login, password)
         # User successfully login.
-        logger.debug('setting request.login to %s', userobj)
-        cherrypy.serving.request.login = userobj
+        cherrypy.serving.request.login = userobj.username
+        cherrypy.serving.request.currentuser = userobj
         cherrypy.session[self.session_key] = userobj.username  # @UndefinedVariable
         self.on_login(userobj.username)
         return True
@@ -78,6 +78,7 @@ class BaseAuth(HandlerTool):
         username = sess.get(self.session_key)
         sess[self.session_key] = None
         cherrypy.serving.request.login = None
+        cherrypy.serving.request.currentuser = None
         if username:
             self.on_logout(username)
         return True
@@ -90,8 +91,8 @@ class BaseAuth(HandlerTool):
         userobj = cherrypy.request.app.store.get_user(username)  # @UndefinedVariable
         if not userobj:
             return False
-        logger.debug('setting request.login to %s', userobj)
-        cherrypy.serving.request.login = userobj
+        cherrypy.serving.request.login = userobj.username
+        cherrypy.serving.request.currentuser = userobj
         return userobj
 
     def on_login(self, username):
