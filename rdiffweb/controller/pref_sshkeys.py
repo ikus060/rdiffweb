@@ -26,15 +26,16 @@ import logging
 from wtforms import validators
 from wtforms.fields.core import StringField
 from wtforms.fields.simple import TextField
-from wtforms.form import Form
 from wtforms.validators import ValidationError
 from wtforms.widgets.core import TextArea
 
 from rdiffweb.controller import Controller, flash
+from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.core import authorizedkeys
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.store import DuplicateSSHKeyError
+
 
 _logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ def validate_key(unused_form, field):
         raise ValidationError(_("Invalid SSH key."))
 
 
-class SSHForm(Form):
+class SSHForm(CherryForm):
     title = StringField(
         _('Title'),
         description=_('The title is an optional description to identify the key. e.g.: bob@thinkpad-t530'),
@@ -71,7 +72,7 @@ class SSHKeysPlugin(Controller):
     def render_prefs_panel(self, panelid, action=None, **kwargs):  # @UnusedVariable
 
         # Handle action
-        form = SSHForm(data=kwargs)
+        form = SSHForm()
         if action == "add" and not form.validate():
             for unused_field, messages in form.errors.items():
                 for message in messages:

@@ -24,19 +24,19 @@ import subprocess
 import sys
 
 import cherrypy
+import humanfriendly
 import psutil
-from wtforms import validators
-from wtforms.fields.core import StringField, SelectField, IntegerField
+from wtforms import validators, widgets
+from wtforms.fields.core import StringField, SelectField, Field
 from wtforms.fields.html5 import EmailField
 from wtforms.fields.simple import PasswordField
-from wtforms.form import Form
 
 from rdiffweb.controller import Controller, flash
+from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.rdw_templating import do_format_filesize as filesize
-from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 from rdiffweb.core.quota import QuotaUnsupported
+from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ def get_hwinfo():
         yield _('Load Average'), ', '.join(map(str, map(lambda x: round(x, 2), os.getloadavg())))
     yield _('CPU Count'), psutil.cpu_count()
     meminfo = psutil.virtual_memory()
-    yield _('Memory usage'), '%s / %s' % (filesize(meminfo.used), filesize(meminfo.total))
+    yield _('Memory usage'), '%s / %s' % (humanfriendly.format_size(meminfo.used), humanfriendly.format_size(meminfo.total))
 
 
 def get_pkginfo():
@@ -113,7 +113,33 @@ def get_pkginfo():
         pass
 
 
-class UserForm(Form):
+class SizeField(Field):
+    """
+    A text field which stores a file size as GiB or GB format.
+    """
+
+    widget = widgets.TextInput()
+
+    def __init__(self, label=None, validators=None, **kwargs):
+        super(SizeField, self).__init__(label, validators, **kwargs)
+
+    def _value(self):
+        if self.raw_data:
+            return ' '.join(self.raw_data)
+        else:
+            return self.data and humanfriendly.format_size(self.data, binary=True) or ''
+
+    def process_formdata(self, valuelist):
+        if valuelist:
+            value_str = ''.join(valuelist)
+            try:
+                self.data = humanfriendly.parse_size(value_str)
+            except:
+                self.data = None
+                raise ValueError(self.gettext('Not a valid file size value'))
+
+
+class UserForm(CherryForm):
     userid = StringField(_('UserID'))
     username = StringField(_('Username'), validators=[validators.required()])
     email = EmailField(_('Email'), validators=[validators.optional()])
@@ -125,11 +151,11 @@ class UserForm(Form):
         choices=[(ADMIN_ROLE, _("Admin")), (MAINTAINER_ROLE, _("Maintainer")), (USER_ROLE, _("User"))],
         default=USER_ROLE,
         description=_("Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo."))
-    disk_quota = IntegerField(
+    disk_quota = SizeField(
         _('User Quota'),
         validators=[validators.optional()],
         description=_("Users disk spaces (in bytes). Set to 0 for unlimited."))
-    disk_usage = IntegerField(
+    disk_usage = SizeField(
         _('Quota Used'),
         validators=[validators.optional()],
         description=_("Disk spaces (in bytes) used by this user."))
@@ -194,7 +220,7 @@ class AdminPage(Controller):
         params = {
             "filename": filename,
             "logfiles": logfiles,
-            "data":  data,
+            "data": data,
         }
         return self._compile_template("admin_logs.html", **params)
 
@@ -202,7 +228,7 @@ class AdminPage(Controller):
     def users(self, criteria=u"", search=u"", action=u"", **kwargs):
 
         # If we're just showing the initial page, just do that
-        form = UserForm(data=kwargs)
+        form = UserForm()
         if action in ["add", "edit"] and not form.validate():
             # Since our validation using form is so smooth, this probably mean
             # the data is completely invalid and was not entered using the form.
@@ -225,11 +251,13 @@ class AdminPage(Controller):
                     flash(_("User's root directory %s is not accessible!") % user.user_root, level='error')
                     logger.warn("user's root directory %s is not accessible" % user.user_root)
                 user.update_repos()
-            # Try to update disk quota. Report error using flash.
+            # Try to update disk quota if the human readable value changed.
+            # Report error using flash.
             if form.disk_quota and form.disk_quota.data:
                 try:
-                    new_quota = int(form.disk_quota.data)
-                    if user.disk_quota != new_quota:
+                    new_quota = form.disk_quota.data
+                    old_quota = humanfriendly.parse_size(humanfriendly.format_size(user.disk_quota, binary=True))
+                    if old_quota != new_quota:
                         user.disk_quota = new_quota
                         flash(_("User's quota updated"), level='success')
                 except QuotaUnsupported as e:
@@ -247,7 +275,6 @@ class AdminPage(Controller):
             else:
                 try:
                     user = self.app.store.get_user(form.username.data)
-                    form = UserForm()
                     if user:
                         user.delete()
                         flash(_("User account removed."))
@@ -257,7 +284,7 @@ class AdminPage(Controller):
                     flash(e, level='error')
 
         params = {
-            "form": form,
+            "form": UserForm(formdata=None),
             "criteria": criteria,
             "search": search,
             "users": list(self.app.store.users(search=search, criteria=criteria))}
