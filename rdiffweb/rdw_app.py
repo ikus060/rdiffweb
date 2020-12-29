@@ -120,7 +120,7 @@ class RdiffwebApp(Application):
                 'tools.encode.encoding': 'utf-8',
                 'tools.gzip.on': True,
                 'tools.sessions.on': True,
-                'tools.proxy.on':  cp_tools_proxy_enabled,
+                'tools.proxy.on': cp_tools_proxy_enabled,
                 'error_page.default': self.error_page,
                 'request.error_response': self.error_response,
                 'tools.sessions.storage_type': 'file' if session_path else 'ram',
@@ -158,9 +158,10 @@ class RdiffwebApp(Application):
     @property
     def currentuser(self):
         """
-        Get the current user.
+        Proxy property to get current user from cherrypy request object.
+        Return a UserObject when logged in or None.
         """
-        return cherrypy.serving.request.login
+        return getattr(cherrypy.serving.request, 'currentuser', None)
 
     def error_page(self, **kwargs):
         """
