@@ -112,15 +112,15 @@
     {{form.disk_quota(class="form-control", disabled=form.disk_quota.data is none)}}
     {% if form.disk_quota.data and form.disk_usage.data %}
     <span class="help-block">{{form.disk_quota.description}}</span>
-    {% set used_pct = form.disk_usage.data / form.disk_quota.data * 100 %}
+    {% set used_pct = form.disk_usage.data / form.disk_quota.data * 100 | round %}
+    {% set used_pct_display = 10 if used_pct < 10 else used_pct %}
     {% set used_str = form.disk_usage.data | filesize %}
-    {% set size_str = form.disk_quota.data | filesize %}
     {% set avail_str = (form.disk_quota.data - form.disk_usage.data) | filesize %}
     <div class="progress">
-      <div class="progress-bar progress-bar-warning progress-bar-striped" role="progressbar" aria-valuenow="{{ used_pct }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ used_pct }}%">
+      <div class="progress-bar progress-bar-warning progress-bar-striped" role="progressbar" aria-valuenow="{{ used_pct }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ used_pct_display }}%">
         {{ used_str }} {% trans %}used{% endtrans %}
       </div>
-      <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{ used_pct }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ 100 - used_pct }}%">
+      <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{ used_pct }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ 100 - used_pct_display }}%">
         {{ avail_str }} {% trans %}free{% endtrans %}
       </div>
     </div>
