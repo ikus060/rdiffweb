@@ -19,6 +19,7 @@ Build-Depends:
  python3-setuptools-scm,
  python3-venv,
  python3-wtforms,
+ python3-humanfriendly,
 Rules-Requires-Root: no
 Standards-Version: 4.5.0
 Homepage: https://www.ikus-soft.com/en/rdiffweb/
@@ -43,6 +44,7 @@ Depends:
  python3-ldap,
  python3-psutil,
  python3-wtforms,
+ python3-humanfriendly,
  ${misc:Depends},
  ${python3:Depends},
  ${sphinxdoc:Depends},

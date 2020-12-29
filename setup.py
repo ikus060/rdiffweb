@@ -182,6 +182,7 @@ setup(
         "python-ldap",
         "WTForms<3.0.0",
         "distro",
+        "humanfriendly",
     ],
     # required packages for build process
     setup_requires=[

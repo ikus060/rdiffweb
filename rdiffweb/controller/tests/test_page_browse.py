@@ -127,9 +127,9 @@ class BrowsePageTest(WebCase):
         self.assertInBody("Untitled Empty Text File 2")
         self.assertInBody("Untitled Empty Text File 3")
         #  Also check if the filesize are properly retrieve.
-        self.assertInBody("21 Bytes")
-        self.assertInBody("14 Bytes")
-        self.assertInBody("0 Bytes")
+        self.assertInBody("21 bytes")
+        self.assertInBody("14 bytes")
+        self.assertInBody("0 bytes")
         #  Also check dates
         self.assertInBody("data-value=\"1414871475\"")
 
@@ -190,8 +190,8 @@ class BrowsePageTest(WebCase):
         self.assertInBody("Untitled Testcase.doc")
         self.assertInBody("Data")
         #  Check size
-        self.assertInBody("21 Bytes")
-        self.assertInBody("14.5 KiB")
+        self.assertInBody('data-value="21"')
+        self.assertInBody('data-value="14848"')
 
     def test_invalid_repo(self):
         """
