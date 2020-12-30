@@ -85,14 +85,14 @@ class SSHKeysPlugin(Controller):
                 flash(str(e), level='error')
             except:
                 flash(_("Unknown error while adding the SSH Key"), level='error')
-                _logger.error("error adding ssh key", exc_info=1)
+                _logger.warning("error adding ssh key", exc_info=1)
         elif action == 'delete':
             is_maintainer()
             try:
                 self.app.currentuser.delete_authorizedkey(form.fingerprint.data)
             except:
                 flash(_("Unknown error while removing the SSH Key"), level='error')
-                _logger.warn("error removing ssh key", exc_info=1)
+                _logger.warning("error removing ssh key", exc_info=1)
 
         # Get SSH keys if file exists.
         params = {

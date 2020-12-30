@@ -39,71 +39,56 @@ def _setup_logging(log_file, log_access_file, level):
     """
     assert isinstance(logging.getLevelName(level), int)
 
-    class ContextFilter(logging.Filter):
-        """
-        Filter the cherrypy record to remove the leading date. Also add more
-        context information like ip address and username.
-        """
+    def remove_cherrypy_date(record):
+        """Remove the leading date for cherrypy error."""
+        if record.name.startswith('cherrypy.error'):
+            record.msg = record.msg[23:].strip()
+        return True
 
-        def filter(self, record):
-            # Remove the leading date for cherrypy error.
-            if record.msg.startswith('cherrypy.error'):
-                record.msg = record.msg[23:]
-            # Get the IP
-            try:
-                if hasattr(cherrypy, 'serving'):
-                    request = cherrypy.serving.request
-                    remote = request.remote
-                    record.ip = remote.name or remote.ip
-                    # If the request was forware by a reverse proxy
-                    if 'X-Forwarded-For' in request.headers:
-                        record.ip = request.headers['X-Forwarded-For']
-            except:
-                record.ip = "unknown"
-            # Get the username
-            try:
-                record.user = cherrypy.session['user']  # @UndefinedVariable
-            except:
-                record.user = "anonymous"
-            return True
+    def add_ip(record):
+        """Add request IP to record."""
+        if hasattr(cherrypy, 'serving'):
+            request = cherrypy.serving.request
+            remote = request.remote
+            record.ip = remote.name or remote.ip
+            # If the request was forwarded by a reverse proxy
+            if 'X-Forwarded-For' in request.headers:
+                record.ip = request.headers['X-Forwarded-For']
+        return True
 
-    cherrypy.config.update({'log.screen': False,
-                            'log.access_file': '',
-                            'log.error_file': ''})
+    def add_username(record):
+        """Add current username to record."""
+        record.user = cherrypy.request and cherrypy.request.login or "anonymous"
+        return True
+
+    cherrypy.config.update({'log.screen': False, 'log.access_file': '', 'log.error_file': ''})
     cherrypy.engine.unsubscribe('graceful', cherrypy.log.reopen_files)
 
-    # Create default formatter
-    fmt = logging.Formatter("[%(asctime)s][%(levelname)-7s][%(ip)s][%(user)s][%(threadName)s][%(name)s] %(message)s")
-
-    # Declare / create all logger
+    # Configure root logger
     logger = logging.getLogger('')
     logger.level = logging.getLevelName(level)
-    cherrypy_access = logging.getLogger('cherrypy.access')
-    cherrypy_access.propagate = False
-    cherrypy_error = logging.getLogger('cherrypy.error')
-    cherrypy_error.propagate = False
-
-    # Configure default logger
     if log_file:
         print("continue logging to %s" % log_file)
         default_handler = logging.handlers.RotatingFileHandler(log_file, maxBytes=10485760, backupCount=20)
     else:
         default_handler = logging.StreamHandler(sys.stdout)
-    default_handler.addFilter(ContextFilter())
-    default_handler.setFormatter(fmt)
+    default_handler.addFilter(remove_cherrypy_date)
+    default_handler.addFilter(add_ip)
+    default_handler.addFilter(add_username)
+    default_handler.setFormatter(logging.Formatter("[%(asctime)s][%(levelname)-7s][%(ip)s][%(user)s][%(threadName)s][%(name)s] %(message)s"))
     logger.addHandler(default_handler)
 
     # Configure cherrypy access logger
+    cherrypy_access = logging.getLogger('cherrypy.access')
+    cherrypy_access.propagate = False
     if log_access_file:
         handler = logging.handlers.RotatingFileHandler(log_access_file, maxBytes=10485760, backupCount=20)
         cherrypy_access.addHandler(handler)
 
     # Configure cherrypy error logger
-    if log_file:
-        cherrypy_error.addHandler(default_handler)
-    else:
-        handler = logging.StreamHandler(sys.stdout)
-        cherrypy_error.addHandler(handler)
+    cherrypy_error = logging.getLogger('cherrypy.error')
+    cherrypy_error.propagate = False
+    cherrypy_error.addHandler(default_handler)
 
 
 def _parse_args(args):

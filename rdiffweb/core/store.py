@@ -541,7 +541,7 @@ class Store():
             raise RdiffError(_("User %s already exists." % (user,)))
 
         # Find a database where to add the user
-        logger.debug("adding new user [%s]", user)
+        logger.info("adding new user [%s]", user)
         if password:
             inserted = self._database.insert('users', username=user, password=hash_password(password))
         else:
