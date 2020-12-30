@@ -117,7 +117,7 @@ class Controller(object):
         # Check if theme exists.
         default_theme_css = pkg_resources.resource_filename('rdiffweb', 'static/%s.css' % self._default_theme)
         if not os.access(default_theme_css, os.F_OK):
-            logger.warn("invalid DefaultTheme value, %s doesn't exists" % default_theme_css)
+            logger.warning("invalid DefaultTheme value, %s doesn't exists" % default_theme_css)
 
         # Append template parameters.
         parms.update(kwargs)

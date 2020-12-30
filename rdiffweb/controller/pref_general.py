@@ -107,7 +107,7 @@ class PrefsGeneralPanelProvider(Controller):
                 elif action == "update_repos":
                     params = self._handle_update_repos()
                 else:
-                    _logger.info("unknown action: %s", action)
+                    _logger.warning("unknown action: %s", action)
                     raise cherrypy.NotFound("Unknown action")
             except RdiffWarning as e:
                 params['warning'] = str(e)

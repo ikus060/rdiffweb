@@ -75,7 +75,7 @@ class LdapPasswordStore():
         def check_crendential(l, r):
             # Check results
             if len(r) != 1:
-                logger.debug("user [%s] not found in LDAP", username)
+                logger.info("user [%s] not found in LDAP", username)
                 return None
 
             # Bind using the user credentials. Throws an exception in case of
