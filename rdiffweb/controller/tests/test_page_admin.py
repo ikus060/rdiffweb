@@ -90,11 +90,11 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
     def test_add_user_with_invalid_role(self):
         # Invalid roles
         self._add_user("invalid", "invalid@test.com", "test2", "/home/", 'admin')
-        self.assertStatus(400)
+        self.assertStatus(200)
         self.assertInBody('role: Invalid Choice: could not coerce')
 
         self._add_user("invalid", "invalid@test.com", "test2", "/home/", -1)
-        self.assertStatus(400)
+        self.assertStatus(200)
         self.assertInBody('role: Not a valid choice')
 
     def test_add_edit_delete(self):
@@ -147,7 +147,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure trying to create user without username.
         """
         self._add_user("", "test1@test.com", "test1", "/tmp/", USER_ROLE)
-        self.assertStatus(400)
+        self.assertStatus(200)
         self.assertInBody("username: This field is required.")
 
     def test_add_user_with_existing_username(self):
@@ -288,6 +288,22 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.assertInBody("User&#39;s quota updated")
         self.assertStatus(200)
 
+    def test_set_quota_as_with_comma(self):
+        # Mock a quota.
+        self.app.quota.set_disk_quota = MagicMock()
+        self._edit_user("admin", disk_quota='1,5 GiB')
+        self.app.quota.set_disk_quota.assert_called_once_with(ANY, 1610612736)
+        self.assertInBody("User&#39;s quota updated")
+        self.assertStatus(200)
+
+    def test_set_quota_as_with_leading_dot(self):
+        # Mock a quota.
+        self.app.quota.set_disk_quota = MagicMock()
+        self._edit_user("admin", disk_quota='.5 GiB')
+        self.app.quota.set_disk_quota.assert_called_once_with(ANY, 536870912)
+        self.assertInBody("User&#39;s quota updated")
+        self.assertStatus(200)
+
     def test_set_quota_empty(self):
         # Mock a quota.
         self.app.quota.set_disk_quota = MagicMock()
@@ -306,7 +322,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.app.quota.set_disk_quota.assert_not_called()
         self.assertNotInBody("User&#39;s quota updated")
         self.assertStatus(200)
-        
+
     def test_set_quota_unsupported(self):
         # Mock a quota.
         self.app.quota.set_disk_quota = MagicMock(side_effect=QuotaUnsupported())
