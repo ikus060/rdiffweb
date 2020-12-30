@@ -132,6 +132,12 @@ class SizeField(Field):
     def process_formdata(self, valuelist):
         if valuelist:
             value_str = ''.join(valuelist)
+            # parse_size doesn't handle locales.this mean we need to
+            # replace ',' by '.' to get parse and prefix number with 0
+            value_str = value_str.replace(',', '.').strip()
+            # a value must start with a number.
+            if value_str.startswith('.'):
+                value_str = '0' + value_str
             try:
                 self.data = humanfriendly.parse_size(value_str)
             except:
@@ -230,10 +236,9 @@ class AdminPage(Controller):
         # If we're just showing the initial page, just do that
         form = UserForm()
         if action in ["add", "edit"] and not form.validate():
-            # Since our validation using form is so smooth, this probably mean
-            # the data is completely invalid and was not entered using the form.
-            # Return 400
-            raise cherrypy.HTTPError(400, form.error_message)
+            # Display the form error to user using flash
+            flash(form.error_message, level='error')
+            
         elif action in ["add", "edit"] and form.validate():
             if action == 'add':
                 user = self.app.store.add_user(form.username.data, form.password.data)

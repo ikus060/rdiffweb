@@ -18,7 +18,7 @@
 import unittest
 
 from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.core.rdw_templating import do_format_filesize, attrib, url_for, \
+from rdiffweb.core.rdw_templating import attrib, url_for, \
     do_format_lastupdated
 from rdiffweb.test import AppTestCase
 
@@ -54,34 +54,6 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual('selected="text"', attrib(selected=str('text')))
 
         self.assertEqual('value="0"', attrib(value=0))
-
-    def test_do_format_filesize(self):
-        # Test simple values
-        self.assertEqual(do_format_filesize(1024, False), "1.02 KB")
-        self.assertEqual(do_format_filesize(1024 * 1024 * 1024, False), "1.07 GB")
-        self.assertEqual(do_format_filesize(1024 * 1024 * 1024 * 1024, False), "1.1 TB")
-        self.assertEqual(do_format_filesize(0, False), "0 bytes")
-        self.assertEqual(do_format_filesize(980, False), "980 bytes")
-        self.assertEqual(do_format_filesize(1024 * 980, False), "1 MB")
-        self.assertEqual(do_format_filesize(1024 * 1024 * 1024 * 1.2, False), "1.29 GB")
-        # Round to one decimal
-        self.assertEqual(do_format_filesize(1024 * 1024 * 1024 * 1.243, False), "1.33 GB")
-        # Round to one decimal
-        self.assertEqual(do_format_filesize(1024 * 1024 * 1024 * 1024 * 120, False), "131.94 TB")
-
-    def test_do_format_filesize_with_binary(self):
-        # Test simple values
-        self.assertEqual(do_format_filesize(1024, True), "1 KiB")
-        self.assertEqual(do_format_filesize(1024 * 1024 * 1024, True), "1 GiB")
-        self.assertEqual(do_format_filesize(1024 * 1024 * 1024 * 1024, True), "1 TiB")
-        self.assertEqual(do_format_filesize(0, True), "0 bytes")
-        self.assertEqual(do_format_filesize(980, True), "980 bytes")
-        self.assertEqual(do_format_filesize(1024 * 980, True), "980 KiB")
-        self.assertEqual(do_format_filesize(1024 * 1024 * 1024 * 1.2, True), "1.2 GiB")
-        # Round to one decimal
-        self.assertEqual(do_format_filesize(1024 * 1024 * 1024 * 1.243, True), "1.24 GiB")
-        # Round to one decimal
-        self.assertEqual(do_format_filesize(1024 * 1024 * 1024 * 1024 * 120, True), "120 TiB")
 
     def test_url_for(self):
         # Check backward compatibility

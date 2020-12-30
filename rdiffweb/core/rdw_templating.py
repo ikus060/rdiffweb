@@ -123,15 +123,6 @@ def do_format_lastupdated(value, now=None):
     return _('%d seconds ago') % delta.seconds
 
 
-def do_format_filesize(value, binary=True):
-    """Format the value like a 'human-readable' file size (i.e. 13 kB,
-    4.1 MB, 102 Bytes, etc).  Per default decimal prefixes are used (Mega,
-    Giga, etc.), if the second parameter is set to `True` the binary
-    prefixes are used (Mebi, Gibi).
-    """
-    return humanfriendly.format_size(value, binary=binary)
-
-
 def create_repo_tree(repos):
     """
     Organise the repositories into a tree.
@@ -213,7 +204,7 @@ class TemplateManager(object):
         self.jinja_env.filters['filter'] = do_filter
         self.jinja_env.filters['datetime'] = do_format_datetime
         self.jinja_env.filters['lastupdated'] = do_format_lastupdated
-        self.jinja_env.filters['filesize'] = humanfriendly.format_size
+        self.jinja_env.filters['filesize'] = lambda x: humanfriendly.format_size(x, binary=True)
 
         # Register method
         self.jinja_env.globals['attrib'] = attrib
