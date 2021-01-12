@@ -37,6 +37,7 @@ from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.quota import QuotaUnsupported
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
+from _collections import OrderedDict
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -183,23 +184,17 @@ class AdminPage(Controller):
         """
         Return a list of log files to be shown in admin area.
         """
-        logfiles = [self.logfile, self.logaccessfile]
-        logfiles = [fn for fn in logfiles if fn]
-        return [os.path.basename(fn) for fn in logfiles]
+        return [fn for fn in [self.logfile, self.logaccessfile] if fn]
 
-    def _get_log_data(self, logfile, num=2000):
+    def _get_log_data(self, fn, num=2000):
         """
         Return a list of log files to be shown in admin area.
         """
-        logfiles = [self.logfile, self.logaccessfile]
-        logfiles = [fn for fn in logfiles if fn]
-        for fn in logfiles:
-            if logfile == os.path.basename(fn):
-                try:
-                    return subprocess.check_output(['tail', '-n', str(num), fn], stderr=subprocess.STDOUT).decode('utf-8')
-                except:
-                    logging.exception('fail to get log file content')
-                    return "Error getting file content"
+        try:
+            return subprocess.check_output(['tail', '-n', str(num), fn], stderr=subprocess.STDOUT).decode('utf-8')
+        except:
+            logging.exception('fail to get log file content')
+            return "Error getting file content"
 
     @cherrypy.expose
     def default(self):
@@ -210,22 +205,18 @@ class AdminPage(Controller):
 
     @cherrypy.expose
     def logs(self, filename=u""):
-
-        # Check if the filename is valid.
+        # get list of log file available.
         data = ""
-        logfiles = self._get_log_files()
+        logfiles = OrderedDict([(os.path.basename(fn), fn) for fn in self._get_log_files()])
         if logfiles:
-            if not filename:
-                filename = logfiles[0]
-
+            filename = filename or list(logfiles.keys())[0]
             if filename not in logfiles:
-                raise cherrypy.HTTPError(404)
-
+                raise cherrypy.HTTPError(404, 'invalid log file: ' + filename)
             data = self._get_log_data(filename)
 
         params = {
             "filename": filename,
-            "logfiles": logfiles,
+            "logfiles": logfiles.keys(),
             "data": data,
         }
         return self._compile_template("admin_logs.html", **params)
@@ -238,7 +229,7 @@ class AdminPage(Controller):
         if action in ["add", "edit"] and not form.validate():
             # Display the form error to user using flash
             flash(form.error_message, level='error')
-            
+
         elif action in ["add", "edit"] and form.validate():
             if action == 'add':
                 user = self.app.store.add_user(form.username.data, form.password.data)
