@@ -392,19 +392,22 @@ class AdminLogsTest(WebCase):
         self.assertInBody("No log files")
 
     def test_logs(self):
-        self.app.cfg['logfile'] = './rdiffweb.log'
-        self.app.cfg['logaccessfile'] = './rdiffweb-access.log'
-
-        with open('./rdiffweb.log', 'w') as f:
+        self.app.cfg['logfile'] = '/tmp/rdiffweb.log'
+        self.app.cfg['logaccessfile'] = '/tmp/rdiffweb-access.log'
+        with open('/tmp/rdiffweb.log', 'w') as f:
             f.write("content of log file")
-
-        self.getPage("/admin/logs/")
-        self.assertStatus(200)
-        self.assertInBody("rdiffweb.log")
-        self.assertInBody("content of log file")
-        self.assertInBody("rdiffweb-access.log")
-
-        os.remove('./rdiffweb.log')
+        with open('/tmp/rdiffweb-access.log', 'w') as f:
+            f.write("content of log file")
+        try:
+            self.getPage("/admin/logs/")
+            self.assertStatus(200)
+            self.assertInBody("rdiffweb.log")
+            self.assertInBody("content of log file")
+            self.assertInBody("rdiffweb-access.log")
+            self.assertNotInBody("Error getting file content")
+        finally:
+            os.remove('/tmp/rdiffweb.log')
+            os.remove('/tmp/rdiffweb-access.log')
 
     def test_logs_with_no_file(self):
         self.app.cfg['logfile'] = './rdiffweb.log'

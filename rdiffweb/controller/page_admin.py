@@ -212,7 +212,7 @@ class AdminPage(Controller):
             filename = filename or list(logfiles.keys())[0]
             if filename not in logfiles:
                 raise cherrypy.HTTPError(404, 'invalid log file: ' + filename)
-            data = self._get_log_data(filename)
+            data = self._get_log_data(logfiles.get(filename))
 
         params = {
             "filename": filename,
