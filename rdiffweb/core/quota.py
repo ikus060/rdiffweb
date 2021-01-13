@@ -100,7 +100,11 @@ class DefaultUserQuota():
         assert isinstance(userobj, UserObject)
         # Fall back to disk spaces.
         if not self._get_usage_cmd:
-            return psutil.disk_usage('/').used
+            try:
+                return psutil.disk_usage(userobj.user_root).used
+            except:
+                logger.warn('fail to get disk usage [%s]', userobj.username, exc_info=1)
+                return 0
         # Execute a command to get disk usage
         try:
             used = self._exec(self._get_usage_cmd, userobj)
@@ -116,7 +120,11 @@ class DefaultUserQuota():
         assert isinstance(userobj, UserObject)
         # Fall back to disk spaces.
         if not self._get_quota_cmd:
-            return psutil.disk_usage('/').total
+            try:
+                return psutil.disk_usage(userobj.user_root).total
+            except:
+                logger.warn('fail to get disk size [%s]', userobj.username, exc_info=1)
+                return 0
         # Execute a command to get disk usage
         try:
             self._exec(self._get_quota_cmd, userobj)
