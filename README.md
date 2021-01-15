@@ -75,6 +75,21 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+# 2.1.0 (2021-01-15)
+
+* Debian package: Remove dh-systemd from Debian build dependencies (https://bugs.debian.org/871312we)
+* Improve Quota management:
+  * `QuotaSetCmd`, `QuotaGetCmd` and `QuotaUsedCmd` options could be used to customize how to set the quota for your environment.
+  * Display user's quota in User View
+  * Display user's quota in Admin View
+  * Allow admin to update user quota from Admin View when `QuotaSetCmd` is defined.
+  * Allow admin to define user quota using human readable value (e.g.: GiB, TiB, etc.)
+  * Improve logging around quota management
+* Improve robustness when service is starting
+* Improve robustness when repository has wrong permission defined (e.g.: when some files not readable)
+* Add user id in Admin view
+* Replace `UserObject(1)` by the actual username in log file to improve debugging
+
 # 2.0.0 (2020-12-04)
 
 * Re-implement logic to update repositories views to remove duplicates and avoid nesting repo. #107
