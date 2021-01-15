@@ -71,6 +71,107 @@ Login to rdiffweb using your username & password. Browse to your user settings.
 A new tab named "Notification" you be displayed. Click on it to change the
 notification settings for each repository.
 
+## User's quota management
+
+Since 2.1.0, it's now possible to customize how user quota is controller for
+your system without a custom plugin. By defining `QuotaSetCmd`, `QuotaGetCmd`
+and `QuotaUsedCmd` configuration options, you have all the flexibility to
+manage the quota the way you want by providing custom command line to be
+executed to respectively set the quota, get the quota and get quota usage.
+
+When calling the script, special environment variables are available:
+
+* RDIFFWEB_USERID: rdiffweb user id. e.g.: `34`
+* RDIFFWEB_USERNAME: rdiffweb user name. e.g.: `patrik`
+* RDIFFWEB_USERROOT: user's root directory. e.g.: `/backups/patrik/`
+* RDIFFWEB_ROLE: user's role e.g.: `10` 1:Admin, 5:Maintainer, 10:User
+* RDIFFWEB_QUOTA: only available for `QuotaSetCmd`. Define the new quota value in bytes. e.g.: 549755813888  (0.5 TiB)
+
+
+| Parameter | Description | Required | 
+| --- | --- | --- |
+| QuotaSetCmd | Command line to set the user's quota. | Yes. If you want to allow administrators to set quota from the web interface. |
+| QuotaGetCmd | Command line to get the user's quota. Should print the size in bytes to console. | No. Default behaviour gets quota using operating system statvfs that should be good if you are using setquota, getquota, etc. For ZFS and other more exotic file system, you may need to define this command. |
+| QuotaUsedCmd | Command line to get the quota usage. Should print the size in bytes to console. | No. |
+
+Continue reading about how to configure quotas for EXT4. We generally
+recommend making use of project quotas with rdiffweb to simplify the management
+of permission and avoid running rdiffweb with root privileges.  The next section
+present how to configure project quota. Keep in mind it's also possible to
+configure quota using either user's quota or project quota.
+
+### Configure user quota for ext4
+
+This section is not a full documentation about how to configure ext4 project quota
+but provide enough guidance to help you.
+
+1. Enabled project quota feature  
+   You must enable project quota feature for the ext4 partition where your backup resides using:  
+   `tune2fs -O project -Q prjquota /dev/sdaX`  
+   The file system must be unmounted to change this setting and may require you
+   to boot you system with a live-cd if your backups reside on root file system (`/`).  
+   Also, add `prjquota` options to your mount point configuration `/etc/fstab`.
+   Something like `/dev/sdaX   /   ext4    errors=remount-ro,prjquota     0    1`
+2. Turn on the project quota after reboot  
+   `quotaon -Pv -F vfsv1 /`
+3. Check if the quota is working  
+   `repquota -Ps /`
+4. Add `+P` attribute on directory you which to control quota  
+   `chattr -R +P /backups/admin`
+5. Then set the project id on directories  
+   `chattr -R -p 1 /backups/admin` where `1` is the rdiffweb user's id
+
+Next you may configure rdiffweb quota command line for your need. For ext4
+project quotas, you only need to define `QuotaSetCmd` with something similar to:
+
+    QuotaSetCmd=setquota -P $RDIFFWEB_USERID $((RDIFFWEB_QUOTA / 1024)) $((RDIFFWEB_QUOTA / 1024)) 0 0 /
+
+This effectively, makes use of rdiffweb user's id as project id.
+
+### Configure user quota for zfs
+
+This section is not a full documentation about how to configure ZFS project quotas
+but provide enough guidance to help you. This documentation uses `tank/backups`
+as the dataset to store rdiffweb backups.
+
+1. Quota feature is a relatively new feature for ZFS On Linux. Check your
+   operating system to verify if your ZFS version support it. You may need
+   to upgrade your pool and dataset using:  
+   
+   `zpool upgrade tank`
+   `zfs upgrade tank/backups`
+   
+2. Add `+P` attribute on directory you which to control quota  
+   `chattr -R +P /backups/admin`
+   `chattr -R -p 1 /backups/admin`
+   OR
+   `zfs project -p 1 -rs /backups/admin`
+   Where `1` is the rdiffweb user's id
+   
+Take note, it's better to enable project quota attributes when the repositories are empty.
+
+## Other Rdiffweb settings
+
+| Parameter | Description | Required | Example |
+| --- | --- | --- | --- |
+| ServerHost | Define the IP address to listen to. Use 0.0.0.0 to listen on all interfaces. | No | 127.0.0.1 |
+| ServerPort | Define the host to listen to. Default to 8080 | No | 80 |
+| LogLevel | Define the log level. ERROR, WARN, INFO, DEBUG | No | DEBUG |
+| Environment | Define the type of environment: development, production. This is used to limit the information shown to the user when an error occur. | No | production |
+| HeaderName | Define the application name displayed in the title bar and header menu. | No | My Backup |
+| DefaultTheme | Define the default theme. Either: default or orange. Define the css file to be loaded in the web interface. You may manually edit a css file to customize it. the location is similar to `/usr/local/lib/python2.7/dist-packages/rdiffweb/static/`. It's preferable to contact the developer if you want a specific color scheme to be added. | No | orange |
+| WelcomeMsg | Replace the headling displayed in the login page | No | - |
+| LogFile | Define the location of the log file | No | /var/log/rdiffweb.log |
+| LogAccessFile | Define the location of the access log file | No | /var/log/rdiffweb-access.log |
+| RemoveOlderTime | Time when to execute the remove older task | No | 22:00 | 
+| SQLiteDBFile | Location of the SQLite database | No | /etc/rdiffweb/rdw.db | 
+| AddMissingUser | True to create users from LDAP when the credential are valid. | No | True |
+| AdminUser | Define the name of the default admin user to be created | No | admin |
+| FavIcon | Define the FavIcon to be displayed in the browser title | No | /etc/rdiffweb/my-fav.ico |
+| TempDir | Define an alternate temp directory to be used when restoring files. | No | /retore/ |
+| MaxDepth | Define the maximum folder depthness to search into the user's root directory to find repositories. This is commonly used if you repositories are organised with multiple sub-folder. Default: 5 | No | 10 |
+
+
 ## Configure Apache - Reverse Proxy (optional)
 
 You may need an Apache server in case:
@@ -147,25 +248,3 @@ no way a complete reference.
 
 See [/extras/nginx](../extras/nginx) folder for example of nginx configuration
 to be used with rdiffweb.
-
-## Other settings
-
-| Parameter | Description | Required | Example |
-| --- | --- | --- | --- |
-| ServerHost | Define the IP address to listen to. Use 0.0.0.0 to listen on all interfaces. | No | 127.0.0.1 |
-| ServerPort | Define the host to listen to. Default to 8080 | No | 80 |
-| LogLevel | Define the log level. ERROR, WARN, INFO, DEBUG | No | DEBUG |
-| Environment | Define the type of environment: development, production. This is used to limit the information shown to the user when an error occur. | No | production |
-| HeaderName | Define the application name displayed in the title bar and header menu. | No | My Backup |
-| DefaultTheme | Define the default theme. Either: default or orange. Define the css file to be loaded in the web interface. You may manually edit a css file to customize it. the location is similar to `/usr/local/lib/python2.7/dist-packages/rdiffweb/static/`. It's preferable to contact the developer if you want a specific color scheme to be added. | No | orange |
-| WelcomeMsg | Replace the headling displayed in the login page | No | - |
-| LogFile | Define the location of the log file | No | /var/log/rdiffweb.log |
-| LogAccessFile | Define the location of the access log file | No | /var/log/rdiffweb-access.log |
-| RemoveOlderTime | Time when to execute the remove older task | No | 22:00 | 
-| SQLiteDBFile | Location of the SQLite database | No | /etc/rdiffweb/rdw.db | 
-| AddMissingUser | True to create users from LDAP when the credential are valid. | No | True |
-| AdminUser | Define the name of the default admin user to be created | No | admin |
-| FavIcon | Define the FavIcon to be displayed in the browser title | No | /etc/rdiffweb/my-fav.ico |
-| TempDir | Define an alternate temp directory to be used when restoring files. | No | /retore/ |
-| MaxDepth | Define the maximum folder depthness to search into the user's root directory to find repositories. This is commonly used if you repositories are organised with multiple sub-folder. Default: 5 | No | 10 |
-
