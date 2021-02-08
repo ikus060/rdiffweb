@@ -5,7 +5,6 @@ Maintainer: Patrik Dufresne <patrik@ikus-soft.com>
 Build-Depends:
  debhelper-compat (= 13),
  dh-python,
- help2man,
  python3,
  python3-all-dev,
  python3-babel,
@@ -18,7 +17,6 @@ Build-Depends:
  python3-psutil,
  python3-setuptools,
  python3-setuptools-scm,
- python3-venv,
  python3-wtforms,
 Rules-Requires-Root: no
 Standards-Version: 4.5.1
