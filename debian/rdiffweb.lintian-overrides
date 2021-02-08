@@ -1,0 +1,2 @@
+# this is intentionally broken in order to detect it in the test suite.
+rdiffweb: broken-gz usr/lib/python3/dist-packages/rdiffweb/core/tests/rdiff-backup-data/error_log.2019-05-22T09:19:09-04:00.data.gz
