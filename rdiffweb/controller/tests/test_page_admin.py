@@ -379,21 +379,25 @@ class AdminUsersAsUserTest(AbstractAdminTest):
         self.assertStatus(403)
 
 
-class AdminLogsTest(WebCase):
+class AdminWithNoLogsTest(WebCase):
 
     login = True
 
-    def test_no_logs(self):
-        self.app.cfg['logfile'] = None
-        self.app.cfg['logaccessfile'] = None
-
+    def test_logs(self):
         self.getPage("/admin/logs/")
         self.assertStatus(200)
         self.assertInBody("No log files")
 
+
+class AdminWithLogsTest(WebCase):
+
+    login = True
+    default_config = {
+        'logfile': '/tmp/rdiffweb.log',
+        'logaccessfile': '/tmp/rdiffweb-access.log'
+    }
+
     def test_logs(self):
-        self.app.cfg['logfile'] = '/tmp/rdiffweb.log'
-        self.app.cfg['logaccessfile'] = '/tmp/rdiffweb-access.log'
         with open('/tmp/rdiffweb.log', 'w') as f:
             f.write("content of log file")
         with open('/tmp/rdiffweb-access.log', 'w') as f:
@@ -409,19 +413,22 @@ class AdminLogsTest(WebCase):
             os.remove('/tmp/rdiffweb.log')
             os.remove('/tmp/rdiffweb-access.log')
 
-    def test_logs_with_no_file(self):
-        self.app.cfg['logfile'] = './rdiffweb.log'
-        self.app.cfg['logaccessfile'] = './rdiffweb-access.log'
 
+class AdminWithLogMissingTest(WebCase):
+
+    login = True
+    default_config = {
+        'logfile': './rdiffweb.log',
+        'logaccessfile': './rdiffweb-access.log'
+    }
+
+    def test_logs_with_no_file(self):
         self.getPage("/admin/logs/")
         self.assertStatus(200)
         self.assertInBody("rdiffweb.log")
         self.assertInBody("Error getting file content")
 
     def test_logs_with_invalid_file(self):
-        self.app.cfg['logfile'] = './rdiffweb.log'
-        self.app.cfg['logaccessfile'] = './rdiffweb-access.log'
-
         self.getPage("/admin/logs/invalid")
         self.assertStatus(404)
 

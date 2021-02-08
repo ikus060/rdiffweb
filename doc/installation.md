@@ -28,14 +28,14 @@ Since v2.0.0, you may install Rdiffweb from APT Repository
 ## Configure rdiffweb
 
 By default rdiffweb is looking for a configuration at `/etc/rdiffweb/rdw.conf`.
-If this file doesn’t exist, rdiffweb refused to start. So let create a default
-configuration file.
 
 Install default configuration file.
 
     sudo mkdir -p /etc/rdiffweb 
     sudo curl -L https://gitlab.com/ikus-soft/rdiffweb/-/raw/master/rdw.conf -o /etc/rdiffweb/rdw.conf
-    
+
+## Start Rdiffweb on reboot
+
 If needed, create a service unit to manage rdiffweb as a service:
 
     sudo curl -L https://gitlab.com/ikus-soft/rdiffweb/-/raw/master/extras/systemd/rdiffweb.service -o /etc/systemd/system/rdiffweb.service

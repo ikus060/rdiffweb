@@ -28,7 +28,7 @@ import smtplib
 from xml.etree.ElementTree import fromstring, tostring
 
 from rdiffweb.core import librdiff
-from rdiffweb.core.config import Option, BoolOption
+from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_deamon import Deamon
 from rdiffweb.core.store import IUserChangeListener
@@ -110,23 +110,21 @@ class NotificationPlugin(Deamon, IUserChangeListener):
     Send email notification when a repository get too old (without a backup).
     """
 
-    _encryption = Option('EmailEncryption', 'none')
+    _encryption = Option('email_encryption')
 
-    _email_host = Option('EmailHost', _get_func=lambda x: x.partition(':')[0])
+    _email_host = Option('email_host')
 
-    _email_port = Option('EmailHost', _get_func=lambda x: int(x.partition(':')[2]))
+    _email_from = Option('email_sender')
 
-    _email_from = Option('EmailSender')
+    _email_notification_time = Option('email_notification_time')
 
-    _email_notification_time = Option('EmailNotificationTime', '23:00')
+    _smtp_username = Option('email_username')
 
-    _smtp_username = Option('EmailUsername', None)
+    _smtp_password = Option('email_password')
 
-    _smtp_password = Option('EmailPassword', None)
+    _header_name = Option("header_name")
 
-    _header_name = Option("HeaderName", "rdiffweb")
-
-    _send_change_notification = BoolOption("EmailSendChangedNotification", False)
+    _send_change_notification = Option("email_send_changed_notification")
 
     def __init__(self, bus, app):
         self.app = app
@@ -248,10 +246,11 @@ class NotificationPlugin(Deamon, IUserChangeListener):
 
         # Open an SMTP connection.
         conn = None
+        host, port = self._email_host.split(':')
         if self._encryption == 'ssl':
-            conn = smtplib.SMTP_SSL(self._email_host, self._email_port)
+            conn = smtplib.SMTP_SSL(host, port)
         else:
-            conn = smtplib.SMTP(self._email_host, self._email_port)
+            conn = smtplib.SMTP(host, port)
         try:
             if self._encryption == 'starttls':
                 conn.starttls()

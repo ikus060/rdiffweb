@@ -28,7 +28,7 @@ import logging
 import os
 import unittest
 
-from mock import MagicMock
+from unittest.mock import MagicMock
 from mockldap import MockLdap
 import pkg_resources
 
@@ -442,21 +442,6 @@ class StoreWithLdapTest(AppTestCase):
         """Check if login work"""
         self.assertIsNone(self.app.store.login('kim', 'password'))
 
-    def test_login_with_create_user(self):
-        """Check if login create the user in database if user exists in LDAP"""
-        self.assertIsNone(self.app.store.get_user('tony'))
-        self.app.cfg['addmissinguser'] = 'true'
-        try:
-            userobj = self.app.store.login('tony', 'password')
-            self.assertIsNotNone(self.app.store.get_user('tony'))
-            self.assertFalse(userobj.is_admin)
-            self.assertEqual(USER_ROLE, userobj.role)
-            # Check listener
-            self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
-            self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
-        finally:
-            self.app.cfg['addmissinguser'] = 'false'
-
     def test_get_user_invalid(self):
         self.assertIsNone(self.app.store.get_user('invalid'))
 
@@ -482,6 +467,68 @@ class StoreWithLdapTest(AppTestCase):
         userobj = self.app.store.add_user('john')
         with self.assertRaises(ValueError):
             self.assertFalse(userobj.set_password(''))
+
+
+class StoreWithLdapAddMissing(AppTestCase):
+
+    basedn = ('dc=nodomain', {
+        'dc': ['nodomain'],
+        'o': ['nodomain']})
+    people = ('ou=People,dc=nodomain', {
+        'ou': ['People'],
+        'objectClass': ['organizationalUnit']})
+
+    # This is the content of our mock LDAP directory. It takes the form
+    # {dn: {attr: [value, ...], ...}, ...}.
+    directory = dict([
+        basedn,
+        people,
+        _ldap_user('tony'),
+    ])
+
+    default_config = {
+        'LdapUri': '__default__',
+        'LdapBaseDn': 'dc=nodomain',
+        'LdapAllowPasswordChange': 'true',
+        'addmissinguser': 'true'
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        # We only need to create the MockLdap instance once. The content we
+        # pass in will be used for all LDAP connections.
+        cls.mockldap = MockLdap(cls.directory)
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.mockldap
+
+    def setUp(self):
+        # Mock LDAP
+        self.mockldap.start()
+        self.ldapobj = self.mockldap['ldap://localhost/']
+        # Original setup
+        AppTestCase.setUp(self)
+        # Get reference to LdapStore
+        self.ldapstore = self.app.store._password_stores[0]
+        # Create fake listener
+        self.mlistener = IUserChangeListener(self.app)
+        self.mlistener.user_added = MagicMock()
+        self.mlistener.user_attr_changed = MagicMock()
+        self.mlistener.user_deleted = MagicMock()
+        self.mlistener.user_logined = MagicMock()
+        self.mlistener.user_password_changed = MagicMock()
+
+    def test_login_with_create_user(self):
+        """Check if login create the user in database if user exists in LDAP"""
+        self.assertIsNone(self.app.store.get_user('tony'))
+        userobj = self.app.store.login('tony', 'password')
+        self.assertIsNotNone(self.app.store.get_user('tony'))
+        self.assertFalse(userobj.is_admin)
+        self.assertEqual(USER_ROLE, userobj.role)
+        # Check listener
+        self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
+        self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
 
 
 class StoreWithAdmin(AppTestCase):
@@ -601,7 +648,7 @@ class StoreTestSSHKeys(AppTestCase):
         userobj = self.app.store.get_user(self.USERNAME)
         os.mkdir(os.path.join(userobj.user_root, '.ssh'))
         filename = os.path.join(userobj.user_root, '.ssh', 'authorized_keys')
-        with open(filename, 'w') as f :
+        with open(filename, 'w') as f:
             f.write(data)
 
         # Get the keys

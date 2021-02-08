@@ -1,5 +1,21 @@
 # Rdiffweb configuration
 
+Since v2.2.0, Rdiffweb configuration is more flexible. You may configure it using
+configuration file, environment variables and command line arguments.
+
+All args that start with '--' (e.g.: --debug) can also be set in configuration file or environment variables.
+By default, Rdiffweb loads configuration files from `/etc/rdiffweb/rdw.conf` or `/etc/rdiffweb/rdw.conf.d/*.conf`.
+Environment variable are prefix with `RDIFFWEB_` where dash (-) should be replace by underscore (_). e.g. `--server-host 8081` could be defined using `RDIFFWEB_SERVER_HOST=8081`.
+
+Configuration file syntax allows: 
+
+    # This is a comments
+    key=value
+    flag=true
+    
+If a value is specified in more than one place, then commandline values
+override environment variables which override config file values which override defaults.
+
 ## LDAP Authentication
 
 Rdiffweb integrates with LDAP to support user authentication. 
@@ -23,18 +39,19 @@ Plugin parameters:
 
 | Parameter | Description | Required | Example |
 | --- | --- | --- | --- |
-| LdapUri | URIs containing only the schema, the host, and the port. | Yes | ldap://localhost:389 | 
-| LdapTls | `true` to enable TLS. Default to `false` | No | false |
-| LdapProtocolVersion | Version of LDAP in use either 2 or 3. Default to 3. | No | 3 |
-| LdapBaseDn | The DN of the branch of the directory where all searches should start from. | Yes | dc=my,dc=domain | 
-| LdapBindDn | An optional DN used to bind to the server when searching for entries. If not provided, will use an anonymous bind. | No | cn=manager,dc=my,dc=domain |
-| LdapBindPassword |  A bind password to use in conjunction with `LdapBindDn`. Note that the bind password is probably sensitive data, and should be properly protected. You should only use the LdapBindDn and LdapBindPassword if you absolutely need them to search the directory. | No | mypassword |
-| LdapAttribute | The attribute to search username. If no attributes are provided, the default is to use `uid`. It's a good idea to choose an attribute that will be unique across all entries in the subtree you will be using. | No | cn | 
-| LdapScope | The scope of the search. Can be either `base`, `onelevel` or `subtree`. Default to `subtree`. | No | onelevel |
-| LdapFilter | A valid LDAP search filter. If not provided, defaults to `(objectClass=*)`, which will search for all objects in the tree. | No | (objectClass=*) | 
-| LdapNetworkTimeout | Optional timeout value. Default to 10 sec. | No | 10 |
-| LdapTimeout | Optional timeout value. Default to 300 sec. | No | 300 |
-| LdapAllowPasswordChange | `true` to allow LDAP users to  update their password using rdiffweb. This option should only be enabled if the LDAP if confiugred to allow the user to change their own password. Default to  `false`. | No | true |
+| --ldap-uri | URIs containing only the schema, the host, and the port. | Yes | ldap://localhost:389 | 
+| --ldap-tls | `true` to enable TLS. Default to `false` | No | false |
+| --ldap-protocol-version | Version of LDAP in use either 2 or 3. Default to 3. | No | 3 |
+| --ldap-base-dn | The DN of the branch of the directory where all searches should start from. | Yes | dc=my,dc=domain | 
+| --ldap-bind-dn | An optional DN used to bind to the server when searching for entries. If not provided, will use an anonymous bind. | No | cn=manager,dc=my,dc=domain |
+| --ldap-bind-password |  A bind password to use in conjunction with `LdapBindDn`. Note that the bind password is probably sensitive data, and should be properly protected. You should only use the LdapBindDn and LdapBindPassword if you absolutely need them to search the directory. | No | mypassword |
+| --ldap-user-attribute | The attribute to search username. If no attributes are provided, the default is to use `uid`. It's a good idea to choose an attribute that will be unique across all entries in the subtree you will be using. | No | cn | 
+| --ldap-scope | The scope of the search. Can be either `base`, `onelevel` or `subtree`. Default to `subtree`. | No | onelevel |
+| --ldap-filter | A valid LDAP search filter. If not provided, defaults to `(objectClass=*)`, which will search for all objects in the tree. | No | (objectClass=*) | 
+| --ldap-network-timeout | Optional timeout value. Default to 10 sec. | No | 10 |
+| --ldap-timeout | Optional timeout value. Default to 300 sec. | No | 300 |
+| --ldap-allow-password-change | `true` to allow LDAP users to  update their password using rdiffweb. This option should only be enabled if the LDAP if confiugred to allow the user to change their own password. Default to  `false`. | No | true |
+| --ldap-add-missing-user | `True` to create users from LDAP when the credential are valid. | No | True |
 
 ## Email notifications
 
@@ -90,9 +107,9 @@ When calling the script, special environment variables are available:
 
 | Parameter | Description | Required | 
 | --- | --- | --- |
-| QuotaSetCmd | Command line to set the user's quota. | Yes. If you want to allow administrators to set quota from the web interface. |
-| QuotaGetCmd | Command line to get the user's quota. Should print the size in bytes to console. | No. Default behaviour gets quota using operating system statvfs that should be good if you are using setquota, getquota, etc. For ZFS and other more exotic file system, you may need to define this command. |
-| QuotaUsedCmd | Command line to get the quota usage. Should print the size in bytes to console. | No. |
+| --quota-set-cmd | Command line to set the user's quota. | Yes. If you want to allow administrators to set quota from the web interface. |
+| --quota-get-cmd | Command line to get the user's quota. Should print the size in bytes to console. | No. Default behaviour gets quota using operating system statvfs that should be good if you are using setquota, getquota, etc. For ZFS and other more exotic file system, you may need to define this command. |
+| --quota-used-cmd | Command line to get the quota usage. Should print the size in bytes to console. | No. |
 
 Continue reading about how to configure quotas for EXT4. We generally
 recommend making use of project quotas with rdiffweb to simplify the management
@@ -154,22 +171,22 @@ Take note, it's better to enable project quota attributes when the repositories 
 
 | Parameter | Description | Required | Example |
 | --- | --- | --- | --- |
-| ServerHost | Define the IP address to listen to. Use 0.0.0.0 to listen on all interfaces. | No | 127.0.0.1 |
-| ServerPort | Define the host to listen to. Default to 8080 | No | 80 |
-| LogLevel | Define the log level. ERROR, WARN, INFO, DEBUG | No | DEBUG |
-| Environment | Define the type of environment: development, production. This is used to limit the information shown to the user when an error occur. | No | production |
-| HeaderName | Define the application name displayed in the title bar and header menu. | No | My Backup |
-| DefaultTheme | Define the default theme. Either: default or orange. Define the css file to be loaded in the web interface. You may manually edit a css file to customize it. the location is similar to `/usr/local/lib/python2.7/dist-packages/rdiffweb/static/`. It's preferable to contact the developer if you want a specific color scheme to be added. | No | orange |
-| WelcomeMsg | Replace the headling displayed in the login page | No | - |
-| LogFile | Define the location of the log file | No | /var/log/rdiffweb.log |
-| LogAccessFile | Define the location of the access log file | No | /var/log/rdiffweb-access.log |
-| RemoveOlderTime | Time when to execute the remove older task | No | 22:00 | 
-| SQLiteDBFile | Location of the SQLite database | No | /etc/rdiffweb/rdw.db | 
-| AddMissingUser | True to create users from LDAP when the credential are valid. | No | True |
-| AdminUser | Define the name of the default admin user to be created | No | admin |
-| FavIcon | Define the FavIcon to be displayed in the browser title | No | /etc/rdiffweb/my-fav.ico |
-| TempDir | Define an alternate temp directory to be used when restoring files. | No | /retore/ |
-| MaxDepth | Define the maximum folder depthness to search into the user's root directory to find repositories. This is commonly used if you repositories are organised with multiple sub-folder. Default: 5 | No | 10 |
+| --server-host | Define the IP address to listen to. Use 0.0.0.0 to listen on all interfaces. | No | 127.0.0.1 |
+| --server-port | Define the host to listen to. Default to 8080 | No | 80 |
+| --log-level | Define the log level. ERROR, WARN, INFO, DEBUG | No | DEBUG |
+| --environment | Define the type of environment: development, production. This is used to limit the information shown to the user when an error occur. | No | production |
+| --header-name | Define the application name displayed in the title bar and header menu. | No | My Backup |
+| --default-theme | Define the default theme. Either: default or orange. Define the css file to be loaded in the web interface. You may manually edit a css file to customize it. the location is similar to `/usr/local/lib/python2.7/dist-packages/rdiffweb/static/`. It's preferable to contact the developer if you want a specific color scheme to be added. | No | orange |
+| --welcome-msg | Replace the headling displayed in the login page | No | - |
+| --log-file | Define the location of the log file | No | /var/log/rdiffweb.log |
+| --log-access-file | Define the location of the access log file | No | /var/log/rdiffweb-access.log |
+| --remove-older-time | Time when to execute the remove older task | No | 22:00 | 
+| --sqlitedb-file | Location of the SQLite database | No | /etc/rdiffweb/rdw.db | 
+
+| --admin-user | Define the name of the default admin user to be created | No | admin |
+| --favicon | Define the FavIcon to be displayed in the browser title | No | /etc/rdiffweb/my-fav.ico |
+| --tempdir | Define an alternate temp directory to be used when restoring files. | No | /retore/ |
+| --max-depth | Define the maximum folder depthness to search into the user's root directory to find repositories. This is commonly used if you repositories are organised with multiple sub-folder. Default: 5 | No | 10 |
 
 
 ## Configure Apache - Reverse Proxy (optional)

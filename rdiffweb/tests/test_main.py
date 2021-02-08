@@ -6,19 +6,14 @@ Created on Sep. 18, 2020
 import contextlib
 import io
 import unittest
+from unittest.mock import patch
 
-from mock import patch
 import pkg_resources
-
-from rdiffweb.main import main, _parse_args
+from rdiffweb.main import main
 
 
 @patch('cherrypy.quickstart')
 class Test(unittest.TestCase):
-
-    def test_parse_args(self, *args):
-        args = _parse_args(['-f', 'myfile.conf'])
-        self.assertEqual(args.config, 'myfile.conf')
 
     def test_main_with_config(self, *args):
         config = pkg_resources.resource_filename('rdiffweb.tests', 'rdw.conf')  # @UndefinedVariable
@@ -27,9 +22,7 @@ class Test(unittest.TestCase):
     def test_main_without_config(self, *args):
         f = io.StringIO()
         with contextlib.redirect_stdout(f):
-            with self.assertRaises(SystemExit):
                 main([])
-        self.assertTrue(f.getvalue().startswith('Fatal Error'), msg='%s' % f.getvalue())
 
     def test_main_help(self, *args):
         f = io.StringIO()

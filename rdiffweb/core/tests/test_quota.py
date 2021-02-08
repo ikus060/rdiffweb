@@ -122,7 +122,7 @@ class DefaultQuotaTest(AppTestCase):
 
     def test_update_userquota_401(self):
         userobj = self.app.store.add_user('bob')
-        # Mock co mmand
+        # Mock command
         self.app.quota._set_quota_cmd = "exit 3"
         # Make sure an exception is raised.
         with self.assertRaises(QuotaException):

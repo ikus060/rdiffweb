@@ -15,19 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import argparse
 import logging
 import logging.config
 import logging.handlers
 import sys
-import rdiffweb
 
 import cherrypy
-
 from rdiffweb import rdw_app
-from rdiffweb.core.config import read_config
+from rdiffweb.core.config import parse_args
 from rdiffweb.core.notification import NotificationPlugin
 from rdiffweb.core.rdw_deamon import RemoveOlder
+
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -91,54 +89,27 @@ def _setup_logging(log_file, log_access_file, level):
     cherrypy_error.addHandler(default_handler)
 
 
-def _parse_args(args):
-    parser = argparse.ArgumentParser(prog='rdiffweb', description='Web interface to browse and restore rdiff-backup repositories')
-    parser.add_argument('-d', '--debug', action='store_true', help='enable Rdiffweb debug mode - change the log level to DEBUG and print exception stack trace to the web interface')
-    parser.add_argument('-f', '--config', help='location of Rdiffweb configuration file', default="/etc/rdiffweb/rdw.conf")
-    parser.add_argument('--log-file', help='location of Rdiffweb log file. Print log to the console if not define in config file.')
-    parser.add_argument('--log-access-file', help='location of Rdiffweb log access file.')
-    parser.add_argument('--version', action='version', version='%(prog)s ' + rdiffweb.__version__)
-    return parser.parse_args(args)
-
-
 def main(args=None):
     """Start rdiffweb deamon."""
     # Parse arguments
-    args = _parse_args(sys.argv[1:] if args is None else args)
-
-    # Open config file before opening the apps.
-    try:
-        cfg = read_config(args.config)
-    except FileNotFoundError:
-        print('Fatal Error: configuration file %s not found' % args.config)
-        sys.exit(1)
-
-    log_file = args.log_file or cfg.get('logfile', None)
-    log_access_file = args.log_access_file or cfg.get('logaccessfile', None)
-    environment = 'development' if args.debug else cfg.get('environment', 'production')
-    log_level = "DEBUG" if args.debug else cfg.get('loglevel', 'INFO')
+    cfg = parse_args(args)
 
     # Configure logging
-    _setup_logging(log_file=log_file, log_access_file=log_access_file, level=log_level)
+    environment = 'development' if cfg.debug else cfg.environment
+    log_level = "DEBUG" if cfg.debug else cfg.log_level
+    _setup_logging(log_file=cfg.log_file, log_access_file=cfg.log_access_file, level=log_level)
 
     try:
         # Create App.
         app = rdw_app.RdiffwebApp(cfg)
 
-        # Get configuration
-        serverhost = cfg.get("serverhost", "127.0.0.1")
-        serverport = int(cfg.get("serverport", "8080"))
-        # Get SSL configuration (if any)
-        sslcertificate = cfg.get("sslcertificate")
-        sslprivatekey = cfg.get("sslprivatekey")
-
         global_config = cherrypy._cpconfig.environments.get(environment, {})
         global_config.update({
-            'server.socket_host': serverhost,
-            'server.socket_port': serverport,
-            'server.log_file': log_file,
-            'server.ssl_certificate': sslcertificate,
-            'server.ssl_private_key': sslprivatekey,
+            'server.socket_host': cfg.server_host,
+            'server.socket_port': cfg.server_port,
+            'server.log_file': cfg.log_file,
+            'server.ssl_certificate': cfg.ssl_certificate,
+            'server.ssl_private_key': cfg.ssl_private_key,
             # Set maximum POST size to 2MiB, for security.
             'server.max_request_body_size': 2097152,
             'server.environment': environment,

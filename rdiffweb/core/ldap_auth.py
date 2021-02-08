@@ -31,8 +31,7 @@ import time
 
 from rdiffweb.core import RdiffError
 from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.config import Option, BoolOption, IntOption
-#
+from rdiffweb.core.config import Option
 
 logger = logging.getLogger(__name__)
 
@@ -43,23 +42,23 @@ class LdapPasswordStore():
 
     This implementation assume the LDAP is using the system encoding."""
 
-    uri = Option("LdapUri", doc="Get Ldap URI")
-    base_dn = Option("LdapBaseDn", "", doc="Get Base DN")
-    scope = Option("LdapScope", "subtree")
-    tls = BoolOption("LdapTls", "false", doc="Check if TLs is enabled")
-    attribute = Option("LdapAttribute", "uid", doc="Get attribute")
-    filter = Option("LdapFilter", "(objectClass=*)")
-    require_group = Option("LdapRequiredGroup")
-    group_attribute = Option("LDAPGroupAttribute", "member")
-    group_attribute_is_dn = BoolOption("LDAPGroupAttributeIsDN", "true")
-    bind_dn = Option("LdapBindDn", "")
-    bind_password = Option("LdapBindPassword", "")
-    version = IntOption("LdapVersion", "3")
-    network_timeout = IntOption("LdapNetworkTimeout", "100")
-    timeout = IntOption("LdapTimeout", "300")
-    encoding = Option("LdapEncoding", "utf-8", doc="Get default LdapEncoding")
-    allow_password_change = BoolOption("LdapAllowPasswordChange", "false", doc="Check if password change are allowed.")
-    check_shadow_expire = BoolOption("LdapCheckShadowExpire", "false", doc="Enable verification of Shadow Expire.")
+    uri = Option("ldap_uri")
+    base_dn = Option("ldap_base_dn")
+    scope = Option("ldap_scope")
+    tls = Option("ldap_tls")
+    attribute = Option("ldap_username_attribute")
+    filter = Option("ldap_filter")
+    require_group = Option("ldap_required_group")
+    group_attribute = Option("ldap_group_attribute")
+    group_attribute_is_dn = Option("ldap_group_attribute_is_dn")
+    bind_dn = Option("ldap_bind_dn")
+    bind_password = Option("ldap_bind_password")
+    version = Option("ldap_version")
+    network_timeout = Option("ldap_network_timeout")
+    timeout = Option("ldap_timeout")
+    encoding = Option("ldap_encoding")
+    allow_password_change = Option("ldap_allow_password_change")
+    check_shadow_expire = Option("ldap_check_shadow_expire")
 
     def __init__(self, app):
         self.app = app

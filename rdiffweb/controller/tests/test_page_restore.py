@@ -24,7 +24,6 @@ Created on Jan 1, 2016
 
 import io
 import logging
-import sys
 import tarfile
 import unittest
 import zipfile
