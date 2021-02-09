@@ -1,5 +1,5 @@
-rdiffweb (1.5.0-1) unstable; urgency=medium
+rdiffweb (2.1.0-1) unstable; urgency=medium
 
   * Initial upload to debian (Closes: #969974).
 
- -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 18 Sep 2020 12:09:40 +0300
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 08 Feb 2021 13:11:20 +0300
