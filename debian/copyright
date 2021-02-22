@@ -7,7 +7,7 @@ Files: *
 Copyright: 2019-2021 Patrik Dufresne <patrik@ikus-soft.com>
 License: GPL-3+
 
-Files: rdiffweb/static/less/bootstrap/* rdiffweb/static/js/bootstrap.min.js
+Files: rdiffweb/static/less/bootstrap/* rdiffweb/static/js/bootstrap.min.js vendor/bootstrap/*
 Copyright: 2011-2019, Twitter, Inc.
            2014, jQuery Foundation and other contributors
            2014, "Cowboy" Ben Alman, contributors
