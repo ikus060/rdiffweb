@@ -6,3 +6,5 @@
 /rdiffweb.prerm.debhelper
 /rdiffweb.substvars
 /debhelper-build-stamp
+/files
+/rdiffweb.postrm.debhelper
