@@ -3,7 +3,7 @@ Section: web
 Priority: optional
 Maintainer: Patrik Dufresne <patrik@ikus-soft.com>
 Build-Depends:
- debhelper-compat (= 13),
+ debhelper-compat (= 12),
  dh-python,
  python3,
  python3-all-dev,
@@ -43,6 +43,7 @@ Depends:
  python3-ldap,
  python3-psutil,
  python3-wtforms,
+ rdiff-backup|rdiff-backup-1.2|rdiff-backup-2.0,
  ${misc:Depends},
  ${python3:Depends},
  ${sphinxdoc:Depends},
