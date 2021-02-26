@@ -43,7 +43,7 @@ Depends:
  python3-ldap,
  python3-psutil,
  python3-wtforms,
- rdiff-backup|rdiff-backup-1.2|rdiff-backup-2.0,
+ rdiff-backup,
  ${misc:Depends},
  ${python3:Depends},
  ${sphinxdoc:Depends},
