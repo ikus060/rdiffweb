@@ -113,7 +113,9 @@ package:debian:buster:
     set -x
     set -e
     export VERSION=$(python3 setup.py --version)
-    apt update && apt install -y devscripts && apt build-dep -y .
+    echo "deb http://deb.debian.org/debian buster-backports main" > /etc/apt/sources.list.d/backports.list
+    echo "deb-src http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list.d/backports.list
+    apt update && apt install -y devscripts && apt build-dep -t buster-backports -y .
     dch -v "$VERSION" "automated build"
     dpkg-buildpackage -b
     mkdir -p ./dist/buster
