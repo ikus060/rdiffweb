@@ -20,8 +20,7 @@ Created on Feb 13, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-
-from mock import MagicMock, ANY, patch
+from unittest.mock import MagicMock, ANY, patch
 import unittest
 
 from rdiffweb.core.notification import html2plaintext, NotificationPlugin
@@ -37,6 +36,13 @@ class NotificationTest(AppTestCase):
     reset_app = True
 
     reset_testcases = True
+
+    default_config = {
+        'EmailHost': 'smtp.gmail.com:587',
+        'EmailUsername': 'test@test.com',
+        'EmailPassword': 'test1234',
+        'EmailEncryption': 'starttls'
+    }
 
     def test_run_with_notification(self):
         """
@@ -83,16 +89,10 @@ class NotificationTest(AppTestCase):
         """
         Check email template generation.
         """
-        with patch('rdiffweb.core.notification.smtplib') as patcher:
+        with patch('rdiffweb.core.notification.smtplib'):
             # Set user config
             user = self.app.store.get_user(self.USERNAME)
             user.email = 'test@test.com'
-
-            # Set email config
-            self.app.cfg['EmailHost'] = 'smtp.gmail.com:587'
-            self.app.cfg['EmailUsername'] = 'test@test.com'
-            self.app.cfg['EmailPassword'] = 'test1234'
-            self.app.cfg['EmailEncryption'] = 'starttls'
 
             # Get ref to notification plugin
             bus = MagicMock()
@@ -121,9 +121,21 @@ How are you?
 Here is the link you wanted."""
         self.assertEqual(expected, html2plaintext(html))
 
+
+class SendChangeNotificationTest(AppTestCase):
+
+    USERNAME = 'admin'
+
+    PASSWORD = 'admin'
+
+    reset_app = True
+
+    reset_testcases = True
+
+    default_config = {'emailsendchangednotification': True}
+
     def test_email_changed(self):
         # Get ref to notification plugin
-        self.app.cfg['emailsendchangednotification'] = 'True'
         n = NotificationPlugin(bus=MagicMock(), app=self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
@@ -139,9 +151,8 @@ Here is the link you wanted."""
         # Set user config
         user = self.app.store.get_user(self.USERNAME)
         user.email = 'test@test.com'
-        
+
         # Get ref to notification plugin
-        self.app.cfg['emailsendchangednotification'] = 'True'
         n = NotificationPlugin(bus=MagicMock(), app=self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
@@ -151,6 +162,7 @@ Here is the link you wanted."""
 
         # Expect it to be called.
         n.send_mail.assert_called_once_with(ANY, ANY, 'password_changed.html')
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

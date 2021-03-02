@@ -47,6 +47,7 @@ from rdiffweb.core.librdiff import DoesNotExistError, AccessDeniedError
 from rdiffweb.core.quota import DefaultUserQuota
 from rdiffweb.core.store import Store
 
+
 # Define the logger
 logger = logging.getLogger(__name__)
 
@@ -91,22 +92,20 @@ class Root(LocationsPage):
 class RdiffwebApp(Application):
     """This class represent the application context."""
 
-    _favicon = Option('Favicon', default=pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico'))  # @UndefinedVariable
+    _favicon = Option('favicon')
 
-    _header_logo = Option('HeaderLogo')
+    _header_logo = Option('header_logo')
 
-    _tempdir = Option('TempDir')
+    _tempdir = Option('tempdir')
+    
+    _session_dir = Option('session_dir')
 
-    _user_quota = Option('UserQuota', default="default")
-
-    def __init__(self, cfg={}):
-        self.cfg = {k.lower(): v for k, v in cfg.items()}
+    def __init__(self, cfg):
+        
+        self.cfg = cfg
 
         # Initialise the template engine.
         self.templates = rdw_templating.TemplateManager()
-
-        # Get some config
-        session_path = self.cfg.get("sessiondir", None)
 
         # Initialise the application
         config = {
@@ -123,8 +122,8 @@ class RdiffwebApp(Application):
                 'tools.proxy.on': cp_tools_proxy_enabled,
                 'error_page.default': self.error_page,
                 'request.error_response': self.error_response,
-                'tools.sessions.storage_type': 'file' if session_path else 'ram',
-                'tools.sessions.storage_path': session_path,
+                'tools.sessions.storage_type': 'file' if self._session_dir else 'ram',
+                'tools.sessions.storage_path': self._session_dir,
             },
         }
 

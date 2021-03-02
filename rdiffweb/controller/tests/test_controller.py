@@ -29,9 +29,7 @@ from rdiffweb.test import WebCase
 
 class ControllerTest(WebCase):
 
-    @classmethod
-    def setup_server(cls):
-        WebCase.setup_server(default_config={'HeaderName':'MyTest'})
+    default_config = {'HeaderName':'MyTest'}
 
     def test_headername(self):
         """
@@ -39,7 +37,7 @@ class ControllerTest(WebCase):
         """
         self.getPage("/")
         self.assertInBody('MyTest')
-        
+
     def test_theme(self):
         """
         Check if the theme is properly configure. 
@@ -50,9 +48,7 @@ class ControllerTest(WebCase):
 
 class ControllerThemeTest(WebCase):
 
-    @classmethod
-    def setup_server(cls):
-        WebCase.setup_server(default_config={'DefaultTheme':'orange'})
+    default_config = {'DefaultTheme':'orange'}
 
     def test_theme(self):
         """

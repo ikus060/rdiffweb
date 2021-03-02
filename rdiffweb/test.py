@@ -32,9 +32,10 @@ import unittest
 import cherrypy
 from cherrypy.test import helper
 import pkg_resources
-
+from rdiffweb.core.config import parse_args
 from rdiffweb.core.store import ADMIN_ROLE
 from rdiffweb.rdw_app import RdiffwebApp
+
 
 try:
     from urllib.parse import urlencode  # @UnresolvedImport @UnusedImport
@@ -52,8 +53,10 @@ class MockRdiffwebApp(RdiffwebApp):
         self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
         default_config['SQLiteDBFile'] = os.path.join(self.database_dir, 'rdiffweb.tmp.db')
 
+        cfg = parse_args(args=[], config_file_contents='\n'.join('%s=%s' % (k, v) for k, v in default_config.items()))
+
         # Call parent constructor
-        RdiffwebApp.__init__(self, cfg=default_config)
+        RdiffwebApp.__init__(self, cfg=cfg)
 
     def clear_db(self):
         if hasattr(self, 'database_dir'):
@@ -89,7 +92,8 @@ class MockRdiffwebApp(RdiffwebApp):
         # Register repository
         for user in self.store.users():
             user.user_root = new
-            user.add_repo('testcases')
+            repo = user.add_repo('testcases')
+            repo.encoding = 'utf-8'
 
         self.testcases = new
 
@@ -143,6 +147,8 @@ class WebCase(helper.CPWebCase):
 
     reset_testcases = False
 
+    default_config = {}
+
     @classmethod
     def setUpClass(cls):
         super(helper.CPWebCase, cls).setUpClass()
@@ -155,7 +161,8 @@ class WebCase(helper.CPWebCase):
         app.clear_db()
 
     @classmethod
-    def setup_server(cls, default_config={}):
+    def setup_server(cls):
+        default_config = getattr(cls, 'default_config', {})
         app = MockRdiffwebApp(default_config)
         cherrypy.tree.mount(app)
 

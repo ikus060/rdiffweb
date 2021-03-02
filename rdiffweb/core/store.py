@@ -26,7 +26,7 @@ import sys
 import pkg_resources
 
 from rdiffweb.core import RdiffError, authorizedkeys
-from rdiffweb.core.config import BoolOption, read_config, Option, IntOption
+from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.ldap_auth import LdapPasswordStore
 from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, \
@@ -454,17 +454,6 @@ class RepoObject(RdiffRepo):
         if encoding:
             return encodings.search_function(encoding.lower())
 
-        # Read encoding value from obsolete config file.
-        try:
-            conf_file = os.path.join(self._data_path, b'rdiffweb')
-            if os.access(conf_file, os.F_OK) and os.path.isfile(conf_file):
-                config = read_config(conf_file)
-                encoding = config.get('encoding')
-                if encoding:
-                    return encodings.search_function(encoding)
-        except:
-            logger.exception("fail to get repo encoding from file")
-
         # Fallback to default encoding.
         return encodings.search_function(DEFAULT_REPO_ENCODING)
 
@@ -496,10 +485,10 @@ class Store():
     This class handle all data storage operations.
     """
 
-    _db_file = Option("SQLiteDBFile", "/etc/rdiffweb/rdw.db")
-    _allow_add_user = BoolOption("AddMissingUser", False)
-    _admin_user = Option("AdminUser", "admin")
-    _max_depth = IntOption('MaxDepth', default=5)
+    _db_file = Option("sqlitedb_file")
+    _allow_add_user = Option("ldap_add_missing_user")
+    _admin_user = Option("admin_user")
+    _max_depth = Option('max_depth')
 
     def __init__(self, app):
         self.app = app

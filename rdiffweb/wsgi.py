@@ -20,16 +20,13 @@ Created on Mar. 3, 2019
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 '''
 
-from rdiffweb.core.config import read_config
-from rdiffweb.rdw_app import RdiffwebApp
-
 import cherrypy
-import os
+from rdiffweb.core.config import parse_args
+from rdiffweb.rdw_app import RdiffwebApp
 
 if __name__.startswith("uwsgi"):
     # Read config file
-    configfile = os.environ.get('RDIFFWEB_CONFIG', '/etc/rdiffweb/rdw.conf')
-    cfg = read_config(configfile)
+    cfg = parse_args(args=[])
 
     # Create application
     cherrypy.config.update({'engine.autoreload.on': False})

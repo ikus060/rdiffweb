@@ -37,7 +37,7 @@ from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.quota import QuotaUnsupported
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
-from _collections import OrderedDict
+from collections import OrderedDict
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -177,8 +177,8 @@ class UserForm(CherryForm):
 class AdminPage(Controller):
     """Administration pages. Allow to manage users database."""
 
-    logfile = Option('logfile')
-    logaccessfile = Option('logaccessfile')
+    logfile = Option('log_file')
+    logaccessfile = Option('log_access_file')
 
     def _get_log_files(self):
         """
@@ -306,7 +306,7 @@ class AdminPage(Controller):
             # Config
             "cfg": {
                 k: '********' if 'password' in k else v
-                for k, v in self.app.cfg.items()},
+                for k, v in vars(self.app.cfg).items()},
             # System Info entries
             "pyinfo": list(get_pyinfo()),
             "osinfo": list(get_osinfo()),

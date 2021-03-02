@@ -15,14 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import os
 import unittest
 
-from rdiffweb.core.config import read_config, write_config
+from rdiffweb.core.config import parse_args, ConfigFileParser
 
 
-class ConfigurationTest(unittest.TestCase):
+class TestParseArg(unittest.TestCase):
+
+    def test_parse_args(self, *args):
+        # TODO Should complete the list of test.
+        args = parse_args(['--serverport', '8081'])
+        self.assertEqual(args.server_port, 8081)
+
+
+class TestConfigFileParser(unittest.TestCase):
     """
     Unit tests for the get_config() function
     """
@@ -43,14 +50,16 @@ NoValue=#This is a setting with no value
         f = open(self.config_file_path, "w")
         f.write(self.good_config_text)
         f.close()
-        self.config = read_config(self.config_file_path)
+        with open(self.config_file_path) as stream:
+            self.config = ConfigFileParser().parse(stream)
 
     def write_bad_file(self, bad_setting_num):
         self.write_good_file()
         f = open(self.config_file_path, "w")
         f.write(self.bad_config_texts[bad_setting_num])
         f.close()
-        self.config = read_config(self.config_file_path)
+        with open(self.config_file_path) as stream:
+            self.config = ConfigFileParser().parse(stream)
 
     def tearDown(self):
         if (os.access(self.config_file_path, os.F_OK)):
@@ -92,24 +101,6 @@ NoValue=#This is a setting with no value
         self.write_bad_file(1)
         value = self.config.get("this")
         self.assertEqual("more=than one equals", value)
-
-    def test_set_config(self):
-        self.write_good_file()
-        self.config['new_key'] = 'new_value'
-        write_config(self.config, self.config_file_path)
-        # re-read the config file
-        self.config2 = read_config(self.config_file_path)
-        # Check value.
-        self.assertEqual('new_value', self.config2.get('new_key'))
-
-    def test_set_config_uppercase(self):
-        self.write_good_file()
-        self.config['NewKey'] = 'new_value'
-        write_config(self.config, self.config_file_path)
-        # re-read the config file
-        self.config2 = read_config(self.config_file_path)
-        # Check value.
-        self.assertEqual('new_value', self.config2.get('newkey'))
 
 
 if __name__ == "__main__":

@@ -231,7 +231,7 @@ class LoginPage(Controller):
     This page is used by the authentication to display enter a user/pass.
     """
 
-    _welcome_msg = Option("WelcomeMsg")
+    _welcome_msg = Option("welcome_msg")
 
     def index(self, redirect=b'/', username='', error_msg='', **kwargs):
         # Re-encode the redirect for display in HTML
@@ -244,9 +244,10 @@ class LoginPage(Controller):
         }
 
         # Add welcome message to params. Try to load translated message.
-        params["welcome_msg"] = self._welcome_msg
-        if hasattr(cherrypy.response, 'i18n'):
-            lang = cherrypy.response.i18n.locale.language
-            params["welcome_msg"] = Option("WelcomeMsg[%s]" % (lang), default=params["welcome_msg"]).get()
+        if self._welcome_msg:
+            params["welcome_msg"] =  self._welcome_msg.get('')
+            if hasattr(cherrypy.response, 'i18n'):
+                locale = cherrypy.response.i18n.locale.language
+                params["welcome_msg"] = self._welcome_msg.get(locale, params["welcome_msg"])
 
         return self._compile_template("login.html", **params).encode("utf-8")

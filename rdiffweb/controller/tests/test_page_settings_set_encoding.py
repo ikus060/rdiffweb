@@ -44,10 +44,6 @@ class SetEncodingTest(WebCase):
                      body={'new_encoding': encoding})
 
     def test_check_default_encoding(self):
-        # Default encoding for testcases is utf-8 because 'rdiffweb' file enforce the value.
-        self._settings('admin', 'testcases')
-        self.assertInBody("Character encoding")
-        self.assertInBody('selected value="utf-8"')
         # Default encoding for broker-repo is the default system encoding.
         user = self.app.store.get_user(self.USERNAME)
         user.add_repo('broker-repo')

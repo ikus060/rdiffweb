@@ -76,13 +76,13 @@ def get_flashed_messages():
 
 class Controller(object):
 
-    _header_name = Option("HeaderName", "rdiffweb")
+    _header_name = Option("header_name")
 
-    _footername = Option("FooterName", "rdiffweb")
+    _footername = Option("footer_name")
 
-    _footerurl = Option("FooterUrl", "https://rdiffweb.org/")
+    _footerurl = Option("footer_url")
 
-    _default_theme = Option("DefaultTheme", "default")
+    _default_theme = Option("default_theme")
 
     @property
     def app(self):

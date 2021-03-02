@@ -75,9 +75,9 @@ class DefaultUserQuota():
     This implementation uses default disk usage.
     """
 
-    _set_quota_cmd = Option('QuotaSetCmd')
-    _get_quota_cmd = Option('QuotaGetCmd')
-    _get_usage_cmd = Option('QuotaUsedCmd')
+    _set_quota_cmd = Option('quota_set_cmd')
+    _get_quota_cmd = Option('quota_get_cmd')
+    _get_usage_cmd = Option('quota_used_cmd')
 
     def __init__(self, app):
         self.app = app;

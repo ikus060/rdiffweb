@@ -26,7 +26,7 @@ import logging
 import unittest
 
 import cherrypy
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from rdiffweb.core.rdw_deamon import RemoveOlder
 from rdiffweb.core.store import USER_ROLE

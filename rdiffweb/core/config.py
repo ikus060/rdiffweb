@@ -15,83 +15,407 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from io import open
+import argparse
+from collections import OrderedDict
 import logging
 import re
+import sys
 
 from cherrypy import Application
 import cherrypy
+import configargparse
+import pkg_resources
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
+# Get rdiffweb version.
+try:
+    VERSION = pkg_resources.get_distribution("rdiffweb").version
+except:
+    VERSION = "DEV"
 
-def read_config(filename):
+
+def parse_args(args=None, config_file_contents=None):
+    args = sys.argv[1:] if args is None else args
+
+    # Get global config argument parser
+    parser = configargparse.ArgumentParser(
+        prog='rdiffweb',
+        description='Web interface to browse and restore rdiff-backup repositories.',
+        default_config_files=['/etc/rdiffweb/rdw.conf', '/etc/rdiffweb/rdw.conf.d/*.conf'],
+        add_env_var_help=True,
+        auto_env_var_prefix='RDIFFWEB_',
+        config_file_parser_class=ConfigFileParser)
+
+    parser.add_argument(
+        '-f', '--config',
+        is_config_file=True,
+        metavar='FILE',
+        help='location of Rdiffweb configuration file')
+
+    parser.add_argument(
+        '-d', '--debug',
+        action='store_true',
+        help='enable rdiffweb debug mode - change the log level to DEBUG and print exception stack trace to the web interface')
+
+    parser.add_argument(
+        '--admin-user', '--adminuser',
+        metavar='USERNAME',
+        help='administrator username. The user get created on startup if the database is empty.',
+        default='admin')
+
+    parser.add_argument(
+        '--default-theme', '--defaulttheme',
+        help='define the default theme. Either: default or orange. Define the CSS file to be loaded in the web interface. You may manually edit a CSS file to customize it. The location is similar to `/usr/local/lib/python3.9/dist-packages/rdiffweb/static/`',
+        choices=['default', 'orange'],
+        default='default')
+
+    parser.add_argument(
+        '--environment',
+        choices=['development', 'production'],
+        help='define the type of environment: development, production. This is used to limit the information shown to the user when an error occur.',
+        default='production')
+
+    parser.add_argument(
+        '--email-encryption', '--emailencryption',
+        choices=['none', 'ssl', 'starttls'],
+        help='type of encryption to be used when establishing communication with SMTP server.',
+        default='none')
+
+    parser.add_argument(
+        '--email-host', '--emailhost',
+        metavar='HOST',
+        help='SMTP server used to send email.')
+
+    parser.add_argument(
+        '--email-sender', '--emailsender',
+        metavar='EMAIL',
+        help='email addres used for the `from:` field when sending email.')
+
+    parser.add_argument(
+        '--email-notification-time', '--emailnotificationtime',
+        metavar='TIME',
+        help='time when the email notifcation should be sent for inactive backups. e.g.: 22:00',
+        default='23:00')
+
+    parser.add_argument(
+        '--email-username', '--emailusername',
+        metavar='USERNAME',
+        help='username used for authentication with the SMTP server.')
+
+    parser.add_argument(
+        '--email-password', '--emailpassword',
+        metavar='PASSWORD',
+        help='password used for authentication with the SMTP server.')
+
+    parser.add_argument(
+        '--email-send-changed-notification', '--emailsendchangednotification',
+        help='True to send notification when sensitive information get change in user profile.',
+        action='store_true',
+        default=False)
+
+    parser.add_argument(
+        '--favicon',
+        help='location of an icon to be used as a favicon displayed in web browser.',
+        default=pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico'))  # @UndefinedVariable
+
+    parser.add_argument(
+        '--footer-name', '--footername',
+        help=argparse.SUPPRESS,
+        default='rdiffweb')  # @UndefinedVariable
+
+    parser.add_argument(
+        '--footer-url', '--footerurl',
+        help=argparse.SUPPRESS,
+        default='https://rdiffweb.org/')  # @UndefinedVariable
+
+    parser.add_argument(
+        '--header-logo', '--headerlogo',
+        help='location of an image (preferably a .png) to be used as a replacement for the rdiffweb logo.')
+
+    parser.add_argument(
+        '--header-name', '--headername',
+        help='application name displayed in the title bar and header menu.',
+        default='rdiffweb')
+
+    parser.add_argument(
+        '--ldap-add-missing-user', '--addmissinguser',
+        action='store_true',
+        help='enable creation of users from LDAP when the credential are valid.',
+        default=False)
+
+    parser.add_argument(
+        '--ldap-uri', '--ldapuri',
+        help='URL to the LDAP server used to validate user credentials. e.g.: ldap://localhost:389')
+
+    parser.add_argument(
+        '--ldap-base-dn', '--ldapbasedn',
+        metavar='DN',
+        help='DN of the branch of the directory where all searches should start from. e.g.: dc=my,dc=domain',
+        default="")
+
+    parser.add_argument(
+        '--ldap-scope', '--ldapscope',
+        help='scope of the search. Can be either base, onelevel or subtree',
+        choices=['base', 'onelevel', 'subtree'],
+        default="subtree")
+
+    parser.add_argument(
+        '--ldap-tls', '--ldaptls',
+        action='store_true',
+        help='enable TLS')
+
+    parser.add_argument(
+        '--ldap-username-attribute', '--ldapattribute',
+        metavar='ATTRIBUTE',
+        help="The attribute to search username. If no attributes are provided, the default is to use `uid`. It's a good idea to choose an attribute that will be unique across all entries in the subtree you will be using.",
+        default='uid')
+
+    parser.add_argument(
+        '--ldap-filter', '--ldapfilter',
+        help="search filter to limit LDAP lookup. If not provided, defaults to (objectClass=*), which searches for all objects in the tree.",
+        default='(objectClass=*)')
+
+    parser.add_argument(
+        '--ldap-required-group', '--ldaprequiredgroup',
+        metavar='GROUPNAME',
+        help="name of the group of which the user must be a member to access rdiffweb. Should be used with ldapgroupattribute and ldapgroupattributeisdn.")
+
+    parser.add_argument(
+        '--ldap-group-attribute', '--ldapgroupattribute',
+        metavar='ATTRIBUTE',
+        help="name of the attribute defining the groups of which the user is a member. Should be used with ldaprequiredgroup and ldapgroupattributeisdn.",
+        default='member')
+
+    parser.add_argument(
+        '--ldap-group-attribute-is-dn', '--ldapgroupattributeisdn',
+        help="True if the content of the attribute `ldapgroupattribute` is a DN.",
+        action='store_true')
+
+    parser.add_argument(
+        '--ldap-bind-dn', '--ldapbinddn',
+        metavar='DN',
+        help="optional DN used to bind to the server when searching for entries. If not provided, will use an anonymous bind.",
+        default="")
+
+    parser.add_argument(
+        '--ldap-bind-password', '--ldapbindpassword',
+        metavar='PASSWORD',
+        help="password to use in conjunction with LdapBindDn. Note that the bind password is probably sensitive data, and should be properly protected. You should only use the LdapBindDn and LdapBindPassword if you absolutely need them to search the directory.",
+        default="")
+
+    parser.add_argument(
+        '--ldap-version', '--ldapversion', '--ldapprotocolversion',
+        help="version of LDAP in use either 2 or 3. Default to 3.",
+        default=3,
+        type=int,
+        choices=[2, 3])
+
+    parser.add_argument(
+        '--ldap-network-timeout', '--ldapnetworktimeout',
+        metavar='SECONDS',
+        help="timeout in seconds value used for LDAP connection",
+        default=100,
+        type=int)
+
+    parser.add_argument(
+        '--ldap-timeout', '--ldaptimeout',
+        metavar='SECONDS',
+        help="timeout in seconds value used for LDAP request",
+        default=300,
+        type=int)
+
+    parser.add_argument(
+        '--ldap-encoding', '--ldapencoding',
+        metavar='ENCODING',
+        help="encoding used by your LDAP server.",
+        default="utf-8")
+
+    parser.add_argument(
+        '--ldap-allow-password-change', '--ldapallowpasswordchange',
+        help="allow LDAP users to  update their password using rdiffweb. This option should only be enabled if the LDAP if configured to allow the user to change their own password. ",
+        default=False,
+        action='store_true')
+
+    parser.add_argument(
+        '--ldap-check-shadow-expire', '--ldapcheckshadowexpire',
+        help="enable validation of shadow expired when validating user's credential. User will not be allowed to login if the account expired.",
+        default=False,
+        action='store_true')
+
+    parser.add_argument(
+        '--log-access-file', '--logaccessfile',
+        metavar='FILE',
+        help='location of Rdiffweb log access file.')
+
+    parser.add_argument(
+        '--log-file', '--logfile',
+        metavar='FILE',
+        help='location of Rdiffweb log file. Print log to the console if not define in config file.')
+
+    parser.add_argument(
+        '--log-level', '--loglevel',
+        help='Define the log level.',
+        choices=['ERROR', 'WARN', 'INFO', 'DEBUG'],
+        default='INFO')
+
+    parser.add_argument(
+        '--max-depth', '--maxdepth',
+        metavar='DEPTH',
+        help="define the maximum folder depthness to search into the user's root directory to find repositories. This is commonly used if you repositories are organised with multiple sub-folder.",
+        type=int,
+        default=5)
+
+    parser.add(
+        '--quota-set-cmd', '--quotasetcmd',
+        metavar='COMMAND',
+        help="command line to set the user's quota.")
+
+    parser.add(
+        '--quota-get-cmd', '--quotagetcmd',
+        metavar='COMMAND',
+        help="command line to get the user's quota.")
+
+    parser.add(
+        '--quota-used-cmd', '--quotausedcmd',
+        metavar='COMMAND',
+        help="Command line to get user's quota disk usage.")
+
+    parser.add(
+        '--remove-older-time', '--removeoldertime',
+        metavar='TIME',
+        help="Time when to execute the remove older task. e.g.: 22:30",
+        default='23:00')
+
+    parser.add(
+        '--server-host', '--serverhost',
+        metavar='IP',
+        default='127.0.0.1',
+        help='IP address to listen to')
+
+    parser.add(
+        '--server-port', '--serverport',
+        metavar='PORT',
+        help='port to listen to for HTTP request',
+        default='8080',
+        type=int)
+
+    parser.add(
+        '--session-dir', '--sessiondir',
+        metavar='FOLDER',
+        help='location where to store user session information. When undefined, the user sessions are kept in memory.')
+
+    parser.add(
+        '--ssl-certificate', '--sslcertificate',
+        metavar='CERT',
+        help='location of the SSL Certification to enable HTTPS')
+
+    parser.add(
+        '--ssl-private-key', '--sslprivatekey',
+        metavar='KEY',
+        help='location of the SSL Private Key to enable HTTPS')
+
+    parser.add(
+        '--sqlitedb-file', '--sqlitedbfile',
+        metavar='FILE',
+        help='location of the SQLite database used for persistence',
+        default='/etc/rdiffweb/rdw.db')
+
+    parser.add(
+        '--tempdir',
+        metavar='FOLDER',
+        help='alternate temporary folder to be used when restoring files. Might be useful if the default location has limited disk space. Default to TEMPDIR environment or `/tmp`.')
+
+    parser.add_argument('--version',
+        action='version',
+        version='%(prog)s ' + VERSION)
+
+    # Here we append a list of arguments for each locale.
+    flags = ['--welcome-msg'] + ['--welcome-msg-' + i for i in ['ca', 'en', 'es', 'fr', 'ru']] + ['--welcomemsg']
+    parser.add_argument(
+        *flags,
+        metavar='HTML',
+        help='replace the welcome message displayed in the login page for default locale or for a specific locale',
+        action=LocaleAction)
+
+    return parser.parse_args(args, config_file_contents=config_file_contents)
+
+
+class LocaleAction(argparse.Action):
     """
-    Used to read the rdiffweb config file as dict.
-    
-    Read the configuration file and update the internal _cache. Return True
-    if the configuration was read. False if the configuration wasn't read. Used
-    may called this method with force=True to force the configuration to be
-    read.
+    Custom Action to support defining arguments with locale.
     """
 
-    if not filename:
-        return {}
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        super(LocaleAction, self).__init__(option_strings, dest, **kwargs)
 
-    # Read configuration file.
-    logger.debug("reading configuration file [%s]", filename)
-
-    new_cache = dict()
-
-    # Open settings file as utf-8
-    with open(filename, encoding='utf-8') as f:
-        lines = f.readlines()
-    for line in lines:
-        line = re.compile("(.*)#.*").sub(r'\1', line).strip()
-        if not line:
-            continue
-        if '=' not in line:
-            raise Exception(
-                "error reading configuration line %s" % (line))
-        split_line = line.partition('=')
-        if not len(split_line) == 3:
-            raise Exception(
-                "error reading configuration line %s" % (line))
-        new_cache[split_line[0].lower().strip()] = split_line[2].strip()
-
-    # This dictionary is read by cherrypy. So create appropriate structure.
-    return new_cache
+    def __call__(self, parser, namespace, values, option_string=None):
+        # TODO Fix me
+        items = getattr(namespace, self.dest, {})
+        items.append(values)
+        setattr(namespace, self.dest, items)
 
 
-def write_config(config, filename):
-    # Start writing the file.
-    with open(filename, "w", encoding='utf-8') as f:
-        for key, value in list(config.items()):
-            f.write('%s=%s' % (key, value))
-            f.write('\n')
+class ConfigFileParser(object):
+    """
+    Custom config file parser to support rdiffweb config file.
+    """
+
+    def get_syntax_description(self):
+        msg = ("Configuration file syntax allows: key=value, flag=true.")
+        return msg
+
+    def parse(self, stream):
+        """
+        Used to read the rdiffweb config file as dict.
+        
+        Read the configuration file and update the internal _cache. Return True
+        if the configuration was read. False if the configuration wasn't read. Used
+        may called this method with force=True to force the configuration to be
+        read.
+        """
+
+        result = OrderedDict()
+
+        for i, line in enumerate(stream):
+            line = re.compile("(.*)#.*").sub(r'\1', line).strip()
+            if not line:
+                continue
+            if '=' not in line:
+                raise configargparse.ConfigFileParserException("Unexpected line {} in {}: {}".format(i,
+                    getattr(stream, 'name', 'stream'), line))
+            split_line = line.partition('=')
+            if not len(split_line) == 3:
+                raise configargparse.ConfigFileParserException("Unexpected line {} in {}: {}".format(i,
+                    getattr(stream, 'name', 'stream'), line))
+
+            # Get key a& value
+            key = split_line[0].lower().strip()
+            value = split_line[2].strip()
+
+            # Support welcome-msg locale for backward compatibility
+            m = re.match("welcome-?msg\[(ca|en|es|fr|ru)\]", key.lower())
+            if m:
+                key = "welcome-msg-%s" % m.group(1)
+
+            result[key] = value
+
+        # This dictionary is read by cherrypy. So create appropriate structure.
+        return result
 
 
 class Option(object):
 
-    def __init__(self, key, default="", doc=None, _get_func=None, _set_func=None):
-        self.key = key.lower()
-        self.default = default
-        self.doc = doc
-        self._get_func = _get_func or (lambda x: x)
-        self._set_func = _set_func or (lambda x: x)
+    def __init__(self, key):
+        assert key
+        self.key = key
 
     def __get__(self, instance, owner):
         """
         Return a property to wrap the given option.
         """
         return self.get(instance)
-
-    def __set__(self, instance, value):
-        """
-        Update the config with the new value.
-        """
-        self.set(value, instance)
 
     def get(self, instance=None):
         """
@@ -101,38 +425,6 @@ class Option(object):
             app = instance
         else:
             app = cherrypy.request.app or getattr(instance, 'app', None)
-        assert app, "Option() can't find reference to app"
-        config = app.cfg
-        value = config.get(self.key)  # @UndefinedVariable
-        if value is None:
-            return self.default
-        return self._get_func(value)
-
-    def set(self, value, instance=None):
-        """
-        Update the config with the new value.
-        """
-        if isinstance(instance, Application):
-            app = instance
-        else:
-            app = cherrypy.request.app or getattr(instance, 'app', None)
-        assert app, "Option() can't find reference to app"
-        config = app.cfg
-        if value is None:
-            config.set(self.key, None)
-        else:
-            config[self.key] = self._set_func(value)
-
-
-class IntOption(Option):
-
-    def __init__(self, key, default="", doc=None):
-        Option.__init__(self, key, default, doc, _get_func=int, _set_func=str)
-
-
-class BoolOption(Option):
-
-    def __init__(self, key, default="", doc=None):
-        Option.__init__(self, key, default, doc,
-            _get_func=lambda x: x.lower() in ("1", "yes", "true", "on"),
-            _set_func=str)
+        assert app, "Option() can't get reference to app"
+        assert app.cfg, "Option() can't get reference to app.cfg"
+        return getattr(app.cfg, self.key)

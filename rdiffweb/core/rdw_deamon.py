@@ -67,7 +67,7 @@ class Deamon(Monitor):
 
 class RemoveOlder(Deamon):
 
-    _remove_older_time = Option('RemoveOlderTime', '23:00')
+    _remove_older_time = Option('remove_older_time')
 
     def __init__(self, bus, app):
         self.app = app
