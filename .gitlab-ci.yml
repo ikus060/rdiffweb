@@ -187,11 +187,11 @@ publish:dev:
     LANG="C.UTF-8" python3 -m readme_renderer README.md -o /tmp/README.html
     twine upload dist/*.whl -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
     # Publish deb
-    export RDIFFWEB_DEB_FILE=$(ls -1 ./buster/rdiffweb*.deb)
-    curl -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_DEV_BUSTER"
+    export RDIFFWEB_DEB_FILE=$(ls -1 ./dist/buster/rdiffweb*.deb)
+    curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_DEV_BUSTER"
     # Publish deb
-    export RDIFFWEB_DEB_FILE=$(ls -1 ./bullseye/rdiffweb*.deb)
-    curl -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_DEV_BULLSEYE"
+    export RDIFFWEB_DEB_FILE=$(ls -1 ./dist/bullseye/rdiffweb*.deb)
+    curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_DEV_BULLSEYE"
 
 publish:release:
   stage: publish
@@ -203,8 +203,11 @@ publish:release:
     pip3 install wheel twine --upgrade
     twine upload dist/*.whl -u $PYPI_USR -p $PYPI_PWD
     # Publish deb
-    export RDIFFWEB_DEB_FILE=$(ls -1 ./bullseye/rdiffweb*.deb)
-    curl -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_RELEASE_BULLSEYE"
+    export RDIFFWEB_DEB_FILE=$(ls -1 ./dist/buster/rdiffweb*.deb)
+    curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_RELEASE_BUSTER"
+    # Publish deb
+    export RDIFFWEB_DEB_FILE=$(ls -1 ./dist/bullseye/rdiffweb*.deb)
+    curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_RELEASE_BULLSEYE"
   
 deploy_rdiffweb_demo:
   stage: deploy
