@@ -92,7 +92,6 @@ That's it.
 :Date: 2010-02-08
 """
 
-
 import cherrypy
 from babel.core import Locale, UnknownLocaleError
 from babel.support import Translations, NullTranslations
@@ -169,15 +168,14 @@ def load_translation(langs, dirname, domain):
     locale = None
     trans = None
     for lang in langs:
-        short = lang[:2].lower()
         try:
             locale = Locale.parse(lang)
-            if (domain, short) in _languages:
-                return _languages[(domain, short)]
+            if (domain, lang) in _languages:
+                return _languages[(domain, lang)]
             # Get all translation from all directories.
             trans = None
             for d in dirname:
-                t = Translations.load(d, short, domain)
+                t = Translations.load(d, lang, domain)
                 if not isinstance(t, Translations):
                     continue
                 if trans:
@@ -191,7 +189,7 @@ def load_translation(langs, dirname, domain):
             break
     if locale is None:
         raise ImproperlyConfigured('Default locale not known.')
-    _languages[(domain, short)] = res = Lang(locale, trans or NullTranslations())
+    _languages[(domain, lang)] = res = Lang(locale, trans or NullTranslations())
     return res
 
 
@@ -214,7 +212,7 @@ def get_lang(mo_dir, default, domain):
     langs = [x.value.replace('-', '_') for x in
              cherrypy.request.headers.elements('Accept-Language')]
     sessions_on = cherrypy.request.config.get('tools.sessions.on', False)
-    if sessions_on and cherrypy.session.get('_lang_', ''):  # @UndefinedVariable
+    if sessions_on and not langs and cherrypy.session.get('_lang_', ''):  # @UndefinedVariable
         langs.insert(0, cherrypy.session.get('_lang_', '__'))  # @UndefinedVariable
     langs.append(default)
     loc = load_translation(langs, mo_dir, domain)
