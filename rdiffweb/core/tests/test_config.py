@@ -24,9 +24,25 @@ from rdiffweb.core.config import parse_args, ConfigFileParser
 class TestParseArg(unittest.TestCase):
 
     def test_parse_args(self, *args):
-        # TODO Should complete the list of test.
         args = parse_args(['--serverport', '8081'])
         self.assertEqual(args.server_port, 8081)
+
+    def test_welcome_msg(self, *args):
+        # Test with old argument without dash (-)
+        args = parse_args(['--welcomemsg', 'This is a message'])
+        self.assertEqual(args.welcome_msg, {'': 'This is a message'})
+        # Test with new argument
+        args = parse_args(['--welcome-msg', 'This is a message'])
+        self.assertEqual(args.welcome_msg, {'': 'This is a message'})
+        # Test with locale value
+        args = parse_args(['--welcome-msg', 'default', '--welcome-msg-fr', 'french', '--welcome-msg-ru', 'rusian'])
+        self.assertEqual(args.welcome_msg, {'': 'default', 'fr': 'french', 'ru': 'rusian'})
+        # Test with config file
+        args = parse_args(args=[], config_file_contents='WelcomeMsg=default')
+        self.assertEqual(args.welcome_msg, {'': 'default'})
+        # Test with config file with locale
+        args = parse_args(args=[], config_file_contents='WelcomeMsg=default\nWelcomeMsg[fr]=french\nWelcomeMsg[ru]=rusian')
+        self.assertEqual(args.welcome_msg, {'': 'default', 'fr': 'french', 'ru': 'rusian'})
 
 
 class TestConfigFileParser(unittest.TestCase):

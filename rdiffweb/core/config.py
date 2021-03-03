@@ -350,10 +350,19 @@ class LocaleAction(argparse.Action):
     def __init__(self, option_strings, dest, nargs=None, **kwargs):
         super(LocaleAction, self).__init__(option_strings, dest, **kwargs)
 
-    def __call__(self, parser, namespace, values, option_string=None):
-        # TODO Fix me
-        items = getattr(namespace, self.dest, {})
-        items.append(values)
+    def __call__(self, parser, namespace, value, option_string=None):
+        if option_string[-3] == '-':
+            # When using arguments, we can extract the locale from the argument key
+            locale = option_string[-2:]
+        elif value[2] == ':':
+            # When using config file, the locale could be extract from the value e.g. fr:message
+            locale = value[0:2]
+            value = value[3:]
+        else:
+            locale = ''
+        # Create a dictionary with locale.
+        items = getattr(namespace, self.dest) or {}
+        items[locale] = value
         setattr(namespace, self.dest, items)
 
 
@@ -397,7 +406,8 @@ class ConfigFileParser(object):
             # Support welcome-msg locale for backward compatibility
             m = re.match("welcome-?msg\[(ca|en|es|fr|ru)\]", key.lower())
             if m:
-                key = "welcome-msg-%s" % m.group(1)
+                key = "welcome-msg-" + m.group(1)
+                value = m.group(1) + ":" + value
 
             result[key] = value
 

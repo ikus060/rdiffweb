@@ -20,7 +20,6 @@ Created on Dec 26, 2015
 @author: Patrik Dufresne
 """
 
-
 from base64 import b64encode
 import logging
 import unittest
@@ -173,6 +172,30 @@ class LoginPageTest(WebCase):
         # Get api using the same session.
         self.getPage('/api/')
         self.assertStatus('200 OK')
+
+
+class LoginPageWithWelcomeMsgTest(WebCase):
+
+    default_config = {
+        'welcomemsg':'default message',
+        'welcomemsg[fr]': 'french message'
+    }
+
+    def test_getpage_default(self):
+        """
+        Make sure the login page can be rendered without error.
+        """
+        self.getPage('/', headers=[("Accept-Language", "it")])
+        self.assertStatus('200 OK')
+        self.assertInBody('default message')
+
+    def test_getpage_french(self):
+        """
+        Make sure the login page can be rendered without error.
+        """
+        self.getPage('/', headers=[("Accept-Language", "fr")])
+        self.assertStatus('200 OK')
+        self.assertInBody('french message')
 
 
 class LogoutPageTest(WebCase):
