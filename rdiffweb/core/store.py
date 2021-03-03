@@ -44,7 +44,11 @@ DEFAULT_REPO_ENCODING = codecs.lookup((sys.getfilesystemencoding() or 'utf-8').l
 ADMIN_ROLE = 0
 MAINTAINER_ROLE = 5
 USER_ROLE = 10
-ROLES = [ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE]
+ROLES = {
+    'admin': ADMIN_ROLE,
+    'maintainer': MAINTAINER_ROLE,
+    'user': USER_ROLE,
+}
 
 
 def normpath(val):
@@ -291,7 +295,7 @@ class UserObject(object):
         return not self._get_attr('password')
 
     def _is_role(self, role):
-        assert role in ROLES
+        assert role in ROLES.values()
         try:
             return int(self._get_attr('role')) <= role
         except:
@@ -319,14 +323,13 @@ class UserObject(object):
             raise ValueError("password can't be empty")
 
         # Try to update the user password in LDAP
-        for store in self._store._password_stores:
-            try:
-                valid = store.are_valid_credentials(self.username, old_password)
-                if valid:
-                    store.set_password(self.username, password, old_password)
-                    return
-            except:
-                pass
+        try:
+            valid = self._store._ldap_store.are_valid_credentials(self.username, old_password)
+            if valid:
+                self._store._ldap_store.set_password(self.username, password, old_password)
+                return
+        except:
+            pass
         # Fallback to database
         if old_password and not check_password(old_password, self.hash_password):
             raise ValueError(_("Wrong password"))
@@ -486,7 +489,9 @@ class Store():
     """
 
     _db_file = Option("sqlitedb_file")
-    _allow_add_user = Option("ldap_add_missing_user")
+    _ldap_add_user = Option("ldap_add_missing_user")
+    _ldap_add_user_default_role = Option("ldap_add_user_default_role")
+    _ldap_add_user_default_userroot = Option("ldap_add_user_default_userroot")
     _admin_user = Option("admin_user")
     _max_depth = Option('max_depth')
 
@@ -494,7 +499,7 @@ class Store():
         self.app = app
         from rdiffweb.core.store_sqlite import SQLiteBackend
         self._database = SQLiteBackend(self._db_file)
-        self._password_stores = [LdapPasswordStore(app)]
+        self._ldap_store = LdapPasswordStore(app)
         self._change_listeners = []
 
         # Register entry point.
@@ -665,18 +670,22 @@ class Store():
             return userobj
 
         # Fallback to LDAP
-        if userobj or self._allow_add_user:
-            for store in self._password_stores:
-                try:
-                    valid = store.are_valid_credentials(user, password)
-                    if valid:
-                        real_user, attrs = valid
-                        if not userobj:
-                            userobj = self.add_user(real_user, attrs=attrs)
-                        self._notify('user_logined', userobj, attrs)
-                        return userobj
-                except:
-                    logger.warn('fail to validate credentials', exc_info=1)
+        if userobj or self._ldap_add_user:
+            try:
+                valid = self._ldap_store.are_valid_credentials(user, password)
+                if valid:
+                    real_user, attrs = valid
+                    if not userobj:
+                        # In case default values are invalid, let evaluate them before creating the user in database.
+                        default_user_root = self._ldap_add_user_default_userroot.format(**attrs)
+                        default_role = ROLES.get(self._ldap_add_user_default_role)
+                        userobj = self.add_user(real_user, attrs=attrs)
+                        userobj.user_root = default_user_root
+                        userobj.role = default_role
+                    self._notify('user_logined', userobj, attrs)
+                    return userobj
+            except:
+                logger.warn('fail to validate credentials', exc_info=1)
         return None
 
     def _notify(self, mod, *args):

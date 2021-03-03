@@ -34,7 +34,8 @@ import pkg_resources
 
 from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.librdiff import AccessDeniedError
-from rdiffweb.core.store import IUserChangeListener, ADMIN_ROLE, USER_ROLE
+from rdiffweb.core.store import IUserChangeListener, ADMIN_ROLE, USER_ROLE, \
+    MAINTAINER_ROLE
 from rdiffweb.test import AppTestCase
 
 
@@ -49,7 +50,10 @@ def _ldap_user(name, password='password'):
         'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']})
 
 
-class StoreTest(AppTestCase):
+class AbstractStoreTest(AppTestCase):
+    """
+    Abstract class used to test store module.
+    """
 
     def setUp(self):
         AppTestCase.setUp(self)
@@ -59,6 +63,77 @@ class StoreTest(AppTestCase):
         self.mlistener.user_deleted = MagicMock()
         self.mlistener.user_logined = MagicMock()
         self.mlistener.user_password_changed = MagicMock()
+
+
+class AbstractLdapStoreTest(AbstractStoreTest):
+    """
+    Abstract class used to test store module with a mock ldap.
+    """
+
+    basedn = ('dc=nodomain', {
+        'dc': ['nodomain'],
+        'o': ['nodomain']})
+    people = ('ou=People,dc=nodomain', {
+        'ou': ['People'],
+        'objectClass': ['organizationalUnit']})
+
+    # This is the content of our mock LDAP directory. It takes the form
+    # {dn: {attr: [value, ...], ...}, ...}.
+    directory = dict([
+        basedn,
+        people,
+        _ldap_user('annik'),
+        _ldap_user('bob'),
+        _ldap_user('foo'),
+        _ldap_user('jeff'),
+        _ldap_user('john'),
+        _ldap_user('karl'),
+        _ldap_user('kim'),
+        _ldap_user('larry'),
+        _ldap_user('mike'),
+        _ldap_user('tony'),
+        _ldap_user('vicky'),
+    ])
+
+    default_config = {
+        'LdapUri': '__default__',
+        'LdapBaseDn': 'dc=nodomain',
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        # We only need to create the MockLdap instance once. The content we
+        # pass in will be used for all LDAP connections.
+        cls.mockldap = MockLdap(cls.directory)
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.mockldap
+
+    def setUp(self):
+        # Mock LDAP
+        self.mockldap.start()
+        self.ldapobj = self.mockldap['ldap://localhost/']
+        # Original setup
+        AbstractStoreTest.setUp(self)
+        # Get reference to LdapStore
+        self.ldapstore = self.app.store._ldap_store
+        # Create fake listener
+        self.mlistener = IUserChangeListener(self.app)
+        self.mlistener.user_added = MagicMock()
+        self.mlistener.user_attr_changed = MagicMock()
+        self.mlistener.user_deleted = MagicMock()
+        self.mlistener.user_logined = MagicMock()
+        self.mlistener.user_password_changed = MagicMock()
+
+    def tearDown(self):
+        # Stop patching ldap.initialize and reset state.
+        self.mockldap.stop()
+        del self.ldapobj
+        AbstractStoreTest.tearDown(self)
+
+
+class StoreTest(AbstractStoreTest):
 
     def test_add_user(self):
         """Add user to database."""
@@ -297,70 +372,13 @@ class StoreTest(AppTestCase):
         self.mlistener.user_password_changed.assert_not_called()
 
 
-class StoreWithLdapTest(AppTestCase):
-
-    basedn = ('dc=nodomain', {
-        'dc': ['nodomain'],
-        'o': ['nodomain']})
-    people = ('ou=People,dc=nodomain', {
-        'ou': ['People'],
-        'objectClass': ['organizationalUnit']})
-
-    # This is the content of our mock LDAP directory. It takes the form
-    # {dn: {attr: [value, ...], ...}, ...}.
-    directory = dict([
-        basedn,
-        people,
-        _ldap_user('annik'),
-        _ldap_user('bob'),
-        _ldap_user('foo'),
-        _ldap_user('jeff'),
-        _ldap_user('john'),
-        _ldap_user('karl'),
-        _ldap_user('kim'),
-        _ldap_user('larry'),
-        _ldap_user('mike'),
-        _ldap_user('tony'),
-        _ldap_user('vicky'),
-    ])
+class StoreWithLdapTest(AbstractLdapStoreTest):
 
     default_config = {
-        'LdapUri': '__default__',
-        'LdapBaseDn': 'dc=nodomain',
-        'LdapAllowPasswordChange': 'true'
+        'ldap-uri': '__default__',
+        'ldap-base-dn': 'dc=nodomain',
+        'ldap-allow-password-change':'true'
     }
-
-    @classmethod
-    def setUpClass(cls):
-        # We only need to create the MockLdap instance once. The content we
-        # pass in will be used for all LDAP connections.
-        cls.mockldap = MockLdap(cls.directory)
-
-    @classmethod
-    def tearDownClass(cls):
-        del cls.mockldap
-
-    def setUp(self):
-        # Mock LDAP
-        self.mockldap.start()
-        self.ldapobj = self.mockldap['ldap://localhost/']
-        # Original setup
-        AppTestCase.setUp(self)
-        # Get reference to LdapStore
-        self.ldapstore = self.app.store._password_stores[0]
-        # Create fake listener
-        self.mlistener = IUserChangeListener(self.app)
-        self.mlistener.user_added = MagicMock()
-        self.mlistener.user_attr_changed = MagicMock()
-        self.mlistener.user_deleted = MagicMock()
-        self.mlistener.user_logined = MagicMock()
-        self.mlistener.user_password_changed = MagicMock()
-
-    def tearDown(self):
-        # Stop patching ldap.initialize and reset state.
-        self.mockldap.stop()
-        del self.ldapobj
-        AppTestCase.tearDown(self)
 
     def test_add_user_to_sqlite(self):
         """Add user to local database."""
@@ -469,55 +487,13 @@ class StoreWithLdapTest(AppTestCase):
             self.assertFalse(userobj.set_password(''))
 
 
-class StoreWithLdapAddMissing(AppTestCase):
-
-    basedn = ('dc=nodomain', {
-        'dc': ['nodomain'],
-        'o': ['nodomain']})
-    people = ('ou=People,dc=nodomain', {
-        'ou': ['People'],
-        'objectClass': ['organizationalUnit']})
-
-    # This is the content of our mock LDAP directory. It takes the form
-    # {dn: {attr: [value, ...], ...}, ...}.
-    directory = dict([
-        basedn,
-        people,
-        _ldap_user('tony'),
-    ])
+class StoreWithLdapAddMissing(AbstractLdapStoreTest):
 
     default_config = {
-        'LdapUri': '__default__',
-        'LdapBaseDn': 'dc=nodomain',
-        'LdapAllowPasswordChange': 'true',
-        'addmissinguser': 'true'
+        'ldap-uri': '__default__',
+        'ldap-base-dn': 'dc=nodomain',
+        'ldap-add-missing-user': 'true'
     }
-
-    @classmethod
-    def setUpClass(cls):
-        # We only need to create the MockLdap instance once. The content we
-        # pass in will be used for all LDAP connections.
-        cls.mockldap = MockLdap(cls.directory)
-
-    @classmethod
-    def tearDownClass(cls):
-        del cls.mockldap
-
-    def setUp(self):
-        # Mock LDAP
-        self.mockldap.start()
-        self.ldapobj = self.mockldap['ldap://localhost/']
-        # Original setup
-        AppTestCase.setUp(self)
-        # Get reference to LdapStore
-        self.ldapstore = self.app.store._password_stores[0]
-        # Create fake listener
-        self.mlistener = IUserChangeListener(self.app)
-        self.mlistener.user_added = MagicMock()
-        self.mlistener.user_attr_changed = MagicMock()
-        self.mlistener.user_deleted = MagicMock()
-        self.mlistener.user_logined = MagicMock()
-        self.mlistener.user_password_changed = MagicMock()
 
     def test_login_with_create_user(self):
         """Check if login create the user in database if user exists in LDAP"""
@@ -526,6 +502,30 @@ class StoreWithLdapAddMissing(AppTestCase):
         self.assertIsNotNone(self.app.store.get_user('tony'))
         self.assertFalse(userobj.is_admin)
         self.assertEqual(USER_ROLE, userobj.role)
+        self.assertEqual('', userobj.user_root)
+        # Check listener
+        self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
+        self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
+
+
+class StoreWithLdapAddMissingWithDefaults(AbstractLdapStoreTest):
+
+    default_config = {
+        'ldap-uri': '__default__',
+        'ldap-base-dn': 'dc=nodomain',
+        'ldap-add-missing-user': 'true',
+        'ldap-add-user-default-role': 'maintainer',
+        'ldap-add-user-default-userroot': '/backups/users/{uid[0]}',
+    }
+
+    def test_login_with_create_user(self):
+        """Check if login create the user in database if user exists in LDAP"""
+        self.assertIsNone(self.app.store.get_user('tony'))
+        userobj = self.app.store.login('tony', 'password')
+        self.assertIsNotNone(self.app.store.get_user('tony'))
+        self.assertFalse(userobj.is_admin)
+        self.assertEqual(MAINTAINER_ROLE, userobj.role)
+        self.assertEqual('/backups/users/tony', userobj.user_root)
         # Check listener
         self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
         self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})

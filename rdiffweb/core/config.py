@@ -146,6 +146,17 @@ def parse_args(args=None, config_file_contents=None):
         default=False)
 
     parser.add_argument(
+        '--ldap-add-user-default-role',
+        help='default role used when creating users from LDAP. This parameter is only useful when `--ldap-add-missing-user` is enabled.',
+        default='user',
+        choices=['admin', 'maintainer', 'user'])
+
+    parser.add_argument(
+        '--ldap-add-user-default-userroot',
+        help='default user root directory used when creating users from LDAP. LDAP attributes may be used to define the default location. e.g.: `/backups/{uid[0]}/`. This parameter is only useful when `--ldap-add-missing-user` is enabled.',
+        default='')
+
+    parser.add_argument(
         '--ldap-uri', '--ldapuri',
         help='URL to the LDAP server used to validate user credentials. e.g.: ldap://localhost:389')
 
