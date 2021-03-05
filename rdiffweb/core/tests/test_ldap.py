@@ -91,7 +91,7 @@ class UserManagerLdapTest(AppTestCase):
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
         # Get reference to LdapStore
-        self.ldapstore = self.app.store._password_stores[0]
+        self.ldapstore = self.app.store._ldap_store
         self.assertTrue(isinstance(self.ldapstore, LdapPasswordStore))
 
     def tearDown(self):
@@ -187,7 +187,7 @@ class UserManagerLdapNoPasswordChangeTest(AppTestCase):
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
         # Get reference to LdapStore
-        self.ldapstore = self.app.store._password_stores[0]
+        self.ldapstore = self.app.store._ldap_store
 
     def tearDown(self):
         # Stop patching ldap.initialize and reset state.
@@ -268,7 +268,7 @@ class UserManagerLdapWithRequiredGroupTest(AppTestCase):
         self.mockldap.start()
         self.ldapobj = self.mockldap['ldap://localhost/']
         # Get reference to LdapStore
-        self.ldapstore = self.app.store._password_stores[0]
+        self.ldapstore = self.app.store._ldap_store
         self.assertTrue(isinstance(self.ldapstore, LdapPasswordStore))
 
     def tearDown(self):

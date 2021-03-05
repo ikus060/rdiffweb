@@ -25,17 +25,14 @@ This integration works with most LDAP-compliant directory servers, including:
 * Microsoft Active Directory
 * Apple Open Directory
 * Open LDAP
-* 389 Server.
+* 389 Server
 
 **Requirements**
 
 Make sure you have `python-ldap` installed either from your Linux distribution repository or from pypi using `pip`.
 
-    sudo apt-get install python-ldap
-    OR
-    sudo pip install python-ldap
 
-Plugin parameters:
+**LDAP parameters**
 
 | Parameter | Description | Required | Example |
 | --- | --- | --- | --- |
@@ -52,6 +49,8 @@ Plugin parameters:
 | --ldap-timeout | Optional timeout value. Default to 300 sec. | No | 300 |
 | --ldap-allow-password-change | `true` to allow LDAP users to  update their password using rdiffweb. This option should only be enabled if the LDAP if confiugred to allow the user to change their own password. Default to  `false`. | No | true |
 | --ldap-add-missing-user | `True` to create users from LDAP when the credential are valid. | No | True |
+| --ldap-add-user-default-role | Role to be used when creating a new user from LDAP. Default: user | No | maintainer |
+| --ldap-add-user-default-userroot | Userroot to be used when creating a new user from LDAP. Default: empty | No | /backups/{cn[0]} |
 
 ## Email notifications
 

@@ -13,9 +13,12 @@ usage: rdiffweb [\-h] [\-f FILE] [\-d] [\-\-admin\-user USERNAME]
 [\-\-email\-send\-changed\-notification] [\-\-favicon FAVICON]
 [\-\-footer\-name FOOTER_NAME] [\-\-footer\-url FOOTER_URL]
 [\-\-header\-logo HEADER_LOGO] [\-\-header\-name HEADER_NAME]
-[\-\-ldap\-add\-missing\-user] [\-\-ldap\-uri LDAP_URI]
-[\-\-ldap\-base\-dn DN] [\-\-ldap\-scope {base,onelevel,subtree}]
-[\-\-ldap\-tls] [\-\-ldap\-username\-attribute ATTRIBUTE]
+[\-\-ldap\-add\-missing\-user]
+[\-\-ldap\-add\-user\-default\-role {admin,maintainer,user}]
+[\-\-ldap\-add\-user\-default\-userroot LDAP_ADD_USER_DEFAULT_USERROOT]
+[\-\-ldap\-uri LDAP_URI] [\-\-ldap\-base\-dn DN]
+[\-\-ldap\-scope {base,onelevel,subtree}] [\-\-ldap\-tls]
+[\-\-ldap\-username\-attribute ATTRIBUTE]
 [\-\-ldap\-filter LDAP_FILTER] [\-\-ldap\-required\-group GROUPNAME]
 [\-\-ldap\-group\-attribute ATTRIBUTE]
 [\-\-ldap\-group\-attribute\-is\-dn] [\-\-ldap\-bind\-dn DN]
@@ -122,6 +125,18 @@ menu. [env var: RDIFFWEB_HEADER_NAME]
 \fB\-\-ldap\-add\-missing\-user\fR, \fB\-\-addmissinguser\fR
 enable creation of users from LDAP when the credential
 are valid. [env var: RDIFFWEB_LDAP_ADD_MISSING_USER]
+.TP
+\fB\-\-ldap\-add\-user\-default\-role\fR {admin,maintainer,user}
+default role used when creating users from LDAP. This
+parameter is only useful when `\-\-ldap\-add\-missinguser` is enabled. [env var:
+RDIFFWEB_LDAP_ADD_USER_DEFAULT_ROLE]
+.TP
+\fB\-\-ldap\-add\-user\-default\-userroot\fR LDAP_ADD_USER_DEFAULT_USERROOT
+default user root directory used when creating users
+from LDAP. LDAP attributes may be used to define the
+default location. e.g.: `/backups/{uid[0]}/`. This
+parameter is only useful when `\-\-ldap\-add\-missinguser` is enabled. [env var:
+RDIFFWEB_LDAP_ADD_USER_DEFAULT_USERROOT]
 .TP
 \fB\-\-ldap\-uri\fR LDAP_URI, \fB\-\-ldapuri\fR LDAP_URI
 URL to the LDAP server used to validate user
