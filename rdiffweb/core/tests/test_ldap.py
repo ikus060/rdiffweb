@@ -80,10 +80,12 @@ class UserManagerLdapTest(AppTestCase):
         # We only need to create the MockLdap instance once. The content we
         # pass in will be used for all LDAP connections.
         cls.mockldap = MockLdap(cls.directory)
+        super(UserManagerLdapTest, cls).setUpClass()
 
     @classmethod
     def tearDownClass(cls):
         del cls.mockldap
+        super(UserManagerLdapTest, cls).tearDownClass()
 
     def setUp(self):
         AppTestCase.setUp(self)
@@ -176,10 +178,12 @@ class UserManagerLdapNoPasswordChangeTest(AppTestCase):
         # We only need to create the MockLdap instance once. The content we
         # pass in will be used for all LDAP connections.
         cls.mockldap = MockLdap(cls.directory)
+        super(UserManagerLdapNoPasswordChangeTest, cls).setUpClass()
 
     @classmethod
     def tearDownClass(cls):
         del cls.mockldap
+        super(UserManagerLdapNoPasswordChangeTest, cls).tearDownClass()
 
     def setUp(self):
         AppTestCase.setUp(self)
@@ -257,10 +261,12 @@ class UserManagerLdapWithRequiredGroupTest(AppTestCase):
         # We only need to create the MockLdap instance once. The content we
         # pass in will be used for all LDAP connections.
         cls.mockldap = MockLdap(cls.directory)
+        super(UserManagerLdapWithRequiredGroupTest, cls).setUpClass()
 
     @classmethod
     def tearDownClass(cls):
         del cls.mockldap
+        super(UserManagerLdapWithRequiredGroupTest, cls).tearDownClass()
 
     def setUp(self):
         AppTestCase.setUp(self)

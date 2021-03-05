@@ -54,10 +54,24 @@ def parse_args(args=None, config_file_contents=None):
         metavar='FILE',
         help='location of Rdiffweb configuration file')
 
+    parser.add(
+        '--database-uri', '--sqlitedb-file', '--sqlitedbfile',
+        metavar='URI',
+        help="""Location of the database used for persistence. SQLite and PostgreSQL
+            database are supported officially. To use a SQLite database you may
+            define the location using a file path or a URI.
+            e.g.: /srv/rdiffweb/file.db or sqlite:///srv/rdiffweb/file.db`.
+            To use PostgreSQL server you must provide
+            a URI similar to postgresql://user:pass@10.255.1.34/dbname and you
+            must install required dependencies.
+            By default, Rdiffweb uses a SQLite embedded database located at
+            /etc/rdiffweb/rdw.db.""",
+        default='/etc/rdiffweb/rdw.db')
+
     parser.add_argument(
         '-d', '--debug',
         action='store_true',
-        help='enable rdiffweb debug mode - change the log level to DEBUG and print exception stack trace to the web interface')
+        help='enable rdiffweb debug mode - change the log level to DEBUG, print exception stack trace to the web interface and show SQL query in logs')
 
     parser.add_argument(
         '--admin-user', '--adminuser',
@@ -326,12 +340,6 @@ def parse_args(args=None, config_file_contents=None):
         '--ssl-private-key', '--sslprivatekey',
         metavar='KEY',
         help='location of the SSL Private Key to enable HTTPS')
-
-    parser.add(
-        '--sqlitedb-file', '--sqlitedbfile',
-        metavar='FILE',
-        help='location of the SQLite database used for persistence',
-        default='/etc/rdiffweb/rdw.db')
 
     parser.add(
         '--tempdir',

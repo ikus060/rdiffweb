@@ -32,10 +32,6 @@ class DeleteRepoTest(WebCase):
 
     login = True
 
-    reset_app = True
-
-    reset_testcases = True
-
     def _settings(self, repo):
         self.getPage("/settings/" + repo + "/")
 

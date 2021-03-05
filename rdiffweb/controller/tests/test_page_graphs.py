@@ -32,10 +32,6 @@ class SettingsTest(WebCase):
 
     login = True
 
-    reset_app = True
-
-    reset_testcases = True
-
     def test_activities(self):
         self.getPage("/graphs/activities/" + self.USERNAME + "/" + self.REPO + "/")
         self.assertStatus('200 OK')

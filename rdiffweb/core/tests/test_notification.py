@@ -29,14 +29,6 @@ from rdiffweb.test import AppTestCase
 
 class NotificationTest(AppTestCase):
 
-    USERNAME = 'admin'
-
-    PASSWORD = 'admin'
-
-    reset_app = True
-
-    reset_testcases = True
-
     default_config = {
         'EmailHost': 'smtp.gmail.com:587',
         'EmailUsername': 'test@test.com',
@@ -123,14 +115,6 @@ Here is the link you wanted."""
 
 
 class SendChangeNotificationTest(AppTestCase):
-
-    USERNAME = 'admin'
-
-    PASSWORD = 'admin'
-
-    reset_app = True
-
-    reset_testcases = True
 
     default_config = {'emailsendchangednotification': True}
 

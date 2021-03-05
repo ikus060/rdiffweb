@@ -184,6 +184,7 @@ setup(
         "distro",
         "humanfriendly",
         "configargparse",
+        "sqlalchemy",
     ],
     # required packages for build process
     setup_requires=[

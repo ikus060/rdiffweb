@@ -34,10 +34,6 @@ class ErrorPageTest(WebCase):
 
     login = True
 
-    reset_app = True
-
-    reset_testcases = True
-
     def test_error_page(self):
         self.getPage('/invalid/')
         self.assertStatus("404 Not Found")

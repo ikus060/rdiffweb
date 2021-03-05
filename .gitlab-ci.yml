@@ -95,6 +95,19 @@ centos8-py3-cherrypy18-jinja210:
   variables:
     IMAGE: centos8-py3
     TOXENV: py3-cherrypy18-jinja210
+
+debian10-postgresql-12:
+  <<: *tox
+  services:
+    - postgres:12.2-alpine
+  variables:
+    IMAGE: debian10-py3
+    TOXENV: py3-cherrypy8-jinja210
+    RDIFFWEB_TEST_DATABASE_URI: "postgresql://admin@postgres/test"
+    POSTGRES_DB: test
+    POSTGRES_USER: admin
+    POSTGRES_PASSWORD: ""
+    POSTGRES_HOST_AUTH_METHOD: trust
   
 package:py3: 
   stage: test-and-package

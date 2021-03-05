@@ -29,10 +29,6 @@ import unittest
 
 class APITest(WebCase):
 
-    reset_app = True
-
-    reset_testcases = True
-    
     headers = [("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))]
 
     def test_get_index(self):

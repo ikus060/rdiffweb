@@ -18,6 +18,7 @@ Build-Depends:
  python3-psutil,
  python3-setuptools,
  python3-setuptools-scm,
+ python3-sqlalchemy,
  python3-wtforms,
 Rules-Requires-Root: no
 Standards-Version: 4.5.1
@@ -44,11 +45,14 @@ Depends:
  python3-jinja2,
  python3-ldap,
  python3-psutil,
+ python3-sqlalchemy,
  python3-wtforms,
  rdiff-backup,
  ${misc:Depends},
  ${python3:Depends},
  ${sphinxdoc:Depends},
+Suggests:
+ python3-psycopg2,
 Description: web interface to rdiff-backup repositories
  Rdiffweb is a web application that allows you to view repositories generated
  by rdiff-backup. The purpose of this application is to ease the management

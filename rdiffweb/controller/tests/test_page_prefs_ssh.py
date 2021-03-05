@@ -33,11 +33,6 @@ class SSHKeysTest(WebCase):
 
     login = True
 
-    reset_app = True
-
-    # Enable testcases to define a user_root
-    reset_testcases = True
-
     def _delete_ssh_key(self, fingerprint):
         b = {'action': 'delete',
              'fingerprint': fingerprint}

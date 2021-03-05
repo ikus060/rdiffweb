@@ -215,6 +215,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Verify failure trying to update user with invalid path.
         """
+        self.app.store.add_user('test1')
         self._edit_user("test1", "test1@test.com", "test", "/var/invalid/", USER_ROLE)
         self.assertNotInBody("User added successfully.")
         self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
@@ -236,6 +237,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Check if admin criteria is working.
         """
+        self.app.store.add_user('test1')
         self.getPage("/admin/users/?criteria=admins")
         self.assertNotInBody("test1")
 
@@ -243,6 +245,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Check if user search is working.
         """
+        self.app.store.add_user('test1')
         self.getPage("/admin/users?search=tes")
         self.assertInBody("test1")
         self.getPage("/admin/users?search=coucou")
@@ -334,8 +337,6 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
 class AdminUsersAsUserTest(AbstractAdminTest):
     """Integration test for page_admin"""
-
-    reset_app = True
 
     def setUp(self):
         WebCase.setUp(self)
@@ -436,10 +437,6 @@ class AdminWithLogMissingTest(WebCase):
 class AdminReposTest(WebCase):
 
     login = True
-
-    reset_app = True
-
-    reset_testcases = True
 
     def test_repos(self):
         self.getPage("/admin/repos")

@@ -33,9 +33,8 @@ import cherrypy
 from cherrypy.test import helper
 import pkg_resources
 from rdiffweb.core.config import parse_args
-from rdiffweb.core.store import ADMIN_ROLE
+from rdiffweb.core.store import _SSHKEYS, _REPOS, _USERS
 from rdiffweb.rdw_app import RdiffwebApp
-
 
 try:
     from urllib.parse import urlencode  # @UnresolvedImport @UnusedImport
@@ -49,9 +48,11 @@ class MockRdiffwebApp(RdiffwebApp):
         assert default_config is None or isinstance(default_config, dict)
         self.default_config = default_config
 
-        # database in memory
+        # Allow defining a custom database uri for testing.
         self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
-        default_config['SQLiteDBFile'] = os.path.join(self.database_dir, 'rdiffweb.tmp.db')
+        uri = os.path.join(self.database_dir, 'rdiffweb.tmp.db')
+        uri = os.environ.get('RDIFFWEB_TEST_DATABASE_URI', uri)
+        default_config['database-uri'] = uri
 
         cfg = parse_args(args=[], config_file_contents='\n'.join('%s=%s' % (k, v) for k, v in default_config.items()))
 
@@ -62,25 +63,23 @@ class MockRdiffwebApp(RdiffwebApp):
         if hasattr(self, 'database_dir'):
             shutil.rmtree(self.database_dir)
             delattr(self, 'database_dir')
+        # Dispose SQLAlchemy engine.
+        self.store.engine.dispose()
 
     def clear_testcases(self):
         if hasattr(self, 'testcases'):
             shutil.rmtree(self.testcases)
             delattr(self, 'testcases')
 
-    def reset(self, username=None, password=None):
+    def reset(self):
         """
         Reset the application. Delete all data from database.
         """
-        # Delete all data from database directly.
-        self.store._database.delete('users')
-        self.store._database.delete('repos')
-        self.store._database.delete('sshkeys')
-
-        # Create new user admin
-        if username and password:
-            user = self.store.add_user(username, password)
-            user.role = ADMIN_ROLE
+        with self.store.engine.connect() as conn:
+            conn.execute(_SSHKEYS.delete())
+            conn.execute(_REPOS.delete())
+            conn.execute(_USERS.delete())
+        self.store.create_admin_user()
 
     def reset_testcases(self):
         """Extract testcases."""
@@ -100,31 +99,24 @@ class MockRdiffwebApp(RdiffwebApp):
 
 class AppTestCase(unittest.TestCase):
 
-    default_config = {}
-
-    reset_app = True
-
-    reset_testcases = False
-
     REPO = 'testcases'
 
-    USERNAME = None
+    USERNAME = 'admin'
 
-    PASSWORD = None
+    PASSWORD = 'admin123'
+
+    default_config = {}
 
     def setUp(self):
         self.app = MockRdiffwebApp(self.default_config)
-        if self.reset_app:
-            self.app.reset(self.USERNAME, self.PASSWORD)
-        if self.reset_testcases:
-            assert self.reset_app, 'reset_app must be True when reset_testcases is True'
-            self.app.reset_testcases()
+        self.app.reset()
+        self.app.reset_testcases()
         unittest.TestCase.setUp(self)
 
     def tearDown(self):
+        # Force dispose on SQL engine
         self.app.clear_db()
-        if self.reset_testcases:
-            self.app.clear_testcases()
+        self.app.clear_testcases()
         unittest.TestCase.tearDown(self)
 
 
@@ -143,16 +135,13 @@ class WebCase(helper.CPWebCase):
 
     login = False
 
-    reset_app = False
-
-    reset_testcases = False
-
     default_config = {}
 
     @classmethod
     def setUpClass(cls):
         super(helper.CPWebCase, cls).setUpClass()
         cls.setup_class()
+        cls.do_gc_test = False
 
     @classmethod
     def tearDownClass(cls):
@@ -168,17 +157,13 @@ class WebCase(helper.CPWebCase):
 
     def setUp(self):
         helper.CPWebCase.setUp(self)
-        if self.reset_app:
-            self.app.reset(self.USERNAME, self.PASSWORD)
-        if self.reset_testcases:
-            assert self.reset_app, 'reset_app must be True when reset_testcases is True'
-            self.app.reset_testcases()
+        self.app.reset()
+        self.app.reset_testcases()
         if self.login:
             self._login()
 
     def tearDown(self):
-        if self.reset_testcases:
-            self.app.clear_testcases()
+        self.app.clear_testcases()
 
     @property
     def app(self):

@@ -33,10 +33,6 @@ from rdiffweb.test import WebCase
 class BrowsePageTest(WebCase):
     """Basic python call to page_browse"""
 
-    reset_app = True
-
-    reset_testcases = True
-
     login = True
 
     def tearDown(self):

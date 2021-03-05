@@ -20,10 +20,10 @@ Created on Dec 26, 2015
 @author: Patrik Dufresne
 """
 
-
 import logging
 import unittest
 
+from rdiffweb.core.store import _REPOS
 from rdiffweb.test import WebCase
 
 
@@ -32,10 +32,6 @@ class PrefsTest(WebCase):
     PREFS = "/prefs/"
 
     login = True
-
-    reset_app = True
-    
-    reset_testcases = True
 
     def _set_password(self, current, new_password, confirm):
         b = {'action': 'set_password',
@@ -92,20 +88,21 @@ class PrefsTest(WebCase):
         self.assertStatus(404)
 
     def test_update_repos(self):
-        
+
         user_obj = self.app.store.get_user(self.USERNAME)
-        self.app.store._database.delete('repos')
+        with self.app.store.engine.connect() as conn:
+            conn.execute(_REPOS.delete())
         self.assertEqual(0, len(user_obj.repos))
-        
+
         self.getPage(self.PREFS, method='POST', body={'action': 'update_repos'})
         self.assertStatus(200)
         # Check database update.
         self.assertInBody("Repositories successfully updated.")
-        
+
         self.assertEqual(2, len(user_obj.repos))
         self.assertIn('testcases', user_obj.repos)
         self.assertIn('broker-repo', user_obj.repos)
-        
+
     def test_update_notification(self):
         self.getPage("/prefs/notification/", method='POST', body={'action':'set_notification_info', 'testcases':'7'})
         self.assertStatus(200)

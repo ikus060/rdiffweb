@@ -59,10 +59,6 @@ class RestoreTest(WebCase):
 
     login = True
 
-    reset_app = True
-
-    reset_testcases = True
-
     maxDiff = None
 
     def _restore(self, user, repo, path, date, usetar, kind=None):

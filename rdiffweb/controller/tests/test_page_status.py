@@ -32,10 +32,6 @@ class StatusTest(WebCase):
 
     login = True
 
-    reset_app = True
-
-    reset_testcases = True
-
     def _status(self, failures=False, date=None):
         url = "/status/"
         if date:

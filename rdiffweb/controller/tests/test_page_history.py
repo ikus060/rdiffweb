@@ -33,10 +33,6 @@ class HistoryPageTest(WebCase):
 
     login = True
 
-    reset_app = True
-
-    reset_testcases = True
-
     def _history(self, user, repo, limit=None):
         url = "/history/" + user + "/" + repo + "/"
         if limit:
