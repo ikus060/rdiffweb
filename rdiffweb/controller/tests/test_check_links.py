@@ -32,10 +32,6 @@ class CheckLinkTest(WebCase):
 
     login = True
 
-    reset_app = True
-
-    reset_testcases = True
-
     def test_links(self):
         """
         Crawl all the pages to find broken links.

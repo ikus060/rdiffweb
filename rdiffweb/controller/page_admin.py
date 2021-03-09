@@ -103,8 +103,8 @@ def get_pkginfo():
     import jinja2
     yield _('Jinja2 Version'), getattr(jinja2, '__version__')
     yield _('CherryPy Version'), getattr(cherrypy, '__version__')
-    from rdiffweb.core.store_sqlite import sqlite3  # @UnresolvedImport
-    yield _('SQLite Version'), getattr(sqlite3, 'version')
+    import sqlalchemy
+    yield _('SQLAlchemy Version'), getattr(sqlalchemy, '__version__')
     try:
         import ldap
         yield _('LDAP Version'), getattr(ldap, '__version__')

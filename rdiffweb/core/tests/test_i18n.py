@@ -136,8 +136,6 @@ class Test(unittest.TestCase):
 
 class TestI18nWebCase(WebCase):
 
-    reset_app = True
-
     def testLanguage_WithUnknown(self):
         #  Query the page without login-in
         self.getPage("/", headers=[("Accept-Language", "it")])

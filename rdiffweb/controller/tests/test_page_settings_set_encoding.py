@@ -32,10 +32,6 @@ class SetEncodingTest(WebCase):
 
     login = True
 
-    reset_app = True
-
-    reset_testcases = True
-
     def _settings(self, user, repo):
         self.getPage("/settings/" + user + "/" + repo + "/")
 
@@ -108,7 +104,7 @@ class SetEncodingTest(WebCase):
         self.assertEquals('cp1252', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
 
     def test_as_another_user(self):
-        # Create a nother user with admin right
+        # Create another user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
         user_obj.add_repo('testcases')

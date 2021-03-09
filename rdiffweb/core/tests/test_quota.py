@@ -29,14 +29,6 @@ from rdiffweb.test import AppTestCase
 
 class QuotaTest(AppTestCase):
 
-    reset_testcases = True
-
-    REPO = 'testcases/'
-
-    USERNAME = 'admin'
-
-    PASSWORD = 'admin123'
-
     def setUp(self):
         AppTestCase.setUp(self)
         self.quota = IUserQuota()
@@ -68,14 +60,6 @@ class QuotaTest(AppTestCase):
 
 
 class DefaultQuotaTest(AppTestCase):
-
-    reset_testcases = True
-
-    REPO = 'testcases/'
-
-    USERNAME = 'admin'
-
-    PASSWORD = 'admin123'
 
     def test_get_disk_quota(self):
         """

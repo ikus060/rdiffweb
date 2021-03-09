@@ -16,6 +16,33 @@ Configuration file syntax allows:
 If a value is specified in more than one place, then commandline values
 override environment variables which override config file values which override defaults.
 
+## Database
+
+Rdiffweb use SQL database to store user preferences. The embedded SQLite database is well suited for small deployment (1-100 users). If you intended to have a large deployment, you must also consider using a PostgreSQL database instead.
+
+| Parameter | Description | Required | Example |
+| --- | --- | --- | --- |
+| --database-uri | Location of the database used for persistence. SQLite and PostgreSQL database are supported officially. To use a SQLite database you may define the location using a file path or a URI. e.g.: /srv/rdiffweb/file.db or sqlite:///srv/rdiffweb/file.db`. To use PostgreSQL server you must provide a URI similar to postgresql://user:pass@10.255.1.34/dbname and you must install required dependencies. By default, Rdiffweb uses a SQLite embedded database located at /etc/rdiffweb/rdw.db. | No | postgresql://user:pass@10.255.1.34/dbname | 
+
+
+###SQLite
+
+To use embedded SQLite database, pass the config `--database-uri` with a URI similar to `sqlite:///etc/rdiffweb/rdw.db` or `/etc/rdiffweb/rdw.db`.
+
+###PostgreSQL
+
+To use an external PostgreSQL database, pass the config `--database-uri` with a URI similar to `postgresql://user:pass@10.255.1.34/dbname`.
+
+You may need to install additional dependencies to connect to PostgreSQL. Step to install dependencies might differ according to the way you installed Rdiffweb.
+
+**Using pip (from Pypi):**
+
+    pip install psycopg2-binary
+
+**Using apt for Debian:**
+
+    apt install python3-psycopg2
+
 ## LDAP Authentication
 
 Rdiffweb integrates with LDAP to support user authentication. 

@@ -80,12 +80,6 @@ class TemplateManagerTest(unittest.TestCase):
 
 class UrlForTest(AppTestCase):
 
-    reset_testcases = True
-
-    USERNAME = 'admin'
-
-    PASSWORD = 'password'
-
     def test_url_for_browse(self):
         """Check creation of url"""
         repo = self.app.store.get_user('admin').get_repo(self.REPO)

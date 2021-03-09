@@ -79,8 +79,6 @@ class RestoreTest(AppTestCase):
 
     maxDiff = None
 
-    reset_testcases = True
-
     def setUp(self):
         AppTestCase.setUp(self)
 

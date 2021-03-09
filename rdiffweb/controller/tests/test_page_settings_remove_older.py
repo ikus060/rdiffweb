@@ -21,7 +21,6 @@ Created on May 2, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-
 import logging
 import unittest
 
@@ -36,10 +35,6 @@ from rdiffweb.test import WebCase
 class RemoveOlderTest(WebCase):
 
     login = True
-
-    reset_app = True
-
-    reset_testcases = True
 
     def _settings(self, user, repo):
         self.getPage("/settings/" + user + "/" + repo + "/")
@@ -110,10 +105,6 @@ class RemoveOlderTest(WebCase):
 class RemoveOlderTestWithMock(WebCase):
 
     login = True
-
-    reset_app = True
-
-    reset_testcases = True
 
     def test_job_run_without_keepdays(self):
         """

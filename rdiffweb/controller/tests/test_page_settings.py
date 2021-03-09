@@ -33,10 +33,6 @@ class SettingsTest(WebCase):
 
     login = True
 
-    reset_app = True
-
-    reset_testcases = True
-
     def test_page(self):
         self.getPage("/settings/" + self.USERNAME + "/" + self.REPO)
         self.assertInBody("Character encoding")
