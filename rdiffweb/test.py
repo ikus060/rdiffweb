@@ -107,6 +107,14 @@ class AppTestCase(unittest.TestCase):
 
     default_config = {}
 
+    @classmethod
+    def setup_class(cls):
+        pass
+
+    @classmethod
+    def teardown_class(cls):
+        pass
+
     def setUp(self):
         self.app = MockRdiffwebApp(self.default_config)
         self.app.reset()
@@ -138,14 +146,13 @@ class WebCase(helper.CPWebCase):
     default_config = {}
 
     @classmethod
-    def setUpClass(cls):
-        super(helper.CPWebCase, cls).setUpClass()
-        cls.setup_class()
+    def setup_class(cls):
+        super(WebCase, cls).setup_class()
         cls.do_gc_test = False
 
     @classmethod
-    def tearDownClass(cls):
-        cls.teardown_class()
+    def teardown_class(cls):
+        super(WebCase, cls).teardown_class()
         app = cherrypy.tree.apps['']
         app.clear_db()
 

@@ -358,6 +358,17 @@ def parse_args(args=None, config_file_contents=None):
         help='replace the welcome message displayed in the login page for default locale or for a specific locale',
         action=LocaleAction)
 
+    # Add entry point arguments
+    entry_points = list(pkg_resources.iter_entry_points('rdiffweb.IUserChangeListener'))
+    entry_points += list(pkg_resources.iter_entry_points('rdiffweb.IUserQuota'))
+    for entry_point in entry_points:
+        try:
+            cls = entry_point.load()
+            if hasattr(cls, 'add_arguments'):
+                cls.add_arguments(parser)
+        except:
+            pass
+
     return parser.parse_args(args, config_file_contents=config_file_contents)
 
 

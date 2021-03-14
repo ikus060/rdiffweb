@@ -100,16 +100,16 @@ class AbstractLdapStoreTest(AbstractStoreTest):
     }
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         # We only need to create the MockLdap instance once. The content we
         # pass in will be used for all LDAP connections.
         cls.mockldap = MockLdap(cls.directory)
-        super(AbstractLdapStoreTest, cls).setUpClass()
+        super(AbstractLdapStoreTest, cls).setup_class()
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         del cls.mockldap
-        super(AbstractLdapStoreTest, cls).tearDownClass()
+        super(AbstractLdapStoreTest, cls).teardown_class()
 
     def setUp(self):
         # Mock LDAP

@@ -76,16 +76,16 @@ class UserManagerLdapTest(AppTestCase):
     }
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         # We only need to create the MockLdap instance once. The content we
         # pass in will be used for all LDAP connections.
         cls.mockldap = MockLdap(cls.directory)
-        super(UserManagerLdapTest, cls).setUpClass()
+        super(UserManagerLdapTest, cls).setup_class()
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         del cls.mockldap
-        super(UserManagerLdapTest, cls).tearDownClass()
+        super(UserManagerLdapTest, cls).teardown_class()
 
     def setUp(self):
         AppTestCase.setUp(self)
@@ -174,16 +174,16 @@ class UserManagerLdapNoPasswordChangeTest(AppTestCase):
     }
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         # We only need to create the MockLdap instance once. The content we
         # pass in will be used for all LDAP connections.
         cls.mockldap = MockLdap(cls.directory)
-        super(UserManagerLdapNoPasswordChangeTest, cls).setUpClass()
+        super(UserManagerLdapNoPasswordChangeTest, cls).setup_class()
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         del cls.mockldap
-        super(UserManagerLdapNoPasswordChangeTest, cls).tearDownClass()
+        super(UserManagerLdapNoPasswordChangeTest, cls).teardown_class()
 
     def setUp(self):
         AppTestCase.setUp(self)
@@ -257,16 +257,16 @@ class UserManagerLdapWithRequiredGroupTest(AppTestCase):
     }
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         # We only need to create the MockLdap instance once. The content we
         # pass in will be used for all LDAP connections.
         cls.mockldap = MockLdap(cls.directory)
-        super(UserManagerLdapWithRequiredGroupTest, cls).setUpClass()
+        super(UserManagerLdapWithRequiredGroupTest, cls).setup_class()
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         del cls.mockldap
-        super(UserManagerLdapWithRequiredGroupTest, cls).tearDownClass()
+        super(UserManagerLdapWithRequiredGroupTest, cls).teardown_class()
 
     def setUp(self):
         AppTestCase.setUp(self)
