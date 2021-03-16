@@ -61,6 +61,14 @@ class TestParseArg(unittest.TestCase):
         args = parse_args(['--ldap-add-user-default-userroot', '/this/is/a/path'])
         self.assertEqual(args.ldap_add_user_default_userroot, '/this/is/a/path')
 
+    def test_enable_ssh_keys_default(self):
+        args = parse_args([])
+        self.assertEqual(args.disable_ssh_keys, False)
+
+    def test_enable_ssh_keys_with_enable(self):
+        args = parse_args(['--disable-ssh-keys'])
+        self.assertEqual(args.disable_ssh_keys, True)
+
 
 class TestConfigFileParser(unittest.TestCase):
     """

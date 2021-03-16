@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import logging
 
 import cherrypy
@@ -24,7 +23,7 @@ from rdiffweb.controller import Controller
 from rdiffweb.controller.pref_general import PrefsGeneralPanelProvider
 from rdiffweb.controller.pref_sshkeys import SSHKeysPlugin
 from rdiffweb.controller.pref_notification import NotificationPref
-
+from rdiffweb.core.config import Option
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -32,23 +31,26 @@ logger = logging.getLogger(__name__)
 
 @cherrypy.popargs('panelid')
 class PreferencesPage(Controller):
-    
-    def __init__(self):
-        # Create the panels.
-        l = [PrefsGeneralPanelProvider(), SSHKeysPlugin(), NotificationPref()]
-        self.panels = [(x.panel_id, x.panel_name) for x in l]
-        self.providers = {x.panel_id: x for x in l}
+
+    disable_ssh_keys = Option('disable_ssh_keys')
 
     @cherrypy.expose
     def index(self, panelid=None, **kwargs):
         if isinstance(panelid, bytes):
             panelid = panelid.decode('ascii')
 
+        # Lazy create the list of "panels".
+        if not hasattr(self, 'panels'):
+            self.panels = [PrefsGeneralPanelProvider(), NotificationPref()]
+            # Show SSHKeys only if enabled.
+            if not self.disable_ssh_keys:
+                self.panels += [SSHKeysPlugin()]
+
         # Select the right panelid. Default to the first one if not define by url.
-        panelid = panelid or self.panels[0][0]
+        panelid = panelid or self.panels[0].panel_id
 
         # Search the panelid within our providers.
-        provider = self.providers.get(panelid)
+        provider = next((x for x in self.panels if x.panel_id == panelid), None)
         if not provider:
             raise cherrypy.HTTPError(404)
 
@@ -57,7 +59,7 @@ class PreferencesPage(Controller):
 
         # Create a params with a default panelid.
         params.update({
-            "panels": self.panels,
+            "panels": [(x.panel_id, x.panel_name) for x in self.panels],
             "active_panelid": panelid,
             "template_content": template,
         })

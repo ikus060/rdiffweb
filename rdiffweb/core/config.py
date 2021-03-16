@@ -346,6 +346,12 @@ def parse_args(args=None, config_file_contents=None):
         metavar='FOLDER',
         help='alternate temporary folder to be used when restoring files. Might be useful if the default location has limited disk space. Default to TEMPDIR environment or `/tmp`.')
 
+    parser.add(
+        '--disable-ssh-keys',
+        action='store_true',
+        help='used to hide SSH Key management to avoid users to add or remove SSH Key using the web application',
+        default=False)
+
     parser.add_argument('--version',
         action='version',
         version='%(prog)s ' + VERSION)

@@ -193,6 +193,14 @@ as the dataset to store rdiffweb backups.
    
 Take note, it's better to enable project quota attributes when the repositories are empty.
 
+## SSH Key management
+
+Rdiffweb allow users to manage their SSH Keys by adding and removing them using the web interface.
+This feature may be disable with `--disable-ssh-keys`.
+
+When this feature is enabled, adding or removing an SSH Key from the web interface
+updates the `${user_root}/.ssh/authorized_keys` file if the file already exists.
+
 ## Other Rdiffweb settings
 
 | Parameter | Description | Required | Example |
@@ -208,7 +216,6 @@ Take note, it's better to enable project quota attributes when the repositories 
 | --log-access-file | Define the location of the access log file | No | /var/log/rdiffweb-access.log |
 | --remove-older-time | Time when to execute the remove older task | No | 22:00 | 
 | --sqlitedb-file | Location of the SQLite database | No | /etc/rdiffweb/rdw.db | 
-
 | --admin-user | Define the name of the default admin user to be created | No | admin |
 | --favicon | Define the FavIcon to be displayed in the browser title | No | /etc/rdiffweb/my-fav.ico |
 | --tempdir | Define an alternate temp directory to be used when restoring files. | No | /retore/ |
