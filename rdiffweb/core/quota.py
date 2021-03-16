@@ -21,10 +21,10 @@ Created on Sep. 29, 2020
 '''
 
 import logging
+import os
 import subprocess
 
 import psutil
-
 from rdiffweb.core.config import Option
 from rdiffweb.core.store import UserObject
 
@@ -98,6 +98,10 @@ class DefaultUserQuota():
         Return the user disk space. Return 0 if unknown.
         """
         assert isinstance(userobj, UserObject)
+        # Skip disk usage if user_root doesn't exists.
+        if not userobj.user_root or not os.path.exists(userobj.user_root):
+            return 0
+
         # Fall back to disk spaces.
         if not self._get_usage_cmd:
             try:
