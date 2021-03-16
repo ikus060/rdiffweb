@@ -118,7 +118,7 @@ package:debian:buster:
     echo "deb-src http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list.d/backports.list
     apt update && apt install -y devscripts && apt build-dep -t buster-backports -y .
     dch -v "$VERSION" "automated build"
-    dpkg-buildpackage -b
+    DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -b
     mkdir -p ./dist/buster
     mv ../rdiffweb*.deb ./dist/buster
   allow_failure: true

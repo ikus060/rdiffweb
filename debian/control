@@ -15,6 +15,7 @@ Build-Depends:
  python3-humanfriendly,
  python3-jinja2,
  python3-ldap,
+ python3-mockldap,
  python3-psutil,
  python3-setuptools,
  python3-setuptools-scm,
