@@ -33,6 +33,7 @@ from rdiffweb.core.passwd import check_password, hash_password
 from sqlalchemy import Table, Column, Integer, SmallInteger, String, MetaData, Text
 from sqlalchemy import create_engine
 from sqlalchemy.sql.expression import select, or_, and_
+from sqlalchemy.sql.functions import count
 from sqlalchemy.exc import IntegrityError
 
 # Define the logger
@@ -609,12 +610,12 @@ class Store():
 
     def count_users(self):
         with self.engine.connect() as conn:
-            result = conn.execute(_USERS.count())
+            result = conn.execute(select([count('*')]).select_from(_USERS))
             return result.fetchone()[0]
 
     def count_repos(self):
         with self.engine.connect() as conn:
-            result = conn.execute(_REPOS.count())
+            result = conn.execute(select([count('*')]).select_from(_REPOS))
             return result.fetchone()[0]
 
     def get_repo(self, name, as_user=None):

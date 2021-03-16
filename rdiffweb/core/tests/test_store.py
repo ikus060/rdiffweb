@@ -307,9 +307,7 @@ class StoreTest(AbstractStoreTest):
         # Search
         users = list(self.app.store.users(criteria='admins'))
         self.assertEqual(3, len(users))
-        self.assertEqual('admin', users[0].username)
-        self.assertEqual('annik', users[1].username)
-        self.assertEqual('tom', users[2].username)
+        self.assertEqual(['admin', 'annik', 'tom'], sorted([u.username for u in users]))
 
     def test_users_with_criteria_ldap(self):
         # Check admin users exists
@@ -765,7 +763,7 @@ class UserObjectTest(AppTestCase):
             conn.execute(_REPOS.delete().where(_REPOS.c.userid == userobj._userid))  # @UndefinedVariable
             conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
         userobj.update_repos()
-        self.assertEquals(['testcases', 'broker-repo'], userobj.repos)
+        self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
 
     def test_update_repos_remove_duplicates(self):
         # Update repos should remove duplicate entries from the database
@@ -777,7 +775,7 @@ class UserObjectTest(AppTestCase):
             conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
         self.assertEquals(['testcases', 'broker-repo', '/testcases'], userobj.repos)
         userobj.update_repos()
-        self.assertEquals(['testcases', 'broker-repo'], userobj.repos)
+        self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
 
     def test_update_repos_remove_nested(self):
         # Update repos should remove duplicate entries from the database
