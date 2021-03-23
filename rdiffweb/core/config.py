@@ -436,7 +436,7 @@ class ConfigFileParser(object):
                     getattr(stream, 'name', 'stream'), line))
 
             # Get key a& value
-            key = split_line[0].lower().strip()
+            key = split_line[0].lower().strip().replace('_', '-')
             value = split_line[2].strip()
 
             # Support welcome-msg locale for backward compatibility

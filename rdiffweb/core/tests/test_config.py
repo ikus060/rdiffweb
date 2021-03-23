@@ -69,6 +69,12 @@ class TestParseArg(unittest.TestCase):
         args = parse_args(['--disable-ssh-keys'])
         self.assertEqual(args.disable_ssh_keys, True)
 
+    def test_config_file(self):
+        args = parse_args([], config_file_contents='disable-ssh-keys=true')
+        self.assertEqual(args.disable_ssh_keys, True)
+        args = parse_args([], config_file_contents='disable_ssh_keys=true')
+        self.assertEqual(args.disable_ssh_keys, True)
+
 
 class TestConfigFileParser(unittest.TestCase):
     """
