@@ -189,7 +189,8 @@ setup(
     # required packages for build process
     setup_requires=[
         "babel>=0.9.6",
-        "setuptools_scm",
+        # setuptools_scm v6.0 drop support for python<=3.6
+        "setuptools_scm" if sys.version_info >= (3, 6) else "setuptools_scm<6.0",
     ],
     # requirement for testing
     tests_require=tests_require,

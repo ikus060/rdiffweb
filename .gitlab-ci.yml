@@ -1,10 +1,11 @@
-image: ikus060/python:debian9-py3
+image: ikus060/python:debian10-py3
 
 variables:
   APT_DEV_BUSTER: https://nexus.ikus-soft.com/repository/apt-dev-buster/
   APT_RELEASE_BUSTERE: https://nexus.ikus-soft.com/repository/apt-release-buster/
   APT_DEV_BULLSEYE: https://nexus.ikus-soft.com/repository/apt-dev-bullseye/
   APT_RELEASE_BULLSEYE: https://nexus.ikus-soft.com/repository/apt-release-bullseye/
+  CRYPTOGRAPHY_DONT_BUILD_RUST: 1
 
 stages:
 - test-and-package
@@ -61,6 +62,11 @@ debian9-py3-cherrypy35-jinja28:
   variables:
     IMAGE: debian9-py3
     TOXENV: py3-cherrypy35-jinja28
+  # Need to upgrade setuptools on Debian stretch
+  before_script:
+  - apt-get update && apt install -yq rdiff-backup libldap2-dev libsasl2-dev
+  - pip3 install -U setuptools
+  
 
 debian10-py3-cherrypy8-jinja210: 
   <<: *tox
