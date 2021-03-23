@@ -110,6 +110,21 @@ class PrefsTest(WebCase):
         repo_obj = self.app.store.get_user(self.USERNAME).get_repo(self.REPO)
         self.assertEqual(7, repo_obj.maxage)
 
+    def test_get_page(self):
+        self.getPage("/prefs/", method='GET')
+        self.assertInBody("SSH")
+
+
+class PrefsWithSSHKeyDisabled(WebCase):
+
+    default_config = {
+        "disable_ssh_keys": "true",
+    }
+
+    def test_get_page(self):
+        self.getPage("/prefs/", method='GET')
+        self.assertNotInBody("SSH")
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
