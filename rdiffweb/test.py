@@ -65,6 +65,8 @@ class MockRdiffwebApp(RdiffwebApp):
             delattr(self, 'database_dir')
         # Dispose SQLAlchemy engine.
         self.store.engine.dispose()
+        # unsubscribe scheduler
+        self.scheduler.unsubscribe()
 
     def clear_testcases(self):
         if hasattr(self, 'testcases'):

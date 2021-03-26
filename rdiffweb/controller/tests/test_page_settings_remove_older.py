@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from rdiffweb.core.removeolder import RemoveOlderJob
 
 """
 Created on May 2, 2016
@@ -27,7 +28,6 @@ import unittest
 import cherrypy
 from unittest.mock import MagicMock
 
-from rdiffweb.core.rdw_deamon import RemoveOlder
 from rdiffweb.core.store import USER_ROLE
 from rdiffweb.test import WebCase
 
@@ -77,7 +77,7 @@ class RemoveOlderTest(WebCase):
         repo = user.get_repo(self.REPO)
         repo.keepdays = 30
         # Run the job.
-        p = RemoveOlder(cherrypy.engine, self.app)
+        p = RemoveOlderJob(self.app)
         p._remove_older(repo)
         # Check number of history.
         repo = user.get_repo(self.REPO)
@@ -111,7 +111,7 @@ class RemoveOlderTestWithMock(WebCase):
         Test execution of job run.
         """
         # Mock the call to _remove_older to make verification.
-        p = RemoveOlder(cherrypy.engine, self.app)
+        p = RemoveOlderJob(self.app)
         p._remove_older = MagicMock()
         # Set a keepdays
         user = self.app.store.get_user(self.USERNAME)
@@ -127,7 +127,7 @@ class RemoveOlderTestWithMock(WebCase):
         Test execution of job run.
         """
         # Mock the call to _remove_older to make verification.
-        p = RemoveOlder(cherrypy.engine, self.app)
+        p = RemoveOlderJob(self.app)
         p._remove_older = MagicMock()
         # Set a keepdays
         user = self.app.store.get_user(self.USERNAME)

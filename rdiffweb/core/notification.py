@@ -30,7 +30,6 @@ from xml.etree.ElementTree import fromstring, tostring
 from rdiffweb.core import librdiff
 from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.rdw_deamon import Deamon
 from rdiffweb.core.store import IUserChangeListener
 
 _logger = logging.getLogger(__name__)
@@ -105,108 +104,26 @@ def _utf8(self, val):
     return val.encode('utf-8')
 
 
-class NotificationPlugin(Deamon, IUserChangeListener):
+class EmailClient():
     """
-    Send email notification when a repository get too old (without a backup).
+    Responsible to send email using application config.
     """
-
+    
     _encryption = Option('email_encryption')
 
     _email_host = Option('email_host')
 
     _email_from = Option('email_sender')
-
-    _email_notification_time = Option('email_notification_time')
-
+    
     _smtp_username = Option('email_username')
 
     _smtp_password = Option('email_password')
 
     _header_name = Option("header_name")
-
-    _send_change_notification = Option("email_send_changed_notification")
-
-    def __init__(self, bus, app):
+    
+    def __init__(self, app):
+        assert app
         self.app = app
-        self.app.store.add_change_listener(self)
-        Deamon.__init__(self, bus)
-
-    @property
-    def job_execution_time(self):
-        return self._email_notification_time
-
-    def job_run(self):
-        """
-        Implementation of JobPLugin interface.
-        Go trough all the repositories and users to send mail in batches.
-        """
-        self.send_notifications()
-
-    def user_attr_changed(self, userobj, attrs={}):
-        """
-        Implementation of IUserChangeListener interface.
-        """
-        if not self._send_change_notification:
-            return
-
-        # Leave if the mail was not changed.
-        if 'email' not in attrs:
-            return
-
-        if not userobj.email:
-            logging.info("can't sent mail to user [%s] without an email", userobj.username)
-            return
-
-        # If the email attributes was changed, send a mail notification.
-        self.send_mail(userobj, _("Email address changed"), "email_changed.html")
-
-    def user_password_changed(self, username, password):
-        """
-        Implementation of IUserChangeListener interface.
-        """
-
-        # get User object (to get email)
-        userobj = self.app.store.get_user(username)
-        assert userobj
-
-        if not userobj.email:
-            logging.info("can't sent mail to user [%s] without an email", userobj.username)
-            return
-
-        # If the email attributes was changed, send a mail notification.
-        self.send_mail(userobj, _("Password changed"), "password_changed.html")
-
-    def send_notifications(self):
-        """
-        Loop trough all the user repository and send notifications.
-        """
-
-        now = librdiff.RdiffTime()
-
-        def _user_repos():
-            """Return a generator trought user repos to be notified."""
-            for user in self.app.store.users():
-                # Check if user has email.
-                if not user.email:
-                    continue
-                # Identify old repo for current user.
-                old_repos = []
-                for repo in user.repo_objs:
-                    # Check if repo has age configured (in days)
-                    maxage = repo.maxage
-                    if not maxage or maxage <= 0:
-                        continue
-                    # Check repo age.
-                    if repo.last_backup_date < (now - datetime.timedelta(days=maxage)):
-                        old_repos.append(repo)
-                # Return an item only if user had old repo
-                if old_repos:
-                    yield user, old_repos
-
-        # For each candidate, send mail.
-        for user, repos in _user_repos():
-            parms = {'user': user, 'repos': repos}
-            self.send_mail(user, _('Notification'), 'email_notification.html', **parms)
 
     def send_mail(self, to_user, subject, template_name, **kwargs):
         """
@@ -263,3 +180,97 @@ class NotificationPlugin(Deamon, IUserChangeListener):
             if conn is not None:
                 conn.quit()
 
+class NotificationPlugin(IUserChangeListener, EmailClient):
+    """
+    Send email notification when a repository get too old (without a backup).
+    """
+
+    _send_change_notification = Option("email_send_changed_notification")
+
+    def __init__(self, app):
+        self.app = app
+        self.app.store.add_change_listener(self)
+
+    def user_attr_changed(self, userobj, attrs={}):
+        """
+        Implementation of IUserChangeListener interface.
+        """
+        if not self._send_change_notification:
+            return
+
+        # Leave if the mail was not changed.
+        if 'email' not in attrs:
+            return
+
+        if not userobj.email:
+            logging.info("can't sent mail to user [%s] without an email", userobj.username)
+            return
+
+        # If the email attributes was changed, send a mail notification.
+        self.send_mail(userobj, _("Email address changed"), "email_changed.html")
+
+    def user_password_changed(self, username, password):
+        """
+        Implementation of IUserChangeListener interface.
+        """
+
+        # get User object (to get email)
+        userobj = self.app.store.get_user(username)
+        assert userobj
+
+        if not userobj.email:
+            logging.info("can't sent mail to user [%s] without an email", userobj.username)
+            return
+
+        # If the email attributes was changed, send a mail notification.
+        self.send_mail(userobj, _("Password changed"), "password_changed.html")
+
+    
+
+class NotificationJob(EmailClient):
+    """
+    Scheduled job to send notification every day with list of problematic
+    repositories.
+    """
+    
+    _email_notification_time = Option('email_notification_time')
+
+    
+    def __init__(self, app):    
+        self.app = app
+    
+    @property
+    def job_execution_time(self):
+        return self._email_notification_time
+
+    def job_run(self):
+        """
+        Loop trough all the user repository and send notifications.
+        """
+
+        now = librdiff.RdiffTime()
+
+        def _user_repos():
+            """Return a generator trought user repos to be notified."""
+            for user in self.app.store.users():
+                # Check if user has email.
+                if not user.email:
+                    continue
+                # Identify old repo for current user.
+                old_repos = []
+                for repo in user.repo_objs:
+                    # Check if repo has age configured (in days)
+                    maxage = repo.maxage
+                    if not maxage or maxage <= 0:
+                        continue
+                    # Check repo age.
+                    if repo.last_backup_date < (now - datetime.timedelta(days=maxage)):
+                        old_repos.append(repo)
+                # Return an item only if user had old repo
+                if old_repos:
+                    yield user, old_repos
+
+        # For each candidate, send mail.
+        for user, repos in _user_repos():
+            parms = {'user': user, 'repos': repos}
+            self.send_mail(user, _('Notification'), 'email_notification.html', **parms)

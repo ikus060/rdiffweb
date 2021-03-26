@@ -23,11 +23,11 @@ Created on Feb 13, 2016
 from unittest.mock import MagicMock, ANY, patch
 import unittest
 
-from rdiffweb.core.notification import html2plaintext, NotificationPlugin
+from rdiffweb.core.notification import html2plaintext, NotificationPlugin, NotificationJob
 from rdiffweb.test import AppTestCase
 
 
-class NotificationTest(AppTestCase):
+class NotificationJobTest(AppTestCase):
 
     default_config = {
         'EmailHost': 'smtp.gmail.com:587',
@@ -46,12 +46,12 @@ class NotificationTest(AppTestCase):
         user.get_repo(self.REPO).maxage = 1
 
         # Get ref to notification plugin
-        n = NotificationPlugin(bus=MagicMock(), app=self.app)
+        n = NotificationJob(app=self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
 
         # Call notification.
-        n.send_notifications()
+        n.job_run()
 
         # Expect it to be called.
         n.send_mail.assert_called_once_with(user, 'Notification', 'email_notification.html', repos=[ANY], user=user)
@@ -66,13 +66,12 @@ class NotificationTest(AppTestCase):
         user.get_repo(self.REPO).maxage = -1
 
         # Get ref to notification plugin
-        bus = MagicMock()
-        n = NotificationPlugin(bus, self.app)
+        n = NotificationJob(self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
 
         # Call notification.
-        n.send_notifications()
+        n.job_run()
 
         # Expect it to be called.
         n.send_mail.assert_not_called()
@@ -87,8 +86,7 @@ class NotificationTest(AppTestCase):
             user.email = 'test@test.com'
 
             # Get ref to notification plugin
-            bus = MagicMock()
-            n = NotificationPlugin(bus, self.app)
+            n = NotificationPlugin(self.app)
             self.assertIsNotNone(n)
             n.send_mail(user, 'subject', 'email_notification.html')
 
@@ -114,13 +112,13 @@ Here is the link you wanted."""
         self.assertEqual(expected, html2plaintext(html))
 
 
-class SendChangeNotificationTest(AppTestCase):
+class NotificationPluginTest(AppTestCase):
 
     default_config = {'emailsendchangednotification': True}
 
     def test_email_changed(self):
         # Get ref to notification plugin
-        n = NotificationPlugin(bus=MagicMock(), app=self.app)
+        n = NotificationPlugin(app=self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
 
@@ -137,7 +135,7 @@ class SendChangeNotificationTest(AppTestCase):
         user.email = 'test@test.com'
 
         # Get ref to notification plugin
-        n = NotificationPlugin(bus=MagicMock(), app=self.app)
+        n = NotificationPlugin(app=self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
 

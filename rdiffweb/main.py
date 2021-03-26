@@ -21,11 +21,8 @@ import logging.handlers
 import sys
 
 import cherrypy
-from rdiffweb import rdw_app
+from rdiffweb.rdw_app import RdiffwebApp
 from rdiffweb.core.config import parse_args
-from rdiffweb.core.notification import NotificationPlugin
-from rdiffweb.core.rdw_deamon import RemoveOlder
-
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -100,9 +97,6 @@ def main(args=None):
     _setup_logging(log_file=cfg.log_file, log_access_file=cfg.log_access_file, level=log_level)
 
     try:
-        # Create App.
-        app = rdw_app.RdiffwebApp(cfg)
-
         global_config = cherrypy._cpconfig.environments.get(environment, {})
         global_config.update({
             'server.socket_host': cfg.server_host,
@@ -117,12 +111,8 @@ def main(args=None):
 
         cherrypy.config.update(global_config)
 
-        # Start deamons
-        RemoveOlder(cherrypy.engine, app).subscribe()
-        NotificationPlugin(cherrypy.engine, app).subscribe()
-
         # Start web server
-        cherrypy.quickstart(app)
+        cherrypy.quickstart(RdiffwebApp(cfg))
     except:
         logger.exception("FAIL")
     else:

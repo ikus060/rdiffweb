@@ -185,6 +185,7 @@ setup(
         "humanfriendly",
         "configargparse",
         "sqlalchemy",
+        "apscheduler",
     ],
     # required packages for build process
     setup_requires=[

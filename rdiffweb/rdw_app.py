@@ -24,7 +24,6 @@ import sys
 from cherrypy import Application
 import cherrypy
 import pkg_resources
-
 import rdiffweb
 from rdiffweb.controller import Controller
 from rdiffweb.controller import filter_authentication  # @UnusedImport
@@ -44,9 +43,12 @@ from rdiffweb.core import i18n  # @UnusedImport
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import DoesNotExistError, AccessDeniedError
+from rdiffweb.core.notification import NotificationJob
 from rdiffweb.core.quota import DefaultUserQuota
 from rdiffweb.core.store import Store
 
+from rdiffweb.core.removeolder import RemoveOlderJob
+from rdiffweb.core.scheduler import Scheduler
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -97,11 +99,11 @@ class RdiffwebApp(Application):
     _header_logo = Option('header_logo')
 
     _tempdir = Option('tempdir')
-    
+
     _session_dir = Option('session_dir')
 
     def __init__(self, cfg):
-        
+
         self.cfg = cfg
 
         # Initialise the template engine.
@@ -153,6 +155,12 @@ class RdiffwebApp(Application):
         # create user manager
         self.store = Store(self)
         self.store.create_admin_user()
+
+        # Start scheduler and register scheduled jobs.
+        self.scheduler = Scheduler(cherrypy.engine, self)
+        self.scheduler.subscribe()
+        self.scheduler.add_job(RemoveOlderJob(self))
+        self.scheduler.add_job(NotificationJob(self))
 
     @property
     def currentuser(self):
