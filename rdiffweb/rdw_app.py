@@ -43,7 +43,7 @@ from rdiffweb.core import i18n  # @UnusedImport
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import DoesNotExistError, AccessDeniedError
-from rdiffweb.core.notification import NotificationJob
+from rdiffweb.core.notification import NotificationJob, NotificationPlugin
 from rdiffweb.core.quota import DefaultUserQuota
 from rdiffweb.core.store import Store
 
@@ -155,6 +155,9 @@ class RdiffwebApp(Application):
         # create user manager
         self.store = Store(self)
         self.store.create_admin_user()
+
+        # Create NotificationPlugin
+        self.notification = NotificationPlugin(self)
 
         # Start scheduler and register scheduled jobs.
         self.scheduler = Scheduler(cherrypy.engine, self)

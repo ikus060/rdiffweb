@@ -66,3 +66,15 @@ class Scheduler(SimplePlugin):
         assert hasattr(task, 'job_run') or hasattr(task, '__call__')
         func = getattr(task, 'job_run', task.__call__)
         self._scheduler.add_job(func=func, next_run_time=datetime.now())
+
+    def list_jobs(self):
+        """
+        Return list of scheduled jobs.
+        """
+        return self._scheduler.get_jobs(jobstore='scheduled')
+
+    def list_tasks(self):
+        """
+        Return list of tasks.
+        """
+        return self._scheduler.get_jobs(jobstore='default')
