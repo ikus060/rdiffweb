@@ -84,19 +84,6 @@ _SSHKEYS = Table('sshkeys', _META,
 )
 
 
-def normpath(val):
-    """
-    Normalize path value.
-    Remove leading /
-    Add ending /
-    """
-    if not val.endswith(SEP):
-        val += SEP
-    if val.startswith(SEP):
-        val = val[1:]
-    return val
-
-
 def _split_path(path):
     """
     Split the given path into <username as str> / <path as bytes>
