@@ -122,6 +122,10 @@ class DefaultUserQuota():
         Get's user's disk quota.
         """
         assert isinstance(userobj, UserObject)
+        # Skip disk usage if user_root doesn't exists.
+        if not userobj.user_root or not os.path.exists(userobj.user_root):
+            return 0
+        
         # Fall back to disk spaces.
         if not self._get_quota_cmd:
             try:
