@@ -35,7 +35,7 @@ class PreferencesPage(Controller):
     disable_ssh_keys = Option('disable_ssh_keys')
 
     @cherrypy.expose
-    def index(self, panelid=None, **kwargs):
+    def default(self, panelid=None, **kwargs):
         if isinstance(panelid, bytes):
             panelid = panelid.decode('ascii')
 

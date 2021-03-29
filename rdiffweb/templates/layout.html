@@ -13,8 +13,8 @@
 <meta name="robots" content="noindex">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="/static/{{ theme }}.css" type="text/css">
-<link rel="shortcut icon" href="/favicon.ico" >
+<link rel="stylesheet" href="{{ url_for('static', theme + '.css') }}" type="text/css">
+<link rel="shortcut icon" href="{{ url_for('favicon.ico') }}" >
 {% endblock head %}
 </head>
 <body>
@@ -44,10 +44,10 @@
         {% if username %}
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
-                <li {{ attrib(class=active_page=='repo' and "active") }}><a href="/">{% trans %}Repositories{% endtrans %}</a></li>
-                <li {{ attrib(class=active_page=='status' and "active") }}><a href="/status/">{% trans %}Status{% endtrans %}</a></li>
+                <li {{ attrib(class=active_page=='repo' and "active") }}><a href="{{ url_for('/') }}">{% trans %}Repositories{% endtrans %}</a></li>
+                <li {{ attrib(class=active_page=='status' and "active") }}><a href="{{ url_for('status') }}">{% trans %}Status{% endtrans %}</a></li>
                 {% if is_admin %}
-                <li {{ attrib(class=active_page=='admin' and "active") }}><a href="/admin/">{% trans %}Admin area{% endtrans %}</a></li>
+                <li {{ attrib(class=active_page=='admin' and "active") }}><a href="{{ url_for('admin') }}">{% trans %}Admin area{% endtrans %}</a></li>
                 {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
@@ -56,10 +56,10 @@
 			        <ul class="dropdown-menu">
 			            <li class="dropdown-header">{% trans %}Signed in as {{ username }}{% endtrans %}</li>
 			            <li role="separator" class="divider"></li>
-			            <li><a href="/prefs/general/">Profile</a></li>
-			            <li><a href="/prefs/notification/">Notifications</a></li>
+			            <li><a href="{{ url_for('prefs', 'general') }}">Profile</a></li>
+			            <li><a href="{{ url_for('prefs', 'notification') }}">Notifications</a></li>
 			            <li role="separator" class="divider"></li>
-			            <li><a href="/logout/">{% trans %}Logout{% endtrans %}</a></li>
+			            <li><a href="{{ url_for('logout') }}">{% trans %}Logout{% endtrans %}</a></li>
 			        </ul>
                 </li>
             </ul>

@@ -34,27 +34,30 @@ class CheckLinkTest(WebCase):
 
     def test_links(self):
         """
-        Crawl all the pages to find broken links.
+        Crawl all the pages to find broken links or relative links.
         """
-        ignore = ['/restore/admin/testcases/BrokenSymlink.*', '/browse/admin/testcases/BrokenSymlink.*', 'https://www.ikus-soft.com/.*', 'https://rdiffweb.org/.*']
-        done = set(['#', '/logout/'])
+        ignore = ['.*/logout', '.*/restore/admin/testcases/BrokenSymlink.*', '.*/browse/admin/testcases/BrokenSymlink.*', 'https://www.ikus-soft.com/.*', 'https://rdiffweb.org/.*']
+        done = set(['#'])
         todo = OrderedDict()
         todo["/"] = "/"
         self.getPage("/")
         while todo:
             page, ref = todo.popitem(last=False)
-
+            # Query page
             self.getPage(page)
+            # Check status
             self.assertStatus('200 OK', "can't access page [%s] referenced by [%s]" % (page, ref))
 
             done.add(page)
 
+            # Collect all link in the page.
             for newpage in re.findall("href=\"([^\"]+)\"", self.body.decode('utf8', 'replace')):
                 newpage = newpage.replace("&amp;", "&")
                 if newpage.startswith("?"):
                     newpage = re.sub("\\?.*", "", page) + newpage
                 if newpage not in done and not any(re.match(i, newpage) for i in ignore):
                     todo[newpage] = page
+                    self.assertTrue(newpage.startswith('http://'), msg='url [%s] referenced in [%s] is not absolute' % (newpage, ref))
 
 
 if __name__ == "__main__":

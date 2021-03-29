@@ -44,3 +44,4 @@ nosetests*.xml
 /htmlcov/
 /.env/
 /.pybuild/
+/.pytest_cache/
