@@ -185,17 +185,21 @@ test-package:debian:bullseye:
   
 publish:sonar:master:
   stage: publish
-  image: ikus060/sonar-runner
+  image: sonarsource/sonar-scanner-cli
   only:
   - master
+  variables:
+    SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
   script:
-  - sonar-runner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.projectVersion=$(git describe) -Dsonar.exclusions=**/test_*.py,rdiffweb/test.py -Dsonar.sources=.
+  - sonar-scanner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.projectVersion=$(git describe) -Dsonar.exclusions=**/test_*.py,rdiffweb/test.py
 
 publish:sonar:dev:
   stage: publish
-  image: ikus060/sonar-runner
+  image: sonarsource/sonar-scanner-cli
+  variables:
+    SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
   script:
-  - sonar-runner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.projectVersion=$(git describe) -Dsonar.exclusions=**/test_*.py,rdiffweb/test.py -Dsonar.sources=.
+  - sonar-scanner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=nosetests-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.projectVersion=$(git describe) -Dsonar.exclusions=**/test_*.py,rdiffweb/test.py
 
 publish:dev:
   stage: publish
