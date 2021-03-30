@@ -292,8 +292,8 @@ class StoreTest(AbstractStoreTest):
         # Search users.
         users = list(self.app.store.users(search='j'))
         self.assertEqual(2, len(users))
-        self.assertEqual('jeff', users[0].username)
-        self.assertEqual('josh', users[1].username)
+        self.assertIn('jeff', [u.username for u in users])
+        self.assertIn('josh', [u.username for u in users])
         self.assertEqual(5, self.app.store.count_users())
 
     def test_users_with_criteria_admins(self):
@@ -477,7 +477,7 @@ class StoreWithLdapTest(AbstractLdapStoreTest):
         # Add users
         self.app.store.add_user('annik')
         users = list(self.app.store.users())
-        self.assertEqual('annik', users[1].username)
+        self.assertIn('annik', [u.username for u in users])
 
     def test_login(self):
         """Check if login work"""
