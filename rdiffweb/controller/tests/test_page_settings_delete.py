@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import os
+from time import sleep
 
 """
 Created on Apr 10, 2016
@@ -50,7 +52,11 @@ class DeleteRepoTest(WebCase):
         """
         self._delete(self.USERNAME, self.REPO, 'testcases')
         self.assertStatus(303)
+        # Check database
         self.assertEqual([], self.app.store.get_user('admin').repos)
+        # Check filesystem
+        sleep(1)
+        self.assertFalse(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
 
     def test_delete_with_slash(self):
         # Make sure the repo exists.
@@ -59,6 +65,9 @@ class DeleteRepoTest(WebCase):
         self._delete(self.USERNAME, self.REPO, 'testcases')
         self.assertStatus(303)
         self.assertEqual([], self.app.store.get_user('admin').repos)
+        # Check filesystem
+        sleep(1)
+        self.assertFalse(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
 
     def test_delete_wrong_confirm(self):
         """
@@ -91,17 +100,22 @@ class DeleteRepoTest(WebCase):
 
         # Check database update
         self.assertEqual([], user_obj.repos)
+        # Check filesystem
+        sleep(1)
+        self.assertFalse(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
 
     def test_delete_as_maintainer(self):
+        self.assertTrue(os.path.isdir(self.app.testcases))
+
         # Create a another user with maintainer right
         user_obj = self.app.store.add_user('maintainer', 'password')
         user_obj.user_root = self.app.testcases
         user_obj.add_repo('testcases')
         user_obj.role = MAINTAINER_ROLE
-        
+
         # Login as maintainer
         self._login('maintainer', 'password')
-        
+
         # Try to delete own own repo
         self._delete('maintainer', 'testcases', 'testcases', redirect='/admin/repos/')
         self.assertStatus(303)
@@ -110,6 +124,9 @@ class DeleteRepoTest(WebCase):
 
         # Check database update
         self.assertEqual([], user_obj.repos)
+        # Check filesystem
+        sleep(1)
+        self.assertFalse(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
 
     def test_delete_as_user(self):
         # Create a another user with maintainer right
@@ -120,13 +137,14 @@ class DeleteRepoTest(WebCase):
 
         # Login as maintainer
         self._login('user', 'password')
-        
+
         # Try to delete own own repo
         self._delete('user', 'testcases', 'testcases', redirect='/admin/repos/')
         self.assertStatus(403)
 
-        # Check database update
+        # Check database don't change
         self.assertEqual(['testcases'], user_obj.repos)
+        self.assertTrue(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
 
 
 if __name__ == "__main__":

@@ -61,7 +61,7 @@ class SettingsPage(Controller):
             _logger.info("do not delete repo, bad confirmation %r != %r", confirm, repo_obj.display_name)
             raise cherrypy.HTTPError(400)
 
-        # Refresh repository list
+        # Delete repository
         repo_obj.delete()
 
         raise cherrypy.HTTPRedirect(redirect)

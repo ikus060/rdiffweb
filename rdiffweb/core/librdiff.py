@@ -25,15 +25,15 @@ import logging
 import os
 import re
 import shutil
+import subprocess
 import time
 import weakref
 
 import psutil
-
 from rdiffweb.core import rdw_helpers
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.restore import call_restore
-import subprocess
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -721,7 +721,10 @@ class RdiffRepo(object):
                     os.chmod(os.path.dirname(path), 0o0700)
                 if not os.access(path, os.W_OK | os.R_OK):
                     os.chmod(path, 0o0600)
-                return shutil.rmtree(path, onerror=handle_error)
+                if os.path.isdir(path):
+                    return shutil.rmtree(path, onerror=handle_error)
+                else:
+                    return os.unlink(path)
             raise
 
         try:
@@ -952,7 +955,7 @@ class RdiffRepo(object):
                 except psutil.NoSuchProcess:
                     logger.debug('pid [%s] does not exists', pid)
                     pass
-                
+
             # If multiple current_mirror file exists and none of them are associated to a PID, this mean the last backup was interrupted.
             # Also, if the last backup date is undefined, this mean the first initial backup was interrupted.
             if len(current_mirrors) > 1 or len(current_mirrors) == 0:

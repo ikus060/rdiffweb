@@ -518,9 +518,12 @@ class RepoObject(RdiffRepo):
     def delete(self):
         """Properly remove the given repository by updating the user's repositories."""
         logger.info("deleting repository %s", self)
+        # Remove entry from database
         with self._user_obj._store.engine.connect() as conn:
             conn.execute(_REPOS.delete(_REPOS.c.repoid == self._repoid))
-        RdiffRepo.delete(self)
+        # Remove data from disk in background
+        app = self._user_obj._store.app
+        app.scheduler.add_task(RdiffRepo.delete, args=(self,))
 
     encoding = property(lambda x: x._encoding.name, _set_encoding)
     maxage = property(fget=lambda x: x._get_attr('maxage', default=0), fset=lambda x, y: x._set_attr('maxage', y))

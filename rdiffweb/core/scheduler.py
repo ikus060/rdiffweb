@@ -59,13 +59,13 @@ class Scheduler(SimplePlugin):
         hour, minute = job.job_execution_time.split(':', 2)
         self._scheduler.add_job(func=job.job_run, trigger='cron', hour=hour, minute=minute, jobstore='scheduled', executor='scheduled')
 
-    def add_task(self, task):
+    def add_task(self, task, args=(), kwargs=[]):
         """
         Add the given task to be execute immediately in background.
         """
         assert hasattr(task, 'job_run') or hasattr(task, '__call__')
-        func = getattr(task, 'job_run', task.__call__)
-        self._scheduler.add_job(func=func, next_run_time=datetime.now())
+        func = getattr(task, 'job_run', task)
+        self._scheduler.add_job(func=func, args=args, kwargs=kwargs, next_run_time=datetime.now())
 
     def list_jobs(self):
         """
