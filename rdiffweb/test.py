@@ -195,6 +195,11 @@ class WebCase(helper.CPWebCase):
         # Send back cookies if any
         if hasattr(self, 'cookies') and self.cookies:
             headers.extend(self.cookies)
+        # CherryPy ~8.9.1 is not handling absolute URL properly and web browser
+        # are usually not sending absolute URL either. So trim the base.
+        base = 'http://%s:%s' % (self.HOST, self.PORT)
+        if url.startswith(base):
+            url = url[len(base):]
         helper.CPWebCase.getPage(self, url, headers, method, body, protocol)
 
     def getJson(self, *args, **kwargs):

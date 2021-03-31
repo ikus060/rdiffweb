@@ -20,16 +20,17 @@ import datetime
 from io import StringIO
 import logging
 
+import cherrypy
 import humanfriendly
 from jinja2 import Environment, PackageLoader
 from jinja2.filters import do_mark_safe
 from jinja2.loaders import ChoiceLoader
-
 from rdiffweb.core import i18n
 from rdiffweb.core import librdiff
 from rdiffweb.core import rdw_helpers
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.store import RepoObject
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -143,39 +144,36 @@ def create_repo_tree(repos):
 def url_for(endpoint, *args, **kwargs):
     """
     Generate a url for the given endpoint, path (*args) with parameters (**kwargs)
+    
+    This could be used to generate a path with userobject and repo object
+    
     """
-    url = "/" + endpoint.strip("/")
+    path = "/" + endpoint.strip("/")
     for chunk in args:
         if not chunk:
             continue
         if hasattr(chunk, 'owner') and hasattr(chunk, 'path'):
             # This is a RepoObject
-            url += "/"
-            url += chunk.owner
-            url += "/"
-            url += rdw_helpers.quote_url(chunk.path.strip(b"/"))
+            path += "/"
+            path += chunk.owner
+            path += "/"
+            path += rdw_helpers.quote_url(chunk.path.strip(b"/"))
         elif hasattr(chunk, 'path'):
             # This is a DirEntry
             if chunk.path:
-                url += "/"
-                url += rdw_helpers.quote_url(chunk.path.strip(b"/"))
+                path += "/"
+                path += rdw_helpers.quote_url(chunk.path.strip(b"/"))
         elif chunk and isinstance(chunk, bytes):
-            url += "/"
-            url += rdw_helpers.quote_url(chunk.strip(b"/"))
+            path += "/"
+            path += rdw_helpers.quote_url(chunk.strip(b"/"))
         elif chunk and isinstance(chunk, str):
-            url += "/"
-            url += chunk.rstrip("/")
+            path += "/"
+            path += chunk.rstrip("/")
         else:
             raise ValueError('invalid positional arguments, url_for accept str, bytes or RepoPath: %r' % chunk)
-    first_args = True
     # Sort the arguments to have predictable results.
-    for key, value in sorted(kwargs.items()):
-        url += "?" if first_args else "&"
-        first_args = False
-        if hasattr(value, 'epoch'):
-            value = value.epoch()
-        url += "%s=%s" % (key, value)
-    return url
+    qs = [(k, v.epoch() if hasattr(v, 'epoch') else v) for k, v in sorted(kwargs.items()) ]
+    return cherrypy.url(path=path, qs=qs)
 
 
 class TemplateManager(object):

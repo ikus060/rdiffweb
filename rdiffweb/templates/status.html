@@ -7,10 +7,10 @@
 
     <ul class="nav nav-pills">
         <li class="{% if not failuresOnly %}active{% endif %}">
-            <a href="/status/?">{% trans %}Show all{% endtrans %}</a>
+            <a href="{{ url_for('status') }}">{% trans %}Show all{% endtrans %}</a>
         </li>
         <li class="{% if failuresOnly %}active{% endif %}">
-            <a href="/status/?failures=T">{% trans %}Show errors only{% endtrans %}</a>
+            <a href="{{ url_for('status', failures='T') }}">{% trans %}Show errors only{% endtrans %}</a>
         </li>
     </ul>
 
