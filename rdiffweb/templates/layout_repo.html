@@ -9,7 +9,7 @@
     <!-- Repo Nav -->
 	{% set repo_nav_bar = [
 	    ('browse', _('Files'), url_for('browse', repo), 'icon-docs'),
-	    ('history', _('Restore Repository'), url_for('history', repo), 'icon-history'),
+	    ('history', _('History'), url_for('history', repo, path), 'icon-history'),
 	    ('settings', _('Settings'), url_for('settings', repo), 'icon-cog-alt'),
 	    ('graphs', _('Graphs'), url_for('graphs', 'activities', repo), 'icon-chart-bar')
 	] -%}

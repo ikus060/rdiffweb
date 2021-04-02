@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 import datetime
 from io import StringIO
 import logging
@@ -30,10 +30,12 @@ from rdiffweb.core import librdiff
 from rdiffweb.core import rdw_helpers
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.store import RepoObject
-
+import os
 
 # Define the logger
 logger = logging.getLogger(__name__)
+
+_ParentEntry = namedtuple("_ParentEntry", 'path,display_name')
 
 
 def attrib(**kwargs):
@@ -141,6 +143,20 @@ def create_repo_tree(repos):
     return repo_tree
 
 
+def list_parents(path):
+    # Build the parameters
+    # Build "parent directories" links
+    # TODO this function should return a list of DirEntry instead.
+    parents = [_ParentEntry(b'', path._repo.display_name)]
+    parent_path_b = b''
+    for part_b in path.path.split(b'/'):
+        if part_b:
+            parent_path_b = os.path.join(parent_path_b, part_b)
+            display_name = path._repo._decode(path._repo.unquote(part_b))
+            parents.append(_ParentEntry(parent_path_b, display_name))
+    return parents
+
+
 def url_for(endpoint, *args, **kwargs):
     """
     Generate a url for the given endpoint, path (*args) with parameters (**kwargs)
@@ -207,6 +223,7 @@ class TemplateManager(object):
         # Register method
         self.jinja_env.globals['attrib'] = attrib
         self.jinja_env.globals['create_repo_tree'] = create_repo_tree
+        self.jinja_env.globals['list_parents'] = list_parents
         self.jinja_env.globals['url_for'] = url_for
 
     def compile_template(self, template_name, **kwargs):

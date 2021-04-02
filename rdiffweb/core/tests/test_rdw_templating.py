@@ -20,7 +20,7 @@ import unittest
 import cherrypy
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.rdw_templating import attrib, url_for, \
-    do_format_lastupdated
+    do_format_lastupdated, list_parents, _ParentEntry
 from rdiffweb.test import AppTestCase
 
 
@@ -62,17 +62,12 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual(cherrypy.server.base() + '/browse', url_for('browse'))
         self.assertEqual(cherrypy.server.base() + '/browse/testcases', url_for('browse', b'testcases'))
         self.assertEqual(cherrypy.server.base() + '/browse/testcases/Revisions', url_for('browse', b'testcases', b'Revisions'))
-        self.assertEqual(cherrypy.server.base() + '/browse/testcases/Revisions?restore=1', url_for('browse', b'testcases', b'Revisions', restore=1))
-        self.assertEqual(cherrypy.server.base() + '/browse/testcases/Revisions?restore=T', url_for('browse', b'testcases', b'Revisions', restore='T'))
-        self.assertEqual(cherrypy.server.base() + '/browse/testcases/Revisions?restore=True', url_for('browse', b'testcases', b'Revisions', restore=True))
+        self.assertEqual(cherrypy.server.base() + '/restore/testcases/Revisions?date=1454448640', url_for('restore', b'testcases', b'Revisions', date=1454448640))
+        self.assertEqual(cherrypy.server.base() + '/restore/testcases/Revisions?date=1454448640&kind=tar.gz', url_for('restore', b'testcases', b'Revisions', date=1454448640, kind='tar.gz'))
         self.assertEqual(cherrypy.server.base() + '/browse/testcases/R%C3%A9pertoire', url_for('browse', b'testcases', b'R\xc3\xa9pertoire'))
         # Check if multi path is supported.
         self.assertEqual(cherrypy.server.base() + '/admin/logs', url_for('admin/logs'))
         self.assertEqual(cherrypy.server.base() + '/admin/logs/backup.log', url_for('admin/logs', 'backup.log'))
-
-    def test_url_for_behind_proxy(self):
-        # FIXME force X-Forward
-        self.assertEqual(cherrypy.server.base() + '/browse', url_for('browse'))
 
     def test_do_format_lastupdated(self):
         self.assertEqual('23 seconds ago', do_format_lastupdated(RdiffTime(value=1591978823), now=1591978846))
@@ -82,6 +77,17 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual('4 weeks ago', do_format_lastupdated(RdiffTime(value=1589127124), now=1591978846))
         self.assertEqual('5 months ago', do_format_lastupdated(RdiffTime(value=1578672724), now=1591978846))
         self.assertEqual('4 years ago', do_format_lastupdated(RdiffTime(value=1452442324), now=1591978846))
+
+
+class ListParentsTest(AppTestCase):
+
+    def test_list_parents_with_root_dir(self):
+        unused, path_obj = self.app.store.get_repo_path('admin/testcases', as_user=self.app.store.get_user('admin'))
+        self.assertEquals(list_parents(path_obj), [_ParentEntry(path=b'', display_name='testcases')])
+
+    def test_list_parents_with_root_subdir(self):
+        unused, path_obj = self.app.store.get_repo_path('admin/testcases/Revisions', as_user=self.app.store.get_user('admin'))
+        self.assertEquals(list_parents(path_obj), [_ParentEntry(path=b'', display_name='testcases'), _ParentEntry(path=b'Revisions', display_name='Revisions')])
 
 
 class UrlForTest(AppTestCase):

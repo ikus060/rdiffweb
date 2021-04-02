@@ -1,28 +1,31 @@
 {% extends 'layout_repo.html' %}
 {% set active_page='repo' %}
 {% set active_repo_page='history' %}
-{% block title %}{% trans %}Restore Repository{% endtrans %}{% endblock%} 
+{% block title %}{% trans %}History{% endtrans %}{% endblock%} 
 {% block content %}
+
+<ol class="pagination pagination-sm">
+    {% for parent in list_parents(path) %}
+    <li {{ attrib(class=loop.last and 'active') }}>
+        <a {{ attrib(href=loop.last and "#" or url_for('browse', repo, parent)) }}>
+            {{ parent.display_name }}
+        </a>
+    </li>
+    {% endfor %}
+</ol>
 
 <div class="panel panel-default spacer">
     <ul class="list-group">
-        {% for entry in history_entries %}
+        {% for restore_date in restore_dates %}
         <li class="list-group-item clearfix">
-            <i class="icon-archive"></i> {{ entry.date | datetime }}
+            <i {% if path.isdir %}class="icon-archive"{% else %}class="icon-file"{% endif %}></i>
+            {{ restore_date | datetime }}
 
-            <!-- Size -->
-            <span>({{ entry.size | filesize }})</span>
-
-            <!-- Status Label -->
-            {% if entry.has_errors %}
-            <span class="label label-danger">{% trans %}Error(s){% endtrans %}</span>
-            <a data-toggle="collapse" href="#errors{{loop.index}}" aria-expanded="false" aria-controls="#errors{{loop.index}}">Show error(s)</a>
-            {% endif %}
-
+            {% if path.isdir %}
             <div class="pull-right">
 
                 <div class="btn-group">
-                    <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for('restore', repo, date=entry.date) }}">
+                    <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date) }}">
                         <i class="icon-download"></i> <span>{% trans %}Download{% endtrans %}</span>
                     </a>
                     <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -30,39 +33,47 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-right-xs" role="menu" aria-labelledby="menu1">
                         <li>
-                            <a rel="nofollow" href="{{ url_for('restore', repo, date=entry.date) }}">
+                            <a rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date) }}">
                                 <i class="icon-download"></i> <span>{% trans %}Download{% endtrans %} ZIP</span>
                             </a>
                         </li>
                         <li>
-                            <a rel="nofollow" href="{{ url_for('restore', repo, date=entry.date, kind='tar.gz') }}">
+                            <a rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date, kind='tar.gz') }}">
                                 <i class="icon-download"></i> <span>{% trans %}Download{% endtrans %} TAR.GZ</span>
                             </a>
                         </li>
                         <li>
-                            <a rel="nofollow" href="{{ url_for('restore', repo, date=entry.date, kind='tar.bz2') }}">
+                            <a rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date, kind='tar.bz2') }}">
                                 <i class="icon-download"></i> <span>{% trans %}Download{% endtrans %} TAR.BZ2</span>
                             </a>
                         </li>
                     </ul>
                 </div>
             </div>
+            {% else %}
+            <div class="pull-right">
+                <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date) }}">
+                  <i class="icon-download"></i>
+                  <span>{% trans %}Download{% endtrans %}</span>
+                </a>
+            </div>
+            {% endif %}
 
 
-            {% if entry.has_errors %}
+            
             <div id="errors{{loop.index}}" class="collapse">
                 <div class="clearfix"></div>
                 <div class="spacer"></div>
-                <div class="well">{{ entry.errors }}</div>
+                <div class="well">FIXME entry.errors</div>
             </div>
-            {% endif %}
+            
 
         </li>
         {% endfor %}
     </ul>
 </div>
 
-{% if limit == history_entries|count %}
+{% if limit == restore_dates|count %}
 <nav aria-label="...">
     <ul class="pager">
         <li>
@@ -72,4 +83,5 @@
         </li>
     </ul>
 </nav>
-{% endif %} {% endblock %}
+{% endif %}
+{% endblock %}
