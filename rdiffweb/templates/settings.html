@@ -7,8 +7,6 @@
 {% block title %}{% trans %}Settings{% endtrans %}{% endblock %}
 {% block content %}
 
-<div class="spacer"></div>
-
 <!-- Panel to set user info. -->
 {% call panel(title=_("Character encoding"), class='default') %}
 <div class="panel-body">
@@ -107,11 +105,11 @@
 {% call panel(title=_("Delete repository"), class='danger') %}
 <div class="panel-body">
   <span class="help-block">
-     {% trans %}Removing the repository will permanantly delete all related resources including files, history, status etc.{% endtrans %}<br/>
-     <b>{% trans %}Removed repository cannot be restored!{% endtrans %}</b>
+     {% trans %}Deleting the repository will permanently delete all related resources including files, history, status etc.{% endtrans %}<br/>
+     <b>{% trans %}Deleted repository cannot be restored!{% endtrans %}</b>
   </span>
   <div>
-     {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", action="delete", confirm=repo.display_name, disabled=not is_maintainer) }}
+     {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", confirm=repo.display_name, disabled=not is_maintainer, redirect=url_for('/'), url=url_for('delete', repo)) }}
   </div>
   {% if not is_maintainer %}
   <span class="help-block">

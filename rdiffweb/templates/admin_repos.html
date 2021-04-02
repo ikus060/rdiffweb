@@ -27,7 +27,7 @@
 			  </strong>
 			  <span class="pull-right">
                 <a class="btn btn-default" href="{{ url_for('settings', repo) }}" role="button">{% trans %}Settings{% endtrans %}</a>
-                {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", redirect=url_for('admin/repos'), url=url_for('settings', repo), action="delete", confirm=repo.display_name) }}
+                {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", redirect=url_for('admin/repos'), url=url_for('delete', repo), action="delete", confirm=repo.display_name) }}
               </span>
 			  {% if repo.status[0] != 'ok' %}
 			  <br/>{{ repo.status[1] }}

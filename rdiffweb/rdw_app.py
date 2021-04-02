@@ -32,6 +32,7 @@ from rdiffweb.controller.api import ApiPage
 from rdiffweb.controller.dispatch import static, empty  # @UnusedImport
 from rdiffweb.controller.page_admin import AdminPage
 from rdiffweb.controller.page_browse import BrowsePage
+from rdiffweb.controller.page_delete import DeletePage
 from rdiffweb.controller.page_graphs import GraphsPage
 from rdiffweb.controller.page_history import HistoryPage
 from rdiffweb.controller.page_locations import LocationsPage
@@ -70,6 +71,7 @@ class Root(LocationsPage):
 
     def __init__(self):
         self.browse = BrowsePage()
+        self.delete = DeletePage()
         self.restore = RestorePage()
         self.history = HistoryPage()
         self.status = StatusPage()

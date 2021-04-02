@@ -4,13 +4,13 @@
 {% block title %}{% trans %}Files{% endtrans %}{% endblock %}
 {% block content %}
 
-<ol class="pagination pagination-sm">
+<ol class="breadcrumb">
     {% for parent in list_parents(path) %}
-    <li {{ attrib(class=loop.last and 'active') }}>
-        <a {{ attrib(href=loop.last and "#" or url_for('browse', repo, parent)) }}>
-            {{ parent.display_name }}
-        </a>
-    </li>
+    {% if loop.last %}
+    <li class="active">{{ parent.display_name }}</li>
+    {% else %}
+    <li><a href="{{ url_for('browse', repo, parent) }}">{{ parent.display_name }}</a></li>
+    {% endif %}
     {% endfor %}
 </ol>
 

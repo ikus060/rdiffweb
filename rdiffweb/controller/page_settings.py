@@ -34,8 +34,6 @@ class SettingsPage(Controller):
     @cherrypy.expose
     def default(self, path=b"", action=None, **kwargs):
         repo_obj = self.app.store.get_repo(path)
-        if action == 'delete':
-            self._delete(repo_obj, **kwargs)
         if kwargs.get('keepdays'):
             return self._remove_older(repo_obj, **kwargs)
         elif kwargs.get('new_encoding'):
@@ -49,22 +47,6 @@ class SettingsPage(Controller):
         }
         # Generate page.
         return self._compile_template("settings.html", **params)
-
-    def _delete(self, repo_obj, confirm=None, redirect='/', **kwargs):
-        """
-        Delete the repository.
-        """
-        is_maintainer()
-        # Validate the name
-        validate(confirm)
-        if confirm != repo_obj.display_name:
-            _logger.info("do not delete repo, bad confirmation %r != %r", confirm, repo_obj.display_name)
-            raise cherrypy.HTTPError(400)
-
-        # Delete repository
-        repo_obj.delete()
-
-        raise cherrypy.HTTPRedirect(redirect)
 
     def _set_encoding(self, repo_obj, new_encoding=None, **kwargs):
         """

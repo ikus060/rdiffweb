@@ -14,8 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from rdiffweb.core.removeolder import RemoveOlderJob
-
 """
 Created on May 2, 2016
 
@@ -24,12 +22,12 @@ Created on May 2, 2016
 
 import logging
 import unittest
-
-import cherrypy
 from unittest.mock import MagicMock
 
 from rdiffweb.core.store import USER_ROLE
 from rdiffweb.test import WebCase
+
+from rdiffweb.core.removeolder import RemoveOlderJob
 
 
 class RemoveOlderTest(WebCase):

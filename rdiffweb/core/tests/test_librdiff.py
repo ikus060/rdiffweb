@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Created on Oct 3, 2015
 
@@ -24,17 +25,21 @@ Module used to test the librdiff.
 
 import datetime
 import os
-import pkg_resources
 import shutil
 import tarfile
 import tempfile
 import time
 import unittest
+from unittest.case import skipIf
 
+import pkg_resources
 from rdiffweb.core.librdiff import FileStatisticsEntry, RdiffRepo, \
     DirEntry, IncrementEntry, SessionStatisticsEntry, HistoryEntry, \
-    AccessDeniedError, DoesNotExistError, FileError, UnknownError, RdiffTime
+    AccessDeniedError, DoesNotExistError, FileError, UnknownError, RdiffTime, \
+    rdiff_backup_version
+from rdiffweb.test import AppTestCase
 
+RDIFF_BACKUP_VERSION = rdiff_backup_version()
 
 class MockRdiffRepo(RdiffRepo):
 
@@ -419,6 +424,29 @@ class RdiffTimeTest(unittest.TestCase):
         # With datetime
         self.assertTrue((RdiffTime('2014-11-02T21:04:30Z') - RdiffTime()).days < 0)
         self.assertTrue((RdiffTime() - RdiffTime('2014-11-02T21:04:30Z')).days > 0)
+
+
+class DirEntryDeleteTest(AppTestCase):
+
+    @skipIf(RDIFF_BACKUP_VERSION < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
+    def test_delete_file(self):
+        # Delete a file
+        repo_obj = self.app.store.get_user('admin').get_repo('testcases')
+        dir_entry = repo_obj.get_path('Revisions/Data')
+        dir_entry.delete()
+        # Check file is deleted
+        with self.assertRaises(DoesNotExistError):
+            dir_entry = repo_obj.get_path('Revisions/Data')
+
+    @skipIf(RDIFF_BACKUP_VERSION < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
+    def test_delete_folder(self):
+        # Delete a folder
+        repo_obj = self.app.store.get_user('admin').get_repo('testcases')
+        dir_entry = repo_obj.get_path('Subdirectory')
+        dir_entry.delete()
+        # Check file is deleted
+        with self.assertRaises(DoesNotExistError):
+            dir_entry = repo_obj.get_path('Subdirectory')
 
 
 if __name__ == "__main__":

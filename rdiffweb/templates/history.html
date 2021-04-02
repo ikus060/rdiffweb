@@ -1,19 +1,29 @@
 {% extends 'layout_repo.html' %}
+{% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
 {% set active_page='repo' %}
 {% set active_repo_page='history' %}
 {% block title %}{% trans %}History{% endtrans %}{% endblock%} 
 {% block content %}
 
-<ol class="pagination pagination-sm">
-    {% for parent in list_parents(path) %}
-    <li {{ attrib(class=loop.last and 'active') }}>
-        <a {{ attrib(href=loop.last and "#" or url_for('browse', repo, parent)) }}>
-            {{ parent.display_name }}
-        </a>
-    </li>
-    {% endfor %}
-</ol>
-
+<div class="row">
+  <div class="col-md-10">
+    <ol class="breadcrumb">
+        {% for parent in list_parents(path) %}
+        {% if loop.last %}
+        <li class="active">{{ parent.display_name }}</li>
+        {% else %}
+        <li><a href="{{ url_for('browse', repo, parent) }}">{{ parent.display_name }}</a></li>
+        {% endif %}
+        {% endfor %}
+    </ol>
+  </div>
+  <div class="col-md-2">
+    <div class="pull-right">
+       {{ button_confirm(label=_('Delete History'), target="#delete-repo-modal", confirm=path.display_name, disabled=not is_maintainer, redirect=url_for('browse', repo), url=url_for('delete', repo, path)) }}
+    </div>
+  </div>
+</div>
+  
 <div class="panel panel-default spacer">
     <ul class="list-group">
         {% for restore_date in restore_dates %}
@@ -84,4 +94,13 @@
     </ul>
 </nav>
 {% endif %}
+
+<!-- Delete Repo Modal -->
+{{ modal_confirm(
+    id='delete-repo-modal',
+    title=_('Confirmation required'),
+    message=_("You are about to permanently delete this file or folder history. Deleted history CANNOT be restored! Are you ABSOLUTELY sure?"),
+    submit=_('Delete'),
+    confirm_field='confirm') }}
+
 {% endblock %}
