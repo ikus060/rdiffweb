@@ -5,18 +5,15 @@
 {% block content %}
 
 <ol class="pagination pagination-sm">
-    {% if parents %}
-    {% for parent in parents %}
+    {% for parent in list_parents(path) %}
     <li {{ attrib(class=loop.last and 'active') }}>
-        <a {{ attrib(href=loop.last and "#" or url_for('browse', repo, parent.path)) }}>
-            {{ parent.name }}
+        <a {{ attrib(href=loop.last and "#" or url_for('browse', repo, parent)) }}>
+            {{ parent.display_name }}
         </a>
     </li>
     {% endfor %}
-    {% endif%}
 </ol>
 
-{% if not restore_dates %}
 <table id="files" class="sortable table">
     <thead>
         <tr>
@@ -68,7 +65,7 @@
                         </li>
                         {% endfor %}
                         <li>
-                            <a href="{{ url_for('browse', repo, entry.path, restore=1) }}">{% trans %}Show more...{% endtrans %}</a>
+                            <a href="{{ url_for('history', repo, entry.path) }}">{% trans %}Show more...{% endtrans %}</a>
                         </li>
                     </ul>
                 </div>
@@ -78,64 +75,4 @@
         {% endfor %}
     </tbody>
 </table>
-{% else %}
-<div class="panel panel-default">
-    <ul class="list-group">
-        {% for restore_date in restore_dates %}
-        <li class="list-group-item clearfix">
-            <i {% if path.isdir %}class="icon-folder"{% else %}class="icon-file"{% endif %}></i>
-            {{ restore_date | datetime }}
-            {% if path.isdir %}
-            <div class="pull-right">
-              <div class="btn-group">
-                <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date) }}">
-                  <i class="icon-download"></i>
-                  <span>{% trans %}Download{% endtrans %}</span>
-                </a>
-                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <span class="caret"></span>
-                  <span class="sr-only">{% trans %}Toggle Dropdown{% endtrans %}</span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-right-xs" role="menu" aria-labelledby="menu1">
-                <li>
-                  <a rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date) }}">
-                    <i class="icon-download"></i>
-                    <span>{% trans %}Download{% endtrans %} ZIP</span>
-                  </a>
-                </li>
-                <li>
-                  <a rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date, kind='tar.gz') }}">
-                    <i class="icon-download"></i>
-                    <span>{% trans %}Download{% endtrans %} TAR.GZ</span>
-                  </a>
-                </li>
-                <li>
-                  <a rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date, kind='tar.bz2') }}">
-                    <i class="icon-download"></i>
-                    <span>{% trans %}Download{% endtrans %} TAR.BZ2</span>
-                  </a>
-                </li>
-                </ul>
-              </div>
-            </div>
-            {% else %}
-            <div class="pull-right">
-                <a type="button" class="btn btn-default btn-xs" rel="nofollow" href="{{ url_for('restore', repo, path, date=restore_date) }}">
-                  <i class="icon-download"></i>
-                  <span>{% trans %}Download{% endtrans %}</span>
-                </a>
-            </div>
-            {% endif %}
-        </li>
-        {% endfor %}
-    </ul>
-</div>
-{% if limit == restore_dates|count %}
-<nav aria-label="...">
-  <ul class="pager">
-    <li><a href="?restore=T&limit={{ limit * 2 }}"><i class="icon-down-dir"></i> {% trans %}Show more...{% endtrans %}</a></li>
-  </ul>
-</nav>
-{% endif %}
-{% endif %}
 {% endblock %}

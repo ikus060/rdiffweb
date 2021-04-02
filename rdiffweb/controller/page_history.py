@@ -34,7 +34,7 @@ class HistoryPage(Controller):
     def default(self, path=b"", limit='10', **kwargs):
         limit = validate_int(limit)
 
-        repo_obj = self.app.store.get_repo(path)
+        (repo_obj, path_obj) = self.app.store.get_repo_path(path)
 
         # Set up warning about in-progress backups, if necessary
         warning = False
@@ -42,10 +42,15 @@ class HistoryPage(Controller):
         if status[0] != 'ok':
             warning = status[1] + ' ' + _("The displayed data may be inconsistent.")
 
+        restore_dates = path_obj.change_dates[:-limit - 1:-1]
+
+        # repo_obj.get_history_entries(numLatestEntries=limit, reverse=True)
+
         parms = {
             "limit": limit,
             "repo": repo_obj,
-            "history_entries": repo_obj.get_history_entries(numLatestEntries=limit, reverse=True),
+            "path": path_obj,
+            "restore_dates": restore_dates,
             "warning": warning,
         }
 

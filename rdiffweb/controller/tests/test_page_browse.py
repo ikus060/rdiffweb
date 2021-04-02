@@ -21,7 +21,6 @@ Created on Dec 26, 2015
 @author: Patrik Dufresne
 """
 
-
 import logging
 import os
 import unittest
@@ -38,10 +37,8 @@ class BrowsePageTest(WebCase):
     def tearDown(self):
         WebCase.tearDown(self)
 
-    def _browse(self, user, repo, path, restore=False):
+    def _browse(self, user, repo, path):
         url = "/browse/" + user + "/" + repo + "/" + path
-        if restore:
-            url = url + "?restore=T"
         self.getPage(url)
 
     def test_locations(self):
@@ -97,16 +94,6 @@ class BrowsePageTest(WebCase):
         #  Make sure "rdiff-backup-data" is not listed
         self.assertNotInBody("rdiff-backup-data")
 
-    def test_root_restore(self):
-        """
-        Browse root restore page.
-        """
-        self._browse(self.USERNAME, self.REPO, "", True)
-        self.assertInBody("Download")
-        self.assertInBody("2016-02-02 16:30")
-        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "?date=1415221507")
-        self.assertInBody("Show more")
-
     def test_loop_symlink(self):
         """
         Browse a symlink.
@@ -129,17 +116,6 @@ class BrowsePageTest(WebCase):
         #  Also check dates
         self.assertInBody("data-value=\"1414871475\"")
 
-    def test_sub_directory_deleted_restore(self):
-        """
-        Browse to restore page of a deleted directory.
-        """
-        self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Supprim%C3%A9/", True)
-        self.assertInBody("Download")
-        self.assertInBody("ZIP")
-        self.assertInBody("TAR.GZ")
-        self.assertInBody("2014-11-01 15:51")
-        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "/R%C3%A9pertoire%20Supprim%C3%A9?date=1414871475")
-
     def test_sub_directory_exists(self):
         """
         Browse to a sub directory.
@@ -155,16 +131,6 @@ class BrowsePageTest(WebCase):
         """
         self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/")
         self.assertInBody("Untitled Testcase.doc")
-
-    def test_sub_directory_with_special_chars_restore(self):
-        """
-        Browse to restore page of a sub directory containing special chars.
-        """
-        self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/", True)
-        self.assertInBody("Download")
-        self.assertInBody("ZIP")
-        self.assertInBody("TAR.GZ")
-        self.assertInBody("2016-02-02 16:30")
 
     def test_sub_directory_with_encoding(self):
         """

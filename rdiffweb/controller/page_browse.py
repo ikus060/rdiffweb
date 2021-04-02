@@ -16,8 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import os
-from rdiffweb.controller import Controller, validate_isinstance, validate_int
+from rdiffweb.controller import Controller
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.i18n import ugettext as _
 
@@ -34,26 +33,10 @@ class BrowsePage(Controller):
     repository."""
 
     @cherrypy.expose
-    def default(self, path=b"", restore="", limit='10'):
-        validate_isinstance(restore, str)
-        limit = validate_int(limit)
-        restore = bool(restore)
+    def default(self, path=b""):
 
         # Check user access to the given repo & path
         (repo_obj, path_obj) = self.app.store.get_repo_path(path)
-
-        # Build the parameters
-        # Build "parent directories" links
-        # TODO This Should to me elsewhere. It contains logic related to librdiff encoding.
-        parents = []
-        parents.append({"path": b"", "name": repo_obj.display_name})
-        parent_path_b = b""
-        for part_b in path_obj.path.split(b'/'):
-            if part_b:
-                parent_path_b = os.path.join(parent_path_b, part_b)
-                display_name = repo_obj._decode(repo_obj.unquote(part_b))
-                parents.append({"path": parent_path_b,
-                                "name": display_name})
 
         # Set up warning about in-progress backups, if necessary
         warning = False
@@ -61,20 +44,12 @@ class BrowsePage(Controller):
         if status[0] != 'ok':
             warning = status[1] + ' ' + _("The displayed data may be inconsistent.")
 
-        dir_entries = []
-        restore_dates = []
-        if restore:
-            restore_dates = path_obj.change_dates[:-limit - 1:-1]
-        else:
-            # Get list of actual directory entries
-            dir_entries = path_obj.dir_entries[::-1]
+        # Get list of actual directory entries
+        dir_entries = path_obj.dir_entries[::-1]
 
         parms = {
-            "repo" : repo_obj,
-            "path" : path_obj,
-            "limit": limit,
+            "repo": repo_obj,
+            "path": path_obj,
             "dir_entries": dir_entries,
-            "parents": parents,
-            "restore_dates": restore_dates,
             "warning": warning}
         return self._compile_template("browse.html", **parms)

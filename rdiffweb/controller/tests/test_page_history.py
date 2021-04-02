@@ -21,7 +21,6 @@ Created on Dec 29, 2015
 @author: Patrik Dufresne
 """
 
-
 import logging
 import unittest
 
@@ -33,19 +32,36 @@ class HistoryPageTest(WebCase):
 
     login = True
 
-    def _history(self, user, repo, limit=None):
-        url = "/history/" + user + "/" + repo + "/"
+    def _history(self, user, path, limit=None):
+        url = "/history/" + user + "/" + path + "/"
         if limit:
             url += "?limit=%s" % limit
         return self.getPage(url)
 
-    def test_history(self):
+    def test_history_with_root(self):
         self._history(self.USERNAME, self.REPO)
-        # New
+        # Check revisions
         self.assertInBody("2016-02-02 16:30")
-        # Old
         self.assertInBody("2014-11-02 09:50")
+        # Check show more button get displayed
         self.assertInBody("Show more")
+        # Check download buttont
+        self.assertInBody("Download")
+        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "?date=1415221507")
+
+    def test_history_with_path(self):
+        self._history(self.USERNAME, 'testcases/Subdirectory')
+        self.assertInBody("2016-02-02 16:30")
+        self.assertInBody("2016-01-20 10:42")
+        self.assertNotInBody("Show more")
+
+    def test_history_with_deleted_path(self):
+        self._history(self.USERNAME, "testcases/R%C3%A9pertoire%20Supprim%C3%A9/")
+        self.assertInBody("Download")
+        self.assertInBody("ZIP")
+        self.assertInBody("TAR.GZ")
+        self.assertInBody("2014-11-01 15:51")
+        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "/R%C3%A9pertoire%20Supprim%C3%A9?date=1414871475")
 
     def test_history_with_limit(self):
         self._history(self.USERNAME, self.REPO, 10)
