@@ -24,8 +24,8 @@ import subprocess
 import sys
 
 # Check running python version.
-if not sys.version_info >= (3, 5):
-    print('python version 3.4 is required.')
+if not sys.version_info >= (3, 6):
+    print('python version 3.6 is required.')
     sys.exit(1)
 
 try:
@@ -175,8 +175,8 @@ setup(
         'build_less': build_less,
     },
     install_requires=[
-        "CherryPy>=3.5",
-        "Jinja2>=2.6,!=2.9",
+        "CherryPy>=8.9.1",
+        "Jinja2>=2.10",
         "psutil>=2.1.1",
         "babel>=0.9.6",
         "python-ldap",
@@ -189,8 +189,7 @@ setup(
     # required packages for build process
     setup_requires=[
         "babel>=0.9.6",
-        # setuptools_scm v6.0 drop support for python<=3.6
-        "setuptools_scm" if sys.version_info >= (3, 6) else "setuptools_scm<6.0",
+        "setuptools_scm",
     ],
     # requirement for testing
     tests_require=tests_require,
@@ -200,12 +199,11 @@ setup(
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Framework :: CherryPy',
     ],
-    python_requires='!=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4',
+    python_requires='!=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, <4',
 )
