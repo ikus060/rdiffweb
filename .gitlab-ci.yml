@@ -39,42 +39,20 @@ stages:
     - nosetests-*.xml
     expire_in: 1 day
 
-# FIXME Downgrade setuptools for this target.
-# This is broken because of setuptools 46.0.0
-.py3-jinja26: 
-  <<: *tox
-
-py3-jinja27: 
-  <<: *tox
-
-py3-jinja28: 
-  <<: *tox
-
-py3-jinja29: 
-  <<: *tox
-
 py3-jinja210: 
+  <<: *tox
+
+py3-jinja211: 
   <<: *tox
 
 py3-cherrypy18: 
   <<: *tox
 
-debian9-py3-cherrypy35-jinja28: 
-  <<: *tox
-  variables:
-    IMAGE: debian9-py3
-    TOXENV: py3-cherrypy35-jinja28
-  # Need to upgrade setuptools on Debian stretch
-  before_script:
-  - apt-get update && apt install -yq rdiff-backup libldap2-dev libsasl2-dev
-  - pip3 install -U setuptools
-  
-
 debian10-py3-cherrypy8-jinja210: 
   <<: *tox
   variables:
     IMAGE: debian10-py3
-    TOXENV: py3-cherrypy8-jinja28
+    TOXENV: py3-cherrypy8-jinja210
   
 debian10-py3-rdiff-backup2:
   <<: *tox
