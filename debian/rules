@@ -8,7 +8,9 @@ export SETUPTOOLS_SCM_PRETEND_VERSION = $(DEB_VERSION_UPSTREAM)
 	dh $@ --buildsystem=pybuild --with python3
 
 override_dh_auto_test:
-	echo "skipping test because of missing cherrypy dependencies #970519"
+	# Install setuptools entry point required for testing.
+	python3 setup.py develop --no-deps
+	python3 -m nose -v
 
 execute_after_dh_auto_install:
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/controller/tests
