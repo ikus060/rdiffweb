@@ -758,7 +758,7 @@ class UserObjectTest(AppTestCase):
         # Check if "/" get removed
         userobj = self.app.store.get_user(self.USERNAME)
         userobj.update_repos()
-        self.assertEquals(['testcases', 'broker-repo'], userobj.repos)
+        self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
         with self.app.store.engine.connect() as conn:
             conn.execute(_REPOS.delete().where(_REPOS.c.userid == userobj._userid))  # @UndefinedVariable
             conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
@@ -770,7 +770,7 @@ class UserObjectTest(AppTestCase):
         # generate by previous versions.
         userobj = self.app.store.get_user(self.USERNAME)
         userobj.update_repos()
-        self.assertEquals(['testcases', 'broker-repo'], userobj.repos)
+        self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
         with self.app.store.engine.connect() as conn:
             conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
         self.assertEquals(['testcases', 'broker-repo', '/testcases'], userobj.repos)
@@ -782,7 +782,7 @@ class UserObjectTest(AppTestCase):
         # generate by previous versions.
         userobj = self.app.store.get_user(self.USERNAME)
         userobj.update_repos()
-        self.assertEquals(['testcases', 'broker-repo'], userobj.repos)
+        self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
         with self.app.store.engine.connect() as conn:
             conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='testcases/home/admin/testcases'))
             conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases/home/admin/data'))
