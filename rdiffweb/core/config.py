@@ -310,7 +310,7 @@ def parse_args(args=None, config_file_contents=None):
     parser.add(
         '--remove-older-time', '--removeoldertime',
         metavar='TIME',
-        help="Time when to execute the remove older task. e.g.: 22:30",
+        help="Time when to execute the remove older scheduled job. e.g.: 22:30",
         default='23:00')
 
     parser.add(

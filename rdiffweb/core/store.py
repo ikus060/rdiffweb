@@ -518,8 +518,10 @@ class RepoObject(RdiffRepo):
     def delete(self):
         """Properly remove the given repository by updating the user's repositories."""
         logger.info("deleting repository %s", self)
+        # Remove entry from database
         with self._user_obj._store.engine.connect() as conn:
             conn.execute(_REPOS.delete(_REPOS.c.repoid == self._repoid))
+        # Remove data from disk in background
         RdiffRepo.delete(self)
 
     encoding = property(lambda x: x._encoding.name, _set_encoding)

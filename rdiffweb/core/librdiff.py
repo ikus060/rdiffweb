@@ -25,15 +25,16 @@ import logging
 import os
 import re
 import shutil
+import subprocess
+import sys
 import time
 import weakref
 
 import psutil
-
 from rdiffweb.core import rdw_helpers
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.restore import call_restore
-import subprocess
+from distutils import spawn
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -45,7 +46,33 @@ RDIFF_BACKUP_DATA = b"rdiff-backup-data"
 INCREMENTS = b"increments"
 
 
-class ExecuteError(Exception):
+def rdiff_backup_version():
+    """
+    Get rdiff-backup version
+    """
+    try:
+        output = subprocess.check_output(['rdiff-backup', '--version'])
+        m = re.search(b'([0-9]+).([0-9]+).([0-9]+)', output)
+        return (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    except:
+        return (0, 0, 0)
+
+
+def find_rdiff_backup_delete():
+    """
+    Lookup for `rdiff-backup-delete` executable. Return None if not found.
+    """
+    path = os.path.dirname(sys.executable) + os.pathsep + os.environ['PATH']
+    cmd = spawn.find_executable('rdiff-backup-delete', path)
+    if not cmd:
+        return None
+    return os.fsencode(cmd)
+
+
+class ExecutableNotFoundError(Exception):
+    """
+    Raised when rdiff-backup or rdiff-backup-delete can't be found. 
+    """
     pass
 
 
@@ -266,7 +293,7 @@ class DirEntry(object):
             # Get entries from directory structure
             existing_entries = os.listdir(self.full_path)
             # Remove "rdiff-backup-data" directory
-            if self.path == b'' and RDIFF_BACKUP_DATA in existing_entries:
+            if self.isroot() and RDIFF_BACKUP_DATA in existing_entries:
                 existing_entries.remove(RDIFF_BACKUP_DATA)
 
         # Process each increment entries and combine this with the existing
@@ -303,10 +330,17 @@ class DirEntry(object):
     @property
     def display_name(self):
         """Return the most human readable filename. Without quote."""
-        if self.path == b'':
+        if self.isroot():
             return self._repo.display_name
         value = self._repo.unquote(os.path.basename(self.path))
         return self._repo._decode(value)
+
+    def isroot(self):
+        """
+        Check if the directory entry represent the root of the repository.
+        Return True when path is empty.
+        """
+        return self.path == b''
 
     @property
     def isdir(self):
@@ -354,7 +388,7 @@ class DirEntry(object):
         previous revision. From old to new.
         """
         # Exception for root path, use backups dates.
-        if self.path == b'':
+        if self.isroot():
             return self._repo.backup_dates
 
         # Return previous computed value
@@ -386,6 +420,21 @@ class DirEntry(object):
         # Return the list of dates.
         self._change_dates = sorted(change_dates)
         return self._change_dates
+
+    def delete(self):
+        """
+        Delete this entry from the repository history using rdiff-backup-delete.
+        """
+        if self.isroot():
+            self._repo.delete()
+        else:
+            rdiff_backup_delete = find_rdiff_backup_delete()
+            if not rdiff_backup_delete:
+                logger.error("can't find `rdiff-backup-delete` executable in PATH, make sure you have rdiff-backup >= 2.0.1 installed")
+                raise ExecutableNotFoundError("can't find `rdiff-backup-delete` executable in PATH, make sure you have rdiff-backup >= 2.0.1 installed")
+            cmdline = [rdiff_backup_delete, self.full_path]
+            logger.info('executing: %r' % cmdline)
+            subprocess.check_call(cmdline)
 
     @property
     def first_change_date(self):
@@ -721,7 +770,10 @@ class RdiffRepo(object):
                     os.chmod(os.path.dirname(path), 0o0700)
                 if not os.access(path, os.W_OK | os.R_OK):
                     os.chmod(path, 0o0600)
-                return shutil.rmtree(path, onerror=handle_error)
+                if os.path.isdir(path):
+                    return shutil.rmtree(path, onerror=handle_error)
+                else:
+                    return os.unlink(path)
             raise
 
         try:
@@ -952,7 +1004,7 @@ class RdiffRepo(object):
                 except psutil.NoSuchProcess:
                     logger.debug('pid [%s] does not exists', pid)
                     pass
-                
+
             # If multiple current_mirror file exists and none of them are associated to a PID, this mean the last backup was interrupted.
             # Also, if the last backup date is undefined, this mean the first initial backup was interrupted.
             if len(current_mirrors) > 1 or len(current_mirrors) == 0:
