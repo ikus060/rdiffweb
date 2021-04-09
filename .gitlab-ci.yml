@@ -10,6 +10,7 @@ variables:
 stages:
 - test
 - package
+- doc
 - test-package
 - sonar
 - publish
@@ -94,7 +95,17 @@ debian10-postgresql-12:
     POSTGRES_USER: admin
     POSTGRES_PASSWORD: ""
     POSTGRES_HOST_AUTH_METHOD: trust
-  
+
+doc:
+  <<: *tox
+  stage: doc
+  needs: []
+  dependencies: []
+  artifacts:
+    paths:
+    - .tox/doc/tmp/html
+    expire_in: 1 day
+
 package:py3: 
   stage: package
   needs: []
@@ -218,7 +229,25 @@ publish:release:
     # Publish deb
     export RDIFFWEB_DEB_FILE=$(ls -1 ./dist/bullseye/rdiffweb*.deb)
     curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_RELEASE_BULLSEYE"
-  
+
+publish:doc:
+  stage: publish
+  needs:
+  - doc
+  script: |
+    # Publish to kalo
+    eval $(ssh-agent -s)
+    echo "$KALO_WWWDATA_PRIVATEKEY" | tr -d '\r' | ssh-add - > /dev/null
+    mkdir -p ~/.ssh
+    chmod 700 ~/.ssh
+    # Publish doc
+    export VERSION=$(python3 setup.py --version)
+    scp -r -o StrictHostKeyChecking=no .tox/doc/tmp/ www-data@kalo.ikus-soft.com:/var/www/patrikdufresne/archive/rdiffweb/doc/$VERSION/
+    # Promote to latest for tags
+    if [ ! -z "$CI_COMMIT_TAG" ]; then
+      ssh -o StrictHostKeyChecking=no www-data@kalo.ikus-soft.com ln -fs $VERSION /var/www/patrikdufresne/archive/rdiffweb/doc/
+    fi
+
 deploy_rdiffweb_demo:
   stage: deploy
   environment:
