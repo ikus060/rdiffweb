@@ -404,7 +404,7 @@ class LocaleAction(argparse.Action):
 
 class ConfigFileParser(object):
     """
-    Custom config file parser to support rdiffweb config file.
+    Custom config file parser to support rdiffweb config file format.
     """
 
     def get_syntax_description(self):
@@ -414,17 +414,12 @@ class ConfigFileParser(object):
     def parse(self, stream):
         """
         Used to read the rdiffweb config file as dict.
-        
-        Read the configuration file and update the internal _cache. Return True
-        if the configuration was read. False if the configuration wasn't read. Used
-        may called this method with force=True to force the configuration to be
-        read.
         """
 
         result = OrderedDict()
 
         for i, line in enumerate(stream):
-            line = re.compile("(.*)#.*").sub(r'\1', line).strip()
+            line = re.compile("(.*?)#.*").sub(r'\1', line).strip()
             if not line:
                 continue
             if '=' not in line:

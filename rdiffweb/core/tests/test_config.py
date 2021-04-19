@@ -74,6 +74,10 @@ class TestParseArg(unittest.TestCase):
         self.assertEqual(args.disable_ssh_keys, True)
         args = parse_args([], config_file_contents='disable_ssh_keys=true')
         self.assertEqual(args.disable_ssh_keys, True)
+        
+    def test_config_file_with_comments(self):
+        args = parse_args([], config_file_contents='##########\n# this is a comment\nserver-host=0.0.0.0')
+        self.assertEqual(args.server_host, "0.0.0.0")
 
 
 class TestConfigFileParser(unittest.TestCase):
