@@ -198,6 +198,26 @@ class LoginPageWithWelcomeMsgTest(WebCase):
         self.assertInBody('french message')
 
 
+class LoginPageWithSessionDirTest(WebCase):
+
+    default_config = {
+        'session-dir':'/tmp',
+    }
+
+    def test_login(self):
+        # Query a page
+        self.getPage('/')
+        self.assertStatus('200 OK')
+        self.assertInBody('Enter your username and password to log in.')
+        # Login
+        self.getPage("/login/", method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD})
+        self.assertStatus('303 See Other')
+        # Query page again
+        self.getPage('/')
+        self.assertStatus('200 OK')
+        self.assertNotInBody('Enter your username and password to log in.')
+
+
 class LogoutPageTest(WebCase):
 
     def test_getpage_without_login(self):
