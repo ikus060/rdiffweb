@@ -1,0 +1,11 @@
+
+case "$1" in
+  configure)
+        # Create default session directory
+        mkdir -p /var/run/rdiffweb/sessions
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0
