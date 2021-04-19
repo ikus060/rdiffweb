@@ -76,8 +76,18 @@ def parse_args(args=None, config_file_contents=None):
     parser.add_argument(
         '--admin-user', '--adminuser',
         metavar='USERNAME',
-        help='administrator username. The user get created on startup if the database is empty.',
+        help='administrator username. The administrator user get created on startup if the database is empty.',
         default='admin')
+
+    parser.add_argument(
+        '--admin-password',
+        metavar='USERNAME',
+        help="""administrator encrypted password as SSHA. Read online
+            documentation to know more about how to encrypt your password
+            into SSHA or use http://projects.marsching.org/weave4j/util/genpassword.php
+            When defined, administrator password cannot be updated using the web interface.
+            When undefined, default administrator password is `admin123` and
+            it can be updated using the web interface.""")
 
     parser.add_argument(
         '--default-theme', '--defaulttheme',

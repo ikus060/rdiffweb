@@ -591,6 +591,30 @@ class StoreWithAdmin(AppTestCase):
         self.assertIsInstance(disk_usage, int)
 
 
+class StoreWithAdminPassword(AppTestCase):
+
+    # password: test
+    default_config = {
+        'admin-password': '{SSHA}wbSK4hlEX7mtGJplFi2oN6ABm6Y3Bo1e'
+    }
+
+    def test_login_with_admin_password(self):
+        # Password validation should work with "test"
+        userobj = self.app.store.login(self.USERNAME, 'test')
+        self.assertIsNotNone(userobj)
+
+    def test_login_with_default_password(self):
+        # Password validation should not work with "admin123"
+        userobj = self.app.store.login(self.USERNAME, self.PASSWORD)
+        self.assertIsNone(userobj)
+
+    def test_set_password(self):
+        # # Update password should fail.
+        userobj = self.app.store.get_user(self.USERNAME)
+        with self.assertRaises(ValueError):
+            userobj.set_password('newpassword')
+
+
 class StoreTestSSHKeys(AppTestCase):
     """
     Testcases for ssh key management.

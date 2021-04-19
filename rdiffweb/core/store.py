@@ -360,6 +360,10 @@ class UserObject(object):
         if not password:
             raise ValueError("password can't be empty")
 
+        # Cannot update admin-password if defined
+        if self.username == self._store._admin_user and self._store._admin_password:
+            raise ValueError(_("can't update admin-password defined in configuration file"))
+
         # Try to update the user password in LDAP
         try:
             valid = self._store._ldap_store.are_valid_credentials(self.username, old_password)
@@ -541,6 +545,7 @@ class Store():
     _db_uri = Option("database_uri")
     _allow_add_user = Option("ldap_add_missing_user")
     _admin_user = Option("admin_user")
+    _admin_password = Option("admin_password")
     _max_depth = Option('max_depth')
 
     def __init__(self, app):
@@ -568,9 +573,13 @@ class Store():
 
     def create_admin_user(self):
         # Check if admin user exists. If not, created it.
-        if not self.get_user(self._admin_user):
+        userobj = self.get_user(self._admin_user)
+        if not userobj:
             userobj = self.add_user(self._admin_user, 'admin123')
             userobj.role = ADMIN_ROLE
+        # Also make sure to update the password with latest value from config file.
+        if self._admin_password:
+            userobj.hash_password = self._admin_password
 
     def add_change_listener(self, listener):
         self._change_listeners.append(listener)
