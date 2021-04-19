@@ -33,8 +33,8 @@ import weakref
 import psutil
 from rdiffweb.core import rdw_helpers
 from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.restore import call_restore
 from distutils import spawn
+from subprocess import CalledProcessError
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -44,6 +44,15 @@ RDIFF_BACKUP_DATA = b"rdiff-backup-data"
 
 # Increment folder name.
 INCREMENTS = b"increments"
+
+# Define the default LANG environment variable to be passed to rdiff-backup
+# restore command line to make sure the binary output stdout as utf8 otherwise
+# we end up with \x encoded characters.
+STDOUT_ENCODING = 'utf-8'
+LANG = "en_US." + STDOUT_ENCODING
+
+# PATH for executable lookup
+PATH = path = os.path.dirname(sys.executable) + os.pathsep + os.environ['PATH']
 
 
 def rdiff_backup_version():
@@ -434,7 +443,13 @@ class DirEntry(object):
                 raise ExecutableNotFoundError("can't find `rdiff-backup-delete` executable in PATH, make sure you have rdiff-backup >= 2.0.1 installed")
             cmdline = [rdiff_backup_delete, self.full_path]
             logger.info('executing: %r' % cmdline)
-            subprocess.check_call(cmdline)
+            process = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env={'LANG': LANG})
+            for line in process.stdout:
+                line = line.rstrip(b'\n').decode('utf-8', errors='replace')
+                logger.info('rdiff-backup-delete: %s' % line)
+            retcode = process.wait()
+            if retcode:
+                raise CalledProcessError(retcode, cmdline)
 
     @property
     def first_change_date(self):
@@ -473,6 +488,7 @@ class DirEntry(object):
             filename = self.display_name
 
         # Restore data using a subprocess.
+        from rdiffweb.core.restore import call_restore
         path = os.path.join(self._repo.full_path, self._repo.unquote(self.path))
         fh = call_restore(path, restore_as_of, self._repo._encoding.name, kind)
         return filename, fh
