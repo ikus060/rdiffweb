@@ -266,7 +266,7 @@ class StoreTest(AbstractStoreTest):
         self.mlistener.user_attr_changed.assert_not_called()
 
         self.assertEqual('larry@gmail.com', user.email)
-        self.assertEqual(['computer', 'laptop'], user.repos)
+        self.assertEqual(['computer', 'laptop'], sorted(user.repos))
         self.assertEqual('/backups/', user.user_root)
         self.assertEqual(True, user.is_admin)
         self.assertEqual(ADMIN_ROLE, user.role)
@@ -468,7 +468,7 @@ class StoreWithLdapTest(AbstractLdapStoreTest):
 
         user = self.app.store.get_user(username)
         self.assertEqual('larry@gmail.com', user.email)
-        self.assertEqual(['computer', 'laptop'], user.repos)
+        self.assertEqual(['computer', 'laptop'], sorted(user.repos))
         self.assertEqual('/backups/', user.user_root)
 
     def test_list(self):
