@@ -28,19 +28,17 @@ import argparse
 from distutils import spawn
 import logging
 import os
-import rdiffweb
 import shutil
-import stat
-import struct
 import subprocess
 import sys
 import tarfile
 import tempfile
 import threading
-import time
 import traceback
-from zipfile import ZipFile, ZipInfo, ZIP_STORED, ZIP64_LIMIT, crc32, zlib, \
-    ZIP_DEFLATED
+from zipfile import ZipFile, ZIP_STORED, ZIP_DEFLATED
+
+import rdiffweb
+from rdiffweb.core.librdiff import LANG, PATH , STDOUT_ENCODING
 
 logger = logging.getLogger(__name__)
 
@@ -49,15 +47,6 @@ CHUNK_SIZE = 4096 * 10
 
 # Token used by rdiff-backup
 TOKEN = b'Processing changed file '
-
-# PATH for executable lookup
-PATH = path = os.path.dirname(sys.executable) + os.pathsep + os.environ['PATH']
-
-# Define the default LANG environment variable to be passed to rdiff-backup
-# restore command line to make sure the binary output stdout as utf8 otherwise
-# we end up with \x encoded characters.
-STDOUT_ENCODING = 'utf-8'
-LANG = "en_US." + STDOUT_ENCODING
 
 
 class TarArchiver(object):
@@ -183,7 +172,7 @@ class RawArchiver(object):
 
 ARCHIVERS = {
     'tar': TarArchiver,
-    'tbz2': lambda dest, : TarArchiver(dest, 'bz2'),
+    'tbz2': lambda dest,: TarArchiver(dest, 'bz2'),
     'tar.bz2': lambda dest: TarArchiver(dest, 'bz2'),
     'tar.gz': lambda dest: TarArchiver(dest, 'gz'),
     'tgz': lambda dest: TarArchiver(dest, 'gz'),
