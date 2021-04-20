@@ -41,6 +41,7 @@ from rdiffweb.test import AppTestCase
 
 RDIFF_BACKUP_VERSION = rdiff_backup_version()
 
+
 class MockRdiffRepo(RdiffRepo):
 
     def __init__(self):
@@ -310,6 +311,8 @@ class RdiffRepoTest(unittest.TestCase):
         self.repo = RdiffRepo(self.temp_dir, b'testcases', encoding='utf-8')
         status = self.repo.status
         self.assertEqual('failed', status[0])
+        # Make sure history entry doesn't raise error
+        self.repo.get_history_entries()
 
     def test_restore_file(self):
         filename, stream = self.repo.get_path(b"Revisions/Data").restore(restore_as_of=1454448640, kind='zip')
@@ -332,6 +335,14 @@ class RdiffRepoTest(unittest.TestCase):
     def test_unquote(self):
         self.assertEqual(b'Char ;090 to quote', self.repo.unquote(b'Char ;059090 to quote'))
 
+    def test_get_history_entries(self):
+        self.assertEqual(22, len(self.repo.get_history_entries()))
+        self.assertEqual(RdiffTime('2014-11-01T15:49:47-04:00'), self.repo.get_history_entries()[0].date)
+        self.assertEqual(RdiffTime('2016-02-02T16:30:40-05:00'), self.repo.get_history_entries()[-1].date)
+
+    def test_error_log_range(self):
+        logs = self.repo.error_log[0:1]
+        self.assertEquals(1, len(logs))
 
 class SessionStatisticsEntryTest(unittest.TestCase):
 

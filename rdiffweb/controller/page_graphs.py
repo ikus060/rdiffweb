@@ -21,6 +21,7 @@ import cherrypy
 
 from rdiffweb.controller import Controller, validate_isinstance
 from rdiffweb.controller.dispatch import poppath
+from rdiffweb.core.librdiff import SessionStatisticsEntry
 
 _logger = logging.getLogger(__name__)
 
@@ -29,26 +30,21 @@ _logger = logging.getLogger(__name__)
 class GraphsPage(Controller):
 
     def _data(self, repo_obj, **kwargs):
-        attrs = [
-            'starttime', 'endtime', 'elapsedtime', 'sourcefiles', 'sourcefilesize',
-            'mirrorfiles', 'mirrorfilesize', 'newfiles', 'newfilesize', 'deletedfiles',
-            'deletedfilesize', 'changedfiles', 'changedsourcesize', 'changedmirrorsize',
-            'incrementfiles', 'incrementfilesize', 'totaldestinationsizechange', 'errors']
 
         # Return a generator
         def func():
             # Header
             yield 'date'
-            for attr in attrs:
+            for attr in SessionStatisticsEntry.ATTRS:
                 yield ','
                 yield attr
             yield '\n'
             # Content
-            for d, s in repo_obj.session_statistics.items():
-                yield str(d.epoch())
-                for attr in attrs:
+            for stat in repo_obj.session_statistics:
+                yield str(stat.date.epoch())
+                for attr in SessionStatisticsEntry.ATTRS:
                     yield ','
-                    yield str(getattr(s, attr))
+                    yield str(getattr(stat, attr))
                 yield '\n'
 
         return func()
