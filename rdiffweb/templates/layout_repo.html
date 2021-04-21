@@ -11,7 +11,8 @@
 	    ('browse', _('Files'), url_for('browse', repo), 'icon-docs'),
 	    ('history', _('History'), url_for('history', repo, path), 'icon-history'),
 	    ('settings', _('Settings'), url_for('settings', repo), 'icon-cog-alt'),
-	    ('graphs', _('Graphs'), url_for('graphs', 'activities', repo), 'icon-chart-bar')
+	    ('graphs', _('Graphs'), url_for('graphs', 'activities', repo), 'icon-chart-bar'),
+        ('logs', _('Logs'), url_for('logs', repo), 'icon-file')
 	] -%}
     <ul class="nav nav-tabs" role="navigation">
     {% for item in repo_nav_bar %}

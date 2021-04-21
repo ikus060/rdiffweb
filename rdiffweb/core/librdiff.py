@@ -542,7 +542,7 @@ class HistoryEntry(object):
             return ""
         # Read the error log entry.
         try:
-            return self._repo._decode(entry.read())
+            return entry.read()
         except:
             return "Error reading log file: " + self._repo._decode(entry.name)
 
@@ -773,11 +773,11 @@ class LogEntry(IncrementEntry):
         file can't be read."""
         # To avoid opening empty file, check the file size first.
         if self.is_empty:
-            return b''
+            return ""
         encoding = self.repo._encoding.name
         if self._is_compressed:
             return subprocess.check_output(['zcat', self.path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding=encoding, errors='replace')
-        with open(self.path, 'rb', encoding=encoding, errors='replace') as f:
+        with open(self.path, 'r', encoding=encoding, errors='replace') as f:
             return f.read()
 
     def tail(self, num=2000):
@@ -872,6 +872,13 @@ class RdiffRepo(object):
         sorted from old to new (ascending order). To identify dates,
         'mirror_metadata' file located in rdiff-backup-data are used."""
         return self.mirror_metadata.keys()
+
+    @property
+    def backup_log(self):
+        """
+        Return the location of the backup log.
+        """
+        return LogEntry(self, b'backup.log')
 
     def delete(self):
         """Delete the repository permanently."""
@@ -1029,6 +1036,13 @@ class RdiffRepo(object):
     def remove_older(self, remove_older_than):
         logger.info("execute rdiff-backup --force --remove-older-than=%sD %r", remove_older_than, self.full_path)
         subprocess.call([b'rdiff-backup', b'--force', b'--remove-older-than=' + str(remove_older_than).encode(encoding='latin1') + b'D', self.full_path])
+
+    @property
+    def restore_log(self):
+        """
+        Return the location of the restore log.
+        """
+        return LogEntry(self, b'restore.log')
 
     def _check_status(self):
         """Check if a backup is in progress for the current repo."""

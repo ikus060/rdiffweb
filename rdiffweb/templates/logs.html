@@ -1,0 +1,40 @@
+{% extends 'layout_repo.html' %}
+{% from 'include/empty.html' import empty %}
+{% set active_page='repo' %}
+{% set active_repo_page='logs' %}
+{% block title %}{% trans %}Repository Logs{% endtrans %}{% endblock %}
+{% block content %}
+
+<div class="row">
+  <div class="col-md-3">
+    <ul class="list-group">
+      <a href="{{ url_for('logs', repo, file='backup.log', limit=limit) }}" class="list-group-item">Backup Log</a>
+      <a href="{{ url_for('logs', repo, file='restore.log', limit=limit) }}" class="list-group-item">Restore Log</a>
+      {% for e in error_logs %}
+      <a href="{{ url_for('logs', repo, date=e.date, limit=limit) }}" class="list-group-item">
+        Error log {{e.date | datetime }}
+        {% if not e.is_empty %}<span class="label label-warning">not empty</span>{% else %}<span class="label label-info">empty</span>{% endif %}
+      </a>
+      {% endfor %}
+      {% if limit == error_logs|count %}
+      <a href="{{ url_for('logs', repo, limit=limit * 2) }}" class="list-group-item">{% trans %}Show more...{% endtrans %}</a>
+      {% endif %}
+    </ul>
+  </div>
+  <div class="col-md-9">
+  {% if data %}
+  <div class="well well-sm">{% trans %}Notice: To prevent performance issues, only the last 2000 lines are displayed.{% endtrans %}</div>
+  <pre class="file-content">{{data}}</pre>
+  {% elif file or date %}
+    {% call empty('icon-file', 'Log file empty') %}
+      <p>{% trans %}This log file is empty. Select another log file to show it's contents.{% endtrans %}</p>
+    {% endcall %}
+  {% else %}
+    {% call empty('icon-file', 'No log file selected') %}
+      <p>{% trans %}Select a log file to show it's contents.{% endtrans %}</p>
+    {% endcall %}  
+  {% endif %}
+  </div>
+</div><!-- /.row -->
+
+{% endblock %}

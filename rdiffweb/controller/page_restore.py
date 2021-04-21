@@ -16,11 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from rdiffweb.controller import Controller, validate_isinstance, validate
+from rdiffweb.controller import Controller, validate_isinstance, validate, \
+    validate_date
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.restore import ARCHIVERS
-from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.rdw_helpers import quote_url
 
 import cherrypy
@@ -72,24 +71,12 @@ class RestorePage(Controller):
     @cherrypy.tools.gzip(on=False)
     def default(self, path=b"", date=None, kind=None, usetar=None):
         validate_isinstance(path, bytes)
-        validate_isinstance(date, str)
         validate(kind is None or kind in ARCHIVERS)
         validate(usetar is None or isinstance(usetar, str))
+        date = validate_date(date)
 
         # Check user access to repo / path.
         path_obj = self.app.store.get_repo_path(path)[1]
-
-        # Get the restore date
-        try:
-            RdiffTime(int(date))
-        except:
-            logger.warning("invalid date %s", date)
-            raise cherrypy.HTTPError(400, _("Invalid date."))
-
-        # Get if backup in progress
-        # status = repo_obj.status
-        # if status[0] != 'ok':
-        #    raise cherrypy.HTTPError(500, _(status[1] + ' ' + _("""Restores are disabled.""")))
 
         if usetar is not None:
             kind = 'tar.gz'

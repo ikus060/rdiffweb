@@ -21,10 +21,10 @@ import os
 
 import cherrypy
 import pkg_resources
-
 import rdiffweb
 from rdiffweb.core.config import Option
-from rdiffweb.core.librdiff import RdiffRepo
+from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.librdiff import RdiffRepo, RdiffTime
 
 
 # Define the logger
@@ -49,6 +49,14 @@ def validate_isinstance(value, cls, message=None):
     """Raise HTTP error if value is not cls."""
     if not isinstance(value, cls):
         raise cherrypy.HTTPError(400, message)
+
+
+def validate_date(value, message=None):
+    try:
+        return RdiffTime(int(value))
+    except:
+        logger.warning("invalid date %s", value)
+        raise cherrypy.HTTPError(400, message or _('Invalid date.'))
 
 
 FlashMessage = namedtuple('FlashMessage', ['message', 'level'])
@@ -97,10 +105,10 @@ class Controller(object):
         loc = cherrypy.response.i18n.locale
         parms = {
             "lang": loc.language,
-            "header_name" : self._header_name,
-            "theme" : self._default_theme,
-            "footername" : self._footername,
-            "footerurl" : self._footerurl,
+            "header_name": self._header_name,
+            "theme": self._default_theme,
+            "footername": self._footername,
+            "footerurl": self._footerurl,
             "get_flashed_messages": get_flashed_messages,
         }
         if self.app.currentuser:
