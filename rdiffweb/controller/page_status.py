@@ -19,7 +19,7 @@ from datetime import timedelta
 import logging
 
 import cherrypy
-from rdiffweb.controller import Controller, validate_isinstance
+from rdiffweb.controller import Controller, validate_isinstance, validate_date
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core import librdiff
 from rdiffweb.core import rdw_helpers
@@ -39,16 +39,11 @@ class StatusPage(Controller):
         startTime = librdiff.RdiffTime() - timedelta(days=5)
         endTime = None
         if date:
-            try:
-                date = int(date)
-            except:
-                logger.exception("invalid date")
-                raise cherrypy.HTTPError(400, _("Invalid date."))
             # Set the start and end time to be the start and end of the day,
             # respectively, to get all entries for that day
-            startTime = librdiff.RdiffTime(date)
+            startTime = validate_date(date)
             startTime.set_time(0, 0, 0)
-            endTime = librdiff.RdiffTime(date)
+            endTime = validate_date(date)
             endTime.set_time(23, 59, 59)
 
         # Limit the scope to the given path.

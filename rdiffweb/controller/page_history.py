@@ -44,8 +44,6 @@ class HistoryPage(Controller):
 
         restore_dates = path_obj.change_dates[:-limit - 1:-1]
 
-        # repo_obj.get_history_entries(numLatestEntries=limit, reverse=True)
-
         parms = {
             "limit": limit,
             "repo": repo_obj,

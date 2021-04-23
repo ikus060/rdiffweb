@@ -17,10 +17,8 @@
 
 import bisect
 import calendar
-from collections import OrderedDict
 from datetime import timedelta
 import encodings
-import gzip
 import logging
 import os
 import re
@@ -53,6 +51,8 @@ LANG = "en_US." + STDOUT_ENCODING
 
 # PATH for executable lookup
 PATH = path = os.path.dirname(sys.executable) + os.pathsep + os.environ['PATH']
+
+PID_RE = re.compile(b"^PID\s*([0-9]+)", re.I | re.M)
 
 
 def rdiff_backup_version():
@@ -103,6 +103,23 @@ class SymLinkAccessDeniedError(FileError):
 
 class UnknownError(FileError):
     pass
+
+
+class cached_property(object):
+    """
+    A property that is only computed once per instance and then replaces itself
+    with an ordinary attribute.
+    """
+
+    def __init__(self, func):
+        self.__doc__ = getattr(func, "__doc__")
+        self.func = func
+
+    def __get__(self, obj, cls):
+        if obj is None:
+            return self
+        value = obj.__dict__[self.func.__name__] = self.func(obj)
+        return value
 
 
 class RdiffTime(object):
@@ -256,8 +273,6 @@ class RdiffTime(object):
 
     __json__ = __str__
 
-# Interfaced objects #
-
 
 class DirEntry(object):
 
@@ -380,12 +395,12 @@ class DirEntry(object):
         else:
             # The only viable place to get the filesize of a deleted entry
             # it to get it from file_statistics
-            stats = self._repo.get_file_statistic(self.last_change_date)
-            if stats:
+            try:
+                stats = self._repo.file_statistics[self.last_change_date]
                 # File stats uses unquoted name.
                 unquote_path = self._repo.unquote(self.path)
                 self._file_size = stats.get_source_size(unquote_path)
-            else:
+            except KeyError:
                 logger.warning("cannot find file statistic [%s]", self.last_change_date)
                 self._file_size = 0
         return self._file_size
@@ -513,7 +528,7 @@ class HistoryEntry(object):
     def has_errors(self):
         """Check if the history has errors."""
         try:
-            return not self._repo._error_logs[self.date].is_empty
+            return not self._repo.error_log[self.date].is_empty
         except KeyError:
             return False
 
@@ -522,12 +537,12 @@ class HistoryEntry(object):
         """Return error messages."""
         # Get error log entry
         try:
-            entry = self._repo._error_logs[self.date]
+            entry = self._repo.error_log[self.date]
         except KeyError:
             return ""
         # Read the error log entry.
         try:
-            return self._repo._decode(entry.read())
+            return entry.read()
         except:
             return "Error reading log file: " + self._repo._decode(entry.name)
 
@@ -566,20 +581,18 @@ class IncrementEntry(object):
         # Calculate the date of the increment.
         self.date = self.repo._extract_date(self.name)
 
-    def _open(self, mode='rb'):
+    @property
+    def path(self):
+        return os.path.join(self.repo._data_path, self.name)
+
+    def _open(self):
         """Should be used to open the increment file. This method handle
         compressed vs not-compressed file."""
         if self._is_compressed:
-            return gzip.open(os.path.join(self.repo._data_path, self.name), mode)
-        return open(os.path.join(self.repo._data_path, self.name), mode)
-
-    def read(self):
-        """Read the error file and return it's content. Raise exception if the
-        file can't be read."""
-        # To avoid opening n empty file, check the file size first.
-        if self.is_empty:
-            return b''
-        return self._open().read()
+            p = subprocess.Popen(['zcat', self.path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            fileobj = p.stdout
+            return fileobj
+        return open(self.path, 'rb')
 
     @property
     def filename(self):
@@ -625,8 +638,7 @@ class IncrementEntry(object):
         """
         Check if the increment entry is empty.
         """
-        fn = os.path.join(self.repo._data_path, self.name)
-        return os.path.getsize(fn) == 0
+        return os.path.getsize(self.path) == 0
 
     def __str__(self):
         return self.name
@@ -696,6 +708,11 @@ class SessionStatisticsEntry(IncrementEntry):
 
     """Represent a single session_statistics."""
 
+    ATTRS = ['starttime', 'endtime', 'elapsedtime', 'sourcefiles', 'sourcefilesize',
+            'mirrorfiles', 'mirrorfilesize', 'newfiles', 'newfilesize', 'deletedfiles',
+            'deletedfilesize', 'changedfiles', 'changedsourcesize', 'changedmirrorsize',
+            'incrementfiles', 'incrementfilesize', 'totaldestinationsizechange', 'errors']
+
     def __init__(self, repo_path, name):
         # check to ensure we have a file_statistics entry
         assert name.startswith(b"session_statistics")
@@ -710,32 +727,112 @@ class SessionStatisticsEntry(IncrementEntry):
         the backup. This class provide a simple and easy way to access this
         data."""
 
-        with self._open('r') as f:
+        with self._open() as f:
             for line in f.readlines():
                 # Skip comments
-                if line.startswith("#"):
+                if line.startswith(b"#"):
                     continue
                 # Read the line into array
-                line = line.rstrip('\r\n')
-                data_line = line.split(" ", 2)
+                line = line.rstrip(b'\r\n')
+                data_line = line.split(b" ", 2)
                 # Read line into tuple
                 (key, value) = tuple(data_line)[0:2]
-                if '.' in value:
+                if b'.' in value:
                     value = float(value)
                 else:
                     value = int(value)
-                setattr(self, key.lower(), value)
+                setattr(self, key.lower().decode('ascii'), value)
 
     def __getattr__(self, name):
         """
         Intercept attribute getter to load the file.
         """
-        if name in ['starttime', 'endtime', 'elapsedtime', 'sourcefiles', 'sourcefilesize',
-                    'mirrorfiles', 'mirrorfilesize', 'newfiles', 'newfilesize', 'deletedfiles',
-                    'deletedfilesize', 'changedfiles', 'changedsourcesize', 'changedmirrorsize',
-                    'incrementfiles', 'incrementfilesize', 'totaldestinationsizechange', 'errors']:
+        if name in self.ATTRS:
             self._load()
         return self.__dict__[name]
+
+
+class CurrentMirrorEntry(IncrementEntry):
+
+    def extract_pid(self):
+        """
+        Return process ID from a current mirror marker, if any
+        """
+        with open(self.path, 'rb') as f:
+            match = PID_RE.search(f.read())
+        if not match:
+            return None
+        else:
+            return int(match.group(1))
+
+
+class LogEntry(IncrementEntry):
+
+    def read(self):
+        """Read the error file and return it's content. Raise exception if the
+        file can't be read."""
+        # To avoid opening empty file, check the file size first.
+        if self.is_empty:
+            return ""
+        encoding = self.repo._encoding.name
+        if self._is_compressed:
+            return subprocess.check_output(['zcat', self.path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding=encoding, errors='replace')
+        with open(self.path, 'r', encoding=encoding, errors='replace') as f:
+            return f.read()
+
+    def tail(self, num=2000):
+        """
+        Tail content of the file. This is used for logs.
+        """
+        # To avoid opening empty file, check the file size first.
+        if self.is_empty:
+            return b''
+        encoding = self.repo._encoding.name
+        if self._is_compressed:
+            return subprocess.check_output(['zcat', self.path, '|', 'tail', '-n', str(num) ], stderr=subprocess.STDOUT, shell=True, encoding=encoding, errors='replace')
+        return subprocess.check_output(['tail', '-n', str(num), self.path], stderr=subprocess.STDOUT, encoding=encoding, errors='replace')
+
+
+class MetadataDict(object):
+    """
+    This is used to access repository metadata quickly in a pythonic way.
+    """
+
+    def __init__(self, repo, prefix, cls):
+        assert isinstance(repo, RdiffRepo)
+        assert isinstance(prefix, bytes)
+        assert hasattr(cls, '__call__')
+        self._repo = repo
+        self._prefix = prefix
+        self._cls = cls
+
+    @cached_property
+    def _entries(self):
+        return [e for e in self._repo._entries if e.startswith(self._prefix)]
+
+    @cached_property
+    def _table(self):
+        _extract_date = self._repo._extract_date
+        return {_extract_date(e): e for e in self._entries}
+
+    def __getitem__(self, key):
+        if isinstance(key, RdiffTime):
+            return self._cls(self._repo, self._table[key])
+        elif isinstance(key, slice):
+            return [self._cls(self._repo, e) for e in self._entries[key]]
+        elif isinstance(key, int):
+            return self._cls(self._repo, self._entries[key])
+
+    def __iter__(self):
+        for e in self._entries:
+            yield self._cls(self._repo, e)
+
+    def __len__(self):
+        return len(self._entries)
+
+    def keys(self):
+        _extract_date = self._repo._extract_date
+        return [_extract_date(e) for e in self._entries]
 
 
 class RdiffRepo(object):
@@ -760,6 +857,12 @@ class RdiffRepo(object):
         assert isinstance(self._data_path, bytes)
         self._increment_path = os.path.join(self._data_path, INCREMENTS)
 
+        self.current_mirror = MetadataDict(self, b'current_mirror', CurrentMirrorEntry)
+        self.error_log = MetadataDict(self, b'error_log', LogEntry)
+        self.mirror_metadata = MetadataDict(self, b'mirror_metadata', IncrementEntry)
+        self.file_statistics = MetadataDict(self, b'file_statistics', FileStatisticsEntry)
+        self.session_statistics = MetadataDict(self, b'session_statistics', SessionStatisticsEntry)
+
         # Load repo status
         self.status = self._check_status()
 
@@ -768,12 +871,14 @@ class RdiffRepo(object):
         """Return a list of dates when backup was executed. This list is
         sorted from old to new (ascending order). To identify dates,
         'mirror_metadata' file located in rdiff-backup-data are used."""
-        if not hasattr(self, '_backup_dates_data'):
-            logger.debug("get backup dates for [%r]", self.full_path)
-            self._backup_dates_data = sorted([
-                self._extract_date(x)
-                for x in self._get_entries(b'mirror_metadata')])
-        return self._backup_dates_data
+        return self.mirror_metadata.keys()
+
+    @property
+    def backup_log(self):
+        """
+        Return the location of the backup log.
+        """
+        return LogEntry(self, b'backup.log')
 
     def delete(self):
         """Delete the repository permanently."""
@@ -810,14 +915,9 @@ class RdiffRepo(object):
         assert isinstance(value, bytes)
         return self._encoding.decode(value, errors)[0]
 
-    @property
-    def _error_logs(self):
-        """Return dict of {date: IncrementEntry} to represent each file statistics."""
-        if not hasattr(self, '_error_logs_data'):
-            self._error_logs_data = {
-                self._extract_date(x): IncrementEntry(self, x)
-                for x in self._get_entries(b'error_log')}
-        return self._error_logs_data
+    @cached_property
+    def _entries(self):
+        return sorted(os.listdir(self._data_path))
 
     def _extract_date(self, filename):
         """
@@ -835,62 +935,10 @@ class RdiffRepo(object):
             logger.warn('fail to parse date [%r]', date_string, exc_info=1)
             return None
 
-    @property
-    def _file_statistics(self):
-        """Return dict of {date: filename} to represent each file statistics."""
-        if not hasattr(self, '_file_statistics_data'):
-            self._file_statistics_data = {
-                self._extract_date(x): x
-                for x in self._get_entries(b'file_statistics')}
-        return self._file_statistics_data
-
-    def _get_entries(self, prefix, ignore_errors=True):
-        """
-        Return list of entries matching the given prefix.
-        """
-        if not hasattr(self, '_entries_data'):
-            self._entries_data = {}
-            try:
-                entries = os.listdir(self._data_path)
-            except:
-                if ignore_errors:
-                    entries = []
-                else:
-                    raise
-            for e in entries:
-                try:
-                    key = e[:e.index(b'.')]
-                    if key in [b'file_statistics', b'session_statistics', b'current_mirror', b'mirror_metadata', b'error_log']:
-                        l = self._entries_data.setdefault(key, [])
-                        l.append(e)
-                except:
-                    pass
-        return self._entries_data.get(prefix, [])
-
-    def get_file_statistic(self, date):
-        """Return the file statistic for the given date.
-        Try to search for the given file statistic and return an object to
-        represent it.
-
-        Try to be lazy as possible. To list file_statistics then only create
-        object if required.
-        """
-        # Get reference to the FileStatisticsEntry
-        try:
-            value = self._file_statistics[date]
-            if not isinstance(value, FileStatisticsEntry):
-                entry = FileStatisticsEntry(self, value)
-                self._file_statistics[date] = entry
-                return entry
-            return self._file_statistics[date]
-        except KeyError:
-            return None
-
     def get_history_entries(self,
                             numLatestEntries=-1,
                             earliestDate=None,
-                            latestDate=None,
-                            reverse=False):
+                            latestDate=None):
         """Returns a list of HistoryEntry's
         earliestDate and latestDate are inclusive."""
 
@@ -903,10 +951,8 @@ class RdiffRepo(object):
         logger.debug("get history entries for [%r]", self.full_path)
 
         entries = []
-        # Take care of reverse
-        backup_dates = reversed(self.backup_dates) if reverse else self.backup_dates
         # Loop to dates
-        for backup_date in backup_dates:
+        for backup_date in self.backup_dates:
             # compare local times because of discrepancy between client/server
             # time zones
             if earliestDate and backup_date < earliestDate:
@@ -980,39 +1026,37 @@ class RdiffRepo(object):
     @property
     def last_backup_date(self):
         """Return the last known backup dates."""
-        current_mirrors = sorted([x for x in self._get_entries(b'current_mirror')])
-        if len(current_mirrors) > 0:
-            return self._extract_date(current_mirrors[-1])
-        return None
+        try:
+            if len(self.current_mirror) > 0:
+                return self.current_mirror[-1].date
+            return None
+        except (PermissionError, FileNotFoundError):
+            return None
 
     def remove_older(self, remove_older_than):
         logger.info("execute rdiff-backup --force --remove-older-than=%sD %r", remove_older_than, self.full_path)
         subprocess.call([b'rdiff-backup', b'--force', b'--remove-older-than=' + str(remove_older_than).encode(encoding='latin1') + b'D', self.full_path])
 
+    @property
+    def restore_log(self):
+        """
+        Return the location of the restore log.
+        """
+        return LogEntry(self, b'restore.log')
+
     def _check_status(self):
         """Check if a backup is in progress for the current repo."""
-
-        def extract_pid(current_mirror):
-            """Return process ID from a current mirror marker, if any"""
-            entry = IncrementEntry(self, current_mirror)
-            match = pid_re.search(entry.read())
-            if not match:
-                return None
-            else:
-                return int(match.group(1))
 
         # Read content of the file and check if pid still exists
         try:
             # Check if the repository exists.
             # Make sure repoRoot is a valid rdiff-backup repository
             if not os.path.isdir(self._data_path):
+                self._entries = []
                 return ('failed', _('The repository cannot be found or is badly damaged.'))
 
-            pid_re = re.compile(b"^PID\s*([0-9]+)", re.I | re.M)
-
-            current_mirrors = self._get_entries(b'current_mirror', ignore_errors=False)
-            for current_mirror in current_mirrors:
-                pid = extract_pid(current_mirror)
+            for current_mirror in self.current_mirror:
+                pid = current_mirror.extract_pid()
                 try:
                     p = psutil.Process(pid)
                     if any('rdiff-backup' in c for c in p.cmdline()):
@@ -1023,26 +1067,16 @@ class RdiffRepo(object):
 
             # If multiple current_mirror file exists and none of them are associated to a PID, this mean the last backup was interrupted.
             # Also, if the last backup date is undefined, this mean the first initial backup was interrupted.
-            if len(current_mirrors) > 1 or len(current_mirrors) == 0:
+            if len(self.current_mirror) > 1 or len(self.current_mirror) == 0:
                 self._status = ('interrupted', _('The previous backup seams to have failed.'))
                 return self._status
 
         except PermissionError:
+            self._entries = []
             logger.warn('error reading current_mirror files', exc_info=1)
             return ('failed', _("Permissions denied. Contact administrator to check repository's permissions."))
 
         return ('ok', '')
-
-    @property
-    def session_statistics(self):
-        """Return list of IncrementEntry to represent each sessions
-        statistics."""
-        if not hasattr(self, '_session_statistics_data'):
-            data = (
-                SessionStatisticsEntry(self, x)
-                for x in sorted(self._get_entries(b'session_statistics')))
-            self._session_statistics_data = OrderedDict([(x.date, x) for x in data])
-        return self._session_statistics_data
 
     def unquote(self, name):
         """Remove quote from the given name."""

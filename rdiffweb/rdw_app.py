@@ -32,7 +32,6 @@ from rdiffweb.controller.api import ApiPage
 from rdiffweb.controller.dispatch import static, empty  # @UnusedImport
 from rdiffweb.controller.page_admin import AdminPage
 from rdiffweb.controller.page_browse import BrowsePage
-from rdiffweb.controller.page_delete import DeletePage
 from rdiffweb.controller.page_graphs import GraphsPage
 from rdiffweb.controller.page_history import HistoryPage
 from rdiffweb.controller.page_locations import LocationsPage
@@ -48,8 +47,11 @@ from rdiffweb.core.notification import NotificationJob, NotificationPlugin
 from rdiffweb.core.quota import DefaultUserQuota
 from rdiffweb.core.store import Store
 
+from rdiffweb.controller.page_delete import DeletePage
+from rdiffweb.controller.page_logs import LogsPage
 from rdiffweb.core.removeolder import RemoveOlderJob
 from rdiffweb.core.scheduler import Scheduler
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -83,6 +85,7 @@ class Root(LocationsPage):
         self.api.set_encoding = self.settings
         self.api.remove_older = self.settings
         self.graphs = GraphsPage()
+        self.logs = LogsPage()
 
         # Register static dir.
         static_dir = pkg_resources.resource_filename('rdiffweb', 'static')  # @UndefinedVariable

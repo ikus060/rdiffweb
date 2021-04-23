@@ -41,6 +41,7 @@ from rdiffweb.test import AppTestCase
 
 RDIFF_BACKUP_VERSION = rdiff_backup_version()
 
+
 class MockRdiffRepo(RdiffRepo):
 
     def __init__(self):
@@ -310,6 +311,8 @@ class RdiffRepoTest(unittest.TestCase):
         self.repo = RdiffRepo(self.temp_dir, b'testcases', encoding='utf-8')
         status = self.repo.status
         self.assertEqual('failed', status[0])
+        # Make sure history entry doesn't raise error
+        self.repo.get_history_entries()
 
     def test_restore_file(self):
         filename, stream = self.repo.get_path(b"Revisions/Data").restore(restore_as_of=1454448640, kind='zip')
@@ -331,6 +334,38 @@ class RdiffRepoTest(unittest.TestCase):
 
     def test_unquote(self):
         self.assertEqual(b'Char ;090 to quote', self.repo.unquote(b'Char ;059090 to quote'))
+
+    def test_get_history_entries(self):
+        self.assertEqual(22, len(self.repo.get_history_entries()))
+        self.assertEqual(RdiffTime('2014-11-01T15:49:47-04:00'), self.repo.get_history_entries()[0].date)
+        self.assertEqual(RdiffTime('2016-02-02T16:30:40-05:00'), self.repo.get_history_entries()[-1].date)
+
+    def test_error_log_range(self):
+        logs = self.repo.error_log[0:1]
+        self.assertEquals(1, len(logs))
+        self.assertEquals("", self.repo.error_log[0].read())
+
+    def test_backup_log(self):
+        self.assertEquals("", self.repo.backup_log.read())
+
+    def test_restore_log(self):
+        self.assertEquals(self.repo.restore_log.read(),"""Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpKDNO4t/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpnG33kc/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpGUEHJC/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpBlFPsW/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpkfCejo/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmphXpFnS as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/rdiffweb_restore_udS97a/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/rdiffweb_restore_LL4rCm/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/rdiffweb_restore_zpYgT3/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/rdiffweb_restore_7H93yy/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/rdiffweb_restore_Xe2CfG/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/rdiffweb_restore_rHFERA/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpF7rSar/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpgHTL2j/root as it was as of Wed Nov  5 16:05:07 2014.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpVo1u4Z/root as it was as of Wed Jan 20 10:42:21 2016.
+Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpBRxRxe/root as it was as of Wed Jan 20 10:42:21 2016.
+""")
 
 
 class SessionStatisticsEntryTest(unittest.TestCase):
