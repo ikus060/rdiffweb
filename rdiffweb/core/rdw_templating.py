@@ -188,7 +188,7 @@ def url_for(endpoint, *args, **kwargs):
         else:
             raise ValueError('invalid positional arguments, url_for accept str, bytes or RepoPath: %r' % chunk)
     # Sort the arguments to have predictable results.
-    qs = [(k, v.epoch() if hasattr(v, 'epoch') else v) for k, v in sorted(kwargs.items()) ]
+    qs = [(k, v.epoch() if hasattr(v, 'epoch') else v) for k, v in sorted(kwargs.items()) if v is not None]
     return cherrypy.url(path=path, qs=qs)
 
 

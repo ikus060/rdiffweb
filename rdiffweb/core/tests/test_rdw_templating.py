@@ -124,6 +124,9 @@ class UrlForTest(AppTestCase):
         self.assertEqual(cherrypy.server.base() + '/status?date=1414967021', url_for('status', date=RdiffTime(1414967021)))
         self.assertEqual(cherrypy.server.base() + '/status/admin/testcases?date=1414967021', url_for('status', repo, date=RdiffTime(1414967021)))
 
+    def test_url_for_with_none(self):
+        self.assertEqual(cherrypy.server.base() + '/logs', url_for('logs', date=None))
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
