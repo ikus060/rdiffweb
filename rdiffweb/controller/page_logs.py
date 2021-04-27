@@ -18,8 +18,10 @@
 import logging
 
 import cherrypy
+from cherrypy.lib.static import serve_fileobj
 from rdiffweb.controller import Controller, validate_int, validate_date
 from rdiffweb.controller.dispatch import poppath
+from rdiffweb.core.i18n import ugettext as _
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -29,13 +31,14 @@ logger = logging.getLogger(__name__)
 class LogsPage(Controller):
 
     @cherrypy.expose
-    def default(self, path, limit='10', date=None, file=None):
+    def default(self, path, limit='10', date=None, file=None, raw=0):
         """
         Called to show every graphs
         """
         limit = validate_int(limit)
         if date is not None:
-            date =  validate_date(date)
+            date = validate_date(date)
+        raw = validate_int(raw)
 
         repo_obj = self.app.store.get_repo(path)
 
@@ -43,19 +46,24 @@ class LogsPage(Controller):
         data = None
         try:
             if file == 'backup.log':
-                data = repo_obj.backup_log.tail()
+                data = repo_obj.backup_log
             elif file == 'restore.log':
-                data = repo_obj.restore_log.tail()
+                data = repo_obj.restore_log
             elif date:
                 try:
-                    data = repo_obj.error_log[date].tail()
+                    data = repo_obj.error_log[date]
                 except KeyError:
-                    raise cherrypy.HTTPError(400, _('Invalid date.'))
+                    raise cherrypy.HTTPError(404, _('Invalid date.'))
         except FileNotFoundError:
             # If the file doesn't exists, swallow the error.
             pass
-            
-        
+
+        if raw:
+            return serve_fileobj(data._open(), content_type="text/plain")
+        elif data:
+            # Limit to 2000 lines in html page.
+            data = data.tail()
+
         # Get error log list
         if limit < len(repo_obj.error_log):
             error_logs = repo_obj.error_log[:-limit - 1:-1]
