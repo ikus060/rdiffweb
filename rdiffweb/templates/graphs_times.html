@@ -48,6 +48,7 @@
 </style>
 {% endblock %}
 {% block graph_body %}
+<h2>{% trans %}Elapsed Time{% endtrans%}</h2>
 <p>
 {% trans %}Average time to complete backup.{% endtrans %}
 </p>
@@ -81,7 +82,7 @@ var svg = d3.select("#graph")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.csv("{{ url_for('graphs', 'data', repo) }}", type, function(error, csv_data) {
+d3.csv("{{ url_for('graphs', 'data', repo, limit=limit) }}", type, function(error, csv_data) {
   if (error) throw error;
 
   // Define a temporary X axis to figure out grouping.

@@ -66,6 +66,7 @@
 </style>
 {% endblock %}
 {% block graph_body %}
+<h2>{% trans %}Errors{% endtrans%}</h2>
 <p>
 {% trans %}Cumulative number of errors by period of time.{% endtrans%}
 </p>
@@ -92,7 +93,7 @@ var svg = d3.select("#graph")
 
 svg.call(tip);
 
-d3.csv("{{ url_for('graphs', 'data', repo) }}", type, function(error, csv_data) {
+d3.csv("{{ url_for('graphs', 'data', repo, limit=limit) }}", type, function(error, csv_data) {
   if (error) throw error;
 
   // Define a temporary X axis to figure out grouping.

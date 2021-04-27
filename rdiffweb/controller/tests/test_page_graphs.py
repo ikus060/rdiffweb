@@ -81,6 +81,19 @@ class SettingsTest(WebCase):
 1454448640,1454448640.0,1454448640.93,0.93,25,3667068,22,3667068,6,14869,3,14869,2,0,0,11,2915,2915,0
 """
         self.assertEquals(expected, self.body)
+        
+    def test_data_with_limit(self):
+        self.getPage("/graphs/data/" + self.USERNAME + "/" + self.REPO + "?limit=5")
+        self.assertStatus('200 OK')
+        # Check header
+        expected = b"""date,starttime,endtime,elapsedtime,sourcefiles,sourcefilesize,mirrorfiles,mirrorfilesize,newfiles,newfilesize,deletedfiles,deletedfilesize,changedfiles,changedsourcesize,changedmirrorsize,incrementfiles,incrementfilesize,totaldestinationsizechange,errors
+1415221470,1415221470.0,1415221417.53,-52.47,19,3667010,17,3667001,2,9,0,0,1,0,0,3,0,9,0
+1415221495,1415221495.0,1415221442.45,-52.55,19,3667010,19,3667010,0,0,0,0,3,9,9,3,72,72,0
+1415221507,1415221507.0,1415221453.86,-53.14,19,3667010,19,3667010,0,0,0,0,3,9,9,3,72,72,0
+1453304541,1453304541.0,1453304542.27,1.27,22,3667068,19,3667010,6,14927,3,14869,16,3652141,3652141,25,3724,3782,0
+1454448640,1454448640.0,1454448640.93,0.93,25,3667068,22,3667068,6,14869,3,14869,2,0,0,11,2915,2915,0
+"""
+        self.assertEquals(expected, self.body)
 
     def test_as_another_user(self):
         # Create a nother user with admin right

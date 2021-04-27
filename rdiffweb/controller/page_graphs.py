@@ -19,7 +19,7 @@ import logging
 
 import cherrypy
 
-from rdiffweb.controller import Controller, validate_isinstance
+from rdiffweb.controller import Controller, validate_isinstance, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import SessionStatisticsEntry
 
@@ -29,7 +29,8 @@ _logger = logging.getLogger(__name__)
 @poppath('graph')
 class GraphsPage(Controller):
 
-    def _data(self, repo_obj, **kwargs):
+    def _data(self, repo_obj, limit='30', **kwargs):
+        limit = validate_int(limit)
 
         # Return a generator
         def func():
@@ -40,7 +41,7 @@ class GraphsPage(Controller):
                 yield attr
             yield '\n'
             # Content
-            for stat in repo_obj.session_statistics:
+            for stat in repo_obj.session_statistics[-limit:]:
                 yield str(stat.date.epoch())
                 for attr in SessionStatisticsEntry.ATTRS:
                     yield ','
@@ -49,7 +50,7 @@ class GraphsPage(Controller):
 
         return func()
 
-    def _page(self, repo_obj, graph, **kwargs):
+    def _page(self, repo_obj, graph, limit='30', **kwargs):
         """
         Generic method to show graphs.
         """
@@ -57,6 +58,7 @@ class GraphsPage(Controller):
         params = {
             'repo': repo_obj,
             'graphs': graph,
+            'limit': limit,
         }
         # Generate page.
         return self._compile_template("graphs_%s.html" % graph, **params)
