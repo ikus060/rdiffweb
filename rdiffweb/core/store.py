@@ -580,6 +580,7 @@ class Store():
         # Also make sure to update the password with latest value from config file.
         if self._admin_password:
             userobj.hash_password = self._admin_password
+            userobj.role = ADMIN_ROLE
 
     def add_change_listener(self, listener):
         self._change_listeners.append(listener)
