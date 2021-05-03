@@ -52,7 +52,6 @@ from rdiffweb.controller.page_logs import LogsPage
 from rdiffweb.core.removeolder import RemoveOlderJob
 from rdiffweb.core.scheduler import Scheduler
 
-
 # Define the logger
 logger = logging.getLogger(__name__)
 
@@ -183,7 +182,7 @@ class RdiffwebApp(Application):
         Default error page shown to the user when an unexpected error occur.
         """
         # Log exception.
-        logger.exception(kwargs.get('message', ''))
+        logger.error('error page: %s %s\n%s' % (kwargs.get('status', ''), kwargs.get('message', ''), kwargs.get('traceback', '')))
 
         # Check expected response type.
         mtype = cherrypy.tools.accept.callable(['text/html', 'text/plain'])  # @UndefinedVariable
