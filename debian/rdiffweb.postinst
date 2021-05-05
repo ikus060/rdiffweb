@@ -1,9 +1,21 @@
+#!/bin/sh
 
-case "$1" in
-  configure)
-        # Create default session directory
-        mkdir -p /var/run/rdiffweb/sessions
-    ;;
+set -e
+
+case "${1}" in
+	configure)
+		# Create default session directory
+		mkdir -p /var/run/rdiffweb/sessions
+		;;
+
+	abort-upgrade|abort-remove|abort-deconfigure)
+
+		;;
+
+	*)
+		echo "postinst called with unknown argument \`${1}'" >&2
+		exit 1
+		;;
 esac
 
 #DEBHELPER#
