@@ -104,7 +104,7 @@ def parse_args(args=None, config_file_contents=None):
     parser.add_argument(
         '--email-encryption', '--emailencryption',
         choices=['none', 'ssl', 'starttls'],
-        help='type of encryption to be used when establishing communication with SMTP server.',
+        help='type of encryption to be used when establishing communication with SMTP server. Default: none',
         default='none')
 
     parser.add_argument(
@@ -120,7 +120,7 @@ def parse_args(args=None, config_file_contents=None):
     parser.add_argument(
         '--email-notification-time', '--emailnotificationtime',
         metavar='TIME',
-        help='time when the email notifcation should be sent for inactive backups. e.g.: 22:00',
+        help='time when the email notifcation should be sent for inactive backups. e.g.: 22:00 Default value: 23:00',
         default='23:00')
 
     parser.add_argument(
@@ -215,17 +215,17 @@ def parse_args(args=None, config_file_contents=None):
     parser.add_argument(
         '--ldap-required-group', '--ldaprequiredgroup',
         metavar='GROUPNAME',
-        help="name of the group of which the user must be a member to access rdiffweb. Should be used with ldapgroupattribute and ldapgroupattributeisdn.")
+        help="name of the group of which the user must be a member to access rdiffweb. Should be used with ldap-group-attribute and ldap-group-attribute-is-dn.")
 
     parser.add_argument(
         '--ldap-group-attribute', '--ldapgroupattribute',
         metavar='ATTRIBUTE',
-        help="name of the attribute defining the groups of which the user is a member. Should be used with ldaprequiredgroup and ldapgroupattributeisdn.",
+        help="name of the attribute defining the groups of which the user is a member. Should be used with ldap-required-group and ldap-group-attribute-is-dn.",
         default='member')
 
     parser.add_argument(
         '--ldap-group-attribute-is-dn', '--ldapgroupattributeisdn',
-        help="True if the content of the attribute `ldapgroupattribute` is a DN.",
+        help="True if the content of the attribute `ldap-group-attribute` is a DN.",
         action='store_true')
 
     parser.add_argument(

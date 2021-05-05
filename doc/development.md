@@ -38,3 +38,11 @@ whenever you change the `.less`.
 Any changes to javascript file need to be manually compiled into .min.js.
 
     python setup.py minify_js
+
+## Documentation
+
+To generate documentation run `tox -e doc`.
+
+It generates HTML documentation in folder `dist/html`
+
+Ref.: https://gist.github.com/johncrossland/9f6f54d559e9136773172aa0a429b46f#pdf-output-from-markdown

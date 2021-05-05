@@ -45,31 +45,31 @@ Use the following credential to login:
 
 ## Installation
 
-For detailed installation steps, take a look at the [Documentation](https://gitlab.com/ikus-soft/rdiffweb/-/blob/master/doc/installation.md).
+For detailed installation steps, take a look at the [Documentation](https://www.ikus-soft.com/archive/rdiffweb/doc/latest/html/installation.html).
 
 ## Current Build Status
 
 [![Build Status](https://gitlab.com/ikus-soft/rdiffweb/badges/master/pipeline.svg)](https://gitlab.com/ikus-soft/rdiffweb/pipelines)
 
-# Download
+## Download
 
 ![PyPI](https://img.shields.io/pypi/v/rdiffweb)
 
 You may download Rdiffweb from [PyPI](https://pypi.org/project/rdiffweb/).
 
-You should read the [Documentation](https://gitlab.com/ikus-soft/rdiffweb/-/blob/master/doc/index.md) to properly install Rdiffweb in your environment.
+You should read the [Documentation](https://www.ikus-soft.com/archive/rdiffweb/doc/latest/html/index.html) to properly install Rdiffweb in your environment.
 
-# Support
+## Support
 
-## Mailing list
+### Mailing list
 
 Rdiffweb users should use the [Rdiffweb mailing list](https://groups.google.com/forum/#!forum/rdiffweb).
 
-## Bug Reports
+### Bug Reports
 
 Bug reports should be reported on the Rdiffweb Gitlab at https://gitlab.com/ikus-soft/rdiffweb/-/issues
 
-## Professional support
+### Professional support
 
 Professional support for Rdiffweb is available by contacting [IKUS Soft](https://www.ikus-soft.com/en/support/#form).
 

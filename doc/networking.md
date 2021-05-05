@@ -1,4 +1,6 @@
-## Configure Apache - Reverse Proxy (optional)
+# Networking
+
+## Configure Rdiffweb behind Apache Reverse Proxy
 
 You may need an Apache server in case:
 
@@ -29,7 +31,8 @@ file in `/etc/apache2/sites-available/rdiffweb`.
     </VirtualHost>
 
 **SSL configuration**
-Here an example with SSL configuration.
+
+Here is an example with SSL configuration.
 
     <VirtualHost *:80>
         ServerName rdiffweb.mydomain.com
@@ -61,10 +64,12 @@ Here an example with SSL configuration.
             Allow from all
         </Location>
     </VirtualHost>
+    
+Take special care of `RequestHeader set X-Forwarded-Proto https` setting used to pass the right protocol to rdiffweb.
 
-## Configure nginx (optional)
+## Configure Rdiffweb behind nginx reverse proxy
 
-You may need an nginx server in case:
+You may need a nginx server in case:
 
  * you need to serve multiple web services from the same IP;
  * you need more security (like HTTP + SSL).
@@ -73,5 +78,14 @@ This section doesn't explain how to install and configure your nginx server.
 This is out-of-scope. The following is only provided as a suggestion and is in
 no way a complete reference.
 
-See [/extras/nginx](../extras/nginx) folder for example of nginx configuration
-to be used with rdiffweb.
+**Basic configuration**
+
+        location / {
+                # Define proxy header for cherrypy logging.
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Host $server_name;
+                # Proxy
+                proxy_pass http://127.0.0.1:8080/;
+        }
