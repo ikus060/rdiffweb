@@ -194,6 +194,10 @@ publish:sonar:dev:
   needs:
   - py3-cherrypy18
   image: sonarsource/sonar-scanner-cli
+  only:
+    variables:
+      - $SONAR_URL
+      - $SONAR_TOKEN
   variables:
     SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
   script:
@@ -201,6 +205,11 @@ publish:sonar:dev:
 
 publish:dev:
   stage: publish
+  only:
+    variables:
+      - $NEXUS_USR
+      - $NEXUS_PWD
+      - $NEXUS_PYPI_URL
   script: |
     set -x
     # Publish wheel
@@ -232,6 +241,9 @@ publish:release:
 
 publish:doc:
   stage: publish
+  only:
+    variables:
+      - $KALO_WWWDATA_PRIVATEKEY
   needs:
   - doc
   script: |
@@ -250,6 +262,9 @@ publish:doc:
 
 deploy_rdiffweb_demo:
   stage: deploy
+  only:
+    variables:
+    - $GITLAB_ANSIBLE_TOKEN
   environment:
     name: demo
     url: https://rdiffweb-demo.ikus-soft.com/
