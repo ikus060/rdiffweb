@@ -31,6 +31,7 @@ With its rich web interface Rdiffweb provide a notable list of features:
  * Backup statistics visualization using graphs
  * SSH Keys management
  * Disk quota visualization
+ * File and folder deletion
 
 ## Demo
 
@@ -75,7 +76,37 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
-# 2.1.0 (2021-01-15)
+## 2.2.0 (2021-05-11)
+ 
+ * Debian package:
+   * Add rdiff-backup as dependencies to comply with Debian packaging rules
+   * Multiple other fixed to control files
+   * Use debhelper-compat (= 13)
+   * Use debhelper-compat (= 13)
+   * Run test during packaging
+   * Create default folder `/var/run/rdiffweb/sessions` to store user session
+ * Use ConfigArgPare for configuration to support configuration file, environment variables and arguments to configure rdiffweb #114
+ * Fix cache in localization module
+ * Add `ldap-add-default-role` and `ldap-add-default-userroot` option to define default value for role and user root when creating user from LDAP #125
+ * Support PostgreSQL database by replacing our storage layer by SQLAlchemy #126
+ * Fix to retrieve user quota only for valid user_root #135
+ * Add option `disable-ssh-keys` to disable SSH Key management
+ * Use absolute URL everywhere
+ * Add support for `X-Forward-For`, `X-Forward-proto` and other reverse proxy header when generating absolute URL
+ * Drop Debian Strech support
+ * Implement a new background scheduler using apscheduler #82
+ * Use background job to send email notification to avoid blocking web page loading #47
+ * Use background job to delete repository to avoid blocking web page loading #48
+ * Allow deleting a specific file or folder from the history using `rdiff-backup-delete` #128
+ * Improve support for `session-dir` #131
+ * Add option `admin-password` to define administrator password for better security
+ * Improve performance of repository browsing 
+ * Add a new view to display logs of a specific repository
+ * Allow downloading the log
+ * Define a default limit to graph statistics to make it display faster
+ * Fix `get-quota-cmd` option to properly return a value
+
+## 2.1.0 (2021-01-15)
 
 * Debian package: Remove dh-systemd from Debian build dependencies (https://bugs.debian.org/871312we)
 * Improve Quota management:
@@ -90,7 +121,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 * Add user id in Admin view
 * Replace `UserObject(1)` by the actual username in log file to improve debugging
 
-# 2.0.0 (2020-12-04)
+## 2.0.0 (2020-12-04)
 
 * Re-implement logic to update repositories views to remove duplicates and avoid nesting repo. #107
 * Handle elapsed time of days in the graph. Thanks [Nathaniel van Diepen](https://github.com/Eeems) contributions.
