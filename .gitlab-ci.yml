@@ -257,7 +257,7 @@ publish:doc:
     scp -r -o StrictHostKeyChecking=no .tox/doc/tmp/ www-data@kalo.ikus-soft.com:/var/www/patrikdufresne/archive/rdiffweb/doc/$VERSION/
     # Promote to latest for tags
     if [ ! -z "$CI_COMMIT_TAG" ]; then
-      ssh -o StrictHostKeyChecking=no www-data@kalo.ikus-soft.com ln -fs $VERSION /var/www/patrikdufresne/archive/rdiffweb/doc/
+      ssh -o StrictHostKeyChecking=no www-data@kalo.ikus-soft.com ln -fs $VERSION /var/www/patrikdufresne/archive/rdiffweb/doc/latest
     fi
 
 deploy_rdiffweb_demo:
