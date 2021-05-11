@@ -135,7 +135,8 @@ class DefaultUserQuota():
                 return 0
         # Execute a command to get disk usage
         try:
-            self._exec(self._get_quota_cmd, userobj)
+            total = self._exec(self._get_quota_cmd, userobj)
+            return int(total.strip())
         except Exception:
             logger.warn('fail to get user quota [%s]', userobj.username, exc_info=1)
             return 0
