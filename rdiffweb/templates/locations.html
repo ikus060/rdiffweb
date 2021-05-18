@@ -17,7 +17,7 @@
       {% endif %}
       {% if repo.last_backup_date %}
       {% trans %}Updated {% endtrans %}
-      <time title="{{ repo.last_backup_date | datetime }}">{{ repo.last_backup_date | lastupdated }}</time>
+      <time datetime="{{ repo.last_backup_date }}" >{{ repo.last_backup_date | lastupdated }}</span>
       {% endif %}
   </span>
 </a>

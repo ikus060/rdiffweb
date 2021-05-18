@@ -48,9 +48,9 @@
                 {% if entry.change_dates %}
                 <div class="dropdown">
                     <button class="btn btn-link dropdown-toggle btn-block" type="button" id="menu1" data-toggle="dropdown">
-                        <span class="hidden-xs">
-                            {{ entry.last_change_date | datetime }}
-                        </span>
+                        <time class="hidden-xs" datetime="{{ entry.last_change_date }}">
+                            {{ entry.last_change_date | lastupdated }}
+                        </time>
                         <span class="badge">{{ entry.change_dates | length }}</span>
                         <span class="caret"></span>
                     </button>
@@ -60,7 +60,7 @@
                             <a href="{{ url_for('restore', repo, entry.path, date=change_date) }}">
                                 <!-- File date -->
                                 <i class="icon-download"></i>
-                                {{ change_date | datetime }}
+                                <time class="hidden-xs js-datetime" datetime="{{ change_date }}">{{ change_date | lastupdated }}</time>
                             </a>
                         </li>
                         {% endfor %}

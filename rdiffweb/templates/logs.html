@@ -12,7 +12,7 @@
       <a href="{{ url_for('logs', repo, file='restore.log', limit=limit) }}" class="list-group-item">Restore Log</a>
       {% for e in error_logs %}
       <a href="{{ url_for('logs', repo, date=e.date, limit=limit) }}" class="list-group-item">
-        Error log {{e.date | datetime }}
+        Error log <time class="js-datetime" datetime="e.date">{{ e.date | lastupdated }}</time>
         {% if not e.is_empty %}<span class="label label-warning">not empty</span>{% else %}<span class="label label-info">empty</span>{% endif %}
       </a>
       {% endfor %}

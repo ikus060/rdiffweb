@@ -31,6 +31,7 @@ from rdiffweb.core import rdw_helpers
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.store import RepoObject
 import os
+import time
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -93,14 +94,6 @@ def do_filter(sequence, attribute_name):
                 getattr(x, attribute_name))]
 
 
-def do_format_datetime(value, dateformat='%Y-%m-%d %H:%M'):
-    """Used to format an epoch into local time."""
-    if not value:
-        return ""
-    assert isinstance(value, librdiff.RdiffTime)
-    return value.strftime(dateformat)
-
-
 def do_format_lastupdated(value, now=None):
     """
     Used to format date as "Updated 10 minutes ago"
@@ -130,7 +123,7 @@ def create_repo_tree(repos):
     """
     Organise the repositories into a tree.
     """
-    repos = sorted(repos, key=lambda r:r.display_name)
+    repos = sorted(repos, key=lambda r: r.display_name)
     repo_tree = OrderedDict()
     for repo in repos:
         h = repo_tree
@@ -160,9 +153,9 @@ def list_parents(path):
 def url_for(endpoint, *args, **kwargs):
     """
     Generate a url for the given endpoint, path (*args) with parameters (**kwargs)
-    
+
     This could be used to generate a path with userobject and repo object
-    
+
     """
     path = "/" + endpoint.strip("/")
     for chunk in args:
@@ -186,9 +179,11 @@ def url_for(endpoint, *args, **kwargs):
             path += "/"
             path += chunk.rstrip("/")
         else:
-            raise ValueError('invalid positional arguments, url_for accept str, bytes or RepoPath: %r' % chunk)
+            raise ValueError(
+                'invalid positional arguments, url_for accept str, bytes or RepoPath: %r' % chunk)
     # Sort the arguments to have predictable results.
-    qs = [(k, v.epoch() if hasattr(v, 'epoch') else v) for k, v in sorted(kwargs.items()) if v is not None]
+    qs = [(k, v.epoch() if hasattr(v, 'epoch') else v)
+          for k, v in sorted(kwargs.items()) if v is not None]
     return cherrypy.url(path=path, qs=qs)
 
 
@@ -216,9 +211,9 @@ class TemplateManager(object):
 
         # Register filters
         self.jinja_env.filters['filter'] = do_filter
-        self.jinja_env.filters['datetime'] = do_format_datetime
         self.jinja_env.filters['lastupdated'] = do_format_lastupdated
-        self.jinja_env.filters['filesize'] = lambda x: humanfriendly.format_size(x, binary=True)
+        self.jinja_env.filters['filesize'] = lambda x: humanfriendly.format_size(
+            x, binary=True)
 
         # Register method
         self.jinja_env.globals['attrib'] = attrib
