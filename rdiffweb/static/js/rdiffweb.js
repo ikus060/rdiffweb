@@ -1,5 +1,5 @@
 // rdiffweb, A web interface to rdiff-backup repositories
-// Copyright (C) 2018 rdiffweb contributors
+// Copyright (C) 2021 rdiffweb contributors
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -147,6 +147,24 @@ $('form[data-async]').on('submit', function(event) {
         },
     });
     event.preventDefault();
+})
+
+/**
+ * Handle locale datetime
+ */
+$('time[datetime]').each(function(){
+  var t = $(this);
+  var datetime = t.attr('datetime');
+  var d = new Date(datetime);
+  if(t.hasClass("js-date")) {
+    t.attr('title', d.toLocaleDateString());
+    t.text(d.toLocaleDateString());
+  } else if($(this).hasClass("js-datetime")) {
+    t.attr('title', d.toLocaleString());
+    t.text(d.toLocaleString());
+  } else {
+    t.attr('title', d.toLocaleString());
+  }
 })
 
 });

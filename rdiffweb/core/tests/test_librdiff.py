@@ -45,8 +45,10 @@ RDIFF_BACKUP_VERSION = rdiff_backup_version()
 class MockRdiffRepo(RdiffRepo):
 
     def __init__(self):
-        p = bytes(pkg_resources.resource_filename('rdiffweb.core', 'tests'), encoding='utf-8')  # @UndefinedVariable
-        RdiffRepo.__init__(self, os.path.dirname(p), os.path.basename(p), encoding='utf-8')
+        p = bytes(pkg_resources.resource_filename('rdiffweb.core',
+                                                  'tests'), encoding='utf-8')  # @UndefinedVariable
+        RdiffRepo.__init__(self, os.path.dirname(
+            p), os.path.basename(p), encoding='utf-8')
         self.root_path = MockDirEntry(self)
 
 
@@ -71,7 +73,8 @@ class IncrementEntryTest(unittest.TestCase):
 
     def test_init(self):
 
-        increment = IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz')
+        increment = IncrementEntry(
+            self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz')
         self.assertEqual(RdiffTime(1414967021), increment.date)
         self.assertEqual(b'my_filename.txt', increment.filename)
         self.assertIsNotNone(increment.repo)
@@ -94,13 +97,16 @@ class DirEntryTest(unittest.TestCase):
         self.assertFalse(entry.isdir)
         self.assertFalse(entry.exists)
         self.assertEqual(os.path.join(b'my_filename.txt'), entry.path)
-        self.assertEqual(os.path.join(self.repo.full_path, b'my_filename.txt'), entry.full_path)
+        self.assertEqual(os.path.join(self.repo.full_path,
+                                      b'my_filename.txt'), entry.full_path)
 
     def test_change_dates(self):
         """Check if dates are properly sorted."""
         increments = [
-            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'),
-            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T09:16:43-05:00.missing'),
+            IncrementEntry(
+                self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'),
+            IncrementEntry(
+                self.root_path, b'my_filename.txt.2014-11-02T09:16:43-05:00.missing'),
             IncrementEntry(self.root_path, b'my_filename.txt.2014-11-03T19:04:57-05:00.diff.gz')]
         entry = DirEntry(self.root_path, b'my_filename.txt', False, increments)
 
@@ -112,8 +118,10 @@ class DirEntryTest(unittest.TestCase):
     def test_change_dates_with_exists(self):
         """Check if dates are properly sorted."""
         increments = [
-            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'),
-            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T09:16:43-05:00.missing'),
+            IncrementEntry(
+                self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'),
+            IncrementEntry(
+                self.root_path, b'my_filename.txt.2014-11-02T09:16:43-05:00.missing'),
             IncrementEntry(self.root_path, b'my_filename.txt.2014-11-03T19:04:57-05:00.diff.gz')]
         entry = DirEntry(self.root_path, b'my_filename.txt', True, increments)
 
@@ -133,7 +141,8 @@ class DirEntryTest(unittest.TestCase):
     def test_file_size(self):
         increments = [
             IncrementEntry(self.root_path, bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial.2014-11-05T16:05:07-05:00.dir', encoding='utf-8'))]
-        entry = DirEntry(self.root_path, bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'), False, increments)
+        entry = DirEntry(self.root_path, bytes(
+            '<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'), False, increments)
         self.assertEqual(286, entry.file_size)
 
     def test_file_size_without_stats(self):
@@ -170,23 +179,31 @@ class FileStatisticsEntryTest(unittest.TestCase):
         self.root_path = self.repo.root_path
 
     def test_get_mirror_size(self):
-        entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data')
-        size = entry.get_mirror_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
+        entry = FileStatisticsEntry(
+            self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data')
+        size = entry.get_mirror_size(
+            bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(143, size)
 
     def test_get_source_size(self):
-        entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data')
-        size = entry.get_source_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
+        entry = FileStatisticsEntry(
+            self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data')
+        size = entry.get_source_size(
+            bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(286, size)
 
     def test_get_mirror_size_gzip(self):
-        entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data.gz')
-        size = entry.get_mirror_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
+        entry = FileStatisticsEntry(
+            self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data.gz')
+        size = entry.get_mirror_size(
+            bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(143, size)
 
     def test_get_source_size_gzip(self):
-        entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data.gz')
-        size = entry.get_source_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
+        entry = FileStatisticsEntry(
+            self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data.gz')
+        size = entry.get_source_size(
+            bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(286, size)
 
 
@@ -197,27 +214,33 @@ class HistoryEntryTest(unittest.TestCase):
         self.root_path = self.repo.root_path
 
     def test_errors(self):
-        increment = IncrementEntry(self.root_path, b'error_log.2015-11-19T07:27:46-05:00.data')
+        increment = IncrementEntry(
+            self.root_path, b'error_log.2015-11-19T07:27:46-05:00.data')
         entry = HistoryEntry(self.repo, increment.date)
         self.assertTrue(entry.has_errors)
-        self.assertEqual('SpecialFileError home/coucou Socket error: AF_UNIX path too long', entry.errors)
+        self.assertEqual(
+            'SpecialFileError home/coucou Socket error: AF_UNIX path too long', entry.errors)
 
     def test_errors_invalid_gz(self):
-        increment = IncrementEntry(self.root_path, b'error_log.2019-05-22T09:19:09-04:00.data.gz')
+        increment = IncrementEntry(
+            self.root_path, b'error_log.2019-05-22T09:19:09-04:00.data.gz')
         entry = HistoryEntry(self.repo, increment.date)
         self.assertTrue(entry.has_errors)
-        self.assertEqual('Error reading log file: error_log.2019-05-22T09:19:09-04:00.data.gz', entry.errors)
+        self.assertEqual(
+            'Error reading log file: error_log.2019-05-22T09:19:09-04:00.data.gz', entry.errors)
 
 
 class RdiffRepoTest(unittest.TestCase):
 
     def setUp(self):
         # Extract 'testcases.tar.gz'
-        testcases = pkg_resources.resource_filename('rdiffweb.tests', 'testcases.tar.gz')  # @UndefinedVariable
+        testcases = pkg_resources.resource_filename(
+            'rdiffweb.tests', 'testcases.tar.gz')  # @UndefinedVariable
         self.temp_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_')
         tarfile.open(testcases).extractall(self.temp_dir)
         # Define location of testcases
-        self.testcases_dir = os.path.normpath(os.path.join(self.temp_dir, 'testcases'))
+        self.testcases_dir = os.path.normpath(
+            os.path.join(self.temp_dir, 'testcases'))
         self.testcases_dir = self.testcases_dir.encode('utf8')
         self.repo = RdiffRepo(self.temp_dir, b'testcases', encoding='utf-8')
 
@@ -226,11 +249,13 @@ class RdiffRepoTest(unittest.TestCase):
 
     def test_extract_date(self):
 
-        self.assertEqual(RdiffTime(1414967021), self.repo._extract_date(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'))
+        self.assertEqual(RdiffTime(1414967021), self.repo._extract_date(
+            b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'))
 
         # Check if date with quoted characther are proerply parsed.
         # On NTFS, colon (:) are not supported.
-        self.assertEqual(RdiffTime(1483443123), self.repo._extract_date(b'my_filename.txt.2017-01-03T06;05832;05803-05;05800.diff.gz'))
+        self.assertEqual(RdiffTime(1483443123), self.repo._extract_date(
+            b'my_filename.txt.2017-01-03T06;05832;05803-05;05800.diff.gz'))
 
     def test_init(self):
         self.assertEqual('testcases', self.repo.display_name)
@@ -259,7 +284,8 @@ class RdiffRepoTest(unittest.TestCase):
         dir_entry = self.repo.get_path(b"Subdirectory")
         self.assertEqual('Subdirectory', dir_entry.display_name)
         self.assertEqual(b'Subdirectory', dir_entry.path)
-        self.assertEqual(os.path.join(self.testcases_dir, b'Subdirectory'), dir_entry.full_path)
+        self.assertEqual(os.path.join(self.testcases_dir,
+                                      b'Subdirectory'), dir_entry.full_path)
         self.assertEqual(True, dir_entry.isdir)
         self.assertTrue(len(dir_entry.dir_entries) > 0)
         self.assertTrue(len(dir_entry.change_dates) > 1)
@@ -268,7 +294,8 @@ class RdiffRepoTest(unittest.TestCase):
         dir_entry = self.repo.get_path(b"Revisions/Data")
         self.assertEqual('Data', dir_entry.display_name)
         self.assertEqual(b'Revisions/Data', dir_entry.path)
-        self.assertEqual(os.path.join(self.testcases_dir, b'Revisions/Data'), dir_entry.full_path)
+        self.assertEqual(os.path.join(self.testcases_dir,
+                                      b'Revisions/Data'), dir_entry.full_path)
         self.assertEqual(False, dir_entry.isdir)
         self.assertEqual([], dir_entry.dir_entries)
         self.assertTrue(len(dir_entry.change_dates) > 1)
@@ -295,7 +322,8 @@ class RdiffRepoTest(unittest.TestCase):
         if os.geteuid() == 0:
             return
         # Change the permissions of the files.
-        os.chmod(os.path.join(self.testcases_dir, b'rdiff-backup-data', b'current_mirror.2016-02-02T16:30:40-05:00.data'), 0000)
+        os.chmod(os.path.join(self.testcases_dir, b'rdiff-backup-data',
+                              b'current_mirror.2016-02-02T16:30:40-05:00.data'), 0000)
         # Create repo again to query status
         self.repo = RdiffRepo(self.temp_dir, b'testcases', encoding='utf-8')
         status = self.repo.status
@@ -315,30 +343,36 @@ class RdiffRepoTest(unittest.TestCase):
         self.repo.get_history_entries()
 
     def test_restore_file(self):
-        filename, stream = self.repo.get_path(b"Revisions/Data").restore(restore_as_of=1454448640, kind='zip')
+        filename, stream = self.repo.get_path(
+            b"Revisions/Data").restore(restore_as_of=1454448640, kind='zip')
         self.assertEqual('Data', filename)
         data = stream.read()
         self.assertEqual(b'Version3\n', data)
 
     def test_restore_subdirectory(self):
-        filename, stream = self.repo.get_path(b"Revisions/").restore(restore_as_of=1454448640, kind='zip')
+        filename, stream = self.repo.get_path(
+            b"Revisions/").restore(restore_as_of=1454448640, kind='zip')
         self.assertEqual('Revisions.zip', filename)
         data = stream.read()
         self.assertTrue(data)
 
     def test_restore_root(self):
-        filename, stream = self.repo.get_path(b"/").restore(restore_as_of=1454448640, kind='zip')
+        filename, stream = self.repo.get_path(
+            b"/").restore(restore_as_of=1454448640, kind='zip')
         self.assertEqual('testcases.zip', filename)
         data = stream.read()
         self.assertTrue(data)
 
     def test_unquote(self):
-        self.assertEqual(b'Char ;090 to quote', self.repo.unquote(b'Char ;059090 to quote'))
+        self.assertEqual(b'Char ;090 to quote',
+                         self.repo.unquote(b'Char ;059090 to quote'))
 
     def test_get_history_entries(self):
         self.assertEqual(22, len(self.repo.get_history_entries()))
-        self.assertEqual(RdiffTime('2014-11-01T15:49:47-04:00'), self.repo.get_history_entries()[0].date)
-        self.assertEqual(RdiffTime('2016-02-02T16:30:40-05:00'), self.repo.get_history_entries()[-1].date)
+        self.assertEqual(RdiffTime('2014-11-01T15:49:47-04:00'),
+                         self.repo.get_history_entries()[0].date)
+        self.assertEqual(RdiffTime('2016-02-02T16:30:40-05:00'),
+                         self.repo.get_history_entries()[-1].date)
 
     def test_error_log_range(self):
         logs = self.repo.error_log[0:1]
@@ -349,7 +383,7 @@ class RdiffRepoTest(unittest.TestCase):
         self.assertEquals("", self.repo.backup_log.read())
 
     def test_restore_log(self):
-        self.assertEquals(self.repo.restore_log.read(),"""Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpKDNO4t/root as it was as of Wed Nov  5 16:05:07 2014.
+        self.assertEquals(self.repo.restore_log.read(), """Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpKDNO4t/root as it was as of Wed Nov  5 16:05:07 2014.
 Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpnG33kc/root as it was as of Wed Nov  5 16:05:07 2014.
 Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpGUEHJC/root as it was as of Wed Nov  5 16:05:07 2014.
 Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpBlFPsW/root as it was as of Wed Nov  5 16:05:07 2014.
@@ -378,7 +412,8 @@ class SessionStatisticsEntryTest(unittest.TestCase):
         """
         Check how a session statistic is read.
         """
-        entry = SessionStatisticsEntry(self.root_path, b'session_statistics.2014-11-02T09:16:43-05:00.data')
+        entry = SessionStatisticsEntry(
+            self.root_path, b'session_statistics.2014-11-02T09:16:43-05:00.data')
         self.assertEqual(1414937803.00, entry.starttime)
         self.assertEqual(1414937764.82, entry.endtime)
         self.assertAlmostEqual(-38.18, entry.elapsedtime, delta=-0.01)
@@ -413,13 +448,19 @@ class RdiffTimeTest(unittest.TestCase):
     def test_compare(self):
         """Check behaviour of comparison operator operator."""
 
-        self.assertTrue(RdiffTime('2014-11-07T21:04:30-04:00') < RdiffTime('2014-11-08T21:04:30Z'))
-        self.assertTrue(RdiffTime('2014-11-08T21:04:30Z') < RdiffTime('2014-11-08T21:50:30Z'))
-        self.assertFalse(RdiffTime('2014-11-08T22:04:30Z') < RdiffTime('2014-11-08T21:50:30Z'))
+        self.assertTrue(RdiffTime('2014-11-07T21:04:30-04:00')
+                        < RdiffTime('2014-11-08T21:04:30Z'))
+        self.assertTrue(RdiffTime('2014-11-08T21:04:30Z') <
+                        RdiffTime('2014-11-08T21:50:30Z'))
+        self.assertFalse(RdiffTime('2014-11-08T22:04:30Z') <
+                         RdiffTime('2014-11-08T21:50:30Z'))
 
-        self.assertFalse(RdiffTime('2014-11-07T21:04:30-04:00') > RdiffTime('2014-11-08T21:04:30Z'))
-        self.assertFalse(RdiffTime('2014-11-08T21:04:30Z') > RdiffTime('2014-11-08T21:50:30Z'))
-        self.assertTrue(RdiffTime('2014-11-08T22:04:30Z') > RdiffTime('2014-11-08T21:50:30Z'))
+        self.assertFalse(RdiffTime('2014-11-07T21:04:30-04:00')
+                         > RdiffTime('2014-11-08T21:04:30Z'))
+        self.assertFalse(RdiffTime('2014-11-08T21:04:30Z') >
+                         RdiffTime('2014-11-08T21:50:30Z'))
+        self.assertTrue(RdiffTime('2014-11-08T22:04:30Z') >
+                        RdiffTime('2014-11-08T21:50:30Z'))
 
     def test_init(self):
         """
@@ -445,7 +486,8 @@ class RdiffTimeTest(unittest.TestCase):
     def test_str(self):
         """Check if __str__ is working."""
         self.assertEqual('2014-11-05T21:04:30Z', str(RdiffTime(1415221470)))
-        self.assertEqual('2014-11-05T21:04:30+01:00', str(RdiffTime(1415221470, 3600)))
+        self.assertEqual('2014-11-05T21:04:30+01:00',
+                         str(RdiffTime(1415221470, 3600)))
 
     def test_sub(self):
         """Check if addition with timedelta is working as expected."""
@@ -457,8 +499,10 @@ class RdiffTimeTest(unittest.TestCase):
                          RdiffTime('2014-11-05T21:04:30-04:00') - datetime.timedelta(days=3))
 
         # With datetime
-        self.assertTrue((RdiffTime('2014-11-02T21:04:30Z') - RdiffTime()).days < 0)
-        self.assertTrue((RdiffTime() - RdiffTime('2014-11-02T21:04:30Z')).days > 0)
+        self.assertTrue(
+            (RdiffTime('2014-11-02T21:04:30Z') - RdiffTime()).days < 0)
+        self.assertTrue(
+            (RdiffTime() - RdiffTime('2014-11-02T21:04:30Z')).days > 0)
 
 
 class DirEntryDeleteTest(AppTestCase):

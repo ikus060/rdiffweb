@@ -37,7 +37,7 @@
 			  {% if repo.last_backup_date %}
 			  <br/>
 			  {% trans %}Updated {% endtrans %}
-              <time title="{{ repo.last_backup_date | datetime }}">{{ repo.last_backup_date | lastupdated }}</time>
+              <time datetime="{{ repo.last_backup_date }}" >{{ repo.last_backup_date | lastupdated }}</time>
               {% endif %}
 			</div>
         {% endfor %}

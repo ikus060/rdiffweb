@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import time
 
 """Internationalization and Localization for CherryPy
 
@@ -92,11 +93,13 @@ That's it.
 :Date: 2010-02-08
 """
 
-import cherrypy
+from collections import namedtuple
+
 from babel.core import Locale, UnknownLocaleError
 from babel.support import Translations, NullTranslations
+import cherrypy
 
-from collections import namedtuple
+
 Lang = namedtuple('Lang', 'locale trans')
 
 # Cache for Translations and Locale objects
@@ -145,8 +148,9 @@ def ungettext(singular, plural, num):
     return cherrypy.response.i18n.trans.ungettext(singular, plural, num)
 
 
-def load_translation(langs, dirname, domain):
-    """Loads the first existing translations for known locale and saves the
+def _search_translation(preferred_langs, dirname, domain):
+    """
+    Loads the first existing translations for known locale and saves the
     `Lang` object in a global cache for faster lookup on the next request.
 
     :parameters:
@@ -167,7 +171,7 @@ def load_translation(langs, dirname, domain):
         dirname = [dirname]
     locale = None
     trans = None
-    for lang in langs:
+    for lang in preferred_langs:
         try:
             locale = Locale.parse(lang)
             if (domain, lang) in _languages:
@@ -189,11 +193,12 @@ def load_translation(langs, dirname, domain):
             break
     if locale is None:
         raise ImproperlyConfigured('Default locale not known.')
-    _languages[(domain, lang)] = res = Lang(locale, trans or NullTranslations())
+    _languages[(domain, lang)] = res = Lang(
+        locale, trans or NullTranslations())
     return res
 
 
-def get_lang(mo_dir, default, domain):
+def _get_i18n(mo_dir, default, domain):
     """Main function which will be invoked during the request by `I18nTool`.
     If the SessionTool is on and has a lang key, this language get the
     highest priority. Default language get the lowest priority.
@@ -209,24 +214,39 @@ def get_lang(mo_dir, default, domain):
         domain : String
             `tools.I18nTool.domain`
     """
-    langs = [x.value.replace('-', '_') for x in
-             cherrypy.request.headers.elements('Accept-Language')]
+    # Get prefered languages from the HTTP Request header.
+    preferred_langs = [
+        x.value.replace('-', '_')
+        for x in cherrypy.request.headers.elements('Accept-Language')]
+
     sessions_on = cherrypy.request.config.get('tools.sessions.on', False)
-    if sessions_on and not langs and cherrypy.session.get('_lang_', ''):  # @UndefinedVariable
-        langs.insert(0, cherrypy.session.get('_lang_', '__'))  # @UndefinedVariable
-    langs.append(default)
-    loc = load_translation(langs, mo_dir, domain)
-    cherrypy.response.i18n = loc
+
+    # If session is enabled, but the request doesn't contains `Accept-Language`,
+    # reload the language from session data.
+    if sessions_on and not preferred_langs and cherrypy.session.get('_lang_', ''):
+        preferred_langs.insert(0, cherrypy.session.get('_lang_', '__'))
+
+    # Last, we append the default locale in the lookup list.
+    preferred_langs.append(default)
+
+    # Search for a translation object.
+    loc = cherrypy.response.i18n = _search_translation(
+        preferred_langs, mo_dir, domain)
+
+    # If session is enabled, keep current locale in session data to be
+    # reloaded the next time.
     if sessions_on:
         cherrypy.session['_lang_'] = str(loc.locale)  # @UndefinedVariable
 
 
-def set_lang():
-    """Sets the Content-Language response header (if not already set) to the
+def _set_content_language():
+    """
+    Sets the Content-Language response header (if not already set) to the
     language of `cherrypy.response.i18n.locale`.
     """
     if hasattr(cherrypy.response, 'i18n') and 'Content-Language' not in cherrypy.response.headers:
-        cherrypy.response.headers['Content-Language'] = str(cherrypy.response.i18n.locale)
+        cherrypy.response.headers['Content-Language'] = str(
+            cherrypy.response.i18n.locale)
 
 
 class I18nTool(cherrypy.Tool):
@@ -235,7 +255,7 @@ class I18nTool(cherrypy.Tool):
     def __init__(self):
         self._name = 'i18n'
         self._point = 'before_handler'
-        self.callable = get_lang
+        self.callable = _get_i18n
         # Make sure, session tool (priority 50) is loaded before
         self._priority = 60
 
@@ -245,7 +265,7 @@ class I18nTool(cherrypy.Tool):
            c.get('tools.staticfile.on', False):
             return
         cherrypy.Tool._setup(self)
-        cherrypy.request.hooks.attach('before_finalize', set_lang)
+        cherrypy.request.hooks.attach('before_finalize', _set_content_language)
 
 
 cherrypy.tools.i18n = I18nTool()

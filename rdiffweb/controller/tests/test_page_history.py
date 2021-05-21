@@ -41,8 +41,8 @@ class HistoryPageTest(WebCase):
     def test_history_with_root(self):
         self._history(self.USERNAME, self.REPO)
         # Check revisions
-        self.assertInBody("2016-02-02 16:30")
-        self.assertInBody("2014-11-02 09:50")
+        self.assertInBody("2016-02-02T16:30:40-05:00")
+        self.assertInBody("2014-11-02T09:50:53-05:00")
         # Check show more button get displayed
         self.assertInBody("Show more")
         # Check download buttont
@@ -51,8 +51,8 @@ class HistoryPageTest(WebCase):
 
     def test_history_with_path(self):
         self._history(self.USERNAME, 'testcases/Subdirectory')
-        self.assertInBody("2016-02-02 16:30")
-        self.assertInBody("2016-01-20 10:42")
+        self.assertInBody("2016-02-02T16:30:40-05:00")
+        self.assertInBody("2016-01-20T10:42:21-05:00")
         self.assertNotInBody("Show more")
 
     def test_history_with_deleted_path(self):
@@ -60,7 +60,7 @@ class HistoryPageTest(WebCase):
         self.assertInBody("Download")
         self.assertInBody("ZIP")
         self.assertInBody("TAR.GZ")
-        self.assertInBody("2014-11-01 15:51")
+        self.assertInBody("2014-11-01T15:51:15-04:00")
         self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "/R%C3%A9pertoire%20Supprim%C3%A9?date=1414871475")
 
     def test_history_with_limit(self):

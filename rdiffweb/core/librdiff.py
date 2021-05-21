@@ -133,7 +133,8 @@ class RdiffTime(object):
     it can restore to the correct state"""
 
     def __init__(self, value=None, tz_offset=None):
-        assert value is None or isinstance(value, int) or isinstance(value, str)
+        assert value is None or isinstance(
+            value, int) or isinstance(value, str)
         if value is None:
             # Get GMT time.
             self._time_seconds = int(time.time())
@@ -192,12 +193,6 @@ class RdiffTime(object):
         day = time.gmtime(self._time_seconds)[2]
         self._time_seconds = calendar.timegm(
             (year, month, day, hour, minute, second, -1, -1, 0))
-
-    def strftime(self, dateformat):
-        value = time.strftime(dateformat, time.gmtime(self._time_seconds))
-        if isinstance(value, bytes):
-            value = value.decode(encoding='latin1')
-        return value
 
     def _tzdtoseconds(self, tzd):
         """Given w3 compliant TZD, converts it to number of seconds from UTC"""
@@ -262,7 +257,8 @@ class RdiffTime(object):
 
     def __str__(self):
         """return utf-8 string"""
-        value = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(self._time_seconds))
+        value = time.strftime("%Y-%m-%dT%H:%M:%S",
+                              time.gmtime(self._time_seconds))
         if isinstance(value, bytes):
             value = value.decode(encoding='latin1')
         return value + self._tz_str()
@@ -292,7 +288,8 @@ class DirEntry(object):
             # Relative path to the repository.
             self.path = os.path.join(parent.path, path)
         # Absolute path to the directory
-        self.full_path = os.path.normpath(os.path.join(self._repo.full_path, self.path))
+        self.full_path = os.path.normpath(
+            os.path.join(self._repo.full_path, self.path))
         # May need to compute our own state if not provided.
         self.exists = exists
         # Store the increments sorted by date.
@@ -401,7 +398,8 @@ class DirEntry(object):
                 unquote_path = self._repo.unquote(self.path)
                 self._file_size = stats.get_source_size(unquote_path)
             except KeyError:
-                logger.warning("cannot find file statistic [%s]", self.last_change_date)
+                logger.warning(
+                    "cannot find file statistic [%s]", self.last_change_date)
                 self._file_size = 0
         return self._file_size
 
@@ -454,11 +452,14 @@ class DirEntry(object):
         else:
             rdiff_backup_delete = find_rdiff_backup_delete()
             if not rdiff_backup_delete:
-                logger.error("can't find `rdiff-backup-delete` executable in PATH, make sure you have rdiff-backup >= 2.0.1 installed")
-                raise ExecutableNotFoundError("can't find `rdiff-backup-delete` executable in PATH, make sure you have rdiff-backup >= 2.0.1 installed")
+                logger.error(
+                    "can't find `rdiff-backup-delete` executable in PATH, make sure you have rdiff-backup >= 2.0.1 installed")
+                raise ExecutableNotFoundError(
+                    "can't find `rdiff-backup-delete` executable in PATH, make sure you have rdiff-backup >= 2.0.1 installed")
             cmdline = [rdiff_backup_delete, self.full_path]
             logger.info('executing: %r' % cmdline)
-            process = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env={'LANG': LANG})
+            process = subprocess.Popen(
+                cmdline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env={'LANG': LANG})
             for line in process.stdout:
                 line = line.rstrip(b'\n').decode('utf-8', errors='replace')
                 logger.info('rdiff-backup-delete: %s' % line)
@@ -488,13 +489,14 @@ class DirEntry(object):
         """
         Restore the current directory entry into a fileobj containing the
         file content of the directory compressed into an archive.
-        
+
         Return a filename and a fileobj.
         """
         assert restore_as_of, "restore_as_of must be defined"
 
         # Define a nice filename for the archive or file to be created.
-        # TODO The current entry might be a directory, but it may have been a file.
+        # TODO The current entry might be a directory, but it may have been a
+        # file.
         if self.path == b"" or self.isdir:
             kind = kind or 'zip'
             filename = "%s.%s" % (self.display_name, kind)
@@ -504,7 +506,8 @@ class DirEntry(object):
 
         # Restore data using a subprocess.
         from rdiffweb.core.restore import call_restore
-        path = os.path.join(self._repo.full_path, self._repo.unquote(self.path))
+        path = os.path.join(self._repo.full_path,
+                            self._repo.unquote(self.path))
         fh = call_restore(path, restore_as_of, self._repo._encoding.name, kind)
         return filename, fh
 
@@ -589,7 +592,8 @@ class IncrementEntry(object):
         """Should be used to open the increment file. This method handle
         compressed vs not-compressed file."""
         if self._is_compressed:
-            p = subprocess.Popen(['zcat', self.path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            p = subprocess.Popen(
+                ['zcat', self.path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             fileobj = p.stdout
             return fileobj
         return open(self.path, 'rb')
@@ -709,9 +713,9 @@ class SessionStatisticsEntry(IncrementEntry):
     """Represent a single session_statistics."""
 
     ATTRS = ['starttime', 'endtime', 'elapsedtime', 'sourcefiles', 'sourcefilesize',
-            'mirrorfiles', 'mirrorfilesize', 'newfiles', 'newfilesize', 'deletedfiles',
-            'deletedfilesize', 'changedfiles', 'changedsourcesize', 'changedmirrorsize',
-            'incrementfiles', 'incrementfilesize', 'totaldestinationsizechange', 'errors']
+             'mirrorfiles', 'mirrorfilesize', 'newfiles', 'newfilesize', 'deletedfiles',
+             'deletedfilesize', 'changedfiles', 'changedsourcesize', 'changedmirrorsize',
+             'incrementfiles', 'incrementfilesize', 'totaldestinationsizechange', 'errors']
 
     def __init__(self, repo_path, name):
         # check to ensure we have a file_statistics entry
@@ -789,7 +793,7 @@ class LogEntry(IncrementEntry):
             return b''
         encoding = self.repo._encoding.name
         if self._is_compressed:
-            return subprocess.check_output(['zcat', self.path, '|', 'tail', '-n', str(num) ], stderr=subprocess.STDOUT, shell=True, encoding=encoding, errors='replace')
+            return subprocess.check_output(['zcat', self.path, '|', 'tail', '-n', str(num)], stderr=subprocess.STDOUT, shell=True, encoding=encoding, errors='replace')
         return subprocess.check_output(['tail', '-n', str(num), self.path], stderr=subprocess.STDOUT, encoding=encoding, errors='replace')
 
 
@@ -857,11 +861,15 @@ class RdiffRepo(object):
         assert isinstance(self._data_path, bytes)
         self._increment_path = os.path.join(self._data_path, INCREMENTS)
 
-        self.current_mirror = MetadataDict(self, b'current_mirror', CurrentMirrorEntry)
+        self.current_mirror = MetadataDict(
+            self, b'current_mirror', CurrentMirrorEntry)
         self.error_log = MetadataDict(self, b'error_log', LogEntry)
-        self.mirror_metadata = MetadataDict(self, b'mirror_metadata', IncrementEntry)
-        self.file_statistics = MetadataDict(self, b'file_statistics', FileStatisticsEntry)
-        self.session_statistics = MetadataDict(self, b'session_statistics', SessionStatisticsEntry)
+        self.mirror_metadata = MetadataDict(
+            self, b'mirror_metadata', IncrementEntry)
+        self.file_statistics = MetadataDict(
+            self, b'file_statistics', FileStatisticsEntry)
+        self.session_statistics = MetadataDict(
+            self, b'session_statistics', SessionStatisticsEntry)
 
         # Load repo status
         self.status = self._check_status()
@@ -883,7 +891,8 @@ class RdiffRepo(object):
     def delete(self):
         """Delete the repository permanently."""
 
-        # Try to change the permissions of the file or directory to delete them.
+        # Try to change the permissions of the file or directory to delete
+        # them.
         def handle_error(func, path, exc_info):
             if exc_info[0] == PermissionError:
                 # Parent directory must allow rwx
@@ -1034,8 +1043,10 @@ class RdiffRepo(object):
             return None
 
     def remove_older(self, remove_older_than):
-        logger.info("execute rdiff-backup --force --remove-older-than=%sD %r", remove_older_than, self.full_path)
-        subprocess.call([b'rdiff-backup', b'--force', b'--remove-older-than=' + str(remove_older_than).encode(encoding='latin1') + b'D', self.full_path])
+        logger.info("execute rdiff-backup --force --remove-older-than=%sD %r",
+                    remove_older_than, self.full_path)
+        subprocess.call([b'rdiff-backup', b'--force', b'--remove-older-than=' +
+                         str(remove_older_than).encode(encoding='latin1') + b'D', self.full_path])
 
     @property
     def restore_log(self):
@@ -1066,9 +1077,11 @@ class RdiffRepo(object):
                     pass
 
             # If multiple current_mirror file exists and none of them are associated to a PID, this mean the last backup was interrupted.
-            # Also, if the last backup date is undefined, this mean the first initial backup was interrupted.
+            # Also, if the last backup date is undefined, this mean the first
+            # initial backup was interrupted.
             if len(self.current_mirror) > 1 or len(self.current_mirror) == 0:
-                self._status = ('interrupted', _('The previous backup seams to have failed.'))
+                self._status = ('interrupted', _(
+                    'The previous backup seams to have failed.'))
                 return self._status
 
         except PermissionError:

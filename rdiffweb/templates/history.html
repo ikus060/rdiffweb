@@ -29,8 +29,7 @@
         {% for restore_date in restore_dates %}
         <li class="list-group-item clearfix">
             <i {% if path.isdir %}class="icon-archive"{% else %}class="icon-file"{% endif %}></i>
-            {{ restore_date | datetime }}
-
+            <time class="js-datetime" datetime="{{ restore_date }}">{{ restore_date | lastupdated }}</time>
             {% if path.isdir %}
             <div class="pull-right">
 
