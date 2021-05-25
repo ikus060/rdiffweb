@@ -191,8 +191,9 @@ class RdiffTime(object):
         year = time.gmtime(self._time_seconds)[0]
         month = time.gmtime(self._time_seconds)[1]
         day = time.gmtime(self._time_seconds)[2]
-        self._time_seconds = calendar.timegm(
+        _time_seconds = calendar.timegm(
             (year, month, day, hour, minute, second, -1, -1, 0))
+        return RdiffTime(_time_seconds, self._tz_offset)
 
     def _tzdtoseconds(self, tzd):
         """Given w3 compliant TZD, converts it to number of seconds from UTC"""
@@ -576,7 +577,7 @@ class IncrementEntry(object):
         assert isinstance(name, bytes)
         # Keep reference to the current path.
         if isinstance(parent, RdiffRepo):
-            self.repo = weakref.proxy(parent)
+            self.repo = parent
         else:
             self.repo = parent._repo
         # The given entry name may has quote character, replace them
@@ -797,9 +798,33 @@ class LogEntry(IncrementEntry):
         return subprocess.check_output(['tail', '-n', str(num), self.path], stderr=subprocess.STDOUT, encoding=encoding, errors='replace')
 
 
+class MetadataKeys:
+    """
+    Provide a view on metadata dict keys. See MetadataDict#keys()
+    """
+
+    def __init__(self, function, sequence):
+        self._f = function
+        self._sequence = sequence
+
+    def __iter__(self):
+        return map(self._f, self._sequence)
+
+    def __getitem__(self, i):
+        if isinstance(i, slice):
+            return list(map(self._f, self._sequence[i]))
+        else:
+            return self._f(self._sequence[i])
+
+    def __len__(self):
+        return len(self._sequence)
+
+
 class MetadataDict(object):
     """
-    This is used to access repository metadata quickly in a pythonic way.
+    This is used to access repository metadata quickly in a pythonic way. It
+    make an abstraction to access a range of increment entries using index and
+    date while also supporting slice to get a range of entries.
     """
 
     def __init__(self, repo, prefix, cls):
@@ -815,14 +840,20 @@ class MetadataDict(object):
         return [e for e in self._repo._entries if e.startswith(self._prefix)]
 
     @cached_property
-    def _table(self):
+    def _idx_table(self):
         _extract_date = self._repo._extract_date
-        return {_extract_date(e): e for e in self._entries}
+        return {_extract_date(e): idx for idx, e in enumerate(self._entries)}
 
     def __getitem__(self, key):
         if isinstance(key, RdiffTime):
-            return self._cls(self._repo, self._table[key])
+            return self._cls(self._repo, self._entries[self._idx_table[key]])
         elif isinstance(key, slice):
+            if isinstance(key.start, RdiffTime):
+                idx = bisect.bisect_left(self.keys(), key.start)
+                key = slice(idx, key.stop, key.step)
+            if isinstance(key.stop, RdiffTime):
+                idx = bisect.bisect_right(self.keys(), key.stop)
+                key = slice(key.start, idx, key.step)
             return [self._cls(self._repo, e) for e in self._entries[key]]
         elif isinstance(key, int):
             return self._cls(self._repo, self._entries[key])
@@ -835,8 +866,7 @@ class MetadataDict(object):
         return len(self._entries)
 
     def keys(self):
-        _extract_date = self._repo._extract_date
-        return [_extract_date(e) for e in self._entries]
+        return MetadataKeys(self._repo._extract_date, self._entries)
 
 
 class RdiffRepo(object):
@@ -860,6 +890,8 @@ class RdiffRepo(object):
         self._data_path = os.path.join(self.full_path, RDIFF_BACKUP_DATA)
         assert isinstance(self._data_path, bytes)
         self._increment_path = os.path.join(self._data_path, INCREMENTS)
+        if not os.path.isdir(self._data_path):
+            self._entries = []
 
         self.current_mirror = MetadataDict(
             self, b'current_mirror', CurrentMirrorEntry)
@@ -870,9 +902,6 @@ class RdiffRepo(object):
             self, b'file_statistics', FileStatisticsEntry)
         self.session_statistics = MetadataDict(
             self, b'session_statistics', SessionStatisticsEntry)
-
-        # Load repo status
-        self.status = self._check_status()
 
     @property
     def backup_dates(self):
@@ -943,39 +972,6 @@ class RdiffRepo(object):
         except:
             logger.warn('fail to parse date [%r]', date_string, exc_info=1)
             return None
-
-    def get_history_entries(self,
-                            numLatestEntries=-1,
-                            earliestDate=None,
-                            latestDate=None):
-        """Returns a list of HistoryEntry's
-        earliestDate and latestDate are inclusive."""
-
-        assert isinstance(numLatestEntries, int)
-        assert (earliestDate is None or
-                isinstance(earliestDate, RdiffTime))
-        assert (latestDate is None or
-                isinstance(latestDate, RdiffTime))
-
-        logger.debug("get history entries for [%r]", self.full_path)
-
-        entries = []
-        # Loop to dates
-        for backup_date in self.backup_dates:
-            # compare local times because of discrepancy between client/server
-            # time zones
-            if earliestDate and backup_date < earliestDate:
-                continue
-
-            if latestDate and backup_date > latestDate:
-                continue
-
-            entries.append(HistoryEntry(self, backup_date))
-
-            if numLatestEntries != -1 and len(entries) == numLatestEntries:
-                return entries
-
-        return entries
 
     def _get_increment_entries(self, path):
         """
@@ -1055,7 +1051,8 @@ class RdiffRepo(object):
         """
         return LogEntry(self, b'restore.log')
 
-    def _check_status(self):
+    @cached_property
+    def status(self):
         """Check if a backup is in progress for the current repo."""
 
         # Read content of the file and check if pid still exists

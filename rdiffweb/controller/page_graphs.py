@@ -23,7 +23,6 @@ import pkg_resources
 from rdiffweb.controller import Controller, validate_isinstance, validate_int
 from rdiffweb.controller.dispatch import poppath, static
 from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.librdiff import SessionStatisticsEntry
 
 
 _logger = logging.getLogger(__name__)
@@ -93,24 +92,6 @@ class GraphsPage(Controller):
     def __init__(self):
         self.chartkick_js = static(
             pkg_resources.resource_filename('chartkick', 'js/chartkick.js'))  # @UndefinedVariable
-
-    def _data(self, repo_obj, limit='30', **kwargs):
-        # Return a generator
-        def func():
-            # Header
-            yield 'date'
-            for attr in SessionStatisticsEntry.ATTRS:
-                yield ','
-                yield attr
-            yield '\n'
-            # Content
-            for stat in repo_obj.session_statistics[-limit:]:
-                yield str(stat.date.epoch())
-                for attr in SessionStatisticsEntry.ATTRS:
-                    yield ','
-                    yield str(getattr(stat, attr))
-                yield '\n'
-        return func()
 
     @cherrypy.expose
     def default(self, graph, path, limit='30', **kwargs):

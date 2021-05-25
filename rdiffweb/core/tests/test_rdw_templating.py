@@ -70,6 +70,7 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual(cherrypy.server.base() + '/admin/logs/backup.log', url_for('admin/logs', 'backup.log'))
 
     def test_do_format_lastupdated(self):
+        self.assertEqual('23 seconds ago', do_format_lastupdated(1591978823, now=1591978846))
         self.assertEqual('23 seconds ago', do_format_lastupdated(RdiffTime(value=1591978823), now=1591978846))
         self.assertEqual('8 minutes ago', do_format_lastupdated(RdiffTime(value=1591978324), now=1591978846))
         self.assertEqual('2 hours ago', do_format_lastupdated(RdiffTime(value=1591971646), now=1591978846))

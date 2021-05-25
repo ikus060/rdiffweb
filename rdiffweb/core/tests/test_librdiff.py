@@ -340,7 +340,7 @@ class RdiffRepoTest(unittest.TestCase):
         status = self.repo.status
         self.assertEqual('failed', status[0])
         # Make sure history entry doesn't raise error
-        self.repo.get_history_entries()
+        list(self.repo.mirror_metadata)
 
     def test_restore_file(self):
         filename, stream = self.repo.get_path(
@@ -366,13 +366,6 @@ class RdiffRepoTest(unittest.TestCase):
     def test_unquote(self):
         self.assertEqual(b'Char ;090 to quote',
                          self.repo.unquote(b'Char ;059090 to quote'))
-
-    def test_get_history_entries(self):
-        self.assertEqual(22, len(self.repo.get_history_entries()))
-        self.assertEqual(RdiffTime('2014-11-01T15:49:47-04:00'),
-                         self.repo.get_history_entries()[0].date)
-        self.assertEqual(RdiffTime('2016-02-02T16:30:40-05:00'),
-                         self.repo.get_history_entries()[-1].date)
 
     def test_error_log_range(self):
         logs = self.repo.error_log[0:1]
@@ -400,6 +393,52 @@ Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpgHTL2j/root as 
 Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpVo1u4Z/root as it was as of Wed Jan 20 10:42:21 2016.
 Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpBRxRxe/root as it was as of Wed Jan 20 10:42:21 2016.
 """)
+
+    def test_session_statistics_idx(self):
+        # Index
+        self.assertEquals(
+            RdiffTime('2014-11-01T15:50:48-04:00'),
+            self.repo.session_statistics[2].date)
+
+    def test_session_statistics_neg_idx(self):
+        # Negative index
+        self.assertEquals(
+            RdiffTime('2016-02-02T16:30:40-05:00'),
+            self.repo.session_statistics[-1].date)
+
+    def test_session_statistics_date(self):
+        # Index
+        self.assertEquals(
+            RdiffTime('2016-02-02T16:30:40-05:00'),
+            self.repo.session_statistics[RdiffTime('2016-02-02T16:30:40-05:00')].date)
+
+    def test_session_statistics_slice_idx(self):
+        # Slice with index
+        self.assertEquals(
+            [RdiffTime('2016-01-20T10:42:21-05:00'),
+             RdiffTime('2016-02-02T16:30:40-05:00')],
+            [s.date for s in self.repo.session_statistics[-2:]])
+
+    def test_session_statistics_slice_date_start(self):
+        # Slice with date (start)
+        self.assertEquals(
+            [RdiffTime('2016-01-20T10:42:21-05:00'),
+             RdiffTime('2016-02-02T16:30:40-05:00')],
+            [s.date for s in self.repo.session_statistics[RdiffTime('2016-01-20T10:42:21-05:00'):]])
+
+    def test_session_statistics_slice_date_start_stop(self):
+        # Slice with date (start, stop)
+        self.assertEquals(
+            [RdiffTime('2014-11-02T17:23:41-05:00'), RdiffTime(
+                '2014-11-03T15:46:47-05:00'), RdiffTime('2014-11-03T19:04:57-05:00')],
+            [s.date for s in self.repo.session_statistics[RdiffTime('2014-11-02T17:00:00-05:00'):RdiffTime('2014-11-04T00:00:00-05:00')]])
+
+    def test_session_statistics_slice_date_start_stop_exact_match(self):
+        # Slice with date (start, stop)
+        self.assertEquals(
+            [RdiffTime('2014-11-02T17:23:41-05:00'), RdiffTime(
+                '2014-11-03T15:46:47-05:00'), RdiffTime('2014-11-03T19:04:57-05:00')],
+            [s.date for s in self.repo.session_statistics[RdiffTime('2014-11-02T17:23:41-05:00'):RdiffTime('2014-11-03T19:04:57-05:00')]])
 
 
 class SessionStatisticsEntryTest(unittest.TestCase):
@@ -503,6 +542,12 @@ class RdiffTimeTest(unittest.TestCase):
             (RdiffTime('2014-11-02T21:04:30Z') - RdiffTime()).days < 0)
         self.assertTrue(
             (RdiffTime() - RdiffTime('2014-11-02T21:04:30Z')).days > 0)
+
+    def test_set_time(self):
+        self.assertEqual(RdiffTime('2014-11-05T00:00:00Z'),
+                         RdiffTime('2014-11-05T21:04:30Z').set_time(0, 0, 0))
+        self.assertEqual(RdiffTime('2014-11-02T00:00:00-04:00'),
+                         RdiffTime('2014-11-02T21:04:30-04:00').set_time(0, 0, 0))
 
 
 class DirEntryDeleteTest(AppTestCase):

@@ -19,51 +19,21 @@ Created on Aug 30, 2019
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
-
-
-import logging
-import os
-import unittest
-
 from rdiffweb.test import WebCase
+import logging
+import unittest
 
 
 class StatusTest(WebCase):
 
     login = True
 
-    def _status(self, failures=False, date=None):
-        url = "/status/"
-        if date:
-            url += '?date=' + str(date)
-        if failures:
-            url += '?failures=T'
-        self.getPage(url)
+    def _status(self):
+        self.getPage("/status/")
 
     def test_page(self):
         self._status()
         self.assertStatus(200)
-        self.assertInBody('There are no recent backups to display.')
-        self.assertInBody('Show all')
-        self.assertInBody('Show errors only')
-        
-    def test_page_no_failures(self):
-        self._status(failures=True)
-        self.assertStatus(200)
-        self.assertInBody('There are no recent backups with errors.')
-        
-    def test_page_with_failures(self):
-        # Write fake error in testcases repo
-        with open(os.path.join(self.app.testcases, 'testcases/rdiff-backup-data/error_log.2014-11-01T15:51:29-04:00.data'), 'w') as f:
-            f.write('This is a fake error message')
-        self._status(date=1414814400)
-        self.assertStatus(200)
-        self.assertInBody('This is a fake error message')
-        
-    def test_page_date(self):
-        self._status(date=1454448640)
-        self.assertStatus(200)
-        self.assertInBody('Successful')
 
 
 if __name__ == "__main__":

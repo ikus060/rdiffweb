@@ -97,13 +97,14 @@ def do_filter(sequence, attribute_name):
 
 def do_format_lastupdated(value, now=None):
     """
-    Used to format date as "Updated 10 minutes ago"
+    Used to format date as "Updated 10 minutes ago".
+    
+    Value could be a RdiffTime or an epoch as int.
     """
     if not value:
         return ""
-    assert isinstance(value, librdiff.RdiffTime)
     now = librdiff.RdiffTime(now)
-    delta = now.epoch() - value.epoch()
+    delta = now.epoch() - (value.epoch() if isinstance(value, librdiff.RdiffTime) else value)
     delta = datetime.timedelta(seconds=delta)
     if delta.days > 365:
         return _('%d years ago') % (delta.days / 365)

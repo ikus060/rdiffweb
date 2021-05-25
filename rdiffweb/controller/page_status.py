@@ -15,14 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import timedelta
+import datetime
 import logging
+import time
 
 import cherrypy
-from rdiffweb.controller import Controller, validate_isinstance, validate_date
+from rdiffweb.controller import Controller
 from rdiffweb.controller.dispatch import poppath
-from rdiffweb.core import librdiff
-from rdiffweb.core import rdw_helpers
+from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.librdiff import RdiffTime
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -31,91 +33,45 @@ logger = logging.getLogger(__name__)
 @poppath()
 class StatusPage(Controller):
 
+    def _data(self, days):
+        """
+        Return number of backups per days including failure.
+        """
+        def _key(d):
+            return time.strftime(str(d).split('T')[0])
+
+        base = RdiffTime().set_time(0, 0, 0) - datetime.timedelta(days=days)
+        # Creating empty data
+        data = {
+            _key(base + datetime.timedelta(days=i)): []
+            for i in range(0, days + 1)
+        }
+        success = {
+            _key(base + datetime.timedelta(days=i)): 0
+            for i in range(0, days + 1)
+        }
+        failure = success.copy()
+
+        # Sum number of backup per days.
+        for repo in self.app.currentuser.repo_objs:
+            if len(repo.session_statistics):
+                for stat in repo.session_statistics[base:]:
+                    key = _key(stat.date)
+                    success[key] += 1
+                    data[key].append(stat)
+                    if stat.errors:
+                        failure[key] += 1
+                    
+        # Return data.
+        return {
+            'backup_count':  [
+                {'name': _('Successful Backup'), 'data': success},
+                {'name': _('Backup with errors'), 'data': failure}
+            ],
+            'data': data,
+        }
+
     @cherrypy.expose
-    def default(self, path=b"", date="", failures=""):
-        validate_isinstance(date, str)
-
-        # Validate date
-        startTime = librdiff.RdiffTime() - timedelta(days=5)
-        endTime = None
-        if date:
-            # Set the start and end time to be the start and end of the day,
-            # respectively, to get all entries for that day
-            startTime = validate_date(date)
-            startTime.set_time(0, 0, 0)
-            endTime = validate_date(date)
-            endTime.set_time(23, 59, 59)
-
-        # Limit the scope to the given path.
-        if path:
-            user_repos = [self.app.store.get_repo(path)]
-        else:
-            user_repos = self.app.currentuser.repo_objs
-
-        failuresOnly = failures != ""
-        messages = self._getUserMessages(user_repos, not failuresOnly, True, startTime, endTime)
-
-        return self._compile_template(
-            "status.html",
-            messages=messages,
-            failuresOnly=failuresOnly)
-
-    def _getUserMessages(self,
-                         repos,
-                         includeSuccess,
-                         includeFailure,
-                         earliest_date,
-                         latest_date):
-
-        repoErrors = []
-        allBackups = []
-        for repo_obj in repos:
-            backups = repo_obj.get_history_entries(-1, earliest_date, latest_date)
-            allBackups += [{"repo": repo_obj,
-                            "date": backup.date,
-                            "size": backup.size,
-                            "errors": backup.errors} for backup in backups]
-
-        allBackups.sort(key=lambda x: x["date"])
-        failedBackups = [x for x in allBackups if x["errors"]]
-
-        # group successful backups by day
-        successfulBackups = [x for x in allBackups if not x["errors"]]
-        if successfulBackups:
-            lastSuccessDate = successfulBackups[0]["date"]
-        successfulBackups = rdw_helpers.groupby(
-            successfulBackups, lambda x: x["date"].get_local_day_since_epoch())
-
-        userMessages = []
-
-        # generate failure messages
-        if includeFailure:
-            for job in failedBackups:
-                date = job["date"]
-                job.update(
-                    {"is_success": False,
-                     "date": date,
-                     "repoErrors": [],
-                     "backups": []})
-                userMessages.append(job)
-
-        # generate success messages (publish date is most recent backup date)
-        if includeSuccess:
-            for day in list(successfulBackups.keys()):
-                date = successfulBackups[day][0]["date"]
-
-                # include repository errors in most recent entry
-                if date == lastSuccessDate:
-                    repoErrorsForMsg = repoErrors
-                else:
-                    repoErrorsForMsg = []
-
-                userMessages.append(
-                    {"is_success": True,
-                     "date": date,
-                     "repoErrors": repoErrorsForMsg,
-                     "backups": successfulBackups[day]})
-
-        # sort messages by date
-        userMessages.sort(key=lambda x: x["date"])
-        return userMessages
+    def default(self, limit=14):
+        params = self._data(limit)
+        return self._compile_template("status.html", **params)
