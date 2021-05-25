@@ -29,13 +29,9 @@ Files: vendor/jquery-validation/*
 Copyright: Copyright (C) 2013 Jörn Zaefferer
 License: MIT
 
-Files: rdiffweb/static/js/d3.min.js
-Copyright: Copyright (C) 2013 Michael Bostock
-License: BSD-3-Clause
-
-Files: rdiffweb/static/js/d3-tip.min.js
-Copyright: 2012-2016, Justin Palmer <justin@labratrevenge.com> (http://labratrevenge.com/d3-tip)
-License: Expat
+Files: rdiffweb/static/js/chart.min.js
+Copyright: Copyright (C) 2021 Chart.js Contributors
+License: MIT
 
 Files: rdiffweb/static/js/jquery.min.js
 Copyright: 2005-2011 John Resig, Brandon Aaron & Jörn Zaefferer

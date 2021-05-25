@@ -176,7 +176,7 @@ setup(
     },
     install_requires=[
         "CherryPy>=8.9.1",
-        "Jinja2>=2.10",
+        "Jinja2>=2.10,<3",
         "psutil>=2.1.1",
         "babel>=0.9.6",
         "python-ldap",
@@ -186,6 +186,7 @@ setup(
         "configargparse",
         "sqlalchemy",
         "apscheduler",
+        "chartkick",
     ],
     # required packages for build process
     setup_requires=[

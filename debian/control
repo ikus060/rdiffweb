@@ -9,6 +9,7 @@ Build-Depends:
  python3-all-dev,
  python3-apscheduler,
  python3-babel,
+ python3-chartkick,
  python3-cherrypy3,
  python3-configargparse,
  python3-distro,
@@ -33,12 +34,12 @@ Package: rdiffweb
 Architecture: all
 Depends:
  libjs-bootstrap,
- libjs-d3,
- libjs-d3-tip,
+ libjs-chart.js,
  libjs-jquery,
  python3,
  python3-apscheduler,
  python3-babel,
+ python3-chartkick,
  python3-cheroot,
  python3-cherrypy3,
  python3-configargparse,
