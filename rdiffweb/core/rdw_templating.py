@@ -19,7 +19,9 @@ from collections import OrderedDict, namedtuple
 import datetime
 from io import StringIO
 import logging
+import os
 
+from chartkick.ext import ChartExtension
 import cherrypy
 import humanfriendly
 from jinja2 import Environment, PackageLoader
@@ -30,8 +32,7 @@ from rdiffweb.core import librdiff
 from rdiffweb.core import rdw_helpers
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.store import RepoObject
-import os
-import time
+
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -187,6 +188,18 @@ def url_for(endpoint, *args, **kwargs):
     return cherrypy.url(path=path, qs=qs)
 
 
+class PatchedChartExtension(ChartExtension):
+    """
+    Patched version of Chartkick.
+    """
+
+    def _chart_support(self, name, data, caller, **kwargs):
+        # Remove l_0_
+        kwargs = dict((k[2:], v) for (k, v) in kwargs.items())
+        return super(PatchedChartExtension, self)._chart_support(
+            name, data, caller, **kwargs)
+
+
 class TemplateManager(object):
     """
     Uses to generate HTML page from template using Jinja2 templating.
@@ -207,6 +220,7 @@ class TemplateManager(object):
                 'jinja2.ext.i18n',
                 'jinja2.ext.with_',
                 'jinja2.ext.autoescape',
+                PatchedChartExtension,
             ])
 
         # Register filters

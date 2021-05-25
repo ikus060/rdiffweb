@@ -3,8 +3,9 @@
 {% set active_repo_page='graphs' %}
 {% block title %}{% trans %}Graphs{% endtrans %}{% endblock %}
 {% block content %}
-<script src="/static/js/d3.min.js"></script>
-<script src="/static/js/d3-tip.min.js"></script>
+
+<script src="{{ url_for('static/js/chart.min.js') }}"></script>
+<script src="{{ url_for('graphs', 'chartkick.js') }}"></script>
 
 <div class="row">
 
@@ -21,7 +22,7 @@
     <div class="col-md-3">
       <ul class="list-group">
         {% for item in graph_nav_bar %}
-        <a {{ attrib(href=item[2], type='button', class=['list-group-item', active_graph_page==item[0] and 'active']) }}>{{ item[1] }}</a>
+        <a {{ attrib(href=item[2], type='button', class=['list-group-item', graph==item[0] and 'active']) }}>{{ item[1] }}</a>
         {% endfor %}
       </ul>
     </div>
@@ -29,7 +30,18 @@
 	<!-- Include graph -->
     <div class="col-md-9">
 	<div class="graph-area">
-	{% block graph_body %}{% endblock %}
+      <div class="pull-right dropdown">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          {% trans %}Show last {% endtrans %} {{limit}}
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+        {% for i in [30, 60, 90, 180] %}
+        <li><a href="{{ url_for('graphs', graph, repo, limit=i) }}">{{i}}</a></li>
+        {% endfor %}
+        </ul>
+      </div>
+	  {% block graph_body %}{% endblock %}
 	</div>
     </div>
 	

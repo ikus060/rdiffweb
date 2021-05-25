@@ -17,21 +17,84 @@
 
 import logging
 
+import chartkick  # @UnusedImport
 import cherrypy
-
+import pkg_resources
 from rdiffweb.controller import Controller, validate_isinstance, validate_int
-from rdiffweb.controller.dispatch import poppath
+from rdiffweb.controller.dispatch import poppath, static
+from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.librdiff import SessionStatisticsEntry
 
+
 _logger = logging.getLogger(__name__)
+
+
+def bytes_to_mb(v):
+    return round(v / 1024 / 1024, 2)
+
+class Data():
+
+    def __init__(self, repo_obj, limit):
+        self.repo_obj = repo_obj
+        self.limit = limit
+
+    @property
+    def activities(self):
+        return [
+            {'name': _('New files'), 'data': [
+                [str(s.date).replace('T', ' '), s.newfiles] for s in self.repo_obj.session_statistics[:-self.limit - 1:-1]]},
+            {'name': _('Deleted files'), 'data': [
+                [str(s.date).replace('T', ' '), s.deletedfiles] for s in self.repo_obj.session_statistics[:-self.limit - 1:-1]]},
+            {'name': _('Changed files'), 'data': [
+                [str(s.date).replace('T', ' '), s.changedfiles] for s in self.repo_obj.session_statistics[:-self.limit - 1:-1]]}]
+
+    @property
+    def filecount(self):
+        return [
+            {'name': _('Number of files'), 'data': [
+                [s.starttime, s.sourcefiles] for s in self.repo_obj.session_statistics[-self.limit:]]}]
+
+    @property
+    def filesize(self):
+        return [
+            {'name': _('New file size (MiB)'), 'data': [
+                [s.starttime, bytes_to_mb(s.newfilesize)] for s in self.repo_obj.session_statistics[-self.limit:]]},
+            {'name': _('Deleted file size (MiB)'), 'data': [
+                [s.starttime, bytes_to_mb(s.deletedfilesize)] for s in self.repo_obj.session_statistics[-self.limit:]]},
+            {'name': _('Changed file size (MiB)'), 'data': [
+                [s.starttime, bytes_to_mb(s.changedmirrorsize)] for s in self.repo_obj.session_statistics[-self.limit:]]},
+            {'name': _('Increment file size (MiB)'), 'data': [
+                [s.starttime, bytes_to_mb(s.incrementfilesize)] for s in self.repo_obj.session_statistics[-self.limit:]]},
+            {'name': _('Destination size change (MiB)'), 'data': [
+                [s.starttime, bytes_to_mb(s.totaldestinationsizechange)] for s in self.repo_obj.session_statistics[-self.limit:]]}]
+
+    @property
+    def sourcefilesize(self):
+        return [
+            {'name': _('Source file size (MiB)'), 'data': [
+                [s.starttime, bytes_to_mb(s.sourcefilesize)] for s in self.repo_obj.session_statistics[-self.limit:]]}]
+
+    @property
+    def elapsedtime(self):
+        return [
+            {'name': _('Elapsed Time (minutes)'), 'data': [
+                [s.starttime, round(max(0, s.elapsedtime) / 60, 2)] for s in self.repo_obj.session_statistics[-self.limit:]]}]
+
+    @property
+    def errors(self):
+        return [
+            {'name': _('Error count'), 'data': [
+                [s.starttime, s.errors] for s in self.repo_obj.session_statistics[-self.limit:]]}]
 
 
 @poppath('graph')
 class GraphsPage(Controller):
 
-    def _data(self, repo_obj, limit='30', **kwargs):
-        limit = validate_int(limit)
+    def __init__(self):
+        self.chartkick_js = static(
+            pkg_resources.resource_filename('chartkick', 'js/chartkick.js'))  # @UndefinedVariable
 
+    def _data(self, repo_obj, limit='30', **kwargs):
         # Return a generator
         def func():
             # Header
@@ -47,35 +110,26 @@ class GraphsPage(Controller):
                     yield ','
                     yield str(getattr(stat, attr))
                 yield '\n'
-
         return func()
 
-    def _page(self, repo_obj, graph, limit='30', **kwargs):
-        """
-        Generic method to show graphs.
-        """
-        # Check if any action to process.
-        params = {
-            'repo': repo_obj,
-            'graphs': graph,
-            'limit': limit,
-        }
-        # Generate page.
-        return self._compile_template("graphs_%s.html" % graph, **params)
-
     @cherrypy.expose
-    def default(self, graph, path, **kwargs):
+    def default(self, graph, path, limit='30', **kwargs):
         """
         Called to show every graphs
         """
         validate_isinstance(graph, bytes)
         graph = graph.decode('ascii', 'replace')
         repo_obj = self.app.store.get_repo(path)
+        limit = validate_int(limit)
+        if graph not in ['activities', 'errors', 'files', 'sizes', 'times']:
+            raise cherrypy.NotFound()
 
-        # check if data should be shown.
-        if graph == 'data':
-            return self._data(repo_obj, **kwargs)
-        elif graph in ['activities', 'errors', 'files', 'sizes', 'times']:
-            return self._page(repo_obj, graph, **kwargs)
-        # Raise error.
-        raise cherrypy.NotFound()
+        # Check if any action to process.
+        params = {
+            'repo': repo_obj,
+            'graph': graph,
+            'limit': limit,
+            'data': Data(repo_obj, limit),
+        }
+        # Generate page.
+        return self._compile_template("graphs_%s.html" % graph, **params)
