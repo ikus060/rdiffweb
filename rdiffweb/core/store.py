@@ -577,6 +577,7 @@ class Store():
         if not userobj:
             userobj = self.add_user(self._admin_user, 'admin123')
             userobj.role = ADMIN_ROLE
+            userobj.user_root = '/backups'
         # Also make sure to update the password with latest value from config file.
         if self._admin_password:
             userobj.hash_password = self._admin_password

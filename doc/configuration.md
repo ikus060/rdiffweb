@@ -306,7 +306,7 @@ Using the web interface, users may configure a retention period on individual re
 To support this feature, Rdiffweb schedule a job to clean-up the repositories in backup. This job is ran once a day. You may change the default time when this schedule job is running by defining another value for option `remove-older-time`.
 
 | Parameter | Description | Example |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | remove-older-time | Time when to execute the remove older task | 22:00 | 
 
 ## Configure temporary folder location
@@ -316,7 +316,7 @@ To restore file or folder, Rdiffweb needs a temporary directory to create the fi
 If you want to enforce a different location for the temporary directory, you may define the option `tempdir` with a different value. Take note, this directory must be created with the right ownership and permissions to allow Rdiffweb to use it. Also make sure enough disk space is available. Usually, a 32GiB is enough.
 
 | Parameter | Description | Example |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | tempdir | alternate temporary folder to be used when restoring files. Might be useful if the default location has limited disk space| /tmp/rdiffweb/ |
 
 

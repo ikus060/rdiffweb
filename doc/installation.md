@@ -1,10 +1,15 @@
+
 # Installation
+
+Three different solutions are available to install Rdiffweb.
+You should pick the right solution depending on your operating system and your
+deployment environment.
 
 ## System requirements
 
 We recommend using high quality server hardware when running Rdiffweb in production, mainly for storage.
 
-### minimum server requirement for evaluation
+### Minimum server requirement for evaluation
 
 These minimum requirements are solely for evaluation and shall not be used in a production environment :
 
@@ -12,18 +17,14 @@ These minimum requirements are solely for evaluation and shall not be used in a 
 * Memory : 2 GiB RAM
 * Hard drive/storage more than 8 GiB
 
-### recommended server requirement
+### Recommended server requirement
 
 * Cpu: 64bit x86-64 or amd64, 4 core
 * Memory: minimum 4 GiB
 * Storage: consider the storage according to your backup needs. A couple of terabytes should be considered for the long term. Ideally, you should consider hardware or ZFS raid for your storage. If you plan to support user quota, make sure that your file system supports it. E.g. ext4 and ZFS. Other file systems might not be well supported.
 * Temporary storage: Rdiffweb requires a temporary storage location that is used during the restoration process. This location should be greater than 8gb. This temporary storage will be closer to the web application. Ideally, it should be in ram using tmpfs.
 
-## Rdiffweb installation
-
-Two different solutions are available to install Rdiffweb. You should pick the right solution depending on your operating system.
-
-### Debian package repositories
+## Option 1. Debian repository
 
 If you are running a Debian-based system, you should use `apt` to install Rdiffweb.
 
@@ -32,9 +33,9 @@ If you are running a Debian-based system, you should use `apt` to install Rdiffw
     apt update
     apt install rdiffweb
 
-Note: You can access the web interface with your web browser using HTTP on port 8080. For example go to `http://<ip-or-dns-name>:8080`
+> **_NOTE:_**  Access the web interface `http://<ip-or-dns-name>:8080` with username  **admin** and password **admin123**. Then browse to the **Admin Area** to add users and assign backup locations to these users.
 
-### PyPi package repositories
+## Option 2. PyPi repository
 
 If you are not running a Debian-based system, use `pip` to install Rdiffweb.
 Using pip to install Rdiffweb has its disadvantages. Extra steps are required: creating a service unit, a directory structure, and a default config file.
@@ -58,4 +59,61 @@ Create a default configuration file:
     sudo mkdir -p /etc/rdiffweb 
     sudo curl -L https://gitlab.com/ikus-soft/rdiffweb/-/raw/master/rdw.conf -o /etc/rdiffweb/rdw.conf
 
-Note: You can access the web interface with your web browser,using HTTP on port 8080. For example go to `http://<ip-or-dns-name>:8080`
+> **_NOTE:_**  Access the web interface `http://<ip-or-dns-name>:8080` with username  **admin** and password **admin123**. Then browse to the **Admin Area** to add users and assign backup locations to these users.
+
+## Option 3. Docker
+
+If you are already familiar with Docker, we recommend you to deploy Rdiffweb using our official Docker image.
+
+Official container image: `ikus060/rdiffweb` ![Docker Pull Count](https://img.shields.io/docker/pulls/ikus060/rdiffweb.svg)
+
+> **_NOTE:_**  Rdiffweb Docker image doesn't start an SSH daemon. You may use the SSH Server from the physical host or start another container with SSH and Rdiff-backup.
+
+**Using Docker command line interface:**
+
+Starting Rdiffweb in Docker is simple:
+
+    docker run -d \
+     --publish 8080:8080 \
+     --name rdiffweb \
+     -e RDIFFWEB_TEMPDIR=/restores \
+     -e RDIFFWEB_SESSION_DIR=/var/run/rdiffweb \
+     -e RDIFFWEB_DISABLE_SSH_KEYS=1 \
+     --volume /path/to/rdiffweb/backups:/backups \
+     --volume /path/to/rdiffweb/config:/etc/rdiffweb \
+     --volume /path/to/rdiffweb/sessions:/var/run/rdiffweb \
+     --volume /path/to/rdiffweb/restores:/restores \
+     --restart=unless-stopped \
+     ikus060/rdiffweb
+
+You may configure Rdiffweb settings using environment variables `RDIFFWEB_*`. Read more about all the configuration options in the [configuration section](configuration).
+
+**Using Docker Compose:**
+
+Create a `docker-compose.yml` file with the following contents:
+
+    version: "3.5"
+    services:
+      rdiffweb:
+        image: ikus060/rdiffweb
+        container_name: rdiffweb
+        ports:
+          - 8080:8080
+        volumes:
+          - /path/to/rdiffweb/backups:/backups
+          - /path/to/rdiffweb/config:/etc/rdiffweb
+          - /path/to/rdiffweb/sessions:/var/run/rdiffweb
+          - /path/to/rdiffweb/restores:/restores
+        restart: "unless-stopped"
+        environment:
+          - RDIFFWEB_TEMPDIR=/restores
+          - RDIFFWEB_SESSION_DIR=/var/run/rdiffweb
+          - RDIFFWEB_DISABLE_SSH_KEYS=1
+
+Then while in the same folder as the `docker-compose.yml` run:
+
+    docker-compose up
+
+To run the container in background add `-d` to the above command.
+
+> **_NOTE:_**  Access the web interface `http://<ip-or-dns-name>:8080` with username  **admin** and password **admin123**. Then browse to the **Admin Area** to add users and assign backup locations to these users.
