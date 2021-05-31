@@ -79,7 +79,7 @@ class RemoveOlderTest(WebCase):
         p._remove_older(repo)
         # Check number of history.
         repo = user.get_repo(self.REPO)
-        self.assertEqual(2, len(repo.get_history_entries()))
+        self.assertEqual(2, len(repo.mirror_metadata))
 
     def test_as_another_user(self):
         # Create a nother user with admin right

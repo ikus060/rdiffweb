@@ -2,86 +2,51 @@
 {% set active_page='status' %}
 {% block title %}{% trans %}Status{% endtrans %}{% endblock %}
 {% block body %}
+<script src="{{ url_for('static/js/chart.min.js') }}"></script>
+<script src="{{ url_for('graphs', 'chartkick.js') }}"></script>
+
 <div class="container">
 
-    <ul class="nav nav-pills">
-        <li class="{% if not failuresOnly %}active{% endif %}">
-            <a href="{{ url_for('status') }}">{% trans %}Show all{% endtrans %}</a>
-        </li>
-        <li class="{% if failuresOnly %}active{% endif %}">
-            <a href="{{ url_for('status', failures='T') }}">{% trans %}Show errors only{% endtrans %}</a>
-        </li>
-    </ul>
-
-    <!--StartDeleteIf:messages-->
-    {% if not messages %}
-    <div class="alert alert-success" role="alert">
-        <strong>{% trans %}Well done!{% endtrans %}</strong>
-        {% if failuresOnly %}
-		{% trans %}There are no recent backups with errors.{% endtrans %}
-    	{% else %}
-    	{% trans %}There are no recent backups to display.{% endtrans %}
-        {% endif %}
+    {% include 'message.html' %}
+    
+    <h2>{% trans %}Backup Status{% endtrans %}</h2>
+    <p>{% trans %}Number of backup per days{% endtrans %}</p>
+    {% line_chart backup_count %}
+    
+    {% for date, items in data.items()|sort(attribute='0',reverse=1) %}
+    <h3>{% trans %}Backup for{% endtrans %} <time class="js-date" datetime="{{date}}">{{date}}</time> ({{items|length}})</h3>
+    {% if items %}
+    <ul class="list-group">
+    {% for i in items|sort(attribute='repo.display_name') %}
+    <li class="list-group-item">
+    <div class="row">
+      <div class="col-sm-3">
+        <h4>
+          <a href="{{url_for('browse', i.repo)}}"><i class="icon-hdd"></i> {{i.repo.display_name}}</a>
+        </h4>
+      </div>
+      <div class="col-sm-3">
+        {% trans %}Start Time:{% endtrans %} <time class="js-time" datetime="{{i.starttime}}">{{i.starttime | lastupdated}}</time><br/>
+        {% trans %}End Time:{% endtrans %} <time class="js-time" datetime="{{i.endtime}}">{{i.endtime | lastupdated}}</time><br/>
+        {% trans %}Elapsed time:{% endtrans %} {{i.elapsedtime}} seconds<br/>
+      </div>
+      <div class="col-sm-3">
+        {% trans %}New files:{% endtrans %} {{i.newfiles}} ({{i.newfilesize|filesize}})<br/>
+        {% trans %}Deleted files:{% endtrans %} {{i.deletedfiles}} ({{i.deletedfilesize|filesize}})<br/>
+        {% trans %}Changed files:{% endtrans %} {{i.changedfiles}} ({{i.changedsourcesize|filesize}})<br/>
+        {% trans %}Increment files:{% endtrans %} {{i.incrementfiles}} ({{i.incrementfilesize|filesize}})
+      </div>
+      <div class="col-sm-3">
+        <a href="{{url_for('logs', i.repo, date=i.starttime|int)}}">{% trans %}Error count:{% endtrans %} {{i.errors}}</a>
+      </div>
     </div>
-    {% endif %}
-    <!--EndDeleteIf:messages-->
-
-    {% for message in messages %}
-    <!--StartRepeat:messages-->
-    {%if message.is_success %}
-    <!--StartIncludeIf:isSuccess-->
-    <h3 class="backupStatus_success">
-        <a href="{{ url_for('status', date=message.date) }}">
-            {% trans %}Successful backups for {% endtrans %}<time class="js-date" datetime="{{ message.date }}">{{ message.date | lastupdated }}</time>
-        </a>
-    </h3>
-    <div>
-        <p>{% trans %}The following backups have completed successfully: {% endtrans %}</p>
-        <ul>
-            {% for backup in message.backups %}
-            <!--StartRepeat:backups-->
-            <li>
-                <a class="statusRepoLink" href="{{ url_for('browse', backup.repo) }}">{{ backup.repo_name }} - {{ backup.size | filesize }}</a>
-            </li>
-            <!--EndRepeat:backups-->
-            {% endfor %}
-        </ul>
-    </div>
-    <!--EndIncludeIf:is_success-->
-    {% else %}
-    <!--StartDeleteIf:isSuccess-->
-    <h3 class="backupStatus_failure">
-        <a href="{{ url_for('status', date=message.date) }}">{% trans %}Backup completed with errors:{% endtrans %}
-            {{ message.repo_name }}</a>
-    </h3>
-    <div>
-        <p>
-            The backup to <strong>{{ message.repo_name }}</strong>
-            <time class="js-datetime" datetime="{{ message.date }}">{{ message.date | lastupdated }}</time>
-            failed with the following errors:
-        </p>
-        <pre>{{ message.errors }}</pre>
-        <p>{% trans %}Backup size: {% endtrans %}{{ message.size | filesize }}</p>
-    </div>
-    {% endif %}
-    <!--/isSuccess-->
-
-    <!--StartIncludeIf:repoErrors-->
-    {% if message.repoErrors %}
-    <p>{% trans %}The following repositories contain errors: {% endtrans %}</p>
-    <ul>
-        {% for repoError in repoErrors %}
-        <!--StartRepeat:repoErrors-->
-        <li>
-            <a class="statusRepoLink" href="{{ repoError.repoLink }}">{{ repoError.repo
-                }}: {{ repoError.error }}</a>
-        </li>
-        <!--EndRepeat:repoErrors-->
-        {% endfor %}
-    </ul>
-    {% endif %}
-    <!--EndIncludeIf:repoErrors-->
+    </li>
     {% endfor %}
-    <!--EndRepeat:messages-->
+    </ul>
+    {% else %}
+    <p>{% trans %}No backup for this date.{% endtrans %}</p>
+    {% endif %}
+    {% endfor %}
+
 </div>
 {% endblock %}
