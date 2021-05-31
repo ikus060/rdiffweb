@@ -1,0 +1,10 @@
+.eggs
+.externalToolBuilders
+.pybuild
+.pybuild_cache
+.settings
+.tox
+debian
+doc
+extras
+rdiffweb.egg-info

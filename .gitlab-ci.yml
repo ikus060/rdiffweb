@@ -116,6 +116,14 @@ package:py3:
   artifacts:
     paths:
     - dist/*.whl
+    
+package:docker:
+  stage: package
+  needs: []
+  dependencies: []
+  image: docker
+  script:
+  - docker build .
 
 package:debian:buster: 
   stage: package

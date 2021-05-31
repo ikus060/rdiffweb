@@ -44,9 +44,9 @@ Use the following credential to login:
  * Username: admin
  * Password: admin123
 
-## Installation
+## Installation & Docker usage
 
-For detailed installation steps, take a look at the [Documentation](https://www.ikus-soft.com/archive/rdiffweb/doc/latest/html/installation.html).
+For detailed installation steps, read the [Installation documentation](https://www.ikus-soft.com/archive/rdiffweb/doc/latest/html/installation.html).
 
 ## Current Build Status
 
@@ -54,11 +54,22 @@ For detailed installation steps, take a look at the [Documentation](https://www.
 
 ## Download
 
-![PyPI](https://img.shields.io/pypi/v/rdiffweb)
-
-You may download Rdiffweb from [PyPI](https://pypi.org/project/rdiffweb/).
-
 You should read the [Documentation](https://www.ikus-soft.com/archive/rdiffweb/doc/latest/html/index.html) to properly install Rdiffweb in your environment.
+
+**Docker**
+
+    docker pull ikus060/rdiffweb
+    
+**Debian**
+
+    curl -L https://www.ikus-soft.com/archive/rdiffweb/public.key | apt-key add - 
+    echo "deb https://nexus.ikus-soft.com/repository/apt-release-bullseye/ bullseye main" > /etc/apt/sources.list.d/rdiffweb.list
+    apt update
+    apt install rdiffweb
+
+**Pypi**
+
+    pip install rdiffweb
 
 ## Support
 
