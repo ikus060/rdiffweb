@@ -33,12 +33,6 @@ whenever you change the `.less`.
 
     python setup.py build_less
 
-## Javascript
-
-Any changes to javascript file need to be manually compiled into .min.js.
-
-    python setup.py minify_js
-
 ## Documentation
 
 To generate documentation run `tox -e doc`.

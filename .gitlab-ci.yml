@@ -121,7 +121,9 @@ package:docker:
   stage: package
   needs: []
   dependencies: []
-  image: docker
+  image: docker:20
+  services:
+  - name: docker:20-dind
   script:
   - docker build .
 
