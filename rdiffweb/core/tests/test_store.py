@@ -366,8 +366,6 @@ class StoreTest(AbstractStoreTest):
 
         data = list(self.app.store.repos())
         self.assertEqual(4, len(data))
-        self.assertEqual('annik', data[1].owner)
-        self.assertEqual('laptop', data[1].name)
 
     def test_repos_with_search(self):
         """
@@ -797,7 +795,7 @@ class UserObjectTest(AppTestCase):
         self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
         with self.app.store.engine.connect() as conn:
             conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
-        self.assertEquals(['testcases', 'broker-repo', '/testcases'], userobj.repos)
+        self.assertEquals(['/testcases', 'broker-repo', 'testcases'], sorted(userobj.repos))
         userobj.update_repos()
         self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
 
