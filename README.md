@@ -87,6 +87,14 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## 2.3.0 (2021-07-06)
+
+ * Improve timezone handling to display date with local timezone using javascript #143
+ * Improve charts by replacing d3js by chartkick #122
+ * Replace the status view by something meaningful with chartkick #122
+ * Provide Docker image with Rdiffweb `docker pull ikus060/rdiffweb` #55
+ * Fix file and folder sorting #143
+
 ## 2.2.0 (2021-05-11)
  
  * Debian package:
