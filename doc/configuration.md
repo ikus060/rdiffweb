@@ -278,7 +278,7 @@ session even if the web server gets restarted, you may persist them on disk with
 
 | Option | Description | Example | 
 | --- | --- | --- |
-| session-dir | location where to store user session information. When undefined, the user sessions are kept in memory. | /var/run/rdiffweb/sessions |
+| session-dir | location where to store user session information. When undefined, the user sessions are kept in memory. | /var/lib/rdiffweb/session |
 
 ## Configure Rdiffweb appearance
 
