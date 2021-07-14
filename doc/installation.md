@@ -77,11 +77,11 @@ Starting Rdiffweb in Docker is simple:
      --publish 8080:8080 \
      --name rdiffweb \
      -e RDIFFWEB_TEMPDIR=/restores \
-     -e RDIFFWEB_SESSION_DIR=/var/run/rdiffweb \
+     -e RDIFFWEB_SESSION_DIR=/var/lib/rdiffweb/session \
      -e RDIFFWEB_DISABLE_SSH_KEYS=1 \
      --volume /path/to/rdiffweb/backups:/backups \
      --volume /path/to/rdiffweb/config:/etc/rdiffweb \
-     --volume /path/to/rdiffweb/sessions:/var/run/rdiffweb \
+     --volume /path/to/rdiffweb/session:/var/lib/rdiffweb/session \
      --volume /path/to/rdiffweb/restores:/restores \
      --restart=unless-stopped \
      ikus060/rdiffweb
@@ -102,12 +102,12 @@ Create a `docker-compose.yml` file with the following contents:
         volumes:
           - /path/to/rdiffweb/backups:/backups
           - /path/to/rdiffweb/config:/etc/rdiffweb
-          - /path/to/rdiffweb/sessions:/var/run/rdiffweb
+          - /path/to/rdiffweb/sessions:/var/lib/rdiffweb/session
           - /path/to/rdiffweb/restores:/restores
         restart: "unless-stopped"
         environment:
           - RDIFFWEB_TEMPDIR=/restores
-          - RDIFFWEB_SESSION_DIR=/var/run/rdiffweb
+          - RDIFFWEB_SESSION_DIR=/var/lib/rdiffweb/session
           - RDIFFWEB_DISABLE_SSH_KEYS=1
 
 Then while in the same folder as the `docker-compose.yml` run:

@@ -5,7 +5,7 @@ set -e
 case "${1}" in
 	configure)
 		# Create default session directory
-		mkdir -p /var/run/rdiffweb/sessions
+		mkdir -p /var/lib/rdiffweb/session
 		;;
 
 	abort-upgrade|abort-remove|abort-deconfigure)

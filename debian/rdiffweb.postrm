@@ -5,7 +5,7 @@ set -e
 case "${1}" in
 	purge)
 		# Remove default session directory
-		rm -rf /var/run/rdiffweb
+		rm -rf /var/lib/rdiffweb
 		;;
 
 	remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
