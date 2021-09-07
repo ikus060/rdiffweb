@@ -31,7 +31,7 @@ from unittest.mock import MagicMock
 
 from mockldap import MockLdap
 import pkg_resources
-from rdiffweb.core import RdiffError, authorizedkeys
+from rdiffweb.core import RdiffError, authorizedkeys, store
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.store import IUserChangeListener, ADMIN_ROLE, USER_ROLE, \
     MAINTAINER_ROLE, _REPOS, DuplicateSSHKeyError
@@ -178,35 +178,33 @@ class StoreTest(AbstractStoreTest):
 
     def test_get_repo(self):
         user = self.app.store.add_user('bernie', 'my-password')
-        user.user_root = '/backups/bernie/'
-        repo_obj = user.add_repo('test')
+        user.user_root = self.app.testcases
 
         # Get as bernie
-        repo_obj2 = self.app.store.get_repo('bernie/test', user)
-        self.assertEqual(repo_obj2.name, repo_obj.name)
-        self.assertEqual(repo_obj2.owner, repo_obj.owner)
+        repo_obj = self.app.store.get_repo('bernie/testcases', user)
+        self.assertEqual('testcases', repo_obj.name)
+        self.assertEqual('bernie', repo_obj.owner)
 
     def test_get_repo_as_other_user(self):
         user = self.app.store.add_user('bernie', 'my-password')
-        user.user_root = '/backups/bernie/'
-        user.add_repo('test')
+        user.user_root = self.app.testcases
+        self.app.store.get_repo('bernie/testcases', user)
 
         # Get as otheruser
         other = self.app.store.add_user('other')
         with self.assertRaises(AccessDeniedError):
-            self.app.store.get_repo('bernie/test', other)
+            self.app.store.get_repo('bernie/testcases', other)
 
     def test_get_repo_as_admin(self):
         user = self.app.store.add_user('bernie', 'my-password')
-        user.user_root = '/backups/bernie/'
-        repo_obj = user.add_repo('test')
+        user.user_root = self.app.testcases
 
         # Get as admin
         other = self.app.store.add_user('other')
         other.role = ADMIN_ROLE
-        repo_obj3 = self.app.store.get_repo('bernie/test', other)
-        self.assertEqual(repo_obj.name, repo_obj3.name)
-        self.assertEqual(repo_obj.owner, repo_obj3.owner)
+        repo_obj3 = self.app.store.get_repo('bernie/testcases', other)
+        self.assertEqual('testcases', repo_obj3.name)
+        self.assertEqual('bernie', repo_obj3.owner)
 
     def test_get_repo_with_user(self):
         user = self.app.store.add_user('other', 'my-password')
@@ -219,41 +217,39 @@ class StoreTest(AbstractStoreTest):
         """
         # Create new user
         user = self.app.store.add_user('bernie', 'my-password')
-        user.user_root = '/backups/bernie/'
+        user.user_root = self.app.testcases
         user.role = ADMIN_ROLE
         user.email = 'bernie@gmail.com'
-        user.add_repo('computer')
-        user.add_repo('laptop')
         user.repo_objs[0].maxage = -1
-        user.get_repo('laptop').maxage = 3
+        user.repo_objs[1].maxage = 3
 
         # Get user record.
         obj = self.app.store.get_user('bernie')
         self.assertIsNotNone(obj)
         self.assertEqual('bernie', obj.username)
         self.assertEqual('bernie@gmail.com', obj.email)
-        self.assertEqual(['computer', 'laptop'], obj.repos)
-        self.assertEqual('/backups/bernie/', obj.user_root)
+        self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in obj.repo_objs]))
+        self.assertEqual(self.app.testcases, obj.user_root)
         self.assertEqual(True, obj.is_admin)
         self.assertEqual(ADMIN_ROLE, obj.role)
 
         # Get repo object
-        self.assertEqual('computer', obj.repo_objs[0].name)
+        self.assertEqual('broker-repo', obj.repo_objs[0].name)
         self.assertEqual(-1, obj.repo_objs[0].maxage)
-        self.assertEqual('laptop', obj.get_repo('laptop').name)
-        self.assertEqual(3, obj.get_repo('laptop').maxage)
+        self.assertEqual('testcases', obj.repo_objs[1].name)
+        self.assertEqual(3, obj.repo_objs[1].maxage)
 
     def test_get_set(self):
         user = self.app.store.add_user('larry', 'password')
 
         self.assertEqual('', user.email)
-        self.assertEqual([], user.repos)
+        self.assertEqual([], user.repo_objs)
         self.assertEqual('', user.user_root)
         self.assertEqual(False, user.is_admin)
         self.assertEqual(USER_ROLE, user.role)
 
-        user.user_root = '/backups/'
-        self.mlistener.user_attr_changed.assert_called_with(user, {'user_root': '/backups/'})
+        user.user_root = self.app.testcases
+        self.mlistener.user_attr_changed.assert_called_with(user, {'user_root': self.app.testcases})
         self.mlistener.user_attr_changed.reset_mock()
         user.role = ADMIN_ROLE
         self.mlistener.user_attr_changed.assert_called_with(user, {'role': ADMIN_ROLE})
@@ -261,13 +257,11 @@ class StoreTest(AbstractStoreTest):
         user.email = 'larry@gmail.com'
         self.mlistener.user_attr_changed.assert_called_with(user, {'email': 'larry@gmail.com'})
         self.mlistener.user_attr_changed.reset_mock()
-        user.add_repo('computer')
-        user.add_repo('laptop')
         self.mlistener.user_attr_changed.assert_not_called()
 
         self.assertEqual('larry@gmail.com', user.email)
-        self.assertEqual(['computer', 'laptop'], sorted(user.repos))
-        self.assertEqual('/backups/', user.user_root)
+        self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in user.repo_objs]))
+        self.assertEqual(self.app.testcases, user.user_root)
         self.assertEqual(True, user.is_admin)
         self.assertEqual(ADMIN_ROLE, user.role)
 
@@ -357,13 +351,9 @@ class StoreTest(AbstractStoreTest):
 
     def test_repos(self):
         # Check default repo exists
-        self.assertEqual(1, len(list(self.app.store.repos())))
+        self.assertEqual(2, len(list(self.app.store.repos())))
         user_obj = self.app.store.add_user('annik')
-        user_obj.add_repo('laptop')
-        user_obj.add_repo('desktop')
-        user_obj = self.app.store.add_user('kim')
-        user_obj.add_repo('repo1')
-
+        user_obj.user_root = self.app.testcases
         data = list(self.app.store.repos())
         self.assertEqual(4, len(data))
 
@@ -371,20 +361,11 @@ class StoreTest(AbstractStoreTest):
         """
         Check if search is working.
         """
-        # Check admin exists
-        users = list(self.app.store.users())
-        self.assertEqual(1, len(users))
-        # Add users
-        userobj = self.app.store.add_user('Charlie', 'password')
-        userobj.add_repo('laptop')
-        userobj.add_repo('desktop')
-        userobj = self.app.store.add_user('Bernard', 'password')
-        userobj.add_repo('repo1')
-        userobj = self.app.store.add_user('Kim', 'password')
-        userobj.add_repo('repo2')
-        # Check total
-        repos = list(map(lambda r: r.name, list(self.app.store.repos('op'))))
-        self.assertEqual(['laptop', 'desktop'], repos)
+        repos = self.app.store.repos('test')
+        self.assertEqual(['testcases'], [r.name for r in repos])
+        repos = self.app.store.repos('e')
+        self.assertEqual(['broker-repo', 'testcases'],
+                         sorted([r.name for r in repos]))
 
     def test_set_password_update(self):
         userobj = self.app.store.add_user('annik', 'password')
@@ -408,6 +389,40 @@ class StoreTest(AbstractStoreTest):
             userobj.set_password('new_password', old_password='invalid')
         # Check if listener called
         self.mlistener.user_password_changed.assert_not_called()
+
+    def test_update_remove_duplicates(self):
+        # Update repos should remove duplicate entries from the database
+        # generate by previous versions.
+        userobj = self.app.store.get_user(self.USERNAME)
+        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        with self.app.store.engine.connect() as conn:
+            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
+        self.assertEquals(['/testcases', 'broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        self.app.store._update()
+        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+
+    def test_update_remove_nested(self):
+        # Update repos should remove duplicate entries from the database
+        # generate by previous versions.
+        userobj = self.app.store.get_user(self.USERNAME)
+        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        with self.app.store.engine.connect() as conn:
+            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='testcases/home/admin/testcases'))
+            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases/home/admin/data'))
+        self.assertEquals(['/testcases/home/admin/data', 'broker-repo', 'testcases', 'testcases/home/admin/testcases'], sorted([r.name for r in userobj.repo_objs]))
+        self.app.store._update()
+        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+
+    def test_update_repos_remove_slash(self):
+        # Check if "/" get removed
+        userobj = self.app.store.get_user(self.USERNAME)
+        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        with self.app.store.engine.connect() as conn:
+            conn.execute(_REPOS.delete().where(_REPOS.c.userid == userobj._userid))  # @UndefinedVariable
+            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
+        self.assertEquals(['/testcases', 'broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        self.app.store._update()
+        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
 
 
 class StoreWithLdapTest(AbstractLdapStoreTest):
@@ -448,26 +463,6 @@ class StoreWithLdapTest(AbstractLdapStoreTest):
 
     def test_get_user_with_invalid_user(self):
         self.assertIsNone(self.app.store.get_user('invalid'))
-
-    def test_get_set(self):
-        username = 'larry'
-        user = self.app.store.add_user(username, 'password')
-
-        self.assertEqual('', user.email)
-        self.assertEqual([], user.repos)
-        self.assertEqual('', user.user_root)
-        self.assertEqual(False, user.is_admin)
-
-        user.user_root = '/backups/'
-        user.role = ADMIN_ROLE
-        user.email = 'larry@gmail.com'
-        user.add_repo('computer')
-        user.add_repo('laptop')
-
-        user = self.app.store.get_user(username)
-        self.assertEqual('larry@gmail.com', user.email)
-        self.assertEqual(['computer', 'laptop'], sorted(user.repos))
-        self.assertEqual('/backups/', user.user_root)
 
     def test_list(self):
         # Check admin exists
@@ -725,92 +720,24 @@ class StoreTestSSHKeys(AppTestCase):
 class UserObjectTest(AppTestCase):
     """Testcases for UserObject"""
 
-    def test_add_repo(self):
-        userobj = self.app.store.get_user(self.USERNAME)
-        self.assertEquals(['testcases'], userobj.repos)
-
-        # Existing repo
-        with self.assertRaises(ValueError):
-            userobj.add_repo('testcases')
-        with self.assertRaises(ValueError):
-            userobj.add_repo('/testcases')
-        with self.assertRaises(ValueError):
-            userobj.add_repo('testcases/')
-        with self.assertRaises(ValueError):
-            userobj.add_repo('/testcases/')
-
-        # Create repo
-        repo_obj = userobj.add_repo('laptop')
-        self.assertEqual('laptop', repo_obj.name)
-
-        # Create repo
-        repo_obj = userobj.add_repo('/desktop')
-        self.assertEqual('desktop', repo_obj.name)
-
-        # Create repo
-        repo_obj = userobj.add_repo('/server/')
-        self.assertEqual('server', repo_obj.name)
-
     def test_set_get_repos(self):
         userobj = self.app.store.get_user(self.USERNAME)
-        self.assertEquals(['testcases'], userobj.repos)
+        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
 
         # Test empty list
         userobj.get_repo('testcases').delete()
-        self.assertEquals([], userobj.repos)
-
-        # Test with leading & ending "/"
-        userobj.add_repo("/testcases/")
-        self.assertEquals(["testcases"], userobj.repos)
-        self.assertEqual(1, len(userobj.repo_objs))
-        self.assertEqual("testcases", userobj.repo_objs[0].name)
+        self.assertEquals(['broker-repo'], sorted([r.name for r in userobj.repo_objs]))
 
         # Make sure we get a repo
-        repo_obj = userobj.get_repo('testcases')
-        self.assertEquals("testcases", repo_obj.name)
+        repo_obj = userobj.get_repo('broker-repo')
+        self.assertEquals("broker-repo", repo_obj.name)
         repo_obj.maxage = 10
         self.assertEquals(10, repo_obj.maxage)
 
         # Make sure we get a repo_path
-        repo_obj = userobj.get_repo('testcases')
+        repo_obj = userobj.get_repo('broker-repo')
         repo_obj.maxage = 7
         self.assertEquals(7, repo_obj.maxage)
-
-    def test_update_repos_remove_slash(self):
-        # Check if "/" get removed
-        userobj = self.app.store.get_user(self.USERNAME)
-        userobj.update_repos()
-        self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
-        with self.app.store.engine.connect() as conn:
-            conn.execute(_REPOS.delete().where(_REPOS.c.userid == userobj._userid))  # @UndefinedVariable
-            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
-        userobj.update_repos()
-        self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
-
-    def test_update_repos_remove_duplicates(self):
-        # Update repos should remove duplicate entries from the database
-        # generate by previous versions.
-        userobj = self.app.store.get_user(self.USERNAME)
-        userobj.update_repos()
-        self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
-        with self.app.store.engine.connect() as conn:
-            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
-        self.assertEquals(['/testcases', 'broker-repo', 'testcases'], sorted(userobj.repos))
-        userobj.update_repos()
-        self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
-
-    def test_update_repos_remove_nested(self):
-        # Update repos should remove duplicate entries from the database
-        # generate by previous versions.
-        userobj = self.app.store.get_user(self.USERNAME)
-        userobj.update_repos()
-        self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
-        with self.app.store.engine.connect() as conn:
-            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='testcases/home/admin/testcases'))
-            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases/home/admin/data'))
-        self.assertEquals(['/testcases/home/admin/data', 'broker-repo', 'testcases', 'testcases/home/admin/testcases'], sorted(userobj.repos))
-        userobj.update_repos()
-        self.assertEquals(['broker-repo', 'testcases'], sorted(userobj.repos))
 
 
 class RepoObjectTest(AppTestCase):

@@ -78,47 +78,56 @@ class DeleteRepoTest(WebCase):
         """
         Check to delete a repo.
         """
+        # Check initial list of repo
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
+        # Delete repo
         self._delete(self.USERNAME, self.REPO, 'testcases')
         self.assertStatus(303)
         # Check filesystem
         sleep(1)
-        self.assertEqual([], self.app.store.get_user('admin').repos)
+        self.assertEqual(['broker-repo'], [r.name for r in self.app.store.get_user('admin').repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
 
     def test_delete_repo_with_slash(self):
-        # Make sure the repo exists.
-        self.assertEqual(['testcases'], self.app.store.get_user('admin').repos)
+        # Check initial list of repo
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
         # Then delete it.
         self._delete(self.USERNAME, self.REPO, 'testcases')
         self.assertStatus(303)
-        self.assertEqual([], self.app.store.get_user('admin').repos)
         # Check filesystem
         sleep(1)
+        self.assertEqual(['broker-repo'], [r.name for r in self.app.store.get_user('admin').repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
 
     def test_delete_repo_wrong_confirm(self):
         """
         Check failure to delete a repo with wrong confirmation.
         """
+        # Check initial list of repo
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
+        # Delete repo with wrong confirmation.
         self._delete(self.USERNAME, self.REPO, 'wrong')
         # TODO Make sure the repository is not delete
         self.assertStatus(400)
-        self.assertEqual(['testcases'], self.app.store.get_user('admin').repos)
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
 
     def test_delete_repo_without_confirm(self):
         """
         Check failure to delete a repo with wrong confirmation.
         """
+        # Check initial list of repo
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
+        # Delete repo without confirmation.
         self._delete(self.USERNAME, self.REPO, None)
         # TODO Make sure the repository is not delete
         self.assertStatus(400)
-        self.assertEqual(['testcases'], self.app.store.get_user('admin').repos)
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
 
     def test_delete_repo_as_admin(self):
         # Create a another user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
-        user_obj.add_repo('testcases')
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
 
         self._delete('anotheruser', 'testcases', 'testcases', redirect='/admin/repos/')
         self.assertStatus(303)
@@ -127,7 +136,7 @@ class DeleteRepoTest(WebCase):
 
         # Check filesystem
         sleep(1)
-        self.assertEqual([], user_obj.repos)
+        self.assertEqual(['broker-repo'], [r.name for r in user_obj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
 
     def test_delete_repo_as_maintainer(self):
@@ -136,8 +145,8 @@ class DeleteRepoTest(WebCase):
         # Create a another user with maintainer right
         user_obj = self.app.store.add_user('maintainer', 'password')
         user_obj.user_root = self.app.testcases
-        user_obj.add_repo('testcases')
         user_obj.role = MAINTAINER_ROLE
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
 
         # Login as maintainer
         self._login('maintainer', 'password')
@@ -150,15 +159,15 @@ class DeleteRepoTest(WebCase):
 
         # Check filesystem
         sleep(1)
-        self.assertEqual([], user_obj.repos)
+        self.assertEqual(['broker-repo'], [r.name for r in user_obj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
 
     def test_delete_repo_as_user(self):
         # Create a another user with maintainer right
         user_obj = self.app.store.add_user('user', 'password')
         user_obj.user_root = self.app.testcases
-        user_obj.add_repo('testcases')
         user_obj.role = USER_ROLE
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
 
         # Login as maintainer
         self._login('user', 'password')
@@ -168,7 +177,7 @@ class DeleteRepoTest(WebCase):
         self.assertStatus(403)
 
         # Check database don't change
-        self.assertEqual(['testcases'], user_obj.repos)
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
         self.assertTrue(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
 
 

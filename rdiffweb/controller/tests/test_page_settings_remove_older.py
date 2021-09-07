@@ -38,13 +38,15 @@ class RemoveOlderTest(WebCase):
         self.getPage("/settings/" + user + "/" + repo + "/")
 
     def _remove_older(self, user, repo, value):
-        self.getPage("/settings/" + user + "/" + repo + "/", method="POST", body={'keepdays': value})
+        self.getPage("/settings/" + user + "/" + repo + "/",
+                     method="POST", body={'keepdays': value})
 
     def test_page_api_set_remove_older(self):
         """
         Check if /api/remove-older/ is still working.
         """
-        self.getPage("/api/remove-older/" + self.USERNAME + "/" + self.REPO + "/", method="POST", body={'keepdays': '4'})
+        self.getPage("/api/remove-older/" + self.USERNAME + "/" +
+                     self.REPO + "/", method="POST", body={'keepdays': '4'})
         self.assertStatus(200)
         # Check results
         user = self.app.store.get_user(self.USERNAME)
@@ -85,7 +87,6 @@ class RemoveOlderTest(WebCase):
         # Create a nother user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
-        user_obj.add_repo('testcases')
 
         self._remove_older('anotheruser', 'testcases', '1')
         self.assertStatus('200 OK')
@@ -118,7 +119,7 @@ class RemoveOlderTestWithMock(WebCase):
         # Call the job.
         p.job_run()
         # Check if _remove_older was called
-        p._remove_older.assert_called_once_with(repo)
+        p._remove_older.assert_called()
 
     def test_job_run_with_keepdays(self):
         """
@@ -134,7 +135,7 @@ class RemoveOlderTestWithMock(WebCase):
         # Call the job.
         p.job_run()
         # Check if _remove_older was called
-        p._remove_older.assert_called_once_with(repo)
+        p._remove_older.assert_called()
 
 
 if __name__ == "__main__":

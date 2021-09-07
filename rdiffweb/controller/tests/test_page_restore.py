@@ -335,7 +335,6 @@ class RestoreTest(WebCase):
         # Create a nother user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
-        user_obj.add_repo('testcases')
 
         self._restore("anotheruser", "testcases", "Fichier%20%40%20%3Croot%3E/", "1414921853", True)
         self.assertStatus('200 OK')

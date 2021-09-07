@@ -25,7 +25,7 @@ import logging
 import os
 import unittest
 
-from rdiffweb.core.store import USER_ROLE
+from rdiffweb.core.store import USER_ROLE, _REPOS
 from rdiffweb.test import WebCase
 
 
@@ -51,8 +51,9 @@ class BrowsePageTest(WebCase):
 
     def test_locations_with_broken_tree(self):
         userobj = self.app.store.get_user(self.USERNAME)
-        userobj.add_repo('testcases/broker-repo')
-        userobj.add_repo('testcases/testcases')
+        with self.app.store.engine.connect() as conn:
+            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='testcases/broker-repo'))
+            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='testcases/testcases'))
         self.getPage("/")
 
     def test_WithRelativePath(self):
@@ -193,7 +194,7 @@ class BrowsePageTest(WebCase):
         # Change the user setting to match single repo.
         user = self.app.store.get_user(self.USERNAME)
         user.user_root = os.path.join(self.app.testcases, 'testcases')
-        user.update_repos()
+        self.assertEqual(['', 'broker-repo', 'testcases'], [r.name for r in user.repo_objs])
         # Check if listing locations is working
         self.getPage('/')
         self.assertStatus('200 OK')
@@ -211,7 +212,6 @@ class BrowsePageTest(WebCase):
         # Create an another user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
-        user_obj.add_repo('testcases')
         self.getPage('/browse/admin')
         self.assertStatus('404 Not Found')
 

@@ -43,26 +43,28 @@ class LogsPage(Controller):
         repo_obj = self.app.store.get_repo(path)
 
         # Read log file data
-        data = None
+        if file == 'backup.log':
+            entry = repo_obj.backup_log
+        elif file == 'restore.log':
+            entry = repo_obj.restore_log
+        elif date:
+            try:
+                entry = repo_obj.error_log[date]
+            except KeyError:
+                raise cherrypy.HTTPError(404, _('Invalid date.'))
+        else:
+            entry = None
+
         try:
-            if file == 'backup.log':
-                data = repo_obj.backup_log
-            elif file == 'restore.log':
-                data = repo_obj.restore_log
-            elif date:
-                try:
-                    data = repo_obj.error_log[date]
-                except KeyError:
-                    raise cherrypy.HTTPError(404, _('Invalid date.'))
+            data = None
+            if raw:
+                return serve_fileobj(entry._open(), content_type="text/plain")
+            elif entry:
+                # Limit to 2000 lines in html page.
+                data = entry.tail()
         except FileNotFoundError:
             # If the file doesn't exists, swallow the error.
             pass
-
-        if raw:
-            return serve_fileobj(data._open(), content_type="text/plain")
-        elif data:
-            # Limit to 2000 lines in html page.
-            data = data.tail()
 
         # Get error log list
         if limit < len(repo_obj.error_log):
@@ -73,7 +75,7 @@ class LogsPage(Controller):
         params = {
             'repo': repo_obj,
             'limit': limit,
-            'date':date,
+            'date': date,
             'file': file,
             'data': data,
             'error_logs': error_logs
