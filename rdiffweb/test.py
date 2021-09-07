@@ -93,7 +93,7 @@ class MockRdiffwebApp(RdiffwebApp):
         # Register repository
         for user in self.store.users():
             user.user_root = new
-            repo = user.add_repo('testcases')
+            repo = user.get_repo('testcases')
             repo.encoding = 'utf-8'
 
         self.testcases = new
@@ -111,6 +111,8 @@ class AppTestCase(unittest.TestCase):
 
     @classmethod
     def setup_class(cls):
+        if cls is AppTestCase:
+            raise unittest.SkipTest("%s is an abstract base class" % cls.__name__)
         pass
 
     @classmethod
@@ -149,6 +151,8 @@ class WebCase(helper.CPWebCase):
 
     @classmethod
     def setup_class(cls):
+        if cls is WebCase:
+            raise unittest.SkipTest("%s is an abstract base class" % cls.__name__)
         super(WebCase, cls).setup_class()
         cls.do_gc_test = False
 

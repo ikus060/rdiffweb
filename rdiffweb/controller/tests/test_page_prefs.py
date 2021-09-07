@@ -88,20 +88,10 @@ class PrefsTest(WebCase):
         self.assertStatus(404)
 
     def test_update_repos(self):
-
-        user_obj = self.app.store.get_user(self.USERNAME)
-        with self.app.store.engine.connect() as conn:
-            conn.execute(_REPOS.delete())
-        self.assertEqual(0, len(user_obj.repos))
-
         self.getPage(self.PREFS, method='POST', body={'action': 'update_repos'})
         self.assertStatus(200)
-        # Check database update.
-        self.assertInBody("Repositories successfully updated.")
-
-        self.assertEqual(2, len(user_obj.repos))
-        self.assertIn('testcases', user_obj.repos)
-        self.assertIn('broker-repo', user_obj.repos)
+        # Don't need to check the results. User's repository are updated on the fly.
+        # This action is only kept for backward compatibility.
 
     def test_update_notification(self):
         self.getPage("/prefs/notification/", method='POST', body={'action':'set_notification_info', 'testcases':'7'})

@@ -41,7 +41,8 @@ logger = logging.getLogger(__name__)
 
 SEP = b'/'
 
-DEFAULT_REPO_ENCODING = codecs.lookup((sys.getfilesystemencoding() or 'utf-8').lower()).name
+DEFAULT_REPO_ENCODING = codecs.lookup(
+    (sys.getfilesystemencoding() or 'utf-8').lower()).name
 
 # Define roles
 ADMIN_ROLE = 0
@@ -56,32 +57,41 @@ ROLES = {
 # Define SQLAlchemy metadata
 _META = MetaData()
 _USERS = Table('users', _META,
-    Column('UserID', Integer, key='userid', primary_key=True),
-    Column('Username', String, key='username', nullable=False, unique=True),
-    Column('Password', String, key='password', nullable=False, server_default=""),
-    Column('UserRoot', String, key='user_root', nullable=False, server_default=""),
-    Column('IsAdmin', SmallInteger, key='is_admin', nullable=False, server_default="0", doc="DEPRECATED This column is replaced by 'role'"),
-    Column('UserEmail', String, key='email', nullable=False, server_default=""),
-    Column('RestoreFormat', SmallInteger, nullable=False, server_default="1", doc="DEPRECATED This column is not used anymore"),
-    Column('role', SmallInteger, nullable=False, server_default=str(USER_ROLE)),
-    sqlite_autoincrement=True,
-)
+               Column('UserID', Integer, key='userid', primary_key=True),
+               Column('Username', String, key='username',
+                      nullable=False, unique=True),
+               Column('Password', String, key='password',
+                      nullable=False, server_default=""),
+               Column('UserRoot', String, key='user_root',
+                      nullable=False, server_default=""),
+               Column('IsAdmin', SmallInteger, key='is_admin', nullable=False,
+                      server_default="0", doc="DEPRECATED This column is replaced by 'role'"),
+               Column('UserEmail', String, key='email',
+                      nullable=False, server_default=""),
+               Column('RestoreFormat', SmallInteger, nullable=False,
+                      server_default="1", doc="DEPRECATED This column is not used anymore"),
+               Column('role', SmallInteger, nullable=False,
+                      server_default=str(USER_ROLE)),
+               sqlite_autoincrement=True,
+               )
 
 _REPOS = Table('repos', _META,
-    Column('RepoID', Integer, key='repoid', primary_key=True, autoincrement=True),
-    Column('UserID', Integer, key='userid', nullable=False),
-    Column('RepoPath', String, key='repopath', nullable=False),
-    Column('MaxAge', SmallInteger, key='maxage', nullable=False, server_default="0"),
-    Column('Encoding', String, key='encoding'),
-    Column('keepdays', String, nullable=False, server_default=""),
-    sqlite_autoincrement=True,
-)
+               Column('RepoID', Integer, key='repoid',
+                      primary_key=True, autoincrement=True),
+               Column('UserID', Integer, key='userid', nullable=False),
+               Column('RepoPath', String, key='repopath', nullable=False),
+               Column('MaxAge', SmallInteger, key='maxage',
+                      nullable=False, server_default="0"),
+               Column('Encoding', String, key='encoding'),
+               Column('keepdays', String, nullable=False, server_default=""),
+               sqlite_autoincrement=True,
+               )
 
 _SSHKEYS = Table('sshkeys', _META,
-    Column('Fingerprint', Text, key='fingerprint'),
-    Column('Key', Text, key='key', unique=True),
-    Column('UserID', Integer, key='userid', nullable=False),
-)
+                 Column('Fingerprint', Text, key='fingerprint'),
+                 Column('Key', Text, key='key', unique=True),
+                 Column('UserID', Integer, key='userid', nullable=False),
+                 )
 
 
 def _split_path(path):
@@ -140,9 +150,9 @@ class UserObject(object):
     def __init__(self, store, data):
         """
         Create a new UserObject from a username or a record.
-        
+
         `data` a dict or a SQLAlchemy row.
-        
+
         """
         assert store
         assert 'userid' in data
@@ -173,39 +183,21 @@ class UserObject(object):
             with open(filename, mode="r+", encoding='utf-8') as fh:
                 if authorizedkeys.exists(fh, key):
                     raise DuplicateSSHKeyError(_("SSH key already exists"))
-                logger.info("add key [%s] to [%s] authorized_keys", key, self.username)
+                logger.info(
+                    "add key [%s] to [%s] authorized_keys", key, self.username)
                 authorizedkeys.add(fh, key)
         else:
             # Also look in database.
             logger.info("add key [%s] to [%s] database", key, self.username)
             try:
                 with self._store.engine.connect() as conn:
-                    conn.execute(_SSHKEYS.insert().values(userid=self._userid, fingerprint=key.fingerprint, key=key.getvalue()))
+                    conn.execute(_SSHKEYS.insert().values(
+                        userid=self._userid, fingerprint=key.fingerprint, key=key.getvalue()))
             except IntegrityError:
-                raise DuplicateSSHKeyError(_("Duplicate key. This key already exists or is associated to another user."))
-        self._store._notify('user_attr_changed', self, {'authorizedkeys': True })
-
-    def add_repo(self, repopath):
-        """
-        Add a Repo for the current user.
-        """
-        assert isinstance(repopath, bytes) or isinstance(repopath, str)
-        if isinstance(repopath, bytes):
-            repopath = os.fsdecode(repopath)
-        repopath = repopath.strip('/')
-
-        # Check if the repopath already exists.
-        try:
-            self.get_repo(repopath)
-            raise ValueError('repo already exists: %s' % repopath)
-        except DoesNotExistError:
-            pass
-
-        # Create entry in database
-        with self._store.engine.connect() as conn:
-            inserted = conn.execute(_REPOS.insert().values(userid=self._userid, repopath=repopath))
-            assert inserted.rowcount
-        return self.get_repo(repopath)
+                raise DuplicateSSHKeyError(
+                    _("Duplicate key. This key already exists or is associated to another user."))
+        self._store._notify('user_attr_changed', self,
+                            {'authorizedkeys': True})
 
     def valid_user_root(self):
         """
@@ -233,7 +225,8 @@ class UserObject(object):
         with self._store.engine.connect() as conn:
             conn.execute(_SSHKEYS.delete(_SSHKEYS.c.userid == self._userid))
             conn.execute(_REPOS.delete(_REPOS.c.userid == self._userid))
-            deleted = conn.execute(_USERS.delete(_USERS.c.userid == self._userid))
+            deleted = conn.execute(_USERS.delete(
+                _USERS.c.userid == self._userid))
             assert deleted.rowcount, 'fail to delete user'
         self._store._notify('user_deleted', self.username)
         return True
@@ -247,14 +240,18 @@ class UserObject(object):
         filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
         if os.path.isfile(filename):
             with open(filename, mode='r+', encoding='utf-8') as fh:
-                logger.info("removing key [%s] from [%s] authorized_keys", fingerprint, self.username)
+                logger.info(
+                    "removing key [%s] from [%s] authorized_keys", fingerprint, self.username)
                 authorizedkeys.remove(fh, fingerprint)
         else:
             # Also look in database.
-            logger.info("removing key [%s] from [%s] database", fingerprint, self.username)
+            logger.info(
+                "removing key [%s] from [%s] database", fingerprint, self.username)
             with self._store.engine.connect() as conn:
-                conn.execute(_SSHKEYS.delete(and_(_SSHKEYS.c.userid == self._userid, _SSHKEYS.c.fingerprint == fingerprint)))
-        self._store._notify('user_attr_changed', self, {'authorizedkeys': True })
+                conn.execute(_SSHKEYS.delete(
+                    and_(_SSHKEYS.c.userid == self._userid, _SSHKEYS.c.fingerprint == fingerprint)))
+        self._store._notify('user_attr_changed', self,
+                            {'authorizedkeys': True})
 
     def __eq__(self, other):
         return isinstance(other, UserObject) and self._userid == other._userid
@@ -280,7 +277,8 @@ class UserObject(object):
 
         # Also look in database.
         with self._store.engine.connect() as conn:
-            result = conn.execute(_SSHKEYS.select(_SSHKEYS.c.userid == self._userid))
+            result = conn.execute(_SSHKEYS.select(
+                _SSHKEYS.c.userid == self._userid))
             for record in result:
                 yield authorizedkeys.check_publickey(record['key'])
 
@@ -293,39 +291,59 @@ class UserObject(object):
             repopath = os.fsdecode(repopath)
         repopath = repopath.strip('/')
 
-        # Search the repo with and without leading "/"
+        # Search the repo in database
         with self._store.engine.connect() as conn:
             result = conn.execute(_REPOS.select(
-                and_(
-                    _REPOS.c.userid == self.userid,
-                    or_(
-                        _REPOS.c.repopath == repopath,
-                        _REPOS.c.repopath == "/" + repopath,
-                        _REPOS.c.repopath == repopath + "/",
-                        _REPOS.c.repopath == "/" + repopath + "/")
-                    )
-                )
-            )
+                and_(_REPOS.c.userid == self.userid, _REPOS.c.repopath == repopath)))
             record = result.fetchone()
-        if not record:
-            raise DoesNotExistError(self.userid, repopath)
-        return RepoObject(self, record)
+        if record:
+            return RepoObject(self, record)
 
-    def _get_repos(self):
-        """
-        Get list of repos for the current `username`.
-        """
-        with self._store.engine.connect() as conn:
-            result = conn.execute(_REPOS.select(_REPOS.c.userid == self._userid))
-            return [record['repopath'] for record in result]
+        raise DoesNotExistError(self.userid, repopath)
 
     def _get_repos_obj(self):
         """
-        Return list of repositories object.
+        Return list of repositories object to reflect the filesystem folders.
+
+        Return a RepoObject for each sub directories under `user_root` with `rdiff-backup-data`.
         """
+
         with self._store.engine.connect() as conn:
-            result = conn.execute(_REPOS.select(_REPOS.c.userid == self._userid))
-            return [RepoObject(self, record) for record in result]
+
+            # Update the repositories by walking in the directory tree.
+            def _onerror(unused):
+                logger.error(
+                    'error updating user [%s] repos' % self.username, exc_info=1)
+
+            dirty = False
+            records = list(conn.execute(_REPOS.select(
+                _REPOS.c.userid == self._userid).order_by(_REPOS.c.repopath)))
+            user_root = os.fsencode(self.user_root)
+            for root, dirs, unused_files in os.walk(user_root, _onerror):
+                for name in dirs:
+                    if name == b'rdiff-backup-data':
+                        repopath = os.path.relpath(root, start=user_root)
+                        # Handle special scenario when the repo is the
+                        # user_root
+                        repopath = b'' if repopath == b'.' else repopath
+
+                        # Check if repo path exists.
+                        if any(record['repopath'] == os.fsdecode(repopath) for record in records):
+                            del dirs[:]
+                        else:
+                            # Add repository to database.
+                            dirty = True
+                            conn.execute(_REPOS.insert().values(
+                                userid=self._userid, repopath=os.fsdecode(repopath)))
+                            del dirs[:]
+                if root.count(SEP) - user_root.count(SEP) >= self._store._max_depth:
+                    del dirs[:]
+
+            # Return list of repository object.
+            if dirty:
+                records = conn.execute(_REPOS.select(
+                    _REPOS.c.userid == self._userid).order_by(_REPOS.c.repopath))
+            return [RepoObject(self, record) for record in records]
 
     @property
     def is_ldap(self):
@@ -343,7 +361,8 @@ class UserObject(object):
         """Used to define an attribute"""
         assert key in self._ATTRS, "invalid attribute: " + key
         with self._store.engine.connect() as conn:
-            updated = conn.execute(_USERS.update().where(_USERS.c.userid == self._userid).values(**{key: value}))
+            updated = conn.execute(_USERS.update().where(
+                _USERS.c.userid == self._userid).values(**{key: value}))
             assert updated.rowcount
         self._record[key] = value
         # Call notification listener
@@ -362,13 +381,16 @@ class UserObject(object):
 
         # Cannot update admin-password if defined
         if self.username == self._store._admin_user and self._store._admin_password:
-            raise ValueError(_("can't update admin-password defined in configuration file"))
+            raise ValueError(
+                _("can't update admin-password defined in configuration file"))
 
         # Try to update the user password in LDAP
         try:
-            valid = self._store._ldap_store.are_valid_credentials(self.username, old_password)
+            valid = self._store._ldap_store.are_valid_credentials(
+                self.username, old_password)
             if valid:
-                self._store._ldap_store.set_password(self.username, password, old_password)
+                self._store._ldap_store.set_password(
+                    self.username, password, old_password)
                 return
         except:
             pass
@@ -378,61 +400,35 @@ class UserObject(object):
         self.hash_password = hash_password(password)
         self._store._notify('user_password_changed', self.username, password)
 
-    def update_repos(self):
+    def _set_user_root(self, value):
         """
-        Refresh the users repositories.
+        Used to take care of updating the user_root.
+
+        When user_root get update, we also want to update the repository list
+        to reflect the filesystem.
         """
-        # Remove slash generated by previous versions.
-        with self._store.engine.connect() as conn:
-            result = conn.execute(_REPOS.select().where(_REPOS.c.userid == self._userid))
-            for row in result:
-                if row['repopath'].startswith('/') or row['repopath'].endswith('/'):
-                    conn.execute(_REPOS.update().where(_REPOS.c.repoid == row['repoid']).values(repopath=row['repopath'].strip('/')))
-
-            # Remove duplicates and nested
-            result = conn.execute(_REPOS.select().where(_REPOS.c.userid == self._userid).order_by(_REPOS.c.repopath))
-            prev_repo = None
-            for row in result:
-                if prev_repo is None:
-                    prev_repo = row['repopath']
-                elif row['repopath'] == prev_repo or row['repopath'].startswith(prev_repo + '/'):
-                    conn.execute(_REPOS.delete(_REPOS.c.repoid == row['repoid']))
-                else:
-                    prev_repo = row['repopath']
-
-            # Update the repositories
-            def _onerror(error):
-                logger.error('error updating user [%s] repos' % self.username, exc_info=1)
-
-            user_root = os.fsencode(self.user_root)
-            for root, dirs, unused_files in os.walk(user_root, _onerror):
-                for name in dirs:
-                    if name == b'rdiff-backup-data':
-                        repopath = os.path.relpath(root, start=user_root)
-                        # Handle special scenario when the repo is the user_root
-                        repopath = b'' if repopath == b'.' else repopath
-                        try:
-                            self.get_repo(repopath)
-                            del dirs[:]
-                        except DoesNotExistError:
-                            self.add_repo(repopath)
-                            del dirs[:]
-                if root.count(SEP) - user_root.count(SEP) >= self._store._max_depth:
-                    del dirs[:]
+        # Update the value
+        self._set_attr('user_root', value)
+        # Refresh the list of repository.
+        self._get_repos_obj()
 
     # Declare properties
     userid = property(fget=lambda x: x._userid)
     is_admin = property(fget=lambda x: x._is_role(ADMIN_ROLE))
     is_maintainer = property(fget=lambda x: x._is_role(MAINTAINER_ROLE))
-    email = property(fget=lambda x: x._get_attr('email'), fset=lambda x, y: x._set_attr('email', y))
-    user_root = property(fget=lambda x: x._get_attr('user_root'), fset=lambda x, y: x._set_attr('user_root', y))
+    email = property(fget=lambda x: x._get_attr('email'),
+                     fset=lambda x, y: x._set_attr('email', y))
+    user_root = property(fget=lambda x: x._get_attr(
+        'user_root'), fset=lambda x, y: x._set_user_root(y))
     username = property(fget=lambda x: x._get_attr('username'))
-    repos = property(fget=lambda x: x._get_repos())
-    role = property(fget=lambda x: x._get_attr('role'), fset=lambda x, y: x._set_attr('role', int(y)))
+    role = property(fget=lambda x: x._get_attr('role'),
+                    fset=lambda x, y: x._set_attr('role', int(y)))
     authorizedkeys = property(fget=lambda x: x._get_authorizedkeys())
     repo_objs = property(fget=lambda x: x._get_repos_obj())
-    disk_quota = property(fget=lambda x: x._store.app.quota.get_disk_quota(x), fset=lambda x, y: x._store.app.quota.set_disk_quota(x, y))
-    hash_password = property(fget=lambda x: x._get_attr('password'), fset=lambda x, y: x._set_attr('password', y))
+    disk_quota = property(fget=lambda x: x._store.app.quota.get_disk_quota(
+        x), fset=lambda x, y: x._store.app.quota.set_disk_quota(x, y))
+    hash_password = property(fget=lambda x: x._get_attr(
+        'password'), fset=lambda x, y: x._set_attr('password', y))
     disk_usage = property(fget=lambda x: x._store.app.quota.get_disk_usage(x))
 
 
@@ -444,9 +440,9 @@ class RepoObject(RdiffRepo):
     def __init__(self, user_obj, data):
         """
         Create a new repository object
-        
+
         `data` a dict or a SQLAlchemy row.
-        
+
         """
         assert user_obj
         assert 'repoid' in data
@@ -455,7 +451,8 @@ class RepoObject(RdiffRepo):
         self._repoid = data['repoid']
         self._repo = data['repopath']
         self._record = {k: data[k] for k in self._ATTRS}
-        RdiffRepo.__init__(self, user_obj.user_root, self._repo, encoding=DEFAULT_REPO_ENCODING)
+        RdiffRepo.__init__(self, user_obj.user_root,
+                           self._repo, encoding=DEFAULT_REPO_ENCODING)
         self._encoding = self._get_encoding()
 
     def __eq__(self, other):
@@ -472,7 +469,8 @@ class RepoObject(RdiffRepo):
         if key in ['maxage', 'keepdays']:
             value = int(value)
         with self._user_obj._store.engine.connect() as conn:
-            updated = conn.execute(_REPOS.update().where(_REPOS.c.repoid == self._repoid).values(**{key: value}))
+            updated = conn.execute(_REPOS.update().where(
+                _REPOS.c.repoid == self._repoid).values(**{key: value}))
             assert updated.rowcount, 'update failed'
         self._record[key] = value
 
@@ -522,15 +520,18 @@ class RepoObject(RdiffRepo):
     def delete(self):
         """Properly remove the given repository by updating the user's repositories."""
         logger.info("deleting repository %s", self)
-        # Remove entry from database
-        with self._user_obj._store.engine.connect() as conn:
-            conn.execute(_REPOS.delete(_REPOS.c.repoid == self._repoid))
         # Remove data from disk in background
         RdiffRepo.delete(self)
+        # Remove entry from database after deleting files.
+        # Otherwise, refresh will add this repo back.
+        with self._user_obj._store.engine.connect() as conn:
+            conn.execute(_REPOS.delete(_REPOS.c.repoid == self._repoid))
 
     encoding = property(lambda x: x._encoding.name, _set_encoding)
-    maxage = property(fget=lambda x: x._get_attr('maxage', default=0), fset=lambda x, y: x._set_attr('maxage', y))
-    keepdays = property(fget=lambda x: x._get_attr('keepdays', default=-1), fset=lambda x, y: x._set_attr('keepdays', y))
+    maxage = property(fget=lambda x: x._get_attr(
+        'maxage', default=0), fset=lambda x, y: x._set_attr('maxage', y))
+    keepdays = property(fget=lambda x: x._get_attr(
+        'keepdays', default=-1), fset=lambda x, y: x._set_attr('keepdays', y))
 
 
 class Store():
@@ -559,9 +560,11 @@ class Store():
 
         self._ldap_store = LdapPasswordStore(app)
         self._change_listeners = []
+        self._update()
 
         # Register entry point.
-        for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserChangeListener'):  # @UndefinedVariable
+        # @UndefinedVariable
+        for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserChangeListener'):
             try:
                 cls = entry_point.load()
                 # Creating the listener should register it self.But let make sure of it.
@@ -569,7 +572,8 @@ class Store():
                 if listener not in self._change_listeners:
                     self._change_listeners.append(listener)
             except:
-                logging.error("IUserChangeListener [%s] fail to load", entry_point)
+                logging.error(
+                    "IUserChangeListener [%s] fail to load", entry_point)
 
     def create_admin_user(self):
         # Check if admin user exists. If not, created it.
@@ -601,9 +605,11 @@ class Store():
         # Find a database where to add the user
         logger.info("adding new user [%s]", user)
         with self.engine.connect() as conn:
-            inserted = conn.execute(_USERS.insert().values(username=user, password=hash_password(password) if password else ''))
+            inserted = conn.execute(_USERS.insert().values(
+                username=user, password=hash_password(password) if password else ''))
             assert inserted.rowcount
-            record = conn.execute(_USERS.select(_USERS.c.username == user)).fetchone()
+            record = conn.execute(_USERS.select(
+                _USERS.c.username == user)).fetchone()
         userobj = UserObject(self, record)
         self._notify('user_added', userobj, attrs)
         # Return user object
@@ -668,7 +674,8 @@ class Store():
     def get_user(self, user):
         """Return a user object."""
         with self.engine.connect() as conn:
-            record = conn.execute(_USERS.select(_USERS.c.username == user)).fetchone()
+            record = conn.execute(_USERS.select(
+                _USERS.c.username == user)).fetchone()
             if record:
                 return UserObject(self, record)
         return None
@@ -676,19 +683,22 @@ class Store():
     def users(self, search=None, criteria=None):
         """
         Search users database. Return a generator of user object.
-        
+
         search: Define a search term to look into email or username.
         criteria: Define a search filter: admins, ldap
         """
         with self.engine.connect() as conn:
             if search:
                 term = '%' + search + '%'
-                result = conn.execute(_USERS.select().where(or_(_USERS.c.username.like(term), _USERS.c.email.like(term))))
+                result = conn.execute(_USERS.select().where(
+                    or_(_USERS.c.username.like(term), _USERS.c.email.like(term))))
             elif criteria:
                 if criteria == 'admins':
-                    result = conn.execute(_USERS.select().where(_USERS.c.role == ADMIN_ROLE))
+                    result = conn.execute(_USERS.select().where(
+                        _USERS.c.role == ADMIN_ROLE))
                 elif criteria == 'ldap':
-                    result = conn.execute(_USERS.select().where(_USERS.c.password == ''))
+                    result = conn.execute(
+                        _USERS.select().where(_USERS.c.password == ''))
                 else:
                     return []
             else:
@@ -699,20 +709,21 @@ class Store():
     def repos(self, search=None, criteria=None):
         """
         Quick listing of all the repository object for all user.
-        
+
         search: Define a search term to look into path, email or username.
         criteria: Define a search filter: ok, failed, interrupted, in_progress
         """
         with self.engine.connect() as conn:
             if search:
                 result = conn.execute(select([_REPOS, _USERS]).where(_USERS.c.userid == _REPOS.c.userid).where(or_(
-                        _USERS.c.username.contains(search),
-                        _USERS.c.email.contains(search),
-                        _REPOS.c.repopath.contains(search),
-                    ))
+                    _USERS.c.username.contains(search),
+                    _USERS.c.email.contains(search),
+                    _REPOS.c.repopath.contains(search),
+                ))
                 )
             else:
-                result = conn.execute(select([_REPOS, _USERS]).where(_USERS.c.userid == _REPOS.c.userid))
+                result = conn.execute(select([_REPOS, _USERS]).where(
+                    _USERS.c.userid == _REPOS.c.userid))
             for record in result:
                 user_obj = UserObject(self, record)
                 repo_obj = RepoObject(user_obj, record)
@@ -750,8 +761,10 @@ class Store():
                     real_user, attrs = valid
                     if not userobj:
                         # In case default values are invalid, let evaluate them before creating the user in database.
-                        default_user_root = self._ldap_add_user_default_userroot.format(**attrs)
-                        default_role = ROLES.get(self._ldap_add_user_default_role)
+                        default_user_root = self._ldap_add_user_default_userroot.format(
+                            **attrs)
+                        default_role = ROLES.get(
+                            self._ldap_add_user_default_role)
                         userobj = self.add_user(real_user, attrs=attrs)
                         userobj.user_root = default_user_root
                         userobj.role = default_role
@@ -765,9 +778,37 @@ class Store():
         for listener in self._change_listeners:
             # Support divergent account change listener implementations too.
             try:
-                logger.debug('notify %s#%s()', listener.__class__.__name__, mod)
+                logger.debug('notify %s#%s()',
+                             listener.__class__.__name__, mod)
                 getattr(listener, mod)(*args)
             except:
                 logger.warning(
                     'IUserChangeListener [%s] fail to run [%s]',
                     listener.__class__.__name__, mod, exc_info=1)
+
+    def _update(self):
+        """
+        Called on startup to update database schema.
+        """
+        with self.engine.connect() as conn:
+            # Remove preceding and leading slash (/) generated by previous
+            # versions. Also rename '.' to ''
+            reult = conn.execute(_REPOS.select())
+            for row in reult:
+                if row['repopath'].startswith('/') or row['repopath'].endswith('/'):
+                    conn.execute(_REPOS.update().where(_REPOS.c.repoid == row['repoid']).values(
+                        repopath=row['repopath'].strip('/')))
+                if row['repopath'] == '.':
+                    conn.execute(_REPOS.update().where(
+                        _REPOS.c.repoid == row['repoid']).values(repopath=''))
+
+            # Remove duplicates and nested repositories.
+            reult = conn.execute(_REPOS.select().order_by(
+                _REPOS.c.userid, _REPOS.c.repopath))
+            prev_repo = (None, None)
+            for row in reult:
+                if prev_repo[0] == row['userid'] and (prev_repo[1] == row['repopath'] or row['repopath'].startswith(prev_repo[1] + '/')):
+                    conn.execute(_REPOS.delete(
+                        _REPOS.c.repoid == row['repoid']))
+                else:
+                    prev_repo = (row['userid'], row['repopath'])

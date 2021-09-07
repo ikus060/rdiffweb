@@ -20,6 +20,7 @@ Created on Apr 26, 2021
 @author: Patrik Dufresne
 """
 
+import os
 import unittest
 
 from rdiffweb.core.rdw_templating import url_for
@@ -54,16 +55,30 @@ class LogsPageTest(WebCase):
         self._log(self.USERNAME, self.REPO, file='backup.log')
         self.assertStatus(200)
 
+    def test_logs_with_file_backup_missing(self):
+        os.unlink(os.path.join(self.app.testcases, self.REPO,
+                               'rdiff-backup-data', 'backup.log'))
+        self._log(self.USERNAME, self.REPO, file='backup.log')
+        self.assertStatus(200)
+        self.assertInBody("This log file is empty")
+
     def test_logs_with_file_restore(self):
         self._log(self.USERNAME, self.REPO, file='restore.log')
         self.assertStatus(200)
         self.assertInBody("Starting restore of")
 
+    def test_logs_with_file_restore_missing(self):
+        os.unlink(os.path.join(self.app.testcases, self.REPO,
+                               'rdiff-backup-data', 'restore.log'))
+        self._log(self.USERNAME, self.REPO, file='restore.log')
+        self.assertStatus(200)
+        self.assertInBody("This log file is empty")
+
     def test_logs_with_date_valid(self):
         self._log(self.USERNAME, self.REPO, date='1454448640')
         self.assertStatus(200)
 
-    def test_logs_with_limite(self):
+    def test_logs_with_limit(self):
         self._log(self.USERNAME, self.REPO, limit=50)
         self.assertStatus(200)
         self.assertNotInBody("Show more")

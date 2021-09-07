@@ -41,8 +41,6 @@ class SetEncodingTest(WebCase):
 
     def test_check_default_encoding(self):
         # Default encoding for broker-repo is the default system encoding.
-        user = self.app.store.get_user(self.USERNAME)
-        user.add_repo('broker-repo')
         self._settings('admin', 'broker-repo')
         self.assertInBody("Character encoding")
         self.assertInBody('selected value="%s"' % DEFAULT_REPO_ENCODING)
@@ -107,7 +105,6 @@ class SetEncodingTest(WebCase):
         # Create another user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.app.testcases
-        user_obj.add_repo('testcases')
 
         self._set_encoding('anotheruser', 'testcases', 'cp1252')
         self.assertStatus('200 OK')

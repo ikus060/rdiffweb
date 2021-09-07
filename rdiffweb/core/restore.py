@@ -38,7 +38,8 @@ import traceback
 from zipfile import ZipFile, ZIP_STORED, ZIP_DEFLATED
 
 import rdiffweb
-from rdiffweb.core.librdiff import LANG, PATH , STDOUT_ENCODING
+from rdiffweb.core.librdiff import LANG, PATH , STDOUT_ENCODING,\
+    find_rdiff_backup, popen
 
 logger = logging.getLogger(__name__)
 
@@ -192,15 +193,6 @@ def _print_stderr(msg, exc_info=False):
         traceback.print_exc(file=sys.stderr)
 
 
-def _readerthread(stderr):
-    """
-    Read stderr and pipe each line to logger.
-    """
-    for line in stderr:
-        logger.info(line.decode(STDOUT_ENCODING, 'replace').strip('\n'))
-    stderr.close()
-
-
 def _lookup_filename(base, path):
     """
     Search for the given filename. This is used to mitigate encoding issue
@@ -223,7 +215,7 @@ def _lookup_filename(base, path):
     return None, None
 
 
-def restore(restore, restore_as_of, kind, encoding, dest, log=logger.info):
+def restore(restore, restore_as_of, kind, encoding, dest, log=logger.debug):
     """
     Used to restore a file or a directory.
     restore: relative or absolute file or folder to be restored (unquoted)
@@ -243,10 +235,7 @@ def restore(restore, restore_as_of, kind, encoding, dest, log=logger.info):
     log('restoring data into temporary folder: %r' % tmp_output)
 
     # Search full path location of rdiff-backup.
-    # To work around issue related to different PATH
-    rdiff_backup_path = spawn.find_executable('rdiff-backup')
-    assert rdiff_backup_path, "can't find `rdiff-backup` executable in PATH: " + PATH
-    rdiff_backup_path = os.fsencode(rdiff_backup_path)
+    rdiff_backup_path = find_rdiff_backup()
 
     # Need to explicitly export some environment variable. Do not export
     # all of them otherwise it also export some python environment variable
@@ -259,53 +248,47 @@ def restore(restore, restore_as_of, kind, encoding, dest, log=logger.info):
 
     cmd = [rdiff_backup_path , b'-v', b'5', b'--restore-as-of=' + str(restore_as_of).encode('latin'), restore, tmp_output]
     log('executing %r with env %r' % (cmd, env))
-    process = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        env=env)
 
     # Open an archive.
     archive = ARCHIVERS[kind](dest)
     try:
         # Read the output of rdiff-backup
-        for line in process.stdout:
-            line = line.rstrip(b'\n')
-            log('rdiff-backup: %r' % line)
-            if not line.startswith(TOKEN):
-                continue
-            # A new file or directory was processed. Extract the filename and
-            # look for it on filesystem.
-            value = line[len(TOKEN):]
-            fullpath, arcname = _lookup_filename(tmp_output, line[len(TOKEN):])
-            if not fullpath:
-                log('error: file not found %r' % value)
-                continue
+        with popen(cmd, env=env) as output:
+            for line in output:
+                line = line.rstrip(b'\n')
+                log('rdiff-backup: %r' % line)
+                if not line.startswith(TOKEN):
+                    continue
+                # A new file or directory was processed. Extract the filename and
+                # look for it on filesystem.
+                value = line[len(TOKEN):]
+                fullpath, arcname = _lookup_filename(tmp_output, line[len(TOKEN):])
+                if not fullpath:
+                    log('error: file not found %r' % value)
+                    continue
 
-            # Add the file to the archive.
-            log('adding %r' % fullpath)
-            try:
-                archive.addfile(fullpath, arcname, encoding)
-            except:
-                # Many error may happen when trying to add a file to the
-                # archive. To be more resilient, capture error and continue
-                # with the next file.
-                log('error: fail to add %r' % fullpath, exc_info=1)
+                # Add the file to the archive.
+                log('adding %r' % fullpath)
+                try:
+                    archive.addfile(fullpath, arcname, encoding)
+                except:
+                    # Many error may happen when trying to add a file to the
+                    # archive. To be more resilient, capture error and continue
+                    # with the next file.
+                    log('error: fail to add %r' % fullpath, exc_info=1)
 
-            # Delete file once added to the archive.
-            if os.path.isfile(fullpath) or os.path.islink(fullpath):
-                os.remove(fullpath)
-
+                # Delete file once added to the archive.
+                if os.path.isfile(fullpath) or os.path.islink(fullpath):
+                    os.remove(fullpath)
     finally:
         # Close the pipe
         archive.close()
-        # Kill the process during exception.
-        process.kill()
         # Clean-up the directory.
         if os.path.isdir(tmp_output):
             shutil.rmtree(tmp_output, ignore_errors=True)
         elif os.path.isfile(tmp_output):
             os.remove(tmp_output)
+
 
 
 def call_restore(path, restore_as_of, encoding, kind):
@@ -324,15 +307,7 @@ def call_restore(path, restore_as_of, encoding, kind):
     # Call the process.
     cmdline = [cmd, b'--restore-as-of', str(restore_as_of).encode('latin'), b'--encoding', encoding, b'--kind', kind, path, b'-']
     logger.info('executing: %r' % cmdline)
-    process = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    # Pipe stderr to logger
-    t = threading.Thread(target=_readerthread, args=(process.stderr,))
-    t.daemon = True
-    t.start()
-
-    # TODO We should wait half a second and check if the process failed.
-    return process.stdout
+    return popen(cmdline)
 
 
 def main():

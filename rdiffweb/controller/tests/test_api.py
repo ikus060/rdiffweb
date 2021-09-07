@@ -40,8 +40,8 @@ class APITest(WebCase):
         self.assertEqual(data.get('username'), 'admin')
         self.assertEqual(data.get('email'), '')
         # This value change on every execution.
-        self.assertEqual(1, len(data.get('repos')))
-        repo = data.get('repos')[0]
+        self.assertEqual(2, len(data.get('repos')))
+        repo = data.get('repos')[1]
         self.assertEqual(repo.get('keepdays'), -1)
         self.assertEqual(repo.get('last_backup_date'), '2016-02-02T16:30:40-05:00')
         self.assertEqual(repo.get('status'), 'ok')

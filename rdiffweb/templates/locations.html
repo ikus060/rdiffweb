@@ -27,8 +27,7 @@
 {% macro repo_tree(repos) -%}
   {% if repos|length == 0 %}
     {% call empty('icon-box', 'No repositories') %}
-      <p>{% trans %}You don't have any repositories configured. You may need to refresh your repositories from your user profile if you just made a new backup.{% endtrans %}</p>
-      <a class="btn btn-success" href="{{ url_for('prefs', 'general') }}">{% trans %}Go to your user profile{% endtrans%}</a>
+      <p>{% trans %}You don't have any repositories in your user directory. You may need to refresh the page if you just made a new backup.{% endtrans %}</p>
     {% endcall %}
   {% else %}
     <div class="list-group" itemscope itemtype="http://schema.org/ItemList">

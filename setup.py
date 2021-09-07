@@ -19,24 +19,18 @@ from distutils.cmd import Command
 from distutils.dist import DistributionMetadata
 from distutils.errors import DistutilsExecError
 from io import open
+from setuptools import setup
 import os
 import subprocess
 import sys
+
 
 # Check running python version.
 if not sys.version_info >= (3, 6):
     print('python version 3.6 is required.')
     sys.exit(1)
 
-try:
-    from setuptools import setup
-except ImportError:
-    import ez_setup
-    ez_setup.use_setuptools()
-    from setuptools import setup
-
 DistributionMetadata.templates = None
-
 
 class compile_all_catalogs(Command):
     """

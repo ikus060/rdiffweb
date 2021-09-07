@@ -87,13 +87,6 @@ class PrefsGeneralPanelProvider(Controller):
 
         return {'success': _("Profile updated successfully.")}
 
-    def _handle_update_repos(self):
-        """
-        Called to refresh the user repos.
-        """
-        self.app.currentuser.update_repos()
-        return {'success': _("Repositories successfully updated.")}
-
     def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
         # Process the parameters.
         params = dict()
@@ -105,7 +98,8 @@ class PrefsGeneralPanelProvider(Controller):
                 elif action == "set_password":
                     params = self._handle_set_password(**kwargs)
                 elif action == "update_repos":
-                    params = self._handle_update_repos()
+                    # Kept for backward compatibility. Do nothing.
+                    pass
                 else:
                     _logger.warning("unknown action: %s", action)
                     raise cherrypy.NotFound("Unknown action")

@@ -246,7 +246,6 @@ class AdminPage(Controller):
                 if not user.valid_user_root():
                     flash(_("User's root directory %s is not accessible!") % user.user_root, level='error')
                     logger.warning("user's root directory %s is not accessible" % user.user_root)
-                user.update_repos()
             # Try to update disk quota if the human readable value changed.
             # Report error using flash.
             if form.disk_quota and form.disk_quota.data:
