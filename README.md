@@ -1,4 +1,24 @@
-# Rdiffweb
+![Rdiffweb Banner](doc/_static/banner.png)
+
+<p align="center">
+<strong>
+<a href="https://rdiffweb.org">website</a>
+• <a href="https://www.ikus-soft.com/archive/rdiffweb/doc/latest/html/">docs</a>
+• <a href="https://groups.google.com/d/forum/rdiffweb">community</a>
+• <a href="https://rdiffweb-demo.ikus-soft.com/">demo</a>
+</strong>
+</p>
+
+<p align="center">
+<a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/ikus060/rdiffweb"></a>
+<a href="https://gitlab.com/ikus-soft/rdiffweb/pipelines"><img alt="Build" src="https://gitlab.com/ikus-soft/rdiffweb/badges/master/pipeline.svg"></a>
+<a href="https://sonar.ikus-soft.com/dashboard?id=rdiffweb"><img alt="Quality Gate Minarca Client" src="https://sonar.ikus-soft.com/api/project_badges/measure?project=rdiffweb&metric=alert_status"></a>
+<a href="https://sonar.ikus-soft.com/dashboard?id=rdiffweb"><img alt="Coverage" src="https://sonar.ikus-soft.com/api/project_badges/measure?project=rdiffweb&metric=coverage"></a>
+</p>
+
+<h1 align="center">
+Welcome to Rdiffweb
+</h1>
 
 Rdiffweb is a web application that allows you to view repositories generated
 by [rdiff-backup](https://rdiff-backup.net/). The purpose of this
