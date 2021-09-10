@@ -288,7 +288,7 @@ need. Most likely, you will want to make it closer to your business brand.
 | Option | Description | Example | 
 | --- | --- | --- |
 | header-name | Define the application name displayed in the title bar and header menu. | My Backup |
-| default-theme | Define the theme. Either: `default` or `orange`. Define the css file to be loaded in the web interface. You may manually edit a CSS file to customize it. The location is similar to `/usr/local/lib/python2.7/dist-packages/rdiffweb/static/`. | orange |
+| default-theme | Define the theme. Either: `default`, `blue` or `orange`. Define the css file to be loaded in the web interface. You may manually edit a CSS file to customize it. The location is similar to `/usr/local/lib/python2.7/dist-packages/rdiffweb/static/`. | orange |
 | welcome-msg | Replace the headline displayed in the login page. It may contains HTML. | Custom message displayed on login page.|
 | favicon | Define the FavIcon to be displayed in the browser title | /etc/rdiffweb/my-fav.ico |
 

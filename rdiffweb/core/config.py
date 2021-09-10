@@ -91,8 +91,8 @@ def parse_args(args=None, config_file_contents=None):
 
     parser.add_argument(
         '--default-theme', '--defaulttheme',
-        help='define the default theme. Either: default or orange. Define the CSS file to be loaded in the web interface. You may manually edit a CSS file to customize it. The location is similar to `/usr/local/lib/python3.9/dist-packages/rdiffweb/static/`',
-        choices=['default', 'orange'],
+        help='define the default theme. Either: default, blue or orange. Define the CSS file to be loaded in the web interface. You may manually edit a CSS file to customize it. The location is similar to `/usr/local/lib/python3.9/dist-packages/rdiffweb/static/`',
+        choices=['default', 'blue', 'orange'],
         default='default')
 
     parser.add_argument(
