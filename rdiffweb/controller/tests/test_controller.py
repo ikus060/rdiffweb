@@ -46,7 +46,7 @@ class ControllerTest(WebCase):
         self.assertInBody('/static/default.css')
 
 
-class ControllerThemeTest(WebCase):
+class ControllerOrangeThemeTest(WebCase):
 
     default_config = {'DefaultTheme':'orange'}
 
@@ -56,6 +56,17 @@ class ControllerThemeTest(WebCase):
         """
         self.getPage("/")
         self.assertInBody('/static/orange.css')
+
+class ControllerBlueThemeTest(WebCase):
+
+    default_config = {'DefaultTheme':'blue'}
+
+    def test_theme(self):
+        """
+        Check if the theme is properly configure. 
+        """
+        self.getPage("/")
+        self.assertInBody('/static/blue.css')
 
 
 if __name__ == "__main__":

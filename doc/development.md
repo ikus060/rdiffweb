@@ -29,9 +29,9 @@ Rdiffweb is provided with unit tests. To run them, execute a command similar to 
 ## Less & CSS(s)
 
 For deployment reason, we need to pre-compile less file into css file
-whenever you change the `.less`.
+whenever you change the `.less`. To complete this operation, run the following command.
 
-    python setup.py build_less
+    tox -e lessc
 
 ## Documentation
 
