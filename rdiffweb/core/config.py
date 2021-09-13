@@ -110,7 +110,7 @@ def parse_args(args=None, config_file_contents=None):
     parser.add_argument(
         '--email-host', '--emailhost',
         metavar='HOST',
-        help='SMTP server used to send email.')
+        help='SMTP server used to send email in the form <host>:<port>. If the port is not provided, default to standard port 25 or 465 is used. e.g.: smtp.gmail.com:587')
 
     parser.add_argument(
         '--email-sender', '--emailsender',

@@ -20,11 +20,11 @@ User can control the notification period.
 """
 
 import datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 import logging
 import re
 import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from xml.etree.ElementTree import fromstring, tostring
 
 from rdiffweb.core import librdiff
@@ -32,7 +32,7 @@ from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.store import IUserChangeListener
 
-_logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def html2plaintext(html, body_id=None, encoding='utf-8'):
@@ -126,7 +126,8 @@ class EmailClient():
         self.app = app
 
     def async_send_mail(self, to_user, subject, template_name, **kwargs):
-        self.app.scheduler.add_task(self.send_mail, args=(to_user, subject, template_name), kwargs=kwargs)
+        self.app.scheduler.add_task(self.send_mail, args=(
+            to_user, subject, template_name), kwargs=kwargs)
 
     def send_mail(self, to_user, subject, template_name, **kwargs):
         """
@@ -166,11 +167,11 @@ class EmailClient():
 
         # Open an SMTP connection.
         conn = None
-        host, port = self._email_host.split(':')
+        host, unused, port = self._email_host.partition(':')
         if self._encryption == 'ssl':
-            conn = smtplib.SMTP_SSL(host, port)
+            conn = smtplib.SMTP_SSL(host, port or 465)
         else:
-            conn = smtplib.SMTP(host, port)
+            conn = smtplib.SMTP(host, port or 25)
         try:
             if self._encryption == 'starttls':
                 conn.starttls()
@@ -202,32 +203,50 @@ class NotificationPlugin(EmailClient, IUserChangeListener):
         if not self._send_change_notification:
             return
 
+        # Warn the administrator if a notification should be sent, but email host is not defined.
+        if not self._email_host:
+            logger.warn(
+                'cannot send email notification because `email-host` is not configured')
+            return
+
         # Leave if the mail was not changed.
         if 'email' not in attrs:
             return
 
         if not userobj.email:
-            logging.info("can't sent mail to user [%s] without an email", userobj.username)
+            logger.info(
+                "can't sent mail to user [%s] without an email", userobj.username)
             return
 
         # If the email attributes was changed, send a mail notification.
-        self.async_send_mail(userobj, _("Email address changed"), "email_changed.html")
+        self.async_send_mail(userobj, _(
+            "Email address changed"), "email_changed.html")
 
     def user_password_changed(self, username, password):  # @UnusedVariable
         """
         Implementation of IUserChangeListener interface.
         """
+        if not self._send_change_notification:
+            return
+
+        # Warn the administrator if a notification should be sent, but email host is not defined.
+        if not self._email_host:
+            logger.warn(
+                'cannot send email notification because `email-host` is not configured')
+            return
 
         # get User object (to get email)
         userobj = self.app.store.get_user(username)
         assert userobj
 
         if not userobj.email:
-            logging.info("can't sent mail to user [%s] without an email", userobj.username)
+            logger.info(
+                "can't sent mail to user [%s] without an email", userobj.username)
             return
 
         # If the email attributes was changed, send a mail notification.
-        self.async_send_mail(userobj, _("Password changed"), "password_changed.html")
+        self.async_send_mail(userobj, _("Password changed"),
+                             "password_changed.html")
 
 
 class NotificationJob(EmailClient):
@@ -249,6 +268,12 @@ class NotificationJob(EmailClient):
         """
         Loop trough all the user repository and send notifications.
         """
+
+        # Warn the administrator if a notification should be sent, but email host is not defined.
+        if not self._email_host:
+            logger.warn(
+                'cannot send email notification because `email-host` is not configured')
+            return
 
         now = librdiff.RdiffTime()
 
@@ -275,4 +300,5 @@ class NotificationJob(EmailClient):
         # For each candidate, send mail.
         for user, repos in _user_repos():
             parms = {'user': user, 'repos': repos}
-            self.send_mail(user, _('Notification'), 'email_notification.html', **parms)
+            self.send_mail(user, _('Notification'),
+                           'email_notification.html', **parms)
