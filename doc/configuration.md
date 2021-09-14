@@ -172,7 +172,7 @@ When enabled, Rdiffweb will also send email notification for security reason whe
 | Option | Description | Example |
 | --- | --- | --- |
 | email-encryption | Type of encryption to be used when establishing communication with SMTP server. Available values: `none`, `ssl` and `starttls` | starttls |
-| email-host | SMTP server used to send email. | smtp.gmail.com:587 | 
+| email-host | SMTP server used to send email in the form `host`:`port`. If the port is not provided, default to standard port 25 or 465 is used. | smtp.gmail.com:587 | 
 | email-sender | email addres used for the `From:` field when sending email. | Rdiffweb <example@gmail.com> |
 | email-notification-time | time when the email notification should be sent for inactive backups. | 22:00 |
 | email-username | username used for authentication with the SMTP server. | example@gmail.com |

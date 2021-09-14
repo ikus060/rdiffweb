@@ -1,5 +1,5 @@
 # Translations template for rdiffweb.
-# Copyright (C) 2020 ORGANIZATION
+# Copyright (C) 2012-2021 rdiffweb contributors
 # This file is distributed under the same license as the rdiffweb project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
 #

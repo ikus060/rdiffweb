@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2018 rdiffweb contributors
+# Copyright (C) 2012-2021 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ def parse_args(args=None, config_file_contents=None):
     parser.add_argument(
         '--email-host', '--emailhost',
         metavar='HOST',
-        help='SMTP server used to send email.')
+        help='SMTP server used to send email in the form <host>:<port>. If the port is not provided, default to standard port 25 or 465 is used. e.g.: smtp.gmail.com:587')
 
     parser.add_argument(
         '--email-sender', '--emailsender',
