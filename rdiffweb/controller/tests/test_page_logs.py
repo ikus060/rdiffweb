@@ -23,16 +23,17 @@ Created on Apr 26, 2021
 import os
 import unittest
 
+import rdiffweb.test
 from rdiffweb.core.rdw_templating import url_for
-from rdiffweb.test import WebCase
 
 
-class LogsPageTest(WebCase):
+class LogsPageTest(rdiffweb.test.WebCase):
 
     login = True
 
     def _log(self, user, repo, limit=None, date=None, file=None, raw=None):
-        url = url_for('logs', user, repo, limit=limit, date=date, file=file, raw=raw)
+        url = url_for('logs', user, repo, limit=limit,
+                      date=date, file=file, raw=raw)
         return self.getPage(url)
 
     def test_logs(self):
@@ -89,8 +90,3 @@ class LogsPageTest(WebCase):
         self.assertHeaderItemValue('Content-Type', 'text/plain;charset=utf-8')
         self.assertInBody("Starting restore of")
         self.assertNotInBody("<html")
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

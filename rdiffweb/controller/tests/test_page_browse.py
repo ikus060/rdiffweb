@@ -25,17 +25,17 @@ import logging
 import os
 import unittest
 
-from rdiffweb.core.store import USER_ROLE, _REPOS
-from rdiffweb.test import WebCase
+import rdiffweb.test
+from rdiffweb.core.store import _REPOS, USER_ROLE
 
 
-class BrowsePageTest(WebCase):
+class BrowsePageTest(rdiffweb.test.WebCase):
     """Basic python call to page_browse"""
 
     login = True
 
     def tearDown(self):
-        WebCase.tearDown(self)
+        super().tearDown()
 
     def _browse(self, user, repo, path):
         url = "/browse/" + user + "/" + repo + "/" + path
@@ -233,9 +233,3 @@ class BrowsePageTest(WebCase):
         self.assertStatus('403 Forbidden')
         self.getPage('/browse/anotheruser/testcases/Revisions/')
         self.assertStatus('403 Forbidden')
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

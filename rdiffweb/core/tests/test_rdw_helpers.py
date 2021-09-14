@@ -37,8 +37,3 @@ class Test(unittest.TestCase):
     def test_unquote_url(self):
         self.assertEqual(b'this is some path', unquote_url('this%20is%20some%20path'))
         self.assertEqual(b'this is some path', unquote_url(b'this%20is%20some%20path'))
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

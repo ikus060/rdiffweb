@@ -26,21 +26,23 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
+import unittest.mock
 
 import cherrypy
-from cherrypy.test import helper
 import pkg_resources
+from cherrypy.test import helper
+
 from rdiffweb.core.config import parse_args
-from rdiffweb.core.store import _SSHKEYS, _REPOS, _USERS
+from rdiffweb.core.store import _REPOS, _SSHKEYS, _USERS
 from rdiffweb.rdw_app import RdiffwebApp
 
 try:
     from urllib.parse import urlencode  # @UnresolvedImport @UnusedImport
 except:
     from urllib import urlencode  # @UnresolvedImport @UnusedImport @Reimport
-
 
 class MockRdiffwebApp(RdiffwebApp):
 
@@ -109,11 +111,12 @@ class AppTestCase(unittest.TestCase):
 
     default_config = {}
 
+    ldap_directory = {}
+
     @classmethod
     def setup_class(cls):
         if cls is AppTestCase:
             raise unittest.SkipTest("%s is an abstract base class" % cls.__name__)
-        pass
 
     @classmethod
     def teardown_class(cls):
@@ -123,13 +126,21 @@ class AppTestCase(unittest.TestCase):
         self.app = MockRdiffwebApp(self.default_config)
         self.app.reset()
         self.app.reset_testcases()
-        unittest.TestCase.setUp(self)
+        # When required mock LDAP server using mockldap
+        if self.ldap_directory:
+            from mockldap import MockLdap
+            self.mockldap = MockLdap(self.ldap_directory)
+            self.mockldap.start()
+        super().setUp()
 
     def tearDown(self):
         # Force dispose on SQL engine
         self.app.clear_db()
         self.app.clear_testcases()
-        unittest.TestCase.tearDown(self)
+        # Remove mock ldap
+        if hasattr(self, 'mockldap'):
+            self.mockldap.stop()
+        super().tearDown()
 
 
 class WebCase(helper.CPWebCase):
@@ -153,12 +164,12 @@ class WebCase(helper.CPWebCase):
     def setup_class(cls):
         if cls is WebCase:
             raise unittest.SkipTest("%s is an abstract base class" % cls.__name__)
-        super(WebCase, cls).setup_class()
+        super().setup_class()
         cls.do_gc_test = False
 
     @classmethod
     def teardown_class(cls):
-        super(WebCase, cls).teardown_class()
+        super().teardown_class()
         app = cherrypy.tree.apps['']
         app.clear_db()
 
@@ -216,8 +227,3 @@ class WebCase(helper.CPWebCase):
     def _login(self, username=USERNAME, password=PASSWORD):
         self.getPage("/login/", method='POST', body={'login': username, 'password': password})
         self.assertStatus('303 See Other')
-
-    def test_gc(self):
-        "Override test_gc to skip the test."
-        # Disable gc check (because it randomly fail).
-        pass

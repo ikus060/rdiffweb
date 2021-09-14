@@ -24,13 +24,12 @@ import logging
 import unittest
 from unittest.mock import MagicMock
 
-from rdiffweb.core.store import USER_ROLE
-from rdiffweb.test import WebCase
-
+import rdiffweb.test
 from rdiffweb.core.removeolder import RemoveOlderJob
+from rdiffweb.core.store import USER_ROLE
 
 
-class RemoveOlderTest(WebCase):
+class RemoveOlderTest(rdiffweb.test.WebCase):
 
     login = True
 
@@ -90,7 +89,7 @@ class RemoveOlderTest(WebCase):
 
         self._remove_older('anotheruser', 'testcases', '1')
         self.assertStatus('200 OK')
-        self.assertEquals(1, user_obj.get_repo('testcases').keepdays)
+        self.assertEqual(1, user_obj.get_repo('testcases').keepdays)
 
         # Remove admin right
         admin = self.app.store.get_user('admin')
@@ -101,7 +100,7 @@ class RemoveOlderTest(WebCase):
         self.assertStatus('403 Forbidden')
 
 
-class RemoveOlderTestWithMock(WebCase):
+class RemoveOlderTestWithMock(rdiffweb.test.WebCase):
 
     login = True
 
@@ -136,9 +135,3 @@ class RemoveOlderTestWithMock(WebCase):
         p.job_run()
         # Check if _remove_older was called
         p._remove_older.assert_called()
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

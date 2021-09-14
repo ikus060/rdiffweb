@@ -24,16 +24,17 @@ Created on Jan 1, 2016
 import logging
 import unittest
 
+import rdiffweb.test
 from rdiffweb.core.store import USER_ROLE
-from rdiffweb.test import WebCase
 
 
-class SettingsTest(WebCase):
+class SettingsTest(rdiffweb.test.WebCase):
 
     login = True
 
     def test_activities(self):
-        self.getPage("/graphs/activities/" + self.USERNAME + "/" + self.REPO + "/")
+        self.getPage("/graphs/activities/" +
+                     self.USERNAME + "/" + self.REPO + "/")
         self.assertStatus('200 OK')
 
     def test_errors(self):
@@ -73,13 +74,8 @@ class SettingsTest(WebCase):
         self.getPage("/static/js/chart.min.js")
         self.assertStatus('200 OK')
         self.assertInBody("Chart")
-        
+
     def test_chart_js(self):
         self.getPage("/graphs/chartkick.js")
         self.assertStatus('200 OK')
         self.assertInBody("Chartkick.js")
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

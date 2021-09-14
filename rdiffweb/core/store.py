@@ -778,7 +778,7 @@ class Store():
                     self._notify('user_logined', userobj, attrs)
                     return userobj
             except:
-                logger.warn('fail to validate credentials', exc_info=1)
+                logger.warning('fail to validate credentials', exc_info=1)
         return None
 
     def _notify(self, mod, *args):

@@ -15,21 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from time import sleep
+
 """
 Created on Feb 13, 2016
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from unittest.mock import MagicMock, ANY, patch
 import unittest
+from unittest.mock import ANY, MagicMock, patch
 
-from rdiffweb.core.notification import html2plaintext, NotificationPlugin, NotificationJob, \
-    EmailClient
-from rdiffweb.test import AppTestCase, WebCase
+import rdiffweb.test
+from rdiffweb.core.notification import (EmailClient, NotificationJob,
+                                        NotificationPlugin, html2plaintext)
 
 
-class NotificationJobTest(AppTestCase):
+class NotificationJobTest(rdiffweb.test.AppTestCase):
 
     default_config = {
         'email-host': 'example.com'
@@ -96,7 +97,7 @@ class NotificationJobTest(AppTestCase):
         n.send_mail.assert_not_called()
 
 
-class EmailClientTest(AppTestCase):
+class EmailClientTest(rdiffweb.test.AppTestCase):
 
     default_config = {
         'EmailHost': 'smtp.gmail.com:587',
@@ -138,7 +139,7 @@ class EmailClientTest(AppTestCase):
         """
         Check email template generation.
         """
-        self.assertEquals(0, len(self.app.scheduler.list_tasks()))
+        self.assertEqual(0, len(self.app.scheduler.list_tasks()))
 
         # Set user config
         user = self.app.store.get_user(self.USERNAME)
@@ -151,7 +152,7 @@ class EmailClientTest(AppTestCase):
         n.async_send_mail(user, 'subject', 'email_notification.html')
 
         # Check task scheduled
-        self.assertEquals(1, len(self.app.scheduler.list_tasks()))
+        self.assertEqual(1, len(self.app.scheduler.list_tasks()))
 
     def test_html2plaintext(self):
         """
@@ -175,7 +176,7 @@ Here is the link you wanted."""
         self.assertEqual(expected, html2plaintext(html))
 
 
-class NotificationPluginTest(WebCase):
+class NotificationPluginTest(rdiffweb.test.WebCase):
 
     default_config = {
         'emailsendchangednotification': True,
@@ -228,7 +229,8 @@ class NotificationPluginTest(WebCase):
             self.assertIsNotNone(n)
             n.async_send_mail(user, 'subject', 'email_notification.html')
 
-class NotificationPluginTestWithoutEmailHost(WebCase):
+
+class NotificationPluginTestWithoutEmailHost(rdiffweb.test.WebCase):
 
     default_config = {
         'emailsendchangednotification': True,
@@ -247,8 +249,3 @@ class NotificationPluginTestWithoutEmailHost(WebCase):
         # Expect it to be called.
         sleep(1)
         n.async_send_mail.assert_not_called()
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

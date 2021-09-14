@@ -445,7 +445,7 @@ class ConfigFileParser(object):
             value = split_line[2].strip()
 
             # Support welcome-msg locale for backward compatibility
-            m = re.match("welcome-?msg\[(ca|en|es|fr|ru)\]", key.lower())
+            m = re.match("welcome-?msg\\[(ca|en|es|fr|ru)\\]", key.lower())
             if m:
                 key = "welcome-msg-" + m.group(1)
                 value = m.group(1) + ":" + value

@@ -87,7 +87,7 @@ class DefaultQuotaTest(AppTestCase):
         # Make sure an exception is raised.
         userobj = self.app.store.add_user('bob')
         userobj.user_root = self.app.testcases
-        self.assertEquals(21474836, self.app.quota.get_disk_usage(userobj))
+        self.assertEqual(21474836, self.app.quota.get_disk_usage(userobj))
 
     def test_get_disk_usage_with_empty_user_root(self):
         """
@@ -99,7 +99,7 @@ class DefaultQuotaTest(AppTestCase):
         # Make sure an exception is raised.
         userobj = self.app.store.add_user('bob')
         userobj.user_root = ''
-        self.assertEquals(0, self.app.quota.get_disk_usage(userobj))
+        self.assertEqual(0, self.app.quota.get_disk_usage(userobj))
 
     def test_get_disk_usage_with_invalid_user_root(self):
         """
@@ -111,7 +111,7 @@ class DefaultQuotaTest(AppTestCase):
         # Make sure an exception is raised.
         userobj = self.app.store.add_user('bob')
         userobj.user_root = 'invalid'
-        self.assertEquals(0, self.app.quota.get_disk_usage(userobj))
+        self.assertEqual(0, self.app.quota.get_disk_usage(userobj))
 
     def test_set_disk_quota(self):
         # Mock command

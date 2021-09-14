@@ -25,10 +25,10 @@ import logging
 import re
 import unittest
 
-from rdiffweb.test import WebCase
+import rdiffweb.test
 
 
-class CheckLinkTest(WebCase):
+class CheckLinkTest(rdiffweb.test.WebCase):
 
     login = True
 
@@ -36,7 +36,8 @@ class CheckLinkTest(WebCase):
         """
         Crawl all the pages to find broken links or relative links.
         """
-        ignore = ['.*/logout', '.*/restore/admin/testcases/BrokenSymlink.*', '.*/browse/admin/testcases/BrokenSymlink.*', '.*/history/admin/testcases/BrokenSymlink.*', 'https://www.ikus-soft.com/.*', 'https://rdiffweb.org/.*', '.*js']
+        ignore = ['.*/logout', '.*/restore/admin/testcases/BrokenSymlink.*', '.*/browse/admin/testcases/BrokenSymlink.*',
+                  '.*/history/admin/testcases/BrokenSymlink.*', 'https://www.ikus-soft.com/.*', 'https://rdiffweb.org/.*', '.*js']
         done = set(['#'])
         todo = OrderedDict()
         todo["/"] = "/"
@@ -58,9 +59,3 @@ class CheckLinkTest(WebCase):
                 if newpage not in done and not any(re.match(i, newpage) for i in ignore):
                     todo[newpage] = page
                     self.assertTrue(newpage.startswith('http://'), msg='url [%s] referenced in [%s] is not absolute' % (newpage, page))
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

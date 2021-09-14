@@ -24,11 +24,11 @@ Created on Dec 29, 2015
 import logging
 import unittest
 
+import rdiffweb.test
 from rdiffweb.core.store import USER_ROLE
-from rdiffweb.test import WebCase
 
 
-class HistoryPageTest(WebCase):
+class HistoryPageTest(rdiffweb.test.WebCase):
 
     login = True
 
@@ -47,7 +47,8 @@ class HistoryPageTest(WebCase):
         self.assertInBody("Show more")
         # Check download buttont
         self.assertInBody("Download")
-        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "?date=1415221507")
+        self.assertInBody("/restore/" + self.USERNAME +
+                          "/" + self.REPO + "?date=1415221507")
 
     def test_history_with_path(self):
         self._history(self.USERNAME, 'testcases/Subdirectory')
@@ -56,12 +57,14 @@ class HistoryPageTest(WebCase):
         self.assertNotInBody("Show more")
 
     def test_history_with_deleted_path(self):
-        self._history(self.USERNAME, "testcases/R%C3%A9pertoire%20Supprim%C3%A9/")
+        self._history(
+            self.USERNAME, "testcases/R%C3%A9pertoire%20Supprim%C3%A9/")
         self.assertInBody("Download")
         self.assertInBody("ZIP")
         self.assertInBody("TAR.GZ")
         self.assertInBody("2014-11-01T15:51:15-04:00")
-        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "/R%C3%A9pertoire%20Supprim%C3%A9?date=1414871475")
+        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO +
+                          "/R%C3%A9pertoire%20Supprim%C3%A9?date=1414871475")
 
     def test_history_with_limit(self):
         self._history(self.USERNAME, self.REPO, 10)
@@ -84,9 +87,3 @@ class HistoryPageTest(WebCase):
         # Browse admin's repos
         self.getPage("/history/anotheruser/testcases")
         self.assertStatus('403 Forbidden')
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

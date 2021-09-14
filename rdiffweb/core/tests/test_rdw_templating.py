@@ -84,11 +84,11 @@ class ListParentsTest(AppTestCase):
 
     def test_list_parents_with_root_dir(self):
         unused, path_obj = self.app.store.get_repo_path('admin/testcases', as_user=self.app.store.get_user('admin'))
-        self.assertEquals(list_parents(path_obj), [_ParentEntry(path=b'', display_name='testcases')])
+        self.assertEqual(list_parents(path_obj), [_ParentEntry(path=b'', display_name='testcases')])
 
     def test_list_parents_with_root_subdir(self):
         unused, path_obj = self.app.store.get_repo_path('admin/testcases/Revisions', as_user=self.app.store.get_user('admin'))
-        self.assertEquals(list_parents(path_obj), [_ParentEntry(path=b'', display_name='testcases'), _ParentEntry(path=b'Revisions', display_name='Revisions')])
+        self.assertEqual(list_parents(path_obj), [_ParentEntry(path=b'', display_name='testcases'), _ParentEntry(path=b'Revisions', display_name='Revisions')])
 
 
 class UrlForTest(AppTestCase):
@@ -127,8 +127,3 @@ class UrlForTest(AppTestCase):
 
     def test_url_for_with_none(self):
         self.assertEqual(cherrypy.server.base() + '/logs', url_for('logs', date=None))
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

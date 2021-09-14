@@ -23,14 +23,14 @@ Created on Dec 30, 2015
 import logging
 import os
 import unittest
-from unittest.mock import MagicMock, ANY
+from unittest.mock import ANY, MagicMock
 
+import rdiffweb.test
 from rdiffweb.core.quota import QuotaUnsupported
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
-from rdiffweb.test import WebCase
 
 
-class AbstractAdminTest(WebCase):
+class AbstractAdminTest(rdiffweb.test.WebCase):
     """Class to regroup command method to test admin page."""
 
     def _add_user(self, username=None, email=None, password=None, user_root=None, role=None):
@@ -181,7 +181,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.assertInBody("User added successfully.")
 
         user = self.app.store.get_user('test6')
-        self.assertEquals('', user.user_root)
+        self.assertEqual('', user.user_root)
 
     def test_delete_user_with_not_existing_username(self):
         """
@@ -339,7 +339,7 @@ class AdminUsersAsUserTest(AbstractAdminTest):
     """Integration test for page_admin"""
 
     def setUp(self):
-        WebCase.setUp(self)
+        super().setUp()
         # Add test user
         self.app.store.add_user('test', 'test123')
         self._login('test', 'test123')
@@ -380,7 +380,7 @@ class AdminUsersAsUserTest(AbstractAdminTest):
         self.assertStatus(403)
 
 
-class AdminWithNoLogsTest(WebCase):
+class AdminWithNoLogsTest(rdiffweb.test.WebCase):
 
     login = True
 
@@ -390,7 +390,7 @@ class AdminWithNoLogsTest(WebCase):
         self.assertInBody("No log files")
 
 
-class AdminWithLogsTest(WebCase):
+class AdminWithLogsTest(rdiffweb.test.WebCase):
 
     login = True
     default_config = {
@@ -415,7 +415,7 @@ class AdminWithLogsTest(WebCase):
             os.remove('/tmp/rdiffweb-access.log')
 
 
-class AdminWithLogMissingTest(WebCase):
+class AdminWithLogMissingTest(rdiffweb.test.WebCase):
 
     login = True
     default_config = {
@@ -434,7 +434,7 @@ class AdminWithLogMissingTest(WebCase):
         self.assertStatus(404)
 
 
-class AdminReposTest(WebCase):
+class AdminReposTest(rdiffweb.test.WebCase):
 
     login = True
 
@@ -467,7 +467,7 @@ class AdminReposTest(WebCase):
         self.assertInBody("No repository found")
 
 
-class AdminSysinfoTest(WebCase):
+class AdminSysinfoTest(rdiffweb.test.WebCase):
 
     login = True
 
@@ -476,9 +476,3 @@ class AdminSysinfoTest(WebCase):
         self.assertStatus(200)
         self.assertInBody("Operating System Info")
         self.assertInBody("Python Info")
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

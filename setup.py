@@ -15,15 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+import subprocess
+import sys
 from distutils.cmd import Command
 from distutils.dist import DistributionMetadata
 from distutils.errors import DistutilsExecError
 from io import open
-from setuptools import setup
-import os
-import subprocess
-import sys
 
+import setuptools
 
 # Check running python version.
 if not sys.version_info >= (3, 6):
@@ -79,17 +79,16 @@ class compile_all_catalogs(Command):
 # Compute requirements
 tests_require = [
     "mock>=1.3.0",
-    "coverage>=4.0.1",
     "mockldap>=0.2.6",
-    "pytest<5.0.0",
+    "pytest",
 ]
-extras_require = {'tox': tests_require}
+extras_require = {'test': tests_require}
 
 long_description = None
 with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-setup(
+setuptools.setup(
     name='rdiffweb',
     use_scm_version=True,
     description='A web interface to rdiff-backup repositories',

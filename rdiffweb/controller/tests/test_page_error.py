@@ -23,11 +23,10 @@ Created on Mar 5, 2016
 
 import logging
 import unittest
+import rdiffweb.test
 
-from rdiffweb.test import WebCase
 
-
-class ErrorPageTest(WebCase):
+class ErrorPageTest(rdiffweb.test.WebCase):
     """
     Check how the error page behave.
     """
@@ -38,8 +37,3 @@ class ErrorPageTest(WebCase):
         self.getPage('/invalid/')
         self.assertStatus("404 Not Found")
         self.assertInBody("Oops!")
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

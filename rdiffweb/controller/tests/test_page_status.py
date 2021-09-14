@@ -19,12 +19,13 @@ Created on Aug 30, 2019
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
-from rdiffweb.test import WebCase
 import logging
 import unittest
 
+import rdiffweb.test
 
-class StatusTest(WebCase):
+
+class StatusTest(rdiffweb.test.WebCase):
 
     login = True
 
@@ -34,9 +35,3 @@ class StatusTest(WebCase):
     def test_page(self):
         self._status()
         self.assertStatus(200)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

@@ -22,19 +22,18 @@ Module to test `user` module.
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from _io import StringIO
-from io import open
 import logging
 import os
 import unittest
+from io import StringIO, open
 from unittest.mock import MagicMock
 
-from mockldap import MockLdap
 import pkg_resources
 from rdiffweb.core import RdiffError, authorizedkeys, store
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
-from rdiffweb.core.store import IUserChangeListener, ADMIN_ROLE, USER_ROLE, \
-    MAINTAINER_ROLE, _REPOS, DuplicateSSHKeyError
+from rdiffweb.core.store import (_REPOS, ADMIN_ROLE, MAINTAINER_ROLE,
+                                 USER_ROLE, DuplicateSSHKeyError,
+                                 IUserChangeListener)
 from rdiffweb.test import AppTestCase
 
 
@@ -59,7 +58,7 @@ class AbstractStoreTest(AppTestCase):
     """
 
     def setUp(self):
-        AppTestCase.setUp(self)
+        super().setUp()
         self.mlistener = IUserChangeListener(self.app)
         self.mlistener.user_added = MagicMock()
         self.mlistener.user_attr_changed = MagicMock()
@@ -82,7 +81,7 @@ class AbstractLdapStoreTest(AbstractStoreTest):
 
     # This is the content of our mock LDAP directory. It takes the form
     # {dn: {attr: [value, ...], ...}, ...}.
-    directory = dict([
+    ldap_directory = dict([
         basedn,
         people,
         _ldap_user('annik'),
@@ -104,24 +103,9 @@ class AbstractLdapStoreTest(AbstractStoreTest):
         'LdapBaseDn': 'dc=nodomain',
     }
 
-    @classmethod
-    def setup_class(cls):
-        # We only need to create the MockLdap instance once. The content we
-        # pass in will be used for all LDAP connections.
-        cls.mockldap = MockLdap(cls.directory)
-        super(AbstractLdapStoreTest, cls).setup_class()
-
-    @classmethod
-    def teardown_class(cls):
-        del cls.mockldap
-        super(AbstractLdapStoreTest, cls).teardown_class()
-
     def setUp(self):
-        # Mock LDAP
-        self.mockldap.start()
-        self.ldapobj = self.mockldap['ldap://localhost/']
         # Original setup
-        AbstractStoreTest.setUp(self)
+        super().setUp()
         # Get reference to LdapStore
         self.ldapstore = self.app.store._ldap_store
         # Create fake listener
@@ -131,12 +115,6 @@ class AbstractLdapStoreTest(AbstractStoreTest):
         self.mlistener.user_deleted = MagicMock()
         self.mlistener.user_logined = MagicMock()
         self.mlistener.user_password_changed = MagicMock()
-
-    def tearDown(self):
-        # Stop patching ldap.initialize and reset state.
-        self.mockldap.stop()
-        del self.ldapobj
-        AbstractStoreTest.tearDown(self)
 
 
 class StoreTest(AbstractStoreTest):
@@ -233,7 +211,8 @@ class StoreTest(AbstractStoreTest):
         self.assertIsNotNone(obj)
         self.assertEqual('bernie', obj.username)
         self.assertEqual('bernie@gmail.com', obj.email)
-        self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in obj.repo_objs]))
+        self.assertEqual(['broker-repo', 'testcases'],
+                         sorted([r.name for r in obj.repo_objs]))
         self.assertEqual(self.app.testcases, obj.user_root)
         self.assertEqual(True, obj.is_admin)
         self.assertEqual(ADMIN_ROLE, obj.role)
@@ -254,18 +233,22 @@ class StoreTest(AbstractStoreTest):
         self.assertEqual(USER_ROLE, user.role)
 
         user.user_root = self.app.testcases
-        self.mlistener.user_attr_changed.assert_called_with(user, {'user_root': self.app.testcases})
+        self.mlistener.user_attr_changed.assert_called_with(
+            user, {'user_root': self.app.testcases})
         self.mlistener.user_attr_changed.reset_mock()
         user.role = ADMIN_ROLE
-        self.mlistener.user_attr_changed.assert_called_with(user, {'role': ADMIN_ROLE})
+        self.mlistener.user_attr_changed.assert_called_with(
+            user, {'role': ADMIN_ROLE})
         self.mlistener.user_attr_changed.reset_mock()
         user.email = 'larry@gmail.com'
-        self.mlistener.user_attr_changed.assert_called_with(user, {'email': 'larry@gmail.com'})
+        self.mlistener.user_attr_changed.assert_called_with(
+            user, {'email': 'larry@gmail.com'})
         self.mlistener.user_attr_changed.reset_mock()
         self.mlistener.user_attr_changed.assert_not_called()
 
         self.assertEqual('larry@gmail.com', user.email)
-        self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in user.repo_objs]))
+        self.assertEqual(['broker-repo', 'testcases'],
+                         sorted([r.name for r in user.repo_objs]))
         self.assertEqual(self.app.testcases, user.user_root)
         self.assertEqual(True, user.is_admin)
         self.assertEqual(ADMIN_ROLE, user.role)
@@ -306,7 +289,8 @@ class StoreTest(AbstractStoreTest):
         # Search
         users = list(self.app.store.users(criteria='admins'))
         self.assertEqual(3, len(users))
-        self.assertEqual(['admin', 'annik', 'tom'], sorted([u.username for u in users]))
+        self.assertEqual(['admin', 'annik', 'tom'],
+                         sorted([u.username for u in users]))
 
     def test_users_with_criteria_ldap(self):
         # Check admin users exists
@@ -378,7 +362,8 @@ class StoreTest(AbstractStoreTest):
         # Check new credentials
         self.assertIsNotNone(self.app.store.login('annik', 'new_password'))
         # Check if listener called
-        self.mlistener.user_password_changed.assert_called_once_with('annik', 'new_password')
+        self.mlistener.user_password_changed.assert_called_once_with(
+            'annik', 'new_password')
 
     def test_set_password_with_old_password(self):
         userobj = self.app.store.add_user('john', 'password')
@@ -386,7 +371,8 @@ class StoreTest(AbstractStoreTest):
         # Check new credentials
         self.assertIsNotNone(self.app.store.login('john', 'new_password'))
         # Check if listener called
-        self.mlistener.user_password_changed.assert_called_once_with('john', 'new_password')
+        self.mlistener.user_password_changed.assert_called_once_with(
+            'john', 'new_password')
 
     def test_set_password_with_invalid_old_password(self):
         userobj = self.app.store.add_user('foo', 'password')
@@ -399,35 +385,49 @@ class StoreTest(AbstractStoreTest):
         # Update repos should remove duplicate entries from the database
         # generate by previous versions.
         userobj = self.app.store.get_user(self.USERNAME)
-        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        self.assertEqual(['broker-repo', 'testcases'],
+                         sorted([r.name for r in userobj.repo_objs]))
         with self.app.store.engine.connect() as conn:
-            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
-        self.assertEquals(['/testcases', 'broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+            conn.execute(_REPOS.insert().values(
+                userid=userobj._userid, repopath='/testcases'))
+        self.assertEqual(['/testcases', 'broker-repo', 'testcases'],
+                         sorted([r.name for r in userobj.repo_objs]))
         self.app.store._update()
-        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        self.assertEqual(['broker-repo', 'testcases'],
+                         sorted([r.name for r in userobj.repo_objs]))
 
     def test_update_remove_nested(self):
         # Update repos should remove duplicate entries from the database
         # generate by previous versions.
         userobj = self.app.store.get_user(self.USERNAME)
-        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        self.assertEqual(['broker-repo', 'testcases'],
+                         sorted([r.name for r in userobj.repo_objs]))
         with self.app.store.engine.connect() as conn:
-            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='testcases/home/admin/testcases'))
-            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases/home/admin/data'))
-        self.assertEquals(['/testcases/home/admin/data', 'broker-repo', 'testcases', 'testcases/home/admin/testcases'], sorted([r.name for r in userobj.repo_objs]))
+            conn.execute(_REPOS.insert().values(
+                userid=userobj._userid, repopath='testcases/home/admin/testcases'))
+            conn.execute(_REPOS.insert().values(
+                userid=userobj._userid, repopath='/testcases/home/admin/data'))
+        self.assertEqual(['/testcases/home/admin/data', 'broker-repo', 'testcases',
+                          'testcases/home/admin/testcases'], sorted([r.name for r in userobj.repo_objs]))
         self.app.store._update()
-        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        self.assertEqual(['broker-repo', 'testcases'],
+                         sorted([r.name for r in userobj.repo_objs]))
 
     def test_update_repos_remove_slash(self):
         # Check if "/" get removed
         userobj = self.app.store.get_user(self.USERNAME)
-        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        self.assertEqual(['broker-repo', 'testcases'],
+                         sorted([r.name for r in userobj.repo_objs]))
         with self.app.store.engine.connect() as conn:
-            conn.execute(_REPOS.delete().where(_REPOS.c.userid == userobj._userid))  # @UndefinedVariable
-            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
-        self.assertEquals(['/testcases', 'broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+            conn.execute(_REPOS.delete().where(_REPOS.c.userid ==
+                         userobj._userid))  # @UndefinedVariable
+            conn.execute(_REPOS.insert().values(
+                userid=userobj._userid, repopath='/testcases'))
+        self.assertEqual(['/testcases', 'broker-repo', 'testcases'],
+                         sorted([r.name for r in userobj.repo_objs]))
         self.app.store._update()
-        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        self.assertEqual(['broker-repo', 'testcases'],
+                         sorted([r.name for r in userobj.repo_objs]))
 
 
 class StoreWithLdapTest(AbstractLdapStoreTest):
@@ -435,7 +435,7 @@ class StoreWithLdapTest(AbstractLdapStoreTest):
     default_config = {
         'ldap-uri': '__default__',
         'ldap-base-dn': 'dc=nodomain',
-        'ldap-allow-password-change':'true'
+        'ldap-allow-password-change': 'true'
     }
 
     def test_add_user_to_sqlite(self):
@@ -543,10 +543,12 @@ class StoreWithLdapAddMissing(AbstractLdapStoreTest):
         self.assertFalse(userobj.is_admin)
         self.assertEqual(USER_ROLE, userobj.role)
         self.assertEqual('', userobj.user_root)
-        self.assertEqual(None, userobj.email)
+        self.assertEqual('', userobj.email)
         # Check listener
-        self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
-        self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
+        self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [
+                                                          u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
+        self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [
+                                                            u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
 
     def test_login_with_create_user_with_email(self):
         """Check if login create the user in database if user exists in LDAP"""
@@ -578,8 +580,10 @@ class StoreWithLdapAddMissingWithDefaults(AbstractLdapStoreTest):
         self.assertEqual(MAINTAINER_ROLE, userobj.role)
         self.assertEqual('/backups/users/tony', userobj.user_root)
         # Check listener
-        self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
-        self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
+        self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [
+                                                          u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
+        self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [
+                                                            u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
 
 
 class StoreWithAdmin(AppTestCase):
@@ -631,13 +635,15 @@ class StoreTestSSHKeys(AppTestCase):
 
     def _read_ssh_key(self):
         """Readthe pub key from test packages"""
-        filename = pkg_resources.resource_filename(__name__, 'test_publickey_ssh_rsa.pub')  # @UndefinedVariable
+        filename = pkg_resources.resource_filename(
+            __name__, 'test_publickey_ssh_rsa.pub')  # @UndefinedVariable
         with open(filename, 'r', encoding='utf8') as f:
             return f.readline()
 
     def _read_authorized_keys(self):
         """Read the content of test_authorized_keys"""
-        filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable
+        filename = pkg_resources.resource_filename(
+            __name__, 'test_authorized_keys')  # @UndefinedVariable
         with open(filename, 'r', encoding='utf8') as f:
             return f.read()
 
@@ -654,7 +660,8 @@ class StoreTestSSHKeys(AppTestCase):
         # validate
         keys = list(userobj.authorizedkeys)
         self.assertEqual(1, len(keys), "expecting one key")
-        self.assertEqual("3c:99:ed:a7:82:a8:71:09:2c:15:3d:78:4a:8c:11:99", keys[0].fingerprint)
+        self.assertEqual(
+            "3c:99:ed:a7:82:a8:71:09:2c:15:3d:78:4a:8c:11:99", keys[0].fingerprint)
 
     def test_add_authorizedkey_duplicate(self):
         # Read the pub key
@@ -703,7 +710,8 @@ class StoreTestSSHKeys(AppTestCase):
         self.assertEqual(2, len(keys))
 
         # Remove a key
-        userobj.delete_authorizedkey("9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
+        userobj.delete_authorizedkey(
+            "9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
 
         # Validate
         keys = list(userobj.authorizedkeys)
@@ -726,7 +734,8 @@ class StoreTestSSHKeys(AppTestCase):
         self.assertEqual(5, len(keys))
 
         # Remove a key
-        userobj.delete_authorizedkey("9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
+        userobj.delete_authorizedkey(
+            "9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
 
         # Validate
         keys = list(userobj.authorizedkeys)
@@ -738,22 +747,24 @@ class UserObjectTest(AppTestCase):
 
     def test_set_get_repos(self):
         userobj = self.app.store.get_user(self.USERNAME)
-        self.assertEquals(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        self.assertEqual(['broker-repo', 'testcases'],
+                         sorted([r.name for r in userobj.repo_objs]))
 
         # Test empty list
         userobj.get_repo('testcases').delete()
-        self.assertEquals(['broker-repo'], sorted([r.name for r in userobj.repo_objs]))
+        self.assertEqual(
+            ['broker-repo'], sorted([r.name for r in userobj.repo_objs]))
 
         # Make sure we get a repo
         repo_obj = userobj.get_repo('broker-repo')
-        self.assertEquals("broker-repo", repo_obj.name)
+        self.assertEqual("broker-repo", repo_obj.name)
         repo_obj.maxage = 10
-        self.assertEquals(10, repo_obj.maxage)
+        self.assertEqual(10, repo_obj.maxage)
 
         # Make sure we get a repo_path
         repo_obj = userobj.get_repo('broker-repo')
         repo_obj.maxage = 7
-        self.assertEquals(7, repo_obj.maxage)
+        self.assertEqual(7, repo_obj.maxage)
 
 
 class RepoObjectTest(AppTestCase):
@@ -762,7 +773,8 @@ class RepoObjectTest(AppTestCase):
     def test_str(self):
         userobj = self.app.store.get_user(self.USERNAME)
         repo_obj = userobj.get_repo(self.REPO)
-        self.assertEqual("RepoObject[%s, testcases]" % userobj._userid , str(repo_obj))
+        self.assertEqual("RepoObject[%s, testcases]" %
+                         userobj._userid, str(repo_obj))
 
     def test_eq(self):
         userobj = self.app.store.get_user(self.USERNAME)
@@ -796,9 +808,3 @@ class RepoObjectTest(AppTestCase):
         # Check with invalid value.
         with self.assertRaises(ValueError):
             repo_obj.keepdays = "invalid"
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

@@ -88,7 +88,7 @@ class LdapPasswordStore():
                     shadow_expire = self._attr_shadow_expire(r)
                     # Convert nb. days into seconds.
                     if shadow_expire and shadow_expire * 24 * 60 * 60 < time.time():
-                        logger.warn("user account %s expired: %s", username, shadow_expire)
+                        logger.warning("user account %s expired: %s", username, shadow_expire)
                         raise RdiffError(_('User account %s expired.' % username))
 
                 # Get username
@@ -223,7 +223,7 @@ class LdapPasswordStore():
             raise RdiffError(_("Password can't be empty."))
         # Check if users are allowed to change their password in LDAP.
         if not self.allow_password_change:
-            logger.warn("authentication backend for user [%s] does not support changing the password", username)
+            logger.warning("authentication backend for user [%s] does not support changing the password", username)
             raise RdiffError(_("LDAP users are not allowed to change their password."))
 
         # Check if old_password id valid

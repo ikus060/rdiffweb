@@ -9,7 +9,14 @@
             "type": "python",
             "request": "launch",
             "module": "rdiffweb.main",
-            "args": ["-f", "testrdw.conf"]
-        }
+            "args": ["-f", "testrdw.conf"],
+            "justMyCode": false
+        },
+        {
+            "name": "Debug Unit Test",
+            "type": "python",
+            "request": "test",
+            "justMyCode": false,
+        },
     ]
 }

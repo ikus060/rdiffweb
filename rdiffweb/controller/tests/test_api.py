@@ -22,12 +22,10 @@ Created on Nov 16, 2017
 
 
 from base64 import b64encode
-import logging
-from rdiffweb.test import WebCase
-import unittest
+import rdiffweb.test
 
 
-class APITest(WebCase):
+class APITest(rdiffweb.test.WebCase):
 
     headers = [("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))]
 
@@ -49,9 +47,3 @@ class APITest(WebCase):
         self.assertEqual(repo.get('encoding'), 'utf-8')
         self.assertEqual(repo.get('name'), 'testcases')
         self.assertEqual(repo.get('maxage'), 0)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

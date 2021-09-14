@@ -24,7 +24,7 @@ Update an existing translation:
 
 Rdiffweb is provided with unit tests. To run them, execute a command similar to the following:
 
-    python setup.py. nosetests
+    tox -e py3
 
 ## Less & CSS(s)
 

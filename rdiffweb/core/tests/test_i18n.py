@@ -22,14 +22,14 @@ Module used to test the i18n tools. Check if translation are properly loaded.
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from cherrypy import _cpconfig
-import cherrypy
 import gettext
-import pkg_resources
 import unittest
 
+import cherrypy
+import pkg_resources
+import rdiffweb.test
+from cherrypy import _cpconfig
 from rdiffweb.core import i18n
-from rdiffweb.test import WebCase
 
 
 class Test(unittest.TestCase):
@@ -146,7 +146,7 @@ class Test(unittest.TestCase):
         pass
 
 
-class TestI18nWebCase(WebCase):
+class TestI18nWebCase(rdiffweb.test.WebCase):
 
     def test_language_with_unknown(self):
         #  Query the page without login-in
@@ -187,8 +187,3 @@ class TestI18nWebCase(WebCase):
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "fr_CA")
         self.assertInBody("Se connecter")
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()
