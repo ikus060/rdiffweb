@@ -38,15 +38,19 @@ from rdiffweb.core.store import IUserChangeListener, ADMIN_ROLE, USER_ROLE, \
 from rdiffweb.test import AppTestCase
 
 
-def _ldap_user(name, password='password'):
+def _ldap_user(name, password='password', email=None):
     """Create ldap entry to be mock."""
     assert isinstance(name, str)
     assert isinstance(password, str)
-    return ('uid=%s,ou=People,dc=nodomain' % (name), {
+    data = {
         'uid': [name],
         'cn': [name],
         'userPassword': [password],
-        'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']})
+        'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']
+    }
+    if email:
+        data['mail'] = [email]
+    return ('uid=%s,ou=People,dc=nodomain' % (name), data)
 
 
 class AbstractStoreTest(AppTestCase):
@@ -92,6 +96,7 @@ class AbstractLdapStoreTest(AbstractStoreTest):
         _ldap_user('mike'),
         _ldap_user('tony'),
         _ldap_user('vicky'),
+        _ldap_user('userwithemail', email='user@example.com'),
     ])
 
     default_config = {
@@ -538,9 +543,20 @@ class StoreWithLdapAddMissing(AbstractLdapStoreTest):
         self.assertFalse(userobj.is_admin)
         self.assertEqual(USER_ROLE, userobj.role)
         self.assertEqual('', userobj.user_root)
+        self.assertEqual(None, userobj.email)
         # Check listener
         self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
         self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
+
+    def test_login_with_create_user_with_email(self):
+        """Check if login create the user in database if user exists in LDAP"""
+        self.assertIsNone(self.app.store.get_user('userwithemail'))
+        userobj = self.app.store.login('userwithemail', 'password')
+        self.assertIsNotNone(self.app.store.get_user('userwithemail'))
+        self.assertFalse(userobj.is_admin)
+        self.assertEqual(USER_ROLE, userobj.role)
+        self.assertEqual('', userobj.user_root)
+        self.assertEqual('user@example.com', userobj.email)
 
 
 class StoreWithLdapAddMissingWithDefaults(AbstractLdapStoreTest):
