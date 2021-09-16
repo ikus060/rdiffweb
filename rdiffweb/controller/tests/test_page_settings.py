@@ -25,11 +25,11 @@ Created on Jan 1, 2016
 import logging
 import unittest
 
+import rdiffweb.test
 from rdiffweb.core.store import USER_ROLE
-from rdiffweb.test import WebCase
 
 
-class SettingsTest(WebCase):
+class SettingsTest(rdiffweb.test.WebCase):
 
     login = True
 
@@ -57,14 +57,8 @@ class SettingsTest(WebCase):
 
     def test_set_maxage(self):
         self.getPage("/settings/" + self.USERNAME + "/" + self.REPO + "/", method="POST",
-            body={'maxage': '4'})
+                     body={'maxage': '4'})
         self.assertStatus(200)
         # Check database update
         repo_obj = self.app.store.get_user('admin').get_repo(self.REPO)
         self.assertEqual(4, repo_obj.maxage)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

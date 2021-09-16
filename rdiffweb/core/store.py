@@ -753,14 +753,18 @@ class Store():
             self._notify('user_logined', userobj, None)
             return userobj
 
-        # Fallback to LDAP
+        # Fallback to LDAP server to validate the user's credentials
+        # or to create a new user in database.
         if userobj or self._ldap_add_user:
             try:
+                # Check if credential are valid
                 valid = self._ldap_store.are_valid_credentials(user, password)
                 if valid:
                     real_user, attrs = valid
-                    if not userobj:
-                        # In case default values are invalid, let evaluate them before creating the user in database.
+                    if not userobj and self._ldap_add_user:
+                        # At this point, we need to create a new user in database.
+                        # In case default values are invalid, let evaluate them
+                        # before creating the user in database.
                         default_user_root = self._ldap_add_user_default_userroot.format(
                             **attrs)
                         default_role = ROLES.get(
@@ -768,10 +772,13 @@ class Store():
                         userobj = self.add_user(real_user, attrs=attrs)
                         userobj.user_root = default_user_root
                         userobj.role = default_role
+                        # Populate the email attribute using LDAP mail attribute.
+                        # Default to empty string to respect database integrity.
+                        userobj.email = next(iter(attrs.get('mail', [])), '')
                     self._notify('user_logined', userobj, attrs)
                     return userobj
             except:
-                logger.warn('fail to validate credentials', exc_info=1)
+                logger.warning('fail to validate credentials', exc_info=1)
         return None
 
     def _notify(self, mod, *args):

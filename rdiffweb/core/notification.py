@@ -79,7 +79,7 @@ def html2plaintext(html, body_id=None, encoding='utf-8'):
     html = html.replace('<em>', '/').replace('</em>', '/')
     html = html.replace('<tr>', '\n')
     html = html.replace('</p>', '\n')
-    html = re.sub('<br\s*/?>', '\n', html)
+    html = re.sub('<br\\s*/?>', '\n', html)
     html = re.sub('<.*?>', ' ', html)
     html = html.replace(' ' * 2, ' ')
     html = html.replace('&gt;', '>')
@@ -205,7 +205,7 @@ class NotificationPlugin(EmailClient, IUserChangeListener):
 
         # Warn the administrator if a notification should be sent, but email host is not defined.
         if not self._email_host:
-            logger.warn(
+            logger.warning(
                 'cannot send email notification because `email-host` is not configured')
             return
 
@@ -231,7 +231,7 @@ class NotificationPlugin(EmailClient, IUserChangeListener):
 
         # Warn the administrator if a notification should be sent, but email host is not defined.
         if not self._email_host:
-            logger.warn(
+            logger.warning(
                 'cannot send email notification because `email-host` is not configured')
             return
 
@@ -271,7 +271,7 @@ class NotificationJob(EmailClient):
 
         # Warn the administrator if a notification should be sent, but email host is not defined.
         if not self._email_host:
-            logger.warn(
+            logger.warning(
                 'cannot send email notification because `email-host` is not configured')
             return
 

@@ -35,8 +35,3 @@ class Test(unittest.TestCase):
         self.assertTrue(hash_password('admin12').startswith('{SSHA}'))
         self.assertTrue(check_password('admin12', hash_password('admin12')))
         self.assertTrue(check_password('admin123', hash_password('admin123')))
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

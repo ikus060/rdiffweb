@@ -24,10 +24,10 @@ Created on Mar 13, 2019
 import logging
 import unittest
 
-from rdiffweb.test import WebCase
+import rdiffweb.test
 
 
-class ControllerTest(WebCase):
+class ControllerTest(rdiffweb.test.WebCase):
 
     default_config = {'HeaderName':'MyTest'}
 
@@ -46,7 +46,7 @@ class ControllerTest(WebCase):
         self.assertInBody('/static/default.css')
 
 
-class ControllerOrangeThemeTest(WebCase):
+class ControllerOrangeThemeTest(rdiffweb.test.WebCase):
 
     default_config = {'DefaultTheme':'orange'}
 
@@ -57,7 +57,7 @@ class ControllerOrangeThemeTest(WebCase):
         self.getPage("/")
         self.assertInBody('/static/orange.css')
 
-class ControllerBlueThemeTest(WebCase):
+class ControllerBlueThemeTest(rdiffweb.test.WebCase):
 
     default_config = {'DefaultTheme':'blue'}
 
@@ -67,9 +67,3 @@ class ControllerBlueThemeTest(WebCase):
         """
         self.getPage("/")
         self.assertInBody('/static/blue.css')
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

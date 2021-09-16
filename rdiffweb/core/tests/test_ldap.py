@@ -23,8 +23,6 @@ Created on Oct 17, 2015
 import logging
 import unittest
 
-from mockldap import MockLdap
-
 from rdiffweb.core import RdiffError
 from rdiffweb.core.ldap_auth import LdapPasswordStore
 from rdiffweb.test import AppTestCase
@@ -54,7 +52,7 @@ class UserManagerLdapTest(AppTestCase):
 
     # This is the content of our mock LDAP directory. It takes the form
     # {dn: {attr: [value, ...], ...}, ...}.
-    directory = dict([
+    ldap_directory = dict([
         basedn,
         people,
         groups,
@@ -75,49 +73,33 @@ class UserManagerLdapTest(AppTestCase):
         'LdapAllowPasswordChange': 'true',
     }
 
-    @classmethod
-    def setup_class(cls):
-        # We only need to create the MockLdap instance once. The content we
-        # pass in will be used for all LDAP connections.
-        cls.mockldap = MockLdap(cls.directory)
-        super(UserManagerLdapTest, cls).setup_class()
-
-    @classmethod
-    def teardown_class(cls):
-        del cls.mockldap
-        super(UserManagerLdapTest, cls).teardown_class()
-
     def setUp(self):
-        AppTestCase.setUp(self)
-        # Mock LDAP
-        self.mockldap.start()
-        self.ldapobj = self.mockldap['ldap://localhost/']
+        super().setUp()
         # Get reference to LdapStore
         self.ldapstore = self.app.store._ldap_store
         self.assertTrue(isinstance(self.ldapstore, LdapPasswordStore))
 
-    def tearDown(self):
-        # Stop patching ldap.initialize and reset state.
-        self.mockldap.stop()
-        del self.ldapobj
-        AppTestCase.tearDown(self)
-
     def test_are_valid_credentials(self):
 
-        username, attrs = self.ldapstore.are_valid_credentials('mike', 'password')
-        self.assertEquals('mike', username)
-        self.assertEquals(attrs, {'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'], 'userPassword': ['password'], 'uid': ['mike'], 'cn': ['mike']})
+        username, attrs = self.ldapstore.are_valid_credentials(
+            'mike', 'password')
+        self.assertEqual('mike', username)
+        self.assertEqual(attrs, {'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'], 'userPassword': [
+            'password'], 'uid': ['mike'], 'cn': ['mike']})
 
     def test_are_valid_credentials_with_invalid_password(self):
-        self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'invalid'))
+        self.assertFalse(
+            self.ldapstore.are_valid_credentials('jeff', 'invalid'))
         # password is case sensitive
-        self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'Password'))
+        self.assertFalse(
+            self.ldapstore.are_valid_credentials('jeff', 'Password'))
         # Match entire password
         self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'pass'))
         self.assertFalse(self.ldapstore.are_valid_credentials('jeff', ''))
 
     def test_are_valid_credentials_with_invalid_user(self):
-        self.assertIsNone(self.ldapstore.are_valid_credentials('josh', 'password'))
+        self.assertIsNone(
+            self.ldapstore.are_valid_credentials('josh', 'password'))
 
     def test_delete_user(self):
         # Delete_user is not supported by LdapPlugin.
@@ -136,16 +118,19 @@ class UserManagerLdapTest(AppTestCase):
         self.assertFalse(self.ldapstore.set_password('annik', 'new_password'))
 
     def test_set_password_with_old_password(self):
-        self.assertFalse(self.ldapstore.set_password('john', 'new_password', old_password='password'))
+        self.assertFalse(self.ldapstore.set_password(
+            'john', 'new_password', old_password='password'))
 
     def test_set_password_with_invalid_old_password(self):
         with self.assertRaises(RdiffError):
-            self.ldapstore.set_password('foo', 'new_password', old_password='invalid')
+            self.ldapstore.set_password(
+                'foo', 'new_password', old_password='invalid')
 
     def test_set_password_update_not_exists(self):
         """Expect error when trying to update password of invalid user."""
         with self.assertRaises(RdiffError):
-            self.assertFalse(self.ldapstore.set_password('bar', 'new_password'))
+            self.assertFalse(
+                self.ldapstore.set_password('bar', 'new_password'))
 
 
 class UserManagerLdapNoPasswordChangeTest(AppTestCase):
@@ -159,7 +144,7 @@ class UserManagerLdapNoPasswordChangeTest(AppTestCase):
 
     # This is the content of our mock LDAP directory. It takes the form
     # {dn: {attr: [value, ...], ...}, ...}.
-    directory = dict([
+    ldap_directory = dict([
         basedn,
         people,
         _ldap_user('annik'),
@@ -173,31 +158,10 @@ class UserManagerLdapNoPasswordChangeTest(AppTestCase):
         'LdapAllowPasswordChange': 'false'
     }
 
-    @classmethod
-    def setup_class(cls):
-        # We only need to create the MockLdap instance once. The content we
-        # pass in will be used for all LDAP connections.
-        cls.mockldap = MockLdap(cls.directory)
-        super(UserManagerLdapNoPasswordChangeTest, cls).setup_class()
-
-    @classmethod
-    def teardown_class(cls):
-        del cls.mockldap
-        super(UserManagerLdapNoPasswordChangeTest, cls).teardown_class()
-
     def setUp(self):
-        AppTestCase.setUp(self)
-        # Mock LDAP
-        self.mockldap.start()
-        self.ldapobj = self.mockldap['ldap://localhost/']
+        super().setUp()
         # Get reference to LdapStore
         self.ldapstore = self.app.store._ldap_store
-
-    def tearDown(self):
-        # Stop patching ldap.initialize and reset state.
-        self.mockldap.stop()
-        del self.ldapobj
-        AppTestCase.tearDown(self)
 
     def test_set_password_update(self):
         with self.assertRaises(RdiffError):
@@ -205,16 +169,19 @@ class UserManagerLdapNoPasswordChangeTest(AppTestCase):
 
     def test_set_password_with_old_password(self):
         with self.assertRaises(RdiffError):
-            self.ldapstore.set_password('john', 'new_password', old_password='password')
+            self.ldapstore.set_password(
+                'john', 'new_password', old_password='password')
 
     def test_set_password_with_invalid_old_password(self):
         with self.assertRaises(RdiffError):
-            self.ldapstore.set_password('foo', 'new_password', old_password='invalid')
+            self.ldapstore.set_password(
+                'foo', 'new_password', old_password='invalid')
 
     def test_set_password_update_not_exists(self):
         """Expect error when trying to update password of invalid user."""
         with self.assertRaises(RdiffError):
-            self.assertFalse(self.ldapstore.set_password('bar', 'new_password'))
+            self.assertFalse(
+                self.ldapstore.set_password('bar', 'new_password'))
 
 
 class UserManagerLdapWithRequiredGroupTest(AppTestCase):
@@ -237,7 +204,7 @@ class UserManagerLdapWithRequiredGroupTest(AppTestCase):
 
     # This is the content of our mock LDAP directory. It takes the form
     # {dn: {attr: [value, ...], ...}, ...}.
-    directory = dict([
+    ldap_directory = dict([
         basedn,
         people,
         groups,
@@ -256,55 +223,34 @@ class UserManagerLdapWithRequiredGroupTest(AppTestCase):
         'LDAPGroupAttributeIsDN': 'false',
     }
 
-    @classmethod
-    def setup_class(cls):
-        # We only need to create the MockLdap instance once. The content we
-        # pass in will be used for all LDAP connections.
-        cls.mockldap = MockLdap(cls.directory)
-        super(UserManagerLdapWithRequiredGroupTest, cls).setup_class()
-
-    @classmethod
-    def teardown_class(cls):
-        del cls.mockldap
-        super(UserManagerLdapWithRequiredGroupTest, cls).teardown_class()
-
     def setUp(self):
-        AppTestCase.setUp(self)
-        # Mock LDAP
-        self.mockldap.start()
-        self.ldapobj = self.mockldap['ldap://localhost/']
+        super().setUp()
         # Get reference to LdapStore
         self.ldapstore = self.app.store._ldap_store
         self.assertTrue(isinstance(self.ldapstore, LdapPasswordStore))
 
-    def tearDown(self):
-        # Stop patching ldap.initialize and reset state.
-        self.mockldap.stop()
-        del self.ldapobj
-        AppTestCase.tearDown(self)
-
     def test_are_valid_credentials(self):
-        username, attrs = self.ldapstore.are_valid_credentials('mike', 'password')
-        self.assertEquals('mike', username)
-        username, attrs = self.ldapstore.are_valid_credentials('jeff', 'password')
-        self.assertEquals('jeff', username)
+        username, attrs = self.ldapstore.are_valid_credentials(
+            'mike', 'password')
+        self.assertEqual('mike', username)
+        username, attrs = self.ldapstore.are_valid_credentials(
+            'jeff', 'password')
+        self.assertEqual('jeff', username)
 
     def test_are_valid_credentials_with_invalid_password(self):
-        self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'invalid'))
+        self.assertFalse(
+            self.ldapstore.are_valid_credentials('jeff', 'invalid'))
         # password is case sensitive
-        self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'Password'))
+        self.assertFalse(
+            self.ldapstore.are_valid_credentials('jeff', 'Password'))
         # Match entire password
         self.assertFalse(self.ldapstore.are_valid_credentials('jeff', 'pass'))
         self.assertFalse(self.ldapstore.are_valid_credentials('jeff', ''))
 
     def test_are_valid_credentials_with_invalid_user(self):
-        self.assertIsNone(self.ldapstore.are_valid_credentials('josh', 'password'))
+        self.assertIsNone(
+            self.ldapstore.are_valid_credentials('josh', 'password'))
 
     def test_are_valid_credentials_missing_group(self):
-        self.assertFalse(self.ldapstore.are_valid_credentials('bob', 'password'))
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()
+        self.assertFalse(
+            self.ldapstore.are_valid_credentials('bob', 'password'))

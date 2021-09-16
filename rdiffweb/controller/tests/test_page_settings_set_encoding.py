@@ -24,11 +24,11 @@ Created on Jan 1, 2016
 import logging
 import unittest
 
+import rdiffweb.test
 from rdiffweb.core.store import DEFAULT_REPO_ENCODING, USER_ROLE
-from rdiffweb.test import WebCase
 
 
-class SetEncodingTest(WebCase):
+class SetEncodingTest(rdiffweb.test.WebCase):
 
     login = True
 
@@ -49,7 +49,8 @@ class SetEncodingTest(WebCase):
         """
         Check if /api/set-encoding/ is still working.
         """
-        self.getPage("/api/set-encoding/admin/testcases/", method="POST", body={'new_encoding': 'cp1252'})
+        self.getPage("/api/set-encoding/admin/testcases/",
+                     method="POST", body={'new_encoding': 'cp1252'})
         self.assertStatus(200)
         # Check results
         user = self.app.store.get_user(self.USERNAME)
@@ -63,7 +64,8 @@ class SetEncodingTest(WebCase):
         self._set_encoding('admin', 'testcases', 'cp1252')
         self.assertStatus(200)
         self.assertInBody("Updated")
-        self.assertEquals('cp1252', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
+        self.assertEqual('cp1252', self.app.store.get_user(
+            self.USERNAME).get_repo(self.REPO).encoding)
         # Get back encoding.
         self._settings('admin', 'testcases')
         self.assertInBody('selected value="cp1252"')
@@ -75,7 +77,8 @@ class SetEncodingTest(WebCase):
         self._set_encoding('admin', 'testcases', 'US-ASCII')
         self.assertStatus(200)
         self.assertInBody("Updated")
-        self.assertEquals('ascii', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
+        self.assertEqual('ascii', self.app.store.get_user(
+            self.USERNAME).get_repo(self.REPO).encoding)
         # Get back encoding.
         self._settings('admin', 'testcases')
         self.assertInBody('selected value="ascii"')
@@ -99,7 +102,8 @@ class SetEncodingTest(WebCase):
         # Get back encoding.
         self._settings('admin', 'testcases')
         self.assertInBody('selected value="cp1252"')
-        self.assertEquals('cp1252', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
+        self.assertEqual('cp1252', self.app.store.get_user(
+            self.USERNAME).get_repo(self.REPO).encoding)
 
     def test_as_another_user(self):
         # Create another user with admin right
@@ -108,7 +112,7 @@ class SetEncodingTest(WebCase):
 
         self._set_encoding('anotheruser', 'testcases', 'cp1252')
         self.assertStatus('200 OK')
-        self.assertEquals('cp1252', user_obj.get_repo('testcases').encoding)
+        self.assertEqual('cp1252', user_obj.get_repo('testcases').encoding)
 
         # Remove admin right
         admin = self.app.store.get_user('admin')
@@ -117,9 +121,3 @@ class SetEncodingTest(WebCase):
         # Browse admin's repos
         self._set_encoding('anotheruser', 'testcases', 'utf-8')
         self.assertStatus('403 Forbidden')
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()

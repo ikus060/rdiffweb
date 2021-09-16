@@ -369,14 +369,14 @@ class RdiffRepoTest(unittest.TestCase):
 
     def test_error_log_range(self):
         logs = self.repo.error_log[0:1]
-        self.assertEquals(1, len(logs))
-        self.assertEquals("", self.repo.error_log[0].read())
+        self.assertEqual(1, len(logs))
+        self.assertEqual("", self.repo.error_log[0].read())
 
     def test_backup_log(self):
-        self.assertEquals("", self.repo.backup_log.read())
+        self.assertEqual("", self.repo.backup_log.read())
 
     def test_restore_log(self):
-        self.assertEquals(self.repo.restore_log.read(), """Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpKDNO4t/root as it was as of Wed Nov  5 16:05:07 2014.
+        self.assertEqual(self.repo.restore_log.read(), """Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpKDNO4t/root as it was as of Wed Nov  5 16:05:07 2014.
 Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpnG33kc/root as it was as of Wed Nov  5 16:05:07 2014.
 Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpGUEHJC/root as it was as of Wed Nov  5 16:05:07 2014.
 Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpBlFPsW/root as it was as of Wed Nov  5 16:05:07 2014.
@@ -396,46 +396,46 @@ Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpBRxRxe/root as 
 
     def test_session_statistics_idx(self):
         # Index
-        self.assertEquals(
+        self.assertEqual(
             RdiffTime('2014-11-01T15:50:48-04:00'),
             self.repo.session_statistics[2].date)
 
     def test_session_statistics_neg_idx(self):
         # Negative index
-        self.assertEquals(
+        self.assertEqual(
             RdiffTime('2016-02-02T16:30:40-05:00'),
             self.repo.session_statistics[-1].date)
 
     def test_session_statistics_date(self):
         # Index
-        self.assertEquals(
+        self.assertEqual(
             RdiffTime('2016-02-02T16:30:40-05:00'),
             self.repo.session_statistics[RdiffTime('2016-02-02T16:30:40-05:00')].date)
 
     def test_session_statistics_slice_idx(self):
         # Slice with index
-        self.assertEquals(
+        self.assertEqual(
             [RdiffTime('2016-01-20T10:42:21-05:00'),
              RdiffTime('2016-02-02T16:30:40-05:00')],
             [s.date for s in self.repo.session_statistics[-2:]])
 
     def test_session_statistics_slice_date_start(self):
         # Slice with date (start)
-        self.assertEquals(
+        self.assertEqual(
             [RdiffTime('2016-01-20T10:42:21-05:00'),
              RdiffTime('2016-02-02T16:30:40-05:00')],
             [s.date for s in self.repo.session_statistics[RdiffTime('2016-01-20T10:42:21-05:00'):]])
 
     def test_session_statistics_slice_date_start_stop(self):
         # Slice with date (start, stop)
-        self.assertEquals(
+        self.assertEqual(
             [RdiffTime('2014-11-02T17:23:41-05:00'), RdiffTime(
                 '2014-11-03T15:46:47-05:00'), RdiffTime('2014-11-03T19:04:57-05:00')],
             [s.date for s in self.repo.session_statistics[RdiffTime('2014-11-02T17:00:00-05:00'):RdiffTime('2014-11-04T00:00:00-05:00')]])
 
     def test_session_statistics_slice_date_start_stop_exact_match(self):
         # Slice with date (start, stop)
-        self.assertEquals(
+        self.assertEqual(
             [RdiffTime('2014-11-02T17:23:41-05:00'), RdiffTime(
                 '2014-11-03T15:46:47-05:00'), RdiffTime('2014-11-03T19:04:57-05:00')],
             [s.date for s in self.repo.session_statistics[RdiffTime('2014-11-02T17:23:41-05:00'):RdiffTime('2014-11-03T19:04:57-05:00')]])

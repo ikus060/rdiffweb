@@ -205,7 +205,7 @@ class BasicAuth(BaseAuth):
                         # Return False to call default page handler.
                         return False
                     except RdiffError:
-                        logger.warn('basic auth fail for user: %s', login, exc_info=1)
+                        logger.warning('basic auth fail for user: %s', login, exc_info=1)
                         cherrypy.serving.response.headers['www-authenticate'] = (
                             'Basic realm="%s"%s' % ('rdiffweb', 'utf-8')
                         )

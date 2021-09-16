@@ -53,7 +53,7 @@ LANG = "en_US." + STDOUT_ENCODING
 # PATH for executable lookup
 PATH = path = os.path.dirname(sys.executable) + os.pathsep + os.environ['PATH']
 
-PID_RE = re.compile(b"^PID\s*([0-9]+)", re.I | re.M)
+PID_RE = re.compile(b"^PID\\s*([0-9]+)", re.I | re.M)
 
 
 def rdiff_backup_version():
@@ -993,7 +993,7 @@ class RdiffRepo(object):
         try:
             shutil.rmtree(self.full_path, onerror=handle_error)
         except:
-            logger.warn('fail to delete repo', exc_info=1)
+            logger.warning('fail to delete repo', exc_info=1)
 
     @property
     def display_name(self):
@@ -1025,7 +1025,7 @@ class RdiffRepo(object):
         try:
             return RdiffTime(date_string.decode())
         except:
-            logger.warn('fail to parse date [%r]', date_string, exc_info=1)
+            logger.warning('fail to parse date [%r]', date_string, exc_info=1)
             return None
 
     def _get_increment_entries(self, path):
@@ -1138,7 +1138,7 @@ class RdiffRepo(object):
 
         except PermissionError:
             self._entries = []
-            logger.warn('error reading current_mirror files', exc_info=1)
+            logger.warning('error reading current_mirror files', exc_info=1)
             return ('failed', _("Permissions denied. Contact administrator to check repository's permissions."))
 
         return ('ok', '')

@@ -23,7 +23,7 @@ pip-log.txt
 .coverage
 .tox
 coverage*.xml
-nosetests*.xml
+xunit*.xml
 
 #Mr Developer
 .mr.developer.cfg

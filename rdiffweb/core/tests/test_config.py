@@ -152,8 +152,3 @@ NoValue=#This is a setting with no value
         self.write_bad_file(1)
         value = self.config.get("this")
         self.assertEqual("more=than one equals", value)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

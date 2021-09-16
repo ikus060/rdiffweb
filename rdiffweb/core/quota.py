@@ -107,14 +107,14 @@ class DefaultUserQuota():
             try:
                 return psutil.disk_usage(userobj.user_root).used
             except:
-                logger.warn('fail to get disk usage [%s]', userobj.username, exc_info=1)
+                logger.warning('fail to get disk usage [%s]', userobj.username, exc_info=1)
                 return 0
         # Execute a command to get disk usage
         try:
             used = self._exec(self._get_usage_cmd, userobj)
             return int(used.strip())
         except Exception:
-            logger.warn('fail to get user disk usage [%s]', userobj.username, exc_info=1)
+            logger.warning('fail to get user disk usage [%s]', userobj.username, exc_info=1)
             return 0
 
     def get_disk_quota(self, userobj):
@@ -131,14 +131,14 @@ class DefaultUserQuota():
             try:
                 return psutil.disk_usage(userobj.user_root).total
             except:
-                logger.warn('fail to get disk size [%s]', userobj.username, exc_info=1)
+                logger.warning('fail to get disk size [%s]', userobj.username, exc_info=1)
                 return 0
         # Execute a command to get disk usage
         try:
             total = self._exec(self._get_quota_cmd, userobj)
             return int(total.strip())
         except Exception:
-            logger.warn('fail to get user quota [%s]', userobj.username, exc_info=1)
+            logger.warning('fail to get user quota [%s]', userobj.username, exc_info=1)
             return 0
 
     def set_disk_quota(self, userobj, quota):
@@ -157,6 +157,6 @@ class DefaultUserQuota():
         except subprocess.CalledProcessError as e:
             raise QuotaException(e.output)
         except Exception as e:
-            logger.warn('fail to set user quota [%s]', userobj.username, exc_info=1)
+            logger.warning('fail to set user quota [%s]', userobj.username, exc_info=1)
             raise QuotaException(str(e))
 

@@ -22,19 +22,18 @@ Created on Apr 10, 2016
 
 import logging
 import os
-from time import sleep
 import unittest
+from time import sleep
 from unittest.case import skipIf
 
+import rdiffweb.test
 from rdiffweb.core.librdiff import DoesNotExistError, rdiff_backup_version
 from rdiffweb.core.store import MAINTAINER_ROLE, USER_ROLE
-from rdiffweb.test import WebCase
-
 
 RDIFF_BACKUP_VERSION = rdiff_backup_version()
 
 
-class DeleteRepoTest(WebCase):
+class DeleteRepoTest(rdiffweb.test.WebCase):
 
     login = True
 
@@ -179,9 +178,3 @@ class DeleteRepoTest(WebCase):
         # Check database don't change
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
         self.assertTrue(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()
