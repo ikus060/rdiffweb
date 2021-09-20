@@ -107,6 +107,24 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## 2.3.4 (2021-09-20)
+
+ * Skip email notification if `email-host` configuration is not provided #157
+ * Skip email notification when the new attribute value has the same value #159
+ * USE LDAP `mail` attribute when creating new user from LDAP directory #156
+
+## 2.3.3 (2021-09-10)
+
+ * Provide a new theme `blue` to match IKUS Soft colors #158
+
+## 2.3.2 (2021-09-07)
+
+ * Automatically update user's repository list based on user's home directory
+
+## 2.3.1 (2021-07-14)
+
+ * Update default `session-dir` location to `/var/lib/rdiffweb/session` to avoid using `/var/run` #148
+
 ## 2.3.0 (2021-07-06)
 
  * Improve timezone handling to display date with local timezone using javascript #143
