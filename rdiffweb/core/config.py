@@ -382,8 +382,8 @@ def parse_args(args=None, config_file_contents=None):
             cls = entry_point.load()
             if hasattr(cls, 'add_arguments'):
                 cls.add_arguments(parser)
-        except:
-            pass
+        except Exception as e:
+            print(str(e))
 
     return parser.parse_args(args, config_file_contents=config_file_contents)
 
