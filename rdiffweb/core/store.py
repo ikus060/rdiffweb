@@ -360,6 +360,10 @@ class UserObject(object):
     def _set_attr(self, key, value, notify=True):
         """Used to define an attribute"""
         assert key in self._ATTRS, "invalid attribute: " + key
+        # Skip database update if the value is the same
+        if self._record[key] == value:
+            return
+        # Update database and object internal state.
         with self._store.engine.connect() as conn:
             updated = conn.execute(_USERS.update().where(
                 _USERS.c.userid == self._userid).values(**{key: value}))
