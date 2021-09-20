@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from time import sleep
+
 
 """
 Created on Feb 13, 2016
@@ -22,7 +22,7 @@ Created on Feb 13, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-import unittest
+from time import sleep
 from unittest.mock import ANY, MagicMock, patch
 
 import rdiffweb.test
@@ -195,26 +195,35 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
 
         # Expect it to be called.
         sleep(1)
-        n.async_send_mail.assert_called_once_with(
-            ANY, ANY, 'email_changed.html')
+        n.async_send_mail.assert_called_once_with(ANY, ANY, 'email_changed.html')
+        n.async_send_mail.reset_mock()
+
+        # Change email again for same value
+        user.email = 'test@test.com'
+        n.async_send_mail.assert_not_called()
 
     def test_password_change_notification(self):
+        # Get ref to notification plugin
+        n = self.app.notification
+        self.assertIsNotNone(n)
+        n.async_send_mail = MagicMock()
+
         # Set user config
         user = self.app.store.get_user(self.USERNAME)
         user.email = 'test@test.com'
-
-        # Get ref to notification plugin
-        n = NotificationPlugin(app=self.app)
-        self.assertIsNotNone(n)
-        n.async_send_mail = MagicMock()
+        n.async_send_mail.reset_mock()
 
         # Change password
         user.set_password('new_password')
 
         # Expect it to be called.
         sleep(1)
-        n.async_send_mail.assert_called_once_with(
-            ANY, ANY, 'password_changed.html')
+        n.async_send_mail.assert_called_once_with(ANY, ANY, 'password_changed.html')
+        n.async_send_mail.reset_mock()
+
+        # Change password again for same value. Check if notificatiom is sent.
+        user.set_password('new_password')
+        n.async_send_mail.assert_called_once_with(ANY, ANY, 'password_changed.html')
 
     def test_async_send_mail(self):
 
