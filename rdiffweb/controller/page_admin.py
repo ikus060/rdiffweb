@@ -22,22 +22,21 @@ import platform
 import pwd
 import subprocess
 import sys
+from collections import OrderedDict
 
 import cherrypy
 import humanfriendly
 import psutil
-from wtforms import validators, widgets
-from wtforms.fields.core import StringField, SelectField, Field
-from wtforms.fields.html5 import EmailField
-from wtforms.fields.simple import PasswordField
-
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.quota import QuotaUnsupported
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
-from collections import OrderedDict
+from wtforms import validators, widgets
+from wtforms.fields.core import Field, SelectField, StringField
+from wtforms.fields.html5 import EmailField
+from wtforms.fields.simple import PasswordField
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -49,12 +48,18 @@ def get_pyinfo():
         yield _('OS Version'), '%s %s (%s %s)' % (platform.system(), platform.release(), distro.linux_distribution()[0].capitalize(), distro.linux_distribution()[1])
     except:
         yield _('OS Version'), '%s %s' % (platform.system(), platform.release())
-    if hasattr(os, 'path'): yield _('OS Path'), os.environ['PATH']
-    if hasattr(sys, 'version'): yield _('Python Version'), ''.join(sys.version)
-    if hasattr(sys, 'subversion'): yield _('Python Subversion'), ', '.join(sys.subversion)
-    if hasattr(sys, 'prefix'): yield _('Python Prefix'), sys.prefix
-    if hasattr(sys, 'executable'): yield _('Python Executable'), sys.executable
-    if hasattr(sys, 'path'): yield _('Python Path'), ', '.join(sys.path)
+    if hasattr(os, 'path'):
+        yield _('OS Path'), os.environ['PATH']
+    if hasattr(sys, 'version'):
+        yield _('Python Version'), ''.join(sys.version)
+    if hasattr(sys, 'subversion'):
+        yield _('Python Subversion'), ', '.join(sys.subversion)
+    if hasattr(sys, 'prefix'):
+        yield _('Python Prefix'), sys.prefix
+    if hasattr(sys, 'executable'):
+        yield _('Python Executable'), sys.executable
+    if hasattr(sys, 'path'):
+        yield _('Python Path'), ', '.join(sys.path)
 
 
 def get_osinfo():
@@ -71,7 +76,8 @@ def get_osinfo():
         except:
             return
 
-    if hasattr(sys, 'getfilesystemencoding'): yield _('File System Encoding'), sys.getfilesystemencoding()
+    if hasattr(sys, 'getfilesystemencoding'):
+        yield _('File System Encoding'), sys.getfilesystemencoding()
     if hasattr(os, 'getcwd'):
         yield _('Current Working Directory'), os.getcwd()
     if hasattr(os, 'getegid'):
@@ -167,10 +173,9 @@ class UserForm(CherryForm):
         validators=[validators.optional()],
         description=_("Disk spaces (in bytes) used by this user."))
 
-    @property
-    def error_message(self):
-        if self.errors:
-            return ' '.join(['%s: %s' % (field, ', '.join(messages)) for field, messages in self.errors.items()])
+
+class DeleteUserForm(CherryForm):
+    username = StringField(_('Username'), validators=[validators.required()])
 
 
 @cherrypy.tools.is_admin()
@@ -179,6 +184,67 @@ class AdminPage(Controller):
 
     logfile = Option('log_file')
     logaccessfile = Option('log_access_file')
+
+    def _add_or_edit_user(self, action, form):
+        assert action in ['add', 'edit']
+        assert form
+        # Validate form.
+        if not form.validate():
+            flash(form.error_message, level='error')
+            return
+        if action == 'add':
+            user = self.app.store.add_user(form.username.data, form.password.data)
+        else:
+            user = self.app.store.get_user(form.username.data)
+            if form.password.data:
+                user.set_password(form.password.data, old_password=None)
+        # Don't allow the user to changes it's "role" state.
+        if form.username.data != self.app.currentuser.username:
+            user.role = form.role.data
+        user.email = form.email.data or ''
+        if form.user_root.data:
+            user.user_root = form.user_root.data
+            if not user.valid_user_root():
+                flash(_("User's root directory %s is not accessible!") % user.user_root, level='error')
+                logger.warning("user's root directory %s is not accessible" % user.user_root)
+        # Try to update disk quota if the human readable value changed.
+        # Report error using flash.
+        if form.disk_quota and form.disk_quota.data:
+            try:
+                new_quota = form.disk_quota.data
+                old_quota = humanfriendly.parse_size(humanfriendly.format_size(user.disk_quota, binary=True))
+                if old_quota != new_quota:
+                    user.disk_quota = new_quota
+                    flash(_("User's quota updated"), level='success')
+            except QuotaUnsupported as e:
+                flash(_("Setting user's quota is not supported"), level='warning')
+            except Exception as e:
+                flash(_("Failed to update user's quota: %s") % e, level='error')
+                logger.warning("failed to update user's quota", exc_info=1)
+        if action == 'add':
+            flash(_("User added successfully."))
+        else:
+            flash(_("User information modified successfully."))
+
+    def _delete_user(self, action, form):
+        assert action == 'delete'
+        assert form
+        # Validate form.
+        if not form.validate():
+            flash(form.error_message, level='error')
+            return
+        if form.username.data == self.app.currentuser.username:
+            flash(_("You cannot remove your own account!"), level='error')
+        else:
+            try:
+                user = self.app.store.get_user(form.username.data)
+                if user:
+                    user.delete()
+                    flash(_("User account removed."))
+                else:
+                    flash(_("User doesn't exists!"), level='warning')
+            except ValueError as e:
+                flash(e, level='error')
 
     def _get_log_files(self):
         """
@@ -226,57 +292,10 @@ class AdminPage(Controller):
 
         # If we're just showing the initial page, just do that
         form = UserForm()
-        if action in ["add", "edit"] and not form.validate():
-            # Display the form error to user using flash
-            flash(form.error_message, level='error')
-
-        elif action in ["add", "edit"] and form.validate():
-            if action == 'add':
-                user = self.app.store.add_user(form.username.data, form.password.data)
-            else:
-                user = self.app.store.get_user(form.username.data)
-                if form.password.data:
-                    user.set_password(form.password.data, old_password=None)
-            # Don't allow the user to changes it's "role" state.
-            if form.username.data != self.app.currentuser.username:
-                user.role = form.role.data
-            user.email = form.email.data or ''
-            if form.user_root.data:
-                user.user_root = form.user_root.data
-                if not user.valid_user_root():
-                    flash(_("User's root directory %s is not accessible!") % user.user_root, level='error')
-                    logger.warning("user's root directory %s is not accessible" % user.user_root)
-            # Try to update disk quota if the human readable value changed.
-            # Report error using flash.
-            if form.disk_quota and form.disk_quota.data:
-                try:
-                    new_quota = form.disk_quota.data
-                    old_quota = humanfriendly.parse_size(humanfriendly.format_size(user.disk_quota, binary=True))
-                    if old_quota != new_quota:
-                        user.disk_quota = new_quota
-                        flash(_("User's quota updated"), level='success')
-                except QuotaUnsupported as e:
-                    flash(_("Setting user's quota is not supported"), level='warning')
-                except Exception as e:
-                    flash(_("Failed to update user's quota: %s") % e, level='error')
-                    logger.warning("failed to update user's quota", exc_info=1)
-            if action == 'add':
-                flash(_("User added successfully."))
-            else:
-                flash(_("User information modified successfully."))
+        if action in ["add", "edit"]:
+            self._add_or_edit_user(action, form)
         elif action == 'delete':
-            if form.username.data == self.app.currentuser.username:
-                flash(_("You cannot remove your own account!"), level='error')
-            else:
-                try:
-                    user = self.app.store.get_user(form.username.data)
-                    if user:
-                        user.delete()
-                        flash(_("User account removed."))
-                    else:
-                        flash(_("User doesn't exists!"), level='warning')
-                except ValueError as e:
-                    flash(e, level='error')
+            self._delete_user(action, DeleteUserForm())
 
         params = {
             "form": UserForm(formdata=None),

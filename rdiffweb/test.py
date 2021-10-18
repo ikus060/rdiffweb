@@ -21,12 +21,11 @@ Mock class for testing.
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
-
 import json
 import os
+import re
 import shutil
 import subprocess
-import sys
 import tempfile
 import unittest
 import unittest.mock
@@ -43,6 +42,7 @@ try:
     from urllib.parse import urlencode  # @UnresolvedImport @UnusedImport
 except:
     from urllib import urlencode  # @UnresolvedImport @UnusedImport @Reimport
+
 
 class MockRdiffwebApp(RdiffwebApp):
 
@@ -227,3 +227,13 @@ class WebCase(helper.CPWebCase):
     def _login(self, username=USERNAME, password=PASSWORD):
         self.getPage("/login/", method='POST', body={'login': username, 'password': password})
         self.assertStatus('303 See Other')
+
+    def getCsrfToken(self, url):
+        # Query page with CSRF token
+        self.getPage(url)
+        self.assertStatus(200)
+        self.assertInBody('csrf_token')
+        # Extract value.
+        m = re.search('<input id="csrf_token" [^>]* value="(.[^"]*)">', self.body.decode('utf-8'))
+        self.assertTrue(m, 'expect csrf_token in body')
+        return m.group(1)

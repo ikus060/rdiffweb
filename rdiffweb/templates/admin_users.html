@@ -55,7 +55,7 @@
                             data-toggle="modal"
                             data-target="#edit-user-{{ user.username }}-modal">
                         {% trans %}Edit{% endtrans %}</button>
-                    {{ button_confirm(label=_('Delete'), target="#delete-user-modal", action="delete", username=user.username) }}
+                    {{ button_confirm(label=_('Delete'), target="#delete-user-modal", action="delete", username=user.username, csrf_token=form.csrf_token.current_token) }}
                 </div>
             </li>
             {% endfor %}
@@ -69,6 +69,7 @@
 </div>
 
 {% macro user_form(form, id=None, user=None) %}
+{{ form.csrf_token }}
 <div class="alert alert-info" role="alert">
 {% trans %}To create an LDAP user, use the same username. You may leave the email and password empty.{% endtrans %}
 </div>
@@ -151,7 +152,7 @@
     id='delete-user-modal',
     title=_('Delete User'),
     message=_("Are you sure you want to delete this User?"),
-    fields=['action', 'username'],
+    fields=['action', 'username', 'csrf_token'],
     submit=_('Delete')) }}
 
 {% endblock %}
