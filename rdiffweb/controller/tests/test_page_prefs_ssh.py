@@ -21,31 +21,30 @@ Created on Jan 1, 2016
 """
 
 
-import logging
-import unittest
-
 import rdiffweb.test
+
+PREFS_SSHKEYS = "/prefs/sshkeys/"
 
 
 class SSHKeysTest(rdiffweb.test.WebCase):
 
-    PREFS_SSHKEYS = "/prefs/sshkeys/"
-
     login = True
 
-    def _delete_ssh_key(self, fingerprint):
+    def _delete_ssh_key(self, fingerprint, csrf_token=None):
         b = {'action': 'delete',
              'fingerprint': fingerprint}
-        self.getPage(self.PREFS_SSHKEYS, method='POST', body=b)
+        b['csrf_token'] = csrf_token or self.getCsrfToken(PREFS_SSHKEYS)
+        self.getPage(PREFS_SSHKEYS, method='POST', body=b)
 
-    def _add_ssh_key(self, title, key):
+    def _add_ssh_key(self, title, key, csrf_token=None):
         b = {'action': 'add',
              'title': title,
              'key': key}
-        self.getPage(self.PREFS_SSHKEYS, method='POST', body=b)
+        b['csrf_token'] = csrf_token or self.getCsrfToken(PREFS_SSHKEYS)
+        self.getPage(PREFS_SSHKEYS, method='POST', body=b)
 
     def test_page(self):
-        self.getPage(self.PREFS_SSHKEYS)
+        self.getPage(PREFS_SSHKEYS)
         self.assertStatus('200 OK')
 
     def test_add(self):
@@ -61,9 +60,24 @@ class SSHKeysTest(rdiffweb.test.WebCase):
         self.assertEqual(1, len(list(user.authorizedkeys)))
 
         # Show page
-        self.getPage(self.PREFS_SSHKEYS)
+        self.getPage(PREFS_SSHKEYS)
         self.assertInBody("test@mysshkey")
         self.assertInBody("4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91")
+
+    def test_add_without_csrf_token(self):
+        # Given an authenticated user.
+        # When trying to add a key without valid csrf token.
+        self._add_ssh_key(
+            "test@mysshkey",
+            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
+            csrf_token='1234567890##invalid',
+        )
+        # Then form is refused.
+        self.assertStatus(200)
+        self.assertInBody('CSRF failed')
+        # Then ssh key is not added.
+        self.getPage(PREFS_SSHKEYS)
+        self.assertNotInBody("4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91")
 
     def test_add_duplicate(self):
         # Delete existing keys
@@ -111,6 +125,21 @@ class SSHKeysTest(rdiffweb.test.WebCase):
         self._delete_ssh_key("4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91")
         self.assertStatus('200 OK')
         self.assertEqual(0, len(list(user.authorizedkeys)))
+
+    def test_delete_without_csrf_token(self):
+        # Given an authenticated user with an existing SSH Key
+        user = self.app.store.get_user('admin')
+        self._add_ssh_key("test@mysshkey", "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530")
+        self.assertStatus('200 OK')
+        self.assertEqual(1, len(list(user.authorizedkeys)))
+        # When trying to delete a key without valid csrf token.
+        self._delete_ssh_key("4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91", csrf_token='1234567890##invalid')
+        # Then form is refused.
+        self.assertStatus(200)
+        self.assertInBody('CSRF failed')
+        # Then ssh key is not delete.
+        self.getPage(PREFS_SSHKEYS)
+        self.assertInBody("4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91")
 
     def test_delete_invalid(self):
         # Delete existing keys

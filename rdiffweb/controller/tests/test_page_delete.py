@@ -37,12 +37,13 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
 
     login = True
 
-    def _delete(self, user, repo, confirm, **kwargs):
+    def _delete(self, user, repo, confirm, redirect=None, csrf_token=None):
         body = {}
         if confirm is not None:
             body.update({'confirm': confirm})
-        if kwargs:
-            body.update(kwargs)
+        if redirect is not None:
+            body['redirect'] = redirect
+        body['csrf_token'] = csrf_token or self.getCsrfToken('/prefs/sshkeys')
         self.getPage("/delete/" + user + "/" + repo + "/", method="POST", body=body)
 
     @skipIf(RDIFF_BACKUP_VERSION < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
@@ -60,6 +61,18 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         sleep(1)
         with self.assertRaises(DoesNotExistError):
             self.app.store.get_repo_path('admin/testcases/Revisions', as_user=admin)
+
+    def test_delete_with_csrf_token(self):
+        # Given an authenticated user with an existing repositor
+        admin = self.app.store.get_user('admin')
+        self.app.store.get_repo_path('admin/testcases/Revisions', as_user=admin)
+        # When trying to delete a repository without a valide csrf token
+        self._delete(self.USERNAME, 'testcases/Revisions', 'Revisions', csrf_token='1234567890##invalid')
+        # Then the form is refused
+        self.assertStatus(400)
+        self.assertInBody('CSRF failed')
+        # Then repository is not deleted.
+        self.assertIsNotNone(self.app.store.get_repo_path('admin/testcases/Revisions', as_user=admin))
 
     @skipIf(RDIFF_BACKUP_VERSION < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
     def test_delete_path_with_wrong_confirm(self):
@@ -118,8 +131,9 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
         # Delete repo without confirmation.
         self._delete(self.USERNAME, self.REPO, None)
-        # TODO Make sure the repository is not delete
+        # Make sure the repository is not delete
         self.assertStatus(400)
+        self.assertInBody('confirm: This field is required')
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
 
     def test_delete_repo_as_admin(self):

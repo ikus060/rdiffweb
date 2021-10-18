@@ -20,9 +20,7 @@ Created on Dec 30, 2015
 @author: Patrik Dufresne
 """
 
-import logging
 import os
-import unittest
 from unittest.mock import ANY, MagicMock
 
 import rdiffweb.test
@@ -33,7 +31,7 @@ from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 class AbstractAdminTest(rdiffweb.test.WebCase):
     """Class to regroup command method to test admin page."""
 
-    def _add_user(self, username=None, email=None, password=None, user_root=None, role=None):
+    def _add_user(self, username=None, email=None, password=None, user_root=None, role=None, csrf_token=None):
         b = {}
         b['action'] = 'add'
         if username is not None:
@@ -46,9 +44,10 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
             b['user_root'] = user_root
         if role is not None:
             b['role'] = str(role)
+        b['csrf_token'] = csrf_token or self.getCsrfToken("/admin/users/")
         self.getPage("/admin/users/", method='POST', body=b)
 
-    def _edit_user(self, username=None, email=None, password=None, user_root=None, role=None, disk_quota=None):
+    def _edit_user(self, username=None, email=None, password=None, user_root=None, role=None, disk_quota=None, csrf_token=None):
         b = {}
         b['action'] = 'edit'
         if username is not None:
@@ -63,11 +62,13 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
             b['role'] = str(role)
         if disk_quota is not None:
             b['disk_quota'] = disk_quota
+        b['csrf_token'] = csrf_token or self.getCsrfToken("/admin/users/")
         self.getPage("/admin/users/", method='POST', body=b)
 
-    def _delete_user(self, username='test1'):
+    def _delete_user(self, username='test1', csrf_token=None):
         b = {'action': 'delete',
              'username': username}
+        b['csrf_token'] = csrf_token or self.getCsrfToken("/admin/users/")
         self.getPage("/admin/users/", method='POST', body=b)
 
 
@@ -76,15 +77,50 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
     login = True
 
+    def test_add_user_without_csrf(self):
+        # Given I'm logging as Admin
+        # When trying add a user with invalid csrf token
+        self._add_user("admin_role", "admin_role@test.com", "test2", "/home/", ADMIN_ROLE, csrf_token='1234567890##invalid')
+        # Then the form is refused
+        self.assertStatus(200)
+        self.assertInBody('CSRF failed')
+        # Then user is not created
+        self.assertIsNone(self.app.store.get_user('admin_role'))
+
+    def test_edit_user_without_csrf(self):
+        # Given an existing user
+        self._add_user("myuser", "myuser@test.com", "test2", "/home/", MAINTAINER_ROLE)
+        # When trying edit a user  with invalid csrf token
+        self._edit_user(username='myuser', email="newemail@test.com", csrf_token='1234567890##invalid')
+        # Then the form is refused
+        self.assertStatus(200)
+        self.assertInBody('CSRF failed')
+        # Then user is not updated
+        self.assertEqual("myuser@test.com", self.app.store.get_user('myuser').email)
+
+    def test_delete_user_without_csrf(self):
+        # Given an existing user
+        self._add_user("myuser", "myuser@test.com", "test2", "/home/", MAINTAINER_ROLE)
+        # When trying edit a user  with invalid csrf token
+        self._delete_user(username='myuser', csrf_token='1234567890##invalid')
+        # Then the form is refused
+        self.assertStatus(200)
+        self.assertInBody('CSRF failed')
+        # Then user is not delete
+        self.assertIsNotNone(self.app.store.get_user('myuser').email)
+
     def test_add_user_with_role(self):
         #  Add user to be listed
         self._add_user("admin_role", "admin_role@test.com", "test2", "/home/", ADMIN_ROLE)
+        self.assertStatus(200)
         self.assertEqual(ADMIN_ROLE, self.app.store.get_user('admin_role').role)
 
         self._add_user("maintainer_role", "maintainer_role@test.com", "test2", "/home/", MAINTAINER_ROLE)
+        self.assertStatus(200)
         self.assertEqual(MAINTAINER_ROLE, self.app.store.get_user('maintainer_role').role)
 
         self._add_user("user_role", "user_role@test.com", "test2", "/home/", USER_ROLE)
+        self.assertStatus(200)
         self.assertEqual(USER_ROLE, self.app.store.get_user('user_role').role)
 
     def test_add_user_with_invalid_role(self):
@@ -202,7 +238,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure to delete our self.
         """
         # Create another admin user
-        self._add_user('admin2', '', 'password', '' , ADMIN_ROLE)
+        self._add_user('admin2', '', 'password', '', ADMIN_ROLE)
         self.getPage("/logout/")
         self._login('admin2', 'password')
 
@@ -348,21 +384,21 @@ class AdminUsersAsUserTest(AbstractAdminTest):
         """
         Check if adding user is forbidden.
         """
-        self._add_user("test2", "test2@test.com", "test2", "/tmp/", USER_ROLE)
+        self._add_user("test2", "test2@test.com", "test2", "/tmp/", USER_ROLE, csrf_token='1234567890##invalid')
         self.assertStatus(403)
 
     def test_delete_user(self):
         """
         Check if deleting user is forbidden.
         """
-        self._delete_user("test")
+        self._delete_user("test", csrf_token='1234567890##invalid')
         self.assertStatus(403)
 
     def test_edit_user(self):
         """
         Check if editing user is forbidden.
         """
-        self._edit_user("test", "test1@test.com", "test", "/var/invalid/", USER_ROLE)
+        self._edit_user("test", "test1@test.com", "test", "/var/invalid/", USER_ROLE, csrf_token='1234567890##invalid')
         self.assertStatus(403)
 
     def test_users(self):
