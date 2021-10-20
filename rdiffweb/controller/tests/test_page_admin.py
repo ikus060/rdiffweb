@@ -20,9 +20,7 @@ Created on Dec 30, 2015
 @author: Patrik Dufresne
 """
 
-import logging
 import os
-import unittest
 from unittest.mock import ANY, MagicMock
 
 import rdiffweb.test
@@ -79,12 +77,15 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
     def test_add_user_with_role(self):
         #  Add user to be listed
         self._add_user("admin_role", "admin_role@test.com", "test2", "/home/", ADMIN_ROLE)
+        self.assertStatus(200)
         self.assertEqual(ADMIN_ROLE, self.app.store.get_user('admin_role').role)
 
         self._add_user("maintainer_role", "maintainer_role@test.com", "test2", "/home/", MAINTAINER_ROLE)
+        self.assertStatus(200)
         self.assertEqual(MAINTAINER_ROLE, self.app.store.get_user('maintainer_role').role)
 
         self._add_user("user_role", "user_role@test.com", "test2", "/home/", USER_ROLE)
+        self.assertStatus(200)
         self.assertEqual(USER_ROLE, self.app.store.get_user('user_role').role)
 
     def test_add_user_with_invalid_role(self):
@@ -202,7 +203,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure to delete our self.
         """
         # Create another admin user
-        self._add_user('admin2', '', 'password', '' , ADMIN_ROLE)
+        self._add_user('admin2', '', 'password', '', ADMIN_ROLE)
         self.getPage("/logout/")
         self._login('admin2', 'password')
 
@@ -210,6 +211,18 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self._delete_user(self.USERNAME)
         self.assertStatus(200)
         self.assertInBody("can&#39;t delete admin user")
+
+    def test_change_admin_password(self):
+        # Given rdiffweb is configured with admin-password option
+        self.app.cfg.admin_password = 'hardcoded'
+        try:
+            # When trying to update admin password
+            self._edit_user('admin', password='new-password')
+            # Then the form is refused with 200 OK with an error message.
+            self.assertStatus(200)
+            self.assertInBody("can&#39;t update admin-password defined in configuration file")
+        finally:
+            self.app.cfg.admin_password = None
 
     def test_edit_user_with_invalid_path(self):
         """

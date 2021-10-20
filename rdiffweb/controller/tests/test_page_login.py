@@ -21,8 +21,6 @@ Created on Dec 26, 2015
 """
 
 from base64 import b64encode
-import logging
-import unittest
 import rdiffweb.test
 
 

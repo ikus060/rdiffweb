@@ -45,3 +45,4 @@ xunit*.xml
 /.env/
 /.pybuild/
 /.pytest_cache/
+/.coverage*

@@ -21,31 +21,28 @@ Created on Jan 1, 2016
 """
 
 
-import logging
-import unittest
-
 import rdiffweb.test
+
+PREFS_SSHKEYS = "/prefs/sshkeys/"
 
 
 class SSHKeysTest(rdiffweb.test.WebCase):
-
-    PREFS_SSHKEYS = "/prefs/sshkeys/"
 
     login = True
 
     def _delete_ssh_key(self, fingerprint):
         b = {'action': 'delete',
              'fingerprint': fingerprint}
-        self.getPage(self.PREFS_SSHKEYS, method='POST', body=b)
+        self.getPage(PREFS_SSHKEYS, method='POST', body=b)
 
     def _add_ssh_key(self, title, key):
         b = {'action': 'add',
              'title': title,
              'key': key}
-        self.getPage(self.PREFS_SSHKEYS, method='POST', body=b)
+        self.getPage(PREFS_SSHKEYS, method='POST', body=b)
 
     def test_page(self):
-        self.getPage(self.PREFS_SSHKEYS)
+        self.getPage(PREFS_SSHKEYS)
         self.assertStatus('200 OK')
 
     def test_add(self):
@@ -61,7 +58,7 @@ class SSHKeysTest(rdiffweb.test.WebCase):
         self.assertEqual(1, len(list(user.authorizedkeys)))
 
         # Show page
-        self.getPage(self.PREFS_SSHKEYS)
+        self.getPage(PREFS_SSHKEYS)
         self.assertInBody("test@mysshkey")
         self.assertInBody("4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91")
 

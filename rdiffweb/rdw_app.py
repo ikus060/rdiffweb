@@ -117,6 +117,7 @@ class RdiffwebApp(Application):
         config = {
             '/': {
                 'tools.authform.on': True,
+                'tools.csrf.on': True,
                 'tools.i18n.on': True,
                 'tools.i18n.default': 'en_US',
                 'tools.i18n.mo_dir': pkg_resources.resource_filename('rdiffweb', 'locales'),  # @UndefinedVariable

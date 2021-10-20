@@ -21,15 +21,12 @@ Created on Mar 13, 2019
 """
 
 
-import logging
-import unittest
-
 import rdiffweb.test
 
 
 class ControllerTest(rdiffweb.test.WebCase):
 
-    default_config = {'HeaderName':'MyTest'}
+    default_config = {'HeaderName': 'MyTest'}
 
     def test_headername(self):
         """
@@ -48,7 +45,7 @@ class ControllerTest(rdiffweb.test.WebCase):
 
 class ControllerOrangeThemeTest(rdiffweb.test.WebCase):
 
-    default_config = {'DefaultTheme':'orange'}
+    default_config = {'DefaultTheme': 'orange'}
 
     def test_theme(self):
         """
@@ -57,9 +54,10 @@ class ControllerOrangeThemeTest(rdiffweb.test.WebCase):
         self.getPage("/")
         self.assertInBody('/static/orange.css')
 
+
 class ControllerBlueThemeTest(rdiffweb.test.WebCase):
 
-    default_config = {'DefaultTheme':'blue'}
+    default_config = {'DefaultTheme': 'blue'}
 
     def test_theme(self):
         """

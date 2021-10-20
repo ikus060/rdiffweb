@@ -20,9 +20,6 @@ Created on Dec 26, 2015
 @author: Patrik Dufresne
 """
 
-import logging
-import unittest
-
 import rdiffweb.test
 
 
@@ -32,16 +29,20 @@ class PrefsTest(rdiffweb.test.WebCase):
 
     login = True
 
-    def _set_password(self, current, new_password, confirm):
-        b = {'action': 'set_password',
-             'current': current,
-             'new': new_password,
-             'confirm': confirm}
+    def _set_password(self, current, new_password, confirm, ):
+        b = {
+            'action': 'set_password',
+            'current': current,
+            'new': new_password,
+            'confirm': confirm,
+        }
         return self.getPage(self.PREFS, method='POST', body=b)
 
     def _set_profile_info(self, email):
-        b = {'action': 'set_profile_info',
-             'email': email}
+        b = {
+            'action': 'set_profile_info',
+            'email': email,
+        }
         return self.getPage(self.PREFS, method='POST', body=b)
 
     def test_change_email(self):
