@@ -38,6 +38,6 @@ def is_maintainer():
     if not cherrypy.serving.request.currentuser or not cherrypy.serving.request.currentuser.is_maintainer:
         raise cherrypy.HTTPError("403 Forbidden")
 
-# Make sure it's running after authentication (priority =  71)
-cherrypy.tools.is_admin = cherrypy.Tool('before_handler', is_admin, priority = 72)
-cherrypy.tools.is_maintainer = cherrypy.Tool('before_handler', is_maintainer, priority = 72)
+# Make sure it's running after authentication (priority = 72)
+cherrypy.tools.is_admin = cherrypy.Tool('before_handler', is_admin, priority = 75)
+cherrypy.tools.is_maintainer = cherrypy.Tool('before_handler', is_maintainer, priority = 75)

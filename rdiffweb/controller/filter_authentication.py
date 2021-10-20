@@ -17,16 +17,16 @@
 
 import base64
 import binascii
+import http.cookies
 import logging
 
 import cherrypy
 from cherrypy._cptools import HandlerTool
-
 from rdiffweb.controller import Controller
 from rdiffweb.core import RdiffError, RdiffWarning
+from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
 from rdiffweb.core.rdw_helpers import quote_url
-from rdiffweb.core.config import Option
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -113,7 +113,7 @@ class AuthFormTool(BaseAuth):
         BaseAuth.__init__(self, self.run, name='authform')
         # Make sure to run after session tool (priority 50)
         # Make sure to run after i18n tool (priority 60)
-        self._priority = 71
+        self._priority = 72
 
     def do_check(self):
         """Assert username. Raise redirect, or return True if request handled."""
@@ -183,7 +183,7 @@ class BasicAuth(BaseAuth):
 
     def __init__(self):
         BaseAuth.__init__(self, self.run, name='authbasic')
-        # Make sure to run before authform (priority 71)
+        # Make sure to run before authform (priority 72) & csrftoken (71)
         self._priority = 70
 
     def run(self):
@@ -225,6 +225,50 @@ class BasicAuth(BaseAuth):
 
 cherrypy.tools.authbasic = BasicAuth()
 
+#
+# Patch Morsel prior to 3.8
+# Allow SameSite attribute to be define on the cookie.
+#
+if not http.cookies.Morsel().isReservedKey("samesite"):
+    http.cookies.Morsel._reserved['samesite'] = 'SameSite'
+
+
+class CsrfAuth(HandlerTool):
+    """
+    This tool provide CSRF mitigation.
+
+    First, by defining `SameSite=Lax` on the cookie
+    Second by validating the `Origin` and `Referer`.
+
+    Ref.: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+    """
+
+    def __init__(self):
+        BaseAuth.__init__(self, self.run, name='csrf')
+        # Make sure to run before authform (priority 71)
+        self._priority = 71
+
+    def _setup(self):
+        cherrypy.request.hooks.attach('before_finalize', self._set_same_site)
+        return super()._setup()
+
+    def _set_same_site(self):
+        # Awaiting bug fix in cherrypy
+        # https://github.com/cherrypy/cherrypy/issues/1767
+        # Force SameSite to Lax
+        cookie = cherrypy.serving.response.cookie.get('session_id', None)
+        cookie['samesite'] = 'Lax'
+
+    def run(self):
+        if cherrypy.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
+            # Check if Origin matches our target.
+            origin = cherrypy.request.headers.get('Origin', None)
+            if origin and not origin.startswith(cherrypy.request.base):
+                raise cherrypy.HTTPError(403, 'Unexpected Origin header')
+
+
+cherrypy.tools.csrf = CsrfAuth()
+
 
 class LoginPage(Controller):
     """
@@ -245,7 +289,7 @@ class LoginPage(Controller):
 
         # Add welcome message to params. Try to load translated message.
         if self._welcome_msg:
-            params["welcome_msg"] =  self._welcome_msg.get('')
+            params["welcome_msg"] = self._welcome_msg.get('')
             if hasattr(cherrypy.response, 'i18n'):
                 locale = cherrypy.response.i18n.locale.language
                 params["welcome_msg"] = self._welcome_msg.get(locale, params["welcome_msg"])
