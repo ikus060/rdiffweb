@@ -212,6 +212,18 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.assertStatus(200)
         self.assertInBody("can&#39;t delete admin user")
 
+    def test_change_admin_password(self):
+        # Given rdiffweb is configured with admin-password option
+        self.app.cfg.admin_password = 'hardcoded'
+        try:
+            # When trying to update admin password
+            self._edit_user('admin', password='new-password')
+            # Then the form is refused with 200 OK with an error message.
+            self.assertStatus(200)
+            self.assertInBody("can&#39;t update admin-password defined in configuration file")
+        finally:
+            self.app.cfg.admin_password = None
+
     def test_edit_user_with_invalid_path(self):
         """
         Verify failure trying to update user with invalid path.

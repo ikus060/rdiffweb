@@ -47,7 +47,7 @@ def validate_key(unused_form, field):
         raise ValidationError(_("Invalid SSH key."))
 
 
-class SSHForm(CherryForm):
+class SshForm(CherryForm):
     title = StringField(
         _('Title'),
         description=_('The title is an optional description to identify the key. e.g.: bob@thinkpad-t530'),
@@ -60,6 +60,10 @@ class SSHForm(CherryForm):
     fingerprint = StringField('Fingerprint')
 
 
+class DeleteSshForm(CherryForm):
+    fingerprint = StringField('Fingerprint')
+
+
 class SSHKeysPlugin(Controller):
     """
     Plugin to configure SSH keys.
@@ -69,30 +73,45 @@ class SSHKeysPlugin(Controller):
 
     panel_name = _('SSH Keys')
 
+    def _add_key(self, action, form):
+        assert action == 'add'
+        assert form
+        if not form.validate():
+            for unused, messages in form.errors.items():
+                for message in messages:
+                    flash(message, level='warning')
+            return
+        try:
+            self.app.currentuser.add_authorizedkey(key=form.key.data, comment=form.title.data)
+        except DuplicateSSHKeyError as e:
+            flash(str(e), level='error')
+        except:
+            flash(_("Unknown error while adding the SSH Key"), level='error')
+            _logger.warning("error adding ssh key", exc_info=1)
+
+    def _delete_key(self, action, form):
+        assert action == 'delete'
+        assert form
+        if not form.validate():
+            for unused, messages in form.errors.items():
+                for message in messages:
+                    flash(message, level='warning')
+            return
+        is_maintainer()
+        try:
+            self.app.currentuser.delete_authorizedkey(form.fingerprint.data)
+        except:
+            flash(_("Unknown error while removing the SSH Key"), level='error')
+            _logger.warning("error removing ssh key", exc_info=1)
+
     def render_prefs_panel(self, panelid, action=None, **kwargs):  # @UnusedVariable
 
         # Handle action
-        form = SSHForm()
-        if action == "add" and not form.validate():
-            for unused_field, messages in form.errors.items():
-                for message in messages:
-                    flash(message, level='warning')
-        elif action == 'add':
-            # Add the key to the current user.
-            try:
-                self.app.currentuser.add_authorizedkey(key=form.key.data, comment=form.title.data)
-            except DuplicateSSHKeyError as e:
-                flash(str(e), level='error')
-            except:
-                flash(_("Unknown error while adding the SSH Key"), level='error')
-                _logger.warning("error adding ssh key", exc_info=1)
+        form = SshForm()
+        if action == "add":
+            self._add_key(action, form)
         elif action == 'delete':
-            is_maintainer()
-            try:
-                self.app.currentuser.delete_authorizedkey(form.fingerprint.data)
-            except:
-                flash(_("Unknown error while removing the SSH Key"), level='error')
-                _logger.warning("error removing ssh key", exc_info=1)
+            self._delete_key(action, DeleteSshForm())
 
         # Get SSH keys if file exists.
         params = {

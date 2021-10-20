@@ -20,17 +20,30 @@ to change password ans refresh it's repository view.
 """
 
 import logging
-from rdiffweb.controller import Controller
-from rdiffweb.core import RdiffError, RdiffWarning
-from rdiffweb.core.i18n import ugettext as _
 import re
 
 import cherrypy
-
-PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
+from rdiffweb.controller import Controller, flash
+from rdiffweb.controller.cherrypy_wtf import CherryForm
+from rdiffweb.core.i18n import ugettext as _
+from wtforms.fields.html5 import EmailField
+from wtforms.fields.simple import PasswordField
+from wtforms.validators import DataRequired, EqualTo, InputRequired, Regexp
 
 # Define the logger
 _logger = logging.getLogger(__name__)
+
+PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
+
+
+class UserProfileForm(CherryForm):
+    email = EmailField(_('Email'), validators=[DataRequired(), Regexp(PATTERN_EMAIL, message=_("Invalid email."))])
+
+
+class UserPasswordForm(CherryForm):
+    current = PasswordField(_('Current password'), validators=[InputRequired(_("Current password is missing."))])
+    new = PasswordField(_('New password'), validators=[InputRequired(_("New password is missing.")), EqualTo('confirm', message=_("The new password and its confirmation do not match."))])
+    confirm = PasswordField(_('Confirm new password'), validators=[InputRequired(_("Confirmation password is missing."))])
 
 
 class PrefsGeneralPanelProvider(Controller):
@@ -42,76 +55,60 @@ class PrefsGeneralPanelProvider(Controller):
 
     panel_name = _('Profile')
 
-    def _handle_set_password(self, **kwargs):
+    def _handle_set_password(self, action, form):
         """
         Called when changing user password.
         """
-        if 'current' not in kwargs or not kwargs['current']:
-            raise RdiffWarning(_("Current password is missing."))
-        if 'new' not in kwargs or not kwargs['new']:
-            raise RdiffWarning(_("New password is missing."))
-        if 'confirm' not in kwargs or not kwargs['confirm']:
-            raise RdiffWarning(_("Confirmation password is missing."))
-
-        # Check if confirmation is valid.
-        if kwargs['new'] != kwargs['confirm']:
-            return {'error': _("The new password and its confirmation do not match.")}
-
+        assert self.app.currentuser
+        assert action == 'set_password'
+        assert form
+        # Validate form
+        if not form.validate():
+            flash(form.error_message, level='error')
+            return
         # Update user password
         try:
-            self.app.currentuser.set_password(kwargs['new'], old_password=kwargs['current'])
-            return {'success': _("Password updated successfully.")}
+            self.app.currentuser.set_password(form.new.data, old_password=form.current.data)
+            flash(_("Password updated successfully."), level='success')
         except ValueError as e:
-            return {'warning': str(e)}
+            flash(str(e), level='warning')
 
-    def _handle_set_profile_info(self, **kwargs):
+    def _handle_set_profile_info(self, action, form):
         """
         Called when changing user profile.
         """
-        # Check data.
-        if 'email' not in kwargs:
-            raise RdiffWarning(_("Email is undefined."))
-
-        # Parse the email value to extract a valid email. The following method
-        # return an empty string if the email is not valid. This RFC also accept
-        # local email address without '@'. So we add verification for '@'
-        if not PATTERN_EMAIL.match(kwargs['email'].lower()):
-            raise RdiffWarning(_("Invalid email."))
-
-        # Update the user's email
         assert self.app.currentuser
+        assert action == 'set_profile_info'
+        assert form
+        # Validate form
+        if not form.validate():
+            flash(form.error_message, level='error')
+            return
+        # Update the user's email
         username = self.app.currentuser.username
-        email = kwargs['email']
-        _logger.info("updating user [%s] email [%s]", username, email)
-        self.app.currentuser.email = kwargs['email']
+        _logger.info("updating user [%s] email [%s]", username, form.email.data)
+        self.app.currentuser.email = form.email.data
+        # Report success
+        flash(_("Profile updated successfully."), level='success')
 
-        return {'success': _("Profile updated successfully.")}
-
-    def render_prefs_panel(self, panelid, **kwargs):  # @UnusedVariable
+    def render_prefs_panel(self, panelid, action=None, **kwargs):  # @UnusedVariable
         # Process the parameters.
-        params = dict()
-        action = kwargs.get('action')
-        if action:
-            try:
-                if action == "set_profile_info":
-                    params = self._handle_set_profile_info(**kwargs)
-                elif action == "set_password":
-                    params = self._handle_set_password(**kwargs)
-                elif action == "update_repos":
-                    # Kept for backward compatibility. Do nothing.
-                    pass
-                else:
-                    _logger.warning("unknown action: %s", action)
-                    raise cherrypy.NotFound("Unknown action")
-            except RdiffWarning as e:
-                params['warning'] = str(e)
-            except RdiffError as e:
-                params['error'] = str(e)
-            except Exception as e:
-                _logger.warning("unknown error processing action", exc_info=True)
-                params['error'] = _("Unknown error")
-
-        params.update({
-            'email': self.app.currentuser.email,
-        })
+        profile_form = UserProfileForm(email=self.app.currentuser.email)
+        password_form = UserPasswordForm()
+        if action == "set_profile_info":
+            params = self._handle_set_profile_info(action, profile_form)
+        elif action == "set_password":
+            params = self._handle_set_password(action, password_form)
+        elif action == "update_repos":
+            # Kept for backward compatibility. Do nothing.
+            pass
+        elif action is None:
+            pass
+        else:
+            _logger.warning("unknown action: %s", action)
+            raise cherrypy.NotFound("Unknown action")
+        params = {
+            'profile_form': profile_form,
+            'password_form': password_form,
+        }
         return "prefs_general.html", params

@@ -24,31 +24,42 @@ Created on Apr. 5, 2021
 import logging
 
 import cherrypy
-from rdiffweb.controller import Controller, validate
+from rdiffweb.controller import Controller, flash
+from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.controller.filter_authorization import is_maintainer
-
+from rdiffweb.core.i18n import ugettext as _
+from wtforms import validators
+from wtforms.fields.core import StringField
 
 _logger = logging.getLogger(__name__)
+
+
+class DeleteRepoForm(CherryForm):
+    confirm = StringField(_('Confirmation'), validators=[validators.required()])
+    redirect = StringField(default='/')
 
 
 @poppath()
 class DeletePage(Controller):
 
     @cherrypy.expose
-    def default(self, path=b"", confirm=None, redirect='/', **kwargs):
+    def default(self, path=b"", **kwargs):
         # Check permissions on path/repo
         unused, path_obj = self.app.store.get_repo_path(path)
         # Check user's permissions
         is_maintainer()
 
+        # validate form
+        form = DeleteRepoForm()
+        if not form.validate():
+            raise cherrypy.HTTPError(400, form.error_message)
+
         # Validate the name
-        validate(confirm)
-        if confirm != path_obj.display_name:
-            _logger.info("do not delete repo, bad confirmation %r != %r", confirm, path_obj.display_name)
-            raise cherrypy.HTTPError(400)
+        if form.confirm.data != path_obj.display_name:
+            _logger.info("do not delete repo, bad confirmation %r != %r", form.confirm.data, path_obj.display_name)
+            raise cherrypy.HTTPError(400, 'bad confirmation')
 
         # Delete repository
         self.app.scheduler.add_task(path_obj.delete, args=[])
-
-        raise cherrypy.HTTPRedirect(redirect)
+        raise cherrypy.HTTPRedirect(form.redirect.data)

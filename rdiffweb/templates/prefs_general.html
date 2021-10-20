@@ -37,11 +37,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         </div>
     </div>
     <div class="form-group">
-        <label for="email" class="control-label">
-            {% trans %}Email{% endtrans %}</label>
+        {{ profile_form.email.label(class="control-label") }}
         <div>
-            <input class="form-control" type="text" name="email" id="email"
-                value="{{ email }}"/>
+            {{ profile_form.email(class="form-control") }}
         </div>
     </div>
     <input type="hidden" name="action" value="set_profile_info" />
@@ -57,26 +55,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <div class="panel-body">
 <form action="#" method="post" role="form" class="clearfix" data-validate>
     <div class="form-group">
-        <label for="current" class="control-label">
-            {% trans %}Current password{% endtrans %}</label>
+        {{ password_form.current.label(class="control-label") }}
         <div>
-            <input class="form-control" type="password" name="current"
-                id="current" required />
+            {{ password_form.current(class="form-control") }}
         </div>
     </div>
     <div class="form-group">
-        <label for="new" class="control-label">
-            {% trans %}New password{% endtrans %}</label>
+        {{ password_form.new.label(class="control-label") }}
         <div>
-            <input class="form-control" type="password" name="new" id="new" required />
+            {{ password_form.new(class="form-control") }}
         </div>
     </div>
     <div class="form-group">
-        <label for="confirm" class="control-label">
-            {% trans %}Confirm new password{% endtrans %}</label>
+        {{ password_form.confirm.label(class="control-label") }}
         <div>
-        <input class="form-control" type="password" name="confirm"
-            id="confirm" data-rule-equalto="#new" required/>
+            {{ password_form.confirm(class="form-control", data_rule_equalto="#new") }}
         </div>
     </div>
     <input type="hidden" name="action" value="set_password" />
