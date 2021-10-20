@@ -24,14 +24,19 @@ These minimum requirements are solely for evaluation and shall not be used in a 
 * Storage: consider the storage according to your backup needs. A couple of terabytes should be considered for the long term. Ideally, you should consider hardware or ZFS raid for your storage. If you plan to support user quota, make sure that your file system supports it. E.g. ext4 and ZFS. Other file systems might not be well supported.
 * Temporary storage: Rdiffweb requires a temporary storage location that is used during the restoration process. This location should be greater than 8gb. This temporary storage will be closer to the web application. Ideally, it should be in ram using tmpfs.
 
-## Option 1. Debian repository
+## Option 1. Debian/Ubuntu repository
 
 If you are running a Debian-based system, you should use `apt` to install Rdiffweb.
 
-    curl -L https://www.ikus-soft.com/archive/rdiffweb/public.key | apt-key add - 
-    echo "deb https://nexus.ikus-soft.com/repository/apt-release-bullseye/ bullseye main" > /etc/apt/sources.list.d/rdiffweb.list
-    apt update
-    apt install rdiffweb
+The following Debian Release as supported: Buster (10), Bullseye (11)
+
+The following Ubuntu Release are supported: Groovy (20.10), Hirsute (21.04)
+
+  apt install lsb-release
+  curl -L https://www.ikus-soft.com/archive/rdiffweb/public.key | gpg --dearmor > /usr/share/keyrings/rdiffweb-keyring.gpg
+  echo "deb [signed-by=/usr/share/keyrings/rdiffweb-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-release-$(lsb_release -sc)/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/rdiffweb.list
+  apt update
+  apt install rdiffweb
 
 > **_NOTE:_**  Access the web interface `http://<ip-or-dns-name>:8080` with username  **admin** and password **admin123**. Then browse to the **Admin Area** to add users and assign backup locations to these users.
 
