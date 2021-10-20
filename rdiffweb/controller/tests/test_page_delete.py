@@ -37,12 +37,12 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
 
     login = True
 
-    def _delete(self, user, repo, confirm, **kwargs):
+    def _delete(self, user, repo, confirm, redirect=None):
         body = {}
         if confirm is not None:
             body.update({'confirm': confirm})
-        if kwargs:
-            body.update(kwargs)
+        if redirect is not None:
+            body['redirect'] = redirect
         self.getPage("/delete/" + user + "/" + repo + "/", method="POST", body=body)
 
     @skipIf(RDIFF_BACKUP_VERSION < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
@@ -118,8 +118,9 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
         # Delete repo without confirmation.
         self._delete(self.USERNAME, self.REPO, None)
-        # TODO Make sure the repository is not delete
+        # Make sure the repository is not delete
         self.assertStatus(400)
+        self.assertInBody('confirm: This field is required')
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
 
     def test_delete_repo_as_admin(self):

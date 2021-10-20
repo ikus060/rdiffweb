@@ -21,12 +21,11 @@ Mock class for testing.
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
-
 import json
 import os
+import re
 import shutil
 import subprocess
-import sys
 import tempfile
 import unittest
 import unittest.mock
@@ -43,6 +42,7 @@ try:
     from urllib.parse import urlencode  # @UnresolvedImport @UnusedImport
 except:
     from urllib import urlencode  # @UnresolvedImport @UnusedImport @Reimport
+
 
 class MockRdiffwebApp(RdiffwebApp):
 
