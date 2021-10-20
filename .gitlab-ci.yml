@@ -1,9 +1,4 @@
 image: python:3-bullseye
-variables:
-  APT_DEV_BUSTER: https://nexus.ikus-soft.com/repository/apt-dev-buster/
-  APT_RELEASE_BUSTER: https://nexus.ikus-soft.com/repository/apt-release-buster/
-  APT_DEV_BULLSEYE: https://nexus.ikus-soft.com/repository/apt-dev-bullseye/
-  APT_RELEASE_BULLSEYE: https://nexus.ikus-soft.com/repository/apt-release-bullseye/
 
 stages:
 - test
@@ -137,61 +132,47 @@ package:docker:
   script:
   - docker build .
 
-package:debian:buster: 
+package:deb: 
   stage: package
   needs: []
-  image: ikus060/python:debian10-py3
+  image: buildpack-deps:$DIST
+  parallel:
+    matrix:
+    - DIST: buster
+      BACKPORTS: deb http://deb.debian.org/debian buster-backports main
+    - DIST: bullseye
+    - DIST: [groovy, hirsute]
   script: |
     set -x
     set -e
     export VERSION=$(python3 setup.py --version)
-    echo "deb http://deb.debian.org/debian buster-backports main" > /etc/apt/sources.list.d/backports.list
-    echo "deb-src http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list.d/backports.list
-    apt update && apt install -y devscripts && apt build-dep -t buster-backports -y .
+    if [ ! -z "$BACKPORTS" ]; then
+      echo "$BACKPORTS" > /etc/apt/sources.list.d/backports.list
+    fi
+    apt update
+    apt -y --no-install-recommends install devscripts
+    if [ ! -z "$BACKPORTS" ]; then
+      apt build-dep -t $DIST-backports -y .
+    else
+      apt build-dep -y .
+    fi
     dch -v "$VERSION" "automated build"
     DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -b
-    mkdir -p ./dist/buster
-    mv ../rdiffweb*.deb ./dist/buster
-  allow_failure: true
+    mkdir -p ./dist/$DIST
+    mv ../rdiffweb*.deb ./dist/$DIST/
   artifacts:
     paths:
     - ./dist/*
 
-package:debian:bullseye: 
-  stage: package
-  needs: []
-  image: ikus060/python:debian11-py3
-  script: |
-    set -x
-    set -e
-    export VERSION=$(python3 setup.py --version)
-    apt update && apt install -y devscripts && apt build-dep -y .
-    dch -v "$VERSION" "automated build"
-    dpkg-buildpackage -b
-    mkdir -p ./dist/bullseye
-    mv ../rdiffweb*.deb ./dist/bullseye
-  allow_failure: true
-  artifacts:
-    paths:
-    - ./dist/*
-
-test-package:debian:buster:
+test-package:deb:
   stage: test-package
   image: debian:buster
-  needs: ["package:debian:buster"]
+  needs: ["package:deb"]
+  parallel:
+    matrix:
+    - DIST: [buster, bullseye, groovy, hirsute]
   script:
-  - apt update && apt install -y ./dist/buster/rdiffweb*.deb
-  - rdiffweb --version
-  - (/usr/bin/rdiffweb &)
-  - apt install -y curl
-  - curl http://localhost:8080
-  
-test-package:debian:bullseye:
-  stage: test-package
-  image: debian:buster
-  needs: ["package:debian:bullseye"]
-  script:
-  - apt update && apt install -y ./dist/bullseye/rdiffweb*.deb
+  - apt update && apt install -y ./dist/$DIST/rdiffweb*.deb
   - rdiffweb --version
   - (/usr/bin/rdiffweb &)
   - apt install -y curl
@@ -223,7 +204,29 @@ publish:sonar:dev:
   script:
   - sonar-scanner -X -Dsonar.python.coverage.reportPath=coverage-*.xml -Dsonar.python.xunit.reportPath=xunit-*.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.projectVersion=$(git describe) -Dsonar.exclusions=**/test_*.py,rdiffweb/test.py
 
-publish:dev:
+publish:deb:
+  needs:
+  - package:deb
+  only:
+    variables:
+      - $NEXUS_USR
+      - $NEXUS_PWD
+  parallel:
+    matrix:
+    - DIST: [buster, bullseye, groovy, hirsute]
+  script: |
+    set -e
+    set -x
+    if [[ "$CI_COMMIT_TAG" == *.*.? ]]; then
+      APT_URL="https://nexus.ikus-soft.com/repository/apt-release-${DIST}/"
+    else
+      APT_URL="https://nexus.ikus-soft.com/repository/apt-dev-${DIST}/"
+    fi
+    export FILE=$(ls -1 ./dist/$DIST/rdiffweb*.deb)
+    curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$FILE" "$APT_URL"
+  stage: publish
+
+publish:wheel:
   stage: publish
   only:
     variables:
@@ -236,28 +239,9 @@ publish:dev:
     pip3 install wheel twine readme_renderer --upgrade
     LANG="C.UTF-8" python3 -m readme_renderer README.md -o /tmp/README.html
     twine upload dist/*.whl -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
-    # Publish deb
-    export RDIFFWEB_DEB_FILE=$(ls -1 ./dist/buster/rdiffweb*.deb)
-    curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_DEV_BUSTER"
-    # Publish deb
-    export RDIFFWEB_DEB_FILE=$(ls -1 ./dist/bullseye/rdiffweb*.deb)
-    curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_DEV_BULLSEYE"
-
-publish:release:
-  stage: publish
-  only:
-  - tags
-  script: |
-    set -x
-    # Publish wheel
-    pip3 install wheel twine --upgrade
-    twine upload dist/*.whl -u $PYPI_USR -p $PYPI_PWD
-    # Publish deb
-    export RDIFFWEB_DEB_FILE=$(ls -1 ./dist/buster/rdiffweb*.deb)
-    curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_RELEASE_BUSTER"
-    # Publish deb
-    export RDIFFWEB_DEB_FILE=$(ls -1 ./dist/bullseye/rdiffweb*.deb)
-    curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$RDIFFWEB_DEB_FILE" "$APT_RELEASE_BULLSEYE"
+    if [[ "$CI_COMMIT_TAG" == *.*.? ]]; then
+      twine upload dist/*.whl -u $PYPI_USR -p $PYPI_PWD
+    fi
 
 publish:doc:
   stage: publish
@@ -276,7 +260,7 @@ publish:doc:
     export VERSION=$(python3 setup.py --version)
     scp -r -o StrictHostKeyChecking=no .tox/doc/tmp/ www-data@kalo.ikus-soft.com:/var/www/patrikdufresne/archive/rdiffweb/doc/$VERSION/
     # Promote to latest for tags
-    if [ ! -z "$CI_COMMIT_TAG" ]; then
+    if [[ "$CI_COMMIT_TAG" == *.*.? ]]; then
       ssh -o StrictHostKeyChecking=no www-data@kalo.ikus-soft.com ln -fs $VERSION /var/www/patrikdufresne/archive/rdiffweb/doc/latest
     fi
 
