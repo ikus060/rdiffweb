@@ -107,6 +107,23 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## 2.3.7 (2021-10-21)
+
+ * To avoid backward compatibility issue, revert CSRF Token validation
+ * Mitigate CSRF vulnerability using cookies with `SameSite=Lax`
+ * Mitigate CSRF vulnerability by validating the `Origin` header when a form is submited
+ * Improve usage of WTForm for all form validation
+ * Update installation stepd for debian #162
+ * Build Ubuntu packages and publish them to our APT repo
+
+## 2.3.6 (2021-10-20)
+
+ * Broken build
+
+## 2.3.5 (2021-10-18)
+
+ * Mitigate CSRF vulnerability to user, ssh and repo management with CSRF Token
+
 ## 2.3.4 (2021-09-20)
 
  * Skip email notification if `email-host` configuration is not provided #157
