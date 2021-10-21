@@ -145,12 +145,12 @@ package:deb:
   script: |
     set -x
     set -e
-    export VERSION=$(python3 setup.py --version)
     if [ ! -z "$BACKPORTS" ]; then
       echo "$BACKPORTS" > /etc/apt/sources.list.d/backports.list
     fi
     apt update
     apt -y --no-install-recommends install devscripts
+    export VERSION=$(curl -L https://gitlab.com/ikus-soft/maven-scm-version/-/raw/master/version.sh 2>/dev/null | bash -s DEB)
     if [ ! -z "$BACKPORTS" ]; then
       apt build-dep -t $DIST-backports -y .
     else
@@ -217,7 +217,7 @@ publish:deb:
   script: |
     set -e
     set -x
-    if [[ "$CI_COMMIT_TAG" == *.*.? ]]; then
+    if [[ "$CI_COMMIT_TAG" == *.+([0-9]) ]]; then
       APT_URL="https://nexus.ikus-soft.com/repository/apt-release-${DIST}/"
     else
       APT_URL="https://nexus.ikus-soft.com/repository/apt-dev-${DIST}/"
@@ -239,7 +239,7 @@ publish:wheel:
     pip3 install wheel twine readme_renderer --upgrade
     LANG="C.UTF-8" python3 -m readme_renderer README.md -o /tmp/README.html
     twine upload dist/*.whl -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
-    if [[ "$CI_COMMIT_TAG" == *.*.? ]]; then
+    if [[ "$CI_COMMIT_TAG" == *.+([0-9]) ]]; then
       twine upload dist/*.whl -u $PYPI_USR -p $PYPI_PWD
     fi
 
@@ -260,23 +260,30 @@ publish:doc:
     export VERSION=$(python3 setup.py --version)
     scp -r -o StrictHostKeyChecking=no .tox/doc/tmp/ www-data@kalo.ikus-soft.com:/var/www/patrikdufresne/archive/rdiffweb/doc/$VERSION/
     # Promote to latest for tags
-    if [[ "$CI_COMMIT_TAG" == *.*.? ]]; then
+    if [[ "$CI_COMMIT_TAG" == *.+([0-9]) ]]; then
       ssh -o StrictHostKeyChecking=no www-data@kalo.ikus-soft.com ln -fs $VERSION /var/www/patrikdufresne/archive/rdiffweb/doc/latest
     fi
 
-deploy_rdiffweb_demo:
-  stage: deploy
+deploy:demo:
   only:
     variables:
     - $GITLAB_ANSIBLE_TOKEN
+  allow_failure: True
   environment:
     name: demo
     url: https://rdiffweb-demo.ikus-soft.com/
+  needs: 
+  - package:deb
+  image: registry.gitlab.com/finestructure/pipeline-trigger
   script:
-  - export RDIFFWEB_VERSION=$(python3 setup.py --version | tail -n 1)
-  - echo RDIFFWEB_VERSION=$RDIFFWEB_VERSION
-  # Call ansible
-  - curl -X POST -F token=36bae86778d901fc6b2d6453a41844 -F "ref=master" -F "variables[RDIFFWEB_VERSION]=$RDIFFWEB_VERSION" https://gitlab.com/api/v4/projects/18716492/trigger/pipeline
+    - apk update && apk add git
+    - export DEB_VERSION=$(ls -1 ./dist/bullseye/rdiffweb_*_all.deb | cut -d '_' -f 2)
+    - echo DEB_VERSION=$DEB_VERSION
+    # Trigger ansible-config pipeline
+    - trigger -a "$ANSIBLE_PIPELINE_GITLAB_API_TOKEN" -t master -e "RDIFFWEB_VERSION=$DEB_VERSION" -p 36bae86778d901fc6b2d6453a41844 18716492
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
 
 bump_minarca_version:
   stage: downstream

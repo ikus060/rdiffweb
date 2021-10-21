@@ -124,7 +124,7 @@ def static(path):
         content_type = mimetypes.types_map.get(ext, None)  # @UndefinedVariable
 
     @cherrypy.expose
-    @cherrypy.config(**{'tools.authform.on': False})
+    @cherrypy.config(**{'tools.authform.on': False, 'tools.sessions.on': False})
     def handler(*args, **kwargs):
         if cherrypy.request.method not in ('GET', 'HEAD'):
             return None

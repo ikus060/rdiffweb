@@ -32,6 +32,14 @@ class CsrfTest(rdiffweb.test.WebCase):
         cookie = self.assertHeader('Set-Cookie')
         self.assertIn('SameSite=Lax', cookie)
 
+    def test_samesite_lax_without_session(self):
+        # Given not a client sending no cookie
+        self.cookies = None
+        # When a query is made to a static path (without session)
+        self.getPage('/static/blue.css')
+        # Then Set-Cookie is not defined.
+        self.assertNoHeader('Set-Cookie')
+
     def test_get_with_wrong_origin(self):
         # Given a GET request made to rdiffweb
         # When the request is made using a different origin
