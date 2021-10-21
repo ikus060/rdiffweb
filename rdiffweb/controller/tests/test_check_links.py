@@ -42,9 +42,13 @@ class CheckLinkTest(rdiffweb.test.WebCase):
         todo = OrderedDict()
         todo["/"] = "/"
         self.getPage("/")
+        # Store the original cookie since it get replace during execution.
+        self.assertIsNotNone(self.cookies)
+        cookies = self.cookies
         while todo:
             page, ref = todo.popitem(last=False)
             # Query page
+            self.cookies = cookies
             self.getPage(page)
             # Check status
             self.assertStatus('200 OK', "can't access page [%s] referenced by [%s]" % (page, ref))

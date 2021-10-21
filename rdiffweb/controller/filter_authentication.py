@@ -257,7 +257,8 @@ class CsrfAuth(HandlerTool):
         # https://github.com/cherrypy/cherrypy/issues/1767
         # Force SameSite to Lax
         cookie = cherrypy.serving.response.cookie.get('session_id', None)
-        cookie['samesite'] = 'Lax'
+        if cookie:
+            cookie['samesite'] = 'Lax'
 
     def run(self):
         if cherrypy.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
