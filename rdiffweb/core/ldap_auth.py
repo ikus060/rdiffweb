@@ -35,7 +35,6 @@ from rdiffweb.core.config import Option
 
 logger = logging.getLogger(__name__)
 
-
 class LdapPasswordStore():
 
     """Wrapper for LDAP authentication.
@@ -73,7 +72,11 @@ class LdapPasswordStore():
 
         def check_crendential(l, r):
             # Check results
-            if len(r) != 1:
+            # when the entire directory is searched, some null records are
+            #  returned, so len(r) > 1 at all times
+            # if, however, the first item returned is one of these, there will
+            #  be no dn in the first record of the result set
+            if not (r and r[0] and r[0][0]):
                 logger.info("user [%s] not found in LDAP", username)
                 return None
 
@@ -104,7 +107,7 @@ class LdapPasswordStore():
             finally:
                 l.unbind_s()
             # Return the username
-            return new_username, r[0][1]
+            return new_username, self._try_decode(r[0][1])
 
         # Execute the LDAP operation
         try:
@@ -135,6 +138,30 @@ class LdapPasswordStore():
         if isinstance(shadow_expire, list):
             shadow_expire = shadow_expire[0]
         return int(shadow_expire)
+
+    def _try_decode(self, value):
+        """
+        Ldap attributes can be bytes, or lists of bytes.
+        If the attribute is a list, loop through and run recursively
+        If it is a byte, decode it
+        """
+        result = []
+        if isinstance(value, list):
+            for l in value:
+                result.append(self._try_decode(l))
+        if isinstance(value, bytes):
+            try:
+                #try to decode completely
+                result = value.decode(encoding=self.encoding, errors='strict')
+            except UnicodeDecodeError:
+                # Sometimes, we can't decode bytes to str, so we'll replace the undecodable characters
+                # with '?', and return that with a warning.
+                result = value.decode(encoding=self.encoding, errors='replace')
+                logger.warning("Unable to decode all of this: {}. Returning attempted decode: {}".format(
+                    value, result))
+        else:
+            result = value
+        return result
 
     def _decode(self, value):
         """If required, decode the given bytes str into unicode."""
@@ -169,6 +196,10 @@ class LdapPasswordStore():
         else:
             l.protocol_version = ldap.VERSION3
 
+        # This tells the search not to follow referrals, and allows searching
+        #  the entire directory as the base_dn
+        l.set_option(ldap.OPT_REFERRALS, 0)
+
         try:
             # Bind to the LDAP server
             logger.debug("binding to ldap server {}".format(self.uri))
@@ -202,7 +233,7 @@ class LdapPasswordStore():
 
         def check_user_exists(l, r):  # @UnusedVariable
             # Check the results
-            if len(r) != 1:
+            if not (r and r[0] and r[0][0]):
                 logger.debug("user [%s] not found", username)
                 return False
 
@@ -236,8 +267,9 @@ class LdapPasswordStore():
     def _set_password_in_ldap(self, username, old_password, password):
 
         def change_passwd(l, r):
-            if len(r) != 1:
+            if not (r and r[0] and r[0][0]):
                 raise RdiffError(_("User %s not found." % (username,)))
+            
             # Bind using the user credentials. Throws an exception in case of
             # error.
             if old_password is not None:

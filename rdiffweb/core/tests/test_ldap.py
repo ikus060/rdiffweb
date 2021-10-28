@@ -34,6 +34,7 @@ def _ldap_user(name, password='password'):
     return ('uid=%s,ou=People,dc=nodomain' % (name), {
         'uid': [name],
         'cn': [name],
+        'sAMAccountName': [name],
         'userPassword': [password],
         'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']})
 
@@ -85,7 +86,7 @@ class UserManagerLdapTest(AppTestCase):
             'mike', 'password')
         self.assertEqual('mike', username)
         self.assertEqual(attrs, {'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'], 'userPassword': [
-            'password'], 'uid': ['mike'], 'cn': ['mike']})
+            'password'], 'uid': ['mike'], 'cn': ['mike'], 'sAMAccountName': ['mike']})
 
     def test_are_valid_credentials_with_invalid_password(self):
         self.assertFalse(

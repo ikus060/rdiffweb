@@ -45,6 +45,7 @@ def _ldap_user(name, password='password', email=None):
         'uid': [name],
         'cn': [name],
         'userPassword': [password],
+        'sAMAccountName': [name],
         'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']
     }
     if email:
@@ -546,9 +547,9 @@ class StoreWithLdapAddMissing(AbstractLdapStoreTest):
         self.assertEqual('', userobj.email)
         # Check listener
         self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [
-                                                          u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
+                                                          u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
         self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [
-                                                            u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
+                                                            u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
 
     def test_login_with_create_user_with_email(self):
         """Check if login create the user in database if user exists in LDAP"""
@@ -581,9 +582,34 @@ class StoreWithLdapAddMissingWithDefaults(AbstractLdapStoreTest):
         self.assertEqual('/backups/users/tony', userobj.user_root)
         # Check listener
         self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [
-                                                          u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
+                                                          u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
         self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [
-                                                            u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony']})
+                                                            u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
+
+class StoreWithLdapAddMissingWithComplexUserroot(AbstractLdapStoreTest):
+
+    default_config = {
+        'ldap-uri': '__default__',
+        'ldap-base-dn': 'dc=nodomain',
+        'ldap-add-missing-user': 'true',
+        'ldap-add-user-default-role': 'maintainer',
+        'ldap-add-user-default-userroot': '/home/{sAMAccountName[0]}/backups',
+    }
+
+    def test_login_with_create_user(self):
+        """Check if login create the user in database if user exists in LDAP"""
+        self.assertIsNone(self.app.store.get_user('tony'))
+        userobj = self.app.store.login('tony', 'password')
+        self.assertIsNotNone(self.app.store.get_user('tony'))
+        self.assertFalse(userobj.is_admin)
+        self.assertEqual(MAINTAINER_ROLE, userobj.role)
+        self.assertEqual('/home/tony/backups', userobj.user_root)
+        # Check listener
+        self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [
+                                                          u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
+        self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [
+                                                            u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
+
 
 
 class StoreWithAdmin(AppTestCase):
