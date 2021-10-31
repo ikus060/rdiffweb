@@ -6,6 +6,12 @@ case "${1}" in
 	configure)
 		# Create default session directory
 		mkdir -p /var/lib/rdiffweb/session
+		# Create symbolic link to Chart.js
+		if [ -f /usr/share/javascript/chart.js/Chart.bundle.min.js ]; then
+			ln -sf /usr/share/javascript/chart.js/Chart.bundle.min.js /usr/lib/python3/dist-packages/rdiffweb/static/js/chart.min.js
+		else
+			ln -sf /usr/share/javascript/chart.js/Chart.min.js /usr/lib/python3/dist-packages/rdiffweb/static/js/chart.min.js
+		fi
 		;;
 
 	abort-upgrade|abort-remove|abort-deconfigure)
