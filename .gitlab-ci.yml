@@ -258,10 +258,10 @@ publish:doc:
     chmod 700 ~/.ssh
     # Publish doc
     export VERSION=$(python3 setup.py --version)
-    scp -r -o StrictHostKeyChecking=no .tox/doc/tmp/ www-data@kalo.ikus-soft.com:/var/www/patrikdufresne/archive/rdiffweb/doc/$VERSION/
+    scp -r -o StrictHostKeyChecking=no .tox/doc/tmp/ www-data@archive.ikus-soft.com:/var/www/patrikdufresne/archive/rdiffweb/doc/$VERSION/
     # Promote to latest for tags
     if [[ "$CI_COMMIT_TAG" == *.+([0-9]) ]]; then
-      ssh -o StrictHostKeyChecking=no www-data@kalo.ikus-soft.com ln -fs $VERSION /var/www/patrikdufresne/archive/rdiffweb/doc/latest
+      ssh -o StrictHostKeyChecking=no www-data@archive.ikus-soft.com ln -fs $VERSION /var/www/patrikdufresne/archive/rdiffweb/doc/latest
     fi
 
 deploy:demo:
