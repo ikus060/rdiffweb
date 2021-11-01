@@ -218,9 +218,9 @@ publish:deb:
     set -e
     set -x
     if [[ "$CI_COMMIT_TAG" == *.+([0-9]) ]]; then
-      APT_URL="https://nexus.ikus-soft.com/repository/apt-release-${DIST}/"
+      APT_URL="$NEXUS_URL/repository/apt-release-${DIST}/"
     else
-      APT_URL="https://nexus.ikus-soft.com/repository/apt-dev-${DIST}/"
+      APT_URL="$NEXUS_URL/repository/apt-dev-${DIST}/"
     fi
     export FILE=$(ls -1 ./dist/$DIST/rdiffweb*.deb)
     curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$FILE" "$APT_URL"
@@ -247,22 +247,17 @@ publish:doc:
   stage: publish
   only:
     variables:
-      - $KALO_WWWDATA_PRIVATEKEY
+      - $NEXUS_USR
+      - $NEXUS_PWD
+      - $NEXUS_URL
   needs:
   - doc
-  script: |
-    # Publish to kalo
-    eval $(ssh-agent -s)
-    echo "$KALO_WWWDATA_PRIVATEKEY" | tr -d '\r' | ssh-add - > /dev/null
-    mkdir -p ~/.ssh
-    chmod 700 ~/.ssh
-    # Publish doc
-    export VERSION=$(python3 setup.py --version)
-    scp -r -o StrictHostKeyChecking=no .tox/doc/tmp/ www-data@archive.ikus-soft.com:/var/www/patrikdufresne/archive/rdiffweb/doc/$VERSION/
-    # Promote to latest for tags
-    if [[ "$CI_COMMIT_TAG" == *.+([0-9]) ]]; then
-      ssh -o StrictHostKeyChecking=no www-data@archive.ikus-soft.com ln -fs $VERSION /var/www/patrikdufresne/archive/rdiffweb/doc/latest
-    fi
+  script:
+    # publish to nexus
+    - export VERSION=$(cd minarca-client; python3 setup.py --version)
+    - export FILE=$(ls -1d $FILENAME)
+    - cd .tox/doc/tmp/html
+    - find * -type f -exec curl --fail -u "$NEXUS_USR:$NEXUS_PWD" --upload-file "{}" $NEXUS_URL/repository/archive/rdiffweb/$VERSION/doc/{} \;
 
 deploy:demo:
   only:
