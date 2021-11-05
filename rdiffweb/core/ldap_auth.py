@@ -73,7 +73,11 @@ class LdapPasswordStore():
 
         def check_crendential(l, r):
             # Check results
-            if len(r) != 1:
+            # when the entire directory is searched, some null records are
+            #  returned, so len(r) > 1 at all times
+            # if, however, the first item returned is one of these, there will
+            #  be no dn in the first record of the result set
+            if not (r and r[0] and r[0][0]):
                 logger.info("user [%s] not found in LDAP", username)
                 return None
 
@@ -169,6 +173,10 @@ class LdapPasswordStore():
         else:
             l.protocol_version = ldap.VERSION3
 
+        # This tells the search not to follow referrals, and allows searching
+        #  the entire directory as the base_dn
+        l.set_option(ldap.OPT_REFERRALS, 0)
+
         try:
             # Bind to the LDAP server
             logger.debug("binding to ldap server {}".format(self.uri))
@@ -202,7 +210,7 @@ class LdapPasswordStore():
 
         def check_user_exists(l, r):  # @UnusedVariable
             # Check the results
-            if len(r) != 1:
+            if not (r and r[0] and r[0][0]):
                 logger.debug("user [%s] not found", username)
                 return False
 
@@ -236,8 +244,9 @@ class LdapPasswordStore():
     def _set_password_in_ldap(self, username, old_password, password):
 
         def change_passwd(l, r):
-            if len(r) != 1:
+            if not (r and r[0] and r[0][0]):
                 raise RdiffError(_("User %s not found." % (username,)))
+            
             # Bind using the user credentials. Throws an exception in case of
             # error.
             if old_password is not None:
