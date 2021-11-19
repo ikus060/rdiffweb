@@ -32,11 +32,11 @@ The following Debian Release as supported: Buster (10), Bullseye (11)
 
 The following Ubuntu Release are supported: Groovy (20.10), Hirsute (21.04)
 
-  apt install lsb-release
-  curl -L https://www.ikus-soft.com/archive/rdiffweb/public.key | gpg --dearmor > /usr/share/keyrings/rdiffweb-keyring.gpg
-  echo "deb [signed-by=/usr/share/keyrings/rdiffweb-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-release-$(lsb_release -sc)/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/rdiffweb.list
-  apt update
-  apt install rdiffweb
+    apt install lsb-release
+    curl -L https://www.ikus-soft.com/archive/rdiffweb/public.key | gpg --dearmor > /usr/share/keyrings/rdiffweb-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/rdiffweb-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-release-$(lsb_release -sc)/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/rdiffweb.list
+    apt update
+    apt install rdiffweb
 
 > **_NOTE:_**  Access the web interface `http://<ip-or-dns-name>:8080` with username  **admin** and password **admin123**. Then browse to the **Admin Area** to add users and assign backup locations to these users.
 
