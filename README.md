@@ -107,6 +107,17 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## 2.3.8 (2021-12-01)
+
+* Push all artefacts to nexus server including binaries and documentation
+* Fix `Chart.js` loading on Debian bullseye #164
+* Update installation steps documentation
+* Improve LDAP authentication to lookup entire directory
+* Fix usage of `--ldap-add-user-default-userroot` to avoid error related to wrong encoding
+* Improve authentication mechanics
+* Avoid raising an HTTP error 500 when login form receive invalid payload
+* Mitigate open redirect vulnerability in login form
+
 ## 2.3.7 (2021-10-21)
 
  * To avoid backward compatibility issue, revert CSRF Token validation
