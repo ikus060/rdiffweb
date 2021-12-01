@@ -15,26 +15,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import namedtuple
-from distutils.version import LooseVersion
 import logging
 import os
 import sys
+from collections import namedtuple
+from distutils.version import LooseVersion
 
-from cherrypy import Application
 import cherrypy
 import pkg_resources
+from cherrypy import Application
+
 import rdiffweb
-from rdiffweb.controller import Controller
-from rdiffweb.controller import filter_authentication  # @UnusedImport
+import rdiffweb.tools.auth_form
+import rdiffweb.tools.auth_basic
+import rdiffweb.tools.currentuser
+import rdiffweb.tools.security
 from rdiffweb.controller import filter_authorization  # @UnusedImport
+from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
-from rdiffweb.controller.dispatch import static, empty  # @UnusedImport
+from rdiffweb.controller.dispatch import empty, static  # @UnusedImport
 from rdiffweb.controller.page_admin import AdminPage
 from rdiffweb.controller.page_browse import BrowsePage
+from rdiffweb.controller.page_delete import DeletePage
 from rdiffweb.controller.page_graphs import GraphsPage
 from rdiffweb.controller.page_history import HistoryPage
 from rdiffweb.controller.page_locations import LocationsPage
+from rdiffweb.controller.page_login import LoginPage, LogoutPage
+from rdiffweb.controller.page_logs import LogsPage
 from rdiffweb.controller.page_prefs import PreferencesPage
 from rdiffweb.controller.page_restore import RestorePage
 from rdiffweb.controller.page_settings import SettingsPage
@@ -42,15 +49,12 @@ from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import i18n  # @UnusedImport
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
-from rdiffweb.core.librdiff import DoesNotExistError, AccessDeniedError
+from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.notification import NotificationJob, NotificationPlugin
 from rdiffweb.core.quota import DefaultUserQuota
-from rdiffweb.core.store import Store
-
-from rdiffweb.controller.page_delete import DeletePage
-from rdiffweb.controller.page_logs import LogsPage
 from rdiffweb.core.removeolder import RemoveOlderJob
 from rdiffweb.core.scheduler import Scheduler
+from rdiffweb.core.store import Store
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -71,6 +75,8 @@ else:
 class Root(LocationsPage):
 
     def __init__(self):
+        self.login = LoginPage()
+        self.logout = LogoutPage()
         self.browse = BrowsePage()
         self.delete = DeletePage()
         self.restore = RestorePage()
@@ -116,7 +122,10 @@ class RdiffwebApp(Application):
         # Initialise the application
         config = {
             '/': {
-                'tools.authform.on': True,
+                'tools.auth_basic.realm': 'rdiffweb',
+                'tools.auth_basic.checkpassword': self._checkpassword,
+                'tools.auth_form.on': True,
+                'tools.currentuser.on': True,
                 'tools.csrf.on': True,
                 'tools.i18n.on': True,
                 'tools.i18n.default': 'en_US',
@@ -177,6 +186,12 @@ class RdiffwebApp(Application):
         Return a UserObject when logged in or None.
         """
         return getattr(cherrypy.serving.request, 'currentuser', None)
+
+    def _checkpassword(self, realm, username, password):
+        """
+        Check basic authentication.
+        """
+        return self.store.login(username, password) is not None
 
     def error_page(self, **kwargs):
         """

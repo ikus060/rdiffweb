@@ -17,6 +17,7 @@
 
 
 import cherrypy
+from markupsafe import Markup, escape
 from wtforms.form import Form
 
 SUBMIT_METHODS = {'POST', 'PUT', 'PATCH', 'DELETE'}
@@ -74,3 +75,24 @@ class CherryForm(Form):
     def error_message(self):
         if self.errors:
             return ' '.join(['%s: %s' % (field, ', '.join(messages)) for field, messages in self.errors.items()])
+
+    def __html__(self):
+        """
+        Return a HTML representation of the form. For more powerful rendering, see the __call__() method.
+        """
+        return self()
+
+    def __call__(self, div_class='form-outline', label_class='form-label', field_class='form-control', error_class='invalid-feedback'):
+
+        def generator():
+            for id, field in self._fields.items():
+                if field.type == 'HiddenField':
+                    yield field(**{'class': field_class})
+                else:
+                    yield Markup('<div class="%s">' % escape(div_class))
+                    yield field.label(**{'class': label_class})
+                    yield field(**{'class': field_class})
+                    for error in field.errors:
+                        yield Markup('<div class="%s">%s</div>' % (escape(error_class), escape(error)))
+                    yield Markup('</div>')
+        return Markup('').join(list(generator()))

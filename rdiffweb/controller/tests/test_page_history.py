@@ -36,7 +36,8 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         url = "/history/" + user + "/" + path + "/"
         if limit:
             url += "?limit=%s" % limit
-        return self.getPage(url)
+        self.getPage(url)
+        self.assertStatus('200 OK')
 
     def test_history_with_root(self):
         self._history(self.USERNAME, self.REPO)

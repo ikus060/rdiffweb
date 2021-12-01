@@ -24,6 +24,8 @@ import rdiffweb.test
 
 class CsrfTest(rdiffweb.test.WebCase):
 
+    login = True
+
     def test_samesite_lax(self):
         # Given a request made to rdiffweb
         # When receiving the response
