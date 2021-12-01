@@ -23,12 +23,13 @@ Mock class for testing.
 """
 import json
 import os
-import re
 import shutil
 import subprocess
 import tempfile
 import unittest
 import unittest.mock
+from threading import Thread
+from urllib.parse import urlencode
 
 import cherrypy
 import pkg_resources
@@ -38,10 +39,8 @@ from rdiffweb.core.config import parse_args
 from rdiffweb.core.store import _REPOS, _SSHKEYS, _USERS
 from rdiffweb.rdw_app import RdiffwebApp
 
-try:
-    from urllib.parse import urlencode  # @UnresolvedImport @UnusedImport
-except:
-    from urllib import urlencode  # @UnresolvedImport @UnusedImport @Reimport
+# For cherrypy8, we need to monkey patch Thread.isAlive
+Thread.isAlive = Thread.is_alive
 
 
 class MockRdiffwebApp(RdiffwebApp):

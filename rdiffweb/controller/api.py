@@ -51,12 +51,11 @@ def json_handler(*args, **kwargs):
 
 
 @cherrypy.tools.json_out(handler=json_handler)
-@cherrypy.config(**{
-    'tools.authform.on': False,
-    'tools.i18n.on': False,
-    'tools.authbasic.on': True,
-    'tools.sessions.on': True,
-    'error_page.default': False})
+@cherrypy.config(**{'error_page.default': False})
+@cherrypy.tools.auth_basic()
+@cherrypy.tools.auth_form(on=False)
+@cherrypy.tools.sessions(on=True)
+@cherrypy.tools.i18n(on=False)
 class ApiPage(Controller):
     """
     This class provide a restful API to access some of the rdiffweb resources.

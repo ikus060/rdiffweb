@@ -150,27 +150,27 @@ class TestI18nWebCase(rdiffweb.test.WebCase):
 
     def test_language_with_unknown(self):
         #  Query the page without login-in
-        self.getPage("/", headers=[("Accept-Language", "it")])
+        self.getPage("/login/", headers=[("Accept-Language", "it")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "en_US")
         self.assertInBody("Sign in")
 
     def test_language_en(self):
-        self.getPage("/", headers=[("Accept-Language", "en-US,en;q=0.8")])
+        self.getPage("/login/", headers=[("Accept-Language", "en-US,en;q=0.8")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "en_US")
         self.assertInBody("Sign in")
 
     def test_language_en_fr(self):
         self.getPage(
-            "/", headers=[("Accept-Language", "en-US,en;q=0.8,fr-CA;q=0.8")])
+            "/login/", headers=[("Accept-Language", "en-US,en;q=0.8,fr-CA;q=0.8")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "en_US")
         self.assertInBody("Sign in")
 
     def test_language_fr(self):
         self.getPage(
-            "/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
+            "/login/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "fr_CA")
         self.assertInBody("Se connecter")
@@ -178,12 +178,12 @@ class TestI18nWebCase(rdiffweb.test.WebCase):
     def test_language_between_session(self):
         # Make a request with Accept-Language
         self.getPage(
-            "/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
+            "/login/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "fr_CA")
         self.assertInBody("Se connecter")
         # Make a second request without Accept-Language
-        self.getPage("/")
+        self.getPage("/login/")
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "fr_CA")
         self.assertInBody("Se connecter")

@@ -26,6 +26,8 @@ import rdiffweb.test
 
 class ControllerTest(rdiffweb.test.WebCase):
 
+    login = True
+
     default_config = {'HeaderName': 'MyTest'}
 
     def test_headername(self):
@@ -33,6 +35,7 @@ class ControllerTest(rdiffweb.test.WebCase):
         Check if the headername is used in the page.
         """
         self.getPage("/")
+        self.assertStatus('200 OK')
         self.assertInBody('MyTest')
 
     def test_theme(self):
@@ -40,10 +43,13 @@ class ControllerTest(rdiffweb.test.WebCase):
         Check if the theme is properly configure. 
         """
         self.getPage("/")
+        self.assertStatus('200 OK')
         self.assertInBody('/static/default.css')
 
 
 class ControllerOrangeThemeTest(rdiffweb.test.WebCase):
+
+    login = True
 
     default_config = {'DefaultTheme': 'orange'}
 
@@ -52,10 +58,13 @@ class ControllerOrangeThemeTest(rdiffweb.test.WebCase):
         Check if the theme is properly configure. 
         """
         self.getPage("/")
+        self.assertStatus('200 OK')
         self.assertInBody('/static/orange.css')
 
 
 class ControllerBlueThemeTest(rdiffweb.test.WebCase):
+
+    login = True
 
     default_config = {'DefaultTheme': 'blue'}
 
