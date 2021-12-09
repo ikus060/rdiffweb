@@ -625,9 +625,10 @@ class IncrementEntry(object):
     MISSING_SUFFIX = b".missing"
 
     SUFFIXES = [b".missing", b".snapshot.gz", b".snapshot",
-                b".diff.gz", b".data.gz", b".data", b".dir", b".diff"]
+                b".diff.gz", b".data.gz", b".data", b".dir",
+                b".diff", b".log"]
 
-    def __init__(self, parent, name):
+    def __init__(self, parent, name, on_date_error=None):
         """Default constructor for an increment entry. User must provide the
             repository directory and an entry name. The entry name correspond
             to an error_log.* filename."""
@@ -641,7 +642,7 @@ class IncrementEntry(object):
         # The given entry name may has quote character, replace them
         self.name = name
         # Calculate the date of the increment.
-        self.date = self.repo._extract_date(self.name)
+        self.date = self.repo._extract_date(self.name, onerror=on_date_error)
 
     @property
     def path(self):
@@ -970,7 +971,7 @@ class RdiffRepo(object):
         """
         Return the location of the backup log.
         """
-        return LogEntry(self, b'backup.log')
+        return LogEntry(self, b'backup.log', on_date_error=lambda e: None)
 
     def delete(self):
         """Delete the repository permanently."""
@@ -1012,10 +1013,11 @@ class RdiffRepo(object):
     def _entries(self):
         return sorted(os.listdir(self._data_path))
 
-    def _extract_date(self, filename):
+    def _extract_date(self, filename, onerror=None):
         """
         Extract date from rdiff-backup filenames.
         """
+        os.walk
         # Remove suffix from filename
         filename = IncrementEntry._remove_suffix(filename)
         # Remove prefix from filename
@@ -1024,9 +1026,10 @@ class RdiffRepo(object):
         date_string = self.unquote(date_string)
         try:
             return RdiffTime(date_string.decode())
-        except:
-            logger.warning('fail to parse date [%r]', date_string, exc_info=1)
-            return None
+        except Exception as error:
+            if onerror is None:
+                raise error
+            return onerror(error)
 
     def _get_increment_entries(self, path):
         """
@@ -1104,7 +1107,7 @@ class RdiffRepo(object):
         """
         Return the location of the restore log.
         """
-        return LogEntry(self, b'restore.log')
+        return LogEntry(self, b'restore.log', on_date_error=lambda e: None)
 
     @cached_property
     def status(self):
