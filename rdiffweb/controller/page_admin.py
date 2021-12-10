@@ -192,15 +192,27 @@ class AdminPage(Controller):
         if not form.validate():
             flash(form.error_message, level='error')
             return
-        if action == 'add':
-            user = self.app.store.add_user(form.username.data, form.password.data)
-        else:
-            user = self.app.store.get_user(form.username.data)
+        # Get or create user
+        try:
+            if action == 'add':
+                user = self.app.store.add_user(form.username.data, form.password.data)
+                assert user
+            else:
+                user = self.app.store.get_user(form.username.data)
+                if not user:
+                    flash(_("Cannot edit user `%s`: user doesn't exists") % form.username.data, level='error')
+                    return
+        except Exception as e:
+            flash(str(e), level='error')
+            return
+
+        # Update user's password
+        try:
             if form.password.data:
-                try:
-                    user.set_password(form.password.data, old_password=None)
-                except ValueError as e:
-                    flash(str(e), level='error')
+                user.set_password(form.password.data, old_password=None)
+        except ValueError as e:
+            flash(str(e), level='error')
+
         # Don't allow the user to changes it's "role" state.
         if form.username.data != self.app.currentuser.username:
             user.role = form.role.data
