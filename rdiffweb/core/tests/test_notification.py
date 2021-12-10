@@ -57,6 +57,23 @@ class NotificationJobTest(rdiffweb.test.AppTestCase):
         n.send_mail.assert_called_once_with(
             user, 'Notification', 'email_notification.html', repos=[ANY], user=user)
 
+    def test_run_with_undefined_last_backup_date(self):
+        # Given a valid user with a repository configured for notification
+        user = self.app.store.get_user(self.USERNAME)
+        user.email = 'test@test.com'
+        user.get_repo('broker-repo').maxage = 1
+        self.assertIsNone(user.get_repo('broker-repo').last_backup_date)
+
+        # When Notification job is running
+        n = NotificationJob(app=self.app)
+        self.assertIsNotNone(n)
+        n.send_mail = MagicMock()
+        n.job_run()
+
+        # Then a notification is sent to the user.
+        n.send_mail.assert_called_once_with(
+            user, 'Notification', 'email_notification.html', repos=[ANY], user=user)
+
     def test_run_without_notification(self):
         """
         Run the notification and check if mails are sent
