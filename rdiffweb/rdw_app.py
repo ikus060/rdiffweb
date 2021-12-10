@@ -22,15 +22,16 @@ from collections import namedtuple
 from distutils.version import LooseVersion
 
 import cherrypy
+import cherrypy.lib.sessions
 import pkg_resources
 from cherrypy import Application
 
 import rdiffweb
-import rdiffweb.tools.auth_form
 import rdiffweb.tools.auth_basic
+import rdiffweb.tools.auth_form
 import rdiffweb.tools.currentuser
-import rdiffweb.tools.security
 import rdiffweb.tools.errors
+import rdiffweb.tools.security
 from rdiffweb.controller import filter_authorization  # @UnusedImport
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
@@ -120,6 +121,9 @@ class RdiffwebApp(Application):
         self.templates = rdw_templating.TemplateManager()
 
         # Initialise the application
+        storage_class = cherrypy.lib.sessions.RamSession
+        if self._session_dir:
+            storage_class = cherrypy.lib.sessions.FileSession
         config = {
             '/': {
                 'tools.auth_basic.realm': 'rdiffweb',
@@ -137,7 +141,7 @@ class RdiffwebApp(Application):
                 'tools.sessions.on': True,
                 'tools.proxy.on': cp_tools_proxy_enabled,
                 'error_page.default': self.error_page,
-                'tools.sessions.storage_type': 'file' if self._session_dir else 'ram',
+                'tools.sessions.storage_class': storage_class,
                 'tools.sessions.storage_path': self._session_dir,
             },
         }
