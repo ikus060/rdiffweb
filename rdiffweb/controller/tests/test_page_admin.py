@@ -155,8 +155,12 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Verify failure trying to add the same user.
         """
+        # Given a user named `test1`
         self._add_user("test1", "test1@test.com", "test1", "/tmp/", USER_ROLE)
+        # When trying to create a new user with the same name
         self._add_user("test1", "test1@test.com", "test1", "/tmp/", USER_ROLE)
+        # Then the user list is displayed with an error message.
+        self.assertStatus(200)
         self.assertInBody("User test1 already exists.")
 
     def test_add_user_with_invalid_root_directory(self):
@@ -243,8 +247,13 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Verify failure trying to update invalid user.
         """
-        self._edit_user("test4", "test1@test.com", "test1", "/tmp/", USER_ROLE)
-        self.assertStatus(500)
+        # Given an invalid username
+        username = 'invalid'
+        # When trying to edit the user
+        self._edit_user(username, "test1@test.com", "test", "/var/invalid/", USER_ROLE)
+        # Then the user list is displayed with an error message
+        self.assertStatus(200)
+        self.assertInBody("Cannot edit user `invalid`: user doesn&#39;t exists")
 
     def test_criteria(self):
         """
