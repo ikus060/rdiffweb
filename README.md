@@ -178,7 +178,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
  * Add option `disable-ssh-keys` to disable SSH Key management
  * Use absolute URL everywhere
  * Add support for `X-Forward-For`, `X-Forward-proto` and other reverse proxy header when generating absolute URL
- * Drop Debian Strech support
+ * Drop Debian Stretch support
  * Implement a new background scheduler using apscheduler #82
  * Use background job to send email notification to avoid blocking web page loading #47
  * Use background job to delete repository to avoid blocking web page loading #48
