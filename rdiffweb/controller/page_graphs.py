@@ -15,21 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 
 import chartkick  # @UnusedImport
 import cherrypy
 import pkg_resources
-from rdiffweb.controller import Controller, validate_isinstance, validate_int
+from rdiffweb.controller import Controller, validate_int, validate_isinstance
 from rdiffweb.controller.dispatch import poppath, static
 from rdiffweb.core.i18n import ugettext as _
-
-
-_logger = logging.getLogger(__name__)
+from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 
 
 def bytes_to_mb(v):
     return round(v / 1024 / 1024, 2)
+
 
 class Data():
 
@@ -94,6 +92,10 @@ class GraphsPage(Controller):
             pkg_resources.resource_filename('chartkick', 'js/chartkick.js'))  # @UndefinedVariable
 
     @cherrypy.expose
+    @cherrypy.tools.errors(error_table={
+        DoesNotExistError: 404,
+        AccessDeniedError: 403,
+    })
     def default(self, graph, path, limit='30', **kwargs):
         """
         Called to show every graphs

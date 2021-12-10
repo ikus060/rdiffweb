@@ -164,7 +164,7 @@ class FileErrorTest(unittest.TestCase):
 
         e = AccessDeniedError('some/path')
         self.assertEqual('some/path', str(e))
-
+        
         e = UnknownError('some/path')
         self.assertEqual('some/path', str(e))
 

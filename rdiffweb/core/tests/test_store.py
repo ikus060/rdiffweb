@@ -22,9 +22,7 @@ Module to test `user` module.
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-import logging
 import os
-import unittest
 from io import StringIO, open
 from unittest.mock import MagicMock
 
@@ -586,6 +584,7 @@ class StoreWithLdapAddMissingWithDefaults(AbstractLdapStoreTest):
         self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [
                                                             u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
 
+
 class StoreWithLdapAddMissingWithComplexUserroot(AbstractLdapStoreTest):
 
     default_config = {
@@ -609,7 +608,6 @@ class StoreWithLdapAddMissingWithComplexUserroot(AbstractLdapStoreTest):
                                                           u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
         self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [
                                                             u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
-
 
 
 class StoreWithAdmin(AppTestCase):

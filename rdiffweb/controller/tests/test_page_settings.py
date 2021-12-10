@@ -22,9 +22,6 @@ Created on Jan 1, 2016
 """
 
 
-import logging
-import unittest
-
 import rdiffweb.test
 from rdiffweb.core.store import USER_ROLE
 
@@ -62,3 +59,11 @@ class SettingsTest(rdiffweb.test.WebCase):
         # Check database update
         repo_obj = self.app.store.get_user('admin').get_repo(self.REPO)
         self.assertEqual(4, repo_obj.maxage)
+
+    def test_does_not_exists(self):
+        # Given an invalid repo
+        repo = 'invalid'
+        # When trying to get settings from it
+        self.getPage("/settings/" + self.USERNAME + "/" + repo)
+        # Then a 404 error is return
+        self.assertStatus(404)

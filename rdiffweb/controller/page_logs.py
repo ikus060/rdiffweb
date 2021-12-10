@@ -19,9 +19,10 @@ import logging
 
 import cherrypy
 from cherrypy.lib.static import serve_fileobj
-from rdiffweb.controller import Controller, validate_int, validate_date
+from rdiffweb.controller import Controller, validate_date, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -31,6 +32,10 @@ logger = logging.getLogger(__name__)
 class LogsPage(Controller):
 
     @cherrypy.expose
+    @cherrypy.tools.errors(error_table={
+        DoesNotExistError: 404,
+        AccessDeniedError: 403,
+    })
     def default(self, path, limit='10', date=None, file=None, raw=0):
         """
         Called to show every graphs

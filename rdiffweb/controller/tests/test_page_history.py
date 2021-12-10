@@ -21,8 +21,6 @@ Created on Dec 29, 2015
 @author: Patrik Dufresne
 """
 
-import logging
-import unittest
 
 import rdiffweb.test
 from rdiffweb.core.store import USER_ROLE
@@ -88,3 +86,11 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         # Browse admin's repos
         self.getPage("/history/anotheruser/testcases")
         self.assertStatus('403 Forbidden')
+
+    def test_history_does_not_exists(self):
+        # Given an invalid repo
+        repo = 'invalid'
+        # When trying to browse the history
+        self.getPage("/history/" + self.USERNAME + "/" + repo)
+        # Then a 404 error is return to the user
+        self.assertStatus(404)

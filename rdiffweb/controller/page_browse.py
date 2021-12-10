@@ -16,11 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+
+import cherrypy
+import rdiffweb.tools.errors
 from rdiffweb.controller import Controller
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.i18n import ugettext as _
-
-import cherrypy
+from rdiffweb.core.librdiff import (AccessDeniedError, DoesNotExistError,
+                                    SymLinkAccessDeniedError)
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -33,6 +36,11 @@ class BrowsePage(Controller):
     repository."""
 
     @cherrypy.expose
+    @cherrypy.tools.errors(error_table={
+        DoesNotExistError: 404,
+        AccessDeniedError: 403,
+        SymLinkAccessDeniedError: 403,
+    })
     def default(self, path=b""):
 
         # Check user access to the given repo & path

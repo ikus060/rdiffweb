@@ -30,6 +30,7 @@ import rdiffweb.tools.auth_form
 import rdiffweb.tools.auth_basic
 import rdiffweb.tools.currentuser
 import rdiffweb.tools.security
+import rdiffweb.tools.errors
 from rdiffweb.controller import filter_authorization  # @UnusedImport
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
@@ -49,7 +50,6 @@ from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import i18n  # @UnusedImport
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
-from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.notification import NotificationJob, NotificationPlugin
 from rdiffweb.core.quota import DefaultUserQuota
 from rdiffweb.core.removeolder import RemoveOlderJob
@@ -137,7 +137,6 @@ class RdiffwebApp(Application):
                 'tools.sessions.on': True,
                 'tools.proxy.on': cp_tools_proxy_enabled,
                 'error_page.default': self.error_page,
-                'request.error_response': self.error_response,
                 'tools.sessions.storage_type': 'file' if self._session_dir else 'ram',
                 'tools.sessions.storage_path': self._session_dir,
             },
@@ -213,19 +212,6 @@ class RdiffwebApp(Application):
             pass
         # If failing, send the raw error message.
         return kwargs.get('message')
-
-    def error_response(self):
-        """
-        Called when ever an exception reach cherrypy core. This implementation
-        will convert the exception into the right HTTP Error.
-        """
-        code = 500
-        t = sys.exc_info()[0]
-        if t == DoesNotExistError:
-            code = 404
-        elif t == AccessDeniedError:
-            code = 403
-        cherrypy.HTTPError(code).set_response()
 
     def _load_quota(self):
         """
