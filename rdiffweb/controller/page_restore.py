@@ -16,14 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from rdiffweb.controller import Controller, validate_isinstance, validate, \
-    validate_date
-from rdiffweb.controller.dispatch import poppath
-from rdiffweb.core.restore import ARCHIVERS
-from rdiffweb.core.rdw_helpers import quote_url
 
 import cherrypy
+import rdiffweb.tools.errors  # noqa: cherrypy.tools.errors
 from cherrypy.lib.static import _serve_fileobj, mimetypes
+from rdiffweb.controller import (Controller, validate, validate_date,
+                                 validate_isinstance)
+from rdiffweb.controller.dispatch import poppath
+from rdiffweb.core.librdiff import (AccessDeniedError, DoesNotExistError,
+                                    SymLinkAccessDeniedError)
+from rdiffweb.core.rdw_helpers import quote_url
+from rdiffweb.core.restore import ARCHIVERS
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -69,6 +72,11 @@ class RestorePage(Controller):
 
     @cherrypy.expose
     @cherrypy.tools.gzip(on=False)
+    @cherrypy.tools.errors(error_table={
+        DoesNotExistError: 404,
+        AccessDeniedError: 403,
+        SymLinkAccessDeniedError: 403,
+    })
     def default(self, path=b"", date=None, kind=None, usetar=None):
         validate_isinstance(path, bytes)
         validate(kind is None or kind in ARCHIVERS)

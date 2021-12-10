@@ -15,22 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 
 import cherrypy
-
 from rdiffweb.controller import Controller, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.i18n import ugettext as _
-
-# Define the logger
-logger = logging.getLogger(__name__)
+from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 
 
 @poppath()
 class HistoryPage(Controller):
 
     @cherrypy.expose
+    @cherrypy.tools.errors(error_table={
+        DoesNotExistError: 404,
+        AccessDeniedError: 403,
+    })
     def default(self, path=b"", limit='10', **kwargs):
         limit = validate_int(limit)
 

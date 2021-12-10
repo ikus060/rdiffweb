@@ -21,7 +21,6 @@ Created on Apr 26, 2021
 """
 
 import os
-import unittest
 
 import rdiffweb.test
 from rdiffweb.core.rdw_templating import url_for
@@ -90,3 +89,11 @@ class LogsPageTest(rdiffweb.test.WebCase):
         self.assertHeaderItemValue('Content-Type', 'text/plain;charset=utf-8')
         self.assertInBody("Starting restore of")
         self.assertNotInBody("<html")
+
+    def test_logs_does_not_exists(self):
+        # Given an invalid repo
+        repo = 'invalid'
+        # When trying to get logs from it
+        self._log(self.USERNAME, repo)
+        # Then a 4040 error is return
+        self.assertStatus(404)

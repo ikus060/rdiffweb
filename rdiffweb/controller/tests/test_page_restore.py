@@ -109,6 +109,13 @@ class RestoreTest(rdiffweb.test.WebCase):
         self.assertInBody("Ajout d'info")
         self.assertHeader('Content-Type', 'application/octet-stream')
 
+    def test_broken_link(self):
+        # Given a a broken symlink
+        # When trying to retore the broken link
+        self._restore(self.USERNAME, self.REPO, "BrokenSymlink", "1477434528", True)
+        # Then a 404 error is returned
+        self.assertStatus('404 Not Found')
+
     def test_with_quoted_vs_unquoted_path(self):
         """
         Restore file with quoted path.

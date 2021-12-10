@@ -21,9 +21,6 @@ Created on Jan 1, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-import logging
-import unittest
-
 import rdiffweb.test
 from rdiffweb.core.store import USER_ROLE
 
@@ -79,3 +76,12 @@ class SettingsTest(rdiffweb.test.WebCase):
         self.getPage("/graphs/chartkick.js")
         self.assertStatus('200 OK')
         self.assertInBody("Chartkick.js")
+
+    def test_does_not_exists(self):
+        # Given an invalid repo
+        repo = 'invalid'
+        # When trying to get graphs of it
+        self.getPage("/graphs/activities/" +
+                     self.USERNAME + "/" + repo + "/")
+        # Then a 404 error is return
+        self.assertStatus(404)

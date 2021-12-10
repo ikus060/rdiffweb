@@ -20,9 +20,7 @@ Created on Apr 10, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-import logging
 import os
-import unittest
 from time import sleep
 from unittest.case import skipIf
 
@@ -179,3 +177,11 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         # Check database don't change
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
         self.assertTrue(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
+
+    def test_delete_does_not_exists(self):
+        # Given an invalid repo
+        repo = 'invalid'
+        # When trying to delete this repo
+        self._delete(self.USERNAME, repo, repo)
+        # Then a 404 is return to the user
+        self.assertStatus(404)

@@ -667,11 +667,12 @@ class Store():
                 pos = path.index(sep, startpos)
                 try:
                     repo_obj = self.get_repo(path[:pos], as_user)
-                    path_obj = repo_obj.get_path(path[pos + 1:])
-                    return repo_obj, path_obj
+                    break
                 except DoesNotExistError:
-                    # continue looping
+                    # Raised when repo doesn't exists
                     startpos = pos + 1
+            path_obj = repo_obj.get_path(path[pos + 1:])
+            return repo_obj, path_obj
         except ValueError:
             raise DoesNotExistError(path)
 

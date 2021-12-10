@@ -24,11 +24,12 @@ Created on Apr. 5, 2021
 import logging
 
 import cherrypy
-from rdiffweb.controller import Controller, flash
+from rdiffweb.controller import Controller
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from wtforms import validators
 from wtforms.fields.core import StringField
 
@@ -44,6 +45,10 @@ class DeleteRepoForm(CherryForm):
 class DeletePage(Controller):
 
     @cherrypy.expose
+    @cherrypy.tools.errors(error_table={
+        DoesNotExistError: 404,
+        AccessDeniedError: 403,
+    })
     def default(self, path=b"", **kwargs):
         # Check permissions on path/repo
         unused, path_obj = self.app.store.get_repo_path(path)
