@@ -25,7 +25,6 @@ import logging
 
 from wtforms import validators
 from wtforms.fields.core import StringField
-from wtforms.fields.simple import TextField
 from wtforms.validators import ValidationError
 from wtforms.widgets.core import TextArea
 
@@ -51,12 +50,12 @@ class SshForm(CherryForm):
     title = StringField(
         _('Title'),
         description=_('The title is an optional description to identify the key. e.g.: bob@thinkpad-t530'),
-        validators=[validators.required()])
-    key = TextField(
+        validators=[validators.data_required()])
+    key = StringField(
         _('Key'),
         widget=TextArea(),
         description=_("Enter a SSH public key. It should start with 'ssh-dss', 'ssh-ed25519', 'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-sha2-nistp521'."),
-        validators=[validators.required(), validate_key])
+        validators=[validators.data_required(), validate_key])
     fingerprint = StringField('Fingerprint')
 
 
