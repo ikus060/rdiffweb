@@ -32,6 +32,9 @@ stages:
     - xunit-*.xml
     expire_in: 1 day
 
+flake8:
+  <<: *tox
+
 py3-jinja210: 
   <<: *tox
 
