@@ -18,11 +18,10 @@
 import logging
 
 import cherrypy
-
 from rdiffweb.controller import Controller
 from rdiffweb.controller.pref_general import PrefsGeneralPanelProvider
-from rdiffweb.controller.pref_sshkeys import SSHKeysPlugin
 from rdiffweb.controller.pref_notification import NotificationPref
+from rdiffweb.controller.pref_sshkeys import SSHKeysPlugin
 from rdiffweb.core.config import Option
 
 # Define the logger
@@ -65,4 +64,3 @@ class PreferencesPage(Controller):
         })
 
         return self._compile_template("prefs.html", **params)
-

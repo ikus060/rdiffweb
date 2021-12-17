@@ -46,7 +46,7 @@ def get_pyinfo():
     try:
         import distro
         yield _('OS Version'), '%s %s (%s %s)' % (platform.system(), platform.release(), distro.name().capitalize(), distro.version())
-    except:
+    except Exception:
         yield _('OS Version'), '%s %s' % (platform.system(), platform.release())
     if hasattr(os, 'path'):
         yield _('OS Path'), os.environ['PATH']
@@ -67,13 +67,13 @@ def get_osinfo():
     def gr_name(gid):
         try:
             return grp.getgrgid(gid).gr_name
-        except:
+        except Exception:
             return
 
     def pw_name(uid):
         try:
             return pwd.getpwuid(os.getuid()).pw_name
-        except:
+        except Exception:
             return
 
     if hasattr(sys, 'getfilesystemencoding'):
@@ -93,7 +93,7 @@ def get_osinfo():
     try:
         if hasattr(os, 'getpid') and hasattr(os, 'getppid'):
             yield _('Process ID'), ('%s (parent: %s)' % (os.getpid(), os.getppid()))
-    except:
+    except Exception:
         pass
 
 
@@ -116,7 +116,7 @@ def get_pkginfo():
         yield _('LDAP Version'), getattr(ldap, '__version__')
         yield _('LDAP SASL Support (Cyrus-SASL)'), ldap.SASL_AVAIL  # @UndefinedVariable
         yield _('LDAP TLS Support (OpenSSL)'), ldap.TLS_AVAIL  # @UndefinedVariable
-    except:
+    except Exception:
         pass
 
 
@@ -147,7 +147,7 @@ class SizeField(Field):
                 value_str = '0' + value_str
             try:
                 self.data = humanfriendly.parse_size(value_str)
-            except:
+            except humanfriendly.InvalidSize:
                 self.data = None
                 raise ValueError(self.gettext('Not a valid file size value'))
 
@@ -231,7 +231,7 @@ class AdminPage(Controller):
                 if old_quota != new_quota:
                     user.disk_quota = new_quota
                     flash(_("User's quota updated"), level='success')
-            except QuotaUnsupported as e:
+            except QuotaUnsupported:
                 flash(_("Setting user's quota is not supported"), level='warning')
             except Exception as e:
                 flash(_("Failed to update user's quota: %s") % e, level='error')
@@ -273,7 +273,7 @@ class AdminPage(Controller):
         """
         try:
             return subprocess.check_output(['tail', '-n', str(num), fn], stderr=subprocess.STDOUT).decode('utf-8')
-        except:
+        except Exception:
             logging.exception('fail to get log file content')
             return "Error getting file content"
 

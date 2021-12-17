@@ -65,7 +65,7 @@ def html2plaintext(html, body_id=None, encoding='utf-8'):
                 url_index.append(url)
 
         html = tostring(tree, encoding=encoding)
-    except:
+    except Exception:
         # Don't fail if the html is invalid.
         pass
     # \r char is converted into &#13;, must remove it

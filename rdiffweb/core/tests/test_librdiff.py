@@ -164,7 +164,7 @@ class FileErrorTest(unittest.TestCase):
 
         e = AccessDeniedError('some/path')
         self.assertEqual('some/path', str(e))
-        
+
         e = UnknownError('some/path')
         self.assertEqual('some/path', str(e))
 
@@ -487,19 +487,14 @@ class RdiffTimeTest(unittest.TestCase):
     def test_compare(self):
         """Check behaviour of comparison operator operator."""
 
-        self.assertTrue(RdiffTime('2014-11-07T21:04:30-04:00')
-                        < RdiffTime('2014-11-08T21:04:30Z'))
-        self.assertTrue(RdiffTime('2014-11-08T21:04:30Z') <
-                        RdiffTime('2014-11-08T21:50:30Z'))
-        self.assertFalse(RdiffTime('2014-11-08T22:04:30Z') <
-                         RdiffTime('2014-11-08T21:50:30Z'))
+        self.assertTrue(RdiffTime('2014-11-07T21:04:30-04:00') < RdiffTime('2014-11-08T21:04:30Z'))
+        self.assertTrue(RdiffTime('2014-11-08T21:04:30Z') < RdiffTime('2014-11-08T21:50:30Z'))
+        self.assertFalse(RdiffTime('2014-11-08T22:04:30Z') < RdiffTime('2014-11-08T21:50:30Z'))
 
         self.assertFalse(RdiffTime('2014-11-07T21:04:30-04:00')
                          > RdiffTime('2014-11-08T21:04:30Z'))
-        self.assertFalse(RdiffTime('2014-11-08T21:04:30Z') >
-                         RdiffTime('2014-11-08T21:50:30Z'))
-        self.assertTrue(RdiffTime('2014-11-08T22:04:30Z') >
-                        RdiffTime('2014-11-08T21:50:30Z'))
+        self.assertFalse(RdiffTime('2014-11-08T21:04:30Z') > RdiffTime('2014-11-08T21:50:30Z'))
+        self.assertTrue(RdiffTime('2014-11-08T22:04:30Z') > RdiffTime('2014-11-08T21:50:30Z'))
 
     def test_init(self):
         """

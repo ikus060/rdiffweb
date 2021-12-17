@@ -48,7 +48,7 @@ def _content_disposition(filename):
         # Some char are not decoded properly by user agent.
         if not any(c in filename for c in [';', '%', '\\']):
             return 'attachment; filename="%s"' % filename
-    except:
+    except Exception:
         pass
     # 3. Define filename* as encoded UTF8 (replace invalid char)
     filename_utf8 = filename.encode('utf-8', 'replace')

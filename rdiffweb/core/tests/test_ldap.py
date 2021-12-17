@@ -20,9 +20,6 @@ Created on Oct 17, 2015
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-import logging
-import unittest
-
 from rdiffweb.core import RdiffError
 from rdiffweb.core.ldap_auth import LdapPasswordStore
 from rdiffweb.test import AppTestCase

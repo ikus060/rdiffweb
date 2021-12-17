@@ -17,7 +17,6 @@
 
 import logging
 import os
-import sys
 from collections import namedtuple
 from distutils.version import LooseVersion
 
@@ -32,10 +31,10 @@ import rdiffweb.tools.auth_form
 import rdiffweb.tools.currentuser
 import rdiffweb.tools.errors
 import rdiffweb.tools.security
-from rdiffweb.controller import filter_authorization  # @UnusedImport
+from rdiffweb.controller import filter_authorization  # noqa
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
-from rdiffweb.controller.dispatch import empty, static  # @UnusedImport
+from rdiffweb.controller.dispatch import static  # noqa
 from rdiffweb.controller.page_admin import AdminPage
 from rdiffweb.controller.page_browse import BrowsePage
 from rdiffweb.controller.page_delete import DeletePage
@@ -48,7 +47,7 @@ from rdiffweb.controller.page_prefs import PreferencesPage
 from rdiffweb.controller.page_restore import RestorePage
 from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_status import StatusPage
-from rdiffweb.core import i18n  # @UnusedImport
+from rdiffweb.core import i18n  # noqa
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
 from rdiffweb.core.notification import NotificationJob, NotificationPlugin
@@ -212,10 +211,9 @@ class RdiffwebApp(Application):
         try:
             page = Controller()
             return page._compile_template('error_page_default.html', **kwargs)
-        except:
-            pass
-        # If failing, send the raw error message.
-        return kwargs.get('message')
+        except Exception:
+            # If failing, send the raw error message.
+            return kwargs.get('message')
 
     def _load_quota(self):
         """
@@ -227,7 +225,7 @@ class RdiffwebApp(Application):
             try:
                 cls = entry_point.load()
                 return cls(self)
-            except:
+            except Exception:
                 logger.warning('IUserQuota [%s] fail to load, fall back to default quota', entry_point, exc_info=1)
                 return DefaultUserQuota(self)
         # Otherwise, return default

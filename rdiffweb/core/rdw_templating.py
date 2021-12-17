@@ -87,18 +87,13 @@ def attrib(**kwargs):
 
 def do_filter(sequence, attribute_name):
     """Filter sequence of objects."""
-    return [x for x in sequence
-            if (isinstance(x, dict) and
-                attribute_name in x and
-                x[attribute_name]) or
-               (hasattr(x, attribute_name) and
-                getattr(x, attribute_name))]
+    return [x for x in sequence if (isinstance(x, dict) and attribute_name in x and x[attribute_name]) or (hasattr(x, attribute_name) and getattr(x, attribute_name))]
 
 
 def do_format_lastupdated(value, now=None):
     """
     Used to format date as "Updated 10 minutes ago".
-    
+
     Value could be a RdiffTime or an epoch as int.
     """
     if not value:

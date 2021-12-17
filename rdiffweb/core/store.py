@@ -168,7 +168,6 @@ class UserObject(object):
         # Parse and validate ssh key
         assert key
         key = authorizedkeys.check_publickey(key)
-        assert key, "invalid ssh key"
 
         # Remove option, replace comments.
         key = authorizedkeys.AuthorizedKey(
@@ -205,7 +204,7 @@ class UserObject(object):
         """
         try:
             return os.access(self.user_root, os.F_OK) and os.path.isdir(self.user_root)
-        except:
+        except Exception:
             return False
 
     def delete(self):
@@ -354,7 +353,7 @@ class UserObject(object):
         assert role in ROLES.values()
         try:
             return int(self._get_attr('role')) <= role
-        except:
+        except ValueError:
             return False
 
     def _set_attr(self, key, value, notify=True):
@@ -396,7 +395,7 @@ class UserObject(object):
                 self._store._ldap_store.set_password(
                     self.username, password, old_password)
                 return
-        except:
+        except Exception:
             pass
         # Fallback to database
         if old_password and not check_password(old_password, self.hash_password):
@@ -460,9 +459,9 @@ class RepoObject(RdiffRepo):
         self._encoding = self._get_encoding()
 
     def __eq__(self, other):
-        return (isinstance(other, RepoObject) and
-                self._user_obj._userid == other._user_obj._userid and
-                self._repo == other._repo)
+        return (isinstance(other, RepoObject)
+                and self._user_obj._userid == other._user_obj._userid
+                and self._repo == other._repo)
 
     def __str__(self):
         return 'RepoObject[%s, %s]' % (self._user_obj._userid, self._repo)
@@ -575,7 +574,7 @@ class Store():
                 listener = cls(self.app)
                 if listener not in self._change_listeners:
                     self._change_listeners.append(listener)
-            except:
+            except Exception:
                 logging.error(
                     "IUserChangeListener [%s] fail to load", entry_point)
 
@@ -782,7 +781,7 @@ class Store():
                         userobj.email = next(iter(attrs.get('mail', [])), '')
                     self._notify('user_logined', userobj, attrs)
                     return userobj
-            except:
+            except Exception:
                 logger.warning('fail to validate credentials', exc_info=1)
         return None
 
@@ -793,7 +792,7 @@ class Store():
                 logger.debug('notify %s#%s()',
                              listener.__class__.__name__, mod)
                 getattr(listener, mod)(*args)
-            except:
+            except Exception:
                 logger.warning(
                     'IUserChangeListener [%s] fail to run [%s]',
                     listener.__class__.__name__, mod, exc_info=1)

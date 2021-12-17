@@ -18,7 +18,7 @@
 import logging
 
 import cherrypy
-import rdiffweb.tools.errors
+import rdiffweb.tools.errors  # noqa
 from rdiffweb.controller import Controller
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.i18n import ugettext as _

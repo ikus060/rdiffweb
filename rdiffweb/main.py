@@ -113,7 +113,7 @@ def main(args=None):
 
         # Start web server
         cherrypy.quickstart(RdiffwebApp(cfg))
-    except:
+    except Exception:
         logger.exception("FAIL")
     else:
         logger.info("STOP")

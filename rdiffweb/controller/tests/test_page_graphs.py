@@ -30,8 +30,7 @@ class SettingsTest(rdiffweb.test.WebCase):
     login = True
 
     def test_activities(self):
-        self.getPage("/graphs/activities/" +
-                     self.USERNAME + "/" + self.REPO + "/")
+        self.getPage("/graphs/activities/" + self.USERNAME + "/" + self.REPO + "/")
         self.assertStatus('200 OK')
 
     def test_errors(self):
@@ -81,7 +80,6 @@ class SettingsTest(rdiffweb.test.WebCase):
         # Given an invalid repo
         repo = 'invalid'
         # When trying to get graphs of it
-        self.getPage("/graphs/activities/" +
-                     self.USERNAME + "/" + repo + "/")
+        self.getPage("/graphs/activities/" + self.USERNAME + "/" + repo + "/")
         # Then a 404 error is return
         self.assertStatus(404)

@@ -41,8 +41,9 @@ _logger = logging.getLogger(__name__)
 
 def validate_key(unused_form, field):
     """Custom validator to check the SSH Key."""
-    key = authorizedkeys.check_publickey(field.data)
-    if not key:
+    try:
+        authorizedkeys.check_publickey(field.data)
+    except ValueError:
         raise ValidationError(_("Invalid SSH key."))
 
 
@@ -84,7 +85,7 @@ class SSHKeysPlugin(Controller):
             self.app.currentuser.add_authorizedkey(key=form.key.data, comment=form.title.data)
         except DuplicateSSHKeyError as e:
             flash(str(e), level='error')
-        except:
+        except Exception:
             flash(_("Unknown error while adding the SSH Key"), level='error')
             _logger.warning("error adding ssh key", exc_info=1)
 
@@ -99,7 +100,7 @@ class SSHKeysPlugin(Controller):
         is_maintainer()
         try:
             self.app.currentuser.delete_authorizedkey(form.fingerprint.data)
-        except:
+        except Exception:
             flash(_("Unknown error while removing the SSH Key"), level='error')
             _logger.warning("error removing ssh key", exc_info=1)
 

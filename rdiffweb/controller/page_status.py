@@ -61,10 +61,10 @@ class StatusPage(Controller):
                     data[key].append(stat)
                     if stat.errors:
                         failure[key] += 1
-                    
+
         # Return data.
         return {
-            'backup_count':  [
+            'backup_count': [
                 {'name': _('Successful Backup'), 'data': success},
                 {'name': _('Backup with errors'), 'data': failure}
             ],

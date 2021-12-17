@@ -40,4 +40,3 @@ class LocationsPage(Controller):
         }
         # Render the page.
         return self._compile_template("locations.html", **params)
-

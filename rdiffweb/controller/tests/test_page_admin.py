@@ -169,7 +169,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         try:
             self._delete_user("test5")
-        except:
+        except Exception:
             pass
         self._add_user("test5", "test1@test.com", "test5", "/var/invalid/", USER_ROLE)
         self.assertInBody("User added successfully.")

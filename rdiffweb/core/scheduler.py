@@ -49,7 +49,7 @@ class Scheduler(SimplePlugin):
     def add_job(self, job):
         """
         Add the given scheduled job to the scheduler.
-        
+
         The job must define a property `job_execution_time` defining when the
         job must run and a function `job_run` to be called.
         """

@@ -20,8 +20,6 @@ Created on May 2, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-import logging
-import unittest
 from unittest.mock import MagicMock
 
 import rdiffweb.test
@@ -37,15 +35,13 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         self.getPage("/settings/" + user + "/" + repo + "/")
 
     def _remove_older(self, user, repo, value):
-        self.getPage("/settings/" + user + "/" + repo + "/",
-                     method="POST", body={'keepdays': value})
+        self.getPage("/settings/" + user + "/" + repo + "/", method="POST", body={'keepdays': value})
 
     def test_page_api_set_remove_older(self):
         """
         Check if /api/remove-older/ is still working.
         """
-        self.getPage("/api/remove-older/" + self.USERNAME + "/" +
-                     self.REPO + "/", method="POST", body={'keepdays': '4'})
+        self.getPage("/api/remove-older/" + self.USERNAME + "/" + self.REPO + "/", method="POST", body={'keepdays': '4'})
         self.assertStatus(200)
         # Check results
         user = self.app.store.get_user(self.USERNAME)

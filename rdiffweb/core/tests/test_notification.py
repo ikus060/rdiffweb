@@ -26,8 +26,7 @@ from time import sleep
 from unittest.mock import ANY, MagicMock, patch
 
 import rdiffweb.test
-from rdiffweb.core.notification import (EmailClient, NotificationJob,
-                                        NotificationPlugin, html2plaintext)
+from rdiffweb.core.notification import (EmailClient, NotificationJob, html2plaintext)
 
 
 class NotificationJobTest(rdiffweb.test.AppTestCase):

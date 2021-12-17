@@ -15,10 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import cherrypy
-
-from rdiffweb.core.i18n import ugettext as _
-
 
 class RdiffError(Exception):
     """

@@ -47,8 +47,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         Check encoding of redirect url when send using GET method.
         """
         #  Query the page without login-in
-        self.getPage('/browse/' + self.USERNAME +
-                     "/" + self.REPO + '/DIR%EF%BF%BD/')
+        self.getPage('/browse/' + self.USERNAME + "/" + self.REPO + '/DIR%EF%BF%BD/')
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2Fbrowse%2Fadmin%2Ftestcases%2FDIR%C3%AF%C2%BF%C2%BD%2F')
 
@@ -64,8 +63,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         Check encoding of redirect url when send using GET method.
         """
         #  Query the page without login-in
-        self.getPage('/restore/' + self.USERNAME + "/" + self.REPO +
-                     '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt')
+        self.getPage('/restore/' + self.USERNAME + "/" + self.REPO + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt')
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2Frestore%2Fadmin%2Ftestcases%2FFichier+avec+non+asci+char+%C3%89velyne+M%C3%A8re.txt')
 

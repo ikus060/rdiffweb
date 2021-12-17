@@ -21,9 +21,6 @@ Created on Jan 1, 2016
 """
 
 
-import logging
-import unittest
-
 import rdiffweb.test
 from rdiffweb.core.store import DEFAULT_REPO_ENCODING, USER_ROLE
 

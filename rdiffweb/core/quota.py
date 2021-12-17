@@ -80,7 +80,7 @@ class DefaultUserQuota():
     _get_usage_cmd = Option('quota_used_cmd')
 
     def __init__(self, app):
-        self.app = app;
+        self.app = app
 
     def _exec(self, cmd, userobj, quota=None):
         env = {
@@ -106,7 +106,7 @@ class DefaultUserQuota():
         if not self._get_usage_cmd:
             try:
                 return psutil.disk_usage(userobj.user_root).used
-            except:
+            except Exception:
                 logger.warning('fail to get disk usage [%s]', userobj.username, exc_info=1)
                 return 0
         # Execute a command to get disk usage
@@ -125,12 +125,12 @@ class DefaultUserQuota():
         # Skip disk usage if user_root doesn't exists.
         if not userobj.user_root or not os.path.exists(userobj.user_root):
             return 0
-        
+
         # Fall back to disk spaces.
         if not self._get_quota_cmd:
             try:
                 return psutil.disk_usage(userobj.user_root).total
-            except:
+            except Exception:
                 logger.warning('fail to get disk size [%s]', userobj.username, exc_info=1)
                 return 0
         # Execute a command to get disk usage
@@ -159,4 +159,3 @@ class DefaultUserQuota():
         except Exception as e:
             logger.warning('fail to set user quota [%s]', userobj.username, exc_info=1)
             raise QuotaException(str(e))
-

@@ -53,4 +53,3 @@ class NotificationPref(Controller):
             'repos': self.app.currentuser.repo_objs,
         }
         return "prefs_notification.html", params
-
