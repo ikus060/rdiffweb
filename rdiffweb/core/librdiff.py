@@ -64,7 +64,7 @@ def rdiff_backup_version():
         output = subprocess.check_output([find_rdiff_backup(), '--version'])
         m = re.search(b'([0-9]+).([0-9]+).([0-9]+)', output)
         return (int(m.group(1)), int(m.group(2)), int(m.group(3)))
-    except:
+    except Exception:
         return (0, 0, 0)
 
 
@@ -86,6 +86,7 @@ def find_rdiff_backup_delete():
     if not cmd:
         raise ExecutableNotFoundError("can't find `rdiff-backup-delete` executable in PATH: %s, make sure you have rdiff-backup >= 2.0.1 installed" % PATH)
     return os.fsencode(cmd)
+
 
 def popen(cmd, buffering=-1, stderr=None, env=None):
     """
@@ -112,6 +113,8 @@ def popen(cmd, buffering=-1, stderr=None, env=None):
     return _wrap_close(proc.stdout, proc)
 
 # Helper for popen() to redirect stderr to a logger.
+
+
 def _readerthread(stream, func):
     """
     Read stderr and pipe each line to logger.
@@ -122,28 +125,36 @@ def _readerthread(stream, func):
     stream.close()
 
 # Helper for popen() to close process when the pipe is closed.
+
+
 class _wrap_close:
     def __init__(self, stream, proc):
         self._stream = stream
         self._proc = proc
+
     def close(self):
         self._stream.close()
         returncode = self._proc.wait()
         if returncode == 0:
             return None
         return returncode
+
     def __enter__(self):
         return self
+
     def __exit__(self, *args):
         self.close()
+
     def __getattr__(self, name):
         return getattr(self._stream, name)
+
     def __iter__(self):
         return iter(self._stream)
 
+
 class ExecutableNotFoundError(Exception):
     """
-    Raised when rdiff-backup or rdiff-backup-delete can't be found. 
+    Raised when rdiff-backup or rdiff-backup-delete can't be found.
     """
     pass
 
@@ -313,8 +324,7 @@ class RdiffTime(object):
         return (self.epoch() > other.epoch()) - (self.epoch() < other.epoch())
 
     def __eq__(self, other):
-        return (isinstance(other, RdiffTime) and
-                self.epoch() == other.epoch())
+        return isinstance(other, RdiffTime) and self.epoch() == other.epoch()
 
     def __hash__(self):
         return hash(self.epoch())
@@ -605,7 +615,7 @@ class HistoryEntry(object):
         # Read the error log entry.
         try:
             return entry.read()
-        except:
+        except Exception:
             return "Error reading log file: " + self._repo._decode(entry.name)
 
     @property
@@ -683,8 +693,7 @@ class IncrementEntry(object):
     @property
     def is_snapshot(self):
         """Check if the current entry is a snapshot increment."""
-        return (self.name.endswith(b".snapshot.gz") or
-                self.name.endswith(b".snapshot"))
+        return (self.name.endswith(b".snapshot.gz") or self.name.endswith(b".snapshot"))
 
     @staticmethod
     def _remove_suffix(filename):
@@ -726,7 +735,7 @@ class FileStatisticsEntry(IncrementEntry):
         path is the relative path from repo root."""
         try:
             return int(self._search(path)["mirror_size"])
-        except:
+        except ValueError:
             logger.warning("mirror size not found for [%r]", path, exc_info=1)
             return 0
 
@@ -735,7 +744,7 @@ class FileStatisticsEntry(IncrementEntry):
         path is the relative path from repo root."""
         try:
             return int(self._search(path)["source_size"])
-        except:
+        except ValueError:
             logger.warning("source size not found for [%r]", path, exc_info=1)
             return 0
 
@@ -993,7 +1002,7 @@ class RdiffRepo(object):
 
         try:
             shutil.rmtree(self.full_path, onerror=handle_error)
-        except:
+        except Exception:
             logger.warning('fail to delete repo', exc_info=1)
 
     @property
@@ -1099,8 +1108,11 @@ class RdiffRepo(object):
     def remove_older(self, remove_older_than):
         logger.info("execute rdiff-backup --force --remove-older-than=%sD %r",
                     remove_older_than, self.full_path)
-        subprocess.call([b'rdiff-backup', b'--force', b'--remove-older-than=' +
-                         str(remove_older_than).encode(encoding='latin1') + b'D', self.full_path])
+        subprocess.call([
+            b'rdiff-backup',
+            b'--force',
+            b'--remove-older-than=' + str(remove_older_than).encode(encoding='latin1') + b'D',
+            self.full_path])
 
     @property
     def restore_log(self):
@@ -1157,7 +1169,7 @@ class RdiffRepo(object):
                 return match.group
             try:
                 return bytes([int(match.group()[1:])])
-            except:
+            except ValueError:
                 return match.group
 
         # Remove quote using regex

@@ -25,7 +25,6 @@ import logging
 
 from wtforms import validators
 from wtforms.fields.core import StringField
-from wtforms.fields.simple import TextField
 from wtforms.validators import ValidationError
 from wtforms.widgets.core import TextArea
 
@@ -42,8 +41,9 @@ _logger = logging.getLogger(__name__)
 
 def validate_key(unused_form, field):
     """Custom validator to check the SSH Key."""
-    key = authorizedkeys.check_publickey(field.data)
-    if not key:
+    try:
+        authorizedkeys.check_publickey(field.data)
+    except ValueError:
         raise ValidationError(_("Invalid SSH key."))
 
 
@@ -51,12 +51,12 @@ class SshForm(CherryForm):
     title = StringField(
         _('Title'),
         description=_('The title is an optional description to identify the key. e.g.: bob@thinkpad-t530'),
-        validators=[validators.required()])
-    key = TextField(
+        validators=[validators.data_required()])
+    key = StringField(
         _('Key'),
         widget=TextArea(),
         description=_("Enter a SSH public key. It should start with 'ssh-dss', 'ssh-ed25519', 'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-sha2-nistp521'."),
-        validators=[validators.required(), validate_key])
+        validators=[validators.data_required(), validate_key])
     fingerprint = StringField('Fingerprint')
 
 
@@ -85,7 +85,7 @@ class SSHKeysPlugin(Controller):
             self.app.currentuser.add_authorizedkey(key=form.key.data, comment=form.title.data)
         except DuplicateSSHKeyError as e:
             flash(str(e), level='error')
-        except:
+        except Exception:
             flash(_("Unknown error while adding the SSH Key"), level='error')
             _logger.warning("error adding ssh key", exc_info=1)
 
@@ -100,7 +100,7 @@ class SSHKeysPlugin(Controller):
         is_maintainer()
         try:
             self.app.currentuser.delete_authorizedkey(form.fingerprint.data)
-        except:
+        except Exception:
             flash(_("Unknown error while removing the SSH Key"), level='error')
             _logger.warning("error removing ssh key", exc_info=1)
 

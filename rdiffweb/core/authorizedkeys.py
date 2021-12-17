@@ -22,12 +22,13 @@ Created on May 12, 2015
 """
 
 import base64
-from collections import namedtuple, OrderedDict
+import binascii
 import hashlib
-from io import open
 import logging
 import re
 import tempfile
+from collections import OrderedDict, namedtuple
+from io import open
 
 _logger = logging.getLogger(__name__)
 
@@ -141,9 +142,13 @@ def check_publickey(data):
     m = PATTERN_LINE.match(data)
     if m:
         key = AuthorizedKey(options=False, keytype=m.group(2), key=m.group(3), comment=m.group(4))
-        key.fingerprint
-        return key
-    return None
+        try:
+            key.fingerprint
+            return key
+        except binascii.Error:
+            # If finger print cannot be generated, it's not a valid base64
+            pass
+    raise ValueError('invalid public key')
 
 
 def exists(fn, key):
@@ -195,8 +200,7 @@ def _parse_options(value):
             continue
 
         # Try to match a key=value or an option.
-        m = (PATTERN_OPTION2.match(value[i:]) or
-             PATTERN_OPTION3.match(value[i:]))
+        m = PATTERN_OPTION2.match(value[i:]) or PATTERN_OPTION3.match(value[i:])
         if not m:
             _logger.warning("invalid options: %s", value[i:])
             break
@@ -246,7 +250,7 @@ def remove(fn, fingerprint):
     Remove a key from the authorised_key.
 
     The `fingerprint` represent the finger print of the ssh key to be removed.
-    
+
     Throw a ValueError if the given finger print can't be found.
     """
     assert fingerprint
@@ -271,7 +275,7 @@ def remove(fn, fingerprint):
                     removed = True
                 else:
                     temp.write(line.encode(encoding))
-            except:
+            except Exception:
                 # Not a valid key, so just copy the line.
                 temp.write(line.encode(encoding))
 

@@ -18,7 +18,8 @@
 import os
 import unittest
 
-from rdiffweb.core.config import parse_args, ConfigFileParser
+import configargparse
+from rdiffweb.core.config import ConfigFileParser, parse_args
 
 
 class TestParseArg(unittest.TestCase):
@@ -74,7 +75,7 @@ class TestParseArg(unittest.TestCase):
         self.assertEqual(args.disable_ssh_keys, True)
         args = parse_args([], config_file_contents='disable_ssh_keys=true')
         self.assertEqual(args.disable_ssh_keys, True)
-        
+
     def test_config_file_with_comments(self):
         args = parse_args([], config_file_contents='##########\n# this is a comment\nserver-host=0.0.0.0')
         self.assertEqual(args.server_host, "0.0.0.0")
@@ -141,14 +142,9 @@ NoValue=#This is a setting with no value
         self.assertEqual(None, self.config.get("settingthatdoesntexist"))
 
     def test_get_config_badfile(self):
-        try:
+        with self.assertRaises(configargparse.ConfigFileParserException):
             self.write_bad_file(0)
-            self.config.get("spacesvalue")
-        except:
-            pass
-        else:
-            assert(False)
-
+        self.config.get("spacesvalue")
         self.write_bad_file(1)
         value = self.config.get("this")
         self.assertEqual("more=than one equals", value)

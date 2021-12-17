@@ -46,8 +46,7 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         self.assertInBody("Show more")
         # Check download buttont
         self.assertInBody("Download")
-        self.assertInBody("/restore/" + self.USERNAME +
-                          "/" + self.REPO + "?date=1415221507")
+        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "?date=1415221507")
 
     def test_history_with_path(self):
         self._history(self.USERNAME, 'testcases/Subdirectory')
@@ -62,8 +61,7 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         self.assertInBody("ZIP")
         self.assertInBody("TAR.GZ")
         self.assertInBody("2014-11-01T15:51:15-04:00")
-        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO +
-                          "/R%C3%A9pertoire%20Supprim%C3%A9?date=1414871475")
+        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "/R%C3%A9pertoire%20Supprim%C3%A9?date=1414871475")
 
     def test_history_with_limit(self):
         self._history(self.USERNAME, self.REPO, 10)

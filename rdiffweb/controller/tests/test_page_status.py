@@ -19,8 +19,6 @@ Created on Aug 30, 2019
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
-import logging
-import unittest
 
 import rdiffweb.test
 

@@ -25,21 +25,19 @@ impossible to properly generate a valid filename depending of the archive types.
 """
 
 import argparse
-from distutils import spawn
 import logging
 import os
 import shutil
-import subprocess
 import sys
 import tarfile
 import tempfile
-import threading
 import traceback
-from zipfile import ZipFile, ZIP_STORED, ZIP_DEFLATED
+from distutils import spawn
+from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
 import rdiffweb
-from rdiffweb.core.librdiff import LANG, PATH , STDOUT_ENCODING,\
-    find_rdiff_backup, popen
+from rdiffweb.core.librdiff import (LANG, PATH, STDOUT_ENCODING,
+                                    find_rdiff_backup, popen)
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +171,7 @@ class RawArchiver(object):
 
 ARCHIVERS = {
     'tar': TarArchiver,
-    'tbz2': lambda dest,: TarArchiver(dest, 'bz2'),
+    'tbz2': lambda dest: TarArchiver(dest, 'bz2'),
     'tar.bz2': lambda dest: TarArchiver(dest, 'bz2'),
     'tar.gz': lambda dest: TarArchiver(dest, 'gz'),
     'tgz': lambda dest: TarArchiver(dest, 'gz'),
@@ -246,7 +244,7 @@ def restore(restore, restore_as_of, kind, encoding, dest, log=logger.debug):
     if os.environ.get('TMPDIR'):
         env['TMPDIR'] = os.environ['TMPDIR']
 
-    cmd = [rdiff_backup_path , b'-v', b'5', b'--restore-as-of=' + str(restore_as_of).encode('latin'), restore, tmp_output]
+    cmd = [rdiff_backup_path, b'-v', b'5', b'--restore-as-of=' + str(restore_as_of).encode('latin'), restore, tmp_output]
     log('executing %r with env %r' % (cmd, env))
 
     # Open an archive.
@@ -271,7 +269,7 @@ def restore(restore, restore_as_of, kind, encoding, dest, log=logger.debug):
                 log('adding %r' % fullpath)
                 try:
                     archive.addfile(fullpath, arcname, encoding)
-                except:
+                except Exception:
                     # Many error may happen when trying to add a file to the
                     # archive. To be more resilient, capture error and continue
                     # with the next file.
@@ -288,7 +286,6 @@ def restore(restore, restore_as_of, kind, encoding, dest, log=logger.debug):
             shutil.rmtree(tmp_output, ignore_errors=True)
         elif os.path.isfile(tmp_output):
             os.remove(tmp_output)
-
 
 
 def call_restore(path, restore_as_of, encoding, kind):
@@ -331,7 +328,7 @@ def main():
     # Execute the restore.
     try:
         restore(path, args.restore_as_of, args.kind, args.encoding, output, log=_print_stderr)
-    except:
+    except Exception:
         _print_stderr('error: failure to create the archive', exc_info=1)
         sys.exit(1)
 

@@ -37,7 +37,7 @@ _logger = logging.getLogger(__name__)
 
 
 class DeleteRepoForm(CherryForm):
-    confirm = StringField(_('Confirmation'), validators=[validators.required()])
+    confirm = StringField(_('Confirmation'), validators=[validators.data_required()])
     redirect = StringField(default='/')
 
 

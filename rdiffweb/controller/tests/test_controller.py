@@ -40,7 +40,7 @@ class ControllerTest(rdiffweb.test.WebCase):
 
     def test_theme(self):
         """
-        Check if the theme is properly configure. 
+        Check if the theme is properly configure.
         """
         self.getPage("/")
         self.assertStatus('200 OK')
@@ -55,7 +55,7 @@ class ControllerOrangeThemeTest(rdiffweb.test.WebCase):
 
     def test_theme(self):
         """
-        Check if the theme is properly configure. 
+        Check if the theme is properly configure.
         """
         self.getPage("/")
         self.assertStatus('200 OK')
@@ -70,7 +70,7 @@ class ControllerBlueThemeTest(rdiffweb.test.WebCase):
 
     def test_theme(self):
         """
-        Check if the theme is properly configure. 
+        Check if the theme is properly configure.
         """
         self.getPage("/")
         self.assertInBody('/static/blue.css')

@@ -21,8 +21,6 @@ Created on Mar 5, 2016
 """
 
 
-import logging
-import unittest
 import rdiffweb.test
 
 

@@ -35,6 +35,7 @@ from rdiffweb.core.config import Option
 
 logger = logging.getLogger(__name__)
 
+
 class LdapPasswordStore():
 
     """Wrapper for LDAP authentication.
@@ -112,7 +113,7 @@ class LdapPasswordStore():
         # Execute the LDAP operation
         try:
             return self._execute(username, check_crendential)
-        except:
+        except Exception:
             logger.exception("can't validate user [%s] credentials", username)
             return False
 
@@ -151,7 +152,7 @@ class LdapPasswordStore():
                 result.append(self._try_decode(l))
         if isinstance(value, bytes):
             try:
-                #try to decode completely
+                # try to decode completely
                 result = value.decode(encoding=self.encoding, errors='strict')
             except UnicodeDecodeError:
                 # Sometimes, we can't decode bytes to str, so we'll replace the undecodable characters
@@ -269,7 +270,7 @@ class LdapPasswordStore():
         def change_passwd(l, r):
             if not (r and r[0] and r[0][0]):
                 raise RdiffError(_("User %s not found." % (username,)))
-            
+
             # Bind using the user credentials. Throws an exception in case of
             # error.
             if old_password is not None:

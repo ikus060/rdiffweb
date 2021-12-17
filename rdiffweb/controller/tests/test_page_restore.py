@@ -23,14 +23,12 @@ Created on Jan 1, 2016
 
 
 import io
-import logging
 import tarfile
-import unittest
 import zipfile
 
+import rdiffweb.test
 from rdiffweb.controller.page_restore import _content_disposition
 from rdiffweb.core.store import USER_ROLE
-import rdiffweb.test
 
 
 class RestorePageTest(rdiffweb.test.AppTestCase):

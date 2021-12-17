@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 # Get rdiffweb version.
 try:
     VERSION = pkg_resources.get_distribution("rdiffweb").version
-except:
+except pkg_resources.DistributionNotFound:
     VERSION = "DEV"
 
 
@@ -362,9 +362,7 @@ def parse_args(args=None, config_file_contents=None):
         help='used to hide SSH Key management to avoid users to add or remove SSH Key using the web application',
         default=False)
 
-    parser.add_argument('--version',
-        action='version',
-        version='%(prog)s ' + VERSION)
+    parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
 
     # Here we append a list of arguments for each locale.
     flags = ['--welcome-msg'] + ['--welcome-msg-' + i for i in ['ca', 'en', 'es', 'fr', 'ru']] + ['--welcomemsg']
@@ -433,12 +431,10 @@ class ConfigFileParser(object):
             if not line:
                 continue
             if '=' not in line:
-                raise configargparse.ConfigFileParserException("Unexpected line {} in {}: {}".format(i,
-                    getattr(stream, 'name', 'stream'), line))
+                raise configargparse.ConfigFileParserException("Unexpected line {} in {}: {}".format(i, getattr(stream, 'name', 'stream'), line))
             split_line = line.partition('=')
             if not len(split_line) == 3:
-                raise configargparse.ConfigFileParserException("Unexpected line {} in {}: {}".format(i,
-                    getattr(stream, 'name', 'stream'), line))
+                raise configargparse.ConfigFileParserException("Unexpected line {} in {}: {}".format(i, getattr(stream, 'name', 'stream'), line))
 
             # Get key a& value
             key = split_line[0].lower().strip().replace('_', '-')

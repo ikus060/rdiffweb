@@ -21,9 +21,7 @@ Created on Dec 26, 2015
 @author: Patrik Dufresne
 """
 
-import logging
 import os
-import unittest
 
 import rdiffweb.test
 from rdiffweb.core.store import _REPOS, USER_ROLE

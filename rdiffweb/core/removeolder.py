@@ -50,4 +50,3 @@ class RemoveOlderJob():
         d = d.days + repo.keepdays
 
         repo.remove_older(d)
-

@@ -22,7 +22,7 @@ class Test(unittest.TestCase):
     def test_main_without_config(self, *args):
         f = io.StringIO()
         with contextlib.redirect_stdout(f):
-                main([])
+            main([])
 
     def test_main_help(self, *args):
         f = io.StringIO()

@@ -27,7 +27,7 @@ from io import StringIO, open
 from unittest.mock import MagicMock
 
 import pkg_resources
-from rdiffweb.core import RdiffError, authorizedkeys, store
+from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.store import (_REPOS, ADMIN_ROLE, MAINTAINER_ROLE,
                                  USER_ROLE, DuplicateSSHKeyError,
@@ -418,15 +418,11 @@ class StoreTest(AbstractStoreTest):
         self.assertEqual(['broker-repo', 'testcases'],
                          sorted([r.name for r in userobj.repo_objs]))
         with self.app.store.engine.connect() as conn:
-            conn.execute(_REPOS.delete().where(_REPOS.c.userid ==
-                         userobj._userid))  # @UndefinedVariable
-            conn.execute(_REPOS.insert().values(
-                userid=userobj._userid, repopath='/testcases'))
-        self.assertEqual(['/testcases', 'broker-repo', 'testcases'],
-                         sorted([r.name for r in userobj.repo_objs]))
+            conn.execute(_REPOS.delete().where(_REPOS.c.userid == userobj._userid))  # @UndefinedVariable
+            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
+        self.assertEqual(['/testcases', 'broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
         self.app.store._update()
-        self.assertEqual(['broker-repo', 'testcases'],
-                         sorted([r.name for r in userobj.repo_objs]))
+        self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
 
 
 class StoreWithLdapTest(AbstractLdapStoreTest):
@@ -726,7 +722,8 @@ class StoreTestSSHKeys(AppTestCase):
         for k in authorizedkeys.read(StringIO(data)):
             try:
                 userobj.add_authorizedkey(k.getvalue())
-            except:
+            except ValueError:
+                # Some ssh key in the testing file are not valid.
                 pass
 
         # Get the keys

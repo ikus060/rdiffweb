@@ -20,10 +20,8 @@ Created on Dec 30, 2015
 @author: Patrik Dufresne
 """
 
-from collections import OrderedDict
-import logging
 import re
-import unittest
+from collections import OrderedDict
 
 import rdiffweb.test
 

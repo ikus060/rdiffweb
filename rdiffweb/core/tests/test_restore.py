@@ -177,7 +177,7 @@ class RestoreTest(AppTestCase):
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(os.path.join(self.path, b'Fichier @ <root>') , restore_as_of=1454448640, dest=f, encoding='utf-8', kind='raw')
+                restore(os.path.join(self.path, b'Fichier @ <root>'), restore_as_of=1454448640, dest=f, encoding='utf-8', kind='raw')
             # Check result.
             with open(filename, 'rb') as f:
                 self.assertEqual(f.read(), b"Ajout d'info\n")
@@ -190,13 +190,13 @@ class RestoreTest(AppTestCase):
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(os.path.join(self.path, b'Char ;090 to quote', b'Data') , restore_as_of=1454448640, dest=f, encoding='utf-8', kind='raw')
+                restore(os.path.join(self.path, b'Char ;090 to quote', b'Data'), restore_as_of=1454448640, dest=f, encoding='utf-8', kind='raw')
             # Check result.
             with open(filename, 'rb') as f:
                 self.assertEqual(f.read(), b"Bring me some Data !\n")
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(os.path.join(self.path, b'Char Z to quote', b'Data') , restore_as_of=1414921853, dest=f, encoding='utf-8', kind='raw')
+                restore(os.path.join(self.path, b'Char Z to quote', b'Data'), restore_as_of=1414921853, dest=f, encoding='utf-8', kind='raw')
             # Check result.
             with open(filename, 'rb') as f:
                 self.assertEqual(f.read(), b"Bring me some Data !\n")
@@ -309,7 +309,7 @@ class RestoreTest(AppTestCase):
         # Run archiver
         restore_async(self.path, restore_as_of=1454448640, dest=io.open(wfd, 'wb'), encoding='utf-8', kind='tar.bz2')
         # Check result.
-        self.assertInTar(TAR_EXPECTED, io.open(rfd, 'rb') , mode='r|bz2')
+        self.assertInTar(TAR_EXPECTED, io.open(rfd, 'rb'), mode='r|bz2')
 
     def test_restore_tar_bz2_file(self):
         """

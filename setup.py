@@ -16,11 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import subprocess
 import sys
 from distutils.cmd import Command
 from distutils.dist import DistributionMetadata
-from distutils.errors import DistutilsExecError
 from io import open
 
 import setuptools
@@ -31,6 +29,7 @@ if not sys.version_info >= (3, 6):
     sys.exit(1)
 
 DistributionMetadata.templates = None
+
 
 class compile_all_catalogs(Command):
     """
@@ -75,6 +74,7 @@ class compile_all_catalogs(Command):
             compiler.statistics = self.statistics
             compiler.finalize_options()
             compiler.run()
+
 
 # Compute requirements
 tests_require = [

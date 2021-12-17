@@ -89,6 +89,7 @@ class SSHKeysTest(rdiffweb.test.WebCase):
 
         # Add key
         self._add_ssh_key("test@mysshkey", "lkjasdfoiuwerlk")
+        self.assertStatus(200)
         self.assertInBody("Invalid SSH key.")
         self.assertEqual(0, len(list(user.authorizedkeys)))
 

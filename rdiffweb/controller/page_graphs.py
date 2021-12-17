@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import chartkick  # @UnusedImport
+import chartkick  # noqa
 import cherrypy
 import pkg_resources
 from rdiffweb.controller import Controller, validate_int, validate_isinstance

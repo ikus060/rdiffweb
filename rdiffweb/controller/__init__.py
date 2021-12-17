@@ -15,17 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import namedtuple
 import logging
 import os
+from collections import namedtuple
 
 import cherrypy
 import pkg_resources
-import rdiffweb
 from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.librdiff import RdiffRepo, RdiffTime
-
+from rdiffweb.core.librdiff import RdiffTime
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -41,7 +39,7 @@ def validate_int(value, message=None):
     """Raise HTTP Error if the value is not an integer"""
     try:
         return int(value)
-    except:
+    except ValueError:
         raise cherrypy.HTTPError(400, message)
 
 
@@ -54,7 +52,7 @@ def validate_isinstance(value, cls, message=None):
 def validate_date(value, message=None):
     try:
         return RdiffTime(int(value))
-    except:
+    except ValueError:
         logger.warning("invalid date %s", value)
         raise cherrypy.HTTPError(400, message or _('Invalid date.'))
 
@@ -131,4 +129,3 @@ class Controller(object):
         parms.update(kwargs)
 
         return self.app.templates.compile_template(template_name, **parms)
-
