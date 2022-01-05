@@ -107,6 +107,19 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## 2.3.9 (2022-01-05)
+
+Maintenance release to fix minor issues
+
+* Improve date parsing for `backup.log` to avoid printing exception in logs #170
+* Return HTTP error 403 for invalid symlink to avoid returning a misleading HTTP 500 Server Error #168
+* Show a user friendly error message when trying to create a new user with an existing username #169
+* Handle repository without last-backup date during the notification process to ensure notifications are sent #171
+* Replace CherryPy `storage_type` by `storage_class` to avoid warning in logs
+* Update code to avoid deprecation warning where applicable
+* Add Flake8 validation to improve code quality
+* Remove Ubuntu Groovy support
+
 ## 2.3.8 (2021-12-01)
 
 * Push all artefacts to nexus server including binaries and documentation
