@@ -31,7 +31,7 @@ def _ldap_user(name, password='password'):
     return ('uid=%s,ou=People,dc=nodomain' % (name), {
         'uid': [name],
         'cn': [name],
-        'sAMAccountName': [name],
+        'sAMAccountName': [name.encode(encoding='utf-8')],
         'userPassword': [password],
         'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount']})
 
@@ -76,6 +76,7 @@ class UserManagerLdapTest(AppTestCase):
         # Get reference to LdapStore
         self.ldapstore = self.app.store._ldap_store
         self.assertTrue(isinstance(self.ldapstore, LdapPasswordStore))
+        self.ldapstore.encoding = 'utf-8'
 
     def test_are_valid_credentials(self):
 
