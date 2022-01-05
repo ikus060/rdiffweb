@@ -143,8 +143,7 @@ package:deb:
     matrix:
     - DIST: buster
       BACKPORTS: deb http://deb.debian.org/debian buster-backports main
-    - DIST: bullseye
-    - DIST: [groovy, hirsute]
+    - DIST: [bullseye, hirsute, impish]
   script: |
     set -x
     set -e
@@ -169,11 +168,15 @@ package:deb:
 
 test-package:deb:
   stage: test-package
-  image: debian:buster
+  image: buildpack-deps:$DIST
   needs: ["package:deb"]
   parallel:
     matrix:
-    - DIST: [buster, bullseye, groovy, hirsute]
+    - DIST: [buster, bullseye]
+    # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
+    # So we need to make it explicit using environment variable
+    - DIST: [hirsute, impish]
+      TZ: UTC
   script:
   - apt update && apt install -y ./dist/$DIST/rdiffweb*.deb
   - rdiffweb --version
@@ -216,7 +219,9 @@ publish:deb:
       - $NEXUS_PWD
   parallel:
     matrix:
-    - DIST: [buster, bullseye, groovy, hirsute]
+    # impish could not be push because nexus server doesn't support zstd compression yet.
+    # See https://issues.sonatype.org/browse/NEXUS-28889
+    - DIST: [buster, bullseye, hirsute]
   script: |
     set -e
     set -x
