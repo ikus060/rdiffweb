@@ -146,10 +146,20 @@ class LdapPasswordStore():
         If the attribute is a list, loop through and run recursively
         If it is a byte, decode it
         """
+        result = {}
+        if isinstance(value, dict):
+            for l in value:
+                result[l] = self._try_decode(value[l])
+
+            return result
+
         result = []
         if isinstance(value, list):
             for l in value:
                 result.append(self._try_decode(l))
+
+            return result
+
         if isinstance(value, bytes):
             try:
                 # try to decode completely
@@ -160,9 +170,11 @@ class LdapPasswordStore():
                 result = value.decode(encoding=self.encoding, errors='replace')
                 logger.warning("Unable to decode all of this: {}. Returning attempted decode: {}".format(
                     value, result))
-        else:
-            result = value
-        return result
+            finally:
+                return result
+
+        # Not a list or bytes, return it as is
+        return value
 
     def _decode(self, value):
         """If required, decode the given bytes str into unicode."""
