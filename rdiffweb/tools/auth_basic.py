@@ -32,6 +32,7 @@ def basic_auth(realm, checkpassword, debug=False, session_key=SESSION_KEY):
     sessions_on = cherrypy.request.config.get('tools.sessions.on', False)
     if not sessions_on:
         cherrypy.lib.auth_basic.basic_auth(realm, checkpassword, debug)
+        return
 
     # When session, is enabled, let check if user is already authenticated
     username = cherrypy.session.get(session_key)
