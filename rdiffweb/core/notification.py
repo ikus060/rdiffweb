@@ -129,6 +129,19 @@ class EmailClient():
         self.app.scheduler.add_task(self.send_mail, args=(
             to_user, subject, template_name), kwargs=kwargs)
 
+    def is_configured(self):
+        """
+        Check if the email nodification module is properly configured to send mail.
+        """
+        # Warn the administrator if a notification should be sent, but email host is not defined.
+        if not self._email_host:
+            logger.warning('cannot send email notification because `email-host` is not configured')
+            return False
+        if not self._email_from:
+            logger.warning('cannot send email notification because `email-from` is not configured')
+            return False
+        return True
+
     def send_mail(self, to_user, subject, template_name, **kwargs):
         """
         Reusable method to be called to send email to the user user.
@@ -154,9 +167,7 @@ class EmailClient():
         part1 = MIMEText(text, 'plain', 'utf8')
         part2 = MIMEText(html, 'html', 'utf8')
 
-        email_from = self._header_name
-        if self._email_from:
-            email_from += " <%s>" % self._email_from
+        email_from = "%s <%s>" % (self._header_name, self._email_from)
 
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
@@ -196,17 +207,17 @@ class NotificationPlugin(EmailClient, IUserChangeListener):
         self.app = app
         self.app.store.add_change_listener(self)
 
+    def is_configured(self):
+        if not self._send_change_notification:
+            logger.debug('email-send-changed-notification is disabled')
+            return False
+        return super().is_configured()
+
     def user_attr_changed(self, userobj, attrs={}):
         """
         Implementation of IUserChangeListener interface.
         """
-        if not self._send_change_notification:
-            return
-
-        # Warn the administrator if a notification should be sent, but email host is not defined.
-        if not self._email_host:
-            logger.warning(
-                'cannot send email notification because `email-host` is not configured')
+        if not self.is_configured():
             return
 
         # Leave if the mail was not changed.
@@ -226,13 +237,7 @@ class NotificationPlugin(EmailClient, IUserChangeListener):
         """
         Implementation of IUserChangeListener interface.
         """
-        if not self._send_change_notification:
-            return
-
-        # Warn the administrator if a notification should be sent, but email host is not defined.
-        if not self._email_host:
-            logger.warning(
-                'cannot send email notification because `email-host` is not configured')
+        if not self.is_configured():
             return
 
         # get User object (to get email)
@@ -270,9 +275,7 @@ class NotificationJob(EmailClient):
         """
 
         # Warn the administrator if a notification should be sent, but email host is not defined.
-        if not self._email_host:
-            logger.warning(
-                'cannot send email notification because `email-host` is not configured')
+        if not self.is_configured():
             return
 
         now = librdiff.RdiffTime()

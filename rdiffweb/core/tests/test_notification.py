@@ -32,7 +32,8 @@ from rdiffweb.core.notification import (EmailClient, NotificationJob, html2plain
 class NotificationJobTest(rdiffweb.test.AppTestCase):
 
     default_config = {
-        'email-host': 'example.com'
+        'email-host': 'example.com',
+        'email-sender': 'test@example.com',
     }
 
     def test_run_with_notification(self):
@@ -196,7 +197,8 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
 
     default_config = {
         'emailsendchangednotification': True,
-        'email-host': 'example.com'
+        'email-host': 'example.com',
+        'email-sender': 'test@example.com',
     }
 
     def test_email_changed(self):
