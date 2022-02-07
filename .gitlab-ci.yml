@@ -73,31 +73,6 @@ postgresql-12:
     POSTGRES_PASSWORD: ""
     POSTGRES_HOST_AUTH_METHOD: trust
 
-centos7:
-  <<: *tox
-  before_script:
-    - yum install -y python3-pip python3-devel gcc git
-    - yum -y install centos-release-scl-rh
-    - yum -y install rh-python38-python-devel rh-python38-python-tkinter rh-python38-python-pip git gcc
-    - scl_source enable rh-python38
-    - pip3 install virtualenv tox --upgrade
-    - pip3 install tox --upgrade
-    - yum install -y epel-release && yum install -y rdiff-backup openldap-devel
-  image: centos:7
-  variables:
-    TOXENV: py3-cherrypy18-jinja210
-    LANG: en_US.UTF-8
-
-centos8:
-  <<: *tox
-  before_script:
-    - yum install -y python3-pip python3-devel gcc git
-    - pip3 install virtualenv tox --upgrade
-    - yum install -y epel-release && yum install -y rdiff-backup openldap-devel
-  image: centos:8
-  variables:
-    TOXENV: py3-cherrypy18-jinja210
-
 doc:
   <<: *tox
   stage: doc
