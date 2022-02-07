@@ -32,12 +32,11 @@ import sys
 import tarfile
 import tempfile
 import traceback
-from distutils import spawn
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
 import rdiffweb
-from rdiffweb.core.librdiff import (LANG, PATH, STDOUT_ENCODING,
-                                    find_rdiff_backup, popen)
+from rdiffweb.core.librdiff import (LANG, STDOUT_ENCODING, find_rdiff_backup,
+                                    popen)
 
 logger = logging.getLogger(__name__)
 
@@ -86,29 +85,6 @@ class TarArchiver(object):
         # Also close file object.
         if self.fileobj:
             self.fileobj.close()
-
-
-class _Tellable(object):
-    """
-    Provide tell method for zipfile.ZipFile when writing to HTTP
-    response file object.
-
-    This is a workaround to bug #23252
-    """
-
-    def __init__(self, fp):
-        self.fp = fp
-        self.offset = 0
-
-    def __getattr__(self, key):
-        return getattr(self.fp, key)
-
-    def write(self, s):
-        self.fp.write(s)
-        self.offset += len(s)
-
-    def tell(self):
-        return self.offset
 
 
 class ZipArchiver(object):
@@ -286,25 +262,6 @@ def restore(restore, restore_as_of, kind, encoding, dest, log=logger.debug):
             shutil.rmtree(tmp_output, ignore_errors=True)
         elif os.path.isfile(tmp_output):
             os.remove(tmp_output)
-
-
-def call_restore(path, restore_as_of, encoding, kind):
-    """
-    Used to call restore as a subprocess.
-    """
-    assert isinstance(restore_as_of, int), "restore_as_of must be a int"
-    assert kind and kind in ARCHIVERS, "kind must be in " + ARCHIVERS
-    assert encoding
-
-    # Lookup the executable.
-    cmd = spawn.find_executable('rdiffweb-restore', PATH)
-    assert cmd, "can't find `rdiffweb-restore` executable in PATH: " + PATH
-    cmd = os.fsencode(cmd)
-
-    # Call the process.
-    cmdline = [cmd, b'--restore-as-of', str(restore_as_of).encode('latin'), b'--encoding', encoding, b'--kind', kind, path, b'-']
-    logger.info('executing: %r' % cmdline)
-    return popen(cmdline)
 
 
 def main():

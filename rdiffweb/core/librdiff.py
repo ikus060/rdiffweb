@@ -17,7 +17,6 @@
 
 import bisect
 import calendar
-from datetime import timedelta
 import encodings
 import logging
 import os
@@ -28,12 +27,13 @@ import sys
 import threading
 import time
 import weakref
+from datetime import timedelta
+from distutils import spawn
+from subprocess import CalledProcessError
 
 import psutil
 from rdiffweb.core import rdw_helpers
 from rdiffweb.core.i18n import ugettext as _
-from distutils import spawn
-from subprocess import CalledProcessError
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -574,10 +574,18 @@ class DirEntry(object):
             filename = self.display_name
 
         # Restore data using a subprocess.
-        from rdiffweb.core.restore import call_restore
         path = os.path.join(self._repo.full_path,
                             self._repo.unquote(self.path))
-        fh = call_restore(path, restore_as_of, self._repo._encoding.name, kind)
+
+        # Lookup the executable.
+        cmd = spawn.find_executable('rdiffweb-restore', PATH)
+        assert cmd, "can't find `rdiffweb-restore` executable in PATH: " + PATH
+        cmd = os.fsencode(cmd)
+
+        # Call external process to offload processing.
+        # rdiffweb-restore --restore-as-of 123456 --encoding utf-8 --kind zip -
+        cmdline = [cmd, b'--restore-as-of', str(restore_as_of).encode('latin'), b'--encoding', self._repo._encoding.name, b'--kind', kind, path, b'-']
+        fh = popen(cmdline)
         return filename, fh
 
 
