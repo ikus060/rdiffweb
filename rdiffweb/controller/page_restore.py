@@ -19,7 +19,7 @@ import logging
 
 import cherrypy
 import rdiffweb.tools.errors  # noqa: cherrypy.tools.errors
-from cherrypy.lib.static import _serve_fileobj, mimetypes
+from cherrypy.lib.static import mimetypes
 from rdiffweb.controller import (Controller, validate, validate_date,
                                  validate_isinstance)
 from rdiffweb.controller.dispatch import poppath
@@ -66,9 +66,36 @@ def _content_type(filename):
     return mimetypes.types_map.get(ext, "application/octet-stream")  # @UndefinedVariable
 
 
+class _file_generator(object):
+    """
+    Yield the given input (a file object) in chunks (default 64k).
+    """
+
+    def __init__(self, input, chunkSize=65536):
+        self.input = input
+        self.chunkSize = chunkSize
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        chunk = self.input.read(self.chunkSize)
+        if chunk:
+            return chunk
+        else:
+            if hasattr(self.input, 'close'):
+                self.input.close()
+            raise StopIteration()
+    next = __next__
+
+    def close(self):
+        if hasattr(self.input, 'close'):
+            self.input.close()
+
+
 @poppath()
 class RestorePage(Controller):
-    _cp_config = {"response.stream": True, "response.timeout": 3000}
+    _cp_config = {"response.stream": True}
 
     @cherrypy.expose
     @cherrypy.tools.gzip(on=False)
@@ -100,6 +127,4 @@ class RestorePage(Controller):
         cherrypy.response.headers['Content-Type'] = content_type
 
         # Stream the data.
-        # Make use of _serve_fileobj() because the fsstat() function on a pipe
-        # return a size of 0 for Content-Length. This behavior brake all the flow.
-        return _serve_fileobj(fileobj, content_type=content_type, content_length=None)
+        return _file_generator(fileobj)

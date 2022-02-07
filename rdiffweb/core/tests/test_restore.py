@@ -30,7 +30,8 @@ import threading
 import unittest
 from zipfile import ZipFile
 
-from rdiffweb.core.restore import restore, call_restore
+from rdiffweb.core.librdiff import popen
+from rdiffweb.core.restore import restore
 from rdiffweb.test import AppTestCase
 
 EXPECTED = {}
@@ -158,7 +159,7 @@ class RestoreTest(AppTestCase):
 
     def test_cmdline(self):
         # Test the command line call.
-        fh = call_restore(self.path, restore_as_of=1454448640, encoding='utf-8', kind='zip')
+        fh = popen(['rdiffweb-restore', b'--restore-as-of', b'1454448640', b'--encoding', 'utf-8', b'--kind', 'zip', self.path, b'-'])
         self.assertInZip(ZIP_EXPECTED, fh)
 
     def test_restore_pipe_zip_file(self):
