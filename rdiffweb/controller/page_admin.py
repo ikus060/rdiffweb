@@ -31,6 +31,7 @@ from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.core.librdiff import rdiff_backup_version
 from rdiffweb.core.quota import QuotaUnsupported
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 from wtforms import validators, widgets
@@ -106,6 +107,7 @@ def get_hwinfo():
 
 
 def get_pkginfo():
+    yield _('Rdiff-Backup Version'), '.'.join([str(i) for i in rdiff_backup_version()])
     import jinja2
     yield _('Jinja2 Version'), getattr(jinja2, '__version__')
     yield _('CherryPy Version'), getattr(cherrypy, '__version__')
@@ -178,7 +180,7 @@ class DeleteUserForm(CherryForm):
     username = StringField(_('Username'), validators=[validators.data_required()])
 
 
-@cherrypy.tools.is_admin()
+@ cherrypy.tools.is_admin()
 class AdminPage(Controller):
     """Administration pages. Allow to manage users database."""
 
@@ -277,14 +279,14 @@ class AdminPage(Controller):
             logging.exception('fail to get log file content')
             return "Error getting file content"
 
-    @cherrypy.expose
+    @ cherrypy.expose
     def default(self):
         params = {"user_count": self.app.store.count_users(),
                   "repo_count": self.app.store.count_repos()}
 
         return self._compile_template("admin.html", **params)
 
-    @cherrypy.expose
+    @ cherrypy.expose
     def logs(self, filename=u""):
         # get list of log file available.
         data = ""
