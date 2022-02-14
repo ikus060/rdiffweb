@@ -47,3 +47,15 @@ class APITest(rdiffweb.test.WebCase):
         self.assertEqual(repo.get('encoding'), 'utf-8')
         self.assertEqual(repo.get('name'), 'testcases')
         self.assertEqual(repo.get('maxage'), 0)
+
+
+class APIRatelimitTest(rdiffweb.test.WebCase):
+
+    default_config = {
+        'rate-limit': 5,
+    }
+
+    def test_login_ratelimit(self):
+        for i in range(0, 6):
+            self.getPage('/api/')
+        self.assertStatus(429)

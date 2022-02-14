@@ -30,6 +30,7 @@ import rdiffweb.tools.auth_basic
 import rdiffweb.tools.auth_form
 import rdiffweb.tools.currentuser
 import rdiffweb.tools.errors
+import rdiffweb.tools.ratelimit
 import rdiffweb.tools.security
 from rdiffweb.controller import filter_authorization  # noqa
 from rdiffweb.controller import Controller
@@ -119,10 +120,13 @@ class RdiffwebApp(Application):
         # Initialise the template engine.
         self.templates = rdw_templating.TemplateManager()
 
-        # Initialise the application
-        storage_class = cherrypy.lib.sessions.RamSession
+        # Pick the right implementation for storage
+        session_storage_class = cherrypy.lib.sessions.RamSession
+        rate_limit_storage_class = rdiffweb.tools.ratelimit.RamRateLimit
         if self._session_dir:
-            storage_class = cherrypy.lib.sessions.FileSession
+            session_storage_class = cherrypy.lib.sessions.FileSession
+            rate_limit_storage_class = rdiffweb.tools.ratelimit.FileRateLimit
+
         config = {
             '/': {
                 'tools.auth_basic.realm': 'rdiffweb',
@@ -137,11 +141,17 @@ class RdiffwebApp(Application):
                 'tools.encode.on': True,
                 'tools.encode.encoding': 'utf-8',
                 'tools.gzip.on': True,
-                'tools.sessions.on': True,
                 'tools.proxy.on': cp_tools_proxy_enabled,
                 'error_page.default': self.error_page,
-                'tools.sessions.storage_class': storage_class,
+                'tools.sessions.on': True,
+                'tools.sessions.debug': cfg.debug,
+                'tools.sessions.storage_class': session_storage_class,
                 'tools.sessions.storage_path': self._session_dir,
+                'tools.ratelimit.debug': cfg.debug,
+                'tools.ratelimit.delay': 60,
+                'tools.ratelimit.anonymous_limit': cfg.rate_limit,
+                'tools.ratelimit.storage_class': rate_limit_storage_class,
+                'tools.ratelimit.storage_path': self._session_dir,
             },
         }
 

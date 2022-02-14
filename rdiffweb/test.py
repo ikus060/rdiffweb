@@ -175,6 +175,11 @@ class WebCase(helper.CPWebCase):
     @classmethod
     def setup_server(cls):
         default_config = getattr(cls, 'default_config', {})
+        # Enabled debug mode
+        default_config['debug'] = True
+        # Disable rate-limit for testing.
+        if 'rate-limit' not in default_config:
+            default_config['rate-limit'] = -1
         app = MockRdiffwebApp(default_config)
         cherrypy.tree.mount(app)
 
