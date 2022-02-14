@@ -21,11 +21,10 @@ from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.core.config import Option
 from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.auth_form import SESSION_KEY
 from wtforms.fields import PasswordField, StringField
 from wtforms.fields.simple import HiddenField
 from wtforms.validators import InputRequired
-
-from rdiffweb.tools.auth_form import SESSION_KEY
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -57,7 +56,7 @@ class LoginPage(Controller):
     _welcome_msg = Option("welcome_msg")
 
     @cherrypy.expose()
-    @cherrypy.config(**{'tools.auth_form.on': False})
+    @cherrypy.config(**{'tools.auth_form.on': False, 'tools.ratelimit.on': True})
     def index(self, **kwargs):
         form = LoginForm()
         # Validate user's credentials

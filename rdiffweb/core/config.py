@@ -342,14 +342,22 @@ def parse_args(args=None, config_file_contents=None):
         help='location where to store user session information. When undefined, the user sessions are kept in memory.')
 
     parser.add(
+        '--rate-limit',
+        metavar='LIMIT',
+        type=int,
+        default=10,
+        help='maximum number of requests per minute that can be made by an IP address for an unauthenticated connection. When this limit is reached, an HTTP 429 message is returned to the user. This security measure is used to limit brute force attacks on the login page and the RESTful API.',
+    )
+
+    parser.add(
         '--ssl-certificate', '--sslcertificate',
         metavar='CERT',
-        help='location of the SSL Certification to enable HTTPS')
+        help='location of the SSL Certification to enable HTTPS (not recommended)')
 
     parser.add(
         '--ssl-private-key', '--sslprivatekey',
         metavar='KEY',
-        help='location of the SSL Private Key to enable HTTPS')
+        help='location of the SSL Private Key to enable HTTPS (not recommended)')
 
     parser.add(
         '--tempdir',

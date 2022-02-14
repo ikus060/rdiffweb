@@ -21,6 +21,7 @@ Created on Dec 26, 2015
 """
 
 from base64 import b64encode
+
 import rdiffweb.test
 
 
@@ -233,6 +234,37 @@ class LoginPageWithSessionDirTest(rdiffweb.test.WebCase):
         self.getPage('/')
         self.assertStatus('200 OK')
         self.assertNotInBody('Enter your username and password to log in.')
+
+
+class LoginPageRateLimitTest(rdiffweb.test.WebCase):
+
+    default_config = {
+        'rate-limit': 5,
+    }
+
+    def test_login_ratelimit(self):
+        # Given an unauthenticate
+        # When requesting multple time the login page
+        for i in range(0, 6):
+            self.getPage('/login/')
+        # Then a 429 error (too many request) is return
+        self.assertStatus(429)
+
+
+class LoginPageRateLimitWithSessionDirTest(rdiffweb.test.WebCase):
+
+    default_config = {
+        'session-dir': '/tmp',
+        'rate-limit': 5,
+    }
+
+    def test_login_ratelimit(self):
+        # Given an unauthenticate
+        # When requesting multple time the login page
+        for i in range(0, 6):
+            self.getPage('/login/')
+        # Then a 429 error (too many request) is return
+        self.assertStatus(429)
 
 
 class LogoutPageTest(rdiffweb.test.WebCase):
