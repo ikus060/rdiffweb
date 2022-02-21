@@ -133,6 +133,7 @@ class RdiffwebApp(Application):
                 'tools.auth_basic.checkpassword': self._checkpassword,
                 'tools.auth_form.on': True,
                 'tools.currentuser.on': True,
+                'tools.currentuser.userobj': lambda username: self.store.get_user(username),
                 'tools.csrf.on': True,
                 'tools.i18n.on': True,
                 'tools.i18n.default': 'en_US',

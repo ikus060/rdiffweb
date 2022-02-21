@@ -19,27 +19,27 @@ import cherrypy
 SESSION_KEY = '_cp_username'
 
 
-def get_currentuser(session_key=SESSION_KEY):
+def get_currentuser(userobj, session_key=SESSION_KEY):
     """
     When session is enabled and user is authenticated, get the
     current user object and store it into the session.
     """
-    # Check if session is enabled
+    # Easy path, login is already defined by another plugin.
+    login = getattr(cherrypy.serving.request, 'login', None)
+
+    # Get username from session.
     sessions_on = cherrypy.request.config.get('tools.sessions.on', False)
-    if not sessions_on:
-        return
-    # Check if user is authenticated
-    username = cherrypy.session.get(session_key)
-    if not username:
-        return
-    # Get reference to current user object
-    app = cherrypy.request.app
-    userobj = app.store.get_user(username)  # @UndefinedVariable
-    if not userobj:
-        # User was deleted after authenticating.
-        raise cherrypy.HTTPError(403)
-    cherrypy.serving.request.login = userobj.username
-    cherrypy.serving.request.currentuser = userobj
+    if login is None and sessions_on:
+        login = cherrypy.session.get(session_key)
+        cherrypy.serving.request.login = login
+
+    # If login is found, Get reference to current user object
+    if login is not None:
+        currentuser = userobj(login)
+        if currentuser is None:
+            # User was deleted after authenticating.
+            raise cherrypy.HTTPError(403)
+        cherrypy.serving.request.currentuser = currentuser
 
 
 cherrypy.tools.currentuser = cherrypy.Tool('before_handler', get_currentuser, priority=73)
