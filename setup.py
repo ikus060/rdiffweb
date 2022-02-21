@@ -114,6 +114,7 @@ setuptools.setup(
     install_requires=[
         "CherryPy>=8.9.1",
         "Jinja2>=2.10,<3",
+        "MarkupSafe<2.1",
         "psutil>=2.1.1",
         "babel>=0.9.6",
         "python-ldap",
