@@ -17,13 +17,7 @@ class RemoveOlderJob():
         assert app
         self.app = app
 
-    _remove_older_time = Option('remove_older_time')
-
-    @property
-    def job_execution_time(self):
-        return self._remove_older_time
-
-    def job_run(self):
+    def __call__(self):
         """
         Execute the job.
         """

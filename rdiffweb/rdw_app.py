@@ -27,7 +27,7 @@ from cherrypy import Application
 
 import rdiffweb
 import rdiffweb.controller.filter_authorization
-import rdiffweb.core.scheduler
+import rdiffweb.plugins.scheduler
 import rdiffweb.plugins.ldap
 import rdiffweb.tools.auth_basic
 import rdiffweb.tools.auth_form
@@ -206,9 +206,8 @@ class RdiffwebApp(Application):
         self.notification = NotificationPlugin(self)
 
         # Start scheduler and register scheduled jobs.
-        # TODO Should happen with a channel.
-        cherrypy.scheduler.add_job(RemoveOlderJob(self))
-        cherrypy.scheduler.add_job(NotificationJob(self))
+        cherrypy.engine.publish('schedule_job', self.cfg.remove_older_time, RemoveOlderJob(self))
+        cherrypy.engine.publish('schedule_job', self.cfg.email_notification_time, NotificationJob(self))
 
     @property
     def currentuser(self):

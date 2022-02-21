@@ -267,16 +267,11 @@ class NotificationJob(EmailClient):
     repositories.
     """
 
-    _email_notification_time = Option('email_notification_time')
-
     def __init__(self, app):
+        assert app
         self.app = app
 
-    @property
-    def job_execution_time(self):
-        return self._email_notification_time
-
-    def job_run(self):
+    def __call__(self):
         """
         Loop trough all the user repository and send notifications.
         """

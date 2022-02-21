@@ -52,7 +52,7 @@ class NotificationJobTest(rdiffweb.test.AppTestCase):
         n.send_mail = MagicMock()
 
         # Call notification.
-        n.job_run()
+        n()
 
         # Expect it to be called.
         n.send_mail.assert_called_once_with(
@@ -69,7 +69,7 @@ class NotificationJobTest(rdiffweb.test.AppTestCase):
         n = NotificationJob(app=self.app)
         self.assertIsNotNone(n)
         n.send_mail = MagicMock()
-        n.job_run()
+        n()
 
         # Then a notification is sent to the user.
         n.send_mail.assert_called_once_with(
@@ -90,7 +90,7 @@ class NotificationJobTest(rdiffweb.test.AppTestCase):
         n.send_mail = MagicMock()
 
         # Call notification.
-        n.job_run()
+        n()
 
         # Expect it to be called.
         n.send_mail.assert_not_called()
@@ -109,7 +109,7 @@ class NotificationJobTest(rdiffweb.test.AppTestCase):
         n.send_mail = MagicMock()
 
         # Call notification.
-        n.job_run()
+        n()
 
         # Expect no call
         n.send_mail.assert_not_called()
@@ -158,7 +158,7 @@ class EmailClientTest(rdiffweb.test.WebCase):
         Check email template generation.
         """
         self.assertEqual(0, len(cherrypy.scheduler.list_tasks()))
-        cherrypy.scheduler._scheduler.pause()
+        cherrypy.scheduler.stop()
 
         # Set user config
         user = self.app.store.get_user(self.USERNAME)
@@ -172,7 +172,7 @@ class EmailClientTest(rdiffweb.test.WebCase):
 
         # Check task scheduled
         self.assertEqual(1, len(cherrypy.scheduler.list_tasks()))
-        cherrypy.scheduler._scheduler.resume()
+        cherrypy.scheduler.start()
 
     def test_html2plaintext(self):
         """

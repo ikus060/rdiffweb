@@ -50,26 +50,20 @@ class Scheduler(SimplePlugin):
         self._scheduler = self._create_scheduler()
         self._scheduler.start(paused=True)
 
-    def add_job(self, job):
+    def add_job(self, execution_time, job, args=(), kwargs={}):
         """
         Add the given scheduled job to the scheduler.
-
-        The job must define a property `job_execution_time` defining when the
-        job must run and a function `job_run` to be called.
         """
-        assert job
-        assert hasattr(job, 'job_execution_time')
-        assert hasattr(job, 'job_run')
-        hour, minute = job.job_execution_time.split(':', 2)
-        self._scheduler.add_job(func=job.job_run, trigger='cron', hour=hour, minute=minute, jobstore='scheduled', executor='scheduled')
+        assert hasattr(job, '__call__'), 'job must be callable'
+        hour, minute = execution_time.split(':', 2)
+        self._scheduler.add_job(func=job, args=args, kwargs=kwargs, trigger='cron', hour=hour, minute=minute, jobstore='scheduled', executor='scheduled')
 
     def add_task(self, task, args=(), kwargs={}):
         """
         Add the given task to be execute immediately in background.
         """
-        assert hasattr(task, 'job_run') or hasattr(task, '__call__')
-        func = getattr(task, 'job_run', task)
-        self._scheduler.add_job(func=func, args=args, kwargs=kwargs, next_run_time=datetime.now())
+        assert hasattr(task, '__call__'), 'task must be callable'
+        self._scheduler.add_job(func=task, args=args, kwargs=kwargs, next_run_time=datetime.now())
 
     def list_jobs(self):
         """

@@ -112,7 +112,7 @@ class RemoveOlderTestWithMock(rdiffweb.test.WebCase):
         repo = user.get_repo(self.REPO)
         repo.keepdays = 0
         # Call the job.
-        p.job_run()
+        p()
         # Check if _remove_older was called
         p._remove_older.assert_called()
 
@@ -128,6 +128,6 @@ class RemoveOlderTestWithMock(rdiffweb.test.WebCase):
         repo = user.get_repo(self.REPO)
         repo.keepdays = 30
         # Call the job.
-        p.job_run()
+        p()
         # Check if _remove_older was called
         p._remove_older.assert_called()
