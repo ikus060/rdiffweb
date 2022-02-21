@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import pickle
-import sys
 import threading
 import time
 from collections import namedtuple
@@ -80,12 +79,11 @@ class FileRateLimit(_DataStore):
         assert storage_path, 'FileRateLimit required a storage_path `tools.ratelimit.storage_path = "/home/site/ratelimit"`'
         self.storage_path = os.path.abspath(storage_path)
 
-    def _path(self, token, endpoint):
+    def _path(self, token):
         assert token
-        assert endpoint
-        f = os.path.join(self.storage_path, self.PREFIX + token + '-' + endpoint.strip('/').replace('/', '-'))
+        f = os.path.join(self.storage_path, self.PREFIX + token.strip('/').replace('/', '-'))
         if not os.path.abspath(f).startswith(self.storage_path):
-            raise ValueError('Invalid token or endpoint.')
+            raise ValueError('invalid token')
         return f
 
     def _load(self, token):
@@ -97,11 +95,9 @@ class FileRateLimit(_DataStore):
             finally:
                 f.close()
         except (IOError, EOFError):
-            e = sys.exc_info()[1]
-            if self.debug:
-                cherrypy.log('Error loading the RateLimit pickle: %s' %
-                             e, 'TOOLS.RATELIMIT')
-            return None
+            # Drop session data if invalid
+            pass
+        return None
 
     def _save(self, tracker):
         path = self._path(tracker.token)
