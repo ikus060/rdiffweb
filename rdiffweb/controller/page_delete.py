@@ -65,6 +65,6 @@ class DeletePage(Controller):
             _logger.info("do not delete repo, bad confirmation %r != %r", form.confirm.data, path_obj.display_name)
             raise cherrypy.HTTPError(400, 'bad confirmation')
 
-        # Delete repository
-        self.app.scheduler.add_task(path_obj.delete, args=[])
+        # Delete repository in background using a schedule task.
+        assert cherrypy.engine.publish('schedule_task', path_obj.delete, args=[])
         raise cherrypy.HTTPRedirect(form.redirect.data)

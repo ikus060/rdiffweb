@@ -21,12 +21,13 @@ Created on Feb 13, 2016
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
-
 from time import sleep
 from unittest.mock import ANY, MagicMock, patch
 
+import cherrypy
 import rdiffweb.test
-from rdiffweb.core.notification import (EmailClient, NotificationJob, html2plaintext)
+from rdiffweb.core.notification import (EmailClient, NotificationJob,
+                                        html2plaintext)
 
 
 class NotificationJobTest(rdiffweb.test.AppTestCase):
@@ -114,7 +115,7 @@ class NotificationJobTest(rdiffweb.test.AppTestCase):
         n.send_mail.assert_not_called()
 
 
-class EmailClientTest(rdiffweb.test.AppTestCase):
+class EmailClientTest(rdiffweb.test.WebCase):
 
     default_config = {
         'EmailHost': 'smtp.gmail.com:587',
@@ -156,7 +157,8 @@ class EmailClientTest(rdiffweb.test.AppTestCase):
         """
         Check email template generation.
         """
-        self.assertEqual(0, len(self.app.scheduler.list_tasks()))
+        self.assertEqual(0, len(cherrypy.scheduler.list_tasks()))
+        cherrypy.scheduler._scheduler.pause()
 
         # Set user config
         user = self.app.store.get_user(self.USERNAME)
@@ -169,7 +171,8 @@ class EmailClientTest(rdiffweb.test.AppTestCase):
         n.async_send_mail(user, 'subject', 'email_notification.html')
 
         # Check task scheduled
-        self.assertEqual(1, len(self.app.scheduler.list_tasks()))
+        self.assertEqual(1, len(cherrypy.scheduler.list_tasks()))
+        cherrypy.scheduler._scheduler.resume()
 
     def test_html2plaintext(self):
         """
@@ -209,7 +212,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
 
         # Set user config
         user = self.app.store.get_user(self.USERNAME)
-        user.email = 'test@test.com'
+        user.email = 'email_changed@test.com'
 
         # Expect it to be called.
         sleep(1)
@@ -217,7 +220,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         n.async_send_mail.reset_mock()
 
         # Change email again for same value
-        user.email = 'test@test.com'
+        user.email = 'email_changed@test.com'
         n.async_send_mail.assert_not_called()
 
     def test_password_change_notification(self):
@@ -228,7 +231,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
 
         # Set user config
         user = self.app.store.get_user(self.USERNAME)
-        user.email = 'test@test.com'
+        user.email = 'password_change@test.com'
         n.async_send_mail.reset_mock()
 
         # Change password
@@ -244,17 +247,15 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         n.async_send_mail.assert_called_once_with(ANY, ANY, 'password_changed.html')
 
     def test_async_send_mail(self):
+        # Given a user with a valid email address
+        user = self.app.store.get_user(self.USERNAME)
+        user._set_attr('email', 'async_send_mail@test.com', notify=False)
 
-        with patch('rdiffweb.core.notification.smtplib'):
-            # Set user config
-            user = self.app.store.get_user(self.USERNAME)
-            user.email = 'test@test.com'
-
-            # Get ref to notification plugin
-            n = EmailClient(self.app)
-            n.send_mail = MagicMock()
-            self.assertIsNotNone(n)
-            n.async_send_mail(user, 'subject', 'email_notification.html')
+        # Get ref to notification plugin
+        n = EmailClient(self.app)
+        n.send_mail = MagicMock()
+        self.assertIsNotNone(n)
+        n.async_send_mail(user, 'subject', 'email_notification.html')
 
 
 class NotificationPluginTestWithoutEmailHost(rdiffweb.test.WebCase):
@@ -271,7 +272,7 @@ class NotificationPluginTestWithoutEmailHost(rdiffweb.test.WebCase):
 
         # Set user config
         user = self.app.store.get_user(self.USERNAME)
-        user.email = 'test@test.com'
+        user.email = 'email_changed_without@test.com'
 
         # Expect it to be called.
         sleep(1)

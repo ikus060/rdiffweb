@@ -17,24 +17,24 @@
 
 import codecs
 import encodings
-from io import open
 import logging
 import os
 import sys
+from io import open
 
-import pkg_resources
+import cherrypy
+from cherrypy.process.plugins import SimplePlugin
 from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.config import Option
-from rdiffweb.tools.i18n import ugettext as _
-from rdiffweb.core.ldap_auth import LdapPasswordStore
-from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, \
-    AccessDeniedError
+from rdiffweb.core.librdiff import (AccessDeniedError, DoesNotExistError,
+                                    RdiffRepo)
 from rdiffweb.core.passwd import check_password, hash_password
-from sqlalchemy import Table, Column, Integer, SmallInteger, String, MetaData, Text
-from sqlalchemy import create_engine
-from sqlalchemy.sql.expression import select, or_, and_
-from sqlalchemy.sql.functions import count
+from rdiffweb.tools.i18n import ugettext as _
+from sqlalchemy import (Column, Integer, MetaData, SmallInteger, String, Table,
+                        Text, create_engine)
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql.expression import and_, or_, select
+from sqlalchemy.sql.functions import count
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -117,31 +117,6 @@ class DuplicateSSHKeyError(Exception):
     pass
 
 
-class IUserChangeListener():
-    """
-    A listener to receive user changes event.
-    """
-
-    def __init__(self, app):
-        self.app = app
-        self.app.store.add_change_listener(self)
-
-    def user_added(self, userobj, attrs):
-        """New user (account) created."""
-
-    def user_attr_changed(self, userobj, attrs={}):
-        """User attribute changed."""
-
-    def user_deleted(self, user):
-        """User and related account information have been deleted."""
-
-    def user_logined(self, userobj, attrs):
-        """User successfully logged into rdiffweb."""
-
-    def user_password_changed(self, user, password):
-        """Password changed."""
-
-
 class UserObject(object):
     """Represent an instance of user."""
 
@@ -195,8 +170,7 @@ class UserObject(object):
             except IntegrityError:
                 raise DuplicateSSHKeyError(
                     _("Duplicate key. This key already exists or is associated to another user."))
-        self._store._notify('user_attr_changed', self,
-                            {'authorizedkeys': True})
+        cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
 
     def valid_user_root(self):
         """
@@ -227,7 +201,7 @@ class UserObject(object):
             deleted = conn.execute(_USERS.delete(
                 _USERS.c.userid == self._userid))
             assert deleted.rowcount, 'fail to delete user'
-        self._store._notify('user_deleted', self.username)
+        cherrypy.engine.publish('user_deleted', self.username)
         return True
 
     def delete_authorizedkey(self, fingerprint):
@@ -249,8 +223,7 @@ class UserObject(object):
             with self._store.engine.connect() as conn:
                 conn.execute(_SSHKEYS.delete(
                     and_(_SSHKEYS.c.userid == self._userid, _SSHKEYS.c.fingerprint == fingerprint)))
-        self._store._notify('user_attr_changed', self,
-                            {'authorizedkeys': True})
+        cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
 
     def __eq__(self, other):
         return isinstance(other, UserObject) and self._userid == other._userid
@@ -370,7 +343,7 @@ class UserObject(object):
         self._record[key] = value
         # Call notification listener
         if notify:
-            self._store._notify('user_attr_changed', self, {key: value})
+            cherrypy.engine.publish('user_attr_changed', self, {key: value})
 
     def set_password(self, password, old_password=None):
         """
@@ -387,21 +360,10 @@ class UserObject(object):
             raise ValueError(
                 _("can't update admin-password defined in configuration file"))
 
-        # Try to update the user password in LDAP
-        try:
-            valid = self._store._ldap_store.are_valid_credentials(
-                self.username, old_password)
-            if valid:
-                self._store._ldap_store.set_password(
-                    self.username, password, old_password)
-                return
-        except Exception:
-            pass
-        # Fallback to database
         if old_password and not check_password(old_password, self.hash_password):
             raise ValueError(_("Wrong password"))
         self.hash_password = hash_password(password)
-        self._store._notify('user_password_changed', self.username, password)
+        cherrypy.engine.publish('user_password_changed', self.username)
 
     def _set_user_root(self, value):
         """
@@ -431,7 +393,7 @@ class UserObject(object):
     disk_quota = property(fget=lambda x: x._store.app.quota.get_disk_quota(
         x), fset=lambda x, y: x._store.app.quota.set_disk_quota(x, y))
     hash_password = property(fget=lambda x: x._get_attr(
-        'password'), fset=lambda x, y: x._set_attr('password', y))
+        'password'), fset=lambda x, y: x._set_attr('password', y, notify=False))
     disk_usage = property(fget=lambda x: x._store.app.quota.get_disk_usage(x))
 
 
@@ -537,7 +499,7 @@ class RepoObject(RdiffRepo):
         'keepdays', default=-1), fset=lambda x, y: x._set_attr('keepdays', y))
 
 
-class Store():
+class Store(SimplePlugin):
     """
     This class handle all data storage operations.
     """
@@ -553,6 +515,7 @@ class Store():
     _max_depth = Option('max_depth')
 
     def __init__(self, app):
+        super().__init__(cherrypy.engine)
         self.app = app
         self.app.store = self
         # Connect to database
@@ -560,23 +523,13 @@ class Store():
         self.engine = create_engine(uri, echo=self._debug)
         # Create tables if missing.
         _META.create_all(self.engine)
-
-        self._ldap_store = LdapPasswordStore(app)
-        self._change_listeners = []
         self._update()
+        cherrypy.engine.subscribe("authenticate", self.authenticate)
+        cherrypy.engine.subscribe("stop", self.stop)
 
-        # Register entry point.
-        # @UndefinedVariable
-        for entry_point in pkg_resources.iter_entry_points('rdiffweb.IUserChangeListener'):
-            try:
-                cls = entry_point.load()
-                # Creating the listener should register it self.But let make sure of it.
-                listener = cls(self.app)
-                if listener not in self._change_listeners:
-                    self._change_listeners.append(listener)
-            except Exception:
-                logging.error(
-                    "IUserChangeListener [%s] fail to load", entry_point)
+    def stop(self):
+        cherrypy.engine.unsubscribe("authenticate", self.authenticate)
+        self.engine.dispose()
 
     def create_admin_user(self):
         # Check if admin user exists. If not, created it.
@@ -589,12 +542,6 @@ class Store():
         if self._admin_password:
             userobj.hash_password = self._admin_password
             userobj.role = ADMIN_ROLE
-
-    def add_change_listener(self, listener):
-        self._change_listeners.append(listener)
-
-    def remove_change_listener(self, listener):
-        self._change_listeners.remove(listener)
 
     def add_user(self, user, password=None, attrs=None):
         """
@@ -614,7 +561,7 @@ class Store():
             record = conn.execute(_USERS.select(
                 _USERS.c.username == user)).fetchone()
         userobj = UserObject(self, record)
-        self._notify('user_added', userobj, attrs)
+        cherrypy.engine.publish('user_added', userobj)
         # Return user object
         return userobj
 
@@ -734,7 +681,41 @@ class Store():
                 if not criteria or criteria == repo_obj.status[0]:
                     yield repo_obj
 
-    def login(self, user, password):
+    def login(self, username, password):
+        """
+        Verify the user's crendentials with authentication plugins.
+        Then create the user in database if required.
+        """
+        assert isinstance(username, str)
+        assert password is None or isinstance(username, str)
+        authenticates = self.bus.publish('authenticate', username, password)
+        authenticates = [a for a in authenticates if a]
+        if not authenticates:
+            return None
+        real_username = authenticates[0][0]
+        extra_attrs = authenticates[0][1]
+
+        # When enabled, create missing userobj in database.
+        userobj = self.get_user(real_username)
+        if userobj is None and self._ldap_add_user:
+            try:
+                # At this point, we need to create a new user in database.
+                # In case default values are invalid, let evaluate them
+                # before creating the user in database.
+                default_user_root = self._ldap_add_user_default_userroot.format(**extra_attrs)
+                default_role = ROLES.get(self._ldap_add_user_default_role)
+                userobj = self.add_user(real_username, attrs=extra_attrs)
+                userobj.user_root = default_user_root
+                userobj.role = default_role
+                # Populate the email attribute using LDAP mail attribute.
+                # Default to empty string to respect database integrity.
+                userobj.email = next(iter(extra_attrs.get('mail', [])), '')
+            except Exception:
+                logger.warning('fail to create new user', exc_info=1)
+        self.bus.publish('user_login', userobj)
+        return userobj
+
+    def authenticate(self, user, password):
         """
         Called to authenticate the given user.
 
@@ -752,50 +733,9 @@ class Store():
         logger.debug("validating user [%s] credentials", user)
         userobj = self.get_user(user)
         if userobj and userobj.hash_password:
-            if not check_password(password, userobj.hash_password):
-                return None
-            self._notify('user_logined', userobj, None)
-            return userobj
-
-        # Fallback to LDAP server to validate the user's credentials
-        # or to create a new user in database.
-        if userobj or self._ldap_add_user:
-            try:
-                # Check if credential are valid
-                valid = self._ldap_store.are_valid_credentials(user, password)
-                if valid:
-                    real_user, attrs = valid
-                    if not userobj and self._ldap_add_user:
-                        # At this point, we need to create a new user in database.
-                        # In case default values are invalid, let evaluate them
-                        # before creating the user in database.
-                        default_user_root = self._ldap_add_user_default_userroot.format(
-                            **attrs)
-                        default_role = ROLES.get(
-                            self._ldap_add_user_default_role)
-                        userobj = self.add_user(real_user, attrs=attrs)
-                        userobj.user_root = default_user_root
-                        userobj.role = default_role
-                        # Populate the email attribute using LDAP mail attribute.
-                        # Default to empty string to respect database integrity.
-                        userobj.email = next(iter(attrs.get('mail', [])), '')
-                    self._notify('user_logined', userobj, attrs)
-                    return userobj
-            except Exception:
-                logger.warning('fail to validate credentials', exc_info=1)
-        return None
-
-    def _notify(self, mod, *args):
-        for listener in self._change_listeners:
-            # Support divergent account change listener implementations too.
-            try:
-                logger.debug('notify %s#%s()',
-                             listener.__class__.__name__, mod)
-                getattr(listener, mod)(*args)
-            except Exception:
-                logger.warning(
-                    'IUserChangeListener [%s] fail to run [%s]',
-                    listener.__class__.__name__, mod, exc_info=1)
+            if check_password(password, userobj.hash_password):
+                return userobj.username, {}
+        return False
 
     def _update(self):
         """

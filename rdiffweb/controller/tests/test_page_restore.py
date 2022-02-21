@@ -21,9 +21,9 @@ Created on Jan 1, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-
 import io
 import tarfile
+import unittest
 import zipfile
 
 import rdiffweb.test
@@ -31,11 +31,7 @@ from rdiffweb.controller.page_restore import _content_disposition
 from rdiffweb.core.store import USER_ROLE
 
 
-class RestorePageTest(rdiffweb.test.AppTestCase):
-
-    def setUp(self):
-        super().setUp()
-        self.page = self.app.root.restore
+class RestorePageTest(unittest.TestCase):
 
     def test_content_disposition(self):
         """

@@ -26,13 +26,16 @@ import pkg_resources
 from cherrypy import Application
 
 import rdiffweb
+import rdiffweb.controller.filter_authorization
+import rdiffweb.core.scheduler
+import rdiffweb.plugins.ldap
 import rdiffweb.tools.auth_basic
 import rdiffweb.tools.auth_form
 import rdiffweb.tools.currentuser
 import rdiffweb.tools.errors
+import rdiffweb.tools.i18n
 import rdiffweb.tools.ratelimit
 import rdiffweb.tools.security
-from rdiffweb.controller import filter_authorization  # noqa
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
 from rdiffweb.controller.dispatch import static  # noqa
@@ -48,13 +51,11 @@ from rdiffweb.controller.page_prefs import PreferencesPage
 from rdiffweb.controller.page_restore import RestorePage
 from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_status import StatusPage
-from rdiffweb.tools import i18n  # noqa
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
 from rdiffweb.core.notification import NotificationJob, NotificationPlugin
 from rdiffweb.core.quota import DefaultUserQuota
 from rdiffweb.core.removeolder import RemoveOlderJob
-from rdiffweb.core.scheduler import Scheduler
 from rdiffweb.core.store import Store
 
 # Define the logger
@@ -116,6 +117,24 @@ class RdiffwebApp(Application):
     def __init__(self, cfg):
 
         self.cfg = cfg
+        # Configure LDAP plugins.
+        cherrypy.config.update({
+            'ldap.uri': cfg.ldap_uri,
+            'ldap.base_dn': cfg.ldap_base_dn,
+            'ldap.bind_dn': cfg.ldap_bind_dn,
+            'ldap.bind_password': cfg.ldap_bind_password,
+            'ldap.scope': cfg.ldap_scope,
+            'ldap.tls': cfg.ldap_tls,
+            'ldap.username_attribute': cfg.ldap_username_attribute,
+            'ldap.required_group': cfg.ldap_required_group,
+            'ldap.group_attribute': cfg.ldap_group_attribute,
+            'ldap.group_attribute_is_dn': cfg.ldap_group_attribute_is_dn,
+            'ldap.version': cfg.ldap_version,
+            'ldap.network_timeout': cfg.ldap_network_timeout,
+            'ldap.timeout': cfg.ldap_timeout,
+            'ldap.encoding': cfg.ldap_encoding,
+            'ldap.check_shadow_expire': cfg.ldap_check_shadow_expire,
+        })
 
         # Initialise the template engine.
         self.templates = rdw_templating.TemplateManager()
@@ -130,7 +149,7 @@ class RdiffwebApp(Application):
         config = {
             '/': {
                 'tools.auth_basic.realm': 'rdiffweb',
-                'tools.auth_basic.checkpassword': self._checkpassword,
+                'tools.auth_basic.checkpassword': lambda realm, username, password: any(cherrypy.engine.publish('authenticate', username, password)),
                 'tools.auth_form.on': True,
                 'tools.currentuser.on': True,
                 'tools.currentuser.userobj': lambda username: self.store.get_user(username),
@@ -187,10 +206,9 @@ class RdiffwebApp(Application):
         self.notification = NotificationPlugin(self)
 
         # Start scheduler and register scheduled jobs.
-        self.scheduler = Scheduler(cherrypy.engine, self)
-        self.scheduler.subscribe()
-        self.scheduler.add_job(RemoveOlderJob(self))
-        self.scheduler.add_job(NotificationJob(self))
+        # TODO Should happen with a channel.
+        cherrypy.scheduler.add_job(RemoveOlderJob(self))
+        cherrypy.scheduler.add_job(NotificationJob(self))
 
     @property
     def currentuser(self):
@@ -199,12 +217,6 @@ class RdiffwebApp(Application):
         Return a UserObject when logged in or None.
         """
         return getattr(cherrypy.serving.request, 'currentuser', None)
-
-    def _checkpassword(self, realm, username, password):
-        """
-        Check basic authentication.
-        """
-        return self.store.login(username, password) is not None
 
     def error_page(self, **kwargs):
         """
@@ -255,6 +267,6 @@ class RdiffwebApp(Application):
         Return list of plugins.
         """
         RiffwebPlugin = namedtuple('RiffwebPlugin', ['name', 'version'])
-        for group in ['rdiffweb.IUserQuota', 'rdiffweb.IUserChangeListener']:
+        for group in ['rdiffweb.IUserQuota']:
             for e in pkg_resources.iter_entry_points(group):
                 yield RiffwebPlugin(name=e.name, version=e.dist)

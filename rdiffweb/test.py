@@ -64,10 +64,6 @@ class MockRdiffwebApp(RdiffwebApp):
         if hasattr(self, 'database_dir'):
             shutil.rmtree(self.database_dir)
             delattr(self, 'database_dir')
-        # Dispose SQLAlchemy engine.
-        self.store.engine.dispose()
-        # unsubscribe scheduler
-        self.scheduler.unsubscribe()
 
     def clear_testcases(self):
         if hasattr(self, 'testcases'):
@@ -110,8 +106,6 @@ class AppTestCase(unittest.TestCase):
 
     default_config = {}
 
-    ldap_directory = {}
-
     @classmethod
     def setup_class(cls):
         if cls is AppTestCase:
@@ -125,20 +119,12 @@ class AppTestCase(unittest.TestCase):
         self.app = MockRdiffwebApp(self.default_config)
         self.app.reset()
         self.app.reset_testcases()
-        # When required mock LDAP server using mockldap
-        if self.ldap_directory:
-            from mockldap import MockLdap
-            self.mockldap = MockLdap(self.ldap_directory)
-            self.mockldap.start()
         super().setUp()
 
     def tearDown(self):
         # Force dispose on SQL engine
         self.app.clear_db()
         self.app.clear_testcases()
-        # Remove mock ldap
-        if hasattr(self, 'mockldap'):
-            self.mockldap.stop()
         super().tearDown()
 
 

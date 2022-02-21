@@ -27,10 +27,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from xml.etree.ElementTree import fromstring, tostring
 
+import cherrypy
 from rdiffweb.core import librdiff
 from rdiffweb.core.config import Option
 from rdiffweb.tools.i18n import ugettext as _
-from rdiffweb.core.store import IUserChangeListener
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +126,7 @@ class EmailClient():
         self.app = app
 
     def async_send_mail(self, to_user, subject, template_name, **kwargs):
-        self.app.scheduler.add_task(self.send_mail, args=(
+        cherrypy.engine.publish('schedule_task', self.send_mail, args=(
             to_user, subject, template_name), kwargs=kwargs)
 
     def is_configured(self):
@@ -196,7 +196,7 @@ class EmailClient():
                 conn.quit()
 
 
-class NotificationPlugin(EmailClient, IUserChangeListener):
+class NotificationPlugin(EmailClient):
     """
     Send email notification when a repository get too old (without a backup).
     """
@@ -205,7 +205,9 @@ class NotificationPlugin(EmailClient, IUserChangeListener):
 
     def __init__(self, app):
         self.app = app
-        self.app.store.add_change_listener(self)
+        cherrypy.engine.subscribe('user_attr_changed', self.user_attr_changed)
+        cherrypy.engine.subscribe('user_password_changed', self.user_password_changed)
+        cherrypy.engine.subscribe('stop', self.stop)
 
     def is_configured(self):
         if not self._send_change_notification:
@@ -213,9 +215,14 @@ class NotificationPlugin(EmailClient, IUserChangeListener):
             return False
         return super().is_configured()
 
+    def stop(self):
+        cherrypy.engine.unsubscribe('user_attr_changed', self.user_attr_changed)
+        cherrypy.engine.unsubscribe('user_password_changed', self.user_password_changed)
+        cherrypy.engine.unsubscribe('stop', self.stop)
+
     def user_attr_changed(self, userobj, attrs={}):
         """
-        Implementation of IUserChangeListener interface.
+        Implementation of interface.
         """
         if not self.is_configured():
             return
@@ -233,9 +240,9 @@ class NotificationPlugin(EmailClient, IUserChangeListener):
         self.async_send_mail(userobj, _(
             "Email address changed"), "email_changed.html")
 
-    def user_password_changed(self, username, password):  # @UnusedVariable
+    def user_password_changed(self, username):  # @UnusedVariable
         """
-        Implementation of IUserChangeListener interface.
+        Implementation of interface.
         """
         if not self.is_configured():
             return

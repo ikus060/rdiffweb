@@ -62,7 +62,7 @@ class LoginPage(Controller):
         # Validate user's credentials
         if form.validate_on_submit():
             try:
-                userobj = cherrypy.request.app.store.login(form.login.data, form.password.data)
+                userobj = self.app.store.login(form.login.data, form.password.data)
             except Exception:
                 logger.exception('fail to validate credential')
                 flash(_("Fail to validate user credential."))

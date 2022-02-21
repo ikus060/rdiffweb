@@ -25,51 +25,71 @@ creation of a LDAP user requires properties which are not made available
 to the LDAP plugin.
 """
 
-import ldap
 import logging
 import time
+from collections import namedtuple
 
-from rdiffweb.core import RdiffError
+import cherrypy
+from cherrypy.process.plugins import SimplePlugin
 from rdiffweb.tools.i18n import ugettext as _
-from rdiffweb.core.config import Option
+
+import ldap
 
 logger = logging.getLogger(__name__)
 
+LdapUser = namedtuple('LdapUser', ['username', 'attrs'])
 
-class LdapPasswordStore():
 
-    """Wrapper for LDAP authentication.
+class LdapException(Exception):
+    pass
 
-    This implementation assume the LDAP is using the system encoding."""
 
-    uri = Option("ldap_uri")
-    base_dn = Option("ldap_base_dn")
-    scope = Option("ldap_scope")
-    tls = Option("ldap_tls")
-    attribute = Option("ldap_username_attribute")
-    filter = Option("ldap_filter")
-    require_group = Option("ldap_required_group")
-    group_attribute = Option("ldap_group_attribute")
-    group_attribute_is_dn = Option("ldap_group_attribute_is_dn")
-    bind_dn = Option("ldap_bind_dn")
-    bind_password = Option("ldap_bind_password")
-    version = Option("ldap_version")
-    network_timeout = Option("ldap_network_timeout")
-    timeout = Option("ldap_timeout")
-    encoding = Option("ldap_encoding")
-    allow_password_change = Option("ldap_allow_password_change")
-    check_shadow_expire = Option("ldap_check_shadow_expire")
+class LdapUserExpired(LdapException):
+    pass
 
-    def __init__(self, app):
-        self.app = app
 
-    def are_valid_credentials(self, username, password):
+class LdapUserMissingRequiredGroup(LdapException):
+    pass
+
+
+class LdapPlugin(SimplePlugin):
+
+    """
+    Wrapper for LDAP authentication.
+    This implementation assume the LDAP is using the system encoding.
+    """
+
+    uri = None
+    base_dn = None
+    bind_dn = ''
+    bind_password = ''
+    scope = 'subtree'
+    tls = False
+    filter = '(objectClass=*)'
+    username_attribute = 'uid'
+    required_group = None
+    group_attribute = 'member'
+    group_attribute_is_dn = False
+    version = 3
+    network_timeout = 10
+    timeout = 10
+    encoding = 'utf-8'
+    check_shadow_expire = False
+
+    def start(self):
+        if self.uri:
+            self.bus.log('Start LDAP connection')
+            self.bus.subscribe("authenticate", self.authenticate)
+
+    def stop(self):
+        self.bus.log('Stop LDAP connection')
+        self.bus.unsubscribe("authenticate", self.authenticate)
+
+    def authenticate(self, username, password):
         """Check if the given credential as valid according to LDAP."""
         assert isinstance(username, str)
         assert isinstance(password, str)
         # Skip validation if LdapUri is not provided
-        if not self.uri:
-            return False
 
         def check_crendential(l, r):
             # Check results
@@ -93,22 +113,22 @@ class LdapPasswordStore():
                     # Convert nb. days into seconds.
                     if shadow_expire and shadow_expire * 24 * 60 * 60 < time.time():
                         logger.warning("user account %s expired: %s", username, shadow_expire)
-                        raise RdiffError(_('User account %s expired.' % username))
+                        raise LdapUserExpired('eser account %s expired.' % username)
 
                 # Get username
                 dn = r[0][0]
-                new_username = self._decode(r[0][1][self.attribute][0])
+                new_username = self._decode(r[0][1][self.username_attribute][0])
 
                 # Verify if the user is member of the required group
-                if self.require_group:
+                if self.required_group:
                     value = dn if self.group_attribute_is_dn else new_username
-                    logger.info("check if user [%s] is member of [%s]", value, self.require_group)
-                    if not l.compare_s(self.require_group, self.group_attribute, value):
-                        raise RdiffError(_('Permissions denied for user account %s.' % username))
+                    logger.info("check if user [%s] is member of [%s]", value, self.required_group)
+                    if not l.compare_s(self.required_group, self.group_attribute, value):
+                        raise LdapUserMissingRequiredGroup('permissions denied for user account %s.' % username)
             finally:
                 l.unbind_s()
             # Return the username
-            return new_username, self._try_decode(r[0][1])
+            return LdapUser(username, self._try_decode(r[0][1]))
 
         # Execute the LDAP operation
         try:
@@ -220,9 +240,9 @@ class LdapPasswordStore():
 
             # Search the LDAP server
             search_filter = "(&{}({}={}))".format(
-                self.filter, self.attribute, username)
+                self.filter, self.username_attribute, username)
             logger.debug("search ldap server: {}/{}?{}?{}?{}".format(
-                self.uri, self.base_dn, self.attribute, scope,
+                self.uri, self.base_dn, self.username_attribute, scope,
                 search_filter))
             r = l.search_s(self.base_dn, scope, search_filter)
 
@@ -233,66 +253,16 @@ class LdapPasswordStore():
             # Handle the LDAP exception and build a nice user message.
             logger.warning('ldap error', exc_info=1)
             msg = _("An LDAP error occurred: %s")
-            ldap_msg = str(e)
+            ldap_msg = repr(e)
             if hasattr(e, 'message') and isinstance(e.message, dict):
                 if 'desc' in e.message:
                     ldap_msg = e.message['desc']
                 if 'info' in e.message:
                     ldap_msg = e.message['info']
-            raise RdiffError(msg % ldap_msg)
+            raise LdapException(msg % ldap_msg)
 
-    def exists(self, username):
-        """Check if the user exists in LDAP"""
 
-        def check_user_exists(l, r):  # @UnusedVariable
-            # Check the results
-            if not (r and r[0] and r[0][0]):
-                logger.debug("user [%s] not found", username)
-                return False
+cherrypy.ldap = LdapPlugin(cherrypy.engine)
+cherrypy.ldap.subscribe()
 
-            logger.debug("user [%s] found", username)
-            return True
-
-        # Execute the LDAP operation
-        return self._execute(username, check_user_exists)
-
-    def set_password(self, username, password, old_password=None):
-        """Update the password of the given user."""
-        assert isinstance(username, str)
-        assert old_password is None or isinstance(old_password, str)
-        assert isinstance(password, str)
-
-        # Do nothing if password is empty
-        if not password:
-            raise RdiffError(_("Password can't be empty."))
-        # Check if users are allowed to change their password in LDAP.
-        if not self.allow_password_change:
-            logger.warning("authentication backend for user [%s] does not support changing the password", username)
-            raise RdiffError(_("LDAP users are not allowed to change their password."))
-
-        # Check if old_password id valid
-        if old_password and not self.are_valid_credentials(username, old_password):
-            raise RdiffError(_("Wrong password."))
-
-        # Update the username password of the given user. If possible.
-        return self._set_password_in_ldap(username, old_password, password)
-
-    def _set_password_in_ldap(self, username, old_password, password):
-
-        def change_passwd(l, r):
-            if not (r and r[0] and r[0][0]):
-                raise RdiffError(_("User %s not found." % (username,)))
-
-            # Bind using the user credentials. Throws an exception in case of
-            # error.
-            if old_password is not None:
-                l.simple_bind_s(r[0][0], old_password)
-            l.passwd_s(r[0][0], old_password, password)
-            l.unbind_s()
-            logger.info("password for user [%s] is updated in LDAP", username)
-            # User updated, return False
-            return False
-
-        # Execute the LDAP operation
-        logger.debug("updating password for [%s] in LDAP", username)
-        return self._execute(username, change_passwd)
+cherrypy.config.namespaces['ldap'] = lambda key, value: setattr(cherrypy.ldap, key, value)
