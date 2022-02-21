@@ -48,7 +48,7 @@ from rdiffweb.controller.page_prefs import PreferencesPage
 from rdiffweb.controller.page_restore import RestorePage
 from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_status import StatusPage
-from rdiffweb.core import i18n  # noqa
+from rdiffweb.tools import i18n  # noqa
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
 from rdiffweb.core.notification import NotificationJob, NotificationPlugin

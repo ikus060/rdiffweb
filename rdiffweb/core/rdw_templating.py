@@ -27,10 +27,10 @@ import humanfriendly
 from jinja2 import Environment, PackageLoader
 from jinja2.filters import do_mark_safe
 from jinja2.loaders import ChoiceLoader
-from rdiffweb.core import i18n
+from rdiffweb.tools import i18n
 from rdiffweb.core import librdiff
 from rdiffweb.core import rdw_helpers
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.store import RepoObject
 
 

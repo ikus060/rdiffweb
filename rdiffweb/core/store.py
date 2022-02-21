@@ -25,7 +25,7 @@ import sys
 import pkg_resources
 from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.config import Option
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.ldap_auth import LdapPasswordStore
 from rdiffweb.core.librdiff import RdiffRepo, DoesNotExistError, \
     AccessDeniedError

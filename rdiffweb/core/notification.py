@@ -29,7 +29,7 @@ from xml.etree.ElementTree import fromstring, tostring
 
 from rdiffweb.core import librdiff
 from rdiffweb.core.config import Option
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.store import IUserChangeListener
 
 logger = logging.getLogger(__name__)

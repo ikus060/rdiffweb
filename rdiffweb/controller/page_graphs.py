@@ -21,7 +21,7 @@ import cherrypy
 import pkg_resources
 from rdiffweb.controller import Controller, validate_int, validate_isinstance
 from rdiffweb.controller.dispatch import poppath, static
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 
 

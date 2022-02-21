@@ -22,7 +22,7 @@ from collections import namedtuple
 import cherrypy
 import pkg_resources
 from rdiffweb.core.config import Option
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import RdiffTime
 
 # Define the logger

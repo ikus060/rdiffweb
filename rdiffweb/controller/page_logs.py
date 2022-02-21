@@ -21,7 +21,7 @@ import cherrypy
 from cherrypy.lib.static import serve_fileobj
 from rdiffweb.controller import Controller, validate_date, validate_int
 from rdiffweb.controller.dispatch import poppath
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 
 # Define the logger

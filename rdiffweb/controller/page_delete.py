@@ -28,7 +28,7 @@ from rdiffweb.controller import Controller
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.controller.filter_authorization import is_maintainer
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from wtforms import validators
 from wtforms.fields.core import StringField
