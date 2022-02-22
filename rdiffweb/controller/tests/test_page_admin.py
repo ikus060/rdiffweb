@@ -23,6 +23,7 @@ Created on Dec 30, 2015
 import os
 from unittest.mock import ANY, MagicMock
 
+import cherrypy
 import rdiffweb.test
 from rdiffweb.core.quota import QuotaUnsupported
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
@@ -30,6 +31,21 @@ from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 
 class AbstractAdminTest(rdiffweb.test.WebCase):
     """Class to regroup command method to test admin page."""
+
+    def setUp(self):
+        super().setUp()
+        self.listener = MagicMock()
+        cherrypy.engine.subscribe('user_added', self.listener.user_added, priority=50)
+        cherrypy.engine.subscribe('user_attr_changed', self.listener.user_attr_changed, priority=50)
+        cherrypy.engine.subscribe('user_deleted', self.listener.user_deleted, priority=50)
+        cherrypy.engine.subscribe('user_password_changed', self.listener.user_password_changed, priority=50)
+
+    def tearDown(self):
+        cherrypy.engine.unsubscribe('user_added', self.listener.user_added)
+        cherrypy.engine.unsubscribe('user_attr_changed', self.listener.user_attr_changed)
+        cherrypy.engine.unsubscribe('user_deleted', self.listener.user_deleted)
+        cherrypy.engine.unsubscribe('user_password_changed', self.listener.user_password_changed)
+        return super().tearDown()
 
     def _add_user(self, username=None, email=None, password=None, user_root=None, role=None):
         b = {}
@@ -74,29 +90,43 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
     login = True
 
-    def test_add_user_with_role(self):
-        #  Add user to be listed
+    def test_add_user_with_role_admin(self):
+        # When trying to create a new user with role admin
         self._add_user("admin_role", "admin_role@test.com", "test2", "/home/", ADMIN_ROLE)
+        # Then page return success
         self.assertStatus(200)
-        self.assertEqual(ADMIN_ROLE, self.app.store.get_user('admin_role').role)
+        # Then database is updated
+        userobj = self.app.store.get_user('admin_role')
+        self.assertEqual(ADMIN_ROLE, userobj.role)
+        # Then notification was raised
+        self.listener.user_added.assert_called_once_with(userobj)
 
+    def test_add_user_with_role_maintainer(self):
         self._add_user("maintainer_role", "maintainer_role@test.com", "test2", "/home/", MAINTAINER_ROLE)
         self.assertStatus(200)
         self.assertEqual(MAINTAINER_ROLE, self.app.store.get_user('maintainer_role').role)
 
+    def test_add_user_with_role_user(self):
         self._add_user("user_role", "user_role@test.com", "test2", "/home/", USER_ROLE)
         self.assertStatus(200)
         self.assertEqual(USER_ROLE, self.app.store.get_user('user_role').role)
 
     def test_add_user_with_invalid_role(self):
-        # Invalid roles
+        # When trying to create a new user with an invalid role (admin instead of 0)
         self._add_user("invalid", "invalid@test.com", "test2", "/home/", 'admin')
+        # Then an error message is displayed to the user
         self.assertStatus(200)
         self.assertInBody('role: Invalid Choice: could not coerce')
+        # Then listener are not called
+        self.listener.user_added.assert_not_called()
 
+        # When trying to create a new user with an invalid role (-1)
         self._add_user("invalid", "invalid@test.com", "test2", "/home/", -1)
+        # Then an error message is displayed to the user
         self.assertStatus(200)
         self.assertInBody('role: Not a valid choice')
+        # Then listener are not called
+        self.listener.user_added.assert_not_called()
 
     def test_add_edit_delete(self):
         #  Add user to be listed
@@ -104,8 +134,13 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.assertInBody("User added successfully.")
         self.assertInBody("test2")
         self.assertInBody("test2@test.com")
+        self.listener.user_added.assert_called_once()
+        self.listener.user_password_changed.assert_called_once()
+        self.listener.user_password_changed.reset_mock()
         #  Update user
         self._edit_user("test2", "chaned@test.com", "new-password", "/tmp/", ADMIN_ROLE)
+        self.listener.user_attr_changed.assert_called()
+        self.listener.user_password_changed.assert_called_once()
         self.assertInBody("User information modified successfully.")
         self.assertInBody("test2")
         self.assertInBody("chaned@test.com")
@@ -116,6 +151,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.assertInBody("test2")
 
         self._delete_user("test2")
+        self.listener.user_deleted.assert_called()
         self.assertStatus(200)
         self.assertInBody("User account removed.")
         self.assertNotInBody("test2")

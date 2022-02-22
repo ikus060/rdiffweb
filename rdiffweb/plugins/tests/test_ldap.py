@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2012-2021 rdiffweb contributors
+# LDAP Plugins for cherrypy
+# # Copyright (C) 2022 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@ Created on Oct 17, 2015
 import cherrypy
 from cherrypy.test import helper
 from mockldap import MockLdap
+
+from .. import ldap  # noqa
 
 
 def _ldap_user(name, password='password'):

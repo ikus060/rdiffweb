@@ -110,16 +110,9 @@ class SmtpPlugin(SimplePlugin):
         self.bus.unsubscribe("queue_mail", self.queue_mail)
 
     def queue_mail(self, to, subject, message, bcc=None, reply_to=None):
-        """
-        Queue mail to be sent.
-        """
         self.bus.publish('schedule_task', self.send_mail, to, subject, message, bcc, reply_to)
 
     def send_mail(self, to, subject, message, bcc=None, reply_to=None):
-        """
-        Reusable method to be called to send email to the user user.
-        `user` user object where to send the email.
-        """
         # Verify if the users as an email.
         assert to
         assert subject
@@ -129,7 +122,7 @@ class SmtpPlugin(SimplePlugin):
             self.bus.log('cannot send email because SMTP Server is not configured')
             return
         if not self.email_from:
-            self.bus.log('cannot send email because SMTP From is not configured')
+            self.bus.log('cannot send email because SMTP `From` is not configured')
             return
 
         # Compile both template.

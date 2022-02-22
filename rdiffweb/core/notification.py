@@ -35,35 +35,46 @@ class NotificationPlugin(SimplePlugin):
     Send email notification when a repository get too old (without a backup).
     """
 
-    def __init__(self, bus):
-        super().__init__(bus)
+    execution_time = '23:00'
+
+    send_changed = False
+
+    def start(self):
+        self.bus.log('Start Notification plugin')
+        self.bus.publish('schedule_job', self.execution_time, self.notification_job)
         self.bus.subscribe('user_attr_changed', self.user_attr_changed)
         self.bus.subscribe('user_password_changed', self.user_password_changed)
-        self.bus.subscribe('stop', self.stop)
 
     def stop(self):
+        self.bus.log('Stop Notification plugin')
+        self.bus.publish('unschedule_job', self.notification_job)
         self.bus.unsubscribe('user_attr_changed', self.user_attr_changed)
         self.bus.unsubscribe('user_password_changed', self.user_password_changed)
-        self.bus.unsubscribe('stop', self.stop)
 
     @property
     def app(self):
         return cherrypy.tree.apps['']
 
     def user_attr_changed(self, userobj, attrs={}):
+        if not self.send_changed:
+            return
+
         # Leave if the mail was not changed.
         if 'email' not in attrs:
             return
 
-        if not userobj.email:
+        old_email = attrs['email'][0]
+        if not old_email:
             logger.info("can't sent mail to user [%s] without an email", userobj.username)
             return
 
         # If the email attributes was changed, send a mail notification.
         body = self.app.templates.compile_template("email_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj})
-        self.bus.publish('queue_mail', to=userobj.email, subject=_("Email address changed"), message=body)
+        self.bus.publish('queue_mail', to=old_email, subject=_("Email address changed"), message=body)
 
     def user_password_changed(self, userobj):
+        if not self.send_changed:
+            return
 
         if not userobj.email:
             logger.info(
@@ -74,36 +85,41 @@ class NotificationPlugin(SimplePlugin):
         body = self.app.templates.compile_template("password_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj})
         self.bus.publish('queue_mail', to=userobj.email, subject=_("Password changed"), message=body)
 
+    def notification_job(self):
+        """
+        Loop trough all the user repository and send notifications.
+        """
 
-def notification_job(app):
-    """
-    Loop trough all the user repository and send notifications.
-    """
+        now = librdiff.RdiffTime()
 
-    now = librdiff.RdiffTime()
-
-    def _user_repos():
-        """Return a generator trought user repos to be notified."""
-        for user in app.store.users():
-            # Check if user has email.
-            if not user.email:
-                continue
-            # Identify old repo for current user.
-            old_repos = []
-            for repo in user.repo_objs:
-                # Check if repo has age configured (in days)
-                maxage = repo.maxage
-                if not maxage or maxage <= 0:
+        def _user_repos():
+            """Return a generator trought user repos to be notified."""
+            for user in self.app.store.users():
+                # Check if user has email.
+                if not user.email:
                     continue
-                # Check repo age.
-                if repo.last_backup_date is None or repo.last_backup_date < (now - datetime.timedelta(days=maxage)):
-                    old_repos.append(repo)
-            # Return an item only if user had old repo
-            if old_repos:
-                yield user, old_repos
+                # Identify old repo for current user.
+                old_repos = []
+                for repo in user.repo_objs:
+                    # Check if repo has age configured (in days)
+                    maxage = repo.maxage
+                    if not maxage or maxage <= 0:
+                        continue
+                    # Check repo age.
+                    if repo.last_backup_date is None or repo.last_backup_date < (now - datetime.timedelta(days=maxage)):
+                        old_repos.append(repo)
+                # Return an item only if user had old repo
+                if old_repos:
+                    yield user, old_repos
 
-    # For each candidate, send mail.
-    for user, repos in _user_repos():
-        parms = {'user': user, 'repos': repos}
-        body = app.templates.compile_template("email_changed.html", **parms)
-        cherrypy.engine.publish('queue_mail', to=user.email, subject=_("Notification"), message=body)
+        # For each candidate, send mail.
+        for user, repos in _user_repos():
+            parms = {'user': user, 'repos': repos}
+            body = self.app.templates.compile_template("email_notification.html", **parms)
+            cherrypy.engine.publish('queue_mail', to=user.email, subject=_("Notification"), message=body)
+
+
+cherrypy.notification = NotificationPlugin(cherrypy.engine)
+cherrypy.notification.subscribe()
+
+cherrypy.config.namespaces['notification'] = lambda key, value: setattr(cherrypy.notification, key, value)

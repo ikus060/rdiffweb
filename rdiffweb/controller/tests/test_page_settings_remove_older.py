@@ -20,11 +20,8 @@ Created on May 2, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from unittest.mock import MagicMock
-from rdiffweb.core.librdiff import RdiffTime
 
 import rdiffweb.test
-from rdiffweb.core.removeolder import remove_older_job
 from rdiffweb.core.store import USER_ROLE
 
 
@@ -62,22 +59,6 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         keepdays = repo.keepdays
         self.assertEqual(1, keepdays)
 
-    def test_remove_older(self):
-        """
-        Run remove older on testcases repository.
-        """
-        self._remove_older('admin', 'testcases', '1')
-        self.assertStatus(200)
-        # Get current user
-        user = self.app.store.get_user(self.USERNAME)
-        repo = user.get_repo(self.REPO)
-        repo.keepdays = 30
-        # Run the job.
-        remove_older_job(self.app)
-        # Check number of history.
-        repo = user.get_repo(self.REPO)
-        self.assertEqual(2, len(repo.mirror_metadata))
-
     def test_as_another_user(self):
         # Create a nother user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
@@ -94,32 +75,3 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         # Browse admin's repos
         self._remove_older('anotheruser', 'testcases', '2')
         self.assertStatus('403 Forbidden')
-
-
-class RemoveOlderTestWithMock(rdiffweb.test.WebCase):
-
-    def test_remove_older_job_without_keepdays(self):
-        # Given a store with repos
-        repo = MagicMock()
-        repo.keepdays = 0
-        repo.last_backup_date = RdiffTime('2014-11-02T17:23:41-05:00')
-        self.app.store.repos = MagicMock()
-        self.app.store.repos.return_value = [repo]
-        # When the job is running.
-        remove_older_job(self.app)
-        # Then remove_older function get called on the repo.
-        self.app.store.repos.assert_called()
-        repo.remove_older.assert_not_called()
-
-    def test_remove_older_job_with_keepdays(self):
-        # Given a store with repos
-        repo = MagicMock()
-        repo.keepdays = 30
-        repo.last_backup_date = RdiffTime('2014-11-02T17:23:41-05:00')
-        self.app.store.repos = MagicMock()
-        self.app.store.repos.return_value = [repo]
-        # When the job is running.
-        remove_older_job(self.app)
-        # Then remove_older function get called on the repo.
-        self.app.store.repos.assert_called()
-        repo.remove_older.assert_called()

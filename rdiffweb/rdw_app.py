@@ -27,8 +27,9 @@ from cherrypy import Application
 
 import rdiffweb
 import rdiffweb.controller.filter_authorization
-import rdiffweb.plugins.scheduler
 import rdiffweb.plugins.ldap
+import rdiffweb.plugins.scheduler
+import rdiffweb.plugins.smtp
 import rdiffweb.tools.auth_basic
 import rdiffweb.tools.auth_form
 import rdiffweb.tools.currentuser
@@ -36,6 +37,8 @@ import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
 import rdiffweb.tools.ratelimit
 import rdiffweb.tools.security
+import rdiffweb.core.remove_older
+import rdiffweb.core.notification
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
 from rdiffweb.controller.dispatch import static  # noqa
@@ -53,9 +56,7 @@ from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
-from rdiffweb.core.notification import NotificationPlugin, notification_job
 from rdiffweb.core.quota import DefaultUserQuota
-from rdiffweb.core.removeolder import remove_older_job
 from rdiffweb.core.store import Store
 
 # Define the logger
@@ -118,7 +119,7 @@ class RdiffwebApp(Application):
 
         self.cfg = cfg
         cherrypy.config.update({
-            # Configure LDAP plugins.
+            # Configure LDAP plugin
             'ldap.uri': cfg.ldap_uri,
             'ldap.base_dn': cfg.ldap_base_dn,
             'ldap.bind_dn': cfg.ldap_bind_dn,
@@ -134,12 +135,17 @@ class RdiffwebApp(Application):
             'ldap.timeout': cfg.ldap_timeout,
             'ldap.encoding': cfg.ldap_encoding,
             'ldap.check_shadow_expire': cfg.ldap_check_shadow_expire,
-            # Configure SMTP plugins
+            # Configure SMTP plugin
             'smtp.server': cfg.email_host,
             'smtp.username': cfg.email_username,
             'smtp.password': cfg.email_password,
             'smtp.email_from': cfg.email_sender and '%s <%s>' % (cfg.header_name, cfg.email_sender,),
             'smtp.encryption': cfg.email_encryption,
+            # Configure remove_older plugin
+            'remove_older.execution_time': self.cfg.remove_older_time,
+            # Configure notification plugin
+            'notification.execution_time': self.cfg.email_notification_time,
+            'notification.send_changed': self.cfg.email_send_changed_notification,
         })
 
         # Initialise the template engine.
@@ -155,7 +161,7 @@ class RdiffwebApp(Application):
         config = {
             '/': {
                 'tools.auth_basic.realm': 'rdiffweb',
-                'tools.auth_basic.checkpassword': lambda realm, username, password: any(cherrypy.engine.publish('authenticate', username, password)),
+                'tools.auth_basic.checkpassword': self._checkpassword,
                 'tools.auth_form.on': True,
                 'tools.currentuser.on': True,
                 'tools.currentuser.userobj': lambda username: self.store.get_user(username),
@@ -208,14 +214,6 @@ class RdiffwebApp(Application):
         self.store = Store(self)
         self.store.create_admin_user()
 
-        # Create NotificationPlugin
-        if cfg.email_send_changed_notification:
-            self.notification = NotificationPlugin(cherrypy.engine)
-
-        # Start scheduler and register scheduled jobs.
-        cherrypy.engine.publish('schedule_job', self.cfg.remove_older_time, remove_older_job, self)
-        cherrypy.engine.publish('schedule_job', self.cfg.email_notification_time, notification_job, self)
-
     @property
     def currentuser(self):
         """
@@ -223,6 +221,12 @@ class RdiffwebApp(Application):
         Return a UserObject when logged in or None.
         """
         return getattr(cherrypy.serving.request, 'currentuser', None)
+
+    def _checkpassword(self, realm, username, password):
+        """
+        Check basic authentication.
+        """
+        return self.store.login(username, password) is not None
 
     def error_page(self, **kwargs):
         """

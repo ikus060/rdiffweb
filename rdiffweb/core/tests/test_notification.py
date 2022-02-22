@@ -24,8 +24,8 @@ Created on Feb 13, 2016
 from unittest.mock import MagicMock
 
 import cherrypy
+import rdiffweb.core.notification
 import rdiffweb.test
-from rdiffweb.core.notification import notification_job
 
 
 class NotificationJobTest(rdiffweb.test.WebCase):
@@ -50,13 +50,13 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         user.get_repo(self.REPO).maxage = 1
 
         # When running notification_job
-        notification_job(self.app)
+        cherrypy.notification.notification_job()
 
         # Then an email is queue for this user
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
             subject='Notification',
-            message='<html>\n<head></head>\n<body>\n\nHey admin,\n\n<p>You recently changed the email address associated with your  account.</p>\n\n<p>If you did not make this change and believe your account has been compromised, please contact your administrator.</p>\n\n</body>\n</html>')
+            message="<html>\n<head></head>\n<body>\n\nHey admin,\n\n<p>You are receiving this email to notify you about your backups. The\nfollowing repositories are inactive for some time. We invite you to have a look\nat your last backup schedule.</p>\n\n<ul>\n\n<li>testcases</li>\n\n</ul>\n\n<p>If you don't want to be notify about this. You need to review your\nuser preferences.</p>\n\n</body>\n</html>")
 
     def test_notification_job_undefined_last_backup_date(self):
         # Given a valid user with a repository configured for notification
@@ -67,13 +67,13 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         self.assertIsNone(user.get_repo('broker-repo').last_backup_date)
 
         # When Notification job is running
-        notification_job(self.app)
+        cherrypy.notification.notification_job()
 
         # Then a notification is sent to the user.
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
             subject='Notification',
-            message='<html>\n<head></head>\n<body>\n\nHey admin,\n\n<p>You recently changed the email address associated with your  account.</p>\n\n<p>If you did not make this change and believe your account has been compromised, please contact your administrator.</p>\n\n</body>\n</html>')
+            message="<html>\n<head></head>\n<body>\n\nHey admin,\n\n<p>You are receiving this email to notify you about your backups. The\nfollowing repositories are inactive for some time. We invite you to have a look\nat your last backup schedule.</p>\n\n<ul>\n\n<li>broker-repo</li>\n\n</ul>\n\n<p>If you don't want to be notify about this. You need to review your\nuser preferences.</p>\n\n</body>\n</html>")
 
     def test_notification_job_without_notification(self):
         # Given a valid user with a repository configured without notification (-1)
@@ -82,7 +82,7 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         user.get_repo(self.REPO).maxage = -1
 
         # Call notification.
-        notification_job(self.app)
+        cherrypy.notification.notification_job()
 
         # Expect it to be called.
         self.listener.queue_email.assert_not_called()
@@ -104,15 +104,17 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         return super().tearDown()
 
     def test_email_changed(self):
-        # Given a user
+        # Given a user with an email address
         user = self.app.store.get_user(self.USERNAME)
+        user.email = 'original_email@test.com'
+        self.listener.queue_email.reset_mock()
 
         # When updating the user's email
         user.email = 'email_changed@test.com'
 
         # Then a email is queue to notify the user.
         self.listener.queue_email.assert_called_once_with(
-            to='email_changed@test.com',
+            to='original_email@test.com',
             subject='Email address changed',
             message='<html>\n<head></head>\n<body>\n\nHey admin,\n\n<p>You recently changed the email address associated with your rdiffweb account.</p>\n\n<p>If you did not make this change and believe your account has been compromised, please contact your administrator.</p>\n\n</body>\n</html>')
 

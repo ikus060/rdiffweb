@@ -170,7 +170,7 @@ class UserObject(object):
             except IntegrityError:
                 raise DuplicateSSHKeyError(
                     _("Duplicate key. This key already exists or is associated to another user."))
-        cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
+        self._store.bus.publish('user_attr_changed', self, {'authorizedkeys': True})
 
     def valid_user_root(self):
         """
@@ -201,7 +201,7 @@ class UserObject(object):
             deleted = conn.execute(_USERS.delete(
                 _USERS.c.userid == self._userid))
             assert deleted.rowcount, 'fail to delete user'
-        cherrypy.engine.publish('user_deleted', self.username)
+        self._store.bus.publish('user_deleted', self.username)
         return True
 
     def delete_authorizedkey(self, fingerprint):
@@ -223,7 +223,7 @@ class UserObject(object):
             with self._store.engine.connect() as conn:
                 conn.execute(_SSHKEYS.delete(
                     and_(_SSHKEYS.c.userid == self._userid, _SSHKEYS.c.fingerprint == fingerprint)))
-        cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
+        self._store.bus.publish('user_attr_changed', self, {'authorizedkeys': True})
 
     def __eq__(self, other):
         return isinstance(other, UserObject) and self._userid == other._userid
@@ -329,21 +329,22 @@ class UserObject(object):
         except ValueError:
             return False
 
-    def _set_attr(self, key, value, notify=True):
+    def _set_attr(self, key, new_value, notify=True):
         """Used to define an attribute"""
         assert key in self._ATTRS, "invalid attribute: " + key
         # Skip database update if the value is the same
-        if self._record[key] == value:
+        if self._record[key] == new_value:
             return
         # Update database and object internal state.
         with self._store.engine.connect() as conn:
             updated = conn.execute(_USERS.update().where(
-                _USERS.c.userid == self._userid).values(**{key: value}))
+                _USERS.c.userid == self._userid).values(**{key: new_value}))
             assert updated.rowcount
-        self._record[key] = value
+        old_value = self._record[key]
+        self._record[key] = new_value
         # Call notification listener
         if notify:
-            cherrypy.engine.publish('user_attr_changed', self, {key: value})
+            self._store.bus.publish('user_attr_changed', self, {key: (old_value, new_value)})
 
     def set_password(self, password, old_password=None):
         """
@@ -362,8 +363,10 @@ class UserObject(object):
 
         if old_password and not check_password(old_password, self.hash_password):
             raise ValueError(_("Wrong password"))
+
+        logger.info("updating user password [%s]", self.username)
         self.hash_password = hash_password(password)
-        cherrypy.engine.publish('user_password_changed', self)
+        self._store.bus.publish('user_password_changed', self)
 
     def _set_user_root(self, value):
         """
@@ -524,11 +527,11 @@ class Store(SimplePlugin):
         # Create tables if missing.
         _META.create_all(self.engine)
         self._update()
-        cherrypy.engine.subscribe("authenticate", self.authenticate)
-        cherrypy.engine.subscribe("stop", self.stop)
+        self.bus.subscribe("authenticate", self.authenticate)
+        self.bus.subscribe("stop", self.stop)
 
     def stop(self):
-        cherrypy.engine.unsubscribe("authenticate", self.authenticate)
+        self.bus.unsubscribe("authenticate", self.authenticate)
         self.engine.dispose()
 
     def create_admin_user(self):
@@ -561,7 +564,7 @@ class Store(SimplePlugin):
             record = conn.execute(_USERS.select(
                 _USERS.c.username == user)).fetchone()
         userobj = UserObject(self, record)
-        cherrypy.engine.publish('user_added', userobj)
+        self.bus.publish('user_added', userobj)
         # Return user object
         return userobj
 
@@ -719,13 +722,8 @@ class Store(SimplePlugin):
         """
         Called to authenticate the given user.
 
-        Check if the credentials are valid. Then may actually add the user
-        in database if allowed.
-
-        If valid, return the username. Return False if the user exists but the
-        password doesn't matches. Return None if the user was not found in any
-        password store.
-        The return user object. The username may not be equals to the given username.
+        Return False if credentials cannot be validated. Otherwise return a
+        tuple with username and user attributes.
         """
         assert isinstance(user, str)
         assert password is None or isinstance(user, str)

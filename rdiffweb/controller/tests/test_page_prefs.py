@@ -20,6 +20,9 @@ Created on Dec 26, 2015
 @author: Patrik Dufresne
 """
 
+from unittest.mock import MagicMock
+
+import cherrypy
 import rdiffweb.test
 
 
@@ -28,6 +31,15 @@ class PrefsTest(rdiffweb.test.WebCase):
     PREFS = "/prefs/"
 
     login = True
+
+    def setUp(self):
+        self.listener = MagicMock()
+        cherrypy.engine.subscribe('user_password_changed', self.listener.user_password_changed, priority=50)
+        return super().setUp()
+
+    def tearDown(self):
+        cherrypy.engine.unsubscribe('user_password_changed', self.listener.user_password_changed)
+        return super().tearDown()
 
     def _set_password(self, current, new_password, confirm, ):
         b = {
@@ -66,8 +78,11 @@ class PrefsTest(rdiffweb.test.WebCase):
         self.assertInBody("Invalid email")
 
     def test_change_password(self):
+        # When udating user's password
         self._set_password(self.PASSWORD, "newpass", "newpass")
         self.assertInBody("Password updated successfully.")
+        # Then a notification is raised
+        self.listener.user_password_changed.assert_called_once()
         # Change it back
         self._set_password("newpass", self.PASSWORD, self.PASSWORD)
         self.assertInBody("Password updated successfully.")

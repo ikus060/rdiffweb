@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2012-2021 rdiffweb contributors
+# LDAP Plugins for cherrypy
+# # Copyright (C) 2022 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,10 +53,8 @@ class LdapUserMissingRequiredGroup(LdapException):
 
 
 class LdapPlugin(SimplePlugin):
-
     """
     Wrapper for LDAP authentication.
-    This implementation assume the LDAP is using the system encoding.
     """
 
     uri = None
@@ -113,7 +111,7 @@ class LdapPlugin(SimplePlugin):
                     # Convert nb. days into seconds.
                     if shadow_expire and shadow_expire * 24 * 60 * 60 < time.time():
                         logger.warning("user account %s expired: %s", username, shadow_expire)
-                        raise LdapUserExpired('eser account %s expired.' % username)
+                        raise LdapUserExpired('User account %s expired.' % username)
 
                 # Get username
                 dn = r[0][0]
@@ -124,7 +122,7 @@ class LdapPlugin(SimplePlugin):
                     value = dn if self.group_attribute_is_dn else new_username
                     logger.info("check if user [%s] is member of [%s]", value, self.required_group)
                     if not l.compare_s(self.required_group, self.group_attribute, value):
-                        raise LdapUserMissingRequiredGroup('permissions denied for user account %s.' % username)
+                        raise LdapUserMissingRequiredGroup('Permissions denied for user account %s.' % username)
             finally:
                 l.unbind_s()
             # Return the username

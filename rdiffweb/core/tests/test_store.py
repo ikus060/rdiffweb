@@ -232,17 +232,16 @@ class StoreTest(AbstractStoreTest):
 
         user.user_root = self.app.testcases
         self.mlistener.user_attr_changed.assert_called_with(
-            user, {'user_root': self.app.testcases})
+            user, {'user_root': ('', self.app.testcases)})
         self.mlistener.user_attr_changed.reset_mock()
         user.role = ADMIN_ROLE
         self.mlistener.user_attr_changed.assert_called_with(
-            user, {'role': ADMIN_ROLE})
+            user, {'role': (USER_ROLE, ADMIN_ROLE)})
         self.mlistener.user_attr_changed.reset_mock()
         user.email = 'larry@gmail.com'
         self.mlistener.user_attr_changed.assert_called_with(
-            user, {'email': 'larry@gmail.com'})
+            user, {'email': ('', 'larry@gmail.com')})
         self.mlistener.user_attr_changed.reset_mock()
-        self.mlistener.user_attr_changed.assert_not_called()
 
         self.assertEqual('larry@gmail.com', user.email)
         self.assertEqual(['broker-repo', 'testcases'],

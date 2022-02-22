@@ -20,17 +20,18 @@ Created on Mar. 23, 2021
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 '''
+from datetime import datetime
+
 import cherrypy
+from apscheduler.executors.pool import ThreadPoolExecutor
+from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 from cherrypy.process.plugins import SimplePlugin
-from apscheduler.jobstores.memory import MemoryJobStore
-from apscheduler.executors.pool import ThreadPoolExecutor
-from datetime import datetime
 
 
 class Scheduler(SimplePlugin):
     """
-    Extends Cherrypy Monitor plugin to run jobs in background.
+    Plugins to run Job at fixed time (cronjob) and to schedule task to be run on by one.
     """
 
     def __init__(self, bus):
@@ -50,15 +51,17 @@ class Scheduler(SimplePlugin):
             })
 
     def start(self):
-        self.bus.log('Start Scheduler')
+        self.bus.log('Start Scheduler plugins')
         self._scheduler.resume()
         self.bus.subscribe('schedule_job', self.schedule_job)
         self.bus.subscribe('schedule_task', self.schedule_task)
+        self.bus.subscribe('unschedule_job', self.unschedule_job)
 
     def stop(self):
-        self.bus.log('Stop Scheduler')
+        self.bus.log('Stop Scheduler plugins')
         self._scheduler.pause()
         self.bus.unsubscribe('schedule_job', self.schedule_job)
+        self.bus.unsubscribe('unschedule_job', self.unschedule_job)
         self.bus.unsubscribe('schedule_task', self.schedule_task)
 
     def exit(self):
@@ -66,6 +69,18 @@ class Scheduler(SimplePlugin):
         self._scheduler.shutdown(wait=True)
         self._scheduler = self._create_scheduler()
         self._scheduler.start(paused=True)
+
+    def list_jobs(self):
+        """
+        Return list of scheduled jobs.
+        """
+        return self._scheduler.get_jobs(jobstore='scheduled')
+
+    def list_tasks(self):
+        """
+        Return list of tasks.
+        """
+        return self._scheduler.get_jobs(jobstore='default')
 
     def schedule_job(self, execution_time, job, *args, **kwargs):
         """
@@ -82,17 +97,14 @@ class Scheduler(SimplePlugin):
         assert hasattr(task, '__call__'), 'task must be callable'
         self._scheduler.add_job(func=task, args=args, kwargs=kwargs, next_run_time=datetime.now())
 
-    def list_jobs(self):
+    def unschedule_job(self, job):
         """
-        Return list of scheduled jobs.
+        Remove the given job from scheduler.
         """
-        return self._scheduler.get_jobs(jobstore='scheduled')
-
-    def list_tasks(self):
-        """
-        Return list of tasks.
-        """
-        return self._scheduler.get_jobs(jobstore='default')
+        # Search for a matching job
+        job_id = next((j.id for j in self._scheduler.get_jobs(jobstore='scheduled') if j.func == job), None)
+        if job_id:
+            self._scheduler.remove_job(job_id=job_id, jobstore='scheduled')
 
 
 # Register Scheduler plugin

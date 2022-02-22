@@ -39,13 +39,16 @@ class SchedulerPluginTest(helper.CPWebCase):
         pass
 
     def test_schedule_job(self):
+        # Given a scheduler with a specific number of jobs
+        count = len(cherrypy.scheduler.list_jobs())
+
         # Given a job schedule every seconds
         def a_job(*args, **kwargs):
             self.called = True
 
         scheduled = cherrypy.engine.publish('schedule_job', '23:00', a_job, 1, 2, 3, foo=1, bar=2)
         self.assertTrue(scheduled)
-        self.assertEqual(1, len(cherrypy.scheduler.list_jobs()))
+        self.assertEqual(count + 1, len(cherrypy.scheduler.list_jobs()))
 
     def test_scheduler_task(self):
         # Given a task
@@ -61,3 +64,24 @@ class SchedulerPluginTest(helper.CPWebCase):
             sleep(1)
         # Then the task get called
         self.assertTrue(self.called)
+
+    def test_unschedule_job(self):
+        # Given a scheduler with a specific number of jobs
+        count = len(cherrypy.scheduler.list_jobs())
+
+        # Given a job schedule every seconds
+        def a_job(*args, **kwargs):
+            self.called = True
+
+        cherrypy.engine.publish('schedule_job', '23:00', a_job, 1, 2, 3, foo=1, bar=2)
+        self.assertEqual(count + 1, len(cherrypy.scheduler.list_jobs()))
+        cherrypy.engine.publish('unschedule_job', a_job)
+        self.assertEqual(count, len(cherrypy.scheduler.list_jobs()))
+
+    def test_unschedule_job_with_invalid_job(self):
+        # Given an unschedule job
+        def a_job(*args, **kwargs):
+            self.called = True
+        # When unscheduling an invalid job
+        cherrypy.engine.publish('unschedule_job', a_job)
+        # Then no error are raised
