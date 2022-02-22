@@ -53,9 +53,9 @@ from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
-from rdiffweb.core.notification import NotificationJob, NotificationPlugin
+from rdiffweb.core.notification import NotificationPlugin, notification_job
 from rdiffweb.core.quota import DefaultUserQuota
-from rdiffweb.core.removeolder import RemoveOlderJob
+from rdiffweb.core.removeolder import remove_older_job
 from rdiffweb.core.store import Store
 
 # Define the logger
@@ -117,8 +117,8 @@ class RdiffwebApp(Application):
     def __init__(self, cfg):
 
         self.cfg = cfg
-        # Configure LDAP plugins.
         cherrypy.config.update({
+            # Configure LDAP plugins.
             'ldap.uri': cfg.ldap_uri,
             'ldap.base_dn': cfg.ldap_base_dn,
             'ldap.bind_dn': cfg.ldap_bind_dn,
@@ -134,6 +134,12 @@ class RdiffwebApp(Application):
             'ldap.timeout': cfg.ldap_timeout,
             'ldap.encoding': cfg.ldap_encoding,
             'ldap.check_shadow_expire': cfg.ldap_check_shadow_expire,
+            # Configure SMTP plugins
+            'smtp.server': cfg.email_host,
+            'smtp.username': cfg.email_username,
+            'smtp.password': cfg.email_password,
+            'smtp.email_from': cfg.email_sender and '%s <%s>' % (cfg.header_name, cfg.email_sender,),
+            'smtp.encryption': cfg.email_encryption,
         })
 
         # Initialise the template engine.
@@ -203,11 +209,12 @@ class RdiffwebApp(Application):
         self.store.create_admin_user()
 
         # Create NotificationPlugin
-        self.notification = NotificationPlugin(self)
+        if cfg.email_send_changed_notification:
+            self.notification = NotificationPlugin(cherrypy.engine)
 
         # Start scheduler and register scheduled jobs.
-        cherrypy.engine.publish('schedule_job', self.cfg.remove_older_time, RemoveOlderJob(self))
-        cherrypy.engine.publish('schedule_job', self.cfg.email_notification_time, NotificationJob(self))
+        cherrypy.engine.publish('schedule_job', self.cfg.remove_older_time, remove_older_job, self)
+        cherrypy.engine.publish('schedule_job', self.cfg.email_notification_time, notification_job, self)
 
     @property
     def currentuser(self):

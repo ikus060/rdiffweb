@@ -360,7 +360,7 @@ class StoreTest(AbstractStoreTest):
         # Check new credentials
         self.assertIsNotNone(self.app.store.login('annik', 'new_password'))
         # Check if listener called
-        self.mlistener.user_password_changed.assert_called_once_with('annik')
+        self.mlistener.user_password_changed.assert_called_once_with(userobj)
 
     def test_set_password_with_old_password(self):
         userobj = self.app.store.add_user('john', 'password')
@@ -368,7 +368,7 @@ class StoreTest(AbstractStoreTest):
         # Check new credentials
         self.assertIsNotNone(self.app.store.login('john', 'new_password'))
         # Check if listener called
-        self.mlistener.user_password_changed.assert_called_once_with('john')
+        self.mlistener.user_password_changed.assert_called_once_with(userobj)
 
     def test_set_password_with_invalid_old_password(self):
         userobj = self.app.store.add_user('foo', 'password')

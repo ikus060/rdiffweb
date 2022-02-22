@@ -21,259 +21,140 @@ Created on Feb 13, 2016
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
-from time import sleep
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import MagicMock
 
 import cherrypy
 import rdiffweb.test
-from rdiffweb.core.notification import (EmailClient, NotificationJob,
-                                        html2plaintext)
+from rdiffweb.core.notification import notification_job
 
 
-class NotificationJobTest(rdiffweb.test.AppTestCase):
+class NotificationJobTest(rdiffweb.test.WebCase):
 
-    default_config = {
-        'email-host': 'example.com',
-        'email-sender': 'test@example.com',
-    }
+    def setUp(self):
+        self.listener = MagicMock()
+        cherrypy.engine.subscribe('queue_mail', self.listener.queue_email, priority=50)
+        return super().setUp()
 
-    def test_run_with_notification(self):
+    def tearDown(self):
+        cherrypy.engine.unsubscribe('queue_mail', self.listener.queue_email)
+        return super().tearDown()
+
+    def test_notification_job(self):
         """
         Run the notification and check if mails are sent
         """
+        # Given a user with an email address and a repository with a maxage
         # Set user config
         user = self.app.store.get_user(self.USERNAME)
         user.email = 'test@test.com'
         user.get_repo(self.REPO).maxage = 1
 
-        # Get ref to notification plugin
-        n = NotificationJob(app=self.app)
-        self.assertIsNotNone(n)
-        n.send_mail = MagicMock()
+        # When running notification_job
+        notification_job(self.app)
 
-        # Call notification.
-        n()
+        # Then an email is queue for this user
+        self.listener.queue_email.assert_called_once_with(
+            to='test@test.com',
+            subject='Notification',
+            message='<html>\n<head></head>\n<body>\n\nHey admin,\n\n<p>You recently changed the email address associated with your  account.</p>\n\n<p>If you did not make this change and believe your account has been compromised, please contact your administrator.</p>\n\n</body>\n</html>')
 
-        # Expect it to be called.
-        n.send_mail.assert_called_once_with(
-            user, 'Notification', 'email_notification.html', repos=[ANY], user=user)
-
-    def test_run_with_undefined_last_backup_date(self):
+    def test_notification_job_undefined_last_backup_date(self):
         # Given a valid user with a repository configured for notification
         user = self.app.store.get_user(self.USERNAME)
         user.email = 'test@test.com'
         user.get_repo('broker-repo').maxage = 1
+        # Given a repo with last_backup_date None
         self.assertIsNone(user.get_repo('broker-repo').last_backup_date)
 
         # When Notification job is running
-        n = NotificationJob(app=self.app)
-        self.assertIsNotNone(n)
-        n.send_mail = MagicMock()
-        n()
+        notification_job(self.app)
 
         # Then a notification is sent to the user.
-        n.send_mail.assert_called_once_with(
-            user, 'Notification', 'email_notification.html', repos=[ANY], user=user)
+        self.listener.queue_email.assert_called_once_with(
+            to='test@test.com',
+            subject='Notification',
+            message='<html>\n<head></head>\n<body>\n\nHey admin,\n\n<p>You recently changed the email address associated with your  account.</p>\n\n<p>If you did not make this change and believe your account has been compromised, please contact your administrator.</p>\n\n</body>\n</html>')
 
-    def test_run_without_notification(self):
-        """
-        Run the notification and check if mails are sent
-        """
-        # Set user config
+    def test_notification_job_without_notification(self):
+        # Given a valid user with a repository configured without notification (-1)
         user = self.app.store.get_user(self.USERNAME)
         user.email = 'test@test.com'
         user.get_repo(self.REPO).maxage = -1
 
-        # Get ref to notification plugin
-        n = NotificationJob(self.app)
-        self.assertIsNotNone(n)
-        n.send_mail = MagicMock()
-
         # Call notification.
-        n()
+        notification_job(self.app)
 
         # Expect it to be called.
-        n.send_mail.assert_not_called()
-
-    def test_run_without_email_host(self):
-        self.app.cfg.email_host = None
-
-        # Set user config
-        user = self.app.store.get_user(self.USERNAME)
-        user.email = 'test@test.com'
-        user.get_repo(self.REPO).maxage = 1
-
-        # Get ref to notification plugin
-        n = NotificationJob(app=self.app)
-        self.assertIsNotNone(n)
-        n.send_mail = MagicMock()
-
-        # Call notification.
-        n()
-
-        # Expect no call
-        n.send_mail.assert_not_called()
-
-
-class EmailClientTest(rdiffweb.test.WebCase):
-
-    default_config = {
-        'EmailHost': 'smtp.gmail.com:587',
-        'EmailUsername': 'test@test.com',
-        'EmailPassword': 'test1234',
-        'EmailEncryption': 'starttls'
-    }
-
-    def test_send_mail(self):
-        """
-        Check email template generation.
-        """
-        with patch('rdiffweb.core.notification.smtplib'):
-            # Set user config
-            user = self.app.store.get_user(self.USERNAME)
-            user.email = 'test@test.com'
-
-            # Get ref to notification plugin
-            n = EmailClient(self.app)
-            self.assertIsNotNone(n)
-            n.send_mail(user, 'subject', 'email_notification.html')
-
-    def test_send_email_host_without_port(self):
-        """
-        Check email template generation.
-        """
-        self.app.cfg.email_host = 'example.com'
-        with patch('rdiffweb.core.notification.smtplib'):
-            # Set user config
-            user = self.app.store.get_user(self.USERNAME)
-            user.email = 'test@test.com'
-
-            # Get ref to notification plugin
-            n = EmailClient(self.app)
-            self.assertIsNotNone(n)
-            n.send_mail(user, 'subject', 'email_notification.html')
-
-    def test_async_send_mail(self):
-        """
-        Check email template generation.
-        """
-        self.assertEqual(0, len(cherrypy.scheduler.list_tasks()))
-        cherrypy.scheduler.stop()
-
-        # Set user config
-        user = self.app.store.get_user(self.USERNAME)
-        user.email = 'test@test.com'
-
-        # Get ref to notification plugin
-        n = EmailClient(self.app)
-        n.send_mail = MagicMock()
-        self.assertIsNotNone(n)
-        n.async_send_mail(user, 'subject', 'email_notification.html')
-
-        # Check task scheduled
-        self.assertEqual(1, len(cherrypy.scheduler.list_tasks()))
-        cherrypy.scheduler.start()
-
-    def test_html2plaintext(self):
-        """
-        Check if this convertion is working fine.
-        """
-
-        html = """<html>
-  <head></head>
-  <body>
-    <p>Hi!<br>
-       How are you?<br>
-       Here is the <a href="https://www.python.org">link</a> you wanted.
-    </p>
-  </body>
-</html>
-"""
-
-        expected = """Hi!
-How are you?
-Here is the link you wanted."""
-        self.assertEqual(expected, html2plaintext(html))
+        self.listener.queue_email.assert_not_called()
 
 
 class NotificationPluginTest(rdiffweb.test.WebCase):
 
     default_config = {
-        'emailsendchangednotification': True,
-        'email-host': 'example.com',
-        'email-sender': 'test@example.com',
+        'email-send-changed-notification': True,
     }
+
+    def setUp(self):
+        self.listener = MagicMock()
+        cherrypy.engine.subscribe('queue_mail', self.listener.queue_email, priority=50)
+        return super().setUp()
+
+    def tearDown(self):
+        cherrypy.engine.unsubscribe('queue_mail', self.listener.queue_email)
+        return super().tearDown()
 
     def test_email_changed(self):
-        # Get ref to notification plugin
-        n = self.app.notification
-        self.assertIsNotNone(n)
-        n.async_send_mail = MagicMock()
+        # Given a user
+        user = self.app.store.get_user(self.USERNAME)
 
-        # Set user config
+        # When updating the user's email
+        user.email = 'email_changed@test.com'
+
+        # Then a email is queue to notify the user.
+        self.listener.queue_email.assert_called_once_with(
+            to='email_changed@test.com',
+            subject='Email address changed',
+            message='<html>\n<head></head>\n<body>\n\nHey admin,\n\n<p>You recently changed the email address associated with your rdiffweb account.</p>\n\n<p>If you did not make this change and believe your account has been compromised, please contact your administrator.</p>\n\n</body>\n</html>')
+
+    def test_email_updated_with_same_value(self):
+        # Given a user with an email
         user = self.app.store.get_user(self.USERNAME)
         user.email = 'email_changed@test.com'
+        self.listener.queue_email.reset_mock()
 
-        # Expect it to be called.
-        sleep(1)
-        n.async_send_mail.assert_called_once_with(ANY, ANY, 'email_changed.html')
-        n.async_send_mail.reset_mock()
-
-        # Change email again for same value
+        # When updating the user's email with the same value
         user.email = 'email_changed@test.com'
-        n.async_send_mail.assert_not_called()
+
+        # Then no email are sent to the user
+        self.listener.queue_email.assert_not_called()
 
     def test_password_change_notification(self):
-        # Get ref to notification plugin
-        n = self.app.notification
-        self.assertIsNotNone(n)
-        n.async_send_mail = MagicMock()
-
-        # Set user config
+        # Given a user with a email.
         user = self.app.store.get_user(self.USERNAME)
         user.email = 'password_change@test.com'
-        n.async_send_mail.reset_mock()
+        self.listener.queue_email.reset_mock()
 
-        # Change password
+        # When updating the user password
         user.set_password('new_password')
 
-        # Expect it to be called.
-        sleep(1)
-        n.async_send_mail.assert_called_once_with(ANY, ANY, 'password_changed.html')
-        n.async_send_mail.reset_mock()
+        # Then a email is send to the user
+        self.listener.queue_email.assert_called_once_with(
+            to='password_change@test.com',
+            subject='Password changed',
+            message='<html>\n<head></head>\n<body>\n\nHey admin,\n\n<p>You recently changed the password associated with your rdiffweb account.</p>\n\n<p>If you did not make this change and believe your account has been compromised, please contact your administrator.</p>\n\n</body>\n</html>')
 
-        # Change password again for same value. Check if notificatiom is sent.
+    def test_password_change_with_same_value(self):
+        # Given a user with a email.
+        user = self.app.store.get_user(self.USERNAME)
+        user.email = 'password_change@test.com'
         user.set_password('new_password')
-        n.async_send_mail.assert_called_once_with(ANY, ANY, 'password_changed.html')
+        self.listener.queue_email.reset_mock()
 
-    def test_async_send_mail(self):
-        # Given a user with a valid email address
-        user = self.app.store.get_user(self.USERNAME)
-        user._set_attr('email', 'async_send_mail@test.com', notify=False)
+        # When updating the user password with the same value
+        user.set_password('new_password')
 
-        # Get ref to notification plugin
-        n = EmailClient(self.app)
-        n.send_mail = MagicMock()
-        self.assertIsNotNone(n)
-        n.async_send_mail(user, 'subject', 'email_notification.html')
-
-
-class NotificationPluginTestWithoutEmailHost(rdiffweb.test.WebCase):
-
-    default_config = {
-        'emailsendchangednotification': True,
-    }
-
-    def test_email_changed_without_email_host(self):
-        # Get ref to notification plugin
-        n = self.app.notification
-        self.assertIsNotNone(n)
-        n.async_send_mail = MagicMock()
-
-        # Set user config
-        user = self.app.store.get_user(self.USERNAME)
-        user.email = 'email_changed_without@test.com'
-
-        # Expect it to be called.
-        sleep(1)
-        n.async_send_mail.assert_not_called()
+        # Then an email is sent to the user
+        self.listener.queue_email.assert_called_once_with(
+            to='password_change@test.com',
+            subject='Password changed',
+            message='<html>\n<head></head>\n<body>\n\nHey admin,\n\n<p>You recently changed the password associated with your rdiffweb account.</p>\n\n<p>If you did not make this change and believe your account has been compromised, please contact your administrator.</p>\n\n</body>\n</html>')

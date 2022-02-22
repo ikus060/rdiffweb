@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2012-2021 rdiffweb contributors
+# Scheduler plugins for Cherrypy
+# Copyright (C) 2022 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,17 +14,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Created on Oct 17, 2015
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 from time import sleep
-from unittest.mock import MagicMock
 
 import cherrypy
-import rdiffweb.plugins.scheduler  # noqa
 from cherrypy.test import helper
+
+from .. import scheduler  # noqa
 
 
 class SchedulerPluginTest(helper.CPWebCase):
@@ -42,7 +43,7 @@ class SchedulerPluginTest(helper.CPWebCase):
         def a_job(*args, **kwargs):
             self.called = True
 
-        scheduled = cherrypy.engine.publish('schedule_job', '23:00', a_job, args=(1, 2, 3), kwargs={'foo': 1, 'bar': 2})
+        scheduled = cherrypy.engine.publish('schedule_job', '23:00', a_job, 1, 2, 3, foo=1, bar=2)
         self.assertTrue(scheduled)
         self.assertEqual(1, len(cherrypy.scheduler.list_jobs()))
 
@@ -53,7 +54,7 @@ class SchedulerPluginTest(helper.CPWebCase):
             self.called = True
 
         # When scheduling that task
-        scheduled = cherrypy.engine.publish('schedule_task', a_task, args=(1, 2, 3), kwargs={'foo': 1, 'bar': 2})
+        scheduled = cherrypy.engine.publish('schedule_task', a_task, 1, 2, 3, foo=1, bar=2)
         self.assertTrue(scheduled)
         sleep(1)
         while len(cherrypy.scheduler.list_tasks()) >= 1:

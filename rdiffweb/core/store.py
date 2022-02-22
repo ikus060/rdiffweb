@@ -363,7 +363,7 @@ class UserObject(object):
         if old_password and not check_password(old_password, self.hash_password):
             raise ValueError(_("Wrong password"))
         self.hash_password = hash_password(password)
-        cherrypy.engine.publish('user_password_changed', self.username)
+        cherrypy.engine.publish('user_password_changed', self)
 
     def _set_user_root(self, value):
         """

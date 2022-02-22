@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
         cherrypy.request.config = _cpconfig.Config()
 
     def tearDown(self):
-        pass
+        del cherrypy.response.i18n
 
     def test_get_i18n(self):
         # Load default translation
