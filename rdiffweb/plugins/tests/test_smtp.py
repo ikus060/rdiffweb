@@ -20,7 +20,7 @@ from unittest import mock
 import cherrypy
 from cherrypy.test import helper
 
-from .. import smtp
+from .. import smtp  # noqa
 
 
 class SmtpPluginTest(helper.CPWebCase):
@@ -38,17 +38,33 @@ class SmtpPluginTest(helper.CPWebCase):
         # Given a valid smtp server
         with mock.patch(smtp.__name__ + '.smtplib') as smtplib:
             # When publishing a send_mail
-            cherrypy.engine.publish('send_mail', to='target@test.com', subject='subjet', message='body')
+            cherrypy.engine.publish(
+                'send_mail', to='target@test.com', subject='subjet', message='body')
             # Then smtplib is called to send the mail.
             smtplib.SMTP.assert_called_once_with('__default__', 25)
-            smtplib.SMTP.return_value.sendmail.assert_called_once_with('Test <email_from@test.com>', 'target@test.com', mock.ANY)
+            smtplib.SMTP.return_value.sendmail.assert_called_once_with(
+                'Test <email_from@test.com>', 'target@test.com', mock.ANY)
+            smtplib.SMTP.return_value.quit.assert_called_once_with()
+
+    def test_send_mail_with_to_tuple(self):
+        # Given a valid smtp server
+        with mock.patch(smtp.__name__ + '.smtplib') as smtplib:
+            # When publishing a send_mail
+            cherrypy.engine.publish(
+                'send_mail', to=('A name', 'target@test.com'), subject='subjet', message='body',
+                bcc=('A bcc name', 'bcc@test.com'), reply_to=('A Reply Name', 'replyto@test.com'))
+            # Then smtplib is called to send the mail.
+            smtplib.SMTP.assert_called_once_with('__default__', 25)
+            smtplib.SMTP.return_value.sendmail.assert_called_once_with(
+                'Test <email_from@test.com>', 'A name <target@test.com>', mock.ANY)
             smtplib.SMTP.return_value.quit.assert_called_once_with()
 
     def test_queue_mail(self):
         # Given a paused scheduler plugin
         cherrypy.scheduler._scheduler.pause()
         # When queueing a email
-        cherrypy.engine.publish('queue_mail', to='target@test.com', subject='subjet', message='body')
+        cherrypy.engine.publish(
+            'queue_mail', to='target@test.com', subject='subjet', message='body')
         # Then a new job get schedule
         self.assertEqual(1, len(cherrypy.scheduler.list_tasks()))
 

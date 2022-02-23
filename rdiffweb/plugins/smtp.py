@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import email.utils
 import re
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.utils import make_msgid
 from xml.etree.ElementTree import fromstring, tostring
 
 import cherrypy
@@ -110,19 +110,38 @@ class SmtpPlugin(SimplePlugin):
         self.bus.unsubscribe("queue_mail", self.queue_mail)
 
     def queue_mail(self, to, subject, message, bcc=None, reply_to=None):
-        self.bus.publish('schedule_task', self.send_mail, to, subject, message, bcc, reply_to)
+        """
+        Queue mail to be sent.
+        """
+        self.bus.publish('schedule_task', self.send_mail,
+                         to, subject, message, bcc, reply_to)
 
-    def send_mail(self, to, subject, message, bcc=None, reply_to=None):
+    def send_mail(self, to, subject: str, message: str, bcc=None, reply_to=None):
+        """
+        Reusable method to be called to send email to the user user.
+        `user` user object where to send the email.
+        """
         # Verify if the users as an email.
-        assert to
+        assert to and isinstance(to, (str, tuple))
         assert subject
+        assert message
+        assert bcc is None or isinstance(bcc, (str, tuple))
+        assert reply_to is None or isinstance(reply_to, (str, tuple))
+        if isinstance(to, tuple):
+            to = email.utils.formataddr(to)
+        if isinstance(bcc, tuple):
+            bcc = email.utils.formataddr(bcc)
+        if isinstance(reply_to, tuple):
+            reply_to = email.utils.formataddr(reply_to)
 
         # Skip sending email if smtp server is not configured.
         if not self.server:
-            self.bus.log('cannot send email because SMTP Server is not configured')
+            self.bus.log(
+                'cannot send email because SMTP Server is not configured')
             return
         if not self.email_from:
-            self.bus.log('cannot send email because SMTP `From` is not configured')
+            self.bus.log(
+                'cannot send email because SMTP From is not configured')
             return
 
         # Compile both template.
@@ -139,7 +158,7 @@ class SmtpPlugin(SimplePlugin):
             msg['Bcc'] = bcc
         if reply_to:
             msg['Reply-To'] = reply_to
-        msg['Message-ID'] = make_msgid()
+        msg['Message-ID'] = email.utils.make_msgid()
         msg.attach(part1)
         msg.attach(part2)
 
@@ -164,4 +183,5 @@ class SmtpPlugin(SimplePlugin):
 cherrypy.smtp = SmtpPlugin(cherrypy.engine)
 cherrypy.smtp.subscribe()
 
-cherrypy.config.namespaces['smtp'] = lambda key, value: setattr(cherrypy.smtp, key, value)
+cherrypy.config.namespaces['smtp'] = lambda key, value: setattr(
+    cherrypy.smtp, key, value)
