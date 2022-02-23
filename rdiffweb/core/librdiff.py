@@ -33,7 +33,7 @@ from subprocess import CalledProcessError
 
 import psutil
 from rdiffweb.core import rdw_helpers
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
 logger = logging.getLogger(__name__)

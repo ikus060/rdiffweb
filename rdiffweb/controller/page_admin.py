@@ -30,7 +30,7 @@ import psutil
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.core.config import Option
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import rdiff_backup_version
 from rdiffweb.core.quota import QuotaUnsupported
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE

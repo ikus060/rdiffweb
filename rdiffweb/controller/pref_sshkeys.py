@@ -32,7 +32,7 @@ from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.core import authorizedkeys
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.store import DuplicateSSHKeyError
 
 

@@ -21,228 +21,60 @@ User can control the notification period.
 
 import datetime
 import logging
-import re
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from xml.etree.ElementTree import fromstring, tostring
 
+import cherrypy
+from cherrypy.process.plugins import SimplePlugin
 from rdiffweb.core import librdiff
-from rdiffweb.core.config import Option
-from rdiffweb.core.i18n import ugettext as _
-from rdiffweb.core.store import IUserChangeListener
+from rdiffweb.tools.i18n import ugettext as _
 
 logger = logging.getLogger(__name__)
 
 
-def html2plaintext(html, body_id=None, encoding='utf-8'):
-    """ From an HTML text, convert the HTML to plain text.
-    If @param body_id is provided then this is the tag where the
-    body (not necessarily <body>) starts.
-    """
-    # (c) Fry-IT, www.fry-it.com, 2007
-    # <peter@fry-it.com>
-    # download here: http://www.peterbe.com/plog/html2plaintext
-    assert isinstance(html, str)
-    url_index = []
-    try:
-        tree = fromstring(html)
-
-        if body_id is not None:
-            source = tree.xpath('//*[@id=%s]' % (body_id,))
-        else:
-            source = tree.xpath('//body')
-        if len(source):
-            tree = source[0]
-
-        i = 0
-        for link in tree.findall('.//a'):
-            url = link.get('href')
-            if url:
-                i += 1
-                link.tag = 'span'
-                link.text = '%s [%s]' % (link.text, i)
-                url_index.append(url)
-
-        html = tostring(tree, encoding=encoding)
-    except Exception:
-        # Don't fail if the html is invalid.
-        pass
-    # \r char is converted into &#13;, must remove it
-    html = html.replace('&#13;', '')
-
-    html = html.replace('<strong>', '*').replace('</strong>', '*')
-    html = html.replace('<b>', '*').replace('</b>', '*')
-    html = html.replace('<h3>', '*').replace('</h3>', '*')
-    html = html.replace('<h2>', '**').replace('</h2>', '**')
-    html = html.replace('<h1>', '**').replace('</h1>', '**')
-    html = html.replace('<em>', '/').replace('</em>', '/')
-    html = html.replace('<tr>', '\n')
-    html = html.replace('</p>', '\n')
-    html = re.sub('<br\\s*/?>', '\n', html)
-    html = re.sub('<.*?>', ' ', html)
-    html = html.replace(' ' * 2, ' ')
-    html = html.replace('&gt;', '>')
-    html = html.replace('&lt;', '<')
-    html = html.replace('&amp;', '&')
-
-    # strip all lines
-    html = '\n'.join([x.strip() for x in html.splitlines()])
-    html = html.replace('\n' * 2, '\n')
-
-    for i, url in enumerate(url_index):
-        if i == 0:
-            html += '\n\n'
-        html += '[%s] %s\n' % (i + 1, url)
-
-    return html.strip('\n')
-
-
-def _utf8(self, val):
-    """Utility method to encode text to utf8 for email."""
-    assert isinstance(val, str)
-    return val.encode('utf-8')
-
-
-class EmailClient():
-    """
-    Responsible to send email using application config.
-    """
-
-    _encryption = Option('email_encryption')
-
-    _email_host = Option('email_host')
-
-    _email_from = Option('email_sender')
-
-    _smtp_username = Option('email_username')
-
-    _smtp_password = Option('email_password')
-
-    _header_name = Option("header_name")
-
-    def __init__(self, app):
-        assert app
-        self.app = app
-
-    def async_send_mail(self, to_user, subject, template_name, **kwargs):
-        self.app.scheduler.add_task(self.send_mail, args=(
-            to_user, subject, template_name), kwargs=kwargs)
-
-    def is_configured(self):
-        """
-        Check if the email nodification module is properly configured to send mail.
-        """
-        # Warn the administrator if a notification should be sent, but email host is not defined.
-        if not self._email_host:
-            logger.warning('cannot send email notification because `email-host` is not configured')
-            return False
-        if not self._email_from:
-            logger.warning('cannot send email notification because `email-from` is not configured')
-            return False
-        return True
-
-    def send_mail(self, to_user, subject, template_name, **kwargs):
-        """
-        Reusable method to be called to send email to the user user.
-        `user` user object where to send the email.
-        ``
-        """
-        # Verify if the users as an email.
-        assert to_user
-        assert to_user.email
-
-        # Build email from template.
-        parms = {'user': to_user}
-
-        if self._header_name:
-            parms["header_name"] = self._header_name
-        parms.update(kwargs)
-
-        # Compile both template.
-        html = self.app.templates.compile_template(template_name, **parms)
-        text = html2plaintext(html)
-
-        # Record the MIME types of both parts - text/plain and text/html.
-        part1 = MIMEText(text, 'plain', 'utf8')
-        part2 = MIMEText(html, 'html', 'utf8')
-
-        email_from = "%s <%s>" % (self._header_name, self._email_from)
-
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = email_from
-        msg['To'] = to_user.email
-        msg.attach(part1)
-        msg.attach(part2)
-
-        # Open an SMTP connection.
-        conn = None
-        host, unused, port = self._email_host.partition(':')
-        if self._encryption == 'ssl':
-            conn = smtplib.SMTP_SSL(host, port or 465)
-        else:
-            conn = smtplib.SMTP(host, port or 25)
-        try:
-            if self._encryption == 'starttls':
-                conn.starttls()
-
-            # Authenticate if required.
-            if self._smtp_username:
-                conn.login(self._smtp_username, self._smtp_password)
-            conn.sendmail(self._email_from, to_user.email, msg.as_string())
-        finally:
-            if conn is not None:
-                conn.quit()
-
-
-class NotificationPlugin(EmailClient, IUserChangeListener):
+class NotificationPlugin(SimplePlugin):
     """
     Send email notification when a repository get too old (without a backup).
     """
 
-    _send_change_notification = Option("email_send_changed_notification")
+    execution_time = '23:00'
 
-    def __init__(self, app):
-        self.app = app
-        self.app.store.add_change_listener(self)
+    send_changed = False
 
-    def is_configured(self):
-        if not self._send_change_notification:
-            logger.debug('email-send-changed-notification is disabled')
-            return False
-        return super().is_configured()
+    def start(self):
+        self.bus.log('Start Notification plugin')
+        self.bus.publish('schedule_job', self.execution_time, self.notification_job)
+        self.bus.subscribe('user_attr_changed', self.user_attr_changed)
+        self.bus.subscribe('user_password_changed', self.user_password_changed)
+
+    def stop(self):
+        self.bus.log('Stop Notification plugin')
+        self.bus.publish('unschedule_job', self.notification_job)
+        self.bus.unsubscribe('user_attr_changed', self.user_attr_changed)
+        self.bus.unsubscribe('user_password_changed', self.user_password_changed)
+
+    @property
+    def app(self):
+        return cherrypy.tree.apps['']
 
     def user_attr_changed(self, userobj, attrs={}):
-        """
-        Implementation of IUserChangeListener interface.
-        """
-        if not self.is_configured():
+        if not self.send_changed:
             return
 
         # Leave if the mail was not changed.
         if 'email' not in attrs:
             return
 
-        if not userobj.email:
-            logger.info(
-                "can't sent mail to user [%s] without an email", userobj.username)
+        old_email = attrs['email'][0]
+        if not old_email:
+            logger.info("can't sent mail to user [%s] without an email", userobj.username)
             return
 
         # If the email attributes was changed, send a mail notification.
-        self.async_send_mail(userobj, _(
-            "Email address changed"), "email_changed.html")
+        body = self.app.templates.compile_template("email_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj})
+        self.bus.publish('queue_mail', to=old_email, subject=_("Email address changed"), message=body)
 
-    def user_password_changed(self, username, password):  # @UnusedVariable
-        """
-        Implementation of IUserChangeListener interface.
-        """
-        if not self.is_configured():
+    def user_password_changed(self, userobj):
+        if not self.send_changed:
             return
-
-        # get User object (to get email)
-        userobj = self.app.store.get_user(username)
-        assert userobj
 
         if not userobj.email:
             logger.info(
@@ -250,33 +82,13 @@ class NotificationPlugin(EmailClient, IUserChangeListener):
             return
 
         # If the email attributes was changed, send a mail notification.
-        self.async_send_mail(userobj, _("Password changed"),
-                             "password_changed.html")
+        body = self.app.templates.compile_template("password_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj})
+        self.bus.publish('queue_mail', to=userobj.email, subject=_("Password changed"), message=body)
 
-
-class NotificationJob(EmailClient):
-    """
-    Scheduled job to send notification every day with list of problematic
-    repositories.
-    """
-
-    _email_notification_time = Option('email_notification_time')
-
-    def __init__(self, app):
-        self.app = app
-
-    @property
-    def job_execution_time(self):
-        return self._email_notification_time
-
-    def job_run(self):
+    def notification_job(self):
         """
         Loop trough all the user repository and send notifications.
         """
-
-        # Warn the administrator if a notification should be sent, but email host is not defined.
-        if not self.is_configured():
-            return
 
         now = librdiff.RdiffTime()
 
@@ -303,5 +115,11 @@ class NotificationJob(EmailClient):
         # For each candidate, send mail.
         for user, repos in _user_repos():
             parms = {'user': user, 'repos': repos}
-            self.send_mail(user, _('Notification'),
-                           'email_notification.html', **parms)
+            body = self.app.templates.compile_template("email_notification.html", **parms)
+            cherrypy.engine.publish('queue_mail', to=user.email, subject=_("Notification"), message=body)
+
+
+cherrypy.notification = NotificationPlugin(cherrypy.engine)
+cherrypy.notification.subscribe()
+
+cherrypy.config.namespaces['notification'] = lambda key, value: setattr(cherrypy.notification, key, value)

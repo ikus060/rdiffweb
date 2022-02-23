@@ -28,7 +28,7 @@ from rdiffweb.controller import Controller
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.controller.filter_authorization import is_maintainer
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from wtforms import validators
 from wtforms.fields.core import StringField
@@ -65,6 +65,7 @@ class DeletePage(Controller):
             _logger.info("do not delete repo, bad confirmation %r != %r", form.confirm.data, path_obj.display_name)
             raise cherrypy.HTTPError(400, 'bad confirmation')
 
-        # Delete repository
-        self.app.scheduler.add_task(path_obj.delete, args=[])
+        # Delete repository in background using a schedule task.
+        scheduled = cherrypy.engine.publish('schedule_task', path_obj.delete)
+        assert scheduled
         raise cherrypy.HTTPRedirect(form.redirect.data)

@@ -29,7 +29,7 @@ import cherrypy
 import pkg_resources
 import rdiffweb.test
 from cherrypy import _cpconfig
-from rdiffweb.core import i18n
+from rdiffweb.tools import i18n
 
 
 class Test(unittest.TestCase):
@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
         cherrypy.request.config = _cpconfig.Config()
 
     def tearDown(self):
-        pass
+        del cherrypy.response.i18n
 
     def test_get_i18n(self):
         # Load default translation

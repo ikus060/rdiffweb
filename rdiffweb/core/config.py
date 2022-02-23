@@ -381,8 +381,7 @@ def parse_args(args=None, config_file_contents=None):
         action=LocaleAction)
 
     # Add entry point arguments
-    entry_points = list(pkg_resources.iter_entry_points('rdiffweb.IUserChangeListener'))
-    entry_points += list(pkg_resources.iter_entry_points('rdiffweb.IUserQuota'))
+    entry_points = list(pkg_resources.iter_entry_points('rdiffweb.IUserQuota'))
     for entry_point in entry_points:
         try:
             cls = entry_point.load()

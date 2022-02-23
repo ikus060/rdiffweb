@@ -20,10 +20,8 @@ Created on May 2, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from unittest.mock import MagicMock
 
 import rdiffweb.test
-from rdiffweb.core.removeolder import RemoveOlderJob
 from rdiffweb.core.store import USER_ROLE
 
 
@@ -61,23 +59,6 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         keepdays = repo.keepdays
         self.assertEqual(1, keepdays)
 
-    def test_remove_older(self):
-        """
-        Run remove older on testcases repository.
-        """
-        self._remove_older('admin', 'testcases', '1')
-        self.assertStatus(200)
-        # Get current user
-        user = self.app.store.get_user(self.USERNAME)
-        repo = user.get_repo(self.REPO)
-        repo.keepdays = 30
-        # Run the job.
-        p = RemoveOlderJob(self.app)
-        p._remove_older(repo)
-        # Check number of history.
-        repo = user.get_repo(self.REPO)
-        self.assertEqual(2, len(repo.mirror_metadata))
-
     def test_as_another_user(self):
         # Create a nother user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
@@ -94,40 +75,3 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         # Browse admin's repos
         self._remove_older('anotheruser', 'testcases', '2')
         self.assertStatus('403 Forbidden')
-
-
-class RemoveOlderTestWithMock(rdiffweb.test.WebCase):
-
-    login = True
-
-    def test_job_run_without_keepdays(self):
-        """
-        Test execution of job run.
-        """
-        # Mock the call to _remove_older to make verification.
-        p = RemoveOlderJob(self.app)
-        p._remove_older = MagicMock()
-        # Set a keepdays
-        user = self.app.store.get_user(self.USERNAME)
-        repo = user.get_repo(self.REPO)
-        repo.keepdays = 0
-        # Call the job.
-        p.job_run()
-        # Check if _remove_older was called
-        p._remove_older.assert_called()
-
-    def test_job_run_with_keepdays(self):
-        """
-        Test execution of job run.
-        """
-        # Mock the call to _remove_older to make verification.
-        p = RemoveOlderJob(self.app)
-        p._remove_older = MagicMock()
-        # Set a keepdays
-        user = self.app.store.get_user(self.USERNAME)
-        repo = user.get_repo(self.REPO)
-        repo.keepdays = 30
-        # Call the job.
-        p.job_run()
-        # Check if _remove_older was called
-        p._remove_older.assert_called()

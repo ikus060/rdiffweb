@@ -19,7 +19,7 @@
 import cherrypy
 from rdiffweb.controller import Controller, validate_int
 from rdiffweb.controller.dispatch import poppath
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 
 

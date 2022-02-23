@@ -20,7 +20,7 @@ import cherrypy
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.core.config import Option
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.tools.auth_form import SESSION_KEY
 from wtforms.fields import PasswordField, StringField
 from wtforms.fields.simple import HiddenField
@@ -62,7 +62,7 @@ class LoginPage(Controller):
         # Validate user's credentials
         if form.validate_on_submit():
             try:
-                userobj = cherrypy.request.app.store.login(form.login.data, form.password.data)
+                userobj = self.app.store.login(form.login.data, form.password.data)
             except Exception:
                 logger.exception('fail to validate credential')
                 flash(_("Fail to validate user credential."))

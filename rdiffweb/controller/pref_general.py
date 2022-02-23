@@ -25,7 +25,7 @@ import re
 import cherrypy
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
-from rdiffweb.core.i18n import ugettext as _
+from rdiffweb.tools.i18n import ugettext as _
 from wtforms.fields.html5 import EmailField
 from wtforms.fields.simple import PasswordField
 from wtforms.validators import DataRequired, EqualTo, InputRequired, Regexp

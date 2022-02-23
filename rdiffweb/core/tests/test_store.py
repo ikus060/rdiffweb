@@ -21,18 +21,18 @@ Module to test `user` module.
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
-
 import os
 from io import StringIO, open
 from unittest.mock import MagicMock
 
+import cherrypy
 import pkg_resources
+from mockldap import MockLdap
 from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.store import (_REPOS, ADMIN_ROLE, MAINTAINER_ROLE,
-                                 USER_ROLE, DuplicateSSHKeyError,
-                                 IUserChangeListener)
-from rdiffweb.test import AppTestCase
+                                 USER_ROLE, DuplicateSSHKeyError)
+from rdiffweb.test import WebCase
 
 
 def _ldap_user(name, password='password', email=None):
@@ -51,19 +51,27 @@ def _ldap_user(name, password='password', email=None):
     return ('uid=%s,ou=People,dc=nodomain' % (name), data)
 
 
-class AbstractStoreTest(AppTestCase):
+class AbstractStoreTest(WebCase):
     """
     Abstract class used to test store module.
     """
 
     def setUp(self):
         super().setUp()
-        self.mlistener = IUserChangeListener(self.app)
-        self.mlistener.user_added = MagicMock()
-        self.mlistener.user_attr_changed = MagicMock()
-        self.mlistener.user_deleted = MagicMock()
-        self.mlistener.user_logined = MagicMock()
-        self.mlistener.user_password_changed = MagicMock()
+        self.mlistener = MagicMock()
+        cherrypy.engine.subscribe('user_added', self.mlistener.user_added, priority=50)
+        cherrypy.engine.subscribe('user_attr_changed', self.mlistener.user_attr_changed, priority=50)
+        cherrypy.engine.subscribe('user_deleted', self.mlistener.user_deleted, priority=50)
+        cherrypy.engine.subscribe('user_login', self.mlistener.user_login, priority=50)
+        cherrypy.engine.subscribe('user_password_changed', self.mlistener.user_password_changed, priority=50)
+
+    def tearDown(self):
+        cherrypy.engine.unsubscribe('user_added', self.mlistener.user_added)
+        cherrypy.engine.unsubscribe('user_attr_changed', self.mlistener.user_attr_changed)
+        cherrypy.engine.unsubscribe('user_deleted', self.mlistener.user_deleted)
+        cherrypy.engine.unsubscribe('user_login', self.mlistener.user_login)
+        cherrypy.engine.unsubscribe('user_password_changed', self.mlistener.user_password_changed)
+        return super().tearDown()
 
 
 class AbstractLdapStoreTest(AbstractStoreTest):
@@ -97,23 +105,14 @@ class AbstractLdapStoreTest(AbstractStoreTest):
         _ldap_user('userwithemail', email='user@example.com'),
     ])
 
-    default_config = {
-        'LdapUri': '__default__',
-        'LdapBaseDn': 'dc=nodomain',
-    }
-
     def setUp(self):
-        # Original setup
-        super().setUp()
-        # Get reference to LdapStore
-        self.ldapstore = self.app.store._ldap_store
-        # Create fake listener
-        self.mlistener = IUserChangeListener(self.app)
-        self.mlistener.user_added = MagicMock()
-        self.mlistener.user_attr_changed = MagicMock()
-        self.mlistener.user_deleted = MagicMock()
-        self.mlistener.user_logined = MagicMock()
-        self.mlistener.user_password_changed = MagicMock()
+        self.mockldap = MockLdap(self.ldap_directory)
+        self.mockldap.start()
+        return super().setUp()
+
+    def tearDown(self):
+        self.mockldap.stop()
+        return super().tearDown()
 
 
 class StoreTest(AbstractStoreTest):
@@ -124,7 +123,7 @@ class StoreTest(AbstractStoreTest):
         self.assertIsNotNone(userobj)
         self.assertIsNotNone(self.app.store.get_user('joe'))
         # Check if listener called
-        self.mlistener.user_added.assert_called_once_with(userobj, None)
+        self.mlistener.user_added.assert_called_once_with(userobj)
 
     def test_add_user_with_duplicate(self):
         """Add user to database."""
@@ -132,7 +131,7 @@ class StoreTest(AbstractStoreTest):
         with self.assertRaises(RdiffError):
             self.app.store.add_user('denise')
         # Check if listener called
-        self.mlistener.user_added.assert_called_once_with(userobj, None)
+        self.mlistener.user_added.assert_called_once_with(userobj)
 
     def test_add_user_with_password(self):
         """Add user to database with password."""
@@ -140,7 +139,7 @@ class StoreTest(AbstractStoreTest):
         self.assertIsNotNone(self.app.store.get_user('jo'))
         self.assertTrue(self.app.store.login('jo', 'password'))
         # Check if listener called
-        self.mlistener.user_added.assert_called_once_with(userobj, None)
+        self.mlistener.user_added.assert_called_once_with(userobj)
 
     def test_delete_admin_user(self):
         # Trying to delete admin user should raise an error.
@@ -233,17 +232,16 @@ class StoreTest(AbstractStoreTest):
 
         user.user_root = self.app.testcases
         self.mlistener.user_attr_changed.assert_called_with(
-            user, {'user_root': self.app.testcases})
+            user, {'user_root': ('', self.app.testcases)})
         self.mlistener.user_attr_changed.reset_mock()
         user.role = ADMIN_ROLE
         self.mlistener.user_attr_changed.assert_called_with(
-            user, {'role': ADMIN_ROLE})
+            user, {'role': (USER_ROLE, ADMIN_ROLE)})
         self.mlistener.user_attr_changed.reset_mock()
         user.email = 'larry@gmail.com'
         self.mlistener.user_attr_changed.assert_called_with(
-            user, {'email': 'larry@gmail.com'})
+            user, {'email': ('', 'larry@gmail.com')})
         self.mlistener.user_attr_changed.reset_mock()
-        self.mlistener.user_attr_changed.assert_not_called()
 
         self.assertEqual('larry@gmail.com', user.email)
         self.assertEqual(['broker-repo', 'testcases'],
@@ -318,7 +316,7 @@ class StoreTest(AbstractStoreTest):
         self.assertIsNotNone(self.app.store.login('tom', 'password'))
         self.assertFalse(self.app.store.login('tom', 'invalid'))
         # Check if listener called
-        self.mlistener.user_logined.assert_called_once_with(userobj, None)
+        self.mlistener.user_login.assert_called_once_with(userobj)
 
     def login_with_invalid_password(self):
         self.app.store.add_user('jeff', 'password')
@@ -329,13 +327,13 @@ class StoreTest(AbstractStoreTest):
         self.assertFalse(self.app.store.login('jeff', 'pass'))
         self.assertFalse(self.app.store.login('jeff', ''))
         # Check if listener called
-        self.mlistener.user_logined.assert_not_called()
+        self.mlistener.user_login.assert_not_called()
 
     def test_login_with_invalid_user(self):
         """Check if login work"""
         self.assertIsNone(self.app.store.login('josh', 'password'))
         # Check if listener called
-        self.mlistener.user_logined.assert_not_called()
+        self.mlistener.user_login.assert_not_called()
 
     def test_repos(self):
         # Check default repo exists
@@ -361,8 +359,7 @@ class StoreTest(AbstractStoreTest):
         # Check new credentials
         self.assertIsNotNone(self.app.store.login('annik', 'new_password'))
         # Check if listener called
-        self.mlistener.user_password_changed.assert_called_once_with(
-            'annik', 'new_password')
+        self.mlistener.user_password_changed.assert_called_once_with(userobj)
 
     def test_set_password_with_old_password(self):
         userobj = self.app.store.add_user('john', 'password')
@@ -370,8 +367,7 @@ class StoreTest(AbstractStoreTest):
         # Check new credentials
         self.assertIsNotNone(self.app.store.login('john', 'new_password'))
         # Check if listener called
-        self.mlistener.user_password_changed.assert_called_once_with(
-            'john', 'new_password')
+        self.mlistener.user_password_changed.assert_called_once_with(userobj)
 
     def test_set_password_with_invalid_old_password(self):
         userobj = self.app.store.add_user('foo', 'password')
@@ -440,7 +436,7 @@ class StoreWithLdapTest(AbstractLdapStoreTest):
         self.assertIsNotNone(userobj)
         self.assertEqual('joe', userobj.username)
         # Check if listener called
-        self.mlistener.user_added.assert_called_once_with(userobj, None)
+        self.mlistener.user_added.assert_called_once_with(userobj)
 
     def test_add_user_to_ldap(self):
         """Add user to LDAP."""
@@ -449,7 +445,7 @@ class StoreWithLdapTest(AbstractLdapStoreTest):
         self.assertIsNotNone(userobj)
         self.assertEqual('karl', userobj.username)
         # Check if listener called
-        self.mlistener.user_added.assert_called_once_with(userobj, None)
+        self.mlistener.user_added.assert_called_once_with(userobj)
 
     def test_delete_user(self):
         """Create then delete a user."""
@@ -505,13 +501,13 @@ class StoreWithLdapTest(AbstractLdapStoreTest):
         self.assertIsNotNone(self.app.store.login('annik', 'new_password'))
 
     def test_set_password_with_old_password(self):
-        userobj = self.app.store.add_user('john')
+        userobj = self.app.store.add_user('john', password='password')
         userobj.set_password('new_password', old_password='password')
         # Check new credentials
         self.assertIsNotNone(self.app.store.login('john', 'new_password'))
 
     def test_set_password_with_invalid_old_password(self):
-        userobj = self.app.store.add_user('foo')
+        userobj = self.app.store.add_user('foo', password='password')
         with self.assertRaises(ValueError):
             userobj.set_password('new_password', old_password='invalid')
 
@@ -540,10 +536,8 @@ class StoreWithLdapAddMissing(AbstractLdapStoreTest):
         self.assertEqual('', userobj.user_root)
         self.assertEqual('', userobj.email)
         # Check listener
-        self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [
-                                                          u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
-        self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [
-                                                            u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
+        self.mlistener.user_added.assert_called_once_with(userobj)
+        self.mlistener.user_login.assert_called_once_with(userobj)
 
     def test_login_with_create_user_with_email(self):
         """Check if login create the user in database if user exists in LDAP"""
@@ -575,10 +569,8 @@ class StoreWithLdapAddMissingWithDefaults(AbstractLdapStoreTest):
         self.assertEqual(MAINTAINER_ROLE, userobj.role)
         self.assertEqual('/backups/users/tony', userobj.user_root)
         # Check listener
-        self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [
-                                                          u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
-        self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [
-                                                            u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
+        self.mlistener.user_added.assert_called_once_with(userobj)
+        self.mlistener.user_login.assert_called_once_with(userobj)
 
 
 class StoreWithLdapAddMissingWithComplexUserroot(AbstractLdapStoreTest):
@@ -600,13 +592,11 @@ class StoreWithLdapAddMissingWithComplexUserroot(AbstractLdapStoreTest):
         self.assertEqual(MAINTAINER_ROLE, userobj.role)
         self.assertEqual('/home/tony/backups', userobj.user_root)
         # Check listener
-        self.mlistener.user_added.assert_called_once_with(userobj, {u'objectClass': [
-                                                          u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
-        self.mlistener.user_logined.assert_called_once_with(userobj, {u'objectClass': [
-                                                            u'person', u'organizationalPerson', u'inetOrgPerson', u'posixAccount'], u'userPassword': [u'password'], u'uid': [u'tony'], u'cn': [u'tony'], u'sAMAccountName': [u'tony']})
+        self.mlistener.user_added.assert_called_once_with(userobj)
+        self.mlistener.user_login.assert_called_once_with(userobj)
 
 
-class StoreWithAdmin(AppTestCase):
+class StoreWithAdmin(WebCase):
 
     def test_disk_quota(self):
         """
@@ -624,7 +614,7 @@ class StoreWithAdmin(AppTestCase):
         self.assertIsInstance(disk_usage, int)
 
 
-class StoreWithAdminPassword(AppTestCase):
+class StoreWithAdminPassword(WebCase):
 
     # password: test
     default_config = {
@@ -642,13 +632,13 @@ class StoreWithAdminPassword(AppTestCase):
         self.assertIsNone(userobj)
 
     def test_set_password(self):
-        # # Update password should fail.
+        # Update password should fail.
         userobj = self.app.store.get_user(self.USERNAME)
         with self.assertRaises(ValueError):
             userobj.set_password('newpassword')
 
 
-class StoreTestSSHKeys(AppTestCase):
+class StoreTestSSHKeys(WebCase):
     """
     Testcases for ssh key management.
     """
@@ -763,7 +753,7 @@ class StoreTestSSHKeys(AppTestCase):
         self.assertEqual(4, len(keys))
 
 
-class UserObjectTest(AppTestCase):
+class UserObjectTest(WebCase):
     """Testcases for UserObject"""
 
     def test_set_get_repos(self):
@@ -788,7 +778,7 @@ class UserObjectTest(AppTestCase):
         self.assertEqual(7, repo_obj.maxage)
 
 
-class RepoObjectTest(AppTestCase):
+class RepoObjectTest(WebCase):
     """Testcases for RepoObject."""
 
     def test_str(self):
