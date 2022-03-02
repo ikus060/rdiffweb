@@ -268,12 +268,6 @@ def parse_args(args=None, config_file_contents=None):
         default="utf-8")
 
     parser.add_argument(
-        '--ldap-allow-password-change', '--ldapallowpasswordchange',
-        help="allow LDAP users to  update their password using rdiffweb. This option should only be enabled if the LDAP if configured to allow the user to change their own password. ",
-        default=False,
-        action='store_true')
-
-    parser.add_argument(
         '--ldap-check-shadow-expire', '--ldapcheckshadowexpire',
         help="enable validation of shadow expired when validating user's credential. User will not be allowed to login if the account expired.",
         default=False,
@@ -379,16 +373,6 @@ def parse_args(args=None, config_file_contents=None):
         metavar='HTML',
         help='replace the welcome message displayed in the login page for default locale or for a specific locale',
         action=LocaleAction)
-
-    # Add entry point arguments
-    entry_points = list(pkg_resources.iter_entry_points('rdiffweb.IUserQuota'))
-    for entry_point in entry_points:
-        try:
-            cls = entry_point.load()
-            if hasattr(cls, 'add_arguments'):
-                cls.add_arguments(parser)
-        except Exception as e:
-            print(str(e))
 
     return parser.parse_args(args, config_file_contents=config_file_contents)
 

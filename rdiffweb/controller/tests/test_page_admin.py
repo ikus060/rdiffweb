@@ -25,7 +25,6 @@ from unittest.mock import ANY, MagicMock
 
 import cherrypy
 import rdiffweb.test
-from rdiffweb.core.quota import QuotaUnsupported
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 
 
@@ -34,18 +33,34 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
 
     def setUp(self):
         super().setUp()
+        self._quota = {}
         self.listener = MagicMock()
         cherrypy.engine.subscribe('user_added', self.listener.user_added, priority=50)
         cherrypy.engine.subscribe('user_attr_changed', self.listener.user_attr_changed, priority=50)
         cherrypy.engine.subscribe('user_deleted', self.listener.user_deleted, priority=50)
         cherrypy.engine.subscribe('user_password_changed', self.listener.user_password_changed, priority=50)
+        self.listener.get_disk_quota.side_effect = self._load_quota
+        cherrypy.engine.subscribe('get_disk_quota', self.listener.get_disk_quota, priority=40)
+        self.listener.get_disk_usage.return_value = 0
+        cherrypy.engine.subscribe('get_disk_usage', self.listener.get_disk_usage, priority=40)
+        self.listener.set_disk_quota.side_effect = self._store_quota
+        cherrypy.engine.subscribe('set_disk_quota', self.listener.set_disk_quota, priority=40)
 
     def tearDown(self):
         cherrypy.engine.unsubscribe('user_added', self.listener.user_added)
         cherrypy.engine.unsubscribe('user_attr_changed', self.listener.user_attr_changed)
         cherrypy.engine.unsubscribe('user_deleted', self.listener.user_deleted)
         cherrypy.engine.unsubscribe('user_password_changed', self.listener.user_password_changed)
+        cherrypy.engine.unsubscribe('get_disk_quota', self.listener.get_disk_quota)
+        cherrypy.engine.unsubscribe('get_disk_usage', self.listener.get_disk_usage)
+        cherrypy.engine.unsubscribe('set_disk_quota', self.listener.set_disk_quota)
         return super().tearDown()
+
+    def _store_quota(self, userobj, value):
+        self._quota[userobj.username] = value
+
+    def _load_quota(self, userobj):
+        return self._quota.get(userobj.username, 0)
 
     def _add_user(self, username=None, email=None, password=None, user_root=None, role=None):
         b = {}
@@ -328,67 +343,82 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
     def test_get_quota(self):
         # Mock a quota.
-        self.app.quota.get_disk_quota = MagicMock(return_value=654321)
+        self.listener.get_disk_quota.side_effect = None
+        self.listener.get_disk_quota.return_value = 654321
+        # When querying the user list
         self.getPage("/admin/users/?criteria=admins")
+        self.assertStatus(200)
+        # Then get_disk_quota listenre is called
+        self.listener.get_disk_quota.assert_called()
+        # Then the quota value is displayed in human readable format
         self.assertInBody("638.99 KiB")
         self.assertStatus(200)
 
     def test_set_quota(self):
-        # Mock a quota.
-        self.app.quota.set_disk_quota = MagicMock()
+        # When updating user quota.
         self._edit_user("admin", disk_quota='8765432')
-        self.app.quota.set_disk_quota.assert_called_once_with(ANY, 8765432)
+        # Then listenr get called
+        self.listener.set_disk_quota.assert_called_once_with(ANY, 8765432)
+        # Then a success message is displayed
         self.assertInBody("User&#39;s quota updated")
         self.assertStatus(200)
 
     def test_set_quota_as_gib(self):
-        # Mock a quota.
-        self.app.quota.set_disk_quota = MagicMock()
+        # When updating user quota
         self._edit_user("admin", disk_quota='1GiB')
-        self.app.quota.set_disk_quota.assert_called_once_with(ANY, 1073741824)
+        # Then listern get called
+        self.listener.set_disk_quota.assert_called_once_with(ANY, 1073741824)
+        # Then a success message is displayed
         self.assertInBody("User&#39;s quota updated")
         self.assertStatus(200)
 
     def test_set_quota_as_with_comma(self):
-        # Mock a quota.
-        self.app.quota.set_disk_quota = MagicMock()
+        # When updating quota with comma value
         self._edit_user("admin", disk_quota='1,5 GiB')
-        self.app.quota.set_disk_quota.assert_called_once_with(ANY, 1610612736)
+        # Then listner get called
+        self.listener.set_disk_quota.assert_called_once_with(ANY, 1610612736)
+        # Then a success message is displayed
         self.assertInBody("User&#39;s quota updated")
         self.assertStatus(200)
 
     def test_set_quota_as_with_leading_dot(self):
-        # Mock a quota.
-        self.app.quota.set_disk_quota = MagicMock()
+        # When updating quota with leading dot
         self._edit_user("admin", disk_quota='.5 GiB')
-        self.app.quota.set_disk_quota.assert_called_once_with(ANY, 536870912)
+        # Then listener get called
+        self.listener.set_disk_quota.assert_called_once_with(ANY, 536870912)
+        # Then a success message is displayed
         self.assertInBody("User&#39;s quota updated")
         self.assertStatus(200)
 
     def test_set_quota_empty(self):
-        # Mock a quota.
-        self.app.quota.set_disk_quota = MagicMock()
+        # When quota is not defined
         self._edit_user("admin", disk_quota='')
-        # Make sure quota isnot called.
-        self.app.quota.set_disk_quota.assert_not_called()
+        # Then listener is not called.
+        self.listener.set_disk_quota.assert_not_called()
+        # Then message is not displayed
         self.assertNotInBody("User&#39;s quota updated")
         self.assertStatus(200)
 
     def test_set_quota_same_value(self):
-        # Mock a quota.
-        self.app.quota.get_disk_quota = MagicMock(return_value=1234567890)
-        self.app.quota.set_disk_quota = MagicMock()
+        # Given an exiting quota
+        self.listener.get_disk_quota.side_effect = None
+        self.listener.get_disk_quota.return_value = 1234567890
+        # When setting the quota value to the same value
         self._edit_user("admin", disk_quota='1.15 GiB')
-        # Verify that set_quota is not called.
-        self.app.quota.set_disk_quota.assert_not_called()
+        #  Then listener is not called
+        self.listener.set_disk_quota.assert_not_called()
+        # Then message is not displayed
         self.assertNotInBody("User&#39;s quota updated")
         self.assertStatus(200)
 
     def test_set_quota_unsupported(self):
-        # Mock a quota.
-        self.app.quota.set_disk_quota = MagicMock(side_effect=QuotaUnsupported())
+        # Given setting quota is not supported
+        self.listener.set_disk_quota.side_effect = None
+        self.listener.set_disk_quota.return_value = None
+        # When updating the quota
         self._edit_user("admin", disk_quota='8765432')
-        self.app.quota.set_disk_quota.assert_called_once_with(ANY, 8765432)
+        # Then
+        self.listener.set_disk_quota.assert_called_once_with(ANY, 8765432)
         self.assertInBody("Setting user&#39;s quota is not supported")
         self.assertStatus(200)
 

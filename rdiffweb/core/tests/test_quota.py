@@ -20,124 +20,151 @@ Created on Dec 10, 2020
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-import unittest
+from unittest import mock
 from unittest.mock import MagicMock
 
-from rdiffweb.core.quota import IUserQuota, QuotaUnsupported, QuotaException
-from rdiffweb.test import AppTestCase
+import cherrypy
+from rdiffweb import test
 
 
-class QuotaTest(AppTestCase):
+class QuotaPluginTest(test.WebCase):
 
-    def setUp(self):
-        AppTestCase.setUp(self)
-        self.quota = IUserQuota()
-        self.quota.get_disk_usage = MagicMock()
-        self.quota.get_disk_quota = MagicMock()
-        self.quota.set_disk_quota = MagicMock()
-        self.app.quota = self.quota
-
-    def test_get_set_disk_quota(self):
-        """
-        Just make a call to the function.
-        """
-        # Get quota
-        self.quota.get_disk_quota = MagicMock(return_value=1234)
-        userobj = self.app.store.get_user(self.USERNAME)
-        self.assertEqual(1234, userobj.disk_quota)
-        # Set Quota
-        userobj.disk_quota = 4567
-        self.quota.set_disk_quota.assert_called_with(userobj, 4567)
-
-    def test_disk_usage(self):
-        """
-        Just make a call to the function.
-        """
-        userobj = self.app.store.get_user(self.USERNAME)
-        self.quota.get_disk_usage = MagicMock(return_value=3)
-        disk_usage = userobj.disk_usage
-        self.assertEqual(3, disk_usage)
-
-
-class DefaultQuotaTest(AppTestCase):
-
-    def test_get_disk_quota(self):
-        """
-        Just make a call to the function.
-        """
-        # Get quota
-        userobj = self.app.store.get_user(self.USERNAME)
-        self.assertIsInstance(userobj.disk_quota, int)
-
-    def test_disk_usage(self):
-        """
-        Just make a call to the function.
-        """
-        userobj = self.app.store.get_user(self.USERNAME)
-        disk_usage = userobj.disk_usage
-        self.assertIsInstance(disk_usage, int)
+    default_config = {
+        'quota-get-cmd': 'echo 123456',
+        'quota-used-cmd': 'echo 21474836',
+        'quota-set-cmd': 'echo $RDIFFWEB_QUOTA',
+    }
 
     def test_get_disk_usage(self):
-        """
-        Check if value is available.
-        """
-        # Mock command line
-        self.app.quota._get_usage_cmd = "echo 21474836"
-
-        # Make sure an exception is raised.
+        # Given a user
         userobj = self.app.store.add_user('bob')
-        userobj.user_root = self.app.testcases
-        self.assertEqual(21474836, self.app.quota.get_disk_usage(userobj))
+        # When querying quota for a userobj
+        result = cherrypy.engine.publish('get_disk_usage', userobj)
+        # Then quota return a value
+        self.assertEqual(21474836, result[0])
 
-    def test_get_disk_usage_with_empty_user_root(self):
-        """
-        Check if value is available.
-        """
-        # Mock command line
-        self.app.quota._get_usage_cmd = "echo 21474836"
-
-        # Make sure an exception is raised.
+    def test_get_disk_quota(self):
+        # Given a user
         userobj = self.app.store.add_user('bob')
-        userobj.user_root = ''
-        self.assertEqual(0, self.app.quota.get_disk_usage(userobj))
-
-    def test_get_disk_usage_with_invalid_user_root(self):
-        """
-        Check if value is available.
-        """
-        # Mock command line
-        self.app.quota._get_usage_cmd = "echo 21474836"
-
-        # Make sure an exception is raised.
-        userobj = self.app.store.add_user('bob')
-        userobj.user_root = 'invalid'
-        self.assertEqual(0, self.app.quota.get_disk_usage(userobj))
+        # When querying quota for a userobj
+        result = cherrypy.engine.publish('get_disk_quota', userobj)
+        # Then quota return a value
+        self.assertEqual(123456, result[0])
 
     def test_set_disk_quota(self):
-        # Mock command
-        self.app.quota._set_quota_cmd = "echo ok"
-
+        # Given a used cmd
         userobj = self.app.store.add_user('bob')
-        self.app.quota.set_disk_quota(userobj, quota=1234567)
+        # When querying quota for a userobj
+        results = cherrypy.engine.publish('set_disk_quota', userobj, 98765)
+        # Then quota return a value
+        self.assertEqual([98765], results)
+
+
+class QuotaPluginTestWithFailure(test.WebCase):
+
+    default_config = {
+        'quota-get-cmd': 'exit 1',
+        'quota-used-cmd': 'exit 2',
+        'quota-set-cmd': 'exit 3',
+    }
+
+    def test_set_disk_quota_with_failure(self):
+        # Given a user object
+        userobj = self.app.store.add_user('bob')
+        # When settings the quota
+        results = cherrypy.engine.publish('set_disk_quota', userobj, 98765)
+        # Then False is returned
+        self.assertEqual([False], results)
+
+
+class QuotaPluginTestWithUndefinedCmd(test.WebCase):
+
+    def test_get_disk_usage_unsupported(self):
+        # Given a user object with a valid user_root
+        userobj = self.app.store.get_user(self.USERNAME)
+        # When getting disk usage
+        results = cherrypy.engine.publish('get_disk_usage', userobj)
+        # Then default disk usage is return
+        self.assertEqual([mock.ANY], results)
+
+    def test_get_disk_quota_unsupported(self):
+        # Given a user object
+        userobj = self.app.store.get_user(self.USERNAME)
+        # When gettings the quota
+        results = cherrypy.engine.publish('get_disk_quota', userobj)
+        # Then default disk usage is return
+        self.assertEqual([mock.ANY], results)
 
     def test_set_disk_quota_unsupported(self):
-        # Mock empty command
-        self.app.quota._get_usage_cmd = ""
-        # Create user
+        # Given a user object
+        userobj = self.app.store.get_user(self.USERNAME)
+        # When settings the quota
+        results = cherrypy.engine.publish('set_disk_quota', userobj, 98765)
+        # Then no response is returned
+        self.assertEqual([], results)
+
+    def test_get_disk_usage_with_empty_user_root(self):
+        # Given a user with an empty user_root.
         userobj = self.app.store.add_user('bob')
-        # expect exception
-        with self.assertRaises(QuotaUnsupported):
-            self.app.quota.set_disk_quota(userobj, quota=1234567)
+        userobj.user_root = ''
+        # When getting disk usage
+        results = cherrypy.engine.publish('get_disk_usage', userobj)
+        # Then default disk usage is return
+        self.assertEqual([0], results)
 
-    def test_update_userquota_401(self):
+    def test_get_disk_usage_with_invalid_user_root(self):
+        # Given a user with an invalid user_root.
         userobj = self.app.store.add_user('bob')
-        # Mock command
-        self.app.quota._set_quota_cmd = "exit 3"
-        # Make sure an exception is raised.
-        with self.assertRaises(QuotaException):
-            self.app.quota.set_disk_quota(userobj, quota=1234567)
+        userobj.user_root = 'invalid'
+        # When getting disk usage
+        results = cherrypy.engine.publish('get_disk_usage', userobj)
+        # Then default disk usage is return
+        self.assertEqual([0], results)
 
 
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()
+class UserObjectQuotaTest(test.WebCase):
+
+    def setUp(self):
+        self.listener = MagicMock()
+        cherrypy.engine.subscribe("set_disk_quota", self.listener.set_disk_quota, priority=40)
+        cherrypy.engine.subscribe("get_disk_quota", self.listener.get_disk_quota, priority=40)
+        cherrypy.engine.subscribe("get_disk_usage", self.listener.get_disk_usage, priority=40)
+        return super().setUp()
+
+    def tearDown(self):
+        cherrypy.engine.unsubscribe("set_disk_quota", self.listener.set_disk_quota)
+        cherrypy.engine.unsubscribe("get_disk_quota", self.listener.get_disk_quota)
+        cherrypy.engine.unsubscribe("get_disk_usage", self.listener.get_disk_usage)
+        return super().tearDown()
+
+    def test_get_disk_usage(self):
+        # Given a mock quota
+        self.listener.get_disk_usage.return_value = 12345
+        # Given a user object
+        userobj = self.app.store.get_user(self.USERNAME)
+        # When getting disk usage
+        value = userobj.disk_usage
+        # Then disk usage value is return
+        self.assertEqual(12345, value)
+        # Then listener was called
+        self.listener.get_disk_usage.assert_called_once_with(userobj)
+
+    def test_get_disk_quota(self):
+        # Given a mock quota
+        self.listener.get_disk_quota.return_value = 23456
+        # Given a user object
+        userobj = self.app.store.get_user(self.USERNAME)
+        # When getting disk quota
+        value = userobj.disk_quota
+        # Then disk quota value is return
+        self.assertEqual(23456, value)
+        # Then listener was called
+        self.listener.get_disk_quota.assert_called_once_with(userobj)
+
+    def test_set_disk_quota(self):
+        # Given a user object
+        userobj = self.app.store.get_user(self.USERNAME)
+        # When setting disk quota
+        userobj.disk_quota = 345678
+        # Then listener was called
+        self.listener.set_disk_quota.assert_called_once_with(userobj, 345678)
