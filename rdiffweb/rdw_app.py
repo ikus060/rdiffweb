@@ -17,7 +17,6 @@
 
 import logging
 import os
-from collections import namedtuple
 from distutils.version import LooseVersion
 
 import cherrypy
@@ -27,6 +26,9 @@ from cherrypy import Application
 
 import rdiffweb
 import rdiffweb.controller.filter_authorization
+import rdiffweb.core.notification
+import rdiffweb.core.quota
+import rdiffweb.core.remove_older
 import rdiffweb.plugins.ldap
 import rdiffweb.plugins.scheduler
 import rdiffweb.plugins.smtp
@@ -37,8 +39,6 @@ import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
 import rdiffweb.tools.ratelimit
 import rdiffweb.tools.security
-import rdiffweb.core.remove_older
-import rdiffweb.core.notification
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
 from rdiffweb.controller.dispatch import static  # noqa
@@ -56,7 +56,6 @@ from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option
-from rdiffweb.core.quota import DefaultUserQuota
 from rdiffweb.core.store import Store
 
 # Define the logger
@@ -146,6 +145,10 @@ class RdiffwebApp(Application):
             # Configure notification plugin
             'notification.execution_time': self.cfg.email_notification_time,
             'notification.send_changed': self.cfg.email_send_changed_notification,
+            # Configure quota plugin
+            'quota.set_quota_cmd': self.cfg.quota_set_cmd,
+            'quota.get_quota_cmd': self.cfg.quota_get_cmd,
+            'quota.get_usage_cmd': self.cfg.quota_used_cmd,
         })
 
         # Initialise the template engine.
@@ -207,9 +210,6 @@ class RdiffwebApp(Application):
         if self._tempdir:
             os.environ["TMPDIR"] = self._tempdir
 
-        # Load UserQuota entry point
-        self.quota = self._load_quota()
-
         # create user manager
         self.store = Store(self)
         self.store.create_admin_user()
@@ -248,35 +248,9 @@ class RdiffwebApp(Application):
             # If failing, send the raw error message.
             return kwargs.get('message')
 
-    def _load_quota(self):
-        """
-        Load the right quota module
-        """
-        # If a custom module define a IUserQuota, let make use of it.
-        entry_point = next(pkg_resources.iter_entry_points('rdiffweb.IUserQuota'), None)  # @UndefinedVariable
-        if entry_point:
-            try:
-                cls = entry_point.load()
-                return cls(self)
-            except Exception:
-                logger.warning('IUserQuota [%s] fail to load, fall back to default quota', entry_point, exc_info=1)
-                return DefaultUserQuota(self)
-        # Otherwise, return default
-        return DefaultUserQuota(self)
-
     @property
     def version(self):
         """
         Get the current running version (using package info).
         """
         return rdiffweb.__version__
-
-    @property
-    def plugins(self):
-        """
-        Return list of plugins.
-        """
-        RiffwebPlugin = namedtuple('RiffwebPlugin', ['name', 'version'])
-        for group in ['rdiffweb.IUserQuota']:
-            for e in pkg_resources.iter_entry_points(group):
-                yield RiffwebPlugin(name=e.name, version=e.dist)

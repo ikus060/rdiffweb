@@ -426,7 +426,6 @@ class StoreWithLdapTest(AbstractLdapStoreTest):
     default_config = {
         'ldap-uri': '__default__',
         'ldap-base-dn': 'dc=nodomain',
-        'ldap-allow-password-change': 'true'
     }
 
     def test_add_user_to_sqlite(self):

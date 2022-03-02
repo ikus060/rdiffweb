@@ -21,66 +21,38 @@ Created on Sep. 29, 2020
 '''
 
 import logging
-import os
 import subprocess
 
+import cherrypy
 import psutil
-from rdiffweb.core.config import Option
+from cherrypy.process.plugins import SimplePlugin
 from rdiffweb.core.store import UserObject
 
 logger = logging.getLogger(__name__)
 
 
-class QuotaException(Exception):
+class QuotaPlugin(SimplePlugin):
     """
-    Raised when error occur during setting quota.
-    """
-    pass
-
-
-class QuotaUnsupported(Exception):
-    """
-    Raised when the quota is not supported.
-    """
-    pass
-
-
-class IUserQuota():
-    """
-    Extension point to get user quotas
-    """
-
-    def get_disk_usage(self, userobj):
-        """
-        Return the user disk space or file system disk space.
-        """
-
-    def get_disk_quota(self, userobj, value):
-        """
-        Return the current user's quota. Return None if quota is not allow for
-        this user or implementation. This is used to enable or disable display
-        of user's quota in web interface.
-        """
-
-    def set_disk_quota(self, userobj, value):
-        """
-        Sets the user's quota. Raise QuotaUnsupported if this implementation
-        doesn't support setting user's quota.
-        """
-
-
-class DefaultUserQuota():
-    """
-    Default implementation of IUserQuota for quota management.
+    Default implementation of user quota for quota management.
     This implementation uses default disk usage.
     """
 
-    _set_quota_cmd = Option('quota_set_cmd')
-    _get_quota_cmd = Option('quota_get_cmd')
-    _get_usage_cmd = Option('quota_used_cmd')
+    set_quota_cmd = None
+    get_quota_cmd = None
+    get_usage_cmd = None
 
-    def __init__(self, app):
-        self.app = app
+    def start(self):
+        self.bus.log('Start Quota plugin')
+        if self.set_quota_cmd:
+            self.bus.subscribe("set_disk_quota", self.set_quota)
+        self.bus.subscribe("get_disk_quota", self.get_quota)
+        self.bus.subscribe("get_disk_usage", self.get_usage)
+
+    def stop(self):
+        self.bus.log('Stop Quota plugin')
+        self.bus.unsubscribe("set_disk_quota", self.set_quota)
+        self.bus.unsubscribe("get_disk_quota", self.get_quota)
+        self.bus.unsubscribe("get_disk_usage", self.get_usage)
 
     def _exec(self, cmd, userobj, quota=None):
         env = {
@@ -93,17 +65,9 @@ class DefaultUserQuota():
             env["RDIFFWEB_QUOTA"] = str(quota)
         return subprocess.run(cmd, env=env, shell=True, check=True, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout
 
-    def get_disk_usage(self, userobj):
-        """
-        Return the user disk space. Return 0 if unknown.
-        """
-        assert isinstance(userobj, UserObject)
-        # Skip disk usage if user_root doesn't exists.
-        if not userobj.user_root or not os.path.exists(userobj.user_root):
-            return 0
-
+    def get_usage(self, userobj: UserObject):
         # Fall back to disk spaces.
-        if not self._get_usage_cmd:
+        if not self.get_usage_cmd:
             try:
                 return psutil.disk_usage(userobj.user_root).used
             except Exception:
@@ -111,23 +75,15 @@ class DefaultUserQuota():
                 return 0
         # Execute a command to get disk usage
         try:
-            used = self._exec(self._get_usage_cmd, userobj)
+            used = self._exec(self.get_usage_cmd, userobj)
             return int(used.strip())
         except Exception:
             logger.warning('fail to get user disk usage [%s]', userobj.username, exc_info=1)
             return 0
 
-    def get_disk_quota(self, userobj):
-        """
-        Get's user's disk quota.
-        """
-        assert isinstance(userobj, UserObject)
-        # Skip disk usage if user_root doesn't exists.
-        if not userobj.user_root or not os.path.exists(userobj.user_root):
-            return 0
-
+    def get_quota(self, userobj: UserObject):
         # Fall back to disk spaces.
-        if not self._get_quota_cmd:
+        if not self.get_quota_cmd:
             try:
                 return psutil.disk_usage(userobj.user_root).total
             except Exception:
@@ -135,27 +91,28 @@ class DefaultUserQuota():
                 return 0
         # Execute a command to get disk usage
         try:
-            total = self._exec(self._get_quota_cmd, userobj)
+            total = self._exec(self.get_quota_cmd, userobj)
             return int(total.strip())
         except Exception:
             logger.warning('fail to get user quota [%s]', userobj.username, exc_info=1)
             return 0
 
-    def set_disk_quota(self, userobj, quota):
-        """
-        Sets the user's quota.
-        """
-        assert isinstance(userobj, UserObject)
-        assert isinstance(quota, int), "quota should be a number: " + quota
-        # Return None if quota is not enabled
-        if not self._set_quota_cmd:
-            raise QuotaUnsupported()
+    def set_quota(self, userobj: UserObject, quota: int):
+        # Return False if quota is not enabled
+        if not self.set_quota_cmd:
+            return False
         # Always update unless quota not define
         logger.info('set user [%s] quota [%s]', userobj.username, quota)
         try:
-            self._exec(self._set_quota_cmd, userobj, quota=quota)
-        except subprocess.CalledProcessError as e:
-            raise QuotaException(e.output)
-        except Exception as e:
+            self._exec(self.set_quota_cmd, userobj, quota=quota)
+            return quota
+        except Exception:
             logger.warning('fail to set user quota [%s]', userobj.username, exc_info=1)
-            raise QuotaException(str(e))
+            return False
+
+
+cherrypy.quota = QuotaPlugin(cherrypy.engine)
+cherrypy.quota.subscribe()
+
+cherrypy.config.namespaces['quota'] = lambda key, value: setattr(
+    cherrypy.quota, key, value)

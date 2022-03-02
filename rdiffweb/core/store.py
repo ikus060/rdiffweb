@@ -225,6 +225,31 @@ class UserObject(object):
                     and_(_SSHKEYS.c.userid == self._userid, _SSHKEYS.c.fingerprint == fingerprint)))
         self._store.bus.publish('user_attr_changed', self, {'authorizedkeys': True})
 
+    @property
+    def disk_usage(self):
+        # Skip if user_root is invalid.
+        if not self.user_root or not os.path.exists(self.user_root):
+            return 0
+        values = self._store.bus.publish('get_disk_usage', self)
+        # Return the first not None value
+        return next((v for v in values if v is not None), 0)
+
+    @property
+    def disk_quota(self):
+        # Skip if user_root is invalid.
+        if not self.user_root or not os.path.exists(self.user_root):
+            return 0
+        values = self._store.bus.publish('get_disk_quota', self)
+        # Return the first not None value
+        return next((v for v in values if v is not None), 0)
+
+    @disk_quota.setter
+    def disk_quota(self, value):
+        # Skip if user_root is invalid.
+        if not self.user_root or not os.path.exists(self.user_root):
+            return
+        self._store.bus.publish('set_disk_quota', self, value)
+
     def __eq__(self, other):
         return isinstance(other, UserObject) and self._userid == other._userid
 
@@ -393,11 +418,8 @@ class UserObject(object):
                     fset=lambda x, y: x._set_attr('role', int(y)))
     authorizedkeys = property(fget=lambda x: x._get_authorizedkeys())
     repo_objs = property(fget=lambda x: x._get_repos_obj())
-    disk_quota = property(fget=lambda x: x._store.app.quota.get_disk_quota(
-        x), fset=lambda x, y: x._store.app.quota.set_disk_quota(x, y))
     hash_password = property(fget=lambda x: x._get_attr(
         'password'), fset=lambda x, y: x._set_attr('password', y, notify=False))
-    disk_usage = property(fget=lambda x: x._store.app.quota.get_disk_usage(x))
 
 
 class RepoObject(RdiffRepo):
