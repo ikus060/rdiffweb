@@ -268,12 +268,6 @@ def parse_args(args=None, config_file_contents=None):
         default="utf-8")
 
     parser.add_argument(
-        '--ldap-check-shadow-expire', '--ldapcheckshadowexpire',
-        help="enable validation of shadow expired when validating user's credential. User will not be allowed to login if the account expired.",
-        default=False,
-        action='store_true')
-
-    parser.add_argument(
         '--log-access-file', '--logaccessfile',
         metavar='FILE',
         help='location of Rdiffweb log access file.')

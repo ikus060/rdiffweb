@@ -107,6 +107,12 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## next-release
+
+* Replace `python-ldap` by `ldap3` a pure python implementation to avoid dependencies on operating system sasl and ldap binaries #186
+* Ldap Password changes is not supported anymore
+* Ldap Check Shadow expire config is not supported. It should be replace by a custom filter.
+
 ## 2.3.9 (2022-01-05)
 
 Maintenance release to fix minor issues

@@ -360,7 +360,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         # Then listenr get called
         self.listener.set_disk_quota.assert_called_once_with(ANY, 8765432)
         # Then a success message is displayed
-        self.assertInBody("User&#39;s quota updated")
+        self.assertInBody("User information modified successfully.")
         self.assertStatus(200)
 
     def test_set_quota_as_gib(self):
@@ -369,7 +369,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         # Then listern get called
         self.listener.set_disk_quota.assert_called_once_with(ANY, 1073741824)
         # Then a success message is displayed
-        self.assertInBody("User&#39;s quota updated")
+        self.assertInBody("User information modified successfully.")
         self.assertStatus(200)
 
     def test_set_quota_as_with_comma(self):
@@ -378,7 +378,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         # Then listner get called
         self.listener.set_disk_quota.assert_called_once_with(ANY, 1610612736)
         # Then a success message is displayed
-        self.assertInBody("User&#39;s quota updated")
+        self.assertInBody("User information modified successfully.")
         self.assertStatus(200)
 
     def test_set_quota_as_with_leading_dot(self):
@@ -387,7 +387,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         # Then listener get called
         self.listener.set_disk_quota.assert_called_once_with(ANY, 536870912)
         # Then a success message is displayed
-        self.assertInBody("User&#39;s quota updated")
+        self.assertInBody("User information modified successfully.")
         self.assertStatus(200)
 
     def test_set_quota_empty(self):
@@ -396,7 +396,6 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         # Then listener is not called.
         self.listener.set_disk_quota.assert_not_called()
         # Then message is not displayed
-        self.assertNotInBody("User&#39;s quota updated")
         self.assertStatus(200)
 
     def test_set_quota_same_value(self):
@@ -408,7 +407,6 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         #  Then listener is not called
         self.listener.set_disk_quota.assert_not_called()
         # Then message is not displayed
-        self.assertNotInBody("User&#39;s quota updated")
         self.assertStatus(200)
 
     def test_set_quota_unsupported(self):

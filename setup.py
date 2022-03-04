@@ -79,7 +79,6 @@ class compile_all_catalogs(Command):
 # Compute requirements
 tests_require = [
     "mock>=1.3.0",
-    "mockldap>=0.2.6",
     "pytest",
 ]
 extras_require = {'test': tests_require}
@@ -117,7 +116,7 @@ setuptools.setup(
         "MarkupSafe<2.1",
         "psutil>=2.1.1",
         "babel>=0.9.6",
-        "python-ldap",
+        "ldap3",
         "WTForms<3.0.0",
         "distro",
         "humanfriendly",

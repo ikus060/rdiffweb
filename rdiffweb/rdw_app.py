@@ -133,7 +133,6 @@ class RdiffwebApp(Application):
             'ldap.network_timeout': cfg.ldap_network_timeout,
             'ldap.timeout': cfg.ldap_timeout,
             'ldap.encoding': cfg.ldap_encoding,
-            'ldap.check_shadow_expire': cfg.ldap_check_shadow_expire,
             # Configure SMTP plugin
             'smtp.server': cfg.email_host,
             'smtp.username': cfg.email_username,
