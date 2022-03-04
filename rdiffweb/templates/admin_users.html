@@ -134,7 +134,7 @@
 {# Dialog to create new user. #}
 {% call modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
     <input type="hidden" name="action" value="add" >
-    {{ user_form(form=form) }}
+    {{ user_form(form=add_form) }}
 {% endcall %}
 
 {# Dialogs to edit user. #}
@@ -142,7 +142,7 @@
 {% set modalid = "edit-user-" + user.username + "-modal" %}
 {% call modal_dialog(modalid, _('Edit user %(name)s', name=user.username), _('Save changes')) %}
     <input type="hidden" name="action" value="edit" >
-    {{ user_form(form=form, id=loop.idx, user=user) }}
+    {{ user_form(form=edit_form, id=loop.idx, user=user) }}
 {% endcall %}
 {% endfor %}
 

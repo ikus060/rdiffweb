@@ -30,13 +30,12 @@ import psutil
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.core.config import Option
-from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import rdiff_backup_version
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
+from rdiffweb.tools.i18n import ugettext as _
 from wtforms import validators, widgets
-from wtforms.fields.core import Field, SelectField, StringField
+from wtforms.fields import Field, PasswordField, SelectField, StringField
 from wtforms.fields.html5 import EmailField
-from wtforms.fields.simple import PasswordField
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -166,13 +165,48 @@ class UserForm(CherryForm):
         default=USER_ROLE,
         description=_("Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo."))
     disk_quota = SizeField(
-        _('User Quota'),
+        _('Disk space'),
         validators=[validators.optional()],
         description=_("Users disk spaces (in bytes). Set to 0 to remove quota (unlimited)."))
     disk_usage = SizeField(
         _('Quota Used'),
         validators=[validators.optional()],
         description=_("Disk spaces (in bytes) used by this user."))
+
+    def validate_role(self, field):
+        # Don't allow the user to changes it's "role" state.
+        currentuser = cherrypy.request.currentuser
+        if self.username.data == currentuser.username and self.role.data != currentuser.role:
+            raise ValueError(_('Cannot edit your own role.'))
+
+    def populate_obj(self, userobj):
+        # Save password if defined
+        if self.password.data:
+            userobj.set_password(self.password.data, old_password=None)
+        userobj.role = self.role.data
+        userobj.email = self.email.data or ''
+        userobj.user_root = self.user_root.data
+        if not userobj.valid_user_root():
+            flash(_("User's root directory %s is not accessible!") % userobj.user_root, level='error')
+            logger.warning("user's root directory %s is not accessible" % userobj.user_root)
+        # Try to update disk quota if the human readable value changed.
+        # Report error using flash.
+        new_quota = self.disk_quota.data or 0
+        old_quota = humanfriendly.parse_size(humanfriendly.format_size(self.disk_quota.object_data or 0, binary=True))
+        if old_quota != new_quota:
+            userobj.disk_quota = new_quota
+            # Setting quota will silently fail. Check if quota was updated.
+            if userobj.disk_quota != new_quota:
+                flash(_("Setting user's quota is not supported"), level='warning')
+
+
+class EditUserForm(UserForm):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Make username field read-only
+        self.username.render_kw = {'readonly': True}
+        self.username.populate_obj = lambda *args, **kwargs: None
 
 
 class DeleteUserForm(CherryForm):
@@ -185,61 +219,6 @@ class AdminPage(Controller):
 
     logfile = Option('log_file')
     logaccessfile = Option('log_access_file')
-
-    def _add_or_edit_user(self, action, form):
-        assert action in ['add', 'edit']
-        assert form
-        # Validate form.
-        if not form.validate():
-            flash(form.error_message, level='error')
-            return
-        # Get or create user
-        try:
-            if action == 'add':
-                user = self.app.store.add_user(form.username.data, form.password.data)
-            else:
-                user = self.app.store.get_user(form.username.data)
-                if not user:
-                    flash(_("Cannot edit user `%s`: user doesn't exists") % form.username.data, level='error')
-                    return
-        except Exception as e:
-            flash(str(e), level='error')
-            return
-
-        # Update user's password
-        try:
-            if form.password.data:
-                user.set_password(form.password.data, old_password=None)
-        except ValueError as e:
-            flash(str(e), level='error')
-
-        # Don't allow the user to changes it's "role" state.
-        if form.username.data != self.app.currentuser.username:
-            user.role = form.role.data
-        user.email = form.email.data or ''
-        if form.user_root.data:
-            user.user_root = form.user_root.data
-            if not user.valid_user_root():
-                flash(_("User's root directory %s is not accessible!") % user.user_root, level='error')
-                logger.warning("user's root directory %s is not accessible" % user.user_root)
-
-        # Try to update disk quota if the human readable value changed.
-        # Report error using flash.
-        if form.disk_quota and form.disk_quota.data:
-            new_quota = form.disk_quota.data
-            old_quota = humanfriendly.parse_size(humanfriendly.format_size(user.disk_quota, binary=True))
-            if old_quota != new_quota:
-                user.disk_quota = new_quota
-                # Setting quota will silently fail. Check if quota was updated.
-                if user.disk_quota == new_quota:
-                    flash(_("User's quota updated"), level='success')
-                else:
-                    flash(_("Setting user's quota is not supported"), level='warning')
-
-        if action == 'add':
-            flash(_("User added successfully."))
-        else:
-            flash(_("User information modified successfully."))
 
     def _delete_user(self, action, form):
         assert action == 'delete'
@@ -303,17 +282,40 @@ class AdminPage(Controller):
         return self._compile_template("admin_logs.html", **params)
 
     @cherrypy.expose
-    def users(self, criteria=u"", search=u"", action=u"", **kwargs):
+    def users(self, username=None, criteria=u"", search=u"", action=u"", **kwargs):
 
         # If we're just showing the initial page, just do that
-        form = UserForm()
-        if action in ["add", "edit"]:
-            self._add_or_edit_user(action, form)
+        if action == "add":
+            form = UserForm()
+            if form.validate_on_submit():
+                try:
+                    user = self.app.store.add_user(username)
+                    form.populate_obj(user)
+                    flash(_("User added successfully."))
+                except Exception as e:
+                    flash(str(e), level='error')
+            else:
+                flash(form.error_message, level='error')
+        elif action == "edit":
+            user = self.app.store.get_user(username)
+            if user:
+                form = EditUserForm(obj=user)
+                if form.validate_on_submit():
+                    try:
+                        form.populate_obj(user)
+                        flash(_("User information modified successfully."))
+                    except Exception as e:
+                        flash(str(e), level='error')
+                else:
+                    flash(form.error_message, level='error')
+            else:
+                flash(_("Cannot edit user `%s`: user doesn't exists") % username, level='error')
         elif action == 'delete':
             self._delete_user(action, DeleteUserForm())
 
         params = {
-            "form": UserForm(formdata=None),
+            "add_form": UserForm(formdata=None),
+            "edit_form": EditUserForm(formdata=None),
             "criteria": criteria,
             "search": search,
             "users": list(self.app.store.users(search=search, criteria=criteria))}
