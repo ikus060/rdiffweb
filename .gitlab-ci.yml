@@ -194,9 +194,7 @@ publish:deb:
       - $NEXUS_PWD
   parallel:
     matrix:
-    # impish could not be push because nexus server doesn't support zstd compression yet.
-    # See https://issues.sonatype.org/browse/NEXUS-28889
-    - DIST: [buster, bullseye, hirsute]
+    - DIST: [buster, bullseye, hirsute, impish]
   script: |
     set -e
     set -x
