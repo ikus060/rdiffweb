@@ -1,8 +1,9 @@
 {% extends 'graphs.html' %}
+{% from 'include/chartkick.html' import line_chart %}
 {% block graph_body %}
 <h2>{% trans %}Errors{% endtrans%}</h2>
 <p>
 {% trans %}Cumulative number of errors by period of time.{% endtrans%}
 </p>
-{% line_chart data.errors with colors=["#dc3912"] %}
+{{ line_chart(data.errors, colors=["#dc3912"]) }}
 {% endblock %}

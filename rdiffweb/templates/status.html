@@ -1,17 +1,15 @@
 {% extends 'layout.html' %}
+{% from 'include/chartkick.html' import line_chart %}
 {% set active_page='status' %}
 {% block title %}{% trans %}Status{% endtrans %}{% endblock %}
 {% block body %}
-<script src="{{ url_for('static/js/chart.min.js') }}"></script>
-<script src="{{ url_for('graphs', 'chartkick.js') }}"></script>
-
 <div class="container">
 
     {% include 'message.html' %}
     
     <h2>{% trans %}Backup Status{% endtrans %}</h2>
     <p>{% trans %}Number of backup per days{% endtrans %}</p>
-    {% line_chart backup_count %}
+    {{ line_chart(backup_count) }}
     
     {% for date, items in data.items()|sort(attribute='0',reverse=1) %}
     <h3>{% trans %}Backup for{% endtrans %} <time class="js-date" datetime="{{date}}">{{date}}</time> ({{items|length}})</h3>

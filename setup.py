@@ -112,7 +112,7 @@ setuptools.setup(
     },
     install_requires=[
         "CherryPy>=8.9.1",
-        "Jinja2>=2.10,<3",
+        "Jinja2>=2.10",
         "MarkupSafe<2.1",
         "psutil>=2.1.1",
         "babel>=0.9.6",
@@ -123,7 +123,6 @@ setuptools.setup(
         "configargparse",
         "sqlalchemy",
         "apscheduler",
-        "chartkick",
     ],
     # required packages for build process
     setup_requires=[

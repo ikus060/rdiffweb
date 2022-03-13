@@ -21,3 +21,4 @@ execute_after_dh_auto_install:
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/bootstrap.min.js
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/jquery.min.js
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/chart.min.js
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/chartkick.min.js

@@ -16,13 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import chartkick  # noqa
 import cherrypy
-import pkg_resources
 from rdiffweb.controller import Controller, validate_int, validate_isinstance
-from rdiffweb.controller.dispatch import poppath, static
-from rdiffweb.tools.i18n import ugettext as _
+from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
+from rdiffweb.tools.i18n import ugettext as _
 
 
 def bytes_to_mb(v):
@@ -86,10 +84,6 @@ class Data():
 
 @poppath('graph')
 class GraphsPage(Controller):
-
-    def __init__(self):
-        self.chartkick_js = static(
-            pkg_resources.resource_filename('chartkick', 'js/chartkick.js'))  # @UndefinedVariable
 
     @cherrypy.expose
     @cherrypy.tools.errors(error_table={

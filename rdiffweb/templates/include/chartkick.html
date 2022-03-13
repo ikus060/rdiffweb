@@ -1,0 +1,28 @@
+{% set chart_id = 0 %}
+
+{% macro chartkick(name, data, height, options) %}
+{% if chart_id == 0 %}
+<script src="{{ url_for('static/js/chart.min.js') }}"></script>
+<script src="{{ url_for('static/js/chartkick.min.js') }}"></script>
+{% endif %}
+{% set chart_id = chart_id + 1 %}
+<div id="chart-{{chart_id}}" style="height: {{height}}; text-align: center; color: #999;
+                      line-height: {{height}}; font-size: 14px;
+                      font-family: Lucida Grande, Lucida Sans Unicode,
+                      Verdana, Arial, Helvetica, sans-serif;">
+    {%trans%}Loading...{%endtrans%}
+</div>
+<script>
+    //<![CDATA[
+    new Chartkick.{{ name }}(document.getElementById("chart-{{chart_id}}"), {{ data|tojson }}, {{options|d({})|tojson}} );
+//]]>
+</script>
+{% endmacro %}
+
+{% macro line_chart(data, height='300px') %}
+{{chartkick('LineChart', data, height, kwargs)}}
+{% endmacro %}
+
+{% macro bar_chart(data, height='300px') %}
+{{chartkick('BarChart', data, height, kwargs)}}
+{% endmacro %}

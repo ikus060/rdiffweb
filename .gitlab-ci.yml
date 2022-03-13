@@ -118,7 +118,7 @@ package:deb:
     matrix:
     - DIST: buster
       BACKPORTS: deb http://deb.debian.org/debian buster-backports main
-    - DIST: [bullseye, hirsute, impish]
+    - DIST: [bullseye, bookworm, hirsute, impish]
   script: |
     set -x
     set -e
@@ -147,7 +147,7 @@ test-package:deb:
   needs: ["package:deb"]
   parallel:
     matrix:
-    - DIST: [buster, bullseye]
+    - DIST: [buster, bullseye, bookworm]
     # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
     # So we need to make it explicit using environment variable
     - DIST: [hirsute, impish]
@@ -194,7 +194,7 @@ publish:deb:
       - $NEXUS_PWD
   parallel:
     matrix:
-    - DIST: [buster, bullseye, hirsute, impish]
+    - DIST: [buster, bullseye, bookworm, hirsute, impish]
   script: |
     set -e
     set -x

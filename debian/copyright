@@ -33,6 +33,10 @@ Files: rdiffweb/static/js/chart.min.js
 Copyright: Copyright (C) 2021 Chart.js Contributors
 License: MIT
 
+Files: rdiffweb/static/js/chartkick.min.js
+Copyright: Copyright (c) 2013-2021 Andrew Kane
+License: MIT
+
 Files: rdiffweb/static/js/jquery.min.js
 Copyright: 2005-2011 John Resig, Brandon Aaron & Jörn Zaefferer
 License: GPL-2 or MIT
