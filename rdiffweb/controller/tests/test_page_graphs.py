@@ -72,9 +72,9 @@ class SettingsTest(rdiffweb.test.WebCase):
         self.assertInBody("Chart")
 
     def test_chart_js(self):
-        self.getPage("/graphs/chartkick.js")
+        self.getPage("/static/js/chartkick.min.js")
         self.assertStatus('200 OK')
-        self.assertInBody("Chartkick.js")
+        self.assertInBody("Chartkick")
 
     def test_does_not_exists(self):
         # Given an invalid repo

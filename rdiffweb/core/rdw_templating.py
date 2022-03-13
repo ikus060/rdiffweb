@@ -21,7 +21,6 @@ from io import StringIO
 import logging
 import os
 
-from chartkick.ext import ChartExtension
 import cherrypy
 import humanfriendly
 from jinja2 import Environment, PackageLoader
@@ -184,18 +183,6 @@ def url_for(endpoint, *args, **kwargs):
     return cherrypy.url(path=path, qs=qs)
 
 
-class PatchedChartExtension(ChartExtension):
-    """
-    Patched version of Chartkick.
-    """
-
-    def _chart_support(self, name, data, caller, **kwargs):
-        # Remove l_0_
-        kwargs = dict((k[2:], v) for (k, v) in kwargs.items())
-        return super(PatchedChartExtension, self)._chart_support(
-            name, data, caller, **kwargs)
-
-
 class TemplateManager(object):
     """
     Uses to generate HTML page from template using Jinja2 templating.
@@ -216,7 +203,6 @@ class TemplateManager(object):
                 'jinja2.ext.i18n',
                 'jinja2.ext.with_',
                 'jinja2.ext.autoescape',
-                PatchedChartExtension,
             ])
 
         # Register filters

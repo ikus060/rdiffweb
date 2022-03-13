@@ -11,7 +11,7 @@ how to translate rdiffweb. It's not a complete instruction set, it's merely a re
 
 Extract the strings to be translated:
 
-    python setup.py extract_messages --output-file rdiffweb/locales/messages.pot
+    python setup.py extract_messages
 
 Create a new translation:
 
