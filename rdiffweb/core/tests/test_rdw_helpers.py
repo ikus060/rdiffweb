@@ -27,12 +27,13 @@ from rdiffweb.core.rdw_helpers import quote_url, unquote_url
 
 
 class Test(unittest.TestCase):
-
     def test_quote_url(self):
         self.assertEqual('this%20is%20some%20path', quote_url('this is some path'))
         self.assertEqual('this%20is%20some%20path', quote_url(b'this is some path'))
-        self.assertEqual('R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial',
-                         quote_url(b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial'))
+        self.assertEqual(
+            'R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial',
+            quote_url(b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial'),
+        )
 
     def test_unquote_url(self):
         self.assertEqual(b'this is some path', unquote_url('this%20is%20some%20path'))

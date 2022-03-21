@@ -18,12 +18,12 @@
 import logging
 
 import cherrypy
+
 import rdiffweb.tools.errors  # noqa
 from rdiffweb.controller import Controller
 from rdiffweb.controller.dispatch import poppath
+from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, SymLinkAccessDeniedError
 from rdiffweb.tools.i18n import ugettext as _
-from rdiffweb.core.librdiff import (AccessDeniedError, DoesNotExistError,
-                                    SymLinkAccessDeniedError)
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -36,11 +36,13 @@ class BrowsePage(Controller):
     repository."""
 
     @cherrypy.expose
-    @cherrypy.tools.errors(error_table={
-        DoesNotExistError: 404,
-        AccessDeniedError: 403,
-        SymLinkAccessDeniedError: 403,
-    })
+    @cherrypy.tools.errors(
+        error_table={
+            DoesNotExistError: 404,
+            AccessDeniedError: 403,
+            SymLinkAccessDeniedError: 403,
+        }
+    )
     def default(self, path=b""):
 
         # Check user access to the given repo & path
@@ -55,9 +57,5 @@ class BrowsePage(Controller):
         # Get list of actual directory entries
         dir_entries = path_obj.dir_entries[::-1]
 
-        parms = {
-            "repo": repo_obj,
-            "path": path_obj,
-            "dir_entries": dir_entries,
-            "warning": warning}
+        parms = {"repo": repo_obj, "path": path_obj, "dir_entries": dir_entries, "warning": warning}
         return self._compile_template("browse.html", **parms)

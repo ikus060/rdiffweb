@@ -23,7 +23,7 @@ from wtforms.form import Form
 SUBMIT_METHODS = {'POST', 'PUT', 'PATCH', 'DELETE'}
 
 
-class _ProxyFormdata():
+class _ProxyFormdata:
     """
     Custom class to proxy default form data into WTForm from cherrypy variables.
     """
@@ -82,8 +82,13 @@ class CherryForm(Form):
         """
         return self()
 
-    def __call__(self, div_class='form-outline', label_class='form-label', field_class='form-control', error_class='invalid-feedback'):
-
+    def __call__(
+        self,
+        div_class='form-outline',
+        label_class='form-label',
+        field_class='form-control',
+        error_class='invalid-feedback',
+    ):
         def generator():
             for id, field in self._fields.items():
                 if field.type == 'HiddenField':
@@ -95,4 +100,5 @@ class CherryForm(Form):
                     for error in field.errors:
                         yield Markup('<div class="%s">%s</div>' % (escape(error_class), escape(error)))
                     yield Markup('</div>')
+
         return Markup('').join(list(generator()))

@@ -1,6 +1,7 @@
-FROM debian:buster-slim
+# rdiff-backup is compatible with Debian Buster python 3.7
+FROM debian:buster-slim as base
 
-MAINTAINER Patrik Dufresne <patrik@ikus-soft.com>
+LABEL author="Patrik Dufresne <patrik@ikus-soft.com>"
 
 EXPOSE 8080
 
@@ -23,8 +24,8 @@ RUN set -x; \
   rm -rf /var/lib/apt/lists/* && \
   cd /tmp/rdiffweb/ && \
   pip3 install rdiff-backup pytest && \
-  pip3 install . && \
-  pip3 install -e ".[test]" && \
-  pytest
+  pip3 install . ".[test]" && \
+  pytest && \
+  pip3 uninstall -y pytest
 
 CMD ["/usr/local/bin/rdiffweb"]

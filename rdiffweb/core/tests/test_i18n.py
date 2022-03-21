@@ -27,16 +27,15 @@ import unittest
 
 import cherrypy
 import pkg_resources
-import rdiffweb.test
 from cherrypy import _cpconfig
+
+import rdiffweb.test
 from rdiffweb.tools import i18n
 
 
 class Test(unittest.TestCase):
-
     def setUp(self):
-        self.mo_dir = pkg_resources.resource_filename(
-            'rdiffweb', 'locales')  # @UndefinedVariable
+        self.mo_dir = pkg_resources.resource_filename('rdiffweb', 'locales')  # @UndefinedVariable
         cherrypy.request.config = _cpconfig.Config()
 
     def tearDown(self):
@@ -147,7 +146,6 @@ class Test(unittest.TestCase):
 
 
 class TestI18nWebCase(rdiffweb.test.WebCase):
-
     def test_language_with_unknown(self):
         #  Query the page without login-in
         self.getPage("/login/", headers=[("Accept-Language", "it")])
@@ -162,23 +160,20 @@ class TestI18nWebCase(rdiffweb.test.WebCase):
         self.assertInBody("Sign in")
 
     def test_language_en_fr(self):
-        self.getPage(
-            "/login/", headers=[("Accept-Language", "en-US,en;q=0.8,fr-CA;q=0.8")])
+        self.getPage("/login/", headers=[("Accept-Language", "en-US,en;q=0.8,fr-CA;q=0.8")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "en_US")
         self.assertInBody("Sign in")
 
     def test_language_fr(self):
-        self.getPage(
-            "/login/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
+        self.getPage("/login/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "fr_CA")
         self.assertInBody("Se connecter")
 
     def test_language_between_session(self):
         # Make a request with Accept-Language
-        self.getPage(
-            "/login/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
+        self.getPage("/login/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "fr_CA")
         self.assertInBody("Se connecter")

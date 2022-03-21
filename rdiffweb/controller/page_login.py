@@ -17,14 +17,15 @@
 import logging
 
 import cherrypy
-from rdiffweb.controller import Controller, flash
-from rdiffweb.controller.cherrypy_wtf import CherryForm
-from rdiffweb.core.config import Option
-from rdiffweb.tools.i18n import ugettext as _
-from rdiffweb.tools.auth_form import SESSION_KEY
 from wtforms.fields import PasswordField, StringField
 from wtforms.fields.simple import HiddenField
 from wtforms.validators import InputRequired
+
+from rdiffweb.controller import Controller, flash
+from rdiffweb.controller.cherrypy_wtf import CherryForm
+from rdiffweb.core.config import Option
+from rdiffweb.tools.auth_form import SESSION_KEY
+from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -39,11 +40,10 @@ class LoginForm(CherryForm):
             "autocorrect": "off",
             "autocapitalize": "none",
             "autocomplete": "off",
-            "autofocus": "autofocus"})
-    password = PasswordField(
-        _('Password'),
-        validators=[InputRequired()],
-        render_kw={"placeholder": _('Password')})
+            "autofocus": "autofocus",
+        },
+    )
+    password = PasswordField(_('Password'), validators=[InputRequired()], render_kw={"placeholder": _('Password')})
     # Sanitize the redirect URL to avoid Open Redirect
     redirect = HiddenField(default='/', filters=[lambda v: v if v.startswith('/') else '/'])
 
@@ -72,9 +72,7 @@ class LoginPage(Controller):
                     raise cherrypy.HTTPRedirect(form.redirect.data)
                 flash(_("Invalid username or password."))
 
-        params = {
-            'form': form
-        }
+        params = {'form': form}
 
         # Add welcome message to params. Try to load translated message.
         if self._welcome_msg:
@@ -87,7 +85,6 @@ class LoginPage(Controller):
 
 
 class LogoutPage(Controller):
-
     @cherrypy.expose
     @cherrypy.config(**{'tools.auth_form.on': False})
     def default(self):

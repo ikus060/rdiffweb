@@ -4,5 +4,9 @@
     "python.formatting.provider": "autopep8",
     "python.formatting.autopep8Args": [
         "--max-line-length=200"
+    ],
+    "python.formatting.blackArgs": [
+        "--config",
+        "black.toml"
     ]
 }

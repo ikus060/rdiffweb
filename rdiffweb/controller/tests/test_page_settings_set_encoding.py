@@ -33,8 +33,7 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         self.getPage("/settings/" + user + "/" + repo + "/")
 
     def _set_encoding(self, user, repo, encoding):
-        self.getPage("/settings/" + user + "/" + repo + "/", method="POST",
-                     body={'new_encoding': encoding})
+        self.getPage("/settings/" + user + "/" + repo + "/", method="POST", body={'new_encoding': encoding})
 
     def test_check_default_encoding(self):
         # Default encoding for broker-repo is the default system encoding.
@@ -46,8 +45,7 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         """
         Check if /api/set-encoding/ is still working.
         """
-        self.getPage("/api/set-encoding/admin/testcases/",
-                     method="POST", body={'new_encoding': 'cp1252'})
+        self.getPage("/api/set-encoding/admin/testcases/", method="POST", body={'new_encoding': 'cp1252'})
         self.assertStatus(200)
         # Check results
         user = self.app.store.get_user(self.USERNAME)
@@ -61,8 +59,7 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         self._set_encoding('admin', 'testcases', 'cp1252')
         self.assertStatus(200)
         self.assertInBody("Updated")
-        self.assertEqual('cp1252', self.app.store.get_user(
-            self.USERNAME).get_repo(self.REPO).encoding)
+        self.assertEqual('cp1252', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
         # Get back encoding.
         self._settings('admin', 'testcases')
         self.assertInBody('selected value="cp1252"')
@@ -74,8 +71,7 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         self._set_encoding('admin', 'testcases', 'US-ASCII')
         self.assertStatus(200)
         self.assertInBody("Updated")
-        self.assertEqual('ascii', self.app.store.get_user(
-            self.USERNAME).get_repo(self.REPO).encoding)
+        self.assertEqual('ascii', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
         # Get back encoding.
         self._settings('admin', 'testcases')
         self.assertInBody('selected value="ascii"')
@@ -99,8 +95,7 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         # Get back encoding.
         self._settings('admin', 'testcases')
         self.assertInBody('selected value="cp1252"')
-        self.assertEqual('cp1252', self.app.store.get_user(
-            self.USERNAME).get_repo(self.REPO).encoding)
+        self.assertEqual('cp1252', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
 
     def test_as_another_user(self):
         # Create another user with admin right

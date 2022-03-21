@@ -94,10 +94,9 @@ That's it.
 
 from collections import namedtuple
 
-from babel.core import Locale, UnknownLocaleError
-from babel.support import Translations, NullTranslations
 import cherrypy
-
+from babel.core import Locale, UnknownLocaleError
+from babel.support import NullTranslations, Translations
 
 Lang = namedtuple('Lang', 'locale trans')
 
@@ -192,8 +191,7 @@ def _search_translation(preferred_langs, dirname, domain):
             break
     if locale is None:
         raise ImproperlyConfigured('Default locale not known.')
-    _languages[(domain, lang)] = res = Lang(
-        locale, trans or NullTranslations())
+    _languages[(domain, lang)] = res = Lang(locale, trans or NullTranslations())
     return res
 
 
@@ -214,9 +212,7 @@ def _get_i18n(mo_dir, default, domain):
             `tools.I18nTool.domain`
     """
     # Get prefered languages from the HTTP Request header.
-    preferred_langs = [
-        x.value.replace('-', '_')
-        for x in cherrypy.request.headers.elements('Accept-Language')]
+    preferred_langs = [x.value.replace('-', '_') for x in cherrypy.request.headers.elements('Accept-Language')]
 
     sessions_on = cherrypy.request.config.get('tools.sessions.on', False)
 
@@ -229,8 +225,7 @@ def _get_i18n(mo_dir, default, domain):
     preferred_langs.append(default)
 
     # Search for a translation object.
-    loc = cherrypy.response.i18n = _search_translation(
-        preferred_langs, mo_dir, domain)
+    loc = cherrypy.response.i18n = _search_translation(preferred_langs, mo_dir, domain)
 
     # If session is enabled, keep current locale in session data to be
     # reloaded the next time.
@@ -244,8 +239,7 @@ def _set_content_language():
     language of `cherrypy.response.i18n.locale`.
     """
     if hasattr(cherrypy.response, 'i18n') and 'Content-Language' not in cherrypy.response.headers:
-        cherrypy.response.headers['Content-Language'] = str(
-            cherrypy.response.i18n.locale)
+        cherrypy.response.headers['Content-Language'] = str(cherrypy.response.i18n.locale)
 
 
 class I18nTool(cherrypy.Tool):
@@ -260,8 +254,7 @@ class I18nTool(cherrypy.Tool):
 
     def _setup(self):
         c = cherrypy.request.config
-        if c.get('tools.staticdir.on', False) or \
-           c.get('tools.staticfile.on', False):
+        if c.get('tools.staticdir.on', False) or c.get('tools.staticfile.on', False):
             return
         cherrypy.Tool._setup(self)
         cherrypy.request.hooks.attach('before_finalize', _set_content_language)

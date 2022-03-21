@@ -21,8 +21,9 @@ import logging.handlers
 import sys
 
 import cherrypy
-from rdiffweb.rdw_app import RdiffwebApp
+
 from rdiffweb.core.config import parse_args
+from rdiffweb.rdw_app import RdiffwebApp
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -70,7 +71,9 @@ def _setup_logging(log_file, log_access_file, level):
     default_handler.addFilter(remove_cherrypy_date)
     default_handler.addFilter(add_ip)
     default_handler.addFilter(add_username)
-    default_handler.setFormatter(logging.Formatter("[%(asctime)s][%(levelname)-7s][%(ip)s][%(user)s][%(threadName)s][%(name)s] %(message)s"))
+    default_handler.setFormatter(
+        logging.Formatter("[%(asctime)s][%(levelname)-7s][%(ip)s][%(user)s][%(threadName)s][%(name)s] %(message)s")
+    )
     logger.addHandler(default_handler)
 
     # Configure cherrypy access logger
@@ -98,16 +101,18 @@ def main(args=None):
 
     try:
         global_config = cherrypy._cpconfig.environments.get(environment, {})
-        global_config.update({
-            'server.socket_host': cfg.server_host,
-            'server.socket_port': cfg.server_port,
-            'server.log_file': cfg.log_file,
-            'server.ssl_certificate': cfg.ssl_certificate,
-            'server.ssl_private_key': cfg.ssl_private_key,
-            # Set maximum POST size to 2MiB, for security.
-            'server.max_request_body_size': 2097152,
-            'server.environment': environment,
-        })
+        global_config.update(
+            {
+                'server.socket_host': cfg.server_host,
+                'server.socket_port': cfg.server_port,
+                'server.log_file': cfg.log_file,
+                'server.ssl_certificate': cfg.ssl_certificate,
+                'server.ssl_private_key': cfg.ssl_private_key,
+                # Set maximum POST size to 2MiB, for security.
+                'server.max_request_body_size': 2097152,
+                'server.environment': environment,
+            }
+        )
 
         cherrypy.config.update(global_config)
 

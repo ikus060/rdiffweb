@@ -16,15 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-from collections import OrderedDict
 import logging
 import re
 import sys
+from collections import OrderedDict
 
-from cherrypy import Application
 import cherrypy
 import configargparse
 import pkg_resources
+from cherrypy import Application
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -46,16 +46,17 @@ def parse_args(args=None, config_file_contents=None):
         default_config_files=['/etc/rdiffweb/rdw.conf', '/etc/rdiffweb/rdw.conf.d/*.conf'],
         add_env_var_help=True,
         auto_env_var_prefix='RDIFFWEB_',
-        config_file_parser_class=ConfigFileParser)
+        config_file_parser_class=ConfigFileParser,
+    )
 
     parser.add_argument(
-        '-f', '--config',
-        is_config_file=True,
-        metavar='FILE',
-        help='location of Rdiffweb configuration file')
+        '-f', '--config', is_config_file=True, metavar='FILE', help='location of Rdiffweb configuration file'
+    )
 
     parser.add(
-        '--database-uri', '--sqlitedb-file', '--sqlitedbfile',
+        '--database-uri',
+        '--sqlitedb-file',
+        '--sqlitedbfile',
         metavar='URI',
         help="""Location of the database used for persistence. SQLite and PostgreSQL
             database are supported officially. To use a SQLite database you may
@@ -66,18 +67,23 @@ def parse_args(args=None, config_file_contents=None):
             must install required dependencies.
             By default, Rdiffweb uses a SQLite embedded database located at
             /etc/rdiffweb/rdw.db.""",
-        default='/etc/rdiffweb/rdw.db')
+        default='/etc/rdiffweb/rdw.db',
+    )
 
     parser.add_argument(
-        '-d', '--debug',
+        '-d',
+        '--debug',
         action='store_true',
-        help='enable rdiffweb debug mode - change the log level to DEBUG, print exception stack trace to the web interface and show SQL query in logs')
+        help='enable rdiffweb debug mode - change the log level to DEBUG, print exception stack trace to the web interface and show SQL query in logs',
+    )
 
     parser.add_argument(
-        '--admin-user', '--adminuser',
+        '--admin-user',
+        '--adminuser',
         metavar='USERNAME',
         help='administrator username. The administrator user get created on startup if the database is empty.',
-        default='admin')
+        default='admin',
+    )
 
     parser.add_argument(
         '--admin-password',
@@ -87,247 +93,298 @@ def parse_args(args=None, config_file_contents=None):
             into SSHA or use http://projects.marsching.org/weave4j/util/genpassword.php
             When defined, administrator password cannot be updated using the web interface.
             When undefined, default administrator password is `admin123` and
-            it can be updated using the web interface.""")
+            it can be updated using the web interface.""",
+    )
 
     parser.add_argument(
-        '--default-theme', '--defaulttheme',
+        '--default-theme',
+        '--defaulttheme',
         help='define the default theme. Either: default, blue or orange. Define the CSS file to be loaded in the web interface. You may manually edit a CSS file to customize it. The location is similar to `/usr/local/lib/python3.9/dist-packages/rdiffweb/static/`',
         choices=['default', 'blue', 'orange'],
-        default='default')
+        default='default',
+    )
 
     parser.add_argument(
         '--environment',
         choices=['development', 'production'],
         help='define the type of environment: development, production. This is used to limit the information shown to the user when an error occur.',
-        default='production')
+        default='production',
+    )
 
     parser.add_argument(
-        '--email-encryption', '--emailencryption',
+        '--email-encryption',
+        '--emailencryption',
         choices=['none', 'ssl', 'starttls'],
         help='type of encryption to be used when establishing communication with SMTP server. Default: none',
-        default='none')
+        default='none',
+    )
 
     parser.add_argument(
-        '--email-host', '--emailhost',
+        '--email-host',
+        '--emailhost',
         metavar='HOST',
-        help='SMTP server used to send email in the form <host>:<port>. If the port is not provided, default to standard port 25 or 465 is used. e.g.: smtp.gmail.com:587')
+        help='SMTP server used to send email in the form <host>:<port>. If the port is not provided, default to standard port 25 or 465 is used. e.g.: smtp.gmail.com:587',
+    )
 
     parser.add_argument(
-        '--email-sender', '--emailsender',
+        '--email-sender',
+        '--emailsender',
         metavar='EMAIL',
-        help='email addres used for the `from:` field when sending email.')
+        help='email addres used for the `from:` field when sending email.',
+    )
 
     parser.add_argument(
-        '--email-notification-time', '--emailnotificationtime',
+        '--email-notification-time',
+        '--emailnotificationtime',
         metavar='TIME',
         help='time when the email notifcation should be sent for inactive backups. e.g.: 22:00 Default value: 23:00',
-        default='23:00')
+        default='23:00',
+    )
 
     parser.add_argument(
-        '--email-username', '--emailusername',
+        '--email-username',
+        '--emailusername',
         metavar='USERNAME',
-        help='username used for authentication with the SMTP server.')
+        help='username used for authentication with the SMTP server.',
+    )
 
     parser.add_argument(
-        '--email-password', '--emailpassword',
+        '--email-password',
+        '--emailpassword',
         metavar='PASSWORD',
-        help='password used for authentication with the SMTP server.')
+        help='password used for authentication with the SMTP server.',
+    )
 
     parser.add_argument(
-        '--email-send-changed-notification', '--emailsendchangednotification',
+        '--email-send-changed-notification',
+        '--emailsendchangednotification',
         help='True to send notification when sensitive information get change in user profile.',
         action='store_true',
-        default=False)
+        default=False,
+    )
 
     parser.add_argument(
         '--favicon',
         help='location of an icon to be used as a favicon displayed in web browser.',
-        default=pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico'))  # @UndefinedVariable
+        default=pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico'),
+    )  # @UndefinedVariable
 
     parser.add_argument(
-        '--footer-name', '--footername',
-        help=argparse.SUPPRESS,
-        default='rdiffweb')  # @UndefinedVariable
+        '--footer-name', '--footername', help=argparse.SUPPRESS, default='rdiffweb'
+    )  # @UndefinedVariable
 
     parser.add_argument(
-        '--footer-url', '--footerurl',
-        help=argparse.SUPPRESS,
-        default='https://rdiffweb.org/')  # @UndefinedVariable
+        '--footer-url', '--footerurl', help=argparse.SUPPRESS, default='https://rdiffweb.org/'
+    )  # @UndefinedVariable
 
     parser.add_argument(
-        '--header-logo', '--headerlogo',
-        help='location of an image (preferably a .png) to be used as a replacement for the rdiffweb logo.')
+        '--header-logo',
+        '--headerlogo',
+        help='location of an image (preferably a .png) to be used as a replacement for the rdiffweb logo.',
+    )
 
     parser.add_argument(
-        '--header-name', '--headername',
+        '--header-name',
+        '--headername',
         help='application name displayed in the title bar and header menu.',
-        default='rdiffweb')
+        default='rdiffweb',
+    )
 
     parser.add_argument(
-        '--ldap-add-missing-user', '--addmissinguser',
+        '--ldap-add-missing-user',
+        '--addmissinguser',
         action='store_true',
         help='enable creation of users from LDAP when the credential are valid.',
-        default=False)
+        default=False,
+    )
 
     parser.add_argument(
         '--ldap-add-user-default-role',
         help='default role used when creating users from LDAP. This parameter is only useful when `--ldap-add-missing-user` is enabled.',
         default='user',
-        choices=['admin', 'maintainer', 'user'])
+        choices=['admin', 'maintainer', 'user'],
+    )
 
     parser.add_argument(
         '--ldap-add-user-default-userroot',
         help='default user root directory used when creating users from LDAP. LDAP attributes may be used to define the default location. e.g.: `/backups/{uid[0]}/`. This parameter is only useful when `--ldap-add-missing-user` is enabled.',
-        default='')
+        default='',
+    )
 
     parser.add_argument(
-        '--ldap-uri', '--ldapuri',
-        help='URL to the LDAP server used to validate user credentials. e.g.: ldap://localhost:389')
+        '--ldap-uri',
+        '--ldapuri',
+        help='URL to the LDAP server used to validate user credentials. e.g.: ldap://localhost:389',
+    )
 
     parser.add_argument(
-        '--ldap-base-dn', '--ldapbasedn',
+        '--ldap-base-dn',
+        '--ldapbasedn',
         metavar='DN',
         help='DN of the branch of the directory where all searches should start from. e.g.: dc=my,dc=domain',
-        default="")
+        default="",
+    )
 
     parser.add_argument(
-        '--ldap-scope', '--ldapscope',
+        '--ldap-scope',
+        '--ldapscope',
         help='scope of the search. Can be either base, onelevel or subtree',
         choices=['base', 'onelevel', 'subtree'],
-        default="subtree")
+        default="subtree",
+    )
+
+    parser.add_argument('--ldap-tls', '--ldaptls', action='store_true', help='enable TLS')
 
     parser.add_argument(
-        '--ldap-tls', '--ldaptls',
-        action='store_true',
-        help='enable TLS')
-
-    parser.add_argument(
-        '--ldap-username-attribute', '--ldapattribute',
+        '--ldap-username-attribute',
+        '--ldapattribute',
         metavar='ATTRIBUTE',
         help="The attribute to search username. If no attributes are provided, the default is to use `uid`. It's a good idea to choose an attribute that will be unique across all entries in the subtree you will be using.",
-        default='uid')
+        default='uid',
+    )
 
     parser.add_argument(
-        '--ldap-filter', '--ldapfilter',
+        '--ldap-filter',
+        '--ldapfilter',
         help="search filter to limit LDAP lookup. If not provided, defaults to (objectClass=*), which searches for all objects in the tree.",
-        default='(objectClass=*)')
+        default='(objectClass=*)',
+    )
 
     parser.add_argument(
-        '--ldap-required-group', '--ldaprequiredgroup',
+        '--ldap-required-group',
+        '--ldaprequiredgroup',
         metavar='GROUPNAME',
-        help="name of the group of which the user must be a member to access rdiffweb. Should be used with ldap-group-attribute and ldap-group-attribute-is-dn.")
+        help="name of the group of which the user must be a member to access rdiffweb. Should be used with ldap-group-attribute and ldap-group-attribute-is-dn.",
+    )
 
     parser.add_argument(
-        '--ldap-group-attribute', '--ldapgroupattribute',
+        '--ldap-group-attribute',
+        '--ldapgroupattribute',
         metavar='ATTRIBUTE',
         help="name of the attribute defining the groups of which the user is a member. Should be used with ldap-required-group and ldap-group-attribute-is-dn.",
-        default='member')
+        default='member',
+    )
 
     parser.add_argument(
-        '--ldap-group-attribute-is-dn', '--ldapgroupattributeisdn',
+        '--ldap-group-attribute-is-dn',
+        '--ldapgroupattributeisdn',
         help="True if the content of the attribute `ldap-group-attribute` is a DN.",
-        action='store_true')
+        action='store_true',
+    )
 
     parser.add_argument(
-        '--ldap-bind-dn', '--ldapbinddn',
+        '--ldap-bind-dn',
+        '--ldapbinddn',
         metavar='DN',
         help="optional DN used to bind to the server when searching for entries. If not provided, will use an anonymous bind.",
-        default="")
+        default="",
+    )
 
     parser.add_argument(
-        '--ldap-bind-password', '--ldapbindpassword',
+        '--ldap-bind-password',
+        '--ldapbindpassword',
         metavar='PASSWORD',
         help="password to use in conjunction with LdapBindDn. Note that the bind password is probably sensitive data, and should be properly protected. You should only use the LdapBindDn and LdapBindPassword if you absolutely need them to search the directory.",
-        default="")
+        default="",
+    )
 
     parser.add_argument(
-        '--ldap-version', '--ldapversion', '--ldapprotocolversion',
+        '--ldap-version',
+        '--ldapversion',
+        '--ldapprotocolversion',
         help="version of LDAP in use either 2 or 3. Default to 3.",
         default=3,
         type=int,
-        choices=[2, 3])
+        choices=[2, 3],
+    )
 
     parser.add_argument(
-        '--ldap-network-timeout', '--ldapnetworktimeout',
+        '--ldap-network-timeout',
+        '--ldapnetworktimeout',
         metavar='SECONDS',
         help="timeout in seconds value used for LDAP connection",
         default=100,
-        type=int)
+        type=int,
+    )
 
     parser.add_argument(
-        '--ldap-timeout', '--ldaptimeout',
+        '--ldap-timeout',
+        '--ldaptimeout',
         metavar='SECONDS',
         help="timeout in seconds value used for LDAP request",
         default=300,
-        type=int)
+        type=int,
+    )
 
     parser.add_argument(
-        '--ldap-encoding', '--ldapencoding',
+        '--ldap-encoding',
+        '--ldapencoding',
         metavar='ENCODING',
         help="encoding used by your LDAP server.",
-        default="utf-8")
+        default="utf-8",
+    )
 
     parser.add_argument(
-        '--log-access-file', '--logaccessfile',
+        '--log-access-file', '--logaccessfile', metavar='FILE', help='location of Rdiffweb log access file.'
+    )
+
+    parser.add_argument(
+        '--log-file',
+        '--logfile',
         metavar='FILE',
-        help='location of Rdiffweb log access file.')
+        help='location of Rdiffweb log file. Print log to the console if not define in config file.',
+    )
 
     parser.add_argument(
-        '--log-file', '--logfile',
-        metavar='FILE',
-        help='location of Rdiffweb log file. Print log to the console if not define in config file.')
-
-    parser.add_argument(
-        '--log-level', '--loglevel',
+        '--log-level',
+        '--loglevel',
         help='Define the log level.',
         choices=['ERROR', 'WARN', 'INFO', 'DEBUG'],
-        default='INFO')
+        default='INFO',
+    )
 
     parser.add_argument(
-        '--max-depth', '--maxdepth',
+        '--max-depth',
+        '--maxdepth',
         metavar='DEPTH',
         help="define the maximum folder depthness to search into the user's root directory to find repositories. This is commonly used if you repositories are organised with multiple sub-folder.",
         type=int,
-        default=5)
+        default=5,
+    )
+
+    parser.add('--quota-set-cmd', '--quotasetcmd', metavar='COMMAND', help="command line to set the user's quota.")
+
+    parser.add('--quota-get-cmd', '--quotagetcmd', metavar='COMMAND', help="command line to get the user's quota.")
 
     parser.add(
-        '--quota-set-cmd', '--quotasetcmd',
-        metavar='COMMAND',
-        help="command line to set the user's quota.")
+        '--quota-used-cmd', '--quotausedcmd', metavar='COMMAND', help="Command line to get user's quota disk usage."
+    )
 
     parser.add(
-        '--quota-get-cmd', '--quotagetcmd',
-        metavar='COMMAND',
-        help="command line to get the user's quota.")
-
-    parser.add(
-        '--quota-used-cmd', '--quotausedcmd',
-        metavar='COMMAND',
-        help="Command line to get user's quota disk usage.")
-
-    parser.add(
-        '--remove-older-time', '--removeoldertime',
+        '--remove-older-time',
+        '--removeoldertime',
         metavar='TIME',
         help="Time when to execute the remove older scheduled job. e.g.: 22:30",
-        default='23:00')
+        default='23:00',
+    )
+
+    parser.add('--server-host', '--serverhost', metavar='IP', default='127.0.0.1', help='IP address to listen to')
 
     parser.add(
-        '--server-host', '--serverhost',
-        metavar='IP',
-        default='127.0.0.1',
-        help='IP address to listen to')
-
-    parser.add(
-        '--server-port', '--serverport',
+        '--server-port',
+        '--serverport',
         metavar='PORT',
         help='port to listen to for HTTP request',
         default='8080',
-        type=int)
+        type=int,
+    )
 
     parser.add(
-        '--session-dir', '--sessiondir',
+        '--session-dir',
+        '--sessiondir',
         metavar='FOLDER',
-        help='location where to store user session information. When undefined, the user sessions are kept in memory.')
+        help='location where to store user session information. When undefined, the user sessions are kept in memory.',
+    )
 
     parser.add(
         '--rate-limit',
@@ -338,25 +395,31 @@ def parse_args(args=None, config_file_contents=None):
     )
 
     parser.add(
-        '--ssl-certificate', '--sslcertificate',
+        '--ssl-certificate',
+        '--sslcertificate',
         metavar='CERT',
-        help='location of the SSL Certification to enable HTTPS (not recommended)')
+        help='location of the SSL Certification to enable HTTPS (not recommended)',
+    )
 
     parser.add(
-        '--ssl-private-key', '--sslprivatekey',
+        '--ssl-private-key',
+        '--sslprivatekey',
         metavar='KEY',
-        help='location of the SSL Private Key to enable HTTPS (not recommended)')
+        help='location of the SSL Private Key to enable HTTPS (not recommended)',
+    )
 
     parser.add(
         '--tempdir',
         metavar='FOLDER',
-        help='alternate temporary folder to be used when restoring files. Might be useful if the default location has limited disk space. Default to TEMPDIR environment or `/tmp`.')
+        help='alternate temporary folder to be used when restoring files. Might be useful if the default location has limited disk space. Default to TEMPDIR environment or `/tmp`.',
+    )
 
     parser.add(
         '--disable-ssh-keys',
         action='store_true',
         help='used to hide SSH Key management to avoid users to add or remove SSH Key using the web application',
-        default=False)
+        default=False,
+    )
 
     parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
 
@@ -366,7 +429,8 @@ def parse_args(args=None, config_file_contents=None):
         *flags,
         metavar='HTML',
         help='replace the welcome message displayed in the login page for default locale or for a specific locale',
-        action=LocaleAction)
+        action=LocaleAction
+    )
 
     return parser.parse_args(args, config_file_contents=config_file_contents)
 
@@ -401,7 +465,7 @@ class ConfigFileParser(object):
     """
 
     def get_syntax_description(self):
-        msg = ("Configuration file syntax allows: key=value, flag=true.")
+        msg = "Configuration file syntax allows: key=value, flag=true."
         return msg
 
     def parse(self, stream):
@@ -416,10 +480,14 @@ class ConfigFileParser(object):
             if not line:
                 continue
             if '=' not in line:
-                raise configargparse.ConfigFileParserException("Unexpected line {} in {}: {}".format(i, getattr(stream, 'name', 'stream'), line))
+                raise configargparse.ConfigFileParserException(
+                    "Unexpected line {} in {}: {}".format(i, getattr(stream, 'name', 'stream'), line)
+                )
             split_line = line.partition('=')
             if not len(split_line) == 3:
-                raise configargparse.ConfigFileParserException("Unexpected line {} in {}: {}".format(i, getattr(stream, 'name', 'stream'), line))
+                raise configargparse.ConfigFileParserException(
+                    "Unexpected line {} in {}: {}".format(i, getattr(stream, 'name', 'stream'), line)
+                )
 
             # Get key a& value
             key = split_line[0].lower().strip().replace('_', '-')
@@ -438,7 +506,6 @@ class ConfigFileParser(object):
 
 
 class Option(object):
-
     def __init__(self, key):
         assert key
         self.key = key

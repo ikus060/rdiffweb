@@ -20,11 +20,11 @@ import logging
 import time
 
 import cherrypy
+
 from rdiffweb.controller import Controller
 from rdiffweb.controller.dispatch import poppath
-from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import RdiffTime
-
+from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -32,24 +32,18 @@ logger = logging.getLogger(__name__)
 
 @poppath()
 class StatusPage(Controller):
-
     def _data(self, days):
         """
         Return number of backups per days including failure.
         """
+
         def _key(d):
             return time.strftime(str(d).split('T')[0])
 
         base = RdiffTime().set_time(0, 0, 0) - datetime.timedelta(days=days)
         # Creating empty data
-        data = {
-            _key(base + datetime.timedelta(days=i)): []
-            for i in range(0, days + 1)
-        }
-        success = {
-            _key(base + datetime.timedelta(days=i)): 0
-            for i in range(0, days + 1)
-        }
+        data = {_key(base + datetime.timedelta(days=i)): [] for i in range(0, days + 1)}
+        success = {_key(base + datetime.timedelta(days=i)): 0 for i in range(0, days + 1)}
         failure = success.copy()
 
         # Sum number of backup per days.
@@ -66,7 +60,7 @@ class StatusPage(Controller):
         return {
             'backup_count': [
                 {'name': _('Successful Backup'), 'data': success},
-                {'name': _('Backup with errors'), 'data': failure}
+                {'name': _('Backup with errors'), 'data': failure},
             ],
             'data': data,
         }

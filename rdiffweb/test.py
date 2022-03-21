@@ -44,7 +44,6 @@ Thread.isAlive = Thread.is_alive
 
 
 class MockRdiffwebApp(RdiffwebApp):
-
     def __init__(self, default_config={}):
         assert default_config is None or isinstance(default_config, dict)
         self.default_config = default_config
@@ -190,14 +189,12 @@ class WebCase(helper.CPWebCase):
     def baseurl(self):
         return 'http://%s:%s' % (self.HOST, self.PORT)
 
-    def getPage(self, url, headers=None, method="GET", body=None,
-                protocol=None):
+    def getPage(self, url, headers=None, method="GET", body=None, protocol=None):
         if headers is None:
             headers = []
         # When body is a dict, send the data as form data.
         if isinstance(body, dict) and method in ['POST', 'PUT']:
-            data = [(k.encode(encoding='latin1'), v.encode(encoding='utf-8'))
-                    for k, v in body.items()]
+            data = [(k.encode(encoding='latin1'), v.encode(encoding='utf-8')) for k, v in body.items()]
             body = urlencode(data)
         # Send back cookies if any
         if hasattr(self, 'cookies') and self.cookies:
@@ -206,7 +203,7 @@ class WebCase(helper.CPWebCase):
         # are usually not sending absolute URL either. So trim the base.
         base = 'http://%s:%s' % (self.HOST, self.PORT)
         if url.startswith(base):
-            url = url[len(base):]
+            url = url[len(base) :]
         helper.CPWebCase.getPage(self, url, headers, method, body, protocol)
 
     def getJson(self, *args, **kwargs):

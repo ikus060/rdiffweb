@@ -29,7 +29,6 @@ from .. import scheduler  # noqa
 
 
 class SchedulerPluginTest(helper.CPWebCase):
-
     def setUp(self) -> None:
         self.called = False
         return super().setUp()
@@ -82,6 +81,7 @@ class SchedulerPluginTest(helper.CPWebCase):
         # Given an unschedule job
         def a_job(*args, **kwargs):
             self.called = True
+
         # When unscheduling an invalid job
         cherrypy.engine.publish('unschedule_job', a_job)
         # Then no error are raised

@@ -23,6 +23,7 @@ Created on Dec 26, 2015
 from unittest.mock import MagicMock
 
 import cherrypy
+
 import rdiffweb.test
 
 
@@ -41,7 +42,12 @@ class PrefsTest(rdiffweb.test.WebCase):
         cherrypy.engine.unsubscribe('user_password_changed', self.listener.user_password_changed)
         return super().tearDown()
 
-    def _set_password(self, current, new_password, confirm, ):
+    def _set_password(
+        self,
+        current,
+        new_password,
+        confirm,
+    ):
         b = {
             'action': 'set_password',
             'current': current,
@@ -89,8 +95,7 @@ class PrefsTest(rdiffweb.test.WebCase):
 
     def test_change_password_with_wrong_confirmation(self):
         self._set_password(self.PASSWORD, "t", "a")
-        self.assertInBody(
-            "The new password and its confirmation do not match.")
+        self.assertInBody("The new password and its confirmation do not match.")
 
     def test_change_password_with_wrong_password(self):
         self._set_password("oups", "t", "t")
@@ -104,15 +109,13 @@ class PrefsTest(rdiffweb.test.WebCase):
         self.assertStatus(404)
 
     def test_update_repos(self):
-        self.getPage(self.PREFS, method='POST',
-                     body={'action': 'update_repos'})
+        self.getPage(self.PREFS, method='POST', body={'action': 'update_repos'})
         self.assertStatus(200)
         # Don't need to check the results. User's repository are updated on the fly.
         # This action is only kept for backward compatibility.
 
     def test_update_notification(self):
-        self.getPage("/prefs/notification/", method='POST',
-                     body={'action': 'set_notification_info', 'testcases': '7'})
+        self.getPage("/prefs/notification/", method='POST', body={'action': 'set_notification_info', 'testcases': '7'})
         self.assertStatus(200)
         # Check database update
         repo_obj = self.app.store.get_user(self.USERNAME).get_repo(self.REPO)

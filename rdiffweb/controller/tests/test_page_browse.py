@@ -58,7 +58,15 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         """
         Check if relative path are resolved.
         """
-        self._browse(self.USERNAME, self.REPO, "../%s/Revisions/../../%s/" % (self.REPO, self.REPO,))
+        self._browse(
+            self.USERNAME,
+            self.REPO,
+            "../%s/Revisions/../../%s/"
+            % (
+                self.REPO,
+                self.REPO,
+            ),
+        )
         self.assertInBody("")
 
     def test_root(self):
@@ -71,13 +79,17 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         self.assertInBody("/Fichier%20%40%20%3Croot%3E?date=")
         #  Répertoire (@vec) {càraçt#èrë} $épêcial
         self.assertInBody("Répertoire (@vec) {càraçt#èrë} $épêcial")
-        self.assertInBody("/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial")
+        self.assertInBody(
+            "/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial"
+        )
         #  test\test
         self.assertInBody("test\\test")
         self.assertInBody("/test%5Ctest")
         #  <F!chïer> (@vec) {càraçt#èrë} $épêcial
         self.assertInBody("&lt;F!chïer&gt; (@vec) {càraçt#èrë} $épêcial")
-        self.assertInBody("/%3CF%21ch%C3%AFer%3E%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial?date=")
+        self.assertInBody(
+            "/%3CF%21ch%C3%AFer%3E%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial?date="
+        )
         #  Répertoire Existant
         self.assertInBody("Répertoire Existant")
         self.assertInBody("/R%C3%A9pertoire%20Existant")
@@ -128,7 +140,11 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         """
         Browse to a sub directory containing special chars.
         """
-        self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/")
+        self._browse(
+            self.USERNAME,
+            self.REPO,
+            "R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/",
+        )
         self.assertInBody("Untitled Testcase.doc")
 
     def test_sub_directory_with_encoding(self):

@@ -22,13 +22,13 @@ Created on May 2, 2016
 from unittest.mock import MagicMock
 
 import cherrypy
+
 import rdiffweb.core.remove_older
 import rdiffweb.test
 from rdiffweb.core.librdiff import RdiffTime
 
 
 class RemoveOlderTest(rdiffweb.test.WebCase):
-
     def test_remove_older_job_without_keepdays(self):
         # Given a store with repos with keepdays equals to 0 (forever)
         repo = MagicMock()

@@ -20,7 +20,7 @@ import logging
 import cherrypy
 import ldap3
 from cherrypy.process.plugins import SimplePlugin
-from ldap3.core.exceptions import LDAPException, LDAPNoSuchObjectResult, LDAPInvalidCredentialsResult
+from ldap3.core.exceptions import LDAPException, LDAPInvalidCredentialsResult, LDAPNoSuchObjectResult
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,15 @@ class LdapPlugin(SimplePlugin):
         assert isinstance(password, str)
 
         server = ldap3.Server(self.uri, connect_timeout=self.network_timeout)
-        conn = ldap3.Connection(server, user=self.bind_dn, password=self.bind_password, auto_bind=False, version=self.version, client_strategy=ldap3.SYNC, raise_exceptions=True)
+        conn = ldap3.Connection(
+            server,
+            user=self.bind_dn,
+            password=self.bind_password,
+            auto_bind=False,
+            version=self.version,
+            client_strategy=ldap3.SYNC,
+            raise_exceptions=True,
+        )
         conn.raise_exceptions = True
 
         try:
@@ -78,9 +86,21 @@ class LdapPlugin(SimplePlugin):
 
             # Search the LDAP server
             search_filter = "(&{}({}={}))".format(self.filter, self.username_attribute, username)
-            search_scope = {'base': ldap3.BASE, 'onelevel': ldap3.LEVEL, 'subtree': ldap3.SUBTREE}.get(self.scope, ldap3.SUBTREE)
-            logger.debug("search ldap server: {}/{}?{}?{}?{}".format(self.uri, self.base_dn, self.username_attribute, search_scope, search_filter))
-            status = conn.search(search_base=self.base_dn, search_filter=search_filter, search_scope=search_scope, time_limit=self.timeout, attributes=ldap3.ALL_ATTRIBUTES)
+            search_scope = {'base': ldap3.BASE, 'onelevel': ldap3.LEVEL, 'subtree': ldap3.SUBTREE}.get(
+                self.scope, ldap3.SUBTREE
+            )
+            logger.debug(
+                "search ldap server: {}/{}?{}?{}?{}".format(
+                    self.uri, self.base_dn, self.username_attribute, search_scope, search_filter
+                )
+            )
+            status = conn.search(
+                search_base=self.base_dn,
+                search_filter=search_filter,
+                search_scope=search_scope,
+                time_limit=self.timeout,
+                attributes=ldap3.ALL_ATTRIBUTES,
+            )
             if not status:
                 logger.info("user %s not found in LDAP", username)
                 return False
@@ -92,7 +112,11 @@ class LdapPlugin(SimplePlugin):
 
             # Get username
             if self.username_attribute not in response[0]['attributes']:
-                logger.info("user object %s was found but the username attribute %s doesn't exists", user_dn, self.username_attribute)
+                logger.info(
+                    "user object %s was found but the username attribute %s doesn't exists",
+                    user_dn,
+                    self.username_attribute,
+                )
                 return False
             new_username = response[0]['attributes'][self.username_attribute][0]
 
@@ -121,5 +145,4 @@ class LdapPlugin(SimplePlugin):
 cherrypy.ldap = LdapPlugin(cherrypy.engine)
 cherrypy.ldap.subscribe()
 
-cherrypy.config.namespaces['ldap'] = lambda key, value: setattr(
-    cherrypy.ldap, key, value)
+cherrypy.config.namespaces['ldap'] = lambda key, value: setattr(cherrypy.ldap, key, value)

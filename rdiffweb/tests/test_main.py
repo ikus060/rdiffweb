@@ -9,12 +9,12 @@ import unittest
 from unittest.mock import patch
 
 import pkg_resources
+
 from rdiffweb.main import main
 
 
 @patch('cherrypy.quickstart')
 class Test(unittest.TestCase):
-
     def test_main_with_config(self, *args):
         config = pkg_resources.resource_filename('rdiffweb.tests', 'rdw.conf')  # @UndefinedVariable
         main(['-f', config])
@@ -37,8 +37,3 @@ class Test(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 main(['--version'])
         self.assertTrue(f.getvalue().startswith('rdiffweb 2.'), msg='%s is not a version' % f.getvalue())
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

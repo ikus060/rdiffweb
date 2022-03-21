@@ -18,6 +18,7 @@
 import logging
 
 import cherrypy
+
 from rdiffweb.controller import Controller
 from rdiffweb.controller.pref_general import PrefsGeneralPanelProvider
 from rdiffweb.controller.pref_notification import NotificationPref
@@ -57,10 +58,12 @@ class PreferencesPage(Controller):
         template, params = provider.render_prefs_panel(panelid, **kwargs)
 
         # Create a params with a default panelid.
-        params.update({
-            "panels": [(x.panel_id, x.panel_name) for x in self.panels],
-            "active_panelid": panelid,
-            "template_content": template,
-        })
+        params.update(
+            {
+                "panels": [(x.panel_id, x.panel_name) for x in self.panels],
+                "active_panelid": panelid,
+                "template_content": template,
+            }
+        )
 
         return self._compile_template("prefs.html", **params)

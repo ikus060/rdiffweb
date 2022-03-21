@@ -17,21 +17,23 @@
 
 
 import cherrypy
+
 from rdiffweb.controller import Controller, validate, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.controller.filter_authorization import is_maintainer
-from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
+from rdiffweb.tools.i18n import ugettext as _
 
 
 @poppath()
 class SettingsPage(Controller):
-
     @cherrypy.expose
-    @cherrypy.tools.errors(error_table={
-        DoesNotExistError: 404,
-        AccessDeniedError: 403,
-    })
+    @cherrypy.tools.errors(
+        error_table={
+            DoesNotExistError: 404,
+            AccessDeniedError: 403,
+        }
+    )
     def default(self, path=b"", action=None, **kwargs):
         repo_obj = self.app.store.get_repo(path)
         if kwargs.get('keepdays'):

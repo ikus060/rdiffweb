@@ -23,12 +23,13 @@ import logging
 import re
 
 import cherrypy
-from rdiffweb.controller import Controller, flash
-from rdiffweb.controller.cherrypy_wtf import CherryForm
-from rdiffweb.tools.i18n import ugettext as _
 from wtforms.fields.html5 import EmailField
 from wtforms.fields.simple import PasswordField
 from wtforms.validators import DataRequired, EqualTo, InputRequired, Regexp
+
+from rdiffweb.controller import Controller, flash
+from rdiffweb.controller.cherrypy_wtf import CherryForm
+from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
 _logger = logging.getLogger(__name__)
@@ -42,8 +43,16 @@ class UserProfileForm(CherryForm):
 
 class UserPasswordForm(CherryForm):
     current = PasswordField(_('Current password'), validators=[InputRequired(_("Current password is missing."))])
-    new = PasswordField(_('New password'), validators=[InputRequired(_("New password is missing.")), EqualTo('confirm', message=_("The new password and its confirmation do not match."))])
-    confirm = PasswordField(_('Confirm new password'), validators=[InputRequired(_("Confirmation password is missing."))])
+    new = PasswordField(
+        _('New password'),
+        validators=[
+            InputRequired(_("New password is missing.")),
+            EqualTo('confirm', message=_("The new password and its confirmation do not match.")),
+        ],
+    )
+    confirm = PasswordField(
+        _('Confirm new password'), validators=[InputRequired(_("Confirmation password is missing."))]
+    )
 
 
 class PrefsGeneralPanelProvider(Controller):

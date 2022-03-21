@@ -31,8 +31,7 @@ def check_auth_form(login_url='/login/', session_key=SESSION_KEY):
         query_string = cherrypy.serving.request.query_string
         if query_string:
             redirect = redirect + '?' + query_string
-        new_url = cherrypy.url(
-            login_url, qs={'redirect': redirect})
+        new_url = cherrypy.url(login_url, qs={'redirect': redirect})
         raise cherrypy.HTTPRedirect(new_url)
 
 

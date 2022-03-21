@@ -25,8 +25,8 @@ Created on Nov 16, 2017
 import logging
 
 import cherrypy
-from rdiffweb.controller import Controller
 
+from rdiffweb.controller import Controller
 
 try:
     import simplejson as json
@@ -68,16 +68,20 @@ class ApiPage(Controller):
         return {
             "email": u.email,
             "username": u.username,
-            "repos": [{
-                # Database fields.
-                "name": repo_obj.name,
-                "maxage": repo_obj.maxage,
-                "keepdays": repo_obj.keepdays,
-                # Repository fields.
-                "display_name": repo_obj.display_name,
-                "last_backup_date": repo_obj.last_backup_date,
-                "status": repo_obj.status[0],
-                "encoding": repo_obj.encoding} for repo_obj in u.repo_objs],
+            "repos": [
+                {
+                    # Database fields.
+                    "name": repo_obj.name,
+                    "maxage": repo_obj.maxage,
+                    "keepdays": repo_obj.keepdays,
+                    # Repository fields.
+                    "display_name": repo_obj.display_name,
+                    "last_backup_date": repo_obj.last_backup_date,
+                    "status": repo_obj.status[0],
+                    "encoding": repo_obj.encoding,
+                }
+                for repo_obj in u.repo_objs
+            ],
         }
 
     @cherrypy.expose

@@ -33,7 +33,9 @@ from io import open
 _logger = logging.getLogger(__name__)
 
 # Pattern used to read a line.
-PATTERN_LINE = re.compile(r'^(?:(.+) )?(ssh-dss|ssh-ed25519|ssh-rsa|ecdsa-sha2-nistp256|ecdsa-sha2-nistp384|ecdsa-sha2-nistp521)\s+([^ \r\n\t]+)\s?(.*)$')
+PATTERN_LINE = re.compile(
+    r'^(?:(.+) )?(ssh-dss|ssh-ed25519|ssh-rsa|ecdsa-sha2-nistp256|ecdsa-sha2-nistp384|ecdsa-sha2-nistp521)\s+([^ \r\n\t]+)\s?(.*)$'
+)
 # Patterns for options parsing.
 PATTERN_OPTION1 = re.compile(r'^[ \t]*,[ \t]*')
 PATTERN_OPTION2 = re.compile(r'^([-a-z0-9A-Z_]+)=\"(.*?[^\"])\"')

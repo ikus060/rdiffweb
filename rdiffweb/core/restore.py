@@ -35,8 +35,7 @@ import traceback
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
 import rdiffweb
-from rdiffweb.core.librdiff import (LANG, STDOUT_ENCODING, find_rdiff_backup,
-                                    popen)
+from rdiffweb.core.librdiff import LANG, STDOUT_ENCODING, find_rdiff_backup, popen
 
 logger = logging.getLogger(__name__)
 
@@ -220,7 +219,14 @@ def restore(restore, restore_as_of, kind, encoding, dest, log=logger.debug):
     if os.environ.get('TMPDIR'):
         env['TMPDIR'] = os.environ['TMPDIR']
 
-    cmd = [rdiff_backup_path, b'-v', b'5', b'--restore-as-of=' + str(restore_as_of).encode('latin'), restore, tmp_output]
+    cmd = [
+        rdiff_backup_path,
+        b'-v',
+        b'5',
+        b'--restore-as-of=' + str(restore_as_of).encode('latin'),
+        restore,
+        tmp_output,
+    ]
     log('executing %r with env %r' % (cmd, env))
 
     # Open an archive.
@@ -235,8 +241,8 @@ def restore(restore, restore_as_of, kind, encoding, dest, log=logger.debug):
                     continue
                 # A new file or directory was processed. Extract the filename and
                 # look for it on filesystem.
-                value = line[len(TOKEN):]
-                fullpath, arcname = _lookup_filename(tmp_output, line[len(TOKEN):])
+                value = line[len(TOKEN) :]
+                fullpath, arcname = _lookup_filename(tmp_output, line[len(TOKEN) :])
                 if not fullpath:
                     log('error: file not found %r' % value)
                     continue
@@ -268,7 +274,9 @@ def main():
     parser = argparse.ArgumentParser(description='Rdiffweb restore script.')
     parser.add_argument('--restore-as-of', type=int, required=True)
     parser.add_argument('--encoding', type=str, default='utf-8', help='Define the encoding of the repository.')
-    parser.add_argument('--kind', type=str, choices=ARCHIVERS, default='zip', help='Define the type of archive to generate.')
+    parser.add_argument(
+        '--kind', type=str, choices=ARCHIVERS, default='zip', help='Define the type of archive to generate.'
+    )
     parser.add_argument('restore', type=str, help='Define the path of the file or directory to restore.')
     parser.add_argument('output', type=str, default='-', help='Define the location of the archive. Default to stdout.')
     parser.add_argument('--version', action='version', version='%(prog)s ' + rdiffweb.__version__)

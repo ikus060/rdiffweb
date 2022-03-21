@@ -22,11 +22,10 @@ Created on Apr. 10, 2020
 
 import unittest
 
-from rdiffweb.core.passwd import hash_password, check_password
+from rdiffweb.core.passwd import check_password, hash_password
 
 
 class Test(unittest.TestCase):
-
     def test_check_password(self):
         self.assertTrue(check_password('admin123', 'f865b53623b121fd34ee5426c792e5c33af8c227'))
         self.assertTrue(check_password('admin123', '{SSHA}/LAr7zGT/Rv/CEsbrEndyh27h+4fLb9h'))

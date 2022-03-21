@@ -15,23 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict, namedtuple
 import datetime
-from io import StringIO
 import logging
 import os
+from collections import OrderedDict, namedtuple
+from io import StringIO
 
 import cherrypy
 import humanfriendly
 from jinja2 import Environment, PackageLoader
 from jinja2.filters import do_mark_safe
 from jinja2.loaders import ChoiceLoader
-from rdiffweb.tools import i18n
-from rdiffweb.core import librdiff
-from rdiffweb.core import rdw_helpers
-from rdiffweb.tools.i18n import ugettext as _
-from rdiffweb.core.store import RepoObject
 
+from rdiffweb.core import librdiff, rdw_helpers
+from rdiffweb.core.store import RepoObject
+from rdiffweb.tools import i18n
+from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -86,7 +85,12 @@ def attrib(**kwargs):
 
 def do_filter(sequence, attribute_name):
     """Filter sequence of objects."""
-    return [x for x in sequence if (isinstance(x, dict) and attribute_name in x and x[attribute_name]) or (hasattr(x, attribute_name) and getattr(x, attribute_name))]
+    return [
+        x
+        for x in sequence
+        if (isinstance(x, dict) and attribute_name in x and x[attribute_name])
+        or (hasattr(x, attribute_name) and getattr(x, attribute_name))
+    ]
 
 
 def do_format_lastupdated(value, now=None):
@@ -175,11 +179,9 @@ def url_for(endpoint, *args, **kwargs):
             path += "/"
             path += chunk.rstrip("/")
         else:
-            raise ValueError(
-                'invalid positional arguments, url_for accept str, bytes or RepoPath: %r' % chunk)
+            raise ValueError('invalid positional arguments, url_for accept str, bytes or RepoPath: %r' % chunk)
     # Sort the arguments to have predictable results.
-    qs = [(k, v.epoch() if hasattr(v, 'epoch') else v)
-          for k, v in sorted(kwargs.items()) if v is not None]
+    qs = [(k, v.epoch() if hasattr(v, 'epoch') else v) for k, v in sorted(kwargs.items()) if v is not None]
     return cherrypy.url(path=path, qs=qs)
 
 
@@ -190,9 +192,7 @@ class TemplateManager(object):
 
     def __init__(self):
 
-        loader = ChoiceLoader([
-            PackageLoader('rdiffweb', 'templates')
-        ])
+        loader = ChoiceLoader([PackageLoader('rdiffweb', 'templates')])
 
         # Load all the templates from /templates directory
         self.jinja_env = Environment(
@@ -203,13 +203,13 @@ class TemplateManager(object):
                 'jinja2.ext.i18n',
                 'jinja2.ext.with_',
                 'jinja2.ext.autoescape',
-            ])
+            ],
+        )
 
         # Register filters
         self.jinja_env.filters['filter'] = do_filter
         self.jinja_env.filters['lastupdated'] = do_format_lastupdated
-        self.jinja_env.filters['filesize'] = lambda x: humanfriendly.format_size(
-            x, binary=True)
+        self.jinja_env.filters['filesize'] = lambda x: humanfriendly.format_size(x, binary=True)
 
         # Register method
         self.jinja_env.globals['attrib'] = attrib
@@ -219,14 +219,13 @@ class TemplateManager(object):
 
     def compile_template(self, template_name, **kwargs):
         """Very simple implementation to render template using jinja2.
-            `templateName`
-                The filename to be used as template.
-            `kwargs`
-                The arguments to be passed to the template.
+        `templateName`
+            The filename to be used as template.
+        `kwargs`
+            The arguments to be passed to the template.
         """
         logger.log(1, "compiling template [%s]", template_name)
-        self.jinja_env.install_gettext_callables(
-            i18n.ugettext, i18n.ungettext, newstyle=True)
+        self.jinja_env.install_gettext_callables(i18n.ugettext, i18n.ungettext, newstyle=True)
         template = self.jinja_env.get_template(template_name)
         data = template.render(kwargs)
         logger.log(1, "template [%s] compiled", template_name)
