@@ -37,4 +37,5 @@ class RdiffWarning(RdiffError):
     should handler this kind of exception and show a warning message to the
     user.
     """
+
     pass

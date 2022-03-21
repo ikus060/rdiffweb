@@ -24,6 +24,7 @@ import logging
 
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
+
 from rdiffweb.core import librdiff
 from rdiffweb.tools.i18n import ugettext as _
 
@@ -69,7 +70,9 @@ class NotificationPlugin(SimplePlugin):
             return
 
         # If the email attributes was changed, send a mail notification.
-        body = self.app.templates.compile_template("email_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj})
+        body = self.app.templates.compile_template(
+            "email_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
+        )
         self.bus.publish('queue_mail', to=old_email, subject=_("Email address changed"), message=body)
 
     def user_password_changed(self, userobj):
@@ -77,12 +80,13 @@ class NotificationPlugin(SimplePlugin):
             return
 
         if not userobj.email:
-            logger.info(
-                "can't sent mail to user [%s] without an email", userobj.username)
+            logger.info("can't sent mail to user [%s] without an email", userobj.username)
             return
 
         # If the email attributes was changed, send a mail notification.
-        body = self.app.templates.compile_template("password_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj})
+        body = self.app.templates.compile_template(
+            "password_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
+        )
         self.bus.publish('queue_mail', to=userobj.email, subject=_("Password changed"), message=body)
 
     def notification_job(self):

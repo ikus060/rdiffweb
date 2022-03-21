@@ -39,7 +39,9 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         """
         Check if /api/remove-older/ is still working.
         """
-        self.getPage("/api/remove-older/" + self.USERNAME + "/" + self.REPO + "/", method="POST", body={'keepdays': '4'})
+        self.getPage(
+            "/api/remove-older/" + self.USERNAME + "/" + self.REPO + "/", method="POST", body={'keepdays': '4'}
+        )
         self.assertStatus(200)
         # Check results
         user = self.app.store.get_user(self.USERNAME)

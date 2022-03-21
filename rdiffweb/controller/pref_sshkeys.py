@@ -32,9 +32,8 @@ from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.core import authorizedkeys
-from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.store import DuplicateSSHKeyError
-
+from rdiffweb.tools.i18n import ugettext as _
 
 _logger = logging.getLogger(__name__)
 
@@ -51,12 +50,16 @@ class SshForm(CherryForm):
     title = StringField(
         _('Title'),
         description=_('The title is an optional description to identify the key. e.g.: bob@thinkpad-t530'),
-        validators=[validators.data_required()])
+        validators=[validators.data_required()],
+    )
     key = StringField(
         _('Key'),
         widget=TextArea(),
-        description=_("Enter a SSH public key. It should start with 'ssh-dss', 'ssh-ed25519', 'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-sha2-nistp521'."),
-        validators=[validators.data_required(), validate_key])
+        description=_(
+            "Enter a SSH public key. It should start with 'ssh-dss', 'ssh-ed25519', 'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-sha2-nistp521'."
+        ),
+        validators=[validators.data_required(), validate_key],
+    )
     fingerprint = StringField('Fingerprint')
 
 
@@ -114,14 +117,12 @@ class SSHKeysPlugin(Controller):
             self._delete_key(action, DeleteSshForm())
 
         # Get SSH keys if file exists.
-        params = {
-            'form': form
-        }
+        params = {'form': form}
         try:
             params["sshkeys"] = [
-                {'title': key.comment or (key.keytype + ' ' + key.key[:18]),
-                 'fingerprint': key.fingerprint}
-                for key in self.app.currentuser.authorizedkeys]
+                {'title': key.comment or (key.keytype + ' ' + key.key[:18]), 'fingerprint': key.fingerprint}
+                for key in self.app.currentuser.authorizedkeys
+            ]
         except IOError:
             params["sshkeys"] = []
             flash(_("Failed to get SSH keys"), level='error')

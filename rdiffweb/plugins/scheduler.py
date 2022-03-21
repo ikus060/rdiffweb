@@ -48,7 +48,8 @@ class Scheduler(SimplePlugin):
             executors={
                 'default': ThreadPoolExecutor(max_workers=10),
                 'scheduled': ThreadPoolExecutor(max_workers=1),
-            })
+            },
+        )
 
     def start(self):
         self.bus.log('Start Scheduler plugins')
@@ -88,7 +89,16 @@ class Scheduler(SimplePlugin):
         """
         assert hasattr(job, '__call__'), 'job must be callable'
         hour, minute = execution_time.split(':', 2)
-        self._scheduler.add_job(func=job, args=args, kwargs=kwargs, trigger='cron', hour=hour, minute=minute, jobstore='scheduled', executor='scheduled')
+        self._scheduler.add_job(
+            func=job,
+            args=args,
+            kwargs=kwargs,
+            trigger='cron',
+            hour=hour,
+            minute=minute,
+            jobstore='scheduled',
+            executor='scheduled',
+        )
 
     def schedule_task(self, task, *args, **kwargs):
         """

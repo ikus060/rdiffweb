@@ -7,6 +7,7 @@ import logging
 
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
+
 from rdiffweb.core import librdiff
 
 _logger = logging.getLogger(__name__)

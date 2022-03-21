@@ -53,8 +53,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         self.assertStatus('403 Forbidden')
 
     def test_set_maxage(self):
-        self.getPage("/settings/" + self.USERNAME + "/" + self.REPO + "/", method="POST",
-                     body={'maxage': '4'})
+        self.getPage("/settings/" + self.USERNAME + "/" + self.REPO + "/", method="POST", body={'maxage': '4'})
         self.assertStatus(200)
         # Check database update
         repo_obj = self.app.store.get_user('admin').get_repo(self.REPO)

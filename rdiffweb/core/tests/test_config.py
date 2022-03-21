@@ -19,11 +19,11 @@ import os
 import unittest
 
 import configargparse
+
 from rdiffweb.core.config import ConfigFileParser, parse_args
 
 
 class TestParseArg(unittest.TestCase):
-
     def test_parse_args(self):
         args = parse_args(['--serverport', '8081'])
         self.assertEqual(args.server_port, 8081)
@@ -42,7 +42,9 @@ class TestParseArg(unittest.TestCase):
         args = parse_args(args=[], config_file_contents='WelcomeMsg=default')
         self.assertEqual(args.welcome_msg, {'': 'default'})
         # Test with config file with locale
-        args = parse_args(args=[], config_file_contents='WelcomeMsg=default\nWelcomeMsg[fr]=french\nWelcomeMsg[ru]=rusian')
+        args = parse_args(
+            args=[], config_file_contents='WelcomeMsg=default\nWelcomeMsg[fr]=french\nWelcomeMsg[ru]=rusian'
+        )
         self.assertEqual(args.welcome_msg, {'': 'default', 'fr': 'french', 'ru': 'rusian'})
 
     def test_ldap_add_user_default_role_with_default_value(self):
@@ -92,9 +94,7 @@ spaces setting=withspaces
 CommentInValue=Value#this is a comment
 NoValue=#This is a setting with no value
 """
-    bad_config_texts = [
-        'This#doesnt have an equals',
-        'This=more=than one equals']
+    bad_config_texts = ['This#doesnt have an equals', 'This=more=than one equals']
 
     config_file_path = "/tmp/rdw_config.conf"
 
@@ -114,7 +114,7 @@ NoValue=#This is a setting with no value
             self.config = ConfigFileParser().parse(stream)
 
     def tearDown(self):
-        if (os.access(self.config_file_path, os.F_OK)):
+        if os.access(self.config_file_path, os.F_OK):
             os.remove(self.config_file_path)
 
     def test_get_config_spaces_in_value(self):

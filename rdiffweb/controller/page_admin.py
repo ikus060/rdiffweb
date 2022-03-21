@@ -27,15 +27,16 @@ from collections import OrderedDict
 import cherrypy
 import humanfriendly
 import psutil
+from wtforms import validators, widgets
+from wtforms.fields import Field, PasswordField, SelectField, StringField
+from wtforms.fields.html5 import EmailField
+
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import rdiff_backup_version
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 from rdiffweb.tools.i18n import ugettext as _
-from wtforms import validators, widgets
-from wtforms.fields import Field, PasswordField, SelectField, StringField
-from wtforms.fields.html5 import EmailField
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -44,7 +45,13 @@ logger = logging.getLogger(__name__)
 def get_pyinfo():
     try:
         import distro
-        yield _('OS Version'), '%s %s (%s %s)' % (platform.system(), platform.release(), distro.name().capitalize(), distro.version())
+
+        yield _('OS Version'), '%s %s (%s %s)' % (
+            platform.system(),
+            platform.release(),
+            distro.name().capitalize(),
+            distro.version(),
+        )
     except Exception:
         yield _('OS Version'), '%s %s' % (platform.system(), platform.release())
     if hasattr(os, 'path'):
@@ -62,7 +69,6 @@ def get_pyinfo():
 
 
 def get_osinfo():
-
     def gr_name(gid):
         try:
             return grp.getgrgid(gid).gr_name
@@ -101,18 +107,24 @@ def get_hwinfo():
         yield _('Load Average'), ', '.join(map(str, map(lambda x: round(x, 2), os.getloadavg())))
     yield _('CPU Count'), psutil.cpu_count()
     meminfo = psutil.virtual_memory()
-    yield _('Memory usage'), '%s / %s' % (humanfriendly.format_size(meminfo.used), humanfriendly.format_size(meminfo.total))
+    yield _('Memory usage'), '%s / %s' % (
+        humanfriendly.format_size(meminfo.used),
+        humanfriendly.format_size(meminfo.total),
+    )
 
 
 def get_pkginfo():
     yield _('Rdiff-Backup Version'), '.'.join([str(i) for i in rdiff_backup_version()])
     import jinja2
+
     yield _('Jinja2 Version'), getattr(jinja2, '__version__')
     yield _('CherryPy Version'), getattr(cherrypy, '__version__')
     import sqlalchemy
+
     yield _('SQLAlchemy Version'), getattr(sqlalchemy, '__version__')
     try:
         import ldap
+
         yield _('LDAP Version'), getattr(ldap, '__version__')
         yield _('LDAP SASL Support (Cyrus-SASL)'), ldap.SASL_AVAIL  # @UndefinedVariable
         yield _('LDAP TLS Support (OpenSSL)'), ldap.TLS_AVAIL  # @UndefinedVariable
@@ -157,21 +169,26 @@ class UserForm(CherryForm):
     username = StringField(_('Username'), validators=[validators.data_required()])
     email = EmailField(_('Email'), validators=[validators.optional()])
     password = PasswordField(_('Password'))
-    user_root = StringField(_('Root directory'), description=_("Absolute path defining the location of the repositories for this user."))
+    user_root = StringField(
+        _('Root directory'), description=_("Absolute path defining the location of the repositories for this user.")
+    )
     role = SelectField(
         _('User Role'),
         coerce=int,
         choices=[(ADMIN_ROLE, _("Admin")), (MAINTAINER_ROLE, _("Maintainer")), (USER_ROLE, _("User"))],
         default=USER_ROLE,
-        description=_("Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo."))
+        description=_(
+            "Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo."
+        ),
+    )
     disk_quota = SizeField(
         _('Disk space'),
         validators=[validators.optional()],
-        description=_("Users disk spaces (in bytes). Set to 0 to remove quota (unlimited)."))
+        description=_("Users disk spaces (in bytes). Set to 0 to remove quota (unlimited)."),
+    )
     disk_usage = SizeField(
-        _('Quota Used'),
-        validators=[validators.optional()],
-        description=_("Disk spaces (in bytes) used by this user."))
+        _('Quota Used'), validators=[validators.optional()], description=_("Disk spaces (in bytes) used by this user.")
+    )
 
     def validate_role(self, field):
         # Don't allow the user to changes it's "role" state.
@@ -201,7 +218,6 @@ class UserForm(CherryForm):
 
 
 class EditUserForm(UserForm):
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Make username field read-only
@@ -213,7 +229,7 @@ class DeleteUserForm(CherryForm):
     username = StringField(_('Username'), validators=[validators.data_required()])
 
 
-@ cherrypy.tools.is_admin()
+@cherrypy.tools.is_admin()
 class AdminPage(Controller):
     """Administration pages. Allow to manage users database."""
 
@@ -256,14 +272,13 @@ class AdminPage(Controller):
             logging.exception('fail to get log file content')
             return "Error getting file content"
 
-    @ cherrypy.expose
+    @cherrypy.expose
     def default(self):
-        params = {"user_count": self.app.store.count_users(),
-                  "repo_count": self.app.store.count_repos()}
+        params = {"user_count": self.app.store.count_users(), "repo_count": self.app.store.count_repos()}
 
         return self._compile_template("admin.html", **params)
 
-    @ cherrypy.expose
+    @cherrypy.expose
     def logs(self, filename=u""):
         # get list of log file available.
         data = ""
@@ -318,7 +333,8 @@ class AdminPage(Controller):
             "edit_form": EditUserForm(formdata=None),
             "criteria": criteria,
             "search": search,
-            "users": list(self.app.store.users(search=search, criteria=criteria))}
+            "users": list(self.app.store.users(search=search, criteria=criteria)),
+        }
 
         # Build users page
         return self._compile_template("admin_users.html", **params)
@@ -328,7 +344,7 @@ class AdminPage(Controller):
         params = {
             "criteria": criteria,
             "search": search,
-            "repos": list(self.app.store.repos(search=search, criteria=criteria))
+            "repos": list(self.app.store.repos(search=search, criteria=criteria)),
         }
         return self._compile_template("admin_repos.html", **params)
 
@@ -338,9 +354,7 @@ class AdminPage(Controller):
         params = {
             "version": self.app.version,
             # Config
-            "cfg": {
-                k: '********' if 'password' in k else v
-                for k, v in vars(self.app.cfg).items()},
+            "cfg": {k: '********' if 'password' in k else v for k, v in vars(self.app.cfg).items()},
             # System Info entries
             "pyinfo": list(get_pyinfo()),
             "osinfo": list(get_osinfo()),

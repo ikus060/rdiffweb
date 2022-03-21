@@ -8,3 +8,11 @@ debian
 doc
 extras
 rdiffweb.egg-info
+.gitlab-ci.yml
+.venv
+.vscode
+*.eggs
+testrdw.conf
+rdw.db
+tox.ini
+vendor

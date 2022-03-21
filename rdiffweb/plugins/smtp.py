@@ -29,7 +29,7 @@ from . import scheduler  # noqa: This plugin required scheduler
 
 
 def _html2plaintext(html, body_id=None, encoding='utf-8'):
-    """ From an HTML text, convert the HTML to plain text.
+    """From an HTML text, convert the HTML to plain text.
     If @param body_id is provided then this is the tag where the
     body (not necessarily <body>) starts.
     """
@@ -113,8 +113,7 @@ class SmtpPlugin(SimplePlugin):
         """
         Queue mail to be sent.
         """
-        self.bus.publish('schedule_task', self.send_mail,
-                         to, subject, message, bcc, reply_to)
+        self.bus.publish('schedule_task', self.send_mail, to, subject, message, bcc, reply_to)
 
     def send_mail(self, to, subject: str, message: str, bcc=None, reply_to=None):
         """
@@ -136,12 +135,10 @@ class SmtpPlugin(SimplePlugin):
 
         # Skip sending email if smtp server is not configured.
         if not self.server:
-            self.bus.log(
-                'cannot send email because SMTP Server is not configured')
+            self.bus.log('cannot send email because SMTP Server is not configured')
             return
         if not self.email_from:
-            self.bus.log(
-                'cannot send email because SMTP From is not configured')
+            self.bus.log('cannot send email because SMTP From is not configured')
             return
 
         # Compile both template.
@@ -183,5 +180,4 @@ class SmtpPlugin(SimplePlugin):
 cherrypy.smtp = SmtpPlugin(cherrypy.engine)
 cherrypy.smtp.subscribe()
 
-cherrypy.config.namespaces['smtp'] = lambda key, value: setattr(
-    cherrypy.smtp, key, value)
+cherrypy.config.namespaces['smtp'] = lambda key, value: setattr(cherrypy.smtp, key, value)

@@ -21,9 +21,9 @@ Created on Apr. 10, 2020
 @author: patrik dufresne
 '''
 
-from base64 import b64decode, b64encode
 import hashlib
 import os
+from base64 import b64decode, b64encode
 
 
 def hash_password(password):

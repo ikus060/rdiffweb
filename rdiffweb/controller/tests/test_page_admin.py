@@ -24,6 +24,7 @@ import os
 from unittest.mock import ANY, MagicMock
 
 import cherrypy
+
 import rdiffweb.test
 from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
 
@@ -95,8 +96,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.getPage("/admin/users/", method='POST', body=b)
 
     def _delete_user(self, username='test1'):
-        b = {'action': 'delete',
-             'username': username}
+        b = {'action': 'delete', 'username': username}
         self.getPage("/admin/users/", method='POST', body=b)
 
 
@@ -479,10 +479,7 @@ class AdminWithNoLogsTest(rdiffweb.test.WebCase):
 class AdminWithLogsTest(rdiffweb.test.WebCase):
 
     login = True
-    default_config = {
-        'logfile': '/tmp/rdiffweb.log',
-        'logaccessfile': '/tmp/rdiffweb-access.log'
-    }
+    default_config = {'logfile': '/tmp/rdiffweb.log', 'logaccessfile': '/tmp/rdiffweb-access.log'}
 
     def test_logs(self):
         with open('/tmp/rdiffweb.log', 'w') as f:
@@ -504,10 +501,7 @@ class AdminWithLogsTest(rdiffweb.test.WebCase):
 class AdminWithLogMissingTest(rdiffweb.test.WebCase):
 
     login = True
-    default_config = {
-        'logfile': './rdiffweb.log',
-        'logaccessfile': './rdiffweb-access.log'
-    }
+    default_config = {'logfile': './rdiffweb.log', 'logaccessfile': './rdiffweb-access.log'}
 
     def test_logs_with_no_file(self):
         self.getPage("/admin/logs/")

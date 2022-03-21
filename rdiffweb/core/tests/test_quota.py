@@ -24,6 +24,7 @@ from unittest import mock
 from unittest.mock import MagicMock
 
 import cherrypy
+
 from rdiffweb import test
 
 
@@ -78,7 +79,6 @@ class QuotaPluginTestWithFailure(test.WebCase):
 
 
 class QuotaPluginTestWithUndefinedCmd(test.WebCase):
-
     def test_get_disk_usage_unsupported(self):
         # Given a user object with a valid user_root
         userobj = self.app.store.get_user(self.USERNAME)
@@ -123,7 +123,6 @@ class QuotaPluginTestWithUndefinedCmd(test.WebCase):
 
 
 class UserObjectQuotaTest(test.WebCase):
-
     def setUp(self):
         self.listener = MagicMock()
         cherrypy.engine.subscribe("set_disk_quota", self.listener.set_disk_quota, priority=40)

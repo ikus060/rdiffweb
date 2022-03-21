@@ -21,12 +21,13 @@ Created on May 11, 2015
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from io import open
 import os
-import pkg_resources
 import shutil
 import tempfile
 import unittest
+from io import open
+
+import pkg_resources
 
 from rdiffweb.core import authorizedkeys
 
@@ -94,10 +95,14 @@ class AuthorizedKeysTest(unittest.TestCase):
     def test_exists(self):
         filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable
         # Check if key exists.
-        key = authorizedkeys.AuthorizedKey(options=False, keytype='ssh-rsa', key='AAAAB3NzaC1yc2EAAAADAQABAAUGK', comment='bobo@computer')
+        key = authorizedkeys.AuthorizedKey(
+            options=False, keytype='ssh-rsa', key='AAAAB3NzaC1yc2EAAAADAQABAAUGK', comment='bobo@computer'
+        )
         self.assertTrue(authorizedkeys.exists(filename, key))
         # Check with different type.
-        key = authorizedkeys.AuthorizedKey(options=False, keytype='ssh-dss', key='AAAAB3NzaC1yc2EAAAADAQABAAUGK', comment='bobo@computer')
+        key = authorizedkeys.AuthorizedKey(
+            options=False, keytype='ssh-dss', key='AAAAB3NzaC1yc2EAAAADAQABAAUGK', comment='bobo@computer'
+        )
         self.assertFalse(authorizedkeys.exists(filename, key))
 
     def test_unicode(self):
@@ -117,7 +122,10 @@ class AuthorizedKeysTest(unittest.TestCase):
     def test_parse_options(self):
         self.assertEqual({'key': 'value'}, authorizedkeys._parse_options('key="value"'))
         self.assertEqual({'option': False}, authorizedkeys._parse_options('option'))
-        self.assertEqual({'option1': False, 'key': 'value', 'option2': False}, authorizedkeys._parse_options('option1,key="value",option2'))
+        self.assertEqual(
+            {'option1': False, 'key': 'value', 'option2': False},
+            authorizedkeys._parse_options('option1,key="value",option2'),
+        )
 
     def test_read(self):
         filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable

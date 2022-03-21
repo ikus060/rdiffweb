@@ -19,10 +19,11 @@ import logging
 
 import cherrypy
 from cherrypy.lib.static import serve_fileobj
+
 from rdiffweb.controller import Controller, validate_date, validate_int
 from rdiffweb.controller.dispatch import poppath
-from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
+from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -30,12 +31,13 @@ logger = logging.getLogger(__name__)
 
 @poppath()
 class LogsPage(Controller):
-
     @cherrypy.expose
-    @cherrypy.tools.errors(error_table={
-        DoesNotExistError: 404,
-        AccessDeniedError: 403,
-    })
+    @cherrypy.tools.errors(
+        error_table={
+            DoesNotExistError: 404,
+            AccessDeniedError: 403,
+        }
+    )
     def default(self, path, limit='10', date=None, file=None, raw=0):
         """
         Called to show every graphs
@@ -73,16 +75,9 @@ class LogsPage(Controller):
 
         # Get error log list
         if limit < len(repo_obj.error_log):
-            error_logs = repo_obj.error_log[:-limit - 1:-1]
+            error_logs = repo_obj.error_log[: -limit - 1 : -1]
         else:
             error_logs = repo_obj.error_log
 
-        params = {
-            'repo': repo_obj,
-            'limit': limit,
-            'date': date,
-            'file': file,
-            'data': data,
-            'error_logs': error_logs
-        }
+        params = {'repo': repo_obj, 'limit': limit, 'date': date, 'file': file, 'data': data, 'error_logs': error_logs}
         return self._compile_template("logs.html", **params)

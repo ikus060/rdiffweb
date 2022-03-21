@@ -35,6 +35,12 @@ stages:
 flake8:
   <<: *tox
 
+black:
+  <<: *tox
+
+isort:
+  <<: *tox
+
 py3-jinja210: 
   <<: *tox
 

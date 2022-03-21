@@ -21,9 +21,10 @@ from collections import namedtuple
 
 import cherrypy
 import pkg_resources
+
 from rdiffweb.core.config import Option
-from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import RdiffTime
+from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -110,11 +111,13 @@ class Controller(object):
             "get_flashed_messages": get_flashed_messages,
         }
         if self.app.currentuser:
-            parms.update({
-                'username': self.app.currentuser.username,
-                'is_admin': self.app.currentuser.is_admin,
-                'is_maintainer': self.app.currentuser.is_maintainer,
-            })
+            parms.update(
+                {
+                    'username': self.app.currentuser.username,
+                    'is_admin': self.app.currentuser.is_admin,
+                    'is_maintainer': self.app.currentuser.is_maintainer,
+                }
+            )
 
         # Append custom branding
         if hasattr(self.app.root, "header_logo"):

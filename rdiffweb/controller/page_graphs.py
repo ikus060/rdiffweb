@@ -17,6 +17,7 @@
 
 
 import cherrypy
+
 from rdiffweb.controller import Controller, validate_int, validate_isinstance
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
@@ -27,8 +28,7 @@ def bytes_to_mb(v):
     return round(v / 1024 / 1024, 2)
 
 
-class Data():
-
+class Data:
     def __init__(self, repo_obj, limit):
         self.repo_obj = repo_obj
         self.limit = limit
@@ -36,60 +36,120 @@ class Data():
     @property
     def activities(self):
         return [
-            {'name': _('New files'), 'data': [
-                [str(s.date).replace('T', ' '), s.newfiles] for s in self.repo_obj.session_statistics[:-self.limit - 1:-1]]},
-            {'name': _('Deleted files'), 'data': [
-                [str(s.date).replace('T', ' '), s.deletedfiles] for s in self.repo_obj.session_statistics[:-self.limit - 1:-1]]},
-            {'name': _('Changed files'), 'data': [
-                [str(s.date).replace('T', ' '), s.changedfiles] for s in self.repo_obj.session_statistics[:-self.limit - 1:-1]]}]
+            {
+                'name': _('New files'),
+                'data': [
+                    [str(s.date).replace('T', ' '), s.newfiles]
+                    for s in self.repo_obj.session_statistics[: -self.limit - 1 : -1]
+                ],
+            },
+            {
+                'name': _('Deleted files'),
+                'data': [
+                    [str(s.date).replace('T', ' '), s.deletedfiles]
+                    for s in self.repo_obj.session_statistics[: -self.limit - 1 : -1]
+                ],
+            },
+            {
+                'name': _('Changed files'),
+                'data': [
+                    [str(s.date).replace('T', ' '), s.changedfiles]
+                    for s in self.repo_obj.session_statistics[: -self.limit - 1 : -1]
+                ],
+            },
+        ]
 
     @property
     def filecount(self):
         return [
-            {'name': _('Number of files'), 'data': [
-                [s.starttime, s.sourcefiles] for s in self.repo_obj.session_statistics[-self.limit:]]}]
+            {
+                'name': _('Number of files'),
+                'data': [[s.starttime, s.sourcefiles] for s in self.repo_obj.session_statistics[-self.limit :]],
+            }
+        ]
 
     @property
     def filesize(self):
         return [
-            {'name': _('New file size (MiB)'), 'data': [
-                [s.starttime, bytes_to_mb(s.newfilesize)] for s in self.repo_obj.session_statistics[-self.limit:]]},
-            {'name': _('Deleted file size (MiB)'), 'data': [
-                [s.starttime, bytes_to_mb(s.deletedfilesize)] for s in self.repo_obj.session_statistics[-self.limit:]]},
-            {'name': _('Changed file size (MiB)'), 'data': [
-                [s.starttime, bytes_to_mb(s.changedmirrorsize)] for s in self.repo_obj.session_statistics[-self.limit:]]},
-            {'name': _('Increment file size (MiB)'), 'data': [
-                [s.starttime, bytes_to_mb(s.incrementfilesize)] for s in self.repo_obj.session_statistics[-self.limit:]]},
-            {'name': _('Destination size change (MiB)'), 'data': [
-                [s.starttime, bytes_to_mb(s.totaldestinationsizechange)] for s in self.repo_obj.session_statistics[-self.limit:]]}]
+            {
+                'name': _('New file size (MiB)'),
+                'data': [
+                    [s.starttime, bytes_to_mb(s.newfilesize)] for s in self.repo_obj.session_statistics[-self.limit :]
+                ],
+            },
+            {
+                'name': _('Deleted file size (MiB)'),
+                'data': [
+                    [s.starttime, bytes_to_mb(s.deletedfilesize)]
+                    for s in self.repo_obj.session_statistics[-self.limit :]
+                ],
+            },
+            {
+                'name': _('Changed file size (MiB)'),
+                'data': [
+                    [s.starttime, bytes_to_mb(s.changedmirrorsize)]
+                    for s in self.repo_obj.session_statistics[-self.limit :]
+                ],
+            },
+            {
+                'name': _('Increment file size (MiB)'),
+                'data': [
+                    [s.starttime, bytes_to_mb(s.incrementfilesize)]
+                    for s in self.repo_obj.session_statistics[-self.limit :]
+                ],
+            },
+            {
+                'name': _('Destination size change (MiB)'),
+                'data': [
+                    [s.starttime, bytes_to_mb(s.totaldestinationsizechange)]
+                    for s in self.repo_obj.session_statistics[-self.limit :]
+                ],
+            },
+        ]
 
     @property
     def sourcefilesize(self):
         return [
-            {'name': _('Source file size (MiB)'), 'data': [
-                [s.starttime, bytes_to_mb(s.sourcefilesize)] for s in self.repo_obj.session_statistics[-self.limit:]]}]
+            {
+                'name': _('Source file size (MiB)'),
+                'data': [
+                    [s.starttime, bytes_to_mb(s.sourcefilesize)]
+                    for s in self.repo_obj.session_statistics[-self.limit :]
+                ],
+            }
+        ]
 
     @property
     def elapsedtime(self):
         return [
-            {'name': _('Elapsed Time (minutes)'), 'data': [
-                [s.starttime, round(max(0, s.elapsedtime) / 60, 2)] for s in self.repo_obj.session_statistics[-self.limit:]]}]
+            {
+                'name': _('Elapsed Time (minutes)'),
+                'data': [
+                    [s.starttime, round(max(0, s.elapsedtime) / 60, 2)]
+                    for s in self.repo_obj.session_statistics[-self.limit :]
+                ],
+            }
+        ]
 
     @property
     def errors(self):
         return [
-            {'name': _('Error count'), 'data': [
-                [s.starttime, s.errors] for s in self.repo_obj.session_statistics[-self.limit:]]}]
+            {
+                'name': _('Error count'),
+                'data': [[s.starttime, s.errors] for s in self.repo_obj.session_statistics[-self.limit :]],
+            }
+        ]
 
 
 @poppath('graph')
 class GraphsPage(Controller):
-
     @cherrypy.expose
-    @cherrypy.tools.errors(error_table={
-        DoesNotExistError: 404,
-        AccessDeniedError: 403,
-    })
+    @cherrypy.tools.errors(
+        error_table={
+            DoesNotExistError: 404,
+            AccessDeniedError: 403,
+        }
+    )
     def default(self, graph, path, limit='30', **kwargs):
         """
         Called to show every graphs

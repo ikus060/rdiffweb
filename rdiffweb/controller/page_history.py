@@ -17,20 +17,22 @@
 
 
 import cherrypy
+
 from rdiffweb.controller import Controller, validate_int
 from rdiffweb.controller.dispatch import poppath
-from rdiffweb.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
+from rdiffweb.tools.i18n import ugettext as _
 
 
 @poppath()
 class HistoryPage(Controller):
-
     @cherrypy.expose
-    @cherrypy.tools.errors(error_table={
-        DoesNotExistError: 404,
-        AccessDeniedError: 403,
-    })
+    @cherrypy.tools.errors(
+        error_table={
+            DoesNotExistError: 404,
+            AccessDeniedError: 403,
+        }
+    )
     def default(self, path=b"", limit='10', **kwargs):
         limit = validate_int(limit)
 
@@ -42,7 +44,7 @@ class HistoryPage(Controller):
         if status[0] != 'ok':
             warning = status[1] + ' ' + _("The displayed data may be inconsistent.")
 
-        restore_dates = path_obj.change_dates[:-limit - 1:-1]
+        restore_dates = path_obj.change_dates[: -limit - 1 : -1]
 
         parms = {
             "limit": limit,

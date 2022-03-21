@@ -159,7 +159,19 @@ class RestoreTest(AppTestCase):
 
     def test_cmdline(self):
         # Test the command line call.
-        fh = popen(['rdiffweb-restore', b'--restore-as-of', b'1454448640', b'--encoding', 'utf-8', b'--kind', 'zip', self.path, b'-'])
+        fh = popen(
+            [
+                'rdiffweb-restore',
+                b'--restore-as-of',
+                b'1454448640',
+                b'--encoding',
+                'utf-8',
+                b'--kind',
+                'zip',
+                self.path,
+                b'-',
+            ]
+        )
         self.assertInZip(ZIP_EXPECTED, fh)
 
     def test_restore_pipe_zip_file(self):
@@ -178,7 +190,13 @@ class RestoreTest(AppTestCase):
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(os.path.join(self.path, b'Fichier @ <root>'), restore_as_of=1454448640, dest=f, encoding='utf-8', kind='raw')
+                restore(
+                    os.path.join(self.path, b'Fichier @ <root>'),
+                    restore_as_of=1454448640,
+                    dest=f,
+                    encoding='utf-8',
+                    kind='raw',
+                )
             # Check result.
             with open(filename, 'rb') as f:
                 self.assertEqual(f.read(), b"Ajout d'info\n")
@@ -191,13 +209,25 @@ class RestoreTest(AppTestCase):
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(os.path.join(self.path, b'Char ;090 to quote', b'Data'), restore_as_of=1454448640, dest=f, encoding='utf-8', kind='raw')
+                restore(
+                    os.path.join(self.path, b'Char ;090 to quote', b'Data'),
+                    restore_as_of=1454448640,
+                    dest=f,
+                    encoding='utf-8',
+                    kind='raw',
+                )
             # Check result.
             with open(filename, 'rb') as f:
                 self.assertEqual(f.read(), b"Bring me some Data !\n")
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(os.path.join(self.path, b'Char Z to quote', b'Data'), restore_as_of=1414921853, dest=f, encoding='utf-8', kind='raw')
+                restore(
+                    os.path.join(self.path, b'Char Z to quote', b'Data'),
+                    restore_as_of=1414921853,
+                    dest=f,
+                    encoding='utf-8',
+                    kind='raw',
+                )
             # Check result.
             with open(filename, 'rb') as f:
                 self.assertEqual(f.read(), b"Bring me some Data !\n")

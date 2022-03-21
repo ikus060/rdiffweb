@@ -22,15 +22,15 @@ Default page handler
 """
 
 
-import cherrypy
-from cherrypy.lib.static import serve_file, mimetypes
 import os
+
+import cherrypy
+from cherrypy.lib.static import mimetypes, serve_file
 
 from rdiffweb.core.rdw_helpers import unquote_url
 
 
 def empty():
-
     @cherrypy.expose
     def handler():
         return None
@@ -56,15 +56,11 @@ def poppath(*args, **kwargs):
         if k == 'handler':
             handler = v
         else:
-            raise TypeError(
-                "cherrypy.popargs() got an unexpected keyword argument '{0}'"
-                .format(k)
-            )
+            raise TypeError("cherrypy.popargs() got an unexpected keyword argument '{0}'".format(k))
 
     import inspect
 
-    if handler is not None \
-            and (hasattr(handler, '__call__') or inspect.isclass(handler)):
+    if handler is not None and (hasattr(handler, '__call__') or inspect.isclass(handler)):
         handler_call = True
 
     def decorated(cls_or_self=None, vpath=None):

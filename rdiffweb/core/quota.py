@@ -26,6 +26,7 @@ import subprocess
 import cherrypy
 import psutil
 from cherrypy.process.plugins import SimplePlugin
+
 from rdiffweb.core.store import UserObject
 
 logger = logging.getLogger(__name__)
@@ -63,7 +64,15 @@ class QuotaPlugin(SimplePlugin):
         }
         if quota is not None:
             env["RDIFFWEB_QUOTA"] = str(quota)
-        return subprocess.run(cmd, env=env, shell=True, check=True, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout
+        return subprocess.run(
+            cmd,
+            env=env,
+            shell=True,
+            check=True,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        ).stdout
 
     def get_usage(self, userobj: UserObject):
         # Fall back to disk spaces.
@@ -114,5 +123,4 @@ class QuotaPlugin(SimplePlugin):
 cherrypy.quota = QuotaPlugin(cherrypy.engine)
 cherrypy.quota.subscribe()
 
-cherrypy.config.namespaces['quota'] = lambda key, value: setattr(
-    cherrypy.quota, key, value)
+cherrypy.config.namespaces['quota'] = lambda key, value: setattr(cherrypy.quota, key, value)

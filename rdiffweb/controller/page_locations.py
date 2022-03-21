@@ -18,6 +18,7 @@
 import logging
 
 import cherrypy
+
 from rdiffweb.controller import Controller
 
 # Define the logger

@@ -70,13 +70,16 @@ class FileRateLimit(_DataStore):
     """
     Store rate limit information in files.
     """
+
     PREFIX = 'ratelimit-'
     pickle_protocol = pickle.HIGHEST_PROTOCOL
 
     def __init__(self, storage_path, **kwargs):
         super().__init__(**kwargs)
         # The 'storage_path' arg is required for file-based datastore.
-        assert storage_path, 'FileRateLimit required a storage_path `tools.ratelimit.storage_path = "/home/site/ratelimit"`'
+        assert (
+            storage_path
+        ), 'FileRateLimit required a storage_path `tools.ratelimit.storage_path = "/home/site/ratelimit"`'
         self.storage_path = os.path.abspath(storage_path)
 
     def _path(self, token):
@@ -138,7 +141,9 @@ def check_ratelimmit(delay=60, anonymous_limit=0, registered_limit=0, rate_excee
     # Get hits count using datastore.
     hits = datastore.get_and_increment(token, delay)
     if debug:
-        cherrypy.log('check and increase rate limit for token %s, limit %s, hits %s' % (token, limit, hits), 'TOOLS.RATELIMIT')
+        cherrypy.log(
+            'check and increase rate limit for token %s, limit %s, hits %s' % (token, limit, hits), 'TOOLS.RATELIMIT'
+        )
 
     # Verify user has not exceeded rate limit
     if limit <= hits:

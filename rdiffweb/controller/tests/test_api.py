@@ -22,6 +22,7 @@ Created on Nov 16, 2017
 
 
 from base64 import b64encode
+
 import rdiffweb.test
 
 
