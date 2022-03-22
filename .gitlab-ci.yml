@@ -8,7 +8,6 @@ stages:
 - sonar
 - publish
 - deploy
-- downstream
 
 #
 # Test Stage
@@ -266,26 +265,4 @@ deploy:demo:
   stage: deploy
   variables:
     GIT_STRATEGY: none
-
-bump_minarca_version:
-  stage: downstream
-  only:
-  - tags
-  script:
-  - export RDIFFWEB_VERSION=$(python3 setup.py --version | tail -n 1)
-  - echo RDIFFWEB_VERSION=$RDIFFWEB_VERSION
-  # configure git & ssh
-  - git config --global user.email "robot@ikus-soft.com"
-  - git config --global user.name "IKUS Soft robot"
-  - mkdir ~/.ssh && chmod 0700 ~/.ssh
-  - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
-  - echo "$GITLAB_MINARCA_DEPLOY_KEY" >> ~/.ssh/id_rsa
-  - chmod 0600 ~/.ssh/id_rsa
-  # Checkout minarca and upgrade version.
-  - git clone git@gitlab.com:ikus-soft/minarca.git
-  - cd minarca/
-  - sed -i -e "s/\"rdiffweb==.*\"/\"rdiffweb==$RDIFFWEB_VERSION\"/g" minarca-server/setup.py
-  - git add minarca-server/setup.py
-  - git commit -m "Bump rdiffweb to v$RDIFFWEB_VERSION"
-  - git push origin master
   
