@@ -207,7 +207,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         """
         # Change the user setting to match single repo.
         user = self.app.store.get_user(self.USERNAME)
-        user.user_root = os.path.join(self.app.testcases, 'testcases')
+        user.user_root = os.path.join(self.testcases, 'testcases')
         self.assertEqual(['', 'broker-repo', 'testcases'], [r.name for r in user.repo_objs])
         # Check if listing locations is working
         self.getPage('/')
@@ -225,7 +225,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
     def test_browse_with_permissions(self):
         # Create an another user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
-        user_obj.user_root = self.app.testcases
+        user_obj.user_root = self.testcases
         self.getPage('/browse/admin')
         self.assertStatus('404 Not Found')
 

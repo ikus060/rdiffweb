@@ -36,9 +36,7 @@ except pkg_resources.DistributionNotFound:
     VERSION = "DEV"
 
 
-def parse_args(args=None, config_file_contents=None):
-    args = sys.argv[1:] if args is None else args
-
+def get_parser():
     # Get global config argument parser
     parser = configargparse.ArgumentParser(
         prog='rdiffweb',
@@ -47,6 +45,7 @@ def parse_args(args=None, config_file_contents=None):
         add_env_var_help=True,
         auto_env_var_prefix='RDIFFWEB_',
         config_file_parser_class=ConfigFileParser,
+        conflict_handler='resolve',
     )
 
     parser.add_argument(
@@ -431,8 +430,12 @@ def parse_args(args=None, config_file_contents=None):
         help='replace the welcome message displayed in the login page for default locale or for a specific locale',
         action=LocaleAction
     )
+    return parser
 
-    return parser.parse_args(args, config_file_contents=config_file_contents)
+
+def parse_args(args=None, config_file_contents=None):
+    args = sys.argv[1:] if args is None else args
+    return get_parser().parse_args(args, config_file_contents=config_file_contents)
 
 
 class LocaleAction(argparse.Action):

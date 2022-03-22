@@ -343,7 +343,7 @@ class RestoreTest(rdiffweb.test.WebCase):
     def test_as_another_user(self):
         # Create a nother user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
-        user_obj.user_root = self.app.testcases
+        user_obj.user_root = self.testcases
 
         self._restore("anotheruser", "testcases", "Fichier%20%40%20%3Croot%3E/", "1414921853", True)
         self.assertStatus('200 OK')

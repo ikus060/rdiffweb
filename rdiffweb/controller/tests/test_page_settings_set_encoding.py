@@ -100,7 +100,7 @@ class SetEncodingTest(rdiffweb.test.WebCase):
     def test_as_another_user(self):
         # Create another user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
-        user_obj.user_root = self.app.testcases
+        user_obj.user_root = self.testcases
 
         self._set_encoding('anotheruser', 'testcases', 'cp1252')
         self.assertStatus('200 OK')

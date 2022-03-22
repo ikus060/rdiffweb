@@ -64,7 +64,7 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
     def test_as_another_user(self):
         # Create a nother user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
-        user_obj.user_root = self.app.testcases
+        user_obj.user_root = self.testcases
 
         self._remove_older('anotheruser', 'testcases', '1')
         self.assertStatus('200 OK')

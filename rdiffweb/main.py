@@ -22,7 +22,6 @@ import sys
 
 import cherrypy
 
-from rdiffweb.core.config import parse_args
 from rdiffweb.rdw_app import RdiffwebApp
 
 # Define logger for this module
@@ -89,10 +88,10 @@ def _setup_logging(log_file, log_access_file, level):
     cherrypy_error.addHandler(default_handler)
 
 
-def main(args=None):
+def main(args=None, app_class=RdiffwebApp):
     """Start rdiffweb deamon."""
-    # Parse arguments
-    cfg = parse_args(args)
+    # Parse arguments if config is not provided
+    cfg = app_class.parse_args(args)
 
     # Configure logging
     environment = 'development' if cfg.debug else cfg.environment
@@ -100,8 +99,7 @@ def main(args=None):
     _setup_logging(log_file=cfg.log_file, log_access_file=cfg.log_access_file, level=log_level)
 
     try:
-        global_config = cherrypy._cpconfig.environments.get(environment, {})
-        global_config.update(
+        cherrypy.config.update(
             {
                 'server.socket_host': cfg.server_host,
                 'server.socket_port': cfg.server_port,
@@ -113,11 +111,8 @@ def main(args=None):
                 'server.environment': environment,
             }
         )
-
-        cherrypy.config.update(global_config)
-
         # Start web server
-        cherrypy.quickstart(RdiffwebApp(cfg))
+        cherrypy.quickstart(app_class(cfg))
     except Exception:
         logger.exception("FAIL")
     else:

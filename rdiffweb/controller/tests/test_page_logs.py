@@ -55,7 +55,7 @@ class LogsPageTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
 
     def test_logs_with_file_backup_missing(self):
-        os.unlink(os.path.join(self.app.testcases, self.REPO, 'rdiff-backup-data', 'backup.log'))
+        os.unlink(os.path.join(self.testcases, self.REPO, 'rdiff-backup-data', 'backup.log'))
         self._log(self.USERNAME, self.REPO, file='backup.log')
         self.assertStatus(200)
         self.assertInBody("This log file is empty")
@@ -66,7 +66,7 @@ class LogsPageTest(rdiffweb.test.WebCase):
         self.assertInBody("Starting restore of")
 
     def test_logs_with_file_restore_missing(self):
-        os.unlink(os.path.join(self.app.testcases, self.REPO, 'rdiff-backup-data', 'restore.log'))
+        os.unlink(os.path.join(self.testcases, self.REPO, 'rdiff-backup-data', 'restore.log'))
         self._log(self.USERNAME, self.REPO, file='restore.log')
         self.assertStatus(200)
         self.assertInBody("This log file is empty")

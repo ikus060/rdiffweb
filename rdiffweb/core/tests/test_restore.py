@@ -84,7 +84,7 @@ class RestoreTest(AppTestCase):
         AppTestCase.setUp(self)
 
         # Define path to be archived
-        self.path = os.path.join(self.app.testcases.encode('ascii'), b'testcases')
+        self.path = os.path.join(self.testcases.encode('ascii'), b'testcases')
         assert os.path.isdir(self.path)
 
     def assertInZip(self, expected_files, filename, equal=True):
