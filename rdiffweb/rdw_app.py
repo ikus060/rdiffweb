@@ -55,7 +55,7 @@ from rdiffweb.controller.page_restore import RestorePage
 from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
-from rdiffweb.core.config import Option
+from rdiffweb.core.config import Option, parse_args
 from rdiffweb.core.store import Store
 
 # Define the logger
@@ -112,6 +112,10 @@ class RdiffwebApp(Application):
     _tempdir = Option('tempdir')
 
     _session_dir = Option('session_dir')
+
+    @classmethod
+    def parse_args(cls, args=None, config_file_contents=None):
+        return parse_args(args, config_file_contents)
 
     def __init__(self, cfg):
 

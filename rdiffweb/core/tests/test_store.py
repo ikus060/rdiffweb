@@ -106,7 +106,7 @@ class StoreTest(AbstractStoreTest):
 
     def test_get_repo(self):
         user = self.app.store.add_user('bernie', 'my-password')
-        user.user_root = self.app.testcases
+        user.user_root = self.testcases
 
         # Get as bernie
         repo_obj = self.app.store.get_repo('bernie/testcases', user)
@@ -115,7 +115,7 @@ class StoreTest(AbstractStoreTest):
 
     def test_get_repo_as_other_user(self):
         user = self.app.store.add_user('bernie', 'my-password')
-        user.user_root = self.app.testcases
+        user.user_root = self.testcases
         self.app.store.get_repo('bernie/testcases', user)
 
         # Get as otheruser
@@ -125,7 +125,7 @@ class StoreTest(AbstractStoreTest):
 
     def test_get_repo_as_admin(self):
         user = self.app.store.add_user('bernie', 'my-password')
-        user.user_root = self.app.testcases
+        user.user_root = self.testcases
 
         # Get as admin
         other = self.app.store.add_user('other')
@@ -145,7 +145,7 @@ class StoreTest(AbstractStoreTest):
         """
         # Create new user
         user = self.app.store.add_user('bernie', 'my-password')
-        user.user_root = self.app.testcases
+        user.user_root = self.testcases
         user.role = ADMIN_ROLE
         user.email = 'bernie@gmail.com'
         user.repo_objs[0].maxage = -1
@@ -157,7 +157,7 @@ class StoreTest(AbstractStoreTest):
         self.assertEqual('bernie', obj.username)
         self.assertEqual('bernie@gmail.com', obj.email)
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in obj.repo_objs]))
-        self.assertEqual(self.app.testcases, obj.user_root)
+        self.assertEqual(self.testcases, obj.user_root)
         self.assertEqual(True, obj.is_admin)
         self.assertEqual(ADMIN_ROLE, obj.role)
 
@@ -176,8 +176,8 @@ class StoreTest(AbstractStoreTest):
         self.assertEqual(False, user.is_admin)
         self.assertEqual(USER_ROLE, user.role)
 
-        user.user_root = self.app.testcases
-        self.listener.user_attr_changed.assert_called_with(user, {'user_root': ('', self.app.testcases)})
+        user.user_root = self.testcases
+        self.listener.user_attr_changed.assert_called_with(user, {'user_root': ('', self.testcases)})
         self.listener.user_attr_changed.reset_mock()
         user.role = ADMIN_ROLE
         self.listener.user_attr_changed.assert_called_with(user, {'role': (USER_ROLE, ADMIN_ROLE)})
@@ -188,7 +188,7 @@ class StoreTest(AbstractStoreTest):
 
         self.assertEqual('larry@gmail.com', user.email)
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in user.repo_objs]))
-        self.assertEqual(self.app.testcases, user.user_root)
+        self.assertEqual(self.testcases, user.user_root)
         self.assertEqual(True, user.is_admin)
         self.assertEqual(ADMIN_ROLE, user.role)
 
@@ -285,7 +285,7 @@ class StoreTest(AbstractStoreTest):
         # Check default repo exists
         self.assertEqual(2, len(list(self.app.store.repos())))
         user_obj = self.app.store.add_user('annik')
-        user_obj.user_root = self.app.testcases
+        user_obj.user_root = self.testcases
         data = list(self.app.store.repos())
         self.assertEqual(4, len(data))
 

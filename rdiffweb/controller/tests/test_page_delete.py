@@ -83,7 +83,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         # Check filesystem
         sleep(1)
         self.assertEqual(['broker-repo'], [r.name for r in self.app.store.get_user('admin').repo_objs])
-        self.assertFalse(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
+        self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
 
     def test_delete_repo_with_slash(self):
         # Check initial list of repo
@@ -94,7 +94,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         # Check filesystem
         sleep(1)
         self.assertEqual(['broker-repo'], [r.name for r in self.app.store.get_user('admin').repo_objs])
-        self.assertFalse(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
+        self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
 
     def test_delete_repo_wrong_confirm(self):
         """
@@ -124,7 +124,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
     def test_delete_repo_as_admin(self):
         # Create a another user with admin right
         user_obj = self.app.store.add_user('anotheruser', 'password')
-        user_obj.user_root = self.app.testcases
+        user_obj.user_root = self.testcases
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
 
         self._delete('anotheruser', 'testcases', 'testcases', redirect='/admin/repos/')
@@ -135,14 +135,14 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         # Check filesystem
         sleep(1)
         self.assertEqual(['broker-repo'], [r.name for r in user_obj.repo_objs])
-        self.assertFalse(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
+        self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
 
     def test_delete_repo_as_maintainer(self):
-        self.assertTrue(os.path.isdir(self.app.testcases))
+        self.assertTrue(os.path.isdir(self.testcases))
 
         # Create a another user with maintainer right
         user_obj = self.app.store.add_user('maintainer', 'password')
-        user_obj.user_root = self.app.testcases
+        user_obj.user_root = self.testcases
         user_obj.role = MAINTAINER_ROLE
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
 
@@ -158,12 +158,12 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         # Check filesystem
         sleep(1)
         self.assertEqual(['broker-repo'], [r.name for r in user_obj.repo_objs])
-        self.assertFalse(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
+        self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
 
     def test_delete_repo_as_user(self):
         # Create a another user with maintainer right
         user_obj = self.app.store.add_user('user', 'password')
-        user_obj.user_root = self.app.testcases
+        user_obj.user_root = self.testcases
         user_obj.role = USER_ROLE
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
 
@@ -176,7 +176,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
 
         # Check database don't change
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
-        self.assertTrue(os.path.isdir(os.path.join(self.app.testcases, 'testcases')))
+        self.assertTrue(os.path.isdir(os.path.join(self.testcases, 'testcases')))
 
     def test_delete_does_not_exists(self):
         # Given an invalid repo

@@ -1,12 +1,5 @@
 {
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
-    "python.formatting.provider": "autopep8",
-    "python.formatting.autopep8Args": [
-        "--max-line-length=200"
-    ],
-    "python.formatting.blackArgs": [
-        "--config",
-        "black.toml"
-    ]
+    "python.formatting.provider": "black",
 }

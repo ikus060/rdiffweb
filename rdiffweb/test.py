@@ -35,7 +35,6 @@ import cherrypy
 import pkg_resources
 from cherrypy.test import helper
 
-from rdiffweb.core.config import parse_args
 from rdiffweb.core.store import _REPOS, _SSHKEYS, _USERS
 from rdiffweb.rdw_app import RdiffwebApp
 
@@ -43,56 +42,13 @@ from rdiffweb.rdw_app import RdiffwebApp
 Thread.isAlive = Thread.is_alive
 
 
-class MockRdiffwebApp(RdiffwebApp):
-    def __init__(self, default_config={}):
-        assert default_config is None or isinstance(default_config, dict)
-        self.default_config = default_config
-
-        # Allow defining a custom database uri for testing.
-        self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
-        uri = os.path.join(self.database_dir, 'rdiffweb.tmp.db')
-        uri = os.environ.get('RDIFFWEB_TEST_DATABASE_URI', uri)
-        default_config['database-uri'] = uri
-
-        cfg = parse_args(args=[], config_file_contents='\n'.join('%s=%s' % (k, v) for k, v in default_config.items()))
-
-        # Call parent constructor
-        RdiffwebApp.__init__(self, cfg=cfg)
-
-    def clear_db(self):
-        if hasattr(self, 'database_dir'):
-            shutil.rmtree(self.database_dir)
-            delattr(self, 'database_dir')
-
-    def clear_testcases(self):
-        if hasattr(self, 'testcases'):
-            shutil.rmtree(self.testcases)
-            delattr(self, 'testcases')
-
-    def reset(self):
-        """
-        Reset the application. Delete all data from database.
-        """
-        with self.store.engine.connect() as conn:
-            conn.execute(_SSHKEYS.delete())
-            conn.execute(_REPOS.delete())
-            conn.execute(_USERS.delete())
-        self.store.create_admin_user()
-
-    def reset_testcases(self):
-        """Extract testcases."""
-        # Extract 'testcases.tar.gz'
-        testcases = pkg_resources.resource_filename('rdiffweb.tests', 'testcases.tar.gz')  # @UndefinedVariable
-        new = str(tempfile.mkdtemp(prefix='rdiffweb_tests_'))
-        subprocess.check_call(['tar', '-zxf', testcases], cwd=new)
-
-        # Register repository
-        for user in self.store.users():
-            user.user_root = new
-            repo = user.get_repo('testcases')
-            repo.encoding = 'utf-8'
-
-        self.testcases = new
+def create_testcases_repo(app):
+    """Extract testcases."""
+    # Extract 'testcases.tar.gz'
+    testcases = pkg_resources.resource_filename('rdiffweb.tests', 'testcases.tar.gz')  # @UndefinedVariable
+    new = str(tempfile.mkdtemp(prefix='rdiffweb_tests_'))
+    subprocess.check_call(['tar', '-zxf', testcases], cwd=new)
+    return new
 
 
 class AppTestCase(unittest.TestCase):
@@ -105,6 +61,8 @@ class AppTestCase(unittest.TestCase):
 
     default_config = {}
 
+    app_class = RdiffwebApp
+
     @classmethod
     def setup_class(cls):
         if cls is AppTestCase:
@@ -115,16 +73,30 @@ class AppTestCase(unittest.TestCase):
         pass
 
     def setUp(self):
-        self.app = MockRdiffwebApp(self.default_config)
-        self.app.reset()
-        self.app.reset_testcases()
-        super().setUp()
+        # Allow defining a custom database uri for testing.
+        self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
+        uri = os.path.join(self.database_dir, 'rdiffweb.tmp.db')
+        uri = os.environ.get('RDIFFWEB_TEST_DATABASE_URI', uri)
+        self.default_config['database-uri'] = uri
+        cfg = self.app_class.parse_args(
+            args=[], config_file_contents='\n'.join('%s=%s' % (k, v) for k, v in self.default_config.items())
+        )
+        # Create Application
+        self.app = self.app_class(cfg)
+        # Create repositories
+        self.testcases = create_testcases_repo(self.app)
+        # Register repository
+        admin_user = self.app.store.get_user(self.USERNAME)
+        if admin_user:
+            admin_user.user_root = self.testcases
 
     def tearDown(self):
-        # Force dispose on SQL engine
-        self.app.clear_db()
-        self.app.clear_testcases()
-        super().tearDown()
+        if hasattr(self, 'database_dir'):
+            shutil.rmtree(self.database_dir)
+            delattr(self, 'database_dir')
+        if hasattr(self, 'testcases'):
+            shutil.rmtree(self.testcases)
+            delattr(self, 'testcases')
 
 
 class WebCase(helper.CPWebCase):
@@ -144,6 +116,8 @@ class WebCase(helper.CPWebCase):
 
     default_config = {}
 
+    app_class = RdiffwebApp
+
     @classmethod
     def setup_class(cls):
         if cls is WebCase:
@@ -154,29 +128,45 @@ class WebCase(helper.CPWebCase):
     @classmethod
     def teardown_class(cls):
         super().teardown_class()
-        app = cherrypy.tree.apps['']
-        app.clear_db()
 
     @classmethod
     def setup_server(cls):
-        default_config = getattr(cls, 'default_config', {})
-        # Enabled debug mode
-        default_config['debug'] = True
+        # Allow defining a custom database uri for testing.
+        cls.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
+        uri = os.path.join(cls.database_dir, 'rdiffweb.tmp.db')
+        uri = os.environ.get('RDIFFWEB_TEST_DATABASE_URI', uri)
+        cls.default_config['database-uri'] = uri
         # Disable rate-limit for testing.
-        if 'rate-limit' not in default_config:
-            default_config['rate-limit'] = -1
-        app = MockRdiffwebApp(default_config)
+        if 'rate-limit' not in cls.default_config:
+            cls.default_config['rate-limit'] = -1
+        cfg = cls.app_class.parse_args(
+            args=[], config_file_contents='\n'.join('%s=%s' % (k, v) for k, v in cls.default_config.items())
+        )
+        # Create Application
+        app = cls.app_class(cfg)
         cherrypy.tree.mount(app)
 
     def setUp(self):
         helper.CPWebCase.setUp(self)
-        self.app.reset()
-        self.app.reset_testcases()
+        # Clear database
+        with self.app.store.engine.connect() as conn:
+            conn.execute(_SSHKEYS.delete())
+            conn.execute(_REPOS.delete())
+            conn.execute(_USERS.delete())
+        self.app.store.create_admin_user()
+        # Create testcases repo
+        self.testcases = create_testcases_repo(self.app)
+        admin_user = self.app.store.get_user(self.USERNAME)
+        if admin_user:
+            admin_user.user_root = self.testcases
+        # Login to web application.
         if self.login:
             self._login()
 
     def tearDown(self):
-        self.app.clear_testcases()
+        if hasattr(self, 'testcases'):
+            shutil.rmtree(self.testcases)
+            delattr(self, 'testcases')
 
     @property
     def app(self):
