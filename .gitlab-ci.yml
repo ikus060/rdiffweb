@@ -18,7 +18,7 @@ stages:
   variables:
     TOXENV: $CI_JOB_NAME
   before_script:
-  - apt -yq update && apt install -yq rdiff-backup libldap2-dev libsasl2-dev
+  - apt -yq update && apt install -yq rdiff-backup
   - pip install tox
   script:
   - export TOXENV=${TOXENV:-$CI_JOB_NAME}
@@ -63,7 +63,7 @@ rdiff-backup2:
     TOXENV: py3-cherrypy9-jinja210
   before_script:
   - apt-get update
-  - apt -y install librsync-dev libldap2-dev libsasl2-dev
+  - apt -y install librsync-dev
   - pip install rdiff-backup tox
 
 postgresql-12:
@@ -121,9 +121,13 @@ package:deb:
   image: buildpack-deps:$DIST
   parallel:
     matrix:
+    # Disable unitest on buster. Cherrypy packages doesn't include tests
     - DIST: buster
+      DEB_BUILD_OPTIONS: nocheck
       BACKPORTS: deb http://deb.debian.org/debian buster-backports main
-    - DIST: [bullseye, bookworm, hirsute, impish]
+    - DIST: [bullseye, bookworm]
+    - DIST: [hirsute, impish]
+      TZ: UTC
   script: |
     set -x
     set -e
@@ -139,7 +143,7 @@ package:deb:
       apt build-dep -y .
     fi
     dch -v "$VERSION" "automated build"
-    DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -b
+    dpkg-buildpackage -b
     mkdir -p ./dist/$DIST
     mv ../rdiffweb*.deb ./dist/$DIST/
   artifacts:

@@ -21,9 +21,9 @@ Test archiver module.
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
-
 import io
 import os
+import sys
 import tarfile
 import tempfile
 import threading
@@ -161,7 +161,9 @@ class RestoreTest(AppTestCase):
         # Test the command line call.
         fh = popen(
             [
-                'rdiffweb-restore',
+                os.fsencode(sys.executable),
+                b'-m',
+                b'rdiffweb.core.restore',
                 b'--restore-as-of',
                 b'1454448640',
                 b'--encoding',

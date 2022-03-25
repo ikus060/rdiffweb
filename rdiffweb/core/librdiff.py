@@ -572,21 +572,18 @@ class DirEntry(object):
         # Restore data using a subprocess.
         path = os.path.join(self._repo.full_path, self._repo.unquote(self.path))
 
-        # Lookup the executable.
-        cmd = spawn.find_executable('rdiffweb-restore', PATH)
-        assert cmd, "can't find `rdiffweb-restore` executable in PATH: " + PATH
-        cmd = os.fsencode(cmd)
-
         # Call external process to offload processing.
-        # rdiffweb-restore --restore-as-of 123456 --encoding utf-8 --kind zip -
+        # python -m rdiffweb.core.restore --restore-as-of 123456 --encoding utf-8 --kind zip -
         cmdline = [
-            cmd,
+            os.fsencode(sys.executable),
+            b'-m',
+            b'rdiffweb.core.restore',
             b'--restore-as-of',
             str(restore_as_of).encode('latin'),
             b'--encoding',
-            self._repo._encoding.name,
+            self._repo._encoding.name.encode('latin'),
             b'--kind',
-            kind,
+            kind.encode('latin'),
             path,
             b'-',
         ]

@@ -23,6 +23,7 @@ from io import StringIO
 
 import cherrypy
 import humanfriendly
+import jinja2
 from jinja2 import Environment, PackageLoader
 from jinja2.filters import do_mark_safe
 from jinja2.loaders import ChoiceLoader
@@ -191,19 +192,18 @@ class TemplateManager(object):
     """
 
     def __init__(self):
-
+        # Load all the templates from /templates directory
         loader = ChoiceLoader([PackageLoader('rdiffweb', 'templates')])
 
-        # Load all the templates from /templates directory
+        # With and autoescape are included by dfault in Jinja2>=3
+        extensions = ['jinja2.ext.i18n']
+        if jinja2.__version__[0] <= '2':
+            extensions.extend(['jinja2.ext.with_', 'jinja2.ext.autoescape'])
         self.jinja_env = Environment(
             loader=loader,
             auto_reload=True,
             autoescape=True,
-            extensions=[
-                'jinja2.ext.i18n',
-                'jinja2.ext.with_',
-                'jinja2.ext.autoescape',
-            ],
+            extensions=extensions,
         )
 
         # Register filters

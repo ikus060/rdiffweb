@@ -3,14 +3,10 @@
 include /usr/share/dpkg/pkg-info.mk
 
 export SETUPTOOLS_SCM_PRETEND_VERSION = $(DEB_VERSION_UPSTREAM)
+export PYBUILD_BEFORE_TEST=python{version} setup.py develop
 
 %:
-	dh $@ --buildsystem=pybuild
-
-override_dh_auto_test:
-	# Install setuptools entry point required for testing.
-	python3 -m pip install ".[test]"
-	python3 -m pytest -v
+	dh $@ --buildsystem=pybuild --test-tox
 
 execute_after_dh_auto_install:
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/controller/tests
