@@ -36,4 +36,4 @@ class Test(unittest.TestCase):
         with contextlib.redirect_stdout(f):
             with self.assertRaises(SystemExit):
                 main(['--version'])
-        self.assertTrue(f.getvalue().startswith('rdiffweb 2.'), msg='%s is not a version' % f.getvalue())
+        self.assertRegexpMatches(f.getvalue(), r'rdiffweb (DEV|[0-9].*)')
