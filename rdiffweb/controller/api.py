@@ -80,7 +80,7 @@ class ApiPage(Controller):
                     "status": repo_obj.status[0],
                     "encoding": repo_obj.encoding,
                 }
-                for repo_obj in u.repo_objs
+                for repo_obj in u.get_repo_objs(refresh=True)
             ],
         }
 

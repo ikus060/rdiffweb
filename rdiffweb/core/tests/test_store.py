@@ -113,6 +113,18 @@ class StoreTest(AbstractStoreTest):
         self.assertEqual('testcases', repo_obj.name)
         self.assertEqual('bernie', repo_obj.owner)
 
+    def test_get_repo_refresh(self):
+        # Given a user with a valid user without any repository
+        userobj = self.app.store.get_user(self.USERNAME)
+        with self.app.store.engine.connect() as conn:
+            conn.execute(_REPOS.delete().where(_REPOS.c.userid == userobj._userid))  # @UndefinedVariable
+        with self.assertRaises(DoesNotExistError):
+            self.app.store.get_repo('admin/testcases', userobj)
+        # When getting a repo with refresh
+        repo = self.app.store.get_repo('admin/testcases', userobj, refresh=True)
+        # Then the repository is found
+        self.assertIsNotNone(repo)
+
     def test_get_repo_as_other_user(self):
         user = self.app.store.add_user('bernie', 'my-password')
         user.user_root = self.testcases
@@ -355,15 +367,16 @@ class StoreTest(AbstractStoreTest):
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
 
     def test_update_repos_remove_slash(self):
-        # Check if "/" get removed
+        # Given a user with a repository named "/testcases"
         userobj = self.app.store.get_user(self.USERNAME)
-        self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
         with self.app.store.engine.connect() as conn:
             conn.execute(_REPOS.delete().where(_REPOS.c.userid == userobj._userid))  # @UndefinedVariable
             conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='/testcases'))
-        self.assertEqual(['/testcases', 'broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        self.assertEqual(['/testcases'], sorted([r.name for r in userobj.repo_objs]))
+        # When updating the database schema
         self.app.store._update()
-        self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        # Then the repository name stripped the "/"
+        self.assertEqual(['testcases'], sorted([r.name for r in userobj.get_repo_objs()]))
 
     def test_add_user_to_sqlite(self):
         """Add user to local database."""
@@ -716,6 +729,30 @@ class UserObjectTest(WebCase):
         repo_obj = userobj.get_repo('broker-repo')
         repo_obj.maxage = 7
         self.assertEqual(7, repo_obj.maxage)
+
+    def test_refresh_repos_without_delete(self):
+        # Given a user with invalid repositories
+        userobj = self.app.store.get_user(self.USERNAME)
+        with self.app.store.engine.connect() as conn:
+            conn.execute(_REPOS.delete())
+            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='invalid'))
+        self.assertEqual(['invalid'], sorted([r.name for r in userobj.repo_objs]))
+        # When updating the repository list without deletion
+        userobj.refresh_repos()
+        # Then the list invlaid the invalid repo and new repos
+        self.assertEqual(['broker-repo', 'invalid', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+
+    def test_refresh_repos_with_delete(self):
+        # Given a user with invalid repositories
+        userobj = self.app.store.get_user(self.USERNAME)
+        with self.app.store.engine.connect() as conn:
+            conn.execute(_REPOS.delete())
+            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='invalid'))
+        self.assertEqual(['invalid'], sorted([r.name for r in userobj.repo_objs]))
+        # When updating the repository list without deletion
+        userobj.refresh_repos(delete=True)
+        # Then the list invlaid the invalid repo and new repos
+        self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
 
 
 class RepoObjectTest(WebCase):

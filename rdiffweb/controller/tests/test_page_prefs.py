@@ -25,6 +25,7 @@ from unittest.mock import MagicMock
 import cherrypy
 
 import rdiffweb.test
+from rdiffweb.core.store import _REPOS
 
 
 class PrefsTest(rdiffweb.test.WebCase):
@@ -109,10 +110,18 @@ class PrefsTest(rdiffweb.test.WebCase):
         self.assertStatus(404)
 
     def test_update_repos(self):
+        # Given a user with invalid repositories
+        userobj = self.app.store.get_user(self.USERNAME)
+        with self.app.store.engine.connect() as conn:
+            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='invalid'))
+        self.assertEqual(['broker-repo', 'invalid', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        # When updating the repository list
         self.getPage(self.PREFS, method='POST', body={'action': 'update_repos'})
         self.assertStatus(200)
-        # Don't need to check the results. User's repository are updated on the fly.
-        # This action is only kept for backward compatibility.
+        # Then a success message is displayed
+        self.assertInBody('Repositories successfully updated')
+        # Then the list is free of inexisting repos.
+        self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
 
     def test_update_notification(self):
         self.getPage("/prefs/notification/", method='POST', body={'action': 'set_notification_info', 'testcases': '7'})

@@ -81,3 +81,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 </form>
 </div>
 {% endcall %}
+
+<!-- Panel to refresh repository list. -->
+{% call panel(title=_("Refresh")) %}
+<div class="panel-body">
+<form action="#" method="post" role="form">
+    <input type="hidden" name="action" value="update_repos" />
+    <p class="help-block">
+        {% trans %}Refresh the list of repositories associated to your account. If you recently add a new repository and it doesn't show, you may try to refresh the list.{% endtrans %}
+    </p>
+    <button type="submit" class="btn btn-success">
+        {% trans %}Refresh repositories{% endtrans %}
+    </button>
+</form>
+</div>
+{% endcall %}
