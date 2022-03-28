@@ -105,12 +105,12 @@ class PrefsGeneralPanelProvider(Controller):
         profile_form = UserProfileForm(email=self.app.currentuser.email)
         password_form = UserPasswordForm()
         if action == "set_profile_info":
-            params = self._handle_set_profile_info(action, profile_form)
+            self._handle_set_profile_info(action, profile_form)
         elif action == "set_password":
-            params = self._handle_set_password(action, password_form)
+            self._handle_set_password(action, password_form)
         elif action == "update_repos":
-            # Kept for backward compatibility. Do nothing.
-            pass
+            self.app.currentuser.refresh_repos(delete=True)
+            flash(_("Repositories successfully updated"), level='success')
         elif action is None:
             pass
         else:

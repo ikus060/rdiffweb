@@ -46,7 +46,7 @@ class BrowsePage(Controller):
     def default(self, path=b""):
 
         # Check user access to the given repo & path
-        (repo_obj, path_obj) = self.app.store.get_repo_path(path)
+        (repo_obj, path_obj) = self.app.store.get_repo_path(path, refresh=True)
 
         # Set up warning about in-progress backups, if necessary
         warning = False

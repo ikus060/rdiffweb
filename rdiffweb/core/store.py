@@ -284,7 +284,7 @@ class UserObject(object):
             for record in result:
                 yield authorizedkeys.check_publickey(record['key'])
 
-    def get_repo(self, repopath):
+    def get_repo(self, repopath, refresh=False):
         """
         Return a repo object.
         """
@@ -292,6 +292,9 @@ class UserObject(object):
         if isinstance(repopath, bytes):
             repopath = os.fsdecode(repopath)
         repopath = repopath.strip('/')
+
+        if refresh:
+            self.refresh_repos()
 
         # Search the repo in database
         with self._store.engine.connect() as conn:
@@ -302,7 +305,17 @@ class UserObject(object):
 
         raise DoesNotExistError(self.userid, repopath)
 
-    def _get_repos_obj(self):
+    def get_repo_objs(self, refresh=False):
+        """
+        Return list of repository object.
+        """
+        if refresh:
+            self.refresh_repos()
+        with self._store.engine.connect() as conn:
+            records = conn.execute(_REPOS.select(_REPOS.c.userid == self._userid).order_by(_REPOS.c.repopath))
+            return [RepoObject(self, record) for record in records]
+
+    def refresh_repos(self, delete=False):
         """
         Return list of repositories object to reflect the filesystem folders.
 
@@ -327,20 +340,23 @@ class UserObject(object):
                         repopath = b'' if repopath == b'.' else repopath
 
                         # Check if repo path exists.
-                        if any(record['repopath'] == os.fsdecode(repopath) for record in records):
-                            del dirs[:]
-                        else:
+                        record_match = next(
+                            (record for record in records if record['repopath'] == os.fsdecode(repopath)), None
+                        )
+                        if not record_match:
                             # Add repository to database.
-                            dirty = True
                             conn.execute(_REPOS.insert().values(userid=self._userid, repopath=os.fsdecode(repopath)))
-                            del dirs[:]
+                            dirty = True
+                        else:
+                            records.remove(record_match)
+                        del dirs[:]
                 if root.count(SEP) - user_root.count(SEP) >= self._store._max_depth:
                     del dirs[:]
-
-            # Return list of repository object.
-            if dirty:
-                records = conn.execute(_REPOS.select(_REPOS.c.userid == self._userid).order_by(_REPOS.c.repopath))
-            return [RepoObject(self, record) for record in records]
+            # If enabled, remove entried from database
+            if delete:
+                for record in records:
+                    conn.execute(_REPOS.delete(_REPOS.c.repoid == record['repoid']))
+        return dirty
 
     @property
     def is_ldap(self):
@@ -401,7 +417,7 @@ class UserObject(object):
         # Update the value
         self._set_attr('user_root', value)
         # Refresh the list of repository.
-        self._get_repos_obj()
+        self.refresh_repos()
 
     # Declare properties
     userid = property(fget=lambda x: x._userid)
@@ -412,7 +428,7 @@ class UserObject(object):
     username = property(fget=lambda x: x._get_attr('username'))
     role = property(fget=lambda x: x._get_attr('role'), fset=lambda x, y: x._set_attr('role', int(y)))
     authorizedkeys = property(fget=lambda x: x._get_authorizedkeys())
-    repo_objs = property(fget=lambda x: x._get_repos_obj())
+    repo_objs = property(fget=lambda x: x.get_repo_objs(refresh=False))
     hash_password = property(
         fget=lambda x: x._get_attr('password'), fset=lambda x, y: x._set_attr('password', y, notify=False)
     )
@@ -596,7 +612,7 @@ class Store(SimplePlugin):
             result = conn.execute(select([count('*')]).select_from(_REPOS))
             return result.fetchone()[0]
 
-    def get_repo(self, name, as_user=None):
+    def get_repo(self, name, as_user=None, refresh=False):
         """
         Return the repository identified as `name`.
         `name` should be <username>/<repopath>
@@ -616,9 +632,9 @@ class Store(SimplePlugin):
             raise DoesNotExistError(name)
 
         # Get the repo object.
-        return user_obj.get_repo(repopath)
+        return user_obj.get_repo(repopath, refresh=refresh)
 
-    def get_repo_path(self, path, as_user=None):
+    def get_repo_path(self, path, as_user=None, refresh=False):
         """
         Return a the repository identified by the given `path`.
         `path` should be <username>/<repopath>/<subdir>
@@ -626,6 +642,7 @@ class Store(SimplePlugin):
         assert isinstance(path, bytes) or isinstance(path, str)
         sep = b'/' if isinstance(path, bytes) else '/'
         path = path.strip(sep) + sep
+
         # Since we don't know which part of the "path" is the repopath,
         # we need to do multiple search.
         try:
@@ -633,7 +650,8 @@ class Store(SimplePlugin):
             while True:
                 pos = path.index(sep, startpos)
                 try:
-                    repo_obj = self.get_repo(path[:pos], as_user)
+                    # Run refresh only on first run.
+                    repo_obj = self.get_repo(path[:pos], as_user, refresh=refresh and startpos == 0)
                     break
                 except DoesNotExistError:
                     # Raised when repo doesn't exists

@@ -35,7 +35,7 @@ class LocationsPage(Controller):
     def index(self):
         # Get page params
         params = {
-            "repos": self.app.currentuser.repo_objs,
+            "repos": self.app.currentuser.get_repo_objs(refresh=True),
             "disk_usage": self.app.currentuser.disk_usage,
             "disk_quota": self.app.currentuser.disk_quota,
         }
