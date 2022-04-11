@@ -51,7 +51,9 @@ class StatusPage(Controller):
             if len(repo.session_statistics):
                 for stat in repo.session_statistics[base:]:
                     key = _key(stat.date)
-                    success[key] += 1
+                    if key not in success:
+                        continue
+                    success[key] = success.get(key, 0) + 1
                     data[key].append(stat)
                     if stat.errors:
                         failure[key] += 1
