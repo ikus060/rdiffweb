@@ -42,9 +42,7 @@ class SmtpPluginTest(helper.CPWebCase):
             cherrypy.engine.publish('send_mail', to='target@test.com', subject='subjet', message='body')
             # Then smtplib is called to send the mail.
             smtplib.SMTP.assert_called_once_with('__default__', 25)
-            smtplib.SMTP.return_value.sendmail.assert_called_once_with(
-                'Test <email_from@test.com>', 'target@test.com', mock.ANY
-            )
+            smtplib.SMTP.return_value.send_message.assert_called_once_with(mock.ANY)
             smtplib.SMTP.return_value.quit.assert_called_once_with()
 
     def test_send_mail_with_to_tuple(self):
@@ -61,9 +59,7 @@ class SmtpPluginTest(helper.CPWebCase):
             )
             # Then smtplib is called to send the mail.
             smtplib.SMTP.assert_called_once_with('__default__', 25)
-            smtplib.SMTP.return_value.sendmail.assert_called_once_with(
-                'Test <email_from@test.com>', 'A name <target@test.com>', mock.ANY
-            )
+            smtplib.SMTP.return_value.send_message.assert_called_once_with(mock.ANY)
             smtplib.SMTP.return_value.quit.assert_called_once_with()
 
     def test_queue_mail(self):
@@ -94,3 +90,10 @@ class SmtpPluginTest(helper.CPWebCase):
 How are you?
 Here is the link you wanted."""
         self.assertEqual(expected, smtp._html2plaintext(html))
+
+    def test_formataddr(self):
+        self.assertEqual('test@test.com', smtp._formataddr('test@test.com'))
+        self.assertEqual('TEST <test@test.com>', smtp._formataddr(('TEST', 'test@test.com')))
+        self.assertEqual(
+            'test2@test.com, TEST3 <test3@test.com>', smtp._formataddr(['test2@test.com', ('TEST3', 'test3@test.com')])
+        )

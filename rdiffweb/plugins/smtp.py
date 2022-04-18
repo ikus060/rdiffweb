@@ -91,6 +91,21 @@ def _html2plaintext(html, body_id=None, encoding='utf-8'):
     return html.strip('\n')
 
 
+def _formataddr(value):
+    """
+    Format the given value into a valid email address. Support raw string, tuple or a list of string.
+    """
+    if not value:
+        return None
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (tuple, list)) and len(value) == 2 and isinstance(value[0], str) and isinstance(value[1], str):
+        return email.utils.formataddr(value)
+    if not isinstance(value, (tuple, list)):
+        raise TypeError('expect a string, a tuple or a list of email address')
+    return ', '.join(map(_formataddr, value))
+
+
 class SmtpPlugin(SimplePlugin):
 
     server = None
@@ -109,29 +124,30 @@ class SmtpPlugin(SimplePlugin):
         self.bus.unsubscribe("send_mail", self.send_mail)
         self.bus.unsubscribe("queue_mail", self.queue_mail)
 
-    def queue_mail(self, to, subject, message, bcc=None, reply_to=None):
+    def queue_mail(self, *args, **kwargs):
         """
         Queue mail to be sent.
         """
-        self.bus.publish('schedule_task', self.send_mail, to, subject, message, bcc, reply_to)
+        # Skip sending email if smtp server is not configured.
+        if not self.server:
+            self.bus.log('cannot send email because SMTP Server is not configured')
+            return
+        if not self.email_from:
+            self.bus.log('cannot send email because SMTP From is not configured')
+            return
+        self.bus.publish('schedule_task', self.send_mail, *args, **kwargs)
 
-    def send_mail(self, to, subject: str, message: str, bcc=None, reply_to=None):
+    def send_mail(self, subject: str, message: str, to=None, bcc=None, reply_to=None):
         """
         Reusable method to be called to send email to the user user.
         `user` user object where to send the email.
         """
-        # Verify if the users as an email.
-        assert to and isinstance(to, (str, tuple))
         assert subject
         assert message
-        assert bcc is None or isinstance(bcc, (str, tuple))
-        assert reply_to is None or isinstance(reply_to, (str, tuple))
-        if isinstance(to, tuple):
-            to = email.utils.formataddr(to)
-        if isinstance(bcc, tuple):
-            bcc = email.utils.formataddr(bcc)
-        if isinstance(reply_to, tuple):
-            reply_to = email.utils.formataddr(reply_to)
+        assert to or bcc
+        to = _formataddr(to)
+        bcc = _formataddr(bcc)
+        reply_to = _formataddr(reply_to)
 
         # Skip sending email if smtp server is not configured.
         if not self.server:
@@ -145,19 +161,18 @@ class SmtpPlugin(SimplePlugin):
         text = _html2plaintext(message)
 
         # Record the MIME types of both parts - text/plain and text/html.
-        part1 = MIMEText(text, 'plain', 'utf8')
-        part2 = MIMEText(message, 'html', 'utf8')
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From'] = self.email_from
-        msg['To'] = to
+        if to:
+            msg['To'] = to
         if bcc:
             msg['Bcc'] = bcc
         if reply_to:
             msg['Reply-To'] = reply_to
         msg['Message-ID'] = email.utils.make_msgid()
-        msg.attach(part1)
-        msg.attach(part2)
+        msg.attach(MIMEText(text, 'plain', 'utf8'))
+        msg.attach(MIMEText(message, 'html', 'utf8'))
 
         host, unused, port = self.server.partition(':')
         if self.encryption == 'ssl':
@@ -170,13 +185,12 @@ class SmtpPlugin(SimplePlugin):
             # Authenticate if required.
             if self.username:
                 conn.login(self.username, self.password)
-            conn.sendmail(self.email_from, to, msg.as_string())
+            conn.send_message(msg)
         finally:
-            if conn is not None:
-                conn.quit()
+            conn.quit()
 
 
-# Register Scheduler plugin
+# Register SMTP plugin
 cherrypy.smtp = SmtpPlugin(cherrypy.engine)
 cherrypy.smtp.subscribe()
 
