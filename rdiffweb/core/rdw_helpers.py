@@ -55,14 +55,3 @@ def unquote_url(url):
     if isinstance(val, str):
         val = val.encode(encoding='latin1')
     return val
-
-
-# Taken from ASPN:
-# http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/259173
-
-
-class groupby(dict):
-    def __init__(self, seq, key=lambda x: x):
-        for value in seq:
-            k = key(value)
-            self.setdefault(k, []).append(value)

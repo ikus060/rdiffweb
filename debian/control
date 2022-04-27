@@ -3,12 +3,15 @@ Section: web
 Priority: optional
 Maintainer: Patrik Dufresne <patrik@ikus-soft.com>
 Build-Depends:
+ coreutils,
  debhelper-compat (= 13),
  dh-sequence-python3,
+ gzip,
  python3,
  python3-all-dev,
  python3-apscheduler,
  python3-babel,
+ python3-cached-property,
  python3-cherrypy3,
  python3-configargparse,
  python3-distro,
@@ -17,6 +20,7 @@ Build-Depends:
  python3-jinja2,
  python3-ldap3,
  python3-nose,
+ python3-parameterized,
  python3-pip,
  python3-psutil,
  python3-pytest,
@@ -34,6 +38,8 @@ Vcs-Browser: https://gitlab.com/ikus-soft/rdiffweb
 Package: rdiffweb
 Architecture: all
 Depends:
+ coreutils,
+ gzip,
  libjs-bootstrap,
  libjs-chart.js,
  libjs-chartkick.js,

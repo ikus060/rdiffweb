@@ -332,24 +332,26 @@ class UserObject(object):
             records = list(conn.execute(_REPOS.select(_REPOS.c.userid == self._userid).order_by(_REPOS.c.repopath)))
             user_root = os.fsencode(self.user_root)
             for root, dirs, unused_files in os.walk(user_root, _onerror):
-                for name in dirs:
-                    if name == b'rdiff-backup-data':
-                        repopath = os.path.relpath(root, start=user_root)
-                        # Handle special scenario when the repo is the
-                        # user_root
-                        repopath = b'' if repopath == b'.' else repopath
+                for name in dirs.copy():
+                    if name.startswith(b'.'):
+                        dirs.remove(name)
+                if b'rdiff-backup-data' in dirs:
+                    repopath = os.path.relpath(root, start=user_root)
+                    del dirs[:]
+                    # Handle special scenario when the repo is the
+                    # user_root
+                    repopath = b'' if repopath == b'.' else repopath
 
-                        # Check if repo path exists.
-                        record_match = next(
-                            (record for record in records if record['repopath'] == os.fsdecode(repopath)), None
-                        )
-                        if not record_match:
-                            # Add repository to database.
-                            conn.execute(_REPOS.insert().values(userid=self._userid, repopath=os.fsdecode(repopath)))
-                            dirty = True
-                        else:
-                            records.remove(record_match)
-                        del dirs[:]
+                    # Check if repo path exists.
+                    record_match = next(
+                        (record for record in records if record['repopath'] == os.fsdecode(repopath)), None
+                    )
+                    if not record_match:
+                        # Add repository to database.
+                        conn.execute(_REPOS.insert().values(userid=self._userid, repopath=os.fsdecode(repopath)))
+                        dirty = True
+                    else:
+                        records.remove(record_match)
                 if root.count(SEP) - user_root.count(SEP) >= self._store._max_depth:
                     del dirs[:]
             # If enabled, remove entried from database
@@ -519,11 +521,11 @@ class RepoObject(RdiffRepo):
         self._set_attr('encoding', codec.name)
         self._encoding = codec
 
-    def delete(self):
+    def delete_repo(self):
         """Properly remove the given repository by updating the user's repositories."""
         logger.info("deleting repository %s", self)
         # Remove data from disk in background
-        RdiffRepo.delete(self)
+        super().delete_repo()
         # Remove entry from database after deleting files.
         # Otherwise, refresh will add this repo back.
         with self._user_obj._store.engine.connect() as conn:
@@ -656,8 +658,7 @@ class Store(SimplePlugin):
                 except DoesNotExistError:
                     # Raised when repo doesn't exists
                     startpos = pos + 1
-            path_obj = repo_obj.get_path(path[pos + 1 :])
-            return repo_obj, path_obj
+            return repo_obj, path[pos + 1 :]
         except ValueError:
             raise DoesNotExistError(path)
 

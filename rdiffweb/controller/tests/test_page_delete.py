@@ -24,8 +24,10 @@ import os
 from time import sleep
 from unittest.case import skipIf
 
+from parameterized import parameterized
+
 import rdiffweb.test
-from rdiffweb.core.librdiff import DoesNotExistError, rdiff_backup_version
+from rdiffweb.core.librdiff import rdiff_backup_version
 from rdiffweb.core.store import MAINTAINER_ROLE, USER_ROLE
 
 RDIFF_BACKUP_VERSION = rdiff_backup_version()
@@ -44,32 +46,28 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.getPage("/delete/" + user + "/" + repo + "/", method="POST", body=body)
 
     @skipIf(RDIFF_BACKUP_VERSION < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
-    def test_delete_path(self):
-        """
-        Check to delete a directory.
-        """
-        # Check directory exists
-        admin = self.app.store.get_user('admin')
-        self.app.store.get_repo_path('admin/testcases/Revisions', as_user=admin)
-        # Delete directory
-        self._delete(self.USERNAME, 'testcases/Revisions', 'Revisions')
-        self.assertStatus(303)
+    @parameterized.expand(
+        [
+            ("with_dir", 'admin', '/testcases/Revisions', 'Revisions', 303, 404),
+            ("with_dir_wrong_confirmation", 'admin', '/testcases/Revisions', 'invalid', 400, 200),
+            ("with_file", 'admin', '/testcases/Revisions/Data', 'Data', 303, 404),
+            ("with_file_wrong_confirmation", 'admin', '/testcases/Revisions/Data', 'invalid', 400, 200),
+            ("with_invalid", 'admin', '/testcases/invalid', 'invalid', 404, 404),
+            ("with_broken_symlink", 'admin', '/testcases/BrokenSymlink', 'BrokenSymlink', 303, 404),
+            ("with_utf8", 'admin', '/testcases/R%C3%A9pertoire%20Existant', 'Répertoire Existant', 303, 404),
+            ("with_rdiff_backup_data", 'admin', '/testcases/rdiff-backup-data', 'rdiff-backup-data', 404, 404),
+            ("with_quoted_path", 'admin', '/testcases/Char%20%3B090%20to%20quote', 'Char Z to quote', 303, 404),
+        ]
+    )
+    def test_delete_path(self, unused, username, path, confirmation, expected_status, expected_history_status):
+        # When trying to delete a file or a folder with a confirmation
+        self._delete(username, path, confirmation)
+        # Then a status is returned
+        self.assertStatus(expected_status)
         # Check filesystem
         sleep(1)
-        with self.assertRaises(DoesNotExistError):
-            self.app.store.get_repo_path('admin/testcases/Revisions', as_user=admin)
-
-    @skipIf(RDIFF_BACKUP_VERSION < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
-    def test_delete_path_with_wrong_confirm(self):
-        # Check directory exists
-        admin = self.app.store.get_user('admin')
-        self.app.store.get_repo_path('admin/testcases/Revisions', as_user=admin)
-        # Delete directory
-        self._delete(self.USERNAME, 'testcases/Revisions', 'invalid')
-        self.assertStatus(400)
-        # Check filesystem
-        sleep(1)
-        self.app.store.get_repo_path('admin/testcases/Revisions', as_user=admin)
+        self.getPage("/history/" + username + "/" + path)
+        self.assertStatus(expected_history_status)
 
     def test_delete_repo(self):
         """
@@ -178,7 +176,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
         self.assertTrue(os.path.isdir(os.path.join(self.testcases, 'testcases')))
 
-    def test_delete_does_not_exists(self):
+    def test_delete_repo_does_not_exists(self):
         # Given an invalid repo
         repo = 'invalid'
         # When trying to delete this repo

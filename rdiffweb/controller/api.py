@@ -27,6 +27,7 @@ import logging
 import cherrypy
 
 from rdiffweb.controller import Controller
+from rdiffweb.core.librdiff import RdiffTime
 
 try:
     import simplejson as json
@@ -41,8 +42,8 @@ def json_handler(*args, **kwargs):
     value = cherrypy.serving.request._json_inner_handler(*args, **kwargs)
 
     def default(o):
-        if hasattr(o, '__json__'):
-            return o.__json__()
+        if isinstance(o, RdiffTime):
+            return str(o)
         raise TypeError(repr(o) + " is not JSON serializable")
 
     encode = json.JSONEncoder(default=default, ensure_ascii=False).iterencode

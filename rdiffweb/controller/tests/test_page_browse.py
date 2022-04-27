@@ -109,14 +109,35 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         """
         Browse a symlink.
         """
+        self._browse(self.USERNAME, self.REPO, "Subdirectory/LoopSymlink")
+        self.assertStatus(200)
+        self.assertInBody("LoopSymlink")
+        self.assertInBody("Foldèr with éncodïng")
         self._browse(self.USERNAME, self.REPO, "Subdirectory/LoopSymlink/LoopSymlink/")
-        self.assertNotInBody("LoopSymlink/LoopSymlink", "")
+        self.assertStatus(200)
+        self.assertInBody("LoopSymlink")
+        self.assertInBody("Foldèr with éncodïng")
+        self._browse(self.USERNAME, self.REPO, "Subdirectory/LoopSymlink/LoopSymlink/LoopSymlink")
+        self.assertStatus(200)
+        self.assertInBody("LoopSymlink")
+        self.assertInBody("Foldèr with éncodïng")
+
+    def test_subdir_symlink(self):
+        self._browse(self.USERNAME, self.REPO, "SymlinkToSubdirectory")
+        self.assertStatus(200)
+        self.assertInBody("LoopSymlink")
+        self.assertInBody("Foldèr with éncodïng")
+        self._browse(self.USERNAME, self.REPO, "SymlinkToSubdirectory/LoopSymlink")
+        self.assertStatus(200)
+        self.assertInBody("LoopSymlink")
+        self.assertInBody("Foldèr with éncodïng")
 
     def test_sub_directory_deleted(self):
         """
         Browse to a sub directory being deleted.
         """
         self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Supprim%C3%A9/")
+        self.assertStatus(200)
         self.assertInBody("Untitled Empty Text File")
         self.assertInBody("Untitled Empty Text File 2")
         self.assertInBody("Untitled Empty Text File 3")
@@ -132,6 +153,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         Browse to a sub directory.
         """
         self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Existant/")
+        self.assertStatus(200)
         self.assertInBody("Fichier supprimé")
         self.assertInBody("Untitled Empty Text File")
         self.assertInBody("Untitled Empty Text File 2")
@@ -145,6 +167,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
             self.REPO,
             "R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/",
         )
+        self.assertStatus(200)
         self.assertInBody("Untitled Testcase.doc")
 
     def test_sub_directory_with_encoding(self):
@@ -152,6 +175,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         Browse to sub directory with non-ascii.
         """
         self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Existant/")
+        self.assertStatus(200)
         self.assertInBody("Répertoire Existant")
 
     def test_quoted_path(self):
@@ -161,6 +185,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         #  Char ;090 to quote
         #  Char Z to quote
         self._browse(self.USERNAME, self.REPO, "Char%20%3B090%20to%20quote/")
+        self.assertStatus(200)
         #  browser location
         self.assertInBody("Char Z to quote")
         #  Content of the folder

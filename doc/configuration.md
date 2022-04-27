@@ -320,8 +320,8 @@ If you want to enforce a different location for the temporary directory, you may
 
 ## Configure repository lookup depthness.
 
-When defining the UserRoot value for a user, Rdiffweb will scan the content of this directory recursively to lookups for rdiff-backup repositories. For performance reason, Rdiffweb limits the recursiveness to 5 subdirectories. This default value should suit most use cases. If you have a particular use case, it's possible to allow Rdiffweb to scan for more subdirectories by defining a greater value for the option `max-depth`. Make sure to pick a reasonable value for your use case as it may impact the performance.
+When defining the UserRoot value for a user, Rdiffweb will scan the content of this directory recursively to lookups for rdiff-backup repositories. For performance reason, Rdiffweb limits the recursiveness to 3 subdirectories. This default value should suit most use cases. If you have a particular use case, it's possible to allow Rdiffweb to scan for more subdirectories by defining a greater value for the option `max-depth`. Make sure to pick a reasonable value for your use case as it may impact the performance.
 
 | Parameter | Description | Example |
 | --- | --- | --- |
-| --max-depth | Define the maximum folder depthness to search into the user's root directory to find repositories. This is commonly used if your repositories are organised with multiple sub-folders. Default: 5 | No | 10 |
+| --max-depth | Define the maximum folder depthness to search into the user's root directory to find repositories. This is commonly used if your repositories are organised with multiple sub-folders. Default: 3 | No | 10 |

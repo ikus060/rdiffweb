@@ -348,7 +348,7 @@ def get_parser():
         metavar='DEPTH',
         help="define the maximum folder depthness to search into the user's root directory to find repositories. This is commonly used if you repositories are organised with multiple sub-folder.",
         type=int,
-        default=5,
+        default=3,
     )
 
     parser.add('--quota-set-cmd', '--quotasetcmd', metavar='COMMAND', help="command line to set the user's quota.")

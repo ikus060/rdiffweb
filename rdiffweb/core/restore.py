@@ -164,6 +164,7 @@ def _print_stderr(msg, exc_info=False):
     print(msg, file=sys.stderr)
     if exc_info:
         traceback.print_exc(file=sys.stderr)
+    sys.stderr.flush()
 
 
 def _lookup_filename(base, path):
@@ -204,7 +205,6 @@ def restore(restore, restore_as_of, kind, encoding, dest, log=logger.debug):
     # Generate a temporary location used to restore data.
     # This location will be deleted after restore.
     tmp_output = tempfile.mkdtemp(prefix=b'rdiffweb_restore_')
-    assert isinstance(tmp_output, bytes)
     log('restoring data into temporary folder: %r' % tmp_output)
 
     # Search full path location of rdiff-backup.

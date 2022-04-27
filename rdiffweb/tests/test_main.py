@@ -36,4 +36,4 @@ class Test(unittest.TestCase):
         with contextlib.redirect_stdout(f):
             with self.assertRaises(SystemExit):
                 main(['--version'])
-        self.assertRegexpMatches(f.getvalue(), r'rdiffweb (DEV|[0-9].*)')
+        self.assertRegex(f.getvalue(), r'rdiffweb (DEV|[0-9].*)')
