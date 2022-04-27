@@ -22,7 +22,6 @@ Module used to test the librdiff.
 
 @author: Patrik Dufresne
 """
-
 import datetime
 import os
 import shutil
@@ -30,25 +29,24 @@ import tarfile
 import tempfile
 import time
 import unittest
+from inspect import isclass
 from unittest.case import skipIf
 
 import pkg_resources
+from parameterized import parameterized
 
 from rdiffweb.core.librdiff import (
     AccessDeniedError,
-    DirEntry,
     DoesNotExistError,
-    FileError,
     FileStatisticsEntry,
-    HistoryEntry,
     IncrementEntry,
+    RdiffDirEntry,
     RdiffRepo,
     RdiffTime,
     SessionStatisticsEntry,
-    UnknownError,
     rdiff_backup_version,
+    unquote,
 )
-from rdiffweb.test import AppTestCase
 
 RDIFF_BACKUP_VERSION = rdiff_backup_version()
 
@@ -60,78 +58,26 @@ class MockRdiffRepo(RdiffRepo):
         self.root_path = MockDirEntry(self)
 
 
-class MockDirEntry(DirEntry):
+class MockDirEntry(RdiffDirEntry):
     def __init__(self, repo):
         self._repo = repo
         self.path = b''
 
 
 class IncrementEntryTest(unittest.TestCase):
-    def setUp(self):
-        self.repo = MockRdiffRepo()
-        backup_dates = [
-            1414871387,
-            1414871426,
-            1414871448,
-            1414871475,
-            1414871489,
-            1414873822,
-            1414873850,
-            1414879639,
-            1414887165,
-            1414887491,
-            1414889478,
-            1414937803,
-            1414939853,
-            1414967021,
-            1415047607,
-            1415059497,
-            1415221262,
-            1415221470,
-            1415221495,
-            1415221507,
-        ]
-        self.repo._backup_dates = [RdiffTime(x) for x in backup_dates]
-        self.root_path = self.repo.root_path
-
     def test_init(self):
-
-        increment = IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz')
+        increment = IncrementEntry(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz')
+        self.assertEqual(b'my_filename.txt', increment.name)
         self.assertEqual(RdiffTime(1414967021), increment.date)
-        self.assertEqual(b'my_filename.txt', increment.filename)
-        self.assertIsNotNone(increment.repo)
+        self.assertEqual(b'.diff.gz', increment.suffix)
 
 
-class DirEntryTest(unittest.TestCase):
+class RdiffDirEntryTest(unittest.TestCase):
     def setUp(self):
         self.repo = MockRdiffRepo()
-        backup_dates = [
-            1414871387,
-            1414871426,
-            1414871448,
-            1414871475,
-            1414871489,
-            1414873822,
-            1414873850,
-            1414879639,
-            1414887165,
-            1414887491,
-            1414889478,
-            1414937803,
-            1414939853,
-            1414967021,
-            1415047607,
-            1415059497,
-            1415221262,
-            1415221470,
-            1415221495,
-            1415221507,
-        ]
-        self.repo._backup_dates = [RdiffTime(x) for x in backup_dates]
-        self.root_path = self.repo.root_path
 
     def test_init(self):
-        entry = DirEntry(self.root_path, b'my_filename.txt', False, [])
+        entry = RdiffDirEntry(self.repo, b'my_filename.txt', False, [])
         self.assertFalse(entry.isdir)
         self.assertFalse(entry.exists)
         self.assertEqual(os.path.join(b'my_filename.txt'), entry.path)
@@ -140,11 +86,11 @@ class DirEntryTest(unittest.TestCase):
     def test_change_dates(self):
         """Check if dates are properly sorted."""
         increments = [
-            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'),
-            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T09:16:43-05:00.missing'),
-            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-03T19:04:57-05:00.diff.gz'),
+            IncrementEntry(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'),
+            IncrementEntry(b'my_filename.txt.2014-11-02T09:16:43-05:00.missing'),
+            IncrementEntry(b'my_filename.txt.2014-11-03T19:04:57-05:00.diff.gz'),
         ]
-        entry = DirEntry(self.root_path, b'my_filename.txt', False, increments)
+        entry = RdiffDirEntry(self.repo, b'my_filename.txt', False, increments)
 
         self.assertEqual(
             [RdiffTime('2014-11-02T17:23:41-05:00'), RdiffTime('2014-11-03T19:04:57-05:00')], entry.change_dates
@@ -153,11 +99,11 @@ class DirEntryTest(unittest.TestCase):
     def test_change_dates_with_exists(self):
         """Check if dates are properly sorted."""
         increments = [
-            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'),
-            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-02T09:16:43-05:00.missing'),
-            IncrementEntry(self.root_path, b'my_filename.txt.2014-11-03T19:04:57-05:00.diff.gz'),
+            IncrementEntry(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz'),
+            IncrementEntry(b'my_filename.txt.2014-11-02T09:16:43-05:00.missing'),
+            IncrementEntry(b'my_filename.txt.2014-11-03T19:04:57-05:00.diff.gz'),
         ]
-        entry = DirEntry(self.root_path, b'my_filename.txt', True, increments)
+        entry = RdiffDirEntry(self.repo, b'my_filename.txt', True, increments)
 
         self.assertEqual(
             [RdiffTime('2014-11-02T17:23:41-05:00'), RdiffTime('2014-11-03T19:04:57-05:00')], entry.change_dates
@@ -165,43 +111,38 @@ class DirEntryTest(unittest.TestCase):
 
     def test_display_name(self):
         """Check if display name is unquoted and unicode."""
-        entry = DirEntry(self.root_path, b'my_dir', True, [])
+        entry = RdiffDirEntry(self.repo, b'my_dir', True, [])
         self.assertEqual('my_dir', entry.display_name)
 
-        entry = DirEntry(self.root_path, b'my;090dir', True, [])
+        entry = RdiffDirEntry(self.repo, b'my;090dir', True, [])
         self.assertEqual('myZdir', entry.display_name)
 
     def test_file_size(self):
+        # Given a dir increment
         increments = [
             IncrementEntry(
-                self.root_path,
                 bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial.2014-11-05T16:05:07-05:00.dir', encoding='utf-8'),
             )
         ]
-        entry = DirEntry(
-            self.root_path, bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'), False, increments
+        entry = RdiffDirEntry(
+            self.repo, bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'), False, increments
         )
-        self.assertEqual(286, entry.file_size)
+        # When getting the file_size
+        # Then the size is 0
+        self.assertEqual(0, entry.file_size)
 
     def test_file_size_without_stats(self):
-        increments = [IncrementEntry(self.root_path, b'my_file.2014-11-05T16:04:30-05:00.dir')]
-        entry = DirEntry(self.root_path, b'my_file', False, increments)
+        increments = [IncrementEntry(b'my_file.2014-11-05T16:04:30-05:00.dir')]
+        entry = RdiffDirEntry(self.repo, b'my_file', False, increments)
         self.assertEqual(0, entry.file_size)
 
 
 class FileErrorTest(unittest.TestCase):
     def test_init(self):
-
-        e = FileError('some/path')
-        self.assertEqual('some/path', str(e))
-
         e = DoesNotExistError('some/path')
         self.assertEqual('some/path', str(e))
 
         e = AccessDeniedError('some/path')
-        self.assertEqual('some/path', str(e))
-
-        e = UnknownError('some/path')
         self.assertEqual('some/path', str(e))
 
 
@@ -212,45 +153,51 @@ class FileStatisticsEntryTest(unittest.TestCase):
 
     def setUp(self):
         self.repo = MockRdiffRepo()
-        self.root_path = self.repo.root_path
 
     def test_get_mirror_size(self):
-        entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data')
+        entry = FileStatisticsEntry(self.repo, b'file_statistics.2014-11-05T16:05:07-05:00.data')
         size = entry.get_mirror_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(143, size)
 
     def test_get_source_size(self):
-        entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data')
+        entry = FileStatisticsEntry(self.repo, b'file_statistics.2014-11-05T16:05:07-05:00.data')
         size = entry.get_source_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(286, size)
 
     def test_get_mirror_size_gzip(self):
-        entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data.gz')
+        entry = FileStatisticsEntry(self.repo, b'file_statistics.2014-11-05T16:05:07-05:00.data.gz')
         size = entry.get_mirror_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(143, size)
 
     def test_get_source_size_gzip(self):
-        entry = FileStatisticsEntry(self.root_path, b'file_statistics.2014-11-05T16:05:07-05:00.data.gz')
+        entry = FileStatisticsEntry(self.repo, b'file_statistics.2014-11-05T16:05:07-05:00.data.gz')
         size = entry.get_source_size(bytes('<F!chïer> (@vec) {càraçt#èrë} $épêcial', encoding='utf-8'))
         self.assertEqual(286, size)
 
 
-class HistoryEntryTest(unittest.TestCase):
+class LogEntryTest(unittest.TestCase):
     def setUp(self):
         self.repo = MockRdiffRepo()
         self.root_path = self.repo.root_path
 
-    def test_errors(self):
-        increment = IncrementEntry(self.root_path, b'error_log.2015-11-19T07:27:46-05:00.data')
-        entry = HistoryEntry(self.repo, increment.date)
-        self.assertTrue(entry.has_errors)
-        self.assertEqual('SpecialFileError home/coucou Socket error: AF_UNIX path too long', entry.errors)
-
-    def test_errors_invalid_gz(self):
-        increment = IncrementEntry(self.root_path, b'error_log.2019-05-22T09:19:09-04:00.data.gz')
-        entry = HistoryEntry(self.repo, increment.date)
-        self.assertTrue(entry.has_errors)
-        self.assertEqual('Error reading log file: error_log.2019-05-22T09:19:09-04:00.data.gz', entry.errors)
+    @parameterized.expand(
+        [
+            (
+                'with_uncompress',
+                '2015-11-19T07:27:46-05:00',
+                'SpecialFileError home/coucou Socket error: AF_UNIX path too long',
+            ),
+            (
+                'with_compress',
+                '2015-11-20T07:27:46-05:00',
+                'SpecialFileError home/coucou Socket error: AF_UNIX path too long',
+            ),
+        ]
+    )
+    def test_errors_tail(self, unused, date, expected_content):
+        entry = self.repo.error_log[RdiffTime(date)]
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.tail(), expected_content)
 
 
 class RdiffRepoTest(unittest.TestCase):
@@ -270,14 +217,14 @@ class RdiffRepoTest(unittest.TestCase):
     def test_extract_date(self):
 
         self.assertEqual(
-            RdiffTime(1414967021), self.repo._extract_date(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz')
+            RdiffTime(1414967021), IncrementEntry._extract_date(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz')
         )
 
         # Check if date with quoted characther are proerply parsed.
         # On NTFS, colon (:) are not supported.
         self.assertEqual(
             RdiffTime(1483443123),
-            self.repo._extract_date(b'my_filename.txt.2017-01-03T06;05832;05803-05;05800.diff.gz'),
+            IncrementEntry._extract_date(b'my_filename.txt.2017-01-03T06;05832;05803-05;05800.diff.gz'),
         )
 
     def test_init(self):
@@ -294,44 +241,267 @@ class RdiffRepoTest(unittest.TestCase):
         self.assertEqual(b'invalid', self.repo.path)
         self.assertEqual('invalid', self.repo.display_name)
 
-    def test_get_path_root(self):
-        dir_entry = self.repo.get_path(b"/")
-        self.assertEqual('testcases', dir_entry.display_name)
-        self.assertEqual(b'', dir_entry.path)
-        self.assertEqual(self.testcases_dir, dir_entry.full_path)
-        self.assertEqual(True, dir_entry.isdir)
-        self.assertTrue(len(dir_entry.dir_entries) > 0)
-        self.assertTrue(len(dir_entry.change_dates) > 1)
+    @parameterized.expand(
+        [
+            (
+                "with_root",
+                b"/",
+                'testcases',
+                b'',
+                True,
+                True,
+                True,
+                0,
+                [
+                    '2014-11-01T15:49:47-04:00',
+                    '2014-11-01T15:50:26-04:00',
+                    '2014-11-01T15:50:48-04:00',
+                    '2014-11-01T15:51:15-04:00',
+                    '2014-11-01T15:51:29-04:00',
+                    '2014-11-01T16:30:22-04:00',
+                    '2014-11-01T16:30:50-04:00',
+                    '2014-11-01T18:07:19-04:00',
+                    '2014-11-01T20:12:45-04:00',
+                    '2014-11-01T20:18:11-04:00',
+                    '2014-11-01T20:51:18-04:00',
+                    '2014-11-02T09:16:43-05:00',
+                    '2014-11-02T09:50:53-05:00',
+                    '2014-11-02T17:23:41-05:00',
+                    '2014-11-03T15:46:47-05:00',
+                    '2014-11-03T19:04:57-05:00',
+                    '2014-11-05T16:01:02-05:00',
+                    '2014-11-05T16:04:30-05:00',
+                    '2014-11-05T16:04:55-05:00',
+                    '2014-11-05T16:05:07-05:00',
+                    '2016-01-20T10:42:21-05:00',
+                    '2016-02-02T16:30:40-05:00',
+                ],
+            ),
+            (
+                "with_dir",
+                b"Subdirectory",
+                'Subdirectory',
+                b'Subdirectory',
+                True,
+                True,
+                False,
+                0,
+                [
+                    '2014-11-05T16:04:55-05:00',
+                    '2016-01-20T10:42:21-05:00',
+                    '2016-02-02T16:30:40-05:00',
+                ],
+            ),
+            (
+                "with_dir_utf8_char",
+                b"Subdirectory/Fold\xc3\xa8r with \xc3\xa9ncod\xc3\xafng",
+                'Foldèr with éncodïng',
+                b'Subdirectory/Fold\xc3\xa8r with \xc3\xa9ncod\xc3\xafng',
+                True,
+                True,
+                False,
+                0,
+                ['2014-11-05T16:04:55-05:00', '2016-02-02T16:30:40-05:00'],
+            ),
+            (
+                "with_dir",
+                b"Revisions",
+                'Revisions',
+                b'Revisions',
+                True,
+                True,
+                False,
+                0,
+                [
+                    '2014-11-03T19:04:57-05:00',
+                    '2014-11-05T16:04:30-05:00',
+                    '2014-11-05T16:04:55-05:00',
+                    '2014-11-05T16:05:07-05:00',
+                    '2016-02-02T16:30:40-05:00',
+                ],
+            ),
+            (
+                "with_file",
+                b'Revisions/Data',
+                'Data',
+                b'Revisions/Data',
+                True,
+                False,
+                False,
+                9,
+                [
+                    '2014-11-03T19:04:57-05:00',
+                    '2014-11-05T16:04:30-05:00',
+                    '2014-11-05T16:04:55-05:00',
+                    '2014-11-05T16:05:07-05:00',
+                    '2016-02-02T16:30:40-05:00',
+                ],
+            ),
+            (
+                "with_broken_symlink",
+                b'BrokenSymlink',
+                'BrokenSymlink',
+                b'BrokenSymlink',
+                True,
+                False,
+                False,
+                7,
+                ['2014-11-05T16:05:07-05:00', '2016-02-02T16:30:40-05:00'],
+            ),
+            (
+                "with_char_to_quote",
+                b'Char ;090 to quote',
+                'Char Z to quote',
+                b'Char ;090 to quote',
+                False,
+                True,
+                False,
+                0,
+                ['2014-11-01T18:07:19-04:00', '2014-11-01T20:18:11-04:00', '2014-11-03T19:04:57-05:00'],
+            ),
+            (
+                "with_char_to_quote",
+                b'Char ;059090 to quote',
+                'Char ;090 to quote',
+                b'Char ;059090 to quote',
+                True,
+                True,
+                False,
+                0,
+                ['2014-11-03T15:46:47-05:00', '2014-11-05T16:05:07-05:00', '2016-02-02T16:30:40-05:00'],
+            ),
+            (
+                "with_char_to_quote",
+                b'Char ;059059090 to quote',
+                'Char ;059090 to quote',
+                b'Char ;059059090 to quote',
+                False,
+                True,
+                False,
+                0,
+                ['2014-11-05T16:04:55-05:00', '2016-01-20T10:42:21-05:00'],
+            ),
+            (
+                "with_loop_symlink",
+                b'Subdirectory/LoopSymlink',
+                'LoopSymlink',
+                b'Subdirectory/LoopSymlink',
+                True,
+                True,
+                False,
+                0,
+                ['2014-11-05T16:05:07-05:00', '2016-02-02T16:30:40-05:00'],
+            ),
+            (
+                "with_subdir_symlink",
+                b'SymlinkToSubdirectory',
+                'SymlinkToSubdirectory',
+                b'SymlinkToSubdirectory',
+                True,
+                True,
+                False,
+                0,
+                ['2014-11-05T16:05:07-05:00', '2016-02-02T16:30:40-05:00'],
+            ),
+        ]
+    )
+    def test_fstat(self, unused, input, display_name, path, exists, isdir, isroot, file_size, change_dates):
+        dir_entry = self.repo.fstat(input)
+        self.assertEqual(display_name, dir_entry.display_name)
+        self.assertEqual(path, dir_entry.path)
+        self.assertEqual(os.path.join(self.testcases_dir, path).rstrip(b'/'), dir_entry.full_path)
+        self.assertEqual(exists, dir_entry.exists)
+        self.assertEqual(isdir, dir_entry.isdir)
+        self.assertEqual(isroot, dir_entry.isroot)
+        self.assertEqual(file_size, dir_entry.file_size)
+        self.assertEqual([RdiffTime(t) for t in change_dates], list(dir_entry.change_dates))
+        # For consistency, check if the same value are retreived using listdir
+        if not isroot:
+            parent_dir = os.path.dirname(input)
+            children = self.repo.listdir(parent_dir)
+            dir_entry = next(c for c in children if c.path == input)
+            self.assertEqual(display_name, dir_entry.display_name)
+            self.assertEqual(path, dir_entry.path)
+            self.assertEqual(os.path.join(self.testcases_dir, path).rstrip(b'/'), dir_entry.full_path)
+            self.assertEqual(exists, dir_entry.exists)
+            self.assertEqual(isdir, dir_entry.isdir)
+            self.assertEqual(isroot, dir_entry.isroot)
+            self.assertEqual(file_size, dir_entry.file_size)
+            self.assertEqual([RdiffTime(t) for t in change_dates], list(dir_entry.change_dates))
 
-    def test_get_path_subdirectory(self):
-        dir_entry = self.repo.get_path(b"Subdirectory")
-        self.assertEqual('Subdirectory', dir_entry.display_name)
-        self.assertEqual(b'Subdirectory', dir_entry.path)
-        self.assertEqual(os.path.join(self.testcases_dir, b'Subdirectory'), dir_entry.full_path)
-        self.assertEqual(True, dir_entry.isdir)
-        self.assertTrue(len(dir_entry.dir_entries) > 0)
-        self.assertTrue(len(dir_entry.change_dates) > 1)
+    @parameterized.expand(
+        [
+            (
+                "with_root",
+                b"",
+                [
+                    '<F!chïer> (@vec) {càraçt#èrë} $épêcial',
+                    'BrokenSymlink',
+                    'Char ;059090 to quote',
+                    'Char ;090 to quote',
+                    'Char Z to quote',
+                    'DIR�',
+                    'Fichier @ <root>',
+                    'Fichier avec non asci char �velyne M�re.txt',
+                    'Revisions',
+                    'Répertoire (@vec) {càraçt#èrë} $épêcial',
+                    'Répertoire Existant',
+                    'Répertoire Supprimé',
+                    'Subdirectory',
+                    'SymlinkToSubdirectory',
+                    'test\\test',
+                    '이루마 YIRUMA - River Flows in You.mp3',
+                ],
+            ),
+            ("with_children utf8_char", b"Subdirectory", ['Foldèr with éncodïng', 'LoopSymlink']),
+            ("with_dir_utf8_char", b"Subdirectory/Fold\xc3\xa8r with \xc3\xa9ncod\xc3\xafng", ['my file']),
+            ("with_dir", b"Revisions", ['Data']),
+            ("with_file", b"Revisions/Data", DoesNotExistError),
+            ("with_broken_symlink", b"BrokenSymlink", DoesNotExistError),
+            ("with_loop_symlink", b"Subdirectory/LoopSymlink", ['Foldèr with éncodïng', 'LoopSymlink']),
+            ("with_subdir_symlink", b"SymlinkToSubdirectory", ['Foldèr with éncodïng', 'LoopSymlink']),
+        ]
+    )
+    def test_listdir(self, unused, path, listdir):
+        if isclass(listdir) and issubclass(listdir, Exception):
+            with self.assertRaises(listdir):
+                self.repo.listdir(path)
+            return
+        self.assertEqual(listdir, sorted([d.display_name for d in self.repo.listdir(path)]))
 
-    def test_get_path_subfile(self):
-        dir_entry = self.repo.get_path(b"Revisions/Data")
+    def test_listdir_attributes(self):
+        children = self.repo.listdir(b"Revisions")
+        self.assertEqual(1, len(children))
+        dir_entry = children[0]
         self.assertEqual('Data', dir_entry.display_name)
         self.assertEqual(b'Revisions/Data', dir_entry.path)
         self.assertEqual(os.path.join(self.testcases_dir, b'Revisions/Data'), dir_entry.full_path)
+        self.assertEqual(True, dir_entry.exists)
         self.assertEqual(False, dir_entry.isdir)
-        self.assertEqual([], dir_entry.dir_entries)
-        self.assertTrue(len(dir_entry.change_dates) > 1)
+        self.assertEqual(False, dir_entry.isroot)
+        self.assertEqual(9, dir_entry.file_size)
+        self.assertEqual(
+            [
+                RdiffTime('2014-11-03T19:04:57-05:00'),
+                RdiffTime('2014-11-05T16:04:30-05:00'),
+                RdiffTime('2014-11-05T16:04:55-05:00'),
+                RdiffTime('2014-11-05T16:05:07-05:00'),
+                RdiffTime('2016-02-02T16:30:40-05:00'),
+            ],
+            list(dir_entry.change_dates),
+        )
 
-    def test_get_path_rdiff_backup_data(self):
+    def test_with_rdiff_backup_data(self):
         with self.assertRaises(DoesNotExistError):
-            self.repo.get_path(b'rdiff-backup-data')
+            self.repo.fstat(b'rdiff-backup-data')
+        with self.assertRaises(DoesNotExistError):
+            self.repo.listdir(b'rdiff-backup-data')
 
-    def test_get_path_invalid(self):
+    def test_with_invalid(self):
         with self.assertRaises(DoesNotExistError):
-            self.repo.get_path(b'invalide')
-
-    def test_get_path_broken_symlink(self):
+            self.repo.fstat(b'invalid')
         with self.assertRaises(DoesNotExistError):
-            self.repo.get_path(b'BrokenSymlink')
+            self.repo.listdir(b'invalid')
 
     def test_status(self):
         status = self.repo.status
@@ -365,26 +535,26 @@ class RdiffRepoTest(unittest.TestCase):
         # Make sure history entry doesn't raise error
         list(self.repo.mirror_metadata)
 
-    def test_restore_file(self):
-        filename, stream = self.repo.get_path(b"Revisions/Data").restore(restore_as_of=1454448640, kind='zip')
-        self.assertEqual('Data', filename)
+    @parameterized.expand(
+        [
+            ("with_root", b'/', 1454448640, 'zip', 'testcases.zip', b'PK\x03\x04'),
+            ("with_zip", b'Revisions', 1454448640, 'zip', 'Revisions.zip', b'PK\x03\x04'),
+            ("with_tar", b'Revisions', 1454448640, 'tar', 'Revisions.tar', b'././@PaxHeader'),
+            ("with_tar_gz", b'Revisions', 1454448640, 'tar.gz', 'Revisions.tar.gz', b'\x1f\x8b'),
+            ("with_tar_bz2", b'Revisions', 1454448640, 'tar.bz2', 'Revisions.tar.bz2', b'BZh'),
+            ("with_none_file", b'Revisions/Data', 1454448640, None, 'Data', b'Version3\n'),
+            ("with_raw_file", b'Revisions/Data', 1454448640, 'raw', 'Data', b'Version3\n'),
+            ("with_zip_file", b'Revisions/Data', 1454448640, 'zip', 'Data.zip', b'PK\x03\x04'),
+        ]
+    )
+    def test_restore(self, unused, path, restore_as_of, kind, expected_filename, expected_startswith):
+        filename, stream = self.repo.restore(path, restore_as_of=restore_as_of, kind=kind)
+        self.assertEqual(expected_filename, filename)
         data = stream.read()
-        self.assertEqual(b'Version3\n', data)
-
-    def test_restore_subdirectory(self):
-        filename, stream = self.repo.get_path(b"Revisions/").restore(restore_as_of=1454448640, kind='zip')
-        self.assertEqual('Revisions.zip', filename)
-        data = stream.read()
-        self.assertTrue(data)
-
-    def test_restore_root(self):
-        filename, stream = self.repo.get_path(b"/").restore(restore_as_of=1454448640, kind='zip')
-        self.assertEqual('testcases.zip', filename)
-        data = stream.read()
-        self.assertTrue(data)
+        self.assertTrue(data.startswith(expected_startswith))
 
     def test_unquote(self):
-        self.assertEqual(b'Char ;090 to quote', self.repo.unquote(b'Char ;059090 to quote'))
+        self.assertEqual(b'Char ;090 to quote', unquote(b'Char ;059090 to quote'))
 
     def test_error_log_range(self):
         logs = self.repo.error_log[0:1]
@@ -416,78 +586,117 @@ Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpBRxRxe/root as 
 """,
         )
 
-    def test_session_statistics_idx(self):
-        # Index
-        self.assertEqual(RdiffTime('2014-11-01T15:50:48-04:00'), self.repo.session_statistics[2].date)
+    @parameterized.expand(
+        [
+            (
+                "with_idx_1",
+                1,
+                '2014-11-01T15:50:26-04:00',
+            ),
+            (
+                "with_idx_2",
+                2,
+                '2014-11-01T15:50:48-04:00',
+            ),
+            (
+                "with_idx_3",
+                3,
+                '2014-11-01T15:51:15-04:00',
+            ),
+            (
+                "with_neg_idx_1",
+                -1,
+                '2016-02-02T16:30:40-05:00',
+            ),
+            (
+                "with_date",
+                RdiffTime('2016-02-02T16:30:40-05:00'),
+                '2016-02-02T16:30:40-05:00',
+            ),
+            (
+                "with_slice_idx",
+                slice(0, 2),
+                [
+                    '2014-11-01T15:49:47-04:00',
+                    '2014-11-01T15:50:26-04:00',
+                ],
+            ),
+            (
+                "with_slice_date_start",
+                slice(RdiffTime('2016-01-20T10:42:21-05:00'), None),
+                ['2016-01-20T10:42:21-05:00', '2016-02-02T16:30:40-05:00'],
+            ),
+            (
+                "with_slice_date_start_stop",
+                slice(
+                    RdiffTime('2014-11-02T17:00:00-05:00'),
+                    RdiffTime('2014-11-04T00:00:00-05:00'),
+                ),
+                [
+                    '2014-11-02T17:23:41-05:00',
+                    '2014-11-03T15:46:47-05:00',
+                    '2014-11-03T19:04:57-05:00',
+                ],
+            ),
+            (
+                "with_slice_date_start_stop_exact_match",
+                slice(RdiffTime('2014-11-02T17:23:41-05:00'), RdiffTime('2014-11-03T19:04:57-05:00')),
+                [
+                    '2014-11-02T17:23:41-05:00',
+                    '2014-11-03T15:46:47-05:00',
+                    '2014-11-03T19:04:57-05:00',
+                ],
+            ),
+            (
+                "with_slice_invalid_idx",
+                slice(100, 120),
+                [],
+            ),
+            (
+                "with_keyerror_date",
+                RdiffTime('2022-11-03T15:46:47-05:00'),
+                KeyError,
+            ),
+            (
+                "with_keyerror_int",
+                1024,
+                KeyError,
+            ),
+        ]
+    )
+    def test_session_statistics(self, unsed, value, expected_value):
+        if isinstance(expected_value, list):
+            self.assertEqual(expected_value, [str(o.date) for o in self.repo.session_statistics[value]])
+        elif isclass(expected_value) and issubclass(expected_value, Exception):
+            with self.assertRaises(expected_value):
+                self.repo.session_statistics[value]
+        else:
+            self.assertEqual(expected_value, str(self.repo.session_statistics[value].date))
 
-    def test_session_statistics_neg_idx(self):
-        # Negative index
-        self.assertEqual(RdiffTime('2016-02-02T16:30:40-05:00'), self.repo.session_statistics[-1].date)
-
-    def test_session_statistics_date(self):
-        # Index
-        self.assertEqual(
-            RdiffTime('2016-02-02T16:30:40-05:00'),
-            self.repo.session_statistics[RdiffTime('2016-02-02T16:30:40-05:00')].date,
-        )
-
-    def test_session_statistics_slice_idx(self):
-        # Slice with index
-        self.assertEqual(
-            [RdiffTime('2016-01-20T10:42:21-05:00'), RdiffTime('2016-02-02T16:30:40-05:00')],
-            [s.date for s in self.repo.session_statistics[-2:]],
-        )
-
-    def test_session_statistics_slice_date_start(self):
-        # Slice with date (start)
-        self.assertEqual(
-            [RdiffTime('2016-01-20T10:42:21-05:00'), RdiffTime('2016-02-02T16:30:40-05:00')],
-            [s.date for s in self.repo.session_statistics[RdiffTime('2016-01-20T10:42:21-05:00') :]],
-        )
-
-    def test_session_statistics_slice_date_start_stop(self):
-        # Slice with date (start, stop)
-        self.assertEqual(
-            [
-                RdiffTime('2014-11-02T17:23:41-05:00'),
-                RdiffTime('2014-11-03T15:46:47-05:00'),
-                RdiffTime('2014-11-03T19:04:57-05:00'),
-            ],
-            [
-                s.date
-                for s in self.repo.session_statistics[
-                    RdiffTime('2014-11-02T17:00:00-05:00') : RdiffTime('2014-11-04T00:00:00-05:00')
-                ]
-            ],
-        )
-
-    def test_session_statistics_slice_date_start_stop_exact_match(self):
-        # Slice with date (start, stop)
-        self.assertEqual(
-            [
-                RdiffTime('2014-11-02T17:23:41-05:00'),
-                RdiffTime('2014-11-03T15:46:47-05:00'),
-                RdiffTime('2014-11-03T19:04:57-05:00'),
-            ],
-            [
-                s.date
-                for s in self.repo.session_statistics[
-                    RdiffTime('2014-11-02T17:23:41-05:00') : RdiffTime('2014-11-03T19:04:57-05:00')
-                ]
-            ],
-        )
+    @skipIf(RDIFF_BACKUP_VERSION < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
+    @parameterized.expand(
+        [
+            ("with_file", b'Revisions/Data'),
+            ("with_folder", b'Subdirectory'),
+            ("with_folder_ending_slash", b'Subdirectory/'),
+            ("with_dir_utf8_char", b"Subdirectory/Fold\xc3\xa8r with \xc3\xa9ncod\xc3\xafng"),
+            ("with_broken_symlink", b'BrokenSymlink'),
+        ]
+    )
+    def test_delete_file(self, unused, path):
+        # Delete a file
+        self.repo.delete(path)
+        # Check file is deleted
+        with self.assertRaises(DoesNotExistError):
+            self.repo.fstat(path)
 
 
 class SessionStatisticsEntryTest(unittest.TestCase):
-    def setUp(self):
-        self.repo = MockRdiffRepo()
-        self.root_path = self.repo.root_path
-
     def test_getattr(self):
         """
         Check how a session statistic is read.
         """
-        entry = SessionStatisticsEntry(self.root_path, b'session_statistics.2014-11-02T09:16:43-05:00.data')
+        entry = SessionStatisticsEntry(MockRdiffRepo(), b'session_statistics.2014-11-02T09:16:43-05:00.data')
         self.assertEqual(1414937803.00, entry.starttime)
         self.assertEqual(1414937764.82, entry.endtime)
         self.assertAlmostEqual(-38.18, entry.elapsedtime, delta=-0.01)
@@ -531,21 +740,21 @@ class RdiffTimeTest(unittest.TestCase):
         self.assertFalse(RdiffTime('2014-11-08T21:04:30Z') > RdiffTime('2014-11-08T21:50:30Z'))
         self.assertTrue(RdiffTime('2014-11-08T22:04:30Z') > RdiffTime('2014-11-08T21:50:30Z'))
 
-    def test_init(self):
-        """
-        Check various constructor.
-        """
+    def test_init_now(self):
         t0 = RdiffTime()
         self.assertAlmostEqual(int(time.time()), t0.epoch(), delta=5000)
 
-        t1 = RdiffTime(1415221470)
-        self.assertEqual(1415221470, t1.epoch())
-
-        t2 = RdiffTime('2014-11-05T21:04:30Z')
-        self.assertEqual(1415221470, t2.epoch())
-
-        t3 = RdiffTime('2014-11-05T16:04:30-05:00')
-        self.assertEqual(1415221470, t3.epoch())
+    @parameterized.expand(
+        [
+            (1415221470, 1415221470),
+            ('2014-11-05T21:04:30Z', 1415221470),
+            ('2014-11-05T16:04:30-05:00', 1415221470),
+            ('2014-11-05T23:04:30+02:00', 1415221470),
+        ]
+    )
+    def test_init(self, value, expected_epoch):
+        t1 = RdiffTime(value)
+        self.assertEqual(expected_epoch, t1.epoch())
 
     def test_int(self):
         """Check if int(RdiffTime) return expected value."""
@@ -577,30 +786,3 @@ class RdiffTimeTest(unittest.TestCase):
         self.assertEqual(
             RdiffTime('2014-11-02T00:00:00-04:00'), RdiffTime('2014-11-02T21:04:30-04:00').set_time(0, 0, 0)
         )
-
-
-class DirEntryDeleteTest(AppTestCase):
-    @skipIf(RDIFF_BACKUP_VERSION < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
-    def test_delete_file(self):
-        # Delete a file
-        repo_obj = self.app.store.get_user('admin').get_repo('testcases')
-        dir_entry = repo_obj.get_path('Revisions/Data')
-        dir_entry.delete()
-        # Check file is deleted
-        with self.assertRaises(DoesNotExistError):
-            dir_entry = repo_obj.get_path('Revisions/Data')
-
-    @skipIf(RDIFF_BACKUP_VERSION < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
-    def test_delete_folder(self):
-        # Delete a folder
-        repo_obj = self.app.store.get_user('admin').get_repo('testcases')
-        dir_entry = repo_obj.get_path('Subdirectory')
-        dir_entry.delete()
-        # Check file is deleted
-        with self.assertRaises(DoesNotExistError):
-            dir_entry = repo_obj.get_path('Subdirectory')
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

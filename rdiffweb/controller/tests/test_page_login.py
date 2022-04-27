@@ -98,10 +98,10 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2Fbrowse%2Ftestcases%2F%3Frestore%3DT')
 
     def test_getpage_with_multiple_querystring_redirect_get(self):
-        self.getPage('/restore/' + self.REPO + '?date=1414871387&usetar=T')
+        self.getPage('/restore/' + self.REPO + '?date=1414871387&kind=zip')
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue(
-            'Location', self.baseurl + '/login/?redirect=%2Frestore%2Ftestcases%3Fdate%3D1414871387%26usetar%3DT'
+            'Location', self.baseurl + '/login/?redirect=%2Frestore%2Ftestcases%3Fdate%3D1414871387%26kind%3Dzip'
         )
 
     def test_getpage_with_redirection(self):
@@ -111,11 +111,11 @@ class LoginPageTest(rdiffweb.test.WebCase):
         b = {
             'login': 'admin',
             'password': 'admin123',
-            'redirect': '/restore/' + self.REPO + '?date=1414871387&usetar=T',
+            'redirect': '/restore/' + self.REPO + '?date=1414871387&kind=zip',
         }
         self.getPage('/login/', method='POST', body=b)
         self.assertStatus('303 See Other')
-        self.assertHeaderItemValue('Location', self.baseurl + '/restore/' + self.REPO + '?date=1414871387&usetar=T')
+        self.assertHeaderItemValue('Location', self.baseurl + '/restore/' + self.REPO + '?date=1414871387&kind=zip')
 
     def test_getpage_without_username(self):
         """

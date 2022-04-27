@@ -5,7 +5,7 @@
 {% block content %}
 
 <ol class="breadcrumb">
-    {% for parent in list_parents(path) %}
+    {% for parent in list_parents(repo, path) %}
     {% if loop.last %}
     <li class="active">{{ parent.display_name }}</li>
     {% else %}

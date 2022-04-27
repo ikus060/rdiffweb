@@ -53,7 +53,9 @@ class DeletePage(Controller):
     )
     def default(self, path=b"", **kwargs):
         # Check permissions on path/repo
-        unused, path_obj = self.app.store.get_repo_path(path)
+        repo, path = self.app.store.get_repo_path(path)
+        # Check if path exists with fstats
+        path_obj = repo.fstat(path)
         # Check user's permissions
         is_maintainer()
 
@@ -68,6 +70,6 @@ class DeletePage(Controller):
             raise cherrypy.HTTPError(400, 'bad confirmation')
 
         # Delete repository in background using a schedule task.
-        scheduled = cherrypy.engine.publish('schedule_task', path_obj.delete)
+        scheduled = cherrypy.engine.publish('schedule_task', repo.delete, path)
         assert scheduled
         raise cherrypy.HTTPRedirect(form.redirect.data)

@@ -22,7 +22,7 @@ import cherrypy
 import rdiffweb.tools.errors  # noqa
 from rdiffweb.controller import Controller
 from rdiffweb.controller.dispatch import poppath
-from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, SymLinkAccessDeniedError
+from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
@@ -40,22 +40,24 @@ class BrowsePage(Controller):
         error_table={
             DoesNotExistError: 404,
             AccessDeniedError: 403,
-            SymLinkAccessDeniedError: 403,
         }
     )
     def default(self, path=b""):
 
         # Check user access to the given repo & path
-        (repo_obj, path_obj) = self.app.store.get_repo_path(path, refresh=True)
+        try:
+            repo, path = self.app.store.get_repo_path(path, refresh=False)
+        except DoesNotExistError:
+            repo, path = self.app.store.get_repo_path(path, refresh=True)
 
         # Set up warning about in-progress backups, if necessary
         warning = False
-        status = repo_obj.status
+        status = repo.status
         if status[0] != 'ok':
             warning = status[1] + ' ' + _("The displayed data may be inconsistent.")
 
         # Get list of actual directory entries
-        dir_entries = path_obj.dir_entries[::-1]
+        dir_entries = repo.listdir(path)
 
-        parms = {"repo": repo_obj, "path": path_obj, "dir_entries": dir_entries, "warning": warning}
+        parms = {"repo": repo, "path": path, "dir_entries": dir_entries, "warning": warning}
         return self._compile_template("browse.html", **parms)

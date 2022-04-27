@@ -8,7 +8,7 @@
 <div class="row">
   <div class="col-md-10">
     <ol class="breadcrumb">
-        {% for parent in list_parents(path) %}
+        {% for parent in list_parents(repo, path) %}
         {% if loop.last %}
         <li class="active">{{ parent.display_name }}</li>
         {% else %}
@@ -19,18 +19,19 @@
   </div>
   <div class="col-md-2">
     <div class="pull-right">
-       {{ button_confirm(label=_('Delete History'), target="#delete-repo-modal", confirm=path.display_name, disabled=not is_maintainer, redirect=url_for('browse', repo), url=url_for('delete', repo, path)) }}
+       {{ button_confirm(label=_('Delete History'), target="#delete-repo-modal", confirm=path_obj.display_name, disabled=not is_maintainer, redirect=url_for('browse', repo), url=url_for('delete', repo, path)) }}
     </div>
   </div>
 </div>
   
 <div class="panel panel-default spacer">
     <ul class="list-group">
+        {% set restore_dates = path_obj.change_dates[: -limit - 1 : -1] %}
         {% for restore_date in restore_dates %}
         <li class="list-group-item clearfix">
-            <i {% if path.isdir %}class="icon-archive"{% else %}class="icon-file"{% endif %}></i>
+            <i {% if path_obj.isdir %}class="icon-archive"{% else %}class="icon-file"{% endif %}></i>
             <time class="js-datetime" datetime="{{ restore_date }}">{{ restore_date | lastupdated }}</time>
-            {% if path.isdir %}
+            {% if path_obj.isdir %}
             <div class="pull-right">
 
                 <div class="btn-group">

@@ -716,7 +716,7 @@ class UserObjectTest(WebCase):
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
 
         # Test empty list
-        userobj.get_repo('testcases').delete()
+        userobj.get_repo('testcases').delete_repo()
         self.assertEqual(['broker-repo'], sorted([r.name for r in userobj.repo_objs]))
 
         # Make sure we get a repo
@@ -753,6 +753,15 @@ class UserObjectTest(WebCase):
         userobj.refresh_repos(delete=True)
         # Then the list invlaid the invalid repo and new repos
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+
+    def test_refresh_repos_with_single_repo(self):
+        # Given a user with invalid repositories
+        userobj = self.app.store.get_user(self.USERNAME)
+        userobj.user_root = os.path.join(self.testcases, 'testcases')
+        # When updating the repository list without deletion
+        userobj.refresh_repos(delete=True)
+        # Then the list invlaid the invalid repo and new repos
+        self.assertEqual([''], sorted([r.name for r in userobj.repo_objs]))
 
 
 class RepoObjectTest(WebCase):

@@ -23,7 +23,7 @@ from cherrypy.lib.static import mimetypes
 import rdiffweb.tools.errors  # noqa: cherrypy.tools.errors
 from rdiffweb.controller import Controller, validate, validate_date, validate_isinstance
 from rdiffweb.controller.dispatch import poppath
-from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, SymLinkAccessDeniedError
+from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.rdw_helpers import quote_url
 from rdiffweb.core.restore import ARCHIVERS
 
@@ -103,23 +103,18 @@ class RestorePage(Controller):
         error_table={
             DoesNotExistError: 404,
             AccessDeniedError: 403,
-            SymLinkAccessDeniedError: 403,
         }
     )
-    def default(self, path=b"", date=None, kind=None, usetar=None):
+    def default(self, path=b"", date=None, kind=None):
         validate_isinstance(path, bytes)
         validate(kind is None or kind in ARCHIVERS)
-        validate(usetar is None or isinstance(usetar, str))
         date = validate_date(date)
 
         # Check user access to repo / path.
-        path_obj = self.app.store.get_repo_path(path)[1]
-
-        if usetar is not None:
-            kind = 'tar.gz'
+        repo, path = self.app.store.get_repo_path(path)
 
         # Restore file(s)
-        filename, fileobj = path_obj.restore(int(date), kind=kind)
+        filename, fileobj = repo.restore(path, int(date), kind=kind)
 
         # Define content-disposition.
         cherrypy.response.headers["Content-Disposition"] = _content_disposition(filename)

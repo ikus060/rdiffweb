@@ -137,16 +137,16 @@ def create_repo_tree(repos):
     return repo_tree
 
 
-def list_parents(path):
+def list_parents(repo, path):
+    assert isinstance(path, bytes)
     # Build the parameters
     # Build "parent directories" links
-    # TODO this function should return a list of DirEntry instead.
-    parents = [_ParentEntry(b'', path._repo.display_name)]
+    parents = [_ParentEntry(b'', repo.display_name)]
     parent_path_b = b''
-    for part_b in path.path.split(b'/'):
+    for part_b in path.split(b'/'):
         if part_b:
             parent_path_b = os.path.join(parent_path_b, part_b)
-            display_name = path._repo._decode(path._repo.unquote(part_b))
+            display_name = repo._decode(librdiff.unquote(part_b))
             parents.append(_ParentEntry(parent_path_b, display_name))
     return parents
 

@@ -54,12 +54,10 @@ class RestoreTest(rdiffweb.test.WebCase):
 
     maxDiff = None
 
-    def _restore(self, user, repo, path, date, usetar, kind=None):
+    def _restore(self, user, repo, path, date, kind=None):
         url = "/restore/" + user + "/" + repo + "/" + path
         if date:
             url += '?date=' + date
-        if usetar:
-            url += '&usetar=T'
         if kind:
             url += '&kind=%s' % kind
         self.getPage(url)
@@ -70,7 +68,7 @@ class RestoreTest(rdiffweb.test.WebCase):
             self.REPO,
             "Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt/",
             "1415221507",
-            True,
+            False,
         )
         self.assertBody("Centers the value\n")
         self.assertHeader(
@@ -79,7 +77,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         )
         self.assertHeader('Content-Type', 'text/plain;charset=utf-8')
 
-        self._restore(self.USERNAME, self.REPO, "DIR%EF%BF%BD/Data/", "1415059497", True)
+        self._restore(self.USERNAME, self.REPO, "DIR%EF%BF%BD/Data/", "1415059497", False)
         self.assertBody("My Data !\n")
         self.assertHeader('Content-Disposition', 'attachment; filename="Data"')
         self.assertHeader('Content-Type', 'application/octet-stream')
@@ -88,7 +86,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         """
         Check names return for a quoted path.
         """
-        self._restore(self.USERNAME, self.REPO, "Char%20%3B059090%20to%20quote/", "1415221507", True)
+        self._restore(self.USERNAME, self.REPO, "Char%20%3B059090%20to%20quote/", "1415221507", "tar.gz")
         self.assertHeader('Content-Disposition', 'attachment; filename*=UTF-8\'\'Char%20%3B090%20to%20quote.tar.gz')
         self.assertHeader('Content-Type', 'application/x-gzip')
 
@@ -96,38 +94,42 @@ class RestoreTest(rdiffweb.test.WebCase):
         """
         Restore a simple file.
         """
-        self._restore(self.USERNAME, self.REPO, "Fichier%20%40%20%3Croot%3E/", "1414921853", True)
+        self._restore(self.USERNAME, self.REPO, "Fichier%20%40%20%3Croot%3E/", "1414921853", False)
         self.assertInBody("Ajout d'info")
         self.assertHeader('Content-Type', 'application/octet-stream')
 
     def test_broken_link(self):
         # Given a a broken symlink
         # When trying to retore the broken link
-        self._restore(self.USERNAME, self.REPO, "BrokenSymlink", "1477434528", True)
-        # Then a 404 error is returned
-        self.assertStatus('404 Not Found')
+        self._restore(self.USERNAME, self.REPO, "BrokenSymlink", "1477434528", False)
+        self.assertStatus(200)
+        self.assertHeader('Content-Type', 'application/octet-stream')
+        self.assertBody('')
 
     def test_with_quoted_vs_unquoted_path(self):
         """
         Restore file with quoted path.
         """
         # Char Z to quote
-        self._restore(self.USERNAME, self.REPO, "Char%20%3B090%20to%20quote/Data/", "1414921853", True)
+        self._restore(self.USERNAME, self.REPO, "Char%20%3B090%20to%20quote/Data/", "1414921853", False)
+        self.assertStatus(200)
         self.assertBody("Bring me some Data !\n")
         self.assertHeader('Content-Type', 'application/octet-stream')
 
         # Char ;090 to quote
-        self._restore(self.USERNAME, self.REPO, "Char%20%3B059090%20to%20quote/Data/", "1454448640", True)
+        self._restore(self.USERNAME, self.REPO, "Char%20%3B059090%20to%20quote/Data/", "1454448640", False)
+        self.assertStatus(200)
         self.assertBody("Bring me some Data !\n")
         self.assertHeader('Content-Type', 'application/octet-stream')
 
         # Char ;059090 to quote
-        self._restore(self.USERNAME, self.REPO, "Char%20%3B059059090%20to%20quote/Data/", "1453304541", True)
+        self._restore(self.USERNAME, self.REPO, "Char%20%3B059059090%20to%20quote/Data/", "1453304541", False)
+        self.assertStatus(200)
         self.assertBody("Bring me some Data !\n")
         self.assertHeader('Content-Type', 'application/octet-stream')
 
     def test_root_as_tar_gz(self):
-        self._restore(self.USERNAME, self.REPO, "", "1414871387", True)
+        self._restore(self.USERNAME, self.REPO, "", "1414871387", "tar.gz")
         self.assertStatus(200)
         self.assertHeader('Content-Type', 'application/x-gzip')
         # Build expected files list
@@ -155,7 +157,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         self.assertEqual(expected, actual)
 
     def test_root_as_tar_gz_recent(self):
-        self._restore(self.USERNAME, self.REPO, "", "1415221507", True)
+        self._restore(self.USERNAME, self.REPO, "", "1415221507", "tar.gz")
         self.assertStatus(200)
         self.assertHeader('Content-Type', 'application/x-gzip')
         #  Read the content as tar.gz with UTF8 encoding.
@@ -191,7 +193,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         self.assertEqual(expected, actual)
 
     def test_root_as_zip(self):
-        self._restore(self.USERNAME, self.REPO, "", "1414871387", False)
+        self._restore(self.USERNAME, self.REPO, "", "1414871387", kind='zip')
         self.assertStatus(200)
         self.assertHeader('Content-Type', 'application/zip')
         #  Read the content as tar.gz with UTF8 encoding.
@@ -218,7 +220,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         self.assertEqual(expected, actual)
 
     def test_root_as_zip_recent(self):
-        self._restore(self.USERNAME, self.REPO, "", "1415221507", False)
+        self._restore(self.USERNAME, self.REPO, "", "1415221507", kind='zip')
         self.assertStatus(200)
         self.assertHeader('Content-Type', 'application/zip')
         #  Read the content as tar.gz with UTF8 encoding.
@@ -254,7 +256,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         self.assertEqual(expected, actual)
 
     def test_root_as_tar_bz2(self):
-        self._restore(self.USERNAME, self.REPO, "", '1415221507', False, 'tar.bz2')
+        self._restore(self.USERNAME, self.REPO, "", '1415221507', 'tar.bz2')
         self.assertStatus(200)
         self.assertHeader('Content-Type', 'application/x-bzip2')
         #  Read content as tar.gz.
@@ -270,7 +272,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         self.assertEqual(18, len(actual))
 
     def test_root_as_tar(self):
-        self._restore(self.USERNAME, self.REPO, "", '1415221507', False, 'tar')
+        self._restore(self.USERNAME, self.REPO, "", '1415221507', 'tar')
         self.assertStatus(200)
         self.assertHeader('Content-Type', 'application/x-tar')
         #  Read content as tar.gz.
@@ -286,7 +288,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         self.assertEqual(18, len(actual))
 
     def test_subdirectory(self):
-        self._restore(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Existant/", "1414871475", True)
+        self._restore(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Existant/", "1414871475", "tar.gz")
         self.assertHeader('Content-Type', 'application/x-gzip')
         #  Read the content as tar.gz with UTF8 encoding.
         expected = {}
@@ -306,7 +308,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         self.assertEqual(expected, actual)
 
     def test_subdirectory_deleted(self):
-        self._restore(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Supprim%C3%A9/", "1414871475", True)
+        self._restore(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Supprim%C3%A9/", "1414871475", "tar.gz")
         self.assertHeader('Content-Type', 'application/x-gzip')
         #  Read the content as tar.gz with UTF8 encoding.
         expected = {}
@@ -326,18 +328,18 @@ class RestoreTest(rdiffweb.test.WebCase):
         self.assertEqual(expected, actual)
 
     def test_with_revisions(self):
-        self._restore(self.USERNAME, self.REPO, "Revisions/Data/", "1415221470", True)
+        self._restore(self.USERNAME, self.REPO, "Revisions/Data/", "1415221470", False)
         self.assertBody("Version1\n")
         self.assertHeader('Content-Type', 'application/octet-stream')
-        self._restore(self.USERNAME, self.REPO, "Revisions/Data/", "1415221495", True)
+        self._restore(self.USERNAME, self.REPO, "Revisions/Data/", "1415221495", False)
         self.assertBody("Version2\n")
         self.assertHeader('Content-Type', 'application/octet-stream')
-        self._restore(self.USERNAME, self.REPO, "Revisions/Data/", "1415221507", True)
+        self._restore(self.USERNAME, self.REPO, "Revisions/Data/", "1415221507", False)
         self.assertBody("Version3\n")
         self.assertHeader('Content-Type', 'application/octet-stream')
 
     def test_invalid_date(self):
-        self._restore(self.USERNAME, self.REPO, "Revisions/Data/", "1415221a470", True)
+        self._restore(self.USERNAME, self.REPO, "Revisions/Data/", "1415221a470", False)
         self.assertStatus(400)
 
     def test_as_another_user(self):
@@ -345,7 +347,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         user_obj = self.app.store.add_user('anotheruser', 'password')
         user_obj.user_root = self.testcases
 
-        self._restore("anotheruser", "testcases", "Fichier%20%40%20%3Croot%3E/", "1414921853", True)
+        self._restore("anotheruser", "testcases", "Fichier%20%40%20%3Croot%3E/", "1414921853")
         self.assertStatus('200 OK')
         self.assertInBody("Ajout d'info")
 
@@ -354,5 +356,5 @@ class RestoreTest(rdiffweb.test.WebCase):
         admin.role = USER_ROLE
 
         # Browse admin's repos
-        self._restore("anotheruser", "testcases", "Fichier%20%40%20%3Croot%3E/", "1414921853", True)
+        self._restore("anotheruser", "testcases", "Fichier%20%40%20%3Croot%3E/", "1414921853")
         self.assertStatus('403 Forbidden')
