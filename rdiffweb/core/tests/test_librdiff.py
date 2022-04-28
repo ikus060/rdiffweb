@@ -429,6 +429,10 @@ class RdiffRepoTest(unittest.TestCase):
             self.assertEqual(file_size, dir_entry.file_size)
             self.assertEqual([RdiffTime(t) for t in change_dates], list(dir_entry.change_dates))
 
+    def test_fstat_outside_repo(self):
+        with self.assertRaises(AccessDeniedError):
+            self.repo.fstat(b"../")
+
     @parameterized.expand(
         [
             (
@@ -468,6 +472,10 @@ class RdiffRepoTest(unittest.TestCase):
                 self.repo.listdir(path)
             return
         self.assertEqual(listdir, sorted([d.display_name for d in self.repo.listdir(path)]))
+
+    def test_listdir_outside_repo(self):
+        with self.assertRaises(AccessDeniedError):
+            self.repo.listdir(b"../")
 
     def test_listdir_attributes(self):
         children = self.repo.listdir(b"Revisions")

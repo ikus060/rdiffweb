@@ -933,7 +933,7 @@ class RdiffRepo(object):
             raise DoesNotExistError(path)
         increment_path = os.path.normpath(os.path.join(self._increment_path, relative_path))
         if not full_path.startswith(self.full_path) or not increment_path.startswith(self.full_path):
-            raise AccessDeniedError('%s make reference outside the repository')
+            raise AccessDeniedError('%s make reference outside the repository' % self._decode(path))
 
         # Get list of all increments and existing file and folder
         try:
@@ -991,18 +991,13 @@ class RdiffRepo(object):
         full_path = os.path.normpath(os.path.join(self.full_path, path.strip(b'/')))
         increment_path = os.path.normpath(os.path.join(self._increment_path, path.strip(b'/'), b'..'))
         if not full_path.startswith(self.full_path) or not increment_path.startswith(self.full_path):
-            raise AccessDeniedError('%s make reference outside the repository')
+            raise AccessDeniedError('%s make reference outside the repository' % self._decode(path))
         relative_path = os.path.relpath(full_path, self.full_path)
         if relative_path.startswith(RDIFF_BACKUP_DATA):
             raise DoesNotExistError(path)
         # Get if the path request is the root path.
         if relative_path == b'.':
             return RdiffDirEntry(self, b'', True, [])
-
-        # TODO Check symlink
-        # p = os.path.realpath(os.path.join(self.full_path, path))
-        # if not p.startswith(self.full_path):
-        #    raise AccessDeniedError(path)
 
         # Check if path exists
         try:
