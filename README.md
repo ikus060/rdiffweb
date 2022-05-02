@@ -1,8 +1,8 @@
-![Rdiffweb Banner](doc/_static/banner.png)
+![Rdiffweb Banner](https://gitlab.com/ikus-soft/rdiffweb/-/raw/master/doc/_static/banner.png)
 
 <p align="center">
 <strong>
-<a href="https://rdiffweb.org">website</a>
+<a href="https://www.rdiffweb.org">website</a>
 • <a href="https://www.ikus-soft.com/archive/rdiffweb/doc/latest/html/">docs</a>
 • <a href="https://groups.google.com/d/forum/rdiffweb">community</a>
 • <a href="https://rdiffweb-demo.ikus-soft.com/">demo</a>
