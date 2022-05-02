@@ -9,17 +9,20 @@ VOLUME ["/etc/rdiffweb", "/backups"]
 
 ENV RDIFFWEB_SERVER_HOST=0.0.0.0
 
-COPY . /tmp/rdiffweb/
 
 RUN set -x; \
   apt -y update && \
-  apt install -y --no-install-recommends \
-    librsync-dev && \
-  rm -rf /var/lib/apt/lists/* && \
+  apt install -y --no-install-recommends librsync-dev python3-pyxattr python3-pylibacl && \
+  rm -Rf /var/lib/apt/lists/*
+
+COPY . /tmp/rdiffweb/
+
+RUN set -x; \
   cd /tmp/rdiffweb/ && \
-  pip3 install rdiff-backup pytest && \
+  pip3 install rdiff-backup==2.0.5 pytest && \
   pip3 install . ".[test]" && \
   pytest && \
-  pip3 uninstall -y pytest
+  pip3 uninstall -y pytest && \
+  rm -Rf /root/.cache /tmp/* /var/log/*
 
 CMD ["/usr/local/bin/rdiffweb"]

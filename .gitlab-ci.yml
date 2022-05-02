@@ -133,7 +133,15 @@ package:docker:
   services:
   - name: docker:20-dind
   script:
-  - docker build .
+  # Get docker layes
+  - docker pull ikus060/rdiffweb:latest || true
+  - docker pull ikus060/rdiffweb:$CI_COMMIT_REF_SLUG || true
+  - docker build --cache-from ikus060/rdiffweb:latest --cache-from ikus060/rdiffweb:$CI_COMMIT_REF_SLUG -t rdiffweb .
+  - mkdir dist
+  - docker save rdiffweb --output dist/rdiffweb-docker.tar
+  artifacts:
+    paths:
+    - dist/*-docker.tar
 
 package:deb: 
   stage: package
@@ -213,6 +221,61 @@ publish:sonar:dev:
     SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
   script:
   - sonar-scanner -X -Dsonar.python.coverage.reportPaths=coverage-*.xml -Dsonar.python.xunit.reportPaths=xunit-*.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.projectVersion=$(git describe) -Dsonar.exclusions=**/test_*.py,rdiffweb/test.py
+
+publish:docker:
+  needs:
+  - package:docker
+  image: docker:20
+  services:
+  - name: docker:20-dind
+  only:
+    variables:
+      - $DOCKER_USR
+      - $DOCKER_PWD
+  script: |
+    set -x
+    docker login $DOCKER_REGISTRY -u $DOCKER_USR -p $DOCKER_PWD
+    docker load --input dist/*.tar
+    # Push commit hash
+    docker tag rdiffweb ikus060/rdiffweb:$CI_COMMIT_SHORT_SHA
+    docker push ikus060/rdiffweb:$CI_COMMIT_SHORT_SHA
+    # Push branch name
+    docker tag rdiffweb ikus060/rdiffweb:$CI_COMMIT_REF_SLUG
+    docker push ikus060/rdiffweb:$CI_COMMIT_REF_SLUG
+    # Push tags
+    if [ -n "$CI_COMMIT_TAG" ]; then
+      docker tag rdiffweb ikus060/rdiffweb:$CI_COMMIT_TAG
+      docker push ikus060/rdiffweb:$CI_COMMIT_TAG
+    fi
+    # Push tag as latest
+    case ${CI_COMMIT_TAG##*.} in
+      [0-9]*)
+        docker tag rdiffweb ikus060/rdiffweb:latest
+        docker push ikus060/rdiffweb:latest      
+        ;;
+    esac
+  stage: publish
+
+publish:docker-readme:
+  needs:
+  - package:docker
+  only:
+    variables:
+      - $DOCKER_USR
+      - $DOCKER_PWD
+      - $CI_COMMIT_TAG
+  image:
+    name: chko/docker-pushrm
+    entrypoint: ["/bin/sh", "-c", "/docker-pushrm"]
+  variables:
+    DOCKER_USER: $DOCKER_USR
+    DOCKER_PASS: $DOCKER_PWD
+    PUSHRM_SHORT: A web interface to rdiff-backup repositories.
+    PUSHRM_TARGET: docker.io/ikus060/rdiffweb
+    PUSHRM_DEBUG: 1
+    PUSHRM_FILE: $CI_PROJECT_DIR/README.md
+  script: "/bin/true"
+  stage: publish
 
 publish:deb:
   needs:
