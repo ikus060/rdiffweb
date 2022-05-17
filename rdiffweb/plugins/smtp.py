@@ -137,7 +137,7 @@ class SmtpPlugin(SimplePlugin):
             return
         self.bus.publish('schedule_task', self.send_mail, *args, **kwargs)
 
-    def send_mail(self, subject: str, message: str, to=None, bcc=None, reply_to=None):
+    def send_mail(self, subject: str, message: str, to=None, cc=None, bcc=None, reply_to=None):
         """
         Reusable method to be called to send email to the user user.
         `user` user object where to send the email.
@@ -146,6 +146,7 @@ class SmtpPlugin(SimplePlugin):
         assert message
         assert to or bcc
         to = _formataddr(to)
+        cc = _formataddr(cc)
         bcc = _formataddr(bcc)
         reply_to = _formataddr(reply_to)
 
@@ -166,6 +167,8 @@ class SmtpPlugin(SimplePlugin):
         msg['From'] = self.email_from
         if to:
             msg['To'] = to
+        if cc:
+            msg['Cc'] = cc
         if bcc:
             msg['Bcc'] = bcc
         if reply_to:
