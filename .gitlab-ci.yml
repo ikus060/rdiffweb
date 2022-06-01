@@ -198,6 +198,7 @@ test-package:deb:
   
 publish:sonar:master:
   stage: sonar
+  allow_failure: True
   needs:
   - py3-cherrypy18
   image: sonarsource/sonar-scanner-cli
@@ -210,6 +211,7 @@ publish:sonar:master:
 
 publish:sonar:dev:
   stage: sonar
+  allow_failure: True
   needs:
   - py3-cherrypy18
   image: sonarsource/sonar-scanner-cli
