@@ -107,17 +107,30 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
-## next-release
+## 2.4.0 (2022-06-01)
+
+This new release brings a lot of improvement since the last version, multiple bug fixes
+to make the application stable. A couple of new features to improve the overall
+usability and a new security feature to block a brute force attack.
 
 * Add RateLimit to login page and API to mitigate robots attacks #167
 * Send email notification only if `email-sender` option is defined to avoid raising exception in logs #176
 * Support file restore cancellation without leaving `rdiffweb-restore` process in `<defunct>` state #174
-* Replace `python-ldap` by `ldap3` a pure python implementation to avoid dependencies on sasl and ldap binaries #186
-* Ldap Password changes is not supported anymore.
-* Ldap Check Shadow expire config is not supported anymore. It should be replace by a custom filter.
+* Replace `python-ldap` by `ldap3` a pure python implementation to avoid dependencies on `sasl` and `ldap` binaries #186
 * Reffactor core module to allow better extendability and reusability #183
 * Add support for Debian Bookworm #180
 * Add support for Ubuntu Impish #175
+* Add rdiff-backup version to administration view
+* Run unit test during Debian build package
+* Refresh repository list automatically when required #188 #189
+* Fix error 500 displayed in status page #191
+* Improve repository browsing speed by minimizing the number of I/O call #192
+* Publish Docker image directly to DockerHub #144
+
+Breaking changes:
+
+* Ldap Password changes is not supported anymore.
+* Ldap Check Shadow expire config is not supported anymore. It should be replace by a custom filter.
 * Drop CentOS 7 and CentOS 8 support
 
 ## 2.3.9 (2022-01-05)
