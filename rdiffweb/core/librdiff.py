@@ -941,30 +941,30 @@ class RdiffRepo(object):
             if relative_path == b'.':
                 existing_items.remove(RDIFF_BACKUP_DATA)
         except (NotADirectoryError, FileNotFoundError):
-            existing_items = []
+            existing_items = None
         except OSError:
             raise AccessDeniedError(path)
         try:
             increment_items = os.listdir(increment_path)
         except (NotADirectoryError, FileNotFoundError):
-            increment_items = []
+            increment_items = None
         except OSError:
             raise AccessDeniedError(path)
         # Raise error if nothing is found
-        if not existing_items and not increment_items:
+        if existing_items is None and increment_items is None:
             raise DoesNotExistError(path)
 
         # Merge information from both location
         # Regroup all information into RdiffDirEntry
         entries = {}
-        for name in existing_items:
+        for name in existing_items or []:
             entries[name] = RdiffDirEntry(
                 self,
                 os.path.normpath(os.path.join(relative_path, name)),
                 exists=True,
                 increments=[],
             )
-        for item in increment_items:
+        for item in increment_items or []:
             try:
                 increment = IncrementEntry(item)
             except ValueError:

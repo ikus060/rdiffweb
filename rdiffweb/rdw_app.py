@@ -17,7 +17,11 @@
 
 import logging
 import os
-from distutils.version import LooseVersion
+
+try:
+    from packaging.version import LooseVersion
+except ImportError:
+    from distutils.version import LooseVersion
 
 import cherrypy
 import cherrypy.lib.sessions

@@ -477,6 +477,14 @@ class RdiffRepoTest(unittest.TestCase):
         with self.assertRaises(AccessDeniedError):
             self.repo.listdir(b"../")
 
+    def test_listdir_empty_folder(self):
+        # Given a folder without data
+        self.repo.delete(b"Revisions/Data")
+        # When listing entries
+        entries = self.repo.listdir(b"Revisions")
+        # Then the list is empty.
+        self.assertEqual([], entries)
+
     def test_listdir_attributes(self):
         children = self.repo.listdir(b"Revisions")
         self.assertEqual(1, len(children))
