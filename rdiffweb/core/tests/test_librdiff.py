@@ -71,6 +71,20 @@ class IncrementEntryTest(unittest.TestCase):
         self.assertEqual(RdiffTime(1414967021), increment.date)
         self.assertEqual(b'.diff.gz', increment.suffix)
 
+    def test_extract_date(self):
+        self.assertEqual(
+            RdiffTime(1414967021), IncrementEntry._extract_date(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz')
+        )
+        self.assertEqual(
+            RdiffTime(1414967021), IncrementEntry._extract_date(b'my_filename.txt.2014-11-02T17-23-41-05-00.diff.gz')
+        )
+        # Check if date with quoted characther are proerply parsed.
+        # On NTFS, colon (:) are not supported.
+        self.assertEqual(
+            RdiffTime(1483443123),
+            IncrementEntry._extract_date(b'my_filename.txt.2017-01-03T06;05832;05803-05;05800.diff.gz'),
+        )
+
 
 class RdiffDirEntryTest(unittest.TestCase):
     def setUp(self):
@@ -213,19 +227,6 @@ class RdiffRepoTest(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir.encode('utf8'), True)
-
-    def test_extract_date(self):
-
-        self.assertEqual(
-            RdiffTime(1414967021), IncrementEntry._extract_date(b'my_filename.txt.2014-11-02T17:23:41-05:00.diff.gz')
-        )
-
-        # Check if date with quoted characther are proerply parsed.
-        # On NTFS, colon (:) are not supported.
-        self.assertEqual(
-            RdiffTime(1483443123),
-            IncrementEntry._extract_date(b'my_filename.txt.2017-01-03T06;05832;05803-05;05800.diff.gz'),
-        )
 
     def test_init(self):
         self.assertEqual('testcases', self.repo.display_name)
@@ -766,6 +767,7 @@ class RdiffTimeTest(unittest.TestCase):
             ('2014-11-05T21:04:30Z', 1415221470),
             ('2014-11-05T16:04:30-05:00', 1415221470),
             ('2014-11-05T23:04:30+02:00', 1415221470),
+            ('2014-11-05T23-04-30+02-00', 1415221470),
         ]
     )
     def test_init(self, value, expected_epoch):

@@ -203,16 +203,33 @@ class RdiffTime(object):
             self._from_str(value)
 
     def _from_str(self, time_string):
+        if time_string[10] != 'T':
+            raise ValueError('missing date time separator (T): ' + time_string)
+        if time_string[19] not in ['-', '+', 'Z']:
+            raise ValueError('missing timezone info (-, + or Z): ' + time_string)
+        if time_string[4] != '-' or time_string[7] != '-':
+            raise ValueError('missing date separator (-): ' + time_string)
+        if not (time_string[13] in [':', '-'] and time_string[16] in [':', '-']):
+            raise ValueError('missing date separator (-): ' + time_string)
         try:
-            date, daytime = time_string[:19].split("T")
-            year, month, day = list(map(int, date.split("-")))
-            hour, minute, second = list(map(int, daytime.split(":")))
-            assert 1900 < year < 2100, year
-            assert 1 <= month <= 12
-            assert 1 <= day <= 31
-            assert 0 <= hour <= 23
-            assert 0 <= minute <= 59
-            assert 0 <= second <= 61  # leap seconds
+            year = int(time_string[0:4])
+            if not (1900 < year < 2200):
+                raise ValueError('unexpected year value between 1900 and 2200: ' + str(year))
+            month = int(time_string[5:7])
+            if not (1 <= month <= 12):
+                raise ValueError('unexpected month value between 1 and 12: ' + str(month))
+            day = int(time_string[8:10])
+            if not (1 <= day <= 31):
+                raise ValueError('unexpected day value between 1 and 31: ' + str(day))
+            hour = int(time_string[11:13])
+            if not (0 <= hour <= 23):
+                raise ValueError('unexpected hour value between 1 and 23: ' + str(hour))
+            minute = int(time_string[14:16])
+            if not (0 <= minute <= 60):
+                raise ValueError('unexpected minute value between 1 and 60: ' + str(minute))
+            second = int(time_string[17:19])
+            if not (0 <= second <= 61):  # leap seconds
+                raise ValueError('unexpected second value between 1 and 61: ' + str(second))
             timetuple = (year, month, day, hour, minute, second, -1, -1, 0)
             self._time_seconds = calendar.timegm(timetuple)
             self._tz_offset = self._tzdtoseconds(time_string[19:])
@@ -247,8 +264,8 @@ class RdiffTime(object):
         """Given w3 compliant TZD, converts it to number of seconds from UTC"""
         if tzd == "Z":
             return 0
-        assert len(tzd) == 6  # only accept forms like +08:00 for now
-        assert (tzd[0] == "-" or tzd[0] == "+") and tzd[3] == ":"
+        assert len(tzd) == 6  # only accept forms like +08:00 or +08-00 for now
+        assert (tzd[0] == "-" or tzd[0] == "+") and tzd[3] in [":", '-']
         if tzd[0] == "+":
             plus_minus = 1
         else:
