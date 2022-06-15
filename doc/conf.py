@@ -50,7 +50,6 @@ exclude_patterns = []
 html_theme = 'alabaster'
 # Ref: https://alabaster.readthedocs.io/en/latest/customization.html#theme-options
 html_theme_options = {
-    'analytics_id': 'UA-19546856-5',
     'description': 'Rdiffweb documentation - A web interface for rdiff-backup',
     'fixed_sidebar': True,
     'caption_font_family': 'Lato,Helvetica,Arial,Verdana,sans-serif',
