@@ -195,6 +195,7 @@ class RdiffwebApp(Application):
                 'tools.sessions.debug': cfg.debug,
                 'tools.sessions.storage_class': session_storage_class,
                 'tools.sessions.storage_path': self._session_dir,
+                'tools.sessions.httponly': True,
                 'tools.ratelimit.debug': cfg.debug,
                 'tools.ratelimit.delay': 60,
                 'tools.ratelimit.anonymous_limit': cfg.rate_limit,

@@ -34,6 +34,14 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2F')
 
+    def test_cookie_http_only(self):
+        # Given a request made to rdiffweb
+        # When receiving the response
+        self.getPage('/')
+        # Then the header contains Set-Cookie with HttpOnly
+        cookie = self.assertHeader('Set-Cookie')
+        self.assertIn('HttpOnly', cookie)
+
     def test_getpage_with_plaintext(self):
         """
         Requesting plain text without being authenticated should show the login form.
