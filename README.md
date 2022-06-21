@@ -107,7 +107,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
-## 2.4.0 (2022-06-01)
+## 2.4.0 (2022-06-21)
 
 This new release brings a lot of improvement since the last version, multiple bug fixes
 to make the application stable. A couple of new features to improve the overall
