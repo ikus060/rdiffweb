@@ -24,7 +24,6 @@ from wtforms.validators import InputRequired
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.core.config import Option
-from rdiffweb.tools.auth_form import SESSION_KEY
 from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
@@ -88,5 +87,5 @@ class LogoutPage(Controller):
     @cherrypy.expose
     @cherrypy.config(**{'tools.auth_form.on': False})
     def default(self):
-        cherrypy.session[SESSION_KEY] = None
+        cherrypy.session.clear()
         raise cherrypy.HTTPRedirect('/')

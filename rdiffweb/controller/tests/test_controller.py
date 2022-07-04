@@ -22,6 +22,7 @@ Created on Mar 13, 2019
 
 
 import rdiffweb.test
+from rdiffweb.core.model import DbSession, SessionObject
 
 
 class ControllerTest(rdiffweb.test.WebCase):
@@ -74,3 +75,34 @@ class ControllerBlueThemeTest(rdiffweb.test.WebCase):
         """
         self.getPage("/")
         self.assertInBody('/static/blue.css')
+
+
+class ControllerEnrichSession(rdiffweb.test.WebCase):
+    def test_enrich_session_anonymous(self):
+        # When making a query to a page while unauthenticated
+        self.getPage('/', headers=[('User-Agent', 'test')])
+        # Then a session object is enriched
+        self.assertEqual(1, SessionObject.query.filter(SessionObject.id == self.session_id).count())
+        SessionObject.query.filter(SessionObject.id == self.session_id).first()
+        session = DbSession(id=self.session_id)
+        session.load()
+        self.assertIsNotNone(session.get('ip_address'))
+        self.assertIsNotNone(session.get('user_agent'))
+        self.assertIsNotNone(session.get('access_time'))
+
+    def test_enrich_session_authenticated(self):
+        # When making a query to a page while unauthenticated
+        self.getPage(
+            '/login/',
+            method='POST',
+            headers=[('User-Agent', 'test')],
+            body={'login': self.USERNAME, 'password': self.PASSWORD},
+        )
+        # Then a session object is enriched
+        self.assertEqual(1, SessionObject.query.filter(SessionObject.id == self.session_id).count())
+        SessionObject.query.filter(SessionObject.id == self.session_id).first()
+        session = DbSession(id=self.session_id)
+        session.load()
+        self.assertIsNotNone(session.get('ip_address'))
+        self.assertIsNotNone(session.get('user_agent'))
+        self.assertIsNotNone(session.get('access_time'))

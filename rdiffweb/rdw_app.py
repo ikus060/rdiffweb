@@ -41,6 +41,7 @@ import rdiffweb.tools.auth_basic
 import rdiffweb.tools.auth_form
 import rdiffweb.tools.currentuser
 import rdiffweb.tools.db
+import rdiffweb.tools.enrich_session
 import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
 import rdiffweb.tools.ratelimit
@@ -62,7 +63,7 @@ from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option, parse_args
-from rdiffweb.core.model import UserObject
+from rdiffweb.core.model import DbSession, UserObject
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -81,6 +82,7 @@ else:
 
 
 @cherrypy.tools.db()
+@cherrypy.tools.enrich_session()
 class Root(LocationsPage):
     def __init__(self):
         self.login = LoginPage()
@@ -117,8 +119,6 @@ class RdiffwebApp(Application):
     _header_logo = Option('header_logo')
 
     _tempdir = Option('tempdir')
-
-    _session_dir = Option('session_dir')
 
     @classmethod
     def parse_args(cls, args=None, config_file_contents=None):
@@ -181,10 +181,8 @@ class RdiffwebApp(Application):
         self.templates = rdw_templating.TemplateManager()
 
         # Pick the right implementation for storage
-        session_storage_class = cherrypy.lib.sessions.RamSession
         rate_limit_storage_class = rdiffweb.tools.ratelimit.RamRateLimit
-        if self._session_dir:
-            session_storage_class = cherrypy.lib.sessions.FileSession
+        if cfg.rate_limit_dir:
             rate_limit_storage_class = rdiffweb.tools.ratelimit.FileRateLimit
 
         config = {
@@ -206,14 +204,13 @@ class RdiffwebApp(Application):
                 'error_page.default': self.error_page,
                 'tools.sessions.on': True,
                 'tools.sessions.debug': cfg.debug,
-                'tools.sessions.storage_class': session_storage_class,
-                'tools.sessions.storage_path': self._session_dir,
+                'tools.sessions.storage_class': DbSession,
                 'tools.sessions.httponly': True,
                 'tools.ratelimit.debug': cfg.debug,
                 'tools.ratelimit.delay': 60,
                 'tools.ratelimit.anonymous_limit': cfg.rate_limit,
                 'tools.ratelimit.storage_class': rate_limit_storage_class,
-                'tools.ratelimit.storage_path': self._session_dir,
+                'tools.ratelimit.storage_path': cfg.rate_limit_dir,
             },
         }
 

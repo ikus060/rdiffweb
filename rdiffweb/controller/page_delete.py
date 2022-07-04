@@ -71,6 +71,11 @@ class DeletePage(Controller):
             raise cherrypy.HTTPError(400, 'bad confirmation')
 
         # Delete repository in background using a schedule task.
-        scheduled = cherrypy.engine.publish('schedule_task', repo.delete, path)
+        repo.expire()
+        scheduled = cherrypy.engine.publish('schedule_task', self.delete_repo_path, repo.repoid, path)
         assert scheduled
         raise cherrypy.HTTPRedirect(form.redirect.data)
+
+    def delete_repo_path(self, repoid, path):
+        repo = RepoObject.query.filter(RepoObject.repoid == repoid).first()
+        repo.delete(path)

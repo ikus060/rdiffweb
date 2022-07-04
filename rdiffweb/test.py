@@ -180,6 +180,15 @@ class WebCase(helper.CPWebCase):
         return cherrypy.tools.db.get_session()
 
     @property
+    def session_id(self):
+        if hasattr(self, 'cookies') and self.cookies:
+            for unused, value in self.cookies:
+                for part in value.split(';'):
+                    key, unused, value = part.partition('=')
+                    if key == 'session_id':
+                        return value
+
+    @property
     def baseurl(self):
         return 'http://%s:%s' % (self.HOST, self.PORT)
 

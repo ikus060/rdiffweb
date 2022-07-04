@@ -379,10 +379,11 @@ def get_parser():
     )
 
     parser.add(
+        '--rate-limit-dir',
         '--session-dir',
         '--sessiondir',
         metavar='FOLDER',
-        help='location where to store user session information. When undefined, the user sessions are kept in memory.',
+        help='location where to store rate-limit information. When undefined, the data is kept in memory. `--session-dir` are deprecated and kept for backward compatibility.',
     )
 
     parser.add(

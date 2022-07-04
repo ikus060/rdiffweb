@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import base64
+import datetime
 
 import cherrypy
 
@@ -43,6 +44,7 @@ def basic_auth(realm, checkpassword, debug=False, session_key=SESSION_KEY):
         cherrypy.lib.auth_basic.basic_auth(realm, checkpassword, debug)
         # User is authenticated, let save this into the session.
         cherrypy.session[session_key] = cherrypy.request.login
+        cherrypy.session['login_time'] = datetime.datetime.now()
 
 
 cherrypy.tools.auth_basic = cherrypy.Tool('before_handler', basic_auth, priority=70)

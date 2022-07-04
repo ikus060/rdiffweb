@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import logging
 
 import cherrypy
@@ -108,6 +109,7 @@ class LoginPlugin(SimplePlugin):
         # Save username in session if session is enabled.
         if cherrypy.request.config and cherrypy.request.config.get('tools.sessions.on', False):
             cherrypy.session[SESSION_KEY] = userobj.username
+            cherrypy.session['login_time'] = datetime.datetime.now()
         self.bus.publish('user_login', userobj)
         return userobj
 

@@ -17,5 +17,6 @@
 
 
 from ._repo import RepoObject  # noqa
+from ._session import DbSession, SessionObject  # noqa
 from ._sshkeys import SshKey  # noqa
 from ._user import DuplicateSSHKeyError, UserObject  # noqa
