@@ -25,9 +25,31 @@ from ldap3.core.exceptions import LDAPException, LDAPInvalidCredentialsResult, L
 logger = logging.getLogger(__name__)
 
 
+def _first_attribute(attributes, key, default=None):
+    """
+    Extract the first value from LDAP attributes.
+    """
+    # Skip loopkup if key is not defined.
+    if not key:
+        return default
+    # Convert key to a list.
+    keys = key if isinstance(key, list) else [key]
+    # Loop on each attribute name to find a value.
+    for attr in keys:
+        value = attributes.get(attr, None)
+        if isinstance(value, list) and len(value) > 0:
+            return value[0]
+    # Default to None.
+    return default
+
+
 class LdapPlugin(SimplePlugin):
     """
-    Wrapper for LDAP authentication.
+    Used this plugin to authenticate user against an LDAP server.
+
+    `authenticate(username, password)` return None if the credentials are not
+    valid. Otherwise it return a tuple or username and extra attributes.
+    The extra attribute may contains `_fullname` and `_email`.
     """
 
     uri = None
@@ -44,6 +66,10 @@ class LdapPlugin(SimplePlugin):
     version = 3
     network_timeout = 10
     timeout = 10
+    fullname_attribute = None
+    firstname_attribute = None
+    lastname_attribute = None
+    email_attribute = None
 
     def start(self):
         if self.uri:
@@ -111,14 +137,15 @@ class LdapPlugin(SimplePlugin):
             conn.rebind(user=user_dn, password=password)
 
             # Get username
-            if self.username_attribute not in response[0]['attributes']:
+            attrs = response[0]['attributes']
+            new_username = _first_attribute(attrs, self.username_attribute)
+            if not new_username:
                 logger.info(
                     "user object %s was found but the username attribute %s doesn't exists",
                     user_dn,
                     self.username_attribute,
                 )
                 return False
-            new_username = response[0]['attributes'][self.username_attribute][0]
 
             # Verify if the user is member of the required group
             if self.required_group:
@@ -131,8 +158,15 @@ class LdapPlugin(SimplePlugin):
                 except LDAPNoSuchObjectResult:
                     logger.exception("group %s not found", self.required_group)
                     return False
-
-            return (new_username, response[0]['attributes'])
+            # Extract common attribute from LDAP
+            attrs['_email'] = _first_attribute(attrs, self.email_attribute)
+            attrs['_fullname'] = fullname = _first_attribute(attrs, self.fullname_attribute)
+            if not fullname:
+                firstname = _first_attribute(attrs, self.firstname_attribute, '')
+                lastname = _first_attribute(attrs, self.lastname_attribute, '')
+                if firstname or lastname:
+                    attrs['_fullname'] = '%s %s' % (firstname, lastname)
+            return (new_username, attrs)
         except LDAPInvalidCredentialsResult:
             return False
         except LDAPException:

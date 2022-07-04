@@ -47,6 +47,10 @@ class LdapPluginTest(helper.CPWebCase):
             {
                 'ldap.uri': 'my_fake_server',
                 'ldap.base_dn': 'dc=example,dc=org',
+                'ldap.email_attribute': ['mail', 'email'],
+                'ldap.fullname_attribute': ['displayName'],
+                'ldap.firstname_attribute': ['givenName'],
+                'ldap.lastname_attribute': ['sn'],
             }
         )
 
@@ -65,7 +69,17 @@ class LdapPluginTest(helper.CPWebCase):
         # Then user is authenticated
         self.assertTrue(authenticated)
         self.assertEqual(authenticated[0], 'user01')
-        self.assertEqual(['user01'], authenticated[1]['cn'])
+        self.assertEqual(
+            {
+                'userPassword': ['password1'],
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+                'cn': ['user01'],
+                '_email': None,
+                '_fullname': None,
+            },
+            authenticated[1],
+        )
 
     def test_authenticate_with_invalid_user(self):
         # Given a user in LDAP
@@ -96,6 +110,98 @@ class LdapPluginTest(helper.CPWebCase):
         authenticated = cherrypy.ldap.authenticate('user01', 'invalid')
         # Then user is not authenticated
         self.assertEqual(False, authenticated)
+
+    def test_authenticate_with_email(self):
+        # Given a user in LDAP with firstname and lastname
+        self.conn.strategy.add_entry(
+            'cn=user01,dc=example,dc=org',
+            {
+                'cn': ['user01'],
+                'userPassword': 'password1',
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+                'mail': ['john@test.com'],
+            },
+        )
+        # When authenticating with that user
+        authenticated = cherrypy.ldap.authenticate('user01', 'password1')
+        # Then user is authenticated and firstname is composed of firstname and lastname
+        self.assertTrue(authenticated)
+        self.assertEqual(authenticated[0], 'user01')
+        self.assertEqual(
+            {
+                'cn': ['user01'],
+                'userPassword': ['password1'],
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+                'mail': ['john@test.com'],
+                '_email': 'john@test.com',
+                '_fullname': None,
+            },
+            authenticated[1],
+        )
+
+    def test_authenticate_with_fullname(self):
+        # Given a user in LDAP with firstname and lastname
+        self.conn.strategy.add_entry(
+            'cn=user01,dc=example,dc=org',
+            {
+                'cn': ['user01'],
+                'userPassword': 'password1',
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+                'displayName': ['John Kennedy'],
+            },
+        )
+        # When authenticating with that user
+        authenticated = cherrypy.ldap.authenticate('user01', 'password1')
+        # Then user is authenticated and firstname is composed of firstname and lastname
+        self.assertTrue(authenticated)
+        self.assertEqual(authenticated[0], 'user01')
+        self.assertEqual(
+            {
+                'cn': ['user01'],
+                'userPassword': ['password1'],
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+                'displayName': ['John Kennedy'],
+                '_email': None,
+                '_fullname': 'John Kennedy',
+            },
+            authenticated[1],
+        )
+
+    def test_authenticate_with_firstname_lastname(self):
+        # Given a user in LDAP with firstname and lastname
+        self.conn.strategy.add_entry(
+            'cn=user01,dc=example,dc=org',
+            {
+                'cn': ['user01'],
+                'userPassword': 'password1',
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+                'givenName': ['John'],
+                'sn': ['Kennedy'],
+            },
+        )
+        # When authenticating with that user
+        authenticated = cherrypy.ldap.authenticate('user01', 'password1')
+        # Then user is authenticated and firstname is composed of firstname and lastname
+        self.assertTrue(authenticated)
+        self.assertEqual(authenticated[0], 'user01')
+        self.assertEqual(
+            {
+                'cn': ['user01'],
+                'userPassword': ['password1'],
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+                'givenName': ['John'],
+                'sn': ['Kennedy'],
+                '_email': None,
+                '_fullname': 'John Kennedy',
+            },
+            authenticated[1],
+        )
 
 
 class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
@@ -140,7 +246,17 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
         # Then user is authenticated
         self.assertTrue(authenticated)
         self.assertEqual(authenticated[0], 'user01')
-        self.assertEqual(['user01'], authenticated[1]['cn'])
+        self.assertEqual(
+            {
+                'userPassword': ['password1'],
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+                'cn': ['user01'],
+                '_email': None,
+                '_fullname': None,
+            },
+            authenticated[1],
+        )
 
     def test_authenticate_with_not_member(self):
         # Given a user and a group in LDAP
