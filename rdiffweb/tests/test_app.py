@@ -4,10 +4,10 @@ Created on Jul. 3, 2019
 @author: ikus060
 '''
 
-from rdiffweb.test import AppTestCase
+import rdiffweb.test
 
 
-class AppTest(AppTestCase):
+class AppTest(rdiffweb.test.WebCase):
     def test_version(self):
         """Verify return value of version."""
         self.assertIsNotNone(self.app.version)

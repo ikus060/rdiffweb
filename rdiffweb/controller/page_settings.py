@@ -22,6 +22,7 @@ from rdiffweb.controller import Controller, validate, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
+from rdiffweb.core.model import RepoObject
 from rdiffweb.tools.i18n import ugettext as _
 
 
@@ -35,7 +36,7 @@ class SettingsPage(Controller):
         }
     )
     def default(self, path=b"", action=None, **kwargs):
-        repo_obj = self.app.store.get_repo(path)
+        repo_obj = RepoObject.get_repo(path)
         if kwargs.get('keepdays'):
             return self._remove_older(repo_obj, **kwargs)
         elif kwargs.get('new_encoding'):

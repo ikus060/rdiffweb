@@ -158,6 +158,9 @@ class LdapPlugin(SimplePlugin):
                 except LDAPNoSuchObjectResult:
                     logger.exception("group %s not found", self.required_group)
                     return False
+            # Remove entryDN from attributes list.
+            if 'entryDN' in attrs:
+                del attrs['entryDN']
             # Extract common attribute from LDAP
             attrs['_email'] = _first_attribute(attrs, self.email_attribute)
             attrs['_fullname'] = fullname = _first_attribute(attrs, self.fullname_attribute)

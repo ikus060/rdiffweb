@@ -40,58 +40,50 @@ black:
 isort:
   <<: *tox
 
-py36:
+py3:
   <<: *tox
-  image: python:3.6
+  image: $IMAGE
+  parallel:
+    matrix:
+    - TOXENV: py3
+      IMAGE: [python:3.6, python:3.7, python:3.8, python:3.9, python:3.10]
 
-py37:
+buster-rdiff-backup2:
   <<: *tox
-  image: python:3.7
-
-py38:
-  <<: *tox
-  image: python:3.8
-
-py39:
-  <<: *tox
-  image: python:3.9
-
-py310:
-  <<: *tox
-  image: python:3.10
-
-py3-jinja210: 
-  <<: *tox
-
-py3-jinja211: 
-  <<: *tox
-
-py3-cherrypy18: 
-  <<: *tox
-
-py3-cherrypy8-jinja210: 
-  <<: *tox
-  # cherrypy8 is not compatible with python 3.9
-  image: python:3.8-bullseye
-
-py3-cherrypy9-jinja211: 
-  <<: *tox
-
-rdiff-backup2:
-  <<: *tox
+  image: python:3.7-buster
   variables:
-    TOXENV: py3-cherrypy9-jinja210
+    TOXENV: buster
   before_script:
   - apt-get update
   - apt -y install librsync-dev
-  - pip install rdiff-backup tox
+  - pip install "rdiff-backup<3,>=2" tox
+
+debian:
+  <<: *tox
+  image: $IMAGE
+  parallel:
+    matrix:
+    - TOXENV: buster
+      IMAGE: python:3.7-buster
+    - TOXENV: bullseye
+      IMAGE: python:3.9-bullseye
+    - TOXENV: bookworm
+      IMAGE: python:3.10
 
 postgresql-12:
   <<: *tox
+  image: $IMAGE
   services:
     - postgres:12.2-alpine
+  parallel:
+    matrix:
+    - TOXENV: buster
+      IMAGE: python:3.7-buster
+    - TOXENV: bullseye
+      IMAGE: python:3.9-bullseye
+    - TOXENV: bookworm
+      IMAGE: python:3.10
   variables:
-    TOXENV: py3-cherrypy18-jinja210
     RDIFFWEB_TEST_DATABASE_URI: "postgresql://admin@postgres/test"
     POSTGRES_DB: test
     POSTGRES_USER: admin
@@ -200,20 +192,20 @@ publish:sonar:master:
   stage: sonar
   allow_failure: True
   needs:
-  - py3-cherrypy18
+  - py3
   image: sonarsource/sonar-scanner-cli
   only:
   - master
   variables:
     SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
   script:
-  - sonar-scanner -X -Dsonar.python.coverage.reportPaths=coverage-*.xml -Dsonar.python.xunit.reportPaths=xunit-py3-cherrypy18.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.projectVersion=$(git describe) -Dsonar.exclusions=**/test_*.py,rdiffweb/test.py -Dsonar.qualitygate.wait=True
+  - sonar-scanner -X -Dsonar.python.coverage.reportPaths=coverage-*.xml -Dsonar.python.xunit.reportPaths=xunit-py3.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.projectVersion=$(git describe) -Dsonar.exclusions=**/test_*.py,rdiffweb/test.py -Dsonar.qualitygate.wait=True
 
 publish:sonar:dev:
   stage: sonar
   allow_failure: True
   needs:
-  - py3-cherrypy18
+  - py3
   image: sonarsource/sonar-scanner-cli
   only:
     variables:

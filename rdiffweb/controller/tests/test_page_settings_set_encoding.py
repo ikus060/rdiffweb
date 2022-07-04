@@ -22,7 +22,7 @@ Created on Jan 1, 2016
 
 
 import rdiffweb.test
-from rdiffweb.core.store import DEFAULT_REPO_ENCODING, USER_ROLE
+from rdiffweb.core.model import RepoObject, UserObject
 
 
 class SetEncodingTest(rdiffweb.test.WebCase):
@@ -39,7 +39,7 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         # Default encoding for broker-repo is the default system encoding.
         self._settings('admin', 'broker-repo')
         self.assertInBody("Character encoding")
-        self.assertInBody('selected value="%s"' % DEFAULT_REPO_ENCODING)
+        self.assertInBody('selected value="%s"' % RepoObject.DEFAULT_REPO_ENCODING)
 
     def test_api_set_encoding(self):
         """
@@ -48,8 +48,7 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         self.getPage("/api/set-encoding/admin/testcases/", method="POST", body={'new_encoding': 'cp1252'})
         self.assertStatus(200)
         # Check results
-        user = self.app.store.get_user(self.USERNAME)
-        repo = user.get_repo(self.REPO)
+        repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         self.assertEqual('cp1252', repo.encoding)
 
     def test_set_encoding(self):
@@ -59,7 +58,8 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         self._set_encoding('admin', 'testcases', 'cp1252')
         self.assertStatus(200)
         self.assertInBody("Updated")
-        self.assertEqual('cp1252', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
+        repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        self.assertEqual('cp1252', repo.encoding)
         # Get back encoding.
         self._settings('admin', 'testcases')
         self.assertInBody('selected value="cp1252"')
@@ -71,7 +71,8 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         self._set_encoding('admin', 'testcases', 'US-ASCII')
         self.assertStatus(200)
         self.assertInBody("Updated")
-        self.assertEqual('ascii', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
+        repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        self.assertEqual('ascii', repo.encoding)
         # Get back encoding.
         self._settings('admin', 'testcases')
         self.assertInBody('selected value="ascii"')
@@ -95,20 +96,23 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         # Get back encoding.
         self._settings('admin', 'testcases')
         self.assertInBody('selected value="cp1252"')
-        self.assertEqual('cp1252', self.app.store.get_user(self.USERNAME).get_repo(self.REPO).encoding)
+        repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        self.assertEqual('cp1252', repo.encoding)
 
     def test_as_another_user(self):
         # Create another user with admin right
-        user_obj = self.app.store.add_user('anotheruser', 'password')
+        user_obj = UserObject.add_user('anotheruser', 'password')
         user_obj.user_root = self.testcases
-
+        user_obj.refresh_repos()
         self._set_encoding('anotheruser', 'testcases', 'cp1252')
         self.assertStatus('200 OK')
-        self.assertEqual('cp1252', user_obj.get_repo('testcases').encoding)
+        repo = RepoObject.query.filter(RepoObject.user == user_obj, RepoObject.repopath == self.REPO).first()
+        self.assertEqual('cp1252', repo.encoding)
 
         # Remove admin right
-        admin = self.app.store.get_user('admin')
-        admin.role = USER_ROLE
+        admin = UserObject.get_user('admin')
+        admin.role = UserObject.USER_ROLE
+        admin.add()
 
         # Browse admin's repos
         self._set_encoding('anotheruser', 'testcases', 'utf-8')

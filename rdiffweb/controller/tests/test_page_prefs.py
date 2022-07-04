@@ -25,7 +25,7 @@ from unittest.mock import MagicMock
 import cherrypy
 
 import rdiffweb.test
-from rdiffweb.core.store import _REPOS
+from rdiffweb.core.model import RepoObject, UserObject
 
 
 class PrefsTest(rdiffweb.test.WebCase):
@@ -85,6 +85,7 @@ class PrefsTest(rdiffweb.test.WebCase):
         self.assertInBody("Invalid email")
 
     def test_change_password(self):
+        self.listener.user_password_changed.reset_mock()
         # When udating user's password
         self._set_password(self.PASSWORD, "newpass", "newpass")
         self.assertInBody("Password updated successfully.")
@@ -111,9 +112,8 @@ class PrefsTest(rdiffweb.test.WebCase):
 
     def test_update_repos(self):
         # Given a user with invalid repositories
-        userobj = self.app.store.get_user(self.USERNAME)
-        with self.app.store.engine.connect() as conn:
-            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='invalid'))
+        userobj = UserObject.get_user(self.USERNAME)
+        RepoObject(userid=userobj.userid, repopath='invalid').add()
         self.assertEqual(['broker-repo', 'invalid', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the repository list
         self.getPage(self.PREFS, method='POST', body={'action': 'update_repos'})
@@ -121,13 +121,14 @@ class PrefsTest(rdiffweb.test.WebCase):
         # Then a success message is displayed
         self.assertInBody('Repositories successfully updated')
         # Then the list is free of inexisting repos.
+        userobj.expire()
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
 
     def test_update_notification(self):
         self.getPage("/prefs/notification/", method='POST', body={'action': 'set_notification_info', 'testcases': '7'})
         self.assertStatus(200)
         # Check database update
-        repo_obj = self.app.store.get_user(self.USERNAME).get_repo(self.REPO)
+        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         self.assertEqual(7, repo_obj.maxage)
 
     def test_get_page(self):

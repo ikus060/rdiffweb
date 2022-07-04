@@ -20,6 +20,7 @@ Created on Mar. 23, 2021
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 '''
+import logging
 from datetime import datetime
 
 import cherrypy
@@ -27,6 +28,22 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 from cherrypy.process.plugins import SimplePlugin
+
+logger = logging.getLogger(__name__)
+
+
+def catch_exception(func):
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except Exception:
+            logger.error('failure during execution of schedule job/task', exc_info=1)
+        finally:
+            cherrypy.tools.db.on_end_resource()
+
+    wrapper._func = func
+    wrapper.__name__ = func.__name__
+    return wrapper
 
 
 class Scheduler(SimplePlugin):
@@ -90,7 +107,7 @@ class Scheduler(SimplePlugin):
         assert hasattr(job, '__call__'), 'job must be callable'
         hour, minute = execution_time.split(':', 2)
         self._scheduler.add_job(
-            func=job,
+            func=catch_exception(job),
             args=args,
             kwargs=kwargs,
             trigger='cron',
@@ -105,14 +122,14 @@ class Scheduler(SimplePlugin):
         Add the given task to be execute immediately in background.
         """
         assert hasattr(task, '__call__'), 'task must be callable'
-        self._scheduler.add_job(func=task, args=args, kwargs=kwargs, next_run_time=datetime.now())
+        self._scheduler.add_job(func=catch_exception(task), args=args, kwargs=kwargs, next_run_time=datetime.now())
 
     def unschedule_job(self, job):
         """
         Remove the given job from scheduler.
         """
         # Search for a matching job
-        job_id = next((j.id for j in self._scheduler.get_jobs(jobstore='scheduled') if j.func == job), None)
+        job_id = next((j.id for j in self._scheduler.get_jobs(jobstore='scheduled') if j.func._func == job), None)
         if job_id:
             self._scheduler.remove_job(job_id=job_id, jobstore='scheduled')
 

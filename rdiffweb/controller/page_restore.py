@@ -24,6 +24,7 @@ import rdiffweb.tools.errors  # noqa: cherrypy.tools.errors
 from rdiffweb.controller import Controller, validate, validate_date, validate_isinstance
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
+from rdiffweb.core.model import RepoObject
 from rdiffweb.core.rdw_helpers import quote_url
 from rdiffweb.core.restore import ARCHIVERS
 
@@ -111,7 +112,7 @@ class RestorePage(Controller):
         date = validate_date(date)
 
         # Check user access to repo / path.
-        repo, path = self.app.store.get_repo_path(path)
+        repo, path = RepoObject.get_repo_path(path)
 
         # Restore file(s)
         filename, fileobj = repo.restore(path, int(date), kind=kind)

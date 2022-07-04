@@ -24,7 +24,7 @@ Created on Dec 26, 2015
 import os
 
 import rdiffweb.test
-from rdiffweb.core.store import _REPOS, USER_ROLE
+from rdiffweb.core.model import RepoObject, UserObject
 
 
 class BrowsePageTest(rdiffweb.test.WebCase):
@@ -48,10 +48,9 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         self.assertInBody('<meta itemprop="name" content="testcases" />')
 
     def test_locations_with_broken_tree(self):
-        userobj = self.app.store.get_user(self.USERNAME)
-        with self.app.store.engine.connect() as conn:
-            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='testcases/broker-repo'))
-            conn.execute(_REPOS.insert().values(userid=userobj._userid, repopath='testcases/testcases'))
+        userobj = UserObject.get_user(self.USERNAME)
+        RepoObject(userid=userobj.userid, repopath='testcases/broker-repo').add()
+        RepoObject(userid=userobj.userid, repopath='testcases/testcases').add()
         self.getPage("/")
 
     def test_WithRelativePath(self):
@@ -201,15 +200,12 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         """
         self.getPage('/browse/invalid')
         self.assertStatus(404)
-        self.assertInBody("Not Found")
 
         self.getPage('/browse/invalid/')
         self.assertStatus(404)
-        self.assertInBody("Not Found")
 
         self.getPage('/browse/admin/invalid/')
         self.assertStatus(404)
-        self.assertInBody("Not Found")
 
     def test_invalid_path(self):
         """
@@ -224,15 +220,16 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         """
         self._browse(self.USERNAME, self.REPO, "rdiff-backup-data/")
         self.assertStatus(404)
-        self.assertInBody("Not Found")
 
     def test_with_single_repo(self):
         """
         Verify if browsing '/browse/' for a single repository is working.
         """
         # Change the user setting to match single repo.
-        user = self.app.store.get_user(self.USERNAME)
+        user = UserObject.get_user(self.USERNAME)
         user.user_root = os.path.join(self.testcases, 'testcases')
+        user.refresh_repos()
+        user.add()
         self.assertEqual(['', 'broker-repo', 'testcases'], [r.name for r in user.repo_objs])
         # Check if listing locations is working
         self.getPage('/')
@@ -249,8 +246,10 @@ class BrowsePageTest(rdiffweb.test.WebCase):
 
     def test_browse_with_permissions(self):
         # Create an another user with admin right
-        user_obj = self.app.store.add_user('anotheruser', 'password')
+        user_obj = UserObject.add_user('anotheruser', 'password')
         user_obj.user_root = self.testcases
+        user_obj.refresh_repos()
+        user_obj.add()
         self.getPage('/browse/admin')
         self.assertStatus('404 Not Found')
 
@@ -264,8 +263,10 @@ class BrowsePageTest(rdiffweb.test.WebCase):
 
     def test_browse_without_permissions(self):
         # Remove admin role.
-        admin = self.app.store.get_user('admin')
-        admin.role = USER_ROLE
+        admin = UserObject.get_user('admin')
+        admin.role = UserObject.USER_ROLE
+        admin.add()
+        admin.refresh_repos()
 
         # Browse other user's repos
         self.getPage('/browse/anotheruser/testcases')

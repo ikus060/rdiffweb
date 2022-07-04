@@ -19,6 +19,10 @@ import cherrypy
 SESSION_KEY = '_cp_username'
 
 
+def clear_currentuser():
+    cherrypy.serving.request.currentuser = None
+
+
 def get_currentuser(userobj, session_key=SESSION_KEY):
     """
     When session is enabled and user is authenticated, get the
@@ -40,6 +44,8 @@ def get_currentuser(userobj, session_key=SESSION_KEY):
             # User was deleted after authenticating.
             raise cherrypy.HTTPError(403)
         cherrypy.serving.request.currentuser = currentuser
+
+        cherrypy.request.hooks.attach('on_end_resource', clear_currentuser)
 
 
 cherrypy.tools.currentuser = cherrypy.Tool('before_handler', get_currentuser, priority=73)

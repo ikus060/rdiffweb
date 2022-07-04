@@ -32,6 +32,15 @@ class ErrorPageTest(rdiffweb.test.WebCase):
     login = True
 
     def test_error_page(self):
+        # When browsing the invalid URL
         self.getPage('/invalid/')
+        # Then a 404 error page is return using jinja2 template
+        self.assertStatus("404 Not Found")
+        self.assertInBody("Oops!")
+
+    def test_error_page_exception(self):
+        # When browsing a an invalid path
+        self.getPage('/browse/invalid/')
+        # Then a 404 error page is return using jinja2 template
         self.assertStatus("404 Not Found")
         self.assertInBody("Oops!")

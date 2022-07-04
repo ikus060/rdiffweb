@@ -27,7 +27,7 @@ import cherrypy
 import psutil
 from cherrypy.process.plugins import SimplePlugin
 
-from rdiffweb.core.store import UserObject
+from rdiffweb.core.model import UserObject
 
 logger = logging.getLogger(__name__)
 

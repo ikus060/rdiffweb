@@ -20,8 +20,9 @@ import unittest
 import cherrypy
 
 from rdiffweb.core.librdiff import RdiffTime
+from rdiffweb.core.model import RepoObject, UserObject
 from rdiffweb.core.rdw_templating import _ParentEntry, attrib, do_format_lastupdated, list_parents, url_for
-from rdiffweb.test import AppTestCase
+from rdiffweb.test import AppTestCase, WebCase
 
 
 class TemplateManagerTest(unittest.TestCase):
@@ -92,13 +93,11 @@ class TemplateManagerTest(unittest.TestCase):
 
 class ListParentsTest(AppTestCase):
     def test_list_parents_with_root_dir(self):
-        repo, path = self.app.store.get_repo_path(b'admin/testcases', as_user=self.app.store.get_user('admin'))
+        repo, path = RepoObject.get_repo_path(b'admin/testcases', as_user=UserObject.get_user('admin'))
         self.assertEqual(list_parents(repo, path), [_ParentEntry(path=b'', display_name='testcases')])
 
     def test_list_parents_with_root_subdir(self):
-        repo, path = self.app.store.get_repo_path(
-            b'admin/testcases/Revisions', as_user=self.app.store.get_user('admin')
-        )
+        repo, path = RepoObject.get_repo_path(b'admin/testcases/Revisions', as_user=UserObject.get_user('admin'))
         self.assertEqual(
             list_parents(repo, path),
             [
@@ -108,74 +107,76 @@ class ListParentsTest(AppTestCase):
         )
 
 
-class UrlForTest(AppTestCase):
+class UrlForTest(WebCase):
+    @property
+    def repo_obj(self):
+        user = UserObject.query.filter(UserObject.username == 'admin').first()
+        return RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
+
     def test_url_for_browse(self):
         """Check creation of url"""
-        repo = self.app.store.get_user('admin').get_repo(self.REPO)
-        self.assertEqual(cherrypy.server.base() + '/browse/admin/testcases', url_for('browse', repo))
+        self.assertEqual(cherrypy.server.base() + '/browse/admin/testcases', url_for('browse', self.repo_obj))
         self.assertEqual(
-            cherrypy.server.base() + '/browse/admin/testcases/Revisions', url_for('browse', repo, b'Revisions')
+            cherrypy.server.base() + '/browse/admin/testcases/Revisions', url_for('browse', self.repo_obj, b'Revisions')
         )
         self.assertEqual(
             cherrypy.server.base() + '/browse/admin/testcases/Revisions?restore=True',
-            url_for('browse', repo, b'Revisions', restore=True),
+            url_for('browse', self.repo_obj, b'Revisions', restore=True),
         )
         self.assertEqual(
             cherrypy.server.base()
             + '/browse/admin/testcases/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial',
             url_for(
                 'browse',
-                repo,
+                self.repo_obj,
                 b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial',
             ),
         )
 
     def test_url_for_graphs(self):
-        repo = self.app.store.get_user('admin').get_repo(self.REPO)
-        self.assertEqual(cherrypy.server.base() + '/graphs/files/admin/testcases', url_for('graphs', 'files', repo))
+        self.assertEqual(
+            cherrypy.server.base() + '/graphs/files/admin/testcases', url_for('graphs', 'files', self.repo_obj)
+        )
 
     def test_url_for_history(self):
         """Check creation of url"""
-        repo = self.app.store.get_user('admin').get_repo(self.REPO)
-        self.assertEqual(cherrypy.server.base() + '/history/admin/testcases', url_for('history', repo))
+        self.assertEqual(cherrypy.server.base() + '/history/admin/testcases', url_for('history', self.repo_obj))
 
     def test_url_for_restore(self):
-        repo = self.app.store.get_user('admin').get_repo(self.REPO)
         self.assertEqual(
             cherrypy.server.base() + '/restore/admin/testcases?date=1414967021',
-            url_for('restore', repo, date=RdiffTime(1414967021)),
+            url_for('restore', self.repo_obj, date=RdiffTime(1414967021)),
         )
         self.assertEqual(
             cherrypy.server.base() + '/restore/admin/testcases?date=1414967021',
-            url_for('restore', repo, b'', date=RdiffTime(1414967021)),
+            url_for('restore', self.repo_obj, b'', date=RdiffTime(1414967021)),
         )
         self.assertEqual(
             cherrypy.server.base() + '/restore/admin/testcases?date=1414967021&kind=tar.gz',
-            url_for('restore', repo, b'', date=RdiffTime(1414967021), kind='tar.gz'),
+            url_for('restore', self.repo_obj, b'', date=RdiffTime(1414967021), kind='tar.gz'),
         )
         self.assertEqual(
             cherrypy.server.base() + '/restore/admin/testcases/Revisions?date=1414967021',
-            url_for('restore', repo, b'Revisions', date=RdiffTime(1414967021)),
+            url_for('restore', self.repo_obj, b'Revisions', date=RdiffTime(1414967021)),
         )
         self.assertEqual(
             cherrypy.server.base()
             + '/restore/admin/testcases/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial?date=1414967021',
             url_for(
                 'restore',
-                repo,
+                self.repo_obj,
                 b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial',
                 date=RdiffTime(1414967021),
             ),
         )
 
     def test_url_for_status(self):
-        repo = self.app.store.get_user('admin').get_repo(self.REPO)
         self.assertEqual(
             cherrypy.server.base() + '/status?date=1414967021', url_for('status', date=RdiffTime(1414967021))
         )
         self.assertEqual(
             cherrypy.server.base() + '/status/admin/testcases?date=1414967021',
-            url_for('status', repo, date=RdiffTime(1414967021)),
+            url_for('status', self.repo_obj, date=RdiffTime(1414967021)),
         )
 
     def test_url_for_with_none(self):

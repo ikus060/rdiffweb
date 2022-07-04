@@ -23,6 +23,7 @@ import rdiffweb.tools.errors  # noqa
 from rdiffweb.controller import Controller
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
+from rdiffweb.core.model import RepoObject
 from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
@@ -45,10 +46,7 @@ class BrowsePage(Controller):
     def default(self, path=b""):
 
         # Check user access to the given repo & path
-        try:
-            repo, path = self.app.store.get_repo_path(path, refresh=False)
-        except DoesNotExistError:
-            repo, path = self.app.store.get_repo_path(path, refresh=True)
+        repo, path = RepoObject.get_repo_path(path, refresh=True)
 
         # Set up warning about in-progress backups, if necessary
         warning = False

@@ -32,6 +32,7 @@ from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
+from rdiffweb.core.model import RepoObject
 from rdiffweb.tools.i18n import ugettext as _
 
 _logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ class DeletePage(Controller):
     )
     def default(self, path=b"", **kwargs):
         # Check permissions on path/repo
-        repo, path = self.app.store.get_repo_path(path)
+        repo, path = RepoObject.get_repo_path(path)
         # Check if path exists with fstats
         path_obj = repo.fstat(path)
         # Check user's permissions

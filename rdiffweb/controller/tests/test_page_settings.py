@@ -23,7 +23,7 @@ Created on Jan 1, 2016
 
 
 import rdiffweb.test
-from rdiffweb.core.store import USER_ROLE
+from rdiffweb.core.model import RepoObject, UserObject
 
 
 class SettingsTest(rdiffweb.test.WebCase):
@@ -37,16 +37,17 @@ class SettingsTest(rdiffweb.test.WebCase):
 
     def test_as_another_user(self):
         # Create a nother user with admin right
-        user_obj = self.app.store.add_user('anotheruser', 'password')
+        user_obj = UserObject.add_user('anotheruser', 'password')
         user_obj.user_root = self.testcases
-
+        user_obj.refresh_repos()
         self.getPage("/settings/anotheruser/testcases")
         self.assertInBody("Character encoding")
         self.assertStatus('200 OK')
 
         # Remove admin right
-        admin = self.app.store.get_user('admin')
-        admin.role = USER_ROLE
+        admin = UserObject.get_user('admin')
+        admin.role = UserObject.USER_ROLE
+        admin.add()
 
         # Browse admin's repos
         self.getPage("/settings/anotheruser/testcases")
@@ -56,7 +57,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         self.getPage("/settings/" + self.USERNAME + "/" + self.REPO + "/", method="POST", body={'maxage': '4'})
         self.assertStatus(200)
         # Check database update
-        repo_obj = self.app.store.get_user('admin').get_repo(self.REPO)
+        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         self.assertEqual(4, repo_obj.maxage)
 
     def test_does_not_exists(self):

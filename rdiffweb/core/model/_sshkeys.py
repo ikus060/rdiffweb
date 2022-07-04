@@ -15,30 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 import cherrypy
+from sqlalchemy import Column, Integer, Text
 
-from rdiffweb.controller import Controller
-
-# Define the logger
-logger = logging.getLogger(__name__)
+Base = cherrypy.tools.db.get_base()
 
 
-class LocationsPage(Controller):
-    """
-    Shows the repository page. Will show all available destination
-    backup directories. This is the root (/) page.
-    """
-
-    @cherrypy.expose
-    def index(self):
-        # Get page params
-        self.app.currentuser.refresh_repos()
-        params = {
-            "repos": self.app.currentuser.repo_objs,
-            "disk_usage": self.app.currentuser.disk_usage,
-            "disk_quota": self.app.currentuser.disk_quota,
-        }
-        # Render the page.
-        return self._compile_template("locations.html", **params)
+class SshKey(Base):
+    __tablename__ = 'sshkeys'
+    __table_args__ = {'sqlite_autoincrement': True}
+    fingerprint = Column('Fingerprint', Text)
+    key = Column('Key', Text, unique=True, primary_key=True)
+    userid = Column('UserID', Integer, nullable=False)

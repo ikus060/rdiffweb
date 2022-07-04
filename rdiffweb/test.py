@@ -35,7 +35,7 @@ import cherrypy
 import pkg_resources
 from cherrypy.test import helper
 
-from rdiffweb.core.store import _REPOS, _SSHKEYS, _USERS
+from rdiffweb.core.model import UserObject
 from rdiffweb.rdw_app import RdiffwebApp
 
 # For cherrypy8, we need to monkey patch Thread.isAlive
@@ -86,9 +86,10 @@ class AppTestCase(unittest.TestCase):
         # Create repositories
         self.testcases = create_testcases_repo(self.app)
         # Register repository
-        admin_user = self.app.store.get_user(self.USERNAME)
+        admin_user = UserObject.get_user(self.USERNAME)
         if admin_user:
             admin_user.user_root = self.testcases
+            admin_user.refresh_repos()
 
     def tearDown(self):
         if hasattr(self, 'database_dir'):
@@ -148,17 +149,16 @@ class WebCase(helper.CPWebCase):
 
     def setUp(self):
         helper.CPWebCase.setUp(self)
-        # Clear database
-        with self.app.store.engine.connect() as conn:
-            conn.execute(_SSHKEYS.delete())
-            conn.execute(_REPOS.delete())
-            conn.execute(_USERS.delete())
-        self.app.store.create_admin_user()
+        cherrypy.tools.db.drop_all()
+        cherrypy.tools.db.create_all()
+        # Create default admin
+        UserObject.create_admin_user(self.USERNAME, self.PASSWORD)
         # Create testcases repo
         self.testcases = create_testcases_repo(self.app)
-        admin_user = self.app.store.get_user(self.USERNAME)
+        admin_user = UserObject.get_user(self.USERNAME)
         if admin_user:
             admin_user.user_root = self.testcases
+            admin_user.refresh_repos()
         # Login to web application.
         if self.login:
             self._login()
@@ -174,6 +174,10 @@ class WebCase(helper.CPWebCase):
         Return reference to Rdiffweb application.
         """
         return cherrypy.tree.apps['']
+
+    @property
+    def session(self):
+        return cherrypy.tools.db.get_session()
 
     @property
     def baseurl(self):

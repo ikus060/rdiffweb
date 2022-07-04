@@ -26,6 +26,7 @@ from unittest.mock import MagicMock
 import cherrypy
 
 from rdiffweb import test
+from rdiffweb.core.model import UserObject
 
 
 class QuotaPluginTest(test.WebCase):
@@ -38,7 +39,7 @@ class QuotaPluginTest(test.WebCase):
 
     def test_get_disk_usage(self):
         # Given a user
-        userobj = self.app.store.add_user('bob')
+        userobj = UserObject.add_user('bob')
         # When querying quota for a userobj
         result = cherrypy.engine.publish('get_disk_usage', userobj)
         # Then quota return a value
@@ -46,7 +47,7 @@ class QuotaPluginTest(test.WebCase):
 
     def test_get_disk_quota(self):
         # Given a user
-        userobj = self.app.store.add_user('bob')
+        userobj = UserObject.add_user('bob')
         # When querying quota for a userobj
         result = cherrypy.engine.publish('get_disk_quota', userobj)
         # Then quota return a value
@@ -54,7 +55,7 @@ class QuotaPluginTest(test.WebCase):
 
     def test_set_disk_quota(self):
         # Given a used cmd
-        userobj = self.app.store.add_user('bob')
+        userobj = UserObject.add_user('bob')
         # When querying quota for a userobj
         results = cherrypy.engine.publish('set_disk_quota', userobj, 98765)
         # Then quota return a value
@@ -71,7 +72,7 @@ class QuotaPluginTestWithFailure(test.WebCase):
 
     def test_set_disk_quota_with_failure(self):
         # Given a user object
-        userobj = self.app.store.add_user('bob')
+        userobj = UserObject.add_user('bob')
         # When settings the quota
         results = cherrypy.engine.publish('set_disk_quota', userobj, 98765)
         # Then False is returned
@@ -81,7 +82,7 @@ class QuotaPluginTestWithFailure(test.WebCase):
 class QuotaPluginTestWithUndefinedCmd(test.WebCase):
     def test_get_disk_usage_unsupported(self):
         # Given a user object with a valid user_root
-        userobj = self.app.store.get_user(self.USERNAME)
+        userobj = UserObject.get_user(self.USERNAME)
         # When getting disk usage
         results = cherrypy.engine.publish('get_disk_usage', userobj)
         # Then default disk usage is return
@@ -89,7 +90,7 @@ class QuotaPluginTestWithUndefinedCmd(test.WebCase):
 
     def test_get_disk_quota_unsupported(self):
         # Given a user object
-        userobj = self.app.store.get_user(self.USERNAME)
+        userobj = UserObject.get_user(self.USERNAME)
         # When gettings the quota
         results = cherrypy.engine.publish('get_disk_quota', userobj)
         # Then default disk usage is return
@@ -97,7 +98,7 @@ class QuotaPluginTestWithUndefinedCmd(test.WebCase):
 
     def test_set_disk_quota_unsupported(self):
         # Given a user object
-        userobj = self.app.store.get_user(self.USERNAME)
+        userobj = UserObject.get_user(self.USERNAME)
         # When settings the quota
         results = cherrypy.engine.publish('set_disk_quota', userobj, 98765)
         # Then no response is returned
@@ -105,7 +106,7 @@ class QuotaPluginTestWithUndefinedCmd(test.WebCase):
 
     def test_get_disk_usage_with_empty_user_root(self):
         # Given a user with an empty user_root.
-        userobj = self.app.store.add_user('bob')
+        userobj = UserObject.add_user('bob')
         userobj.user_root = ''
         # When getting disk usage
         results = cherrypy.engine.publish('get_disk_usage', userobj)
@@ -114,7 +115,7 @@ class QuotaPluginTestWithUndefinedCmd(test.WebCase):
 
     def test_get_disk_usage_with_invalid_user_root(self):
         # Given a user with an invalid user_root.
-        userobj = self.app.store.add_user('bob')
+        userobj = UserObject.add_user('bob')
         userobj.user_root = 'invalid'
         # When getting disk usage
         results = cherrypy.engine.publish('get_disk_usage', userobj)
@@ -140,7 +141,7 @@ class UserObjectQuotaTest(test.WebCase):
         # Given a mock quota
         self.listener.get_disk_usage.return_value = 12345
         # Given a user object
-        userobj = self.app.store.get_user(self.USERNAME)
+        userobj = UserObject.get_user(self.USERNAME)
         # When getting disk usage
         value = userobj.disk_usage
         # Then disk usage value is return
@@ -152,7 +153,7 @@ class UserObjectQuotaTest(test.WebCase):
         # Given a mock quota
         self.listener.get_disk_quota.return_value = 23456
         # Given a user object
-        userobj = self.app.store.get_user(self.USERNAME)
+        userobj = UserObject.get_user(self.USERNAME)
         # When getting disk quota
         value = userobj.disk_quota
         # Then disk quota value is return
@@ -162,7 +163,7 @@ class UserObjectQuotaTest(test.WebCase):
 
     def test_set_disk_quota(self):
         # Given a user object
-        userobj = self.app.store.get_user(self.USERNAME)
+        userobj = UserObject.get_user(self.USERNAME)
         # When setting disk quota
         userobj.disk_quota = 345678
         # Then listener was called

@@ -28,9 +28,7 @@ from parameterized import parameterized
 
 import rdiffweb.test
 from rdiffweb.core.librdiff import rdiff_backup_version
-from rdiffweb.core.store import MAINTAINER_ROLE, USER_ROLE
-
-RDIFF_BACKUP_VERSION = rdiff_backup_version()
+from rdiffweb.core.model import UserObject
 
 
 class DeleteRepoTest(rdiffweb.test.WebCase):
@@ -45,7 +43,6 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
             body['redirect'] = redirect
         self.getPage("/delete/" + user + "/" + repo + "/", method="POST", body=body)
 
-    @skipIf(RDIFF_BACKUP_VERSION < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
     @parameterized.expand(
         [
             ("with_dir", 'admin', '/testcases/Revisions', 'Revisions', 303, 404),
@@ -59,6 +56,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
             ("with_quoted_path", 'admin', '/testcases/Char%20%3B090%20to%20quote', 'Char Z to quote', 303, 404),
         ]
     )
+    @skipIf(rdiff_backup_version() < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
     def test_delete_path(self, unused, username, path, confirmation, expected_status, expected_history_status):
         # When trying to delete a file or a folder with a confirmation
         self._delete(username, path, confirmation)
@@ -74,24 +72,28 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         Check to delete a repo.
         """
         # Check initial list of repo
-        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
+        userobj = UserObject.get_user('admin')
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in userobj.repo_objs])
         # Delete repo
         self._delete(self.USERNAME, self.REPO, 'testcases')
         self.assertStatus(303)
         # Check filesystem
         sleep(1)
-        self.assertEqual(['broker-repo'], [r.name for r in self.app.store.get_user('admin').repo_objs])
+        userobj.expire()
+        self.assertEqual(['broker-repo'], [r.name for r in userobj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
 
     def test_delete_repo_with_slash(self):
         # Check initial list of repo
-        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
+        userobj = UserObject.get_user('admin')
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in userobj.repo_objs])
         # Then delete it.
         self._delete(self.USERNAME, self.REPO, 'testcases')
         self.assertStatus(303)
         # Check filesystem
         sleep(1)
-        self.assertEqual(['broker-repo'], [r.name for r in self.app.store.get_user('admin').repo_objs])
+        userobj.expire()
+        self.assertEqual(['broker-repo'], [r.name for r in userobj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
 
     def test_delete_repo_wrong_confirm(self):
@@ -99,30 +101,35 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         Check failure to delete a repo with wrong confirmation.
         """
         # Check initial list of repo
-        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
+        userobj = UserObject.get_user('admin')
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in userobj.repo_objs])
         # Delete repo with wrong confirmation.
         self._delete(self.USERNAME, self.REPO, 'wrong')
         # TODO Make sure the repository is not delete
+        userobj.expire()
         self.assertStatus(400)
-        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in userobj.repo_objs])
 
     def test_delete_repo_without_confirm(self):
         """
         Check failure to delete a repo with wrong confirmation.
         """
         # Check initial list of repo
-        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
+        userobj = UserObject.get_user('admin')
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in userobj.repo_objs])
         # Delete repo without confirmation.
         self._delete(self.USERNAME, self.REPO, None)
         # Make sure the repository is not delete
         self.assertStatus(400)
         self.assertInBody('confirm: This field is required')
-        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in self.app.store.get_user('admin').repo_objs])
+        userobj.expire()
+        self.assertEqual(['broker-repo', 'testcases'], [r.name for r in userobj.repo_objs])
 
     def test_delete_repo_as_admin(self):
         # Create a another user with admin right
-        user_obj = self.app.store.add_user('anotheruser', 'password')
+        user_obj = UserObject.add_user('anotheruser', 'password')
         user_obj.user_root = self.testcases
+        user_obj.refresh_repos()
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
 
         self._delete('anotheruser', 'testcases', 'testcases', redirect='/admin/repos/')
@@ -132,6 +139,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
 
         # Check filesystem
         sleep(1)
+        user_obj.expire()
         self.assertEqual(['broker-repo'], [r.name for r in user_obj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
 
@@ -139,9 +147,10 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertTrue(os.path.isdir(self.testcases))
 
         # Create a another user with maintainer right
-        user_obj = self.app.store.add_user('maintainer', 'password')
+        user_obj = UserObject.add_user('maintainer', 'password')
         user_obj.user_root = self.testcases
-        user_obj.role = MAINTAINER_ROLE
+        user_obj.role = UserObject.MAINTAINER_ROLE
+        user_obj.refresh_repos()
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
 
         # Login as maintainer
@@ -155,14 +164,16 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
 
         # Check filesystem
         sleep(1)
+        user_obj.expire()
         self.assertEqual(['broker-repo'], [r.name for r in user_obj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
 
     def test_delete_repo_as_user(self):
         # Create a another user with maintainer right
-        user_obj = self.app.store.add_user('user', 'password')
+        user_obj = UserObject.add_user('user', 'password')
         user_obj.user_root = self.testcases
-        user_obj.role = USER_ROLE
+        user_obj.role = UserObject.USER_ROLE
+        user_obj.refresh_repos()
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
 
         # Login as maintainer

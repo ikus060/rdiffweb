@@ -66,6 +66,7 @@ class ApiPage(Controller):
     @cherrypy.expose
     def currentuser(self):
         u = self.app.currentuser
+        u.refresh_repos()
         return {
             "email": u.email,
             "username": u.username,
@@ -81,7 +82,7 @@ class ApiPage(Controller):
                     "status": repo_obj.status[0],
                     "encoding": repo_obj.encoding,
                 }
-                for repo_obj in u.get_repo_objs(refresh=True)
+                for repo_obj in u.repo_objs
             ],
         }
 
