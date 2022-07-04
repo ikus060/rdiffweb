@@ -48,15 +48,18 @@ class StatusPage(Controller):
 
         # Sum number of backup per days.
         for repo in self.app.currentuser.repo_objs:
-            if len(repo.session_statistics):
-                for stat in repo.session_statistics[base:]:
-                    key = _key(stat.date)
-                    if key not in success:
-                        continue
-                    success[key] = success.get(key, 0) + 1
-                    data[key].append(stat)
-                    if stat.errors:
-                        failure[key] += 1
+            try:
+                if len(repo.session_statistics):
+                    for stat in repo.session_statistics[base:]:
+                        key = _key(stat.date)
+                        if key not in success:
+                            continue
+                        success[key] = success.get(key, 0) + 1
+                        data[key].append(stat)
+                        if stat.errors:
+                            failure[key] += 1
+            except Exception:
+                logger.warning('failure to read session statistics from %s', repo, exc_info=1)
 
         # Return data.
         return {
