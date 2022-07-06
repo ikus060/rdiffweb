@@ -551,6 +551,14 @@ class RdiffRepoTest(unittest.TestCase):
         # Make sure history entry doesn't raise error
         list(self.repo.mirror_metadata)
 
+    def test_remove_older(self):
+        # Given a repository with history
+        self.assertEqual(22, len(self.repo.mirror_metadata))
+        # When removing older then 1D
+        self.repo.remove_older(1)
+        # Then all history get deleted up to one
+        self.assertEqual(1, len(self.repo.mirror_metadata))
+
     @parameterized.expand(
         [
             ("with_root", b'/', 1454448640, 'zip', 'testcases.zip', b'PK\x03\x04'),

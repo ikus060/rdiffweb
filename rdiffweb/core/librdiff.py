@@ -939,6 +939,23 @@ class RdiffRepo(object):
     def _entries(self):
         return sorted(os.listdir(self._data_path))
 
+    def expire(self):
+        """
+        Clear the cache to refresh metadata.
+        """
+        cached_properties = [
+            (self, '_entries'),
+            (self, 'status'),
+            (self.current_mirror, '_entries'),
+            (self.error_log, '_entries'),
+            (self.mirror_metadata, '_entries'),
+            (self.file_statistics, '_entries'),
+            (self.session_statistics, '_entries'),
+        ]
+        for obj, attr in cached_properties:
+            if attr in obj.__dict__:
+                del obj.__dict__[attr]
+
     def listdir(self, path):
         """
         Return a list of RdiffDirEntry each representing a file or a folder in the given path.
@@ -1078,8 +1095,13 @@ class RdiffRepo(object):
             return self._decode(unquote(os.path.basename(path)))
 
     def remove_older(self, remove_older_than):
-        logger.info("execute rdiff-backup --force --remove-older-than=%sD %r", remove_older_than, self.full_path)
-        subprocess.call(
+        assert type(remove_older_than) is int, 'invalid remove_older_than, expect an integer: ' + remove_older_than
+        logger.info(
+            "execute rdiff-backup --force --remove-older-than=%sD %r",
+            remove_older_than,
+            self.full_path.decode(sys.getfilesystemencoding(), 'replace'),
+        )
+        subprocess.check_output(
             [
                 b'rdiff-backup',
                 b'--force',
@@ -1087,6 +1109,7 @@ class RdiffRepo(object):
                 self.full_path,
             ]
         )
+        self.expire()
 
     def restore(self, path, restore_as_of, kind=None):
         """
@@ -1184,8 +1207,7 @@ class RdiffRepo(object):
             # Also, if the last backup date is undefined, this mean the first
             # initial backup was interrupted.
             if len(self.current_mirror) > 1 or len(self.current_mirror) == 0:
-                self._status = ('interrupted', _('The previous backup seams to have failed.'))
-                return self._status
+                return ('interrupted', _('The previous backup seams to have failed.'))
         except FileNotFoundError:
             self._entries = []
             return ('failed', _('The repository cannot be found or is badly damaged.'))
