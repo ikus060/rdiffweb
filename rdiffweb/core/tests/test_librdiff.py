@@ -48,8 +48,6 @@ from rdiffweb.core.librdiff import (
     unquote,
 )
 
-RDIFF_BACKUP_VERSION = rdiff_backup_version()
-
 
 class MockRdiffRepo(RdiffRepo):
     def __init__(self):
@@ -478,6 +476,7 @@ class RdiffRepoTest(unittest.TestCase):
         with self.assertRaises(AccessDeniedError):
             self.repo.listdir(b"../")
 
+    @skipIf(rdiff_backup_version() < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
     def test_listdir_empty_folder(self):
         # Given a folder without data
         self.repo.delete(b"Revisions/Data")
@@ -690,7 +689,6 @@ Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpBRxRxe/root as 
         else:
             self.assertEqual(expected_value, str(self.repo.session_statistics[value].date))
 
-    @skipIf(RDIFF_BACKUP_VERSION < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
     @parameterized.expand(
         [
             ("with_file", b'Revisions/Data'),
@@ -700,6 +698,7 @@ Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpBRxRxe/root as 
             ("with_broken_symlink", b'BrokenSymlink'),
         ]
     )
+    @skipIf(rdiff_backup_version() < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
     def test_delete_file(self, unused, path):
         # Delete a file
         self.repo.delete(path)

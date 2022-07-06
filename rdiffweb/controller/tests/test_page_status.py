@@ -21,15 +21,27 @@ Created on Aug 30, 2019
 """
 
 import rdiffweb.test
+from rdiffweb.core.model import UserObject
 
 
 class StatusTest(rdiffweb.test.WebCase):
 
     login = True
 
-    def _status(self):
-        self.getPage("/status/")
-
     def test_page(self):
-        self._status()
+        # When browsing the status page
+        self.getPage("/status/")
+        # Then no error are raised
         self.assertStatus(200)
+        self.assertInBody('Backup Status')
+
+    def test_page_with_broken_repo(self):
+        # Given a user's with broken repo
+        userobj = UserObject.get_user('admin')
+        userobj.user_root = '/invalid/'
+        userobj.add()
+        # When browsing the status page
+        self.getPage("/status/")
+        # Then not error should be raised
+        self.assertStatus(200)
+        self.assertInBody('Backup Status')

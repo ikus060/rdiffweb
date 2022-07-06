@@ -30,6 +30,7 @@ from cherrypy import Application
 
 import rdiffweb
 import rdiffweb.controller.filter_authorization
+import rdiffweb.core.login  # noqa
 import rdiffweb.core.notification
 import rdiffweb.core.quota
 import rdiffweb.core.remove_older
@@ -39,6 +40,8 @@ import rdiffweb.plugins.smtp
 import rdiffweb.tools.auth_basic
 import rdiffweb.tools.auth_form
 import rdiffweb.tools.currentuser
+import rdiffweb.tools.db
+import rdiffweb.tools.enrich_session
 import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
 import rdiffweb.tools.ratelimit
@@ -60,7 +63,7 @@ from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import Option, parse_args
-from rdiffweb.core.store import Store
+from rdiffweb.core.model import DbSession, UserObject
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -78,6 +81,8 @@ else:
     cp_tools_proxy_enabled = not (5 <= int(cherrypy_version.split('.')[0]) <= 10)
 
 
+@cherrypy.tools.db()
+@cherrypy.tools.enrich_session()
 class Root(LocationsPage):
     def __init__(self):
         self.login = LoginPage()
@@ -115,8 +120,6 @@ class RdiffwebApp(Application):
 
     _tempdir = Option('tempdir')
 
-    _session_dir = Option('session_dir')
-
     @classmethod
     def parse_args(cls, args=None, config_file_contents=None):
         return parse_args(args, config_file_contents)
@@ -124,8 +127,12 @@ class RdiffwebApp(Application):
     def __init__(self, cfg):
 
         self.cfg = cfg
+        db_uri = self.cfg.database_uri if '://' in self.cfg.database_uri else "sqlite:///" + self.cfg.database_uri
         cherrypy.config.update(
             {
+                # Configure database plugins
+                'tools.db.uri': db_uri,
+                'tools.db.debug': cfg.debug,
                 # Configure LDAP plugin
                 'ldap.uri': cfg.ldap_uri,
                 'ldap.base_dn': cfg.ldap_base_dn,
@@ -141,6 +148,10 @@ class RdiffwebApp(Application):
                 'ldap.network_timeout': cfg.ldap_network_timeout,
                 'ldap.timeout': cfg.ldap_timeout,
                 'ldap.encoding': cfg.ldap_encoding,
+                # Configure login
+                'login.add_missing_user': cfg.ldap_add_missing_user,
+                'login.add_user_default_role': cfg.ldap_add_user_default_role,
+                'login.add_user_default_userroot': cfg.ldap_add_user_default_userroot,
                 # Configure SMTP plugin
                 'smtp.server': cfg.email_host,
                 'smtp.username': cfg.email_username,
@@ -163,15 +174,15 @@ class RdiffwebApp(Application):
                 'quota.get_usage_cmd': self.cfg.quota_used_cmd,
             }
         )
+        # Create database if required
+        cherrypy.tools.db.create_all()
 
         # Initialise the template engine.
         self.templates = rdw_templating.TemplateManager()
 
         # Pick the right implementation for storage
-        session_storage_class = cherrypy.lib.sessions.RamSession
         rate_limit_storage_class = rdiffweb.tools.ratelimit.RamRateLimit
-        if self._session_dir:
-            session_storage_class = cherrypy.lib.sessions.FileSession
+        if cfg.rate_limit_dir:
             rate_limit_storage_class = rdiffweb.tools.ratelimit.FileRateLimit
 
         config = {
@@ -180,7 +191,7 @@ class RdiffwebApp(Application):
                 'tools.auth_basic.checkpassword': self._checkpassword,
                 'tools.auth_form.on': True,
                 'tools.currentuser.on': True,
-                'tools.currentuser.userobj': lambda username: self.store.get_user(username),
+                'tools.currentuser.userobj': lambda username: UserObject.get_user(username),
                 'tools.csrf.on': True,
                 'tools.i18n.on': True,
                 'tools.i18n.default': 'en_US',
@@ -193,14 +204,13 @@ class RdiffwebApp(Application):
                 'error_page.default': self.error_page,
                 'tools.sessions.on': True,
                 'tools.sessions.debug': cfg.debug,
-                'tools.sessions.storage_class': session_storage_class,
-                'tools.sessions.storage_path': self._session_dir,
+                'tools.sessions.storage_class': DbSession,
                 'tools.sessions.httponly': True,
                 'tools.ratelimit.debug': cfg.debug,
                 'tools.ratelimit.delay': 60,
                 'tools.ratelimit.anonymous_limit': cfg.rate_limit,
                 'tools.ratelimit.storage_class': rate_limit_storage_class,
-                'tools.ratelimit.storage_path': self._session_dir,
+                'tools.ratelimit.storage_path': cfg.rate_limit_dir,
             },
         }
 
@@ -225,8 +235,7 @@ class RdiffwebApp(Application):
             os.environ["TMPDIR"] = self._tempdir
 
         # create user manager
-        self.store = Store(self)
-        self.store.create_admin_user()
+        UserObject.create_admin_user(cfg.admin_user, cfg.admin_password)
 
     @property
     def currentuser(self):
@@ -240,7 +249,7 @@ class RdiffwebApp(Application):
         """
         Check basic authentication.
         """
-        return self.store.login(username, password) is not None
+        return any(cherrypy.engine.publish('login', username, password))
 
     def error_page(self, **kwargs):
         """

@@ -21,6 +21,7 @@ import cherrypy
 from rdiffweb.controller import Controller, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
+from rdiffweb.core.model import RepoObject
 from rdiffweb.tools.i18n import ugettext as _
 
 
@@ -36,7 +37,7 @@ class HistoryPage(Controller):
     def default(self, path=b"", limit='10', **kwargs):
         limit = validate_int(limit)
 
-        repo, path = self.app.store.get_repo_path(path)
+        repo, path = RepoObject.get_repo_path(path)
 
         # Set up warning about in-progress backups, if necessary
         warning = False

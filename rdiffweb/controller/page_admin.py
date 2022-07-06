@@ -35,7 +35,7 @@ from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import rdiff_backup_version
-from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
+from rdiffweb.core.model import RepoObject, UserObject
 from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
@@ -175,8 +175,12 @@ class UserForm(CherryForm):
     role = SelectField(
         _('User Role'),
         coerce=int,
-        choices=[(ADMIN_ROLE, _("Admin")), (MAINTAINER_ROLE, _("Maintainer")), (USER_ROLE, _("User"))],
-        default=USER_ROLE,
+        choices=[
+            (UserObject.ADMIN_ROLE, _("Admin")),
+            (UserObject.MAINTAINER_ROLE, _("Maintainer")),
+            (UserObject.USER_ROLE, _("User")),
+        ],
+        default=UserObject.USER_ROLE,
         description=_(
             "Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo."
         ),
@@ -206,6 +210,8 @@ class UserForm(CherryForm):
         if not userobj.valid_user_root():
             flash(_("User's root directory %s is not accessible!") % userobj.user_root, level='error')
             logger.warning("user's root directory %s is not accessible" % userobj.user_root)
+        else:
+            userobj.refresh_repos(delete=True)
         # Try to update disk quota if the human readable value changed.
         # Report error using flash.
         new_quota = self.disk_quota.data or 0
@@ -247,7 +253,7 @@ class AdminPage(Controller):
             flash(_("You cannot remove your own account!"), level='error')
         else:
             try:
-                user = self.app.store.get_user(form.username.data)
+                user = UserObject.get_user(form.username.data)
                 if user:
                     user.delete()
                     flash(_("User account removed."))
@@ -274,7 +280,10 @@ class AdminPage(Controller):
 
     @cherrypy.expose
     def default(self):
-        params = {"user_count": self.app.store.count_users(), "repo_count": self.app.store.count_repos()}
+        params = {
+            "user_count": UserObject.query.count(),
+            "repo_count": RepoObject.query.count(),
+        }
 
         return self._compile_template("admin.html", **params)
 
@@ -304,7 +313,7 @@ class AdminPage(Controller):
             form = UserForm()
             if form.validate_on_submit():
                 try:
-                    user = self.app.store.add_user(username)
+                    user = UserObject.add_user(username)
                     form.populate_obj(user)
                     flash(_("User added successfully."))
                 except Exception as e:
@@ -312,7 +321,7 @@ class AdminPage(Controller):
             else:
                 flash(form.error_message, level='error')
         elif action == "edit":
-            user = self.app.store.get_user(username)
+            user = UserObject.get_user(username)
             if user:
                 form = EditUserForm(obj=user)
                 if form.validate_on_submit():
@@ -333,7 +342,7 @@ class AdminPage(Controller):
             "edit_form": EditUserForm(formdata=None),
             "criteria": criteria,
             "search": search,
-            "users": list(self.app.store.users(search=search, criteria=criteria)),
+            "users": UserObject.users(search=search, criteria=criteria),
         }
 
         # Build users page
@@ -344,7 +353,7 @@ class AdminPage(Controller):
         params = {
             "criteria": criteria,
             "search": search,
-            "repos": list(self.app.store.repos(search=search, criteria=criteria)),
+            "repos": RepoObject.search(search=search, criteria=criteria),
         }
         return self._compile_template("admin_repos.html", **params)
 

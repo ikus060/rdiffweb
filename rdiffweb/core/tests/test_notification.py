@@ -27,6 +27,7 @@ import cherrypy
 
 import rdiffweb.core.notification
 import rdiffweb.test
+from rdiffweb.core.model import RepoObject, UserObject
 
 
 class NotificationJobTest(rdiffweb.test.WebCase):
@@ -45,10 +46,12 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         """
         # Given a user with an email address and a repository with a maxage
         # Set user config
-        user = self.app.store.get_user(self.USERNAME)
+        user = UserObject.get_user(self.USERNAME)
         user.email = 'test@test.com'
-        user.get_repo(self.REPO).maxage = 1
-
+        user.add()
+        repo = RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
+        repo.maxage = 1
+        repo.add()
         # When running notification_job
         cherrypy.notification.notification_job()
 
@@ -61,11 +64,14 @@ class NotificationJobTest(rdiffweb.test.WebCase):
 
     def test_notification_job_undefined_last_backup_date(self):
         # Given a valid user with a repository configured for notification
-        user = self.app.store.get_user(self.USERNAME)
+        user = UserObject.get_user(self.USERNAME)
         user.email = 'test@test.com'
-        user.get_repo('broker-repo').maxage = 1
+        user.add()
         # Given a repo with last_backup_date None
-        self.assertIsNone(user.get_repo('broker-repo').last_backup_date)
+        repo = RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == 'broker-repo').first()
+        repo.maxage = 1
+        repo.add()
+        self.assertIsNone(repo.last_backup_date)
 
         # When Notification job is running
         cherrypy.notification.notification_job()
@@ -79,9 +85,12 @@ class NotificationJobTest(rdiffweb.test.WebCase):
 
     def test_notification_job_without_notification(self):
         # Given a valid user with a repository configured without notification (-1)
-        user = self.app.store.get_user(self.USERNAME)
+        user = UserObject.get_user(self.USERNAME)
         user.email = 'test@test.com'
-        user.get_repo(self.REPO).maxage = -1
+        user.add()
+        repo = RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
+        repo.maxage = -1
+        repo.add()
 
         # Call notification.
         cherrypy.notification.notification_job()
@@ -107,7 +116,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
 
     def test_email_changed(self):
         # Given a user with an email address
-        user = self.app.store.get_user(self.USERNAME)
+        user = UserObject.get_user(self.USERNAME)
         user.email = 'original_email@test.com'
         self.listener.queue_email.reset_mock()
 
@@ -123,7 +132,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
 
     def test_email_updated_with_same_value(self):
         # Given a user with an email
-        user = self.app.store.get_user(self.USERNAME)
+        user = UserObject.get_user(self.USERNAME)
         user.email = 'email_changed@test.com'
         self.listener.queue_email.reset_mock()
 
@@ -135,7 +144,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
 
     def test_password_change_notification(self):
         # Given a user with a email.
-        user = self.app.store.get_user(self.USERNAME)
+        user = UserObject.get_user(self.USERNAME)
         user.email = 'password_change@test.com'
         self.listener.queue_email.reset_mock()
 
@@ -151,7 +160,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
 
     def test_password_change_with_same_value(self):
         # Given a user with a email.
-        user = self.app.store.get_user(self.USERNAME)
+        user = UserObject.get_user(self.USERNAME)
         user.email = 'password_change@test.com'
         user.set_password('new_password')
         self.listener.queue_email.reset_mock()

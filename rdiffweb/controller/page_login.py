@@ -24,7 +24,6 @@ from wtforms.validators import InputRequired
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.core.config import Option
-from rdiffweb.tools.auth_form import SESSION_KEY
 from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
@@ -62,15 +61,15 @@ class LoginPage(Controller):
         # Validate user's credentials
         if form.validate_on_submit():
             try:
-                userobj = self.app.store.login(form.login.data, form.password.data)
+                login = any(cherrypy.engine.publish('login', form.login.data, form.password.data))
             except Exception:
                 logger.exception('fail to validate credential')
                 flash(_("Fail to validate user credential."))
             else:
-                if userobj:
-                    cherrypy.session[SESSION_KEY] = userobj.username
-                    raise cherrypy.HTTPRedirect(form.redirect.data)
-                flash(_("Invalid username or password."))
+                if login:
+                    raise cherrypy.HTTPRedirect(form.redirect.data or '/')
+                else:
+                    flash(_("Invalid username or password."))
 
         params = {'form': form}
 
@@ -88,5 +87,5 @@ class LogoutPage(Controller):
     @cherrypy.expose
     @cherrypy.config(**{'tools.auth_form.on': False})
     def default(self):
-        cherrypy.session[SESSION_KEY] = None
+        cherrypy.session.clear()
         raise cherrypy.HTTPRedirect('/')

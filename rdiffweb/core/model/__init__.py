@@ -15,30 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 
-import cherrypy
-
-from rdiffweb.controller import Controller
-
-# Define the logger
-logger = logging.getLogger(__name__)
-
-
-class LocationsPage(Controller):
-    """
-    Shows the repository page. Will show all available destination
-    backup directories. This is the root (/) page.
-    """
-
-    @cherrypy.expose
-    def index(self):
-        # Get page params
-        self.app.currentuser.refresh_repos()
-        params = {
-            "repos": self.app.currentuser.repo_objs,
-            "disk_usage": self.app.currentuser.disk_usage,
-            "disk_quota": self.app.currentuser.disk_quota,
-        }
-        # Render the page.
-        return self._compile_template("locations.html", **params)
+from ._repo import RepoObject  # noqa
+from ._session import DbSession, SessionObject  # noqa
+from ._sshkeys import SshKey  # noqa
+from ._user import DuplicateSSHKeyError, UserObject  # noqa

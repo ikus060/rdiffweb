@@ -26,6 +26,7 @@ import cherrypy
 from cherrypy.process.plugins import SimplePlugin
 
 from rdiffweb.core import librdiff
+from rdiffweb.core.model import UserObject
 from rdiffweb.tools.i18n import ugettext as _
 
 logger = logging.getLogger(__name__)
@@ -98,7 +99,7 @@ class NotificationPlugin(SimplePlugin):
 
         def _user_repos():
             """Return a generator trought user repos to be notified."""
-            for user in self.app.store.users():
+            for user in UserObject.users():
                 # Check if user has email.
                 if not user.email:
                     continue

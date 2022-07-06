@@ -21,6 +21,7 @@ import cherrypy
 from rdiffweb.controller import Controller, validate_int, validate_isinstance
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
+from rdiffweb.core.model import RepoObject
 from rdiffweb.tools.i18n import ugettext as _
 
 
@@ -156,7 +157,7 @@ class GraphsPage(Controller):
         """
         validate_isinstance(graph, bytes)
         graph = graph.decode('ascii', 'replace')
-        repo_obj = self.app.store.get_repo(path)
+        repo_obj = RepoObject.get_repo(path)
         limit = validate_int(limit)
         if graph not in ['activities', 'errors', 'files', 'sizes', 'times']:
             raise cherrypy.NotFound()

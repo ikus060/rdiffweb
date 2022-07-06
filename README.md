@@ -107,6 +107,18 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## Next Release
+
+This next release focus on multi-factor-authentication as a measure to increase security of user's account.
+
+* Store User's session information into database
+* Update ldap plugin to load additional attributes from LDAP server
+* Fix status page error handling
+
+Breaking changes:
+
+* `session-dir` is deprecated and should be replace by `rate-limit-dir`
+
 ## 2.4.0 (2022-06-21)
 
 This new release brings a lot of improvement since the last version, multiple bug fixes

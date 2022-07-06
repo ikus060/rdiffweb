@@ -26,7 +26,7 @@ from unittest.mock import ANY, MagicMock
 import cherrypy
 
 import rdiffweb.test
-from rdiffweb.core.store import ADMIN_ROLE, MAINTAINER_ROLE, USER_ROLE
+from rdiffweb.core.model import UserObject
 
 
 class AbstractAdminTest(rdiffweb.test.WebCase):
@@ -107,24 +107,24 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
     def test_add_user_with_role_admin(self):
         # When trying to create a new user with role admin
-        self._add_user("admin_role", "admin_role@test.com", "test2", "/home/", ADMIN_ROLE)
+        self._add_user("admin_role", "admin_role@test.com", "test2", "/home/", UserObject.ADMIN_ROLE)
         # Then page return success
         self.assertStatus(200)
         # Then database is updated
-        userobj = self.app.store.get_user('admin_role')
-        self.assertEqual(ADMIN_ROLE, userobj.role)
+        userobj = UserObject.get_user('admin_role')
+        self.assertEqual(UserObject.ADMIN_ROLE, userobj.role)
         # Then notification was raised
         self.listener.user_added.assert_called_once_with(userobj)
 
     def test_add_user_with_role_maintainer(self):
-        self._add_user("maintainer_role", "maintainer_role@test.com", "test2", "/home/", MAINTAINER_ROLE)
+        self._add_user("maintainer_role", "maintainer_role@test.com", "test2", "/home/", UserObject.MAINTAINER_ROLE)
         self.assertStatus(200)
-        self.assertEqual(MAINTAINER_ROLE, self.app.store.get_user('maintainer_role').role)
+        self.assertEqual(UserObject.MAINTAINER_ROLE, UserObject.get_user('maintainer_role').role)
 
     def test_add_user_with_role_user(self):
-        self._add_user("user_role", "user_role@test.com", "test2", "/home/", USER_ROLE)
+        self._add_user("user_role", "user_role@test.com", "test2", "/home/", UserObject.USER_ROLE)
         self.assertStatus(200)
-        self.assertEqual(USER_ROLE, self.app.store.get_user('user_role').role)
+        self.assertEqual(UserObject.USER_ROLE, UserObject.get_user('user_role').role)
 
     def test_add_user_with_invalid_role(self):
         # When trying to create a new user with an invalid role (admin instead of 0)
@@ -145,7 +145,8 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
     def test_add_edit_delete(self):
         #  Add user to be listed
-        self._add_user("test2", "test2@test.com", "test2", "/home/", USER_ROLE)
+        self.listener.user_password_changed.reset_mock()
+        self._add_user("test2", "test2@test.com", "test2", "/home/", UserObject.USER_ROLE)
         self.assertInBody("User added successfully.")
         self.assertInBody("test2")
         self.assertInBody("test2@test.com")
@@ -153,7 +154,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.listener.user_password_changed.assert_called_once()
         self.listener.user_password_changed.reset_mock()
         #  Update user
-        self._edit_user("test2", "chaned@test.com", "new-password", "/tmp/", ADMIN_ROLE)
+        self._edit_user("test2", "chaned@test.com", "new-password", "/tmp/", UserObject.ADMIN_ROLE)
         self.listener.user_attr_changed.assert_called()
         self.listener.user_password_changed.assert_called_once()
         self.assertInBody("User information modified successfully.")
@@ -175,12 +176,12 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Check creation of user with non-ascii char.
         """
-        self._add_user("Éric", "éric@test.com", "Éric", "/home/", USER_ROLE)
+        self._add_user("Éric", "éric@test.com", "Éric", "/home/", UserObject.USER_ROLE)
         self.assertInBody("User added successfully.")
         self.assertInBody("Éric")
         self.assertInBody("éric@test.com")
         # Update user
-        self._edit_user("Éric", "eric.létourno@test.com", "écureuil", "/tmp/", ADMIN_ROLE)
+        self._edit_user("Éric", "eric.létourno@test.com", "écureuil", "/tmp/", UserObject.ADMIN_ROLE)
         self.assertInBody("User information modified successfully.")
         self.assertInBody("Éric")
         self.assertInBody("eric.létourno@test.com")
@@ -198,7 +199,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Verify failure trying to create user without username.
         """
-        self._add_user("", "test1@test.com", "test1", "/tmp/", USER_ROLE)
+        self._add_user("", "test1@test.com", "test1", "/tmp/", UserObject.USER_ROLE)
         self.assertStatus(200)
         self.assertInBody("username: This field is required.")
 
@@ -207,9 +208,9 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure trying to add the same user.
         """
         # Given a user named `test1`
-        self._add_user("test1", "test1@test.com", "test1", "/tmp/", USER_ROLE)
+        self._add_user("test1", "test1@test.com", "test1", "/tmp/", UserObject.USER_ROLE)
         # When trying to create a new user with the same name
-        self._add_user("test1", "test1@test.com", "test1", "/tmp/", USER_ROLE)
+        self._add_user("test1", "test1@test.com", "test1", "/tmp/", UserObject.USER_ROLE)
         # Then the user list is displayed with an error message.
         self.assertStatus(200)
         self.assertInBody("User test1 already exists.")
@@ -222,21 +223,21 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
             self._delete_user("test5")
         except Exception:
             pass
-        self._add_user("test5", "test1@test.com", "test5", "/var/invalid/", USER_ROLE)
+        self._add_user("test5", "test1@test.com", "test5", "/var/invalid/", UserObject.USER_ROLE)
         self.assertInBody("User added successfully.")
         self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
 
     def test_add_without_email(self):
         #  Add user to be listed
-        self._add_user("test2", None, "test2", "/tmp/", USER_ROLE)
+        self._add_user("test2", None, "test2", "/tmp/", UserObject.USER_ROLE)
         self.assertInBody("User added successfully.")
 
     def test_add_without_user_root(self):
         #  Add user to be listed
-        self._add_user("test6", None, "test6", None, USER_ROLE)
+        self._add_user("test6", None, "test6", None, UserObject.USER_ROLE)
         self.assertInBody("User added successfully.")
 
-        user = self.app.store.get_user('test6')
+        user = UserObject.get_user('test6')
         self.assertEqual('', user.user_root)
 
     def test_delete_user_with_not_existing_username(self):
@@ -258,8 +259,10 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure to delete our self.
         """
         # Create another admin user
-        self._add_user('admin2', '', 'password', '', ADMIN_ROLE)
+        self._add_user('admin2', '', 'password', '', UserObject.ADMIN_ROLE)
         self.getPage("/logout/")
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', self.baseurl + '/')
         self._login('admin2', 'password')
 
         # Try deleting admin user
@@ -283,8 +286,8 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Verify failure trying to update user with invalid path.
         """
-        self.app.store.add_user('test1')
-        self._edit_user("test1", "test1@test.com", "test", "/var/invalid/", USER_ROLE)
+        UserObject.add_user('test1')
+        self._edit_user("test1", "test1@test.com", "test", "/var/invalid/", UserObject.USER_ROLE)
         self.assertNotInBody("User added successfully.")
         self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
 
@@ -301,7 +304,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         # Given an invalid username
         username = 'invalid'
         # When trying to edit the user
-        self._edit_user(username, "test1@test.com", "test", "/var/invalid/", USER_ROLE)
+        self._edit_user(username, "test1@test.com", "test", "/var/invalid/", UserObject.USER_ROLE)
         # Then the user list is displayed with an error message
         self.assertStatus(200)
         self.assertInBody("Cannot edit user `invalid`: user doesn&#39;t exists")
@@ -310,7 +313,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Check if admin criteria is working.
         """
-        self.app.store.add_user('test1')
+        UserObject.add_user('test1')
         self.getPage("/admin/users/?criteria=admins")
         self.assertNotInBody("test1")
 
@@ -318,7 +321,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Check if user search is working.
         """
-        self.app.store.add_user('test1')
+        UserObject.add_user('test1')
         self.getPage("/admin/users?search=tes")
         self.assertInBody("test1")
         self.getPage("/admin/users?search=coucou")
@@ -326,18 +329,20 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
     def test_user_invalid_root(self):
         # Delete all user's
-        for user in self.app.store.users():
+        for user in UserObject.users():
             if user.username != self.USERNAME:
                 user.delete()
         # Change the user's root
-        user = self.app.store.get_user('admin')
+        user = UserObject.get_user('admin')
         user.user_root = "/invalid"
+        user.add()
         self.getPage("/admin/users")
         self.assertInBody("Root directory not accessible!")
 
         # Query the page by default
-        user = self.app.store.get_user('admin')
+        user = UserObject.get_user('admin')
         user.user_root = "/tmp/"
+        user.add()
         self.getPage("/admin/users")
         self.assertNotInBody("Root directory not accessible!")
 
@@ -427,14 +432,14 @@ class AdminUsersAsUserTest(AbstractAdminTest):
     def setUp(self):
         super().setUp()
         # Add test user
-        self.app.store.add_user('test', 'test123')
+        UserObject.add_user('test', 'test123')
         self._login('test', 'test123')
 
     def test_add_user(self):
         """
         Check if adding user is forbidden.
         """
-        self._add_user("test2", "test2@test.com", "test2", "/tmp/", USER_ROLE)
+        self._add_user("test2", "test2@test.com", "test2", "/tmp/", UserObject.USER_ROLE)
         self.assertStatus(403)
 
     def test_delete_user(self):
@@ -448,7 +453,7 @@ class AdminUsersAsUserTest(AbstractAdminTest):
         """
         Check if editing user is forbidden.
         """
-        self._edit_user("test", "test1@test.com", "test", "/var/invalid/", USER_ROLE)
+        self._edit_user("test", "test1@test.com", "test", "/var/invalid/", UserObject.USER_ROLE)
         self.assertStatus(403)
 
     def test_users(self):

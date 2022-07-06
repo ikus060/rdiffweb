@@ -266,17 +266,15 @@ as the dataset to store rdiffweb backups.
    
 Take note, it's better to enable project quota attributes when the repositories are empty.
 
-## Configure user's session persistence.
+## Configure Rate-Limit
 
-Rdiffweb could be configured to persist the user's session information either in
-memory or on disk. When the user's session persists in memory, all user's
-session get reset if the web server restart. If you want to persist the user's
-session even if the web server gets restarted, you may persist them on disk with
-`session-dir` option.
+Rdiffweb could be configured to rate-limit access to anonymous to avoid bruteforce
+attacks and authenticated users to avoid Denial Of Service attack.
 
-| Option | Description | Example | 
+| Option | Description | Example |
 | --- | --- | --- |
-| session-dir | location where to store user session information. When undefined, the user sessions are kept in memory. | /var/lib/rdiffweb/session |
+| rate-limit | maximum number of requests per minute that can be made by an IP address for an unauthenticated connection. When this limit is reached, an HTTP 429 message is returned to the user. This security measure is used to limit brute force attacks on the login page and the RESTful API. | 10 |
+| rate-limit-dir | location where to store rate-limit information. When undefined, data is kept in memory. | /var/lib/rdiffweb/session |
 
 ## Configure Rdiffweb appearance
 

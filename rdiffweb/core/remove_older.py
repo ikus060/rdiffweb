@@ -9,6 +9,7 @@ import cherrypy
 from cherrypy.process.plugins import SimplePlugin
 
 from rdiffweb.core import librdiff
+from rdiffweb.core.model import RepoObject
 
 _logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class RemoveOlder(SimplePlugin):
     def remove_older_job(self):
         # Create a generator to loop on repositories.
         # Loop on each repos.
-        for repo in self.app.store.repos():
+        for repo in RepoObject.search():
             try:
                 if repo.keepdays <= 0:
                     return

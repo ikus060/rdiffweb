@@ -23,6 +23,7 @@ from cherrypy.lib.static import serve_fileobj
 from rdiffweb.controller import Controller, validate_date, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
+from rdiffweb.core.model import RepoObject
 from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
@@ -47,7 +48,7 @@ class LogsPage(Controller):
             date = validate_date(date)
         raw = validate_int(raw)
 
-        repo_obj = self.app.store.get_repo(path)
+        repo_obj = RepoObject.get_repo(path)
 
         # Read log file data
         if file == 'backup.log':

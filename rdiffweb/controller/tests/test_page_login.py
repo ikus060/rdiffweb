@@ -23,6 +23,8 @@ Created on Dec 26, 2015
 from base64 import b64encode
 
 import rdiffweb.test
+from rdiffweb.core.model import DbSession, SessionObject
+from rdiffweb.tools.auth_form import SESSION_KEY
 
 
 class LoginPageTest(rdiffweb.test.WebCase):
@@ -30,9 +32,33 @@ class LoginPageTest(rdiffweb.test.WebCase):
         """
         Make sure the login page can be rendered without error.
         """
+        # When making a query to a page while unauthenticated
         self.getPage('/')
+        # Then user is redirected to login page
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2F')
+        # Then a session object is created without a username
+        self.assertEqual(1, SessionObject.query.filter(SessionObject.id == self.session_id).count())
+        SessionObject.query.filter(SessionObject.id == self.session_id).first()
+        session = DbSession(id=self.session_id)
+        session.load()
+        self.assertIsNone(session.get(SESSION_KEY))
+
+    def test_getpage_success(self):
+        """
+        Make sure the login page can be rendered without error.
+        """
+        # When authenticating with valid credentials.
+        self.getPage('/login/', method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD})
+        # Then user is redirected
+        self.assertStatus('303 See Other')
+        self.assertHeaderItemValue('Location', self.baseurl + '/')
+        # Then a session object is created with a username
+        self.assertEqual(1, SessionObject.query.filter(SessionObject.id == self.session_id).count())
+        SessionObject.query.filter(SessionObject.id == self.session_id).first()
+        session = DbSession(id=self.session_id)
+        session.load()
+        self.assertEquals('admin', session.get(SESSION_KEY))
 
     def test_cookie_http_only(self):
         # Given a request made to rdiffweb
@@ -226,26 +252,6 @@ class LoginPageWithWelcomeMsgTest(rdiffweb.test.WebCase):
         self.assertInBody('french message')
 
 
-class LoginPageWithSessionDirTest(rdiffweb.test.WebCase):
-
-    default_config = {
-        'session-dir': '/tmp',
-    }
-
-    def test_login(self):
-        # Query a page
-        self.getPage('/login/')
-        self.assertStatus('200 OK')
-        self.assertInBody('Enter your username and password to log in.')
-        # Login
-        self.getPage("/login/", method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD})
-        self.assertStatus('303 See Other')
-        # Query page again
-        self.getPage('/')
-        self.assertStatus('200 OK')
-        self.assertNotInBody('Enter your username and password to log in.')
-
-
 class LoginPageRateLimitTest(rdiffweb.test.WebCase):
 
     default_config = {
@@ -264,7 +270,7 @@ class LoginPageRateLimitTest(rdiffweb.test.WebCase):
 class LoginPageRateLimitWithSessionDirTest(rdiffweb.test.WebCase):
 
     default_config = {
-        'session-dir': '/tmp',
+        'rate-limit-dir': '/tmp',
         'rate-limit': 5,
     }
 

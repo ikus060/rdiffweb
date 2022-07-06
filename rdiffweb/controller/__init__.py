@@ -118,6 +118,12 @@ class Controller(object):
                     'is_maintainer': self.app.currentuser.is_maintainer,
                 }
             )
+        elif getattr(cherrypy.serving.request, 'login', None):
+            parms.update(
+                {
+                    'username': cherrypy.serving.request.login,
+                }
+            )
 
         # Append custom branding
         if hasattr(self.app.root, "header_logo"):
