@@ -61,8 +61,8 @@ class UserObject(Base):
 
     userid = Column('UserID', Integer, primary_key=True)
     username = Column('Username', String, nullable=False, unique=True)
-    hash_password = Column('Password', String, nullable=False, server_default="")
-    user_root = Column('UserRoot', String, nullable=False, server_default="")
+    hash_password = Column('Password', String, nullable=False, default="")
+    user_root = Column('UserRoot', String, nullable=False, default="")
     is_admin = Column(
         'IsAdmin',
         SmallInteger,
@@ -70,7 +70,7 @@ class UserObject(Base):
         server_default="0",
         doc="DEPRECATED This column is replaced by 'role'",
     )
-    email = Column('UserEmail', String, nullable=False, server_default="")
+    email = Column('UserEmail', String, nullable=False, default="")
     restore_format = Column(
         'RestoreFormat',
         SmallInteger,
@@ -79,7 +79,7 @@ class UserObject(Base):
         doc="DEPRECATED This column is not used anymore",
     )
     role = Column('role', SmallInteger, nullable=False, server_default=str(USER_ROLE))
-    fullname = Column('fullname', String, nullable=False, server_default="")
+    fullname = Column('fullname', String, nullable=False, default="")
     repo_objs = relationship(
         'RepoObject',
         foreign_keys='UserObject.userid',

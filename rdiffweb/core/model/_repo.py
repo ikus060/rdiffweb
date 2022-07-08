@@ -66,10 +66,10 @@ class RepoObject(Base, RdiffRepo):
         uselist=False,
         lazy='subquery',
     )
-    repopath = Column('RepoPath', String, nullable=False)
+    repopath = Column('RepoPath', String, nullable=False, default='')
     maxage = Column('MaxAge', SmallInteger, nullable=False, server_default="0")
     encoding = Column('Encoding', String, default=DEFAULT_REPO_ENCODING)
-    _keepdays = Column('keepdays', String, nullable=False, server_default="")
+    _keepdays = Column('keepdays', String, nullable=False, default="-1")
 
     @classmethod
     def get_repo(cls, name, as_user=None, refresh=False):
