@@ -49,6 +49,9 @@ class LogsPage(Controller):
         raw = validate_int(raw)
 
         repo_obj = RepoObject.get_repo(path)
+        if repo_obj.status[0] == 'failed':
+            params = {'repo': repo_obj, 'limit': limit, 'date': date, 'file': file, 'data': '', 'error_logs': []}
+            return self._compile_template("logs.html", **params)
 
         # Read log file data
         if file == 'backup.log':
