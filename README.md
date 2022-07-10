@@ -114,6 +114,7 @@ This next release focus on multi-factor-authentication as a measure to increase 
 * Store User's session information into database
 * Update ldap plugin to load additional attributes from LDAP server
 * Fix status page error handling
+* Add support for Ubuntu Jammy
 
 Breaking changes:
 
