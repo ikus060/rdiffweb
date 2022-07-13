@@ -113,6 +113,9 @@ class UrlForTest(WebCase):
         user = UserObject.query.filter(UserObject.username == 'admin').first()
         return RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
 
+    def test_url_for_absolute_path(self):
+        self.assertEqual(cherrypy.server.base() + '/static/js/jquery.min.js', url_for('/static/js/jquery.min.js'))
+
     def test_url_for_browse(self):
         """Check creation of url"""
         self.assertEqual(cherrypy.server.base() + '/browse/admin/testcases', url_for('browse', self.repo_obj))

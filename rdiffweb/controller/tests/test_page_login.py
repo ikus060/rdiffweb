@@ -252,6 +252,19 @@ class LoginPageWithWelcomeMsgTest(rdiffweb.test.WebCase):
         self.assertInBody('french message')
 
 
+class LoginPageWithHeaderName(rdiffweb.test.WebCase):
+
+    default_config = {'header-name': 'HEADER-NAME'}
+
+    def test_getpage_default(self):
+        # Given a custom header-name
+        # When querying the loging page
+        self.getPage('/login/')
+        # Then the page display the header-name
+        self.assertStatus('200 OK')
+        self.assertInBody('HEADER-NAME')
+
+
 class LoginPageRateLimitTest(rdiffweb.test.WebCase):
 
     default_config = {

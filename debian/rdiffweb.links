@@ -1,3 +1,14 @@
-/usr/share/javascript/bootstrap/js/bootstrap.min.js /usr/lib/python3/dist-packages/rdiffweb/static/js/bootstrap.min.js
-/usr/share/javascript/jquery/jquery.min.js          /usr/lib/python3/dist-packages/rdiffweb/static/js/jquery.min.js
-/usr/share/libjs-chartkick.js/chartkick.js          /usr/lib/python3/dist-packages/rdiffweb/static/js/chartkick.min.js
+/usr/share/fonts-font-awesome/css/font-awesome.css.map         /usr/lib/python3/dist-packages/rdiffweb/static/css/font-awesome.css.map
+/usr/share/fonts-font-awesome/css/font-awesome.min.css         /usr/lib/python3/dist-packages/rdiffweb/static/css/font-awesome.min.css
+/usr/share/fonts-font-awesome/fonts/FontAwesome.otf            /usr/lib/python3/dist-packages/rdiffweb/static/fonts/FontAwesome.otf
+/usr/share/fonts-font-awesome/fonts/fontawesome-webfont.eot    /usr/lib/python3/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.eot
+/usr/share/fonts-font-awesome/fonts/fontawesome-webfont.svg    /usr/lib/python3/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.svg
+/usr/share/fonts-font-awesome/fonts/fontawesome-webfont.ttf    /usr/lib/python3/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.ttf
+/usr/share/fonts-font-awesome/fonts/fontawesome-webfont.woff2  /usr/lib/python3/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.woff2
+/usr/share/fonts-font-awesome/fonts/fontawesome-webfont.woff   /usr/lib/python3/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.woff
+/usr/share/javascript/bootstrap4/css/bootstrap.min.css.map     /usr/lib/python3/dist-packages/rdiffweb/static/css/bootstrap.min.css.map
+/usr/share/javascript/bootstrap4/css/bootstrap.min.css         /usr/lib/python3/dist-packages/rdiffweb/static/css/bootstrap.min.css
+/usr/share/javascript/bootstrap4/js/bootstrap.bundle.js.map    /usr/lib/python3/dist-packages/rdiffweb/static/js/bootstrap.bundle.js.map
+/usr/share/javascript/bootstrap4/js/bootstrap.bundle.min.js    /usr/lib/python3/dist-packages/rdiffweb/static/js/bootstrap.bundle.min.js
+/usr/share/javascript/jquery/jquery.min.js                     /usr/lib/python3/dist-packages/rdiffweb/static/js/jquery.min.js
+/usr/share/libjs-chartkick.js/chartkick.js                     /usr/lib/python3/dist-packages/rdiffweb/static/js/chartkick.min.js

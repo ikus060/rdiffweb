@@ -1,89 +1,106 @@
 <!DOCTYPE html>
 <html lang="{{ lang[0:2] }}">
-<head>
-{% block head %}
-<title>
-{% block title %}
-{% if title %}{{ title }}{% endif %}
-{% endblock title %}
- - 
-{{ header_name }}
-</title>
-<meta charset="utf-8">
-<meta name="robots" content="noindex">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="{{ url_for('static', theme + '.css') }}" type="text/css">
-<link rel="shortcut icon" href="{{ url_for('favicon.ico') }}" >
-{% endblock head %}
-</head>
-<body>
-<!-- .navbar -->
-<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed"
-                data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">{% trans %}Toggle navigation{% endtrans %}</span> <span
-                    class="icon-bar"></span> <span class="icon-bar"></span> <span
-                    class="icon-bar"></span>
-            </button>
-            <!-- Header_logo -->
-            <a class="navbar-brand" href="/">
-            {% if header_logo %}
-            <img src="{{ header_logo }}" style="display: inline">
-            {% else %}
-            <i class="icon-rdiffweb"></i>
-            {% endif %}
-            <!-- /Header_logo -->
-            <!-- Header_name -->
-            {{ header_name }}
-            <!-- /Header_name -->
-            </a>
-        </div>
-        {% if username %}
-        <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-                <li {{ attrib(class=active_page=='repo' and "active") }}><a href="{{ url_for('/') }}">{% trans %}Repositories{% endtrans %}</a></li>
-                <li {{ attrib(class=active_page=='status' and "active") }}><a href="{{ url_for('status') }}">{% trans %}Status{% endtrans %}</a></li>
-                {% if is_admin %}
-                <li {{ attrib(class=active_page=='admin' and "active") }}><a href="{{ url_for('admin') }}">{% trans %}Admin area{% endtrans %}</a></li>
-                {% endif %}
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="icon-user"></i> {{ username }} <span class="caret"></span></a>
-			        <ul class="dropdown-menu">
-			            <li class="dropdown-header">{% trans %}Signed in as {{ username }}{% endtrans %}</li>
-			            <li role="separator" class="divider"></li>
-			            <li><a href="{{ url_for('prefs', 'general') }}">Profile</a></li>
-			            <li><a href="{{ url_for('prefs', 'notification') }}">Notifications</a></li>
-			            <li role="separator" class="divider"></li>
-			            <li><a href="{{ url_for('logout') }}">{% trans %}Logout{% endtrans %}</a></li>
-			        </ul>
+  <head>
+    {% block head %}
+      <title>
+        {% block title %}
+          {% if title %}{{ title }}{% endif %}
+        {% endblock title %}
+        - {{ header_name }}
+      </title>
+      <meta charset="utf-8" />
+      <meta content="noindex" name="robots" />
+      <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+      <meta content="width=device-width, initial-scale=1" name="viewport" />
+      <link href="{{ url_for('favicon.ico') }}" rel="shortcut icon"/>
+      <!-- Jquery -->
+      <script src="{{ url_for('/static/js/jquery.min.js') }}"></script>
+      <script src="{{ url_for('/static/js/plugins/jquery.sortchildren.js') }}"></script>
+      <!-- Bootstrap v4 -->
+      <script src="{{ url_for('/static/js/bootstrap.bundle.min.js') }}"></script>
+      <link href="{{ url_for('/static/css/bootstrap.min.css') }}"
+            rel="stylesheet"
+            type="text/css"/>
+      <!-- Fontawesome -->
+      <link href="{{ url_for('/static/css/font-awesome.min.css') }}"
+            rel="stylesheet"
+            type="text/css"/>
+      <!-- TimSort -->
+      <script src="{{ url_for('/static/js/plugins/timsort.js') }}"></script>
+      <!-- Custom -->
+      <script src="{{ url_for('/static/js/rdiffweb.js') }}"></script>
+      <link href="{{ url_for('static', 'default.css') }}"
+            rel="stylesheet"
+            type="text/css"/>
+      {% if theme != 'default' %}
+        <link href="{{ url_for('static', theme + '.css') }}"
+              rel="stylesheet"
+              type="text/css"/>
+      {% endif %}
+    {% endblock head %}
+  </head>
+  <body class="d-flex flex-column">
+    <!-- .navbar -->
+    {% if username %}
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="{{ url_for('/')}}">
+            <img alt="{{ header_name }}"
+                 class="mr-1"
+                 height="36"
+                 src="{{ header_logo or url_for('static','header-logo.svg') }}"/>
+          </a>
+          <button aria-controls="navbarSupportedContent"
+                  aria-expanded="false"
+                  aria-label="{% trans %}Toggle navigation{% endtrans %}"
+                  class="navbar-toggler"
+                  data-target="#navbarSupportedContent"
+                  data-toggle="collapse"
+                  type="button">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item{% if active_page=='repo' %} active{% endif %}">
+                <a class="nav-link" href="{{ url_for('/') }}">{% trans %}Repositories{% endtrans %}</a>
+              </li>
+              <li class="nav-item{% if active_page=='status' %} active{% endif %}">
+                <a class="nav-link" href="{{ url_for('status') }}">{% trans %}Status{% endtrans %}</a>
+              </li>
+              {% if is_admin %}
+                <li class="nav-item{% if active_page=='admin' %} active{% endif %}">
+                  <a class="nav-link" href="{{ url_for('admin') }}">{% trans %}Admin area{% endtrans %}</a>
                 </li>
+              {% endif %}
             </ul>
+            <ul class="navbar-nav">
+              <li class="nav-item dropdown">
+                <a aria-expanded="false"
+                   class="nav-link dropdown-toggle"
+                   data-toggle="dropdown"
+                   href="#"
+                   id="navbarDropdown"
+                   role="button">
+                  <i aria-hidden="true" class="fa fa-user"></i>
+                  {{ username }}
+                </a>
+                <div aria-labelledby="navbarDropdown" class="dropdown-menu">
+                  <h6 class="dropdown-header">{% trans %}Signed in as{% endtrans %} {{ username }}</h6>
+                  <a class="dropdown-item" href="{{ url_for('prefs', 'general') }}">{% trans %}Edit profile{% endtrans %}</a>
+                  <a class="dropdown-item" href="{{ url_for('prefs', 'notification') }}">{% trans %}Notifications{% endtrans %}</a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Include rdiffweb specifics -->
-<script src="{{ url_for('/static/js/jquery.min.js') }}"></script>
-<script src="{{ url_for('/static/js/bootstrap.min.js') }}"></script>
-<script src="{{ url_for('/static/js/plugins/jquery.validate.js') }}"></script>
-<script src="{{ url_for('/static/js/plugins/jquery.sortchildren.js') }}"></script>
-<script src="{{ url_for('/static/js/plugins/timsort.js') }}"></script>
-<script src="{{ url_for('/static/js/rdiffweb.js') }}"></script>
-{% if lang and lang[0:2] in ["fr", "ru"] %}
-<!-- Include translation for JQuery Validation -->
-<script src="/static/js/plugins/jquery.validate.{{ lang[0:2] }}.js"></script>
-{% endif %}
-
-<!-- /.navbar -->
-{% block body %}
-
-{% endblock %}
-<footer class="small text-center">{% trans %}Powered by {% endtrans %} <a href="{{footerurl}}">{{footername}}</a></footer>
-</body>
+      </nav>
+    {% endif %}
+    {% block body %}
+    {% endblock body %}
+    <footer class="small text-center mt-auto">
+      {% trans %}Powered by{% endtrans %} <a href="{{ footerurl }}">{{ footername }}</a>
+    </footer>
+  </body>
 </html>

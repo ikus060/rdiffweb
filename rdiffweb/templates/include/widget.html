@@ -1,26 +1,29 @@
 {# Dropdown select for notification #}
 {% macro maxage_dropdown(value=-1, disabled=False) -%}
   <select {{ attrib(**kwargs) }}>
-    <option value="0" {{ attrib(selected=value == 0) }}>{% trans %}disabled{% endtrans %}</option>
-    <option value="1" {{ attrib(selected=value == 1) }}>{% trans %}1 day{% endtrans %}</option>
-    <option value="2"  {{ attrib(selected=value == 2) }}>{% trans %}2 days{% endtrans %}</option>
-    <option value="3"  {{ attrib(selected=value == 3) }}>{% trans %}3 days{% endtrans %}</option>
-    <option value="4"  {{ attrib(selected=value == 4) }}>{% trans %}4 days{% endtrans %}</option>
-    <option value="5"  {{ attrib(selected=value == 5) }}>{% trans %}5 days{% endtrans %}</option>
-    <option value="6"  {{ attrib(selected=value == 6) }}>{% trans %}6 days{% endtrans %}</option>
-    <option value="7"  {{ attrib(selected=value == 7) }}>{% trans %}1 week{% endtrans %}</option>
-    <option value="14" {{ attrib(selected=value == 14) }}>{% trans %}2 weeks{% endtrans %}</option>
-    <option value="21" {{ attrib(selected=value == 21) }}>{% trans %}3 weeks{% endtrans %}</option>
-    <option value="28" {{ attrib(selected=value == 28) }}>{% trans %}4 weeks{% endtrans %}</option>
-    <option value="31" {{ attrib(selected=value == 31) }}>{% trans %}1 month{% endtrans %}</option>
-  </select>
-{%- endmacro %}
-
-{% macro encoding_dropdown(value=-1) -%}
-  {% set encodings = ['utf-8', 'ascii', 'big5', 'big5hkscs', 'cp037', 'cp424', 'cp437', 'cp500', 'cp720', 'cp737', 'cp775', 'cp850', 'cp852', 'cp855', 'cp856', 'cp857', 'cp858', 'cp860', 'cp861', 'cp862', 'cp863', 'cp864', 'cp865', 'cp866', 'cp869', 'cp874', 'cp875', 'cp932', 'cp949', 'cp950', 'cp1006', 'cp1026', 'cp1140', 'cp1250', 'cp1251', 'cp1252', 'cp1253', 'cp1254', 'cp1255', 'cp1256', 'cp1257', 'cp1258', 'euc_jp', 'euc_jis_2004', 'euc_jisx0213', 'euc_kr', 'gb2312', 'gbk', 'gb18030', 'hz', 'iso2022_jp', 'iso2022_jp_1', 'iso2022_jp_2', 'iso2022_jp_2004', 'iso2022_jp_3', 'iso2022_jp_ext', 'iso2022_kr', 'iso8859-1', 'iso8859-2', 'iso8859-3', 'iso8859-4', 'iso8859-5', 'iso8859-6', 'iso8859-7', 'iso8859-8', 'iso8859-9', 'iso8859-10', 'iso8859-13', 'iso8859-14', 'iso8859-15', 'iso8859-16', 'johab', 'koi8-r', 'koi8-u', 'mac-cyrillic', 'mac-greek', 'mac-iceland', 'mac-latin2', 'mac-roman', 'mac-turkish', 'ptcp154', 'shift_jis', 'shift_jis_2004', 'shift_jisx0213', 'utf-32', 'utf-32-be', 'utf-32-le', 'utf-16', 'utf-16-be', 'utf-16-le', 'utf-7', 'utf-8-sig']%}
-  <select {{ attrib(**kwargs) }}>
-    {% for e in encodings %}
-	<option {{ attrib(selected=(value == e), value=e) }}>{{ e }}</option>
-	{% endfor %}
+    <option value="0" {{ attrib(selected=value == 0) }}>{% trans %}disabled{% endtrans %}
+    </option>
+    <option value="1" {{ attrib(selected=value == 1) }}>{% trans %}1 day{% endtrans %}
+    </option>
+    <option value="2"  {{ attrib(selected=value == 2) }}>{% trans %}2 days{% endtrans %}
+    </option>
+    <option value="3"  {{ attrib(selected=value == 3) }}>{% trans %}3 days{% endtrans %}
+    </option>
+    <option value="4"  {{ attrib(selected=value == 4) }}>{% trans %}4 days{% endtrans %}
+    </option>
+    <option value="5"  {{ attrib(selected=value == 5) }}>{% trans %}5 days{% endtrans %}
+    </option>
+    <option value="6"  {{ attrib(selected=value == 6) }}>{% trans %}6 days{% endtrans %}
+    </option>
+    <option value="7"  {{ attrib(selected=value == 7) }}>{% trans %}1 week{% endtrans %}
+    </option>
+    <option value="14" {{ attrib(selected=value == 14) }}>{% trans %}2 weeks{% endtrans %}
+    </option>
+    <option value="21" {{ attrib(selected=value == 21) }}>{% trans %}3 weeks{% endtrans %}
+    </option>
+    <option value="28" {{ attrib(selected=value == 28) }}>{% trans %}4 weeks{% endtrans %}
+    </option>
+    <option value="31" {{ attrib(selected=value == 31) }}>{% trans %}1 month{% endtrans %}
+    </option>
   </select>
 {%- endmacro %}

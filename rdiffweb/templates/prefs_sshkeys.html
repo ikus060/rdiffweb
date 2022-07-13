@@ -1,103 +1,43 @@
-{#
-Rdiffweb SSHKeys plugins
-
-Copyright (C) 2012-2021 rdiffweb contributors
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#}
-
-<div class="spacer"></div>
-
-{% include 'message.html' %}
-
+{% from 'include/panel.html' import panel %}
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
-
-<!-- List of ssh keys -->
-<div class="panel panel-default"
-     itemscope itemtype="http://schema.org/ItemList">
-    
-    <div class="panel-heading clearfix">
-        <span itemprop="name">{% trans %}SSH Keys{% endtrans %}</span>
-        (<span itemprop="numberOfItems">{{ sshkeys | length }}</span>)
-        
-        <!-- Add button -->
-        <div class="btn-group pull-right">
-            <button type="button" class="btn btn-success btn-xs" data-toggle="modal" data-target="#add-sshkey-modal">
-                <i class="icon-plus"></i>
-                {% trans %}Add SSH key{% endtrans %}
-            </button>
-        </div>
-    </div>
-    <!-- /.panel-heading -->
-    
-    <div class="panel-body">
-        <p class="light">
-            {% trans %}SSH keys allow you to establish a secure connection between your computer and this backup system. This is a list of SSH keys associated with your account. Remove any keys that you do not recognize.{% endtrans %}
-        </p>
-        {% if not is_maintainer %}
-        <p class="light pull-right">
-            {% trans %}Ask your administrator to delete SSH Keys.{% endtrans %}
-        </p>
-        {% endif %}
-    </div>
-    
-    <!-- List of keys-->
-    <ul class="list-group">
-        {% for key in sshkeys %}
-        <li class="list-group-item clearfix" itemprop="itemListElement" itemscope
-                itemtype="http://schema.org/ListItem">
-            <div class="pull-right">
-                {{ button_confirm(label=_('Delete'), target="#delete-sshkey-modal", action="delete", fingerprint=key.fingerprint, disabled=not is_maintainer) }}
-            </div>
-            <strong class="list-group-item-heading" itemprop="name">
-                {{ key.title }}
-            </strong>
-            <p class="list-group-item-text" itemprop="fingerprint">{{ key.fingerprint }}</p>
-        </li>
-        {% endfor %}
-    </ul>
-    <!-- /.list-group -->
-    
+{% include 'message.html' %}
+{% call panel(title=_("SSH Keys"), description=_('SSH keys allow you to establish a secure connection between your computer and this backup system. This is a list of SSH keys associated with your account. Remove any keys that you do not recognize.')) %}
+<!-- Add SSH Key-->
+<div class="text-right mb-2">
+  <button type="button"
+          class="btn btn-success btn-sm"
+          data-toggle="modal"
+          data-target="#add-sshkey-modal">
+    {% trans %}Add SSH key{% endtrans %}
+  </button>
 </div>
-
+{% if not is_maintainer %}
+  <p class="text-secondary">{% trans %}Ask your administrator to delete SSH Keys.{% endtrans %}</p>
+{% endif %}
+<!-- List of keys-->
+<ul class="list-group">
+  {% for key in sshkeys %}
+    <li class="list-group-item">
+      <div class="pull-right">
+        {{ button_confirm(label=_('Delete'), target="#delete-sshkey-modal", action="delete", fingerprint=key.fingerprint, disabled=not is_maintainer) }}
+      </div>
+      <strong class="list-group-item-heading">{{ key.title }}</strong>
+      <p class="list-group-item-text">{{ key.fingerprint }}</p>
+    </li>
+  {% else %}
+    <li class="list-group-item text-center">{% trans %}List is empty{% endtrans %}</li>
+  {% endfor %}
+</ul>
+{% endcall %}
 {# Dialog to create SSH key. #}
 {% call modal_dialog('add-sshkey-modal',_('Add SSH key'), _('Add SSH key')) %}
-    <input type="hidden" name="action" value="add" >
-    <div class="form-group">
-        {{ form.title.label(class="col-sm-2 control-label") }}
-        <div class="col-sm-10">
-            {{ form.title(class="form-control") }}
-	        <p class="help-block">
-	            {{form.title.description}}
-	        </p>
-        </div>
-    </div>
-    <div class="form-group">
-        {{ form.key.label(class="col-sm-2 control-label") }}
-        <div class="col-sm-10">
-            {{ form.key(class="form-control", rows="10") }}
-            <p class="help-block">
-                {{form.key.description}}
-            </p>
-        </div>
-    </div>
+<input type="hidden" name="action" value="add" />
+{{ form }}
 {% endcall %}
-
 <!-- Delete SSH Key Modal -->
 {{ modal_confirm(
-    id='delete-sshkey-modal',
-    title=_('Delete SSH key'),
-    message=_("Are you sure you want to delete this SSH Key?"),
-    fields=['action', 'fingerprint'],
-    submit=_('Delete')) }}
+id="delete-sshkey-modal",
+title=_('Delete SSH key'),
+message=_("Are you sure you want to delete this SSH Key?"),
+fields=['action', 'fingerprint'],
+submit=_('Delete')) }}

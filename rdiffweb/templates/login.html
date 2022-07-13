@@ -1,34 +1,49 @@
 {% extends 'layout.html' %}
-{% block title %}{% trans %}Sign in{% endtrans %}{% endblock %}
+{% block title %}
+  {% trans %}Sign in{% endtrans %}
+{% endblock %}
 {% block body %}
-<div class='container'>
-    <div class='col-sm-offset-3 col-sm-6'>
-        <center>
-            <h1>{% if header_name %}{{ header_name }}{% else %}rdiffweb{% endif %}</h1>
-            <p class='light'>
-                {% if welcome_msg %}
-                {% autoescape false %}{{ welcome_msg }}{% endautoescape %}
-                {% else %}
-                {% trans %}A simplified backup management software for quick access to your archives through an
-                efficient web interface.{% endtrans %}
-                <br /><br />
-                <a href="https://rdiffweb.org/">{% trans %}website{% endtrans %}</a> •
-                <a href="https://rdiffweb.org/doc/">{% trans %}docs{% endtrans %}</a> •
-                <a href="https://groups.google.com/d/forum/rdiffweb">{% trans %}community{% endtrans %}</a>
-                {% endif %}
-            </p>
-        </center>
+  <div class="container mb-auto">
+    <div class="row">
+      <div class="offset-sm-3 col-sm-6 text-center">
+        <h1>
+          {% if header_name != 'Rdiffweb' %}
+            {{ header_name }}
+          {% else %}
+            <img alt="{{ header_name }}"
+                 class="mt-4 mb-4"
+                 height="192"
+                 src="{{ header_logo or url_for('static','logo1.svg') }}"/>
+          {% endif %}
+        </h1>
+        <p class="text-secondary">
+          {% if welcome_msg %}
+            {% autoescape false %}
+              {{ welcome_msg }}
+            {% endautoescape %}
+          {% else %}
+            {% trans %}A simplified backup management software for quick access to your archives through an
+            efficient web interface.{% endtrans %}
+            <br />
+            <br />
+            <a href="https://rdiffweb.org/">{% trans %}website{% endtrans %}</a> •
+            <a href="https://groups.google.com/d/forum/rdiffweb">{% trans %}community{% endtrans %}</a>
+          {% endif %}
+        </p>
+      </div>
     </div>
-    <!-- /content -->
-</div>
-<!-- /container -->
-<div class="container login-page">
-    <form class="form-signin" role="form" method="post" action="/login/" id="form-login">
-        <h2 class="form-signin-heading">{{ _('Sign in') }}</h2>
-        {% include 'message.html' %}
-        <p>{% trans %}Enter your username and password to log in.{% endtrans %}</p>
-        {{ form }}
-        <button class="btn btn-lg btn-primary btn-block" type="submit">{{ _('Sign in') }}</button>
-    </form>
-</div>
+  </div>
+  <div class="container mb-auto">
+    <div class="row">
+      <div class="offset-sm-4 col-sm-4">
+        <form id="form-login" role="form" method="post" action="/login/">
+          <h2>{{ _('Sign in') }}</h2>
+          {% include 'message.html' %}
+          <p>{% trans %}Enter your username and password to log in.{% endtrans %}</p>
+          {{ form }}
+          <button class="btn btn-lg btn-primary btn-block" type="submit">{{ _('Sign in') }}</button>
+        </form>
+      </div>
+    </div>
+  </div>
 {% endblock %}

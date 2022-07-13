@@ -28,7 +28,7 @@ from wtforms.fields.simple import PasswordField
 from wtforms.validators import DataRequired, EqualTo, InputRequired, Regexp
 
 from rdiffweb.controller import Controller, flash
-from rdiffweb.controller.cherrypy_wtf import CherryForm
+from rdiffweb.controller.form import CherryForm
 from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger

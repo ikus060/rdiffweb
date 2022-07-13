@@ -29,8 +29,8 @@ from wtforms.validators import ValidationError
 from wtforms.widgets.core import TextArea
 
 from rdiffweb.controller import Controller, flash
-from rdiffweb.controller.cherrypy_wtf import CherryForm
 from rdiffweb.controller.filter_authorization import is_maintainer
+from rdiffweb.controller.form import CherryForm
 from rdiffweb.core import authorizedkeys
 from rdiffweb.core.model import DuplicateSSHKeyError
 from rdiffweb.tools.i18n import ugettext as _
@@ -60,7 +60,6 @@ class SshForm(CherryForm):
         ),
         validators=[validators.data_required(), validate_key],
     )
-    fingerprint = StringField('Fingerprint')
 
 
 class DeleteSshForm(CherryForm):

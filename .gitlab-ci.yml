@@ -40,6 +40,9 @@ black:
 isort:
   <<: *tox
 
+djhtml:
+  <<: *tox
+
 py3:
   <<: *tox
   image: $IMAGE
@@ -99,12 +102,6 @@ doc:
     paths:
     - .tox/doc/tmp/html
     expire_in: 1 day
-
-lessc:
-  <<: *tox
-  stage: doc
-  needs: []
-  dependencies: []
 
 package:py3: 
   stage: package

@@ -27,12 +27,9 @@ Rdiffweb is provided with unit tests. To run them, execute a command similar to 
 
     tox -e py3
 
-## Less & CSS(s)
+## Generage favicon.ico with imagemagik
 
-For deployment reason, we need to pre-compile less file into css file
-whenever you change the `.less`. To complete this operation, run the following command.
-
-    tox -e lessc
+    convert -density 256x256 -background transparent favicon.svg -define icon:auto-resize -colors 256 favicon.ico
 
 ## Documentation
 

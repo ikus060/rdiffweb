@@ -1,0 +1,34 @@
+{% macro nav_tabs(nav_items) -%}
+  <ul class="nav nav-tabs mb-4" role="tablist">
+    {% for item in nav_items %}
+      {% if item|length == 3 %}
+        {% set label, url, active = item %}
+      {% elif item|length == 4 %}
+        {% set label, url, active, icon = item %}
+      {% endif %}
+      <li class="nav-item">
+        <a class="nav-link{% if active %} active{% endif %}" href="{{ url }}">
+          {% if icon %}<i class="{{ icon }}" aria-hidden="true"></i>{% endif %}
+          {{ label }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endmacro %}
+{% macro nav_pills(nav_items) -%}
+  <ul class="nav nav-pills mb-4" role="tablist">
+    {% for item in nav_items %}
+      {% if item|length == 3 %}
+        {% set label, url, active = item %}
+      {% elif item|length == 4 %}
+        {% set label, url, active, icon = item %}
+      {% endif %}
+      <li class="nav-item">
+        <a class="nav-link{% if active %} active{% endif %}" href="{{ url }}">
+          {% if icon %}<i class="{{ icon }}" aria-hidden="true"></i>{% endif %}
+          {{ label }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endmacro %}

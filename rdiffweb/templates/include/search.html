@@ -1,33 +1,25 @@
-{# Bootstrap panel #}
 {% macro search_bar(search_placeholder=None, criterias=[], criteria='', search='') -%}
-<!-- Search / Filters -->
-<div class="row">
-     <div class="col-md-12">
-        {{ caller() }}
-        {% if criterias %}
-        <ul class="nav nav-pills">
-            {% for key, label in criterias %}
-            <li {% if criteria == key %}class="active"{% endif %}>
-                <a href="?criteria={{key}}">{{label}}</a>
-            </li>
-            {% endfor %}
-        </ul>
-        <div class="spacer"></div>
-        {% endif %}
+  <form accept-charset="UTF-8"
+        action=""
+        method="get"
+        role="form"
+        class="flex-grow-1 bg-light p-2 mb-2">
+    <div class="form-row align-items-center">
+      <div class="col-auto flex-fill">
+        <label class="sr-only" for="search">{% trans %}Search{% endtrans %}</label>
+        <input type="search"
+               class="form-control"
+               name="search"
+               id="search"
+               value="{{ search }}"
+               placeholder="{{ search_placeholder or _('Search by') }}"/>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">
+          <i class="fa fa-search" aria-hidden="true"></i>
+          {% trans %}Search{% endtrans %}
+        </button>
+      </div>
     </div>
-    <div class="col-md-12">
-        <div class="well well-sm">
-            <form accept-charset="UTF-8" action="" method="get" role="form">
-                <div class="d-flex">
-                    <label class="sr-only" for="search">{% trans %}Search{% endtrans %}</label>
-                    <input class="form-control" name="search"
-                            placeholder="{{ search_placeholder or _('Search by') }}"
-                            value="{{ search }}"
-                            type="search">
-                    <button class="btn btn-primary pull-right" type="submit"><i class="icon-search"></i> {% trans %}Search{% endtrans %}</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+  </form>
 {% endmacro %}

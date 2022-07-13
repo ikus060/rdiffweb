@@ -63,13 +63,6 @@ function toDate(n) {
     return n;
   }
 
-/**
- * Add form validation where applicable.
- */
-jQuery.validator.addMethod("equalValue", function(value, element, parameters) {
-    return value == parameters;
-}, "Enter the same value.");
-
 $(document).ready(function() {
 
 // Table sorting
@@ -159,10 +152,10 @@ $('form[data-async]').on('submit', function(event) {
         url: $form.attr('action'),
         data: $form.serialize(),
         success: function(data, status) {
-            $target.html('<i class="icon-ok text-success"></i> ' + data);
+            $target.html('<i class="fa fa-check text-success" aria-hidden="true"></i> ' + data);
         },
         error: function(data, status, e) {
-        	$target.html('<i class="icon-attention text-danger"></i> ' + data.responseText);
+        	$target.html('<i class="fa-exclamation-circle" aria-hidden="true"></i> ' + data.responseText);
         },
     });
     event.preventDefault();

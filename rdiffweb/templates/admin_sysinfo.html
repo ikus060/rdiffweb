@@ -1,88 +1,35 @@
 {% extends 'admin.html' %}
-{% block title %}{% trans %}System Info{% endtrans %}{% endblock %}
+{% block title %}
+  {% trans %}System Info{% endtrans %}
+{% endblock %}
 {% set admin_nav_active="sysinfo" %}
 {% block content %}
-    
-<div class="row">
-
-    <div class="col-md-6">
-        <h3>{% trans %}Application Config{% endtrans %}</h3>
-        <div class="list-group">
-          {% for k, v in cfg.items() %}
-          <a href="#" class="list-group-item">
-            <h4 class="list-group-item-heading">{{k}}</h4>
-            <p class="list-group-item-text">{{v}}</p>
-          </a>
+  {% set section_items = [
+  (_('Application Version'), [(_('Core Version'), version)] + plugins|d([]) ),
+  (_('Application Config'), cfg.items()),
+  (_('System usage'), hwinfo),
+  (_('Operating System Info'), osinfo),
+  (_('Dependencies Version'), ldapinfo),
+  (_('Python Info'), pyinfo),]%}
+  {% for section_name, items in section_items %}
+    <h3>{{ section_name }}</h3>
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead class="sr-only">
+          <tr>
+            <th scope="col" width="25%">Description</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for k, v in items %}
+            <tr>
+              <td width="25%">{{k}}</td>
+              <td>{{v}}</td>
+            </tr>
           {% endfor %}
-        </div>
+        </tbody>
+      </table>
     </div>
-    
-    <div class="col-md-6">
-        <h3>{% trans %}Application Version{% endtrans %}</h3>
-        <div class="list-group">
-          <a href="#" class="list-group-item">
-            <h4 class="list-group-item-heading">{% trans %}Core Version{% endtrans %}</h4>
-            <p class="list-group-item-text">{{version}}</p>
-          </a>
-          {% for name, version in plugins %}
-          <a href="#" class="list-group-item">
-            <h4 class="list-group-item-heading">{{name}}</h4>
-            <p class="list-group-item-text">{{version}}</p>
-          </a>
-          {% endfor %}
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <h3>{% trans %}System usage{% endtrans %}</h3>
-        <div class="list-group">
-          {% for k, v in hwinfo %}
-          <a href="#" class="list-group-item">
-            <h4 class="list-group-item-heading">{{k}}</h4>
-            <p class="list-group-item-text">{{v}}</p>
-          </a>
-          {% endfor %}
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <h3>{% trans %}Operating System Info{% endtrans %}</h3>
-        <div class="list-group">
-          {% for k, v in osinfo %}
-          <a href="#" class="list-group-item">
-            <h4 class="list-group-item-heading">{{k}}</h4>
-            <p class="list-group-item-text">{{v}}</p>
-          </a>
-          {% endfor %}
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <h3>{% trans %}Dependencies Version{% endtrans %}</h3>
-        <div class="list-group">
-          {% for k, v in ldapinfo %}
-          <a href="#" class="list-group-item">
-            <h4 class="list-group-item-heading">{{k}}</h4>
-            <p class="list-group-item-text">{{v}}</p>
-          </a>
-          {% endfor %}
-        </div>
-    </div>
-
-    <div class="col-md-12">
-	    <h3>{% trans %}Python Info{% endtrans %}</h3>
-	    <div class="list-group">
-	      {% for k, v in pyinfo %}
-	      <a href="#" class="list-group-item">
-	        <h4 class="list-group-item-heading">{{k}}</h4>
-	        <p class="list-group-item-text">{{v}}</p>
-	      </a>
-	      {% endfor %}
-	    </div>
-    </div>
-    
-<!-- /.row -->
-</div>
-
+  {% endfor %}
 {% endblock %}
-
