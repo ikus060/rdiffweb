@@ -61,8 +61,8 @@ class UserObject(Base):
 
     userid = Column('UserID', Integer, primary_key=True)
     username = Column('Username', String, nullable=False, unique=True)
-    hash_password = Column('Password', String, nullable=False, server_default="")
-    user_root = Column('UserRoot', String, nullable=False, server_default="")
+    hash_password = Column('Password', String, nullable=False, default="")
+    user_root = Column('UserRoot', String, nullable=False, default="")
     is_admin = Column(
         'IsAdmin',
         SmallInteger,
@@ -70,7 +70,7 @@ class UserObject(Base):
         server_default="0",
         doc="DEPRECATED This column is replaced by 'role'",
     )
-    email = Column('UserEmail', String, nullable=False, server_default="")
+    email = Column('UserEmail', String, nullable=False, default="")
     restore_format = Column(
         'RestoreFormat',
         SmallInteger,
@@ -79,7 +79,7 @@ class UserObject(Base):
         doc="DEPRECATED This column is not used anymore",
     )
     role = Column('role', SmallInteger, nullable=False, server_default=str(USER_ROLE))
-    fullname = Column('fullname', String, nullable=False, server_default="")
+    fullname = Column('fullname', String, nullable=False, default="")
     repo_objs = relationship(
         'RepoObject',
         foreign_keys='UserObject.userid',
@@ -385,35 +385,3 @@ def user_after_delete(mapper, connection, target):
     Publish event when user is deleted.
     """
     cherrypy.engine.publish('user_deleted', target.username)
-
-
-@event.listens_for(Base.metadata, 'after_create')
-def repo_after_create(target, connection, **kw):
-    """
-    Called on database creation to update database schema.
-    """
-
-    def exists(table_name, column_name):
-        if 'SQLite' in connection.engine.dialect.__class__.__name__:
-            sql = "SELECT COUNT(*) FROM pragma_table_info('%s') WHERE name='%s'" % (table_name, column_name)
-        else:
-            sql = "SELECT COUNT(*) FROM information_schema.columns WHERE table_name='%s' and column_name='%s'" % (
-                table_name,
-                column_name,
-            )
-        data = connection.engine.execute(sql).first()
-        return data[0] >= 1
-
-    def add_column(column):
-        table_name = column.table.fullname
-        column_name = column.name
-        if exists(table_name, column_name):
-            return
-        column_type = column.type.compile(connection.engine.dialect)
-        connection.engine.execute('ALTER TABLE %s ADD COLUMN %s %s' % (table_name, column_name, column_type))
-
-    if getattr(connection, '_transaction', None):
-        connection._transaction.commit()
-
-    # Add user's fullname
-    add_column(UserObject.__table__.c.fullname)

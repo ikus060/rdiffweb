@@ -67,3 +67,14 @@ class SettingsTest(rdiffweb.test.WebCase):
         self.getPage("/settings/" + self.USERNAME + "/" + repo)
         # Then a 404 error is return
         self.assertStatus(404)
+
+    def test_browser_with_failed_repo(self):
+        # Given a failed repo
+        admin = UserObject.get_user('admin')
+        admin.user_root = '/invalid/'
+        admin.add()
+        # When querying the logs
+        self.getPage("/settings/" + self.USERNAME + "/" + self.REPO)
+        # Then the page is return with an error message
+        self.assertStatus(200)
+        self.assertInBody('The repository cannot be found or is badly damaged.')

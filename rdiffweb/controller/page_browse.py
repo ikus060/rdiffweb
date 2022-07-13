@@ -24,7 +24,6 @@ from rdiffweb.controller import Controller
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
-from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -48,14 +47,10 @@ class BrowsePage(Controller):
         # Check user access to the given repo & path
         repo, path = RepoObject.get_repo_path(path, refresh=True)
 
-        # Set up warning about in-progress backups, if necessary
-        warning = False
-        status = repo.status
-        if status[0] != 'ok':
-            warning = status[1] + ' ' + _("The displayed data may be inconsistent.")
-
         # Get list of actual directory entries
-        dir_entries = repo.listdir(path)
-
-        parms = {"repo": repo, "path": path, "dir_entries": dir_entries, "warning": warning}
+        if repo.status[0] == 'failed':
+            dir_entries = []
+        else:
+            dir_entries = repo.listdir(path)
+        parms = {"repo": repo, "path": path, "dir_entries": dir_entries}
         return self._compile_template("browse.html", **parms)

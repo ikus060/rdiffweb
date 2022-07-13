@@ -176,7 +176,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
         # New repo get created with keepdays == -1
-        self.assertEqual('', repo_obj._keepdays)
+        self.assertEqual('-1', repo_obj._keepdays)
         self.assertEqual(-1, repo_obj.keepdays)
 
     def test_keepdays_default_value_from_init(self):
@@ -184,6 +184,20 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         # When creating a new repository
         repo_obj = RepoObject(user=userobj, repopath='repopath').add()
+        # New repo get created with keepdays == -1
+        self.assertEqual('-1', repo_obj._keepdays)
+        self.assertEqual(-1, repo_obj.keepdays)
+
+    def test_keepdays_empty_string(self):
+        # Given a User
+        userobj = UserObject.get_user(self.USERNAME)
+        # When creating a new repository
+        repo_obj = RepoObject(user=userobj, repopath='repopath').add()
+        RepoObject.session.execute(
+            RepoObject.__table__.update().where(RepoObject.__table__.c.RepoID == repo_obj.repoid).values(keepdays='')
+        )
+        RepoObject.session.commit()
+        repo_obj.expire()
         # New repo get created with keepdays == -1
         self.assertEqual('', repo_obj._keepdays)
         self.assertEqual(-1, repo_obj.keepdays)
