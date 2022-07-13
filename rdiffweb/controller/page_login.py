@@ -22,7 +22,7 @@ from wtforms.fields.simple import HiddenField
 from wtforms.validators import InputRequired
 
 from rdiffweb.controller import Controller, flash
-from rdiffweb.controller.cherrypy_wtf import CherryForm
+from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.config import Option
 from rdiffweb.tools.i18n import ugettext as _
 
@@ -58,6 +58,11 @@ class LoginPage(Controller):
     @cherrypy.config(**{'tools.auth_form.on': False, 'tools.ratelimit.on': True})
     def index(self, **kwargs):
         form = LoginForm()
+
+        # Redirect user to main page if already login.
+        if self.app.currentuser is not None:
+            raise cherrypy.HTTPRedirect(form.redirect.data or '/')
+
         # Validate user's credentials
         if form.validate_on_submit():
             try:

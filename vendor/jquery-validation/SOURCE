@@ -1,3 +1,0 @@
-curl -L https://github.com/jquery-validation/jquery-validation/archive/1.11.1.tar.gz -o jquery-validation-1.11.1.tar.gz
-tar -zxf jquery-validation-1.11.1.tar.gz --strip-components 1 jquery-validation-1.11.1/{lib,localization}
-rm jquery-validation-1.11.1.tar.gz

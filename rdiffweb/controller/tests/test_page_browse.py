@@ -45,7 +45,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         """
         self.getPage("/")
         self.assertInBody(self.REPO)
-        self.assertInBody('<meta itemprop="name" content="testcases" />')
+        self.assertInBody('testcases')
 
     def test_locations_with_broken_tree(self):
         userobj = UserObject.get_user(self.USERNAME)

@@ -1,44 +1,30 @@
 {% extends 'layout.html' %}
+{% from 'components/nav.html' import nav_tabs %}
 {% block body %}
-<div class="repohead" style="margin-bottom: 20px;">
-    <div class="container">
-    
+  <div class="container">
     <!-- Title -->
     <h2>{{ repo.display_name }}</h2>
-    
     <!-- Repo Nav -->
-	{% set repo_nav_bar = [
-	    ('browse', _('Files'), url_for('browse', repo), 'icon-docs'),
-	    ('history', _('History'), url_for('history', repo, path), 'icon-history'),
-	    ('settings', _('Settings'), url_for('settings', repo), 'icon-cog-alt'),
-	    ('graphs', _('Graphs'), url_for('graphs', 'activities', repo), 'icon-chart-bar'),
-        ('logs', _('Logs'), url_for('logs', repo), 'icon-file')
-	] -%}
-    <ul class="nav nav-tabs" role="navigation">
-    {% for item in repo_nav_bar %}
-    <li {{ attrib(class=active_repo_page==item[0] and "active") }} >
-        <a href="{{ item[2] }}"><i class="{{ item[3] }}"></i> {{ item[1] }}</a>
-    </li>
-    {% endfor %}
-    </ul>
-    
-    </div>
-</div>
-
-<div class="container" id="{{ active_repo_page }}">
-
-{% if repo.status[0] == 'failed' %}
-  <div class="alert alert-warning alert-dismissible" role="alert">
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
-      {{repo.status[1]}}
+    {% set nav_items = [
+    (_('Files'), url_for('browse', repo), active_repo_page=='browse', 'fa fa-files-o'),
+    (_('History'), url_for('history', repo, path), active_repo_page=='history', 'fa fa-history'),
+    (_('Settings'), url_for('settings', repo), active_repo_page=='settings', 'fa fa-sliders'),
+    (_('Graphs'), url_for('graphs', 'activities', repo), active_repo_page=='graphs', 'fa fa-area-chart'),
+    (_('Logs'), url_for('logs', repo), active_repo_page=='logs', 'fa fa-file-text-o')
+    ] -%}
+    {{ nav_tabs(nav_items) }}
   </div>
-{% else %}
-
-{% include 'message.html' %}
-
-{% block content %}
-{% endblock %}
-    
-{% endif %}
-</div>
+  <div class="container" id="{{ active_repo_page }}">
+    {% if repo.status[0] == 'failed' %}
+      <div class="alert alert-warning alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+        {{ repo.status[1] }}
+      </div>
+    {% else %}
+      {% include 'message.html' %}
+      {% block content %}{% endblock %}
+    {% endif %}
+  </div>
 {% endblock %}

@@ -13,8 +13,10 @@ execute_after_dh_auto_install:
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/core/tests
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/tests
 	rm -f  debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/test.py
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/less/
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/bootstrap.min.js
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/jquery.min.js
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/chart.min.js
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/chartkick.min.js
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/bootstrap.*
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/chart.*
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/chartkick.*
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/font-awesome.*
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/fontawesome*
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/FontAwesome*
+	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/jquery.*

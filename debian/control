@@ -40,7 +40,8 @@ Architecture: all
 Depends:
  coreutils,
  gzip,
- libjs-bootstrap,
+ fonts-font-awesome,
+ libjs-bootstrap4,
  libjs-chart.js,
  libjs-chartkick.js,
  libjs-jquery,

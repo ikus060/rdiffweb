@@ -151,14 +151,14 @@ def list_parents(repo, path):
     return parents
 
 
-def url_for(endpoint, *args, **kwargs):
+def url_for(*args, **kwargs):
     """
     Generate a url for the given endpoint, path (*args) with parameters (**kwargs)
 
     This could be used to generate a path with userobject and repo object
 
     """
-    path = "/" + endpoint.strip("/")
+    path = ""
     for chunk in args:
         if not chunk:
             continue
@@ -178,7 +178,7 @@ def url_for(endpoint, *args, **kwargs):
             path += rdw_helpers.quote_url(chunk.strip(b"/"))
         elif chunk and isinstance(chunk, str):
             path += "/"
-            path += chunk.rstrip("/")
+            path += chunk.strip("/")
         else:
             raise ValueError('invalid positional arguments, url_for accept str, bytes or RepoPath: %r' % chunk)
     # Sort the arguments to have predictable results.

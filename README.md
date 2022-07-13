@@ -115,10 +115,16 @@ This next release focus on multi-factor-authentication as a measure to increase 
 * Update ldap plugin to load additional attributes from LDAP server
 * Fix status page error handling
 * Add support for Ubuntu Jammy
+* Upgrade to Bootstrap v4 #204
+* Upgrade from bootstrap v3 to v4
+* Replace Fontello by Font-Awesome v4
+* Use CSS variables `var()` to customize themes
+* Remove usage of Jquery.validate
 
 Breaking changes:
 
-* `session-dir` is deprecated and should be replace by `rate-limit-dir`
+* `session-dir` is deprecated and should be replace by `rate-limit-dir`. User's session are stored in database.
+* previous `.css` customization are not barkward compatible
 
 ## 2.4.0 (2022-06-21)
 

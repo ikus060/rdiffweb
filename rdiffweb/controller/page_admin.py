@@ -28,11 +28,11 @@ import cherrypy
 import humanfriendly
 import psutil
 from wtforms import validators, widgets
-from wtforms.fields import Field, PasswordField, SelectField, StringField
+from wtforms.fields import Field, HiddenField, PasswordField, SelectField, StringField
 from wtforms.fields.html5 import EmailField
 
 from rdiffweb.controller import Controller, flash
-from rdiffweb.controller.cherrypy_wtf import CherryForm
+from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import rdiff_backup_version
 from rdiffweb.core.model import RepoObject, UserObject
@@ -165,12 +165,16 @@ class SizeField(Field):
 
 
 class UserForm(CherryForm):
-    userid = StringField(_('UserID'))
+    userid = HiddenField(_('UserID'))
     username = StringField(_('Username'), validators=[validators.data_required()])
     email = EmailField(_('Email'), validators=[validators.optional()])
-    password = PasswordField(_('Password'))
+    password = PasswordField(
+        _('Password'),
+        description=_('To create an LDAP user, you must leave the password empty.'),
+    )
     user_root = StringField(
-        _('Root directory'), description=_("Absolute path defining the location of the repositories for this user.")
+        _('Root directory'),
+        description=_("Absolute path defining the location of the repositories for this user."),
     )
     role = SelectField(
         _('User Role'),
@@ -191,7 +195,10 @@ class UserForm(CherryForm):
         description=_("Users disk spaces (in bytes). Set to 0 to remove quota (unlimited)."),
     )
     disk_usage = SizeField(
-        _('Quota Used'), validators=[validators.optional()], description=_("Disk spaces (in bytes) used by this user.")
+        _('Quota Used'),
+        validators=[validators.optional()],
+        description=_("Disk spaces (in bytes) used by this user."),
+        widget=widgets.HiddenInput(),
     )
 
     def validate_role(self, field):

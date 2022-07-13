@@ -1,58 +1,54 @@
 {% extends 'layout.html' %}
 {% set active_page='admin' %}
-{% block title %}{% trans %}Admin area{% endtrans %}{% endblock %}
-{% block body %}
-
-<div class="spacer"></div>
-
-<div class="container">
-{# Navigation bar for Administration #}
-<div class="row">
-<ul class="nav nav-tabs" role="tablist">
-    <li {% if not admin_nav_active %}class="active"{% endif %}>
-        <a href="{{ url_for('admin') }}">{% trans %}Overview{% endtrans %}</a>
-    </li>
-    <li {% if admin_nav_active=="users"%}class="active"{% endif %}>
-        <a href="{{ url_for('admin/users') }}">{% trans %}Users{% endtrans %}</a>
-    </li>
-    <li {% if admin_nav_active=="repos"%}class="active"{% endif %}>
-        <a href="{{ url_for('admin/repos') }}">{% trans %}Repositories{% endtrans %}</a>
-    </li>
-    <li {% if admin_nav_active=="logs"%}class="active"{% endif %}>
-        <a href="{{ url_for('admin/logs') }}">{% trans %}Logs{% endtrans %}</a>
-    </li>
-    <li {% if admin_nav_active=="sysinfo"%}class="active"{% endif %}>
-        <a href="{{ url_for('admin/sysinfo') }}">{% trans %}System Info{% endtrans %}</a>
-    </li>
-</ul>
-{% include 'message.html' %}
-<div class="spacer"></div>
-</div>
-
-{% block content %}
-<div class="row">
-    <div class="col-md-6">
-        <div class="well clearfix">
-          <h2 class="text-center">
-            <a href={{ url_for('admin/users') }}>
-            {% trans %}Users:{% endtrans %} {{ user_count }}
-            </a>
-          </h2>
-        </div>  
-    </div>
-    <div class="col-md-6">
-        <div class="well">
-          <h2 class="text-center">
-            <a href={{ url_for('admin/repos') }}>
-            {% trans %}Repositories:{% endtrans %} {{ repo_count }}
-            </a>
-          </h1>
-        </div>
-    </div>
-</div>
+{% block title %}
+  {% trans %}Admin area{% endtrans %}
 {% endblock %}
-
-<!-- /.container -->
-</div>
-
+{% block body %}
+  <div class="container">
+    {# Navigation bar for Administration #}
+    {% set admin_nav_items = [
+    ('', _('Overview'), not admin_nav_active),
+    ('users', _('Users'), admin_nav_active=='users'),
+    ('repos', _('Repositories'), admin_nav_active=='repos'),
+    ('logs', _('Logs'), admin_nav_active=='logs'),
+    ('sysinfo', _('System Info'), admin_nav_active=='sysinfo')] %}
+    <ul class="nav nav-tabs mb-4" role="tablist">
+      {% for key, label, active in admin_nav_items %}
+        <li class="nav-item">
+          <a class="nav-link{% if active %} active{% endif %}"
+             href="{{ url_for('admin', key) }}">{{ label }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+    {% include 'message.html' %}
+    {% block content %}
+      {% set card_items = [
+      (_('Users'), user_count, url_for('admin','users'), 'primary'),
+      (_('Repositories'), repo_count, url_for('admin','repos'), 'success'),
+      ]%}
+      <div class="row">
+        {% for label, count, url, class in card_items %}
+          <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card">
+              <div class="card border-{{ class }} shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div class="text-xs font-weight-bold text-uppercase mb-1">
+                        <a class="stretched-link text-{{ class }}" href="{{ url }}">{{ label }}</a>
+                      </div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">{{ count }}</div>
+                    </div>
+                    <div class="col-auto">
+                      <i class="bi bi-collection h1 text-secondary" aria-hidden="true"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endblock %}
+  </div>
 {% endblock %}

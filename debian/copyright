@@ -8,9 +8,7 @@ Copyright: 2019-2021 Patrik Dufresne <patrik@ikus-soft.com>
 License: GPL-3+
 
 Files:
- rdiffweb/static/less/bootstrap/*
- rdiffweb/static/js/bootstrap.min.js
- vendor/bootstrap/*
+ rdiffweb/static/js/bootstrap.*
 Copyright: 2011-2019, Twitter, Inc.
            2014, jQuery Foundation and other contributors
            2014, "Cowboy" Ben Alman, contributors
@@ -24,10 +22,6 @@ License-Grant:
  Docs released under Creative Commons
  <https://github.com/twbs/bootstrap/blob/master/docs/LICENSE>.
 License: Expat
-
-Files: vendor/jquery-validation/*
-Copyright: Copyright (C) 2013 Jörn Zaefferer
-License: MIT
 
 Files: rdiffweb/static/js/chart.min.js
 Copyright: Copyright (C) 2021 Chart.js Contributors

@@ -1,60 +1,33 @@
-{#
-Rdiffweb SSHKeys plugins
-
-Copyright (C) 2012-2021 rdiffweb contributors
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#}
-
-<div class="spacer"/>
-
-{% include 'message.html' %}
-
 {% from 'include/panel.html' import panel %}
 {% from 'include/widget.html' import maxage_dropdown %}
-
+{% include 'message.html' %}
 <!-- Panel to set notification info -->
 {% call panel(title=_("Notification settings")) %}
 <div class="panel-body">
-<form action="#" method="post" role="form" class="clearfix" >
+  <form action="#" method="post" role="form">
     <div class="form-group">
-        <label for="email" class="control-label">
-            {% trans %}Notification sent to{% endtrans %}</label>
-        <div>
-            <input class="form-control" type="text"
-                id="email" readonly="readonly"
-                value="{{ email }}" />
+      <label for="email">{% trans %}Notification sent to{% endtrans %}</label>
+      <div>
+        <input class="form-control"
+               type="text"
+               id="email"
+               readonly="readonly"
+               value="{{ email }}"/>
+      </div>
+    </div>
+    <div class="mb-4 font-weight-bold">{% trans %}Send notification for the following repositories:{% endtrans %}</div>
+    {% for repo in repos %}
+      <div class="row mb-2">
+        <div class="col">
+          <label for="{{ repo.name }}">{{ repo.name }}</label>
         </div>
-    </div>
-    <div class="form-group">
-        <label for="email" class="control-label">
-            {% trans %}Send notification for the following repositories:{% endtrans %}</label>
-    </div>
-    <div class="form-horizontal">
-        {% for repo in repos %}
-        <div class="form-group" >
-            <label for="{{ repo.name }}" class="col-sm-2 control-label">{{ repo.name }}</label>
-            <div class="col-sm-10">
-            {{ maxage_dropdown(class="form-control", id=repo.name, name=repo.name, value=repo.maxage) }}
-            </div>
-        </div>
-        {% endfor %}
-    </div>
+        <div class="col">{{ maxage_dropdown(class="form-control", id=repo.name, name=repo.name, value=repo.maxage) }}</div>
+      </div>
+    {% endfor %}
     <input type="hidden" name="action" value="set_notification_info" />
     <div>
-        <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
+      <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
     </div>
-</form>
+  </form>
 </div>
 {% endcall %}

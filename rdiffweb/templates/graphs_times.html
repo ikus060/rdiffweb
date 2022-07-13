@@ -1,9 +1,7 @@
 {% extends 'graphs.html' %}
 {% from 'include/chartkick.html' import line_chart %}
 {% block graph_body %}
-<h2>{% trans %}Elapsed Time{% endtrans%}</h2>
-<p>
-{% trans %}Average time to complete backup.{% endtrans %}
-</p>
-{{ line_chart(data.elapsedtime, prefix='min') }}
+  <h2>{% trans %}Elapsed Time{% endtrans %}</h2>
+  <p>{% trans %}Average time to complete backup.{% endtrans %}</p>
+  {{ line_chart(data.elapsedtime, prefix='min') }}
 {% endblock %}

@@ -16,83 +16,66 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #}
-
-<div class="spacer"/>
-
 {% include 'message.html' %}
-
 {% from 'include/panel.html' import panel %}
-
 <!-- Panel to set user info. -->
 {% call panel(title=_("General information")) %}
 <div class="panel-body">
-<form action="#" method="post" role="form" class="clearfix" >
+  <form action="#" method="post" role="form">
     <div class="form-group">
-        <label for="username" class="control-label">
-            {% trans %}Username{% endtrans %}</label>
-        <div>
-            <input class="form-control" type="text" name="username" 
-                id="username" readonly="readonly"
-                value="{{ username }}" />
-        </div>
+      <label for="username">{% trans %}Username{% endtrans %}</label>
+      <div>
+        <input class="form-control"
+               type="text"
+               name="username"
+               id="username"
+               readonly="readonly"
+               value="{{ username }}"/>
+      </div>
     </div>
     <div class="form-group">
-        {{ profile_form.email.label(class="control-label") }}
-        <div>
-            {{ profile_form.email(class="form-control") }}
-        </div>
+      {{ profile_form.email.label() }}
+      <div>{{ profile_form.email(class="form-control") }}</div>
     </div>
     <input type="hidden" name="action" value="set_profile_info" />
     <div>
-        <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
+      <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
     </div>
-</form>
+  </form>
 </div>
 {% endcall %}
-
 <!-- Panel to change password. -->
 {% call panel(title=_("Change password")) %}
 <div class="panel-body">
-<form action="#" method="post" role="form" class="clearfix" data-validate>
+  <form action="#" method="post" role="form" data-validate>
     <div class="form-group">
-        {{ password_form.current.label(class="control-label") }}
-        <div>
-            {{ password_form.current(class="form-control") }}
-        </div>
+      {{ password_form.current.label() }}
+      <div>{{ password_form.current(class="form-control") }}</div>
     </div>
     <div class="form-group">
-        {{ password_form.new.label(class="control-label") }}
-        <div>
-            {{ password_form.new(class="form-control") }}
-        </div>
+      {{ password_form.new.label() }}
+      <div>{{ password_form.new(class="form-control") }}</div>
     </div>
     <div class="form-group">
-        {{ password_form.confirm.label(class="control-label") }}
-        <div>
-            {{ password_form.confirm(class="form-control", data_rule_equalto="#new") }}
-        </div>
+      {{ password_form.confirm.label() }}
+      <div>{{ password_form.confirm(class="form-control", data_rule_equalto="#new") }}</div>
     </div>
     <input type="hidden" name="action" value="set_password" />
     <div>
-        <button type="submit" class="btn btn-success">
-            {% trans %}Update password{% endtrans %}
-        </button>
+      <button type="submit" class="btn btn-success">{% trans %}Update password{% endtrans %}</button>
     </div>
-</form>
+  </form>
 </div>
 {% endcall %}
-
 <!-- Panel to refresh repository list. -->
 {% call panel(title=_("Refresh")) %}
 <div class="panel-body">
-<form action="#" method="post" role="form">
+  <form action="#" method="post" role="form">
     <input type="hidden" name="action" value="update_repos" />
-    <p class="help-block">
-        {% trans %}Refresh the list of repositories associated to your account. If you recently add a new repository and it doesn't show, you may try to refresh the list.{% endtrans %}
+    <p class="form-text">
+      {% trans %}Refresh the list of repositories associated to your account. If you recently add a new repository and it doesn't show, you may try to refresh the list.{% endtrans %}
     </p>
-    <button type="submit" class="btn btn-success">
-        {% trans %}Refresh repositories{% endtrans %}
-    </button>
-</form>
+    <button type="submit" class="btn btn-success">{% trans %}Refresh repositories{% endtrans %}</button>
+  </form>
 </div>
 {% endcall %}

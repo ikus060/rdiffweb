@@ -186,7 +186,7 @@ def get_parser():
         '--header-name',
         '--headername',
         help='application name displayed in the title bar and header menu.',
-        default='rdiffweb',
+        default='Rdiffweb',
     )
 
     parser.add_argument(

@@ -179,7 +179,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         # Login as maintainer
         self._login('user', 'password')
 
-        # Try to delete own own repo
+        # Try to delete our own repo
         self._delete('user', 'testcases', 'testcases', redirect='/admin/repos/')
         self.assertStatus(403)
 
