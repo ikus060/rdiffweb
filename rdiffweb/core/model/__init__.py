@@ -56,10 +56,20 @@ def db_after_create(target, connection, **kw):
     if getattr(connection, '_transaction', None):
         connection._transaction.commit()
 
+    # Add repo's Encoding
+    add_column(RepoObject.__table__.c.Encoding)
+    add_column(RepoObject.__table__.c.keepdays)
+
+    # Create column for roles using "isadmin" column. Keep the
+    # original column in case we need to revert to previous version.
+    if not exists(UserObject.__table__.c.role):
+        add_column(UserObject.__table__.c.role)
+        UserObject.query.filter(UserObject._is_admin == 1).update({UserObject.role: UserObject.ADMIN_ROLE})
+
     # Add user's fullname
     add_column(UserObject.__table__.c.fullname)
 
-    # Re-create session table is Number column is missing
+    # Re-create session table if Number column is missing
     if not exists(SessionObject.__table__.c.Number):
         SessionObject.__table__.drop()
         SessionObject.__table__.create()
