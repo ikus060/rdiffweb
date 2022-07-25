@@ -115,6 +115,7 @@ This next release focus on multi-factor-authentication as a measure to increase 
 * Update ldap plugin to load additional attributes from LDAP server
 * Fix status page error handling
 * Add support for Ubuntu Jammy
+* Drop Ubuntu Hirsute & Impish (End-of-life)
 * Upgrade to Bootstrap v4 #204
 * Upgrade from bootstrap v3 to v4
 * Replace Fontello by Font-Awesome v4
