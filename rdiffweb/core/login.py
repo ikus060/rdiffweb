@@ -82,7 +82,7 @@ class LoginPlugin(SimplePlugin):
                     **extra_attrs
                 )
                 default_role = UserObject.ROLES.get(self.add_user_default_role)
-                userobj = UserObject(
+                userobj = UserObject.add_user(
                     username=real_username,
                     fullname=fullname,
                     email=email,

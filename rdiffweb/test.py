@@ -133,9 +133,9 @@ class WebCase(helper.CPWebCase):
     @classmethod
     def setup_server(cls):
         # Allow defining a custom database uri for testing.
-        cls.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
-        uri = os.path.join(cls.database_dir, 'rdiffweb.tmp.db')
-        uri = os.environ.get('RDIFFWEB_TEST_DATABASE_URI', uri)
+        uri = os.environ.get(
+            'RDIFFWEB_TEST_DATABASE_URI', 'sqlite:///' + tempfile.gettempdir() + '/test_rdiffweb_data.db'
+        )
         cls.default_config['database-uri'] = uri
         # Disable rate-limit for testing.
         if 'rate-limit' not in cls.default_config:

@@ -60,9 +60,9 @@ class UserObject(Base):
     }
 
     userid = Column('UserID', Integer, primary_key=True)
-    username = Column('Username', String, nullable=False, unique=True)
+    _username = Column('Username', String, nullable=False, unique=True)
     hash_password = Column('Password', String, nullable=False, default="")
-    user_root = Column('UserRoot', String, nullable=False, default="")
+    _user_root = Column('UserRoot', String, nullable=False, default="")
     is_admin = Column(
         'IsAdmin',
         SmallInteger,
@@ -70,7 +70,7 @@ class UserObject(Base):
         server_default="0",
         doc="DEPRECATED This column is replaced by 'role'",
     )
-    email = Column('UserEmail', String, nullable=False, default="")
+    _email = Column('UserEmail', String, nullable=False, default="")
     restore_format = Column(
         'RestoreFormat',
         SmallInteger,
@@ -78,7 +78,7 @@ class UserObject(Base):
         server_default="1",
         doc="DEPRECATED This column is not used anymore",
     )
-    role = Column('role', SmallInteger, nullable=False, server_default=str(USER_ROLE))
+    _role = Column('role', SmallInteger, nullable=False, server_default=str(USER_ROLE))
     fullname = Column('fullname', String, nullable=False, default="")
     repo_objs = relationship(
         'RepoObject',
@@ -99,9 +99,7 @@ class UserObject(Base):
         # Check if admin user exists. If not, created it.
         userobj = UserObject.get_user(default_username)
         if not userobj:
-            userobj = cls.add_user(default_username)
-            userobj.role = UserObject.ADMIN_ROLE
-            userobj.user_root = '/backups'
+            userobj = cls.add_user(default_username, role=UserObject.ADMIN_ROLE, user_root='/backups')
         # Also make sure to update the password with latest value from config file.
         if default_password and default_password.startswith('{SSHA}'):
             userobj.hash_password = default_password
@@ -112,18 +110,24 @@ class UserObject(Base):
         userobj.add()
 
     @classmethod
-    def add_user(cls, user, password=None, attrs=None):
+    def add_user(cls, username, password=None, **attrs):
         """
         Used to add a new user with an optional password.
         """
         assert password is None or isinstance(password, str)
         # Check if user already exists.
-        if UserObject.get_user(user):
-            raise ValueError(_("User %s already exists." % (user,)))
+        if UserObject.get_user(username):
+            raise ValueError(_("User %s already exists." % (username,)))
 
         # Find a database where to add the user
-        logger.info("adding new user [%s]", user)
-        userobj = UserObject(username=user, hash_password=hash_password(password) if password else '').add()
+        logger.info("adding new user [%s]", username)
+        userobj = UserObject(
+            username=username,
+            hash_password=hash_password(password) if password else '',
+            **attrs,
+        ).add()
+        # Raise event
+        cherrypy.engine.publish('user_added', userobj)
         # Return user object
         return userobj
 
@@ -341,42 +345,55 @@ class UserObject(Base):
     def __eq__(self, other):
         return type(self) == type(other) and inspect(self).key == inspect(other).key
 
+    @hybrid_property
+    def username(self):
+        return self._username
 
-@event.listens_for(UserObject.username, "set")
-def username_set(target, value, oldvalue, initiator):
-    cherrypy.engine.publish('user_attr_changed', target, {'username': (oldvalue, value)})
+    @username.setter
+    def username(self, value):
+        oldvalue = self._username
+        self._username = value
+        if oldvalue != value:
+            cherrypy.engine.publish('user_attr_changed', self, {'username': (oldvalue, value)})
 
+    @hybrid_property
+    def role(self):
+        return self._role
 
-@event.listens_for(UserObject.role, "set")
-def role_set(target, value, oldvalue, initiator):
-    if value != oldvalue:
-        cherrypy.engine.publish('user_attr_changed', target, {'role': (target.role, value)})
+    @role.setter
+    def role(self, value):
+        oldvalue = self._role
+        self._role = value
+        if oldvalue != value:
+            cherrypy.engine.publish('user_attr_changed', self, {'role': (oldvalue, value)})
 
+    @hybrid_property
+    def email(self):
+        return self._email
 
-@event.listens_for(UserObject.email, "set")
-def email_set(target, value, oldvalue, initiator):
-    if value != oldvalue:
-        cherrypy.engine.publish('user_attr_changed', target, {'email': (oldvalue, value)})
+    @email.setter
+    def email(self, value):
+        oldvalue = self._email
+        self._email = value
+        if oldvalue != value:
+            cherrypy.engine.publish('user_attr_changed', self, {'email': (oldvalue, value)})
 
+    @hybrid_property
+    def user_root(self):
+        return self._user_root
 
-@event.listens_for(UserObject.user_root, "set")
-def user_root_set(target, value, oldvalue, initiator):
-    if value != oldvalue:
-        cherrypy.engine.publish('user_attr_changed', target, {'user_root': (oldvalue, value)})
+    @user_root.setter
+    def user_root(self, value):
+        oldvalue = self._user_root
+        self._user_root = value
+        if oldvalue != value:
+            cherrypy.engine.publish('user_attr_changed', self, {'user_root': (oldvalue, value)})
 
 
 @event.listens_for(UserObject.hash_password, "set")
 def hash_password_set(target, value, oldvalue, initiator):
     if value and value != oldvalue:
         cherrypy.engine.publish('user_password_changed', target)
-
-
-@event.listens_for(UserObject, 'after_insert')
-def user_after_insert(mapper, connection, target):
-    """
-    Publish event when user is created.
-    """
-    cherrypy.engine.publish('user_added', target)
 
 
 @event.listens_for(UserObject, 'after_delete')
