@@ -110,6 +110,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 ## 2.4.1 (2022-09-08)
 
 * Add Clickjacking Defense
+* Drop Ubuntu Hirsute & Impish (End-of-life)
 
 ## 2.4.0 (2022-06-21)
 
