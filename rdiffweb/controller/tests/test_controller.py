@@ -21,6 +21,8 @@ Created on Mar 13, 2019
 """
 
 
+import datetime
+
 from parameterized import parameterized
 
 import rdiffweb.test
@@ -107,7 +109,7 @@ class ControllerBlueThemeTest(rdiffweb.test.WebCase):
         self.assertInBody('/static/blue.css')
 
 
-class ControllerEnrichSession(rdiffweb.test.WebCase):
+class ControllerSession(rdiffweb.test.WebCase):
     def test_enrich_session_anonymous(self):
         # When making a query to a page while unauthenticated
         self.getPage('/', headers=[('User-Agent', 'test')])
@@ -136,3 +138,30 @@ class ControllerEnrichSession(rdiffweb.test.WebCase):
         self.assertIsNotNone(session.get('ip_address'))
         self.assertIsNotNone(session.get('user_agent'))
         self.assertIsNotNone(session.get('access_time'))
+
+    def test_create_session(self):
+        # Given a server with no session.
+        self.assertEquals(0, len(SessionObject.query.all()))
+        # When querying a new page
+        self.getPage('/')
+        self.assertStatus(303)
+        # Then a new session get created
+        self.assertEquals(1, len(SessionObject.query.all()))
+        session = SessionObject.query.filter(SessionObject.id == self.session_id).first()
+        self.assertIsNotNone(session)
+
+    def test_clean_up_session(self):
+        # Given a server with a session
+        self.getPage('/')
+        self.assertStatus(303)
+        self.assertEquals(1, len(SessionObject.query.all()))
+        # When this session get old
+        data = SessionObject.query.filter(SessionObject.id == self.session_id).first()
+        data.expiration_time = datetime.datetime.now() - datetime.timedelta(seconds=1)
+        data.add()
+        session = DbSession(id=self.session_id)
+        # Then the session get deleted by clean_up process
+        session.clean_up()
+        # Then session is deleted
+        data = SessionObject.query.filter(SessionObject.id == self.session_id).first()
+        self.assertIsNone(data)
