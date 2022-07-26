@@ -38,6 +38,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         # When creating database
         cherrypy.tools.db.create_all()
         # Then duplicates are removed
+        userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
 
     def test_update_remove_nested(self):
@@ -53,6 +54,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         # When creating database
         cherrypy.tools.db.create_all()
         # Then nested path are removed
+        userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
 
     def test_update_repos_remove_slash(self):
@@ -64,6 +66,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         # When updating the database schema
         cherrypy.tools.db.create_all()
         # Then the repository name stripped the "/"
+        userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(['testcases'], sorted([r.name for r in userobj.repo_objs]))
 
     def test_search(self):

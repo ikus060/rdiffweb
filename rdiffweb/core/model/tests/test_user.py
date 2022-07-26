@@ -72,6 +72,22 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Check if listener called
         self.listener.user_added.assert_called_once_with(userobj)
 
+    def test_add_user_updated_by_listener(self):
+        """Add user to database."""
+        # Given a listener with side effet
+        def change_user_obj(userobj):
+            userobj.user_root = '/new/value'
+
+        self.listener.user_added.side_effect = change_user_obj
+        # When adding user
+        userobj = UserObject.add_user('joe')
+        self.assertIsNotNone(userobj)
+        self.assertIsNotNone(UserObject.get_user('joe'))
+        # Then lister get called
+        self.listener.user_added.assert_called_once_with(userobj)
+        # Then object was updated by listener
+        self.assertEqual('/new/value', userobj.user_root)
+
     def test_add_user_with_duplicate(self):
         """Add user to database."""
         UserObject.add_user('denise')
