@@ -21,6 +21,8 @@ Created on Mar 13, 2019
 """
 
 
+from parameterized import parameterized
+
 import rdiffweb.test
 from rdiffweb.core.model import DbSession, SessionObject
 
@@ -39,13 +41,41 @@ class ControllerTest(rdiffweb.test.WebCase):
         self.assertStatus('200 OK')
         self.assertInBody('MyTest')
 
-    def test_theme(self):
+    @parameterized.expand(
+        [
+            '/favicon.ico',
+            '/static/blue.css',
+            '/static/css/bootstrap.min.css',
+            '/static/css/font-awesome.min.css',
+            '/static/css/jquery.dataTables.min.css',
+            '/static/default.css',
+            '/static/js/bootstrap.bundle.min.js',
+            '/static/js/jquery.dataTables.min.js',
+            '/static/js/jquery.min.js',
+            '/static/js/rdiffweb.js',
+            '/static/orange.css',
+        ]
+    )
+    def test_static_files(self, path):
         """
         Check if the theme is properly configure.
         """
-        self.getPage("/")
-        self.assertStatus('200 OK')
-        self.assertInBody('/static/default.css')
+        self.getPage(path)
+        self.assertStatus(200)
+
+    def test_static_invalid_method(self):
+        """
+        Check if the theme is properly configure.
+        """
+        self.getPage("/static/default.css", method="POST")
+        self.assertStatus(405)
+
+    def test_static_invalid_file(self):
+        """
+        Check if the theme is properly configure.
+        """
+        self.getPage("/static/invalid.css")
+        self.assertStatus(404)
 
 
 class ControllerOrangeThemeTest(rdiffweb.test.WebCase):

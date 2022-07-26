@@ -1,59 +1,50 @@
 {% extends 'admin.html' %}
+{% from 'include/datatables.html' import datatables %}
 {% block title %}
   {% trans %}User management{% endtrans %}
 {% endblock %}
 {% set admin_nav_active="repos" %}
 {% block content %}
-  {% from 'include/empty.html' import empty %}
-  {% from 'include/search.html' import search_bar %}
-  {% from 'components/nav.html' import nav_pills %}
-  {% from 'include/modal_dialog.html' import button_confirm, modal_confirm %}
-  {% set nav_items = [
-  (_('All'), url_for(criteria=''), criteria == ''),
-  (_('Healthy'), url_for(criteria='ok'), criteria == 'ok'),
-  (_('Failed'), url_for(criteria='failed'), criteria == 'failed'),
-  (_('Interrupted'), url_for(criteria='interrupted'), criteria == 'interrupted'),
-  (_('In progress'), url_for(criteria='in_progress'), criteria == 'in_progress')] %}
-  {{ nav_pills(nav_items)}}
-  {{ search_bar( search_placeholder=_('Search by name or path'), search=search) }}
-  <div class="row">
-    <div class="col-md-12">
-      {% if repos %}
-        <div class="list-group">
-          {% for repo in repos %}
-            <div {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }}>
-              <strong>
-                <a href="{{ url_for('browse', repo) }}">
-                  {% if repo.status[0] != 'ok' %}
-                    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-                  {% else %}
-                    <i class="fa fa-archive" aria-hidden="true"></i>
-                  {% endif %}
-                {{ repo.display_name }}</a>
-              </strong>
-              <span class="pull-right">
-                <a class="btn btn-secondary"
-                   href="{{ url_for('settings', repo) }}"
-                   role="button">{% trans %}Settings{% endtrans %}</a>
-              </span>
-              {% if repo.status[0] != 'ok' %}
-                <br/>
-                {{ repo.status[1] }}
-              {% endif %}
-              <br/>
-              {% trans %}Owner: {% endtrans %}{{ repo.owner }}
-              {% if repo.last_backup_date %}
-                <br/>
-                {% trans %}Updated {% endtrans %}
-                <time datetime="{{ repo.last_backup_date }}">{{ repo.last_backup_date | lastupdated }}</time>
-              {% endif %}
-            </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p class="text-center">{% trans %}No repository found{% endtrans %}</p>
-      {% endif %}
-    </div>
-    <!-- /.row -->
-  </div>
+  {% set filter_buttons = [
+  (_('Healthy'), 2, 'ok'),
+  (_('Failed'), 2, 'failed'),
+  (_('Interrupted'), 2, 'interrupted'),
+  (_('In progress'), 2, 'in_progress')] %}
+  {% call() datatables(_('Repository list'), filter_buttons) %}
+  <thead>
+    <tr>
+      <th scope="col">Display Name</th>
+      <th scope="col">Owner</th>
+      <th scope="col">Status</th>
+      <th scope="col" data-sortable="false">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for repo in repos %}
+      <tr class="{{ 'table-warning' if repo.status[0] != 'ok' else '' }}">
+        <td data-search="{{ repo.display_name }}">
+          {% if repo.status[0] != 'ok' %}
+            <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+          {% else %}
+            <i class="fa fa-archive" aria-hidden="true"></i>
+          {% endif %}
+          <a href="{{ url_for('browse', repo) }}">{{ repo.display_name }}</a>
+        </td>
+        <td data-search="{{ repo.owner }}">{{ repo.owner }}</td>
+        <td data-search="{{ repo.status[0] }}">
+          {% if repo.last_backup_date %}
+            {% trans %}Updated {% endtrans %}
+            <time datetime="{{ repo.last_backup_date }}">{{ repo.last_backup_date | lastupdated }}</time>
+          {% endif %}
+          {% if repo.status[0] != 'ok' %}{{ repo.status[1] }}{% endif %}
+        </td>
+        <td data-search="">
+          <a class="btn btn-secondary"
+             href="{{ url_for('settings', repo) }}"
+             role="button">{% trans %}Settings{% endtrans %}</a>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+{% endcall %}
 {% endblock %}

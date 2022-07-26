@@ -22,7 +22,7 @@ import os
 import sys
 
 import cherrypy
-from sqlalchemy import Column, Integer, SmallInteger, String, and_, case, event, or_, orm
+from sqlalchemy import Column, Integer, SmallInteger, String, and_, case, event, orm
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, validates
 
@@ -129,32 +129,6 @@ class RepoObject(Base, RdiffRepo):
             return repo_obj, path[pos + 1 :]
         except ValueError:
             raise DoesNotExistError(path)
-
-    @classmethod
-    def search(cls, search=None, criteria=None):
-        """
-        Quick listing of all the repository object for all user.
-
-        search: Define a search term to look into path, email or username.
-        criteria: Define a search filter: ok, failed, interrupted, in_progress
-        """
-        from ._user import UserObject
-
-        if search:
-            return (
-                RepoObject.query.join(UserObject, UserObject.userid == RepoObject.userid)
-                .filter(
-                    or_(
-                        UserObject.username.contains(search),
-                        UserObject.email.contains(search),
-                        RepoObject.repopath.contains(search),
-                    )
-                )
-                .all()
-            )
-        elif criteria:
-            return [repo for repo in RepoObject.query.all() if criteria == repo.status[0]]
-        return RepoObject.query.all()
 
     @orm.reconstructor
     def __init_on_load__(self):

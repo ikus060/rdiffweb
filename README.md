@@ -121,6 +121,7 @@ This next release focus on multi-factor-authentication as a measure to increase 
 * Replace Fontello by Font-Awesome v4
 * Use CSS variables `var()` to customize themes
 * Remove usage of Jquery.validate
+* Replace custom timsort by jquery DataTables #205
 
 Breaking changes:
 

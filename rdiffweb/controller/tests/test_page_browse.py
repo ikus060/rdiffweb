@@ -145,7 +145,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         self.assertInBody("14 bytes")
         self.assertInBody("0 bytes")
         #  Also check dates
-        self.assertInBody("data-value=\"1414871475\"")
+        self.assertInBody("data-order=\"1414871475\"")
 
     def test_sub_directory_exists(self):
         """
@@ -191,8 +191,8 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         self.assertInBody("Untitled Testcase.doc")
         self.assertInBody("Data")
         #  Check size
-        self.assertInBody('data-value="21"')
-        self.assertInBody('data-value="14848"')
+        self.assertInBody('data-order="21"')
+        self.assertInBody('data-order="14848"')
 
     def test_invalid_repo(self):
         """

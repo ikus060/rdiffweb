@@ -99,61 +99,11 @@ class UserObjectTest(rdiffweb.test.WebCase):
         self.assertEqual(1, UserObject.query.count())
         # Create user.
         UserObject.add_user('annik')
-        users = list(UserObject.users())
+        users = UserObject.query.all()
         self.assertEqual(2, len(users))
         self.assertEqual('annik', users[1].username)
         # Then 2 user exists
         self.assertEqual(2, UserObject.query.count())
-
-    def test_users_with_search(self):
-        # Check admin exists
-        self.assertEqual(1, len(UserObject.users()))
-        # Create users.
-        UserObject.add_user('annik')
-        UserObject.add_user('tom')
-        UserObject.add_user('jeff')
-        UserObject.add_user('josh')
-        # Then 5 users exists
-        self.assertEqual(5, UserObject.query.count())
-        # Search users.
-        users = list(UserObject.users(search='j'))
-        self.assertEqual(2, len(users))
-        self.assertIn('jeff', [u.username for u in users])
-        self.assertIn('josh', [u.username for u in users])
-
-    def test_users_with_criteria_admins(self):
-        # Check admin exists
-        self.assertEqual(1, len(UserObject.users()))
-        # Create users.
-        UserObject.add_user('annik').role = UserObject.ADMIN_ROLE
-        UserObject.add_user('tom').role = UserObject.ADMIN_ROLE
-        UserObject.add_user('jeff')
-        UserObject.add_user('josh')
-        # Search
-        users = list(UserObject.users(criteria='admins'))
-        self.assertEqual(3, len(users))
-        self.assertEqual(['admin', 'annik', 'tom'], sorted([u.username for u in users]))
-
-    def test_users_with_criteria_ldap(self):
-        # Check admin users exists
-        self.assertEqual(1, len(UserObject.users()))
-        # Create users.
-        UserObject.add_user('annik', 'coucou')
-        UserObject.add_user('tom')
-        # search
-        users = list(UserObject.users(criteria='ldap'))
-        self.assertEqual(1, len(users))
-        self.assertEqual('tom', users[0].username)
-
-    def test_users_with_criteria_invalid(self):
-        # Check admin users exists
-        self.assertEqual(1, len(UserObject.users()))
-        # Create users
-        UserObject.add_user('annik', 'coucou')
-        UserObject.add_user('tom')
-        # Search
-        users = list(UserObject.users(criteria='invalid'))
-        self.assertEqual(0, len(users))
 
     def test_get_user(self):
         # Create new user

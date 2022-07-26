@@ -313,7 +313,7 @@ class AdminPage(Controller):
         return self._compile_template("admin_logs.html", **params)
 
     @cherrypy.expose
-    def users(self, username=None, criteria=u"", search=u"", action=u"", **kwargs):
+    def users(self, username=None, action=u"", **kwargs):
 
         # If we're just showing the initial page, just do that
         if action == "add":
@@ -347,20 +347,16 @@ class AdminPage(Controller):
         params = {
             "add_form": UserForm(formdata=None),
             "edit_form": EditUserForm(formdata=None),
-            "criteria": criteria,
-            "search": search,
-            "users": UserObject.users(search=search, criteria=criteria),
+            "users": UserObject.query.all(),
         }
 
         # Build users page
         return self._compile_template("admin_users.html", **params)
 
     @cherrypy.expose
-    def repos(self, criteria=u"", search=u""):
+    def repos(self):
         params = {
-            "criteria": criteria,
-            "search": search,
-            "repos": RepoObject.search(search=search, criteria=criteria),
+            "repos": RepoObject.query.all(),
         }
         return self._compile_template("admin_repos.html", **params)
 

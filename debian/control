@@ -45,6 +45,8 @@ Depends:
  libjs-chart.js,
  libjs-chartkick.js,
  libjs-jquery,
+ libjs-jquery-datatables,
+ libjs-jquery-datatables-extensions,
  python3-distutils,
  python3-future,
  rdiff-backup,

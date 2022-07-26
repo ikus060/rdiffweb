@@ -40,7 +40,7 @@ black:
 isort:
   <<: *tox
 
-djhtml:
+djlint:
   <<: *tox
 
 py3:

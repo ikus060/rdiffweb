@@ -12,7 +12,7 @@
     ('repos', _('Repositories'), admin_nav_active=='repos'),
     ('logs', _('Logs'), admin_nav_active=='logs'),
     ('sysinfo', _('System Info'), admin_nav_active=='sysinfo')] %}
-    <ul class="nav nav-tabs mb-4" role="tablist">
+    <ul class="nav nav-tabs mb-2" role="tablist">
       {% for key, label, active in admin_nav_items %}
         <li class="nav-item">
           <a class="nav-link{% if active %} active{% endif %}"

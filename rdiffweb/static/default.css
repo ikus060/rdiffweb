@@ -1,45 +1,85 @@
 :root {
     --link-color: #35979c;
     --navbar-color: #383E45;
-    --font-family-sans-serif: "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+    --font-family-sans-serif: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
+
 /* Adjust for fixed header */
 body {
     padding-top: 4.5rem;
     min-height: 100vh;
     font-family: var(--font-family-sans-serif);
 }
+
 /* Adjust navbar color */
 .navbar.bg-dark {
-    background-color: var(--navbar-color)!important;
+    background-color: var(--navbar-color) !important;
 }
+
 /* Adjust primary color */
 a {
     color: var(--link-color);
 }
+
 a:hover {
     filter: brightness(.85);
     color: var(--link-color);
 }
+
 .btn-primary {
     background-color: var(--link-color);
     border-color: var(--link-color);
 }
+
 .btn-primary:hover {
     filter: brightness(.85);
     background-color: var(--link-color);
     border-color: var(--link-color);
 }
-.btn-primary:focus, .btn-primary:not(:disabled):not(.disabled).active, .btn-primary:not(:disabled):not(.disabled):active, .show>.btn-primary.dropdown-toggle {
+
+.btn-primary:focus,
+.btn-primary:not(:disabled):not(.disabled).active,
+.btn-primary:not(:disabled):not(.disabled):active,
+.show>.btn-primary.dropdown-toggle {
     filter: brightness(.65);
     background-color: var(--link-color);
     border-color: var(--link-color);
 }
+
 .list-group-item.active {
     background-color: var(--link-color);
     border-color: var(--link-color);
 }
+
 .nav-pills .nav-link.active {
     background-color: var(--link-color);
     border-color: var(--link-color);
+}
+
+/* DataTable adjustments */
+table.dataTable thead>tr>th.sorting {
+    padding-top: 5px 30px 5px 5px;
+}
+.dataTables_filter {
+    white-space: nowrap;
+}
+.dataTables_filter label {
+    margin-bottom: 0;
+}
+.dataTables_filter input {
+    display: inline-block; 
+    width: auto;
+}
+/* DataTable Buttons adjustments to align them on mobile */
+@media screen and (max-width: 640px){
+    .dataTables_wrapper .dt-buttons {
+        text-align: center;
+    }
+}
+/* DataTable Buttons adjustments to change default colors */ 
+table.dataTable.dtr-inline.collapsed>tbody>tr>td:first-child:before, table.dataTable.dtr-inline.collapsed>tbody>tr>th:first-child:before {
+    background-color: var(--link-color);
+}
+table.dataTable.dtr-inline.collapsed>tbody>tr.parent>td:first-child:before, table.dataTable.dtr-inline.collapsed>tbody>tr.parent>th:first-child:before {
+    background-color: var(--navbar-color);
 }

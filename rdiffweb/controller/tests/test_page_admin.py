@@ -162,9 +162,6 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.assertInBody("chaned@test.com")
         self.assertNotInBody("/home/")
         self.assertInBody("/tmp/")
-        #  Check with filters
-        self.getPage("/admin/users/?criteria=admins")
-        self.assertInBody("test2")
 
         self._delete_user("test2")
         self.listener.user_deleted.assert_called()
@@ -187,9 +184,6 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.assertInBody("eric.létourno@test.com")
         self.assertNotInBody("/home/")
         self.assertInBody("/tmp/")
-        # Check with filter
-        self.getPage("/admin/users/?criteria=admins")
-        self.assertInBody("Éric")
 
         self._delete_user("Éric")
         self.assertInBody("User account removed.")
@@ -309,27 +303,9 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.assertStatus(200)
         self.assertInBody("Cannot edit user `invalid`: user doesn&#39;t exists")
 
-    def test_criteria(self):
-        """
-        Check if admin criteria is working.
-        """
-        UserObject.add_user('test1')
-        self.getPage("/admin/users/?criteria=admins")
-        self.assertNotInBody("test1")
-
-    def test_search(self):
-        """
-        Check if user search is working.
-        """
-        UserObject.add_user('test1')
-        self.getPage("/admin/users?search=tes")
-        self.assertInBody("test1")
-        self.getPage("/admin/users?search=coucou")
-        self.assertNotInBody("test1")
-
     def test_user_invalid_root(self):
         # Delete all user's
-        for user in UserObject.users():
+        for user in UserObject.query.all():
             if user.username != self.USERNAME:
                 user.delete()
         # Change the user's root
@@ -351,7 +327,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.listener.get_disk_quota.side_effect = None
         self.listener.get_disk_quota.return_value = 654321
         # When querying the user list
-        self.getPage("/admin/users/?criteria=admins")
+        self.getPage("/admin/users/")
         self.assertStatus(200)
         # Then get_disk_quota listenre is called
         self.listener.get_disk_quota.assert_called()
@@ -526,30 +502,6 @@ class AdminReposTest(rdiffweb.test.WebCase):
     def test_repos(self):
         self.getPage("/admin/repos")
         self.assertStatus(200)
-
-    def test_repos_with_search(self):
-        # Search something that exists
-        self.getPage("/admin/repos?search=test")
-        self.assertStatus(200)
-        self.assertInBody(self.REPO)
-
-        # Search something that doesn't exists
-        self.getPage("/admin/repos?search=coucou")
-        self.assertStatus(200)
-        self.assertNotInBody(self.REPO)
-        self.assertInBody("No repository found")
-
-    def test_repos_with_criteria(self):
-        # Search something that exists
-        self.getPage("/admin/repos?criteria=ok")
-        self.assertStatus(200)
-        self.assertInBody(self.REPO)
-
-        # Search something that exists
-        self.getPage("/admin/repos?criteria=failed")
-        self.assertStatus(200)
-        self.assertNotInBody(self.REPO)
-        self.assertInBody("No repository found")
 
 
 class AdminSysinfoTest(rdiffweb.test.WebCase):

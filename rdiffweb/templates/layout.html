@@ -15,7 +15,6 @@
       <link href="{{ url_for('favicon.ico') }}" rel="shortcut icon"/>
       <!-- Jquery -->
       <script src="{{ url_for('/static/js/jquery.min.js') }}"></script>
-      <script src="{{ url_for('/static/js/plugins/jquery.sortchildren.js') }}"></script>
       <!-- Bootstrap v4 -->
       <script src="{{ url_for('/static/js/bootstrap.bundle.min.js') }}"></script>
       <link href="{{ url_for('/static/css/bootstrap.min.css') }}"
@@ -25,8 +24,16 @@
       <link href="{{ url_for('/static/css/font-awesome.min.css') }}"
             rel="stylesheet"
             type="text/css"/>
-      <!-- TimSort -->
-      <script src="{{ url_for('/static/js/plugins/timsort.js') }}"></script>
+      <!-- JQuery Datatables -->
+      <script src="{{ url_for('/static/js/jquery.dataTables.min.js') }}"></script>
+      <script src="{{ url_for('/static/js/dataTables.buttons.min.js') }}"></script>
+      <script src="{{ url_for('/static/js/dataTables.responsive.min.js') }}"></script>
+      <link href="{{ url_for('/static/css/jquery.dataTables.min.css') }}"
+            rel="stylesheet"
+            type="text/css"/>
+      <link href="{{ url_for('/static/css/responsive.dataTables.min.css') }}"
+            rel="stylesheet"
+            type="text/css"/>
       <!-- Custom -->
       <script src="{{ url_for('/static/js/rdiffweb.js') }}"></script>
       <link href="{{ url_for('static', 'default.css') }}"

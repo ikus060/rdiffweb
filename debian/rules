@@ -13,10 +13,26 @@ execute_after_dh_auto_install:
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/core/tests
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/tests
 	rm -f  debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/test.py
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/bootstrap.*
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/chart.*
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/chartkick.*
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/font-awesome.*
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/fontawesome*
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/FontAwesome*
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/*/jquery.*
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/css/bootstrap.min.css
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/css/bootstrap.min.css.map
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/css/font-awesome.css.map
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/css/font-awesome.min.css
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/css/jquery.dataTables.min.css
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/css/responsive.dataTables.min.css
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/fonts/FontAwesome.otf
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.eot
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.svg
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.ttf
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.woff
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.woff2
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/images/sort_asc.png
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/images/sort_both.png
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/images/sort_desc.png
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/bootstrap.bundle.js.map
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/bootstrap.bundle.min.js
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/chartkick.min.js
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/chart.min.js
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/dataTables.buttons.min.js
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/dataTables.responsive.min.js
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/jquery.dataTables.min.js
+	rm -f debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/static/js/jquery.min.js

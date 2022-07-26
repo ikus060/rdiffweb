@@ -35,12 +35,12 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         repo = MagicMock()
         repo.keepdays = 0
         repo.last_backup_date = RdiffTime('2014-11-02T17:23:41-05:00')
-        RepoObject.search = MagicMock()
-        RepoObject.search.return_value = [repo]
+        RepoObject.session.query = MagicMock()
+        RepoObject.session.query.return_value.all.return_value = [repo]
         # When the job is running.
         cherrypy.remove_older.remove_older_job()
         # Then remove_older function is not called.
-        RepoObject.search.assert_called()
+        RepoObject.session.query.return_value.all.assert_called()
         repo.remove_older.assert_not_called()
 
     def test_remove_older_job_with_keepdays(self):
@@ -48,10 +48,10 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         repo = MagicMock()
         repo.keepdays = 30
         repo.last_backup_date = RdiffTime('2014-11-02T17:23:41-05:00')
-        RepoObject.search = MagicMock()
-        RepoObject.search.return_value = [repo]
+        RepoObject.session.query = MagicMock()
+        RepoObject.session.query.return_value.all.return_value = [repo]
         # When the job is running.
         cherrypy.remove_older.remove_older_job()
         # Then remove_older function get called on the repo.
-        RepoObject.search.assert_called()
+        RepoObject.session.query.return_value.all.assert_called()
         repo.remove_older.assert_called()
