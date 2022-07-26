@@ -131,26 +131,6 @@ class UserObject(Base):
         # Return user object
         return userobj
 
-    @classmethod
-    def users(cls, search=None, criteria=None):
-        """
-        Search users database. Return a generator of user object.
-
-        search: Define a search term to look into email or username.
-        criteria: Define a search filter: admins, ldap
-        """
-        if search:
-            term = '%' + search + '%'
-            return UserObject.query.filter(or_(UserObject.username.like(term), UserObject.email.like(term))).all()
-        elif criteria:
-            if criteria == 'admins':
-                return UserObject.query.filter(UserObject.role == UserObject.ADMIN_ROLE).all()
-            elif criteria == 'ldap':
-                return UserObject.query.filter(UserObject.is_ldap).all()
-            else:
-                return []
-        return UserObject.query.all()
-
     def add_authorizedkey(self, key, comment=None):
         """
         Add the given key to the user. Adding the key to his `authorized_keys`

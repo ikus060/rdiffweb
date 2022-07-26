@@ -99,7 +99,7 @@ class NotificationPlugin(SimplePlugin):
 
         def _user_repos():
             """Return a generator trought user repos to be notified."""
-            for user in UserObject.users():
+            for user in UserObject.query.all():
                 # Check if user has email.
                 if not user.email:
                     continue

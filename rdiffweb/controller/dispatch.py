@@ -124,11 +124,11 @@ def static(path):
     @cherrypy.tools.sessions(on=False)
     def handler(*args, **kwargs):
         if cherrypy.request.method not in ('GET', 'HEAD'):
-            return None
+            raise cherrypy.HTTPError(405)
         filename = os.path.join(path, *args)
         assert filename.startswith(path)
         if not os.path.isfile(filename):
-            return None
+            raise cherrypy.HTTPError(404)
         return serve_file(filename, content_type)
 
     return handler

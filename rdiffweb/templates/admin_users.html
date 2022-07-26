@@ -1,119 +1,111 @@
 {% extends 'admin.html' %}
+{% from 'include/datatables.html' import datatables %}
 {% block title %}
   {% trans %}User management{% endtrans %}
 {% endblock %}
 {% set admin_nav_active="users" %}
 {% block content %}
   {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
-  {% from 'include/search.html' import search_bar %}
-  {% from 'components/nav.html' import nav_pills %}
-  <!--Criterias -->
-  {% set nav_items = [
-  (_('All'), url_for(criteria=''), criteria == ''),
-  (_('Admins'), url_for(criteria='admins'), criteria == 'admins'),
-  (_('LDAP'), url_for(criteria='ldap'), criteria == 'ldap')] %}
-  <div class="d-flex align-items-baseline justify-content-between">
-    {{ nav_pills(nav_items)}}
-    <button type="button"
-            class="btn btn-success"
-            data-toggle="modal"
-            data-target="#add-user-modal">
-      {% trans %}Add user{% endtrans %}
-    </button>
-  </div>
-  <!-- Search bar -->
-  {{ search_bar(search_placeholder=_('Search by name, email or username'), search=search) }}
+  <button type="button"
+          class="btn btn-success mb-2"
+          data-toggle="modal"
+          data-target="#add-user-modal">
+    {% trans %}Add user{% endtrans %}
+  </button>
   <!-- Users View -->
-  {% if users %}
-    <ul class="list-group">
-      {% for user in users|sort(attribute='username') %}
-        <li class="list-group-item">
-          <div class="d-flex w-100 justify-content-between">
-            <!-- Username & Email -->
-            <h5 class="mb-1">
-              {{ user.username }}
-              {% if user.email %}<small class="text-secondary">({{ user.email }})</small>{% endif %}
-            </h5>
-            <!-- Buttons -->
-            <div>
-              <button type="button"
-                      class="btn btn-secondary"
-                      data-toggle="modal"
-                      data-target="#edit-user-{{ user.username }}-modal">
-                {% trans %}Edit{% endtrans %}
-              </button>
-              {{ button_confirm(label=_('Delete'), target="#delete-user-modal", action="delete",
-              username=user.username) }}
-            </div>
-          </div>
-          <div class="d-flex w-100 justify-content-between">
-            <!-- Badges -->
-            <div>
-              <span class="badge badge-secondary">#{{ user.userid }}</span>
-              {% if user.is_admin %}
-                <span class="badge badge-info">{% trans %}Admin{% endtrans %}</span>
-              {% elif user.is_maintainer %}
-                <span class="badge badge-info">{% trans %}Maintainer{% endtrans %}</span>
-              {% endif %}
-              {% if user.is_ldap %}
-                <span class="badge badge-secondary">{% trans %}LDAP{% endtrans %}</span>
-              {% endif %}
-              {% if user.username == username %}
-                <span class="badge badge-success">{% trans %}It's you{% endtrans %}</span>
-              {% endif %}
-            </div>
-            <!-- UserRoot -->
-            <span class="text-secondary">
-              {{ user.user_root }}
-              {% if not user.valid_user_root() %}
-                <span class="text-danger">
-                  <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-                  {% trans %}Root directory not accessible!{% endtrans %}
-                </span>
-              {% endif %}
+  {% set filter_buttons = [
+  (_('Admins'), 2, 'admin'),
+  (_('LDAP'), 0, 'LDAP')] %}
+  {% call datatables(_('User list'), filter_buttons)%}
+  <thead>
+    <tr>
+      <th scope="col">User</th>
+      <th scope="col">Email</th>
+      <th scope="col">User Role</th>
+      <th scope="col">Root directory</th>
+      <th scope="col" data-sortable="false" class="text-right">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+      <tr>
+        <td>
+          {{ user.username }}
+          <span class="badge badge-secondary">#{{ user.userid }}</span>
+          {% if user.is_ldap %}
+            <span class="badge badge-secondary">{% trans %}LDAP{% endtrans %}</span>
+          {% endif %}
+          {% if user.username == username %}
+            <span class="badge badge-success">{% trans %}It's you{% endtrans %}</span>
+          {% endif %}
+        </td>
+        <td>{{ user.email }}</td>
+        <td>
+          {% if user.is_admin %}
+            <span class="badge badge-danger">{% trans %}Admin{% endtrans %}</span>
+          {% elif user.is_maintainer %}
+            <span class="badge badge-warning">{% trans %}Maintainer{% endtrans %}</span>
+          {% else %}
+            <span class="badge badge-info">{% trans %}User{% endtrans %}</span>
+          {% endif %}
+        </td>
+        <td>
+          {{ user.user_root }}
+          {% if not user.valid_user_root() %}
+            <span class="text-danger">
+              <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+              {% trans %}Root directory not accessible!{% endtrans %}
             </span>
-          </div>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="text-center">{% trans %}No users found{% endtrans %}</p>
-  {% endif %}
-  {% macro user_form(form, id=None, user=None) %}
-    {% if user %}{{ form.process(obj=user) or '' }}{% endif %}
-    {{ form }}
-    {% if form.disk_quota.data and form.disk_usage.data %}
-      {% set used_pct = form.disk_usage.data / form.disk_quota.data * 100 | round %}
-      {% set used_pct_display = 10 if used_pct < 10 else used_pct %}
-      {% set used_str=form.disk_usage.data | filesize %}
-      {% set avail_str=(form.disk_quota.data - form.disk_usage.data) | filesize %}
-      <div class="progress">
-        <div class="progress-bar progress-bar bg-warning progress-bar-striped"
-             role="progressbar"
-             aria-valuenow="{{ used_pct }}"
-             aria-valuemin="0"
-             aria-valuemax="100"
-             style="width: {{ used_pct_display }}%">
-          {{ used_str }} {% trans %}used{% endtrans %}
-        </div>
-        <div class="progress-bar progress-bar bg-success"
-             role="progressbar"
-             aria-valuenow="{{ used_pct }}"
-             aria-valuemin="0"
-             aria-valuemax="100"
-             style="width: {{ 100 - used_pct_display }}%">
-          {{ avail_str }} {% trans %}free{% endtrans %}
-        </div>
+          {% endif %}
+        </td>
+        <td class="text-right">
+          <button type="button"
+                  class="btn btn-secondary"
+                  data-toggle="modal"
+                  data-target="#edit-user-{{ user.username }}-modal">
+            {% trans %}Edit{% endtrans %}
+          </button>
+          {{ button_confirm(label=_('Delete'), target="#delete-user-modal", action="delete", username=user.username) }}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+{% endcall %}
+{% macro user_form(form, id=None, user=None) %}
+  {% if user %}{{ form.process(obj=user) or '' }}{% endif %}
+  {{ form }}
+  {% if form.disk_quota.data and form.disk_usage.data %}
+    {% set used_pct = form.disk_usage.data / form.disk_quota.data * 100 | round %}
+    {% set used_pct_display = 10 if used_pct < 10 else used_pct %}
+    {% set used_str=form.disk_usage.data | filesize %}
+    {% set avail_str=(form.disk_quota.data - form.disk_usage.data) | filesize %}
+    <div class="progress">
+      <div class="progress-bar progress-bar bg-warning progress-bar-striped"
+           role="progressbar"
+           aria-valuenow="{{ used_pct }}"
+           aria-valuemin="0"
+           aria-valuemax="100"
+           style="width: {{ used_pct_display }}%">
+        {{ used_str }} {% trans %}used{% endtrans %}
       </div>
-    {% endif %}
-  {% endmacro %}
-  {# Dialog to create new user. #}
-  {% call modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
-  <input type="hidden" name="action" value="add" />
-  {{ user_form(form=add_form) }}
+      <div class="progress-bar progress-bar bg-success"
+           role="progressbar"
+           aria-valuenow="{{ used_pct }}"
+           aria-valuemin="0"
+           aria-valuemax="100"
+           style="width: {{ 100 - used_pct_display }}%">
+        {{ avail_str }} {% trans %}free{% endtrans %}
+      </div>
+    </div>
+  {% endif %}
+{% endmacro %}
+{# Dialog to create new user. #}
+{% call modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
+<input type="hidden" name="action" value="add" />
+{{ user_form(form=add_form) }}
 {% endcall %}
 {# Dialogs to edit user. #}
-{% for user in users|sort(attribute='username') %}
+{% for user in users %}
   {% set modalid = "edit-user-" + user.username + "-modal" %}
   {% call modal_dialog(modalid, _('Edit user %(name)s', name=user.username), _('Save changes')) %}
   <input type="hidden" name="action" value="edit" />
@@ -127,4 +119,4 @@ title=_('Delete User'),
 message=_("Are you sure you want to delete this User?"),
 fields=['action', 'username'],
 submit=_('Delete')) }}
-{% endblock %}
+{% endblock content %}

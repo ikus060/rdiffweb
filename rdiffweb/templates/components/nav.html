@@ -1,5 +1,5 @@
 {% macro nav_tabs(nav_items) -%}
-  <ul class="nav nav-tabs mb-4" role="tablist">
+  <ul class="nav nav-tabs mb-2" role="tablist">
     {% for item in nav_items %}
       {% if item|length == 3 %}
         {% set label, url, active = item %}
@@ -16,7 +16,7 @@
   </ul>
 {% endmacro %}
 {% macro nav_pills(nav_items) -%}
-  <ul class="nav nav-pills mb-4" role="tablist">
+  <ul class="nav nav-pills mb-2" role="tablist">
     {% for item in nav_items %}
       {% if item|length == 3 %}
         {% set label, url, active = item %}

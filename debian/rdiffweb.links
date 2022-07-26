@@ -10,5 +10,13 @@
 /usr/share/javascript/bootstrap4/css/bootstrap.min.css         /usr/lib/python3/dist-packages/rdiffweb/static/css/bootstrap.min.css
 /usr/share/javascript/bootstrap4/js/bootstrap.bundle.js.map    /usr/lib/python3/dist-packages/rdiffweb/static/js/bootstrap.bundle.js.map
 /usr/share/javascript/bootstrap4/js/bootstrap.bundle.min.js    /usr/lib/python3/dist-packages/rdiffweb/static/js/bootstrap.bundle.min.js
+/usr/share/javascript/jquery-datatables/css/jquery.dataTables.min.css /usr/lib/python3/dist-packages/rdiffweb/static/css/jquery.dataTables.min.css
+/usr/share/javascript/jquery-datatables-extensions/Buttons/js/dataTables.buttons.min.js /usr/lib/python3/dist-packages/rdiffweb/static/js/dataTables.buttons.min.js
+/usr/share/javascript/jquery-datatables-extensions/Responsive/css/responsive.dataTables.min.css /usr/lib/python3/dist-packages/rdiffweb/static/css/responsive.dataTables.min.css
+/usr/share/javascript/jquery-datatables-extensions/Responsive/js/dataTables.responsive.min.js /usr/lib/python3/dist-packages/rdiffweb/static/js/dataTables.responsive.min.js
+/usr/share/javascript/jquery-datatables/images/sort_asc.png    /usr/lib/python3/dist-packages/rdiffweb/static/images/sort_asc.png
+/usr/share/javascript/jquery-datatables/images/sort_both.png   /usr/lib/python3/dist-packages/rdiffweb/static/images/sort_both.png
+/usr/share/javascript/jquery-datatables/images/sort_desc.png   /usr/lib/python3/dist-packages/rdiffweb/static/images/sort_desc.png
+/usr/share/javascript/jquery-datatables/jquery.dataTables.min.js /usr/lib/python3/dist-packages/rdiffweb/static/js/jquery.dataTables.min.js
 /usr/share/javascript/jquery/jquery.min.js                     /usr/lib/python3/dist-packages/rdiffweb/static/js/jquery.min.js
 /usr/share/libjs-chartkick.js/chartkick.js                     /usr/lib/python3/dist-packages/rdiffweb/static/js/chartkick.min.js

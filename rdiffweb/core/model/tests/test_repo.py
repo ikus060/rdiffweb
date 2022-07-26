@@ -69,23 +69,6 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(['testcases'], sorted([r.name for r in userobj.repo_objs]))
 
-    def test_search(self):
-        # Check default repo exists
-        self.assertEqual(2, len(RepoObject.search()))
-        user_obj = UserObject.add_user('annik')
-        user_obj.user_root = self.testcases
-        user_obj.refresh_repos()
-        self.assertEqual(4, len(RepoObject.search()))
-
-    def test_search_with_search(self):
-        """
-        Check if search is working.
-        """
-        repos = RepoObject.search('test')
-        self.assertEqual(['testcases'], [r.name for r in repos])
-        repos = RepoObject.search('e')
-        self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in repos]))
-
     def test_get_repo(self):
         user = UserObject.add_user('bernie', 'my-password')
         user.user_root = self.testcases

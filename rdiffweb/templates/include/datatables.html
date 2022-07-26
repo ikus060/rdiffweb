@@ -1,0 +1,58 @@
+{% set table_id = 1 %}
+{% macro datatables(label, filter_buttons=[]) %}
+  {# filter_buttons define a list of filter buttons. Should be a list of tuple (label, column, search) #}
+  {% set id = 'table' + table_id|string %}
+  {% set table_id = table_id + 1 %}
+  <table id="{{ id }}"
+         class="table responsive"
+         aria-label="{{ label }}"
+         width="100%">
+    {{ caller() }}
+  </table>
+  <script>
+    /* Enable JQuery DataTables. */
+    var table = $("#{{id}}").DataTable({
+      dom: "<'row align-items-center'<'col-sm'B><'col-sm mb-1'f>>" +
+      "<'row'<'col-sm-12'tr>>" +
+      "<'row'<'col-sm-12 col-md-12'i>>",
+      initComplete: function () {
+          var input = $('#{{id}}_filter input');
+          input.addClass('form-control form-control-sm');
+          input.parent().addClass('');
+      },
+      language: {
+        "aria": {
+            "sortAscending": ": {%trans%}activate to sort column ascending{%endtrans%}",
+            "sortDescending": ": {%trans%}activate to sort column descending{%endtrans%}"
+        },
+        "info": "{%trans%}Showing _START_ to _TOTAL_ entries{%endtrans%}",
+        "infoFiltered": "{%trans%}(filtered from _MAX_ total entries){%endtrans%}",
+        "infoEmpty": "{%trans%}Showing 0 of 0 entries{%endtrans%}",
+        "zeroRecords": "{%trans%}No matching records found{%endtrans%}",
+        "search": "{%trans%}Filter: {%endtrans%}"
+      },
+      paging: false,
+      search: false,
+      stateSave: true,
+      responsive: true,
+      buttons: {
+        dom: {
+          button: {
+            className: 'btn btn-primary mr-2 mb-1',
+            active: 'active',
+          }
+        },
+        buttons: [
+          {% for label, column, search in filter_buttons %}
+          {
+            text: "{{label}}",
+            extend: 'filter',
+            column: "{{column}}",
+            search: "{{search}}",
+          },
+         {% endfor %}
+        ],
+      }
+    });
+  </script>
+{% endmacro %}
