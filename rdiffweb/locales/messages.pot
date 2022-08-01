@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: rdiffweb 2.4.1.dev18+g0b496eb.d20220719\n"
+"Project-Id-Version: rdiffweb 2.4.1.dev27+gd1cbf6d.d20220801\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-07-19 14:59-0400\n"
+"POT-Creation-Date: 2022-08-01 10:32-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -70,7 +70,7 @@ msgid "Group"
 msgstr ""
 
 #: rdiffweb/controller/page_admin.py:95 rdiffweb/controller/page_admin.py:185
-#: rdiffweb/templates/admin_users.html:60
+#: rdiffweb/templates/admin_users.html:49
 msgid "User"
 msgstr ""
 
@@ -132,15 +132,17 @@ msgstr ""
 
 #: rdiffweb/controller/page_admin.py:169 rdiffweb/controller/page_admin.py:242
 #: rdiffweb/controller/page_login.py:35 rdiffweb/controller/page_login.py:38
-#: rdiffweb/templates/prefs_general.html:26
+#: rdiffweb/templates/prefs_general.html:29
 msgid "Username"
 msgstr ""
 
-#: rdiffweb/controller/page_admin.py:170 rdiffweb/controller/pref_general.py:41
+#: rdiffweb/controller/page_admin.py:170
+#: rdiffweb/controller/page_pref_general.py:41
 msgid "Email"
 msgstr ""
 
 #: rdiffweb/controller/page_admin.py:172 rdiffweb/controller/page_login.py:45
+#: rdiffweb/templates/prefs_general.html:51
 msgid "Password"
 msgstr ""
 
@@ -160,11 +162,11 @@ msgstr ""
 msgid "User Role"
 msgstr ""
 
-#: rdiffweb/controller/page_admin.py:183 rdiffweb/templates/admin_users.html:56
+#: rdiffweb/controller/page_admin.py:183 rdiffweb/templates/admin_users.html:45
 msgid "Admin"
 msgstr ""
 
-#: rdiffweb/controller/page_admin.py:184 rdiffweb/templates/admin_users.html:58
+#: rdiffweb/controller/page_admin.py:184 rdiffweb/templates/admin_users.html:47
 msgid "Maintainer"
 msgstr ""
 
@@ -292,6 +294,94 @@ msgstr ""
 msgid "Invalid username or password."
 msgstr ""
 
+#: rdiffweb/controller/page_pref_general.py:41
+msgid "Invalid email."
+msgstr ""
+
+#: rdiffweb/controller/page_pref_general.py:46
+msgid "Current password"
+msgstr ""
+
+#: rdiffweb/controller/page_pref_general.py:47
+msgid "Current password is missing."
+msgstr ""
+
+#: rdiffweb/controller/page_pref_general.py:48
+msgid "You must provide your current password in order to change it."
+msgstr ""
+
+#: rdiffweb/controller/page_pref_general.py:51
+msgid "New password"
+msgstr ""
+
+#: rdiffweb/controller/page_pref_general.py:53
+msgid "New password is missing."
+msgstr ""
+
+#: rdiffweb/controller/page_pref_general.py:54
+msgid "The new password and its confirmation do not match."
+msgstr ""
+
+#: rdiffweb/controller/page_pref_general.py:58
+msgid "Confirm new password"
+msgstr ""
+
+#: rdiffweb/controller/page_pref_general.py:58
+msgid "Confirmation password is missing."
+msgstr ""
+
+#: rdiffweb/controller/page_pref_general.py:81
+msgid "Password updated successfully."
+msgstr ""
+
+#: rdiffweb/controller/page_pref_general.py:101
+msgid "Profile updated successfully."
+msgstr ""
+
+#: rdiffweb/controller/page_pref_general.py:114
+msgid "Repositories successfully updated"
+msgstr ""
+
+#: rdiffweb/controller/page_pref_notification.py:48
+msgid "Notification settings updated successfully."
+msgstr ""
+
+#: rdiffweb/controller/page_pref_sshkeys.py:47
+msgid "Invalid SSH key."
+msgstr ""
+
+#: rdiffweb/controller/page_pref_sshkeys.py:52
+msgid "Title"
+msgstr ""
+
+#: rdiffweb/controller/page_pref_sshkeys.py:53
+msgid ""
+"The title is an optional description to identify the key. e.g.: "
+"bob@thinkpad-t530"
+msgstr ""
+
+#: rdiffweb/controller/page_pref_sshkeys.py:57
+msgid "Key"
+msgstr ""
+
+#: rdiffweb/controller/page_pref_sshkeys.py:59
+msgid ""
+"Enter a SSH public key. It should start with 'ssh-dss', 'ssh-ed25519', 'ssh-"
+"rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-sha2-nistp521'."
+msgstr ""
+
+#: rdiffweb/controller/page_pref_sshkeys.py:88
+msgid "Unknown error while adding the SSH Key"
+msgstr ""
+
+#: rdiffweb/controller/page_pref_sshkeys.py:103
+msgid "Unknown error while removing the SSH Key"
+msgstr ""
+
+#: rdiffweb/controller/page_pref_sshkeys.py:126
+msgid "Failed to get SSH keys"
+msgstr ""
+
 #: rdiffweb/controller/page_settings.py:62
 msgid "invalid encoding value"
 msgstr ""
@@ -307,99 +397,6 @@ msgstr ""
 
 #: rdiffweb/controller/page_status.py:68
 msgid "Backup with errors"
-msgstr ""
-
-#: rdiffweb/controller/pref_general.py:41
-msgid "Invalid email."
-msgstr ""
-
-#: rdiffweb/controller/pref_general.py:45
-msgid "Current password"
-msgstr ""
-
-#: rdiffweb/controller/pref_general.py:45
-msgid "Current password is missing."
-msgstr ""
-
-#: rdiffweb/controller/pref_general.py:47
-msgid "New password"
-msgstr ""
-
-#: rdiffweb/controller/pref_general.py:49
-msgid "New password is missing."
-msgstr ""
-
-#: rdiffweb/controller/pref_general.py:50
-msgid "The new password and its confirmation do not match."
-msgstr ""
-
-#: rdiffweb/controller/pref_general.py:54
-msgid "Confirm new password"
-msgstr ""
-
-#: rdiffweb/controller/pref_general.py:54
-msgid "Confirmation password is missing."
-msgstr ""
-
-#: rdiffweb/controller/pref_general.py:65
-msgid "Profile"
-msgstr ""
-
-#: rdiffweb/controller/pref_general.py:81
-msgid "Password updated successfully."
-msgstr ""
-
-#: rdiffweb/controller/pref_general.py:101
-msgid "Profile updated successfully."
-msgstr ""
-
-#: rdiffweb/controller/pref_general.py:113
-msgid "Repositories successfully updated"
-msgstr ""
-
-#: rdiffweb/controller/pref_notification.py:34 rdiffweb/core/notification.py:124
-#: rdiffweb/templates/settings.html:99
-msgid "Notification"
-msgstr ""
-
-#: rdiffweb/controller/pref_sshkeys.py:46
-msgid "Invalid SSH key."
-msgstr ""
-
-#: rdiffweb/controller/pref_sshkeys.py:51
-msgid "Title"
-msgstr ""
-
-#: rdiffweb/controller/pref_sshkeys.py:52
-msgid ""
-"The title is an optional description to identify the key. e.g.: "
-"bob@thinkpad-t530"
-msgstr ""
-
-#: rdiffweb/controller/pref_sshkeys.py:56
-msgid "Key"
-msgstr ""
-
-#: rdiffweb/controller/pref_sshkeys.py:58
-msgid ""
-"Enter a SSH public key. It should start with 'ssh-dss', 'ssh-ed25519', 'ssh-"
-"rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-sha2-nistp521'."
-msgstr ""
-
-#: rdiffweb/controller/pref_sshkeys.py:76 rdiffweb/templates/prefs_sshkeys.html:4
-msgid "SSH Keys"
-msgstr ""
-
-#: rdiffweb/controller/pref_sshkeys.py:91
-msgid "Unknown error while adding the SSH Key"
-msgstr ""
-
-#: rdiffweb/controller/pref_sshkeys.py:106
-msgid "Unknown error while removing the SSH Key"
-msgstr ""
-
-#: rdiffweb/controller/pref_sshkeys.py:127
-msgid "Failed to get SSH keys"
 msgstr ""
 
 #: rdiffweb/core/librdiff.py:1202
@@ -424,6 +421,11 @@ msgstr ""
 
 #: rdiffweb/core/notification.py:91
 msgid "Password changed"
+msgstr ""
+
+#: rdiffweb/core/notification.py:124 rdiffweb/templates/prefs.html:15
+#: rdiffweb/templates/settings.html:99
+msgid "Notification"
 msgstr ""
 
 #: rdiffweb/core/rdw_templating.py:109
@@ -461,39 +463,39 @@ msgstr ""
 msgid "%d seconds ago"
 msgstr ""
 
-#: rdiffweb/core/model/_repo.py:197
+#: rdiffweb/core/model/_repo.py:185
 #, python-format
 msgid "invalid encoding %s"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:122
+#: rdiffweb/core/model/_user.py:120
 #, python-format
 msgid "User %s already exists."
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:165
+#: rdiffweb/core/model/_user.py:153
 msgid "SSH key already exists"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:176
+#: rdiffweb/core/model/_user.py:164
 msgid "Duplicate key. This key already exists or is associated to another user."
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:192
+#: rdiffweb/core/model/_user.py:180
 msgid "can't delete admin user"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:329
+#: rdiffweb/core/model/_user.py:317
 msgid "can't update admin-password defined in configuration file"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:332
+#: rdiffweb/core/model/_user.py:320
 msgid "Wrong password"
 msgstr ""
 
 #: rdiffweb/core/tests/test_i18n.py:80 rdiffweb/core/tests/test_i18n.py:120
 #: rdiffweb/core/tests/test_i18n.py:133 rdiffweb/core/tests/test_i18n.py:144
-#: rdiffweb/templates/admin_users.html:77
+#: rdiffweb/templates/admin_users.html:66
 msgid "Edit"
 msgstr ""
 
@@ -501,7 +503,7 @@ msgstr ""
 msgid "Invalid String"
 msgstr ""
 
-#: rdiffweb/templates/admin.html:4 rdiffweb/templates/layout.html:78
+#: rdiffweb/templates/admin.html:4 rdiffweb/templates/layout.html:79
 msgid "Admin area"
 msgstr ""
 
@@ -514,7 +516,7 @@ msgid "Users"
 msgstr ""
 
 #: rdiffweb/templates/admin.html:12 rdiffweb/templates/admin.html:27
-#: rdiffweb/templates/layout.html:71 rdiffweb/templates/locations.html:5
+#: rdiffweb/templates/layout.html:72 rdiffweb/templates/locations.html:5
 #: rdiffweb/templates/locations.html:60
 msgid "Repositories"
 msgstr ""
@@ -546,36 +548,31 @@ msgid ""
 "display their content in this view."
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:12 rdiffweb/templates/admin_users.html:13
-msgid "All"
-msgstr ""
-
-#: rdiffweb/templates/admin_repos.html:13
+#: rdiffweb/templates/admin_repos.html:9
 msgid "Healthy"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:14
+#: rdiffweb/templates/admin_repos.html:10
 msgid "Failed"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:15
+#: rdiffweb/templates/admin_repos.html:11
 msgid "Interrupted"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:16
+#: rdiffweb/templates/admin_repos.html:12
 msgid "In progress"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:20 rdiffweb/templates/admin_users.html:19
-#: rdiffweb/templates/browse.html:22
-msgid "Filter: "
+#: rdiffweb/templates/admin_repos.html:13
+msgid "Repository list"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:48 rdiffweb/templates/locations.html:23
+#: rdiffweb/templates/admin_repos.html:36 rdiffweb/templates/locations.html:23
 msgid "Updated "
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:56 rdiffweb/templates/layout_repo.html:11
+#: rdiffweb/templates/admin_repos.html:44 rdiffweb/templates/layout_repo.html:11
 #: rdiffweb/templates/settings.html:8
 msgid "Settings"
 msgstr ""
@@ -608,78 +605,83 @@ msgstr ""
 msgid "Python Info"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:14
-msgid "Admins"
-msgstr ""
-
-#: rdiffweb/templates/admin_users.html:15 rdiffweb/templates/admin_users.html:47
-msgid "LDAP"
-msgstr ""
-
-#: rdiffweb/templates/admin_users.html:26 rdiffweb/templates/admin_users.html:115
+#: rdiffweb/templates/admin_users.html:13 rdiffweb/templates/admin_users.html:103
 msgid "Add user"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:50
+#: rdiffweb/templates/admin_users.html:17
+msgid "Admins"
+msgstr ""
+
+#: rdiffweb/templates/admin_users.html:18 rdiffweb/templates/admin_users.html:36
+msgid "LDAP"
+msgstr ""
+
+#: rdiffweb/templates/admin_users.html:19
+msgid "User list"
+msgstr ""
+
+#: rdiffweb/templates/admin_users.html:39
 msgid "It's you"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:68
+#: rdiffweb/templates/admin_users.html:57
 msgid "Root directory not accessible!"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:79 rdiffweb/templates/admin_users.html:133
-#: rdiffweb/templates/history.html:100 rdiffweb/templates/prefs_sshkeys.html:22
-#: rdiffweb/templates/prefs_sshkeys.html:43 rdiffweb/templates/settings.html:122
+#: rdiffweb/templates/admin_users.html:68 rdiffweb/templates/admin_users.html:121
+#: rdiffweb/templates/history.html:100 rdiffweb/templates/prefs_sshkeys.html:29
+#: rdiffweb/templates/prefs_sshkeys.html:51 rdiffweb/templates/settings.html:122
 #: rdiffweb/templates/settings.html:135
 msgid "Delete"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:101 rdiffweb/templates/locations.html:70
+#: rdiffweb/templates/admin_users.html:89 rdiffweb/templates/locations.html:70
 msgid "used"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:109 rdiffweb/templates/locations.html:70
+#: rdiffweb/templates/admin_users.html:97 rdiffweb/templates/locations.html:70
 msgid "free"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:122
+#: rdiffweb/templates/admin_users.html:110
 #, python-format
 msgid "Edit user %(name)s"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:122 rdiffweb/templates/prefs_general.html:42
-#: rdiffweb/templates/prefs_notification.html:29
+#: rdiffweb/templates/admin_users.html:110 rdiffweb/templates/prefs_general.html:45
+#: rdiffweb/templates/prefs_notification.html:32
 #: rdiffweb/templates/settings.html:32 rdiffweb/templates/settings.html:88
 #: rdiffweb/templates/settings.html:111
 msgid "Save changes"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:130
+#: rdiffweb/templates/admin_users.html:118
 msgid "Delete User"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:131
+#: rdiffweb/templates/admin_users.html:119
 msgid "Are you sure you want to delete this User?"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:6 rdiffweb/templates/layout_repo.html:9
+#: rdiffweb/templates/browse.html:6 rdiffweb/templates/browse.html:20
+#: rdiffweb/templates/layout_repo.html:9
 msgid "Files"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:29
+#: rdiffweb/templates/browse.html:23
 msgid "Name"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:30 rdiffweb/templates/graphs.html:14
+#: rdiffweb/templates/browse.html:24 rdiffweb/templates/graphs.html:14
 msgid "Size"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:31
+#: rdiffweb/templates/browse.html:25
 msgid "Version(s)"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:73 rdiffweb/templates/history.html:89
+#: rdiffweb/templates/browse.html:67 rdiffweb/templates/history.html:89
 #: rdiffweb/templates/logs.html:30
 msgid "Show more..."
 msgstr ""
@@ -807,27 +809,27 @@ msgid ""
 "history CANNOT be restored! Are you ABSOLUTELY sure?"
 msgstr ""
 
-#: rdiffweb/templates/layout.html:61
+#: rdiffweb/templates/layout.html:62
 msgid "Toggle navigation"
 msgstr ""
 
-#: rdiffweb/templates/layout.html:74 rdiffweb/templates/status.html:5
+#: rdiffweb/templates/layout.html:75 rdiffweb/templates/status.html:5
 msgid "Status"
 msgstr ""
 
-#: rdiffweb/templates/layout.html:94
+#: rdiffweb/templates/layout.html:95
 msgid "Signed in as"
 msgstr ""
 
-#: rdiffweb/templates/layout.html:95
+#: rdiffweb/templates/layout.html:96
 msgid "Edit profile"
 msgstr ""
 
-#: rdiffweb/templates/layout.html:96
+#: rdiffweb/templates/layout.html:97
 msgid "Notifications"
 msgstr ""
 
-#: rdiffweb/templates/layout.html:109
+#: rdiffweb/templates/layout.html:110
 msgid "Powered by"
 msgstr ""
 
@@ -896,73 +898,93 @@ msgid ""
 "account."
 msgstr ""
 
-#: rdiffweb/templates/prefs.html:4
-msgid "User settings"
+#: rdiffweb/templates/prefs.html:5 rdiffweb/templates/prefs.html:9
+msgid "User profile"
 msgstr ""
 
-#: rdiffweb/templates/prefs_general.html:22
-msgid "General information"
+#: rdiffweb/templates/prefs.html:14
+msgid "General"
 msgstr ""
 
-#: rdiffweb/templates/prefs_general.html:48
-msgid "Change password"
+#: rdiffweb/templates/prefs.html:16
+msgid "SSH Keys"
 msgstr ""
 
-#: rdiffweb/templates/prefs_general.html:65
+#: rdiffweb/templates/prefs_general.html:25
+msgid "Account settings"
+msgstr ""
+
+#: rdiffweb/templates/prefs_general.html:25
+msgid "General information about your account."
+msgstr ""
+
+#: rdiffweb/templates/prefs_general.html:51
+msgid "Change your current password"
+msgstr ""
+
+#: rdiffweb/templates/prefs_general.html:57
 msgid "Update password"
 msgstr ""
 
-#: rdiffweb/templates/prefs_general.html:71
+#: rdiffweb/templates/prefs_general.html:63
 msgid "Refresh"
 msgstr ""
 
-#: rdiffweb/templates/prefs_general.html:76
+#: rdiffweb/templates/prefs_general.html:68
 msgid ""
 "Refresh the list of repositories associated to your account. If you recently "
 "add a new repository and it doesn't show, you may try to refresh the list."
 msgstr ""
 
-#: rdiffweb/templates/prefs_general.html:78
+#: rdiffweb/templates/prefs_general.html:70
 msgid "Refresh repositories"
 msgstr ""
 
-#: rdiffweb/templates/prefs_notification.html:5
+#: rdiffweb/templates/prefs_notification.html:8
 msgid "Notification settings"
 msgstr ""
 
-#: rdiffweb/templates/prefs_notification.html:9
+#: rdiffweb/templates/prefs_notification.html:12
 msgid "Notification sent to"
 msgstr ""
 
-#: rdiffweb/templates/prefs_notification.html:18
+#: rdiffweb/templates/prefs_notification.html:21
 msgid "Send notification for the following repositories:"
 msgstr ""
 
-#: rdiffweb/templates/prefs_sshkeys.html:4
+#: rdiffweb/templates/prefs_sshkeys.html:7
+msgid "SSH Keys management is disabled by your administrator."
+msgstr ""
+
+#: rdiffweb/templates/prefs_sshkeys.html:10
+msgid "SSH keys"
+msgstr ""
+
+#: rdiffweb/templates/prefs_sshkeys.html:15
+#: rdiffweb/templates/prefs_sshkeys.html:40
+msgid "Add SSH key"
+msgstr ""
+
+#: rdiffweb/templates/prefs_sshkeys.html:19
 msgid ""
 "SSH keys allow you to establish a secure connection between your computer and"
 " this backup system. This is a list of SSH keys associated with your account."
 " Remove any keys that you do not recognize."
 msgstr ""
 
-#: rdiffweb/templates/prefs_sshkeys.html:11
-#: rdiffweb/templates/prefs_sshkeys.html:33
-msgid "Add SSH key"
-msgstr ""
-
-#: rdiffweb/templates/prefs_sshkeys.html:15
+#: rdiffweb/templates/prefs_sshkeys.html:22
 msgid "Ask your administrator to delete SSH Keys."
 msgstr ""
 
-#: rdiffweb/templates/prefs_sshkeys.html:28
-msgid "List is empty"
+#: rdiffweb/templates/prefs_sshkeys.html:35
+msgid "There are no SSH keys associated with your account."
 msgstr ""
 
-#: rdiffweb/templates/prefs_sshkeys.html:40
+#: rdiffweb/templates/prefs_sshkeys.html:48
 msgid "Delete SSH key"
 msgstr ""
 
-#: rdiffweb/templates/prefs_sshkeys.html:41
+#: rdiffweb/templates/prefs_sshkeys.html:49
 msgid "Are you sure you want to delete this SSH Key?"
 msgstr ""
 
@@ -1182,28 +1204,32 @@ msgstr ""
 msgid "Loading..."
 msgstr ""
 
-#: rdiffweb/templates/include/datatables.html:14
+#: rdiffweb/templates/include/datatables.html:25
 msgid "activate to sort column ascending"
 msgstr ""
 
-#: rdiffweb/templates/include/datatables.html:15
+#: rdiffweb/templates/include/datatables.html:26
 msgid "activate to sort column descending"
 msgstr ""
 
-#: rdiffweb/templates/include/datatables.html:17
-msgid "Showing _START_ to _END_ of _TOTAL_ entries"
+#: rdiffweb/templates/include/datatables.html:28
+msgid "Showing _TOTAL_ entries"
 msgstr ""
 
-#: rdiffweb/templates/include/datatables.html:18
+#: rdiffweb/templates/include/datatables.html:29
 msgid "(filtered from _MAX_ total entries)"
 msgstr ""
 
-#: rdiffweb/templates/include/datatables.html:19
-msgid "Showing 0 to 0 of 0 entries"
+#: rdiffweb/templates/include/datatables.html:30
+msgid "Showing 0 entries"
 msgstr ""
 
-#: rdiffweb/templates/include/datatables.html:20
+#: rdiffweb/templates/include/datatables.html:31
 msgid "No matching records found"
+msgstr ""
+
+#: rdiffweb/templates/include/datatables.html:32
+msgid "Filter: "
 msgstr ""
 
 #: rdiffweb/templates/include/modal_dialog.html:22
@@ -1221,15 +1247,6 @@ msgstr ""
 msgid ""
 "Please type <strong>%(confirm_value)s</strong> to proceed or close this modal"
 " to cancel."
-msgstr ""
-
-#: rdiffweb/templates/include/search.html:9
-#: rdiffweb/templates/include/search.html:20
-msgid "Search"
-msgstr ""
-
-#: rdiffweb/templates/include/search.html:15
-msgid "Search by"
 msgstr ""
 
 #: rdiffweb/templates/include/widget.html:4

@@ -309,13 +309,13 @@ class LogoutPageTest(rdiffweb.test.WebCase):
         self.getPage('/login/', method='POST', body=b)
         self.assertStatus('303 See Other')
         # Get content of a page.
-        self.getPage("/prefs/")
+        self.getPage("/prefs/general")
         self.assertStatus('200 OK')
         # Then logout
         self.getPage('/logout/')
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         # Get content of a page.
-        self.getPage("/prefs/")
+        self.getPage("/prefs/general")
         self.assertStatus('303 See Other')
-        self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2Fprefs%2F')
+        self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2Fprefs%2Fgeneral')

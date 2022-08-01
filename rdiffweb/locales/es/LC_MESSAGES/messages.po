@@ -838,7 +838,7 @@ msgid "Well done!"
 msgstr "¡Muy bien!"
 
 #: rdiffweb/templates/prefs.html:3
-msgid "User settings"
+msgid "User profile"
 msgstr "Configuración del usuario"
 
 #: rdiffweb/templates/prefs_general.html:27
@@ -960,47 +960,47 @@ msgstr "Mantén el historial por:"
 msgid "Forever"
 msgstr "Siempre"
 
-#: rdiffweb/templates/include/widget.html:5 rdiffweb/templates/settings.html:43
+#: rdiffweb/templates/include/components.html:5 rdiffweb/templates/settings.html:43
 msgid "1 day"
 msgstr "1 día"
 
-#: rdiffweb/templates/include/widget.html:6 rdiffweb/templates/settings.html:44
+#: rdiffweb/templates/include/components.html:6 rdiffweb/templates/settings.html:44
 msgid "2 days"
 msgstr "2 días"
 
-#: rdiffweb/templates/include/widget.html:7 rdiffweb/templates/settings.html:45
+#: rdiffweb/templates/include/components.html:7 rdiffweb/templates/settings.html:45
 msgid "3 days"
 msgstr "3 días"
 
-#: rdiffweb/templates/include/widget.html:8 rdiffweb/templates/settings.html:46
+#: rdiffweb/templates/include/components.html:8 rdiffweb/templates/settings.html:46
 msgid "4 days"
 msgstr "4 días"
 
-#: rdiffweb/templates/include/widget.html:9 rdiffweb/templates/settings.html:47
+#: rdiffweb/templates/include/components.html:9 rdiffweb/templates/settings.html:47
 msgid "5 days"
 msgstr "5 días"
 
-#: rdiffweb/templates/include/widget.html:10
+#: rdiffweb/templates/include/components.html:10
 #: rdiffweb/templates/settings.html:48
 msgid "6 days"
 msgstr "6 días"
 
-#: rdiffweb/templates/include/widget.html:11
+#: rdiffweb/templates/include/components.html:11
 #: rdiffweb/templates/settings.html:49
 msgid "1 week"
 msgstr "1 semana"
 
-#: rdiffweb/templates/include/widget.html:12
+#: rdiffweb/templates/include/components.html:12
 #: rdiffweb/templates/settings.html:50
 msgid "2 weeks"
 msgstr "2 semanas"
 
-#: rdiffweb/templates/include/widget.html:13
+#: rdiffweb/templates/include/components.html:13
 #: rdiffweb/templates/settings.html:51
 msgid "3 weeks"
 msgstr "3 semanas"
 
-#: rdiffweb/templates/include/widget.html:15
+#: rdiffweb/templates/include/components.html:15
 #: rdiffweb/templates/settings.html:52
 msgid "1 month"
 msgstr "1 mes"
@@ -1167,11 +1167,11 @@ msgstr "Buscar"
 msgid "Search by"
 msgstr "Buscar"
 
-#: rdiffweb/templates/include/widget.html:4
+#: rdiffweb/templates/include/components.html:4
 msgid "disabled"
 msgstr "deshabilitado"
 
-#: rdiffweb/templates/include/widget.html:14
+#: rdiffweb/templates/include/components.html:14
 msgid "4 weeks"
 msgstr "4 semanas"
 

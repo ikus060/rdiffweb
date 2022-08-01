@@ -32,3 +32,18 @@
     {% endfor %}
   </ul>
 {% endmacro %}
+{% macro nav_list(nav_items) -%}
+  <div class="list-group mb-2">
+    {% for item in nav_items %}
+      {% if item|length == 3 %}
+        {% set label, url, active = item %}
+      {% elif item|length == 4 %}
+        {% set label, url, active, icon = item %}
+      {% endif %}
+      <a href="{{ url }}" class="list-group-item list-group-item-action {% if active %} active{% endif %}" aria-current="true">
+        {% if icon %}<i class="{{ icon }}" aria-hidden="true"></i>{% endif %}
+        {{ label }}
+      </a>
+    {% endfor %}
+  </div>
+{% endmacro %}

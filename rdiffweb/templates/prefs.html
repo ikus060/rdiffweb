@@ -1,22 +1,26 @@
 {% extends 'layout.html' %}
+{% from 'components/nav.html' import nav_list %}
 {% set active_page='settings' %}
 {% block title %}
-  {% trans %}User settings{% endtrans %}
+  {% trans %}User profile{% endtrans %}
 {% endblock %}
 {% block body %}
   <div class="container">
+    <h2>{% trans %}User profile{% endtrans %}</h2>
     <!-- Navigation bar for preference page -->
-    <ul class="nav nav-tabs mb-2" role="tablist">
-      {% for panelid, label in panels %}
-        <li class="nav-item">
-          <a class="nav-link{% if active_panelid==panelid %} active{% endif %}"
-             href="{{ url_for('prefs', panelid) }}">
-            {{ label }}
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
-    <!-- panel content -->
-    {% include template_content with context %}
+    <div class="row">
+      <div class="col-md-3">
+        {% set nav_items = [
+        (_('General'), url_for('prefs','general'), active_panelid=='general'),
+        (_('Notification'), url_for('prefs', 'notification'), active_panelid=='notification'),
+        (_('SSH Keys'), url_for('prefs','sshkeys'), active_panelid=='sshkeys'),
+        ] %}
+        {{ nav_list(nav_items) }}
+      </div>
+      <div class="col-md-9">
+        <!-- panel content -->
+        {% block panel %}{% endblock %}
+      </div>
+    </div>
   </div>
 {% endblock %}

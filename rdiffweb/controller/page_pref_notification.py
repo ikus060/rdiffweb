@@ -21,18 +21,15 @@ User can control the notification period.
 
 import logging
 
-from rdiffweb.controller import Controller, validate_int
+import cherrypy
+
+from rdiffweb.controller import Controller, flash, validate_int
 from rdiffweb.tools.i18n import ugettext as _
 
 _logger = logging.getLogger(__name__)
 
 
-class NotificationPref(Controller):
-
-    panel_id = 'notification'
-
-    panel_name = _('Notification')
-
+class PagePrefNotification(Controller):
     def _handle_set_notification_info(self, **kwargs):
 
         # Loop trough user repo and update max age.
@@ -43,13 +40,15 @@ class NotificationPref(Controller):
                 # Update the maxage
                 repo.maxage = validate_int(value)
 
-    def render_prefs_panel(self, panelid, action=None, **kwargs):  # @UnusedVariable
+    @cherrypy.expose
+    def default(self, action=None, **kwargs):
         # Process the parameters.
         if action == "set_notification_info":
             self._handle_set_notification_info(**kwargs)
+            flash(_('Notification settings updated successfully.'))
 
         params = {
             'email': self.app.currentuser.email,
             'repos': self.app.currentuser.repo_objs,
         }
-        return "prefs_notification.html", params
+        return self._compile_template("prefs_notification.html", **params)

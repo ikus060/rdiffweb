@@ -28,9 +28,9 @@ import rdiffweb.test
 from rdiffweb.core.model import RepoObject, UserObject
 
 
-class PrefsTest(rdiffweb.test.WebCase):
+class PagePrefGeneralTest(rdiffweb.test.WebCase):
 
-    PREFS = "/prefs/"
+    PREFS = "/prefs/general"
 
     login = True
 
@@ -57,31 +57,72 @@ class PrefsTest(rdiffweb.test.WebCase):
         }
         return self.getPage(self.PREFS, method='POST', body=b)
 
-    def _set_profile_info(self, email):
+    def _set_profile_info(self, email, fullname=None):
         b = {
             'action': 'set_profile_info',
             'email': email,
         }
+        if fullname:
+            b['fullname'] = fullname
         return self.getPage(self.PREFS, method='POST', body=b)
+
+    def test_get_page(self):
+        # When querying the page
+        self.getPage(self.PREFS)
+        # Then the page is returned
+        self.assertStatus(200)
+        self.assertInBody('User profile')
+
+    def test_change_username_noop(self):
+        # Given an authenticated user
+        # When updating the username
+        self.getPage(
+            self.PREFS,
+            method='POST',
+            body={'action': 'set_profile_info', 'email': 'test@test.com', 'username': 'test'},
+        )
+        self.assertStatus(200)
+        self.assertInBody("Profile updated successfully.")
+        # Then database is updated with fullname
+        user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
+        self.assertIsNotNone(user)
+        self.assertEqual("test@test.com", user.email)
+
+    def test_change_fullname(self):
+        # Given an authenticated user
+        # When update the fullname
+        self._set_profile_info("test@test.com", "My Fullname")
+        self.assertStatus(200)
+        self.assertInBody("Profile updated successfully.")
+        # Then database is updated with fullname
+        self.assertInBody("My Fullname")
+        user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
+        self.assertEqual("My Fullname", user.fullname)
 
     def test_change_email(self):
         self._set_profile_info("test@test.com")
+        self.assertStatus(200)
         self.assertInBody("Profile updated successfully.")
 
     def test_change_email_with_invalid_email(self):
         self._set_profile_info("@test.com")
+        self.assertStatus(200)
         self.assertInBody("Invalid email")
 
         self._set_profile_info("test.com")
+        self.assertStatus(200)
         self.assertInBody("Invalid email")
 
         self._set_profile_info("test")
+        self.assertStatus(200)
         self.assertInBody("Invalid email")
 
         self._set_profile_info("test@te_st.com")
+        self.assertStatus(200)
         self.assertInBody("Invalid email")
 
         self._set_profile_info("test@test.com, test2@test.com")
+        self.assertStatus(200)
         self.assertInBody("Invalid email")
 
     def test_change_password(self):
@@ -123,25 +164,3 @@ class PrefsTest(rdiffweb.test.WebCase):
         # Then the list is free of inexisting repos.
         userobj.expire()
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
-
-    def test_update_notification(self):
-        self.getPage("/prefs/notification/", method='POST', body={'action': 'set_notification_info', 'testcases': '7'})
-        self.assertStatus(200)
-        # Check database update
-        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
-        self.assertEqual(7, repo_obj.maxage)
-
-    def test_get_page(self):
-        self.getPage("/prefs/", method='GET')
-        self.assertInBody("SSH")
-
-
-class PrefsWithSSHKeyDisabled(rdiffweb.test.WebCase):
-
-    default_config = {
-        "disable_ssh_keys": "true",
-    }
-
-    def test_get_page(self):
-        self.getPage("/prefs/", method='GET')
-        self.assertNotInBody("SSH")

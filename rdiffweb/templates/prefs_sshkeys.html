@@ -1,43 +1,53 @@
-{% from 'include/panel.html' import panel %}
-{% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
-{% include 'message.html' %}
-{% call panel(title=_("SSH Keys"), description=_('SSH keys allow you to establish a secure connection between your computer and this backup system. This is a list of SSH keys associated with your account. Remove any keys that you do not recognize.')) %}
-<!-- Add SSH Key-->
-<div class="text-right mb-2">
-  <button type="button"
-          class="btn btn-success btn-sm"
-          data-toggle="modal"
-          data-target="#add-sshkey-modal">
-    {% trans %}Add SSH key{% endtrans %}
-  </button>
-</div>
-{% if not is_maintainer %}
-  <p class="text-secondary">{% trans %}Ask your administrator to delete SSH Keys.{% endtrans %}</p>
-{% endif %}
-<!-- List of keys-->
-<ul class="list-group">
-  {% for key in sshkeys %}
-    <li class="list-group-item">
-      <div class="pull-right">
-        {{ button_confirm(label=_('Delete'), target="#delete-sshkey-modal", action="delete", fingerprint=key.fingerprint, disabled=not is_maintainer) }}
-      </div>
-      <strong class="list-group-item-heading">{{ key.title }}</strong>
-      <p class="list-group-item-text">{{ key.fingerprint }}</p>
-    </li>
+{% extends 'prefs.html' %}
+{% set active_panelid='sshkeys' %}
+{% block panel %}
+  {% include 'message.html' %}
+  {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
+  {% if disable_ssh_keys %}
+    {% trans %}SSH Keys management is disabled by your administrator.{% endtrans %}
   {% else %}
-    <li class="list-group-item text-center">{% trans %}List is empty{% endtrans %}</li>
-  {% endfor %}
-</ul>
-{% endcall %}
-{# Dialog to create SSH key. #}
-{% call modal_dialog('add-sshkey-modal',_('Add SSH key'), _('Add SSH key')) %}
-<input type="hidden" name="action" value="add" />
-{{ form }}
-{% endcall %}
-<!-- Delete SSH Key Modal -->
-{{ modal_confirm(
-id="delete-sshkey-modal",
-title=_('Delete SSH key'),
-message=_("Are you sure you want to delete this SSH Key?"),
-fields=['action', 'fingerprint'],
-submit=_('Delete')) }}
+    <div class="d-flex  justify-content-between">
+      <h3>{% trans %}SSH keys{% endtrans %}</h3>
+      <button type="button"
+              class="btn btn-success btn-sm"
+              data-toggle="modal"
+              data-target="#add-sshkey-modal">
+        {% trans %}Add SSH key{% endtrans %}
+      </button>
+    </div>
+    <p>
+      {% trans %}SSH keys allow you to establish a secure connection between your computer and this backup system. This is a list of SSH keys associated with your account. Remove any keys that you do not recognize.{% endtrans %}
+    </p>
+    {% if not is_maintainer %}
+      <p class="text-secondary">{% trans %}Ask your administrator to delete SSH Keys.{% endtrans %}</p>
+    {% endif %}
+    <!-- List of keys-->
+    <ul class="list-group">
+      {% for key in sshkeys %}
+        <li class="list-group-item">
+          <div class="pull-right">
+            {{ button_confirm(label=_('Delete'), target="#delete-sshkey-modal", action="delete", fingerprint=key.fingerprint, disabled=not is_maintainer) }}
+          </div>
+          <strong class="list-group-item-heading">{{ key.title }}</strong>
+          <p class="list-group-item-text">{{ key.fingerprint }}</p>
+        </li>
+      {% else %}
+        <li class="list-group-item text-center">{% trans %}There are no SSH keys associated with your account.{% endtrans %}</li>
+      {% endfor %}
+    </ul>
+    {# djlint:off #}
+    {# Dialog to create SSH key. #}
+    {% call modal_dialog('add-sshkey-modal',_('Add SSH key'), _('Add SSH key')) %}
+      <input type="hidden" name="action" value="add" />
+      {{ form }}
+    {% endcall %}
+    {# djlint:on #}
+    <!-- Delete SSH Key Modal -->
+    {{ modal_confirm(
+    id='delete-sshkey-modal',
+    title=_('Delete SSH key'),
+    message=_("Are you sure you want to delete this SSH Key?"),
+    fields=['action', 'fingerprint'],
+    submit=_('Delete')) }}
+  {% endif %}
+{% endblock %}

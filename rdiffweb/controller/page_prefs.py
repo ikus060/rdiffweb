@@ -20,50 +20,21 @@ import logging
 import cherrypy
 
 from rdiffweb.controller import Controller
-from rdiffweb.controller.pref_general import PrefsGeneralPanelProvider
-from rdiffweb.controller.pref_notification import NotificationPref
-from rdiffweb.controller.pref_sshkeys import SSHKeysPlugin
-from rdiffweb.core.config import Option
+from rdiffweb.controller.page_pref_general import PagePrefsGeneral
+from rdiffweb.controller.page_pref_notification import PagePrefNotification
+from rdiffweb.controller.page_pref_sshkeys import PagePrefSshKeys
+from rdiffweb.core.rdw_templating import url_for
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-@cherrypy.popargs('panelid')
 class PreferencesPage(Controller):
 
-    disable_ssh_keys = Option('disable_ssh_keys')
+    general = PagePrefsGeneral()
+    notification = PagePrefNotification()
+    sshkeys = PagePrefSshKeys()
 
     @cherrypy.expose
-    def default(self, panelid=None, **kwargs):
-        if isinstance(panelid, bytes):
-            panelid = panelid.decode('ascii')
-
-        # Lazy create the list of "panels".
-        if not hasattr(self, 'panels'):
-            self.panels = [PrefsGeneralPanelProvider(), NotificationPref()]
-            # Show SSHKeys only if enabled.
-            if not self.disable_ssh_keys:
-                self.panels += [SSHKeysPlugin()]
-
-        # Select the right panelid. Default to the first one if not define by url.
-        panelid = panelid or self.panels[0].panel_id
-
-        # Search the panelid within our providers.
-        provider = next((x for x in self.panels if x.panel_id == panelid), None)
-        if not provider:
-            raise cherrypy.HTTPError(404)
-
-        # Render the page.
-        template, params = provider.render_prefs_panel(panelid, **kwargs)
-
-        # Create a params with a default panelid.
-        params.update(
-            {
-                "panels": [(x.panel_id, x.panel_name) for x in self.panels],
-                "active_panelid": panelid,
-                "template_content": template,
-            }
-        )
-
-        return self._compile_template("prefs.html", **params)
+    def index(self, panelid=None, **kwargs):
+        raise cherrypy.HTTPRedirect(url_for('/prefs/general'))
