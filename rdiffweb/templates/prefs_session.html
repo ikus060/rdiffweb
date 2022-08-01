@@ -1,0 +1,51 @@
+{% extends 'prefs.html' %}
+{% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
+{% from 'include/session.html' import browser, os %}
+{% set active_panelid='session' %}
+{% block panel %}
+  {% include 'message.html' %}
+  <div class="d-flex  justify-content-between">
+    <h3>{% trans %}Active Sessions{% endtrans %}</h3>
+  </div>
+  <p>
+    {% trans %}This is a list of devices that are logged into your account. You may revoke any sessions that you do not recognize except your current session.{% endtrans %}
+  </p>
+  <!-- List of keys-->
+  <ul class="list-group">
+    {% for session in active_sessions %}
+      <li class="list-group-item">
+        <div class="pull-right">
+          {% if not session.current %}
+            {{ button_confirm(label=_('Revoke'), target="#delete-session-modal", action="delete", number=session.number) }}
+          {% endif %}
+        </div>
+        <p class="list-group-item-heading" title="{{ session.user_agent }}">
+          <strong>{{ browser(session.user_agent) }}</strong>
+          {% trans %}running on{% endtrans %}
+          <strong>{{ os(session.user_agent)}}</strong>
+          {% if session.current %}
+            <span class="badge badge-success">{% trans %}current session{% endtrans %}</span>
+          {% endif %}
+        </p>
+        <p>
+          {% trans %}Last accessed{% endtrans %}
+          <strong><time datetime="{{ session.access_time }}">{{ session.access_time | lastupdated }}</time></strong>
+          {% trans %}from{% endtrans %}
+          <strong>{{ session.ip_address }}</strong>
+          <br/>
+          {% trans %}Signed in{% endtrans %}
+          <strong><time datetime="{{ session.login_time }}">{{ session.login_time | lastupdated }}</time></strong>
+          <br/>
+          {% trans %}Expired on{% endtrans %}
+          <strong><time class="js-datetime" datetime="{{ session.expiration_time }}">{{ session.expiration_time }}</time></strong>
+        </p>
+      </li>
+    {% endfor %}
+  </ul>
+  {{ modal_confirm(
+  id='delete-session-modal',
+  title=_('Revoke Session'),
+  message=_("Are you sure? The device will be signed out from the application."),
+  fields=['action', 'number'],
+  submit=_('Revoke')) }}
+{% endblock %}

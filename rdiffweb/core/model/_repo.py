@@ -64,7 +64,7 @@ class RepoObject(Base, RdiffRepo):
         foreign_keys=[userid],
         primaryjoin='UserObject.userid == RepoObject.userid',
         uselist=False,
-        lazy='subquery',
+        lazy=True,
     )
     repopath = Column('RepoPath', String, nullable=False, default='')
     maxage = Column('MaxAge', SmallInteger, nullable=False, server_default="0")

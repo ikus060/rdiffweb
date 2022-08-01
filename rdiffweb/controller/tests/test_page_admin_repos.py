@@ -15,28 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 
-import cherrypy
-
-from rdiffweb.controller import Controller
-from rdiffweb.controller.page_pref_general import PagePrefsGeneral
-from rdiffweb.controller.page_pref_notification import PagePrefNotification
-from rdiffweb.controller.page_pref_session import PagePrefSession
-from rdiffweb.controller.page_pref_sshkeys import PagePrefSshKeys
-from rdiffweb.core.rdw_templating import url_for
-
-# Define the logger
-logger = logging.getLogger(__name__)
+import rdiffweb.test
+from rdiffweb.core.model import RepoObject, UserObject
 
 
-class PreferencesPage(Controller):
+class AdminReposTest(rdiffweb.test.WebCase):
 
-    general = PagePrefsGeneral()
-    notification = PagePrefNotification()
-    sshkeys = PagePrefSshKeys()
-    session = PagePrefSession()
+    login = True
 
-    @cherrypy.expose
-    def index(self, panelid=None, **kwargs):
-        raise cherrypy.HTTPRedirect(url_for('/prefs/general'))
+    def test_repos(self):
+        # Given an administrator user with repos
+        repos = (
+            RepoObject.query.join(UserObject, RepoObject.userid == UserObject.userid)
+            .filter(UserObject.username == self.USERNAME)
+            .all()
+        )
+        # When querying the repository page
+        self.getPage("/admin/repos")
+        self.assertStatus(200)
+        # Then the page contains our repos.
+        for repo in repos:
+            self.assertInBody(repo.name)

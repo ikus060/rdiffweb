@@ -103,7 +103,12 @@ def do_format_lastupdated(value, now=None):
     if not value:
         return ""
     now = librdiff.RdiffTime(now)
-    delta = now.epoch() - (value.epoch() if isinstance(value, librdiff.RdiffTime) else value)
+    if isinstance(value, librdiff.RdiffTime):
+        delta = now.epoch() - value.epoch()
+    elif isinstance(value, datetime.datetime):
+        delta = now.epoch() - value.timestamp()
+    else:
+        delta = now.epoch() - value
     delta = datetime.timedelta(seconds=delta)
     if delta.days > 365:
         return _('%d years ago') % (delta.days / 365)

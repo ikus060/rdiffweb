@@ -68,7 +68,7 @@ class LoginTest(LoginAbstractTest):
         # When trying to login with an invalid user
         login = cherrypy.engine.publish('login', 'josh', 'password')
         # Then login is not successful
-        self.assertEquals(login, [None])
+        self.assertEqual(login, [None])
         # Check if listener called
         self.listener.user_login.assert_not_called()
 

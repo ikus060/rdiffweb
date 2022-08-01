@@ -32,7 +32,9 @@
           <p class="list-group-item-text">{{ key.fingerprint }}</p>
         </li>
       {% else %}
-        <li class="list-group-item text-center">{% trans %}There are no SSH keys associated with your account.{% endtrans %}</li>
+        <li class="list-group-item text-center">
+          {% trans %}There are no SSH keys associated with your account.{% endtrans %}
+        </li>
       {% endfor %}
     </ul>
     {# djlint:off #}

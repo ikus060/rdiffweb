@@ -19,11 +19,11 @@
   {% call datatables(_('User list'), filter_buttons)%}
   <thead>
     <tr>
-      <th scope="col">User</th>
-      <th scope="col">Email</th>
-      <th scope="col">User Role</th>
-      <th scope="col">Root directory</th>
-      <th scope="col" data-sortable="false" class="text-right">Actions</th>
+      <th scope="col">{% trans %}User{% endtrans %}</th>
+      <th scope="col">{% trans %}Email{% endtrans %}</th>
+      <th scope="col">{% trans %}User Role{% endtrans %}</th>
+      <th scope="col">{% trans %}Root directory{% endtrans %}</th>
+      <th scope="col" data-sortable="false" class="text-right">{% trans %}Actions{% endtrans %}</th>
     </tr>
   </thead>
   <tbody>

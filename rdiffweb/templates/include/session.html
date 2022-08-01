@@ -1,0 +1,39 @@
+{# https://developer.mozilla.org/en-US/docs/Web/HTTP/Browser_detection_using_the_user_agent #}
+{% macro browser(user_agent) %}
+  {% if not user_agent %}
+    {% trans %}Unknown{% endtrans %}
+  {% elif 'Firefox/' in user_agent and 'Seamonkey/' not in user_agent %}
+    Firefox
+  {% elif 'Seamonkey/' in user_agent %}
+    Seamonkey
+  {% elif 'Chrome/' in user_agent and 'Chromium/' not in user_agent %}
+    Chrome
+  {% elif 'Chromium/' in user_agent %}
+    Chromium
+  {% elif 'Safari/' in user_agent and 'Chrome/' not in user_agent and 'Chromium/' not in user_agent %}
+    Safari
+  {% elif 'OPR/' in user_agent or 'Opera/' in user_agent %}
+    Opera
+  {% elif '; MSIE xyz;' in user_agent %}
+    Internet Explorer
+  {% elif 'Trident/7.0;' in user_agent %}
+    Internet Explorer
+  {% else %}
+    {% trans %}Unknown{% endtrans %}
+  {% endif %}
+{% endmacro %}
+{% macro os(user_agent) %}
+  {% if not user_agent %}
+    {% trans %}Unknown{% endtrans %}
+  {% elif 'Linux' in user_agent %}
+    Linux
+  {% elif 'X11' in user_agent %}
+    Unix
+  {% elif 'Mac' in user_agent %}
+    MacOS
+  {% elif 'Windows' in user_agent %}
+    Windows
+  {% else %}
+    {% trans %}Unknown{% endtrans %}
+  {% endif %}
+{% endmacro %}

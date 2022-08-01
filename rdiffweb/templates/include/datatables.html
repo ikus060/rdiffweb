@@ -12,9 +12,8 @@
   <script>
     /* Enable JQuery DataTables. */
     var table = $("#{{id}}").DataTable({
-      dom: "<'row align-items-center'<'col-sm'B><'col-sm mb-1'f>>" +
-      "<'row'<'col-sm-12'tr>>" +
-      "<'row'<'col-sm-12 col-md-12'i>>",
+      dom: "<'d-sm-flex align-items-center'<'mb-1 flex-grow-1'i><'mb-1'f><B>>" +
+      "<'row'<'col-sm-12'tr>>",
       initComplete: function () {
           var input = $('#{{id}}_filter input');
           input.addClass('form-control form-control-sm');
@@ -38,7 +37,7 @@
       buttons: {
         dom: {
           button: {
-            className: 'btn btn-primary mr-2 mb-1',
+            className: 'btn btn-primary ml-2 mb-1',
             active: 'active',
           }
         },

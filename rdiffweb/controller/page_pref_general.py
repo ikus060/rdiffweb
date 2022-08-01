@@ -23,13 +23,13 @@ import logging
 import re
 
 import cherrypy
-from wtforms.fields.html5 import EmailField
 from wtforms.fields import PasswordField, StringField
+from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, EqualTo, InputRequired, Regexp
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
-from rdiffweb.tools.i18n import ugettext as _
+from rdiffweb.tools.i18n import gettext_lazy as _
 
 # Define the logger
 _logger = logging.getLogger(__name__)
@@ -103,9 +103,7 @@ class PagePrefsGeneral(Controller):
         elif action == "update_repos":
             self.app.currentuser.refresh_repos(delete=True)
             flash(_("Repositories successfully updated"), level='success')
-        elif action is None:
-            pass
-        else:
+        elif action is not None:
             _logger.warning("unknown action: %s", action)
             raise cherrypy.NotFound("Unknown action")
         params = {

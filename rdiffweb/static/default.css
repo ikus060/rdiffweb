@@ -57,6 +57,9 @@ a:hover {
 }
 
 /* DataTable adjustments */
+.dataTables_wrapper .dataTables_info{
+    padding-top: 0;
+}
 table.dataTable thead>tr>th.sorting {
     padding-top: 5px 30px 5px 5px;
 }

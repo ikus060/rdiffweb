@@ -34,7 +34,7 @@ from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.core import authorizedkeys
 from rdiffweb.core.model import DuplicateSSHKeyError
-from rdiffweb.tools.i18n import ugettext as _
+from rdiffweb.tools.i18n import gettext_lazy as _
 
 _logger = logging.getLogger(__name__)
 

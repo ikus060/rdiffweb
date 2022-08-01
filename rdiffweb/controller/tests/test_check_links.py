@@ -14,11 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-Created on Dec 30, 2015
-
-@author: Patrik Dufresne
-"""
 
 import re
 from collections import OrderedDict

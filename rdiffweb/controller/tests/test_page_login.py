@@ -58,7 +58,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         SessionObject.query.filter(SessionObject.id == self.session_id).first()
         session = DbSession(id=self.session_id)
         session.load()
-        self.assertEquals('admin', session.get(SESSION_KEY))
+        self.assertEqual('admin', session.get(SESSION_KEY))
 
     def test_cookie_http_only(self):
         # Given a request made to rdiffweb

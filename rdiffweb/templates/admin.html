@@ -11,6 +11,7 @@
     ('users', _('Users'), admin_nav_active=='users'),
     ('repos', _('Repositories'), admin_nav_active=='repos'),
     ('logs', _('Logs'), admin_nav_active=='logs'),
+    ('session', _('Active Sessions'), admin_nav_active=='session'),
     ('sysinfo', _('System Info'), admin_nav_active=='sysinfo')] %}
     <ul class="nav nav-tabs mb-2" role="tablist">
       {% for key, label, active in admin_nav_items %}
@@ -25,6 +26,7 @@
       {% set card_items = [
       (_('Users'), user_count, url_for('admin','users'), 'primary'),
       (_('Repositories'), repo_count, url_for('admin','repos'), 'success'),
+      (_('Active Sessions (last hour)'), session_count, url_for('admin','session'), 'warning'),
       ]%}
       <div class="row">
         {% for label, count, url, class in card_items %}

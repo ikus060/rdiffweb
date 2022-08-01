@@ -85,7 +85,7 @@ class UserObject(Base):
         foreign_keys='UserObject.userid',
         primaryjoin='UserObject.userid == RepoObject.userid',
         uselist=True,
-        lazy='subquery',
+        lazy=True,
         order_by=lambda: RepoObject.repopath,
     )
 
