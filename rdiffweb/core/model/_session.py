@@ -80,9 +80,13 @@ class DbSession(Session):
 
     def clean_up(self):
         """Clean up expired sessions."""
-        now = self.now()
-        with SessionObject.session.begin():
+        try:
+            now = self.now()
             SessionObject.query.filter(SessionObject.expiration_time < now).delete()
+        except Exception:
+            logger.error('fail to clean-up sessions', exc_info=1)
+        finally:
+            cherrypy.tools.db.on_end_resource()
 
     def __len__(self):
         """Return the number of active sessions."""

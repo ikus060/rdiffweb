@@ -42,7 +42,6 @@ def catch_exception(func):
             cherrypy.tools.db.on_end_resource()
 
     wrapper._func = func
-    wrapper.__name__ = func.__name__
     return wrapper
 
 
@@ -108,6 +107,7 @@ class Scheduler(SimplePlugin):
         hour, minute = execution_time.split(':', 2)
         self._scheduler.add_job(
             func=catch_exception(job),
+            name=job.__name__,
             args=args,
             kwargs=kwargs,
             trigger='cron',
@@ -122,7 +122,13 @@ class Scheduler(SimplePlugin):
         Add the given task to be execute immediately in background.
         """
         assert hasattr(task, '__call__'), 'task must be callable'
-        self._scheduler.add_job(func=catch_exception(task), args=args, kwargs=kwargs, next_run_time=datetime.now())
+        self._scheduler.add_job(
+            func=catch_exception(task),
+            name=task.__name__,
+            args=args,
+            kwargs=kwargs,
+            next_run_time=datetime.now(),
+        )
 
     def unschedule_job(self, job):
         """
