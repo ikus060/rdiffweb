@@ -18,11 +18,6 @@
 import logging
 import os
 
-try:
-    from packaging.version import LooseVersion
-except ImportError:
-    from distutils.version import LooseVersion
-
 import cherrypy
 import cherrypy.lib.sessions
 import pkg_resources
@@ -44,6 +39,7 @@ import rdiffweb.tools.db
 import rdiffweb.tools.enrich_session
 import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
+import rdiffweb.tools.proxy
 import rdiffweb.tools.ratelimit
 import rdiffweb.tools.security
 from rdiffweb.controller import Controller
@@ -68,20 +64,9 @@ from rdiffweb.core.model import DbSession, UserObject
 # Define the logger
 logger = logging.getLogger(__name__)
 
-# Enabled tools.proxy only for version < 5 or > 10
-# From version 5 to 10, a bug in cherrypy is breaking creation of base url.
-cherrypy_version = cherrypy.__version__
-if cherrypy_version == 'unknown':
-    # From time to time the cheroot dependencies is broken on python3.5
-    # So default to enabling proxy. https://www.illumos.org/issues/10508
-    cp_tools_proxy_enabled = True
-    cp_uri_encoding_enabled = True
-else:
-    cp_uri_encoding_enabled = LooseVersion(cherrypy.__version__) >= LooseVersion("5.5.0")
-    cp_tools_proxy_enabled = not (5 <= int(cherrypy_version.split('.')[0]) <= 10)
-
 
 @cherrypy.tools.db()
+@cherrypy.tools.proxy()
 @cherrypy.tools.enrich_session()
 class Root(LocationsPage):
     def __init__(self):
@@ -187,6 +172,10 @@ class RdiffwebApp(Application):
 
         config = {
             '/': {
+                # To work around the new behaviour in CherryPy >= 5.5.0, force usage of
+                # ISO-8859-1 encoding for URL. This avoid any conversion of the
+                # URL into UTF-8.
+                'request.uri_encoding': 'ISO-8859-1',
                 'tools.auth_basic.realm': 'rdiffweb',
                 'tools.auth_basic.checkpassword': self._checkpassword,
                 'tools.auth_form.on': True,
@@ -200,7 +189,6 @@ class RdiffwebApp(Application):
                 'tools.encode.on': True,
                 'tools.encode.encoding': 'utf-8',
                 'tools.gzip.on': True,
-                'tools.proxy.on': cp_tools_proxy_enabled,
                 'error_page.default': self.error_page,
                 'tools.sessions.on': True,
                 'tools.sessions.debug': cfg.debug,
@@ -213,12 +201,6 @@ class RdiffwebApp(Application):
                 'tools.ratelimit.storage_path': cfg.rate_limit_dir,
             },
         }
-
-        # To work around the new behaviour in CherryPy >= 5.5.0, force usage of
-        # ISO-8859-1 encoding for URL. This avoid any conversion of the
-        # URL into UTF-8.
-        if cp_uri_encoding_enabled:
-            config['/']["request.uri_encoding"] = "ISO-8859-1"
 
         # Initialize the application
         Application.__init__(self, root=Root(), config=config)

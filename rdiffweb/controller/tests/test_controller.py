@@ -43,6 +43,22 @@ class ControllerTest(rdiffweb.test.WebCase):
         self.assertStatus('200 OK')
         self.assertInBody('MyTest')
 
+    def test_proxy(self):
+        """
+        Check if the headername is used in the page.
+        """
+        self.getPage("/", headers=[('Host', 'this.is.a.test.com')])
+        self.assertStatus('200 OK')
+        self.assertInBody('http://this.is.a.test.com/favicon.ico')
+
+    def test_proxy_https(self):
+        """
+        Check if the headername is used in the page.
+        """
+        self.getPage("/", headers=[('Host', 'this.is.a.test.com'), ('X-Forwarded-Proto', 'https')])
+        self.assertStatus('200 OK')
+        self.assertInBody('https://this.is.a.test.com/favicon.ico')
+
     @parameterized.expand(
         [
             '/favicon.ico',
