@@ -43,7 +43,7 @@ class Test(unittest.TestCase):
 
     def test_get_i18n(self):
         # Load default translation
-        i18n._get_i18n(self.mo_dir, 'en_US', 'messages')
+        i18n._get_i18n(self.mo_dir, 'en', 'messages')
         t = cherrypy.response.i18n.trans
         l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
@@ -79,8 +79,8 @@ class Test(unittest.TestCase):
         # Test translation object
         self.assertEqual("Modifier", t.gettext("Edit"))
         # Check if the translation fallback
-        self.assertEqual("Invalid String", t.gettext("Invalid String"))
-        pass
+        text = "Invalid String"
+        self.assertEqual("Invalid String", t.gettext(text))
 
     def test_get_i18n_with_en(self):
         # Get trans
@@ -89,7 +89,6 @@ class Test(unittest.TestCase):
         l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("en", l.language)
-        pass
 
     def test_get_i18n_with_en_us(self):
         # Get trans
@@ -98,7 +97,6 @@ class Test(unittest.TestCase):
         l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("en", l.language)
-        pass
 
     def test_get_i18n_with_fr_ca(self):
         # Get trans
@@ -107,7 +105,6 @@ class Test(unittest.TestCase):
         l = cherrypy.response.i18n.locale
         self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("fr", l.language)
-        pass
 
     def test_get_i18n_with_en_fr(self):
         # Get trans
@@ -119,8 +116,8 @@ class Test(unittest.TestCase):
         # Test translation object
         self.assertEqual("Edit", t.gettext("Edit"))
         # Check if the translation fallback
-        self.assertEqual("Invalid String", t.gettext("Invalid String"))
-        pass
+        text = "Invalid String"
+        self.assertEqual("Invalid String", t.gettext(text))
 
     def test_get_i18n_with_fr_en(self):
         # Get trans
@@ -131,7 +128,6 @@ class Test(unittest.TestCase):
         self.assertEqual("fr", l.language)
         # Test translation object
         self.assertEqual("Modifier", t.gettext("Edit"))
-        pass
 
     def test_get_i18n_with_date_format(self):
         # Get trans
@@ -142,7 +138,6 @@ class Test(unittest.TestCase):
         self.assertEqual("fr", l.language)
         # Test translation object
         self.assertEqual("Modifier", t.gettext("Edit"))
-        pass
 
 
 class TestI18nWebCase(rdiffweb.test.WebCase):

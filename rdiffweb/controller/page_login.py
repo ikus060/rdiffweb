@@ -24,7 +24,7 @@ from wtforms.validators import InputRequired
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.config import Option
-from rdiffweb.tools.i18n import ugettext as _
+from rdiffweb.tools.i18n import gettext_lazy as _
 
 # Define the logger
 logger = logging.getLogger(__name__)

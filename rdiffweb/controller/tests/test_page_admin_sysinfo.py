@@ -15,28 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 
-import cherrypy
-
-from rdiffweb.controller import Controller
-from rdiffweb.controller.page_pref_general import PagePrefsGeneral
-from rdiffweb.controller.page_pref_notification import PagePrefNotification
-from rdiffweb.controller.page_pref_session import PagePrefSession
-from rdiffweb.controller.page_pref_sshkeys import PagePrefSshKeys
-from rdiffweb.core.rdw_templating import url_for
-
-# Define the logger
-logger = logging.getLogger(__name__)
+import rdiffweb.test
 
 
-class PreferencesPage(Controller):
+class AdminSysinfoTest(rdiffweb.test.WebCase):
 
-    general = PagePrefsGeneral()
-    notification = PagePrefNotification()
-    sshkeys = PagePrefSshKeys()
-    session = PagePrefSession()
+    login = True
 
-    @cherrypy.expose
-    def index(self, panelid=None, **kwargs):
-        raise cherrypy.HTTPRedirect(url_for('/prefs/general'))
+    def test_sysinfo(self):
+        self.getPage("/admin/sysinfo")
+        self.assertStatus(200)
+        self.assertInBody("Operating System Info")
+        self.assertInBody("Python Info")

@@ -16,50 +16,28 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #}
-{% include 'message.html' %}
+{% extends 'prefs.html' %}
 {% from 'include/panel.html' import panel %}
-<!-- Panel to set user info. -->
-{% call panel(title=_("General information")) %}
-<div class="panel-body">
-  <form action="#" method="post" role="form">
-    <div class="form-group">
-      <label for="username">{% trans %}Username{% endtrans %}</label>
+{% set active_panelid='general' %}
+{% block panel %}
+  {% include 'message.html' %}
+  <!-- Panel to set user info. -->
+  {% call panel(title=_("Account settings"), description=_("General information about your account.")) %}
+  <div class="panel-body">
+    <form action="#" method="post" role="form">
+      {{ profile_form }}
+      <input type="hidden" name="action" value="set_profile_info" />
       <div>
-        <input class="form-control"
-               type="text"
-               name="username"
-               id="username"
-               readonly="readonly"
-               value="{{ username }}"/>
+        <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
       </div>
-    </div>
-    <div class="form-group">
-      {{ profile_form.email.label() }}
-      <div>{{ profile_form.email(class="form-control") }}</div>
-    </div>
-    <input type="hidden" name="action" value="set_profile_info" />
-    <div>
-      <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
-    </div>
-  </form>
-</div>
+    </form>
+  </div>
 {% endcall %}
 <!-- Panel to change password. -->
-{% call panel(title=_("Change password")) %}
+{% call panel(title=_("Password"), description=_("Change your current password")) %}
 <div class="panel-body">
-  <form action="#" method="post" role="form" data-validate>
-    <div class="form-group">
-      {{ password_form.current.label() }}
-      <div>{{ password_form.current(class="form-control") }}</div>
-    </div>
-    <div class="form-group">
-      {{ password_form.new.label() }}
-      <div>{{ password_form.new(class="form-control") }}</div>
-    </div>
-    <div class="form-group">
-      {{ password_form.confirm.label() }}
-      <div>{{ password_form.confirm(class="form-control", data_rule_equalto="#new") }}</div>
-    </div>
+  <form action="#" method="post" role="form" class="clearfix" data-validate>
+    {{ password_form }}
     <input type="hidden" name="action" value="set_password" />
     <div>
       <button type="submit" class="btn btn-success">{% trans %}Update password{% endtrans %}</button>
@@ -79,3 +57,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   </form>
 </div>
 {% endcall %}
+{% endblock %}

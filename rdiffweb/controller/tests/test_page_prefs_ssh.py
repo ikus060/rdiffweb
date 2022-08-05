@@ -24,10 +24,10 @@ Created on Jan 1, 2016
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
 
-PREFS_SSHKEYS = "/prefs/sshkeys/"
+PREFS_SSHKEYS = "/prefs/sshkeys"
 
 
-class SSHKeysTest(rdiffweb.test.WebCase):
+class PagePrefSshKeysTest(rdiffweb.test.WebCase):
 
     login = True
 
@@ -139,3 +139,19 @@ class SSHKeysTest(rdiffweb.test.WebCase):
         self._delete_ssh_key("invalid")
         self.assertStatus('200 OK')
         self.assertEqual(1, len(list(user.authorizedkeys)))
+
+
+class PagePrefSshKeysWithSSHKeyDisabled(rdiffweb.test.WebCase):
+
+    login = True
+
+    default_config = {
+        "disable_ssh_keys": "true",
+    }
+
+    def test_get_page(self):
+        # When making a query to preferences
+        self.getPage("/prefs/sshkeys", method='GET')
+        # Then the page should return with success but without SSH
+        self.assertStatus(200)
+        self.assertInBody("SSH Keys management is disabled by your administrator.")

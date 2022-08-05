@@ -13,10 +13,10 @@
   {% call() datatables(_('Repository list'), filter_buttons) %}
   <thead>
     <tr>
-      <th scope="col">Display Name</th>
-      <th scope="col">Owner</th>
-      <th scope="col">Status</th>
-      <th scope="col" data-sortable="false">Actions</th>
+      <th scope="col">{% trans %}Display Name{% endtrans %}</th>
+      <th scope="col">{% trans %}Owner{% endtrans %}</th>
+      <th scope="col">{% trans %}Status{% endtrans %}</th>
+      <th scope="col" data-sortable="false">{% trans %}Actions{% endtrans %}</th>
     </tr>
   </thead>
   <tbody>

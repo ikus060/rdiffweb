@@ -23,13 +23,13 @@ import logging
 import re
 
 import cherrypy
+from wtforms.fields import PasswordField, StringField
 from wtforms.fields.html5 import EmailField
-from wtforms.fields.simple import PasswordField
 from wtforms.validators import DataRequired, EqualTo, InputRequired, Regexp
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
-from rdiffweb.tools.i18n import ugettext as _
+from rdiffweb.tools.i18n import gettext_lazy as _
 
 # Define the logger
 _logger = logging.getLogger(__name__)
@@ -38,11 +38,22 @@ PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
 
 
 class UserProfileForm(CherryForm):
+    username = StringField(_('Username'), render_kw={'readonly': True})
+    fullname = StringField(_('Fullname'))
     email = EmailField(_('Email'), validators=[DataRequired(), Regexp(PATTERN_EMAIL, message=_("Invalid email."))])
+
+    def populate_obj(self, user):
+        user.fullname = self.fullname.data
+        user.email = self.email.data
+        user.add()
 
 
 class UserPasswordForm(CherryForm):
-    current = PasswordField(_('Current password'), validators=[InputRequired(_("Current password is missing."))])
+    current = PasswordField(
+        _('Current password'),
+        validators=[InputRequired(_("Current password is missing."))],
+        description=_("You must provide your current password in order to change it."),
+    )
     new = PasswordField(
         _('New password'),
         validators=[
@@ -55,14 +66,10 @@ class UserPasswordForm(CherryForm):
     )
 
 
-class PrefsGeneralPanelProvider(Controller):
+class PagePrefsGeneral(Controller):
     """
     Plugin to change user profile and password.
     """
-
-    panel_id = 'general'
-
-    panel_name = _('Profile')
 
     def _handle_set_password(self, action, form):
         """
@@ -82,42 +89,25 @@ class PrefsGeneralPanelProvider(Controller):
         except ValueError as e:
             flash(str(e), level='warning')
 
-    def _handle_set_profile_info(self, action, form):
-        """
-        Called when changing user profile.
-        """
-        assert self.app.currentuser
-        assert action == 'set_profile_info'
-        assert form
-        # Validate form
-        if not form.validate():
-            flash(form.error_message, level='error')
-            return
-        # Update the user's email
-        username = self.app.currentuser.username
-        _logger.info("updating user [%s] email [%s]", username, form.email.data)
-        self.app.currentuser.email = form.email.data
-        # Report success
-        flash(_("Profile updated successfully."), level='success')
-
-    def render_prefs_panel(self, panelid, action=None, **kwargs):  # @UnusedVariable
+    @cherrypy.expose
+    def default(self, action=None, **kwargs):
         # Process the parameters.
-        profile_form = UserProfileForm(email=self.app.currentuser.email)
+        profile_form = UserProfileForm(obj=self.app.currentuser)
         password_form = UserPasswordForm()
         if action == "set_profile_info":
-            self._handle_set_profile_info(action, profile_form)
+            if profile_form.validate_on_submit():
+                profile_form.populate_obj(self.app.currentuser)
+                flash(_("Profile updated successfully."), level='success')
         elif action == "set_password":
             self._handle_set_password(action, password_form)
         elif action == "update_repos":
             self.app.currentuser.refresh_repos(delete=True)
             flash(_("Repositories successfully updated"), level='success')
-        elif action is None:
-            pass
-        else:
+        elif action is not None:
             _logger.warning("unknown action: %s", action)
             raise cherrypy.NotFound("Unknown action")
         params = {
             'profile_form': profile_form,
             'password_form': password_form,
         }
-        return "prefs_general.html", params
+        return self._compile_template("prefs_general.html", **params)

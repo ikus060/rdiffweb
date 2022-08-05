@@ -122,7 +122,13 @@ This next release focus on multi-factor-authentication as a measure to increase 
 * Use CSS variables `var()` to customize themes
 * Remove usage of Jquery.validate
 * Replace custom timsort by jquery DataTables #205
-
+* Add Active Session managements #203
+  * Active session should be visible in user's profiles
+  * Active session may be revoked by user
+  * Active session should be visible in administration view
+  * Action session may be revoke by administrator
+  * Show number of active users within the last 24 hours in dashboard
+ 
 Breaking changes:
 
 * `session-dir` is deprecated and should be replace by `rate-limit-dir`. User's session are stored in database.

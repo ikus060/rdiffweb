@@ -15,44 +15,38 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import threading
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-
 import logging
+import threading
 
 import cherrypy
 from cherrypy.lib.sessions import Session
-from sqlalchemy import Column, DateTime, LargeBinary, String
+from sqlalchemy import Column, DateTime, Integer, PickleType, String
+from sqlalchemy.orm import validates
 
 Base = cherrypy.tools.db.get_base()
 
 logger = logging.getLogger(__name__)
 
-SESSION_KEY = '_cp_username'
-
 
 class SessionObject(Base):
     __tablename__ = 'sessions'
     __table_args__ = {'sqlite_autoincrement': True}
-    id = Column('SessionID', String, unique=True, primary_key=True)
+    number = Column('Number', Integer, unique=True, primary_key=True)
+    id = Column('SessionID', String, unique=True, nullable=False)
     username = Column('Username', String)
-    data = Column('Data', LargeBinary)
-    expiration_time = Column('ExpirationTime', DateTime)
+    data = Column('Data', PickleType)
+    expiration_time = Column('ExpirationTime', DateTime, nullable=False)
+    access_time = Column('AccessTime', DateTime)
+
+    @validates('data')
+    def validate_encoding(self, key, value):
+        if value:
+            self.access_time = value.get('access_time')
+            self.username = value.get('_cp_username')
+        return value
 
 
 class DbSession(Session):
-    @classmethod
-    def setup(cls, session_key=SESSION_KEY):
-        """
-        Set up the storage system for SQLAlchemy backend.
-        Called once when the built-in tool calls sessions.init.
-        """
-        cls._session_key = session_key
-
     def _exists(self):
         return SessionObject.query.filter(SessionObject.id == self.id).first() is not None
 
@@ -61,7 +55,7 @@ class DbSession(Session):
         if not session:
             return None
         try:
-            return (pickle.loads(session.data), session.expiration_time)
+            return (session.data, session.expiration_time)
         except TypeError:
             logger.error('fail to read session data', exc_info=1)
         return None
@@ -70,9 +64,8 @@ class DbSession(Session):
         session = SessionObject.query.filter(SessionObject.id == self.id).first()
         if not session:
             session = SessionObject(id=self.id)
+        session.data = self._data
         session.expiration_time = expiration_time
-        session.username = self._data.get(self._session_key)
-        session.data = pickle.dumps(self._data, pickle.HIGHEST_PROTOCOL)
         session.add()
 
     def _delete(self):

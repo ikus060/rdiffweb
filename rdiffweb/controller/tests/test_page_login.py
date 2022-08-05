@@ -58,7 +58,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         SessionObject.query.filter(SessionObject.id == self.session_id).first()
         session = DbSession(id=self.session_id)
         session.load()
-        self.assertEquals('admin', session.get(SESSION_KEY))
+        self.assertEqual('admin', session.get(SESSION_KEY))
 
     def test_cookie_http_only(self):
         # Given a request made to rdiffweb
@@ -309,13 +309,13 @@ class LogoutPageTest(rdiffweb.test.WebCase):
         self.getPage('/login/', method='POST', body=b)
         self.assertStatus('303 See Other')
         # Get content of a page.
-        self.getPage("/prefs/")
+        self.getPage("/prefs/general")
         self.assertStatus('200 OK')
         # Then logout
         self.getPage('/logout/')
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         # Get content of a page.
-        self.getPage("/prefs/")
+        self.getPage("/prefs/general")
         self.assertStatus('303 See Other')
-        self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2Fprefs%2F')
+        self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2Fprefs%2Fgeneral')

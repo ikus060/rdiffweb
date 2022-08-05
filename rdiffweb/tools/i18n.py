@@ -96,7 +96,7 @@ from collections import namedtuple
 
 import cherrypy
 from babel.core import Locale, UnknownLocaleError
-from babel.support import NullTranslations, Translations
+from babel.support import LazyProxy, NullTranslations, Translations
 
 Lang = namedtuple('Lang', 'locale trans')
 
@@ -144,6 +144,19 @@ def ungettext(singular, plural, num):
     if not hasattr(cherrypy.response, "i18n"):
         return singular
     return cherrypy.response.i18n.trans.ungettext(singular, plural, num)
+
+
+def gettext_lazy(message):
+    """Like ugettext, but lazy.
+
+    :returns: A proxy for the translation object.
+    :rtype: LazyProxy
+    """
+
+    def get_translation():
+        return cherrypy.response.i18n.trans.ugettext(message)
+
+    return LazyProxy(get_translation)
 
 
 def _search_translation(preferred_langs, dirname, domain):

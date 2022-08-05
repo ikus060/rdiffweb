@@ -23,6 +23,7 @@ user home.
 
 import logging
 
+import cherrypy
 from wtforms import validators
 from wtforms.fields.core import StringField
 from wtforms.validators import ValidationError
@@ -33,7 +34,7 @@ from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.core import authorizedkeys
 from rdiffweb.core.model import DuplicateSSHKeyError
-from rdiffweb.tools.i18n import ugettext as _
+from rdiffweb.tools.i18n import gettext_lazy as _
 
 _logger = logging.getLogger(__name__)
 
@@ -66,14 +67,10 @@ class DeleteSshForm(CherryForm):
     fingerprint = StringField('Fingerprint')
 
 
-class SSHKeysPlugin(Controller):
+class PagePrefSshKeys(Controller):
     """
     Plugin to configure SSH keys.
     """
-
-    panel_id = 'sshkeys'
-
-    panel_name = _('SSH Keys')
 
     def _add_key(self, action, form):
         assert action == 'add'
@@ -106,17 +103,19 @@ class SSHKeysPlugin(Controller):
             flash(_("Unknown error while removing the SSH Key"), level='error')
             _logger.warning("error removing ssh key", exc_info=1)
 
-    def render_prefs_panel(self, panelid, action=None, **kwargs):  # @UnusedVariable
+    @cherrypy.expose
+    def default(self, action=None, **kwargs):
 
         # Handle action
         form = SshForm()
-        if action == "add":
-            self._add_key(action, form)
-        elif action == 'delete':
-            self._delete_key(action, DeleteSshForm())
+        if not self.app.cfg.disable_ssh_keys:
+            if action == "add":
+                self._add_key(action, form)
+            elif action == 'delete':
+                self._delete_key(action, DeleteSshForm())
 
         # Get SSH keys if file exists.
-        params = {'form': form}
+        params = {'disable_ssh_keys': self.app.cfg.disable_ssh_keys, 'form': form}
         try:
             params["sshkeys"] = [
                 {'title': key.comment or (key.keytype + ' ' + key.key[:18]), 'fingerprint': key.fingerprint}
@@ -127,4 +126,4 @@ class SSHKeysPlugin(Controller):
             flash(_("Failed to get SSH keys"), level='error')
             _logger.warning("error reading SSH keys", exc_info=1)
 
-        return "prefs_sshkeys.html", params
+        return self._compile_template("prefs_sshkeys.html", **params)

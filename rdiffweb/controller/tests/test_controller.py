@@ -157,12 +157,12 @@ class ControllerSession(rdiffweb.test.WebCase):
 
     def test_create_session(self):
         # Given a server with no session.
-        self.assertEquals(0, len(SessionObject.query.all()))
+        self.assertEqual(0, len(SessionObject.query.all()))
         # When querying a new page
         self.getPage('/')
         self.assertStatus(303)
         # Then a new session get created
-        self.assertEquals(1, len(SessionObject.query.all()))
+        self.assertEqual(1, len(SessionObject.query.all()))
         session = SessionObject.query.filter(SessionObject.id == self.session_id).first()
         self.assertIsNotNone(session)
 
@@ -170,7 +170,7 @@ class ControllerSession(rdiffweb.test.WebCase):
         # Given a server with a session
         self.getPage('/')
         self.assertStatus(303)
-        self.assertEquals(1, len(SessionObject.query.all()))
+        self.assertEqual(1, len(SessionObject.query.all()))
         # When this session get old
         data = SessionObject.query.filter(SessionObject.id == self.session_id).first()
         data.expiration_time = datetime.datetime.now() - datetime.timedelta(seconds=1)

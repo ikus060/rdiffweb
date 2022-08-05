@@ -12,9 +12,8 @@
   <script>
     /* Enable JQuery DataTables. */
     var table = $("#{{id}}").DataTable({
-      dom: "<'row align-items-center'<'col-sm'B><'col-sm mb-1'f>>" +
-      "<'row'<'col-sm-12'tr>>" +
-      "<'row'<'col-sm-12 col-md-12'i>>",
+      dom: "<'d-sm-flex align-items-center'<'mb-1 flex-grow-1'i><'mb-1'f><B>>" +
+      "<'row'<'col-sm-12'tr>>",
       initComplete: function () {
           var input = $('#{{id}}_filter input');
           input.addClass('form-control form-control-sm');
@@ -25,9 +24,9 @@
             "sortAscending": ": {%trans%}activate to sort column ascending{%endtrans%}",
             "sortDescending": ": {%trans%}activate to sort column descending{%endtrans%}"
         },
-        "info": "{%trans%}Showing _START_ to _TOTAL_ entries{%endtrans%}",
+        "info": "{%trans%}Showing _TOTAL_ entries{%endtrans%}",
         "infoFiltered": "{%trans%}(filtered from _MAX_ total entries){%endtrans%}",
-        "infoEmpty": "{%trans%}Showing 0 of 0 entries{%endtrans%}",
+        "infoEmpty": "{%trans%}Showing 0 entries{%endtrans%}",
         "zeroRecords": "{%trans%}No matching records found{%endtrans%}",
         "search": "{%trans%}Filter: {%endtrans%}"
       },
@@ -38,7 +37,7 @@
       buttons: {
         dom: {
           button: {
-            className: 'btn btn-primary mr-2 mb-1',
+            className: 'btn btn-primary ml-2 mb-1',
             active: 'active',
           }
         },
