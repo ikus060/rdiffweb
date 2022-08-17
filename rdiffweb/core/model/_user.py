@@ -63,7 +63,7 @@ class UserObject(Base):
     _username = Column('Username', String, nullable=False, unique=True)
     hash_password = Column('Password', String, nullable=False, default="")
     _user_root = Column('UserRoot', String, nullable=False, default="")
-    is_admin = Column(
+    _is_admin = Column(
         'IsAdmin',
         SmallInteger,
         nullable=False,
@@ -338,6 +338,8 @@ class UserObject(Base):
 
     @hybrid_property
     def role(self):
+        if self._role is None:
+            return self.USER_ROLE
         return self._role
 
     @role.setter

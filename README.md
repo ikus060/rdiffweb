@@ -128,7 +128,8 @@ This next release focus on multi-factor-authentication as a measure to increase 
   * Active session should be visible in administration view
   * Action session may be revoke by administrator
   * Show number of active users within the last 24 hours in dashboard
- 
+* Handle migration of older Rdiffweb database by adding the missing `Encoding` column #185
+
 Breaking changes:
 
 * `session-dir` is deprecated and should be replace by `rate-limit-dir`. User's session are stored in database.
