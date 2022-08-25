@@ -18,120 +18,120 @@
     </select>
   {%- endmacro %}
   {% call panel(title=_("Character encoding"), description='This value may need to be changed if your files are not displayed with the right characters. This is very common for non-english speaker.', class="default") %}
-  <div class="panel-body">
-    <form action="{{ url_for('settings', repo) }}"
-          method="post"
-          role="form"
-          data-async
-          data-target="#new-encoding-status">
-      <div class="form-group">
-        <label for="encoding">{% trans %}Encoding{% endtrans %}</label>
-        {{ encoding_dropdown(class="form-control", name="new_encoding", id="new_encoding", value=repo.encoding) }}
-      </div>
+    <div class="panel-body">
+      <form action="{{ url_for('settings', repo) }}"
+            method="post"
+            role="form"
+            data-async
+            data-target="#new-encoding-status">
+        <div class="form-group">
+          <label for="encoding">{% trans %}Encoding{% endtrans %}</label>
+          {{ encoding_dropdown(class="form-control", name="new_encoding", id="new_encoding", value=repo.encoding) }}
+        </div>
+        <div>
+          <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
+          <span id="new-encoding-status"></span>
+        </div>
+      </form>
+    </div>
+  {% endcall %}
+  {% call panel(title=_("Remove older"), description=_('You can parameterize the storage time of earlier versions for each repository. Changing this value may free up disk space.'), class="default") %}
+    <div class="panel-body">
+      <form data-async
+            data-target="#keepdays-status"
+            action="{{ url_for('settings', repo) }}"
+            method="post"
+            role="form">
+        <div class="form-group">
+          <label for="encoding">{% trans %}Keep history for{% endtrans %}</label>
+          <select class="form-control"
+                  name="keepdays"
+                  {% if not is_maintainer %}disabled{% endif %}>
+            {% set remove_older_values = [
+            (-1, _("Forever")),
+            (1, _("1 day")),
+            (2, _("2 days")),
+            (3, _("3 days")),
+            (4, _("4 days")),
+            (5, _("5 days")),
+            (6, _("6 days")),
+            (7, _("1 week")),
+            (14, _("2 weeks")),
+            (21, _("3 weeks")),
+            (30, _("1 month")),
+            (60, _("2 months")),
+            (90, _("3 months")),
+            (120, _("4 months")),
+            (150, _("5 months")),
+            (180, _("6 months")),
+            (210, _("7 months")),
+            (240, _("8 months")),
+            (270, _("9 months")),
+            (300, _("10 months")),
+            (330, _("11 months")),
+            (365, _("1 year")),
+            (730, _("2 years")),
+            (1095, _("3 years")),
+            (1460, _("4 years")),
+            (1825, _("5 years")),
+            ] %}
+            {% for i in remove_older_values %}
+              <option {{ attrib(value=i[0], selected=(keepdays == i[0])) }}>{{ i[1] }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <button type="submit"
+                  class="btn btn-success"
+                  {% if not is_maintainer %}disabled{% endif %}>
+            {% trans %}Save changes{% endtrans %}
+          </button>
+          <span id="keepdays-status"></span>
+        </div>
+        {% if not is_maintainer %}
+          <span class="form-text">{% trans %}Ask your administrator to change this setting.{% endtrans %}</span>
+        {% endif %}
+      </form>
+    </div>
+  {% endcall %}
+  <!-- Delete repo. -->
+  {% call panel(title=_("Notification"), description=_('An email notification will be sent if backup is inactive for the given period of time.'), class="default") %}
+    <div class="panel-body">
+      <form data-async
+            data-target="#maxage-status"
+            action="{{ url_for('settings', repo) }}"
+            method="post"
+            role="form">
+        <div class="form-group">
+          <label for="maxage">{% trans %}Notify after{% endtrans %}</label>
+          {{ maxage_dropdown(class="form-control", name="maxage", value=repo.maxage)}}
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
+          <span id="maxage-status"></span>
+        </div>
+      </form>
+    </div>
+  {% endcall %}
+  <!-- Delete repo. -->
+  {% call panel(title=_("Delete repository"), description=_('Deleting the repository will permanently delete all related resources including files, history, status etc.'), class="danger") %}
+    <div class="panel-body">
+      <span class=" font-weight-bold">{% trans %}Deleted repository cannot be restored!{% endtrans %}</span>
       <div>
-        <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
-        <span id="new-encoding-status"></span>
+        {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", disabled=not is_maintainer, redirect=url_for('/'), url=url_for('delete', repo)) }}
       </div>
-    </form>
-  </div>
-{% endcall %}
-{% call panel(title=_("Remove older"), description=_('You can parameterize the storage time of earlier versions for each repository. Changing this value may free up disk space.'), class="default") %}
-<div class="panel-body">
-  <form data-async
-        data-target="#keepdays-status"
-        action="{{ url_for('settings', repo) }}"
-        method="post"
-        role="form">
-    <div class="form-group">
-      <label for="encoding">{% trans %}Keep history for{% endtrans %}</label>
-      <select class="form-control"
-              name="keepdays"
-              {% if not is_maintainer %}disabled{% endif %}>
-        {% set remove_older_values = [
-        (-1, _("Forever")),
-        (1, _("1 day")),
-        (2, _("2 days")),
-        (3, _("3 days")),
-        (4, _("4 days")),
-        (5, _("5 days")),
-        (6, _("6 days")),
-        (7, _("1 week")),
-        (14, _("2 weeks")),
-        (21, _("3 weeks")),
-        (30, _("1 month")),
-        (60, _("2 months")),
-        (90, _("3 months")),
-        (120, _("4 months")),
-        (150, _("5 months")),
-        (180, _("6 months")),
-        (210, _("7 months")),
-        (240, _("8 months")),
-        (270, _("9 months")),
-        (300, _("10 months")),
-        (330, _("11 months")),
-        (365, _("1 year")),
-        (730, _("2 years")),
-        (1095, _("3 years")),
-        (1460, _("4 years")),
-        (1825, _("5 years")),
-        ] %}
-        {% for i in remove_older_values %}
-          <option {{ attrib(value=i[0], selected=(keepdays == i[0])) }}>{{ i[1] }}
-          </option>
-        {% endfor %}
-      </select>
+      {% if not is_maintainer %}
+        <span class="form-text">{% trans %}Ask your administrator if you want to delete this repository.{% endtrans %}</span>
+      {% endif %}
     </div>
-    <div>
-      <button type="submit"
-              class="btn btn-success"
-              {% if not is_maintainer %}disabled{% endif %}>
-        {% trans %}Save changes{% endtrans %}
-      </button>
-      <span id="keepdays-status"></span>
-    </div>
-    {% if not is_maintainer %}
-      <span class="form-text">{% trans %}Ask your administrator to change this setting.{% endtrans %}</span>
-    {% endif %}
-  </form>
-</div>
-{% endcall %}
-<!-- Delete repo. -->
-{% call panel(title=_("Notification"), description=_('An email notification will be sent if backup is inactive for the given period of time.'), class="default") %}
-<div class="panel-body">
-  <form data-async
-        data-target="#maxage-status"
-        action="{{ url_for('settings', repo) }}"
-        method="post"
-        role="form">
-    <div class="form-group">
-      <label for="maxage">{% trans %}Notify after{% endtrans %}</label>
-      {{ maxage_dropdown(class="form-control", name="maxage", value=repo.maxage)}}
-    </div>
-    <div class="form-group">
-      <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
-      <span id="maxage-status"></span>
-    </div>
-  </form>
-</div>
-{% endcall %}
-<!-- Delete repo. -->
-{% call panel(title=_("Delete repository"), description=_('Deleting the repository will permanently delete all related resources including files, history, status etc.'), class="danger") %}
-<div class="panel-body">
-  <span class=" font-weight-bold">{% trans %}Deleted repository cannot be restored!{% endtrans %}</span>
-  <div>
-    {{ button_confirm(label=_('Delete'), target="#delete-repo-modal", disabled=not is_maintainer, redirect=url_for('/'), url=url_for('delete', repo)) }}
-  </div>
-  {% if not is_maintainer %}
-    <span class="form-text">{% trans %}Ask your administrator if you want to delete this repository.{% endtrans %}</span>
-  {% endif %}
-</div>
-{% endcall %}
-<!-- Delete Repo Modal -->
-{{ modal_confirm(
-id="delete-repo-modal",
-title=_('Confirmation required'),
-message=_("You are about to permanently delete this repository. Deleted repository CANNOT be restored! Are you ABSOLUTELY sure?"),
-fields=['action'],
-submit=_('Delete'),
-confirm_value=repo.display_name) }}
+  {% endcall %}
+  <!-- Delete Repo Modal -->
+  {{ modal_confirm(
+  id="delete-repo-modal",
+  title=_('Confirmation required'),
+  message=_("You are about to permanently delete this repository. Deleted repository CANNOT be restored! Are you ABSOLUTELY sure?"),
+  fields=['action'],
+  submit=_('Delete'),
+  confirm_value=repo.display_name) }}
 {% endblock %}

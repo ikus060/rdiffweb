@@ -18,59 +18,59 @@
     {% endfor %}
   </ol>
   {% call datatables(_('Files')) %}
-  <thead>
-    <tr>
-      <th id="name" class="sortable">{% trans %}Name{% endtrans %}</th>
-      <th id="size" class="sortable col-md-2" data-type="num">{% trans %}Size{% endtrans %}</th>
-      <th id="last-revision" class="sortable col-md-2" data-type="num">{% trans %}Version(s){% endtrans %}</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for entry in dir_entries %}
-      <tr class="{% if not entry.exists %}bg-light{% endif %}">
-        <td data-search="{{ entry.display_name }}"
-            data-order="{{ 'dir' if entry.isdir else 'file' }}-{{ entry.display_name }}">
-          <i class="{{ 'fa fa-folder' if entry.isdir else 'fa fa-file-o' }}"
-             aria-hidden="true"></i>
-          <a {{ attrib(href=(entry.isdir and url_for('browse', repo, entry.path)) or (entry.last_change_date and url_for('restore', repo, entry.path, date=entry.last_change_date)) or "#", title=(entry.display_name | length > 45 and entry.display_name)) }}>
-            {% if entry.isdir %}<span class="sr-only">&lt;DIR&gt;</span>{% endif %}
-            {% if not entry.exists %}<span class="sr-only">&lt;DELETED&gt;</span>{% endif %}
-            {{ entry.display_name | truncate(45,True) }}
-          </a>
-        </td>
-        <td class="nowrap"
-            data-search=""
-            data-order="{{ 0 if entry.isdir else entry.file_size }}">
-          {% if not entry.isdir %}{{ entry.file_size | filesize }}{% endif %}
-        </td>
-        <td data-search=""
-            data-order="{{ entry.last_change_date and entry.last_change_date.epoch() }}">
-          {% if entry.change_dates %}
-            <div class="btn-group">
-              <a href="#" class="dropdown-toggle" id="menu1" data-toggle="dropdown">
-                <time datetime="{{ entry.last_change_date }}">
-                  {{ entry.last_change_date | lastupdated }}
-                </time>
-                <span class="badge badge-secondary">{{ entry.change_dates | length }}</span>
-                <span class="caret"></span>
-              </a>
-              <div class="dropdown-menu" role="menu" aria-labelledby="menu1">
-                {% for change_date in entry.change_dates[:-6:-1] %}
-                  <a class="dropdown-item"
-                     href="{{ url_for('restore', repo, entry.path, date=change_date) }}">
-                    <!-- File date -->
-                    <i class="fa fa-download" aria-hidden="true"></i>
-                    <time class="js-datetime" datetime="{{ change_date }}">{{ change_date | lastupdated }}</time>
-                  </a>
-                {% endfor %}
-                <a class="dropdown-item"
-                   href="{{ url_for('history', repo, entry.path) }}">{% trans %}Show more...{% endtrans %}</a>
-              </div>
-            </div>
-          {% endif %}
-        </td>
+    <thead>
+      <tr>
+        <th id="name" class="sortable">{% trans %}Name{% endtrans %}</th>
+        <th id="size" class="sortable col-md-2" data-type="num">{% trans %}Size{% endtrans %}</th>
+        <th id="last-revision" class="sortable col-md-2" data-type="num">{% trans %}Version(s){% endtrans %}</th>
       </tr>
-    {% endfor %}
-  </tbody>
-{% endcall %}
+    </thead>
+    <tbody>
+      {% for entry in dir_entries %}
+        <tr class="{% if not entry.exists %}bg-light{% endif %}">
+          <td data-search="{{ entry.display_name }}"
+              data-order="{{ 'dir' if entry.isdir else 'file' }}-{{ entry.display_name }}">
+            <i class="{{ 'fa fa-folder' if entry.isdir else 'fa fa-file-o' }}"
+               aria-hidden="true"></i>
+            <a {{ attrib(href=(entry.isdir and url_for('browse', repo, entry.path)) or (entry.last_change_date and url_for('restore', repo, entry.path, date=entry.last_change_date)) or "#", title=(entry.display_name | length > 45 and entry.display_name)) }}>
+              {% if entry.isdir %}<span class="sr-only">&lt;DIR&gt;</span>{% endif %}
+              {% if not entry.exists %}<span class="sr-only">&lt;DELETED&gt;</span>{% endif %}
+              {{ entry.display_name | truncate(45,True) }}
+            </a>
+          </td>
+          <td class="nowrap"
+              data-search=""
+              data-order="{{ 0 if entry.isdir else entry.file_size }}">
+            {% if not entry.isdir %}{{ entry.file_size | filesize }}{% endif %}
+          </td>
+          <td data-search=""
+              data-order="{{ entry.last_change_date and entry.last_change_date.epoch() }}">
+            {% if entry.change_dates %}
+              <div class="btn-group">
+                <a href="#" class="dropdown-toggle" id="menu1" data-toggle="dropdown">
+                  <time datetime="{{ entry.last_change_date }}">
+                    {{ entry.last_change_date | lastupdated }}
+                  </time>
+                  <span class="badge badge-secondary">{{ entry.change_dates | length }}</span>
+                  <span class="caret"></span>
+                </a>
+                <div class="dropdown-menu" role="menu" aria-labelledby="menu1">
+                  {% for change_date in entry.change_dates[:-6:-1] %}
+                    <a class="dropdown-item"
+                       href="{{ url_for('restore', repo, entry.path, date=change_date) }}">
+                      <!-- File date -->
+                      <i class="fa fa-download" aria-hidden="true"></i>
+                      <time class="js-datetime" datetime="{{ change_date }}">{{ change_date | lastupdated }}</time>
+                    </a>
+                  {% endfor %}
+                  <a class="dropdown-item"
+                     href="{{ url_for('history', repo, entry.path) }}">{% trans %}Show more...{% endtrans %}</a>
+                </div>
+              </div>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  {% endcall %}
 {% endblock %}

@@ -107,17 +107,15 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
-## Next Release
+## Next Release - 2.5.0
 
 This next release focus on multi-factor-authentication as a measure to increase security of user's account.
 
 * Store User's session information into database
 * Update ldap plugin to load additional attributes from LDAP server
-* Fix status page error handling
+* Improve `/status` page error handling when `session_statistics` cannot be read
 * Add support for Ubuntu Jammy
-* Drop Ubuntu Hirsute & Impish (End-of-life)
-* Upgrade to Bootstrap v4 #204
-* Upgrade from bootstrap v3 to v4
+* Upgrade from Bootstrap v3 to v4 #204
 * Replace Fontello by Font-Awesome v4
 * Use CSS variables `var()` to customize themes
 * Remove usage of Jquery.validate
@@ -128,10 +126,12 @@ This next release focus on multi-factor-authentication as a measure to increase 
   * Active session should be visible in administration view
   * Action session may be revoke by administrator
   * Show number of active users within the last 24 hours in dashboard
-* Handle migration of older Rdiffweb database by adding the missing `Encoding` column #185
+* Handle migration of older Rdiffweb database by adding the missing `repos.Encoding`, `repos.keepdays` and `users.role` columns #185
+* Replace deprecated references of `disutils.spawn.find_executable()` by `shutil.which()` #208
 
 Breaking changes:
 
+* Drop Ubuntu Hirsute & Impish (End-of-life)
 * `session-dir` is deprecated and should be replace by `rate-limit-dir`. User's session are stored in database.
 * previous `.css` customization are not barkward compatible
 

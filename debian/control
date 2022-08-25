@@ -47,7 +47,6 @@ Depends:
  libjs-jquery,
  libjs-jquery-datatables,
  libjs-jquery-datatables-extensions,
- python3-distutils,
  python3-future,
  rdiff-backup,
  ${python3:Depends},

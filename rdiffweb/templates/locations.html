@@ -30,56 +30,56 @@
   {% macro repo_tree(repos) -%}
     {% if repos|length == 0 %}
       {% call empty('fa fa-archive', 'No repositories') %}
-      <p>
-        {% trans %}You don't have any repositories in your user directory. You may need to refresh the page if you just made a new backup.{% endtrans %}
-      </p>
-    {% endcall %}
-  {% else %}
-    <div class="list-group" itemscope itemtype="http://schema.org/ItemList">
-      {% for name, data in create_repo_tree(repos).items() recursive %}
-        {% if data.items %}
-          {# Data is a list of children #}
-          <div class="list-group-item">
-            <div class="list-group-item-heading mb-2">
-              {% set is_desktop = data.keys()[0]|length == 1 %}
-              <i class="{% if is_desktop %}fa fa-laptop{% else %}fa fa-archive{% endif %}"
-                 aria-hidden="true"></i>
-              {{ name }}
+        <p>
+          {% trans %}You don't have any repositories in your user directory. You may need to refresh the page if you just made a new backup.{% endtrans %}
+        </p>
+      {% endcall %}
+    {% else %}
+      <div class="list-group" itemscope itemtype="http://schema.org/ItemList">
+        {% for name, data in create_repo_tree(repos).items() recursive %}
+          {% if data.items %}
+            {# Data is a list of children #}
+            <div class="list-group-item">
+              <div class="list-group-item-heading mb-2">
+                {% set is_desktop = data.keys()[0]|length == 1 %}
+                <i class="{% if is_desktop %}fa fa-laptop{% else %}fa fa-archive{% endif %}"
+                   aria-hidden="true"></i>
+                {{ name }}
+              </div>
+              <div class="list-group" id="{{ outer_name }}{{ name }}">{{ loop(data.items()) }}</div>
             </div>
-            <div class="list-group" id="{{ outer_name }}{{ name }}">{{ loop(data.items()) }}</div>
-          </div>
-        {% else %}
-          {# Data is a repo #}
-          {{ repo_list_item(data) }}
-        {% endif %}
-      {% endfor %}
-    </div>
-  {% endif %}
-{%- endmacro %}
-<div class="container" id="locations">
-  <h2>{% trans %}Repositories{% endtrans %} ({{ repos|length }})</h2>
-  <!-- disk usage/quota -->
-  {% if disk_usage and disk_quota %}
-    <div class="card mb-4 bg-light">
-      <div class="card-body">
-        {% set used_pct = disk_usage / disk_quota * 100 %}
-        {% set used_str = disk_usage | filesize %}
-        {% set size_str = disk_quota | filesize %}
-        {% set avail_str = (disk_quota - disk_usage) | filesize %}
-        <strong>{% trans %}Usage{% endtrans %}</strong>
-        {{ used_str }} {% trans %}used{% endtrans %} | {{ size_str }} {% trans %}total{% endtrans %} | {{ avail_str }} {% trans %}free{% endtrans %}
-        <div class="progress">
-          <div class="progress-bar {% if used_pct > 90 %}progress-bar bg-warning{% else %}progress-bar bg-success{% endif %}"
-               role="progressbar"
-               aria-valuenow="{{ used_pct }}"
-               aria-valuemin="0"
-               aria-valuemax="100"
-               style="width: {{ used_pct }}%">
+          {% else %}
+            {# Data is a repo #}
+            {{ repo_list_item(data) }}
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  {%- endmacro %}
+  <div class="container" id="locations">
+    <h2>{% trans %}Repositories{% endtrans %} ({{ repos|length }})</h2>
+    <!-- disk usage/quota -->
+    {% if disk_usage and disk_quota %}
+      <div class="card mb-4 bg-light">
+        <div class="card-body">
+          {% set used_pct = disk_usage / disk_quota * 100 %}
+          {% set used_str = disk_usage | filesize %}
+          {% set size_str = disk_quota | filesize %}
+          {% set avail_str = (disk_quota - disk_usage) | filesize %}
+          <strong>{% trans %}Usage{% endtrans %}</strong>
+          {{ used_str }} {% trans %}used{% endtrans %} | {{ size_str }} {% trans %}total{% endtrans %} | {{ avail_str }} {% trans %}free{% endtrans %}
+          <div class="progress">
+            <div class="progress-bar {% if used_pct > 90 %}progress-bar bg-warning{% else %}progress-bar bg-success{% endif %}"
+                 role="progressbar"
+                 aria-valuenow="{{ used_pct }}"
+                 aria-valuemin="0"
+                 aria-valuemax="100"
+                 style="width: {{ used_pct }}%">
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  {% endif %}
-  {{ repo_tree(repos) }}
-</div>
+    {% endif %}
+    {{ repo_tree(repos) }}
+  </div>
 {% endblock body %}
