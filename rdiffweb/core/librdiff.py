@@ -27,7 +27,6 @@ import sys
 import threading
 import time
 from datetime import timedelta
-from distutils import spawn
 from subprocess import CalledProcessError
 
 import psutil
@@ -50,9 +49,6 @@ INCREMENTS = b"increments"
 STDOUT_ENCODING = 'utf-8'
 LANG = "en_US." + STDOUT_ENCODING
 
-# PATH for executable lookup
-PATH = path = os.path.dirname(sys.executable) + os.pathsep + os.environ['PATH']
-
 
 def rdiff_backup_version():
     """
@@ -70,9 +66,9 @@ def find_rdiff_backup():
     """
     Lookup for `rdiff-backup` executable. Raise an exception if not found.
     """
-    cmd = spawn.find_executable('rdiff-backup', PATH)
+    cmd = shutil.which('rdiff-backup')
     if not cmd:
-        raise FileNotFoundError("can't find `rdiff-backup` executable in PATH: %s" % PATH)
+        raise FileNotFoundError("can't find `rdiff-backup` executable in PATH: %s" % os.environ['PATH'])
     return os.fsencode(cmd)
 
 
@@ -80,11 +76,11 @@ def find_rdiff_backup_delete():
     """
     Lookup for `rdiff-backup-delete` executable. Raise an exception if not found.
     """
-    cmd = spawn.find_executable('rdiff-backup-delete', PATH)
+    cmd = shutil.which('rdiff-backup-delete')
     if not cmd:
         raise FileNotFoundError(
             "can't find `rdiff-backup-delete` executable in PATH: %s, make sure you have rdiff-backup >= 2.0.1 installed"
-            % PATH
+            % os.environ['PATH']
         )
     return os.fsencode(cmd)
 
