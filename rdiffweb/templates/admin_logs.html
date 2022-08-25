@@ -23,12 +23,12 @@
     {% else %}
       <div class="col-md-12">
         {% call empty('icon-doc-text', _("No log files")) %}
-        <p>
-          {% trans %}The application must be configured with logfile location if you want to display their content in this view.{% endtrans %}
-        </p>
-      {% endcall %}
-    </div>
-  {% endif %}
-  <!-- /.row -->
-</div>
+          <p>
+            {% trans %}The application must be configured with logfile location if you want to display their content in this view.{% endtrans %}
+          </p>
+        {% endcall %}
+      </div>
+    {% endif %}
+    <!-- /.row -->
+  </div>
 {% endblock %}

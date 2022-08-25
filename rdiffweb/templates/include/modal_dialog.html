@@ -42,23 +42,23 @@
 {# modal dialog for confirmation #}
 {% macro modal_confirm(id, title, message, fields, submit, confirm_value=None) -%}
   {% call modal_dialog(id, title, submit, class="danger") %}
-  {% for f in fields %}<input type="hidden" name="{{ f }}" value="" />{% endfor %}
-  <p {% if confirm_value %}class="lead text-danger"{% endif %}>{{ message }}</p>
-  {% if confirm_value %}
-    <p>
-      {% trans %}This action can lead to data loss. To prevent accidental actions we ask you to confirm your intention.{% endtrans %}
-      <br />
-      {% trans %}Please type <strong>{{ confirm_value }}</strong> to proceed or close this modal to cancel.{% endtrans %}
-    </p>
-    <input class="form-control"
-           name="confirm"
-           type="text"
-           value=""
-           pattern="{{ regex_escape(confirm_value) }}"
-           required/>
-  {% endif %}
-{% endcall %}
-<script>
+    {% for f in fields %}<input type="hidden" name="{{ f }}" value="" />{% endfor %}
+    <p {% if confirm_value %}class="lead text-danger"{% endif %}>{{ message }}</p>
+    {% if confirm_value %}
+      <p>
+        {% trans %}This action can lead to data loss. To prevent accidental actions we ask you to confirm your intention.{% endtrans %}
+        <br />
+        {% trans %}Please type <strong>{{ confirm_value }}</strong> to proceed or close this modal to cancel.{% endtrans %}
+      </p>
+      <input class="form-control"
+             name="confirm"
+             type="text"
+             value=""
+             pattern="{{ regex_escape(confirm_value) }}"
+             required/>
+    {% endif %}
+  {% endcall %}
+  <script>
     $('#{{id}}').on('show.bs.modal', function (event) {
       var button = $(event.relatedTarget); // Button that triggered the modal
       var modal = $(this);
@@ -71,5 +71,5 @@
         modal.find(".modal-body input[name='{{f}}']").val(value);
       {% endfor %}
     })
-</script>
+  </script>
 {%- endmacro %}
