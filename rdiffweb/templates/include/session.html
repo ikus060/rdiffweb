@@ -18,6 +18,8 @@
     Internet Explorer
   {% elif 'Trident/7.0;' in user_agent %}
     Internet Explorer
+  {% elif 'minarca/' in user_agent %}
+    Minarca
   {% else %}
     {% trans %}Unknown{% endtrans %}
   {% endif %}
@@ -29,7 +31,7 @@
     Linux
   {% elif 'X11' in user_agent %}
     Unix
-  {% elif 'Mac' in user_agent %}
+  {% elif 'Mac' in user_agent or 'Darwin' in user_agent %}
     MacOS
   {% elif 'Windows' in user_agent %}
     Windows
