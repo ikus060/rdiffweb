@@ -30,9 +30,9 @@ import threading
 import unittest
 from zipfile import ZipFile
 
+import rdiffweb.test
 from rdiffweb.core.librdiff import popen
 from rdiffweb.core.restore import restore
-from rdiffweb.test import AppTestCase
 
 EXPECTED = {}
 EXPECTED["이루마 YIRUMA - River Flows in You.mp3"] = 3636731
@@ -76,12 +76,12 @@ def restore_async(*args, **kwargs):
     thread.start()
 
 
-class RestoreTest(AppTestCase):
+class RestoreTest(rdiffweb.test.WebCase):
 
     maxDiff = None
 
     def setUp(self):
-        AppTestCase.setUp(self)
+        super().setUp()
 
         # Define path to be archived
         self.path = os.path.join(self.testcases.encode('ascii'), b'testcases')

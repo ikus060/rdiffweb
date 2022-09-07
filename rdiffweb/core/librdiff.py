@@ -1157,14 +1157,16 @@ class RdiffRepo(object):
             stderr=subprocess.PIPE,
             env=None,
         )
-        # Check if the processing is properly started
-        # Read stderr output until "Starting restore of"
+        # Check if the restore process is properly starting
+        # Read the first 100 line until "Processing changed file"
+        max_line = 100
         output = b''
         success = False
         line = proc.stderr.readline()
-        while line:
+        while max_line > 0 and line:
+            max_line -= 1
             output += line
-            if b'Starting restore of' in line:
+            if b'Processing changed file' in line:
                 success = True
                 break
             line = proc.stderr.readline()

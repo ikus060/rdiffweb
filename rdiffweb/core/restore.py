@@ -235,6 +235,9 @@ def restore(restore, restore_as_of, kind, encoding, dest, log=logger.debug):
         # Read the output of rdiff-backup
         with popen(cmd, env=env) as output:
             for line in output:
+                # Since rdiff-backup 2.1.2b1 the line start with b'* '
+                if line.startswith(b'* '):
+                    line = line[2:]
                 line = line.rstrip(b'\n')
                 log('rdiff-backup: %r' % line)
                 if not line.startswith(TOKEN):
