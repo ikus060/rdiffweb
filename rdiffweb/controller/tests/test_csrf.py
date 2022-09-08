@@ -71,3 +71,11 @@ class CsrfTest(rdiffweb.test.WebCase):
         self.getPage('/', method='POST')
         # Then the request is accepted with 200 OK
         self.assertStatus(200)
+
+    def test_clickjacking_defense(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue('X-Frame-Options', 'DENY')

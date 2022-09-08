@@ -135,6 +135,10 @@ Breaking changes:
 * `session-dir` is deprecated and should be replace by `rate-limit-dir`. User's session are stored in database.
 * previous `.css` customization are not barkward compatible
 
+## 2.4.1 (2022-09-08)
+
+* Add Clickjacking Defense
+
 ## 2.4.0 (2022-06-21)
 
 This new release brings a lot of improvement since the last version, multiple bug fixes
