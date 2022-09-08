@@ -36,10 +36,13 @@ class CsrfAuth(HandlerTool):
     """
     This tool provide CSRF mitigation.
 
-    First, by defining `SameSite=Lax` on the cookie
-    Second by validating the `Origin` and `Referer`.
+    * Define X-Frame-Options = DENY
+    * Define Cookies SameSite=Lax
+    * Validate `Origin` and `Referer` on POST, PUT, PATCH, DELETE
 
-    Ref.: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+    Ref.:
+    https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+    https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html
     """
 
     def __init__(self):
@@ -48,14 +51,17 @@ class CsrfAuth(HandlerTool):
         self._priority = 71
 
     def _setup(self):
-        cherrypy.request.hooks.attach('before_finalize', self._set_same_site)
+        cherrypy.request.hooks.attach('before_finalize', self._set_headers)
         return super()._setup()
 
-    def _set_same_site(self):
+    def _set_headers(self):
+        response = cherrypy.serving.response
+        # Define X-Frame-Options to avoid Clickjacking
+        response.headers['X-Frame-Options'] = 'DENY'
         # Awaiting bug fix in cherrypy
         # https://github.com/cherrypy/cherrypy/issues/1767
         # Force SameSite to Lax
-        cookie = cherrypy.serving.response.cookie.get('session_id', None)
+        cookie = response.cookie.get('session_id', None)
         if cookie:
             cookie['samesite'] = 'Lax'
 
