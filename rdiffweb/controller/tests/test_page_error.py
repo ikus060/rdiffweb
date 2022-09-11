@@ -21,17 +21,31 @@ Created on Mar 5, 2016
 """
 
 
+from parameterized import parameterized_class
+
 import rdiffweb.test
 
 
+@parameterized_class(
+    [
+        {"default_config": {'environment': 'production'}, "expect_stacktrace": False},
+        {"default_config": {'environment': 'development'}, "expect_stacktrace": True},
+        {"default_config": {'debug': False}, "expect_stacktrace": False},
+        {"default_config": {'debug': True}, "expect_stacktrace": True},
+    ]
+)
 class ErrorPageTest(rdiffweb.test.WebCase):
-    """
-    Check how the error page behave.
-    """
 
     login = True
 
     def test_error_page(self):
+        # Given a webserver started with production environment
+        # When error page is return
         self.getPage('/invalid/')
+        # Then page doesn't contain a stack trace
         self.assertStatus("404 Not Found")
         self.assertInBody("Oops!")
+        if self.expect_stacktrace:
+            self.assertInBody('Traceback (most recent call last):')
+        else:
+            self.assertNotInBody('Traceback (most recent call last):')

@@ -61,6 +61,16 @@ from rdiffweb.core.store import Store
 # Define the logger
 logger = logging.getLogger(__name__)
 
+# Define cherrypy development environment
+cherrypy.config.environments['development'] = {
+    'engine.autoreload.on': True,
+    'checker.on': False,
+    'tools.log_headers.on': True,
+    'request.show_tracebacks': True,
+    'request.show_mismatched_params': True,
+    'log.screen': False,
+}
+
 
 @cherrypy.tools.proxy()
 @cherrypy.tools.secure_headers()
@@ -108,10 +118,10 @@ class RdiffwebApp(Application):
         return parse_args(args, config_file_contents)
 
     def __init__(self, cfg):
-
         self.cfg = cfg
         cherrypy.config.update(
             {
+                'environment': 'development' if cfg.debug else cfg.environment,
                 # Configure LDAP plugin
                 'ldap.uri': cfg.ldap_uri,
                 'ldap.base_dn': cfg.ldap_base_dn,

@@ -69,7 +69,7 @@ Rdiffweb can be configured to send logs to specific location. By default, logs a
 | log-file | Define the location of the log file. | /var/log/rdiffweb/server.log |
 | log-access-file | Define the location of the access log file. | /var/log/rdiffweb/access.log |
 
-**Enable Debugging log**
+### Enable Debugging
 
 A specific option is also available if you want to enable the debugging log. We do not recommend to enable this option in production as it may leak information to the user whenever an exception is raised.
 
