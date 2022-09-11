@@ -32,12 +32,13 @@ if not http.cookies.Morsel().isReservedKey("samesite"):
     http.cookies.Morsel._reserved['samesite'] = 'SameSite'
 
 
-class CsrfAuth(HandlerTool):
+class SecureHeaders(HandlerTool):
     """
     This tool provide CSRF mitigation.
 
     * Define X-Frame-Options = DENY
     * Define Cookies SameSite=Lax
+    * Define Cookies Secure when https is detected
     * Validate `Origin` and `Referer` on POST, PUT, PATCH, DELETE
 
     Ref.:
@@ -46,7 +47,7 @@ class CsrfAuth(HandlerTool):
     """
 
     def __init__(self):
-        HandlerTool.__init__(self, self.run, name='csrf')
+        HandlerTool.__init__(self, self.run, name='secure_headers')
         # Make sure to run before authform (priority 71)
         self._priority = 71
 
@@ -58,12 +59,18 @@ class CsrfAuth(HandlerTool):
         response = cherrypy.serving.response
         # Define X-Frame-Options to avoid Clickjacking
         response.headers['X-Frame-Options'] = 'DENY'
-        # Awaiting bug fix in cherrypy
-        # https://github.com/cherrypy/cherrypy/issues/1767
-        # Force SameSite to Lax
+
+        # Enforce security on cookies
         cookie = response.cookie.get('session_id', None)
         if cookie:
+            # Awaiting bug fix in cherrypy
+            # https://github.com/cherrypy/cherrypy/issues/1767
+            # Force SameSite to Lax
             cookie['samesite'] = 'Lax'
+            # Check if https is enabled
+            https = cherrypy.request.base.startswith('https')
+            if https:
+                cookie['secure'] = 1
 
     def run(self):
         if cherrypy.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
@@ -73,4 +80,4 @@ class CsrfAuth(HandlerTool):
                 raise cherrypy.HTTPError(403, 'Unexpected Origin header')
 
 
-cherrypy.tools.csrf = CsrfAuth()
+cherrypy.tools.secure_headers = SecureHeaders()

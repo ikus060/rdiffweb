@@ -22,11 +22,11 @@ Created on Oct 20, 2021
 import rdiffweb.test
 
 
-class CsrfTest(rdiffweb.test.WebCase):
+class SecureHeadersTest(rdiffweb.test.WebCase):
 
     login = True
 
-    def test_samesite_lax(self):
+    def test_cookie_samesite_lax(self):
         # Given a request made to rdiffweb
         # When receiving the response
         self.getPage('/')
@@ -34,13 +34,29 @@ class CsrfTest(rdiffweb.test.WebCase):
         cookie = self.assertHeader('Set-Cookie')
         self.assertIn('SameSite=Lax', cookie)
 
-    def test_samesite_lax_without_session(self):
+    def test_cookie_samesite_lax_without_session(self):
         # Given not a client sending no cookie
         self.cookies = None
         # When a query is made to a static path (without session)
         self.getPage('/static/blue.css')
         # Then Set-Cookie is not defined.
         self.assertNoHeader('Set-Cookie')
+
+    def test_cookie_with_https(self):
+        # Given an https request made to rdiffweb
+        self.getPage('/', headers=[('X-Forwarded-Proto', 'https')])
+        # When receiving the response
+        # Then the header contains Set-Cookie with Secure
+        cookie = self.assertHeader('Set-Cookie')
+        self.assertIn('Secure', cookie)
+
+    def test_cookie_with_http(self):
+        # Given an https request made to rdiffweb
+        self.getPage('/')
+        # When receiving the response
+        # Then the header contains Set-Cookie with Secure
+        cookie = self.assertHeader('Set-Cookie')
+        self.assertNotIn('Secure', cookie)
 
     def test_get_with_wrong_origin(self):
         # Given a GET request made to rdiffweb

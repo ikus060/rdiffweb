@@ -38,7 +38,7 @@ import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
 import rdiffweb.tools.proxy
 import rdiffweb.tools.ratelimit
-import rdiffweb.tools.security
+import rdiffweb.tools.secure_headers
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
 from rdiffweb.controller.dispatch import static  # noqa
@@ -63,6 +63,7 @@ logger = logging.getLogger(__name__)
 
 
 @cherrypy.tools.proxy()
+@cherrypy.tools.secure_headers()
 class Root(LocationsPage):
     def __init__(self):
         self.login = LoginPage()
@@ -170,7 +171,6 @@ class RdiffwebApp(Application):
                 'tools.auth_form.on': True,
                 'tools.currentuser.on': True,
                 'tools.currentuser.userobj': lambda username: self.store.get_user(username),
-                'tools.csrf.on': True,
                 'tools.i18n.on': True,
                 'tools.i18n.default': 'en_US',
                 'tools.i18n.mo_dir': pkg_resources.resource_filename('rdiffweb', 'locales'),  # @UndefinedVariable
