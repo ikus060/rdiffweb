@@ -168,7 +168,7 @@ class UserForm(CherryForm):
     userid = StringField(_('UserID'))
     username = StringField(_('Username'), validators=[validators.data_required()])
     email = EmailField(_('Email'), validators=[validators.optional()])
-    password = PasswordField(_('Password'))
+    password = PasswordField(_('Password'), validators=[validators.optional()])
     user_root = StringField(
         _('Root directory'), description=_("Absolute path defining the location of the repositories for this user.")
     )
@@ -189,6 +189,20 @@ class UserForm(CherryForm):
     disk_usage = SizeField(
         _('Quota Used'), validators=[validators.optional()], description=_("Disk spaces (in bytes) used by this user.")
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.password.validators += [
+            validators.length(
+                min=self.app.cfg.password_min_length,
+                max=self.app.cfg.password_max_length,
+                message=_('Password must have between %(min)d and %(max)d characters.'),
+            )
+        ]
+
+    @property
+    def app(self):
+        return cherrypy.request.app
 
     def validate_role(self, field):
         # Don't allow the user to changes it's "role" state.

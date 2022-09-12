@@ -278,6 +278,20 @@ session even if the web server gets restarted, you may persist them on disk with
 | --- | --- | --- |
 | session-dir | location where to store user session information. When undefined, the user sessions are kept in memory. | /var/lib/rdiffweb/session |
 
+## Custom user's password length limits
+
+By default, Rdiffweb supports passwords with the following lengths:
+
+* Minimum: 8 characters
+* Maximum: 128 characters
+
+Changing the minimum or maximum length does not affect existing users' passwords. Existing users are not prompted to reset their passwords to meet the new limits. The new limit only applies when an existing user changes their password.
+
+| Option | Description | Example |
+| --- | --- | --- |
+| password-min-length | Minimum length of the user's password | 8 |
+| password-max-length | Maximum length of the user's password | 128 |
+
 ## Configure Rdiffweb appearance
 
 A number of options are available to customize the appearance of Rdiffweb to your

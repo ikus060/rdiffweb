@@ -420,6 +420,20 @@ def get_parser():
         default=False,
     )
 
+    parser.add(
+        '--password-min-length',
+        type=int,
+        help="Minimum length of the user's password",
+        default=8,
+    )
+
+    parser.add(
+        '--password-max-length',
+        type=int,
+        help="Maximum length of the user's password",
+        default=128,
+    )
+
     parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
 
     # Here we append a list of arguments for each locale.

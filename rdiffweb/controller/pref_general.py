@@ -25,7 +25,7 @@ import re
 import cherrypy
 from wtforms.fields.html5 import EmailField
 from wtforms.fields.simple import PasswordField
-from wtforms.validators import DataRequired, EqualTo, InputRequired, Regexp
+from wtforms.validators import DataRequired, EqualTo, InputRequired, Length, Regexp
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
@@ -53,6 +53,20 @@ class UserPasswordForm(CherryForm):
     confirm = PasswordField(
         _('Confirm new password'), validators=[InputRequired(_("Confirmation password is missing."))]
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.new.validators += [
+            Length(
+                min=self.app.cfg.password_min_length,
+                max=self.app.cfg.password_max_length,
+                message=_('Password must have between %(min)d and %(max)d characters.'),
+            )
+        ]
+
+    @property
+    def app(self):
+        return cherrypy.request.app
 
 
 class PrefsGeneralPanelProvider(Controller):

@@ -397,6 +397,9 @@ class UserObject(object):
         assert old_password is None or isinstance(old_password, str)
         if not password:
             raise ValueError("password can't be empty")
+        cfg = self._store.app.cfg
+        if cfg.password_min_length > len(password) > cfg.password_max_length:
+            raise ValueError("invalid password length")
 
         # Cannot update admin-password if defined
         if self.username == self._store._admin_user and self._store._admin_password:
