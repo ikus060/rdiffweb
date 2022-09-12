@@ -107,13 +107,13 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
-## 2.4.2 (2022-09-08)
+## 2.4.2 (2022-09-12)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
 * Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session. [CVE-2022-3174](https://nvd.nist.gov/vuln/detail/CVE-2022-3174) #209
 * Avoid leakage of the stack trace in the default error page. [CVE-2022-3175](https://nvd.nist.gov/vuln/detail/CVE-2022-3175) #210
-* Enforce minimum and maximum password length #211
+* Enforce minimum and maximum password length [CVE-2022-3175](https://nvd.nist.gov/vuln/detail/CVE-2022-3179) #211
 
 ## 2.4.1 (2022-09-08)
 
