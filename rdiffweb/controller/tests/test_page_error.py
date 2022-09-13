@@ -21,13 +21,20 @@ Created on Mar 5, 2016
 """
 
 
+from parameterized import parameterized_class
+
 import rdiffweb.test
 
 
+@parameterized_class(
+    [
+        {"default_config": {'environment': 'production'}, "expect_stacktrace": False},
+        {"default_config": {'environment': 'development'}, "expect_stacktrace": True},
+        {"default_config": {'debug': False}, "expect_stacktrace": False},
+        {"default_config": {'debug': True}, "expect_stacktrace": True},
+    ]
+)
 class ErrorPageTest(rdiffweb.test.WebCase):
-    """
-    Check how the error page behave.
-    """
 
     login = True
 
@@ -37,10 +44,9 @@ class ErrorPageTest(rdiffweb.test.WebCase):
         # Then a 404 error page is return using jinja2 template
         self.assertStatus("404 Not Found")
         self.assertInBody("Oops!")
-
-    def test_error_page_exception(self):
-        # When browsing a an invalid path
-        self.getPage('/browse/invalid/')
-        # Then a 404 error page is return using jinja2 template
         self.assertStatus("404 Not Found")
         self.assertInBody("Oops!")
+        if self.expect_stacktrace:
+            self.assertInBody('Traceback (most recent call last):')
+        else:
+            self.assertNotInBody('Traceback (most recent call last):')

@@ -310,9 +310,12 @@ class UserObject(Base):
         assert old_password is None or isinstance(old_password, str)
         if not password:
             raise ValueError("password can't be empty")
+        # Verify password length.
+        cfg = cherrypy.tree.apps[''].cfg
+        if cfg.password_min_length > len(password) > cfg.password_max_length:
+            raise ValueError("invalid password length")
 
         # Cannot update admin-password if defined
-        cfg = cherrypy.tree.apps[''].cfg
         if self.username == cfg.admin_user and cfg.admin_password:
             raise ValueError(_("can't update admin-password defined in configuration file"))
 

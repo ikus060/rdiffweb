@@ -96,7 +96,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
 
     def test_add_user_with_role_admin(self):
         # When trying to create a new user with role admin
-        self._add_user("admin_role", "admin_role@test.com", "test2", "/home/", UserObject.ADMIN_ROLE)
+        self._add_user("admin_role", "admin_role@test.com", "password", "/home/", UserObject.ADMIN_ROLE)
         # Then page return success
         self.assertStatus(200)
         # Then database is updated
@@ -106,18 +106,18 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.listener.user_added.assert_called_once_with(userobj)
 
     def test_add_user_with_role_maintainer(self):
-        self._add_user("maintainer_role", "maintainer_role@test.com", "test2", "/home/", UserObject.MAINTAINER_ROLE)
+        self._add_user("maintainer_role", "maintainer_role@test.com", "password", "/home/", UserObject.MAINTAINER_ROLE)
         self.assertStatus(200)
         self.assertEqual(UserObject.MAINTAINER_ROLE, UserObject.get_user('maintainer_role').role)
 
     def test_add_user_with_role_user(self):
-        self._add_user("user_role", "user_role@test.com", "test2", "/home/", UserObject.USER_ROLE)
+        self._add_user("user_role", "user_role@test.com", "password", "/home/", UserObject.USER_ROLE)
         self.assertStatus(200)
         self.assertEqual(UserObject.USER_ROLE, UserObject.get_user('user_role').role)
 
     def test_add_user_with_invalid_role(self):
         # When trying to create a new user with an invalid role (admin instead of 0)
-        self._add_user("invalid", "invalid@test.com", "test2", "/home/", 'admin')
+        self._add_user("invalid", "invalid@test.com", "password", "/home/", 'admin')
         # Then an error message is displayed to the user
         self.assertStatus(200)
         self.assertInBody('role: Invalid Choice: could not coerce')
@@ -125,7 +125,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.listener.user_added.assert_not_called()
 
         # When trying to create a new user with an invalid role (-1)
-        self._add_user("invalid", "invalid@test.com", "test2", "/home/", -1)
+        self._add_user("invalid", "invalid@test.com", "password", "/home/", -1)
         # Then an error message is displayed to the user
         self.assertStatus(200)
         self.assertInBody('role: Not a valid choice')
@@ -135,7 +135,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
     def test_add_edit_delete(self):
         #  Add user to be listed
         self.listener.user_password_changed.reset_mock()
-        self._add_user("test2", "test2@test.com", "test2", "/home/", UserObject.USER_ROLE)
+        self._add_user("test2", "test2@test.com", "password", "/home/", UserObject.USER_ROLE)
         self.assertInBody("User added successfully.")
         self.assertInBody("test2")
         self.assertInBody("test2@test.com")
@@ -177,7 +177,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         """
         Check creation of user with non-ascii char.
         """
-        self._add_user("Éric", "éric@test.com", "Éric", "/home/", UserObject.USER_ROLE)
+        self._add_user("Éric", "éric@test.com", "password", "/home/", UserObject.USER_ROLE)
         self.assertInBody("User added successfully.")
         self.assertInBody("Éric")
         self.assertInBody("éric@test.com")
@@ -197,7 +197,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         """
         Verify failure trying to create user without username.
         """
-        self._add_user("", "test1@test.com", "test1", "/tmp/", UserObject.USER_ROLE)
+        self._add_user("", "test1@test.com", "password", "/tmp/", UserObject.USER_ROLE)
         self.assertStatus(200)
         self.assertInBody("username: This field is required.")
 
@@ -206,9 +206,9 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         Verify failure trying to add the same user.
         """
         # Given a user named `test1`
-        self._add_user("test1", "test1@test.com", "test1", "/tmp/", UserObject.USER_ROLE)
+        self._add_user("test1", "test1@test.com", "password", "/tmp/", UserObject.USER_ROLE)
         # When trying to create a new user with the same name
-        self._add_user("test1", "test1@test.com", "test1", "/tmp/", UserObject.USER_ROLE)
+        self._add_user("test1", "test1@test.com", "password", "/tmp/", UserObject.USER_ROLE)
         # Then the user list is displayed with an error message.
         self.assertStatus(200)
         self.assertInBody("User test1 already exists.")
@@ -221,18 +221,18 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
             self._delete_user("test5")
         except Exception:
             pass
-        self._add_user("test5", "test1@test.com", "test5", "/var/invalid/", UserObject.USER_ROLE)
+        self._add_user("test5", "test1@test.com", "password", "/var/invalid/", UserObject.USER_ROLE)
         self.assertInBody("User added successfully.")
         self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
 
     def test_add_without_email(self):
         #  Add user to be listed
-        self._add_user("test2", None, "test2", "/tmp/", UserObject.USER_ROLE)
+        self._add_user("test2", None, "password", "/tmp/", UserObject.USER_ROLE)
         self.assertInBody("User added successfully.")
 
     def test_add_without_user_root(self):
         #  Add user to be listed
-        self._add_user("test6", None, "test6", None, UserObject.USER_ROLE)
+        self._add_user("test6", None, "password", None, UserObject.USER_ROLE)
         self.assertInBody("User added successfully.")
 
         user = UserObject.get_user('test6')
@@ -268,6 +268,15 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody("can&#39;t delete admin user")
 
+    def test_change_password_with_too_short(self):
+        self._edit_user(self.USERNAME, password='short')
+        self.assertInBody("Password must have between 8 and 128 characters.")
+
+    def test_change_password_with_too_long(self):
+        new_password = 'a' * 129
+        self._edit_user(self.USERNAME, password=new_password)
+        self.assertInBody("Password must have between 8 and 128 characters.")
+
     def test_change_admin_password(self):
         # Given rdiffweb is configured with admin-password option
         self.app.cfg.admin_password = 'hardcoded'
@@ -285,7 +294,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         Verify failure trying to update user with invalid path.
         """
         UserObject.add_user('test1')
-        self._edit_user("test1", "test1@test.com", "test", "/var/invalid/", UserObject.USER_ROLE)
+        self._edit_user("test1", "test1@test.com", "password", "/var/invalid/", UserObject.USER_ROLE)
         self.assertNotInBody("User added successfully.")
         self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
 

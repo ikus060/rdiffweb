@@ -41,7 +41,7 @@ import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
 import rdiffweb.tools.proxy
 import rdiffweb.tools.ratelimit
-import rdiffweb.tools.security
+import rdiffweb.tools.secure_headers
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
 from rdiffweb.controller.dispatch import static  # noqa
@@ -65,9 +65,20 @@ from rdiffweb.core.model import DbSession, UserObject
 logger = logging.getLogger(__name__)
 
 
+# Define cherrypy development environment
+cherrypy.config.environments['development'] = {
+    'engine.autoreload.on': True,
+    'checker.on': False,
+    'tools.log_headers.on': True,
+    'request.show_tracebacks': True,
+    'request.show_mismatched_params': True,
+    'log.screen': False,
+}
+
 @cherrypy.tools.db()
-@cherrypy.tools.proxy()
 @cherrypy.tools.enrich_session()
+@cherrypy.tools.proxy()
+@cherrypy.tools.secure_headers()
 class Root(LocationsPage):
     def __init__(self):
         self.login = LoginPage()
@@ -110,11 +121,11 @@ class RdiffwebApp(Application):
         return parse_args(args, config_file_contents)
 
     def __init__(self, cfg):
-
         self.cfg = cfg
         db_uri = self.cfg.database_uri if '://' in self.cfg.database_uri else "sqlite:///" + self.cfg.database_uri
         cherrypy.config.update(
             {
+                'environment': 'development' if cfg.debug else cfg.environment,
                 # Configure database plugins
                 'tools.db.uri': db_uri,
                 'tools.db.debug': cfg.debug,
@@ -181,7 +192,6 @@ class RdiffwebApp(Application):
                 'tools.auth_form.on': True,
                 'tools.currentuser.on': True,
                 'tools.currentuser.userobj': lambda username: UserObject.get_user(username),
-                'tools.csrf.on': True,
                 'tools.i18n.on': True,
                 'tools.i18n.default': 'en_US',
                 'tools.i18n.mo_dir': pkg_resources.resource_filename('rdiffweb', 'locales'),  # @UndefinedVariable

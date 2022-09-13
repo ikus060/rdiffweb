@@ -135,9 +135,20 @@ Breaking changes:
 * `session-dir` is deprecated and should be replace by `rate-limit-dir`. User's session are stored in database.
 * previous `.css` customization are not barkward compatible
 
+## 2.4.2 (2022-09-12)
+
+This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
+
+* Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session. [CVE-2022-3174](https://nvd.nist.gov/vuln/detail/CVE-2022-3174) #209
+* Avoid leakage of the stack trace in the default error page. [CVE-2022-3175](https://nvd.nist.gov/vuln/detail/CVE-2022-3175) #210
+* Enforce minimum and maximum password length [CVE-2022-3175](https://nvd.nist.gov/vuln/detail/CVE-2022-3179) #211
+
 ## 2.4.1 (2022-09-08)
 
-* Add Clickjacking Defense
+This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
+
+* Add Clickjacking Defense [CVE-2022-3167](https://nvd.nist.gov/vuln/detail/CVE-2022-3167)
+* Drop Ubuntu Hirsute & Impish (End-of-life)
 
 ## 2.4.0 (2022-06-21)
 

@@ -71,6 +71,7 @@ class UserForm(CherryForm):
     email = EmailField(_('Email'), validators=[validators.optional()])
     password = PasswordField(
         _('Password'),
+        validators=[validators.optional()],
         description=_('To create an LDAP user, you must leave the password empty.'),
     )
     user_root = StringField(
@@ -101,6 +102,17 @@ class UserForm(CherryForm):
         description=_("Disk spaces (in bytes) used by this user."),
         widget=widgets.HiddenInput(),
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        cfg = cherrypy.tree.apps[''].cfg
+        self.password.validators += [
+            validators.length(
+                min=cfg.password_min_length,
+                max=cfg.password_max_length,
+                message=_('Password must have between %(min)d and %(max)d characters.'),
+            )
+        ]
 
     def validate_role(self, field):
         # Don't allow the user to changes it's "role" state.

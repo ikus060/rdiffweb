@@ -128,12 +128,12 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
     def test_change_password(self):
         self.listener.user_password_changed.reset_mock()
         # When udating user's password
-        self._set_password(self.PASSWORD, "newpass", "newpass")
+        self._set_password(self.PASSWORD, "newpassword", "newpassword")
         self.assertInBody("Password updated successfully.")
         # Then a notification is raised
         self.listener.user_password_changed.assert_called_once()
         # Change it back
-        self._set_password("newpass", self.PASSWORD, self.PASSWORD)
+        self._set_password("newpassword", self.PASSWORD, self.PASSWORD)
         self.assertInBody("Password updated successfully.")
 
     def test_change_password_with_wrong_confirmation(self):
@@ -141,8 +141,17 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.assertInBody("The new password and its confirmation do not match.")
 
     def test_change_password_with_wrong_password(self):
-        self._set_password("oups", "t", "t")
+        self._set_password("oups", "newpassword", "newpassword")
         self.assertInBody("Wrong password")
+
+    def test_change_password_with_too_short(self):
+        self._set_password(self.PASSWORD, "short", "short")
+        self.assertInBody("Password must have between 8 and 128 characters.")
+
+    def test_change_password_with_too_long(self):
+        new_password = 'a' * 129
+        self._set_password(self.PASSWORD, new_password, new_password)
+        self.assertInBody("Password must have between 8 and 128 characters.")
 
     def test_invalid_pref(self):
         """

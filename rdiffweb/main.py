@@ -94,7 +94,6 @@ def main(args=None, app_class=RdiffwebApp):
     cfg = app_class.parse_args(args)
 
     # Configure logging
-    environment = 'development' if cfg.debug else cfg.environment
     log_level = "DEBUG" if cfg.debug else cfg.log_level
     _setup_logging(log_file=cfg.log_file, log_access_file=cfg.log_access_file, level=log_level)
 
@@ -108,7 +107,6 @@ def main(args=None, app_class=RdiffwebApp):
                 'server.ssl_private_key': cfg.ssl_private_key,
                 # Set maximum POST size to 2MiB, for security.
                 'server.max_request_body_size': 2097152,
-                'server.environment': environment,
             }
         )
         # Start web server

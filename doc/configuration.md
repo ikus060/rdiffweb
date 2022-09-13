@@ -69,7 +69,7 @@ Rdiffweb can be configured to send logs to specific location. By default, logs a
 | log-file | Define the location of the log file. | /var/log/rdiffweb/server.log |
 | log-access-file | Define the location of the access log file. | /var/log/rdiffweb/access.log |
 
-**Enable Debugging log**
+### Enable Debugging
 
 A specific option is also available if you want to enable the debugging log. We do not recommend to enable this option in production as it may leak information to the user whenever an exception is raised.
 
@@ -275,6 +275,20 @@ attacks and authenticated users to avoid Denial Of Service attack.
 | --- | --- | --- |
 | rate-limit | maximum number of requests per minute that can be made by an IP address for an unauthenticated connection. When this limit is reached, an HTTP 429 message is returned to the user. This security measure is used to limit brute force attacks on the login page and the RESTful API. | 10 |
 | rate-limit-dir | location where to store rate-limit information. When undefined, data is kept in memory. | /var/lib/rdiffweb/session |
+
+## Custom user's password length limits
+
+By default, Rdiffweb supports passwords with the following lengths:
+
+* Minimum: 8 characters
+* Maximum: 128 characters
+
+Changing the minimum or maximum length does not affect existing users' passwords. Existing users are not prompted to reset their passwords to meet the new limits. The new limit only applies when an existing user changes their password.
+
+| Option | Description | Example |
+| --- | --- | --- |
+| password-min-length | Minimum length of the user's password | 8 |
+| password-max-length | Maximum length of the user's password | 128 |
 
 ## Configure Rdiffweb appearance
 
