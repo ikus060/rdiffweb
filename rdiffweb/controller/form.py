@@ -57,7 +57,7 @@ class CherryForm(Form):
         if 'formdata' in kwargs:
             formdata = kwargs.pop('formdata')
         else:
-            formdata = _AUTO if self.is_submitted() else None
+            formdata = _AUTO if CherryForm.is_submitted(self) else None
         super().__init__(formdata=formdata, **kwargs)
 
     def is_submitted(self):
@@ -77,7 +77,18 @@ class CherryForm(Form):
     @property
     def error_message(self):
         if self.errors:
-            return ' '.join(['%s: %s' % (field, ', '.join(messages)) for field, messages in self.errors.items()])
+            msg = Markup("")
+            for field, messages in self.errors.items():
+                if msg:
+                    msg += Markup('<br/>')
+                # Field name
+                if field in self:
+                    msg += "%s: " % self[field].label.text
+                else:
+                    msg += "%s: " % field
+                for m in messages:
+                    msg += m
+            return msg
 
     def __html__(self):
         """

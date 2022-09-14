@@ -1,4 +1,5 @@
 {% extends 'layout.html' %}
+{% set username = None %}
 {% block title %}
   {% trans %}Sign in{% endtrans %}
 {% endblock %}
@@ -33,17 +34,17 @@
       </div>
     </div>
   </div>
-  <div class="container mb-auto">
-    <div class="row">
-      <div class="offset-sm-4 col-sm-4">
-        <form id="form-login" role="form" method="post" action="/login/">
-          <h2>{{ _('Sign in') }}</h2>
-          {% include 'message.html' %}
-          <p>{% trans %}Enter your username and password to log in.{% endtrans %}</p>
-          {{ form }}
-          <button class="btn btn-lg btn-primary btn-block" type="submit">{{ _('Sign in') }}</button>
-        </form>
+  {% block content %}
+    <div class="container mb-auto">
+      <div class="row">
+        <div class="offset-sm-4 col-sm-4">
+          <form id="form-login" role="form" method="post" action="{{ url_for() }}">
+            <h2>{% trans %}Welcome back{% endtrans %}</h2>
+            {% include 'message.html' %}
+            {{ form }}
+          </form>
+        </div>
       </div>
     </div>
-  </div>
-{% endblock %}
+  {% endblock content %}
+{% endblock body %}

@@ -66,8 +66,11 @@ def db_after_create(target, connection, **kw):
         add_column(UserObject.__table__.c.role)
         UserObject.query.filter(UserObject._is_admin == 1).update({UserObject.role: UserObject.ADMIN_ROLE})
 
-    # Add user's fullname
+    # Add user's fullname column
     add_column(UserObject.__table__.c.fullname)
+
+    # Add user's mfa column
+    add_column(UserObject.__table__.c.mfa)
 
     # Re-create session table if Number column is missing
     if not exists(SessionObject.__table__.c.Number):

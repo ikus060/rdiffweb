@@ -27,6 +27,9 @@ import os
 import cherrypy
 from cherrypy.lib.static import mimetypes, serve_file
 
+import rdiffweb.tools.auth_form  # noqa
+import rdiffweb.tools.auth_mfa  # noqa
+import rdiffweb.tools.ratelimit  # noqa
 from rdiffweb.core.rdw_helpers import unquote_url
 
 
@@ -121,6 +124,8 @@ def static(path):
 
     @cherrypy.expose
     @cherrypy.tools.auth_form(on=False)
+    @cherrypy.tools.auth_mfa(on=False)
+    @cherrypy.tools.ratelimit(on=False)
     @cherrypy.tools.sessions(on=False)
     def handler(*args, **kwargs):
         if cherrypy.request.method not in ('GET', 'HEAD'):

@@ -23,6 +23,8 @@ from cherrypy.lib.sessions import Session
 from sqlalchemy import Column, DateTime, Integer, PickleType, String
 from sqlalchemy.orm import validates
 
+SESSION_KEY = '_cp_username'
+
 Base = cherrypy.tools.db.get_base()
 
 logger = logging.getLogger(__name__)
@@ -42,7 +44,7 @@ class SessionObject(Base):
     def validate_encoding(self, key, value):
         if value:
             self.access_time = value.get('access_time')
-            self.username = value.get('_cp_username')
+            self.username = value.get(SESSION_KEY)
         return value
 
 

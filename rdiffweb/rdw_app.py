@@ -32,8 +32,8 @@ import rdiffweb.core.remove_older
 import rdiffweb.plugins.ldap
 import rdiffweb.plugins.scheduler
 import rdiffweb.plugins.smtp
-import rdiffweb.tools.auth_basic
 import rdiffweb.tools.auth_form
+import rdiffweb.tools.auth_mfa
 import rdiffweb.tools.currentuser
 import rdiffweb.tools.db
 import rdiffweb.tools.enrich_session
@@ -51,8 +51,9 @@ from rdiffweb.controller.page_delete import DeletePage
 from rdiffweb.controller.page_graphs import GraphsPage
 from rdiffweb.controller.page_history import HistoryPage
 from rdiffweb.controller.page_locations import LocationsPage
-from rdiffweb.controller.page_login import LoginPage, LogoutPage
+from rdiffweb.controller.page_login import LoginPage
 from rdiffweb.controller.page_logs import LogsPage
+from rdiffweb.controller.page_mfa import MfaPage
 from rdiffweb.controller.page_prefs import PreferencesPage
 from rdiffweb.controller.page_restore import RestorePage
 from rdiffweb.controller.page_settings import SettingsPage
@@ -75,6 +76,13 @@ cherrypy.config.environments['development'] = {
     'log.screen': False,
 }
 
+
+@cherrypy.tools.auth_form(login_url='/login/')
+@cherrypy.tools.auth_mfa(
+    mfa_url='/mfa/',
+    mfa_enabled=lambda username: UserObject.get_user(username).mfa == UserObject.ENABLED_MFA,
+)
+@cherrypy.tools.currentuser(userobj=lambda username: UserObject.get_user(username))
 @cherrypy.tools.db()
 @cherrypy.tools.enrich_session()
 @cherrypy.tools.proxy()
@@ -82,7 +90,7 @@ cherrypy.config.environments['development'] = {
 class Root(LocationsPage):
     def __init__(self):
         self.login = LoginPage()
-        self.logout = LogoutPage()
+        self.mfa = MfaPage()
         self.browse = BrowsePage()
         self.delete = DeletePage()
         self.restore = RestorePage()
@@ -92,9 +100,6 @@ class Root(LocationsPage):
         self.prefs = PreferencesPage()
         self.settings = SettingsPage()
         self.api = ApiPage()
-        # Keep this for backward compatibility.
-        self.api.set_encoding = self.settings
-        self.api.remove_older = self.settings
         self.graphs = GraphsPage()
         self.logs = LogsPage()
 
@@ -187,11 +192,6 @@ class RdiffwebApp(Application):
                 # ISO-8859-1 encoding for URL. This avoid any conversion of the
                 # URL into UTF-8.
                 'request.uri_encoding': 'ISO-8859-1',
-                'tools.auth_basic.realm': 'rdiffweb',
-                'tools.auth_basic.checkpassword': self._checkpassword,
-                'tools.auth_form.on': True,
-                'tools.currentuser.on': True,
-                'tools.currentuser.userobj': lambda username: UserObject.get_user(username),
                 'tools.i18n.on': True,
                 'tools.i18n.default': 'en_US',
                 'tools.i18n.mo_dir': pkg_resources.resource_filename('rdiffweb', 'locales'),  # @UndefinedVariable
@@ -204,6 +204,8 @@ class RdiffwebApp(Application):
                 'tools.sessions.debug': cfg.debug,
                 'tools.sessions.storage_class': DbSession,
                 'tools.sessions.httponly': True,
+                'tools.sessions.timeout': cfg.session_timeout,  # minutes
+                'tools.sessions.persistent': False,  # auth_form should update this.
                 'tools.ratelimit.debug': cfg.debug,
                 'tools.ratelimit.delay': 60,
                 'tools.ratelimit.anonymous_limit': cfg.rate_limit,
@@ -236,12 +238,6 @@ class RdiffwebApp(Application):
         Return a UserObject when logged in or None.
         """
         return getattr(cherrypy.serving.request, 'currentuser', None)
-
-    def _checkpassword(self, realm, username, password):
-        """
-        Check basic authentication.
-        """
-        return any(cherrypy.engine.publish('login', username, password))
 
     def error_page(self, **kwargs):
         """

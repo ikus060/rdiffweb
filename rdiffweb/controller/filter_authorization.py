@@ -24,19 +24,13 @@ Created on Oct. 21, 2019
 
 
 def is_admin():
-    # Authentication may have remove the default handle to let the user login.
-    if cherrypy.serving.request.handler is None:
-        return True
-    # Otherwise, validate the permissions.
+    # Validate the permissions.
     if not cherrypy.serving.request.currentuser or not cherrypy.serving.request.currentuser.is_admin:
         raise cherrypy.HTTPError("403 Forbidden")
 
 
 def is_maintainer():
-    # Authentication may have remove the default handle to let the user login.
-    if cherrypy.serving.request.handler is None:
-        return True
-    # Otherwise, validate the permissions.
+    # Validate the permissions.
     if not cherrypy.serving.request.currentuser or not cherrypy.serving.request.currentuser.is_maintainer:
         raise cherrypy.HTTPError("403 Forbidden")
 

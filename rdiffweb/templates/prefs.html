@@ -14,6 +14,7 @@
         (_('General'), url_for('prefs','general'), active_panelid=='general'),
         (_('Notification'), url_for('prefs', 'notification'), active_panelid=='notification'),
         (_('SSH Keys'), url_for('prefs','sshkeys'), active_panelid=='sshkeys'),
+        (_('Two-Factor Authentication'), url_for('prefs','mfa'), active_panelid=='mfa'),
         (_('Active Sessions'), url_for('prefs','session'), active_panelid=='session'),
         ] %}
         {{ nav_list(nav_items) }}

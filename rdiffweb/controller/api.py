@@ -28,6 +28,7 @@ import cherrypy
 
 from rdiffweb.controller import Controller
 from rdiffweb.core.librdiff import RdiffTime
+from rdiffweb.core.model import UserObject
 
 try:
     import simplejson as json
@@ -51,13 +52,26 @@ def json_handler(*args, **kwargs):
         yield chunk.encode('utf-8')
 
 
+def _checkpassword(realm, username, password):
+    """
+    Check basic authentication.
+    """
+    # Disable password authentication for MFA
+    userobj = UserObject.get_user(username)
+    if userobj is None or userobj.mfa == UserObject.ENABLED_MFA:
+        return False
+    # Otherwise validate username password
+    return any(cherrypy.engine.publish('login', username, password))
+
+
 @cherrypy.tools.json_out(handler=json_handler)
 @cherrypy.config(**{'error_page.default': False})
-@cherrypy.tools.auth_basic()
+@cherrypy.tools.auth_basic(realm='rdiffweb', checkpassword=_checkpassword, priority=70)
 @cherrypy.tools.auth_form(on=False)
-@cherrypy.tools.sessions(on=True)
+@cherrypy.tools.auth_mfa(on=False)
+@cherrypy.tools.sessions(on=False)
 @cherrypy.tools.i18n(on=False)
-@cherrypy.tools.ratelimit(on=True)
+@cherrypy.tools.ratelimit()
 class ApiPage(Controller):
     """
     This class provide a restful API to access some of the rdiffweb resources.

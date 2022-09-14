@@ -215,6 +215,6 @@ class WebCase(helper.CPWebCase):
         return json.loads(self.body.decode('utf8'))
 
     def _login(self, username=USERNAME, password=PASSWORD):
-        self.getPage("/logout/")
+        self.getPage("/logout")
         self.getPage("/login/", method='POST', body={'login': username, 'password': password})
         self.assertStatus('303 See Other')

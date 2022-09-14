@@ -163,7 +163,7 @@ class SmtpPlugin(SimplePlugin):
 
         # Record the MIME types of both parts - text/plain and text/html.
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
+        msg['Subject'] = str(subject)
         msg['From'] = self.email_from
         if to:
             msg['To'] = to

@@ -109,7 +109,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 ## Next Release - 2.5.0
 
-This next release focus on multi-factor-authentication as a measure to increase security of user's account.
+This next release focus on two-factor-authentication as a measure to increase security of user's account.
 
 * Store User's session information into database
 * Update ldap plugin to load additional attributes from LDAP server
@@ -128,6 +128,7 @@ This next release focus on multi-factor-authentication as a measure to increase 
   * Show number of active users within the last 24 hours in dashboard
 * Handle migration of older Rdiffweb database by adding the missing `repos.Encoding`, `repos.keepdays` and `users.role` columns #185
 * Replace deprecated references of `disutils.spawn.find_executable()` by `shutil.which()` #208
+* Add two-factor authentication with email verification #201
 
 Breaking changes:
 

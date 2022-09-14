@@ -49,6 +49,53 @@ class APITest(rdiffweb.test.WebCase):
         self.assertEqual(repo.get('name'), 'testcases')
         self.assertEqual(repo.get('maxage'), 0)
 
+    def test_getapi_without_authorization(self):
+        """
+        Check if 401 is return when authorization is not provided.
+        """
+        self.getPage('/api/')
+        self.assertStatus('401 Unauthorized')
+
+    def test_getapi_without_username(self):
+        """
+        Check if error 401 is raised when requesting /login without a username.
+        """
+        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b":admin123").decode('ascii'))])
+        self.assertStatus('401 Unauthorized')
+
+    def test_getapi_with_empty_password(self):
+        """
+        Check if 401 is return when authorization is not provided.
+        """
+        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:").decode('ascii'))])
+        self.assertStatus('401 Unauthorized')
+
+    def test_getapi_with_invalid_password(self):
+        """
+        Check if 401 is return when authorization is not provided.
+        """
+        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:invalid").decode('ascii'))])
+        self.assertStatus('401 Unauthorized')
+
+    def test_getapi_with_authorization(self):
+        """
+        Check if 200 is return when authorization is not provided.
+        """
+        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))])
+        self.assertStatus('200 OK')
+
+    def test_getapi_with_session(self):
+        # Given an authenticate user
+        b = {'login': self.USERNAME, 'password': self.PASSWORD}
+        self.getPage('/login/', method='POST', body=b)
+        self.assertStatus('303 See Other')
+        self.getPage('/')
+        self.assertStatus('200 OK')
+        # When querying the API
+        self.getPage('/api/')
+        # Then access is refused
+        self.assertStatus('401 Unauthorized')
+
 
 class APIRatelimitTest(rdiffweb.test.WebCase):
 

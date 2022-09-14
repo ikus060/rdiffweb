@@ -1,25 +1,49 @@
 {% set bootstrap_class_table = {
-'Select': 'form-control',
-'TextInput': 'form-control',
-'TextArea': 'form-control',
-'PasswordInput': 'form-control',
+'CheckboxInput': 'form-check-input',
 'EmailInput': 'form-control',
-'SubmitInput': 'btn btn-secondary'} %}
+'PasswordInput': 'form-control',
+'Select': 'form-control',
+'SubmitInput': 'btn',
+'TextArea': 'form-control',
+'TextInput': 'form-control',
+} %}
 {% for id, field in form._fields.items() %}
   {% if field.widget['input_type'] == 'hidden' %}
     {{ field(id=False) }}
   {% else %}
     {% set extra_label_class = field.errors and ' is-invalid' or '' %}
     {% set field_class = bootstrap_class_table.get(field.widget.__class__.__name__) %}
+    {% if field.render_kw and field.render_kw.get('class') %}
+      {% set field_class = field_class + ' ' + field.render_kw.get('class') %}
+    {% endif %}
     {% if field.widget.__class__.__name__ == 'SubmitInput' %}
       <div class="form-group">
+        {{ field(id=False, class=field_class + (' btn-primary' if 'btn-' not in field_class else '')) }}
+        {% if field.description %}<div class="form-text small test-secondary">{{ field.description }}</div>{% endif %}
+        {% for error in field.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+      </div>
+    {% elif field.widget.__class__.__name__ == 'CheckboxInput' %}
+      <div class="form-group form-check">
         {{ field(id=False, class=field_class) }}
+        {{ field.label(class="font-weight-bold" + extra_label_class) }}
+        {% if field.render_kw and field.render_kw.get('data-beta') %}
+          <span class="badge badge-info"
+                title="{% trans %}This feature has not been thoroughly tested and should be used with caution.{% endtrans %}">
+            {% trans %}Beta{% endtrans %}
+          </span>
+        {% endif %}
         {% if field.description %}<div class="form-text small test-secondary">{{ field.description }}</div>{% endif %}
         {% for error in field.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
       </div>
     {% else %}
       <div class="form-group">
         {{ field.label(class="font-weight-bold" + extra_label_class) }}
+        {% if field.render_kw and  field.render_kw.get('data-beta') %}
+          <span class="badge badge-info"
+                title="{% trans %}This feature has not been thoroughly tested and should be used with caution.{% endtrans %}">
+            {% trans %}Beta{% endtrans %}
+          </span>
+        {% endif %}
         {{ field(id=False, class=field_class) }}
         {% if field.description %}<div class="form-text small test-secondary">{{ field.description }}</div>{% endif %}
         {% for error in field.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}

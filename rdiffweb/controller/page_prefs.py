@@ -21,6 +21,7 @@ import cherrypy
 
 from rdiffweb.controller import Controller
 from rdiffweb.controller.page_pref_general import PagePrefsGeneral
+from rdiffweb.controller.page_pref_mfa import PagePrefMfa
 from rdiffweb.controller.page_pref_notification import PagePrefNotification
 from rdiffweb.controller.page_pref_session import PagePrefSession
 from rdiffweb.controller.page_pref_sshkeys import PagePrefSshKeys
@@ -36,6 +37,7 @@ class PreferencesPage(Controller):
     notification = PagePrefNotification()
     sshkeys = PagePrefSshKeys()
     session = PagePrefSession()
+    mfa = PagePrefMfa()
 
     @cherrypy.expose
     def index(self, panelid=None, **kwargs):

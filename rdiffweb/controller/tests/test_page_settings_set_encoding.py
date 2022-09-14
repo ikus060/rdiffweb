@@ -41,16 +41,6 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         self.assertInBody("Character encoding")
         self.assertInBody('selected value="%s"' % RepoObject.DEFAULT_REPO_ENCODING)
 
-    def test_api_set_encoding(self):
-        """
-        Check if /api/set-encoding/ is still working.
-        """
-        self.getPage("/api/set-encoding/admin/testcases/", method="POST", body={'new_encoding': 'cp1252'})
-        self.assertStatus(200)
-        # Check results
-        repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
-        self.assertEqual('cp1252', repo.encoding)
-
     def test_set_encoding(self):
         """
         Check to update the encoding with cp1252.

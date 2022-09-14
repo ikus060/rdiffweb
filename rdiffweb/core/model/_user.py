@@ -58,28 +58,35 @@ class UserObject(Base):
         'maintainer': MAINTAINER_ROLE,
         'user': USER_ROLE,
     }
+    DISABLED_MFA = 0
+    ENABLED_MFA = 1
 
     userid = Column('UserID', Integer, primary_key=True)
     _username = Column('Username', String, nullable=False, unique=True)
     hash_password = Column('Password', String, nullable=False, default="")
     _user_root = Column('UserRoot', String, nullable=False, default="")
-    _is_admin = deferred(Column(
-        'IsAdmin',
-        SmallInteger,
-        nullable=False,
-        server_default="0",
-        doc="DEPRECATED This column is replaced by 'role'",
-    ))
+    _is_admin = deferred(
+        Column(
+            'IsAdmin',
+            SmallInteger,
+            nullable=False,
+            server_default="0",
+            doc="DEPRECATED This column is replaced by 'role'",
+        )
+    )
     _email = Column('UserEmail', String, nullable=False, default="")
-    restore_format = deferred(Column(
-        'RestoreFormat',
-        SmallInteger,
-        nullable=False,
-        server_default="1",
-        doc="DEPRECATED This column is not used anymore",
-    ))
+    restore_format = deferred(
+        Column(
+            'RestoreFormat',
+            SmallInteger,
+            nullable=False,
+            server_default="1",
+            doc="DEPRECATED This column is not used anymore",
+        )
+    )
     _role = Column('role', SmallInteger, nullable=False, server_default=str(USER_ROLE))
     fullname = Column('fullname', String, nullable=False, default="")
+    mfa = Column('mfa', SmallInteger, nullable=False, default=DISABLED_MFA)
     repo_objs = relationship(
         'RepoObject',
         foreign_keys='UserObject.userid',

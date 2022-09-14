@@ -43,7 +43,7 @@ class _DataStore:
             self._save(tracker)
         return tracker.hits
 
-    def _save(self, token, hits, timeout):
+    def _save(self, tracker):
         raise NotImplementedError
 
     def _load(self, token):
@@ -111,7 +111,7 @@ class FileRateLimit(_DataStore):
             f.close()
 
 
-def check_ratelimmit(delay=60, anonymous_limit=0, registered_limit=0, rate_exceed_status=429, debug=False, **conf):
+def check_ratelimit(delay=60, anonymous_limit=0, registered_limit=0, rate_exceed_status=429, debug=False, **conf):
     """
     Verify the ratelimit. By default return a 429 HTTP error code (Too Many Request).
 
@@ -150,4 +150,4 @@ def check_ratelimmit(delay=60, anonymous_limit=0, registered_limit=0, rate_excee
         raise cherrypy.HTTPError(rate_exceed_status)
 
 
-cherrypy.tools.ratelimit = cherrypy.Tool('before_handler', check_ratelimmit, priority=60)
+cherrypy.tools.ratelimit = cherrypy.Tool('before_handler', check_ratelimit, priority=60)
