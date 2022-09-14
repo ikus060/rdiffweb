@@ -108,11 +108,12 @@ class PagePrefSshKeys(Controller):
 
         # Handle action
         form = SshForm()
+        delete_form = DeleteSshForm()
         if not self.app.cfg.disable_ssh_keys:
-            if action == "add":
+            if action == "add" and form.is_submitted():
                 self._add_key(action, form)
-            elif action == 'delete':
-                self._delete_key(action, DeleteSshForm())
+            elif action == 'delete' and delete_form.is_submitted():
+                self._delete_key(action, delete_form)
 
         # Get SSH keys if file exists.
         params = {'disable_ssh_keys': self.app.cfg.disable_ssh_keys, 'form': form}
