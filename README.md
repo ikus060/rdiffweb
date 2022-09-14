@@ -107,6 +107,12 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## 2.4.3 (2022-09-14)
+
+This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
+
+* Mitigate CSRF in profile's SSH Keys #212
+
 ## 2.4.2 (2022-09-12)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.

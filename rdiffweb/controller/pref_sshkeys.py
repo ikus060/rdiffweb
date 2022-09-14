@@ -111,9 +111,10 @@ class SSHKeysPlugin(Controller):
 
         # Handle action
         form = SshForm()
-        if action == "add":
+        delete_form = DeleteSshForm()
+        if action == "add" and form.is_submitted():
             self._add_key(action, form)
-        elif action == 'delete':
+        elif action == 'delete' and delete_form.is_submitted():
             self._delete_key(action, DeleteSshForm())
 
         # Get SSH keys if file exists.

@@ -99,6 +99,18 @@ class SSHKeysTest(rdiffweb.test.WebCase):
         self.assertInBody("Invalid SSH key.")
         self.assertEqual(0, len(list(user.authorizedkeys)))
 
+    def test_add_get_method(self):
+        # Given an authenticated user
+        user = self.app.store.get_user('admin')
+        # When querying a page with parameters (HTTP GET)
+        self.getPage(
+            "/prefs/sshkeys?action=add&title=ssh1&key=ssh-rsa+AAAAB3NzaC1yc2EAAAADAQABAAAAgQCzurRNVKwb0ZJCmUgGenoe4vth5gnHxgnzjHSUO8r7IZiouB6DAciiVUAryV6MQm5trwIXNo0QDwFxyX99exIwUlDu3OzhZHKKbb721hCID17AWZMAQIgxQdu6b27s5YgJXsaxXWvEO2lSRVOnVXoCSI7mK5St%2FCJ8O1OdXivNIQ%3D%3D+noname%0D%0A"
+        )
+        # Then page return without error
+        self.assertStatus(200)
+        # Then ssh key is not added
+        self.assertEqual(0, len(list(user.authorizedkeys)))
+
     def test_delete(self):
         # Delete existing keys
         user = self.app.store.get_user('admin')
