@@ -21,7 +21,7 @@ import cherrypy
 from sqlalchemy import Column, Integer, SmallInteger, String, and_, event, inspect, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import deferred, relationship
 
 import rdiffweb.tools.db  # noqa
 from rdiffweb.core import authorizedkeys
@@ -63,21 +63,21 @@ class UserObject(Base):
     _username = Column('Username', String, nullable=False, unique=True)
     hash_password = Column('Password', String, nullable=False, default="")
     _user_root = Column('UserRoot', String, nullable=False, default="")
-    _is_admin = Column(
+    _is_admin = deferred(Column(
         'IsAdmin',
         SmallInteger,
         nullable=False,
         server_default="0",
         doc="DEPRECATED This column is replaced by 'role'",
-    )
+    ))
     _email = Column('UserEmail', String, nullable=False, default="")
-    restore_format = Column(
+    restore_format = deferred(Column(
         'RestoreFormat',
         SmallInteger,
         nullable=False,
         server_default="1",
         doc="DEPRECATED This column is not used anymore",
-    )
+    ))
     _role = Column('role', SmallInteger, nullable=False, server_default=str(USER_ROLE))
     fullname = Column('fullname', String, nullable=False, default="")
     repo_objs = relationship(
