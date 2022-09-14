@@ -25,6 +25,7 @@ from rdiffweb.controller.page_pref_mfa import PagePrefMfa
 from rdiffweb.controller.page_pref_notification import PagePrefNotification
 from rdiffweb.controller.page_pref_session import PagePrefSession
 from rdiffweb.controller.page_pref_sshkeys import PagePrefSshKeys
+from rdiffweb.controller.page_pref_tokens import PagePrefTokens
 from rdiffweb.core.rdw_templating import url_for
 
 # Define the logger
@@ -34,10 +35,11 @@ logger = logging.getLogger(__name__)
 class PreferencesPage(Controller):
 
     general = PagePrefsGeneral()
-    notification = PagePrefNotification()
-    sshkeys = PagePrefSshKeys()
-    session = PagePrefSession()
     mfa = PagePrefMfa()
+    notification = PagePrefNotification()
+    session = PagePrefSession()
+    sshkeys = PagePrefSshKeys()
+    tokens = PagePrefTokens()
 
     @cherrypy.expose
     def index(self, panelid=None, **kwargs):

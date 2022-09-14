@@ -20,7 +20,8 @@ from sqlalchemy import event
 
 from ._repo import RepoObject  # noqa
 from ._session import DbSession, SessionObject  # noqa
-from ._sshkeys import SshKey  # noqa
+from ._sshkey import SshKey  # noqa
+from ._token import Token  # noqa
 from ._user import DuplicateSSHKeyError, UserObject  # noqa
 
 Base = cherrypy.tools.db.get_base()

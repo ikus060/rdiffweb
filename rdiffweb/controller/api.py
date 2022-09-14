@@ -56,10 +56,15 @@ def _checkpassword(realm, username, password):
     """
     Check basic authentication.
     """
-    # Disable password authentication for MFA
+    # Validate username
     userobj = UserObject.get_user(username)
-    if userobj is None or userobj.mfa == UserObject.ENABLED_MFA:
-        return False
+    if userobj is not None:
+        # Verify if the password matches a token.
+        if userobj.validate_access_token(password):
+            return True
+        # Disable password authentication for MFA
+        if userobj.mfa == UserObject.ENABLED_MFA:
+            return False
     # Otherwise validate username password
     return any(cherrypy.engine.publish('login', username, password))
 

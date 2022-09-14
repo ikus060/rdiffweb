@@ -9,4 +9,5 @@ Learn how to use Rdiffweb end-to-end. Create users, manage user's permission and
    :caption: Contents:
    
    settings
+   access_tokens
    two_factor_authentication

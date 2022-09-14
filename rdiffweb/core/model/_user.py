@@ -14,8 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import datetime
 import logging
 import os
+import secrets
+import string
 
 import cherrypy
 from sqlalchemy import Column, Integer, SmallInteger, String, and_, event, inspect, or_
@@ -29,7 +32,8 @@ from rdiffweb.core.passwd import check_password, hash_password
 from rdiffweb.tools.i18n import ugettext as _
 
 from ._repo import RepoObject
-from ._sshkeys import SshKey
+from ._sshkey import SshKey
+from ._token import Token
 
 logger = logging.getLogger(__name__)
 
@@ -172,6 +176,24 @@ class UserObject(Base):
                 )
         cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
 
+    def add_access_token(self, name, expiration_time=None, length=16):
+        """
+        Create a new access token. Return the un-encrypted value of the token.
+        """
+        assert name
+        assert length >= 8
+        # Generate a random token
+        token = ''.join(secrets.choice(string.ascii_lowercase) for i in range(length))
+        # Store hash token
+        try:
+            obj = Token(userid=self.userid, name=name, hash_token=hash_password(token), expiration_time=expiration_time)
+            obj.add()
+        except IntegrityError:
+            Token.session.rollback()
+            raise ValueError(_("Duplicate token name: %s") % name)
+        cherrypy.engine.publish('access_token_added', self, name)
+        return token
+
     def valid_user_root(self):
         """
         Check if the current user_root is valid and readable
@@ -188,6 +210,7 @@ class UserObject(Base):
         # FIXME This should be deleted by cascade
         SshKey.query.filter(SshKey.userid == self.userid).delete()
         RepoObject.query.filter(RepoObject.userid == self.userid).delete()
+        Token.query.filter(Token.userid == self.userid).delete()
         # Delete ourself
         Base.delete(self)
 
@@ -207,6 +230,11 @@ class UserObject(Base):
             logger.info("removing key [%s] from [%s] database", fingerprint, self.username)
             SshKey.query.filter(and_(SshKey.userid == self.userid, SshKey.fingerprint == fingerprint)).delete()
         cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
+
+    def delete_access_token(self, name):
+        assert name
+        if not Token.query.filter(Token.userid == self.userid, Token.name == name).delete():
+            raise ValueError(_("token name doesn't exists: %s") % name)
 
     @property
     def disk_usage(self):
@@ -380,6 +408,21 @@ class UserObject(Base):
         self._user_root = value
         if oldvalue != value:
             cherrypy.engine.publish('user_attr_changed', self, {'user_root': (oldvalue, value)})
+
+    def validate_access_token(self, token):
+        """
+        Check if the given token matches.
+        """
+        for access_token in Token.query.all():
+            # If token expired. Let delete it.
+            if access_token.is_expired:
+                access_token.delete()
+                continue
+            if check_password(token, access_token.hash_token):
+                # When it matches, let update the record.
+                access_token.access_time = datetime.datetime.utcnow
+                return True
+        return False
 
 
 @event.listens_for(UserObject.hash_password, "set")

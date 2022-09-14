@@ -4,7 +4,10 @@
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
-    {{ message }}
+    {% for line in (message|string).split('\n') %}
+      {{ line }}
+      {% if not loop.last %}<br/>{% endif %}
+    {% endfor %}
   </div>
 {% endfor %}
 {% if success %}

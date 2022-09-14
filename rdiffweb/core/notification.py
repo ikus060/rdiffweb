@@ -44,18 +44,34 @@ class NotificationPlugin(SimplePlugin):
     def start(self):
         self.bus.log('Start Notification plugin')
         self.bus.publish('schedule_job', self.execution_time, self.notification_job)
+        self.bus.subscribe('access_token_added', self.access_token_added)
         self.bus.subscribe('user_attr_changed', self.user_attr_changed)
         self.bus.subscribe('user_password_changed', self.user_password_changed)
 
     def stop(self):
         self.bus.log('Stop Notification plugin')
         self.bus.publish('unschedule_job', self.notification_job)
+        self.bus.unsubscribe('access_token_added', self.access_token_added)
         self.bus.unsubscribe('user_attr_changed', self.user_attr_changed)
         self.bus.unsubscribe('user_password_changed', self.user_password_changed)
 
     @property
     def app(self):
         return cherrypy.tree.apps['']
+
+    def access_token_added(self, userobj, name):
+        if not self.send_changed:
+            return
+
+        if not userobj.email:
+            logger.info("can't sent mail to user [%s] without an email", userobj.username)
+            return
+
+        # Send a mail notification
+        body = self.app.templates.compile_template(
+            "access_token_added.html", **{"header_name": self.app.cfg.header_name, 'user': userobj, 'name': name}
+        )
+        self.bus.publish('queue_mail', to=userobj.email, subject=_("A new access token has been created"), message=body)
 
     def user_attr_changed(self, userobj, attrs={}):
         if not self.send_changed:

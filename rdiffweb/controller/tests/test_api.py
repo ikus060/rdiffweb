@@ -24,6 +24,7 @@ Created on Nov 16, 2017
 from base64 import b64encode
 
 import rdiffweb.test
+from rdiffweb.core.model import UserObject
 
 
 class APITest(rdiffweb.test.WebCase):
@@ -93,6 +94,25 @@ class APITest(rdiffweb.test.WebCase):
         self.assertStatus('200 OK')
         # When querying the API
         self.getPage('/api/')
+        # Then access is refused
+        self.assertStatus('401 Unauthorized')
+
+    def test_auth_with_access_token(self):
+        # Given a user with an access token
+        userobj = UserObject.get_user(self.USERNAME)
+        token = userobj.add_access_token('test').encode('ascii')
+        # When using this token to authenticated with /api
+        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:" + token).decode('ascii'))])
+        # Then authentication is successful
+        self.assertStatus('200 OK')
+
+    def test_auth_failed_with_mfa_enabled(self):
+        # Given a user with MFA enabled
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.mfa = UserObject.ENABLED_MFA
+        userobj.add()
+        # When authenticating with /api/
+        self.getPage('/api/', headers=self.headers)
         # Then access is refused
         self.assertStatus('401 Unauthorized')
 
