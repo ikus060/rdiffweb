@@ -38,7 +38,6 @@ xunit*.xml
 .pydevproject
 /rdw.db
 /testrdw.conf
-/sonar-project.properties
 .tox
 .pydevproject
 /htmlcov/
