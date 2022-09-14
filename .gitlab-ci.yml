@@ -113,6 +113,7 @@ package:py3:
   artifacts:
     paths:
     - dist/*.whl
+    expire_in: 1 day
     
 package:docker:
   stage: package
@@ -131,6 +132,7 @@ package:docker:
   artifacts:
     paths:
     - dist/*-docker.tar
+    expire_in: 1 day
 
 package:deb: 
   stage: package
@@ -166,6 +168,7 @@ package:deb:
   artifacts:
     paths:
     - ./dist/*
+    expire_in: 1 day
 
 test-package:deb:
   stage: test-package
