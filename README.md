@@ -176,6 +176,7 @@ usability and a new security feature to block a brute force attack.
 * Fix error 500 displayed in status page #191
 * Improve repository browsing speed by minimizing the number of I/O call #192
 * Publish Docker image directly to DockerHub #144
+* Add REST API to manage sshkeys
 
 Breaking changes:
 

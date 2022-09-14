@@ -30,6 +30,7 @@ from wtforms.validators import ValidationError
 from wtforms.widgets.core import TextArea
 
 from rdiffweb.controller import Controller, flash
+from rdiffweb.controller.dispatch import restapi
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.core import authorizedkeys
@@ -62,47 +63,29 @@ class SshForm(CherryForm):
         validators=[validators.data_required(), validate_key],
     )
 
-
-class DeleteSshForm(CherryForm):
-    fingerprint = StringField('Fingerprint')
-
-
-class PagePrefSshKeys(Controller):
-    """
-    Plugin to configure SSH keys.
-    """
-
-    def _add_key(self, action, form):
-        assert action == 'add'
-        assert form
-        if not form.validate():
-            for unused, messages in form.errors.items():
-                for message in messages:
-                    flash(message, level='warning')
-            return
+    def populate_obj(self, userobj):
         try:
-            self.app.currentuser.add_authorizedkey(key=form.key.data, comment=form.title.data)
+            userobj.add_authorizedkey(key=self.key.data, comment=self.title.data)
         except DuplicateSSHKeyError as e:
             flash(str(e), level='error')
         except Exception:
             flash(_("Unknown error while adding the SSH Key"), level='error')
             _logger.warning("error adding ssh key", exc_info=1)
 
-    def _delete_key(self, action, form):
-        assert action == 'delete'
-        assert form
-        if not form.validate():
-            for unused, messages in form.errors.items():
-                for message in messages:
-                    flash(message, level='warning')
-            return
+
+class DeleteSshForm(CherryForm):
+    fingerprint = StringField('Fingerprint', validators=[validators.data_required()])
+
+    def populate_obj(self, userobj):
         is_maintainer()
         try:
-            self.app.currentuser.delete_authorizedkey(form.fingerprint.data)
+            userobj.delete_authorizedkey(self.fingerprint.data)
         except Exception:
             flash(_("Unknown error while removing the SSH Key"), level='error')
             _logger.warning("error removing ssh key", exc_info=1)
 
+
+class PagePrefSshKeys(Controller):
     @cherrypy.expose
     def default(self, action=None, **kwargs):
 
@@ -110,17 +93,25 @@ class PagePrefSshKeys(Controller):
         form = SshForm()
         delete_form = DeleteSshForm()
         if not self.app.cfg.disable_ssh_keys:
-            if action == "add" and form.is_submitted():
-                self._add_key(action, form)
+            if action == 'add' and form.is_submitted():
+                if form.validate():
+                    form.populate_obj(self.app.currentuser)
+                else:
+                    flash(form.error_message, level='warning')
             elif action == 'delete' and delete_form.is_submitted():
-                self._delete_key(action, delete_form)
+                if delete_form.validate():
+                    delete_form.populate_obj(self.app.currentuser)
+                else:
+                    flash(delete_form.error_message, level='warning')
 
         # Get SSH keys if file exists.
-        params = {'disable_ssh_keys': self.app.cfg.disable_ssh_keys, 'form': form}
+        params = {
+            'disable_ssh_keys': self.app.cfg.disable_ssh_keys,
+            'form': form,
+        }
         try:
             params["sshkeys"] = [
-                {'title': key.comment or (key.keytype + ' ' + key.key[:18]), 'fingerprint': key.fingerprint}
-                for key in self.app.currentuser.authorizedkeys
+                {'title': key.comment, 'fingerprint': key.fingerprint} for key in self.app.currentuser.authorizedkeys
             ]
         except IOError:
             params["sshkeys"] = []
@@ -128,3 +119,36 @@ class PagePrefSshKeys(Controller):
             _logger.warning("error reading SSH keys", exc_info=1)
 
         return self._compile_template("prefs_sshkeys.html", **params)
+
+
+@restapi()
+@cherrypy.tools.json_out()
+class ApiSshKeys(Controller):
+    @cherrypy.expose
+    def list(self):
+        return [{'title': key.comment, 'fingerprint': key.fingerprint} for key in self.app.currentuser.authorizedkeys]
+
+    @cherrypy.expose
+    def get(self, fingerprint):
+        for key in self.app.currentuser.authorizedkeys:
+            if key.fingerprint == fingerprint:
+                return {'title': key.comment, 'fingerprint': key.fingerprint}
+        raise cherrypy.HTTPError(404)
+
+    @cherrypy.expose
+    def delete(self, fingerprint):
+        form = DeleteSshForm(fingerprint=fingerprint)
+        if form.validate():
+            form.populate_obj(self.app.currentuser)
+            return {}
+        else:
+            raise cherrypy.HTTPError(400, form.error_message)
+
+    @cherrypy.expose
+    def post(self, **kwargs):
+        form = SshForm()
+        if form.validate():
+            form.populate_obj(self.app.currentuser)
+            return kwargs
+        else:
+            raise cherrypy.HTTPError(400, form.error_message)
