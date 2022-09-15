@@ -154,6 +154,8 @@ def gettext_lazy(message):
     """
 
     def get_translation():
+        if not hasattr(cherrypy.response, "i18n"):
+            return message
         return cherrypy.response.i18n.trans.ugettext(message)
 
     return LazyProxy(get_translation)

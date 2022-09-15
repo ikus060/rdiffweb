@@ -121,7 +121,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self._delete(self.USERNAME, self.REPO, None)
         # Make sure the repository is not delete
         self.assertStatus(400)
-        self.assertInBody('confirm: This field is required')
+        self.assertInBody('Confirmation: This field is required')
         userobj.expire()
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in userobj.repo_objs])
 

@@ -387,10 +387,24 @@ def get_parser():
     )
 
     parser.add(
+        '--session-timeout',
+        metavar='MINUTES',
+        help='The session will be purged after this period of inactivity. Default 30 days or 43200 minutes.',
+        default=43200,
+    )
+
+    parser.add(
+        '--login-timeout',
+        metavar='MINUTES',
+        help='Remember  user session Keep user login Number of minutes of inactivities before purging sessions data. Default 1 day or 1440 minutes.',
+        default=1440,
+    )
+
+    parser.add(
         '--rate-limit',
         metavar='LIMIT',
         type=int,
-        default=10,
+        default=30,
         help='maximum number of requests per minute that can be made by an IP address for an unauthenticated connection. When this limit is reached, an HTTP 429 message is returned to the user. This security measure is used to limit brute force attacks on the login page and the RESTful API.',
     )
 

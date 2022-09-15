@@ -58,7 +58,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
     def _load_quota(self, userobj):
         return self._quota.get(userobj.username, 0)
 
-    def _add_user(self, username=None, email=None, password=None, user_root=None, role=None):
+    def _add_user(self, username=None, email=None, password=None, user_root=None, role=None, mfa=None):
         b = {}
         b['action'] = 'add'
         if username is not None:
@@ -71,9 +71,13 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
             b['user_root'] = user_root
         if role is not None:
             b['role'] = str(role)
+        if mfa is not None:
+            b['mfa'] = str(mfa)
         self.getPage("/admin/users/", method='POST', body=b)
 
-    def _edit_user(self, username=None, email=None, password=None, user_root=None, role=None, disk_quota=None):
+    def _edit_user(
+        self, username=None, email=None, password=None, user_root=None, role=None, disk_quota=None, mfa=None
+    ):
         b = {}
         b['action'] = 'edit'
         if username is not None:
@@ -88,6 +92,8 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
             b['role'] = str(role)
         if disk_quota is not None:
             b['disk_quota'] = disk_quota
+        if mfa is not None:
+            b['mfa'] = str(mfa)
         self.getPage("/admin/users/", method='POST', body=b)
 
     def _delete_user(self, username='test1'):
@@ -120,7 +126,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self._add_user("invalid", "invalid@test.com", "password", "/home/", 'admin')
         # Then an error message is displayed to the user
         self.assertStatus(200)
-        self.assertInBody('role: Invalid Choice: could not coerce')
+        self.assertInBody('Role: Invalid Choice: could not coerce')
         # Then listener are not called
         self.listener.user_added.assert_not_called()
 
@@ -128,14 +134,16 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self._add_user("invalid", "invalid@test.com", "password", "/home/", -1)
         # Then an error message is displayed to the user
         self.assertStatus(200)
-        self.assertInBody('role: Not a valid choice')
+        self.assertInBody('User Role: Not a valid choice')
         # Then listener are not called
         self.listener.user_added.assert_not_called()
 
     def test_add_edit_delete(self):
         #  Add user to be listed
         self.listener.user_password_changed.reset_mock()
-        self._add_user("test2", "test2@test.com", "password", "/home/", UserObject.USER_ROLE)
+        self._add_user(
+            "test2", "test2@test.com", "password", "/home/", UserObject.USER_ROLE, mfa=UserObject.DISABLED_MFA
+        )
         self.assertInBody("User added successfully.")
         self.assertInBody("test2")
         self.assertInBody("test2@test.com")
@@ -143,7 +151,9 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.listener.user_password_changed.assert_called_once()
         self.listener.user_password_changed.reset_mock()
         #  Update user
-        self._edit_user("test2", "chaned@test.com", "new-password", "/tmp/", UserObject.ADMIN_ROLE)
+        self._edit_user(
+            "test2", "chaned@test.com", "new-password", "/tmp/", UserObject.ADMIN_ROLE, mfa=UserObject.ENABLED_MFA
+        )
         self.listener.user_attr_changed.assert_called()
         self.listener.user_password_changed.assert_called_once()
         self.assertInBody("User information modified successfully.")
@@ -199,7 +209,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         """
         self._add_user("", "test1@test.com", "password", "/tmp/", UserObject.USER_ROLE)
         self.assertStatus(200)
-        self.assertInBody("username: This field is required.")
+        self.assertInBody("Username: This field is required.")
 
     def test_add_user_with_existing_username(self):
         """
@@ -258,7 +268,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         """
         # Create another admin user
         self._add_user('admin2', '', 'password', '', UserObject.ADMIN_ROLE)
-        self.getPage("/logout/")
+        self.getPage("/logout")
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         self._login('admin2', 'password')
@@ -413,3 +423,19 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.listener.set_disk_quota.assert_called_once_with(ANY, 8765432)
         self.assertInBody("Setting user&#39;s quota is not supported")
         self.assertStatus(200)
+
+    def test_edit_own_role(self):
+        # Given an administrator
+        # When trygin to update your own role
+        self._edit_user(username=self.USERNAME, role=UserObject.MAINTAINER_ROLE)
+        # Then an error is returned
+        self.assertStatus(200)
+        self.assertInBody("Cannot edit your own role.")
+
+    def test_edit_own_mfa(self):
+        # Given an administrator
+        # When trygin to update your own role
+        self._edit_user(username=self.USERNAME, mfa=UserObject.ENABLED_MFA)
+        # Then an error is returned
+        self.assertStatus(200)
+        self.assertInBody("Cannot change your own two-factor authentication settings.")

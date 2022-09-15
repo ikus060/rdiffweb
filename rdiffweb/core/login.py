@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
 import logging
 
 import cherrypy
@@ -23,7 +22,6 @@ from cherrypy.process.plugins import SimplePlugin
 
 from rdiffweb.core.model import UserObject
 from rdiffweb.core.passwd import check_password
-from rdiffweb.tools.auth_form import SESSION_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -105,11 +103,6 @@ class LoginPlugin(SimplePlugin):
             dirty = True
         if dirty:
             userobj.add()
-
-        # Save username in session if session is enabled.
-        if cherrypy.request.config and cherrypy.request.config.get('tools.sessions.on', False):
-            cherrypy.session[SESSION_KEY] = userobj.username
-            cherrypy.session['login_time'] = datetime.datetime.now()
         self.bus.publish('user_login', userobj)
         return userobj
 

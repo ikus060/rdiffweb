@@ -20,7 +20,8 @@ from sqlalchemy import event
 
 from ._repo import RepoObject  # noqa
 from ._session import DbSession, SessionObject  # noqa
-from ._sshkeys import SshKey  # noqa
+from ._sshkey import SshKey  # noqa
+from ._token import Token  # noqa
 from ._user import DuplicateSSHKeyError, UserObject  # noqa
 
 Base = cherrypy.tools.db.get_base()
@@ -66,8 +67,11 @@ def db_after_create(target, connection, **kw):
         add_column(UserObject.__table__.c.role)
         UserObject.query.filter(UserObject._is_admin == 1).update({UserObject.role: UserObject.ADMIN_ROLE})
 
-    # Add user's fullname
+    # Add user's fullname column
     add_column(UserObject.__table__.c.fullname)
+
+    # Add user's mfa column
+    add_column(UserObject.__table__.c.mfa)
 
     # Re-create session table if Number column is missing
     if not exists(SessionObject.__table__.c.Number):

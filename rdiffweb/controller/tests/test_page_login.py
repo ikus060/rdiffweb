@@ -20,23 +20,21 @@ Created on Dec 26, 2015
 @author: Patrik Dufresne
 """
 
-from base64 import b64encode
+
+from parameterized import parameterized
 
 import rdiffweb.test
-from rdiffweb.core.model import DbSession, SessionObject
-from rdiffweb.tools.auth_form import SESSION_KEY
+from rdiffweb.core.model import DbSession, SessionObject, UserObject
+from rdiffweb.tools.auth_form import LOGIN_TIME, SESSION_KEY
 
 
 class LoginPageTest(rdiffweb.test.WebCase):
     def test_getpage(self):
-        """
-        Make sure the login page can be rendered without error.
-        """
         # When making a query to a page while unauthenticated
         self.getPage('/')
         # Then user is redirected to login page
         self.assertStatus('303 See Other')
-        self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2F')
+        self.assertHeaderItemValue('Location', self.baseurl + '/login/')
         # Then a session object is created without a username
         self.assertEqual(1, SessionObject.query.filter(SessionObject.id == self.session_id).count())
         SessionObject.query.filter(SessionObject.id == self.session_id).first()
@@ -44,10 +42,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         session.load()
         self.assertIsNone(session.get(SESSION_KEY))
 
-    def test_getpage_success(self):
-        """
-        Make sure the login page can be rendered without error.
-        """
+    def test_login_success(self):
         # When authenticating with valid credentials.
         self.getPage('/login/', method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD})
         # Then user is redirected
@@ -59,6 +54,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         session = DbSession(id=self.session_id)
         session.load()
         self.assertEqual('admin', session.get(SESSION_KEY))
+        self.assertIsNotNone(session.get(LOGIN_TIME))
 
     def test_cookie_http_only(self):
         # Given a request made to rdiffweb
@@ -68,88 +64,61 @@ class LoginPageTest(rdiffweb.test.WebCase):
         cookie = self.assertHeader('Set-Cookie')
         self.assertIn('HttpOnly', cookie)
 
-    def test_getpage_with_plaintext(self):
+    def test_login_with_plaintext(self):
         """
         Requesting plain text without being authenticated should show the login form.
         """
+        # When querying root page without authentication
         self.getPage('/', headers=[("Accept", "text/plain")])
+        # Then user is redirected to /login page
         self.assertStatus('303 See Other')
-        self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2F')
+        self.assertHeaderItemValue('Location', self.baseurl + '/login/')
 
-    def test_getpage_with_redirect_get(self):
-        """
-        Check encoding of redirect url when send using GET method.
-        """
-        #  Query the page without login-in
-        self.getPage('/browse/' + self.USERNAME + "/" + self.REPO + '/DIR%EF%BF%BD/')
+    @parameterized.expand(
+        [
+            ('with_root', '/'),
+            ('with_browse_url', '/browse/admin/testcases/Revisions/'),
+            ('with_encoded_url', '/browse/admin/testcases/DIR%EF%BF%BD/'),
+            (
+                'with_broken_encoding',
+                '/restore/admin/testcases/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt/?date=1415221507',
+            ),
+            ('with_query_string', '/restore/admin/testcases/Revisions?date=1477434528'),
+            ('with_multiple_query_string', '/restore/admin/testcases/Revisions?date=1477434528&kind=tar.gz'),
+            ('with_admin', '/admin/'),
+        ]
+    )
+    def test_login(self, unused, original_url):
+        # Given an unauthenticated user
+        # Query the page without login-in
+        self.getPage(original_url)
+        # Then user is redirected to the login page
         self.assertStatus('303 See Other')
-        self.assertHeaderItemValue(
-            'Location', self.baseurl + '/login/?redirect=%2Fbrowse%2Fadmin%2Ftestcases%2FDIR%C3%AF%C2%BF%C2%BD%2F'
-        )
-
-    def test_getpage_with_open_redirect(self):
-        # Given a user browsing a URL with open redirect
-        # When the user visit the login page
-        self.getPage('/login/?redirect=https://attacker.com')
-        # The URL is sanitize.
-        self.assertNotInBody('https://attacker.com')
-
-    def test_getpage_with_broken_encoding(self):
-        """
-        Check encoding of redirect url when send using GET method.
-        """
-        #  Query the page without login-in
-        self.getPage(
-            '/restore/'
-            + self.USERNAME
-            + "/"
-            + self.REPO
-            + '/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt'
-        )
+        self.assertHeaderItemValue('Location', self.baseurl + '/login/')
+        # When authentication is successful
+        self.getPage('/login/', method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD})
+        # Then user is redirected to original URL
         self.assertStatus('303 See Other')
-        self.assertHeaderItemValue(
-            'Location',
-            self.baseurl
-            + '/login/?redirect=%2Frestore%2Fadmin%2Ftestcases%2FFichier+avec+non+asci+char+%C3%89velyne+M%C3%A8re.txt',
-        )
+        self.assertHeaderItemValue('Location', self.baseurl + original_url)
+        # When requesting the original page
+        self.getPage(original_url)
+        # Then page return without error
+        self.assertStatus(200)
 
     def test_getpage_with_redirect_post(self):
         """
         Check encoding of redirect url when send using POST method.
         """
+        # When posting invalid credentials
         b = {'login': 'admin', 'password': 'invalid', 'redirect': '/browse/' + self.REPO + '/DIR%EF%BF%BD/'}
         self.getPage('/login/', method='POST', body=b)
+        # Then page return without HTTP Error
         self.assertStatus('200 OK')
+        # Then page display an error
+        self.assertInBody('Invalid username or password.')
         self.assertInBody('id="form-login"')
-        self.assertInBody('/browse/' + self.REPO + '/DIR%EF%BF%BD/"')
-
-    def test_getpage_with_querystring_redirect_get(self):
-        """
-        Check if unauthenticated users are redirect properly to login page.
-        """
-        self.getPage('/browse/' + self.REPO + '/?restore=T')
-        self.assertStatus('303 See Other')
-        self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2Fbrowse%2Ftestcases%2F%3Frestore%3DT')
-
-    def test_getpage_with_multiple_querystring_redirect_get(self):
-        self.getPage('/restore/' + self.REPO + '?date=1414871387&kind=zip')
-        self.assertStatus('303 See Other')
-        self.assertHeaderItemValue(
-            'Location', self.baseurl + '/login/?redirect=%2Frestore%2Ftestcases%3Fdate%3D1414871387%26kind%3Dzip'
-        )
-
-    def test_getpage_with_redirection(self):
-        """
-        Check if redirect url is properly rendered in HTML.
-        """
-        b = {
-            'login': 'admin',
-            'password': 'admin123',
-            'redirect': '/restore/' + self.REPO + '?date=1414871387&kind=zip',
-        }
-        self.getPage('/login/', method='POST', body=b)
-        self.assertStatus('303 See Other')
-        self.assertHeaderItemValue('Location', self.baseurl + '/restore/' + self.REPO + '?date=1414871387&kind=zip')
+        # Then redirect URL is ignored
+        self.assertNotInBody('/browse/' + self.REPO + '/DIR%EF%BF%BD/"')
 
     def test_getpage_without_username(self):
         """
@@ -175,60 +144,24 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.getPage('/login/kefuxian.mvc', method='POST')
         self.assertStatus('303 See Other')
 
-    def test_getpage_admin(self):
-        """
-        Access to admin area without session should redirect to login page.
-        """
-        self.getPage('/admin/')
-        self.assertStatus('303 See Other')
-
-    def test_getapi_without_authorization(self):
-        """
-        Check if 401 is return when authorization is not provided.
-        """
-        self.getPage('/api/')
-        self.assertStatus('401 Unauthorized')
-
-    def test_getapi_without_username(self):
-        """
-        Check if error 401 is raised when requesting /login without a username.
-        """
-        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b":admin123").decode('ascii'))])
-        self.assertStatus('401 Unauthorized')
-
-    def test_getapi_with_empty_password(self):
-        """
-        Check if 401 is return when authorization is not provided.
-        """
-        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:").decode('ascii'))])
-        self.assertStatus('401 Unauthorized')
-
-    def test_getapi_with_invalid_password(self):
-        """
-        Check if 401 is return when authorization is not provided.
-        """
-        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:invalid").decode('ascii'))])
-        self.assertStatus('401 Unauthorized')
-
-    def test_getapi_with_authorization(self):
-        """
-        Check if 200 is return when authorization is not provided.
-        """
-        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))])
-        self.assertStatus('200 OK')
-
-    def test_getapi_with_session(self):
-        """
-        Check if 200 is return when authorization is not provided.
-        """
-        b = {'login': 'admin', 'password': 'admin123'}
-        self.getPage('/login/', method='POST', body=b)
-        self.assertStatus('303 See Other')
+    def test_login_twice(self):
+        # Given an authenticated user
+        self.getPage('/login/', method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD})
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', self.baseurl + "/")
         self.getPage('/')
-        self.assertStatus('200 OK')
-        # Get api using the same session.
-        self.getPage('/api/')
-        self.assertStatus('200 OK')
+        self.assertStatus(200)
+        self.assertInBody(self.USERNAME)
+        # Given another user
+        UserObject.add_user('otheruser', password='password')
+        # When trying to re-authenticated with login page
+        self.getPage('/login/', method='POST', body={'login': 'otheruser', 'password': 'password'})
+        # Then user is still authenticated with previous user
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', self.baseurl + "/")
+        self.getPage('/')
+        self.assertStatus(200)
+        self.assertInBody(self.USERNAME)
 
 
 class LoginPageWithWelcomeMsgTest(rdiffweb.test.WebCase):
@@ -299,7 +232,7 @@ class LoginPageRateLimitWithSessionDirTest(rdiffweb.test.WebCase):
 class LogoutPageTest(rdiffweb.test.WebCase):
     def test_getpage_without_login(self):
         # Accessing logout page directly will redirect to "/".
-        self.getPage('/logout/')
+        self.getPage('/logout')
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/')
 
@@ -312,10 +245,10 @@ class LogoutPageTest(rdiffweb.test.WebCase):
         self.getPage("/prefs/general")
         self.assertStatus('200 OK')
         # Then logout
-        self.getPage('/logout/')
+        self.getPage('/logout')
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         # Get content of a page.
         self.getPage("/prefs/general")
         self.assertStatus('303 See Other')
-        self.assertHeaderItemValue('Location', self.baseurl + '/login/?redirect=%2Fprefs%2Fgeneral')
+        self.assertHeaderItemValue('Location', self.baseurl + '/login/')

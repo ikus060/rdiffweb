@@ -1,7 +1,7 @@
 <html>
   <head></head>
   <body>
-    {% trans username=user.username %}Hey {{ username }},{% endtrans %}
+    {% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}
     <p>{% trans %}You recently changed the email address associated with your {{ header_name }} account.{% endtrans %}</p>
     <p>
       {% trans %}If you did not make this change and believe your account has been compromised, please contact your administrator.{% endtrans %}

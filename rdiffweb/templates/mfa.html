@@ -1,0 +1,21 @@
+{% extends 'login.html' %}
+{% block content %}
+  <div class="container mb-auto">
+    <div class="row">
+      <div class="offset-sm-3 col-sm-6">
+        <form id="form-login" role="form" method="post" action="{{ url_for() }}">
+          <h2>{% trans %}Login Verification{% endtrans %}</h2>
+          {% include 'message.html' %}
+          <p>
+            {% trans %}Two-Factor Authentication is enabled for your account. To verify your account, you must enter the code that was sent to your email address.{% endtrans %}
+          </p>
+          {{ form }}
+        </form>
+        <a class="btn-link btn-sm btn-block text-center"
+           href="{{ url_for('logout')}}">
+          {% trans %}Login with a different account{% endtrans %}
+        </a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

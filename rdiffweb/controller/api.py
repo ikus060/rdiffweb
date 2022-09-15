@@ -28,6 +28,7 @@ import cherrypy
 
 from rdiffweb.controller import Controller
 from rdiffweb.core.librdiff import RdiffTime
+from rdiffweb.core.model import UserObject
 
 try:
     import simplejson as json
@@ -51,20 +52,26 @@ def json_handler(*args, **kwargs):
         yield chunk.encode('utf-8')
 
 
-@cherrypy.tools.json_out(handler=json_handler)
-@cherrypy.config(**{'error_page.default': False})
-@cherrypy.tools.auth_basic()
-@cherrypy.tools.auth_form(on=False)
-@cherrypy.tools.sessions(on=True)
-@cherrypy.tools.i18n(on=False)
-@cherrypy.tools.ratelimit(on=True)
-class ApiPage(Controller):
+def _checkpassword(realm, username, password):
     """
-    This class provide a restful API to access some of the rdiffweb resources.
+    Check basic authentication.
     """
+    # Validate username
+    userobj = UserObject.get_user(username)
+    if userobj is not None:
+        # Verify if the password matches a token.
+        if userobj.validate_access_token(password):
+            return True
+        # Disable password authentication for MFA
+        if userobj.mfa == UserObject.ENABLED_MFA:
+            return False
+    # Otherwise validate username password
+    return any(cherrypy.engine.publish('login', username, password))
 
+
+class ApiCurrentUser(Controller):
     @cherrypy.expose
-    def currentuser(self):
+    def default(self):
         u = self.app.currentuser
         u.refresh_repos()
         return {
@@ -85,6 +92,22 @@ class ApiPage(Controller):
                 for repo_obj in u.repo_objs
             ],
         }
+
+
+@cherrypy.tools.json_out(handler=json_handler)
+@cherrypy.config(**{'error_page.default': False})
+@cherrypy.tools.auth_basic(realm='rdiffweb', checkpassword=_checkpassword, priority=70)
+@cherrypy.tools.auth_form(on=False)
+@cherrypy.tools.auth_mfa(on=False)
+@cherrypy.tools.sessions(on=False)
+@cherrypy.tools.i18n(on=False)
+@cherrypy.tools.ratelimit()
+class ApiPage(Controller):
+    """
+    This class provide a restful API to access some of the rdiffweb resources.
+    """
+
+    currentuser = ApiCurrentUser()
 
     @cherrypy.expose
     def index(self):

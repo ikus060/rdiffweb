@@ -1,59 +1,29 @@
-{#
-Rdiffweb SSHKeys plugins
-
-Copyright (C) 2012-2021 rdiffweb contributors
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#}
 {% extends 'prefs.html' %}
 {% from 'include/panel.html' import panel %}
 {% set active_panelid='general' %}
 {% block panel %}
   {% include 'message.html' %}
-  <!-- Panel to set user info. -->
+  {# Panel to set user info. #}
   {% call panel(title=_("Account settings"), description=_("General information about your account.")) %}
     <div class="panel-body">
       <form action="#" method="post" role="form">
         {{ profile_form }}
-        <input type="hidden" name="action" value="set_profile_info" />
-        <div>
-          <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
-        </div>
       </form>
     </div>
   {% endcall %}
-  <!-- Panel to change password. -->
+  {# Panel to change password. #}
   {% call panel(title=_("Password"), description=_("Change your current password")) %}
     <div class="panel-body">
-      <form action="#" method="post" role="form" class="clearfix" data-validate>
+      <form action="#" method="post" role="form" class="clearfix">
         {{ password_form }}
-        <input type="hidden" name="action" value="set_password" />
-        <div>
-          <button type="submit" class="btn btn-success">{% trans %}Update password{% endtrans %}</button>
-        </div>
       </form>
     </div>
   {% endcall %}
-  <!-- Panel to refresh repository list. -->
+  {# Panel to refresh repository list. #}
   {% call panel(title=_("Refresh")) %}
     <div class="panel-body">
       <form action="#" method="post" role="form">
-        <input type="hidden" name="action" value="update_repos" />
-        <p class="form-text">
-          {% trans %}Refresh the list of repositories associated to your account. If you recently add a new repository and it doesn't show, you may try to refresh the list.{% endtrans %}
-        </p>
-        <button type="submit" class="btn btn-success">{% trans %}Refresh repositories{% endtrans %}</button>
+        {{ refresh_form }}
       </form>
     </div>
   {% endcall %}

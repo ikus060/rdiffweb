@@ -114,6 +114,7 @@ class Controller(object):
             parms.update(
                 {
                     'username': self.app.currentuser.username,
+                    'fullname': self.app.currentuser.fullname,
                     'is_admin': self.app.currentuser.is_admin,
                     'is_maintainer': self.app.currentuser.is_maintainer,
                 }

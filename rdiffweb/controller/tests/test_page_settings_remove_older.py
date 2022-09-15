@@ -35,18 +35,6 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
     def _remove_older(self, user, repo, value):
         self.getPage("/settings/" + user + "/" + repo + "/", method="POST", body={'keepdays': value})
 
-    def test_page_api_set_remove_older(self):
-        """
-        Check if /api/remove-older/ is still working.
-        """
-        self.getPage(
-            "/api/remove-older/" + self.USERNAME + "/" + self.REPO + "/", method="POST", body={'keepdays': '4'}
-        )
-        self.assertStatus(200)
-        # Check results
-        repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
-        self.assertEqual(4, repo.keepdays)
-
     def test_page_set_keepdays(self):
         self._remove_older(self.USERNAME, self.REPO, '1')
         self.assertStatus(200)

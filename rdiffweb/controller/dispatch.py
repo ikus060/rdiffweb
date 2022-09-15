@@ -22,11 +22,15 @@ Default page handler
 """
 
 
+import inspect
 import os
 
 import cherrypy
 from cherrypy.lib.static import mimetypes, serve_file
 
+import rdiffweb.tools.auth_form  # noqa
+import rdiffweb.tools.auth_mfa  # noqa
+import rdiffweb.tools.ratelimit  # noqa
 from rdiffweb.core.rdw_helpers import unquote_url
 
 
@@ -36,6 +40,52 @@ def empty():
         return None
 
     return handler
+
+
+def restapi():
+    """
+    A decorator for _cp_dispatch
+    (cherrypy.dispatch.Dispatcher.dispatch_method_name).
+
+    Will use the HTTP method to find the proper function to be called.
+
+    e.g.:
+    GET /api/users      -> list()
+    GET /api/users/3    -> get(3)
+    DELETE /api/users/3 -> delete(3)
+    POST /api/users     -> post(data)
+    POST /api/users/3   -> post(3, data)
+    PUT /api/users      -> post(data)
+    PUT /api/users/3    -> post(3, data)
+    """
+
+    @cherrypy.expose
+    def decorated(cls_or_self=None, *args, **kwargs):
+        if inspect.isclass(cls_or_self):
+            # cherrypy.restapi is a class decorator
+            cls = cls_or_self
+            setattr(cls, 'default', decorated)
+            return cls
+
+        # We're in the actual function
+        self = cls_or_self
+
+        # Handle GET without object identifier
+        method = cherrypy.request.method
+        if method == 'GET' and not args:
+            method = 'LIST'
+
+        # Lookup class for a matching node.
+        if getattr(self, method.lower(), False):
+            # Verify if the node is an exposed function.
+            node = getattr(self, method.lower(), False)
+            if hasattr(node, '__call__') and getattr(node, 'exposed', False):
+                return node(*args, **kwargs)
+
+        # Raise 405 Method not allowed if a function matching the method is not found.
+        raise cherrypy.HTTPError(405)
+
+    return decorated
 
 
 def poppath(*args, **kwargs):
@@ -121,6 +171,8 @@ def static(path):
 
     @cherrypy.expose
     @cherrypy.tools.auth_form(on=False)
+    @cherrypy.tools.auth_mfa(on=False)
+    @cherrypy.tools.ratelimit(on=False)
     @cherrypy.tools.sessions(on=False)
     def handler(*args, **kwargs):
         if cherrypy.request.method not in ('GET', 'HEAD'):

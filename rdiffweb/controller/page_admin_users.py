@@ -74,6 +74,19 @@ class UserForm(CherryForm):
         validators=[validators.optional()],
         description=_('To create an LDAP user, you must leave the password empty.'),
     )
+    mfa = SelectField(
+        _('Two-Factor Authentication (2FA)'),
+        coerce=int,
+        choices=[
+            (UserObject.DISABLED_MFA, _("Disabled")),
+            (UserObject.ENABLED_MFA, _("Enabled")),
+        ],
+        default=UserObject.DISABLED_MFA,
+        description=_(
+            "When Two-Factor Authentication (2FA) is enabled for a user, a verification code get sent by email when user login from a new location."
+        ),
+        render_kw={'data-beta': 1},
+    )
     user_root = StringField(
         _('Root directory'),
         description=_("Absolute path defining the location of the repositories for this user."),
@@ -120,6 +133,12 @@ class UserForm(CherryForm):
         if self.username.data == currentuser.username and self.role.data != currentuser.role:
             raise ValueError(_('Cannot edit your own role.'))
 
+    def validate_mfa(self, field):
+        # Don't allow the user to changes it's "mfa" state.
+        currentuser = cherrypy.request.currentuser
+        if self.username.data == currentuser.username and self.mfa.data != currentuser.mfa:
+            raise ValueError(_('Cannot change your own two-factor authentication settings.'))
+
     def populate_obj(self, userobj):
         # Save password if defined
         if self.password.data:
@@ -128,6 +147,10 @@ class UserForm(CherryForm):
         userobj.fullname = self.fullname.data or ''
         userobj.email = self.email.data or ''
         userobj.user_root = self.user_root.data
+        if self.mfa.data and not userobj.email:
+            flash(_("User email is required to enabled Two-Factor Authentication"), level='error')
+        else:
+            userobj.mfa = self.mfa.data
         if not userobj.valid_user_root():
             flash(_("User's root directory %s is not accessible!") % userobj.user_root, level='error')
             logger.warning("user's root directory %s is not accessible" % userobj.user_root)

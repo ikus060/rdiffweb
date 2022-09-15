@@ -1,0 +1,72 @@
+{% extends 'prefs.html' %}
+{% from 'include/panel.html' import panel %}
+{% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
+{% set active_panelid='tokens' %}
+{% block panel %}
+  <div class="d-flex  justify-content-between">
+    <h3>{% trans %}Access Token{% endtrans %}</h3>
+  </div>
+  <p>
+    {% trans %}You can use access tokens to authenticate to this application. They are the only accepted password when you have Two-Factor Authentication (2FA) enabled.{% endtrans %}
+  </p>
+  <hr/>
+  {# Panel to create tokens. #}
+  {% call panel(title=_("Create New Access Token"), description=_("You can generate a access token for each application you use that needs access to API.")) %}
+    {% include 'message.html' %}
+    <div class="panel-body">
+      <form action="#" method="post" role="form" class="clearfix">
+        {{ form }}
+      </form>
+    </div>
+  {% endcall %}
+  {# Panel to manage tokens. #}
+  {% call panel(title=_("Active access tokens"), description=_("Manage your existing access token.")) %}
+    <ul class="list-group">
+      {% for token in tokens %}
+        <li class="list-group-item">
+          <div class="pull-right">
+            {{ button_confirm(label=_('Revoke'), target="#delete-token-modal", action="delete_access_token", name=token.name) }}
+          </div>
+          <p class="list-group-item-heading">
+            <strong>{{ token.name }}</strong>
+          </p>
+          <p>
+            {% trans %}Created on{% endtrans %}
+            <strong>
+              <time class="js-datetime" datetime="{{ token.creation_time }}">{{ token.creation_time }}</time>
+            </strong>
+            <br/>
+            {% trans %}Last accessed{% endtrans %}
+            <strong>
+              {% if  token.access_time %}
+                <time class="js-datetime" datetime="{{ token.access_time }}">{{ token.access_time }}</time>
+              {% else %}
+                {% trans %}Never{% endtrans %}
+              {% endif %}
+            </strong>
+            <br/>
+            {% trans %}Expired on{% endtrans %}
+            <strong>
+              {% if  token.expiration_time %}
+                <time class="js-datetime" datetime="{{ token.expiration_time }}">{{ token.expiration_time }}</time>
+              {% else %}
+                {% trans %}Never{% endtrans %}
+              {% endif %}
+            </strong>
+          </p>
+        </li>
+      {% else %}
+        <li class="list-group-item text-center">
+          {% trans %}There are no access token associated with your account.{% endtrans %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endcall %}
+  <!-- Delete SSH Key Modal -->
+  {{ modal_confirm(
+  id='delete-token-modal',
+  title=_('Delete access token'),
+  message=_("Are you sure you want to revoke this access token? Any application that uses this access token to authenticate will stop working."),
+  fields=['action', 'name'],
+  submit=_('Revoke')) }}
+{% endblock %}

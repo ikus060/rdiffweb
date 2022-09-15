@@ -17,13 +17,12 @@
 import logging
 
 import cherrypy
-from wtforms.fields import PasswordField, StringField
-from wtforms.fields.simple import HiddenField
+from wtforms.fields import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import InputRequired
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
-from rdiffweb.core.config import Option
+from rdiffweb.tools.auth_form import LOGIN_PERSISTENT, SESSION_KEY
 from rdiffweb.tools.i18n import gettext_lazy as _
 
 # Define the logger
@@ -31,8 +30,11 @@ logger = logging.getLogger(__name__)
 
 
 class LoginForm(CherryForm):
+    # Sanitize the redirect URL to avoid Open Redirect
+    # redirect = HiddenField(default='/', filters=[lambda v: v if v.startswith('/') else '/'])
     login = StringField(
         _('Username'),
+        default=lambda: cherrypy.session.get(SESSION_KEY, None),
         validators=[InputRequired()],
         render_kw={
             "placeholder": _('Username'),
@@ -43,8 +45,14 @@ class LoginForm(CherryForm):
         },
     )
     password = PasswordField(_('Password'), validators=[InputRequired()], render_kw={"placeholder": _('Password')})
-    # Sanitize the redirect URL to avoid Open Redirect
-    redirect = HiddenField(default='/', filters=[lambda v: v if v.startswith('/') else '/'])
+    persistent = BooleanField(
+        _('Remember me'),
+        default=lambda: cherrypy.session.get(LOGIN_PERSISTENT, False),
+    )
+    submit = SubmitField(
+        _('Sign in'),
+        render_kw={"class": "btn-primary btn-lg btn-block"},
+    )
 
 
 class LoginPage(Controller):
@@ -52,45 +60,37 @@ class LoginPage(Controller):
     This page is used by the authentication to enter a user/pass.
     """
 
-    _welcome_msg = Option("welcome_msg")
-
     @cherrypy.expose()
-    @cherrypy.config(**{'tools.auth_form.on': False, 'tools.ratelimit.on': True})
+    @cherrypy.tools.auth_mfa(on=False)
+    @cherrypy.tools.ratelimit()
     def index(self, **kwargs):
+        """
+        Called by auth_form to generate the /login/ page.
+        """
         form = LoginForm()
-
-        # Redirect user to main page if already login.
-        if self.app.currentuser is not None:
-            raise cherrypy.HTTPRedirect(form.redirect.data or '/')
 
         # Validate user's credentials
         if form.validate_on_submit():
             try:
-                login = any(cherrypy.engine.publish('login', form.login.data, form.password.data))
+                results = cherrypy.engine.publish('login', form.login.data, form.password.data)
             except Exception:
-                logger.exception('fail to validate credential')
-                flash(_("Fail to validate user credential."))
+                logger.exception('fail to validate user [%s] credentials', form.login.data)
+                flash(_("Failed to validate user credentials."), level='error')
             else:
-                if login:
-                    raise cherrypy.HTTPRedirect(form.redirect.data or '/')
+                if len(results) > 0 and results[0]:
+                    cherrypy.tools.auth_form.login(username=results[0].username, persistent=form.persistent.data)
+                    cherrypy.tools.auth_form.redirect_to_original_url()
                 else:
                     flash(_("Invalid username or password."))
-
-        params = {'form': form}
-
+        params = {
+            'form': form,
+        }
         # Add welcome message to params. Try to load translated message.
-        if self._welcome_msg:
-            params["welcome_msg"] = self._welcome_msg.get('')
+        welcome_msg = self.app.cfg.welcome_msg
+        if welcome_msg:
+            params["welcome_msg"] = welcome_msg.get('')
             if hasattr(cherrypy.response, 'i18n'):
                 locale = cherrypy.response.i18n.locale.language
-                params["welcome_msg"] = self._welcome_msg.get(locale, params["welcome_msg"])
+                params["welcome_msg"] = welcome_msg.get(locale, params["welcome_msg"])
 
-        return self._compile_template("login.html", **params).encode("utf-8")
-
-
-class LogoutPage(Controller):
-    @cherrypy.expose
-    @cherrypy.config(**{'tools.auth_form.on': False})
-    def default(self):
-        cherrypy.session.clear()
-        raise cherrypy.HTTPRedirect('/')
+        return self._compile_template("login.html", **params)

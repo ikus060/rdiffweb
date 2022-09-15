@@ -21,6 +21,7 @@ Module to test `user` model.
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
+import datetime
 import os
 from io import StringIO, open
 from unittest.mock import MagicMock
@@ -30,11 +31,16 @@ import pkg_resources
 
 import rdiffweb.test
 from rdiffweb.core import authorizedkeys
-from rdiffweb.core.model import DuplicateSSHKeyError, RepoObject, UserObject
+from rdiffweb.core.model import DuplicateSSHKeyError, RepoObject, Token, UserObject
 from rdiffweb.core.passwd import check_password
 
 
 class UserObjectTest(rdiffweb.test.WebCase):
+
+    default_config = {
+        'email-send-changed-notification': True,
+    }
+
     def _read_ssh_key(self):
         """Readthe pub key from test packages"""
         filename = pkg_resources.resource_filename('rdiffweb.core.tests', 'test_publickey_ssh_rsa.pub')
@@ -50,6 +56,8 @@ class UserObjectTest(rdiffweb.test.WebCase):
     def setUp(self):
         super().setUp()
         self.listener = MagicMock()
+        cherrypy.engine.subscribe('access_token_added', self.listener.access_token_added, priority=50)
+        cherrypy.engine.subscribe('queue_mail', self.listener.queue_mail, priority=50)
         cherrypy.engine.subscribe('user_added', self.listener.user_added, priority=50)
         cherrypy.engine.subscribe('user_attr_changed', self.listener.user_attr_changed, priority=50)
         cherrypy.engine.subscribe('user_deleted', self.listener.user_deleted, priority=50)
@@ -57,6 +65,8 @@ class UserObjectTest(rdiffweb.test.WebCase):
         cherrypy.engine.subscribe('user_password_changed', self.listener.user_password_changed, priority=50)
 
     def tearDown(self):
+        cherrypy.engine.unsubscribe('access_token_added', self.listener.access_token_added)
+        cherrypy.engine.unsubscribe('queue_mail', self.listener.queue_mail)
         cherrypy.engine.unsubscribe('user_added', self.listener.user_added)
         cherrypy.engine.unsubscribe('user_attr_changed', self.listener.user_attr_changed)
         cherrypy.engine.unsubscribe('user_deleted', self.listener.user_deleted)
@@ -378,6 +388,98 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Then the list invlaid the invalid repo and new repos
         userobj.expire()
         self.assertEqual([''], sorted([r.name for r in userobj.repo_objs]))
+
+    def test_add_access_token(self):
+        # Given a user with an email
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.email = 'test@examples.com'
+        userobj.add()
+        # When adding a new token
+        token = userobj.add_access_token('test')
+        # Then a new token get created
+        self.assertTrue(token)
+        tokenobj = Token.query.filter(Token.userid == userobj.userid).first()
+        self.assertTrue(tokenobj)
+        self.assertEqual(None, tokenobj.expiration_time)
+        self.assertEqual(None, tokenobj.access_time)
+        # Then an email is sent to the user.
+        self.listener.access_token_added.assert_called_once_with(userobj, 'test')
+        self.listener.queue_mail.assert_called_once()
+
+    def test_add_access_token_duplicate_name(self):
+        # Given a user with an existing token
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.add_access_token('test')
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        # When adding a new token with the same name
+        with self.assertRaises(ValueError):
+            userobj.add_access_token('test')
+        # Then token is not created
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        # Then an email is not sent.
+        self.listener.access_token_added.assert_called_once_with(userobj, 'test')
+
+    def test_delete_access_token(self):
+        # Given a user with an existing token
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.add_access_token('test')
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        # When deleting an access token
+        userobj.delete_access_token('test')
+        # Then Token get deleted
+        self.assertEqual(0, Token.query.filter(Token.userid == userobj.userid).count())
+
+    def test_delete_access_token_invalid(self):
+        # Given a user with an existing token
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.add_access_token('test')
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        # When deleting an invalid access token
+        with self.assertRaises(ValueError):
+            userobj.delete_access_token('invalid')
+        # Then Token not deleted
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+
+    def test_delete_user_remove_access_tokens(self):
+        # Given a user with an existing token
+        userobj = UserObject.add_user('testuser', 'password')
+        userobj.add_access_token('test')
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        # When deleting the user
+        userobj.delete()
+        # Then Token get deleted
+        self.assertEqual(0, Token.query.filter(Token.userid == userobj.userid).count())
+
+    def test_verify_access_token(self):
+        # Given a user with an existing token
+        userobj = UserObject.get_user(self.USERNAME)
+        token = userobj.add_access_token('test')
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        # When validating the token
+        # Then token is valid
+        self.assertTrue(userobj.validate_access_token(token))
+
+    def test_verify_access_token_with_expired(self):
+        # Given a user with an existing token
+        userobj = UserObject.get_user(self.USERNAME)
+        token = userobj.add_access_token(
+            'test', expiration_time=datetime.datetime.now() - datetime.timedelta(seconds=1)
+        )
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        # When validating the token
+        # Then token is invalid
+        self.assertFalse(userobj.validate_access_token(token))
+        # Then token get removed
+        self.assertEqual(0, Token.query.filter(Token.userid == userobj.userid).count())
+
+    def test_verify_access_token_with_invalid(self):
+        # Given a user with an existing token
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.add_access_token('test', expiration_time=datetime.datetime.now())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        # When validating the token
+        # Then token is invalid
+        self.assertFalse(userobj.validate_access_token('invalid'))
 
 
 class UserObjectWithAdminPassword(rdiffweb.test.WebCase):
