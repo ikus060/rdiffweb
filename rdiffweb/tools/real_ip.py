@@ -14,25 +14,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import datetime
 
 import cherrypy
 
 
-def enrich_session():
+def real_ip(remote='X-Real-IP'):
     """
-    Store ephemeral information into user's session. e.g.: last IP address, user-agent
+    Update the `remote.ip` from the `X-Real-IP` field.
     """
-    # When session is not enable, simply validate credentials
-    sessions_on = cherrypy.request.config.get('tools.sessions.on', False)
-    if not sessions_on:
-        return
-    # Get information related to the current request
+
     request = cherrypy.serving.request
-    ip_address = request.remote.ip
-    cherrypy.session['ip_address'] = ip_address
-    cherrypy.session['user_agent'] = request.headers.get('User-Agent', None)
-    cherrypy.session['access_time'] = datetime.datetime.now()
+
+    value = request.headers.get(remote)
+    if value:
+        request.remote.ip = value
 
 
-cherrypy.tools.enrich_session = cherrypy.Tool('before_handler', enrich_session, priority=60)
+cherrypy.tools.real_ip = cherrypy.Tool('before_request_body', real_ip, priority=31)

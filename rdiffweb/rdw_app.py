@@ -41,6 +41,7 @@ import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
 import rdiffweb.tools.proxy
 import rdiffweb.tools.ratelimit
+import rdiffweb.tools.real_ip
 import rdiffweb.tools.secure_headers
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
@@ -86,8 +87,9 @@ cherrypy.config.environments['development'] = {
 @cherrypy.tools.currentuser(userobj=lambda username: UserObject.get_user(username))
 @cherrypy.tools.db()
 @cherrypy.tools.enrich_session()
-@cherrypy.tools.proxy()
+@cherrypy.tools.proxy(remote=None)
 @cherrypy.tools.secure_headers()
+@cherrypy.tools.real_ip()
 class Root(LocationsPage):
     def __init__(self):
         self.login = LoginPage()

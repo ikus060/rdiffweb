@@ -46,9 +46,6 @@ def _setup_logging(log_file, log_access_file, level):
             request = cherrypy.serving.request
             remote = request.remote
             record.ip = remote.name or remote.ip
-            # If the request was forwarded by a reverse proxy
-            if 'X-Forwarded-For' in request.headers:
-                record.ip = request.headers['X-Forwarded-For']
         return True
 
     def add_username(record):
