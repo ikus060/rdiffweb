@@ -277,6 +277,36 @@ class LoginPageRateLimitWithSessionDirTest(rdiffweb.test.WebCase):
         self.assertStatus(429)
 
 
+class LoginPageRateLimitTestWithXForwardedFor(rdiffweb.test.WebCase):
+
+    default_config = {
+        'rate-limit': 5,
+    }
+
+    def test_login_ratelimit(self):
+        # Given an unauthenticate
+        # When requesting multple time the login page
+        for i in range(0, 6):
+            self.getPage('/login/', headers=[('X-Forwarded-For', '127.0.0.%s' % i)])
+        # Then a 429 error (too many request) is return
+        self.assertStatus(429)
+
+
+class LoginPageRateLimitTestWithXRealIP(rdiffweb.test.WebCase):
+
+    default_config = {
+        'rate-limit': 5,
+    }
+
+    def test_login_ratelimit(self):
+        # Given an unauthenticate
+        # When requesting multple time the login page
+        for i in range(0, 6):
+            self.getPage('/login/', headers=[('X-Real-IP', '127.0.0.%s' % i)])
+        # Then a 200 is return.
+        self.assertStatus(200)
+
+
 class LogoutPageTest(rdiffweb.test.WebCase):
     def test_getpage_without_login(self):
         # Accessing logout page directly will redirect to "/".

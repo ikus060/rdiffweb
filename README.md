@@ -107,6 +107,12 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## 2.4.4 (2002-09-15)
+
+This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
+
+* Use `X-Real-IP` to identify client IP address to mitigate Brute-Force attack #213
+
 ## 2.4.3 (2022-09-14)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
@@ -237,7 +243,7 @@ Maintenance release to fix minor issues
  * Fix to retrieve user quota only for valid user_root #135
  * Add option `disable-ssh-keys` to disable SSH Key management
  * Use absolute URL everywhere
- * Add support for `X-Forward-For`, `X-Forward-proto` and other reverse proxy header when generating absolute URL
+ * Add support for `X-Forwarded-For`, `X-Forwarded-proto` and other reverse proxy header when generating absolute URL
  * Drop Debian Stretch support
  * Implement a new background scheduler using apscheduler #82
  * Use background job to send email notification to avoid blocking web page loading #47
