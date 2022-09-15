@@ -28,7 +28,7 @@ file in `/etc/apache2/sites-available/rdiffweb`.
         ServerName rdiffweb.mydomain.com
         ProxyPass / http://localhost:8080/ retry=5
         ProxyPassReverse / http://localhost:8080/
-        RemoteIPHeader X-Real-IP
+        RequestHeader set X-Real-IP %{REMOTE_ADDR}s
     </VirtualHost>
 
 **SSL configuration**
@@ -54,7 +54,7 @@ Here is an example with SSL configuration.
         ProxyPass / http://localhost:8080/ retry=5
         ProxyPassReverse / http://localhost:8080/
         RequestHeader set X-Forwarded-Proto https
-        RemoteIPHeader X-Real-IP
+        RequestHeader set X-Real-IP %{REMOTE_ADDR}s
 
         # SSL Configuration
         SSLEngine on
