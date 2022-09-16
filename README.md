@@ -107,6 +107,12 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## 2.4.5 (2002-09-16)
+
+This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
+
+* Mitigate CSRF on repository deletion and user deletion [CVE-2022-3232](https://nvd.nist.gov/vuln/detail/CVE-2022-3232) #214 #215
+
 ## 2.4.4 (2002-09-15)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
@@ -117,7 +123,7 @@ This releases include a security fix. If you are using an earlier version, you s
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
-* Mitigate CSRF in profile's SSH Keys #212
+* Mitigate CSRF in profile's SSH Keys [CVE-2022-3221](https://nvd.nist.gov/vuln/detail/CVE-2022-3221) #212
 
 ## 2.4.2 (2022-09-12)
 

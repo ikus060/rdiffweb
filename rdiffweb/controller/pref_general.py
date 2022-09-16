@@ -54,15 +54,13 @@ class UserPasswordForm(CherryForm):
         _('Confirm new password'), validators=[InputRequired(_("Confirmation password is missing."))]
     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.new.validators += [
-            Length(
-                min=self.app.cfg.password_min_length,
-                max=self.app.cfg.password_max_length,
-                message=_('Password must have between %(min)d and %(max)d characters.'),
-            )
-        ]
+    def validate_new(self, field):
+        validator = Length(
+            min=self.app.cfg.password_min_length,
+            max=self.app.cfg.password_max_length,
+            message=_('Password must have between %(min)d and %(max)d characters.'),
+        )
+        validator(self, field)
 
     @property
     def app(self):

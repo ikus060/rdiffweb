@@ -190,15 +190,13 @@ class UserForm(CherryForm):
         _('Quota Used'), validators=[validators.optional()], description=_("Disk spaces (in bytes) used by this user.")
     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.password.validators += [
-            validators.length(
-                min=self.app.cfg.password_min_length,
-                max=self.app.cfg.password_max_length,
-                message=_('Password must have between %(min)d and %(max)d characters.'),
-            )
-        ]
+    def validate_password(self, field):
+        validator = validators.length(
+            min=self.app.cfg.password_min_length,
+            max=self.app.cfg.password_max_length,
+            message=_('Password must have between %(min)d and %(max)d characters.'),
+        )
+        validator(self, field)
 
     @property
     def app(self):
@@ -340,7 +338,9 @@ class AdminPage(Controller):
             else:
                 flash(_("Cannot edit user `%s`: user doesn't exists") % username, level='error')
         elif action == 'delete':
-            self._delete_user(action, DeleteUserForm())
+            form = DeleteUserForm()
+            if form.validate_on_submit():
+                self._delete_user(action, form)
 
         params = {
             "add_form": UserForm(formdata=None),
