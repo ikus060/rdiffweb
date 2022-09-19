@@ -278,6 +278,16 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody("can&#39;t delete admin user")
 
+    def test_delete_user_method_get(self):
+        # Given a user
+        UserObject.add_user('newuser')
+        # When trying to delete this user using method GET
+        self.getPage("/admin/users/?action=delete&username=newuser", method='GET')
+        # Then page return without error
+        self.assertStatus(200)
+        # Then user is not deleted
+        self.assertIsNotNone(UserObject.get_user('newuser'))
+
     def test_change_password_with_too_short(self):
         self._edit_user(self.USERNAME, password='short')
         self.assertInBody("Password must have between 8 and 128 characters.")

@@ -233,7 +233,9 @@ class AdminUsersPage(Controller):
             else:
                 flash(_("Cannot edit user `%s`: user doesn't exists") % username, level='error')
         elif action == 'delete':
-            self._delete_user(action, DeleteUserForm())
+            form = DeleteUserForm()
+            if form.validate_on_submit():
+                self._delete_user(action, form)
 
         params = {
             "add_form": UserForm(formdata=None),

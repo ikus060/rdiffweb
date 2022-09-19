@@ -22,10 +22,11 @@ Created on Apr. 5, 2021
 # Define the logger
 
 import logging
+import os
 
 import cherrypy
-from wtforms import validators
 from wtforms.fields.core import StringField
+from wtforms.validators import DataRequired, ValidationError
 
 from rdiffweb.controller import Controller
 from rdiffweb.controller.dispatch import poppath
@@ -33,14 +34,18 @@ from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
+from rdiffweb.core.rdw_templating import url_for
 from rdiffweb.tools.i18n import gettext_lazy as _
 
 _logger = logging.getLogger(__name__)
 
 
 class DeleteRepoForm(CherryForm):
-    confirm = StringField(_('Confirmation'), validators=[validators.data_required()])
-    redirect = StringField(default='/')
+    confirm = StringField(_('Confirmation'), validators=[DataRequired()])
+
+    def validate_confirm(self, field):
+        if self.confirm.data != self.expected_confirm:
+            raise ValidationError(_('Invalid value, must be: %s') % self.expected_confirm)
 
 
 @poppath()
@@ -62,20 +67,18 @@ class DeletePage(Controller):
 
         # validate form
         form = DeleteRepoForm()
-        if not form.validate():
-            raise cherrypy.HTTPError(400, form.error_message)
 
-        # Validate the name
-        if form.confirm.data != path_obj.display_name:
-            _logger.info("do not delete repo, bad confirmation %r != %r", form.confirm.data, path_obj.display_name)
-            raise cherrypy.HTTPError(400, 'bad confirmation')
-
-        # Delete repository in background using a schedule task.
-        repo.expire()
-        scheduled = cherrypy.engine.publish('schedule_task', self.delete_repo_path, repo.repoid, path)
-        assert scheduled
-        raise cherrypy.HTTPRedirect(form.redirect.data)
-
-    def delete_repo_path(self, repoid, path):
-        repo = RepoObject.query.filter(RepoObject.repoid == repoid).first()
-        repo.delete(path)
+        form.expected_confirm = path_obj.display_name
+        if form.is_submitted():
+            if form.validate():
+                cherrypy.engine.publish('schedule_task', repo.delete, path)
+                # Redirect to parent folder or to root if repo get deleted
+                if path_obj.isroot:
+                    raise cherrypy.HTTPRedirect(url_for('/'))
+                else:
+                    parent_path = repo.fstat(os.path.dirname(path_obj.path))
+                    raise cherrypy.HTTPRedirect(url_for('browse', repo, parent_path))
+            else:
+                raise cherrypy.HTTPError(400, form.error_message)
+        else:
+            raise cherrypy.HTTPError(405)
