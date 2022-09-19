@@ -3,35 +3,22 @@
 {% from 'include/widget.html' import maxage_dropdown %}
 {% set active_panelid='notification' %}
 {% block panel %}
-  {% include 'message.html' %}
-  <!-- Panel to set notification info -->
-  {% call panel(title=_("Notification settings")) %}
-    <div class="panel-body">
-      <form action="#" method="post" role="form">
-        <div class="form-group">
-          <label for="email">{% trans %}Notification sent to{% endtrans %}</label>
-          <div>
-            <input class="form-control"
-                   type="text"
-                   id="email"
-                   readonly="readonly"
-                   value="{{ email }}"/>
-          </div>
-        </div>
-        <div class="mb-4 font-weight-bold">{% trans %}Send notification for the following repositories:{% endtrans %}</div>
-        {% for repo in repos %}
-          <div class="row mb-2">
-            <div class="col">
-              <label for="{{ repo.name }}">{{ repo.name }}</label>
-            </div>
-            <div class="col">{{ maxage_dropdown(class="form-control", id=repo.name, name=repo.name, value=repo.maxage) }}</div>
-          </div>
-        {% endfor %}
-        <input type="hidden" name="action" value="set_notification_info" />
-        <div>
-          <button type="submit" class="btn btn-success">{% trans %}Save changes{% endtrans %}</button>
-        </div>
-      </form>
+  <h3>{% trans %}Notification settings{% endtrans %}</h3>
+  <div class="form-group">
+    <label for="email">{% trans %}Notification sent to{% endtrans %}</label>
+    <div>
+      <input class="form-control"
+             type="text"
+             id="email"
+             readonly="readonly"
+             value="{{ email }}"/>
     </div>
-  {% endcall %}
+  </div>
+  {% include 'message.html' %}
+  <div class="form-horizontal">
+    <p>{% trans %}Send notification for the following repositories:{% endtrans %}</p>
+    <form action="#" method="post" role="form">
+      {{ form }}
+    </form>
+  </div>
 {% endblock %}
