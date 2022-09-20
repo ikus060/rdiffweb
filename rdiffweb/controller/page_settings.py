@@ -37,12 +37,13 @@ class SettingsPage(Controller):
     )
     def default(self, path=b"", action=None, **kwargs):
         repo_obj = RepoObject.get_repo(path)
-        if kwargs.get('keepdays'):
-            return self._remove_older(repo_obj, **kwargs)
-        elif kwargs.get('new_encoding'):
-            return self._set_encoding(repo_obj, **kwargs)
-        elif kwargs.get('maxage'):
-            return self._set_maxage(repo_obj, **kwargs)
+        if cherrypy.request.method == 'POST':
+            if kwargs.get('keepdays'):
+                return self._remove_older(repo_obj, **kwargs)
+            elif kwargs.get('new_encoding'):
+                return self._set_encoding(repo_obj, **kwargs)
+            elif kwargs.get('maxage'):
+                return self._set_maxage(repo_obj, **kwargs)
         # Get page data.
         params = {
             'repo': repo_obj,
