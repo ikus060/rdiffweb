@@ -112,6 +112,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
 * Support MarkupSafe<3 for Debian bookworm
+* Mitigate CSRF on user's notification settings #216 [CVE-2022-3233](https://nvd.nist.gov/vuln/detail/CVE-2022-3233)
 
 ## 2.4.5 (2002-09-16)
 

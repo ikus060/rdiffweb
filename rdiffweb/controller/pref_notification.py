@@ -21,6 +21,8 @@ User can control the notification period.
 
 import logging
 
+import cherrypy
+
 from rdiffweb.controller import Controller, validate_int
 from rdiffweb.tools.i18n import ugettext as _
 
@@ -45,7 +47,7 @@ class NotificationPref(Controller):
 
     def render_prefs_panel(self, panelid, action=None, **kwargs):  # @UnusedVariable
         # Process the parameters.
-        if action == "set_notification_info":
+        if cherrypy.request.method == 'POST' and action == "set_notification_info":
             self._handle_set_notification_info(**kwargs)
 
         params = {
