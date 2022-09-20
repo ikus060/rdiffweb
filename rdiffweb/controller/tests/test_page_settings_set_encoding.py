@@ -113,3 +113,13 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         # Browse admin's repos
         self._set_encoding('anotheruser', 'testcases', 'utf-8')
         self.assertStatus('403 Forbidden')
+
+    def test_set_encoding_method_get(self):
+        # When trying to update encoding with method GET
+        self.getPage("/settings/admin/testcases/?new_encoding=cp1252")
+        # Then page return without error
+        self.assertStatus(200)
+        # Then database is not updated
+        user = self.app.store.get_user(self.USERNAME)
+        repo = user.get_repo(self.REPO)
+        self.assertEqual('utf-8', repo.encoding)

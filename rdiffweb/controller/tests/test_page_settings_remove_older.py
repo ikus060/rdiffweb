@@ -77,3 +77,13 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         # Browse admin's repos
         self._remove_older('anotheruser', 'testcases', '2')
         self.assertStatus('403 Forbidden')
+
+    def test_set_keepdays_method_get(self):
+        # When trying update keepdays with method GET
+        self.getPage("/settings/" + self.USERNAME + "/" + self.REPO + "/?keepdays=4")
+        # Then pge return without error
+        self.assertStatus(200)
+        # Then database is not updated
+        user = self.app.store.get_user(self.USERNAME)
+        repo = user.get_repo(self.REPO)
+        self.assertEqual(-1, repo.keepdays)

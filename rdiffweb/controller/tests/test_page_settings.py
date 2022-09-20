@@ -59,6 +59,15 @@ class SettingsTest(rdiffweb.test.WebCase):
         repo_obj = self.app.store.get_user('admin').get_repo(self.REPO)
         self.assertEqual(4, repo_obj.maxage)
 
+    def test_set_maxage_method_get(self):
+        # When trying to update maxage with GET method
+        self.getPage("/settings/" + self.USERNAME + "/" + self.REPO + "/?maxage=4")
+        # Then page return without error
+        self.assertStatus(200)
+        # Then database is not updated
+        repo_obj = self.app.store.get_user('admin').get_repo(self.REPO)
+        self.assertEqual(0, repo_obj.maxage)
+
     def test_does_not_exists(self):
         # Given an invalid repo
         repo = 'invalid'
