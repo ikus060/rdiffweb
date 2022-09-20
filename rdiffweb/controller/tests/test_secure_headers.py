@@ -19,6 +19,8 @@ Created on Oct 20, 2021
 
 @author: Patrik Dufresne
 """
+from parameterized import parameterized
+
 import rdiffweb.test
 
 
@@ -46,6 +48,24 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
         # Given an https request made to rdiffweb
         self.getPage('/', headers=[('X-Forwarded-Proto', 'https')])
         # When receiving the response
+        self.assertStatus(200)
+        # Then the header contains Set-Cookie with Secure
+        cookie = self.assertHeader('Set-Cookie')
+        self.assertIn('Secure', cookie)
+
+    @parameterized.expand(
+        [
+            ('/invalid', 404),
+            ('/browse/invalid', 404),
+            ('/login', 301),
+            ('/logout', 303),
+        ]
+    )
+    def test_cookie_with_https_http_error(self, url, expected_error_code):
+        # Given an https request made to rdiffweb
+        self.getPage(url, headers=[('X-Forwarded-Proto', 'https')])
+        # When receiving the response
+        self.assertStatus(expected_error_code)
         # Then the header contains Set-Cookie with Secure
         cookie = self.assertHeader('Set-Cookie')
         self.assertIn('Secure', cookie)

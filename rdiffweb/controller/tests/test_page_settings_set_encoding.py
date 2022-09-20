@@ -114,6 +114,6 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         # Then page return without error
         self.assertStatus(200)
         # Then database is not updated
-        user = self.app.store.get_user(self.USERNAME)
-        repo = user.get_repo(self.REPO)
+        user_obj = UserObject.get_user(self.USERNAME)
+        repo = RepoObject.query.filter(RepoObject.user == user_obj, RepoObject.repopath == self.REPO).first()
         self.assertEqual('utf-8', repo.encoding)

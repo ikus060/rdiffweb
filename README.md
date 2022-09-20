@@ -143,6 +143,7 @@ This releases include a security fix. If you are using an earlier version, you s
 * Support MarkupSafe<3 for Debian bookworm
 * Mitigate CSRF on user's notification settings #216 [CVE-2022-3233](https://nvd.nist.gov/vuln/detail/CVE-2022-3233)
 * Mitigate CSRF on repository settings #217
+* Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session on HTTP Error #218 [CVE-2022-3174](https://nvd.nist.gov/vuln/detail/CVE-2022-3174)
 
 ## 2.4.5 (2002-09-16)
 

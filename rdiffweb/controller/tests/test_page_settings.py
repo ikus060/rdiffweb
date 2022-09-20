@@ -66,7 +66,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         # Then page return without error
         self.assertStatus(200)
         # Then database is not updated
-        repo_obj = self.app.store.get_user('admin').get_repo(self.REPO)
+        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         self.assertEqual(0, repo_obj.maxage)
 
     def test_does_not_exists(self):

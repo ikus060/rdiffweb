@@ -19,7 +19,6 @@ import http.cookies
 import logging
 
 import cherrypy
-from cherrypy._cptools import HandlerTool
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -32,7 +31,7 @@ if not http.cookies.Morsel().isReservedKey("samesite"):
     http.cookies.Morsel._reserved['samesite'] = 'SameSite'
 
 
-class SecureHeaders(HandlerTool):
+def set_headers():
     """
     This tool provide CSRF mitigation.
 
@@ -45,39 +44,27 @@ class SecureHeaders(HandlerTool):
     https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
     https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html
     """
+    if cherrypy.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
+        # Check if Origin matches our target.
+        origin = cherrypy.request.headers.get('Origin', None)
+        if origin and not origin.startswith(cherrypy.request.base):
+            raise cherrypy.HTTPError(403, 'Unexpected Origin header')
 
-    def __init__(self):
-        HandlerTool.__init__(self, self.run, name='secure_headers')
-        # Make sure to run before authform (priority 71)
-        self._priority = 71
+    response = cherrypy.serving.response
+    # Define X-Frame-Options to avoid Clickjacking
+    response.headers['X-Frame-Options'] = 'DENY'
 
-    def _setup(self):
-        cherrypy.request.hooks.attach('before_finalize', self._set_headers)
-        return super()._setup()
-
-    def _set_headers(self):
-        response = cherrypy.serving.response
-        # Define X-Frame-Options to avoid Clickjacking
-        response.headers['X-Frame-Options'] = 'DENY'
-
-        # Enforce security on cookies
-        cookie = response.cookie.get('session_id', None)
-        if cookie:
-            # Awaiting bug fix in cherrypy
-            # https://github.com/cherrypy/cherrypy/issues/1767
-            # Force SameSite to Lax
-            cookie['samesite'] = 'Lax'
-            # Check if https is enabled
-            https = cherrypy.request.base.startswith('https')
-            if https:
-                cookie['secure'] = 1
-
-    def run(self):
-        if cherrypy.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
-            # Check if Origin matches our target.
-            origin = cherrypy.request.headers.get('Origin', None)
-            if origin and not origin.startswith(cherrypy.request.base):
-                raise cherrypy.HTTPError(403, 'Unexpected Origin header')
+    # Enforce security on cookies
+    cookie = response.cookie.get('session_id', None)
+    if cookie:
+        # Awaiting bug fix in cherrypy
+        # https://github.com/cherrypy/cherrypy/issues/1767
+        # Force SameSite to Lax
+        cookie['samesite'] = 'Lax'
+        # Check if https is enabled
+        https = cherrypy.request.base.startswith('https')
+        if https:
+            cookie['secure'] = 1
 
 
-cherrypy.tools.secure_headers = SecureHeaders()
+cherrypy.tools.secure_headers = cherrypy.Tool('before_request_body', set_headers, priority=71)
