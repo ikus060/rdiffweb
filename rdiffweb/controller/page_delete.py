@@ -71,6 +71,7 @@ class DeletePage(Controller):
         form.expected_confirm = path_obj.display_name
         if form.is_submitted():
             if form.validate():
+                RepoObject.session.expunge(repo)
                 cherrypy.engine.publish('schedule_task', repo.delete, path)
                 # Redirect to parent folder or to root if repo get deleted
                 if path_obj.isroot:
