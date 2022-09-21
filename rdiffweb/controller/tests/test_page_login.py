@@ -43,8 +43,16 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.assertIsNone(session.get(SESSION_KEY))
 
     def test_login_success(self):
+        # Given an anonymous user
+        self.getPage('/')
+        prev_session_id = self.session_id
+        # Then user is redirected to /login page
+        self.assertStatus('303 See Other')
+        self.assertHeaderItemValue('Location', self.baseurl + '/login/')
         # When authenticating with valid credentials.
         self.getPage('/login/', method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD})
+        # Then a new session_id is generated
+        self.assertNotEqual(prev_session_id, self.session_id)
         # Then user is redirected
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/')
@@ -261,21 +269,32 @@ class LoginPageRateLimitTestWithXRealIP(rdiffweb.test.WebCase):
 
 class LogoutPageTest(rdiffweb.test.WebCase):
     def test_getpage_without_login(self):
-        # Accessing logout page directly will redirect to "/".
+        # Given an unauthenticated user
+        # When Accessing logout page directly
         self.getPage('/logout')
+        # Then user is redirect to root '/'
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/')
 
     def test_getpage_with_login(self):
+        # Given an anonymous user
+        self.getPage('/')
+        prev_session_id = self.session_id
         # Login
         b = {'login': 'admin', 'password': 'admin123'}
         self.getPage('/login/', method='POST', body=b)
         self.assertStatus('303 See Other')
+        # Then a new session id is generated
+        self.assertNotEqual(prev_session_id, self.session_id)
+        prev_session_id = self.session_id
         # Get content of a page.
         self.getPage("/prefs/general")
         self.assertStatus('200 OK')
-        # Then logout
+        # When logout
         self.getPage('/logout')
+        # Then a new session id is generated
+        self.assertNotEqual(prev_session_id, self.session_id)
+        # Then user is redirected to root page
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         # Get content of a page.

@@ -72,7 +72,7 @@ class LoginPage(Controller):
         # Validate user's credentials
         if form.validate_on_submit():
             try:
-                results = cherrypy.engine.publish('login', form.login.data, form.password.data)
+                results = [r for r in cherrypy.engine.publish('login', form.login.data, form.password.data) if r]
             except Exception:
                 logger.exception('fail to validate user [%s] credentials', form.login.data)
                 flash(_("Failed to validate user credentials."), level='error')

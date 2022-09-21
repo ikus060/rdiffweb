@@ -129,6 +129,7 @@ This next release focus on two-factor-authentication as a measure to increase se
 * Handle migration of older Rdiffweb database by adding the missing `repos.Encoding`, `repos.keepdays` and `users.role` columns #185
 * Replace deprecated references of `disutils.spawn.find_executable()` by `shutil.which()` #208
 * Add two-factor authentication with email verification #201
+* Generate a new session on login and 2FA #220
 
 Breaking changes:
 

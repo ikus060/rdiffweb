@@ -193,6 +193,7 @@ class CheckAuthMfa(cherrypy.Tool):
         session[MFA_TRUSTED_IP_LIST] = session.get(MFA_TRUSTED_IP_LIST, []) + [cherrypy.serving.request.remote.ip]
         session[MFA_CODE] = None
         session[MFA_CODE_TIME] = None
+        session.regenerate()
         return True
 
 

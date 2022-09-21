@@ -135,10 +135,13 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.assertInBody("A new verification code has been sent to your email.")
 
     def test_verify_code_valid(self):
+        prev_session_id = self.session_id
         # Given an authenticated user With MFA enabled
         code = self._get_code()
         # When sending a valid verification code
         self.getPage("/mfa/", method='POST', body={'code': code, 'submit': '1'})
+        # Then a new session_id is generated
+        self.assertNotEqual(prev_session_id, self.session_id)
         # Then user is redirected to root page
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
@@ -206,12 +209,14 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.assertHeaderItemValue('Location', self.baseurl + '/prefs/general')
 
     def test_login_persistent(self):
+        prev_session_id = self.session_id
         # Given a user authenticated with MFA with "login_persistent"
         code = self._get_code()
         self.getPage("/mfa/", method='POST', body={'code': code, 'submit': '1', 'persistent': '1'})
         self.assertStatus(303)
         self.getPage("/")
         self.assertStatus(200)
+        self.assertNotEqual(prev_session_id, self.session_id)
         session = DbSession(id=self.session_id)
         session.load()
         self.assertTrue(session['login_persistent'])
@@ -226,8 +231,10 @@ class MfaPageTest(rdiffweb.test.WebCase):
         # Then user is redirected to /login/ page (by auth_form)
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/login/')
+        prev_session_id = self.session_id
         # When user enter valid username password
         self.getPage("/login/", method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD})
+        self.assertNotEqual(prev_session_id, self.session_id)
         # Then user is redirected to original url
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/prefs/general')
