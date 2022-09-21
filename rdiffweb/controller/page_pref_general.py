@@ -126,7 +126,7 @@ class PagePrefsGeneral(Controller):
     """
 
     @cherrypy.expose
-    def default(self, action=None, **kwargs):
+    def default(self, **kwargs):
         # Process the parameters.
         profile_form = UserProfileForm(obj=self.app.currentuser)
         password_form = UserPasswordForm()
@@ -147,9 +147,6 @@ class PagePrefsGeneral(Controller):
                 refresh_form.populate_obj(self.app.currentuser)
             else:
                 flash(refresh_form.error_message, level='error')
-        elif action is not None:
-            _logger.warning("unknown action: %s", action)
-            raise cherrypy.NotFound("Unknown action")
         params = {
             'profile_form': profile_form,
             'password_form': password_form,

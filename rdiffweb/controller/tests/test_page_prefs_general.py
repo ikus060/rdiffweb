@@ -99,6 +99,16 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
         self.assertEqual("My Fullname", user.fullname)
 
+    def test_change_fullname_method_get(self):
+        # Given an authenticated user
+        # When trying to update full name using GET method
+        self.getPage(self.PREFS + '?action=set_profile_info&email=test@test.com')
+        # Then nothing happen
+        self.assertStatus(200)
+        self.assertNotInBody("Profile updated successfully.")
+        user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
+        self.assertEqual("", user.fullname)
+
     def test_change_email(self):
         self._set_profile_info("test@test.com")
         self.assertStatus(200)
@@ -152,6 +162,14 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         new_password = 'a' * 129
         self._set_password(self.PASSWORD, new_password, new_password)
         self.assertInBody("Password must have between 8 and 128 characters.")
+
+    def test_change_password_method_get(self):
+        # Given an authenticated user
+        # Trying to update password with GET method
+        self.getPage(self.PREFS + '?action=set_password&new=newpassword&confirm=newpassword&current=' + self.PASSWORD)
+        # Then nothing happen
+        self.assertStatus(200)
+        self.assertNotInBody("Password updated successfully.")
 
     def test_invalid_pref(self):
         """
