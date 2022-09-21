@@ -116,18 +116,19 @@ class PrefsGeneralPanelProvider(Controller):
         # Process the parameters.
         profile_form = UserProfileForm(email=self.app.currentuser.email)
         password_form = UserPasswordForm()
-        if action == "set_profile_info":
-            self._handle_set_profile_info(action, profile_form)
-        elif action == "set_password":
-            self._handle_set_password(action, password_form)
-        elif action == "update_repos":
-            self.app.currentuser.refresh_repos(delete=True)
-            flash(_("Repositories successfully updated"), level='success')
-        elif action is None:
-            pass
-        else:
-            _logger.warning("unknown action: %s", action)
-            raise cherrypy.NotFound("Unknown action")
+        if cherrypy.request.method == 'POST':
+            if action == "set_profile_info":
+                self._handle_set_profile_info(action, profile_form)
+            elif action == "set_password":
+                self._handle_set_password(action, password_form)
+            elif action == "update_repos":
+                self.app.currentuser.refresh_repos(delete=True)
+                flash(_("Repositories successfully updated"), level='success')
+            elif action is None:
+                pass
+            else:
+                _logger.warning("unknown action: %s", action)
+                raise cherrypy.NotFound("Unknown action")
         params = {
             'profile_form': profile_form,
             'password_form': password_form,

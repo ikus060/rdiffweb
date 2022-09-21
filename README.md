@@ -112,6 +112,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
 * Generate a new session on login and 2FA #220
+* Mitigate CSRF on user's settings #221
 
 ## 2.4.6 (2022-09-20)
 
