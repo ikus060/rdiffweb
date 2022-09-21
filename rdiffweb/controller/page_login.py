@@ -69,6 +69,7 @@ class LoginPage(Controller):
             else:
                 if userobj:
                     cherrypy.session[SESSION_KEY] = userobj.username
+                    cherrypy.session.regenerate()
                     raise cherrypy.HTTPRedirect(form.redirect.data)
                 flash(_("Invalid username or password."))
 
@@ -89,4 +90,5 @@ class LogoutPage(Controller):
     @cherrypy.config(**{'tools.auth_form.on': False})
     def default(self):
         cherrypy.session[SESSION_KEY] = None
+        cherrypy.session.regenerate()
         raise cherrypy.HTTPRedirect('/')
