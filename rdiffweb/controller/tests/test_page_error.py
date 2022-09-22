@@ -49,3 +49,20 @@ class ErrorPageTest(rdiffweb.test.WebCase):
             self.assertInBody('Traceback (most recent call last):')
         else:
             self.assertNotInBody('Traceback (most recent call last):')
+
+    def test_not_found(self):
+        # When user browser an invalid path.
+        self.getPage(
+            '/This%20website%20has%20been%20hacked%20and%20the%20confidential%20data%20of%20all%20users%20have%20been%20compromised%20and%20leaked%20to%20public'
+        )
+        # Then an error page is return
+        self.assertStatus("404 Not Found")
+        # Then page doesn't make reference to the path.
+        if self.expect_stacktrace:
+            self.assertInBody(
+                'This website has been hacked and the confidential data of all users have been compromised and leaked to public'
+            )
+        else:
+            self.assertNotInBody(
+                'This website has been hacked and the confidential data of all users have been compromised and leaked to public'
+            )

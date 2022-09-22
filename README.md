@@ -107,6 +107,12 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## 2.4.8 (2022-09-23)
+
+This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
+
+* Clean-up invalid path on error page
+
 ## 2.4.7 (2002-09-21)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.

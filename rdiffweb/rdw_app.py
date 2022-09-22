@@ -245,6 +245,10 @@ class RdiffwebApp(Application):
             'error page: %s %s\n%s' % (kwargs.get('status', ''), kwargs.get('message', ''), kwargs.get('traceback', ''))
         )
 
+        # Replace message by generic one for 404. Default implementation leak path info.
+        if kwargs.get('status', '') == '404 Not Found':
+            kwargs['message'] = 'Nothing matches the given URI'
+
         # Check expected response type.
         mtype = cherrypy.tools.accept.callable(['text/html', 'text/plain'])  # @UndefinedVariable
         if mtype == 'text/plain':
