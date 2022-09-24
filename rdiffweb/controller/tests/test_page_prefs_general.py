@@ -135,6 +135,10 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody("Invalid email")
 
+    def test_change_email_with_too_long(self):
+        self._set_profile_info(("test1" * 50) + "@test.com")
+        self.assertInBody("Invalid email")
+
     def test_change_password(self):
         self.listener.user_password_changed.reset_mock()
         # When udating user's password

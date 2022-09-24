@@ -41,7 +41,14 @@ class UserProfileForm(CherryForm):
     action = HiddenField(default='set_profile_info')
     username = StringField(_('Username'), render_kw={'readonly': True})
     fullname = StringField(_('Fullname'))
-    email = EmailField(_('Email'), validators=[DataRequired(), Regexp(PATTERN_EMAIL, message=_("Invalid email."))])
+    email = EmailField(
+        _('Email'),
+        validators=[
+            DataRequired(),
+            Length(max=256, message=_("Invalid email.")),
+            Regexp(PATTERN_EMAIL, message=_("Invalid email.")),
+        ],
+    )
     set_profile_info = SubmitField(_('Save changes'))
 
     def is_submitted(self):
