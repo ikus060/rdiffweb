@@ -132,6 +132,12 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.getPage('/login/', method='GET')
         self.assertStatus('200 OK')
 
+    def test_getpage_with_username_too_long(self):
+        b = {'login': 'admin' * 52, 'password': 'admin123'}
+        self.getPage('/login/', method='POST', body=b)
+        self.assertStatus('200 OK')
+        self.assertInBody('Username too long.')
+
     def test_getpage_with_empty_password(self):
         """
         Check if authentication is failing without a password.

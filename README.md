@@ -107,18 +107,21 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
-## 2.4.8 (2022-09-23)
+## 2.4.8 (2022-09-24)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
 * Clean-up invalid path on error page
+* Limit username field length [CVE-2022-3290](https://nvd.nist.gov/vuln/detail/CVE-2022-3290)
+* Limit user's email field length [CVE-2022-3272](https://nvd.nist.gov/vuln/detail/CVE-2022-3272)
+* Limit user's root directory field length [CVE-2022-3295](https://nvd.nist.gov/vuln/detail/CVE-2022-3295)
 
 ## 2.4.7 (2002-09-21)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
-* Generate a new session on login and 2FA #220
-* Mitigate CSRF on user's settings #221
+* Generate a new session on login and 2FA #220 [CVE-2022-3269](https://nvd.nist.gov/vuln/detail/CVE-2022-3269)
+* Mitigate CSRF on user's settings #221 [CVE-2022-3274](https://nvd.nist.gov/vuln/detail/CVE-2022-3274)
 
 ## 2.4.6 (2022-09-20)
 
@@ -126,7 +129,7 @@ This releases include a security fix. If you are using an earlier version, you s
 
 * Support MarkupSafe<3 for Debian bookworm
 * Mitigate CSRF on user's notification settings #216 [CVE-2022-3233](https://nvd.nist.gov/vuln/detail/CVE-2022-3233)
-* Mitigate CSRF on repository settings #217
+* Mitigate CSRF on repository settings #217 [CVE-2022-3267](https://nvd.nist.gov/vuln/detail/CVE-2022-3267)
 * Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session on HTTP Error #218 [CVE-2022-3174](https://nvd.nist.gov/vuln/detail/CVE-2022-3174)
 
 ## 2.4.5 (2002-09-16)

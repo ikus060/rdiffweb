@@ -19,7 +19,7 @@ import logging
 import cherrypy
 from wtforms.fields import PasswordField, StringField
 from wtforms.fields.simple import HiddenField
-from wtforms.validators import InputRequired
+from wtforms.validators import InputRequired, Length
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.cherrypy_wtf import CherryForm
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 class LoginForm(CherryForm):
     login = StringField(
         _('Username'),
-        validators=[InputRequired()],
+        validators=[InputRequired(), Length(max=256, message=_('Username too long.'))],
         render_kw={
             "placeholder": _('Username'),
             "autocorrect": "off",

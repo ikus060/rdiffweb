@@ -239,6 +239,33 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         user = self.app.store.get_user('test6')
         self.assertEqual('', user.user_root)
 
+    def test_add_with_username_too_long(self):
+        # Given a too long username
+        username = "test2" * 52
+        # When trying to create the user
+        self._add_user(username, None, "password", "/tmp/", USER_ROLE)
+        # Then an error is raised
+        self.assertStatus(200)
+        self.assertInBody("Username too long.")
+
+    def test_add_with_email_too_long(self):
+        # Given a too long username
+        email = ("test2" * 50) + "@test.com"
+        # When trying to create the user
+        self._add_user("test2", email, "password", "/tmp/", USER_ROLE)
+        # Then an error is raised
+        self.assertStatus(200)
+        self.assertInBody("Email too long.")
+
+    def test_add_with_user_root_too_long(self):
+        # Given a too long user root
+        user_root = "/temp/" * 50
+        # When trying to create the user
+        self._add_user("test2", "test@test,com", "password", user_root, USER_ROLE)
+        # Then an error is raised
+        self.assertStatus(200)
+        self.assertInBody("Root directory too long.")
+
     def test_delete_user_with_not_existing_username(self):
         """
         Verify failure to delete invalid username.

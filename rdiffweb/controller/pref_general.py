@@ -38,7 +38,14 @@ PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
 
 
 class UserProfileForm(CherryForm):
-    email = EmailField(_('Email'), validators=[DataRequired(), Regexp(PATTERN_EMAIL, message=_("Invalid email."))])
+    email = EmailField(
+        _('Email'),
+        validators=[
+            DataRequired(),
+            Length(max=256, message=_("Invalid email.")),
+            Regexp(PATTERN_EMAIL, message=_("Invalid email.")),
+        ],
+    )
 
 
 class UserPasswordForm(CherryForm):

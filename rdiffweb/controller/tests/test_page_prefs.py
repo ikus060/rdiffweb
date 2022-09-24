@@ -84,6 +84,10 @@ class PrefsTest(rdiffweb.test.WebCase):
         self._set_profile_info("test@test.com, test2@test.com")
         self.assertInBody("Invalid email")
 
+    def test_change_email_with_too_long(self):
+        self._set_profile_info(("test1" * 50) + "@test.com")
+        self.assertInBody("Invalid email")
+
     def test_change_password(self):
         # When udating user's password
         self._set_password(self.PASSWORD, "newpassword", "newpassword")
