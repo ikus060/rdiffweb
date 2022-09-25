@@ -41,7 +41,8 @@ class SessionObject(Base):
     access_time = Column('AccessTime', DateTime)
 
     @validates('data')
-    def validate_encoding(self, key, value):
+    def validate_data(self, key, value):
+        # Extract specific fields from data into column to speed up SQL query.
         if value:
             self.access_time = value.get('access_time')
             self.username = value.get(SESSION_KEY)
@@ -57,6 +58,7 @@ class DbSession(Session):
         if not session:
             return None
         try:
+            self.timeout = session.data.pop('_timeout', self.timeout)
             return (session.data, session.expiration_time)
         except TypeError:
             logger.error('fail to read session data', exc_info=1)
@@ -67,6 +69,7 @@ class DbSession(Session):
         if not session:
             session = SessionObject(id=self.id)
         session.data = self._data
+        session.data['_timeout'] = self.timeout
         session.expiration_time = expiration_time
         session.add()
 

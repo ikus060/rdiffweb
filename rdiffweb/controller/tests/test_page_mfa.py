@@ -171,12 +171,10 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.assertInBody("Invalid verification code.")
         self.assertInBody("A new verification code has been sent to your email.")
 
-    def test_verify_code_invalid_after_4_tentative(self):
+    def test_verify_code_invalid_after_3_tentative(self):
         # Given an authenticated user With MFA
         self._get_code()
         # When user enter an invalid verification code 3 times
-        self.getPage("/mfa/", method='POST', body={'code': '1234567', 'submit': '1'})
-        self.assertStatus(200)
         self.getPage("/mfa/", method='POST', body={'code': '1234567', 'submit': '1'})
         self.assertStatus(200)
         self.getPage("/mfa/", method='POST', body={'code': '1234567', 'submit': '1'})
@@ -208,7 +206,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/prefs/general')
 
-    def test_login_persistent(self):
+    def test_login_persistent_when_login_timout(self):
         prev_session_id = self.session_id
         # Given a user authenticated with MFA with "login_persistent"
         code = self._get_code()
@@ -220,10 +218,10 @@ class MfaPageTest(rdiffweb.test.WebCase):
         session = DbSession(id=self.session_id)
         session.load()
         self.assertTrue(session['login_persistent'])
-        # When the login_time expired (after 1 days)
-        session['login_time'] = session.now() - datetime.timedelta(days=1, seconds=1)
+        # When the login_time expired (after 15 min)
+        session['login_time'] = session.now() - datetime.timedelta(minutes=15, seconds=1)
         session.save()
-        # Then next query redirect user to root page (by mfa)
+        # Then next query redirect user to same page (by mfa)
         self.getPage("/prefs/general")
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/prefs/general')
@@ -236,6 +234,35 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.getPage("/login/", method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD})
         self.assertNotEqual(prev_session_id, self.session_id)
         # Then user is redirected to original url
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', self.baseurl + '/prefs/general')
+        self.getPage("/")
+        self.assertStatus(200)
+        self.assertInBody('Repositories')
+
+    def test_login_persistent_when_mfa_timeout(self):
+        prev_session_id = self.session_id
+        # Given a user authenticated with MFA with "login_persistent"
+        code = self._get_code()
+        self.getPage("/mfa/", method='POST', body={'code': code, 'submit': '1', 'persistent': '1'})
+        self.assertStatus(303)
+        self.getPage("/")
+        self.assertStatus(200)
+        self.assertNotEqual(prev_session_id, self.session_id)
+        session = DbSession(id=self.session_id)
+        session.load()
+        self.assertTrue(session['login_persistent'])
+        # When the mfa verification timeout (after 30 days)
+        session['_auth_mfa_time'] = session.now() - datetime.timedelta(days=30, seconds=1)
+        session.save()
+        # Then next query redirect user to mfa page
+        self.getPage("/prefs/general")
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', self.baseurl + '/mfa/')
+        # When user enter valid code
+        code = self._get_code()
+        self.getPage("/mfa/", method='POST', body={'code': code, 'submit': '1', 'persistent': '1'})
+        # Then user is redirected to original page.
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/prefs/general')
         self.getPage("/")

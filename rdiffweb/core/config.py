@@ -389,15 +389,15 @@ def get_parser():
     parser.add(
         '--session-timeout',
         metavar='MINUTES',
-        help='The session will be purged after this period of inactivity. Default 30 days or 43200 minutes.',
-        default=43200,
+        help='Sessions will be revoke after this period of inactivity, unless the user selected "remember me". Default 15 minutes.',
+        default=15,
     )
 
     parser.add(
-        '--login-timeout',
+        '--session-persistent-timeout',
         metavar='MINUTES',
-        help='Remember  user session Keep user login Number of minutes of inactivities before purging sessions data. Default 1 day or 1440 minutes.',
-        default=1440,
+        help='Persistent sessions (remember me) will be revoke after this period of inactivity. Default 30 days.',
+        default=43200,
     )
 
     parser.add(
