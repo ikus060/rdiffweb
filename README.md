@@ -137,7 +137,7 @@ Breaking changes:
 * `session-dir` is deprecated and should be replace by `rate-limit-dir`. User's session are stored in database.
 * previous `.css` customization are not barkward compatible
 
-## 2.4.8 (2022-09-24)
+## 2.4.8 (2022-09-26)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
@@ -145,6 +145,7 @@ This releases include a security fix. If you are using an earlier version, you s
 * Limit username field length [CVE-2022-3290](https://nvd.nist.gov/vuln/detail/CVE-2022-3290)
 * Limit user's email field length [CVE-2022-3272](https://nvd.nist.gov/vuln/detail/CVE-2022-3272)
 * Limit user's root directory field length [CVE-2022-3295](https://nvd.nist.gov/vuln/detail/CVE-2022-3295)
+* Limit SSH Key title field length [CVE-2022-3298](https://nvd.nist.gov/vuln/detail/CVE-2022-3298)
 
 ## 2.4.7 (2002-09-21)
 
