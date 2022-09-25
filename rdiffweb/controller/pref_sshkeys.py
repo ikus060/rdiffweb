@@ -50,7 +50,13 @@ class SshForm(CherryForm):
     title = StringField(
         _('Title'),
         description=_('The title is an optional description to identify the key. e.g.: bob@thinkpad-t530'),
-        validators=[validators.data_required()],
+        validators=[
+            validators.data_required(),
+            validators.length(
+                max=256,
+                message=_('Title too long.'),
+            ),
+        ],
     )
     key = StringField(
         _('Key'),

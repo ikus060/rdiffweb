@@ -111,6 +111,23 @@ class SSHKeysTest(rdiffweb.test.WebCase):
         # Then ssh key is not added
         self.assertEqual(0, len(list(user.authorizedkeys)))
 
+    def test_add_with_title_too_long(self):
+        # Given an authenticated user without any ssh keys
+        user = self.app.store.get_user('admin')
+        for key in user.authorizedkeys:
+            user.delete_authorizedkey(key.fingerprint)
+        self.assertEqual(0, len(list(user.authorizedkeys)))
+        # When adding a key with title too long.
+        self._add_ssh_key(
+            "title" * 52,
+            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
+        )
+        # Then page return with error
+        self.assertStatus('200 OK')
+        self.assertInBody('Title too long.')
+        # Then key is not added
+        self.assertEqual(0, len(list(user.authorizedkeys)))
+
     def test_delete(self):
         # Delete existing keys
         user = self.app.store.get_user('admin')
