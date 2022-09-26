@@ -115,3 +115,69 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
         # Then the request is accepted with 200 OK
         self.assertStatus(200)
         self.assertHeaderItemValue('X-Frame-Options', 'DENY')
+
+    def test_no_cache(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue('Cache-control', 'no-cache')
+        self.assertHeaderItemValue('Cache-control', 'no-store')
+        self.assertHeaderItemValue('Cache-control', 'must-revalidate')
+        self.assertHeaderItemValue('Cache-control', 'max-age=0')
+        self.assertHeaderItemValue('Pragma', 'no-cache')
+        self.assertHeaderItemValue('Expires', '0')
+
+    def test_no_cache_with_static(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/static/default.css')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertNoHeader('Cache-control')
+        self.assertNoHeader('Pragma')
+        self.assertNoHeader('Expires')
+
+    def test_referrer_policy(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue('Referrer-Policy', 'same-origin')
+
+    def test_nosniff(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue('X-Content-Type-Options', 'nosniff')
+
+    def test_xss_protection(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue('X-XSS-Protection', '1; mode=block')
+
+    def test_content_security_policy(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue(
+            'Content-Security-Policy',
+            "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'",
+        )
+
+    def test_strict_transport_security(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/', headers=[('X-Forwarded-Proto', 'https')])
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
