@@ -58,7 +58,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
     def _load_quota(self, userobj):
         return self._quota.get(userobj.username, 0)
 
-    def _add_user(self, username=None, email=None, password=None, user_root=None, role=None, mfa=None):
+    def _add_user(self, username=None, email=None, password=None, user_root=None, role=None, mfa=None, fullname=None):
         b = {}
         b['action'] = 'add'
         if username is not None:
@@ -73,6 +73,8 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
             b['role'] = str(role)
         if mfa is not None:
             b['mfa'] = str(mfa)
+        if fullname is not None:
+            b['fullname'] = str(fullname)
         self.getPage("/admin/users/", method='POST', body=b)
 
     def _edit_user(
@@ -274,6 +276,15 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         # Then an error is raised
         self.assertStatus(200)
         self.assertInBody("Root directory too long.")
+
+    def test_add_with_fullname_too_long(self):
+        # Given a too long user root
+        fullname = "fullname" * 50
+        # When trying to create the user
+        self._add_user("test2", "test@test,com", "password", "/tmp/", UserObject.USER_ROLE, fullname=fullname)
+        # Then an error is raised
+        self.assertStatus(200)
+        self.assertInBody("Fullname too long.")
 
     def test_delete_user_with_not_existing_username(self):
         """

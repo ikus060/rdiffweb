@@ -25,7 +25,7 @@ import re
 import cherrypy
 from wtforms.fields import HiddenField, PasswordField, StringField, SubmitField
 from wtforms.fields.html5 import EmailField
-from wtforms.validators import DataRequired, EqualTo, InputRequired, Length, Regexp
+from wtforms.validators import DataRequired, EqualTo, InputRequired, Length, Optional, Regexp
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
@@ -40,7 +40,13 @@ PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
 class UserProfileForm(CherryForm):
     action = HiddenField(default='set_profile_info')
     username = StringField(_('Username'), render_kw={'readonly': True})
-    fullname = StringField(_('Fullname'))
+    fullname = StringField(
+        _('Fullname'),
+        validators=[
+            Optional(),
+            Length(max=256, message=_('Fullname too long.')),
+        ],
+    )
     email = EmailField(
         _('Email'),
         validators=[

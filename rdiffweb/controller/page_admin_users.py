@@ -76,7 +76,13 @@ class UserForm(CherryForm):
             validators.length(max=256, message=_('Username too long.')),
         ],
     )
-    fullname = StringField(_('Fullname'), validators=[validators.optional()])
+    fullname = StringField(
+        _('Fullname'),
+        validators=[
+            validators.optional(),
+            validators.length(max=256, message=_('Fullname too long.')),
+        ],
+    )
     email = EmailField(
         _('Email'),
         validators=[

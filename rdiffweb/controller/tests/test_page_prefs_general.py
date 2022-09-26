@@ -109,6 +109,18 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
         self.assertEqual("", user.fullname)
 
+    def test_change_fullname_too_long(self):
+        # Given an authenticated user
+        # When update the fullname
+        self._set_profile_info("test@test.com", "Fullname" * 50)
+        # Then page return with error message
+        self.assertStatus(200)
+        self.assertNotInBody("Profile updated successfully.")
+        self.assertInBody("Fullname too long.")
+        # Then database is not updated
+        user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
+        self.assertEqual("", user.fullname)
+
     def test_change_email(self):
         self._set_profile_info("test@test.com")
         self.assertStatus(200)

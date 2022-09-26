@@ -78,6 +78,19 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         # Then access token is not created
         self.assertEqual(0, Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').count())
 
+    def test_add_access_token_with_name_too_long(self):
+        # Given an existing user
+        # When adding a new access token with name too long.
+        self.getPage(
+            "/prefs/tokens",
+            method='POST',
+            body={'action': 'add_access_token', 'name': 'token' * 52, 'expiration_time': ''},
+        )
+        # Then page return with error message
+        self.assertStatus(200)
+        # Then token name get displayed in the view
+        self.assertInBody('Token name too long')
+
     def test_delete_access_token(self):
         # Given an existing user with access_token
         userobj = UserObject.get_user(self.USERNAME)

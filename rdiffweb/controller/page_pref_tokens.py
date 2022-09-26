@@ -20,7 +20,7 @@ import logging
 
 import cherrypy
 from wtforms.fields import DateField, HiddenField, StringField, SubmitField
-from wtforms.validators import DataRequired, Optional
+from wtforms.validators import DataRequired, Length, Optional
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.filter_authorization import is_maintainer
@@ -38,7 +38,10 @@ class TokenForm(CherryForm):
         description=_(
             'Used only to identify the purpose of the token. For example, the application that uses the token.'
         ),
-        validators=[DataRequired()],
+        validators=[
+            DataRequired(),
+            Length(max=256, message=_('Token name too long')),
+        ],
     )
     expiration = DateField(
         _('Expiration date'),
