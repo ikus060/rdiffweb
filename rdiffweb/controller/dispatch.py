@@ -30,14 +30,6 @@ from cherrypy.lib.static import mimetypes, serve_file
 from rdiffweb.core.rdw_helpers import unquote_url
 
 
-def empty():
-    @cherrypy.expose
-    def handler():
-        return None
-
-    return handler
-
-
 def poppath(*args, **kwargs):
     """
     A decorator for _cp_dispatch
@@ -122,6 +114,7 @@ def static(path):
     @cherrypy.expose
     @cherrypy.tools.auth_form(on=False)
     @cherrypy.tools.sessions(on=False)
+    @cherrypy.tools.secure_headers(on=False)
     def handler(*args, **kwargs):
         if cherrypy.request.method not in ('GET', 'HEAD'):
             return None
