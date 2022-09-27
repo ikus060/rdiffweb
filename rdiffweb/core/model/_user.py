@@ -25,6 +25,7 @@ from sqlalchemy import Column, Integer, SmallInteger, String, and_, event, inspe
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import deferred, relationship
+from zxcvbn import zxcvbn
 
 import rdiffweb.tools.db  # noqa
 from rdiffweb.core import authorizedkeys
@@ -345,10 +346,7 @@ class UserObject(Base):
         assert old_password is None or isinstance(old_password, str)
         if not password:
             raise ValueError("password can't be empty")
-        # Verify password length.
         cfg = cherrypy.tree.apps[''].cfg
-        if cfg.password_min_length > len(password) > cfg.password_max_length:
-            raise ValueError("invalid password length")
 
         # Cannot update admin-password if defined
         if self.username == cfg.admin_user and cfg.admin_password:
@@ -356,6 +354,25 @@ class UserObject(Base):
 
         if old_password and not check_password(old_password, self.hash_password):
             raise ValueError(_("Wrong password"))
+
+        # Check password length
+        if cfg.password_min_length > len(password) or len(password) > cfg.password_max_length:
+            raise ValueError(
+                _('Password must have between %(min)d and %(max)d characters.')
+                % {'min': cfg.password_min_length, 'max': cfg.password_max_length}
+            )
+
+        # Verify password score using zxcvbn
+        stats = zxcvbn(password)
+        if stats.get('score') < cfg.password_score:
+            msg = _('Password too weak.')
+            warning = stats.get('feedback', {}).get('warning')
+            suggestions = stats.get('feedback', {}).get('suggestions')
+            if warning:
+                msg += ' ' + warning
+            if suggestions:
+                msg += ' ' + ' '.join(suggestions)
+            raise ValueError(msg)
 
         logger.info("updating user password [%s]", self.username)
         self.hash_password = hash_password(password)

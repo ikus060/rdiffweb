@@ -86,20 +86,6 @@ class UserPasswordForm(CherryForm):
     )
     set_password = SubmitField(_('Update password'))
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.new.validators += [
-            Length(
-                min=self.app.cfg.password_min_length,
-                max=self.app.cfg.password_max_length,
-                message=_('Password must have between %(min)d and %(max)d characters.'),
-            )
-        ]
-
-    @property
-    def app(self):
-        return cherrypy.request.app
-
     def is_submitted(self):
         # Validate only if action is set_profile_info
         return super().is_submitted() and self.action.data == 'set_password'
