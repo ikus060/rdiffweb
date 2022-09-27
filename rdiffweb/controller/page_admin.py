@@ -209,18 +209,6 @@ class UserForm(CherryForm):
         _('Quota Used'), validators=[validators.optional()], description=_("Disk spaces (in bytes) used by this user.")
     )
 
-    def validate_password(self, field):
-        validator = validators.length(
-            min=self.app.cfg.password_min_length,
-            max=self.app.cfg.password_max_length,
-            message=_('Password must have between %(min)d and %(max)d characters.'),
-        )
-        validator(self, field)
-
-    @property
-    def app(self):
-        return cherrypy.request.app
-
     def validate_role(self, field):
         # Don't allow the user to changes it's "role" state.
         currentuser = cherrypy.request.currentuser

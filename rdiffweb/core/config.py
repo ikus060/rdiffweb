@@ -434,6 +434,13 @@ def get_parser():
         default=128,
     )
 
+    parser.add(
+        '--password-score',
+        type=lambda x: max(1, min(int(x), 4)),
+        help="Minimum zxcvbn's score for password. Value from 1 to 4. Default value 2. Read more about it here: https://github.com/dropbox/zxcvbn",
+        default=2,
+    )
+
     parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
 
     # Here we append a list of arguments for each locale.

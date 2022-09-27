@@ -28,6 +28,7 @@ from sqlalchemy import Column, Integer, MetaData, SmallInteger, String, Table, T
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.expression import and_, or_, select
 from sqlalchemy.sql.functions import count
+from zxcvbn import zxcvbn
 
 from rdiffweb.core import RdiffError, authorizedkeys
 from rdiffweb.core.config import Option
@@ -397,16 +398,34 @@ class UserObject(object):
         assert old_password is None or isinstance(old_password, str)
         if not password:
             raise ValueError("password can't be empty")
-        cfg = self._store.app.cfg
-        if cfg.password_min_length > len(password) > cfg.password_max_length:
-            raise ValueError("invalid password length")
 
         # Cannot update admin-password if defined
         if self.username == self._store._admin_user and self._store._admin_password:
             raise ValueError(_("can't update admin-password defined in configuration file"))
 
+        # Check current password
         if old_password and not check_password(old_password, self.hash_password):
             raise ValueError(_("Wrong password"))
+
+        # Check password length
+        cfg = self._store.app.cfg
+        if cfg.password_min_length > len(password) or len(password) > cfg.password_max_length:
+            raise ValueError(
+                _('Password must have between %(min)d and %(max)d characters.')
+                % {'min': cfg.password_min_length, 'max': cfg.password_max_length}
+            )
+
+        # Verify password score using zxcvbn
+        stats = zxcvbn(password)
+        if stats.get('score') < cfg.password_score:
+            msg = _('Password too weak.')
+            warning = stats.get('feedback', {}).get('warning')
+            suggestions = stats.get('feedback', {}).get('suggestions')
+            if warning:
+                msg += ' ' + warning
+            if suggestions:
+                msg += ' ' + ' '.join(suggestions)
+            raise ValueError(msg)
 
         logger.info("updating user password [%s]", self.username)
         self.hash_password = hash_password(password)

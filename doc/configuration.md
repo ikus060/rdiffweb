@@ -291,6 +291,9 @@ Changing the minimum or maximum length does not affect existing users' passwords
 | --- | --- | --- |
 | password-min-length | Minimum length of the user's password | 8 |
 | password-max-length | Maximum length of the user's password | 128 |
+| password-score      | Minimum zxcvbn's score for password. Value from 0 to 4. Default value 1. | 4 |
+
+You may want to read more about [zxcvbn](https://github.com/dropbox/zxcvbn) score value.
 
 ## Configure Rdiffweb appearance
 

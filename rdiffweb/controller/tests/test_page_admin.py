@@ -107,7 +107,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
     def test_add_user_with_role_admin(self):
         # When trying to create a new user with role admin
-        self._add_user("admin_role", "admin_role@test.com", "password", "/home/", ADMIN_ROLE)
+        self._add_user("admin_role", "admin_role@test.com", "pr3j5Dwi", "/home/", ADMIN_ROLE)
         # Then page return success
         self.assertStatus(200)
         # Then database is updated
@@ -117,18 +117,18 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.listener.user_added.assert_called_once_with(userobj)
 
     def test_add_user_with_role_maintainer(self):
-        self._add_user("maintainer_role", "maintainer_role@test.com", "password", "/home/", MAINTAINER_ROLE)
+        self._add_user("maintainer_role", "maintainer_role@test.com", "pr3j5Dwi", "/home/", MAINTAINER_ROLE)
         self.assertStatus(200)
         self.assertEqual(MAINTAINER_ROLE, self.app.store.get_user('maintainer_role').role)
 
     def test_add_user_with_role_user(self):
-        self._add_user("user_role", "user_role@test.com", "password", "/home/", USER_ROLE)
+        self._add_user("user_role", "user_role@test.com", "pr3j5Dwi", "/home/", USER_ROLE)
         self.assertStatus(200)
         self.assertEqual(USER_ROLE, self.app.store.get_user('user_role').role)
 
     def test_add_user_with_invalid_role(self):
         # When trying to create a new user with an invalid role (admin instead of 0)
-        self._add_user("invalid", "invalid@test.com", "test1234", "/home/", 'admin')
+        self._add_user("invalid", "invalid@test.com", "pr3j5Dwi", "/home/", 'admin')
         # Then an error message is displayed to the user
         self.assertStatus(200)
         self.assertInBody('role: Invalid Choice: could not coerce')
@@ -136,7 +136,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         self.listener.user_added.assert_not_called()
 
         # When trying to create a new user with an invalid role (-1)
-        self._add_user("invalid", "invalid@test.com", "test2", "/home/", -1)
+        self._add_user("invalid", "invalid@test.com", "pr3j5Dwi", "/home/", -1)
         # Then an error message is displayed to the user
         self.assertStatus(200)
         self.assertInBody('role: Not a valid choice')
@@ -145,7 +145,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
 
     def test_add_edit_delete(self):
         #  Add user to be listed
-        self._add_user("test2", "test2@test.com", "test1234", "/home/", USER_ROLE)
+        self._add_user("test2", "test2@test.com", "pr3j5Dwi", "/home/", USER_ROLE)
         self.assertInBody("User added successfully.")
         self.assertInBody("test2")
         self.assertInBody("test2@test.com")
@@ -175,7 +175,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Check creation of user with non-ascii char.
         """
-        self._add_user("Éric", "éric@test.com", "password", "/home/", USER_ROLE)
+        self._add_user("Éric", "éric@test.com", "pr3j5Dwi", "/home/", USER_ROLE)
         self.assertInBody("User added successfully.")
         self.assertInBody("Éric")
         self.assertInBody("éric@test.com")
@@ -198,7 +198,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         """
         Verify failure trying to create user without username.
         """
-        self._add_user("", "test1@test.com", "test1", "/tmp/", USER_ROLE)
+        self._add_user("", "test1@test.com", "pr3j5Dwi", "/tmp/", USER_ROLE)
         self.assertStatus(200)
         self.assertInBody("username: This field is required.")
 
@@ -207,9 +207,9 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure trying to add the same user.
         """
         # Given a user named `test1`
-        self._add_user("test1", "test1@test.com", "password", "/tmp/", USER_ROLE)
+        self._add_user("test1", "test1@test.com", "pr3j5Dwi", "/tmp/", USER_ROLE)
         # When trying to create a new user with the same name
-        self._add_user("test1", "test1@test.com", "password", "/tmp/", USER_ROLE)
+        self._add_user("test1", "test1@test.com", "pr3j5Dwi", "/tmp/", USER_ROLE)
         # Then the user list is displayed with an error message.
         self.assertStatus(200)
         self.assertInBody("User test1 already exists.")
@@ -222,18 +222,18 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
             self._delete_user("test5")
         except Exception:
             pass
-        self._add_user("test5", "test1@test.com", "password", "/var/invalid/", USER_ROLE)
+        self._add_user("test5", "test1@test.com", "pr3j5Dwi", "/var/invalid/", USER_ROLE)
         self.assertInBody("User added successfully.")
         self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
 
     def test_add_without_email(self):
         #  Add user to be listed
-        self._add_user("test2", None, "password", "/tmp/", USER_ROLE)
+        self._add_user("test2", None, "pr3j5Dwi", "/tmp/", USER_ROLE)
         self.assertInBody("User added successfully.")
 
     def test_add_without_user_root(self):
         #  Add user to be listed
-        self._add_user("test6", None, "password", None, USER_ROLE)
+        self._add_user("test6", None, "pr3j5Dwi", None, USER_ROLE)
         self.assertInBody("User added successfully.")
 
         user = self.app.store.get_user('test6')
@@ -243,7 +243,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         # Given a too long username
         username = "test2" * 52
         # When trying to create the user
-        self._add_user(username, None, "password", "/tmp/", USER_ROLE)
+        self._add_user(username, None, "pr3j5Dwi", "/tmp/", USER_ROLE)
         # Then an error is raised
         self.assertStatus(200)
         self.assertInBody("Username too long.")
@@ -252,7 +252,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         # Given a too long username
         email = ("test2" * 50) + "@test.com"
         # When trying to create the user
-        self._add_user("test2", email, "password", "/tmp/", USER_ROLE)
+        self._add_user("test2", email, "pr3j5Dwi", "/tmp/", USER_ROLE)
         # Then an error is raised
         self.assertStatus(200)
         self.assertInBody("Email too long.")
@@ -261,7 +261,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         # Given a too long user root
         user_root = "/temp/" * 50
         # When trying to create the user
-        self._add_user("test2", "test@test,com", "password", user_root, USER_ROLE)
+        self._add_user("test2", "test@test,com", "pr3j5Dwi", user_root, USER_ROLE)
         # Then an error is raised
         self.assertStatus(200)
         self.assertInBody("Root directory too long.")
@@ -285,9 +285,9 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure to delete our self.
         """
         # Create another admin user
-        self._add_user('admin2', '', 'password', '', ADMIN_ROLE)
+        self._add_user('admin2', '', 'pr3j5Dwi', '', ADMIN_ROLE)
         self.getPage("/logout/")
-        self._login('admin2', 'password')
+        self._login('admin2', 'pr3j5Dwi')
 
         # Try deleting admin user
         self._delete_user(self.USERNAME)
@@ -330,7 +330,7 @@ class AdminUsersAsAdminTest(AbstractAdminTest):
         Verify failure trying to update user with invalid path.
         """
         self.app.store.add_user('test1')
-        self._edit_user("test1", "test1@test.com", "password", "/var/invalid/", USER_ROLE)
+        self._edit_user("test1", "test1@test.com", "pr3j5Dwi", "/var/invalid/", USER_ROLE)
         self.assertNotInBody("User added successfully.")
         self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
 
