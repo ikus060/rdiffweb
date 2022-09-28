@@ -25,7 +25,7 @@ import re
 import cherrypy
 from wtforms.fields import HiddenField, PasswordField, StringField, SubmitField
 from wtforms.fields.html5 import EmailField
-from wtforms.validators import DataRequired, EqualTo, InputRequired, Length, Regexp
+from wtforms.validators import DataRequired, EqualTo, InputRequired, Length, Optional, Regexp
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
@@ -40,8 +40,21 @@ PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
 class UserProfileForm(CherryForm):
     action = HiddenField(default='set_profile_info')
     username = StringField(_('Username'), render_kw={'readonly': True})
-    fullname = StringField(_('Fullname'))
-    email = EmailField(_('Email'), validators=[DataRequired(), Regexp(PATTERN_EMAIL, message=_("Invalid email."))])
+    fullname = StringField(
+        _('Fullname'),
+        validators=[
+            Optional(),
+            Length(max=256, message=_('Fullname too long.')),
+        ],
+    )
+    email = EmailField(
+        _('Email'),
+        validators=[
+            DataRequired(),
+            Length(max=256, message=_("Invalid email.")),
+            Regexp(PATTERN_EMAIL, message=_("Invalid email.")),
+        ],
+    )
     set_profile_info = SubmitField(_('Save changes'))
 
     def is_submitted(self):
@@ -72,20 +85,6 @@ class UserPasswordForm(CherryForm):
         _('Confirm new password'), validators=[InputRequired(_("Confirmation password is missing."))]
     )
     set_password = SubmitField(_('Update password'))
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.new.validators += [
-            Length(
-                min=self.app.cfg.password_min_length,
-                max=self.app.cfg.password_max_length,
-                message=_('Password must have between %(min)d and %(max)d characters.'),
-            )
-        ]
-
-    @property
-    def app(self):
-        return cherrypy.request.app
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
@@ -126,7 +125,7 @@ class PagePrefsGeneral(Controller):
     """
 
     @cherrypy.expose
-    def default(self, action=None, **kwargs):
+    def default(self, **kwargs):
         # Process the parameters.
         profile_form = UserProfileForm(obj=self.app.currentuser)
         password_form = UserPasswordForm()
@@ -147,9 +146,6 @@ class PagePrefsGeneral(Controller):
                 refresh_form.populate_obj(self.app.currentuser)
             else:
                 flash(refresh_form.error_message, level='error')
-        elif action is not None:
-            _logger.warning("unknown action: %s", action)
-            raise cherrypy.NotFound("Unknown action")
         params = {
             'profile_form': profile_form,
             'password_form': password_form,

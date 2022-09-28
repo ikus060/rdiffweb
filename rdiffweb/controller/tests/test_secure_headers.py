@@ -19,6 +19,8 @@ Created on Oct 20, 2021
 
 @author: Patrik Dufresne
 """
+from parameterized import parameterized
+
 import rdiffweb.test
 
 
@@ -46,6 +48,24 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
         # Given an https request made to rdiffweb
         self.getPage('/', headers=[('X-Forwarded-Proto', 'https')])
         # When receiving the response
+        self.assertStatus(200)
+        # Then the header contains Set-Cookie with Secure
+        cookie = self.assertHeader('Set-Cookie')
+        self.assertIn('Secure', cookie)
+
+    @parameterized.expand(
+        [
+            ('/invalid', 404),
+            ('/browse/invalid', 404),
+            ('/login', 301),
+            ('/logout', 303),
+        ]
+    )
+    def test_cookie_with_https_http_error(self, url, expected_error_code):
+        # Given an https request made to rdiffweb
+        self.getPage(url, headers=[('X-Forwarded-Proto', 'https')])
+        # When receiving the response
+        self.assertStatus(expected_error_code)
         # Then the header contains Set-Cookie with Secure
         cookie = self.assertHeader('Set-Cookie')
         self.assertIn('Secure', cookie)
@@ -95,3 +115,69 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
         # Then the request is accepted with 200 OK
         self.assertStatus(200)
         self.assertHeaderItemValue('X-Frame-Options', 'DENY')
+
+    def test_no_cache(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue('Cache-control', 'no-cache')
+        self.assertHeaderItemValue('Cache-control', 'no-store')
+        self.assertHeaderItemValue('Cache-control', 'must-revalidate')
+        self.assertHeaderItemValue('Cache-control', 'max-age=0')
+        self.assertHeaderItemValue('Pragma', 'no-cache')
+        self.assertHeaderItemValue('Expires', '0')
+
+    def test_no_cache_with_static(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/static/default.css')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertNoHeader('Cache-control')
+        self.assertNoHeader('Pragma')
+        self.assertNoHeader('Expires')
+
+    def test_referrer_policy(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue('Referrer-Policy', 'same-origin')
+
+    def test_nosniff(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue('X-Content-Type-Options', 'nosniff')
+
+    def test_xss_protection(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue('X-XSS-Protection', '1; mode=block')
+
+    def test_content_security_policy(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue(
+            'Content-Security-Policy',
+            "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'",
+        )
+
+    def test_strict_transport_security(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made without an origin
+        self.getPage('/', headers=[('X-Forwarded-Proto', 'https')])
+        # Then the request is accepted with 200 OK
+        self.assertStatus(200)
+        self.assertHeaderItemValue('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')

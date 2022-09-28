@@ -38,7 +38,46 @@ class PagePrefNotificationTest(rdiffweb.test.WebCase):
         # Then the page return successfully with the modification
         self.assertStatus(200)
         self.assertInBody('Notification settings updated successfully.')
-        self.assertInBody('<option value="7"  selected')
+        self.assertInBody('<option selected value="7">')
         # Then database is updated too
         repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         self.assertEqual(7, repo_obj.maxage)
+
+    def test_update_notification_method_get(self):
+        # Given a user with repositories
+        # When trying to update notification with GET method
+        self.getPage("/prefs/notification?action=set_notification_info&testcases=7")
+        # Then page return with success
+        self.assertStatus(200)
+        self.assertNotInBody('<option selected value="7">')
+        # Then page doesn't update values
+        self.assertNotInBody('Notification settings updated successfully.')
+        # Then database is not updated
+        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        self.assertEqual(0, repo_obj.maxage)
+
+    def test_update_notification_with_invalid_string(self):
+        # Given a user with a repository
+        # When updating the notification settings
+        self.getPage(
+            "/prefs/notification", method='POST', body={'action': 'set_notification_info', 'testcases': 'invalid'}
+        )
+        # Then the page return successfully with the modification
+        self.assertStatus(200)
+        self.assertInBody('Invalid Choice:')
+        self.assertNotInBody('Notification settings updated successfully.')
+        # Then database is not updated
+        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        self.assertEqual(0, repo_obj.maxage)
+
+    def test_update_notification_with_invalid_number(self):
+        # Given a user with a repository
+        # When updating the notification settings
+        self.getPage("/prefs/notification", method='POST', body={'action': 'set_notification_info', 'testcases': '365'})
+        # Then the page return successfully with the modification
+        self.assertStatus(200)
+        self.assertInBody('Not a valid choice')
+        self.assertNotInBody('Notification settings updated successfully.')
+        # Then database is not updated
+        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        self.assertEqual(0, repo_obj.maxage)

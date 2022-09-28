@@ -34,14 +34,6 @@ import rdiffweb.tools.ratelimit  # noqa
 from rdiffweb.core.rdw_helpers import unquote_url
 
 
-def empty():
-    @cherrypy.expose
-    def handler():
-        return None
-
-    return handler
-
-
 def restapi():
     """
     A decorator for _cp_dispatch
@@ -174,6 +166,7 @@ def static(path):
     @cherrypy.tools.auth_mfa(on=False)
     @cherrypy.tools.ratelimit(on=False)
     @cherrypy.tools.sessions(on=False)
+    @cherrypy.tools.secure_headers(on=False)
     def handler(*args, **kwargs):
         if cherrypy.request.method not in ('GET', 'HEAD'):
             raise cherrypy.HTTPError(405)

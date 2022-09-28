@@ -19,7 +19,6 @@ import http.cookies
 import logging
 
 import cherrypy
-from cherrypy._cptools import HandlerTool
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -32,7 +31,14 @@ if not http.cookies.Morsel().isReservedKey("samesite"):
     http.cookies.Morsel._reserved['samesite'] = 'SameSite'
 
 
-class SecureHeaders(HandlerTool):
+def set_headers(
+    xfo='DENY',
+    no_cache=True,
+    referrer='same-origin',
+    nosniff=True,
+    xxp='1; mode=block',
+    csp="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'",
+):
     """
     This tool provide CSRF mitigation.
 
@@ -40,44 +46,64 @@ class SecureHeaders(HandlerTool):
     * Define Cookies SameSite=Lax
     * Define Cookies Secure when https is detected
     * Validate `Origin` and `Referer` on POST, PUT, PATCH, DELETE
+    * Define Cache-Control by default
+    * Define Referrer-Policy to 'same-origin'
 
     Ref.:
     https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
     https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html
     """
+    request = cherrypy.request
+    response = cherrypy.serving.response
 
-    def __init__(self):
-        HandlerTool.__init__(self, self.run, name='secure_headers')
-        # Make sure to run before authform (priority 71)
-        self._priority = 71
+    # Check if Origin matches our target.
+    if request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
+        origin = request.headers.get('Origin', None)
+        if origin and not origin.startswith(request.base):
+            raise cherrypy.HTTPError(403, 'Unexpected Origin header')
 
-    def _setup(self):
-        cherrypy.request.hooks.attach('before_finalize', self._set_headers)
-        return super()._setup()
+    # Check if https is enabled
+    https = request.base.startswith('https')
 
-    def _set_headers(self):
-        response = cherrypy.serving.response
-        # Define X-Frame-Options to avoid Clickjacking
-        response.headers['X-Frame-Options'] = 'DENY'
+    # Define X-Frame-Options to avoid Clickjacking
+    if xfo:
+        response.headers['X-Frame-Options'] = xfo
 
-        # Enforce security on cookies
-        cookie = response.cookie.get('session_id', None)
-        if cookie:
-            # Awaiting bug fix in cherrypy
-            # https://github.com/cherrypy/cherrypy/issues/1767
-            # Force SameSite to Lax
-            cookie['samesite'] = 'Lax'
-            # Check if https is enabled
-            https = cherrypy.request.base.startswith('https')
-            if https:
-                cookie['secure'] = 1
+    # Enforce security on cookies
+    cookie = response.cookie.get('session_id', None)
+    if cookie:
+        # Awaiting bug fix in cherrypy
+        # https://github.com/cherrypy/cherrypy/issues/1767
+        # Force SameSite to Lax
+        cookie['samesite'] = 'Lax'
+        if https:
+            cookie['secure'] = 1
 
-    def run(self):
-        if cherrypy.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
-            # Check if Origin matches our target.
-            origin = cherrypy.request.headers.get('Origin', None)
-            if origin and not origin.startswith(cherrypy.request.base):
-                raise cherrypy.HTTPError(403, 'Unexpected Origin header')
+    # Add Cache-Control to avoid storing sensible information in Browser cache.
+    if no_cache:
+        response.headers['Cache-control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+
+    # Add Referrer-Policy
+    if referrer:
+        response.headers['Referrer-Policy'] = referrer
+
+    # Add X-Content-Type-Options to avoid browser to "sniff" to content-type
+    if nosniff:
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+
+    # Add X-XSS-Protection to enabled XSS protection
+    if xxp:
+        response.headers['X-XSS-Protection'] = xxp
+
+    # Add Content-Security-Policy
+    if csp:
+        response.headers['Content-Security-Policy'] = csp
+
+    # Add Strict-Transport-Security to force https use.
+    if https:
+        response.headers['Strict-Transport-Security'] = "max-age=31536000; includeSubDomains"
 
 
-cherrypy.tools.secure_headers = SecureHeaders()
+cherrypy.tools.secure_headers = cherrypy.Tool('before_request_body', set_headers, priority=71)

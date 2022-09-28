@@ -99,6 +99,28 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
         self.assertEqual("My Fullname", user.fullname)
 
+    def test_change_fullname_method_get(self):
+        # Given an authenticated user
+        # When trying to update full name using GET method
+        self.getPage(self.PREFS + '?action=set_profile_info&email=test@test.com')
+        # Then nothing happen
+        self.assertStatus(200)
+        self.assertNotInBody("Profile updated successfully.")
+        user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
+        self.assertEqual("", user.fullname)
+
+    def test_change_fullname_too_long(self):
+        # Given an authenticated user
+        # When update the fullname
+        self._set_profile_info("test@test.com", "Fullname" * 50)
+        # Then page return with error message
+        self.assertStatus(200)
+        self.assertNotInBody("Profile updated successfully.")
+        self.assertInBody("Fullname too long.")
+        # Then database is not updated
+        user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
+        self.assertEqual("", user.fullname)
+
     def test_change_email(self):
         self._set_profile_info("test@test.com")
         self.assertStatus(200)
@@ -125,23 +147,24 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody("Invalid email")
 
+    def test_change_email_with_too_long(self):
+        self._set_profile_info(("test1" * 50) + "@test.com")
+        self.assertInBody("Invalid email")
+
     def test_change_password(self):
         self.listener.user_password_changed.reset_mock()
         # When udating user's password
-        self._set_password(self.PASSWORD, "newpassword", "newpassword")
+        self._set_password(self.PASSWORD, "pr3j5Dwi", "pr3j5Dwi")
         self.assertInBody("Password updated successfully.")
         # Then a notification is raised
         self.listener.user_password_changed.assert_called_once()
-        # Change it back
-        self._set_password("newpassword", self.PASSWORD, self.PASSWORD)
-        self.assertInBody("Password updated successfully.")
 
     def test_change_password_with_wrong_confirmation(self):
         self._set_password(self.PASSWORD, "t", "a")
         self.assertInBody("The new password and its confirmation do not match.")
 
     def test_change_password_with_wrong_password(self):
-        self._set_password("oups", "newpassword", "newpassword")
+        self._set_password("oups", "pr3j5Dwi", "pr3j5Dwi")
         self.assertInBody("Wrong password")
 
     def test_change_password_with_too_short(self):
@@ -152,6 +175,14 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         new_password = 'a' * 129
         self._set_password(self.PASSWORD, new_password, new_password)
         self.assertInBody("Password must have between 8 and 128 characters.")
+
+    def test_change_password_method_get(self):
+        # Given an authenticated user
+        # Trying to update password with GET method
+        self.getPage(self.PREFS + '?action=set_password&new=pr3j5Dwi&confirm=pr3j5Dwi&current=' + self.PASSWORD)
+        # Then nothing happen
+        self.assertStatus(200)
+        self.assertNotInBody("Password updated successfully.")
 
     def test_invalid_pref(self):
         """

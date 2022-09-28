@@ -129,12 +129,46 @@ This next release focus on two-factor-authentication as a measure to increase se
 * Handle migration of older Rdiffweb database by adding the missing `repos.Encoding`, `repos.keepdays` and `users.role` columns #185
 * Replace deprecated references of `disutils.spawn.find_executable()` by `shutil.which()` #208
 * Add two-factor authentication with email verification #201
+* Generate a new session on login and 2FA #220
 
 Breaking changes:
 
 * Drop Ubuntu Hirsute & Impish (End-of-life)
 * `session-dir` is deprecated and should be replace by `rate-limit-dir`. User's session are stored in database.
 * previous `.css` customization are not barkward compatible
+
+## 2.4.9 (2002-09-28)
+
+This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
+
+* Add `Cache-Control` and other security headers [CVE-2022-3292](https://nvd.nist.gov/vuln/detail/CVE-2022-3292)
+* Enforce password policy using `password-score` based on [zxcvbn](https://github.com/dropbox/zxcvbn) [CVE-2022-3326](https://nvd.nist.gov/vuln/detail/CVE-2022-3326)
+
+## 2.4.8 (2022-09-26)
+
+This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
+
+* Clean-up invalid path on error page
+* Limit username field length [CVE-2022-3290](https://nvd.nist.gov/vuln/detail/CVE-2022-3290)
+* Limit user's email field length [CVE-2022-3272](https://nvd.nist.gov/vuln/detail/CVE-2022-3272)
+* Limit user's root directory field length [CVE-2022-3295](https://nvd.nist.gov/vuln/detail/CVE-2022-3295)
+* Limit SSH Key title field length [CVE-2022-3298](https://nvd.nist.gov/vuln/detail/CVE-2022-3298)
+
+## 2.4.7 (2002-09-21)
+
+This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
+
+* Generate a new session on login and 2FA #220 [CVE-2022-3269](https://nvd.nist.gov/vuln/detail/CVE-2022-3269)
+* Mitigate CSRF on user's settings #221 [CVE-2022-3274](https://nvd.nist.gov/vuln/detail/CVE-2022-3274)
+
+## 2.4.6 (2022-09-20)
+
+This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
+
+* Support MarkupSafe<3 for Debian bookworm
+* Mitigate CSRF on user's notification settings #216 [CVE-2022-3233](https://nvd.nist.gov/vuln/detail/CVE-2022-3233)
+* Mitigate CSRF on repository settings #217 [CVE-2022-3267](https://nvd.nist.gov/vuln/detail/CVE-2022-3267)
+* Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session on HTTP Error #218 [CVE-2022-3174](https://nvd.nist.gov/vuln/detail/CVE-2022-3174)
 
 ## 2.4.5 (2002-09-16)
 

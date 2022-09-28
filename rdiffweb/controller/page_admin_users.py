@@ -31,6 +31,9 @@ from rdiffweb.tools.i18n import gettext_lazy as _
 # Define the logger
 logger = logging.getLogger(__name__)
 
+# Max root directory path length
+MAX_PATH = 260
+
 
 class SizeField(Field):
     """
@@ -66,9 +69,27 @@ class SizeField(Field):
 
 class UserForm(CherryForm):
     userid = HiddenField(_('UserID'))
-    username = StringField(_('Username'), validators=[validators.data_required()])
-    fullname = StringField(_('Fullname'), validators=[validators.optional()])
-    email = EmailField(_('Email'), validators=[validators.optional()])
+    username = StringField(
+        _('Username'),
+        validators=[
+            validators.data_required(),
+            validators.length(max=256, message=_('Username too long.')),
+        ],
+    )
+    fullname = StringField(
+        _('Fullname'),
+        validators=[
+            validators.optional(),
+            validators.length(max=256, message=_('Fullname too long.')),
+        ],
+    )
+    email = EmailField(
+        _('Email'),
+        validators=[
+            validators.optional(),
+            validators.length(max=256, message=_('Email too long.')),
+        ],
+    )
     password = PasswordField(
         _('Password'),
         validators=[validators.optional()],
@@ -90,6 +111,9 @@ class UserForm(CherryForm):
     user_root = StringField(
         _('Root directory'),
         description=_("Absolute path defining the location of the repositories for this user."),
+        validators=[
+            validators.length(max=MAX_PATH, message=_('Root directory too long.')),
+        ],
     )
     role = SelectField(
         _('User Role'),

@@ -19,36 +19,76 @@ Plugin used to send email to users when their repository is getting too old.
 User can control the notification period.
 """
 
-import logging
 
 import cherrypy
+from wtforms.fields import HiddenField, SelectField, SubmitField
 
-from rdiffweb.controller import Controller, flash, validate_int
+from rdiffweb.controller import Controller, flash
+from rdiffweb.controller.form import CherryForm
 from rdiffweb.tools.i18n import ugettext as _
 
-_logger = logging.getLogger(__name__)
+
+class MaxAgeField(SelectField):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args,
+            choices=[
+                (0, _('disabled')),
+                (1, _('1 day')),
+                (2, _('2 days')),
+                (3, _('3 days')),
+                (4, _('4 days')),
+                (5, _('5 days')),
+                (6, _('6 days')),
+                (7, _('1 week')),
+                (14, _('2 weeks')),
+                (21, _('3 weeks')),
+                (28, _('4 weeks')),
+                (31, _('1 month')),
+            ],
+            coerce=int,
+            **kwargs
+        )
+
+
+class NotificationForm(CherryForm):
+    action = HiddenField(default="set_notification_info")
+
+    @classmethod
+    def create_form(cls, userobj):
+        # Create dynamic list of fields
+        data = {}
+        extends = {}
+        for repo in userobj.repo_objs:
+            extends[repo.display_name] = MaxAgeField(label=repo.display_name)
+            data[repo.display_name] = repo.maxage
+        extends['submit'] = SubmitField(label=_('Save changes'))
+        # Create class
+        sub_form = type('SubForm', (cls,), extends)
+        return sub_form(data=data)
+
+    def is_submitted(self):
+        return self.action.data == 'set_notification_info' and super().is_submitted()
+
+    def populate_obj(self, userobj):
+        # Loop trough user repo and update max age.
+        for repo in userobj.repo_objs:
+            if repo.display_name in self:
+                # Update the maxage
+                repo.maxage = self[repo.display_name].data
 
 
 class PagePrefNotification(Controller):
-    def _handle_set_notification_info(self, **kwargs):
-
-        # Loop trough user repo and update max age.
-        for repo in self.app.currentuser.repo_objs:
-            # Get value received for the repo.
-            value = kwargs.get(repo.name, None)
-            if value:
-                # Update the maxage
-                repo.maxage = validate_int(value)
-
     @cherrypy.expose
     def default(self, action=None, **kwargs):
         # Process the parameters.
-        if action == "set_notification_info":
-            self._handle_set_notification_info(**kwargs)
-            flash(_('Notification settings updated successfully.'))
+        form = NotificationForm.create_form(self.app.currentuser)
+        if form.validate_on_submit():
+            form.populate_obj(self.app.currentuser)
+            flash(_('Notification settings updated successfully.'), level='success')
 
         params = {
             'email': self.app.currentuser.email,
-            'repos': self.app.currentuser.repo_objs,
+            'form': form,
         }
         return self._compile_template("prefs_notification.html", **params)

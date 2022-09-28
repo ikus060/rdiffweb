@@ -41,7 +41,6 @@ import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
 import rdiffweb.tools.proxy
 import rdiffweb.tools.ratelimit
-import rdiffweb.tools.real_ip
 import rdiffweb.tools.secure_headers
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
@@ -87,9 +86,8 @@ cherrypy.config.environments['development'] = {
 @cherrypy.tools.currentuser(userobj=lambda username: UserObject.get_user(username))
 @cherrypy.tools.db()
 @cherrypy.tools.enrich_session()
-@cherrypy.tools.proxy(remote=None)
+@cherrypy.tools.proxy(remote='X-Real-IP')
 @cherrypy.tools.secure_headers()
-@cherrypy.tools.real_ip()
 class Root(LocationsPage):
     def __init__(self):
         self.login = LoginPage()
@@ -251,6 +249,10 @@ class RdiffwebApp(Application):
         logger.error(
             'error page: %s %s\n%s' % (kwargs.get('status', ''), kwargs.get('message', ''), kwargs.get('traceback', ''))
         )
+
+        # Replace message by generic one for 404. Default implementation leak path info.
+        if kwargs.get('status', '') == '404 Not Found':
+            kwargs['message'] = 'Nothing matches the given URI'
 
         # Check expected response type.
         mtype = cherrypy.tools.accept.callable(['text/html', 'text/plain'])  # @UndefinedVariable
