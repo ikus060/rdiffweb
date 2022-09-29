@@ -51,15 +51,17 @@ py3:
     - TOXENV: py3
       IMAGE: [python:3.6, python:3.7, python:3.8, python:3.9, python:3.10]
 
-buster-rdiff-backup2:
+rdiff-backup-beta:
   <<: *tox
-  image: python:3.7-buster
+  image: python:3.9-bullseye
   variables:
     TOXENV: buster
+  allow_failure: true
   before_script:
   - apt-get update
   - apt -y install librsync-dev
-  - pip install "rdiff-backup<3,>=2" tox
+  - pip install tox
+  - pip install -U --pre rdiff-backup
 
 debian:
   <<: *tox
