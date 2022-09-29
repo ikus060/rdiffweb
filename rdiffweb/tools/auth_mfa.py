@@ -34,8 +34,7 @@ MFA_CODE_TIME = '_auth_mfa_code_time'
 MFA_CODE_ATTEMPT = '_auth_mfa_code_attempt'
 
 MFA_DEFAULT_LENGTH = 8
-MFA_DEFAULT_CODE_TIMEOUT = 60  # 1 hour
-MFA_DEFAULT_CODE_MAX_ATTEMPT = 4
+MFA_CODE_MAX_ATTEMPT = 3
 
 
 class CheckAuthMfa(cherrypy.Tool):
@@ -48,20 +47,6 @@ class CheckAuthMfa(cherrypy.Tool):
         """
         length = cherrypy.request.config.get('tools.auth_mfa.code_length')
         return MFA_DEFAULT_LENGTH if length is None else int(length)
-
-    def _get_code_timeout(self):
-        """
-        Return the configured code timeout.
-        """
-        timeout = cherrypy.request.config.get('tools.auth_mfa.code_timeout')
-        return MFA_DEFAULT_CODE_TIMEOUT if timeout is None else int(timeout)
-
-    def _get_code_max_attempt(self):
-        """
-        Return the configured code attempt.
-        """
-        attempt = cherrypy.request.config.get('tools.auth_mfa.code_max_attempt')
-        return MFA_DEFAULT_CODE_MAX_ATTEMPT if attempt is None else int(attempt)
 
     def _get_redirect_url(self):
         """
@@ -108,8 +93,7 @@ class CheckAuthMfa(cherrypy.Tool):
         """
         Return True if the verification code expired and must be re-generate.
         """
-        code_timeout = self._get_code_timeout()
-        code_max_attempt = self._get_code_max_attempt()
+        code_timeout = cherrypy.request.config.get('tools.sessions.timeout', 60)
         session = cherrypy.session
         return (
             getattr(cherrypy, 'session', None) is None
@@ -117,7 +101,7 @@ class CheckAuthMfa(cherrypy.Tool):
             or session.get(MFA_CODE) is None
             or session.get(MFA_CODE_TIME) is None
             or session.get(MFA_CODE_TIME) + datetime.timedelta(minutes=code_timeout) < session.now()
-            or session.get(MFA_CODE_ATTEMPT) >= code_max_attempt
+            or session.get(MFA_CODE_ATTEMPT) >= MFA_CODE_MAX_ATTEMPT
         )
 
     def run(self, mfa_url='/mfa/', mfa_enabled=True, debug=False, **kwargs):
@@ -140,17 +124,15 @@ class CheckAuthMfa(cherrypy.Tool):
         if not enabled:
             return
 
-        # Check "remember me" status. Need to verify password every day.
+        # Check MFA is enabled with persistent session. We want to check user crendetials every "session.timeout"
         session = cherrypy.session
-        if (
-            session.get(LOGIN_PERSISTENT, False)
-            and session.get(LOGIN_TIME, False)
-            and session[LOGIN_TIME] + datetime.timedelta(days=1) < session.now()
-        ):
-            # Clear login_time to force login
-            del session[LOGIN_TIME]
-            self._set_redirect_url()
-            self.redirect_to_original_url()
+        if session.get(LOGIN_PERSISTENT, False) and session.get(LOGIN_TIME, False):
+            session_timeout = cherrypy.request.config.get('tools.sessions.timeout', 60)
+            if session[LOGIN_TIME] + datetime.timedelta(minutes=session_timeout) < session.now():
+                # Clear login_time to force login
+                del session[LOGIN_TIME]
+                self._set_redirect_url()
+                self.redirect_to_original_url()
 
         # Check if verified
         if not self._is_verified():

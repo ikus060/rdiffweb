@@ -78,9 +78,8 @@ cherrypy.config.environments['development'] = {
 }
 
 
-@cherrypy.tools.auth_form(login_url='/login/')
+@cherrypy.tools.auth_form()
 @cherrypy.tools.auth_mfa(
-    mfa_url='/mfa/',
     mfa_enabled=lambda username: UserObject.get_user(username).mfa == UserObject.ENABLED_MFA,
 )
 @cherrypy.tools.currentuser(userobj=lambda username: UserObject.get_user(username))
@@ -208,6 +207,7 @@ class RdiffwebApp(Application):
                 'tools.sessions.httponly': True,
                 'tools.sessions.timeout': cfg.session_timeout,  # minutes
                 'tools.sessions.persistent': False,  # auth_form should update this.
+                'tools.auth_form.timeout': cfg.session_persistent_timeout,  # minutes
                 'tools.ratelimit.debug': cfg.debug,
                 'tools.ratelimit.delay': 60,
                 'tools.ratelimit.anonymous_limit': cfg.rate_limit,

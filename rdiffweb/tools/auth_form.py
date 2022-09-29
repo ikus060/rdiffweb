@@ -72,7 +72,7 @@ class CheckAuthForm(cherrypy.Tool):
         # Redirect user to original URL
         raise cherrypy.HTTPRedirect(self._get_redirect_url())
 
-    def run(self, login_url='/login/', logout_url='/logout', debug=False):
+    def run(self, login_url='/login/', logout_url='/logout', timeout=43200):
         """
         A tool that verify if the session is associated to a user by tracking
         a session key. If session is not authenticated, redirect user to login page.
@@ -96,12 +96,15 @@ class CheckAuthForm(cherrypy.Tool):
             # And redirect to login page
             raise cherrypy.HTTPRedirect(login_url)
 
-        # If login, update the cookie max-age/expires according to "Remember me" (persistent)
+        # If login is persistent, update the cookie max-age/expires
         if cherrypy.session.get(LOGIN_PERSISTENT, False):
-            timeout = cherrypy.session.timeout
+            cherrypy.session.timeout = timeout
             cookie = cherrypy.serving.response.cookie
             cookie['session_id']['max-age'] = timeout * 60
             cookie['session_id']['expires'] = httputil.HTTPDate(time.time() + timeout * 60)
+        else:
+            session_timeout = cherrypy.request.config.get('tools.sessions.timeout', 60)
+            cherrypy.session.timeout = session_timeout
 
     def login(self, username, persistent=False):
         """
