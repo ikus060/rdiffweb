@@ -4,6 +4,8 @@ set -e
 
 case "${1}" in
 	configure)
+		# Encforce permissions on /etc/rdiffweb
+		mkdir -p --mode 750 /etc/rdiffweb
 		# Create default session directory
 		mkdir -p /var/lib/rdiffweb/session
 		# Create symbolic link to Chart.js
