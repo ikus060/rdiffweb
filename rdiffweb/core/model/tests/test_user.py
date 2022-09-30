@@ -200,28 +200,6 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Check if listener called
         self.listener.user_password_changed.assert_called_once_with(userobj)
 
-    def test_set_password_with_old_password(self):
-        # Given a user in drabase with a password
-        userobj = UserObject.add_user('john', 'password')
-        self.listener.user_password_changed.reset_mock()
-        # When updating the user's password with old_password
-        userobj.set_password('new_password', old_password='password')
-        # Then password is SSHA
-        self.assertTrue(check_password('new_password', userobj.hash_password))
-        # Check if listener called
-        self.listener.user_password_changed.assert_called_once_with(userobj)
-
-    def test_set_password_with_invalid_old_password(self):
-        # Given a user in drabase with a password
-        userobj = UserObject.add_user('foo', 'password')
-        self.listener.user_password_changed.reset_mock()
-        # When updating the user's password with wrong old_password
-        # Then an exception is raised
-        with self.assertRaises(ValueError):
-            userobj.set_password('new_password', old_password='invalid')
-        # Check if listener called
-        self.listener.user_password_changed.assert_not_called()
-
     def test_delete_user(self):
         # Given an existing user in database
         userobj = UserObject.add_user('vicky')

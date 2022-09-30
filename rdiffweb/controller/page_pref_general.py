@@ -29,6 +29,10 @@ from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.model import UserObject
 from rdiffweb.tools.i18n import gettext_lazy as _
 
+# Maximum number of password change attempt before logout
+CHANGE_PASSWORD_MAX_ATTEMPT = 5
+CHANGE_PASSWORD_ATTEMPTS = 'change_password_attempts'
+
 
 class UserProfileForm(CherryForm):
     action = HiddenField(default='set_profile_info')
@@ -85,11 +89,30 @@ class UserPasswordForm(CherryForm):
         return super().is_submitted() and self.action.data == 'set_password'
 
     def populate_obj(self, user):
-        try:
-            user.set_password(self.new.data, old_password=self.current.data)
-            flash(_("Password updated successfully."), level='success')
-        except ValueError as e:
-            flash(str(e), level='warning')
+        # Check if current password is "valid" if Not, rate limit the
+        # number of attempts and logout user after too many invalid attempts.
+        if not user.validate_password(self.current.data):
+            cherrypy.session[CHANGE_PASSWORD_ATTEMPTS] = cherrypy.session.get(CHANGE_PASSWORD_ATTEMPTS, 0) + 1
+            attempts = cherrypy.session[CHANGE_PASSWORD_ATTEMPTS]
+            if attempts >= CHANGE_PASSWORD_MAX_ATTEMPT:
+                cherrypy.session.clear()
+                cherrypy.session.regenerate()
+                flash(
+                    _("You were logged out because you entered the wrong password too many times."),
+                    level='warning',
+                )
+                raise cherrypy.HTTPRedirect('/login/')
+            flash(_("Wrong current password."), level='warning')
+        else:
+            # Clear number of attempts
+            if CHANGE_PASSWORD_ATTEMPTS in cherrypy.session:
+                del cherrypy.session[CHANGE_PASSWORD_ATTEMPTS]
+            # If Valid, update password
+            try:
+                user.set_password(self.new.data)
+                flash(_("Password updated successfully."), level='success')
+            except ValueError as e:
+                flash(str(e), level='warning')
 
 
 class RefreshForm(CherryForm):

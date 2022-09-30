@@ -344,13 +344,12 @@ class UserObject(Base):
     def is_maintainer(self):
         return self.role <= self.MAINTAINER_ROLE
 
-    def set_password(self, password, old_password=None):
+    def set_password(self, password):
         """
         Change the user's password. Raise a ValueError if the username or
         the password are invalid.
         """
         assert isinstance(password, str)
-        assert old_password is None or isinstance(old_password, str)
         if not password:
             raise ValueError("password can't be empty")
         cfg = cherrypy.tree.apps[''].cfg
@@ -358,9 +357,6 @@ class UserObject(Base):
         # Cannot update admin-password if defined
         if self.username == cfg.admin_user and cfg.admin_password:
             raise ValueError(_("can't update admin-password defined in configuration file"))
-
-        if old_password and not check_password(old_password, self.hash_password):
-            raise ValueError(_("Wrong password"))
 
         # Check password length
         if cfg.password_min_length > len(password) or len(password) > cfg.password_max_length:
@@ -447,6 +443,9 @@ class UserObject(Base):
                 access_token.access_time = datetime.datetime.utcnow
                 return True
         return False
+
+    def validate_password(self, password):
+        return check_password(password, self.hash_password)
 
 
 @event.listens_for(UserObject.hash_password, "set")
