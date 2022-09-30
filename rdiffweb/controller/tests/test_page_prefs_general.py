@@ -182,7 +182,7 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
 
     def test_change_password_with_wrong_password(self):
         self._set_password("oups", "pr3j5Dwi", "pr3j5Dwi")
-        self.assertInBody("Wrong password")
+        self.assertInBody("Wrong current password")
 
     def test_change_password_with_too_short(self):
         self._set_password(self.PASSWORD, "short", "short")
@@ -192,6 +192,21 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         new_password = 'a' * 129
         self._set_password(self.PASSWORD, new_password, new_password)
         self.assertInBody("Password must have between 8 and 128 characters.")
+
+    def test_change_password_too_many_attemps(self):
+        # When udating user's password with wrong current password 5 times
+        for _i in range(1, 5):
+            self._set_password('wrong', "pr3j5Dwi", "pr3j5Dwi")
+            self.assertStatus(200)
+            self.assertInBody("Wrong current password.")
+        # Then user session is cleared and user is redirect to login page
+        self._set_password('wrong', "pr3j5Dwi", "pr3j5Dwi")
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', self.baseurl + '/login/')
+        # Then a warning message is displayed on login page
+        self.getPage('/login/')
+        self.assertStatus(200)
+        self.assertInBody('You were logged out because you entered the wrong password too many times.')
 
     def test_change_password_method_get(self):
         # Given an authenticated user

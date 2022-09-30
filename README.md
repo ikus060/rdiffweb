@@ -132,6 +132,7 @@ This next release focus on two-factor-authentication as a measure to increase se
 * Generate a new session on login and 2FA #220
 * Enforce permission on /etc/rdiffweb configuration folder
 * Enforce validation on fullname, username and email
+* Limit incorrect attempts to change the user's password to prevent brute force attacks #225 [CVE-2022-3273](https://nvd.nist.gov/vuln/detail/CVE-2022-3273)
 
 Breaking changes:
 

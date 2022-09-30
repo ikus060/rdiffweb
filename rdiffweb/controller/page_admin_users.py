@@ -159,7 +159,7 @@ class UserForm(CherryForm):
     def populate_obj(self, userobj):
         # Save password if defined
         if self.password.data:
-            userobj.set_password(self.password.data, old_password=None)
+            userobj.set_password(self.password.data)
         userobj.role = self.role.data
         userobj.fullname = self.fullname.data or ''
         userobj.email = self.email.data or ''

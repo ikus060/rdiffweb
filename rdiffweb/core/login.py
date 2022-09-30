@@ -21,7 +21,6 @@ import cherrypy
 from cherrypy.process.plugins import SimplePlugin
 
 from rdiffweb.core.model import UserObject
-from rdiffweb.core.passwd import check_password
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +51,7 @@ class LoginPlugin(SimplePlugin):
         Only verify the user's credentials using the database store.
         """
         user = UserObject.query.filter_by(username=username).first()
-        if user and check_password(password, user.hash_password):
+        if user and user.validate_password(password):
             return username, {}
         return False
 
