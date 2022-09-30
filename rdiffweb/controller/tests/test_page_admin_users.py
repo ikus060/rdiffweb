@@ -18,6 +18,7 @@
 from unittest.mock import ANY, MagicMock
 
 import cherrypy
+from parameterized import parameterized
 
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
@@ -170,40 +171,58 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.assertInBody("User account removed.")
         self.assertNotInBody("test2")
 
-    def test_edit_fullname(self):
+    @parameterized.expand(
+        [
+            # Invalid
+            ('evil.com', False),
+            ('http://test', False),
+            ('email@test.test', False),
+            ('/test/', False),
+            # Valid
+            ('My fullname', True),
+            ('Test Test', True),
+            ('Éric Terrien-Pascal', True),
+            ("Tel'c", True),
+        ]
+    )
+    def test_edit_fullname_with_special_character(self, new_fullname, expected_valid):
         # Given an existing user
         # When updating the user's fullname
         self.getPage(
             "/admin/users/",
             method='POST',
-            body={'action': 'edit', 'username': self.USERNAME, 'fullname': 'My fullname'},
+            body={'action': 'edit', 'username': self.USERNAME, 'fullname': new_fullname},
         )
         self.assertStatus(200)
-        # Then user is updated successfully
-        self.assertInBody("User information modified successfully.")
-        # Then database is updated
-        obj = UserObject.query.filter(UserObject.username == self.USERNAME).first()
-        self.assertEqual('My fullname', obj.fullname)
+        if expected_valid:
+            self.assertInBody("User information modified successfully.")
+            self.assertNotInBody("Fullname: Must not contain any special characters.")
+        else:
+            self.assertNotInBody("User information modified successfully.")
+            self.assertInBody("Fullname: Must not contain any special characters.")
 
-    def test_add_edit_delete_user_with_encoding(self):
-        """
-        Check creation of user with non-ascii char.
-        """
-        self._add_user("Éric", "éric@test.com", "pr3j5Dwi", "/home/", UserObject.USER_ROLE)
-        self.assertInBody("User added successfully.")
-        self.assertInBody("Éric")
-        self.assertInBody("éric@test.com")
-        # Update user
-        self._edit_user("Éric", "eric.létourno@test.com", "écureuil", "/tmp/", UserObject.ADMIN_ROLE)
-        self.assertInBody("User information modified successfully.")
-        self.assertInBody("Éric")
-        self.assertInBody("eric.létourno@test.com")
-        self.assertNotInBody("/home/")
-        self.assertInBody("/tmp/")
-
-        self._delete_user("Éric")
-        self.assertInBody("User account removed.")
-        self.assertNotInBody("Éric")
+    @parameterized.expand(
+        [
+            # Invalid
+            ('http://username', False),
+            ('username@test.test', False),
+            ('/username/', False),
+            # Valid
+            ('username.com', True),
+            ('admin_user', True),
+            ('test.test', True),
+            ('test-test', True),
+        ]
+    )
+    def test_add_user_with_special_character(self, new_username, expected_valid):
+        self._add_user(new_username, "eric@test.com", "pr3j5Dwi", "/home/", UserObject.USER_ROLE)
+        self.assertStatus(200)
+        if expected_valid:
+            self.assertInBody("User added successfully.")
+            self.assertNotInBody("Username: Must not contain any special characters.")
+        else:
+            self.assertNotInBody("User added successfully.")
+            self.assertInBody("Username: Must not contain any special characters.")
 
     def test_add_user_with_empty_username(self):
         """
