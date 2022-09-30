@@ -187,8 +187,7 @@ test-package:deb:
   - apt update && apt install -y ./dist/$DIST/rdiffweb*.deb
   - rdiffweb --version
   - (/usr/bin/rdiffweb &)
-  - apt install -y curl
-  - curl http://localhost:8080
+  - timeout 60 bash -c 'until curl --silent http://localhost:8080; do sleep 1; done'
   
 publish:sonar:master:
   stage: sonar
