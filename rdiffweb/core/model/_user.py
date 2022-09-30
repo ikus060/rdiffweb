@@ -55,6 +55,7 @@ class UserObject(Base):
     __tablename__ = 'users'
     __table_args__ = {'sqlite_autoincrement': True}
 
+    # Value for role.
     ADMIN_ROLE = 0
     MAINTAINER_ROLE = 5
     USER_ROLE = 10
@@ -63,8 +64,14 @@ class UserObject(Base):
         'maintainer': MAINTAINER_ROLE,
         'user': USER_ROLE,
     }
+    # Value for mfa field
     DISABLED_MFA = 0
     ENABLED_MFA = 1
+
+    # Regex pattern to be used for validation.
+    PATTERN_EMAIL = r"[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
+    PATTERN_FULLNAME = r"""[^!"#$%&()*+,./:;<=>?@[\]_{|}~]+$"""
+    PATTERN_USERNAME = r"[a-zA-Z0-9_.\-]+$"
 
     userid = Column('UserID', Integer, primary_key=True)
     _username = Column('Username', String, nullable=False, unique=True)

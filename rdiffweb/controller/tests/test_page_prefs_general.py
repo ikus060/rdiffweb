@@ -23,6 +23,7 @@ Created on Dec 26, 2015
 from unittest.mock import MagicMock
 
 import cherrypy
+from parameterized import parameterized
 
 import rdiffweb.test
 from rdiffweb.core.model import RepoObject, UserObject
@@ -88,16 +89,31 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.assertIsNotNone(user)
         self.assertEqual("test@test.com", user.email)
 
-    def test_change_fullname(self):
+    @parameterized.expand(
+        [
+            # Invalid
+            ('@test.com', False),
+            ('test.com', False),
+            ('test@te_st.com', False),
+            ('test@test.com, test2@test.com', False),
+            # Valid
+            ('test', True),
+            ('My Fullname', True),
+        ]
+    )
+    def test_change_fullname(self, new_fullname, expected_valid):
         # Given an authenticated user
         # When update the fullname
-        self._set_profile_info("test@test.com", "My Fullname")
+        self._set_profile_info("test@test.com", new_fullname)
         self.assertStatus(200)
-        self.assertInBody("Profile updated successfully.")
-        # Then database is updated with fullname
-        self.assertInBody("My Fullname")
-        user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
-        self.assertEqual("My Fullname", user.fullname)
+        if expected_valid:
+            self.assertInBody("Profile updated successfully.")
+            # Then database is updated with fullname
+            self.assertInBody(new_fullname)
+            user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
+            self.assertEqual(new_fullname, user.fullname)
+        else:
+            self.assertNotInBody("Profile updated successfully.")
 
     def test_change_fullname_method_get(self):
         # Given an authenticated user
@@ -126,30 +142,31 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody("Profile updated successfully.")
 
-    def test_change_email_with_invalid_email(self):
-        self._set_profile_info("@test.com")
+    @parameterized.expand(
+        [
+            # Invalid
+            ('@test.com', False),
+            ('test.com', False),
+            ('test', False),
+            ('test@te_st.com', False),
+            ('test@test.com, test2@test.com', False),
+            # Valid
+            ('test@test.com', True),
+        ]
+    )
+    def test_change_email_with_invalid_email(self, new_email, expected_valid):
+        self._set_profile_info(new_email)
         self.assertStatus(200)
-        self.assertInBody("Invalid email")
-
-        self._set_profile_info("test.com")
-        self.assertStatus(200)
-        self.assertInBody("Invalid email")
-
-        self._set_profile_info("test")
-        self.assertStatus(200)
-        self.assertInBody("Invalid email")
-
-        self._set_profile_info("test@te_st.com")
-        self.assertStatus(200)
-        self.assertInBody("Invalid email")
-
-        self._set_profile_info("test@test.com, test2@test.com")
-        self.assertStatus(200)
-        self.assertInBody("Invalid email")
+        if expected_valid:
+            self.assertInBody("Profile updated successfully.")
+            self.assertNotInBody("Must be a valid email address.")
+        else:
+            self.assertNotInBody("Profile updated successfully.")
+            self.assertInBody("Must be a valid email address.")
 
     def test_change_email_with_too_long(self):
         self._set_profile_info(("test1" * 50) + "@test.com")
-        self.assertInBody("Invalid email")
+        self.assertInBody("Email too long.")
 
     def test_change_password(self):
         self.listener.user_password_changed.reset_mock()

@@ -19,9 +19,6 @@ Default preference page to show general user information. It allows user
 to change password ans refresh it's repository view.
 """
 
-import logging
-import re
-
 import cherrypy
 from wtforms.fields import HiddenField, PasswordField, StringField, SubmitField
 from wtforms.fields.html5 import EmailField
@@ -29,12 +26,8 @@ from wtforms.validators import DataRequired, EqualTo, InputRequired, Length, Opt
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
+from rdiffweb.core.model import UserObject
 from rdiffweb.tools.i18n import gettext_lazy as _
-
-# Define the logger
-_logger = logging.getLogger(__name__)
-
-PATTERN_EMAIL = re.compile(r'[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$')
 
 
 class UserProfileForm(CherryForm):
@@ -45,14 +38,15 @@ class UserProfileForm(CherryForm):
         validators=[
             Optional(),
             Length(max=256, message=_('Fullname too long.')),
+            Regexp(UserObject.PATTERN_FULLNAME, message=_('Must not contain any special characters.')),
         ],
     )
     email = EmailField(
         _('Email'),
         validators=[
             DataRequired(),
-            Length(max=256, message=_("Invalid email.")),
-            Regexp(PATTERN_EMAIL, message=_("Invalid email.")),
+            Length(max=256, message=_("Email too long.")),
+            Regexp(UserObject.PATTERN_EMAIL, message=_("Must be a valid email address.")),
         ],
     )
     set_profile_info = SubmitField(_('Save changes'))

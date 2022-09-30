@@ -74,6 +74,8 @@ class UserForm(CherryForm):
         validators=[
             validators.data_required(),
             validators.length(max=256, message=_('Username too long.')),
+            validators.length(min=3, message=_('Username too short.')),
+            validators.regexp(UserObject.PATTERN_USERNAME, message=_('Must not contain any special characters.')),
         ],
     )
     fullname = StringField(
@@ -81,6 +83,7 @@ class UserForm(CherryForm):
         validators=[
             validators.optional(),
             validators.length(max=256, message=_('Fullname too long.')),
+            validators.regexp(UserObject.PATTERN_FULLNAME, message=_('Must not contain any special characters.')),
         ],
     )
     email = EmailField(
@@ -88,6 +91,7 @@ class UserForm(CherryForm):
         validators=[
             validators.optional(),
             validators.length(max=256, message=_('Email too long.')),
+            validators.regexp(UserObject.PATTERN_EMAIL, message=_('Must be a valid email address.')),
         ],
     )
     password = PasswordField(
@@ -139,17 +143,6 @@ class UserForm(CherryForm):
         description=_("Disk spaces (in bytes) used by this user."),
         widget=widgets.HiddenInput(),
     )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        cfg = cherrypy.tree.apps[''].cfg
-        self.password.validators += [
-            validators.length(
-                min=cfg.password_min_length,
-                max=cfg.password_max_length,
-                message=_('Password must have between %(min)d and %(max)d characters.'),
-            )
-        ]
 
     def validate_role(self, field):
         # Don't allow the user to changes it's "role" state.

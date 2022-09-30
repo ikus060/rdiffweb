@@ -131,6 +131,7 @@ This next release focus on two-factor-authentication as a measure to increase se
 * Add two-factor authentication with email verification #201
 * Generate a new session on login and 2FA #220
 * Enforce permission on /etc/rdiffweb configuration folder
+* Enforce validation on fullname, username and email
 
 Breaking changes:
 
