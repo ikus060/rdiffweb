@@ -133,6 +133,7 @@ This next release focus on two-factor-authentication as a measure to increase se
 * Enforce permission on /etc/rdiffweb configuration folder
 * Enforce validation on fullname, username and email
 * Limit incorrect attempts to change the user's password to prevent brute force attacks #225 [CVE-2022-3273](https://nvd.nist.gov/vuln/detail/CVE-2022-3273)
+* Enforce password policy new password cannot be set as new password [CVE-2022-3376](https://nvd.nist.gov/vuln/detail/CVE-2022-3376)
 
 Breaking changes:
 
