@@ -20,6 +20,7 @@ Created on Mar 13, 2019
 @author: Patrik Dufresne
 """
 
+from parameterized import parameterized
 
 import rdiffweb.test
 
@@ -46,6 +47,26 @@ class ControllerTest(rdiffweb.test.WebCase):
         self.assertStatus('200 OK')
         self.assertInBody('/static/default.css')
 
+    @parameterized.expand(
+        [
+            '/favicon.ico',
+            '/static/default.css',
+            '/static/js/rdiffweb.js',
+            '/static/orange.css',
+        ]
+    )
+    def test_static_files(self, path):
+        """
+        Check if the theme is properly configure.
+        """
+        self.getPage('/logout')
+        self.getPage(path)
+        self.assertStatus(200)
+
+    def test_path_traversal(self):
+        self.getPage('/static//../../test.txt')
+        self.assertStatus(403)
+
 
 class ControllerOrangeThemeTest(rdiffweb.test.WebCase):
 
@@ -53,7 +74,9 @@ class ControllerOrangeThemeTest(rdiffweb.test.WebCase):
 
     default_config = {'DefaultTheme': 'orange'}
 
-    def test_theme(self):
+    from parameterized import parameterized
+
+    def test_static(self):
         """
         Check if the theme is properly configure.
         """

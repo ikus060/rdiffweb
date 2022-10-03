@@ -42,7 +42,7 @@ import rdiffweb.tools.real_ip
 import rdiffweb.tools.secure_headers
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
-from rdiffweb.controller.dispatch import static  # noqa
+from rdiffweb.controller.dispatch import staticdir, staticfile
 from rdiffweb.controller.page_admin import AdminPage
 from rdiffweb.controller.page_browse import BrowsePage
 from rdiffweb.controller.page_delete import DeletePage
@@ -97,11 +97,11 @@ class Root(LocationsPage):
 
         # Register static dir.
         static_dir = pkg_resources.resource_filename('rdiffweb', 'static')  # @UndefinedVariable
-        self.static = static(static_dir)
+        self.static = staticdir(static_dir)
 
         # Register robots.txt
         robots_txt = pkg_resources.resource_filename('rdiffweb', 'static/robots.txt')  # @UndefinedVariable
-        self.robots_txt = static(robots_txt)
+        self.robots_txt = staticfile(robots_txt)
 
 
 class RdiffwebApp(Application):
@@ -208,11 +208,11 @@ class RdiffwebApp(Application):
         Application.__init__(self, root=Root(), config=config)
 
         # Register favicon.ico
-        self.root.favicon_ico = static(self._favicon)
+        self.root.favicon_ico = staticfile(self._favicon)
 
         # Register header_logo
         if self._header_logo:
-            self.root.header_logo = static(self._header_logo)
+            self.root.header_logo = staticfile(self._header_logo)
 
         # Define TEMP env
         if self._tempdir:

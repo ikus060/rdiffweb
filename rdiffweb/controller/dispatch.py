@@ -22,10 +22,7 @@ Default page handler
 """
 
 
-import os
-
 import cherrypy
-from cherrypy.lib.static import mimetypes, serve_file
 
 from rdiffweb.core.rdw_helpers import unquote_url
 
@@ -96,32 +93,33 @@ def poppath(*args, **kwargs):
     return decorated
 
 
-def static(path):
+def staticdir(path):
     """
-    Create a page handler to serve static files. Disable authentication.
+    Create a page handler to serve static directory.
     """
-    assert isinstance(path, str)
-    assert os.path.exists(path), "%r doesn't exists" % path
-    content_type = None
-    if os.path.isfile(path):
-        # Set content-type based on filename extension
-        ext = ""
-        i = path.rfind('.')
-        if i != -1:
-            ext = path[i:].lower()
-        content_type = mimetypes.types_map.get(ext, None)  # @UndefinedVariable
 
     @cherrypy.expose
     @cherrypy.tools.auth_form(on=False)
     @cherrypy.tools.sessions(on=False)
     @cherrypy.tools.secure_headers(on=False)
+    @cherrypy.tools.staticdir(section="", dir=path)
     def handler(*args, **kwargs):
-        if cherrypy.request.method not in ('GET', 'HEAD'):
-            return None
-        filename = os.path.join(path, *args)
-        assert filename.startswith(path)
-        if not os.path.isfile(filename):
-            return None
-        return serve_file(filename, content_type)
+        return None
+
+    return handler
+
+
+def staticfile(path):
+    """
+    Create a page handler to serve static file.
+    """
+
+    @cherrypy.expose
+    @cherrypy.tools.auth_form(on=False)
+    @cherrypy.tools.sessions(on=False)
+    @cherrypy.tools.secure_headers(on=False)
+    @cherrypy.tools.staticfile(filename=path)
+    def handler(*args, **kwargs):
+        return None
 
     return handler
