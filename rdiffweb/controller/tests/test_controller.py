@@ -20,7 +20,6 @@ Created on Mar 13, 2019
 @author: Patrik Dufresne
 """
 
-
 import datetime
 
 from parameterized import parameterized
@@ -78,6 +77,7 @@ class ControllerTest(rdiffweb.test.WebCase):
         """
         Check if the theme is properly configure.
         """
+        self.getPage('/logout')
         self.getPage(path)
         self.assertStatus(200)
 
@@ -86,14 +86,18 @@ class ControllerTest(rdiffweb.test.WebCase):
         Check if the theme is properly configure.
         """
         self.getPage("/static/default.css", method="POST")
-        self.assertStatus(405)
+        self.assertStatus(400)
 
     def test_static_invalid_file(self):
         """
         Check if the theme is properly configure.
         """
         self.getPage("/static/invalid.css")
-        self.assertStatus(404)
+        self.assertStatus(400)
+
+    def test_path_traversal(self):
+        self.getPage('/static//../../test.txt')
+        self.assertStatus(403)
 
 
 class ControllerOrangeThemeTest(rdiffweb.test.WebCase):
@@ -102,7 +106,7 @@ class ControllerOrangeThemeTest(rdiffweb.test.WebCase):
 
     default_config = {'DefaultTheme': 'orange'}
 
-    def test_theme(self):
+    def test_static(self):
         """
         Check if the theme is properly configure.
         """

@@ -23,10 +23,8 @@ Default page handler
 
 
 import inspect
-import os
 
 import cherrypy
-from cherrypy.lib.static import mimetypes, serve_file
 
 import rdiffweb.tools.auth_form  # noqa
 import rdiffweb.tools.auth_mfa  # noqa
@@ -146,20 +144,10 @@ def poppath(*args, **kwargs):
     return decorated
 
 
-def static(path):
+def staticdir(path):
     """
-    Create a page handler to serve static files. Disable authentication.
+    Create a page handler to serve static directory.
     """
-    assert isinstance(path, str)
-    assert os.path.exists(path), "%r doesn't exists" % path
-    content_type = None
-    if os.path.isfile(path):
-        # Set content-type based on filename extension
-        ext = ""
-        i = path.rfind('.')
-        if i != -1:
-            ext = path[i:].lower()
-        content_type = mimetypes.types_map.get(ext, None)  # @UndefinedVariable
 
     @cherrypy.expose
     @cherrypy.tools.auth_form(on=False)
@@ -167,13 +155,26 @@ def static(path):
     @cherrypy.tools.ratelimit(on=False)
     @cherrypy.tools.sessions(on=False)
     @cherrypy.tools.secure_headers(on=False)
+    @cherrypy.tools.staticdir(section="", dir=path)
     def handler(*args, **kwargs):
-        if cherrypy.request.method not in ('GET', 'HEAD'):
-            raise cherrypy.HTTPError(405)
-        filename = os.path.join(path, *args)
-        assert filename.startswith(path)
-        if not os.path.isfile(filename):
-            raise cherrypy.HTTPError(404)
-        return serve_file(filename, content_type)
+        raise cherrypy.HTTPError(400)
+
+    return handler
+
+
+def staticfile(path):
+    """
+    Create a page handler to serve static file.
+    """
+
+    @cherrypy.expose
+    @cherrypy.tools.auth_form(on=False)
+    @cherrypy.tools.auth_mfa(on=False)
+    @cherrypy.tools.ratelimit(on=False)
+    @cherrypy.tools.sessions(on=False)
+    @cherrypy.tools.secure_headers(on=False)
+    @cherrypy.tools.staticfile(filename=path)
+    def handler(*args, **kwargs):
+        raise cherrypy.HTTPError(400)
 
     return handler

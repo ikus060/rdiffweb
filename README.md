@@ -140,7 +140,13 @@ Breaking changes:
 * `session-dir` is deprecated and should be replace by `rate-limit-dir`. User's session are stored in database.
 * previous `.css` customization are not barkward compatible
 
-## 2.4.9 (2002-09-28)
+## 2.4.10 (2022-10-03)
+
+This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
+
+* Mitigate path traversal vulnerability [CVE-2022-3389](https://nvd.nist.gov/vuln/detail/CVE-2022-3389)
+
+## 2.4.9 (2022-09-28)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
