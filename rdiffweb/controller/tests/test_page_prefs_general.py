@@ -82,7 +82,8 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
             method='POST',
             body={'action': 'set_profile_info', 'email': 'test@test.com', 'username': 'test'},
         )
-        self.assertStatus(200)
+        self.assertStatus(303)
+        self.getPage(self.PREFS)
         self.assertInBody("Profile updated successfully.")
         # Then database is updated with fullname
         user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
@@ -105,14 +106,16 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         # Given an authenticated user
         # When update the fullname
         self._set_profile_info("test@test.com", new_fullname)
-        self.assertStatus(200)
         if expected_valid:
+            self.assertStatus(303)
+            self.getPage(self.PREFS)
             self.assertInBody("Profile updated successfully.")
             # Then database is updated with fullname
             self.assertInBody(new_fullname)
             user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
             self.assertEqual(new_fullname, user.fullname)
         else:
+            self.assertStatus(200)
             self.assertNotInBody("Profile updated successfully.")
 
     def test_change_fullname_method_get(self):
@@ -139,7 +142,8 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
 
     def test_change_email(self):
         self._set_profile_info("test@test.com")
-        self.assertStatus(200)
+        self.assertStatus(303)
+        self.getPage(self.PREFS)
         self.assertInBody("Profile updated successfully.")
 
     @parameterized.expand(
@@ -156,11 +160,13 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
     )
     def test_change_email_with_invalid_email(self, new_email, expected_valid):
         self._set_profile_info(new_email)
-        self.assertStatus(200)
         if expected_valid:
+            self.assertStatus(303)
+            self.getPage(self.PREFS)
             self.assertInBody("Profile updated successfully.")
             self.assertNotInBody("Must be a valid email address.")
         else:
+            self.assertStatus(200)
             self.assertNotInBody("Profile updated successfully.")
             self.assertInBody("Must be a valid email address.")
 
@@ -172,6 +178,10 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.listener.user_password_changed.reset_mock()
         # When udating user's password
         self._set_password(self.PASSWORD, "pr3j5Dwi", "pr3j5Dwi")
+        # Then user is redirect to same page
+        self.assertStatus(303)
+        # Then the page return success message.
+        self.getPage(self.PREFS)
         self.assertInBody("Password updated successfully.")
         # Then a notification is raised
         self.listener.user_password_changed.assert_called_once()
@@ -207,6 +217,16 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.getPage('/login/')
         self.assertStatus(200)
         self.assertInBody('You were logged out because you entered the wrong password too many times.')
+
+    def test_change_password_with_same_value(self):
+        # Given a user with a password
+        self._set_password(self.PASSWORD, "pr3j5Dwi", "pr3j5Dwi")
+        self.assertStatus(303)
+        # When updating the pasword with the same password
+        self._set_password("pr3j5Dwi", "pr3j5Dwi", "pr3j5Dwi")
+        self.assertStatus(200)
+        # Then an error should be displayed
+        self.assertInBody("The new password must be different from the current password.")
 
     def test_change_password_method_get(self):
         # Given an authenticated user
