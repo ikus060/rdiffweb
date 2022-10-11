@@ -62,7 +62,7 @@ class LoginPage(Controller):
 
     @cherrypy.expose()
     @cherrypy.tools.auth_mfa(on=False)
-    @cherrypy.tools.ratelimit()
+    @cherrypy.tools.ratelimit(methods=['POST'])
     def index(self, **kwargs):
         """
         Called by auth_form to generate the /login/ page.

@@ -209,8 +209,8 @@ class RdiffwebApp(Application):
                 'tools.sessions.persistent': False,  # auth_form should update this.
                 'tools.auth_form.timeout': cfg.session_persistent_timeout,  # minutes
                 'tools.ratelimit.debug': cfg.debug,
-                'tools.ratelimit.delay': 60,
-                'tools.ratelimit.anonymous_limit': cfg.rate_limit,
+                'tools.ratelimit.delay': 3600,
+                'tools.ratelimit.limit': cfg.rate_limit,
                 'tools.ratelimit.storage_class': rate_limit_storage_class,
                 'tools.ratelimit.storage_path': cfg.rate_limit_dir,
             },

@@ -203,21 +203,6 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self._set_password(self.PASSWORD, new_password, new_password)
         self.assertInBody("Password must have between 8 and 128 characters.")
 
-    def test_change_password_too_many_attemps(self):
-        # When udating user's password with wrong current password 5 times
-        for _i in range(1, 5):
-            self._set_password('wrong', "pr3j5Dwi", "pr3j5Dwi")
-            self.assertStatus(200)
-            self.assertInBody("Wrong current password.")
-        # Then user session is cleared and user is redirect to login page
-        self._set_password('wrong', "pr3j5Dwi", "pr3j5Dwi")
-        self.assertStatus(303)
-        self.assertHeaderItemValue('Location', self.baseurl + '/login/')
-        # Then a warning message is displayed on login page
-        self.getPage('/login/')
-        self.assertStatus(200)
-        self.assertInBody('You were logged out because you entered the wrong password too many times.')
-
     def test_change_password_with_same_value(self):
         # Given a user with a password
         self._set_password(self.PASSWORD, "pr3j5Dwi", "pr3j5Dwi")
@@ -256,3 +241,31 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         # Then the list is free of inexisting repos.
         userobj.expire()
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+
+
+class PagePrefGeneralRateLimitTest(rdiffweb.test.WebCase):
+    login = True
+
+    default_config = {'rate-limit': 5}
+
+    def test_change_password_too_many_attemps(self):
+        # When udating user's password with wrong current password 5 times
+        for _i in range(1, 5):
+            self.getPage(
+                '/prefs/general',
+                method='POST',
+                body={'action': 'set_password', 'current': 'wrong', 'new': 'pr3j5Dwi', 'confirm': 'pr3j5Dwi'},
+            )
+            self.assertStatus(200)
+            self.assertInBody("Wrong current password.")
+        # Then user session is cleared and user is redirect to login page
+        self.getPage(
+            '/prefs/general',
+            method='POST',
+            body={'action': 'set_password', 'current': 'wrong', 'new': 'pr3j5Dwi', 'confirm': 'pr3j5Dwi'},
+        )
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', self.baseurl + '/')
+        # Then a warning message is displayed on login page
+        self.getPage('/login/')
+        self.assertStatus(200)

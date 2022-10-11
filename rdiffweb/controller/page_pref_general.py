@@ -29,10 +29,6 @@ from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.model import UserObject
 from rdiffweb.tools.i18n import gettext_lazy as _
 
-# Maximum number of password change attempt before logout
-CHANGE_PASSWORD_MAX_ATTEMPT = 5
-CHANGE_PASSWORD_ATTEMPTS = 'change_password_attempts'
-
 
 class UserProfileForm(CherryForm):
     action = HiddenField(default='set_profile_info')
@@ -99,23 +95,8 @@ class UserPasswordForm(CherryForm):
         # Check if current password is "valid" if Not, rate limit the
         # number of attempts and logout user after too many invalid attempts.
         if not user.validate_password(self.current.data):
-            cherrypy.session[CHANGE_PASSWORD_ATTEMPTS] = cherrypy.session.get(CHANGE_PASSWORD_ATTEMPTS, 0) + 1
-            attempts = cherrypy.session[CHANGE_PASSWORD_ATTEMPTS]
-            if attempts >= CHANGE_PASSWORD_MAX_ATTEMPT:
-                cherrypy.session.clear()
-                cherrypy.session.regenerate()
-                flash(
-                    _("You were logged out because you entered the wrong password too many times."),
-                    level='warning',
-                )
-                raise cherrypy.HTTPRedirect('/login/')
             self.current.errors = [_("Wrong current password.")]
             return False
-
-        # Clear number of attempts
-        if CHANGE_PASSWORD_ATTEMPTS in cherrypy.session:
-            del cherrypy.session[CHANGE_PASSWORD_ATTEMPTS]
-
         try:
             user.set_password(self.new.data)
             return True
@@ -151,6 +132,7 @@ class PagePrefsGeneral(Controller):
     """
 
     @cherrypy.expose
+    @cherrypy.tools.ratelimit(methods=['POST'], logout=True)
     def default(self, **kwargs):
         # Process the parameters.
         profile_form = UserProfileForm(obj=self.app.currentuser)
