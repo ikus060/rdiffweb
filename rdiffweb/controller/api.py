@@ -64,9 +64,14 @@ def _checkpassword(realm, username, password):
             return True
         # Disable password authentication for MFA
         if userobj.mfa == UserObject.ENABLED_MFA:
+            cherrypy.tools.ratelimit.hit()
             return False
     # Otherwise validate username password
-    return any(cherrypy.engine.publish('login', username, password))
+    valid = any(cherrypy.engine.publish('login', username, password))
+    if not valid:
+        # When invalid, we need to increase the rate limit.
+        cherrypy.tools.ratelimit.hit()
+    return valid
 
 
 class ApiCurrentUser(Controller):
@@ -99,9 +104,9 @@ class ApiCurrentUser(Controller):
 @cherrypy.tools.auth_basic(realm='rdiffweb', checkpassword=_checkpassword, priority=70)
 @cherrypy.tools.auth_form(on=False)
 @cherrypy.tools.auth_mfa(on=False)
-@cherrypy.tools.sessions(on=False)
 @cherrypy.tools.i18n(on=False)
-@cherrypy.tools.ratelimit()
+@cherrypy.tools.ratelimit(scope='rdiffweb-api', hit=0, priority=69)
+@cherrypy.tools.sessions(on=False)
 class ApiPage(Controller):
     """
     This class provide a restful API to access some of the rdiffweb resources.

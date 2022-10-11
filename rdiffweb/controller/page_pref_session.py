@@ -30,10 +30,6 @@ class RevokeSessionForm(CherryForm):
     action = StringField(validators=[validators.regexp('delete')])
     number = IntegerField(validators=[validators.data_required()])
 
-    @property
-    def app(self):
-        return cherrypy.request.app
-
 
 class PagePrefSession(Controller):
     @cherrypy.expose

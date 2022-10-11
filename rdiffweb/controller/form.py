@@ -19,8 +19,6 @@ import cherrypy
 from markupsafe import Markup
 from wtforms.form import Form
 
-SUBMIT_METHODS = {'POST', 'PUT', 'PATCH', 'DELETE'}
-
 
 class _ProxyFormdata:
     """
@@ -65,7 +63,7 @@ class CherryForm(Form):
         Consider the form submitted if there is an active request and
         the method is ``POST``, ``PUT``, ``PATCH``, or ``DELETE``.
         """
-        return cherrypy.request.method in SUBMIT_METHODS
+        return cherrypy.request.method == 'POST'
 
     def validate_on_submit(self):
         """

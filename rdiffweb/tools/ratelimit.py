@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2012-2021 rdiffweb contributors
+# udb, A web interface to manage IT network
+# Copyright (C) 2022 IKUS Software inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,13 +33,13 @@ class _DataStore:
     def __init__(self, **kwargs):
         self._locks = {}
 
-    def get_and_increment(self, token, delay):
+    def get_and_increment(self, token, delay, hit=1):
         lock = self._locks.setdefault(token, threading.RLock())
         with lock:
             tracker = self._load(token)
             if tracker is None or tracker.timeout < time.time():
                 tracker = Tracker(token=token, hits=0, timeout=int(time.time() + delay))
-            tracker = tracker._replace(hits=tracker.hits + 1)
+            tracker = tracker._replace(hits=tracker.hits + hit)
             self._save(tracker)
         return tracker.hits
 
@@ -97,7 +97,7 @@ class FileRateLimit(_DataStore):
                 return pickle.load(f)
             finally:
                 f.close()
-        except (IOError, EOFError):
+        except Exception:
             # Drop session data if invalid
             pass
         return None
@@ -111,43 +111,74 @@ class FileRateLimit(_DataStore):
             f.close()
 
 
-def check_ratelimit(delay=60, anonymous_limit=0, registered_limit=0, rate_exceed_status=429, debug=False, **conf):
+def check_ratelimit(
+    delay=3600, limit=25, return_status=429, logout=False, scope=None, methods=None, debug=False, hit=1, **conf
+):
     """
-    Verify the ratelimit. By default return a 429 HTTP error code (Too Many Request).
+    Verify the ratelimit. By default return a 429 HTTP error code (Too Many Request). After 25 request within the same hour.
 
-    Usage:
-
-    @cherrypy.tools.ratelimit(on=True, anonymous_limit=5, registered_limit=50, storage_class=FileRateLimit, storage_path='/tmp')
-    def index(self):
-        pass
+    Arguments:
+        delay:         Time window for analysis in seconds. Default per hour (3600 seconds)
+        limit:         Number of request allowed for an entry point. Default 25
+        return_status: HTTP Error code to return.
+        logout:        True to logout user when limit is reached
+        scope:         if specify, define the scope of rate limit. Default to path_info.
+        methods:       if specify, only the methods in the list will be rate limited.
     """
+    assert delay > 0, 'invalid delay'
+
+    # Check if limit is enabled
+    if limit <= 0:
+        return
+
+    # Check if this 'method' should be rate limited
+    request = cherrypy.request
+    if methods is not None and request.method not in methods:
+        if debug:
+            cherrypy.log(
+                'skip rate limit for HTTP method %s' % (request.method,),
+                'TOOLS.RATELIMIT',
+            )
+        return
 
     # If datastore is not pass as configuration, create it for the first time.
-    datastore = getattr(cherrypy, '_ratelimit_datastore', None)
+    datastore = getattr(cherrypy.request.app, '_ratelimit_datastore', None)
     if datastore is None:
         # Create storage using storage class
         storage_class = conf.get('storage_class', RamRateLimit)
         datastore = storage_class(**conf)
-        cherrypy._ratelimit_datastore = datastore
+        cherrypy.request.app._ratelimit_datastore = datastore
 
     # If user is authenticated, use the username else use the ip address
-    token = cherrypy.request.login or cherrypy.request.remote.ip
-
-    # Get the real limit depending of user login.
-    limit = registered_limit if cherrypy.request.login else anonymous_limit
-    if limit is None or limit <= 0:
-        return
+    token = (request.login or request.remote.ip) + '.' + (scope or request.path_info)
 
     # Get hits count using datastore.
-    hits = datastore.get_and_increment(token, delay)
+    hits = datastore.get_and_increment(token, delay, hit)
     if debug:
         cherrypy.log(
-            'check and increase rate limit for token %s, limit %s, hits %s' % (token, limit, hits), 'TOOLS.RATELIMIT'
+            'check and increase rate limit for scope %s, limit %s, hits %s' % (token, limit, hits), 'TOOLS.RATELIMIT'
         )
 
     # Verify user has not exceeded rate limit
     if limit <= hits:
-        raise cherrypy.HTTPError(rate_exceed_status)
+        if logout:
+            if hasattr(cherrypy, 'session'):
+                cherrypy.session.clear()
+            raise cherrypy.HTTPRedirect("/")
+
+        raise cherrypy.HTTPError(return_status)
+
+
+def hit(hit=1):
+    """
+    May be called directly by handlers to add a hit for the given request.
+    """
+    conf = cherrypy.tools.ratelimit._merged_args()
+    conf['hit'] = hit
+    cherrypy.tools.ratelimit.callable(**conf)
 
 
 cherrypy.tools.ratelimit = cherrypy.Tool('before_handler', check_ratelimit, priority=60)
+
+
+cherrypy.tools.ratelimit.hit = hit

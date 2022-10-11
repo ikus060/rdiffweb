@@ -70,7 +70,7 @@ class MfaForm(CherryForm):
 
 class MfaPage(Controller):
     @cherrypy.expose()
-    @cherrypy.tools.ratelimit()
+    @cherrypy.tools.ratelimit(methods=['POST'])
     def index(self, **kwargs):
         form = MfaForm()
 

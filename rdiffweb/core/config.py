@@ -404,8 +404,8 @@ def get_parser():
         '--rate-limit',
         metavar='LIMIT',
         type=int,
-        default=30,
-        help='maximum number of requests per minute that can be made by an IP address for an unauthenticated connection. When this limit is reached, an HTTP 429 message is returned to the user. This security measure is used to limit brute force attacks on the login page and the RESTful API.',
+        default=20,
+        help='maximum number of requests per hour that can be made on sensitive endpoints. When this limit is reached, an HTTP 429 message is returned to the user or the user is logged out. This security measure is used to limit brute force attacks on the login page and the RESTful API.',
     )
 
     parser.add(

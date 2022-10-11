@@ -19,9 +19,9 @@ Created on Dec 26, 2015
 
 @author: Patrik Dufresne
 """
+import os
 
-
-from parameterized import parameterized
+from parameterized import parameterized, parameterized_class
 
 import rdiffweb.test
 from rdiffweb.core.model import DbSession, SessionObject, UserObject
@@ -212,65 +212,78 @@ class LoginPageWithHeaderName(rdiffweb.test.WebCase):
         self.assertInBody('HEADER-NAME')
 
 
+@parameterized_class(
+    [
+        {"default_config": {'rate-limit': 5}},
+        {"default_config": {'rate-limit': 5, 'rate-limit-dir': '/tmp'}},
+    ]
+)
 class LoginPageRateLimitTest(rdiffweb.test.WebCase):
-
-    default_config = {
-        'rate-limit': 5,
-    }
+    def setUp(self):
+        if os.path.isfile('/tmp/ratelimit-127.0.0.1'):
+            os.unlink('/tmp/ratelimit-127.0.0.1')
+        if os.path.isfile('/tmp/ratelimit-127.0.0.1.-login'):
+            os.unlink('/tmp/ratelimit-127.0.0.1.-login')
+        return super().setUp()
 
     def test_login_ratelimit(self):
         # Given an unauthenticate
-        # When requesting multple time the login page
-        for i in range(0, 6):
-            self.getPage('/login/')
+        # When requesting multiple time the login page
+        for i in range(1, 5):
+            self.getPage('/login/', method='POST', body={'login': 'invalid', 'password': 'invalid'})
+            self.assertStatus(200)
         # Then a 429 error (too many request) is return
+        self.getPage('/login/', method='POST', body={'login': 'invalid', 'password': 'invalid'})
         self.assertStatus(429)
 
 
-class LoginPageRateLimitWithSessionDirTest(rdiffweb.test.WebCase):
+class LoginPageRateLimitTest2(rdiffweb.test.WebCase):
 
-    default_config = {
-        'rate-limit-dir': '/tmp',
-        'rate-limit': 5,
-    }
+    default_config = {'rate-limit': 5}
 
-    def test_login_ratelimit(self):
+    def test_login_ratelimit_forwarded_for(self):
         # Given an unauthenticate
-        # When requesting multple time the login page
-        for i in range(0, 6):
-            self.getPage('/login/')
-        # Then a 429 error (too many request) is return
+        # When requesting multiple time the login page with different `X-Forwarded-For`
+        for i in range(1, 5):
+            self.getPage(
+                '/login/',
+                headers=[('X-Forwarded-For', '127.0.0.%s' % i)],
+                method='POST',
+                body={'login': 'invalid', 'password': 'invalid'},
+            )
+            self.assertStatus(200)
+        # Then original IP get blocked
+        self.getPage(
+            '/login/',
+            headers=[('X-Forwarded-For', '127.0.0.%s' % i)],
+            method='POST',
+            body={'login': 'invalid', 'password': 'invalid'},
+        )
         self.assertStatus(429)
 
 
-class LoginPageRateLimitTestWithXForwardedFor(rdiffweb.test.WebCase):
+class LoginPageRateLimitTest3(rdiffweb.test.WebCase):
+    default_config = {'rate-limit': 5}
 
-    default_config = {
-        'rate-limit': 5,
-    }
-
-    def test_login_ratelimit(self):
+    def test_login_ratelimit_real_ip(self):
         # Given an unauthenticate
-        # When requesting multple time the login page
-        for i in range(0, 6):
-            self.getPage('/login/', headers=[('X-Forwarded-For', '127.0.0.%s' % i)])
-        # Then a 429 error (too many request) is return
+        # When requesting multiple time the login page with different `X-Real-IP`
+        for i in range(1, 5):
+            self.getPage(
+                '/login/',
+                headers=[('X-Real-IP', '127.0.0.128')],
+                method='POST',
+                body={'login': 'invalid', 'password': 'invalid'},
+            )
+            self.assertStatus(200)
+        # Then the X-Real-IP get blocked
+        self.getPage(
+            '/login/',
+            headers=[('X-Real-IP', '127.0.0.128')],
+            method='POST',
+            body={'login': 'invalid', 'password': 'invalid'},
+        )
         self.assertStatus(429)
-
-
-class LoginPageRateLimitTestWithXRealIP(rdiffweb.test.WebCase):
-
-    default_config = {
-        'rate-limit': 5,
-    }
-
-    def test_login_ratelimit(self):
-        # Given an unauthenticate
-        # When requesting multple time the login page
-        for i in range(0, 6):
-            self.getPage('/login/', headers=[('X-Real-IP', '127.0.0.%s' % i)])
-        # Then a 200 is return.
-        self.assertStatus(200)
 
 
 class LogoutPageTest(rdiffweb.test.WebCase):
