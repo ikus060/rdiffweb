@@ -93,6 +93,15 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
         self.assertStatus(403)
         self.assertInBody('Unexpected Origin header')
 
+    def test_post_with_prefixed_origin(self):
+        # Given a POST request made to rdiffweb
+        # When the request is made using a different origin
+        base = 'http://%s:%s' % (self.HOST + 'anything.com', self.PORT)
+        self.getPage('/dashboard/', headers=[('Origin', base)], method='POST')
+        # Then the request is accepted with 200 OK
+        self.assertStatus(403)
+        self.assertInBody('Unexpected Origin header')
+
     def test_post_with_valid_origin(self):
         # Given a POST request made to rdiffweb
         # When the request is made using a different origin
