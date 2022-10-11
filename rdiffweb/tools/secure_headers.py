@@ -59,7 +59,7 @@ def set_headers(
     # Check if Origin matches our target.
     if request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
         origin = request.headers.get('Origin', None)
-        if origin and not origin.startswith(request.base):
+        if origin and origin != request.base:
             raise cherrypy.HTTPError(403, 'Unexpected Origin header')
 
     # Check if https is enabled
