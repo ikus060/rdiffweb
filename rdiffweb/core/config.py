@@ -387,25 +387,32 @@ def get_parser():
     )
 
     parser.add(
-        '--session-timeout',
-        metavar='MINUTES',
-        help='Sessions will be revoke after this period of inactivity, unless the user selected "remember me". Default 15 minutes.',
-        default=15,
-    )
-
-    parser.add(
-        '--session-persistent-timeout',
-        metavar='MINUTES',
-        help='Persistent sessions (remember me) will be revoke after this period of inactivity. Default 30 days.',
-        default=43200,
-    )
-
-    parser.add(
         '--rate-limit',
         metavar='LIMIT',
         type=int,
         default=20,
         help='maximum number of requests per hour that can be made on sensitive endpoints. When this limit is reached, an HTTP 429 message is returned to the user or the user is logged out. This security measure is used to limit brute force attacks on the login page and the RESTful API.',
+    )
+
+    parser.add(
+        '--session-idle-timeout',
+        metavar='MINUTES',
+        help='This timeout defines the amount of time a session will remain active in case there is no activity in the session. User Session will be revoke after this period of inactivity, unless the user selected "remember me". Default 5 minutes.',
+        default=5,
+    )
+
+    parser.add(
+        '--session-absolute-timeout',
+        metavar='MINUTES',
+        help='This timeout defines the maximum amount of time a session can be active. After this period, user is forced to (re)authenticate, unless the user selected "remember me". Default 20 minutes.',
+        default=20,
+    )
+
+    parser.add(
+        '--session-persistent-timeout',
+        metavar='MINUTES',
+        help='This timeout defines the maximum amount of time to remember and trust a user device. This timeout is used when user select "remember me". Default 30 days.',
+        default=43200,
     )
 
     parser.add(

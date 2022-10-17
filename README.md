@@ -137,6 +137,7 @@ This next release focus on two-factor-authentication as a measure to increase se
 * Enforce password policy new password cannot be set as new password [CVE-2022-3376](https://nvd.nist.gov/vuln/detail/CVE-2022-3376)
 * Enforce better rate limit on login, mfa, password change and API [CVE-2022-3439](https://nvd.nist.gov/vuln/detail/CVE-2022-3439) [CVE-2022-3456](https://nvd.nist.gov/vuln/detail/CVE-2022-3456)
 * Enforce 'Origin' validation [CVE-2022-3457](https://nvd.nist.gov/vuln/detail/CVE-2022-3457)
+* Define idle and absolute session timeout with agressive default to protect usage on public computer [CVE-2022-3327](https://nvd.nist.gov/vuln/detail/CVE-2022-3327)
 
 Breaking changes:
 

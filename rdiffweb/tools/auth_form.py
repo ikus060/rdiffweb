@@ -46,12 +46,9 @@ class CheckAuthForm(cherrypy.Tool):
             return False
 
         # Verify session
+        # We don't need to verify the timeout value since expired session get deleted automatically.
         session = cherrypy.session
-        return (
-            session.get(SESSION_KEY) is not None
-            and session.get(LOGIN_TIME) is not None
-            and session[LOGIN_TIME] + datetime.timedelta(minutes=session.timeout) > session.now()
-        )
+        return session.get(SESSION_KEY) is not None and session.get(LOGIN_TIME) is not None
 
     def _get_redirect_url(self):
         """
@@ -68,11 +65,32 @@ class CheckAuthForm(cherrypy.Tool):
         new_url = cherrypy.url(original_url, qs=qs, base='')
         cherrypy.session[LOGIN_REDIRECT_URL] = new_url
 
+    def _update_session_timeout(self, persistent_timeout=43200, absolute_timeout=30):
+        """
+        Since we have multiple timeout value (idle, absolute and persistent) We need to update the session timeout and possibly the cookie timeout.
+        """
+        persistent_timeout = cherrypy.request.config.get('tools.auth_form.persistent_timeout', 43200)
+        absolute_timeout = cherrypy.request.config.get('tools.auth_form.absolute_timeout', 30)
+        # If login is persistent, update the cookie max-age/expires
+        session = cherrypy.session
+        if session.get(LOGIN_PERSISTENT, False):
+            expiration = session[LOGIN_TIME] + datetime.timedelta(minutes=persistent_timeout)
+            session.timeout = int((expiration - session.now()).total_seconds() / 60)
+            cookie = cherrypy.serving.response.cookie
+            cookie['session_id']['max-age'] = session.timeout * 60
+            cookie['session_id']['expires'] = httputil.HTTPDate(time.time() + session.timeout * 60)
+        else:
+            session_idle_timeout = cherrypy.request.config.get('tools.sessions.timeout', 60)
+            expiration1 = session.now() + datetime.timedelta(minutes=session_idle_timeout)
+            expiration2 = session[LOGIN_TIME] + datetime.timedelta(minutes=absolute_timeout)
+            expiration = min(expiration1, expiration2)
+            session.timeout = int((expiration - session.now()).total_seconds() / 60)
+
     def redirect_to_original_url(self):
         # Redirect user to original URL
         raise cherrypy.HTTPRedirect(self._get_redirect_url())
 
-    def run(self, login_url='/login/', logout_url='/logout', timeout=43200):
+    def run(self, login_url='/login/', logout_url='/logout', persistent_timeout=43200, absolute_timeout=30):
         """
         A tool that verify if the session is associated to a user by tracking
         a session key. If session is not authenticated, redirect user to login page.
@@ -96,15 +114,7 @@ class CheckAuthForm(cherrypy.Tool):
             # And redirect to login page
             raise cherrypy.HTTPRedirect(login_url)
 
-        # If login is persistent, update the cookie max-age/expires
-        if cherrypy.session.get(LOGIN_PERSISTENT, False):
-            cherrypy.session.timeout = timeout
-            cookie = cherrypy.serving.response.cookie
-            cookie['session_id']['max-age'] = timeout * 60
-            cookie['session_id']['expires'] = httputil.HTTPDate(time.time() + timeout * 60)
-        else:
-            session_timeout = cherrypy.request.config.get('tools.sessions.timeout', 60)
-            cherrypy.session.timeout = session_timeout
+        self._update_session_timeout()
 
     def login(self, username, persistent=False):
         """
@@ -116,6 +126,8 @@ class CheckAuthForm(cherrypy.Tool):
         cherrypy.session[LOGIN_TIME] = cherrypy.session.now()
         # Generate a new session id
         cherrypy.session.regenerate()
+        # Update the session timeout
+        self._update_session_timeout()
 
     def logout(self):
         # Clear session date and generate a new session id

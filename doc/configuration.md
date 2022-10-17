@@ -162,6 +162,16 @@ Here is an example of how you may limit Rdiffweb access to members of *Admin_Bac
     ldap-group-attribute=memberUid
     ldap-group-attribute-is-dn=false
 
+## Configure User Session
+
+A user session is a sequence of request and response transactions associated with a single user. The user session is the means to track each authenticated user. 
+
+| Option | Description | Example |
+| --- | --- | --- |
+| session-idle-timeout | This timeout defines the amount of time a session will remain active in case there is no activity in the session. User Session will be revoke after this period of inactivity, unless the user selected "remember me". Default 10 minutes. | 5 |
+| session-absolute-timeout | This timeout defines the maximum amount of time a session can be active. After this period, user is forced to (re)authenticate, unless the user selected "remember me". Default 20 minutes. | 30 |
+| session-persistent-timeout | This timeout defines the maximum amount of time to remember and trust a user device. This timeout is used when user select "remember me". Default 30 days | 43200 |
+
 ## Configure email notifications
 
 Since Rdiffweb v0.9, you may configure Rdiffweb to send an email notification to the users when their backups did not complete successfully for a period of time.
