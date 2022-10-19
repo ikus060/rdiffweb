@@ -108,6 +108,9 @@ class LoginPageTest(rdiffweb.test.WebCase):
         # Then user is redirected to original URL
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + original_url)
+        # Then cookie is not persistent
+        self.assertNotIn('expires', self.cookies[0][1])
+        self.assertNotIn('Max-Age', self.cookies[0][1])
         # When requesting the original page
         self.getPage(original_url)
         # Then page return without error
@@ -176,6 +179,24 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.getPage('/')
         self.assertStatus(200)
         self.assertInBody(self.USERNAME)
+
+    def test_login_persistent(self):
+        # Given a user authenticated with persistent
+        self.getPage('/logout/')
+        self.assertStatus(303)
+        self.getPage(
+            '/login/', method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD, 'persistent': '1'}
+        )
+        self.assertStatus(303)
+        # Then a persistent cookie is return
+        self.assertIn('expires', self.cookies[0][1])
+        self.assertIn('Max-Age', self.cookies[0][1])
+        # Then a session is created with persistent flag
+        session = DbSession(id=self.session_id)
+        session.load()
+        self.assertTrue(session['login_persistent'])
+        # Then session timeout is 30 days in future
+        self.assertAlmostEqual(session.timeout, 43200, delta=2)
 
 
 class LoginPageWithWelcomeMsgTest(rdiffweb.test.WebCase):

@@ -205,9 +205,10 @@ class RdiffwebApp(Application):
                 'tools.sessions.debug': cfg.debug,
                 'tools.sessions.storage_class': DbSession,
                 'tools.sessions.httponly': True,
-                'tools.sessions.timeout': cfg.session_timeout,  # minutes
+                'tools.sessions.timeout': cfg.session_idle_timeout,  # minutes
                 'tools.sessions.persistent': False,  # auth_form should update this.
-                'tools.auth_form.timeout': cfg.session_persistent_timeout,  # minutes
+                'tools.auth_form.persistent_timeout': cfg.session_persistent_timeout,  # minutes
+                'tools.auth_form.absolute_timeout': cfg.session_absolute_timeout,  # minutes
                 'tools.ratelimit.debug': cfg.debug,
                 'tools.ratelimit.delay': 3600,
                 'tools.ratelimit.limit': cfg.rate_limit,
