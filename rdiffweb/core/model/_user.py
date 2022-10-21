@@ -24,7 +24,7 @@ import cherrypy
 from sqlalchemy import Column, Integer, SmallInteger, String, and_, event, inspect, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import deferred, relationship
+from sqlalchemy.orm import deferred, relationship, validates
 from zxcvbn import zxcvbn
 
 import rdiffweb.tools.db  # noqa
@@ -74,9 +74,9 @@ class UserObject(Base):
     PATTERN_USERNAME = r"[a-zA-Z0-9_.\-]+$"
 
     userid = Column('UserID', Integer, primary_key=True)
-    _username = Column('Username', String, nullable=False, unique=True)
+    username = Column('Username', String, nullable=False, unique=True)
     hash_password = Column('Password', String, nullable=False, default="")
-    _user_root = Column('UserRoot', String, nullable=False, default="")
+    user_root = Column('UserRoot', String, nullable=False, default="")
     _is_admin = deferred(
         Column(
             'IsAdmin',
@@ -86,7 +86,7 @@ class UserObject(Base):
             doc="DEPRECATED This column is replaced by 'role'",
         )
     )
-    _email = Column('UserEmail', String, nullable=False, default="")
+    email = Column('UserEmail', String, nullable=False, default="")
     restore_format = deferred(
         Column(
             'RestoreFormat',
@@ -96,7 +96,7 @@ class UserObject(Base):
             doc="DEPRECATED This column is not used anymore",
         )
     )
-    _role = Column('role', SmallInteger, nullable=False, server_default=str(USER_ROLE))
+    role = Column('role', SmallInteger, nullable=False, server_default=str(USER_ROLE), default=USER_ROLE)
     fullname = Column('fullname', String, nullable=False, default="")
     mfa = Column('mfa', SmallInteger, nullable=False, default=DISABLED_MFA)
     repo_objs = relationship(
@@ -129,7 +129,7 @@ class UserObject(Base):
         userobj.add()
 
     @classmethod
-    def add_user(cls, username, password=None, **attrs):
+    def add_user(cls, username, password=None, role=USER_ROLE, **attrs):
         """
         Used to add a new user with an optional password.
         """
@@ -143,6 +143,7 @@ class UserObject(Base):
         userobj = UserObject(
             username=username,
             hash_password=hash_password(password) if password else '',
+            role=role,
             **attrs,
         ).add()
         # Raise event
@@ -383,51 +384,11 @@ class UserObject(Base):
     def __eq__(self, other):
         return type(self) == type(other) and inspect(self).key == inspect(other).key
 
-    @hybrid_property
-    def username(self):
-        return self._username
-
-    @username.setter
-    def username(self, value):
-        oldvalue = self._username
-        self._username = value
-        if oldvalue != value:
-            cherrypy.engine.publish('user_attr_changed', self, {'username': (oldvalue, value)})
-
-    @hybrid_property
-    def role(self):
-        if self._role is None:
-            return self.USER_ROLE
-        return self._role
-
-    @role.setter
-    def role(self, value):
-        oldvalue = self._role
-        self._role = value
-        if oldvalue != value:
-            cherrypy.engine.publish('user_attr_changed', self, {'role': (oldvalue, value)})
-
-    @hybrid_property
-    def email(self):
-        return self._email
-
-    @email.setter
-    def email(self, value):
-        oldvalue = self._email
-        self._email = value
-        if oldvalue != value:
-            cherrypy.engine.publish('user_attr_changed', self, {'email': (oldvalue, value)})
-
-    @hybrid_property
-    def user_root(self):
-        return self._user_root
-
-    @user_root.setter
-    def user_root(self, value):
-        oldvalue = self._user_root
-        self._user_root = value
-        if oldvalue != value:
-            cherrypy.engine.publish('user_attr_changed', self, {'user_root': (oldvalue, value)})
+    @validates('username')
+    def validates_username(self, key, value):
+        if self.username:
+            raise ValueError('Username cannot be modified.')
+        return value
 
     def validate_access_token(self, token):
         """
@@ -460,3 +421,19 @@ def user_after_delete(mapper, connection, target):
     Publish event when user is deleted.
     """
     cherrypy.engine.publish('user_deleted', target.username)
+
+
+@event.listens_for(UserObject, 'after_update')
+def user_attr_changed(mapper, connection, target):
+    changes = {}
+    state = inspect(target)
+    for attr in state.attrs:
+        if attr.key in ['user_root', 'email', 'role', 'mfa']:
+            hist = attr.load_history()
+            if hist.has_changes():
+                changes[attr.key] = (
+                    hist.deleted[0] if len(hist.deleted) >= 1 else None,
+                    hist.added[0] if len(hist.added) >= 1 else None,
+                )
+    if changes:
+        cherrypy.engine.publish('user_attr_changed', target, changes)

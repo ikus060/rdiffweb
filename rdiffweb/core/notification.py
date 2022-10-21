@@ -78,19 +78,31 @@ class NotificationPlugin(SimplePlugin):
             return
 
         # Leave if the mail was not changed.
-        if 'email' not in attrs:
-            return
+        if 'email' in attrs:
+            old_email = attrs['email'][0]
+            if not old_email:
+                logger.info("can't sent mail to user [%s] without an email", userobj.username)
+                return
+            # If the email attributes was changed, send a mail notification.
+            subject = _("Email address changed")
+            body = self.app.templates.compile_template(
+                "email_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
+            )
+            self.bus.publish('queue_mail', to=old_email, subject=str(subject), message=body)
 
-        old_email = attrs['email'][0]
-        if not old_email:
-            logger.info("can't sent mail to user [%s] without an email", userobj.username)
-            return
-
-        # If the email attributes was changed, send a mail notification.
-        body = self.app.templates.compile_template(
-            "email_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
-        )
-        self.bus.publish('queue_mail', to=old_email, subject=_("Email address changed"), message=body)
+        if 'mfa' in attrs:
+            if not userobj.email:
+                logger.info("can't sent mail to user [%s] without an email", userobj.username)
+                return
+            subject = (
+                _("Two-Factor Authentication turned off")
+                if userobj.mfa == UserObject.DISABLED_MFA
+                else _("Two-Factor Authentication turned on")
+            )
+            body = self.app.templates.compile_template(
+                "email_mfa.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
+            )
+            self.bus.publish('queue_mail', to=userobj.email, subject=str(subject), message=body)
 
     def user_password_changed(self, userobj):
         if not self.send_changed:

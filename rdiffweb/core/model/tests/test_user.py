@@ -36,11 +36,6 @@ from rdiffweb.core.passwd import check_password
 
 
 class UserObjectTest(rdiffweb.test.WebCase):
-
-    default_config = {
-        'email-send-changed-notification': True,
-    }
-
     def _read_ssh_key(self):
         """Readthe pub key from test packages"""
         filename = pkg_resources.resource_filename('rdiffweb.core.tests', 'test_publickey_ssh_rsa.pub')
@@ -174,12 +169,16 @@ class UserObjectTest(rdiffweb.test.WebCase):
         user.refresh_repos()
         self.listener.user_attr_changed.assert_called_with(user, {'user_root': ('', self.testcases)})
         self.listener.user_attr_changed.reset_mock()
+        user = UserObject.get_user('larry')
         user.role = UserObject.ADMIN_ROLE
+        user.add()
         self.listener.user_attr_changed.assert_called_with(
             user, {'role': (UserObject.USER_ROLE, UserObject.ADMIN_ROLE)}
         )
         self.listener.user_attr_changed.reset_mock()
+        user = UserObject.get_user('larry')
         user.email = 'larry@gmail.com'
+        user.add()
         self.listener.user_attr_changed.assert_called_with(user, {'email': ('', 'larry@gmail.com')})
         self.listener.user_attr_changed.reset_mock()
 

@@ -126,7 +126,7 @@ class PagePrefMfa(Controller):
             return
         code = cherrypy.tools.auth_mfa.generate_code()
         body = self.app.templates.compile_template(
-            "email_mfa.html", **{"header_name": self.app.cfg.header_name, 'user': userobj, 'code': code}
+            "email_verification_code.html", **{"header_name": self.app.cfg.header_name, 'user': userobj, 'code': code}
         )
         cherrypy.engine.publish('queue_mail', to=userobj.email, subject=_("Your verification code"), message=body)
         flash(_("A new verification code has been sent to your email."))
