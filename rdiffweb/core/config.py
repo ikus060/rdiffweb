@@ -159,7 +159,7 @@ def get_parser():
         '--emailsendchangednotification',
         help='True to send notification when sensitive information get change in user profile.',
         action='store_true',
-        default=False,
+        default=True,
     )
 
     parser.add_argument(

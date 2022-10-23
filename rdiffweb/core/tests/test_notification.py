@@ -118,10 +118,13 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         # Given a user with an email address
         user = UserObject.get_user(self.USERNAME)
         user.email = 'original_email@test.com'
+        user.add()
         self.listener.queue_email.reset_mock()
 
         # When updating the user's email
+        user = UserObject.get_user(self.USERNAME)
         user.email = 'email_changed@test.com'
+        user.add()
 
         # Then a email is queue to notify the user.
         self.listener.queue_email.assert_called_once_with(
