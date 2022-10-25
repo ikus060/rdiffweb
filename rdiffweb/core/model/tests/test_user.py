@@ -28,6 +28,7 @@ from unittest.mock import MagicMock
 
 import cherrypy
 import pkg_resources
+from parameterized import parameterized
 
 import rdiffweb.test
 from rdiffweb.core import authorizedkeys
@@ -187,6 +188,51 @@ class UserObjectTest(rdiffweb.test.WebCase):
         self.assertEqual(self.testcases, user.user_root)
         self.assertEqual(True, user.is_admin)
         self.assertEqual(UserObject.ADMIN_ROLE, user.role)
+
+    def test_set_role_null(self):
+        # Given a user
+        user = UserObject.add_user('annik', 'password')
+        # When trying to set the role to null
+        user.role = None
+        # Then an exception is raised
+        with self.assertRaises(Exception):
+            user.add()
+
+    @parameterized.expand(
+        [
+            (-1, True),
+            (0, True),
+            (5, False),
+            (10, False),
+            (15, False),
+        ]
+    )
+    def test_is_admin(self, role, expected_is_admin):
+        # Given a user
+        user = UserObject.add_user('annik', 'password')
+        # When setting the role value
+        user.role = role
+        user.add()
+        # Then the is_admin value get updated too
+        self.assertEqual(expected_is_admin, user.is_admin)
+
+    @parameterized.expand(
+        [
+            (-1, True),
+            (0, True),
+            (5, True),
+            (10, False),
+            (15, False),
+        ]
+    )
+    def test_is_maintainer(self, role, expected_is_maintainer):
+        # Given a user
+        user = UserObject.add_user('annik', 'password')
+        # When setting the role value
+        user.role = role
+        user.add()
+        # Then the is_admin value get updated too
+        self.assertEqual(expected_is_maintainer, user.is_maintainer)
 
     def test_set_password_update(self):
         # Given a user in database with a password

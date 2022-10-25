@@ -331,7 +331,7 @@ class UserObject(Base):
 
     @hybrid_property
     def is_admin(self):
-        return self.role <= self.ADMIN_ROLE
+        return self.role is not None and self.role <= self.ADMIN_ROLE
 
     @hybrid_property
     def is_ldap(self):
@@ -343,7 +343,7 @@ class UserObject(Base):
 
     @hybrid_property
     def is_maintainer(self):
-        return self.role <= self.MAINTAINER_ROLE
+        return self.role is not None and self.role <= self.MAINTAINER_ROLE
 
     def set_password(self, password):
         """

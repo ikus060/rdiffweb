@@ -307,7 +307,7 @@ publish:wheel:
     pip3 install wheel twine readme_renderer --upgrade
     LANG="C.UTF-8" python3 -m readme_renderer README.md -o /tmp/README.html
     twine upload dist/*.whl -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
-    if [[ "$CI_COMMIT_TAG" == *.+([0-9]) ]]; then
+    if [ ! -z "$CI_COMMIT_TAG" ]; then
       twine upload dist/*.whl -u $PYPI_USR -p $PYPI_PWD
     fi
 
