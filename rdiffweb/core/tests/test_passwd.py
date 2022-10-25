@@ -22,15 +22,24 @@ Created on Apr. 10, 2020
 
 import unittest
 
+from parameterized import parameterized
+
 from rdiffweb.core.passwd import check_password, hash_password
 
 
 class Test(unittest.TestCase):
-    def test_check_password(self):
-        self.assertTrue(check_password('admin123', 'f865b53623b121fd34ee5426c792e5c33af8c227'))
-        self.assertTrue(check_password('admin123', '{SSHA}/LAr7zGT/Rv/CEsbrEndyh27h+4fLb9h'))
-        self.assertFalse(check_password('admin12', 'f865b53623b121fd34ee5426c792e5c33af8c227'))
-        self.assertFalse(check_password('admin12', '{SSHA}/LAr7zGT/Rv/CEsbrEndyh27h+4fLb9h'))
-        self.assertTrue(hash_password('admin12').startswith('{SSHA}'))
-        self.assertTrue(check_password('admin12', hash_password('admin12')))
-        self.assertTrue(check_password('admin123', hash_password('admin123')))
+    @parameterized.expand(
+        [
+            ('admin123', 'f865b53623b121fd34ee5426c792e5c33af8c227'),
+            ('admin123', '{SSHA}/LAr7zGT/Rv/CEsbrEndyh27h+4fLb9h'),
+            ('admin123', '$argon2id$v=19$m=102400,t=2,p=8$/mDhOg8wyZeMTUjcbIC7mg$3pxRSfYgUXmKEKNtasP1Og'),
+        ]
+    )
+    def test_check_password(self, password, challenge):
+        self.assertTrue(check_password(password, challenge))
+        self.assertTrue(check_password(password, hash_password(password)))
+        self.assertFalse(check_password('invalid', challenge))
+        self.assertFalse(check_password(password, 'invalid'))
+
+    def test_hash_password(self):
+        self.assertTrue(hash_password('admin12').startswith('$argon2id$'))
