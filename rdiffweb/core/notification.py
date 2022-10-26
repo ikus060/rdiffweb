@@ -48,12 +48,16 @@ class NotificationPlugin(SimplePlugin):
         self.bus.subscribe('user_attr_changed', self.user_attr_changed)
         self.bus.subscribe('user_password_changed', self.user_password_changed)
 
+    start.priority = 55
+
     def stop(self):
         self.bus.log('Stop Notification plugin')
         self.bus.publish('unschedule_job', self.notification_job)
         self.bus.unsubscribe('access_token_added', self.access_token_added)
         self.bus.unsubscribe('user_attr_changed', self.user_attr_changed)
         self.bus.unsubscribe('user_password_changed', self.user_password_changed)
+
+    stop.priority = 45
 
     @property
     def app(self):

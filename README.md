@@ -140,6 +140,7 @@ This next release focus on two-factor-authentication as a measure to increase se
 * Define idle and absolute session timeout with agressive default to protect usage on public computer [CVE-2022-3327](https://nvd.nist.gov/vuln/detail/CVE-2022-3327)
 * Send email notification when enabling or disabling MFA [CVE-2022-3363](https://nvd.nist.gov/vuln/detail/CVE-2022-3363)
 * Use Argon2id to store password hash #231
+* Fixed plugin priorities to ensure that jobs are scheduled at each startup #232
 
 Breaking changes:
 
