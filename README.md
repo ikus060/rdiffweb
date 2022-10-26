@@ -107,6 +107,10 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## 2.4.11 (2022-10-28)
+
+* Fixed plugin priorities to ensure that jobs are scheduled at each startup #232
+
 ## 2.4.10 (2022-10-03)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.

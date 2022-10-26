@@ -29,6 +29,13 @@ from rdiffweb.core.librdiff import RdiffTime
 
 
 class RemoveOlderTest(rdiffweb.test.WebCase):
+    def test_check_schedule(self):
+        # Given the application is started
+        # Then remove_older job should be schedule
+        self.assertEqual(
+            1, len([job for job in cherrypy.scheduler.list_jobs() if job.name == 'RemoveOlder.remove_older_job'])
+        )
+
     def test_remove_older_job_without_keepdays(self):
         # Given a store with repos with keepdays equals to 0 (forever)
         repo = MagicMock()

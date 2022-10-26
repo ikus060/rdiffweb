@@ -21,9 +21,13 @@ class RemoveOlder(SimplePlugin):
         self.bus.log('Start RemoveOlder plugin')
         self.bus.publish('schedule_job', self.execution_time, self.remove_older_job)
 
+    start.priority = 55
+
     def stop(self):
         self.bus.log('Stop RemoveOlder plugin')
         self.bus.publish('unschedule_job', self.remove_older_job)
+
+    stop.priority = 45
 
     @property
     def app(self):

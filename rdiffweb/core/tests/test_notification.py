@@ -39,6 +39,13 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         cherrypy.engine.unsubscribe('queue_mail', self.listener.queue_email)
         return super().tearDown()
 
+    def test_check_schedule(self):
+        # Given the application is started
+        # Then remove_older job should be schedule
+        self.assertEqual(
+            1, len([job for job in cherrypy.scheduler.list_jobs() if job.name == 'NotificationPlugin.notification_job'])
+        )
+
     def test_notification_job(self):
         """
         Run the notification and check if mails are sent
