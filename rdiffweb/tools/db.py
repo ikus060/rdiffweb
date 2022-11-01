@@ -20,8 +20,9 @@ SQLAlchemy Tool for CherryPy.
 import logging
 
 import cherrypy
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, inspect
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -39,6 +40,31 @@ def _set_sqlite_journal_mode_wal(connection, connection_record):
         cursor.close()
 
 
+def _get_model_changes(model):
+    """
+    Return a dictionary containing changes made to the model since it was
+    fetched from the database.
+
+    The dictionary is of the form {'property_name': [old_value, new_value]}
+    """
+    state = inspect(model)
+    changes = {}
+    for attr in state.attrs:
+        hist = attr.history
+        if not hist.has_changes():
+            continue
+        if isinstance(attr.value, (list, tuple)) or len(hist.deleted) > 1 or len(hist.added) > 1:
+            # If array, store array
+            changes[attr.key] = [hist.deleted, hist.added]
+        else:
+            # If primitive, store primitive
+            changes[attr.key] = [
+                hist.deleted[0] if len(hist.deleted) >= 1 else None,
+                hist.added[0] if len(hist.added) >= 1 else None,
+            ]
+    return changes
+
+
 class Base:
     '''
     Extends declarative base to provide convenience methods to models similar to
@@ -53,35 +79,32 @@ class Base:
     changed = User.from_dict({}) # update record based on dict argument passed in and returns any keys changed
     '''
 
-    def add(self, commit=True):
+    def add(self):
         """
         Add current object to session.
         """
         self.__class__.session.add(self)
-        if commit:
-            self.__class__.session.commit()
         return self
 
-    def delete(self, commit=True):
-        """
-        Delete current object to session.
-        """
+    def delete(self):
         self.__class__.session.delete(self)
-        if commit:
-            self.__class__.session.commit()
         return self
 
-    def merge(self, commit=True):
-        """
-        Merge current object to session.
-        """
-        self.__class__.session.merge(self)
-        if commit:
-            self.__class__.session.commit()
+    def commit(self):
+        self.__class__.session.commit()
+        return self
+
+    def flush(self):
+        self.__class__.session.flush()
         return self
 
     def expire(self):
         self.__class__.session.expire(self)
+        return self
+
+    def rollback(self):
+        self.__class__.session.rollback()
+        return self
 
 
 class BaseExtensions(DeclarativeMeta):
@@ -117,6 +140,7 @@ class SQLA(cherrypy.Tool):
             if debug:
                 logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG)
         base.metadata.create_all()
+        self.get_session().commit()
 
     def drop_all(self):
         # Release opened sessions.
@@ -124,6 +148,7 @@ class SQLA(cherrypy.Tool):
         # Drop all
         base = self.get_base()
         base.metadata.drop_all()
+        self.get_session().commit()
 
     def get_base(self):
         if self._base is None:
@@ -140,13 +165,17 @@ class SQLA(cherrypy.Tool):
         if self._session is None:
             return
         try:
-            self._session.flush()
-            self._session.commit()
-        except Exception:
-            logger.exception('error trying to flush and commit session')
+            # When terminating, raise an error if objects are not commit.
+            if self._session.dirty or self._session.new or self._session.deleted:
+                changes = ', '.join([str(_get_model_changes(obj)) for obj in self._session.dirty])
+                logger.exception(
+                    'session is dirty, some database object(s) are not commited, this indicate a bug in the application '
+                    'dirty %s new %s deleted %s' % (changes, self._session.new, self._session.deleted)
+                )
+                raise SQLAlchemyError('session is dirty')
+        finally:
             self._session.rollback()
             self._session.expunge_all()
-        finally:
             self._session.remove()
 
 

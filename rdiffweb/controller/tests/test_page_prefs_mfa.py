@@ -33,7 +33,7 @@ class PagePrefMfaTest(rdiffweb.test.WebCase):
         # Define email for all test
         userobj = UserObject.get_user(self.USERNAME)
         userobj.email = 'admin@example.com'
-        userobj.add()
+        userobj.commit()
         # Register a listener on email
         self.listener = MagicMock()
         cherrypy.engine.subscribe('queue_mail', self.listener.queue_email, priority=50)
@@ -46,7 +46,7 @@ class PagePrefMfaTest(rdiffweb.test.WebCase):
         # Define mfa for user
         userobj = UserObject.get_user(self.USERNAME)
         userobj.mfa = mfa
-        userobj.add()
+        userobj.commit()
         # Reset mock.
         self.listener.queue_email.reset_mock()
         # Leave to disable mfa
@@ -142,7 +142,7 @@ class PagePrefMfaTest(rdiffweb.test.WebCase):
         # Given a user without email requesting a code
         userobj = UserObject.get_user(self.USERNAME)
         userobj.email = ''
-        userobj.add()
+        userobj.commit()
         # When trying to enable or disable mfa
         self.getPage("/prefs/mfa", method='POST', body={action: '1'})
         # Then an error is return to the user

@@ -52,6 +52,7 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         user_obj = UserObject.add_user('anotheruser', 'password')
         user_obj.user_root = self.testcases
         user_obj.refresh_repos()
+        user_obj.commit()
         self._remove_older('anotheruser', 'testcases', '1')
         self.assertStatus('200 OK')
         repo = RepoObject.query.filter(RepoObject.user == user_obj, RepoObject.repopath == self.REPO).first()
@@ -60,7 +61,7 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         # Remove admin right
         admin = UserObject.get_user('admin')
         admin.role = UserObject.USER_ROLE
-        admin.add()
+        admin.commit()
 
         # Browse admin's repos
         self._remove_older('anotheruser', 'testcases', '2')

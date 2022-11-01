@@ -100,7 +100,7 @@ class LogsPageTest(rdiffweb.test.WebCase):
         # Given a failed repo
         admin = UserObject.get_user('admin')
         admin.user_root = 'invalid'
-        admin.add()
+        admin.commit()
         # When querying the logs
         self._log(self.USERNAME, self.REPO)
         # Then the page is return with an error message

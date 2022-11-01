@@ -48,7 +48,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         userobj.mfa = UserObject.ENABLED_MFA
         userobj.email = 'admin@example.com'
-        userobj.add()
+        userobj.commit()
 
     def test_get_without_login(self):
         # Given an unauthenticated user
@@ -64,7 +64,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         # Given an authenticated user with MFA Disable
         userobj = UserObject.get_user(self.USERNAME)
         userobj.mfa = UserObject.DISABLED_MFA
-        userobj.add()
+        userobj.commit()
         self.getPage("/")
         self.assertStatus(200)
         # When requesting /mfa/ page
@@ -77,7 +77,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         # Given an authenticated user without email.
         userobj = UserObject.get_user(self.USERNAME)
         userobj.email = ''
-        userobj.add()
+        userobj.commit()
         # When requesting /mfa/ page
         self.getPage("/mfa/")
         # Then user is redirected to root page
@@ -282,7 +282,7 @@ class MfaPageWithWelcomeMsgTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         userobj.mfa = UserObject.ENABLED_MFA
         userobj.email = 'admin@example.com'
-        userobj.add()
+        userobj.commit()
 
     def test_getpage_default(self):
         # Given a user with MFA enabled

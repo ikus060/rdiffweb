@@ -53,10 +53,10 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         # Set user config
         user = UserObject.get_user(self.USERNAME)
         user.email = 'test@test.com'
-        user.add()
+        user.commit()
         repo = RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
         repo.maxage = 1
-        repo.add()
+        repo.commit()
         # When running notification_job
         cherrypy.notification.notification_job()
 
@@ -71,11 +71,11 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         # Given a valid user with a repository configured for notification
         user = UserObject.get_user(self.USERNAME)
         user.email = 'test@test.com'
-        user.add()
+        user.add().commit()
         # Given a repo with last_backup_date None
         repo = RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == 'broker-repo').first()
         repo.maxage = 1
-        repo.add()
+        repo.add().commit()
         self.assertIsNone(repo.last_backup_date)
 
         # When Notification job is running
@@ -92,10 +92,10 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         # Given a valid user with a repository configured without notification (-1)
         user = UserObject.get_user(self.USERNAME)
         user.email = 'test@test.com'
-        user.add()
+        user.add().commit()
         repo = RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
         repo.maxage = -1
-        repo.add()
+        repo.add().commit()
 
         # Call notification.
         cherrypy.notification.notification_job()
@@ -123,13 +123,13 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         # Given a user with an email address
         user = UserObject.get_user(self.USERNAME)
         user.email = 'original_email@test.com'
-        user.add()
+        user.add().commit()
         self.listener.queue_email.reset_mock()
 
         # When updating the user's email
         user = UserObject.get_user(self.USERNAME)
         user.email = 'email_changed@test.com'
-        user.add()
+        user.add().commit()
 
         # Then a email is queue to notify the user.
         self.listener.queue_email.assert_called_once_with(
@@ -142,10 +142,12 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         # Given a user with an email
         user = UserObject.get_user(self.USERNAME)
         user.email = 'email_changed@test.com'
+        user.add().commit()
         self.listener.queue_email.reset_mock()
 
         # When updating the user's email with the same value
         user.email = 'email_changed@test.com'
+        user.add().commit()
 
         # Then no email are sent to the user
         self.listener.queue_email.assert_not_called()
@@ -154,10 +156,12 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         # Given a user with a email.
         user = UserObject.get_user(self.USERNAME)
         user.email = 'password_change@test.com'
+        user.add().commit()
         self.listener.queue_email.reset_mock()
 
         # When updating the user password
         user.set_password('new_password')
+        user.add().commit()
 
         # Then a email is send to the user
         self.listener.queue_email.assert_called_once_with(
@@ -171,10 +175,12 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         user = UserObject.get_user(self.USERNAME)
         user.email = 'password_change@test.com'
         user.set_password('new_password')
+        user.add().commit()
         self.listener.queue_email.reset_mock()
 
         # When updating the user password with the same value
         user.set_password('new_password')
+        user.add().commit()
 
         # Then an email is sent to the user
         self.listener.queue_email.assert_called_once_with(

@@ -40,6 +40,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         user_obj = UserObject.add_user('anotheruser', 'password')
         user_obj.user_root = self.testcases
         user_obj.refresh_repos()
+        user_obj.commit()
         self.getPage("/settings/anotheruser/testcases")
         self.assertInBody("Character encoding")
         self.assertStatus('200 OK')
@@ -47,7 +48,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         # Remove admin right
         admin = UserObject.get_user('admin')
         admin.role = UserObject.USER_ROLE
-        admin.add()
+        admin.commit()
 
         # Browse admin's repos
         self.getPage("/settings/anotheruser/testcases")
@@ -81,7 +82,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         # Given a failed repo
         admin = UserObject.get_user('admin')
         admin.user_root = '/invalid/'
-        admin.add()
+        admin.commit()
         # When querying the logs
         self.getPage("/settings/" + self.USERNAME + "/" + self.REPO)
         # Then the page is return with an error message

@@ -47,6 +47,7 @@ class PagePrefSession(Controller):
                     flash(_('You cannot revoke your current session.'), level='warning')
                 else:
                     session.delete()
+                    session.commit()
                     flash(_('The session was successfully revoked.'), level='success')
             else:
                 flash(form.error_message, level='error')

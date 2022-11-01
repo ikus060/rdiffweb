@@ -72,7 +72,9 @@ class SshForm(CherryForm):
     def populate_obj(self, userobj):
         try:
             userobj.add_authorizedkey(key=self.key.data, comment=self.title.data)
+            userobj.commit()
         except DuplicateSSHKeyError as e:
+            userobj.rollback()
             flash(str(e), level='error')
         except Exception:
             flash(_("Unknown error while adding the SSH Key"), level='error')
@@ -86,6 +88,7 @@ class DeleteSshForm(CherryForm):
         is_maintainer()
         try:
             userobj.delete_authorizedkey(self.fingerprint.data)
+            userobj.commit()
         except Exception:
             flash(_("Unknown error while removing the SSH Key"), level='error')
             _logger.warning("error removing ssh key", exc_info=1)

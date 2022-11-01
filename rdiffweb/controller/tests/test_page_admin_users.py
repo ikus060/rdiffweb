@@ -337,7 +337,8 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
 
     def test_delete_user_method_get(self):
         # Given a user
-        UserObject.add_user('newuser')
+        user = UserObject.add_user('newuser')
+        user.commit()
         # When trying to delete this user using method GET
         self.getPage("/admin/users/?action=delete&username=newuser", method='GET')
         # Then page return without error
@@ -370,7 +371,8 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         """
         Verify failure trying to update user with invalid path.
         """
-        UserObject.add_user('test1')
+        userobj = UserObject.add_user('test1')
+        userobj.commit()
         self._edit_user("test1", "test1@test.com", "pr3j5Dwi", "/var/invalid/", UserObject.USER_ROLE)
         self.assertNotInBody("User added successfully.")
         self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
@@ -397,18 +399,18 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         # Delete all user's
         for user in UserObject.query.all():
             if user.username != self.USERNAME:
-                user.delete()
+                user.delete().commit()
         # Change the user's root
         user = UserObject.get_user('admin')
         user.user_root = "/invalid"
-        user.add()
+        user.commit()
         self.getPage("/admin/users")
         self.assertInBody("Root directory not accessible!")
 
         # Query the page by default
         user = UserObject.get_user('admin')
         user.user_root = "/tmp/"
-        user.add()
+        user.commit()
         self.getPage("/admin/users")
         self.assertNotInBody("Root directory not accessible!")
 

@@ -49,8 +49,8 @@ class BrowsePageTest(rdiffweb.test.WebCase):
 
     def test_locations_with_broken_tree(self):
         userobj = UserObject.get_user(self.USERNAME)
-        RepoObject(userid=userobj.userid, repopath='testcases/broker-repo').add()
-        RepoObject(userid=userobj.userid, repopath='testcases/testcases').add()
+        RepoObject(userid=userobj.userid, repopath='testcases/broker-repo').add().commit()
+        RepoObject(userid=userobj.userid, repopath='testcases/testcases').add().commit()
         self.getPage("/")
 
     def test_WithRelativePath(self):
@@ -229,7 +229,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         user = UserObject.get_user(self.USERNAME)
         user.user_root = os.path.join(self.testcases, 'testcases')
         user.refresh_repos()
-        user.add()
+        user.commit()
         self.assertEqual(['', 'broker-repo', 'testcases'], [r.name for r in user.repo_objs])
         # Check if listing locations is working
         self.getPage('/')
@@ -249,7 +249,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         user_obj = UserObject.add_user('anotheruser', 'password')
         user_obj.user_root = self.testcases
         user_obj.refresh_repos()
-        user_obj.add()
+        user_obj.commit()
         self.getPage('/browse/admin')
         self.assertStatus('404 Not Found')
 
@@ -265,8 +265,8 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         # Remove admin role.
         admin = UserObject.get_user('admin')
         admin.role = UserObject.USER_ROLE
-        admin.add()
         admin.refresh_repos()
+        admin.commit()
 
         # Browse other user's repos
         self.getPage('/browse/anotheruser/testcases')
@@ -278,7 +278,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         # Given a failed repo
         admin = UserObject.get_user('admin')
         admin.user_root = 'invalid'
-        admin.add()
+        admin.commit()
         # When querying the logs
         self._browse(self.USERNAME, self.REPO, '')
         # Then the page is return with an error message

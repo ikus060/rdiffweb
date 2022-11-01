@@ -170,7 +170,8 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody(self.USERNAME)
         # Given another user
-        UserObject.add_user('otheruser', password='password')
+        userobj = UserObject.add_user('otheruser', password='password')
+        userobj.commit()
         # When trying to re-authenticated with login page
         self.getPage('/login/', method='POST', body={'login': 'otheruser', 'password': 'password'})
         # Then user is still authenticated with previous user

@@ -89,10 +89,10 @@ def db_after_create(target, connection, **kw):
     for row in result:
         if row.repopath.startswith('/') or row.repopath.endswith('/'):
             row.repopath = row.repopath.strip('/')
-            row.add()
+            row.commit()
         if row.repopath == '.':
             row.repopath = ''
-            row.add()
+            row.commit()
     # Remove duplicates and nested repositories.
     result = RepoObject.query.order_by(RepoObject.userid, RepoObject.repopath).all()
     prev_repo = (None, None)

@@ -58,7 +58,7 @@ class UserProfileForm(CherryForm):
     def populate_obj(self, user):
         user.fullname = self.fullname.data
         user.email = self.email.data
-        user.add()
+        user.commit()
 
 
 class UserPasswordForm(CherryForm):
@@ -99,6 +99,7 @@ class UserPasswordForm(CherryForm):
             return False
         try:
             user.set_password(self.new.data)
+            user.commit()
             return True
         except ValueError as e:
             self.new.errors = [str(e)]
@@ -120,7 +121,8 @@ class RefreshForm(CherryForm):
 
     def populate_obj(self, user):
         try:
-            user.refresh_repos(delete=True)
+            if user.refresh_repos(delete=True):
+                user.commit()
             flash(_("Repositories successfully updated"), level='success')
         except ValueError as e:
             flash(str(e), level='warning')

@@ -232,7 +232,8 @@ class RdiffwebApp(Application):
             os.environ["TMPDIR"] = self._tempdir
 
         # create user manager
-        UserObject.create_admin_user(cfg.admin_user, cfg.admin_password)
+        user = UserObject.create_admin_user(cfg.admin_user, cfg.admin_password)
+        user.commit()
 
     @property
     def currentuser(self):

@@ -40,6 +40,7 @@ class QuotaPluginTest(test.WebCase):
     def test_get_disk_usage(self):
         # Given a user
         userobj = UserObject.add_user('bob')
+        userobj.commit()
         # When querying quota for a userobj
         result = cherrypy.engine.publish('get_disk_usage', userobj)
         # Then quota return a value
@@ -48,6 +49,7 @@ class QuotaPluginTest(test.WebCase):
     def test_get_disk_quota(self):
         # Given a user
         userobj = UserObject.add_user('bob')
+        userobj.commit()
         # When querying quota for a userobj
         result = cherrypy.engine.publish('get_disk_quota', userobj)
         # Then quota return a value
@@ -56,6 +58,7 @@ class QuotaPluginTest(test.WebCase):
     def test_set_disk_quota(self):
         # Given a used cmd
         userobj = UserObject.add_user('bob')
+        userobj.commit()
         # When querying quota for a userobj
         results = cherrypy.engine.publish('set_disk_quota', userobj, 98765)
         # Then quota return a value
@@ -73,6 +76,7 @@ class QuotaPluginTestWithFailure(test.WebCase):
     def test_set_disk_quota_with_failure(self):
         # Given a user object
         userobj = UserObject.add_user('bob')
+        userobj.commit()
         # When settings the quota
         results = cherrypy.engine.publish('set_disk_quota', userobj, 98765)
         # Then False is returned
@@ -108,6 +112,7 @@ class QuotaPluginTestWithUndefinedCmd(test.WebCase):
         # Given a user with an empty user_root.
         userobj = UserObject.add_user('bob')
         userobj.user_root = ''
+        userobj.commit()
         # When getting disk usage
         results = cherrypy.engine.publish('get_disk_usage', userobj)
         # Then default disk usage is return
@@ -117,6 +122,7 @@ class QuotaPluginTestWithUndefinedCmd(test.WebCase):
         # Given a user with an invalid user_root.
         userobj = UserObject.add_user('bob')
         userobj.user_root = 'invalid'
+        userobj.commit()
         # When getting disk usage
         results = cherrypy.engine.publish('get_disk_usage', userobj)
         # Then default disk usage is return

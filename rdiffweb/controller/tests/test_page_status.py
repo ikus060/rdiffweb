@@ -39,7 +39,7 @@ class StatusTest(rdiffweb.test.WebCase):
         # Given a user's with broken repo
         userobj = UserObject.get_user('admin')
         userobj.user_root = '/invalid/'
-        userobj.add()
+        userobj.commit()
         # When browsing the status page
         self.getPage("/status/")
         # Then not error should be raised

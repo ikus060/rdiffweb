@@ -51,55 +51,6 @@ def create_testcases_repo(app):
     return new
 
 
-class AppTestCase(unittest.TestCase):
-
-    REPO = 'testcases'
-
-    USERNAME = 'admin'
-
-    PASSWORD = 'admin123'
-
-    default_config = {}
-
-    app_class = RdiffwebApp
-
-    @classmethod
-    def setup_class(cls):
-        if cls is AppTestCase:
-            raise unittest.SkipTest("%s is an abstract base class" % cls.__name__)
-
-    @classmethod
-    def teardown_class(cls):
-        pass
-
-    def setUp(self):
-        # Allow defining a custom database uri for testing.
-        self.database_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_db_')
-        uri = os.path.join(self.database_dir, 'rdiffweb.tmp.db')
-        uri = os.environ.get('RDIFFWEB_TEST_DATABASE_URI', uri)
-        self.default_config['database-uri'] = uri
-        cfg = self.app_class.parse_args(
-            args=[], config_file_contents='\n'.join('%s=%s' % (k, v) for k, v in self.default_config.items())
-        )
-        # Create Application
-        self.app = self.app_class(cfg)
-        # Create repositories
-        self.testcases = create_testcases_repo(self.app)
-        # Register repository
-        admin_user = UserObject.get_user(self.USERNAME)
-        if admin_user:
-            admin_user.user_root = self.testcases
-            admin_user.refresh_repos()
-
-    def tearDown(self):
-        if hasattr(self, 'database_dir'):
-            shutil.rmtree(self.database_dir)
-            delattr(self, 'database_dir')
-        if hasattr(self, 'testcases'):
-            shutil.rmtree(self.testcases)
-            delattr(self, 'testcases')
-
-
 class WebCase(helper.CPWebCase):
     """
     Helper class for the rdiffweb test suite.
@@ -152,13 +103,14 @@ class WebCase(helper.CPWebCase):
         cherrypy.tools.db.drop_all()
         cherrypy.tools.db.create_all()
         # Create default admin
-        UserObject.create_admin_user(self.USERNAME, self.PASSWORD)
+        admin_user = UserObject.create_admin_user(self.USERNAME, self.PASSWORD)
+        admin_user.commit()
         # Create testcases repo
         self.testcases = create_testcases_repo(self.app)
-        admin_user = UserObject.get_user(self.USERNAME)
         if admin_user:
             admin_user.user_root = self.testcases
             admin_user.refresh_repos()
+            admin_user.commit()
         # Login to web application.
         if self.login:
             self._login()
@@ -167,6 +119,7 @@ class WebCase(helper.CPWebCase):
         if hasattr(self, 'testcases'):
             shutil.rmtree(self.testcases)
             delattr(self, 'testcases')
+        cherrypy.tools.db.drop_all()
 
     @property
     def app(self):
