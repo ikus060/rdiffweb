@@ -91,6 +91,24 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         # Then token name get displayed in the view
         self.assertInBody('Token name too long')
 
+    def test_add_access_token_duplicate(self):
+        # Given an existing user with access_token
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.add_access_token('test-token-name')
+        userobj.commit()
+        # When adding a new access token with same name
+        self.getPage(
+            "/prefs/tokens",
+            method='POST',
+            body={'action': 'add_access_token', 'name': 'test-token-name', 'expiration_time': ''},
+        )
+        # Then page return without error
+        self.assertStatus(200)
+        # Then token name get displayed in the view
+        self.assertInBody('Duplicate token name: test-token-name')
+        # Then access token get created
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').count())
+
     def test_delete_access_token(self):
         # Given an existing user with access_token
         userobj = UserObject.get_user(self.USERNAME)

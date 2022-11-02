@@ -73,8 +73,10 @@ class TokenForm(CherryForm):
                 level='info',
             )
         except ValueError as e:
+            userobj.rollback()
             flash(str(e), level='warning')
         except Exception:
+            userobj.rollback()
             logger.exception("error adding access token: %s, %s" % (self.name.data, self.expiration.data))
             flash(_("Unknown error while adding the access token."), level='error')
 
