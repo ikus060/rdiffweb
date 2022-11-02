@@ -36,6 +36,26 @@ class PagePrefSessionTest(rdiffweb.test.WebCase):
         # Then sessionid are not exposed
         self.assertNotInBody(self.session_id)
 
+    def test_get_page_persistent(self):
+        # Given a persistent user session
+        self.cookies = None
+        self.getPage(
+            '/login/',
+            method='POST',
+            body={
+                'login': self.USERNAME,
+                'password': self.PASSWORD,
+                'persistent': '1',
+            },
+        )
+        self.assertStatus(303)
+        # When listing the action session
+        self.getPage(self.PREFS)
+        self.assertStatus(200)
+        # Then a badge identify the persistent session.
+        self.assertInBody('current session')
+        self.assertInBody('persistent')
+
     def test_revoke_current_session(self):
         # Given a user authenticated
         self.assertEqual(1, len(SessionObject.query.all()))

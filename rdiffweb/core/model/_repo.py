@@ -96,7 +96,8 @@ class RepoObject(Base, RdiffRepo):
         record = query.first()
         # If the repo is not found but refresh is requested
         if refresh and not record:
-            as_user.refresh_repos()
+            if as_user.refresh_repos():
+                as_user.commit()
             record = query.first()
         # If repo is not found, raise an error
         if not record:
@@ -176,7 +177,7 @@ class RepoObject(Base, RdiffRepo):
         RdiffRepo.delete(self, path=path)
         # Remove entry from database after deleting files.
         # Otherwise, refresh will add this repo back.
-        super().delete()
+        return super().delete()
 
     @validates('encoding')
     def validate_encoding(self, key, value):

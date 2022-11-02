@@ -33,7 +33,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         # Given a database with duplicate path
         userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
-        RepoObject(userid=userobj.userid, repopath='/testcases').add()
+        RepoObject(userid=userobj.userid, repopath='/testcases').add().commit()
         self.assertEqual(['/testcases', 'broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
         # When creating database
         cherrypy.tools.db.create_all()
@@ -46,7 +46,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
         RepoObject(userid=userobj.userid, repopath='testcases/home/admin/testcases').add()
-        RepoObject(userid=userobj.userid, repopath='/testcases/home/admin/data').add()
+        RepoObject(userid=userobj.userid, repopath='/testcases/home/admin/data').add().commit()
         self.assertEqual(
             ['/testcases/home/admin/data', 'broker-repo', 'testcases', 'testcases/home/admin/testcases'],
             sorted([r.name for r in userobj.repo_objs]),
@@ -61,7 +61,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         # Given a user with a repository named "/testcases"
         userobj = UserObject.get_user(self.USERNAME)
         RepoObject.query.filter(RepoObject.userid == userobj.userid).delete()
-        RepoObject(userid=userobj.userid, repopath='/testcases').add()
+        RepoObject(userid=userobj.userid, repopath='/testcases').add().commit()
         self.assertEqual(['/testcases'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the database schema
         cherrypy.tools.db.create_all()
@@ -73,7 +73,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         user = UserObject.add_user('bernie', 'my-password')
         user.user_root = self.testcases
         user.refresh_repos()
-
+        user.commit()
         # Get as bernie
         repo_obj = RepoObject.get_repo('bernie/testcases', user)
         self.assertEqual('testcases', repo_obj.name)
@@ -94,10 +94,12 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         user = UserObject.add_user('bernie', 'my-password')
         user.user_root = self.testcases
         user.refresh_repos()
+        user.commit()
         RepoObject.get_repo('bernie/testcases', user)
 
         # Get as otheruser
         other = UserObject.add_user('other')
+        other.commit()
         with self.assertRaises(AccessDeniedError):
             RepoObject.get_repo('bernie/testcases', other)
 
@@ -105,10 +107,12 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         user = UserObject.add_user('bernie', 'my-password')
         user.user_root = self.testcases
         user.refresh_repos()
+        user.commit()
 
         # Get as admin
         other = UserObject.add_user('other')
         other.role = UserObject.ADMIN_ROLE
+        other.commit()
         repo_obj3 = RepoObject.get_repo('bernie/testcases', other)
         self.assertEqual('testcases', repo_obj3.name)
         self.assertEqual('bernie', repo_obj3.owner)
@@ -128,7 +132,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
         repo_obj.encoding = "cp1252"
-        repo_obj.add()
+        repo_obj.commit()
         repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
         self.assertEqual("cp1252", repo_obj.encoding)
         # Check with invalid value.
@@ -139,7 +143,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
         repo_obj.maxage = 10
-        repo_obj.add()
+        repo_obj.commit()
         repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
         self.assertEqual(10, repo_obj.maxage)
         # Check with invalid value.
@@ -150,7 +154,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
         repo_obj.keepdays = 10
-        repo_obj.add()
+        repo_obj.commit()
         repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
         self.assertEqual(10, repo_obj.keepdays)
         # Check with invalid value.
@@ -169,7 +173,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         # Given a User
         userobj = UserObject.get_user(self.USERNAME)
         # When creating a new repository
-        repo_obj = RepoObject(user=userobj, repopath='repopath').add()
+        repo_obj = RepoObject(user=userobj, repopath='repopath').add().commit()
         # New repo get created with keepdays == -1
         self.assertEqual('-1', repo_obj._keepdays)
         self.assertEqual(-1, repo_obj.keepdays)
@@ -178,7 +182,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         # Given a User
         userobj = UserObject.get_user(self.USERNAME)
         # When creating a new repository
-        repo_obj = RepoObject(user=userobj, repopath='repopath').add()
+        repo_obj = RepoObject(user=userobj, repopath='repopath').add().commit()
         RepoObject.session.execute(
             RepoObject.__table__.update().where(RepoObject.__table__.c.RepoID == repo_obj.repoid).values(keepdays='')
         )
@@ -199,6 +203,6 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         # Given a User
         userobj = UserObject.get_user(self.USERNAME)
         # When creating a new repository
-        repo_obj = RepoObject(user=userobj, repopath='repopath').add()
+        repo_obj = RepoObject(user=userobj, repopath='repopath').add().commit()
         # New repo get created with utf-8
         self.assertEqual('utf-8', repo_obj.encoding)

@@ -95,6 +95,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         # Given an existing user with access_token
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_access_token('test-token-name')
+        userobj.commit()
         # When deleting access token
         self.getPage(
             "/prefs/tokens",

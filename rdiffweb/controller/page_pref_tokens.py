@@ -62,6 +62,7 @@ class TokenForm(CherryForm):
     def populate_obj(self, userobj):
         try:
             token = userobj.add_access_token(self.name.data, self.expiration.data)
+            userobj.commit()
             flash(
                 _(
                     "Your new personal access token has been created.\n"

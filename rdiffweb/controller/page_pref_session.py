@@ -47,6 +47,7 @@ class PagePrefSession(Controller):
                     flash(_('You cannot revoke your current session.'), level='warning')
                 else:
                     session.delete()
+                    session.commit()
                     flash(_('The session was successfully revoked.'), level='success')
             else:
                 flash(form.error_message, level='error')
@@ -61,6 +62,7 @@ class PagePrefSession(Controller):
                 'ip_address': obj.data.get('ip_address', None),
                 'login_time': obj.data.get('login_time', None),
                 'user_agent': obj.data.get('user_agent', None),
+                'login_persistent': obj.data.get('login_persistent', None),
                 'username': obj.username,
             }
             for obj in obj_list

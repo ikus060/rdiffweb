@@ -34,7 +34,8 @@ class LocationsPage(Controller):
     @cherrypy.expose
     def index(self):
         # Get page params
-        self.app.currentuser.refresh_repos()
+        if self.app.currentuser.refresh_repos():
+            self.app.currentuser.commit()
         params = {
             "repos": self.app.currentuser.repo_objs,
             "disk_usage": self.app.currentuser.disk_usage,

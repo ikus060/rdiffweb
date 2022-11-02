@@ -76,6 +76,7 @@ class NotificationForm(CherryForm):
             if repo.display_name in self:
                 # Update the maxage
                 repo.maxage = self[repo.display_name].data
+        userobj.commit()
 
 
 class PagePrefNotification(Controller):

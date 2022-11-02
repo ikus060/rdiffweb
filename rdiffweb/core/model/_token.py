@@ -17,6 +17,7 @@
 import datetime
 
 import cherrypy
+from cherrypy.process.plugins import SimplePlugin
 from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -43,3 +44,33 @@ class Token(Base):
     @property
     def is_expired(self):
         return self.expiration_time is not None and self.expiration_time <= datetime.datetime.now()
+
+    def accessed(self):
+        self.access_time = datetime.datetime.utcnow()
+
+
+class TokenCleanup(SimplePlugin):
+
+    execution_time = '23:00'
+
+    def start(self):
+        self.bus.log('Start Token Clean Up plugin')
+        self.bus.publish('schedule_job', self.execution_time, self.clean_up)
+
+    start.priority = 55
+
+    def stop(self):
+        self.bus.log('Stop Token Clean Up plugin')
+        self.bus.publish('unschedule_job', self.clean_up)
+
+    stop.priority = 45
+
+    def clean_up(self):
+        Token.query.filter(Token.expiration_time <= datetime.datetime.now()).delete()
+        Token.session.commit()
+
+
+cherrypy.token_cleanup = TokenCleanup(cherrypy.engine)
+cherrypy.token_cleanup.subscribe()
+
+cherrypy.config.namespaces['token_cleanup'] = lambda key, value: setattr(cherrypy.token_cleanup, key, value)

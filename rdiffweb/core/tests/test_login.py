@@ -45,6 +45,7 @@ class LoginTest(LoginAbstractTest):
     def test_login(self):
         # Given a valid user in database with a password
         userobj = UserObject.add_user('tom', 'password')
+        userobj.commit()
         # When trying to login with valid password
         login = cherrypy.engine.publish('login', 'tom', 'password')
         # Then login is successful
@@ -53,7 +54,8 @@ class LoginTest(LoginAbstractTest):
         self.listener.user_login.assert_called_once_with(userobj)
 
     def test_login_with_invalid_password(self):
-        UserObject.add_user('jeff', 'password')
+        userobj = UserObject.add_user('jeff', 'password')
+        userobj.commit()
         self.assertFalse(any(cherrypy.engine.publish('login', 'jeff', 'invalid')))
         # password is case sensitive
         self.assertFalse(any(cherrypy.engine.publish('login', 'jeff', 'Password')))

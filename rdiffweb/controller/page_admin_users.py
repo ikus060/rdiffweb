@@ -182,6 +182,7 @@ class UserForm(CherryForm):
             # Setting quota will silently fail. Check if quota was updated.
             if userobj.disk_quota != new_quota:
                 flash(_("Setting user's quota is not supported"), level='warning')
+        userobj.commit()
 
 
 class EditUserForm(UserForm):
@@ -214,6 +215,7 @@ class AdminUsersPage(Controller):
                 user = UserObject.get_user(form.username.data)
                 if user:
                     user.delete()
+                    user.commit()
                     flash(_("User account removed."))
                 else:
                     flash(_("User doesn't exists!"), level='warning')

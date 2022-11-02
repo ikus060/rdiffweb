@@ -141,6 +141,7 @@ This next release focus on two-factor-authentication as a measure to increase se
 * Send email notification when enabling or disabling MFA [CVE-2022-3363](https://nvd.nist.gov/vuln/detail/CVE-2022-3363)
 * Use Argon2id to store password hash #231
 * Fixed plugin priorities to ensure that jobs are scheduled at each startup #232
+* Revoke previous user's sessions on password change [CVE-2022-3362](https://nvd.nist.gov/vuln/detail/CVE-2022-3362)
 
 Breaking changes:
 

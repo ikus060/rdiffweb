@@ -21,7 +21,6 @@ Module to test `user` model.
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
-import datetime
 import os
 from io import StringIO, open
 from unittest.mock import MagicMock
@@ -32,7 +31,7 @@ from parameterized import parameterized
 
 import rdiffweb.test
 from rdiffweb.core import authorizedkeys
-from rdiffweb.core.model import DuplicateSSHKeyError, RepoObject, Token, UserObject
+from rdiffweb.core.model import DuplicateSSHKeyError, RepoObject, UserObject
 from rdiffweb.core.passwd import check_password
 
 
@@ -73,7 +72,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
     def test_add_user(self):
         """Add user to database."""
         userobj = UserObject.add_user('joe')
-        self.assertIsNotNone(userobj)
+        userobj.commit()
         self.assertIsNotNone(UserObject.get_user('joe'))
         # Check if listener called
         self.listener.user_added.assert_called_once_with(userobj)
@@ -87,7 +86,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         self.listener.user_added.side_effect = change_user_obj
         # When adding user
         userobj = UserObject.add_user('joe')
-        self.assertIsNotNone(userobj)
+        userobj.commit()
         self.assertIsNotNone(UserObject.get_user('joe'))
         # Then lister get called
         self.listener.user_added.assert_called_once_with(userobj)
@@ -96,7 +95,8 @@ class UserObjectTest(rdiffweb.test.WebCase):
 
     def test_add_user_with_duplicate(self):
         """Add user to database."""
-        UserObject.add_user('denise')
+        user = UserObject.add_user('denise')
+        user.commit()
         self.listener.user_added.reset_mock()
         with self.assertRaises(ValueError):
             UserObject.add_user('denise')
@@ -106,6 +106,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
     def test_add_user_with_password(self):
         """Add user to database with password."""
         userobj = UserObject.add_user('jo', 'password')
+        userobj.commit()
         self.assertIsNotNone(UserObject.get_user('jo'))
         # Check if listener called
         self.listener.user_added.assert_called_once_with(userobj)
@@ -120,7 +121,8 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Check admin exists
         self.assertEqual(1, UserObject.query.count())
         # Create user.
-        UserObject.add_user('annik')
+        user = UserObject.add_user('annik')
+        user.commit()
         users = UserObject.query.all()
         self.assertEqual(2, len(users))
         self.assertEqual('annik', users[1].username)
@@ -134,9 +136,11 @@ class UserObjectTest(rdiffweb.test.WebCase):
         user.role = UserObject.ADMIN_ROLE
         user.email = 'bernie@gmail.com'
         user.refresh_repos()
+        user.commit()
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in user.repo_objs]))
         user.repo_objs[0].maxage = -1
         user.repo_objs[1].maxage = 3
+        user.commit()
 
         # Get user record.
         obj = UserObject.get_user('bernie')
@@ -159,6 +163,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
 
     def test_get_set(self):
         user = UserObject.add_user('larry', 'password')
+        user.add().commit()
 
         self.assertEqual('', user.email)
         self.assertEqual([], user.repo_objs)
@@ -168,18 +173,19 @@ class UserObjectTest(rdiffweb.test.WebCase):
 
         user.user_root = self.testcases
         user.refresh_repos()
+        user.commit()
         self.listener.user_attr_changed.assert_called_with(user, {'user_root': ('', self.testcases)})
         self.listener.user_attr_changed.reset_mock()
         user = UserObject.get_user('larry')
         user.role = UserObject.ADMIN_ROLE
-        user.add()
+        user.commit()
         self.listener.user_attr_changed.assert_called_with(
             user, {'role': (UserObject.USER_ROLE, UserObject.ADMIN_ROLE)}
         )
         self.listener.user_attr_changed.reset_mock()
         user = UserObject.get_user('larry')
         user.email = 'larry@gmail.com'
-        user.add()
+        user.commit()
         self.listener.user_attr_changed.assert_called_with(user, {'email': ('', 'larry@gmail.com')})
         self.listener.user_attr_changed.reset_mock()
 
@@ -192,11 +198,12 @@ class UserObjectTest(rdiffweb.test.WebCase):
     def test_set_role_null(self):
         # Given a user
         user = UserObject.add_user('annik', 'password')
+        user.add().commit()
         # When trying to set the role to null
         user.role = None
         # Then an exception is raised
         with self.assertRaises(Exception):
-            user.add()
+            user.add().commit()
 
     @parameterized.expand(
         [
@@ -212,7 +219,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         user = UserObject.add_user('annik', 'password')
         # When setting the role value
         user.role = role
-        user.add()
+        user.commit()
         # Then the is_admin value get updated too
         self.assertEqual(expected_is_admin, user.is_admin)
 
@@ -230,16 +237,18 @@ class UserObjectTest(rdiffweb.test.WebCase):
         user = UserObject.add_user('annik', 'password')
         # When setting the role value
         user.role = role
-        user.add()
+        user.commit()
         # Then the is_admin value get updated too
         self.assertEqual(expected_is_maintainer, user.is_maintainer)
 
     def test_set_password_update(self):
         # Given a user in database with a password
         userobj = UserObject.add_user('annik', 'password')
+        userobj.commit()
         self.listener.user_password_changed.reset_mock()
         # When updating the user's password
         userobj.set_password('new_password')
+        userobj.commit()
         # Then password is SSHA
         self.assertTrue(check_password('new_password', userobj.hash_password))
         # Check if listener called
@@ -248,9 +257,11 @@ class UserObjectTest(rdiffweb.test.WebCase):
     def test_delete_user(self):
         # Given an existing user in database
         userobj = UserObject.add_user('vicky')
+        userobj.commit()
         self.assertIsNotNone(UserObject.get_user('vicky'))
         # When deleting that user
         userobj.delete()
+        userobj.commit()
         # Then user it no longer in database
         self.assertIsNone(UserObject.get_user('vicky'))
         # Then listner was called
@@ -259,6 +270,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
     def test_set_password_empty(self):
         """Expect error when trying to update password of invalid user."""
         userobj = UserObject.add_user('john')
+        userobj.commit()
         with self.assertRaises(ValueError):
             self.assertFalse(userobj.set_password(''))
 
@@ -286,6 +298,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Add the key to the user
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_authorizedkey(key)
+        userobj.commit()
 
         # validate
         keys = list(userobj.authorizedkeys)
@@ -298,9 +311,11 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Add the key to the user
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_authorizedkey(key)
+        userobj.commit()
         # Add the same key
         with self.assertRaises(DuplicateSSHKeyError):
             userobj.add_authorizedkey(key)
+            userobj.commit()
 
     def test_add_authorizedkey_with_file(self):
         """
@@ -316,6 +331,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Read the pub key
         key = self._read_ssh_key()
         userobj.add_authorizedkey(key)
+        userobj.commit()
 
         # Validate
         with open(filename, 'r') as fh:
@@ -341,6 +357,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
 
         # Remove a key
         userobj.delete_authorizedkey("9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
+        userobj.commit()
 
         # Validate
         keys = list(userobj.authorizedkeys)
@@ -376,6 +393,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in repos])
         # When deleting a repository empty list
         repos[1].delete()
+        repos[1].commit()
         # Then the repository is removed from the list.
         self.assertEqual(['broker-repo'], sorted([r.name for r in userobj.repo_objs]))
 
@@ -383,10 +401,11 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Given a user with invalid repositories
         userobj = UserObject.get_user(self.USERNAME)
         RepoObject.query.delete()
-        RepoObject(userid=userobj.userid, repopath='invalid').add()
+        RepoObject(userid=userobj.userid, repopath='invalid').add().commit()
         self.assertEqual(['invalid'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the repository list without deletion
         userobj.refresh_repos()
+        userobj.commit()
         # Then the list invlaid the invalid repo and new repos
         self.assertEqual(['broker-repo', 'invalid', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
 
@@ -394,10 +413,11 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Given a user with invalid repositories
         userobj = UserObject.get_user(self.USERNAME)
         RepoObject.query.delete()
-        RepoObject(userid=userobj.userid, repopath='invalid').add()
+        RepoObject(userid=userobj.userid, repopath='invalid').add().commit()
         self.assertEqual(['invalid'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the repository list without deletion
         userobj.refresh_repos(delete=True)
+        userobj.commit()
         # Then the list invlaid the invalid repo and new repos
         userobj.expire()
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
@@ -408,101 +428,10 @@ class UserObjectTest(rdiffweb.test.WebCase):
         userobj.user_root = os.path.join(self.testcases, 'testcases')
         # When updating the repository list without deletion
         userobj.refresh_repos(delete=True)
+        userobj.commit()
         # Then the list invlaid the invalid repo and new repos
         userobj.expire()
         self.assertEqual([''], sorted([r.name for r in userobj.repo_objs]))
-
-    def test_add_access_token(self):
-        # Given a user with an email
-        userobj = UserObject.get_user(self.USERNAME)
-        userobj.email = 'test@examples.com'
-        userobj.add()
-        # When adding a new token
-        token = userobj.add_access_token('test')
-        # Then a new token get created
-        self.assertTrue(token)
-        tokenobj = Token.query.filter(Token.userid == userobj.userid).first()
-        self.assertTrue(tokenobj)
-        self.assertEqual(None, tokenobj.expiration_time)
-        self.assertEqual(None, tokenobj.access_time)
-        # Then an email is sent to the user.
-        self.listener.access_token_added.assert_called_once_with(userobj, 'test')
-        self.listener.queue_mail.assert_called_once()
-
-    def test_add_access_token_duplicate_name(self):
-        # Given a user with an existing token
-        userobj = UserObject.get_user(self.USERNAME)
-        userobj.add_access_token('test')
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
-        # When adding a new token with the same name
-        with self.assertRaises(ValueError):
-            userobj.add_access_token('test')
-        # Then token is not created
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
-        # Then an email is not sent.
-        self.listener.access_token_added.assert_called_once_with(userobj, 'test')
-
-    def test_delete_access_token(self):
-        # Given a user with an existing token
-        userobj = UserObject.get_user(self.USERNAME)
-        userobj.add_access_token('test')
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
-        # When deleting an access token
-        userobj.delete_access_token('test')
-        # Then Token get deleted
-        self.assertEqual(0, Token.query.filter(Token.userid == userobj.userid).count())
-
-    def test_delete_access_token_invalid(self):
-        # Given a user with an existing token
-        userobj = UserObject.get_user(self.USERNAME)
-        userobj.add_access_token('test')
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
-        # When deleting an invalid access token
-        with self.assertRaises(ValueError):
-            userobj.delete_access_token('invalid')
-        # Then Token not deleted
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
-
-    def test_delete_user_remove_access_tokens(self):
-        # Given a user with an existing token
-        userobj = UserObject.add_user('testuser', 'password')
-        userobj.add_access_token('test')
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
-        # When deleting the user
-        userobj.delete()
-        # Then Token get deleted
-        self.assertEqual(0, Token.query.filter(Token.userid == userobj.userid).count())
-
-    def test_verify_access_token(self):
-        # Given a user with an existing token
-        userobj = UserObject.get_user(self.USERNAME)
-        token = userobj.add_access_token('test')
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
-        # When validating the token
-        # Then token is valid
-        self.assertTrue(userobj.validate_access_token(token))
-
-    def test_verify_access_token_with_expired(self):
-        # Given a user with an existing token
-        userobj = UserObject.get_user(self.USERNAME)
-        token = userobj.add_access_token(
-            'test', expiration_time=datetime.datetime.now() - datetime.timedelta(seconds=1)
-        )
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
-        # When validating the token
-        # Then token is invalid
-        self.assertFalse(userobj.validate_access_token(token))
-        # Then token get removed
-        self.assertEqual(0, Token.query.filter(Token.userid == userobj.userid).count())
-
-    def test_verify_access_token_with_invalid(self):
-        # Given a user with an existing token
-        userobj = UserObject.get_user(self.USERNAME)
-        userobj.add_access_token('test', expiration_time=datetime.datetime.now())
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
-        # When validating the token
-        # Then token is invalid
-        self.assertFalse(userobj.validate_access_token('invalid'))
 
 
 class UserObjectWithAdminPassword(rdiffweb.test.WebCase):
@@ -523,7 +452,6 @@ class UserObjectWithAdminPassword(rdiffweb.test.WebCase):
         self.assertEqual('{SSHA}wbSK4hlEX7mtGJplFi2oN6ABm6Y3Bo1e', userobj.hash_password)
         self.assertTrue(check_password('test', userobj.hash_password))
 
-    def test_set_password(self):
         # Given admin-password is configure
         # When trying to update admin password
         # Then an exception is raised

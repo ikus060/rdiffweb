@@ -26,7 +26,7 @@ import cherrypy
 from parameterized import parameterized
 
 import rdiffweb.test
-from rdiffweb.core.model import RepoObject, UserObject
+from rdiffweb.core.model import RepoObject, SessionObject, UserObject
 
 
 class PagePrefGeneralTest(rdiffweb.test.WebCase):
@@ -175,8 +175,14 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.assertInBody("Email too long.")
 
     def test_change_password(self):
-        self.listener.user_password_changed.reset_mock()
+        # Given a user with 3 active sessions
+        self.cookies = None
+        self._login(self.USERNAME, self.PASSWORD)
+        self.cookies = None
+        self._login(self.USERNAME, self.PASSWORD)
+        self.assertEqual(3, SessionObject.query.count())
         # When udating user's password
+        self.listener.user_password_changed.reset_mock()
         self._set_password(self.PASSWORD, "pr3j5Dwi", "pr3j5Dwi")
         # Then user is redirect to same page
         self.assertStatus(303)
@@ -185,6 +191,9 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.assertInBody("Password updated successfully.")
         # Then a notification is raised
         self.listener.user_password_changed.assert_called_once()
+        # Then all users session get deleted except our own session.
+        self.assertEqual(1, SessionObject.query.count())
+        self.assertEqual(self.session_id, SessionObject.query.first().id)
 
     def test_change_password_with_wrong_confirmation(self):
         self._set_password(self.PASSWORD, "t", "a")
@@ -231,7 +240,7 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
     def test_update_repos(self):
         # Given a user with invalid repositories
         userobj = UserObject.get_user(self.USERNAME)
-        RepoObject(userid=userobj.userid, repopath='invalid').add()
+        RepoObject(userid=userobj.userid, repopath='invalid').add().commit()
         self.assertEqual(['broker-repo', 'invalid', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the repository list
         self.getPage(self.PREFS, method='POST', body={'action': 'update_repos'})

@@ -85,7 +85,7 @@ class LoginPlugin(SimplePlugin):
                     email=email,
                     role=default_role,
                     user_root=default_user_root,
-                ).add()
+                ).commit()
             except Exception:
                 logger.error('fail to create new user', exc_info=1)
         if userobj is None:
@@ -101,7 +101,7 @@ class LoginPlugin(SimplePlugin):
             userobj.email = email
             dirty = True
         if dirty:
-            userobj.add()
+            userobj.commit()
         self.bus.publish('user_login', userobj)
         return userobj
 

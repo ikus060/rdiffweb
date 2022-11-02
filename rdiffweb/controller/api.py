@@ -60,7 +60,10 @@ def _checkpassword(realm, username, password):
     userobj = UserObject.get_user(username)
     if userobj is not None:
         # Verify if the password matches a token.
-        if userobj.validate_access_token(password):
+        access_token = userobj.validate_access_token(password)
+        if access_token:
+            access_token.accessed()
+            access_token.commit()
             return True
         # Disable password authentication for MFA
         if userobj.mfa == UserObject.ENABLED_MFA:
@@ -78,7 +81,8 @@ class ApiCurrentUser(Controller):
     @cherrypy.expose
     def default(self):
         u = self.app.currentuser
-        u.refresh_repos()
+        if u.refresh_repos():
+            u.commit()
         return {
             "email": u.email,
             "username": u.username,

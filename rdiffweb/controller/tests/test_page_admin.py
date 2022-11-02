@@ -23,7 +23,8 @@ class AdminPagesAsUser(rdiffweb.test.WebCase):
     def setUp(self):
         super().setUp()
         # Add test user
-        UserObject.add_user('test', 'test123')
+        userobj = UserObject.add_user('test', 'test123')
+        userobj.commit()
         self._login('test', 'test123')
 
     @parameterized.expand(

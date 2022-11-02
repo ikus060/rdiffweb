@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import datetime
 import logging
 import os
 import secrets
@@ -33,6 +32,7 @@ from rdiffweb.core.passwd import check_password, hash_password
 from rdiffweb.tools.i18n import ugettext as _
 
 from ._repo import RepoObject
+from ._session import SessionObject
 from ._sshkey import SshKey
 from ._token import Token
 
@@ -127,6 +127,7 @@ class UserObject(Base):
         else:
             userobj.hash_password = hash_password('admin123')
         userobj.add()
+        return userobj
 
     @classmethod
     def add_user(cls, username, password=None, role=USER_ROLE, **attrs):
@@ -177,9 +178,8 @@ class UserObject(Base):
             # Also look in database.
             logger.info("add key [%s] to [%s] database", key, self.username)
             try:
-                SshKey(userid=self.userid, fingerprint=key.fingerprint, key=key.getvalue()).add()
+                SshKey(userid=self.userid, fingerprint=key.fingerprint, key=key.getvalue()).add().flush()
             except IntegrityError:
-                SshKey.session.rollback()
                 raise DuplicateSSHKeyError(
                     _("Duplicate key. This key already exists or is associated to another user.")
                 )
@@ -195,10 +195,10 @@ class UserObject(Base):
         token = ''.join(secrets.choice(string.ascii_lowercase) for i in range(length))
         # Store hash token
         try:
-            obj = Token(userid=self.userid, name=name, hash_token=hash_password(token), expiration_time=expiration_time)
-            obj.add()
+            Token(
+                userid=self.userid, name=name, hash_token=hash_password(token), expiration_time=expiration_time
+            ).add().flush()
         except IntegrityError:
-            Token.session.rollback()
             raise ValueError(_("Duplicate token name: %s") % name)
         cherrypy.engine.publish('access_token_added', self, name)
         return token
@@ -221,7 +221,7 @@ class UserObject(Base):
         RepoObject.query.filter(RepoObject.userid == self.userid).delete()
         Token.query.filter(Token.userid == self.userid).delete()
         # Delete ourself
-        Base.delete(self)
+        return Base.delete(self)
 
     def delete_authorizedkey(self, fingerprint):
         """
@@ -378,8 +378,16 @@ class UserObject(Base):
                 msg += ' ' + ' '.join(suggestions)
             raise ValueError(msg)
 
-        logger.info("updating user password [%s]", self.username)
+        # Store password
+        logger.info("updating user password [%s] and revoke sessions", self.username)
         self.hash_password = hash_password(password)
+
+        # Revoke other session to force re-login
+        session_id = cherrypy.serving.session.id if getattr(cherrypy.serving, 'session', None) else None
+        SessionObject.query.filter(
+            SessionObject.username == self.username,
+            SessionObject.id != session_id,
+        ).delete()
 
     def __eq__(self, other):
         return type(self) == type(other) and inspect(self).key == inspect(other).key
@@ -395,14 +403,11 @@ class UserObject(Base):
         Check if the given token matches.
         """
         for access_token in Token.query.all():
-            # If token expired. Let delete it.
             if access_token.is_expired:
-                access_token.delete()
                 continue
             if check_password(token, access_token.hash_token):
-                # When it matches, let update the record.
-                access_token.access_time = datetime.datetime.utcnow
-                return True
+                # When it matches, return the record.
+                return access_token
         return False
 
     def validate_password(self, password):

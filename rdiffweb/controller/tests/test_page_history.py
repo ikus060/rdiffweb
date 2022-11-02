@@ -75,13 +75,14 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         user_obj = UserObject.add_user('anotheruser', 'password')
         user_obj.user_root = self.testcases
         user_obj.refresh_repos()
+        user_obj.commit()
         self.getPage("/history/anotheruser/testcases")
         self.assertStatus('200 OK')
 
         # Remove admin right
         admin = UserObject.get_user('admin')
         admin.role = UserObject.USER_ROLE
-        admin.add()
+        admin.commit()
 
         # Browse admin's repos
         self.getPage("/history/anotheruser/testcases")
@@ -99,7 +100,7 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         # Given a failed repo
         admin = UserObject.get_user('admin')
         admin.user_root = 'invalid'
-        admin.add()
+        admin.commit()
         # When querying the logs
         self.getPage("/history/" + self.USERNAME + "/" + self.REPO)
         # Then the page is return with an error message

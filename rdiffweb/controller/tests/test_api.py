@@ -101,6 +101,7 @@ class APITest(rdiffweb.test.WebCase):
         # Given a user with an access token
         userobj = UserObject.get_user(self.USERNAME)
         token = userobj.add_access_token('test').encode('ascii')
+        userobj.commit()
         # When using this token to authenticated with /api
         self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:" + token).decode('ascii'))])
         # Then authentication is successful
@@ -110,7 +111,7 @@ class APITest(rdiffweb.test.WebCase):
         # Given a user with MFA enabled
         userobj = UserObject.get_user(self.USERNAME)
         userobj.mfa = UserObject.ENABLED_MFA
-        userobj.add()
+        userobj.commit()
         # When authenticating with /api/
         self.getPage('/api/', headers=self.headers)
         # Then access is refused

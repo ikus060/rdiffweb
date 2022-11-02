@@ -22,7 +22,7 @@ import cherrypy
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import RepoObject, UserObject
 from rdiffweb.core.rdw_templating import _ParentEntry, attrib, do_format_lastupdated, list_parents, url_for
-from rdiffweb.test import AppTestCase, WebCase
+from rdiffweb.test import WebCase
 
 
 class TemplateManagerTest(unittest.TestCase):
@@ -91,7 +91,7 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual('4 years ago', do_format_lastupdated(RdiffTime(value=1452442324), now=1591978846))
 
 
-class ListParentsTest(AppTestCase):
+class ListParentsTest(WebCase):
     def test_list_parents_with_root_dir(self):
         repo, path = RepoObject.get_repo_path(b'admin/testcases', as_user=UserObject.get_user('admin'))
         self.assertEqual(list_parents(repo, path), [_ParentEntry(path=b'', display_name='testcases')])

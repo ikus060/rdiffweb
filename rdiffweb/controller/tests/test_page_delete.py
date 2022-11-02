@@ -158,6 +158,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         user_obj = UserObject.add_user('anotheruser', 'password')
         user_obj.user_root = self.testcases
         user_obj.refresh_repos()
+        user_obj.commit()
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
 
         self._delete('anotheruser', 'testcases', 'testcases')
@@ -178,6 +179,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         user_obj.user_root = self.testcases
         user_obj.role = UserObject.MAINTAINER_ROLE
         user_obj.refresh_repos()
+        user_obj.commit()
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
 
         # Login as maintainer
@@ -200,6 +202,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         user_obj.user_root = self.testcases
         user_obj.role = UserObject.USER_ROLE
         user_obj.refresh_repos()
+        user_obj.commit()
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
 
         # Login as maintainer

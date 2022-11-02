@@ -71,16 +71,18 @@ class DbSession(Session):
         session.data = self._data
         session.data['_timeout'] = self.timeout
         session.expiration_time = expiration_time
-        session.add()
+        session.add().commit()
 
     def _delete(self):
         SessionObject.query.filter(SessionObject.id == self.id).delete()
+        SessionObject.session.commit()
 
     def clean_up(self):
         """Clean up expired sessions."""
         try:
             now = self.now()
             SessionObject.query.filter(SessionObject.expiration_time < now).delete()
+            SessionObject.session.commit()
         except Exception:
             logger.error('fail to clean-up sessions', exc_info=1)
         finally:
