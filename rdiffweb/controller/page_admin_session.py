@@ -61,6 +61,7 @@ class AdminSessionPage(Controller):
                 'ip_address': obj.data.get('ip_address', None),
                 'login_time': obj.data.get('login_time', None),
                 'user_agent': obj.data.get('user_agent', None),
+                'login_persistent': obj.data.get('login_persistent', None),
                 'username': obj.username,
             }
             for obj in obj_list

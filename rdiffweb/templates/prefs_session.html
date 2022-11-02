@@ -26,6 +26,9 @@
           {% if session.current %}
             <span class="badge badge-success">{% trans %}current session{% endtrans %}</span>
           {% endif %}
+          {% if session.login_persistent %}
+            <span class="badge badge-info">{% trans %}persistent{% endtrans %}</span>
+          {% endif %}
         </p>
         <p>
           {% trans %}Last accessed{% endtrans %}
