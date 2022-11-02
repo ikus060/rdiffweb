@@ -71,12 +71,16 @@ class NotificationForm(CherryForm):
         return self.action.data == 'set_notification_info' and super().is_submitted()
 
     def populate_obj(self, userobj):
-        # Loop trough user repo and update max age.
-        for repo in userobj.repo_objs:
-            if repo.display_name in self:
-                # Update the maxage
-                repo.maxage = self[repo.display_name].data
-        userobj.commit()
+        try:
+            # Loop trough user repo and update max age.
+            for repo in userobj.repo_objs:
+                if repo.display_name in self:
+                    # Update the maxage
+                    repo.maxage = self[repo.display_name].data
+            userobj.commit()
+        except Exception as e:
+            userobj.rollback()
+            flash(str(e), level='warning')
 
 
 class PagePrefNotification(Controller):

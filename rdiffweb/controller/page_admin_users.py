@@ -234,6 +234,7 @@ class AdminUsersPage(Controller):
                     form.populate_obj(user)
                     flash(_("User added successfully."))
                 except Exception as e:
+                    UserObject.session.rollback()
                     flash(str(e), level='error')
             else:
                 flash(form.error_message, level='error')
@@ -246,6 +247,7 @@ class AdminUsersPage(Controller):
                         form.populate_obj(user)
                         flash(_("User information modified successfully."))
                     except Exception as e:
+                        user.rollback()
                         flash(str(e), level='error')
                 else:
                     flash(form.error_message, level='error')

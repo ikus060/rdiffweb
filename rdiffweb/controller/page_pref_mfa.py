@@ -76,14 +76,18 @@ class MfaToggleForm(AbstractMfaForm):
 
     def populate_obj(self, userobj):
         # Enable or disable MFA only when a code is provided.
-        if self.enable_mfa.data:
-            userobj.mfa = UserObject.ENABLED_MFA
-            userobj.commit()
-            flash(_("Two-Factor authentication enabled successfully."), level='success')
-        elif self.disable_mfa.data:
-            userobj.mfa = UserObject.DISABLED_MFA
-            userobj.commit()
-            flash(_("Two-Factor authentication disabled successfully."), level='success')
+        try:
+            if self.enable_mfa.data:
+                userobj.mfa = UserObject.ENABLED_MFA
+                userobj.commit()
+                flash(_("Two-Factor authentication enabled successfully."), level='success')
+            elif self.disable_mfa.data:
+                userobj.mfa = UserObject.DISABLED_MFA
+                userobj.commit()
+                flash(_("Two-Factor authentication disabled successfully."), level='success')
+        except Exception as e:
+            userobj.rollback()
+            flash(str(e), level='warning')
 
     def validate_code(self, field):
         # Code is required for enable_mfa and disable_mfa

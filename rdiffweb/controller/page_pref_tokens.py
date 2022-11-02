@@ -95,8 +95,10 @@ class DeleteTokenForm(CherryForm):
             userobj.delete_access_token(self.name.data)
             flash(_('The access token has been successfully deleted.'), level='success')
         except ValueError as e:
+            userobj.rollback()
             flash(str(e), level='warning')
         except Exception:
+            userobj.rollback()
             logger.exception("error removing access token: %s" % self.name.data)
             flash(_("Unknown error while removing the access token."), level='error')
 
