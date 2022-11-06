@@ -118,7 +118,7 @@ This next release focus on two-factor-authentication as a measure to increase se
 * Add support for Ubuntu Jammy
 * Upgrade from Bootstrap v3 to v4 #204
 * Replace Fontello by Font-Awesome v4
-* Use CSS variables `var()` to customize themes
+* Use CSS variables `var()` to customize themes using `--branding-X` options #239
 * Remove usage of Jquery.validate
 * Replace custom timsort by jquery DataTables #205
 * Add Active Session managements #203
@@ -147,7 +147,7 @@ Breaking changes:
 
 * Drop Ubuntu Hirsute & Impish (End-of-life)
 * `session-dir` is deprecated and should be replace by `rate-limit-dir`. User's session are stored in database.
-* previous `.css` customization are not barkward compatible
+* previous `.css` customization are not barkward compatible. Make usage of the `--branding-X` options.
 
 ## 2.4.10 (2022-10-03)
 
