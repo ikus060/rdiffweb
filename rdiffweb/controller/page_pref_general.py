@@ -56,9 +56,13 @@ class UserProfileForm(CherryForm):
         return super().is_submitted() and self.action.data == 'set_profile_info'
 
     def populate_obj(self, user):
-        user.fullname = self.fullname.data
-        user.email = self.email.data
-        user.commit()
+        try:
+            user.fullname = self.fullname.data
+            user.email = self.email.data
+            user.commit()
+        except Exception as e:
+            user.rollback()
+            flash(str(e), level='warning')
 
 
 class UserPasswordForm(CherryForm):
@@ -102,6 +106,7 @@ class UserPasswordForm(CherryForm):
             user.commit()
             return True
         except ValueError as e:
+            user.rollback()
             self.new.errors = [str(e)]
             return False
 
@@ -125,6 +130,7 @@ class RefreshForm(CherryForm):
                 user.commit()
             flash(_("Repositories successfully updated"), level='success')
         except ValueError as e:
+            user.rollback()
             flash(str(e), level='warning')
 
 

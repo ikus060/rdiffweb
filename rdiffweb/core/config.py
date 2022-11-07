@@ -36,6 +36,20 @@ except pkg_resources.DistributionNotFound:
     VERSION = "DEV"
 
 
+def css_color(value):
+    if not re.match('^#?(?:[0-9a-fA-F]{3}){1,2}$', value):
+        raise argparse.ArgumentTypeError("invalid CSS Color")
+    if value.startswith('#'):
+        return value
+    return '#' + value
+
+
+def css_font(value):
+    if not re.match('^[a-zA-Z0-9 ]+$', value):
+        raise argparse.ArgumentTypeError("invalid CSS Font name")
+    return value
+
+
 def get_parser():
     # Get global config argument parser
     parser = configargparse.ArgumentParser(
@@ -98,8 +112,8 @@ def get_parser():
     parser.add_argument(
         '--default-theme',
         '--defaulttheme',
-        help='define the default theme. Either: default, blue or orange. Define the CSS file to be loaded in the web interface. You may manually edit a CSS file to customize it. The location is similar to `/usr/local/lib/python3.9/dist-packages/rdiffweb/static/`',
-        choices=['default', 'blue', 'orange'],
+        help='define the default theme. Either: default, blue, orange or custom. Define a default set of colors and font for the web interface. Also read more about link-color, navbar-cloor and font-family.',
+        choices=['default', 'blue', 'orange', 'custom'],
         default='default',
     )
 
@@ -163,30 +177,72 @@ def get_parser():
     )
 
     parser.add_argument(
+        '--brand-favicon',
         '--favicon',
+        dest='favicon',
         help='location of an icon to be used as a favicon displayed in web browser.',
-        default=pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico'),
     )  # @UndefinedVariable
 
     parser.add_argument(
-        '--footer-name', '--footername', help=argparse.SUPPRESS, default='rdiffweb'
+        '--footer-name',
+        '--footername',
+        help=argparse.SUPPRESS,
+        default='rdiffweb',
     )  # @UndefinedVariable
 
     parser.add_argument(
-        '--footer-url', '--footerurl', help=argparse.SUPPRESS, default='https://rdiffweb.org/'
+        '--footer-url',
+        '--footerurl',
+        help=argparse.SUPPRESS,
+        default='https://rdiffweb.org/',
     )  # @UndefinedVariable
 
     parser.add_argument(
-        '--header-logo',
-        '--headerlogo',
-        help='location of an image (preferably a .png) to be used as a replacement for the rdiffweb logo.',
+        '--brand-logo',
+        '--logo',
+        dest='logo',
+        help='location of an image (preferably a .svg) to be used as a replacement for the rdiffweb logo displayed in Login page.',
     )
 
     parser.add_argument(
+        '--brand-header-logo',
+        '--header-logo',
+        '--headerlogo',
+        dest='header_logo',
+        help='location of an image (preferably a .svg) to be used as a replacement for the rdiffweb header logo displayed in navigation bar.',
+    )
+
+    parser.add_argument(
+        '--brand-header-name',
         '--header-name',
         '--headername',
+        dest='header_name',
         help='application name displayed in the title bar and header menu.',
         default='Rdiffweb',
+    )
+
+    parser.add_argument(
+        '--brand-link-color',
+        '--link-color',
+        type=css_color,
+        dest='link_color',
+        help='define a CSS color to be used for link. e.g.: ff0000',
+    )
+
+    parser.add_argument(
+        '--brand-navbar-color',
+        '--navbar-color',
+        type=css_color,
+        dest='navbar_color',
+        help='define a CSS color to be used for navigation bar background e.g.: 00ff00',
+    )
+
+    parser.add_argument(
+        '--brand-font-family',
+        '--font-family',
+        type=css_font,
+        dest='font_family',
+        help='define a CSS font to be used as main font. e.g.: Roboto',
     )
 
     parser.add_argument(

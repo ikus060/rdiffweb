@@ -147,8 +147,6 @@ class UserObject(Base):
             role=role,
             **attrs,
         ).add()
-        # Raise event
-        cherrypy.engine.publish('user_added', userobj)
         # Return user object
         return userobj
 
@@ -418,6 +416,14 @@ class UserObject(Base):
 def hash_password_set(target, value, oldvalue, initiator):
     if value and value != oldvalue:
         cherrypy.engine.publish('user_password_changed', target)
+
+
+@event.listens_for(UserObject, 'before_insert')
+def user_before_insert(mapper, connection, target):
+    """
+    Publish event when user is added
+    """
+    cherrypy.engine.publish('user_added', target)
 
 
 @event.listens_for(UserObject, 'after_delete')

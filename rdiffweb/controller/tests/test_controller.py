@@ -22,7 +22,7 @@ Created on Mar 13, 2019
 
 import datetime
 
-from parameterized import parameterized
+from parameterized import parameterized, parameterized_class
 
 import rdiffweb.test
 from rdiffweb.core.model import DbSession, SessionObject
@@ -61,16 +61,16 @@ class ControllerTest(rdiffweb.test.WebCase):
     @parameterized.expand(
         [
             '/favicon.ico',
-            '/static/blue.css',
+            '/default.css',
+            '/logo',
+            '/header_logo',
             '/static/css/bootstrap.min.css',
             '/static/css/font-awesome.min.css',
             '/static/css/jquery.dataTables.min.css',
-            '/static/default.css',
             '/static/js/bootstrap.bundle.min.js',
             '/static/js/jquery.dataTables.min.js',
             '/static/js/jquery.min.js',
             '/static/js/rdiffweb.js',
-            '/static/orange.css',
         ]
     )
     def test_static_files(self, path):
@@ -80,12 +80,8 @@ class ControllerTest(rdiffweb.test.WebCase):
         self.getPage('/logout')
         self.getPage(path)
         self.assertStatus(200)
-
-    def test_static_invalid_method(self):
-        """
-        Check if the theme is properly configure.
-        """
-        self.getPage("/static/default.css", method="POST")
+        # Test with invalid method.
+        self.getPage(path, method="POST")
         self.assertStatus(400)
 
     def test_static_invalid_file(self):
@@ -100,33 +96,27 @@ class ControllerTest(rdiffweb.test.WebCase):
         self.assertStatus(403)
 
 
-class ControllerOrangeThemeTest(rdiffweb.test.WebCase):
+@parameterized_class(
+    [
+        {"default_config": {'DefaultTheme': 'default'}, "expect_color": '#35979c'},
+        {"default_config": {'DefaultTheme': 'orange'}, "expect_color": '#dd4814'},
+        {"default_config": {'DefaultTheme': 'blue'}, "expect_color": '#153a58'},
+        {"default_config": {'link-color': '111'}, "expect_color": '#111'},
+        {"default_config": {'navbar-color': '222'}, "expect_color": '#222'},
+        {"default_config": {'font-family': 'Sans'}, "expect_color": 'Sans'},
+    ]
+)
+class ControllerThemeTest(rdiffweb.test.WebCase):
 
-    login = True
+    default_config = {}
 
-    default_config = {'DefaultTheme': 'orange'}
+    expect_color = ''
 
     def test_static(self):
-        """
-        Check if the theme is properly configure.
-        """
-        self.getPage("/")
+        # Query css with uniq value to avoid caching.
+        self.getPage("/default.css")
         self.assertStatus('200 OK')
-        self.assertInBody('/static/orange.css')
-
-
-class ControllerBlueThemeTest(rdiffweb.test.WebCase):
-
-    login = True
-
-    default_config = {'DefaultTheme': 'blue'}
-
-    def test_theme(self):
-        """
-        Check if the theme is properly configure.
-        """
-        self.getPage("/")
-        self.assertInBody('/static/blue.css')
+        self.assertInBody(self.expect_color)
 
 
 class ControllerSession(rdiffweb.test.WebCase):

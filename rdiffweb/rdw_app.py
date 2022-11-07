@@ -60,7 +60,7 @@ from rdiffweb.controller.page_restore import RestorePage
 from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
-from rdiffweb.core.config import Option, parse_args
+from rdiffweb.core.config import parse_args
 from rdiffweb.core.model import DbSession, UserObject
 
 # Define the logger
@@ -112,15 +112,36 @@ class Root(LocationsPage):
         robots_txt = pkg_resources.resource_filename('rdiffweb', 'static/robots.txt')  # @UndefinedVariable
         self.robots_txt = staticfile(robots_txt)
 
+    @cherrypy.expose
+    @cherrypy.tools.auth_form(on=False)
+    @cherrypy.tools.auth_mfa(on=False)
+    @cherrypy.tools.ratelimit(on=False)
+    @cherrypy.tools.sessions(on=False)
+    @cherrypy.tools.secure_headers(on=False)
+    @cherrypy.tools.caching(on=True)
+    def default_css(self):
+        if cherrypy.request.method not in ('GET', 'HEAD'):
+            raise cherrypy.HTTPError(400)
+        cfg = self.app.cfg
+        param = {'font_family': 'Open Sans'}
+        if cfg.default_theme == 'default':
+            param.update({'link_color': '#35979c', 'navbar_color': '#383e45'})
+            if cfg.link_color:
+                param['link_color'] = cfg.link_color
+            if cfg.navbar_color:
+                param['navbar_color'] = cfg.navbar_color
+            if cfg.font_family:
+                param['font_family'] = cfg.font_family
+        elif cfg.default_theme == 'blue':
+            param.update({'link_color': '#153a58', 'navbar_color': '#153a58'})
+        elif cfg.default_theme == 'orange':
+            param.update({'link_color': '#dd4814', 'navbar_color': '#dd4814'})
+        cherrypy.response.headers['Content-Type'] = 'text/css'
+        return self._compile_template("default.css", **param)
+
 
 class RdiffwebApp(Application):
     """This class represent the application context."""
-
-    _favicon = Option('favicon')
-
-    _header_logo = Option('header_logo')
-
-    _tempdir = Option('tempdir')
 
     @classmethod
     def parse_args(cls, args=None, config_file_contents=None):
@@ -221,15 +242,25 @@ class RdiffwebApp(Application):
         Application.__init__(self, root=Root(), config=config)
 
         # Register favicon.ico
-        self.root.favicon_ico = staticfile(self._favicon)
+        self.root.favicon_ico = staticfile(
+            cfg.favicon if cfg.favicon else pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico')
+        )
 
         # Register header_logo
-        if self._header_logo:
-            self.root.header_logo = staticfile(self._header_logo)
+        self.root.header_logo = staticfile(
+            cfg.header_logo
+            if cfg.header_logo
+            else pkg_resources.resource_filename('rdiffweb', 'static/header-logo.svg')
+        )
+
+        # Register logo
+        self.root.logo = staticfile(
+            cfg.logo if cfg.logo else pkg_resources.resource_filename('rdiffweb', 'static/logo1.svg')
+        )
 
         # Define TEMP env
-        if self._tempdir:
-            os.environ["TMPDIR"] = self._tempdir
+        if cfg.tempdir:
+            os.environ["TMPDIR"] = cfg.tempdir
 
         # create user manager
         user = UserObject.create_admin_user(cfg.admin_user, cfg.admin_password)

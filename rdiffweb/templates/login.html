@@ -8,14 +8,10 @@
     <div class="row">
       <div class="offset-sm-3 col-sm-6 text-center">
         <h1>
-          {% if header_name != 'Rdiffweb' %}
-            {{ header_name }}
-          {% else %}
-            <img alt="{{ header_name }}"
-                 class="mt-4 mb-4"
-                 height="192"
-                 src="{{ header_logo or url_for('static','logo1.svg') }}"/>
-          {% endif %}
+          <img alt="{{ header_name }}"
+               class="mt-4 mb-4"
+               height="192"
+               src="{{ url_for('/logo') }}"/>
         </h1>
         <p class="text-secondary">
           {% if welcome_msg %}

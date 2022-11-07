@@ -1,7 +1,7 @@
 :root {
-    --link-color: #35979c;
-    --navbar-color: #383E45;
-    --font-family-sans-serif: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --link-color: {{link_color}};
+    --navbar-color: {{navbar_color}};
+    --font-family-sans-serif: "{{font_family}}", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 /* Adjust for fixed header */

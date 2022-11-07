@@ -77,6 +77,7 @@ class SshForm(CherryForm):
             userobj.rollback()
             flash(str(e), level='error')
         except Exception:
+            userobj.rollback()
             flash(_("Unknown error while adding the SSH Key"), level='error')
             _logger.warning("error adding ssh key", exc_info=1)
 
@@ -90,6 +91,7 @@ class DeleteSshForm(CherryForm):
             userobj.delete_authorizedkey(self.fingerprint.data)
             userobj.commit()
         except Exception:
+            userobj.rollback()
             flash(_("Unknown error while removing the SSH Key"), level='error')
             _logger.warning("error removing ssh key", exc_info=1)
 

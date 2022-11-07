@@ -16,11 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import os
 from collections import namedtuple
 
 import cherrypy
-import pkg_resources
 
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import RdiffTime
@@ -89,8 +87,6 @@ class Controller(object):
 
     _footerurl = Option("footer_url")
 
-    _default_theme = Option("default_theme")
-
     @property
     def app(self):
         return cherrypy.request.app
@@ -105,7 +101,6 @@ class Controller(object):
         parms = {
             "lang": loc.language,
             "header_name": self._header_name,
-            "theme": self._default_theme,
             "footername": self._footername,
             "footerurl": self._footerurl,
             "get_flashed_messages": get_flashed_messages,
@@ -125,15 +120,6 @@ class Controller(object):
                     'username': cherrypy.serving.request.login,
                 }
             )
-
-        # Append custom branding
-        if hasattr(self.app.root, "header_logo"):
-            parms["header_logo"] = '/header_logo'
-
-        # Check if theme exists.
-        default_theme_css = pkg_resources.resource_filename('rdiffweb', 'static/%s.css' % self._default_theme)
-        if not os.access(default_theme_css, os.F_OK):
-            logger.warning("invalid DefaultTheme value, %s doesn't exists" % default_theme_css)
 
         # Append template parameters.
         parms.update(kwargs)
