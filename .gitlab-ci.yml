@@ -147,7 +147,7 @@ package:deb:
       DEB_BUILD_OPTIONS: nocheck
       BACKPORTS: deb http://deb.debian.org/debian buster-backports main
     - DIST: [bullseye, bookworm]
-    - DIST: [jammy]
+    - DIST: [jammy, kinetic]
       TZ: UTC
   script: |
     set -x
@@ -181,7 +181,7 @@ test-package:deb:
     - DIST: [buster, bullseye, bookworm]
     # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
     # So we need to make it explicit using environment variable
-    - DIST: [jammy]
+    - DIST: [jammy, kinetic]
       TZ: UTC
   script:
   - apt update && apt install -y ./dist/$DIST/rdiffweb*.deb
@@ -281,7 +281,7 @@ publish:deb:
       - $NEXUS_PWD
   parallel:
     matrix:
-    - DIST: [buster, bullseye, bookworm, jammy]
+    - DIST: [buster, bullseye, bookworm, jammy, kinetic]
   script: |
     set -e
     set -x
