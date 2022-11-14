@@ -108,7 +108,11 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
-## Next Release - 2.5.0
+## Next Rlease - 2.5.1
+
+* Add support for Ubuntu Kinetic #240
+
+## 2.5.0 (2022-11-09)
 
 This next release focus on two-factor-authentication as a measure to increase security of user's account.
 
