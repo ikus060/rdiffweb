@@ -141,9 +141,9 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         self.assertInBody("Untitled Empty Text File 2")
         self.assertInBody("Untitled Empty Text File 3")
         #  Also check if the filesize are properly retrieve.
-        self.assertInBody("21 bytes")
-        self.assertInBody("14 bytes")
-        self.assertInBody("0 bytes")
+        self.assertInBody(
+            "The size of deleted files is available in the file history using the `Show more...` function."
+        )
         #  Also check dates
         self.assertInBody("data-order=\"1414871475\"")
 
@@ -191,8 +191,9 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         self.assertInBody("Untitled Testcase.doc")
         self.assertInBody("Data")
         #  Check size
-        self.assertInBody('data-order="21"')
-        self.assertInBody('data-order="14848"')
+        self.assertInBody(
+            "The size of deleted files is available in the file history using the `Show more...` function."
+        )
 
     def test_invalid_repo(self):
         """

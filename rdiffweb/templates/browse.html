@@ -38,10 +38,13 @@
               {{ entry.display_name | truncate(45,True) }}
             </a>
           </td>
-          <td class="nowrap"
-              data-search=""
-              data-order="{{ 0 if entry.isdir else entry.file_size }}">
-            {% if not entry.isdir %}{{ entry.file_size | filesize }}{% endif %}
+          <td class="nowrap" data-search="" data-order="{{ entry.file_size }}">
+            {% if entry.isdir %}
+            {% elif not entry.exists %}
+              <span title="{% trans %}The size of deleted files is available in the file history using the `Show more...` function.{% endtrans %}">-</span>
+            {% else %}
+              {{ entry.file_size | filesize }}
+            {% endif %}
           </td>
           <td data-search=""
               data-order="{{ entry.last_change_date and entry.last_change_date.epoch() }}">

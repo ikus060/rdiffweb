@@ -31,8 +31,8 @@
           <i class="{{ 'fa fa-folder' if path_obj.isdir else 'fa fa-file-o' }}"
              aria-hidden="true"></i>
           <time class="js-datetime" datetime="{{ restore_date }}">{{ restore_date | lastupdated }}</time>
-          {% if path_obj.isdir %}
-            <div class="pull-right">
+          <div class="pull-right">
+            {% if path_obj.isdir %}
               <div class="btn-group">
                 <a type="button"
                    class="btn btn-secondary btn-sm"
@@ -68,9 +68,8 @@
                   </a>
                 </div>
               </div>
-            </div>
-          {% else %}
-            <div class="pull-right">
+            {% else %}
+              {{ path_obj.get_file_size(restore_date) | filesize }}
               <a type="button"
                  class="btn btn-secondary btn-sm"
                  rel="nofollow"
@@ -78,8 +77,8 @@
                 <i class="fa fa-download" aria-hidden="true"></i>
                 <span>{% trans %}Download{% endtrans %}</span>
               </a>
-            </div>
-          {% endif %}
+            {% endif %}
+          </div>
         </li>
       {% endfor %}
       {% if limit == restore_dates|count %}

@@ -37,6 +37,7 @@ def _set_sqlite_journal_mode_wal(connection, connection_record):
     if 'sqlite3' in str(connection.__class__):
         cursor = connection.cursor()
         cursor.execute('PRAGMA journal_mode=WAL;')
+        cursor.execute("PRAGMA foreign_keys=ON;")
         cursor.close()
 
 

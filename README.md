@@ -111,6 +111,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 ## Next Rlease - 2.5.1
 
 * Add support for Ubuntu Kinetic #240
+* Disable filesize for deleted files to improve page loading #241
 
 ## 2.5.0 (2022-11-09)
 

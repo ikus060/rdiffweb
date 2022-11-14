@@ -56,6 +56,7 @@ class HistoryPageTest(rdiffweb.test.WebCase):
 
     def test_history_with_deleted_path(self):
         self._history(self.USERNAME, "testcases/R%C3%A9pertoire%20Supprim%C3%A9/")
+        self.assertStatus(200)
         self.assertInBody("Download")
         self.assertInBody("ZIP")
         self.assertInBody("TAR.GZ")
@@ -63,6 +64,23 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         self.assertInBody(
             "/restore/" + self.USERNAME + "/" + self.REPO + "/R%C3%A9pertoire%20Supprim%C3%A9?date=1414871475"
         )
+
+    def test_history_with_deleted_file(self):
+        self._history(self.USERNAME, "testcases/R%C3%A9pertoire%20Supprim%C3%A9/Untitled%20Empty%20Text%20File")
+        self.assertStatus(200)
+        self.assertInBody("Download")
+        self.assertNotInBody("ZIP")
+        self.assertNotInBody("TAR.GZ")
+        self.assertInBody("2014-11-01T15:51:15-04:00")
+        self.assertInBody(
+            "/restore/"
+            + self.USERNAME
+            + "/"
+            + self.REPO
+            + "/R%C3%A9pertoire%20Supprim%C3%A9/Untitled%20Empty%20Text%20File?date=1414871475"
+        )
+        self.assertInBody("21 bytes")
+        self.assertInBody("0 byte")
 
     def test_history_with_limit(self):
         self._history(self.USERNAME, self.REPO, 10)
