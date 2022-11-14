@@ -111,6 +111,9 @@ class RestorePage(Controller):
         validate(kind is None or kind in ARCHIVERS)
         date = validate_date(date)
 
+        # Release session lock
+        cherrypy.session.release_lock()
+
         # Check user access to repo / path.
         repo, path = RepoObject.get_repo_path(path)
 
