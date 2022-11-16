@@ -371,25 +371,30 @@ class RdiffDirEntry(object):
 
     @cached_property
     def file_size(self):
-        """Return the file size in bytes."""
-        if self.isdir:
-            return 0
-        elif self.exists:
+        """
+        Return the current file size in bytes.
+        Return negative value (-1) for folder and deleted files.
+        """
+        if self.isdir or not self.exists:
+            return -1
+        else:
             try:
                 return os.lstat(self.full_path).st_size
             except Exception:
                 logger.warning("cannot lstat on file [%s]", self.full_path, exc_info=1)
-        else:
-            # The only viable place to get the filesize of a deleted entry
-            # it to get it from file_statistics
-            try:
-                stats = self._repo.file_statistics[self.last_change_date]
-                # File stats uses unquoted name.
-                unquote_path = unquote(self.path)
-                return stats.get_source_size(unquote_path)
-            except Exception:
-                logger.warning("cannot find file statistic [%s]", self.last_change_date, exc_info=1)
-        return 0
+                return 0
+
+    def get_file_size(self, date=None):
+        # A viable place to get the filesize of a deleted entry
+        # it to get it from file_statistics
+        try:
+            stats = self._repo.file_statistics[date]
+            # File stats uses unquoted name.
+            unquote_path = unquote(self.path)
+            return stats.get_source_size(unquote_path)
+        except Exception:
+            logger.warning("cannot find file statistic [%s]", self.last_change_date, exc_info=1)
+        return -1
 
     @cached_property
     def change_dates(self):

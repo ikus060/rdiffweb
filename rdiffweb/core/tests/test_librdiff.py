@@ -141,12 +141,12 @@ class RdiffDirEntryTest(unittest.TestCase):
         )
         # When getting the file_size
         # Then the size is 0
-        self.assertEqual(0, entry.file_size)
+        self.assertEqual(-1, entry.file_size)
 
     def test_file_size_without_stats(self):
         increments = [IncrementEntry(b'my_file.2014-11-05T16:04:30-05:00.dir')]
         entry = RdiffDirEntry(self.repo, b'my_file', False, increments)
-        self.assertEqual(0, entry.file_size)
+        self.assertEqual(-1, entry.file_size)
 
 
 class FileErrorTest(unittest.TestCase):
@@ -250,7 +250,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 True,
                 True,
-                0,
+                -1,
                 [
                     '2014-11-01T15:49:47-04:00',
                     '2014-11-01T15:50:26-04:00',
@@ -284,7 +284,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 True,
                 False,
-                0,
+                -1,
                 [
                     '2014-11-05T16:04:55-05:00',
                     '2016-01-20T10:42:21-05:00',
@@ -299,7 +299,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 True,
                 False,
-                0,
+                -1,
                 ['2014-11-05T16:04:55-05:00', '2016-02-02T16:30:40-05:00'],
             ),
             (
@@ -310,7 +310,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 True,
                 False,
-                0,
+                -1,
                 [
                     '2014-11-03T19:04:57-05:00',
                     '2014-11-05T16:04:30-05:00',
@@ -355,7 +355,7 @@ class RdiffRepoTest(unittest.TestCase):
                 False,
                 True,
                 False,
-                0,
+                -1,
                 ['2014-11-01T18:07:19-04:00', '2014-11-01T20:18:11-04:00', '2014-11-03T19:04:57-05:00'],
             ),
             (
@@ -366,7 +366,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 True,
                 False,
-                0,
+                -1,
                 ['2014-11-03T15:46:47-05:00', '2014-11-05T16:05:07-05:00', '2016-02-02T16:30:40-05:00'],
             ),
             (
@@ -377,7 +377,7 @@ class RdiffRepoTest(unittest.TestCase):
                 False,
                 True,
                 False,
-                0,
+                -1,
                 ['2014-11-05T16:04:55-05:00', '2016-01-20T10:42:21-05:00'],
             ),
             (
@@ -388,7 +388,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 True,
                 False,
-                0,
+                -1,
                 ['2014-11-05T16:05:07-05:00', '2016-02-02T16:30:40-05:00'],
             ),
             (
@@ -399,7 +399,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 True,
                 False,
-                0,
+                -1,
                 ['2014-11-05T16:05:07-05:00', '2016-02-02T16:30:40-05:00'],
             ),
         ]
