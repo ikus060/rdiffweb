@@ -27,7 +27,7 @@ from unittest.mock import MagicMock
 
 import cherrypy
 import pkg_resources
-from parameterized import parameterized
+from parameterized import parameterized, parameterized_class
 
 import rdiffweb.test
 from rdiffweb.core import authorizedkeys
@@ -454,11 +454,27 @@ class UserObjectTest(rdiffweb.test.WebCase):
         self.assertEqual(['failed', 'failed'], [r.status[0] for r in userobj.repo_objs])
 
 
+# password: test
+@parameterized_class(
+    [
+        {
+            'default_config': {
+                'admin-password': '{SSHA}wbSK4hlEX7mtGJplFi2oN6ABm6Y3Bo1e',
+            },
+        },
+        {
+            'default_config': {
+                'admin-password': '$argon2id$v=19$m=65536,t=3,p=4$N2FmDyCNjY/MTreAOWluLw$BbKVcHt99Jf5yeTbFcJhwJpcEtSSNCB1ru4D+Vvm+JM'
+            },
+        },
+        {
+            'default_config': {
+                'admin-password': 'test',
+            }
+        },
+    ]
+)
 class UserObjectWithAdminPassword(rdiffweb.test.WebCase):
-
-    # password: test
-    default_config = {'admin-password': '{SSHA}wbSK4hlEX7mtGJplFi2oN6ABm6Y3Bo1e'}
-
     def setUp(self):
         # Do nothing - We need to skip the default setup to avoid deleting the records.
         pass
@@ -469,7 +485,6 @@ class UserObjectWithAdminPassword(rdiffweb.test.WebCase):
         # Then admin user get created with 'test' password
         userobj = UserObject.get_user(self.USERNAME)
         self.assertIsNotNone(userobj)
-        self.assertEqual('{SSHA}wbSK4hlEX7mtGJplFi2oN6ABm6Y3Bo1e', userobj.hash_password)
         self.assertTrue(check_password('test', userobj.hash_password))
 
         # Given admin-password is configure
@@ -478,3 +493,40 @@ class UserObjectWithAdminPassword(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         with self.assertRaises(ValueError):
             userobj.set_password('newpassword')
+
+
+class UserObjectWithoutAdminPassword(rdiffweb.test.WebCase):
+    def setUp(self):
+        # Do nothing - We need to skip the default setup to avoid deleting the records.
+        pass
+
+    def tearDown(self):
+        # Do nothing - We need to makre sure the database is not drop.
+        pass
+
+    def test_create_admin_user_without_password(self):
+        # Given an existing admin user with a password
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.hash_password = '{SSHA}wbSK4hlEX7mtGJplFi2oN6ABm6Y3Bo1e'  # test
+        # When application restart, create_admin_user is called again
+        user = UserObject.create_admin_user(self.USERNAME, None)
+        user.commit()
+        # Then user password must not be replaced
+        self.assertTrue(check_password('test', user.hash_password))
+
+    @parameterized.expand(
+        [
+            'puy3qjRWjpCn',
+            '$argon2id$v=19$m=65536,t=3,p=4$L91u8sX4ecyrbUSqvmb/FA$GOGR5uPmQmla6H62e5yKKNCRa7sY6d2Hxmly/eAXe6Q',
+            '{SSHA}3RkZu26wF8xSHInMcK8P/9wqqU1aCzie',
+        ]
+    )
+    def test_create_admin_user_with_password(self, new_password):
+        # Given an existing admin user with a password
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.hash_password = '{SSHA}wbSK4hlEX7mtGJplFi2oN6ABm6Y3Bo1e'  # test
+        # When application restart, create_admin_user is called again with a password
+        user = UserObject.create_admin_user(self.USERNAME, new_password)
+        user.commit()
+        # Then user password get replaced
+        self.assertTrue(check_password('puy3qjRWjpCn', user.hash_password))

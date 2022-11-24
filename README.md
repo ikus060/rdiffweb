@@ -111,6 +111,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 ## Next Rlease 2.5.2
 
 * Block repository access when user_root directory is empty or a relative path
+* Replace admin password only when `--admin-password` option is provided #246
 
 ## 2.5.1 (2022-11-11)
 

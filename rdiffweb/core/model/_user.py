@@ -119,13 +119,13 @@ class UserObject(Base):
         userobj = UserObject.get_user(default_username)
         if not userobj:
             userobj = cls.add_user(default_username, role=UserObject.ADMIN_ROLE, user_root='/backups')
-        # Also make sure to update the password with latest value from config file.
-        if default_password and default_password.startswith('{SSHA}'):
-            userobj.hash_password = default_password
-        elif default_password:
-            userobj.hash_password = hash_password(default_password)
-        else:
             userobj.hash_password = hash_password('admin123')
+        # Also make sure to update the password with latest value from config file.
+        if default_password:
+            if default_password.startswith('{SSHA}') or default_password.startswith('$argon2'):
+                userobj.hash_password = default_password
+            else:
+                userobj.hash_password = hash_password(default_password)
         userobj.add()
         return userobj
 
