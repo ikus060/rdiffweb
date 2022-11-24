@@ -11,7 +11,7 @@
           <img alt="{{ header_name }}"
                class="mt-4 mb-4"
                height="192"
-               src="{{ url_for('/logo') }}"/>
+               src="{{ url_for('/logo', v=cache_invalid) }}"/>
         </h1>
         <p class="text-secondary">
           {% if welcome_msg %}

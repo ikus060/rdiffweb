@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import time
 from collections import namedtuple
 
 import cherrypy
@@ -87,6 +88,8 @@ class Controller(object):
 
     _footerurl = Option("footer_url")
 
+    cache_invalid = int(time.time())
+
     @property
     def app(self):
         return cherrypy.request.app
@@ -97,6 +100,7 @@ class Controller(object):
         This method should be used by subclasses to provide default template
         value.
         """
+        app = self.app
         loc = cherrypy.response.i18n.locale
         parms = {
             "lang": loc.language,
@@ -104,14 +108,15 @@ class Controller(object):
             "footername": self._footername,
             "footerurl": self._footerurl,
             "get_flashed_messages": get_flashed_messages,
+            "cache_invalid": self.cache_invalid,
         }
-        if self.app.currentuser:
+        if app.currentuser:
             parms.update(
                 {
-                    'username': self.app.currentuser.username,
-                    'fullname': self.app.currentuser.fullname,
-                    'is_admin': self.app.currentuser.is_admin,
-                    'is_maintainer': self.app.currentuser.is_maintainer,
+                    'username': app.currentuser.username,
+                    'fullname': app.currentuser.fullname,
+                    'is_admin': app.currentuser.is_admin,
+                    'is_maintainer': app.currentuser.is_maintainer,
                 }
             )
         elif getattr(cherrypy.serving.request, 'login', None):
@@ -124,4 +129,4 @@ class Controller(object):
         # Append template parameters.
         parms.update(kwargs)
 
-        return self.app.templates.compile_template(template_name, **parms)
+        return app.templates.compile_template(template_name, **parms)
