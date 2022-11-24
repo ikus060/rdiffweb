@@ -20,7 +20,7 @@ Created on Oct 17, 2015
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
-from time import sleep
+import time
 
 import cherrypy
 from cherrypy.test import helper
@@ -36,6 +36,11 @@ class SchedulerPluginTest(helper.CPWebCase):
     @classmethod
     def setup_server(cls):
         pass
+
+    def wait_for_tasks(self):
+        time.sleep(1)
+        while len(cherrypy.scheduler.list_tasks()) or cherrypy.scheduler.is_job_running():
+            time.sleep(1)
 
     def test_schedule_job(self):
         # Given a scheduler with a specific number of jobs
@@ -58,9 +63,7 @@ class SchedulerPluginTest(helper.CPWebCase):
         # When scheduling that task
         scheduled = cherrypy.engine.publish('schedule_task', a_task, 1, 2, 3, foo=1, bar=2)
         self.assertTrue(scheduled)
-        sleep(1)
-        while len(cherrypy.scheduler.list_tasks()) >= 1:
-            sleep(1)
+        self.wait_for_tasks()
         # Then the task get called
         self.assertTrue(self.called)
 
