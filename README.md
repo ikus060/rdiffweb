@@ -108,7 +108,11 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
-## Next Rlease - 2.5.1
+## Next Rlease 2.5.2
+
+* Block repository access when user_root directory is empty or a relative path
+
+## 2.5.1 (2022-11-11)
 
 * Add support for Ubuntu Kinetic #240
 * Disable filesize for deleted files to improve page loading #241

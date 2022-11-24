@@ -396,12 +396,8 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.assertInBody("Cannot edit user `invalid`: user doesn&#39;t exists")
 
     def test_user_invalid_root(self):
-        # Delete all user's
-        for user in UserObject.query.all():
-            if user.username != self.USERNAME:
-                user.delete().commit()
         # Change the user's root
-        user = UserObject.get_user('admin')
+        user = UserObject.get_user(self.USERNAME)
         user.user_root = "/invalid"
         user.commit()
         self.getPage("/admin/users")

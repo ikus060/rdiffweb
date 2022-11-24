@@ -133,14 +133,14 @@ class RepoObject(Base, RdiffRepo):
 
     @orm.reconstructor
     def __init_on_load__(self):
-        RdiffRepo.__init__(
-            self, self.user.user_root, self.repopath, encoding=self.encoding or RepoObject.DEFAULT_REPO_ENCODING
-        )
-
-    @property
-    def displayname(self):
-        # Repository displayName is the "repopath" too.
-        return self.repopath.strip('/')
+        # RdiffRepo required an absolute full path, When the user_root is invalid, let generate an invalid full path.
+        if not self.user.user_root:
+            full_path = os.path.join('/user_has_an_empty_user_root/', self.repopath.strip('/'))
+        elif not os.path.isabs(self.user.user_root):
+            full_path = os.path.join('/user_has_a_relative_user_root/', self.repopath.strip('/'))
+        else:
+            full_path = os.path.join(self.user.user_root, self.repopath.strip('/'))
+        RdiffRepo.__init__(self, full_path, encoding=self.encoding or RepoObject.DEFAULT_REPO_ENCODING)
 
     @property
     def name(self):

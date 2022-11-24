@@ -845,21 +845,16 @@ class RdiffRepo(object):
 
     """Represent one rdiff-backup repository."""
 
-    def __init__(self, user_root, path, encoding):
-        if isinstance(user_root, str):
-            user_root = os.fsencode(user_root)
-        if isinstance(path, str):
-            path = os.fsencode(path)
-        assert isinstance(user_root, bytes)
-        assert isinstance(path, bytes)
-        assert encoding
+    def __init__(self, full_path, encoding):
+        assert encoding, 'encoding is required'
         self._encoding = encodings.search_function(encoding)
-        assert self._encoding
-        self.path = path.strip(b"/")
-        if self.path:
-            self.full_path = os.path.normpath(os.path.join(user_root, self.path))
-        else:
-            self.full_path = os.path.normpath(user_root)
+        assert self._encoding, 'encoding must be a valid charset'
+
+        # Validate and sanitize the full_path
+        assert full_path, 'full path is required'
+        self.full_path = os.fsencode(full_path) if isinstance(full_path, str) else full_path
+        assert os.path.isabs(self.full_path), 'full_path must be absolute path'
+        self.full_path = os.path.normpath(self.full_path)
 
         # The location of rdiff-backup-data directory.
         self._data_path = os.path.join(self.full_path, RDIFF_BACKUP_DATA)
@@ -1087,10 +1082,8 @@ class RdiffRepo(object):
         assert isinstance(path, bytes)
         path = path.strip(b'/')
         if path in [b'.', b'']:
-            # For repository we use either path if defined or the directory base name
-            if not self.path:
-                return self._decode(unquote(os.path.basename(self.full_path)))
-            return self._decode(unquote(self.path))
+            # For repository the directory base name
+            return self._decode(unquote(os.path.basename(self.full_path)))
         else:
             # For path, we use the dir name
             return self._decode(unquote(os.path.basename(path)))

@@ -167,12 +167,12 @@ def url_for(*args, **kwargs):
     for chunk in args:
         if not chunk:
             continue
-        if hasattr(chunk, 'owner') and hasattr(chunk, 'path'):
+        if hasattr(chunk, 'owner') and hasattr(chunk, 'repopath'):
             # This is a RepoObject
             path += "/"
             path += chunk.owner
             path += "/"
-            path += rdw_helpers.quote_url(chunk.path.strip(b"/"))
+            path += rdw_helpers.quote_url(chunk.repopath.strip("/"))
         elif hasattr(chunk, 'path'):
             # This is a DirEntry
             if chunk.path:

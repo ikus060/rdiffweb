@@ -52,7 +52,7 @@ from rdiffweb.core.librdiff import (
 class MockRdiffRepo(RdiffRepo):
     def __init__(self):
         p = bytes(pkg_resources.resource_filename('rdiffweb.core', 'tests'), encoding='utf-8')  # @UndefinedVariable
-        RdiffRepo.__init__(self, os.path.dirname(p), os.path.basename(p), encoding='utf-8')
+        RdiffRepo.__init__(self, p, encoding='utf-8')
         self.root_path = MockDirEntry(self)
 
 
@@ -221,7 +221,7 @@ class RdiffRepoTest(unittest.TestCase):
         # Define location of testcases
         self.testcases_dir = os.path.normpath(os.path.join(self.temp_dir, 'testcases'))
         self.testcases_dir = self.testcases_dir.encode('utf8')
-        self.repo = RdiffRepo(self.temp_dir, b'testcases', encoding='utf-8')
+        self.repo = RdiffRepo(os.path.join(self.temp_dir, 'testcases'), encoding='utf-8')
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir.encode('utf8'), True)
@@ -230,14 +230,13 @@ class RdiffRepoTest(unittest.TestCase):
         self.assertEqual('testcases', self.repo.display_name)
 
     def test_init_with_absolute(self):
-        self.repo = RdiffRepo(self.temp_dir, '/testcases', encoding='utf-8')
+        self.repo = RdiffRepo(os.path.join(self.temp_dir, '/testcases'), encoding='utf-8')
         self.assertEqual('testcases', self.repo.display_name)
 
     def test_init_with_invalid(self):
-        self.repo = RdiffRepo(self.temp_dir, 'invalid', encoding='utf-8')
+        self.repo = RdiffRepo(os.path.join(self.temp_dir, 'invalid'), encoding='utf-8')
         self.assertEqual('failed', self.repo.status[0])
         self.assertEqual(None, self.repo.last_backup_date)
-        self.assertEqual(b'invalid', self.repo.path)
         self.assertEqual('invalid', self.repo.display_name)
 
     @parameterized.expand(
@@ -534,7 +533,7 @@ class RdiffRepoTest(unittest.TestCase):
             0000,
         )
         # Create repo again to query status
-        self.repo = RdiffRepo(self.temp_dir, b'testcases', encoding='utf-8')
+        self.repo = RdiffRepo(os.path.join(self.temp_dir, 'testcases'), encoding='utf-8')
         status = self.repo.status
         self.assertEqual('failed', status[0])
 
@@ -545,7 +544,7 @@ class RdiffRepoTest(unittest.TestCase):
         # Change the permissions of the files.
         os.chmod(os.path.join(self.testcases_dir, b'rdiff-backup-data'), 0000)
         # Query status.
-        self.repo = RdiffRepo(self.temp_dir, b'testcases', encoding='utf-8')
+        self.repo = RdiffRepo(os.path.join(self.temp_dir, 'testcases'), encoding='utf-8')
         status = self.repo.status
         self.assertEqual('failed', status[0])
         # Make sure history entry doesn't raise error
