@@ -433,6 +433,26 @@ class UserObjectTest(rdiffweb.test.WebCase):
         userobj.expire()
         self.assertEqual([''], sorted([r.name for r in userobj.repo_objs]))
 
+    def test_refresh_repos_with_empty_userroot(self):
+        # Given a user with valid repositories relative to root
+        userobj = UserObject.get_user(self.USERNAME)
+        for repo in userobj.repo_objs:
+            repo.repopath = self.testcases[1:] + '/' + repo.repopath
+            repo.add().commit()
+        userobj.user_root = '/'
+        userobj.add().commit()
+        self.assertEqual(['interrupted', 'ok'], sorted([r.status[0] for r in userobj.repo_objs]))
+        # When updating it's userroot directory to an empty value
+        userobj.user_root = ''
+        userobj.add().commit()
+        UserObject.session.expire_all()
+        # Then close session
+        cherrypy.tools.db.on_end_resource()
+        # Then repo status is "broken"
+        userobj = UserObject.get_user(self.USERNAME)
+        self.assertFalse(userobj.valid_user_root())
+        self.assertEqual(['failed', 'failed'], [r.status[0] for r in userobj.repo_objs])
+
 
 class UserObjectWithAdminPassword(rdiffweb.test.WebCase):
 
