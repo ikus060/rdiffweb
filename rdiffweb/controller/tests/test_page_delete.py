@@ -21,7 +21,6 @@ Created on Apr 10, 2016
 """
 
 import os
-from time import sleep
 from unittest.case import skipIf
 
 from parameterized import parameterized
@@ -89,7 +88,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         if expected_redirect:
             self.assertHeaderItemValue('Location', self.baseurl + expected_redirect)
         # Check filesystem
-        sleep(1)
+        self.wait_for_tasks()
         self.getPage("/history/" + username + "/" + path)
         self.assertStatus(expected_history_status)
 
@@ -105,7 +104,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         # Check filesystem
-        sleep(1)
+        self.wait_for_tasks()
         userobj.expire()
         self.assertEqual(['broker-repo'], [r.name for r in userobj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
@@ -119,7 +118,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         # Check filesystem
-        sleep(1)
+        self.wait_for_tasks()
         userobj.expire()
         self.assertEqual(['broker-repo'], [r.name for r in userobj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
@@ -166,7 +165,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertHeaderItemValue('Location', self.baseurl + '/')
 
         # Check filesystem
-        sleep(1)
+        self.wait_for_tasks()
         user_obj.expire()
         self.assertEqual(['broker-repo'], [r.name for r in user_obj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
@@ -191,7 +190,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertHeaderItemValue('Location', self.baseurl + '/')
 
         # Check filesystem
-        sleep(1)
+        self.wait_for_tasks()
         user_obj.expire()
         self.assertEqual(['broker-repo'], [r.name for r in user_obj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))

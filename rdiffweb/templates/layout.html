@@ -12,7 +12,8 @@
       <meta content="noindex" name="robots" />
       <meta content="IE=edge" http-equiv="X-UA-Compatible" />
       <meta content="width=device-width, initial-scale=1" name="viewport" />
-      <link href="{{ url_for('favicon.ico') }}" rel="shortcut icon"/>
+      <link href="{{ url_for('favicon.ico', v=cache_invalid) }}"
+            rel="shortcut icon"/>
       <!-- Jquery -->
       <script src="{{ url_for('/static/js/jquery.min.js') }}"></script>
       <!-- Bootstrap v4 -->
@@ -48,7 +49,7 @@
             <img alt="{{ header_name }}"
                  class="mr-1"
                  height="36"
-                 src="{{ url_for('/header_logo') }}"/>
+                 src="{{ url_for('/header_logo',v=cache_invalid) }}"/>
           </a>
           <button aria-controls="navbarSupportedContent"
                   aria-expanded="false"

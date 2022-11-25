@@ -26,6 +26,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 import unittest
 import unittest.mock
 from threading import Thread
@@ -178,3 +179,8 @@ class WebCase(helper.CPWebCase):
         self.getPage("/logout")
         self.getPage("/login/", method='POST', body={'login': username, 'password': password})
         self.assertStatus('303 See Other')
+
+    def wait_for_tasks(self):
+        time.sleep(1)
+        while len(cherrypy.scheduler.list_tasks()) or cherrypy.scheduler.is_job_running():
+            time.sleep(1)

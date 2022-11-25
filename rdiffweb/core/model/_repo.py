@@ -148,6 +148,11 @@ class RepoObject(Base, RdiffRepo):
         return self.repopath
 
     @property
+    def display_name(self):
+        # String representation of repopath
+        return self.repopath.strip('/')
+
+    @property
     def owner(self):
         return self.user.username
 
