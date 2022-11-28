@@ -108,11 +108,11 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
-## Next Rlease 2.5.2
+## 2.5.2 (2022-11-28)
 
-* Block repository access when user_root directory is empty or a relative path
+* Block repository access when user_root directory is empty or relative path
 * Replace admin password only when `--admin-password` option is provided #246
-* Invalidate browser cache for logo, headerlogo and favicon on restart #245
+* Invalidate browser cache for `logo`, `headerlogo` and `favicon` on restart #245
 
 ## 2.5.1 (2022-11-11)
 
