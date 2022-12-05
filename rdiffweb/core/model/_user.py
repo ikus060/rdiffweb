@@ -381,7 +381,7 @@ class UserObject(Base):
         self.hash_password = hash_password(password)
 
         # Revoke other session to force re-login
-        session_id = cherrypy.serving.session.id if getattr(cherrypy.serving, 'session', None) else None
+        session_id = cherrypy.serving.session.id if hasattr(cherrypy.serving, 'session') else None
         SessionObject.query.filter(
             SessionObject.username == self.username,
             SessionObject.id != session_id,

@@ -96,7 +96,7 @@ class CheckAuthMfa(cherrypy.Tool):
         code_timeout = cherrypy.request.config.get('tools.sessions.timeout', 60)
         session = cherrypy.session
         return (
-            getattr(cherrypy, 'session', None) is None
+            not hasattr(cherrypy.serving, 'session')
             or session.get(MFA_USERNAME) != cherrypy.request.login
             or session.get(MFA_CODE) is None
             or session.get(MFA_CODE_TIME) is None
@@ -151,7 +151,7 @@ class CheckAuthMfa(cherrypy.Tool):
         original_url = urllib.parse.quote(request.path_info, encoding=request.uri_encoding)
         qs = request.query_string
         new_url = cherrypy.url(original_url, qs=qs, base='')
-        if hasattr(cherrypy, 'session'):
+        if hasattr(cherrypy.serving, 'session'):
             cherrypy.session[MFA_REDIRECT_URL] = new_url
 
     def verify_code(self, code, persistent=False):
