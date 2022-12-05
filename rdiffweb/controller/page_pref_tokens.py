@@ -19,7 +19,7 @@
 import logging
 
 import cherrypy
-from wtforms.fields import DateField, HiddenField, StringField, SubmitField
+from wtforms.fields import DateField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional
 
 from rdiffweb.controller import Controller, flash
@@ -32,7 +32,6 @@ logger = logging.getLogger(__name__)
 
 
 class TokenForm(CherryForm):
-    action = HiddenField(default='add_access_token')
     name = StringField(
         _('Token name'),
         description=_(
@@ -53,11 +52,11 @@ class TokenForm(CherryForm):
         },
         validators=[Optional()],
     )
-    submit = SubmitField(_('Create access token'))
+    add_access_token = SubmitField(_('Create access token'))
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
-        return super().is_submitted() and self.action.data == 'add_access_token'
+        return super().is_submitted() and self.add_access_token.data
 
     def populate_obj(self, userobj):
         try:
@@ -82,12 +81,12 @@ class TokenForm(CherryForm):
 
 
 class DeleteTokenForm(CherryForm):
-    action = HiddenField(default='delete_access_token')
     name = StringField(validators=[DataRequired()])
+    revoke = SubmitField(_('Revoke'))
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
-        return super().is_submitted() and self.action.data == 'delete_access_token'
+        return super().is_submitted() and self.revoke.data
 
     def populate_obj(self, userobj):
         is_maintainer()
