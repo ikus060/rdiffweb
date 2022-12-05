@@ -123,11 +123,11 @@ This integration works with most LDAP-compliant servers, including:
 | ldap-add-missing-user | `True` to create users from LDAP when the credential is valid. | True |
 | ldap-add-user-default-role | Role to be used when creating a new user from LDAP. Default: user | maintainer |
 | ldap-add-user-default-userroot | Userroot to be used when creating a new user from LDAP. Default: empty | /backups/{cn[0]} |
-| ldap-base-dn | The DN of the branch of the directory where all searches should start from. | dc=my,dc=domain | 
+| ldap-base-dn | The DN of the branch of the directory where all searches should start from. | dc=my,dc=domain |
 | ldap-bind-dn | An optional DN used to bind to the server when searching for entries. If not provided, will use an anonymous bind. | cn=manager,dc=my,dc=domain |
 | ldap-bind-password | A bind password to use in conjunction with `LdapBindDn`. Note that the bind password is probably sensitive data,and should be properly protected. You should only use the LdapBindDn and LdapBindPassword if you absolutely need them to search the directory. | mypassword |
 | ldap-encoding | encoding used by your LDAP server. Default to utf-8 | cp1252 |
-| ldap-filter | A valid LDAP search filter. If not provided, defaults to `(objectClass=*)`, which will search for all objects in the tree. | (objectClass=*) | 
+| ldap-filter | A valid LDAP search filter. If not provided, defaults to `(objectClass=*)`, which will search for all objects in the tree. | (objectClass=*) |
 | ldap-group-attribute-is-dn | True if the content of the attribute ldap-group-attribute is a DN. | true |
 | ldap-group-attribute | name of the attribute defining the groups of which the user is a member. Should be used with ldap-required-group and ldap-group-attribute-is-dn. | member |
 | ldap-network-timeout | Optional timeout value. Default to 10 sec. | 10 |
@@ -136,8 +136,8 @@ This integration works with most LDAP-compliant servers, including:
 | ldap-scope | The scope of the search. Can be either `base`, `onelevel` or `subtree`. Default to `subtree`. | onelevel |
 | ldap-timeout | Optional timeout value. Default to 300 sec. | 300 |
 | ldap-tls | `true` to enable TLS. Default to `false` | false |
-| ldap-uri | URIs containing only the schema, the host, and the port. | ldap://localhost:389 | 
-| ldap-username-attribute | The attribute to search username. If no attributes are provided, the default is to use `uid`. It's a good idea to choose an attribute that will be unique across all entries in the subtree you will be using. | cn | 
+| ldap-uri | URIs containing only the schema, the host, and the port. | ldap://localhost:389 |
+| ldap-username-attribute | The attribute to search username. If no attributes are provided, the default is to use `uid`. It's a good idea to choose an attribute that will be unique across all entries in the subtree you will be using. | cn |
 | ldap-version | version of LDAP in use either 2 or 3. Default to 3.| 3 |
 
 ### Automatically create user in Rdiffweb
@@ -164,7 +164,7 @@ Here is an example of how you may limit Rdiffweb access to members of *Admin_Bac
 
 ## Configure User Session
 
-A user session is a sequence of request and response transactions associated with a single user. The user session is the means to track each authenticated user. 
+A user session is a sequence of request and response transactions associated with a single user. The user session is the means to track each authenticated user.
 
 | Option | Description | Example |
 | --- | --- | --- |
@@ -180,7 +180,7 @@ When enabled, Rdiffweb will also send email notification for security reason whe
 | Option | Description | Example |
 | --- | --- | --- |
 | email-encryption | Type of encryption to be used when establishing communication with SMTP server. Available values: `none`, `ssl` and `starttls` | starttls |
-| email-host | SMTP server used to send email in the form `host`:`port`. If the port is not provided, default to standard port 25 or 465 is used. | smtp.gmail.com:587 | 
+| email-host | SMTP server used to send email in the form `host`:`port`. If the port is not provided, default to standard port 25 or 465 is used. | smtp.gmail.com:587 |
 | email-sender | email addres used for the `From:` field when sending email. | Rdiffweb <example@gmail.com> |
 | email-notification-time | time when the email notification should be sent for inactive backups. | 22:00 |
 | email-username | username used for authentication with the SMTP server. | example@gmail.com |
@@ -205,7 +205,7 @@ your system without a custom plugin. By defining `quota-set-cmd`, `quota-get-cmd
 and `QuotaUsedCmd` configuration options, you have all the flexibility to
 manage the quota the way you want by providing custom command line to be executed to respectively set the quota, get the quota and get quota usage.
 
-| Option | Description | Example | 
+| Option | Description | Example |
 | --- | --- | --- |
 | quota-set-cmd | Command line to set the user's quota. | Yes. If you want to allow administrators to set quota from the web interface. |
 | quota-get-cmd | Command line to get the user's quota. Should print the size in bytes to console. | No. Default behaviour gets quota using operating system statvfs that should be good if you are using setquota, getquota, etc. For ZFS and other more exotic file system, you may need to define this command. |
@@ -226,7 +226,7 @@ configure quota using either user's quota or project quota.
 
 ### Configure user quota for EXT4
 
-This section is not a full documentation about how to configure ext4 project quota, 
+This section is not a full documentation about how to configure ext4 project quota,
 but provide enough guidance to help you.
 
 1. Enabled project quota feature  
@@ -312,7 +312,7 @@ need. Most likely, you will want to make it closer to your business brand.
 | --- | --- | --- |
 | welcome-msg | Replace the headline displayed in the login page. It may contains HTML. | Custom message displayed on login page.|
 | brand-header-name | Define the application name displayed in the title bar and header menu. | My Backup |
-| brand-default-theme | Define the theme. Either: `default`, `blue` or `orange`. Define the css file to be loaded in the web interface. You may manually edit a CSS file to customize it. The location is similar to `/usr/lib/python3/dist-packages/rdiffweb/static/`. | orange |
+| brand-default-theme | Define the theme. Either: `default`, `blue` or `orange`. Define the css file to be loaded in the web interface. | orange |
 | brand-favicon | Define the FavIcon to be displayed in the browser title | /etc/rdiffweb/my-fav.ico |
 | brand-logo | location of an image (preferably a .png) to be used as a replacement for the rdiffweb logo displayed in Login page. | /etc/rdiffweb/logo2.png |
 | brand-header-logo | location of an image (preferably a .png) to be used as a replacement for the rdiffweb header logo displayed in navigation bar. | /etc/rdiffweb/logo1.png |
@@ -332,7 +332,7 @@ To support this feature, Rdiffweb schedule a job to clean-up the repositories in
 
 | Parameter | Description | Example |
 | --- | --- | --- |
-| remove-older-time | Time when to execute the remove older task | 22:00 | 
+| remove-older-time | Time when to execute the remove older task | 22:00 |
 
 ## Configure temporary folder location
 
@@ -345,7 +345,7 @@ If you want to enforce a different location for the temporary directory, you may
 | tempdir | alternate temporary folder to be used when restoring files. Might be useful if the default location has limited disk space| /tmp/rdiffweb/ |
 
 
-## Configure repository lookup depthness.
+## Configure repository lookup depthness
 
 When defining the UserRoot value for a user, Rdiffweb will scan the content of this directory recursively to lookups for rdiff-backup repositories. For performance reason, Rdiffweb limits the recursiveness to 3 subdirectories. This default value should suit most use cases. If you have a particular use case, it's possible to allow Rdiffweb to scan for more subdirectories by defining a greater value for the option `max-depth`. Make sure to pick a reasonable value for your use case as it may impact the performance.
 
