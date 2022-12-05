@@ -25,7 +25,7 @@ import logging
 import os
 
 import cherrypy
-from wtforms.fields.core import StringField
+from wtforms.fields import StringField
 from wtforms.validators import DataRequired, ValidationError
 
 from rdiffweb.controller import Controller

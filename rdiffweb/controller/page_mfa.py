@@ -18,6 +18,7 @@ import logging
 
 import cherrypy
 from wtforms.fields import BooleanField, StringField, SubmitField
+from wtforms.validators import ValidationError
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
@@ -57,14 +58,14 @@ class MfaForm(CherryForm):
         # Code is required when submit.
         if self.submit.data:
             if not self.code.data:
-                raise ValueError(_('Invalid verification code.'))
+                raise ValidationError(_('Invalid verification code.'))
             # Validate verification code.
             if not cherrypy.tools.auth_mfa.verify_code(code=self.code.data, persistent=self.persistent.data):
-                raise ValueError(_('Invalid verification code.'))
+                raise ValidationError(_('Invalid verification code.'))
 
     def validate(self, extra_validators=None):
         if not (self.submit.data or self.resend_code.data):
-            raise ValueError(_('Invalid operation'))
+            raise ValidationError(_('Invalid operation'))
         return super().validate()
 
 

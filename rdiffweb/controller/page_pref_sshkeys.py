@@ -25,7 +25,7 @@ import logging
 
 import cherrypy
 from wtforms import validators
-from wtforms.fields.core import StringField
+from wtforms.fields import StringField
 from wtforms.validators import ValidationError
 from wtforms.widgets.core import TextArea
 
