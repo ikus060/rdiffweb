@@ -25,7 +25,7 @@
       {% for token in tokens %}
         <li class="list-group-item">
           <div class="pull-right">
-            {{ button_confirm(label=_('Revoke'), target="#delete-token-modal", action="delete_access_token", name=token.name) }}
+            {{ button_confirm(label=_('Revoke'), target="#delete-token-modal", revoke=token.name, name=token.name) }}
           </div>
           <p class="list-group-item-heading">
             <strong>{{ token.name }}</strong>
@@ -67,6 +67,6 @@
   id='delete-token-modal',
   title=_('Delete access token'),
   message=_("Are you sure you want to revoke this access token? Any application that uses this access token to authenticate will stop working."),
-  fields=['action', 'name'],
+  fields=['revoke', 'name'],
   submit=_('Revoke')) }}
 {% endblock %}

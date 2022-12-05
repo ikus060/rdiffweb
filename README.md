@@ -111,6 +111,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 ## 2.5.3 (2022-12-05)
 
 * Add support for WTForms v3 to support Debian Bookworm
+* Fix strange behavior in access token management #247
 
 ## 2.5.2 (2022-11-28)
 

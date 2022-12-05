@@ -37,7 +37,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'action': 'add_access_token', 'name': 'test-token-name', 'expiration_time': ''},
+            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration_time': ''},
         )
         # Then page return without error
         self.assertStatus(200)
@@ -53,7 +53,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'action': 'add_access_token', 'name': 'test-token-name', 'expiration_time': '1999-01-01'},
+            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration_time': '1999-01-01'},
         )
         # Then page return without error
         self.assertStatus(200)
@@ -69,7 +69,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'action': 'add_access_token', 'name': '', 'expiration_time': ''},
+            body={'add_access_token': '1', 'name': '', 'expiration_time': ''},
         )
         # Then page return without error
         self.assertStatus(200)
@@ -84,7 +84,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'action': 'add_access_token', 'name': 'token' * 52, 'expiration_time': ''},
+            body={'add_access_token': '1', 'name': 'token' * 52, 'expiration_time': ''},
         )
         # Then page return with error message
         self.assertStatus(200)
@@ -100,7 +100,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'action': 'add_access_token', 'name': 'test-token-name', 'expiration_time': ''},
+            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration_time': ''},
         )
         # Then page return without error
         self.assertStatus(200)
@@ -118,7 +118,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'action': 'delete_access_token', 'name': 'test-token-name'},
+            body={'revoke': '1', 'name': 'test-token-name'},
         )
         # Then page return without error
         self.assertStatus(200)
