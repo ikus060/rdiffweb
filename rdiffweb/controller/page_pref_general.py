@@ -21,8 +21,12 @@ to change password ans refresh it's repository view.
 
 import cherrypy
 from wtforms.fields import HiddenField, PasswordField, StringField, SubmitField
-from wtforms.fields.html5 import EmailField
-from wtforms.validators import DataRequired, EqualTo, InputRequired, Length, Optional, Regexp
+from wtforms.validators import DataRequired, EqualTo, InputRequired, Length, Optional, Regexp, ValidationError
+
+try:
+    from wtforms.fields import EmailField  # wtform >=3
+except ImportError:
+    from wtforms.fields.html5 import EmailField  # wtform <3
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
@@ -93,7 +97,7 @@ class UserPasswordForm(CherryForm):
         Make sure new password if not equals to old password.
         """
         if self.new.data and self.new.data == self.current.data:
-            raise ValueError(_('The new password must be different from the current password.'))
+            raise ValidationError(_('The new password must be different from the current password.'))
 
     def populate_obj(self, user):
         # Check if current password is "valid" if Not, rate limit the

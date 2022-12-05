@@ -18,6 +18,7 @@
 
 import cherrypy
 from wtforms.fields import SelectField, StringField, SubmitField
+from wtforms.validators import ValidationError
 from wtforms.widgets import HiddenInput
 
 from rdiffweb.controller import Controller, flash
@@ -93,14 +94,14 @@ class MfaToggleForm(AbstractMfaForm):
         # Code is required for enable_mfa and disable_mfa
         if self.enable_mfa.data or self.disable_mfa.data:
             if not self.code.data:
-                raise ValueError(_("Enter the verification code to continue."))
+                raise ValidationError(_("Enter the verification code to continue."))
             # Validate code
             if not cherrypy.tools.auth_mfa.verify_code(self.code.data, False):
-                raise ValueError(_("Invalid verification code."))
+                raise ValidationError(_("Invalid verification code."))
 
     def validate(self, extra_validators=None):
         if not (self.enable_mfa.data or self.disable_mfa.data or self.resend_code.data):
-            raise ValueError(_('Invalid operation'))
+            raise ValidationError(_('Invalid operation'))
         return super().validate()
 
 

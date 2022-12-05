@@ -21,7 +21,12 @@ import cherrypy
 import humanfriendly
 from wtforms import validators, widgets
 from wtforms.fields import Field, HiddenField, PasswordField, SelectField, StringField
-from wtforms.fields.html5 import EmailField
+from wtforms.validators import ValidationError
+
+try:
+    from wtforms.fields import EmailField  # wtform >=3
+except ImportError:
+    from wtforms.fields.html5 import EmailField  # wtform <3
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
@@ -64,7 +69,7 @@ class SizeField(Field):
                 self.data = humanfriendly.parse_size(value_str)
             except humanfriendly.InvalidSize:
                 self.data = None
-                raise ValueError(self.gettext('Not a valid file size value'))
+                raise ValidationError(self.gettext('Not a valid file size value'))
 
 
 class UserForm(CherryForm):
@@ -148,13 +153,13 @@ class UserForm(CherryForm):
         # Don't allow the user to changes it's "role" state.
         currentuser = cherrypy.request.currentuser
         if self.username.data == currentuser.username and self.role.data != currentuser.role:
-            raise ValueError(_('Cannot edit your own role.'))
+            raise ValidationError(_('Cannot edit your own role.'))
 
     def validate_mfa(self, field):
         # Don't allow the user to changes it's "mfa" state.
         currentuser = cherrypy.request.currentuser
         if self.username.data == currentuser.username and self.mfa.data != currentuser.mfa:
-            raise ValueError(_('Cannot change your own two-factor authentication settings.'))
+            raise ValidationError(_('Cannot change your own two-factor authentication settings.'))
 
     def populate_obj(self, userobj):
         # Save password if defined
