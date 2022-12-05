@@ -76,6 +76,7 @@ class SshForm(CherryForm):
         except DuplicateSSHKeyError as e:
             userobj.rollback()
             flash(str(e), level='error')
+            _logger.warning("trying to add duplicate ssh key")
         except Exception:
             userobj.rollback()
             flash(_("Unknown error while adding the SSH Key"), level='error')
@@ -92,7 +93,8 @@ class DeleteSshForm(CherryForm):
             userobj.commit()
         except Exception:
             userobj.rollback()
-            flash(_("Unknown error while removing the SSH Key"), level='error')
+            if hasattr(cherrypy.serving, 'session'):
+                flash(_("Unknown error while removing the SSH Key"), level='error')
             _logger.warning("error removing ssh key", exc_info=1)
 
 
@@ -159,7 +161,14 @@ class ApiSshKeys(Controller):
     def post(self, **kwargs):
         form = SshForm()
         if form.validate():
-            form.populate_obj(self.app.currentuser)
+            # Create the SSH Key
+            userobj = self.app.currentuser
+            try:
+                userobj.add_authorizedkey(key=form.key.data, comment=form.title.data)
+                userobj.commit()
+            except DuplicateSSHKeyError as e:
+                userobj.rollback()
+                raise cherrypy.HTTPError(400, str(e))
             return kwargs
         else:
             raise cherrypy.HTTPError(400, form.error_message)

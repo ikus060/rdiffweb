@@ -66,6 +66,7 @@ def flash(message, level='info'):
     """
     assert message
     assert level in ['info', 'error', 'warning', 'success']
+    assert hasattr(cherrypy, 'session'), 'flash message requires user session'
     if 'flash' not in cherrypy.session:  # @UndefinedVariable
         cherrypy.session['flash'] = []  # @UndefinedVariable
     flash_message = FlashMessage(str(message), level)

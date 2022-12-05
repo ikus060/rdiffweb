@@ -162,8 +162,8 @@ def check_ratelimit(
     # Verify user has not exceeded rate limit
     if limit <= hits:
         if logout:
-            if hasattr(cherrypy, 'session'):
-                cherrypy.session.clear()
+            if hasattr(cherrypy.serving, 'session'):
+                cherrypy.serving.session.clear()
             raise cherrypy.HTTPRedirect("/")
 
         raise cherrypy.HTTPError(return_status)
