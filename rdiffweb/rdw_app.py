@@ -85,7 +85,7 @@ cherrypy.config.environments['development'] = {
 @cherrypy.tools.currentuser(userobj=lambda username: UserObject.get_user(username))
 @cherrypy.tools.db()
 @cherrypy.tools.enrich_session()
-@cherrypy.tools.proxy(remote='X-Real-IP')
+@cherrypy.tools.proxy(local=None, remote='X-Real-IP')
 @cherrypy.tools.secure_headers()
 class Root(LocationsPage):
     def __init__(self):
