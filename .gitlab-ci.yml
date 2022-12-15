@@ -188,6 +188,28 @@ test-package:deb:
   - rdiffweb --version
   - (/usr/bin/rdiffweb &)
   - timeout 60 bash -c 'until curl --silent http://localhost:8080; do sleep 1; done'
+  # Check if static files are working
+  - curl http://localhost:8080/static/css/bootstrap.min.css
+  - curl http://localhost:8080/static/css/bootstrap.min.css.map
+  - curl http://localhost:8080/static/css/font-awesome.css.map
+  - curl http://localhost:8080/static/css/font-awesome.min.css
+  - curl http://localhost:8080/static/css/jquery.dataTables.min.css
+  - curl http://localhost:8080/static/css/responsive.dataTables.min.css
+  - curl http://localhost:8080/static/fonts/FontAwesome.otf
+  - curl http://localhost:8080/static/fonts/fontawesome-webfont.eot
+  - curl http://localhost:8080/static/fonts/fontawesome-webfont.svg
+  - curl http://localhost:8080/static/fonts/fontawesome-webfont.ttf
+  - curl http://localhost:8080/static/fonts/fontawesome-webfont.woff
+  - curl http://localhost:8080/static/fonts/fontawesome-webfont.woff2
+  - curl http://localhost:8080/static/images/sort_asc.png
+  - curl http://localhost:8080/static/images/sort_both.png
+  - curl http://localhost:8080/static/images/sort_desc.png
+  - curl http://localhost:8080/static/js/bootstrap.bundle.js.map
+  - curl http://localhost:8080/static/js/bootstrap.bundle.min.js
+  - curl http://localhost:8080/static/js/dataTables.buttons.min.js
+  - curl http://localhost:8080/static/js/dataTables.responsive.min.js
+  - curl http://localhost:8080/static/js/jquery.dataTables.min.js
+  - curl http://localhost:8080/static/js/jquery.min.js
   
 publish:sonar:master:
   stage: sonar

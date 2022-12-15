@@ -19,4 +19,3 @@
 /usr/share/javascript/jquery-datatables/images/sort_desc.png   /usr/lib/python3/dist-packages/rdiffweb/static/images/sort_desc.png
 /usr/share/javascript/jquery-datatables/jquery.dataTables.min.js /usr/lib/python3/dist-packages/rdiffweb/static/js/jquery.dataTables.min.js
 /usr/share/javascript/jquery/jquery.min.js                     /usr/lib/python3/dist-packages/rdiffweb/static/js/jquery.min.js
-/usr/share/libjs-chartkick.js/chartkick.js                     /usr/lib/python3/dist-packages/rdiffweb/static/js/chartkick.min.js
