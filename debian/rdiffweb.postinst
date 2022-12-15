@@ -14,6 +14,12 @@ case "${1}" in
 		else
 			ln -sf /usr/share/javascript/chart.js/Chart.min.js /usr/lib/python3/dist-packages/rdiffweb/static/js/chart.min.js
 		fi
+		# Create symbolic link to chartkick.js
+		if [ -f /usr/share/javascript/chartkick/chartkick.min.js ]; then
+			ln -sf /usr/share/javascript/chartkick/chartkick.min.js /usr/lib/python3/dist-packages/rdiffweb/static/js/chartkick.min.js
+		else
+			ln -sf /usr/share/libjs-chartkick.js/chartkick.js /usr/lib/python3/dist-packages/rdiffweb/static/js/chartkick.min.js
+		fi
 		;;
 
 	abort-upgrade|abort-remove|abort-deconfigure)
