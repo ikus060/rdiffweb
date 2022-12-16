@@ -283,7 +283,7 @@ publish:docker-readme:
       - $CI_COMMIT_TAG
   image:
     name: chko/docker-pushrm
-    entrypoint: ["/bin/sh", "-c", "/docker-pushrm"]
+    entrypoint: ["/bin/sh", "-c"]
   variables:
     DOCKER_USER: $DOCKER_USR
     DOCKER_PASS: $DOCKER_PWD
@@ -291,7 +291,12 @@ publish:docker-readme:
     PUSHRM_TARGET: docker.io/ikus060/rdiffweb
     PUSHRM_DEBUG: 1
     PUSHRM_FILE: $CI_PROJECT_DIR/README.md
-  script: "/bin/true"
+  script:
+  # Keep top 400 lines to workarround Dockerhub limitation.
+  - cp README.md README.md.orig
+  - head -n 400 README.md.orig > README.md
+  # Push file
+  - /docker-pushrm
   stage: publish
 
 publish:deb:

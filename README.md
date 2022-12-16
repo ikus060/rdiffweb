@@ -42,17 +42,17 @@ The Rdiffweb website is https://rdiffweb.org/.
 
 With its rich web interface Rdiffweb provide a notable list of features:
 
- * Browse your backup
- * Restore single file or multiple files as an archived
- * Users authentication via local database and LDAP
- * Users authorization
- * Email notification when backup is not successful
- * Configurable repository encoding
- * Configurable retention period
- * Backup statistics visualization using graphs
- * SSH Keys management
- * Disk quota visualization
- * File and folder deletion
+* Browse your backup
+* Restore single file or multiple files as an archived
+* Users authentication via local database and LDAP
+* Users authorization
+* Email notification when backup is not successful
+* Configurable repository encoding
+* Configurable retention period
+* Backup statistics visualization using graphs
+* SSH Keys management
+* Disk quota visualization
+* File and folder deletion
 
 ## Demo
 
@@ -62,8 +62,8 @@ If you quickly want to check how Rdiffweb is behaving, you may try our demo serv
 
 Use the following credential to login:
 
- * Username: admin
- * Password: admin123
+* Username: admin
+* Password: admin123
 
 ## Installation & Docker usage
 
@@ -80,7 +80,7 @@ You should read the [Documentation](https://www.ikus-soft.com/archive/rdiffweb/d
 **Docker**
 
     docker pull ikus060/rdiffweb
-    
+
 **Debian**
 
     curl -L https://www.ikus-soft.com/archive/rdiffweb/public.key | apt-key add - 
@@ -110,7 +110,8 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 ## Next Release - 2.5.4
 
-* Discard `X-Forwarded-Host` headers
+* Discard `X-Forwarded-Host` headers credit to [Anishka Shukla](https://github.com/anishkashukla)
+* Create proper symbolic link of chartkick.js on Ubuntu Jammy to fix loading of Charts in web interface
 
 ## 2.5.3 (2022-12-05)
 
@@ -119,7 +120,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 ## 2.5.2 (2022-11-28)
 
-* Block repository access when user_root directory is empty or relative path
+* Block repository access when user_root directory is empty or relative path [CVE-2022-4314](https://nvd.nist.gov/vuln/detail/CVE-2022-4314) credit to [neverjunior](https://github.com/neverjunior)
 * Replace admin password only when `--admin-password` option is provided #246
 * Invalidate browser cache for `logo`, `headerlogo` and `favicon` on restart #245
 
@@ -153,15 +154,15 @@ This next release focus on two-factor-authentication as a measure to increase se
 * Generate a new session on login and 2FA #220
 * Enforce permission on /etc/rdiffweb configuration folder
 * Enforce validation on fullname, username and email
-* Limit incorrect attempts to change the user's password to prevent brute force attacks #225 [CVE-2022-3273](https://nvd.nist.gov/vuln/detail/CVE-2022-3273)
-* Enforce password policy new password cannot be set as new password [CVE-2022-3376](https://nvd.nist.gov/vuln/detail/CVE-2022-3376)
-* Enforce better rate limit on login, mfa, password change and API [CVE-2022-3439](https://nvd.nist.gov/vuln/detail/CVE-2022-3439) [CVE-2022-3456](https://nvd.nist.gov/vuln/detail/CVE-2022-3456)
-* Enforce 'Origin' validation [CVE-2022-3457](https://nvd.nist.gov/vuln/detail/CVE-2022-3457)
-* Define idle and absolute session timeout with agressive default to protect usage on public computer [CVE-2022-3327](https://nvd.nist.gov/vuln/detail/CVE-2022-3327)
-* Send email notification when enabling or disabling MFA [CVE-2022-3363](https://nvd.nist.gov/vuln/detail/CVE-2022-3363)
+* Limit incorrect attempts to change the user's password to prevent brute force attacks #225 [CVE-2022-3273](https://nvd.nist.gov/vuln/detail/CVE-2022-3273) credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+* Enforce password policy new password cannot be set as new password [CVE-2022-3376](https://nvd.nist.gov/vuln/detail/CVE-2022-3376) credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+* Enforce better rate limit on login, mfa, password change and API [CVE-2022-3439](https://nvd.nist.gov/vuln/detail/CVE-2022-3439) [CVE-2022-3456](https://nvd.nist.gov/vuln/detail/CVE-2022-3456) credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+* Enforce 'Origin' validation [CVE-2022-3457](https://nvd.nist.gov/vuln/detail/CVE-2022-3457) credit to [Nithissh12](Nithissh12)
+* Define idle and absolute session timeout with agressive default to protect usage on public computer [CVE-2022-3327](https://nvd.nist.gov/vuln/detail/CVE-2022-3327) credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+* Send email notification when enabling or disabling MFA [CVE-2022-3363](https://nvd.nist.gov/vuln/detail/CVE-2022-3363) credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
 * Use Argon2id to store password hash #231
 * Fixed plugin priorities to ensure that jobs are scheduled at each startup #232
-* Revoke previous user's sessions on password change [CVE-2022-3362](https://nvd.nist.gov/vuln/detail/CVE-2022-3362)
+* Revoke previous user's sessions on password change [CVE-2022-3362](https://nvd.nist.gov/vuln/detail/CVE-2022-3362) credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
 
 Breaking changes:
 
@@ -169,50 +170,52 @@ Breaking changes:
 * `session-dir` is deprecated and should be replace by `rate-limit-dir`. User's session are stored in database.
 * previous `.css` customization are not barkward compatible. Make usage of the `--branding-X` options.
 
+**Thanks to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172) with whom I collaborate to improve the security of this project.**
+
 ## 2.4.10 (2022-10-03)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
-* Mitigate path traversal vulnerability [CVE-2022-3389](https://nvd.nist.gov/vuln/detail/CVE-2022-3389)
+* Mitigate path traversal vulnerability [CVE-2022-3389](https://nvd.nist.gov/vuln/detail/CVE-2022-3389) credit to [Hoang Van Hiep](https://www.linkedin.com/in/hiephv2410/)
 
 ## 2.4.9 (2022-09-28)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
-* Add `Cache-Control` and other security headers [CVE-2022-3292](https://nvd.nist.gov/vuln/detail/CVE-2022-3292)
-* Enforce password policy using `password-score` based on [zxcvbn](https://github.com/dropbox/zxcvbn) [CVE-2022-3326](https://nvd.nist.gov/vuln/detail/CVE-2022-3326)
+* Add `Cache-Control` and other security headers [CVE-2022-3292](https://nvd.nist.gov/vuln/detail/CVE-2022-3292) credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+* Enforce password policy using `password-score` based on [zxcvbn](https://github.com/dropbox/zxcvbn) [CVE-2022-3326](https://nvd.nist.gov/vuln/detail/CVE-2022-3326) credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
 
 ## 2.4.8 (2022-09-26)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
 * Clean-up invalid path on error page
-* Limit username field length [CVE-2022-3290](https://nvd.nist.gov/vuln/detail/CVE-2022-3290)
-* Limit user's email field length [CVE-2022-3272](https://nvd.nist.gov/vuln/detail/CVE-2022-3272)
-* Limit user's root directory field length [CVE-2022-3295](https://nvd.nist.gov/vuln/detail/CVE-2022-3295)
-* Limit SSH Key title field length [CVE-2022-3298](https://nvd.nist.gov/vuln/detail/CVE-2022-3298)
+* Limit username field length [CVE-2022-3290](https://nvd.nist.gov/vuln/detail/CVE-2022-3290) credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+* Limit user's email field length [CVE-2022-3272](https://nvd.nist.gov/vuln/detail/CVE-2022-3272) credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+* Limit user's root directory field length [CVE-2022-3295](https://nvd.nist.gov/vuln/detail/CVE-2022-3295) credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+* Limit SSH Key title field length [CVE-2022-3298](https://nvd.nist.gov/vuln/detail/CVE-2022-3298) credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
 
 ## 2.4.7 (2002-09-21)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
-* Generate a new session on login and 2FA #220 [CVE-2022-3269](https://nvd.nist.gov/vuln/detail/CVE-2022-3269)
-* Mitigate CSRF on user's settings #221 [CVE-2022-3274](https://nvd.nist.gov/vuln/detail/CVE-2022-3274)
+* Generate a new session on login and 2FA #220 [CVE-2022-3269](https://nvd.nist.gov/vuln/detail/CVE-2022-3269) credit to [Ambadi MP](https://www.linkedin.com/in/ambadi-m-p-16a95217b/)
+* Mitigate CSRF on user's settings #221 [CVE-2022-3274](https://nvd.nist.gov/vuln/detail/CVE-2022-3274) credit to [irfansayyed](https://github.com/irfansayyed-github)
 
 ## 2.4.6 (2022-09-20)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
 * Support MarkupSafe<3 for Debian bookworm
-* Mitigate CSRF on user's notification settings #216 [CVE-2022-3233](https://nvd.nist.gov/vuln/detail/CVE-2022-3233)
-* Mitigate CSRF on repository settings #217 [CVE-2022-3267](https://nvd.nist.gov/vuln/detail/CVE-2022-3267)
-* Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session on HTTP Error #218 [CVE-2022-3174](https://nvd.nist.gov/vuln/detail/CVE-2022-3174)
+* Mitigate CSRF on user's notification settings #216 [CVE-2022-3233](https://nvd.nist.gov/vuln/detail/CVE-2022-3233) credit to [Ambadi MP](https://www.linkedin.com/in/ambadi-m-p-16a95217b/)
+* Mitigate CSRF on repository settings #217 [CVE-2022-3267](https://nvd.nist.gov/vuln/detail/CVE-2022-3267) credit to [irfansayyed](https://github.com/irfansayyed-github)
+* Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session on HTTP Error #218 [CVE-2022-3174](https://nvd.nist.gov/vuln/detail/CVE-2022-3174) credit to [Chuu](https://github.com/uonghoangminhchau)
 
 ## 2.4.5 (2002-09-16)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
-* Mitigate CSRF on repository deletion and user deletion [CVE-2022-3232](https://nvd.nist.gov/vuln/detail/CVE-2022-3232) #214 #215
+* Mitigate CSRF on repository deletion and user deletion [CVE-2022-3232](https://nvd.nist.gov/vuln/detail/CVE-2022-3232) #214 #215 credit to [Ambadi MP](https://www.linkedin.com/in/ambadi-m-p-16a95217b/)
 
 ## 2.4.4 (2002-09-15)
 
@@ -224,21 +227,21 @@ This releases include a security fix. If you are using an earlier version, you s
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
-* Mitigate CSRF in profile's SSH Keys [CVE-2022-3221](https://nvd.nist.gov/vuln/detail/CVE-2022-3221) #212
+* Mitigate CSRF in profile's SSH Keys [CVE-2022-3221](https://nvd.nist.gov/vuln/detail/CVE-2022-3221) #212 credit to [Ambadi MP](https://www.linkedin.com/in/ambadi-m-p-16a95217b/)
 
 ## 2.4.2 (2022-09-12)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
-* Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session. [CVE-2022-3174](https://nvd.nist.gov/vuln/detail/CVE-2022-3174) #209
-* Avoid leakage of the stack trace in the default error page. [CVE-2022-3175](https://nvd.nist.gov/vuln/detail/CVE-2022-3175) #210
-* Enforce minimum and maximum password length [CVE-2022-3175](https://nvd.nist.gov/vuln/detail/CVE-2022-3179) #211
+* Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session. [CVE-2022-3174](https://nvd.nist.gov/vuln/detail/CVE-2022-3174) #209 credit to [Chuu](https://github.com/uonghoangminhchau)
+* Avoid leakage of the stack trace in the default error page. [CVE-2022-3175](https://nvd.nist.gov/vuln/detail/CVE-2022-3175) #210 credit to [Chuu](https://github.com/uonghoangminhchau)
+* Enforce minimum and maximum password length [CVE-2022-3175](https://nvd.nist.gov/vuln/detail/CVE-2022-3179) #211 credit to [Chuu](https://github.com/uonghoangminhchau)
 
 ## 2.4.1 (2022-09-08)
 
 This releases include a security fix. If you are using an earlier version, you should upgrade to this release immediately.
 
-* Add Clickjacking Defense [CVE-2022-3167](https://nvd.nist.gov/vuln/detail/CVE-2022-3167)
+* Add Clickjacking Defense [CVE-2022-3167](https://nvd.nist.gov/vuln/detail/CVE-2022-3167) credit to [tharunavula](https://github.com/tharunavula)
 * Drop Ubuntu Hirsute & Impish (End-of-life)
 
 ## 2.4.0 (2022-06-21)
@@ -294,76 +297,76 @@ Maintenance release to fix minor issues
 
 ## 2.3.7 (2021-10-21)
 
- * To avoid backward compatibility issue, revert CSRF Token validation
- * Mitigate CSRF vulnerability using cookies with `SameSite=Lax`
- * Mitigate CSRF vulnerability by validating the `Origin` header when a form is submited
- * Improve usage of WTForm for all form validation
- * Update installation stepd for debian #162
- * Build Ubuntu packages and publish them to our APT repo
+* To avoid backward compatibility issue, revert CSRF Token validation
+* Mitigate CSRF vulnerability using cookies with `SameSite=Lax`
+* Mitigate CSRF vulnerability by validating the `Origin` header when a form is submited
+* Improve usage of WTForm for all form validation
+* Update installation stepd for debian #162
+* Build Ubuntu packages and publish them to our APT repo
 
 ## 2.3.6 (2021-10-20)
 
- * Broken build
+* Broken build
 
 ## 2.3.5 (2021-10-18)
 
- * Mitigate CSRF vulnerability to user, ssh and repo management with CSRF Token
+* Mitigate CSRF vulnerability to user, ssh and repo management with CSRF Token
 
 ## 2.3.4 (2021-09-20)
 
- * Skip email notification if `email-host` configuration is not provided #157
- * Skip email notification when the new attribute value has the same value #159
- * USE LDAP `mail` attribute when creating new user from LDAP directory #156
+* Skip email notification if `email-host` configuration is not provided #157
+* Skip email notification when the new attribute value has the same value #159
+* USE LDAP `mail` attribute when creating new user from LDAP directory #156
 
 ## 2.3.3 (2021-09-10)
 
- * Provide a new theme `blue` to match IKUS Soft colors #158
+* Provide a new theme `blue` to match IKUS Soft colors #158
 
 ## 2.3.2 (2021-09-07)
 
- * Automatically update user's repository list based on user's home directory
+* Automatically update user's repository list based on user's home directory
 
 ## 2.3.1 (2021-07-14)
 
- * Update default `session-dir` location to `/var/lib/rdiffweb/session` to avoid using `/var/run` #148
+* Update default `session-dir` location to `/var/lib/rdiffweb/session` to avoid using `/var/run` #148
 
 ## 2.3.0 (2021-07-06)
 
- * Improve timezone handling to display date with local timezone using javascript #143
- * Improve charts by replacing d3js by chartkick #122
- * Replace the status view by something meaningful with chartkick #122
- * Provide Docker image with Rdiffweb `docker pull ikus060/rdiffweb` #55
- * Fix file and folder sorting #143
+* Improve timezone handling to display date with local timezone using javascript #143
+* Improve charts by replacing d3js by chartkick #122
+* Replace the status view by something meaningful with chartkick #122
+* Provide Docker image with Rdiffweb `docker pull ikus060/rdiffweb` #55
+* Fix file and folder sorting #143
 
 ## 2.2.0 (2021-05-11)
- 
- * Debian package:
-   * Add rdiff-backup as dependencies to comply with Debian packaging rules
-   * Multiple other fixed to control files
-   * Use debhelper-compat (= 13)
-   * Use debhelper-compat (= 13)
-   * Run test during packaging
-   * Create default folder `/var/run/rdiffweb/sessions` to store user session
- * Use ConfigArgPare for configuration to support configuration file, environment variables and arguments to configure rdiffweb #114
- * Fix cache in localization module
- * Add `ldap-add-default-role` and `ldap-add-default-userroot` option to define default value for role and user root when creating user from LDAP #125
- * Support PostgreSQL database by replacing our storage layer by SQLAlchemy #126
- * Fix to retrieve user quota only for valid user_root #135
- * Add option `disable-ssh-keys` to disable SSH Key management
- * Use absolute URL everywhere
- * Add support for `X-Forwarded-For`, `X-Forwarded-proto` and other reverse proxy header when generating absolute URL
- * Drop Debian Stretch support
- * Implement a new background scheduler using apscheduler #82
- * Use background job to send email notification to avoid blocking web page loading #47
- * Use background job to delete repository to avoid blocking web page loading #48
- * Allow deleting a specific file or folder from the history using `rdiff-backup-delete` #128
- * Improve support for `session-dir` #131
- * Add option `admin-password` to define administrator password for better security
- * Improve performance of repository browsing 
- * Add a new view to display logs of a specific repository
- * Allow downloading the log
- * Define a default limit to graph statistics to make it display faster
- * Fix `get-quota-cmd` option to properly return a value
+
+* Debian package:
+  * Add rdiff-backup as dependencies to comply with Debian packaging rules
+  * Multiple other fixed to control files
+  * Use debhelper-compat (= 13)
+  * Use debhelper-compat (= 13)
+  * Run test during packaging
+  * Create default folder `/var/run/rdiffweb/sessions` to store user session
+* Use ConfigArgPare for configuration to support configuration file, environment variables and arguments to configure rdiffweb #114
+* Fix cache in localization module
+* Add `ldap-add-default-role` and `ldap-add-default-userroot` option to define default value for role and user root when creating user from LDAP #125
+* Support PostgreSQL database by replacing our storage layer by SQLAlchemy #126
+* Fix to retrieve user quota only for valid user_root #135
+* Add option `disable-ssh-keys` to disable SSH Key management
+* Use absolute URL everywhere
+* Add support for `X-Forwarded-For`, `X-Forwarded-proto` and other reverse proxy header when generating absolute URL
+* Drop Debian Stretch support
+* Implement a new background scheduler using apscheduler #82
+* Use background job to send email notification to avoid blocking web page loading #47
+* Use background job to delete repository to avoid blocking web page loading #48
+* Allow deleting a specific file or folder from the history using `rdiff-backup-delete` #128
+* Improve support for `session-dir` #131
+* Add option `admin-password` to define administrator password for better security
+* Improve performance of repository browsing
+* Add a new view to display logs of a specific repository
+* Allow downloading the log
+* Define a default limit to graph statistics to make it display faster
+* Fix `get-quota-cmd` option to properly return a value
 
 ## 2.1.0 (2021-01-15)
 
@@ -400,135 +403,138 @@ Maintenance release to fix minor issues
 
 This minor release introduce official support of rdiffweb on Debian Bullseye. It also includes some usability improvements.
 
- * Change formatting of Last Backup date for "Updated 3 weeks ago" to ease the readability
- * Add support for Debian Bullseye
- * Add support for Python 3.8 (#104)
- * Add warning in the users list view when a root directory is invalid (#30)
- * Add options to control search depthness (#1)
- * Print a warning in the log when the "DefaultTheme" value is not valid (#90)
+* Change formatting of Last Backup date for "Updated 3 weeks ago" to ease the readability
+* Add support for Debian Bullseye
+* Add support for Python 3.8 (#104)
+* Add warning in the users list view when a root directory is invalid (#30)
+* Add options to control search depthness (#1)
+* Print a warning in the log when the "DefaultTheme" value is not valid (#90)
 
 ## 1.4.0 (2020-05-20)
 
 Thanks to our sponsor, this release introduce a feature to have better control over the user's permission by defining 3 different levels of privilege: Admin, Maintainer and User. This addition allows you to have better control on what your users can or can't do.
 
- * Fix single repository discovery when a user's home is a rdiff-backup repository
- * [SPONSORED] Add a new setting at the user level to define the user's role. Admin,
+* Fix single repository discovery when a user's home is a rdiff-backup repository
+* [SPONSORED] Add a new setting at the user level to define the user's role. Admin,
    Maintainer and User. Admin are allowed to do everything. Maintainer are
    allow to browse and delete repo. Users are only allowed to browse. #94
- * Add "Powered by" in the web interface footer #91
- * Display a nice error message when trying to delete admin user #93
- * Introduce usage of wtforms and flash in admin users for better form validation. #96 #97
- * Update French translation
+* Add "Powered by" in the web interface footer #91
+* Display a nice error message when trying to delete admin user #93
+* Introduce usage of wtforms and flash in admin users for better form validation. #96 #97
+* Update French translation
 
 ## 1.3.2 (2020-04-23)
 
 This minor releases fixed issues found while testing release 1.3.0.
 
- * Fix lookup of executable rdiff-backup and rdiffweb-restore to search in current virtualenv first
- * Fix repository view when multiple repo path are conflicting
- * Fix logging of rdiffweb-restore subprocess
+* Fix lookup of executable rdiff-backup and rdiffweb-restore to search in current virtualenv first
+* Fix repository view when multiple repo path are conflicting
+* Fix logging of rdiffweb-restore subprocess
 
 ## 1.3.1 (2020-04-10)
 
 This minor release enforces security of the password stored in rdiffweb database to make use of a better encryption using SSHA.
 Only new passwords will make use of the SSHA scheme.
 
- * Enforce password encryption by using SSHA scheme #88
+* Enforce password encryption by using SSHA scheme #88
 
 ## 1.3.0 (2020-04-07)
 
 This release focuses on improving the restore of big archives. The download should be much faster to start. Major enhancement was made to offload the processing outside the web server. And all of this is still compatible with rdiff-backup v1.2.8 and the latest v2.0.0.
 
- * Restore file and folder in a subprocess to make the download start faster
- * Fix encoding of archive on Python3.6 (CentOS 7) by using PAX format
- * Add support to restore files and folders using rdiff-backup2
- * Remove obsolete dependencies `pysqlite2`
- * Fix issue creating duplicate entries of repository in the database
+* Restore file and folder in a subprocess to make the download start faster
+* Fix encoding of archive on Python3.6 (CentOS 7) by using PAX format
+* Add support to restore files and folders using rdiff-backup2
+* Remove obsolete dependencies `pysqlite2`
+* Fix issue creating duplicate entries of repository in the database
 
 ## 1.2.2 (2020-03-05)
 
 This release provides little improvement to the v1.2.x including official support of rdiff-backup v2.0.0.
 
- * Enhance the repository to invite users to refresh the repository when the view is empty.
- * Support rdiff-backup v2.0.0
- * Deprecate support for cherrypy 4, 5, 6 and 7
- * Improve loading of repository data (cache status and entries)
- * Restore compatibility with SQLite 3.7 (CentOS7)
+* Enhance the repository to invite users to refresh the repository when the view is empty.
+* Support rdiff-backup v2.0.0
+* Deprecate support for cherrypy 4, 5, 6 and 7
+* Improve loading of repository data (cache status and entries)
+* Restore compatibility with SQLite 3.7 (CentOS7)
 
 Known issues:
 
- * Filename encoding in tar.gz and zip file might not be accurate if you are running Python 3.6 (CentOS7)
-
+* Filename encoding in tar.gz and zip file might not be accurate if you are running Python 3.6 (CentOS7)
 
 ## 1.2.1 (2020-02-08)
 
 Little bug fix following the previous release
 
- * Fix 404 error when trying to access other users repo as admin
- * Fix logging format for cherrypy logs to matches rdiffweb format
- * Add log rotation by default
+* Fix 404 error when trying to access other users repo as admin
+* Fix logging format for cherrypy logs to matches rdiffweb format
+* Add log rotation by default
 
 ## 1.2.0 (2020-01-30)
 
 This release focus on improving the database layers for better extendability to add more type of data and to support more databases backend like postgresql in the near future.
 
- * Add explicit testing for Debian Stretch & Buster
- * Change the persistence layers
-   * Minimize number of SQL queries
-   * Add object lazy loading
-   * Add object data caching
- * Fix bugs with SQLite <= 3.16 (Debian Stretch)
+* Add explicit testing for Debian Stretch & Buster
+* Change the persistence layers
+  * Minimize number of SQL queries
+  * Add object lazy loading
+  * Add object data caching
+* Fix bugs with SQLite <= 3.16 (Debian Stretch)
 
 ## 1.1.0 (2019-10-31)
 
 This release focus on improving the admin area and building the fundation for repository access control list (ACL).
 
- * Update documentation from PDSL web site
- * Improve the navigation bar layout
- * Update the login page headline
- * Update jinja2 version to allow 2.10.x
- * Show server log in admin area
- * Reduce code smell
- * Add System information in admin area
- * Validate credential using local database before LDAP
- * Reffactoring templates macros
- * Enhance user's view search bar
- * Change repository URL to username/repopath
- * Add System information in admin area
- * Improve testcases
- * Clean-up obsolete code
- * Fix issue with captital case encoding name
- * Fix compilation of less files
- * Fix google font import
+* Update documentation from PDSL web site
+* Improve the navigation bar layout
+* Update the login page headline
+* Update jinja2 version to allow 2.10.x
+* Show server log in admin area
+* Reduce code smell
+* Add System information in admin area
+* Validate credential using local database before LDAP
+* Reffactoring templates macros
+* Enhance user's view search bar
+* Change repository URL to username/repopath
+* Add System information in admin area
+* Improve testcases
+* Clean-up obsolete code
+* Fix issue with captital case encoding name
+* Fix compilation of less files
+* Fix google font import
 
 ## 1.0.3 (2019-10-04)
- * Removing the auto update repos
+
+* Removing the auto update repos
 
 ## 1.0.2 (2019-10-01)
- * Create "admin" user if missing
- * Update french translation
+
+* Create "admin" user if missing
+* Update french translation
 
 ## 1.0.1 (2019-09-22)
- * Update installation documentation 
- * Fix removal of SSH Key
- * Return meaningful error to the user trying to add an existing SSH key
+
+* Update installation documentation
+* Fix removal of SSH Key
+* Return meaningful error to the user trying to add an existing SSH key
 
 ## 1.0.0 (2019-09-11)
- * Make repository removal more robust
- * Improve performance of librdiff
- * Add new RESTful api
- * Return the right HTTP 401 or 402 error code for authentication
- * Fix bug introduce by upgrade to Jinja2 + python3
- * Store ssh keys in database and disk
- * Add support for theme (default, orange)
- * Remove deprecated profiling code
- * Add disk usage support / quota
- * Add support of cherrypy v18
- * Drop support of cherrypy v3.2.2
- * Add wsgi entry point
- * Replace the plugins architecture to ease implementation
- * Numerous bug fixes
+
+* Make repository removal more robust
+* Improve performance of librdiff
+* Add new RESTful api
+* Return the right HTTP 401 or 402 error code for authentication
+* Fix bug introduce by upgrade to Jinja2 + python3
+* Store ssh keys in database and disk
+* Add support for theme (default, orange)
+* Remove deprecated profiling code
+* Add disk usage support / quota
+* Add support of cherrypy v18
+* Drop support of cherrypy v3.2.2
+* Add wsgi entry point
+* Replace the plugins architecture to ease implementation
+* Numerous bug fixes
 
 ## 0.10.9 (2019-05-22)
- * Better error handling when error.log file are not valid gzip file
 
+* Better error handling when error.log file are not valid gzip file
