@@ -403,10 +403,6 @@ msgstr "Неверное имя пользователя или пароль."
 msgid "Verification code"
 msgstr "Код подтверждения"
 
-#: rdiffweb/controller/page_mfa.py:34
-msgid "Enter the code to verify your identity."
-msgstr "Введите код для подтверждения вашей личности."
-
 #: rdiffweb/controller/page_mfa.py:37 rdiffweb/controller/page_pref_mfa.py:60
 msgid "Enter verification code here"
 msgstr "Введите код подтверждения здесь"

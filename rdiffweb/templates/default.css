@@ -1,5 +1,7 @@
 :root {
     --link-color: {{link_color}};
+    --btn-fg-color: {{btn_fg_color|d("#fff")}};
+    --btn-bg-color: {{btn_bg_color|d(link_color)}};
     --navbar-color: {{navbar_color}};
     --font-family-sans-serif: "{{font_family}}", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -17,24 +19,26 @@ body {
 }
 
 /* Adjust primary color */
-a {
+a, .btn-link {
     color: var(--link-color);
 }
 
-a:hover {
+a:hover, .btn-link:hover {
     filter: brightness(.85);
     color: var(--link-color);
 }
 
 .btn-primary {
-    background-color: var(--link-color);
-    border-color: var(--link-color);
+    color: var(--btn-fg-color);
+    background-color: var(--btn-bg-color);
+    border-color: var(--btn-bg-color);
 }
 
 .btn-primary:hover {
     filter: brightness(.85);
-    background-color: var(--link-color);
-    border-color: var(--link-color);
+    color: var(--btn-fg-color);
+    background-color: var(--btn-bg-color);
+    border-color: var(--btn-bg-color);
 }
 
 .btn-primary:focus,
@@ -42,19 +46,29 @@ a:hover {
 .btn-primary:not(:disabled):not(.disabled):active,
 .show>.btn-primary.dropdown-toggle {
     filter: brightness(.65);
-    background-color: var(--link-color);
-    border-color: var(--link-color);
+    color: var(--btn-fg-color);
+    background-color: var(--btn-bg-color);
+    border-color: var(--btn-bg-color);
 }
 
 .list-group-item.active {
-    background-color: var(--link-color);
-    border-color: var(--link-color);
+    color: var(--btn-fg-color);
+    background-color: var(--btn-bg-color);
+    border-color: var(--btn-bg-color);
 }
 
 .nav-pills .nav-link.active {
-    background-color: var(--link-color);
-    border-color: var(--link-color);
+    color: var(--btn-fg-color);
+    background-color: var(--btn-bg-color);
+    border-color: var(--btn-bg-color);
 }
+
+{% if not btn_rounded %}
+/* Keep border radius */
+.btn, .btn-lg{
+    border-radius: 0;
+}
+{% endif %}
 
 /* DataTable adjustments */
 .dataTables_wrapper .dataTables_info{
@@ -81,7 +95,7 @@ table.dataTable thead>tr>th.sorting {
 }
 /* DataTable Buttons adjustments to change default colors */ 
 table.dataTable.dtr-inline.collapsed>tbody>tr>td:first-child:before, table.dataTable.dtr-inline.collapsed>tbody>tr>th:first-child:before {
-    background-color: var(--link-color);
+    background-color: var(--btn-bg-color);
 }
 table.dataTable.dtr-inline.collapsed>tbody>tr.parent>td:first-child:before, table.dataTable.dtr-inline.collapsed>tbody>tr.parent>th:first-child:before {
     background-color: var(--navbar-color);

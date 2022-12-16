@@ -230,6 +230,30 @@ def get_parser():
     )
 
     parser.add_argument(
+        '--brand-btn-bg-color',
+        '--btn-bg-color',
+        type=css_color,
+        dest='btn_bg_color',
+        help="define a CSS color to be used for button's background. Default to `link-color` if undefined",
+    )
+
+    parser.add_argument(
+        '--brand-btn-fg-color',
+        '--btn-fg-color',
+        type=css_color,
+        dest='btn_fg_color',
+        help="define a CSS color to be used for button's text. Default to white if undefined",
+    )
+
+    parser.add_argument(
+        '--brand-btn-rounded',
+        '--btn-rounded',
+        type=bool,
+        dest='btn_rounded',
+        help='define if the button should be rounded',
+    )
+
+    parser.add_argument(
         '--brand-navbar-color',
         '--navbar-color',
         type=css_color,
@@ -586,12 +610,12 @@ class ConfigFileParser(object):
                     "Unexpected line {} in {}: {}".format(i, getattr(stream, 'name', 'stream'), line)
                 )
             split_line = line.partition('=')
-            if not len(split_line) == 3:
+            if len(split_line) != 3:
                 raise configargparse.ConfigFileParserException(
                     "Unexpected line {} in {}: {}".format(i, getattr(stream, 'name', 'stream'), line)
                 )
 
-            # Get key a& value
+            # Get key & value
             key = split_line[0].lower().strip().replace('_', '-')
             value = split_line[2].strip()
 

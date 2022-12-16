@@ -418,10 +418,6 @@ msgstr "Nom d'utilisateur ou mot de passe invalide."
 msgid "Verification code"
 msgstr "Code de vérification"
 
-#: rdiffweb/controller/page_mfa.py:34
-msgid "Enter the code to verify your identity."
-msgstr "Entrez le code pour vérifier votre identité."
-
 #: rdiffweb/controller/page_mfa.py:37 rdiffweb/controller/page_pref_mfa.py:60
 msgid "Enter verification code here"
 msgstr "Entrez le code de vérification ici"
