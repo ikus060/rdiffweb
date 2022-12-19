@@ -6,7 +6,7 @@
 {% block body %}
   <div class="container mb-auto">
     <div class="row">
-      <div class="offset-sm-3 col-sm-6 text-center">
+      <div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8 text-center">
         <h1>
           <img alt="{{ header_name }}"
                class="mt-4 mb-4"
@@ -33,9 +33,11 @@
   {% block content %}
     <div class="container mb-auto">
       <div class="row">
-        <div class="offset-sm-4 col-sm-4">
-          <form id="form-login" role="form" method="post" action="{{ url_for() }}">
-            <h2>{% trans %}Welcome back{% endtrans %}</h2>
+        <div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8">
+          <h2>{% trans %}Welcome back{% endtrans %}</h2>
+        </div>
+        <div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8 form-login">
+          <form role="form" method="post" action="{{ url_for() }}">
             {% include 'message.html' %}
             {{ form }}
           </form>

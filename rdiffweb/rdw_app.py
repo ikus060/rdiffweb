@@ -124,14 +124,12 @@ class Root(LocationsPage):
             raise cherrypy.HTTPError(400)
         cfg = self.app.cfg
         param = {'font_family': 'Open Sans'}
+        # With default style, user can customize all colors
         if cfg.default_theme == 'default':
             param.update({'link_color': '#35979c', 'navbar_color': '#383e45'})
-            if cfg.link_color:
-                param['link_color'] = cfg.link_color
-            if cfg.navbar_color:
-                param['navbar_color'] = cfg.navbar_color
-            if cfg.font_family:
-                param['font_family'] = cfg.font_family
+            for key in ['link_color', 'btn_bg_color', 'btn_fg_color', 'navbar_color', 'font_family']:
+                if getattr(cfg, key, None):
+                    param[key] = getattr(cfg, key, None)
         elif cfg.default_theme == 'blue':
             param.update({'link_color': '#153a58', 'navbar_color': '#153a58'})
         elif cfg.default_theme == 'orange':

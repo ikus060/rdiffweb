@@ -2,7 +2,7 @@
 {% block content %}
   <div class="container mb-auto">
     <div class="row">
-      <div class="offset-sm-3 col-sm-6">
+      <div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8 form-login">
         <form id="form-login" role="form" method="post" action="{{ url_for() }}">
           <h2>{% trans %}Login Verification{% endtrans %}</h2>
           {% include 'message.html' %}

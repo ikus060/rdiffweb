@@ -127,7 +127,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.assertStatus('200 OK')
         # Then page display an error
         self.assertInBody('Invalid username or password.')
-        self.assertInBody('id="form-login"')
+        self.assertInBody('form-login')
         # Then redirect URL is ignored
         self.assertNotInBody('/browse/' + self.REPO + '/DIR%EF%BF%BD/"')
 

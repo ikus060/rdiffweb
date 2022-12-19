@@ -308,7 +308,7 @@ You may want to read more about [zxcvbn](https://github.com/dropbox/zxcvbn) scor
 A number of options are available to customize the appearance of Rdiffweb to your
 need. Most likely, you will want to make it closer to your business brand.
 
-| Option | Description | Example | 
+| Option | Description | Example |
 | --- | --- | --- |
 | welcome-msg | Replace the headline displayed in the login page. It may contains HTML. | Custom message displayed on login page.|
 | brand-header-name | Define the application name displayed in the title bar and header menu. | My Backup |
@@ -316,6 +316,10 @@ need. Most likely, you will want to make it closer to your business brand.
 | brand-favicon | Define the FavIcon to be displayed in the browser title | /etc/rdiffweb/my-fav.ico |
 | brand-logo | location of an image (preferably a .png) to be used as a replacement for the rdiffweb logo displayed in Login page. | /etc/rdiffweb/logo2.png |
 | brand-header-logo | location of an image (preferably a .png) to be used as a replacement for the rdiffweb header logo displayed in navigation bar. | /etc/rdiffweb/logo1.png |
+| brand-link-color | define a CSS color to be used for link. | #eeffee | 
+| brand-btn-fg-color | define a CSS color to use for the button text. Default to white if undefined | #ffffff |
+| brand-btn-bg-color | define a CSS color to use for the background of the button. Default to `link-color` if undefined | #eeeeff |
+| brand-btn-radius | activate or deactivate the rounded corners of the buttons | 0 |
 
 ## Configure SSH Key management
 

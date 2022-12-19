@@ -401,10 +401,6 @@ msgstr ""
 msgid "Verification code"
 msgstr ""
 
-#: rdiffweb/controller/page_mfa.py:34
-msgid "Enter the code to verify your identity."
-msgstr ""
-
 #: rdiffweb/controller/page_mfa.py:37 rdiffweb/controller/page_pref_mfa.py:60
 msgid "Enter verification code here"
 msgstr ""
