@@ -52,7 +52,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
 
     def test_get_without_login(self):
         # Given an unauthenticated user
-        self.getPage("/logout")
+        self.getPage("/logout", method="POST")
         self.assertStatus(303)
         # When requesting /mfa/
         self.getPage("/mfa/")

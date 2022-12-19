@@ -104,6 +104,8 @@ class CheckAuthForm(cherrypy.Tool):
 
         # Clear session when browsing /logout
         if request.path_info == logout_url or request.path_info.startswith(logout_url):
+            if request.method != 'POST':
+                raise cherrypy.HTTPError(405)
             self.logout()
             raise cherrypy.HTTPRedirect('/')
 
