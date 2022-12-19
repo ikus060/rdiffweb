@@ -1,9 +1,9 @@
 {% extends 'graphs.html' %}
-{% from 'include/chartkick.html' import bar_chart %}
+{% import 'include/chartkick.html' as chartkick with context %}
 {% set active_graph_page='activities' %}
 {% block graph_body %}
   <h2>{% trans %}Activities{% endtrans %}</h2>
   <p>{% trans %}Cumulative number of new, deleted and changed files by period of time.{% endtrans %}</p>
   {% set height=(22 * limit)|string + "px" %}
-  {{ bar_chart(data.activities, stacked=True, height=height) }}
+  {{ chartkick.bar_chart(data.activities, stacked=True, height=height) }}
 {% endblock %}

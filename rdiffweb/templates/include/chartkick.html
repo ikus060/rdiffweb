@@ -1,11 +1,11 @@
-{% set chart_id = 0 %}
+{% set ns = namespace(chart_id=0) %}
 {% macro chartkick(name, data, height, options) %}
-  {% if chart_id == 0 %}
+  {% if ns.chart_id == 0 %}
     <script src="{{ url_for('static/js/chart.min.js') }}"></script>
     <script src="{{ url_for('static/js/chartkick.min.js') }}"></script>
   {% endif %}
-  {% set chart_id = chart_id + 1 %}
-  <div id="chart-{{ chart_id }}"
+  {% set ns.chart_id = ns.chart_id + 1 %}
+  <div id="chart-{{ ns.chart_id }}"
        style="height: {{ height }};
               text-align: center;
               color: #999;
@@ -16,7 +16,7 @@
   </div>
   <script>
     //<![CDATA[
-    new Chartkick.{{ name }}(document.getElementById("chart-{{chart_id}}"), {{ data|tojson }}, {{options|d({})|tojson}} );
+    new Chartkick.{{ name }}(document.getElementById("chart-{{ns.chart_id}}"), {{ data|tojson }}, {{options|d({})|tojson}} );
     //]]>
   </script>
 {% endmacro %}
