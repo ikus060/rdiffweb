@@ -325,7 +325,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         """
         # Create another admin user
         self._add_user('admin2', '', 'pr3j5Dwi', '', UserObject.ADMIN_ROLE)
-        self.getPage("/logout")
+        self.getPage("/logout", method="POST")
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         self._login('admin2', 'pr3j5Dwi')

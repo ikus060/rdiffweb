@@ -77,7 +77,7 @@ class ControllerTest(rdiffweb.test.WebCase):
         """
         Check if the theme is properly configure.
         """
-        self.getPage('/logout')
+        self.getPage('/logout', method="POST")
         self.getPage(path)
         self.assertStatus(200)
         # Test with invalid method.

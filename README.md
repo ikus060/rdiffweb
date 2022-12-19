@@ -111,7 +111,8 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 ## Next Release - 2.5.4
 
 * Discard `X-Forwarded-Host` headers credit to [Anishka Shukla](https://github.com/anishkashukla)
-* Create proper symbolic link of chartkick.js on Ubuntu Jammy to fix loading of Charts in web interface
+* Create proper symbolic link of `chartkick.js` on Ubuntu Jammy to fix loading of Charts in web interface
+* Add CSRF verification on `/logout` credits to [reza.duty](https://rezaduty.me)
 
 ## 2.5.3 (2022-12-05)
 

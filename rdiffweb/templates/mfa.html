@@ -11,10 +11,12 @@
           </p>
           {{ form }}
         </form>
-        <a class="btn-link btn-sm btn-block text-center"
-           href="{{ url_for('logout')}}">
-          {% trans %}Login with a different account{% endtrans %}
-        </a>
+        {# Logout button #}
+        <form action="{{ url_for('logout') }}" method="post">
+          <button type="submit" class="btn btn-link btn-sm btn-block text-center">
+            {% trans %}Login with a different account{% endtrans %}
+          </button>
+        </form>
       </div>
     </div>
   </div>

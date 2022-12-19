@@ -183,7 +183,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
 
     def test_login_persistent(self):
         # Given a user authenticated with persistent
-        self.getPage('/logout/')
+        self.getPage('/logout', method="POST")
         self.assertStatus(303)
         self.getPage(
             '/login/', method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD, 'persistent': '1'}
@@ -312,7 +312,7 @@ class LogoutPageTest(rdiffweb.test.WebCase):
     def test_getpage_without_login(self):
         # Given an unauthenticated user
         # When Accessing logout page directly
-        self.getPage('/logout')
+        self.getPage('/logout', method="POST")
         # Then user is redirect to root '/'
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/')
@@ -332,7 +332,7 @@ class LogoutPageTest(rdiffweb.test.WebCase):
         self.getPage("/prefs/general")
         self.assertStatus('200 OK')
         # When logout
-        self.getPage('/logout')
+        self.getPage('/logout', method="POST")
         # Then a new session id is generated
         self.assertNotEqual(prev_session_id, self.session_id)
         # Then user is redirected to root page

@@ -58,7 +58,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
             ('/invalid', 404),
             ('/browse/invalid', 404),
             ('/login', 301),
-            ('/logout', 303),
+            ('/logout', 405),
         ]
     )
     def test_cookie_with_https_http_error(self, url, expected_error_code):
