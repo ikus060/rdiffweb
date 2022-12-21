@@ -73,7 +73,7 @@ class NotificationPlugin(SimplePlugin):
 
         # Send a mail notification
         body = self.app.templates.compile_template(
-            "access_token_added.html", **{"header_name": self.app.cfg.header_name, 'user': userobj, 'name': name}
+            "email_access_token_added.html", **{"header_name": self.app.cfg.header_name, 'user': userobj, 'name': name}
         )
         self.bus.publish('queue_mail', to=userobj.email, subject=_("A new access token has been created"), message=body)
 
@@ -118,7 +118,7 @@ class NotificationPlugin(SimplePlugin):
 
         # If the email attributes was changed, send a mail notification.
         body = self.app.templates.compile_template(
-            "password_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
+            "email_password_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
         )
         self.bus.publish('queue_mail', to=userobj.email, subject=_("Password changed"), message=body)
 

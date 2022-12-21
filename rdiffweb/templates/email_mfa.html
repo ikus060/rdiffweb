@@ -1,7 +1,9 @@
 <html>
   <head></head>
   <body>
-    {% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}
+    <p>
+      <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
+    </p>
     <p>
       {% if user.mfa %}
         {% trans %}Your {{ header_name }} Account is now protected with Two-Factor Authentication. When you sign in on a new or untrusted device, you'll need your second factor to verify your identity.{% endtrans %}

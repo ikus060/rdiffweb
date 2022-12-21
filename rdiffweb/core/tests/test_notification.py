@@ -64,7 +64,7 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
             subject='Notification',
-            message="<html>\n  <head></head>\n  <body>\n    Hey admin,\n    <p>\n      You are receiving this email to notify you about your backups. The\n      following repositories are inactive for some time. We invite you to have a look\n      at your last backup schedule.\n    </p>\n    <ul>\n      <li>testcases</li>\n    </ul>\n    <p>\n      If you don't want to be notify about this. You need to review your\n      user preferences.\n    </p>\n  </body>\n</html>",
+            message="<html>\n  <head></head>\n  <body>\n    <p>\n      <a>Hey admin,</a>\n    </p>\n    <p>\n      You are receiving this email to notify you about your backups. The\n      following repositories are inactive for some time. We invite you to have a look\n      at your last backup schedule.\n    </p>\n    <ul>\n      \n        <li>\n          <a>testcases</a>\n        </li>\n      \n    </ul>\n    <p>If you don't want to be notify about this. You need to review your user preferences.</p>\n  </body>\n</html>",
         )
 
     def test_notification_job_undefined_last_backup_date(self):
@@ -85,7 +85,7 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
             subject='Notification',
-            message="<html>\n  <head></head>\n  <body>\n    Hey admin,\n    <p>\n      You are receiving this email to notify you about your backups. The\n      following repositories are inactive for some time. We invite you to have a look\n      at your last backup schedule.\n    </p>\n    <ul>\n      <li>broker-repo</li>\n    </ul>\n    <p>\n      If you don't want to be notify about this. You need to review your\n      user preferences.\n    </p>\n  </body>\n</html>",
+            message="<html>\n  <head></head>\n  <body>\n    <p>\n      <a>Hey admin,</a>\n    </p>\n    <p>\n      You are receiving this email to notify you about your backups. The\n      following repositories are inactive for some time. We invite you to have a look\n      at your last backup schedule.\n    </p>\n    <ul>\n      \n        <li>\n          <a>broker-repo</a>\n        </li>\n      \n    </ul>\n    <p>If you don't want to be notify about this. You need to review your user preferences.</p>\n  </body>\n</html>",
         )
 
     def test_notification_job_without_notification(self):
@@ -135,7 +135,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_called_once_with(
             to='original_email@test.com',
             subject='Email address changed',
-            message='<html>\n  <head></head>\n  <body>\n    Hey admin,\n    <p>You recently changed the email address associated with your Rdiffweb account.</p>\n    <p>\n      If you did not make this change and believe your account has been compromised, please contact your administrator.\n    </p>\n  </body>\n</html>',
+            message='<html>\n  <head></head>\n  <body>\n    <p>\n      <a>Hey admin,</a>\n    </p>\n    <p>\n      <a>You recently changed the email address associated with your Rdiffweb account.</a>\n    </p>\n    <p>\n      If you did not make this change and believe your account has been compromised, please contact your administrator.\n    </p>\n  </body>\n</html>',
         )
 
     def test_email_updated_with_same_value(self):
@@ -167,7 +167,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_called_once_with(
             to='password_change@test.com',
             subject='Password changed',
-            message='<html>\n  <head></head>\n  <body>\n    Hey admin,\n    <p>You recently changed the password associated with your Rdiffweb account.</p>\n    <p>\n      If you did not make this change and believe your account has been compromised, please contact your administrator.\n    </p>\n  </body>\n</html>',
+            message='<html>\n  <head></head>\n  <body>\n    <p>\n      <a>Hey admin,</a>\n    </p>\n    <p>You recently changed the password associated with your Rdiffweb account.</p>\n    <p>\n      If you did not make this change and believe your account has been compromised, please contact your administrator.\n    </p>\n  </body>\n</html>',
         )
 
     def test_password_change_with_same_value(self):
@@ -186,5 +186,5 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_called_once_with(
             to='password_change@test.com',
             subject='Password changed',
-            message='<html>\n  <head></head>\n  <body>\n    Hey admin,\n    <p>You recently changed the password associated with your Rdiffweb account.</p>\n    <p>\n      If you did not make this change and believe your account has been compromised, please contact your administrator.\n    </p>\n  </body>\n</html>',
+            message='<html>\n  <head></head>\n  <body>\n    <p>\n      <a>Hey admin,</a>\n    </p>\n    <p>You recently changed the password associated with your Rdiffweb account.</p>\n    <p>\n      If you did not make this change and believe your account has been compromised, please contact your administrator.\n    </p>\n  </body>\n</html>',
         )
