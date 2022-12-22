@@ -107,6 +107,7 @@ class MfaToggleForm(AbstractMfaForm):
 
 class PagePrefMfa(Controller):
     @cherrypy.expose
+    @cherrypy.tools.ratelimit(methods=['POST'])
     def default(self, action=None, **kwargs):
         form = MfaToggleForm(obj=self.app.currentuser)
         if form.is_submitted():
