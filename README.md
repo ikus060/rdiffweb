@@ -108,7 +108,13 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
-## Next Release - 2.5.4
+## Next Release - 2.5.5
+
+* Fix loading of Charts in Status page
+* Ensure Gmail and other mail client doesn't create hyperlink automatically for any nodification sent by Rdiffweb to avoid phishing - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+* Sent email notification to user when a new SSH Key get added - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+
+## 2.5.4 (2022-12-19)
 
 * Discard `X-Forwarded-Host` headers credit to [Anishka Shukla](https://github.com/anishkashukla)
 * Create proper symbolic link of `chartkick.js` on Ubuntu Jammy to fix loading of Charts in web interface

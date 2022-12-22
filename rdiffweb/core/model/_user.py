@@ -182,6 +182,7 @@ class UserObject(Base):
                     _("Duplicate key. This key already exists or is associated to another user.")
                 )
         cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
+        cherrypy.engine.publish('authorizedkey_added', self, fingerprint=key.fingerprint, comment=comment)
 
     def add_access_token(self, name, expiration_time=None, length=16):
         """

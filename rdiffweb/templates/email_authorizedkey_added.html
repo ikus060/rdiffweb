@@ -1,0 +1,14 @@
+<html>
+  <head></head>
+  <body>
+    <p>
+      <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
+    </p>
+    <p>
+      <a>{% trans %}A new SSH Key, titled "{{ comment }}" with fingerprint "{{ fingerprint }}" has been created in your account.{% endtrans %}</a>
+    </p>
+    <p>
+      {% trans %}If you did not make this change and believe your account has been compromised, please contact your administrator.{% endtrans %}
+    </p>
+  </body>
+</html>
