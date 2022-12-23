@@ -64,6 +64,15 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.assertEqual('admin', session.get(SESSION_KEY))
         self.assertIsNotNone(session.get(LOGIN_TIME))
 
+    def test_login_case_insensitive(self):
+        # When authenticating with valid credentials with all uppercase username
+        self.getPage('/login/', method='POST', body={'login': self.USERNAME.upper(), 'password': self.PASSWORD})
+        # Then a new session_id is generated
+        self.assertStatus('303 See Other')
+        self.assertHeaderItemValue('Location', self.baseurl + '/')
+        self.getPage('/')
+        self.assertStatus(200)
+
     def test_cookie_http_only(self):
         # Given a request made to rdiffweb
         # When receiving the response

@@ -85,8 +85,8 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.getPage(self.PREFS)
         self.assertInBody("Profile updated successfully.")
-        # Then database is updated with fullname
-        user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
+        # Then database is not updated with new username.
+        user = UserObject.get_user(self.USERNAME)
         self.assertIsNotNone(user)
         self.assertEqual("test@test.com", user.email)
 
@@ -112,7 +112,7 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
             self.assertInBody("Profile updated successfully.")
             # Then database is updated with fullname
             self.assertInBody(new_fullname)
-            user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
+            user = UserObject.get_user(self.USERNAME)
             self.assertEqual(new_fullname, user.fullname)
         else:
             self.assertStatus(200)
@@ -125,7 +125,7 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         # Then nothing happen
         self.assertStatus(200)
         self.assertNotInBody("Profile updated successfully.")
-        user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
+        user = UserObject.get_user(self.USERNAME)
         self.assertEqual("", user.fullname)
 
     def test_change_fullname_too_long(self):
@@ -137,7 +137,7 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.assertNotInBody("Profile updated successfully.")
         self.assertInBody("Fullname too long.")
         # Then database is not updated
-        user = UserObject.query.filter(UserObject.username == self.USERNAME).first()
+        user = UserObject.get_user(self.USERNAME)
         self.assertEqual("", user.fullname)
 
     def test_change_email(self):

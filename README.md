@@ -26,7 +26,7 @@ by [rdiff-backup](https://rdiff-backup.net/). The purpose of this
 application is to ease the management of backups and quickly restore your data
 with a rich and powerful web interface.
 
-Rdiffweb is written in Python and is released as open source project under the 
+Rdiffweb is written in Python and is released as open source project under the
 GNU GENERAL PUBLIC LICENSE (GPL). All source code and documentation are
 Copyright Rdiffweb contributors.
 
@@ -36,7 +36,7 @@ since November 2014.
 The Rdiffweb source code is hosted on [Gitlab](https://gitlab.com/ikus-soft/rdiffweb)
 and mirrored to [Github](https://github.com/ikus060/rdiffweb).
 
-The Rdiffweb website is https://rdiffweb.org/.
+The Rdiffweb website is <https://rdiffweb.org/>.
 
 ## Features
 
@@ -100,7 +100,7 @@ Rdiffweb users should use the [Rdiffweb mailing list](https://groups.google.com/
 
 ### Bug Reports
 
-Bug reports should be reported on the Rdiffweb Gitlab at https://gitlab.com/ikus-soft/rdiffweb/-/issues
+Bug reports should be reported on the Rdiffweb Gitlab at <https://gitlab.com/ikus-soft/rdiffweb/-/issues>
 
 ### Professional support
 
@@ -114,6 +114,11 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 * Ensure Gmail and other mail client doesn't create hyperlink automatically for any nodification sent by Rdiffweb to avoid phishing - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
 * Sent email notification to user when a new SSH Key get added - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
 * Ratelimit "Resend code to my email" in Two-Factor Authentication view - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+* Username are not case-insensitive - credits to [raiders0786](https://www.linkedin.com/in/chirag-agrawal-770488144/)
+
+Breaking changes:
+
+* Username with different cases (e.g.: admin vs Ammin) are not supported. If your database contains such username make sure to remove them before upgrading otherwise Rdiffweb will not start.
 
 ## 2.5.4 (2022-12-19)
 
@@ -378,7 +383,7 @@ Maintenance release to fix minor issues
 
 ## 2.1.0 (2021-01-15)
 
-* Debian package: Remove dh-systemd from Debian build dependencies (https://bugs.debian.org/871312we)
+* Debian package: Remove dh-systemd from Debian build dependencies (<https://bugs.debian.org/871312we>)
 * Improve Quota management:
   * `QuotaSetCmd`, `QuotaGetCmd` and `QuotaUsedCmd` options could be used to customize how to set the quota for your environment.
   * Display user's quota in User View

@@ -20,7 +20,7 @@ import secrets
 import string
 
 import cherrypy
-from sqlalchemy import Column, Integer, SmallInteger, String, and_, event, inspect, or_
+from sqlalchemy import Column, Index, Integer, SmallInteger, String, and_, event, func, inspect, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import deferred, relationship, validates
@@ -74,7 +74,7 @@ class UserObject(Base):
     PATTERN_USERNAME = r"[a-zA-Z0-9_.\-]+$"
 
     userid = Column('UserID', Integer, primary_key=True)
-    username = Column('Username', String, nullable=False, unique=True)
+    username = Column('Username', String, nullable=False)
     hash_password = Column('Password', String, nullable=False, default="")
     user_root = Column('UserRoot', String, nullable=False, default="")
     _is_admin = deferred(
@@ -110,8 +110,8 @@ class UserObject(Base):
 
     @classmethod
     def get_user(cls, user):
-        """Return a user object."""
-        return UserObject.query.filter(UserObject.username == user).first()
+        """Return a user object with username case-insensitive"""
+        return UserObject.query.filter(func.lower(UserObject.username) == user.lower()).first()
 
     @classmethod
     def create_admin_user(cls, default_username, default_password):
@@ -411,6 +411,10 @@ class UserObject(Base):
 
     def validate_password(self, password):
         return check_password(password, self.hash_password)
+
+
+# Username should be case insensitive
+user_username_index = Index('user_username_index', func.lower(UserObject.username), unique=True)
 
 
 @event.listens_for(UserObject.hash_password, "set")
