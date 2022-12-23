@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cherrypy
-from sqlalchemy import Column, Integer, Text
+from sqlalchemy import Column, Index, Integer, Text
 
 Base = cherrypy.tools.db.get_base()
 
@@ -27,3 +27,7 @@ class SshKey(Base):
     fingerprint = Column('Fingerprint', Text)
     key = Column('Key', Text, unique=True, primary_key=True)
     userid = Column('UserID', Integer, nullable=False)
+
+
+# Make finger print unique
+sshkey_fingerprint_index = Index('sshkey_fingerprint_index', SshKey.fingerprint, unique=True)

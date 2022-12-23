@@ -50,7 +50,7 @@ class LoginPlugin(SimplePlugin):
         """
         Only verify the user's credentials using the database store.
         """
-        user = UserObject.query.filter_by(username=username).first()
+        user = UserObject.get_user(username)
         if user and user.validate_password(password):
             return username, {}
         return False
@@ -69,7 +69,7 @@ class LoginPlugin(SimplePlugin):
         fullname = extra_attrs.get('_fullname', None)
         email = extra_attrs.get('_email', None)
         # When enabled, create missing userobj in database.
-        userobj = UserObject.query.filter_by(username=username).first()
+        userobj = UserObject.get_user(username)
         if userobj is None and self.add_missing_user:
             try:
                 # At this point, we need to create a new user in database.

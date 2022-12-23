@@ -150,7 +150,10 @@ def check_ratelimit(
         cherrypy.request.app._ratelimit_datastore = datastore
 
     # If user is authenticated, use the username else use the ip address
-    token = (request.login or request.remote.ip) + '.' + (scope or request.path_info)
+    identifier = request.remote.ip
+    if hasattr(cherrypy.serving, 'session') and cherrypy.serving.session.get('_cp_username', None):
+        identifier = cherrypy.serving.session.get('_cp_username', None)
+    token = identifier + '.' + (scope or request.path_info)
 
     # Get hits count using datastore.
     hits = datastore.get_and_increment(token, delay, hit)

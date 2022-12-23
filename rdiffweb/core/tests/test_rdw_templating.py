@@ -110,7 +110,7 @@ class ListParentsTest(WebCase):
 class UrlForTest(WebCase):
     @property
     def repo_obj(self):
-        user = UserObject.query.filter(UserObject.username == 'admin').first()
+        user = UserObject.get_user('admin')
         return RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
 
     def test_url_for_absolute_path(self):

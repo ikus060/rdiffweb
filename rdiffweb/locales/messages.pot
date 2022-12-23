@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: rdiffweb 2.5.0a10.dev0+gcc29583e.d20221109\n"
+"Project-Id-Version: rdiffweb 2.5.5.dev9+g661600c8.d20221223\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-11-09 14:52-0500\n"
+"POT-Creation-Date: 2022-12-23 13:59-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.10.3\n"
 
-#: rdiffweb/controller/__init__.py:56 rdiffweb/controller/page_logs.py:65
+#: rdiffweb/controller/__init__.py:57 rdiffweb/controller/page_logs.py:65
 msgid "Invalid date."
 msgstr ""
 
@@ -86,7 +86,7 @@ msgid "Group"
 msgstr ""
 
 #: rdiffweb/controller/page_admin_sysinfo.py:83
-#: rdiffweb/controller/page_admin_users.py:128
+#: rdiffweb/controller/page_admin_users.py:133
 #: rdiffweb/templates/admin_session.html:22 rdiffweb/templates/admin_users.html:22
 #: rdiffweb/templates/admin_users.html:49
 msgid "User"
@@ -140,181 +140,181 @@ msgstr ""
 msgid "LDAP TLS Support (OpenSSL)"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:67
+#: rdiffweb/controller/page_admin_users.py:72
 msgid "Not a valid file size value"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:71
+#: rdiffweb/controller/page_admin_users.py:76
 msgid "UserID"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:73
-#: rdiffweb/controller/page_admin_users.py:197 rdiffweb/controller/page_login.py:36
-#: rdiffweb/controller/page_login.py:40 rdiffweb/controller/page_pref_general.py:35
+#: rdiffweb/controller/page_admin_users.py:78
+#: rdiffweb/controller/page_admin_users.py:202 rdiffweb/controller/page_login.py:36
+#: rdiffweb/controller/page_login.py:40 rdiffweb/controller/page_pref_general.py:39
 msgid "Username"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:76 rdiffweb/controller/page_login.py:38
+#: rdiffweb/controller/page_admin_users.py:81 rdiffweb/controller/page_login.py:38
 msgid "Username too long."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:77
+#: rdiffweb/controller/page_admin_users.py:82
 msgid "Username too short."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:78
-#: rdiffweb/controller/page_admin_users.py:86
-#: rdiffweb/controller/page_pref_general.py:41
+#: rdiffweb/controller/page_admin_users.py:83
+#: rdiffweb/controller/page_admin_users.py:91
+#: rdiffweb/controller/page_pref_general.py:45
 msgid "Must not contain any special characters."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:82
-#: rdiffweb/controller/page_pref_general.py:37
+#: rdiffweb/controller/page_admin_users.py:87
+#: rdiffweb/controller/page_pref_general.py:41
 msgid "Fullname"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:85
-#: rdiffweb/controller/page_pref_general.py:40
+#: rdiffweb/controller/page_admin_users.py:90
+#: rdiffweb/controller/page_pref_general.py:44
 msgid "Fullname too long."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:90
-#: rdiffweb/controller/page_pref_general.py:45
+#: rdiffweb/controller/page_admin_users.py:95
+#: rdiffweb/controller/page_pref_general.py:49
 #: rdiffweb/templates/admin_users.html:23
 msgid "Email"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:93
-#: rdiffweb/controller/page_pref_general.py:48
+#: rdiffweb/controller/page_admin_users.py:98
+#: rdiffweb/controller/page_pref_general.py:52
 msgid "Email too long."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:94
-#: rdiffweb/controller/page_pref_general.py:49
+#: rdiffweb/controller/page_admin_users.py:99
+#: rdiffweb/controller/page_pref_general.py:53
 msgid "Must be a valid email address."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:98 rdiffweb/controller/page_login.py:47
+#: rdiffweb/controller/page_admin_users.py:103 rdiffweb/controller/page_login.py:47
 #: rdiffweb/templates/prefs_general.html:15
 msgid "Password"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:100
+#: rdiffweb/controller/page_admin_users.py:105
 msgid "To create an LDAP user, you must leave the password empty."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:103
+#: rdiffweb/controller/page_admin_users.py:108
 msgid "Two-Factor Authentication (2FA)"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:106
-#: rdiffweb/controller/page_pref_mfa.py:47
+#: rdiffweb/controller/page_admin_users.py:111
+#: rdiffweb/controller/page_pref_mfa.py:48
 msgid "Disabled"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:107
-#: rdiffweb/controller/page_pref_mfa.py:48
+#: rdiffweb/controller/page_admin_users.py:112
+#: rdiffweb/controller/page_pref_mfa.py:49
 msgid "Enabled"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:110
+#: rdiffweb/controller/page_admin_users.py:115
 msgid ""
 "When Two-Factor Authentication (2FA) is enabled for a user, a verification "
 "code get sent by email when user login from a new location."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:116
+#: rdiffweb/controller/page_admin_users.py:121
 #: rdiffweb/templates/admin_users.html:25
 msgid "Root directory"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:117
+#: rdiffweb/controller/page_admin_users.py:122
 msgid "Absolute path defining the location of the repositories for this user."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:119
+#: rdiffweb/controller/page_admin_users.py:124
 msgid "Root directory too long."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:123
+#: rdiffweb/controller/page_admin_users.py:128
 #: rdiffweb/templates/admin_users.html:24
 msgid "User Role"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:126
+#: rdiffweb/controller/page_admin_users.py:131
 #: rdiffweb/templates/admin_users.html:45
 msgid "Admin"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:127
+#: rdiffweb/controller/page_admin_users.py:132
 #: rdiffweb/templates/admin_users.html:47
 msgid "Maintainer"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:131
+#: rdiffweb/controller/page_admin_users.py:136
 msgid ""
 "Admin: may browse and delete everything. Maintainer: may browse and delete "
 "their own repo. User: may only browser their own repo."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:136
+#: rdiffweb/controller/page_admin_users.py:141
 msgid "Disk space"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:138
+#: rdiffweb/controller/page_admin_users.py:143
 msgid "Users disk spaces (in bytes). Set to 0 to remove quota (unlimited)."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:141
+#: rdiffweb/controller/page_admin_users.py:146
 msgid "Quota Used"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:143
+#: rdiffweb/controller/page_admin_users.py:148
 msgid "Disk spaces (in bytes) used by this user."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:151
+#: rdiffweb/controller/page_admin_users.py:156
 msgid "Cannot edit your own role."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:157
+#: rdiffweb/controller/page_admin_users.py:162
 msgid "Cannot change your own two-factor authentication settings."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:168
+#: rdiffweb/controller/page_admin_users.py:173
 msgid "User email is required to enabled Two-Factor Authentication"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:172
+#: rdiffweb/controller/page_admin_users.py:177
 #, python-format
 msgid "User's root directory %s is not accessible!"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:184
+#: rdiffweb/controller/page_admin_users.py:189
 msgid "Setting user's quota is not supported"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:212
+#: rdiffweb/controller/page_admin_users.py:217
 msgid "You cannot remove your own account!"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:219
+#: rdiffweb/controller/page_admin_users.py:224
 msgid "User account removed."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:221
+#: rdiffweb/controller/page_admin_users.py:226
 msgid "User doesn't exists!"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:235
+#: rdiffweb/controller/page_admin_users.py:240
 msgid "User added successfully."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:248
+#: rdiffweb/controller/page_admin_users.py:253
 msgid "User information modified successfully."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:255
+#: rdiffweb/controller/page_admin_users.py:260
 #, python-format
 msgid "Cannot edit user `%s`: user doesn't exists"
 msgstr ""
@@ -397,24 +397,24 @@ msgstr ""
 msgid "Invalid username or password."
 msgstr ""
 
-#: rdiffweb/controller/page_mfa.py:33 rdiffweb/controller/page_pref_mfa.py:58
+#: rdiffweb/controller/page_mfa.py:34 rdiffweb/controller/page_pref_mfa.py:59
 msgid "Verification code"
 msgstr ""
 
-#: rdiffweb/controller/page_mfa.py:37 rdiffweb/controller/page_pref_mfa.py:60
+#: rdiffweb/controller/page_mfa.py:37 rdiffweb/controller/page_pref_mfa.py:61
 msgid "Enter verification code here"
 msgstr ""
 
-#: rdiffweb/controller/page_mfa.py:52 rdiffweb/controller/page_pref_mfa.py:69
+#: rdiffweb/controller/page_mfa.py:52 rdiffweb/controller/page_pref_mfa.py:70
 msgid "Resend code to my email"
 msgstr ""
 
 #: rdiffweb/controller/page_mfa.py:60 rdiffweb/controller/page_mfa.py:63
-#: rdiffweb/controller/page_pref_mfa.py:99
+#: rdiffweb/controller/page_pref_mfa.py:100
 msgid "Invalid verification code."
 msgstr ""
 
-#: rdiffweb/controller/page_mfa.py:67 rdiffweb/controller/page_pref_mfa.py:103
+#: rdiffweb/controller/page_mfa.py:67 rdiffweb/controller/page_pref_mfa.py:104
 msgid "Invalid operation"
 msgstr ""
 
@@ -425,112 +425,112 @@ msgid ""
 "your account settings with your administrator."
 msgstr ""
 
-#: rdiffweb/controller/page_mfa.py:113 rdiffweb/controller/page_pref_mfa.py:137
+#: rdiffweb/controller/page_mfa.py:113 rdiffweb/controller/page_pref_mfa.py:139
 msgid "Your verification code"
 msgstr ""
 
-#: rdiffweb/controller/page_mfa.py:114 rdiffweb/controller/page_pref_mfa.py:138
+#: rdiffweb/controller/page_mfa.py:114 rdiffweb/controller/page_pref_mfa.py:140
 msgid "A new verification code has been sent to your email."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:52
+#: rdiffweb/controller/page_pref_general.py:56
 #: rdiffweb/controller/page_pref_notification.py:65
 #: rdiffweb/templates/admin_users.html:110 rdiffweb/templates/settings.html:32
 #: rdiffweb/templates/settings.html:88 rdiffweb/templates/settings.html:111
 msgid "Save changes"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:71
+#: rdiffweb/controller/page_pref_general.py:75
 msgid "Current password"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:72
+#: rdiffweb/controller/page_pref_general.py:76
 msgid "Current password is missing."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:73
+#: rdiffweb/controller/page_pref_general.py:77
 msgid "You must provide your current password in order to change it."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:76
+#: rdiffweb/controller/page_pref_general.py:80
 msgid "New password"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:78
+#: rdiffweb/controller/page_pref_general.py:82
 msgid "New password is missing."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:79
+#: rdiffweb/controller/page_pref_general.py:83
 msgid "The new password and its confirmation do not match."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:83
+#: rdiffweb/controller/page_pref_general.py:87
 msgid "Confirm new password"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:83
+#: rdiffweb/controller/page_pref_general.py:87
 msgid "Confirmation password is missing."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:85
+#: rdiffweb/controller/page_pref_general.py:89
 msgid "Update password"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:96
+#: rdiffweb/controller/page_pref_general.py:100
 msgid "The new password must be different from the current password."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:102
+#: rdiffweb/controller/page_pref_general.py:106
 msgid "Wrong current password."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:117
+#: rdiffweb/controller/page_pref_general.py:121
 msgid "Refresh repositories"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:118
+#: rdiffweb/controller/page_pref_general.py:122
 msgid ""
 "Refresh the list of repositories associated to your account. If you recently "
 "add a new repository and it doesn't show, you may try to refresh the list."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:131
+#: rdiffweb/controller/page_pref_general.py:135
 msgid "Repositories successfully updated"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:152
+#: rdiffweb/controller/page_pref_general.py:156
 msgid "Profile updated successfully."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_general.py:159
+#: rdiffweb/controller/page_pref_general.py:163
 msgid "Password updated successfully."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_mfa.py:44
+#: rdiffweb/controller/page_pref_mfa.py:45
 msgid "Two-Factor Authentication (2FA) Status"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_mfa.py:52 rdiffweb/controller/page_pref_mfa.py:66
+#: rdiffweb/controller/page_pref_mfa.py:53 rdiffweb/controller/page_pref_mfa.py:67
 msgid "Enable Two-Factor Authentication"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_mfa.py:53 rdiffweb/controller/page_pref_mfa.py:67
+#: rdiffweb/controller/page_pref_mfa.py:54 rdiffweb/controller/page_pref_mfa.py:68
 msgid "Disable Two-Factor Authentication"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_mfa.py:83
+#: rdiffweb/controller/page_pref_mfa.py:84
 msgid "Two-Factor authentication enabled successfully."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_mfa.py:87
+#: rdiffweb/controller/page_pref_mfa.py:88
 msgid "Two-Factor authentication disabled successfully."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_mfa.py:96
+#: rdiffweb/controller/page_pref_mfa.py:97
 msgid "Enter the verification code to continue."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_mfa.py:131
+#: rdiffweb/controller/page_pref_mfa.py:133
 msgid "To continue, you must set up an email address for your account."
 msgstr ""
 
@@ -626,51 +626,51 @@ msgid ""
 "rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-sha2-nistp521'."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_sshkeys.py:81
+#: rdiffweb/controller/page_pref_sshkeys.py:82
 msgid "Unknown error while adding the SSH Key"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_sshkeys.py:95
+#: rdiffweb/controller/page_pref_sshkeys.py:97
 msgid "Unknown error while removing the SSH Key"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_sshkeys.py:129
+#: rdiffweb/controller/page_pref_sshkeys.py:131
 msgid "Failed to get SSH keys"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:37
+#: rdiffweb/controller/page_pref_tokens.py:36
 msgid "Token name"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:38
+#: rdiffweb/controller/page_pref_tokens.py:37
 msgid ""
 "Used only to identify the purpose of the token. For example, the application "
 "that uses the token."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:43
+#: rdiffweb/controller/page_pref_tokens.py:42
 msgid "Token name too long"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:47
+#: rdiffweb/controller/page_pref_tokens.py:46
 msgid "Expiration date"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:48
+#: rdiffweb/controller/page_pref_tokens.py:47
 msgid ""
 "Allows the creation of a temporary token by defining an expiration date. "
 "Leave empty to keep the token forever."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:52
+#: rdiffweb/controller/page_pref_tokens.py:51
 msgid "YYYY-MM-DD"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:56
+#: rdiffweb/controller/page_pref_tokens.py:55
 msgid "Create access token"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:67
+#: rdiffweb/controller/page_pref_tokens.py:66
 #, python-format
 msgid ""
 "Your new personal access token has been created.\n"
@@ -678,15 +678,24 @@ msgid ""
 "%s"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:81
+#: rdiffweb/controller/page_pref_tokens.py:80
 msgid "Unknown error while adding the access token."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:96
+#: rdiffweb/controller/page_pref_tokens.py:85
+#: rdiffweb/templates/admin_session.html:62
+#: rdiffweb/templates/admin_session.html:74
+#: rdiffweb/templates/prefs_session.html:19
+#: rdiffweb/templates/prefs_session.html:53 rdiffweb/templates/prefs_tokens.html:28
+#: rdiffweb/templates/prefs_tokens.html:71
+msgid "Revoke"
+msgstr ""
+
+#: rdiffweb/controller/page_pref_tokens.py:95
 msgid "The access token has been successfully deleted."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:103
+#: rdiffweb/controller/page_pref_tokens.py:102
 msgid "Unknown error while removing the access token."
 msgstr ""
 
@@ -707,43 +716,47 @@ msgstr ""
 msgid "Backup with errors"
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1200
+#: rdiffweb/core/librdiff.py:1198
 msgid "A backup is currently in progress to this repository."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1208
+#: rdiffweb/core/librdiff.py:1206
 msgid "The previous backup seams to have failed."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1211
+#: rdiffweb/core/librdiff.py:1209
 msgid "The repository cannot be found or is badly damaged."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1215
+#: rdiffweb/core/librdiff.py:1213
 msgid "Permissions denied. Contact administrator to check repository's permissions."
 msgstr ""
 
-#: rdiffweb/core/notification.py:78
+#: rdiffweb/core/notification.py:80
 msgid "A new access token has been created"
 msgstr ""
 
-#: rdiffweb/core/notification.py:91
+#: rdiffweb/core/notification.py:95
+msgid "A new SSH Key has been added"
+msgstr ""
+
+#: rdiffweb/core/notification.py:108
 msgid "Email address changed"
 msgstr ""
 
-#: rdiffweb/core/notification.py:102
+#: rdiffweb/core/notification.py:119
 msgid "Two-Factor Authentication turned off"
 msgstr ""
 
-#: rdiffweb/core/notification.py:104
+#: rdiffweb/core/notification.py:121
 msgid "Two-Factor Authentication turned on"
 msgstr ""
 
-#: rdiffweb/core/notification.py:123
+#: rdiffweb/core/notification.py:140
 msgid "Password changed"
 msgstr ""
 
-#: rdiffweb/core/notification.py:156 rdiffweb/templates/prefs.html:15
+#: rdiffweb/core/notification.py:173 rdiffweb/templates/prefs.html:15
 #: rdiffweb/templates/settings.html:99
 msgid "Notification"
 msgstr ""
@@ -783,7 +796,7 @@ msgstr ""
 msgid "%d seconds ago"
 msgstr ""
 
-#: rdiffweb/core/model/_repo.py:186
+#: rdiffweb/core/model/_repo.py:191
 #, python-format
 msgid "invalid encoding %s"
 msgstr ""
@@ -797,34 +810,34 @@ msgstr ""
 msgid "SSH key already exists"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:182
+#: rdiffweb/core/model/_user.py:183
 msgid "Duplicate key. This key already exists or is associated to another user."
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:200
+#: rdiffweb/core/model/_user.py:202
 #, python-format
 msgid "Duplicate token name: %s"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:216
+#: rdiffweb/core/model/_user.py:218
 msgid "can't delete admin user"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:244
+#: rdiffweb/core/model/_user.py:246
 #, python-format
 msgid "token name doesn't exists: %s"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:358
+#: rdiffweb/core/model/_user.py:360
 msgid "can't update admin-password defined in configuration file"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:363
+#: rdiffweb/core/model/_user.py:365
 #, python-format
 msgid "Password must have between %(min)d and %(max)d characters."
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:370
+#: rdiffweb/core/model/_user.py:372
 msgid "Password too weak."
 msgstr ""
 
@@ -834,29 +847,7 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: rdiffweb/templates/access_token_added.html:4
-#: rdiffweb/templates/email_changed.html:4 rdiffweb/templates/email_mfa.html:4
-#: rdiffweb/templates/email_notification.html:4
-#: rdiffweb/templates/email_verification_code.html:4
-#: rdiffweb/templates/password_changed.html:4
-#, python-format
-msgid "Hey %(username)s,"
-msgstr ""
-
-#: rdiffweb/templates/access_token_added.html:5
-#, python-format
-msgid "A new access token, named \"%(name)s\", has been created."
-msgstr ""
-
-#: rdiffweb/templates/access_token_added.html:7
-#: rdiffweb/templates/email_changed.html:7
-#: rdiffweb/templates/password_changed.html:7
-msgid ""
-"If you did not make this change and believe your account has been "
-"compromised, please contact your administrator."
-msgstr ""
-
-#: rdiffweb/templates/admin.html:4 rdiffweb/templates/layout.html:72
+#: rdiffweb/templates/admin.html:4 rdiffweb/templates/layout.html:73
 msgid "Admin area"
 msgstr ""
 
@@ -869,7 +860,7 @@ msgid "Users"
 msgstr ""
 
 #: rdiffweb/templates/admin.html:12 rdiffweb/templates/admin.html:28
-#: rdiffweb/templates/layout.html:65 rdiffweb/templates/locations.html:5
+#: rdiffweb/templates/layout.html:66 rdiffweb/templates/locations.html:5
 #: rdiffweb/templates/locations.html:60
 msgid "Repositories"
 msgstr ""
@@ -938,7 +929,7 @@ msgstr ""
 msgid "Owner"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:18 rdiffweb/templates/layout.html:68
+#: rdiffweb/templates/admin_repos.html:18 rdiffweb/templates/layout.html:69
 #: rdiffweb/templates/status.html:5
 msgid "Status"
 msgstr ""
@@ -1018,14 +1009,6 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: rdiffweb/templates/admin_session.html:62
-#: rdiffweb/templates/admin_session.html:74
-#: rdiffweb/templates/prefs_session.html:19
-#: rdiffweb/templates/prefs_session.html:53 rdiffweb/templates/prefs_tokens.html:28
-#: rdiffweb/templates/prefs_tokens.html:71
-msgid "Revoke"
-msgstr ""
-
 #: rdiffweb/templates/admin_session.html:71
 #: rdiffweb/templates/prefs_session.html:50
 msgid "Revoke Session"
@@ -1089,7 +1072,7 @@ msgid "Root directory not accessible!"
 msgstr ""
 
 #: rdiffweb/templates/admin_users.html:68 rdiffweb/templates/admin_users.html:121
-#: rdiffweb/templates/history.html:100 rdiffweb/templates/prefs_sshkeys.html:29
+#: rdiffweb/templates/history.html:99 rdiffweb/templates/prefs_sshkeys.html:29
 #: rdiffweb/templates/prefs_sshkeys.html:53 rdiffweb/templates/settings.html:122
 #: rdiffweb/templates/settings.html:135
 msgid "Delete"
@@ -1133,19 +1116,56 @@ msgstr ""
 msgid "Version(s)"
 msgstr ""
 
-#: rdiffweb/templates/browse.html:67 rdiffweb/templates/history.html:89
+#: rdiffweb/templates/browse.html:44
+msgid ""
+"The size of deleted files is available in the file history using the `Show "
+"more...` function."
+msgstr ""
+
+#: rdiffweb/templates/browse.html:70 rdiffweb/templates/history.html:88
 #: rdiffweb/templates/logs.html:30
 msgid "Show more..."
 msgstr ""
 
-#: rdiffweb/templates/email_changed.html:5
+#: rdiffweb/templates/email_access_token_added.html:5
+#: rdiffweb/templates/email_authorizedkey_added.html:5
+#: rdiffweb/templates/email_changed.html:5 rdiffweb/templates/email_mfa.html:5
+#: rdiffweb/templates/email_notification.html:5
+#: rdiffweb/templates/email_password_changed.html:5
+#: rdiffweb/templates/email_verification_code.html:5
+#, python-format
+msgid "Hey %(username)s,"
+msgstr ""
+
+#: rdiffweb/templates/email_access_token_added.html:8
+#, python-format
+msgid "A new access token, named \"%(name)s\", has been created."
+msgstr ""
+
+#: rdiffweb/templates/email_access_token_added.html:11
+#: rdiffweb/templates/email_authorizedkey_added.html:11
+#: rdiffweb/templates/email_changed.html:11
+#: rdiffweb/templates/email_password_changed.html:9
+msgid ""
+"If you did not make this change and believe your account has been "
+"compromised, please contact your administrator."
+msgstr ""
+
+#: rdiffweb/templates/email_authorizedkey_added.html:8
+#, python-format
+msgid ""
+"A new SSH Key, titled \"%(comment)s\" with fingerprint \"%(fingerprint)s\" "
+"has been created in your account."
+msgstr ""
+
+#: rdiffweb/templates/email_changed.html:8
 #, python-format
 msgid ""
 "You recently changed the email address associated with your %(header_name)s "
 "account."
 msgstr ""
 
-#: rdiffweb/templates/email_mfa.html:7
+#: rdiffweb/templates/email_mfa.html:9
 #, python-format
 msgid ""
 "Your %(header_name)s Account is now protected with Two-Factor Authentication."
@@ -1153,21 +1173,21 @@ msgid ""
 "factor to verify your identity."
 msgstr ""
 
-#: rdiffweb/templates/email_mfa.html:9
+#: rdiffweb/templates/email_mfa.html:11
 #, python-format
 msgid ""
 "Your %(header_name)s account is no longer protected with Two-Factor "
 "Authentication. You don't need your second factor to sign in."
 msgstr ""
 
-#: rdiffweb/templates/email_mfa.html:13
+#: rdiffweb/templates/email_mfa.html:15
 #, python-format
 msgid ""
 "You received this email to let you know about important changes to your "
 "%(header_name)s Account."
 msgstr ""
 
-#: rdiffweb/templates/email_notification.html:6
+#: rdiffweb/templates/email_notification.html:8
 msgid ""
 "You are receiving this email to notify you about your backups. The\n"
 "      following repositories are inactive for some time. We invite you to "
@@ -1175,25 +1195,32 @@ msgid ""
 "      at your last backup schedule."
 msgstr ""
 
-#: rdiffweb/templates/email_notification.html:14
+#: rdiffweb/templates/email_notification.html:19
 msgid ""
-"If you don't want to be notify about this. You need to review your\n"
-"      user preferences."
+"If you don't want to be notify about this. You need to review your user "
+"preferences."
 msgstr ""
 
-#: rdiffweb/templates/email_verification_code.html:6
+#: rdiffweb/templates/email_password_changed.html:7
+#, python-format
+msgid ""
+"You recently changed the password associated with your %(header_name)s "
+"account."
+msgstr ""
+
+#: rdiffweb/templates/email_verification_code.html:8
 msgid ""
 "To help us make sure it's really you, here's the verification code you'll "
 "need to log in:"
 msgstr ""
 
-#: rdiffweb/templates/email_verification_code.html:12
+#: rdiffweb/templates/email_verification_code.html:14
 msgid ""
 "If this wasn't you logging in, and you use a password to log in, please reset"
 " your password."
 msgstr ""
 
-#: rdiffweb/templates/email_verification_code.html:15
+#: rdiffweb/templates/email_verification_code.html:17
 msgid ""
 "This code will expire in 1 hour. Once the code expires, you will need to "
 "request a new verification code by going through the login procedure again."
@@ -1269,7 +1296,7 @@ msgstr ""
 
 #: rdiffweb/templates/history.html:41 rdiffweb/templates/history.html:57
 #: rdiffweb/templates/history.html:62 rdiffweb/templates/history.html:67
-#: rdiffweb/templates/history.html:79
+#: rdiffweb/templates/history.html:78
 msgid "Download"
 msgstr ""
 
@@ -1277,33 +1304,37 @@ msgstr ""
 msgid "Toggle Dropdown"
 msgstr ""
 
-#: rdiffweb/templates/history.html:98 rdiffweb/templates/settings.html:132
+#: rdiffweb/templates/history.html:97 rdiffweb/templates/settings.html:132
 msgid "Confirmation required"
 msgstr ""
 
-#: rdiffweb/templates/history.html:99
+#: rdiffweb/templates/history.html:98
 msgid ""
 "You are about to permanently delete this file or folder history. Deleted "
 "history CANNOT be restored! Are you ABSOLUTELY sure?"
 msgstr ""
 
-#: rdiffweb/templates/layout.html:55
+#: rdiffweb/templates/layout.html:56
 msgid "Toggle navigation"
 msgstr ""
 
-#: rdiffweb/templates/layout.html:88
+#: rdiffweb/templates/layout.html:90
 msgid "Signed in as"
 msgstr ""
 
-#: rdiffweb/templates/layout.html:89
+#: rdiffweb/templates/layout.html:91
 msgid "Edit profile"
 msgstr ""
 
-#: rdiffweb/templates/layout.html:90
+#: rdiffweb/templates/layout.html:92
 msgid "Notifications"
 msgstr ""
 
-#: rdiffweb/templates/layout.html:103
+#: rdiffweb/templates/layout.html:95
+msgid "Logout"
+msgstr ""
+
+#: rdiffweb/templates/layout.html:107
 msgid "Powered by"
 msgstr ""
 
@@ -1336,7 +1367,7 @@ msgstr ""
 msgid "community"
 msgstr ""
 
-#: rdiffweb/templates/login.html:38
+#: rdiffweb/templates/login.html:37
 msgid "Welcome back"
 msgstr ""
 
@@ -1366,15 +1397,8 @@ msgid ""
 "account, you must enter the code that was sent to your email address."
 msgstr ""
 
-#: rdiffweb/templates/mfa.html:16
+#: rdiffweb/templates/mfa.html:17
 msgid "Login with a different account"
-msgstr ""
-
-#: rdiffweb/templates/password_changed.html:5
-#, python-format
-msgid ""
-"You recently changed the password associated with your %(header_name)s "
-"account."
 msgstr ""
 
 #: rdiffweb/templates/prefs.html:5 rdiffweb/templates/prefs.html:9

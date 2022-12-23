@@ -1,7 +1,9 @@
 <html>
   <head></head>
   <body>
-    {% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}
+    <p>
+      <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
+    </p>
     <p>
       {% trans %}To help us make sure it's really you, here's the verification code you'll need to log in:{% endtrans %}
     </p>

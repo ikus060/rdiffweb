@@ -471,7 +471,7 @@ def get_parser():
         metavar='LIMIT',
         type=int,
         default=20,
-        help='maximum number of requests per hour that can be made on sensitive endpoints. When this limit is reached, an HTTP 429 message is returned to the user or the user is logged out. This security measure is used to limit brute force attacks on the login page and the RESTful API.',
+        help='maximum number of requests per hour that can be made on sensitive endpoints. When this limit is reached, an HTTP 429 message is returned to the user or the user is logged out. This security measure is used to limit brute force attacks on the login page and the RESTful API. default: 20 requests / hour',
     )
 
     parser.add(

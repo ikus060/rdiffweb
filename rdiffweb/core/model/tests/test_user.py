@@ -103,6 +103,16 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Check if listener called
         self.listener.user_added.assert_not_called()
 
+    def test_add_user_with_duplicate_caseinsensitive(self):
+        """Add user to database."""
+        user = UserObject.add_user('denise')
+        user.commit()
+        self.listener.user_added.reset_mock()
+        with self.assertRaises(ValueError):
+            UserObject.add_user('dEnIse')
+        # Check if listener called
+        self.listener.user_added.assert_not_called()
+
     def test_add_user_with_password(self):
         """Add user to database with password."""
         userobj = UserObject.add_user('jo', 'password')
@@ -157,6 +167,13 @@ class UserObjectTest(rdiffweb.test.WebCase):
         self.assertEqual(-1, obj.repo_objs[0].maxage)
         self.assertEqual('testcases', obj.repo_objs[1].name)
         self.assertEqual(3, obj.repo_objs[1].maxage)
+
+    def test_get_user_case_insensitive(self):
+        userobj1 = UserObject.get_user(self.USERNAME)
+        userobj2 = UserObject.get_user(self.USERNAME.lower())
+        userobj3 = UserObject.get_user(self.USERNAME.upper())
+        self.assertEqual(userobj1, userobj2)
+        self.assertEqual(userobj2, userobj3)
 
     def test_get_user_with_invalid_user(self):
         self.assertIsNone(UserObject.get_user('invalid'))
@@ -308,14 +325,46 @@ class UserObjectTest(rdiffweb.test.WebCase):
     def test_add_authorizedkey_duplicate(self):
         # Read the pub key
         key = self._read_ssh_key()
-        # Add the key to the user
+        # Given a user with a SSH Key
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_authorizedkey(key)
         userobj.commit()
-        # Add the same key
+
+        # When adding the same identical key.
+        # Then an error is raised
         with self.assertRaises(DuplicateSSHKeyError):
             userobj.add_authorizedkey(key)
             userobj.commit()
+
+    def test_add_authorizedkey_duplicate_new_comment(self):
+        # Read the pub key
+        key = self._read_ssh_key()
+        # Given a user with a SSH Key
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.add_authorizedkey(key)
+        userobj.commit()
+
+        # When adding the same key with a different comment
+        # Then an error is raised
+        with self.assertRaises(DuplicateSSHKeyError):
+            userobj.add_authorizedkey(key, comment="new comment")
+            userobj.commit()
+
+    def test_add_authorizedkey_duplicate_new_user(self):
+        # Read the pub key
+        key = self._read_ssh_key()
+        # Given a user with a SSH Key
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.add_authorizedkey(key)
+        userobj.commit()
+
+        # When adding the same key to a different user
+        # Then an error is raised
+        newuser = UserObject.add_user("newuser")
+        newuser.commit()
+        with self.assertRaises(DuplicateSSHKeyError):
+            newuser.add_authorizedkey(key, comment="new comment")
+            newuser.commit()
 
     def test_add_authorizedkey_with_file(self):
         """
