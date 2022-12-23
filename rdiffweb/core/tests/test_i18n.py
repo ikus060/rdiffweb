@@ -161,6 +161,8 @@ class TestI18nWebCase(rdiffweb.test.WebCase):
         self.assertInBody("Sign in")
 
     def test_language_fr(self):
+        self.getPage("/login/")
+        self.assertInBody("Sign in")
         self.getPage("/login/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
         self.assertStatus('200 OK')
         self.assertHeaderItemValue("Content-Language", "fr_CA")

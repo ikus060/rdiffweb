@@ -116,6 +116,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 * Ratelimit "Resend code to my email" in Two-Factor Authentication view - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
 * Username are not case-insensitive - credits to [raiders0786](https://www.linkedin.com/in/chirag-agrawal-770488144/)
 * Make sure that all ssh keys are unique, regardless of the user - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+* Disable translation caching
 
 Breaking changes:
 

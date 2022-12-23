@@ -158,7 +158,7 @@ def gettext_lazy(message):
             return message
         return cherrypy.response.i18n.trans.ugettext(message)
 
-    return LazyProxy(get_translation)
+    return LazyProxy(get_translation, enable_cache=False)
 
 
 def _search_translation(preferred_langs, dirname, domain):
