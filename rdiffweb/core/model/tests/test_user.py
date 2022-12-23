@@ -325,14 +325,46 @@ class UserObjectTest(rdiffweb.test.WebCase):
     def test_add_authorizedkey_duplicate(self):
         # Read the pub key
         key = self._read_ssh_key()
-        # Add the key to the user
+        # Given a user with a SSH Key
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_authorizedkey(key)
         userobj.commit()
-        # Add the same key
+
+        # When adding the same identical key.
+        # Then an error is raised
         with self.assertRaises(DuplicateSSHKeyError):
             userobj.add_authorizedkey(key)
             userobj.commit()
+
+    def test_add_authorizedkey_duplicate_new_comment(self):
+        # Read the pub key
+        key = self._read_ssh_key()
+        # Given a user with a SSH Key
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.add_authorizedkey(key)
+        userobj.commit()
+
+        # When adding the same key with a different comment
+        # Then an error is raised
+        with self.assertRaises(DuplicateSSHKeyError):
+            userobj.add_authorizedkey(key, comment="new comment")
+            userobj.commit()
+
+    def test_add_authorizedkey_duplicate_new_user(self):
+        # Read the pub key
+        key = self._read_ssh_key()
+        # Given a user with a SSH Key
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.add_authorizedkey(key)
+        userobj.commit()
+
+        # When adding the same key to a different user
+        # Then an error is raised
+        newuser = UserObject.add_user("newuser")
+        newuser.commit()
+        with self.assertRaises(DuplicateSSHKeyError):
+            newuser.add_authorizedkey(key, comment="new comment")
+            newuser.commit()
 
     def test_add_authorizedkey_with_file(self):
         """

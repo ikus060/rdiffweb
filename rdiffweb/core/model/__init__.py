@@ -19,12 +19,12 @@ import logging
 import sys
 
 import cherrypy
-from sqlalchemy import event
+from sqlalchemy import event, func
 from sqlalchemy.exc import IntegrityError
 
 from ._repo import RepoObject  # noqa
 from ._session import DbSession, SessionObject  # noqa
-from ._sshkey import SshKey  # noqa
+from ._sshkey import SshKey, sshkey_fingerprint_index  # noqa
 from ._token import Token  # noqa
 from ._user import DuplicateSSHKeyError, UserObject, user_username_index  # noqa
 
@@ -133,6 +133,25 @@ def db_after_create(target, connection, **kw):
                 'Failure to upgrade your database to make Username case insensitive. '
                 'You must downgrade and deleted duplicate Username. '
                 '%s' % '\n'.join([str(k) for k in duplicate_users]),
+            )
+            logger.error(msg)
+            print(msg, file=sys.stderr)
+            raise SystemExit(12)
+
+    # Fix SSH Key uniqueness - since 2.5.4
+    if not _index_exists(connection, 'sshkey_fingerprint_index'):
+        duplicate_sshkeys = (
+            SshKey.query.with_entities(SshKey.fingerprint)
+            .group_by(SshKey.fingerprint)
+            .having(func.count(SshKey.fingerprint) > 1)
+        ).all()
+        try:
+            sshkey_fingerprint_index.create()
+        except IntegrityError:
+            msg = (
+                'Failure to upgrade your database to make SSH Keys unique. '
+                'You must downgrade and deleted duplicate SSH Keys. '
+                '%s' % '\n'.join([str(k) for k in duplicate_sshkeys]),
             )
             logger.error(msg)
             print(msg, file=sys.stderr)

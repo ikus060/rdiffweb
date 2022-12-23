@@ -159,7 +159,7 @@ class UserObject(Base):
         assert key
         key = authorizedkeys.check_publickey(key)
 
-        # Remove option, replace comments.
+        # Remove option & Remove comment for SQL storage
         key = authorizedkeys.AuthorizedKey(
             options=None, keytype=key.keytype, key=key.key, comment=comment or key.comment
         )
@@ -176,7 +176,8 @@ class UserObject(Base):
             # Also look in database.
             logger.info("add key [%s] to [%s] database", key, self.username)
             try:
-                SshKey(userid=self.userid, fingerprint=key.fingerprint, key=key.getvalue()).add().flush()
+                sshkey = SshKey(userid=self.userid, fingerprint=key.fingerprint, key=key.getvalue())
+                sshkey.add().flush()
             except IntegrityError:
                 raise DuplicateSSHKeyError(
                     _("Duplicate key. This key already exists or is associated to another user.")
