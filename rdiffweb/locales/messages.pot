@@ -1,14 +1,14 @@
 # Translations template for rdiffweb.
-# Copyright (C) 2022 ORGANIZATION
+# Copyright (C) 2023 ORGANIZATION
 # This file is distributed under the same license as the rdiffweb project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: rdiffweb 2.5.5.dev9+g661600c8.d20221223\n"
+"Project-Id-Version: rdiffweb 2.5.6.dev0+g70c1de69.d20230111\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-12-23 13:59-0500\n"
+"POT-Creation-Date: 2023-01-11 16:45-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -721,7 +721,7 @@ msgid "A backup is currently in progress to this repository."
 msgstr ""
 
 #: rdiffweb/core/librdiff.py:1206
-msgid "The previous backup seams to have failed."
+msgid "The last backup has been interrupted."
 msgstr ""
 
 #: rdiffweb/core/librdiff.py:1209

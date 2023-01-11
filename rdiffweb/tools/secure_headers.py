@@ -37,7 +37,7 @@ def set_headers(
     referrer='same-origin',
     nosniff=True,
     xxp='1; mode=block',
-    csp="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'",
+    csp="default-src 'self'",
 ):
     """
     This tool provide CSRF mitigation.

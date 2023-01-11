@@ -108,7 +108,12 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
-## Next Release - 2.5.5
+## 2.5.6 (2023-01-11)
+
+* Fixed display of Hamburger menu on mobiles (minarca#192)
+* Change working for interupted backup
+
+## 2.5.5 (2022-12-23)
 
 * Fix loading of Charts in Status page
 * Ensure Gmail and other mail client doesn't create hyperlink automatically for any nodification sent by Rdiffweb to avoid phishing - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)

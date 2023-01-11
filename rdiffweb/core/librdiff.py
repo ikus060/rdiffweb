@@ -1203,7 +1203,7 @@ class RdiffRepo(object):
             # Also, if the last backup date is undefined, this mean the first
             # initial backup was interrupted.
             if len(self.current_mirror) > 1 or len(self.current_mirror) == 0:
-                return ('interrupted', _('The previous backup seams to have failed.'))
+                return ('interrupted', _('The last backup has been interrupted.'))
         except FileNotFoundError:
             self._entries = []
             return ('failed', _('The repository cannot be found or is badly damaged.'))
