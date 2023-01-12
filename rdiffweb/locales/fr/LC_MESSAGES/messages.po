@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-12-23 13:59-0500\n"
+"POT-Creation-Date: 2023-01-11 16:45-0500\n"
 "PO-Revision-Date: 2014-11-14 10:00-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -773,8 +773,8 @@ msgid "A backup is currently in progress to this repository."
 msgstr "Une sauvegarde est actuellement en cours dans ce dépôt."
 
 #: rdiffweb/core/librdiff.py:1206
-msgid "The previous backup seams to have failed."
-msgstr "La sauvegarde précédente a échoué."
+msgid "The last backup has been interrupted."
+msgstr "La dernière sauvegarde a été interrompue."
 
 #: rdiffweb/core/librdiff.py:1209
 msgid "The repository cannot be found or is badly damaged."

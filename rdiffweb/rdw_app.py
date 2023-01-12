@@ -86,7 +86,9 @@ cherrypy.config.environments['development'] = {
 @cherrypy.tools.db()
 @cherrypy.tools.enrich_session()
 @cherrypy.tools.proxy(local=None, remote='X-Real-IP')
-@cherrypy.tools.secure_headers()
+@cherrypy.tools.secure_headers(
+    csp="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+)
 class Root(LocationsPage):
     def __init__(self):
         self.login = LoginPage()
