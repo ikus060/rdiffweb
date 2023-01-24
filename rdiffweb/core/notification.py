@@ -19,14 +19,12 @@ Plugin used to send email to users when their repository is getting too old.
 User can control the notification period.
 """
 
-import datetime
 import logging
 
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
 
-from rdiffweb.core import librdiff
-from rdiffweb.core.model import UserObject
+from rdiffweb.core.model import RepoObject, UserObject
 from rdiffweb.tools.i18n import ugettext as _
 
 logger = logging.getLogger(__name__)
@@ -144,33 +142,14 @@ class NotificationPlugin(SimplePlugin):
         Loop trough all the user repository and send notifications.
         """
 
-        now = librdiff.RdiffTime()
-
-        def _user_repos():
-            """Return a generator trought user repos to be notified."""
-            for user in UserObject.query.all():
-                # Check if user has email.
-                if not user.email:
-                    continue
-                # Identify old repo for current user.
-                old_repos = []
-                for repo in user.repo_objs:
-                    # Check if repo has age configured (in days)
-                    maxage = repo.maxage
-                    if not maxage or maxage <= 0:
-                        continue
-                    # Check repo age.
-                    if repo.last_backup_date is None or repo.last_backup_date < (now - datetime.timedelta(days=maxage)):
-                        old_repos.append(repo)
-                # Return an item only if user had old repo
-                if old_repos:
-                    yield user, old_repos
-
-        # For each candidate, send mail.
-        for user, repos in _user_repos():
-            parms = {'user': user, 'repos': repos}
-            body = self.app.templates.compile_template("email_notification.html", **parms)
-            cherrypy.engine.publish('queue_mail', to=user.email, subject=_("Notification"), message=body)
+        # For Each user,
+        # Identify the repository without activities using the backup statistics.
+        for user in UserObject.query.all():
+            old_repos = [repo for repo in RepoObject.query.filter(RepoObject.maxage > 0) if not repo.check_activity()]
+            if old_repos:
+                parms = {'user': user, 'repos': old_repos}
+                body = self.app.templates.compile_template("email_notification.html", **parms)
+                cherrypy.engine.publish('queue_mail', to=user.email, subject=_("Notification"), message=body)
 
 
 cherrypy.notification = NotificationPlugin(cherrypy.engine)
