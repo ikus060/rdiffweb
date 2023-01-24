@@ -111,6 +111,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 # Next Release - 2.6.0
 
 * Fix deletion confirmation of repositories within subdirectory #250
+* Send notification for inactive backup based on statistics
 
 ## 2.5.6 (2023-01-11)
 

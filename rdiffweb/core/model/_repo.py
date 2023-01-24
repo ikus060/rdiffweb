@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import codecs
+import datetime
 import encodings
 import logging
 import os
@@ -27,7 +28,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, validates
 
 import rdiffweb.tools.db  # noqa
-from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo
+from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo, RdiffTime
 from rdiffweb.tools.i18n import ugettext as _
 
 Base = cherrypy.tools.db.get_base()
@@ -203,6 +204,21 @@ class RepoObject(Base, RdiffRepo):
 
     def __str__(self):
         return "RepoObject[%s, %s]" % (self.userid, self.repopath)
+
+    def check_activity(self):
+        """
+        Check if the repository is inative according to maxage.
+        Retunr None if maxage is undefied.
+        Return True if repository is active.
+        """
+        if self.maxage <= 0:
+            return None
+        # Loop on session statistics to check backup activity.
+        from_date = RdiffTime() - datetime.timedelta(days=self.maxage)
+        for stats in self.session_statistics[from_date:]:
+            if stats.newfiles > 0 or stats.deletedfiles > 0 or stats.changedfiles > 0:
+                return True
+        return False
 
 
 @event.listens_for(RepoObject.encoding, "set")

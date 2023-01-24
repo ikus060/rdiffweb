@@ -100,7 +100,7 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         # Call notification.
         cherrypy.notification.notification_job()
 
-        # Expect it to be called.
+        # Mail should not be queue.
         self.listener.queue_email.assert_not_called()
 
 
