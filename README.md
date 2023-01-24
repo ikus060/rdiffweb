@@ -108,10 +108,14 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+# Next Release - 2.6.0
+
+* Fix deletion confirmation of repositories within subdirectory #250
+
 ## 2.5.6 (2023-01-11)
 
 * Fixed display of Hamburger menu on mobiles (minarca#192)
-* Change working for interupted backup
+* Change wording for interupted backup
 
 ## 2.5.5 (2022-12-23)
 

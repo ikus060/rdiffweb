@@ -73,7 +73,7 @@ class DeletePage(Controller):
         # validate form
         form = DeleteRepoForm()
 
-        form.expected_confirm = path_obj.display_name
+        form.expected_confirm = repo.display_name if path_obj.isroot else path_obj.display_name
         if form.is_submitted():
             if form.validate():
                 RepoObject.session.expunge(repo)
