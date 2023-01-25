@@ -15,6 +15,7 @@ develop-eggs
 .installed.cfg
 setup.py.bak
 .eggs
+.sass-cache
 
 # Installer logs
 pip-log.txt

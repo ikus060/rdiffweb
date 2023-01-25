@@ -112,6 +112,9 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 * Fix deletion confirmation of repositories within subdirectory #250
 * Send notification for inactive backup based on statistics
+* Properly clean-up plain text email from HTML tags
+* Send email using a new template following the web interface branding
+* Redistribute logos in PNG format for better compatibility
 
 ## 2.5.6 (2023-01-11)
 

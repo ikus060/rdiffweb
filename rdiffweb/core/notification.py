@@ -63,34 +63,56 @@ class NotificationPlugin(SimplePlugin):
     def app(self):
         return cherrypy.tree.apps['']
 
+    def _queue_mail(self, userobj, subject, template, to=None, **kwargs):
+        """
+        Generic function to queue email.
+        """
+        if not userobj.email:
+            logger.info("can't sent mail to user [%s] without an email", userobj.username)
+            return
+
+        # Mimic the behavior of CSS style for email template.
+        cfg = self.app.cfg
+        param = {
+            'header_name': self.app.cfg.header_name,
+            'font_family': 'Open Sans',
+        }
+        if cfg.default_theme == 'default':
+            param.update({'link_color': '#35979c', 'navbar_color': '#383e45'})
+            for key in ['link_color', 'btn_bg_color', 'btn_fg_color', 'navbar_color', 'font_family']:
+                if getattr(cfg, key, None):
+                    param[key] = getattr(cfg, key, None)
+        elif cfg.default_theme == 'blue':
+            param.update({'link_color': '#153a58', 'navbar_color': '#153a58'})
+        elif cfg.default_theme == 'orange':
+            param.update({'link_color': '#dd4814', 'navbar_color': '#dd4814'})
+
+        # Compile the email body
+        body = self.app.templates.compile_template(template, user=userobj, **dict(param, **kwargs))
+        # Queue the email.
+        self.bus.publish('queue_mail', to=to or userobj.email, subject=subject, message=body)
+
     def access_token_added(self, userobj, name):
         if not self.send_changed:
             return
 
-        if not userobj.email:
-            logger.info("can't sent mail to user [%s] without an email", userobj.username)
-            return
-
-        # Send a mail notification
-        body = self.app.templates.compile_template(
-            "email_access_token_added.html", **{"header_name": self.app.cfg.header_name, 'user': userobj, 'name': name}
+        self._queue_mail(
+            userobj,
+            subject=_("A new access token has been created"),
+            template="email_access_token_added.html",
+            name=name,
         )
-        self.bus.publish('queue_mail', to=userobj.email, subject=_("A new access token has been created"), message=body)
 
     def authorizedkey_added(self, userobj, fingerprint, comment, **kwargs):
         if not self.send_changed:
             return
-
-        if not userobj.email:
-            logger.info("can't sent mail to user [%s] without an email", userobj.username)
-            return
-
-        # If the email attributes was changed, send a mail notification.
-        body = self.app.templates.compile_template(
-            "email_authorizedkey_added.html",
-            **{"header_name": self.app.cfg.header_name, 'user': userobj, 'comment': comment, 'fingerprint': fingerprint}
+        self._queue_mail(
+            userobj,
+            subject=_("A new SSH Key has been added"),
+            template="email_authorizedkey_added.html",
+            comment=comment,
+            fingerprint=fingerprint,
         )
-        self.bus.publish('queue_mail', to=userobj.email, subject=_("A new SSH Key has been added"), message=body)
 
     def user_attr_changed(self, userobj, attrs={}):
         if not self.send_changed:
@@ -103,11 +125,12 @@ class NotificationPlugin(SimplePlugin):
                 logger.info("can't sent mail to user [%s] without an email", userobj.username)
                 return
             # If the email attributes was changed, send a mail notification.
-            subject = _("Email address changed")
-            body = self.app.templates.compile_template(
-                "email_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
+            self._queue_mail(
+                userobj,
+                to=old_email,
+                subject=_("Email address changed"),
+                template="email_changed.html",
             )
-            self.bus.publish('queue_mail', to=old_email, subject=str(subject), message=body)
 
         if 'mfa' in attrs:
             if not userobj.email:
@@ -118,38 +141,42 @@ class NotificationPlugin(SimplePlugin):
                 if userobj.mfa == UserObject.DISABLED_MFA
                 else _("Two-Factor Authentication turned on")
             )
-            body = self.app.templates.compile_template(
-                "email_mfa.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
+            self._queue_mail(
+                userobj,
+                subject=subject,
+                template="email_mfa.html",
             )
-            self.bus.publish('queue_mail', to=userobj.email, subject=str(subject), message=body)
 
     def user_password_changed(self, userobj):
         if not self.send_changed:
             return
 
-        if not userobj.email:
-            logger.info("can't sent mail to user [%s] without an email", userobj.username)
-            return
-
-        # If the email attributes was changed, send a mail notification.
-        body = self.app.templates.compile_template(
-            "email_password_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
+        self._queue_mail(
+            userobj,
+            subject=_("Password changed"),
+            template="email_password_changed.html",
         )
-        self.bus.publish('queue_mail', to=userobj.email, subject=_("Password changed"), message=body)
 
     def notification_job(self):
         """
         Loop trough all the user repository and send notifications.
         """
 
-        # For Each user,
+        # For Each user with an email.
         # Identify the repository without activities using the backup statistics.
-        for user in UserObject.query.all():
-            old_repos = [repo for repo in RepoObject.query.filter(RepoObject.maxage > 0) if not repo.check_activity()]
+        for userobj in UserObject.query.filter(UserObject.email != ''):
+            old_repos = [
+                repo
+                for repo in RepoObject.query.filter(RepoObject.user == userobj, RepoObject.maxage > 0)
+                if not repo.check_activity()
+            ]
             if old_repos:
-                parms = {'user': user, 'repos': old_repos}
-                body = self.app.templates.compile_template("email_notification.html", **parms)
-                cherrypy.engine.publish('queue_mail', to=user.email, subject=_("Notification"), message=body)
+                self._queue_mail(
+                    userobj,
+                    subject=_("Notification"),
+                    template="email_notification.html",
+                    repos=old_repos,
+                )
 
 
 cherrypy.notification = NotificationPlugin(cherrypy.engine)
