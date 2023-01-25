@@ -76,17 +76,23 @@ class SmtpPluginTest(helper.CPWebCase):
         """
 
         html = """<html>
-  <head></head>
+  <head>
+    <style type="text/css">
+      body { font-family:Helvetica; }
+    </style>
+  </head>
   <body>
-    <p>Hi!<br>
-       How are you?<br>
-       Here is the <a href="https://www.python.org">link</a> you wanted.
+    <h1>Hi!</h1>
+    <p id="test"
+        class="mb-2 text-center">
+      How are you?<br/>
+      Here&#160;is the <a href="https://www.python.org">link</a> you wanted.
     </p>
   </body>
 </html>
 """
 
-        expected = """Hi!
+        expected = """**Hi!**
 How are you?
 Here is the link you wanted."""
         self.assertEqual(expected, smtp._html2plaintext(html))

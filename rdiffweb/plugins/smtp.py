@@ -61,20 +61,25 @@ def _html2plaintext(html, body_id=None, encoding='utf-8'):
     except Exception:
         # Don't fail if the html is invalid.
         pass
-    # \r char is converted into &#13;, must remove it
+    # &#13; are new line \r
     html = html.replace('&#13;', '')
-
+    # &#160; are non-braking space
+    html = html.replace('&#160;', ' ')
+    # Remove new line & spaces defined for html formating.
+    html = re.sub('\n *', '', html)
+    # Replace tags
     html = html.replace('<strong>', '*').replace('</strong>', '*')
     html = html.replace('<b>', '*').replace('</b>', '*')
     html = html.replace('<h3>', '*').replace('</h3>', '*')
-    html = html.replace('<h2>', '**').replace('</h2>', '**')
-    html = html.replace('<h1>', '**').replace('</h1>', '**')
+    html = html.replace('<h2>', '**').replace('</h2>', '**\n')
+    html = html.replace('<h1>', '**').replace('</h1>', '**\n')
     html = html.replace('<em>', '/').replace('</em>', '/')
     html = html.replace('<tr>', '\n')
     html = html.replace('</p>', '\n')
+    html = re.sub('<style[^>]*>[^<]*</style>', '', html)
     html = re.sub(r'<br\s*/?>', '\n', html)
-    html = re.sub('<.*?>', ' ', html)
-    html = html.replace(' ' * 2, ' ')
+    html = re.sub('<[^>]*>', '', html)
+    html = re.sub(r'\n+', '\n', html)
     html = html.replace('&gt;', '>')
     html = html.replace('&lt;', '<')
     html = html.replace('&amp;', '&')
