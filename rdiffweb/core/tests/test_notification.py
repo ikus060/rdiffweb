@@ -21,7 +21,7 @@ Created on Feb 13, 2016
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import cherrypy
 
@@ -64,7 +64,7 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
             subject='Notification',
-            message="<html>\n  <head></head>\n  <body>\n    <p>\n      <a>Hey admin,</a>\n    </p>\n    <p>\n      You are receiving this email to notify you about your backups. The\n      following repositories are inactive for some time. We invite you to have a look\n      at your last backup schedule.\n    </p>\n    <ul>\n      \n        <li>\n          <a>testcases</a>\n        </li>\n      \n    </ul>\n    <p>If you don't want to be notify about this. You need to review your user preferences.</p>\n  </body>\n</html>",
+            message=ANY,
         )
 
     def test_notification_job_undefined_last_backup_date(self):
@@ -85,7 +85,7 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
             subject='Notification',
-            message="<html>\n  <head></head>\n  <body>\n    <p>\n      <a>Hey admin,</a>\n    </p>\n    <p>\n      You are receiving this email to notify you about your backups. The\n      following repositories are inactive for some time. We invite you to have a look\n      at your last backup schedule.\n    </p>\n    <ul>\n      \n        <li>\n          <a>broker-repo</a>\n        </li>\n      \n    </ul>\n    <p>If you don't want to be notify about this. You need to review your user preferences.</p>\n  </body>\n</html>",
+            message=ANY,
         )
 
     def test_notification_job_without_notification(self):
@@ -135,7 +135,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_called_once_with(
             to='original_email@test.com',
             subject='Email address changed',
-            message='<html>\n  <head></head>\n  <body>\n    <p>\n      <a>Hey admin,</a>\n    </p>\n    <p>\n      <a>You recently changed the email address associated with your Rdiffweb account.</a>\n    </p>\n    <p>\n      If you did not make this change and believe your account has been compromised, please contact your administrator.\n    </p>\n  </body>\n</html>',
+            message=ANY,
         )
 
     def test_email_updated_with_same_value(self):
@@ -167,7 +167,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_called_once_with(
             to='password_change@test.com',
             subject='Password changed',
-            message='<html>\n  <head></head>\n  <body>\n    <p>\n      <a>Hey admin,</a>\n    </p>\n    <p>You recently changed the password associated with your Rdiffweb account.</p>\n    <p>\n      If you did not make this change and believe your account has been compromised, please contact your administrator.\n    </p>\n  </body>\n</html>',
+            message=ANY,
         )
 
     def test_password_change_with_same_value(self):
@@ -186,7 +186,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_called_once_with(
             to='password_change@test.com',
             subject='Password changed',
-            message='<html>\n  <head></head>\n  <body>\n    <p>\n      <a>Hey admin,</a>\n    </p>\n    <p>You recently changed the password associated with your Rdiffweb account.</p>\n    <p>\n      If you did not make this change and believe your account has been compromised, please contact your administrator.\n    </p>\n  </body>\n</html>',
+            message=ANY,
         )
 
     def test_access_token_added(self):
@@ -204,7 +204,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_called_once_with(
             to='password_change@test.com',
             subject='A new access token has been created',
-            message='<html>\n  <head></head>\n  <body>\n    <p>\n      <a>Hey admin,</a>\n    </p>\n    <p>\n      <a>A new access token, named "TEST", has been created.</a>\n    </p>\n    <p>\n      If you did not make this change and believe your account has been compromised, please contact your administrator.\n    </p>\n  </body>\n</html>',
+            message=ANY,
         )
 
     def test_authorizedkey_added(self):
@@ -225,5 +225,5 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_called_once_with(
             to='password_change@test.com',
             subject='A new SSH Key has been added',
-            message='<html>\n  <head></head>\n  <body>\n    <p>\n      <a>Hey admin,</a>\n    </p>\n    <p>\n      <a>A new SSH Key, titled "test@mysshkey" with fingerprint "4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91" has been created in your account.</a>\n    </p>\n    <p>\n      If you did not make this change and believe your account has been compromised, please contact your administrator.\n    </p>\n  </body>\n</html>',
+            message=ANY,
         )

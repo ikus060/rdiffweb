@@ -236,6 +236,11 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self._delete(self.USERNAME, 'MyComputer/C', 'MyComputer/C')
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
+        # Check filesystem
+        self.wait_for_tasks()
+        userobj.expire()
+        self.assertEqual(['MyComputer/D'], [r.name for r in userobj.repo_objs])
+        self.assertFalse(os.path.isdir(os.path.join(userobj.user_root, 'MyComputer', 'C')))
 
     def test_delete_method_get(self):
         # Given a user with repo

@@ -1,18 +1,16 @@
-<html>
-  <head></head>
-  <body>
-    <p>
-      <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
-    </p>
-    <p>
-      {% if user.mfa %}
-        {% trans %}Your {{ header_name }} Account is now protected with Two-Factor Authentication. When you sign in on a new or untrusted device, you'll need your second factor to verify your identity.{% endtrans %}
-      {% else %}
-        {% trans %}Your {{ header_name }} account is no longer protected with Two-Factor Authentication. You don't need your second factor to sign in.{% endtrans %}
-      {% endif %}
-    </p>
-    <p>
-      {% trans %}You received this email to let you know about important changes to your {{ header_name }} Account.{% endtrans %}
-    </p>
-  </body>
-</html>
+{% extends 'email_layout.html' %}
+{% block body %}
+  <h1>
+    <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
+  </h1>
+  <p>
+    {% if user.mfa %}
+      {% trans %}Your {{ header_name }} Account is now protected with Two-Factor Authentication. When you sign in on a new or untrusted device, you'll need your second factor to verify your identity.{% endtrans %}
+    {% else %}
+      {% trans %}Your {{ header_name }} account is no longer protected with Two-Factor Authentication. You don't need your second factor to sign in.{% endtrans %}
+    {% endif %}
+  </p>
+  <p>
+    {% trans %}You received this email to let you know about important changes to your {{ header_name }} Account.{% endtrans %}
+  </p>
+{% endblock body %}
