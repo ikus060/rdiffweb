@@ -224,7 +224,9 @@ recommend making use of project quotas with Rdiffweb to simplify the management 
 presents how to configure project quota. Keep in mind it's also possible to
 configure quota using either user's quota or project quota.
 
-### Configure user quota for EXT4
+### Configure prjquota
+
+#### For EXT4
 
 This section is not a full documentation about how to configure ext4 project quota,
 but provide enough guidance to help you.
@@ -254,7 +256,7 @@ with EXT4 quota management.
 
 This effectively, makes use of Rdiffweb user's id as project id.
 
-### Configure user quota for ZFS
+#### ZFS
 
 This section is not a full documentation about how to configure ZFS project quotas,
 but provide enough guidance to help you. This documentation uses `tank/backups`
@@ -273,8 +275,46 @@ as the dataset to store rdiffweb backups.
    OR
    `zfs project -p 1 -rs /backups/admin`
    Where `1` is the rdiffweb user's id
-   
+
 Take note, it's better to enable project quota attributes when the repositories are empty.
+
+### Configure usrquota
+
+This section is not a full documentation about how to enabled
+and configure ext4 quota, but provide enough guidance to help you
+in this configuration for you own need.
+
+NOTE: When using this mode of operation, each rdiffweb username should match a linux user.
+
+This documentation assume you have a separate partition for your storage `/dev/sdb1` mounted on `/backups`.
+
+1. First, you may need to install some dependencies required to enable the quota management:
+
+   `apt update`
+   `apt install quota e2fsprogs`
+
+2. First, you need to unmount the partition to apply modifications:
+
+   `umount -l /dev/sdb1`
+
+3. Once unmounted, you may enabled the quota feature on the partition:
+
+   `tune2fs -O quota /dev/sdb1`
+
+4. You may then re-mount the partition:
+
+   `mount /dev/sdb1`
+
+5. Verify if it's working by settings a quota:
+
+   `setquota -u $(id -u) 524288000 524288000 0 0 -a`
+   `repquota`
+
+6. Finally, you must configure rdiffweb by editing it's configuration file `/etc/rdiffweb/rdw.conf`.
+
+   `quota-set-cmd=setquota -u $RDIFFWEB_USERNAME $((RDIFFWEB_QUOTA / 1024)) $((RDIFFWEB_QUOTA / 1024)) 0 0 -a`
+   `quota-get-cmd=quota -u $RDIFFWEB_USERNAME | tail -n 1 | awk '{ print $3 * 1024; }'`
+   `quota-used-cmd=quota -u $RDIFFWEB_USERNAME | tail -n 1 | awk '{ print $2 * 1024; }'`
 
 ## Configure Rate-Limit
 
