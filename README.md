@@ -108,6 +108,10 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## 2.5.7 (2023-01-27)
+
+* Enforce SQLAlchemy version between 1.2 or 1.4
+
 ## 2.5.6 (2023-01-11)
 
 * Fixed display of Hamburger menu on mobiles (minarca#192)
