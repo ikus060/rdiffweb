@@ -250,12 +250,12 @@ class RdiffwebApp(Application):
         self.root.header_logo = staticfile(
             cfg.header_logo
             if cfg.header_logo
-            else pkg_resources.resource_filename('rdiffweb', 'static/header-logo.svg')
+            else pkg_resources.resource_filename('rdiffweb', 'static/header-logo.png')
         )
 
         # Register logo
         self.root.logo = staticfile(
-            cfg.logo if cfg.logo else pkg_resources.resource_filename('rdiffweb', 'static/logo1.svg')
+            cfg.logo if cfg.logo else pkg_resources.resource_filename('rdiffweb', 'static/logo1.png')
         )
 
         # Define TEMP env

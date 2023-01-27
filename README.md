@@ -108,6 +108,14 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+# Next Release - 2.6.0
+
+* Fix deletion confirmation of repositories within subdirectory #250
+* Send notification for inactive backup based on statistics
+* Properly clean-up plain text email from HTML tags
+* Send email using a new template following the web interface branding
+* Redistribute logos in PNG format for better compatibility
+
 ## 2.5.7 (2023-01-27)
 
 * Enforce SQLAlchemy version between 1.2 or 1.4
@@ -115,7 +123,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 ## 2.5.6 (2023-01-11)
 
 * Fixed display of Hamburger menu on mobiles (minarca#192)
-* Change working for interupted backup
+* Change wording for interupted backup
 
 ## 2.5.5 (2022-12-23)
 

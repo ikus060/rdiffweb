@@ -20,7 +20,7 @@ Created on Dec 29, 2015
 
 @author: Patrik Dufresne
 """
-
+import os
 
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
@@ -124,3 +124,18 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         # Then the page is return with an error message
         self.assertStatus(200)
         self.assertInBody('The repository cannot be found or is badly damaged.')
+
+    def test_history_with_root_within_subdirectory(self):
+        # Given a user with repo in subdirectory (mimic Windows layout)
+        userobj = UserObject.get_user('admin')
+        os.mkdir(os.path.join(userobj.user_root, 'MyComputer'))
+        os.rename(os.path.join(userobj.user_root, 'broker-repo'), os.path.join(userobj.user_root, 'MyComputer', 'C'))
+        os.rename(os.path.join(userobj.user_root, 'testcases'), os.path.join(userobj.user_root, 'MyComputer', 'D'))
+        userobj.refresh_repos(delete=True)
+        userobj.commit()
+        self.assertEqual(['MyComputer/C', 'MyComputer/D'], [r.name for r in userobj.repo_objs])
+        # When querying the history page
+        self.getPage("/history/" + self.USERNAME + "/MyComputer/C")
+        # Then the confirmation value is the repository display_name
+        self.assertStatus(200)
+        self.assertInBody('pattern="MyComputer/C"')

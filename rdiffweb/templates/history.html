@@ -97,5 +97,5 @@
   title=_('Confirmation required'),
   message=_("You are about to permanently delete this file or folder history. Deleted history CANNOT be restored! Are you ABSOLUTELY sure?"),
   submit=_('Delete'),
-  confirm_value=path_obj.display_name) }}
+  confirm_value=repo.display_name if path_obj.isroot else path_obj.display_name) }}
 {% endblock %}
