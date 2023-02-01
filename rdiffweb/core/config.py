@@ -459,6 +459,12 @@ def get_parser():
     )
 
     parser.add(
+        '--external-url',
+        metavar='URL',
+        help='URL that should be used to reach this service. You can use the IP of your server, but a Fully Qualified Domain Name (FQDN) is preferred. This URL is only used to generate URL for Email Notification.',
+    )
+
+    parser.add(
         '--rate-limit-dir',
         '--session-dir',
         '--sessiondir',

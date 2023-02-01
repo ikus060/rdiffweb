@@ -26,6 +26,7 @@ from parameterized import parameterized, parameterized_class
 
 import rdiffweb.test
 from rdiffweb.core.model import DbSession, SessionObject
+from rdiffweb.core.rdw_templating import url_for
 
 
 class ControllerTest(rdiffweb.test.WebCase):
@@ -57,6 +58,13 @@ class ControllerTest(rdiffweb.test.WebCase):
         self.getPage("/", headers=[('Host', 'this.is.a.test.com'), ('X-Forwarded-Proto', 'https')])
         self.assertStatus('200 OK')
         self.assertInBody('https://this.is.a.test.com/favicon.ico')
+
+    def test_url_for_with_external_url(self):
+        # Given external-url is defined
+        self.app.cfg.external_url = 'https://www.example.com'
+        # When creating a URL outside a request
+        # Then the external-url is used to build the url
+        self.assertEqual('https://www.example.com/header_logo', url_for('/header_logo'))
 
     @parameterized.expand(
         [

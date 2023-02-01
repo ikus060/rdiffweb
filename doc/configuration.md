@@ -45,6 +45,16 @@ For security reasons, Rdiffweb listen on port `8080` for HTTP request on loopbac
 | server-host | Define the IP address to listen to. Use `0.0.0.0` to listen on all interfaces. Use `127.0.0.1` to listen on loopback interface. | 0.0.0.0 |
 | server-port | Define the port to listen for HTTP request. Default to `8080` | 9090 |
 
+## Configure External URL
+
+To display the correct URL when sending Email Notification to Rdiffweb users,
+you must provide Rdiffweb with the URL your users use to reach the web application.
+You can use the IP of your server, but a Fully Qualified Domain Name (FQDN) is preferred.
+
+| Option | Description | Example |
+| --- | --- | --- |
+| external-url | Define the base URL used to reach your Rdiffweb application | `https://rdiffweb.mycompagny.com` |
+
 ## Configure administrator username & password
 
 Using configuration file, you may setup a special administrator which cannot be

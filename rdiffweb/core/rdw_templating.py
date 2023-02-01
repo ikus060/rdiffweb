@@ -188,7 +188,12 @@ def url_for(*args, **kwargs):
             raise ValueError('invalid positional arguments, url_for accept str, bytes or RepoPath: %r' % chunk)
     # Sort the arguments to have predictable results.
     qs = [(k, v.epoch() if hasattr(v, 'epoch') else v) for k, v in sorted(kwargs.items()) if v is not None]
-    return cherrypy.url(path=path, qs=qs)
+    # Outside a request, use the external_url as base if defined
+    base = None
+    if not cherrypy.request.app:
+        app = cherrypy.tree.apps['']
+        base = app.cfg.external_url
+    return cherrypy.url(path=path, qs=qs, base=base)
 
 
 class TemplateManager(object):
