@@ -175,11 +175,8 @@ class UrlForTest(WebCase):
 
     def test_url_for_status(self):
         self.assertEqual(
-            cherrypy.server.base() + '/status?date=1414967021', url_for('status', date=RdiffTime(1414967021))
-        )
-        self.assertEqual(
-            cherrypy.server.base() + '/status/admin/testcases?date=1414967021',
-            url_for('status', self.repo_obj, date=RdiffTime(1414967021)),
+            cherrypy.server.base() + '/status/admin/?date=1414967021',
+            url_for('status', 'admin', '/', date=RdiffTime(1414967021)),
         )
 
     def test_url_for_with_none(self):

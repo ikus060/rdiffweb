@@ -209,7 +209,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
 
         # Try to delete own own repo
         self._delete('user', 'testcases', 'testcases')
-        self.assertStatus(403)
+        self.assertStatus(404)
 
         # Check database don't change
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])

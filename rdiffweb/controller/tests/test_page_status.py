@@ -20,28 +20,116 @@ Created on Aug 30, 2019
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
+from parameterized import parameterized
+
 import rdiffweb.test
-from rdiffweb.core.model import UserObject
+from rdiffweb.core.librdiff import RdiffTime
+from rdiffweb.core.model import RepoObject, UserObject
 
 
 class StatusTest(rdiffweb.test.WebCase):
 
     login = True
 
-    def test_page(self):
-        # When browsing the status page
-        self.getPage("/status/")
-        # Then no error are raised
-        self.assertStatus(200)
-        self.assertInBody('Backup Status')
+    @parameterized.expand(
+        [
+            ('/status/invalid/', 404),
+            ('/status/invalid/per-days.json', 404),
+            ('/status/invalid/age.json', 404),
+            ('/status/invalid/disk-usage.json', 404),
+            ('/status/invalid/elapsetime.json', 404),
+            ('/status/invalid/activities.json', 404),
+            ('/status/admin', 301),
+            ('/status/admin/'),
+            ('/status/admin/per-days.json'),
+            ('/status/admin/per-days.json?days=1'),
+            ('/status/admin/per-days.json?days=60'),
+            ('/status/admin/per-days.json?days=61', 400),
+            ('/status/admin/per-days.json?days=0', 400),
+            ('/status/admin/age.json'),
+            ('/status/admin/age.json?count=1'),
+            ('/status/admin/age.json?count=20'),
+            ('/status/admin/age.json?count=21', 400),
+            ('/status/admin/age.json?count=0', 400),
+            ('/status/admin/disk-usage.json'),
+            ('/status/admin/elapsetime.json'),
+            ('/status/admin/elapsetime.json?days=1&count=1'),
+            ('/status/admin/elapsetime.json?days=60&count=20'),
+            ('/status/admin/elapsetime.json?days=61&count=21', 400),
+            ('/status/admin/elapsetime.json?days=0&count=0', 400),
+            ('/status/admin/activities.json'),
+            ('/status/admin/activities.json?days=1&count=1'),
+            ('/status/admin/activities.json?days=60&count=20'),
+            ('/status/admin/activities.json?days=61&count=21', 400),
+            ('/status/admin/activities.json?days=0&count=0', 400),
+        ]
+    )
+    def test_get_page(self, url, expected_status=200):
+        self.getPage(url)
+        self.assertStatus(expected_status)
 
-    def test_page_with_broken_repo(self):
-        # Given a user's with broken repo
-        userobj = UserObject.get_user('admin')
-        userobj.user_root = '/invalid/'
-        userobj.commit()
-        # When browsing the status page
-        self.getPage("/status/")
-        # Then not error should be raised
-        self.assertStatus(200)
-        self.assertInBody('Backup Status')
+    def test_age_json(self):
+        # Given a user with repositories
+        # When queyring age.json
+        data = self.getJson('/status/admin/age.json')
+        # Then json data is returned
+        userobj = UserObject.query.filter(UserObject.username == self.USERNAME).one()
+        repo = RepoObject.get_repo('admin/testcases', userobj)
+        delta = (RdiffTime().epoch() - repo.last_backup_date.epoch()) / 60 / 60
+        self.assertEqual(
+            data,
+            [
+                {
+                    "name": "Hours since last backup",
+                    "data": {
+                        "testcases": float("%.2g" % delta),
+                    },
+                }
+            ],
+        )
+
+    def test_disk_usage(self):
+        # Given a user with repositories
+        # When queyring age.json
+        data = self.getJson('/status/admin/disk-usage.json')
+        # Then json data is returned
+        self.assertEqual(
+            data,
+            [['broker-repo', 0], ['testcases', 3.5]],
+        )
+
+    @parameterized.expand(
+        [
+            ('/status/anotheruser/'),
+            ('/status/anotheruser/per-days.json'),
+            ('/status/anotheruser/age.json'),
+            ('/status/anotheruser/disk-usage.json'),
+            ('/status/anotheruser/elapsetime.json'),
+            ('/status/anotheruser/activities.json'),
+        ]
+    )
+    def test_as_another_user(self, url):
+        # Create a nother user with admin right
+        user_obj = UserObject.add_user('anotheruser', 'password')
+        user_obj.user_root = self.testcases
+        user_obj.refresh_repos()
+        user_obj.commit()
+        self.getPage(url)
+        self.assertStatus('200 OK')
+
+        # Remove admin right
+        admin = UserObject.get_user('admin')
+        admin.role = UserObject.USER_ROLE
+        admin.commit()
+
+        # Browse admin's repos
+        self.getPage(url)
+        self.assertStatus(404)
+
+    def test_with_invalid_username(self):
+        # Given an invalid repo
+        repo = 'invalid'
+        # When trying to browse the history
+        self.getPage("/history/" + self.USERNAME + "/" + repo)
+        # Then a 404 error is return to the user
+        self.assertStatus(404)
