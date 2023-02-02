@@ -18,7 +18,7 @@
 import datetime
 import logging
 import os
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 from io import StringIO
 
 import cherrypy
@@ -29,7 +29,6 @@ from jinja2.filters import do_mark_safe
 from jinja2.loaders import ChoiceLoader
 
 from rdiffweb.core import librdiff, rdw_helpers
-from rdiffweb.core.model import RepoObject
 from rdiffweb.tools import i18n
 from rdiffweb.tools.i18n import ugettext as _
 
@@ -125,23 +124,6 @@ def do_format_lastupdated(value, now=None):
     return _('%d seconds ago') % delta.seconds
 
 
-def create_repo_tree(repos):
-    """
-    Organise the repositories into a tree.
-    """
-    repos = sorted(repos, key=lambda r: r.display_name)
-    repo_tree = OrderedDict()
-    for repo in repos:
-        h = repo_tree
-        key = repo.display_name.strip('/').split('/')
-        for p in key[:-1]:
-            if p in h and isinstance(h[p], RepoObject):
-                h[p] = {'.': h[p]}
-            h = h.setdefault(p, {})
-        h[key[-1]] = repo
-    return repo_tree
-
-
 def list_parents(repo, path):
     assert isinstance(path, bytes)
     # Build the parameters
@@ -223,7 +205,6 @@ class TemplateManager(object):
 
         # Register method
         self.jinja_env.globals['attrib'] = attrib
-        self.jinja_env.globals['create_repo_tree'] = create_repo_tree
         self.jinja_env.globals['list_parents'] = list_parents
         self.jinja_env.globals['url_for'] = url_for
 
