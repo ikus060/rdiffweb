@@ -278,10 +278,12 @@ class RdiffwebApp(Application):
         """
         Default error page shown to the user when an unexpected error occur.
         """
-        # Log exception.
-        logger.error(
-            'error page: %s %s\n%s' % (kwargs.get('status', ''), kwargs.get('message', ''), kwargs.get('traceback', ''))
-        )
+        # Log server error exception
+        if kwargs.get('status', '').startswith('500'):
+            logger.error(
+                'error page: %s %s\n%s'
+                % (kwargs.get('status', ''), kwargs.get('message', ''), kwargs.get('traceback', ''))
+            )
 
         # Replace message by generic one for 404. Default implementation leak path info.
         if kwargs.get('status', '') == '404 Not Found':
