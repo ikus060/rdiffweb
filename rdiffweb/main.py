@@ -42,15 +42,26 @@ def _setup_logging(log_file, log_access_file, level):
 
     def add_ip(record):
         """Add request IP to record."""
-        if hasattr(cherrypy, 'serving'):
-            request = cherrypy.serving.request
-            remote = request.remote
+        # Check if we are serving a real request
+        if cherrypy.request and cherrypy.request.request_line:
+            remote = cherrypy.request.remote
             record.ip = remote.name or remote.ip
+        else:
+            record.ip = "-"
         return True
 
     def add_username(record):
         """Add current username to record."""
-        record.user = cherrypy.request and cherrypy.request.login or "anonymous"
+        # Check if we are serving a real request
+        if cherrypy.request and cherrypy.request.request_line:
+            if cherrypy.request.login:
+                record.user = cherrypy.request.login
+            elif hasattr(cherrypy, 'session') and cherrypy.session and cherrypy.session.get('_cp_username', None):
+                record.user = cherrypy.serving.session['_cp_username']
+            else:
+                record.user = "anonymous"
+        else:
+            record.user = "-"
         return True
 
     cherrypy.config.update({'log.screen': False, 'log.access_file': '', 'log.error_file': ''})
