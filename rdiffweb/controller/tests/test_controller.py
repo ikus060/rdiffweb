@@ -175,7 +175,7 @@ class ControllerSession(rdiffweb.test.WebCase):
         self.assertEqual(1, len(SessionObject.query.all()))
         # When this session get old
         data = SessionObject.query.filter(SessionObject.id == self.session_id).first()
-        data.expiration_time = datetime.datetime.now() - datetime.timedelta(seconds=1)
+        data.expiration_time = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(seconds=1)
         data.commit()
         session = DbSession(id=self.session_id)
         # Then the session get deleted by clean_up process
