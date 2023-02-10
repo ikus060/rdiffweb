@@ -63,6 +63,14 @@ a:hover, .btn-link:hover {
     border-color: var(--btn-bg-color);
 }
 
+.page-link {
+    color: var(--btn-bg-color);
+}
+.page-item.active .page-link {
+    background-color: var(--btn-bg-color);
+    border-color: var(--btn-bg-color);
+}
+
 {% if not btn_rounded %}
 /* Keep border radius */
 .btn, .btn-lg{
