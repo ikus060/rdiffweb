@@ -115,6 +115,9 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 * Properly clean-up plain text email from HTML tags
 * Send email using a new template following the web interface branding
 * Redistribute logos in PNG format for better compatibility
+* Disable error page logs for 4xx errors
+* Add username and IP address to logs only for HTTP Request
+* Support Setuptools==66 for compatibility with Debian Bookworm
 
 ## 2.5.7 (2023-01-27)
 

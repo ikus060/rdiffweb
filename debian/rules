@@ -2,7 +2,7 @@
 
 include /usr/share/dpkg/pkg-info.mk
 
-export SETUPTOOLS_SCM_PRETEND_VERSION = $(DEB_VERSION_UPSTREAM)
+export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_RDIFFWEB=$(shell python3 setup.py --version)
 export PYBUILD_BEFORE_TEST=python{version} setup.py develop
 
 %:
