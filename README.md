@@ -110,17 +110,20 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Next Release - 2.6.0
 
+* Review the application layout to use Fluid container to use all the space available on the screen
+* Rename status view to Dashboard
+* Display more useful data in Dashboard view: Backups per days, Oldest backup, Storage Usage, Average duration, Least Active, Most active
 * Fix deletion confirmation of repositories within subdirectory #250
-* Send notification for inactive backup based on statistics
 * Properly clean-up plain text email from HTML tags
-* Send email using a new template following the web interface branding
+* Send notification for inactive backup based on statistics
+* Send notification using a new template following the web interface branding
+* Send notification to user when repository get added or removed
 * Redistribute logos in PNG format for better compatibility
 * Disable error page logs for 4xx errors
 * Add username and IP address to logs only for HTTP Request
-* Support Setuptools==66 for compatibility with Debian Bookworm
 * Fix LDAP integration to support non-list attributes - credit to [Shane Robinson](https://gitlab.com/shanesq)
-* Send notification to user when repository get added or removed
 * Improve System Logs view to identify "User Activity", "Threats" and "User Login"
+* Support Setuptools v66 for compatibility with Debian Bookworm
 
 ## 2.5.7 (2023-01-27)
 
