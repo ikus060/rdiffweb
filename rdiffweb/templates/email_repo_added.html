@@ -1,0 +1,12 @@
+{% extends 'email_layout.html' %}
+{% block body %}
+  <h1>
+    <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
+  </h1>
+  <p>
+    <a>{% trans %}You are receiving this email to inform you that a new repository, named "{{ repo_path }}", has been added to your account.{% endtrans %}</a>
+  </p>
+  <p>
+    {% trans %}If you did not make this change and believe your account has been compromised, please contact your administrator.{% endtrans %}
+  </p>
+{% endblock body %}

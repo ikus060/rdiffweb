@@ -22,7 +22,7 @@ from rdiffweb.core.model import DbSession, SessionObject
 
 class AdminSessionTest(rdiffweb.test.WebCase):
 
-    PAGE = "/admin/session"
+    PAGE = "/admin/session/"
 
     login = True
 

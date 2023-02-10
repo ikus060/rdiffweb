@@ -34,7 +34,7 @@
     <div class="col-md-9">
       {% if data %}
         <div class="alert alert-info">
-          {% trans %}Notice: To prevent performance issues, only the last 2000 lines are displayed.{% endtrans %}
+          {% trans %}Notice: To prevent performance issues, only the last 2000 lines of each log files are displayed.{% endtrans %}
           <a href="{{ url_for('logs', repo, file=file, date=date, raw=1)}}"><b><i class="icon icon-download"></i>{% trans %}Show all logs{% endtrans %}</b></a>
         </div>
         {{ pre_code(data)}}

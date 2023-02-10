@@ -164,6 +164,7 @@ def check_ratelimit(
 
     # Verify user has not exceeded rate limit
     if limit <= hits:
+        cherrypy.log('ratelimit access to `%s`' % request.path_info, 'TOOLS.RATELIMIT')
         if logout:
             if hasattr(cherrypy.serving, 'session'):
                 cherrypy.serving.session.clear()

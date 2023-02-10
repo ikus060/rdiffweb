@@ -1,34 +1,56 @@
 {% extends 'admin.html' %}
-{% block title %}
-  {% trans %}User management{% endtrans %}
-{% endblock title %}
+{% from 'include/table.html' import table %}
+{% from 'include/session.html' import browser, os %}
+{% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
 {% from 'components/nav.html' import nav_pills %}
 {% from 'components/log.html' import pre_code %}
+{% block title %}
+  {% trans %}System Logs{% endtrans %}
+{% endblock title %}
 {% set admin_nav_active="logs" %}
+{% block script %}
+  <script>
+  $.fn.dataTable.render.description = function () {
+      return function (data, type, row, meta) {
+          switch(row[5]){
+              case 'threat':
+                  return '<span class="badge badge-pill badge-primary">{% trans %}Threat{% endtrans %}</span> ' + safe(row[4]);
+              case 'auth':
+                  return '<span class="badge badge-pill badge-primary">{% trans %}User Login{% endtrans %}</span> ' + safe(row[4]);
+              case 'activity':
+                  return '<span class="badge badge-pill badge-primary">{% trans %}User Activity{% endtrans %}</span> ' + safe(row[4]);
+              default:
+                return safe(row[4]);
+          }
+      };
+  }
+  </script>
+{% endblock script %}
 {% block content %}
-  {% from 'include/empty.html' import empty %}
-  <div class="row">
-    {% if logfiles %}
-      <div class="col-md-12">
-        {% set ns = namespace(nav_items=[]) %}
-        {% for fn in logfiles %}
-          {% set ns.nav_items = ns.nav_items + [(fn, url_for('admin/logs', fn), fn == filename, 'fa fa-files-o')] %}
-        {% endfor %}
-        {{ nav_pills(ns.nav_items) }}
-        <div class="alert alert-info">
-          {% trans %}Notice: To prevent performance issues, only the last 2000 lines are displayed.{% endtrans %}
-        </div>
-        {{ pre_code(data) }}
-      </div>
-    {% else %}
-      <div class="col-md-12">
-        {% call empty('icon-doc-text', _("No log files")) %}
-          <p>
-            {% trans %}The application must be configured with logfile location if you want to display their content in this view.{% endtrans %}
-          </p>
-        {% endcall %}
-      </div>
-    {% endif %}
-    <!-- /.row -->
-  </div>
+  {# Lazy loaded Table #}
+  {% set buttons = [
+  {'text': _('All'), 'extend': 'filter', 'column': 'tag:name', 'search': ''},
+  {'text': _('User Login'), 'extend': 'filter', 'column': 'tag:name', 'search': 'auth'},
+  {'text': _('Threats'), 'extend': 'filter', 'column': 'tag:name', 'search': 'threat'},
+  {'text': _('User Activity'), 'extend': 'filter', 'column': 'tag:name', 'search': 'activity'},
+  {'text': _('Clear'), 'extend': 'clear'},
+  ] %}
+  {% set columns = [
+  {'name':'filename', 'visible': False },
+  {'name':'date', 'title':_('When'), 'orderable': True, 'render':'datetime', 'width':'150px'},
+  {'name':'username', 'title':_('User'), 'orderable': True, 'width':'120px'},
+  {'name':'ip', 'title':_('IP Address'), 'orderable': True, 'width':'120px'},
+  {'name':'description', 'title':_('Event Description'), 'orderable': True, 'render':'description' },
+  {'name':'tag', 'visible': False},
+  ] %}
+  {{ table(url_for('/admin/logs/data.json'),
+  columns=columns,
+  buttons=buttons,
+  order=[[ 0, 'desc' ]],
+  searching=True,
+  show_header=True,
+  empty_message=_('Logs is empty'),
+  info_message=_('Displaying _START_-_END_ of _TOTAL_ most recent log systems'),
+  paging=True,
+  pageLength=20) }}
 {% endblock %}
