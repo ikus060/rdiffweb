@@ -108,6 +108,10 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+## 2.5.8 (2023-02-19)
+
+* Support Setuptools v66 for compatibility with Debian Bookworm
+
 ## 2.5.7 (2023-01-27)
 
 * Enforce SQLAlchemy version between 1.2 or 1.4
