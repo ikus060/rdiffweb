@@ -39,6 +39,8 @@ def _first_attribute(attributes, key, default=None):
         value = attributes.get(attr, None)
         if isinstance(value, list) and len(value) > 0:
             return value[0]
+        else:
+            return value
     # Default to None.
     return default
 
