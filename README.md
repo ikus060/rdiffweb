@@ -118,6 +118,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 * Disable error page logs for 4xx errors
 * Add username and IP address to logs only for HTTP Request
 * Support Setuptools==66 for compatibility with Debian Bookworm
+* Fix LDAP integration to support non-list attributes - credit to [Shane Robinson](https://gitlab.com/shanesq)
 
 ## 2.5.7 (2023-01-27)
 
