@@ -125,17 +125,11 @@ class Root(LocationsPage):
         if cherrypy.request.method not in ('GET', 'HEAD'):
             raise cherrypy.HTTPError(400)
         cfg = self.app.cfg
-        param = {'font_family': 'Open Sans'}
-        # With default style, user can customize all colors
-        if cfg.default_theme == 'default':
-            param.update({'link_color': '#35979c', 'navbar_color': '#383e45'})
-            for key in ['link_color', 'btn_bg_color', 'btn_fg_color', 'navbar_color', 'font_family']:
-                if getattr(cfg, key, None):
-                    param[key] = getattr(cfg, key, None)
-        elif cfg.default_theme == 'blue':
-            param.update({'link_color': '#153a58', 'navbar_color': '#153a58'})
-        elif cfg.default_theme == 'orange':
-            param.update({'link_color': '#dd4814', 'navbar_color': '#dd4814'})
+        param = {}
+        # Get values from configuration.
+        for key in ['link_color', 'btn_bg_color', 'btn_fg_color', 'navbar_color', 'font_family']:
+            if getattr(cfg, key, None):
+                param[key] = getattr(cfg, key, None)
         cherrypy.response.headers['Content-Type'] = 'text/css'
         return self._compile_template("default.css", **param)
 
@@ -149,6 +143,11 @@ class RdiffwebApp(Application):
 
     def __init__(self, cfg):
         self.cfg = cfg
+
+        # Initialise the template engine.
+        self.templates = rdw_templating.TemplateManager()
+
+        # Configure all the plugins.
         db_uri = self.cfg.database_uri if '://' in self.cfg.database_uri else "sqlite:///" + self.cfg.database_uri
         cherrypy.config.update(
             {
@@ -191,6 +190,11 @@ class RdiffwebApp(Application):
                 # Configure notification plugin
                 'notification.execution_time': self.cfg.email_notification_time,
                 'notification.send_changed': self.cfg.email_send_changed_notification,
+                'notification.header_name': self.cfg.header_name,
+                'notification.env': self.templates,
+                'notification.bcc': self.cfg.email_catch_all,
+                'notification.link_color': self.cfg.link_color,
+                'notification.navbar_color': self.cfg.navbar_color,
                 # Configure quota plugin
                 'quota.set_quota_cmd': self.cfg.quota_set_cmd,
                 'quota.get_quota_cmd': self.cfg.quota_get_cmd,
@@ -199,9 +203,6 @@ class RdiffwebApp(Application):
         )
         # Create database if required
         cherrypy.tools.db.create_all()
-
-        # Initialise the template engine.
-        self.templates = rdw_templating.TemplateManager()
 
         # Pick the right implementation for storage
         rate_limit_storage_class = rdiffweb.tools.ratelimit.RamRateLimit

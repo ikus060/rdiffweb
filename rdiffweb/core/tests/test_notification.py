@@ -30,7 +30,7 @@ import rdiffweb.test
 from rdiffweb.core.model import RepoObject, UserObject
 
 
-class NotificationJobTest(rdiffweb.test.WebCase):
+class AbstractNotificationTest(rdiffweb.test.WebCase):
     def setUp(self):
         self.listener = MagicMock()
         cherrypy.engine.subscribe('queue_mail', self.listener.queue_email, priority=50)
@@ -40,6 +40,8 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         cherrypy.engine.unsubscribe('queue_mail', self.listener.queue_email)
         return super().tearDown()
 
+
+class NotificationJobTest(AbstractNotificationTest):
     def test_check_schedule(self):
         # Given the application is started
         # Then remove_older job should be schedule
@@ -106,20 +108,11 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         self.listener.queue_email.assert_not_called()
 
 
-class NotificationPluginTest(rdiffweb.test.WebCase):
+class NotificationPluginTest(AbstractNotificationTest):
 
     default_config = {
         'email-send-changed-notification': True,
     }
-
-    def setUp(self):
-        self.listener = MagicMock()
-        cherrypy.engine.subscribe('queue_mail', self.listener.queue_email, priority=50)
-        return super().setUp()
-
-    def tearDown(self):
-        cherrypy.engine.unsubscribe('queue_mail', self.listener.queue_email)
-        return super().tearDown()
 
     def test_email_changed(self):
         # Given a user with an email address
@@ -287,4 +280,53 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
             to='myemail@test.com',
             subject='Repository deleted',
             message=ANY,
+        )
+
+
+class NotificationConfigTest(AbstractNotificationTest):
+
+    default_config = {
+        'email-send-changed-notification': True,
+        'link-color': '123456',
+        'navbar-color': '7890ab',
+        'header-name': 'MyHeaderName',
+    }
+
+    def test_notification_config(self):
+        # Given specific branding configuration
+        # When sending an email using the notification plugin
+        user = UserObject.get_user(self.USERNAME)
+        user.email = 'original_email@test.com'
+        user.add().commit()
+        self.listener.queue_email.reset_mock()
+        user.email = 'email_changed@test.com'
+        user.add().commit()
+        # Then an email is sent to the user
+        self.listener.queue_email.assert_called_once()
+        # Then the email is customized with the branding
+        message = self.listener.queue_email.call_args[1]['message']
+        self.assertIn('#123456', message)
+        self.assertIn('#7890ab', message)
+        self.assertIn('MyHeaderName', message)
+
+
+class NotificationCatchAllTest(AbstractNotificationTest):
+
+    default_config = {'email-send-changed-notification': True, 'email-catch-all': 'all@examples.com'}
+
+    def test_notification_catch_all(self):
+        # Given a catch all email.
+        # When sending an email.
+        user = UserObject.get_user(self.USERNAME)
+        user.email = 'myemail@test.com'
+        user.add().commit()
+        self.listener.queue_email.reset_mock()
+        user.add_access_token('TEST')
+        user.commit()
+        # Then email is also sent to catch-all
+        self.listener.queue_email.assert_called_once_with(
+            to='myemail@test.com',
+            subject='A new access token has been created',
+            message=ANY,
+            bcc='all@examples.com',
         )
