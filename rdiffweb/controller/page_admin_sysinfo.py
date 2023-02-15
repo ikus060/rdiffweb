@@ -125,7 +125,7 @@ class AdminSysinfoPage(Controller):
     """Administration pages. Allow to manage users database."""
 
     @cherrypy.expose
-    def default(self, **kwargs):
+    def index(self, **kwargs):
         params = {
             "version": self.app.version,
             # Config

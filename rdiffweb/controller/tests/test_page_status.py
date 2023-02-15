@@ -95,7 +95,7 @@ class StatusTest(rdiffweb.test.WebCase):
         # Then json data is returned
         self.assertEqual(
             data,
-            [['broker-repo', 0], ['testcases', 3.5]],
+            [['testcases', 3.5], ['broker-repo', 0]],
         )
 
     @parameterized.expand(

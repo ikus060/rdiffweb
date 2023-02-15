@@ -81,7 +81,7 @@ class TokenTest(rdiffweb.test.WebCase):
         user.add_access_token('test2')
         user.add_access_token('test3')
         for t in Token.query.all():
-            t.expiration_time = datetime.datetime.now()
+            t.expiration_time = datetime.datetime.now(tz=datetime.timezone.utc)
         user.commit()
         self.assertEqual(3, Token.query.count())
         # When running notification_job
@@ -174,8 +174,9 @@ class TokenTest(rdiffweb.test.WebCase):
         # Given a user with an existing token
         userobj = UserObject.get_user(self.USERNAME)
         token = userobj.add_access_token(
-            'test', expiration_time=datetime.datetime.now() - datetime.timedelta(seconds=1)
+            'test', expiration_time=datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(seconds=1)
         )
+        userobj.commit()
         self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
         # When validating the token
         # Then token is invalid
@@ -186,7 +187,7 @@ class TokenTest(rdiffweb.test.WebCase):
     def test_verify_access_token_with_invalid(self):
         # Given a user with an existing token
         userobj = UserObject.get_user(self.USERNAME)
-        userobj.add_access_token('test', expiration_time=datetime.datetime.now())
+        userobj.add_access_token('test', expiration_time=datetime.datetime.now(tz=datetime.timezone.utc))
         userobj.commit()
         self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
         # When validating the token

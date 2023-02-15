@@ -32,7 +32,7 @@ def enrich_session():
     ip_address = request.remote.ip
     cherrypy.session['ip_address'] = ip_address
     cherrypy.session['user_agent'] = request.headers.get('User-Agent', None)
-    cherrypy.session['access_time'] = datetime.datetime.now()
+    cherrypy.session['access_time'] = datetime.datetime.now(tz=datetime.timezone.utc)
 
 
 cherrypy.tools.enrich_session = cherrypy.Tool('before_handler', enrich_session, priority=60)

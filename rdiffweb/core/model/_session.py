@@ -15,13 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import logging
 import threading
 
 import cherrypy
 from cherrypy.lib.sessions import Session
-from sqlalchemy import Column, DateTime, Integer, PickleType, String
+from sqlalchemy import Column, Integer, PickleType, String
 from sqlalchemy.orm import validates
+
+from ._timestamp import Timestamp
 
 SESSION_KEY = '_cp_username'
 
@@ -37,8 +40,8 @@ class SessionObject(Base):
     id = Column('SessionID', String, unique=True, nullable=False)
     username = Column('Username', String)
     data = Column('Data', PickleType)
-    expiration_time = Column('ExpirationTime', DateTime, nullable=False)
-    access_time = Column('AccessTime', DateTime)
+    expiration_time = Column('ExpirationTime', Timestamp, nullable=False)
+    access_time = Column('AccessTime', Timestamp)
 
     @validates('data')
     def validate_data(self, key, value):
@@ -106,3 +109,7 @@ class DbSession(Session):
         """Release the lock on the currently-loaded session data."""
         self.locks[self.id].release()
         self.locked = False
+
+    def now(self):
+        """Generate a timezone aware, versions of 'now'."""
+        return datetime.datetime.now(tz=datetime.timezone.utc)

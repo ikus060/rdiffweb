@@ -1,11 +1,12 @@
 {% extends 'layout.html' %}
 {% import 'include/chartkick.html' as chartkick with context %}
+{% from 'include/timerange.html' import timerange %}
 {% set active_page='status' %}
 {% block title %}
   {% trans %}Dashboard{% endtrans %}
 {% endblock %}
 {% block body %}
-  <div class="container">
+  <div class="container-fluid">
     {% include 'message.html' %}
     {# Title #}
     <div class="d-flex justify-content-between">
@@ -15,24 +16,7 @@
           <small>{% trans %}for user {{ path }}{% endtrans %}</small>
         {% endif %}
       </h2>
-      {# Dropdown days #}
-      <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle"
-                type="button"
-                id="dropdownMenu1"
-                data-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="true">
-          {% trans %}Show last{% endtrans %} {{ days }} {% trans %}days{% endtrans %}
-          <span class="caret"></span>
-        </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenu1">
-          {% for i in [1, 7, 14, 30, 60] %}
-            <a class="dropdown-item"
-               href="{{ url_for('status', path, '/', days=i) }}">{{ i }}</a>
-          {% endfor %}
-        </div>
-      </div>
+      {{ timerange(ranges=[1, 7, 14, 30, 60], limit=days, qs='days') }}
     </div>
     <div class="row">
       {# Backup per day #}

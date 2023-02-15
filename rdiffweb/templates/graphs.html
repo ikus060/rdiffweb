@@ -1,4 +1,5 @@
 {% extends 'layout_repo.html' %}
+{% from 'include/timerange.html' import timerange %}
 {% set active_page='repo' %}
 {% set active_repo_page='graphs' %}
 {% block title %}
@@ -25,23 +26,7 @@
     <!-- Include graph -->
     <div class="col-md-9">
       <div class="graph-area">
-        <div class="pull-right dropdown">
-          <button class="btn btn-secondary dropdown-toggle"
-                  type="button"
-                  id="dropdownMenu1"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="true">
-            {% trans %}Show last{% endtrans %} {{ limit }}
-            <span class="caret"></span>
-          </button>
-          <div class="dropdown-menu" aria-labelledby="dropdownMenu1">
-            {% for i in [30, 60, 90, 180] %}
-              <a class="dropdown-item"
-                 href="{{ url_for('graphs', graph, repo, limit=i) }}">{{ i }}</a>
-            {% endfor %}
-          </div>
-        </div>
+        <div class="pull-right">{{ timerange(ranges=[1, 7, 14, 30, 60, 90], limit=limit) }}</div>
         {% block graph_body %}
         {% endblock graph_body %}
       </div>

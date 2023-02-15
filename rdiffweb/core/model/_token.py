@@ -18,9 +18,11 @@ import datetime
 
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
+from ._timestamp import Timestamp
 
 Base = cherrypy.tools.db.get_base()
 
@@ -37,16 +39,18 @@ class Token(Base):
         lazy=True,
     )
     hash_token = Column('Token', String, nullable=False, default="")
-    access_time = Column('AccessTime', DateTime, nullable=True)
-    creation_time = Column('CreationTime', DateTime, nullable=False, server_default=func.now())
-    expiration_time = Column('ExpirationTime', DateTime, nullable=True)
+    access_time = Column('AccessTime', Timestamp, nullable=True)
+    creation_time = Column('CreationTime', Timestamp, nullable=False, server_default=func.now())
+    expiration_time = Column('ExpirationTime', Timestamp, nullable=True)
 
     @property
     def is_expired(self):
-        return self.expiration_time is not None and self.expiration_time <= datetime.datetime.now()
+        return self.expiration_time is not None and self.expiration_time <= datetime.datetime.now(
+            tz=datetime.timezone.utc
+        )
 
     def accessed(self):
-        self.access_time = datetime.datetime.utcnow()
+        self.access_time = datetime.datetime.now(tz=datetime.timezone.utc)
 
 
 class TokenCleanup(SimplePlugin):
@@ -66,7 +70,7 @@ class TokenCleanup(SimplePlugin):
     stop.priority = 45
 
     def clean_up(self):
-        Token.query.filter(Token.expiration_time <= datetime.datetime.now()).delete()
+        Token.query.filter(Token.expiration_time <= datetime.datetime.now(tz=datetime.timezone.utc)).delete()
         Token.session.commit()
 
 

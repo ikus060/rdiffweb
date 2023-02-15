@@ -147,7 +147,7 @@ def url_for(*args, **kwargs):
     """
     path = ""
     for chunk in args:
-        if not chunk:
+        if chunk is None:
             continue
         if hasattr(chunk, 'owner') and hasattr(chunk, 'repopath'):
             # This is a RepoObject
@@ -160,19 +160,20 @@ def url_for(*args, **kwargs):
             if chunk.path:
                 path += "/"
                 path += rdw_helpers.quote_url(chunk.path.strip(b"/"))
-        elif chunk and isinstance(chunk, bytes):
+        elif isinstance(chunk, bytes):
             path += "/"
             path += rdw_helpers.quote_url(chunk.strip(b"/"))
-        elif chunk and isinstance(chunk, str):
-            path += "/"
-            path += chunk.strip("/")
+        elif isinstance(chunk, str):
+            if not chunk.startswith('.'):
+                path += "/"
+            path += chunk.lstrip("/")
         else:
             raise ValueError('invalid positional arguments, url_for accept str, bytes or RepoPath: %r' % chunk)
     # Sort the arguments to have predictable results.
     qs = [(k, v.epoch() if hasattr(v, 'epoch') else v) for k, v in sorted(kwargs.items()) if v is not None]
     # Outside a request, use the external_url as base if defined
     base = None
-    if not cherrypy.request.app:
+    if not cherrypy.request.app and cherrypy.tree.apps:
         app = cherrypy.tree.apps['']
         base = app.cfg.external_url
     return cherrypy.url(path=path, qs=qs, base=base)

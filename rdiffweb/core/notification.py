@@ -28,6 +28,8 @@ from rdiffweb.core.model import RepoObject, UserObject
 from rdiffweb.tools.i18n import ugettext as _
 
 logger = logging.getLogger(__name__)
+activity = logging.getLogger('activity')
+auth = logging.getLogger('auth')
 
 
 class NotificationPlugin(SimplePlugin):
@@ -46,6 +48,11 @@ class NotificationPlugin(SimplePlugin):
         self.bus.subscribe('authorizedkey_added', self.authorizedkey_added)
         self.bus.subscribe('user_attr_changed', self.user_attr_changed)
         self.bus.subscribe('user_password_changed', self.user_password_changed)
+        self.bus.subscribe('repo_added', self.repo_added)
+        self.bus.subscribe('repo_deleted', self.repo_deleted)
+        self.bus.subscribe('user_added', self.user_added)
+        self.bus.subscribe('user_deleted', self.user_deleted)
+        self.bus.subscribe('user_login', self.user_login)
 
     start.priority = 55
 
@@ -56,6 +63,11 @@ class NotificationPlugin(SimplePlugin):
         self.bus.unsubscribe('authorizedkey_added', self.authorizedkey_added)
         self.bus.unsubscribe('user_attr_changed', self.user_attr_changed)
         self.bus.unsubscribe('user_password_changed', self.user_password_changed)
+        self.bus.unsubscribe('repo_added', self.repo_added)
+        self.bus.unsubscribe('repo_deleted', self.repo_deleted)
+        self.bus.unsubscribe('user_added', self.user_added)
+        self.bus.unsubscribe('user_deleted', self.user_deleted)
+        self.bus.unsubscribe('user_login', self.user_login)
 
     stop.priority = 45
 
@@ -67,7 +79,8 @@ class NotificationPlugin(SimplePlugin):
         """
         Generic function to queue email.
         """
-        if not userobj.email:
+        to = userobj.email if to is None else to
+        if not to:
             logger.info("can't sent mail to user [%s] without an email", userobj.username)
             return
 
@@ -90,72 +103,103 @@ class NotificationPlugin(SimplePlugin):
         # Compile the email body
         body = self.app.templates.compile_template(template, user=userobj, **dict(param, **kwargs))
         # Queue the email.
-        self.bus.publish('queue_mail', to=to or userobj.email, subject=subject, message=body)
+        self.bus.publish('queue_mail', to=to, subject=subject, message=body)
 
     def access_token_added(self, userobj, name):
-        if not self.send_changed:
-            return
-
-        self._queue_mail(
-            userobj,
-            subject=_("A new access token has been created"),
-            template="email_access_token_added.html",
-            name=name,
-        )
+        username = userobj.username
+        activity.info(f"A new access token {name} for the user {username} has been added")
+        if self.send_changed:
+            self._queue_mail(
+                userobj,
+                subject=_("A new access token has been created"),
+                template="email_access_token_added.html",
+                name=name,
+            )
 
     def authorizedkey_added(self, userobj, fingerprint, comment, **kwargs):
-        if not self.send_changed:
-            return
-        self._queue_mail(
-            userobj,
-            subject=_("A new SSH Key has been added"),
-            template="email_authorizedkey_added.html",
-            comment=comment,
-            fingerprint=fingerprint,
-        )
+        username = userobj.username
+        activity.info(f"A new SSH key {fingerprint} has been added for the user {username}")
+        if self.send_changed:
+            self._queue_mail(
+                userobj,
+                subject=_("A new SSH Key has been added"),
+                template="email_authorizedkey_added.html",
+                comment=comment,
+                fingerprint=fingerprint,
+            )
 
     def user_attr_changed(self, userobj, attrs={}):
-        if not self.send_changed:
-            return
-
+        username = userobj.username
         # Leave if the mail was not changed.
         if 'email' in attrs:
-            old_email = attrs['email'][0]
-            if not old_email:
-                logger.info("can't sent mail to user [%s] without an email", userobj.username)
-                return
+            activity.info(f"Email address of the user {username} has been changed")
             # If the email attributes was changed, send a mail notification.
-            self._queue_mail(
-                userobj,
-                to=old_email,
-                subject=_("Email address changed"),
-                template="email_changed.html",
-            )
+            if self.send_changed:
+                old_email = attrs['email'][0]
+                self._queue_mail(
+                    userobj,
+                    to=old_email,
+                    subject=_("Email address changed"),
+                    template="email_changed.html",
+                )
 
         if 'mfa' in attrs:
-            if not userobj.email:
-                logger.info("can't sent mail to user [%s] without an email", userobj.username)
-                return
-            subject = (
-                _("Two-Factor Authentication turned off")
-                if userobj.mfa == UserObject.DISABLED_MFA
-                else _("Two-Factor Authentication turned on")
-            )
-            self._queue_mail(
-                userobj,
-                subject=subject,
-                template="email_mfa.html",
-            )
+            state = 'activated' if userobj.mfa == UserObject.DISABLED_MFA else 'disabled'
+            activity.info(f"Two-factor authentication has been {state} for the user {username}")
+            if self.send_changed:
+                subject = (
+                    _("Two-Factor Authentication turned off")
+                    if userobj.mfa == UserObject.DISABLED_MFA
+                    else _("Two-Factor Authentication turned on")
+                )
+                self._queue_mail(
+                    userobj,
+                    subject=subject,
+                    template="email_mfa.html",
+                )
 
     def user_password_changed(self, userobj):
-        if not self.send_changed:
-            return
+        username = userobj.username
+        activity.info(f"User's password {username} changed")
+        if self.send_changed:
+            self._queue_mail(
+                userobj,
+                subject=_("Password changed"),
+                template="email_password_changed.html",
+            )
 
-        self._queue_mail(
-            userobj,
-            subject=_("Password changed"),
-            template="email_password_changed.html",
-        )
+    def repo_added(self, userobj, repo_path):
+        username = userobj.username
+        activity.info(f"New repository named {repo_path} has been added for the user {username}")
+        if self.send_changed:
+            self._queue_mail(
+                userobj,
+                subject=_("New Repository detected"),
+                template="email_repo_added.html",
+                repo_path=repo_path,
+            )
+
+    def repo_deleted(self, userobj, repo_path):
+        username = userobj.username
+        activity.info(f"Repository {repo_path} of the user {username} has been deleted")
+        if self.send_changed:
+            self._queue_mail(
+                userobj,
+                subject=_("Repository deleted"),
+                template="email_repo_deleted.html",
+                repo_path=repo_path,
+            )
+
+    def user_added(self, userobj):
+        username = userobj.username
+        activity.info(f"New user {username} has been added")
+
+    def user_deleted(self, username):
+        activity.info(f"User {username} has been deleted")
+
+    def user_login(self, userobj):
+        username = userobj.username
+        auth.info(f"User {username} login to web application")
 
     def notification_job(self):
         """

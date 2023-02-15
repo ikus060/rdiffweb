@@ -1,0 +1,24 @@
+{% macro timerange(ranges=[1,7,30], limit=0, qs='limit') -%}
+  <nav aria-label="{% trans %}Time Range{% endtrans %}">
+    <ul class="pagination">
+      {% for i in ranges %}
+        {% set url = url_for(**{qs: i}) %}
+        <li class="page-item{% if limit==i %} active{% endif %}">
+          {% if i<7 %}
+            <a class="page-link"
+               href="{{ url }}"
+               title="{% trans num=i %}{{ num }} Day{% pluralize %}{{ num }} Days{% endtrans %}">{{ i }}{% trans %}D{% endtrans %}</a>
+          {% elif i<30 and i%7==0 %}
+            <a class="page-link"
+               href="{{ url }}"
+               title="{% trans num=(i/7)|int %}{{ num }} Week{% pluralize %}{{ num }} Weeks{% endtrans %}">{{ (i / 7)|int }}{% trans %}W{% endtrans %}</a>
+          {% elif i%30==0 %}
+            <a class="page-link"
+               href="{{ url }}"
+               title="{% trans num=(i/30)|int %}{{ num }} Month{% pluralize %}{{ num }} Months{% endtrans %}">{{ (i / 30)|int }}{% trans %}M{% endtrans %}</a>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+{% endmacro %}

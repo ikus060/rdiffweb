@@ -60,6 +60,9 @@ class StatusPage(Controller):
         """
         days = validate_int(days, min=DAYS_MIN, max=DAYS_MAX)
 
+        # Release session lock
+        cherrypy.session.release_lock()
+
         def _key(d):
             return time.strftime(str(d).split('T')[0])
 
@@ -96,6 +99,11 @@ class StatusPage(Controller):
         """
         Return the oldest backup.
         """
+
+        # Release session lock
+        cherrypy.session.release_lock()
+
+        # Get data
         count = validate_int(count, min=COUNT_MIN, max=COUNT_MAX)
         now = RdiffTime()
         repos = sorted(self._list_repo(path), key=lambda r: (r.last_backup_date is None, r.last_backup_date))
@@ -119,6 +127,9 @@ class StatusPage(Controller):
         """
         Return disk usage.
         """
+        # Release session lock
+        cherrypy.session.release_lock()
+
         data = {}
         for repo in self._list_repo(path):
             try:
@@ -128,7 +139,8 @@ class StatusPage(Controller):
                     data[repo.display_name] = float('%.2g' % size)
             except Exception:
                 pass
-        return list(data.items())
+        # Sort from small to large
+        return sorted(data.items(), key=lambda i: i[1], reverse=True)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -139,6 +151,10 @@ class StatusPage(Controller):
         days = validate_int(days, min=DAYS_MIN, max=DAYS_MAX)
         count = validate_int(count, min=COUNT_MIN, max=COUNT_MAX)
         sort = validate_int(sort)
+
+        # Release session lock
+        cherrypy.session.release_lock()
+
         from_date = RdiffTime() - datetime.timedelta(days=7)
         # Count activities per repository for the last X days
         new = {}
@@ -183,6 +199,10 @@ class StatusPage(Controller):
         days = validate_int(days, min=DAYS_MIN, max=DAYS_MAX)
         count = validate_int(count, min=COUNT_MIN, max=COUNT_MAX)
         from_date = RdiffTime() - datetime.timedelta(days=7)
+
+        # Release session lock
+        cherrypy.session.release_lock()
+
         data = {}
         for repo in self._list_repo(path):
             try:

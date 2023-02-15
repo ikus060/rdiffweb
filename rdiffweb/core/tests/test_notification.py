@@ -57,6 +57,7 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         repo = RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
         repo.maxage = 1
         repo.commit()
+        self.listener.queue_email.reset_mock()
         # When running notification_job
         cherrypy.notification.notification_job()
 
@@ -77,7 +78,7 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         repo.maxage = 1
         repo.add().commit()
         self.assertIsNone(repo.last_backup_date)
-
+        self.listener.queue_email.reset_mock()
         # When Notification job is running
         cherrypy.notification.notification_job()
 
@@ -96,6 +97,7 @@ class NotificationJobTest(rdiffweb.test.WebCase):
         repo = RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
         repo.maxage = -1
         repo.add().commit()
+        self.listener.queue_email.reset_mock()
 
         # Call notification.
         cherrypy.notification.notification_job()
@@ -146,6 +148,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
         self.listener.queue_email.reset_mock()
 
         # When updating the user's email with the same value
+        user = UserObject.get_user(self.USERNAME)
         user.email = 'email_changed@test.com'
         user.add().commit()
 
@@ -192,17 +195,18 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
     def test_access_token_added(self):
         # Given a user with a email.
         user = UserObject.get_user(self.USERNAME)
-        user.email = 'password_change@test.com'
+        user.email = 'myemail@test.com'
         user.set_password('new_password')
         user.add().commit()
         self.listener.queue_email.reset_mock()
 
         # When adding a new access token
         user.add_access_token('TEST')
+        user.commit()
 
         # Then a notification is sent to the user
         self.listener.queue_email.assert_called_once_with(
-            to='password_change@test.com',
+            to='myemail@test.com',
             subject='A new access token has been created',
             message=ANY,
         )
@@ -210,7 +214,7 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
     def test_authorizedkey_added(self):
         # Given a user with a email.
         user = UserObject.get_user(self.USERNAME)
-        user.email = 'password_change@test.com'
+        user.email = 'myemail@test.com'
         user.set_password('new_password')
         user.add().commit()
         self.listener.queue_email.reset_mock()
@@ -220,10 +224,67 @@ class NotificationPluginTest(rdiffweb.test.WebCase):
             key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
             comment="test@mysshkey",
         )
+        user.commit()
 
         # Then a notification is sent to the user
         self.listener.queue_email.assert_called_once_with(
-            to='password_change@test.com',
+            to='myemail@test.com',
             subject='A new SSH Key has been added',
+            message=ANY,
+        )
+
+    def test_user_added(self):
+        # Given an empty database
+        self.listener.queue_email.reset_mock()
+        # When adding a new user to database
+        user = UserObject.add_user('newuser')
+        user.commit()
+        # Then event is raised
+        self.listener.queue_email.assert_not_called()
+
+    def test_user_deleted(self):
+        # Given a database with a new username
+        user = UserObject.add_user('newuser')
+        user.commit()
+        self.listener.queue_email.reset_mock()
+        # When deleting that user
+        user.delete()
+        user.commit()
+        # Then event is raised
+        self.listener.queue_email.assert_not_called()
+
+    def test_repo_added(self):
+        # Given a database with a user
+        user = UserObject.add_user('newuser')
+        user.email = 'myemail@test.com'
+        user.commit()
+        self.listener.queue_email.reset_mock()
+        # When adding new repositories
+        user.user_root = self.testcases
+        user.refresh_repos()
+        user.commit()
+        # Then a notification is sent to the user
+        self.listener.queue_email.assert_any_call(
+            to='myemail@test.com',
+            subject='New Repository detected',
+            message=ANY,
+        )
+
+    def test_repo_deleted(self):
+        # Given a database with a user with repo
+        user = UserObject.add_user('newuser')
+        user.email = 'myemail@test.com'
+        user.user_root = self.testcases
+        user.refresh_repos()
+        user.commit()
+        self.listener.queue_email.reset_mock()
+        # When deleting a repo new repositories
+        repo = RepoObject.get_repo('newuser/testcases', as_user=user)
+        repo.delete()
+        repo.commit()
+        # Then a notification is sent to the user
+        self.listener.queue_email.assert_called_once_with(
+            to='myemail@test.com',
+            subject='Repository deleted',
             message=ANY,
         )

@@ -46,7 +46,7 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         self.assertInBody("Show more")
         # Check download buttont
         self.assertInBody("Download")
-        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "?date=1415221507")
+        self.assertInBody("/restore/" + self.USERNAME + "/" + self.REPO + "/?date=1415221507")
 
     def test_history_with_path(self):
         self._history(self.USERNAME, 'testcases/Subdirectory')

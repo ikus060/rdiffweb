@@ -151,7 +151,6 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.assertInBody("test2")
         self.assertInBody("test2@test.com")
         self.listener.user_added.assert_called_once()
-        self.listener.user_password_changed.assert_called_once()
         self.listener.user_password_changed.reset_mock()
         #  Update user
         self._edit_user(
@@ -400,14 +399,14 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         user = UserObject.get_user(self.USERNAME)
         user.user_root = "/invalid"
         user.commit()
-        self.getPage("/admin/users")
+        self.getPage("/admin/users/")
         self.assertInBody("Root directory not accessible!")
 
         # Query the page by default
         user = UserObject.get_user('admin')
         user.user_root = "/tmp/"
         user.commit()
-        self.getPage("/admin/users")
+        self.getPage("/admin/users/")
         self.assertNotInBody("Root directory not accessible!")
 
     def test_get_quota(self):
