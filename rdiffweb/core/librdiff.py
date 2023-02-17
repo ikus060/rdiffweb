@@ -935,7 +935,7 @@ class RdiffRepo(object):
     def _entries(self):
         return sorted(os.listdir(self._data_path))
 
-    def expire(self):
+    def clear_cache(self):
         """
         Clear the cache to refresh metadata.
         """
@@ -1095,7 +1095,7 @@ class RdiffRepo(object):
             remove_older_than,
             self.full_path.decode(sys.getfilesystemencoding(), 'replace'),
         )
-        subprocess.check_output(
+        output = subprocess.check_output(
             [
                 b'rdiff-backup',
                 b'--force',
@@ -1103,7 +1103,8 @@ class RdiffRepo(object):
                 self.full_path,
             ]
         )
-        self.expire()
+        logger.debug(output)
+        self.clear_cache()
 
     def restore(self, path, restore_as_of, kind=None):
         """

@@ -127,6 +127,7 @@ class Scheduler(SimplePlugin):
             minute=minute,
             jobstore='scheduled',
             executor='scheduled',
+            misfire_grace_time=None,
         )
 
     def schedule_task(self, task, *args, **kwargs):
@@ -140,6 +141,7 @@ class Scheduler(SimplePlugin):
             args=args,
             kwargs=kwargs,
             next_run_time=datetime.now(),
+            misfire_grace_time=None,
         )
 
     def unschedule_job(self, job):

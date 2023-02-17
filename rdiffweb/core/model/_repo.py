@@ -166,9 +166,8 @@ class RepoObject(Base, RdiffRepo):
     @keepdays.expression
     def keepdays(cls):
         return case(
-            (cls._keepdays.is_(None), -1),
-            (cls._keepdays == '', -1),
-            else_=cls._keepdays.cast(Integer),
+            [(and_(cls._keepdays != None, cls._keepdays != ''), cls._keepdays.cast(Integer))],  # noqa
+            else_=-1,
         )
 
     @keepdays.setter

@@ -30,25 +30,19 @@ class RemoveOlder(SimplePlugin):
 
     stop.priority = 45
 
-    @property
-    def app(self):
-        return cherrypy.tree.apps['']
-
     def remove_older_job(self):
         # Create a generator to loop on repositories.
         # Loop on each repos.
-        for repo in RepoObject.query.all():
+        for repo in RepoObject.query.filter(RepoObject.keepdays > 0).all():
             try:
-                if repo.keepdays <= 0:
-                    return
                 # Check history date.
                 if not repo.last_backup_date:
                     _logger.info("no backup dates for [%r]", repo.full_path)
-                    return
+                    continue
                 d = librdiff.RdiffTime() - repo.last_backup_date
                 d = d.days + repo.keepdays
                 repo.remove_older(d)
-            except BaseException:
+            except Exception:
                 _logger.exception("fail to remove older for user [%r] repo [%r]", repo.owner, repo)
 
 

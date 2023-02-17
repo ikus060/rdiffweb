@@ -111,6 +111,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 ## 2.5.8 (2023-02-19)
 
 * Support Setuptools v66 for compatibility with Debian Bookworm
+* Fix execution of rdiffweb remove-older job to clean-up repository history #262
 
 ## 2.5.7 (2023-01-27)
 
