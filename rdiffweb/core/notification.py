@@ -37,9 +37,19 @@ class NotificationPlugin(SimplePlugin):
     Send email notification when a repository get too old (without a backup).
     """
 
+    env = None  # Jinja2 env
+
     execution_time = '23:00'
 
     send_changed = False
+
+    bcc = None
+
+    header_name = 'rdiffweb'
+
+    link_color = '#35979c'
+
+    navbar_color = '#383e45'
 
     def start(self):
         self.bus.log('Start Notification plugin')
@@ -71,39 +81,31 @@ class NotificationPlugin(SimplePlugin):
 
     stop.priority = 45
 
-    @property
-    def app(self):
-        return cherrypy.tree.apps['']
-
     def _queue_mail(self, userobj, subject, template, to=None, **kwargs):
         """
         Generic function to queue email.
         """
         to = userobj.email if to is None else to
-        if not to:
+        if not to and not self.bcc:
             logger.info("can't sent mail to user [%s] without an email", userobj.username)
             return
 
-        # Mimic the behavior of CSS style for email template.
-        cfg = self.app.cfg
-        param = {
-            'header_name': self.app.cfg.header_name,
-            'font_family': 'Open Sans',
-        }
-        if cfg.default_theme == 'default':
-            param.update({'link_color': '#35979c', 'navbar_color': '#383e45'})
-            for key in ['link_color', 'btn_bg_color', 'btn_fg_color', 'navbar_color', 'font_family']:
-                if getattr(cfg, key, None):
-                    param[key] = getattr(cfg, key, None)
-        elif cfg.default_theme == 'blue':
-            param.update({'link_color': '#153a58', 'navbar_color': '#153a58'})
-        elif cfg.default_theme == 'orange':
-            param.update({'link_color': '#dd4814', 'navbar_color': '#dd4814'})
+        # Also send email to catch-all email.
+        queue_mail_kwargs = {}
+        if self.bcc:
+            queue_mail_kwargs['bcc'] = self.bcc
 
+        # Add branding variable to template creation.
+        param = {
+            'header_name': self.header_name,
+            'font_family': 'Open Sans',
+            'link_color': self.link_color,
+            'navbar_color': self.navbar_color,
+        }
         # Compile the email body
-        body = self.app.templates.compile_template(template, user=userobj, **dict(param, **kwargs))
+        body = self.env.compile_template(template, user=userobj, **dict(param, **kwargs))
         # Queue the email.
-        self.bus.publish('queue_mail', to=to, subject=subject, message=body)
+        self.bus.publish('queue_mail', to=to, subject=subject, message=body, **queue_mail_kwargs)
 
     def access_token_added(self, userobj, name):
         username = userobj.username

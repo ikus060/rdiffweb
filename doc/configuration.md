@@ -196,6 +196,7 @@ When enabled, Rdiffweb will also send email notification for security reason whe
 | email-username | username used for authentication with the SMTP server. | example@gmail.com |
 | email-password | password used for authentication with the SMTP server. | CHANGEME |
 | email-send-changed-notification | True to send notification when sensitive information get change in user profile. Default: false | True |
+| email-catch-all | When defined, all notification email will be sent to this email address using Blind carbon copy (Bcc) |
 
 To configure the notification, you need a valid SMTP server. In this example, you are making use of a Gmail account to send emails.
 

@@ -118,6 +118,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 * Send notification for inactive backup based on statistics
 * Send notification using a new template following the web interface branding
 * Send notification to user when repository get added or removed
+* Send all notification to an optional "catch-all" email address configured using `--email-catch-all` option #258
 * Redistribute logos in PNG format for better compatibility
 * Disable error page logs for 4xx errors
 * Add username and IP address to logs only for HTTP Request
