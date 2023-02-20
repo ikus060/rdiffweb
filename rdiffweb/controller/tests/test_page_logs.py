@@ -37,6 +37,7 @@ class LogsPageTest(rdiffweb.test.WebCase):
 
     def test_logs(self):
         self._log(self.USERNAME, self.REPO)
+        self.assertStatus(200)
         # Check revisions
         self.assertInBody("Backup Log")
         self.assertInBody("Restore Log")
@@ -50,6 +51,10 @@ class LogsPageTest(rdiffweb.test.WebCase):
     def test_logs_with_date_invalid(self):
         self._log(self.USERNAME, self.REPO, date='invalid')
         self.assertStatus(400)
+
+    def test_logs_with_file_invalid(self):
+        self._log(self.USERNAME, self.REPO, file='invalid.log')
+        self.assertStatus(404)
 
     def test_logs_with_file_backup(self):
         self._log(self.USERNAME, self.REPO, file='backup.log')
