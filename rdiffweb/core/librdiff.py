@@ -1202,7 +1202,9 @@ class RdiffRepo(object):
             # If multiple current_mirror file exists and none of them are associated to a PID, this mean the last backup was interrupted.
             # Also, if the last backup date is undefined, this mean the first
             # initial backup was interrupted.
-            if len(self.current_mirror) > 1 or len(self.current_mirror) == 0:
+            if len(self.current_mirror) == 0:
+                return ('in_progress', _('Initial backup in progress.'))
+            elif len(self.current_mirror) > 1:
                 return ('interrupted', _('The last backup has been interrupted.'))
         except FileNotFoundError:
             self._entries = []
