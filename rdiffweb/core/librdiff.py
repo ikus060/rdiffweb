@@ -1089,22 +1089,29 @@ class RdiffRepo(object):
             return self._decode(unquote(os.path.basename(path)))
 
     def remove_older(self, remove_older_than):
+        """
+        Remove older history from repository.
+        """
         assert type(remove_older_than) is int, 'invalid remove_older_than, expect an integer: ' + remove_older_than
         logger.info(
             "execute rdiff-backup --force --remove-older-than=%sD %r",
             remove_older_than,
             self.full_path.decode(sys.getfilesystemencoding(), 'replace'),
         )
-        output = subprocess.check_output(
-            [
-                b'rdiff-backup',
-                b'--force',
-                b'--remove-older-than=' + str(remove_older_than).encode(encoding='latin1') + b'D',
-                self.full_path,
-            ]
-        )
-        logger.debug(output)
+        cmdline = [
+            find_rdiff_backup(),
+            b'--force',
+            b'--remove-older-than=' + str(remove_older_than).encode(encoding='latin1') + b'D',
+            self.full_path,
+        ]
+        process = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env={'LANG': LANG})
+        for line in process.stdout:
+            line = line.rstrip(b'\n').decode('utf-8', errors='replace')
+            logger.info('remove-older: %s' % line)
+        retcode = process.wait()
         self.clear_cache()
+        if retcode:
+            raise CalledProcessError(retcode, cmdline)
 
     def restore(self, path, restore_as_of, kind=None):
         """
