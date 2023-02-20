@@ -490,7 +490,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
             repo.add().commit()
         userobj.user_root = '/'
         userobj.add().commit()
-        self.assertEqual(['interrupted', 'ok'], sorted([r.status[0] for r in userobj.repo_objs]))
+        self.assertEqual(['in_progress', 'ok'], sorted([r.status[0] for r in userobj.repo_objs]))
         # When updating it's userroot directory to an empty value
         userobj.user_root = ''
         userobj.add().commit()
