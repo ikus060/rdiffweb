@@ -113,6 +113,9 @@ class UrlForTest(WebCase):
         user = UserObject.get_user('admin')
         return RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
 
+    def test_url_for_index(self):
+        self.assertEqual(cherrypy.server.base() + '/admin/users/', url_for('admin', 'users', ''))
+
     def test_url_for_absolute_path(self):
         self.assertEqual(cherrypy.server.base() + '/static/js/jquery.min.js', url_for('/static/js/jquery.min.js'))
 
@@ -151,11 +154,11 @@ class UrlForTest(WebCase):
             url_for('restore', self.repo_obj, date=RdiffTime(1414967021)),
         )
         self.assertEqual(
-            cherrypy.server.base() + '/restore/admin/testcases?date=1414967021',
+            cherrypy.server.base() + '/restore/admin/testcases/?date=1414967021',
             url_for('restore', self.repo_obj, b'', date=RdiffTime(1414967021)),
         )
         self.assertEqual(
-            cherrypy.server.base() + '/restore/admin/testcases?date=1414967021&kind=tar.gz',
+            cherrypy.server.base() + '/restore/admin/testcases/?date=1414967021&kind=tar.gz',
             url_for('restore', self.repo_obj, b'', date=RdiffTime(1414967021), kind='tar.gz'),
         )
         self.assertEqual(
@@ -175,11 +178,8 @@ class UrlForTest(WebCase):
 
     def test_url_for_status(self):
         self.assertEqual(
-            cherrypy.server.base() + '/status?date=1414967021', url_for('status', date=RdiffTime(1414967021))
-        )
-        self.assertEqual(
-            cherrypy.server.base() + '/status/admin/testcases?date=1414967021',
-            url_for('status', self.repo_obj, date=RdiffTime(1414967021)),
+            cherrypy.server.base() + '/status/admin/?date=1414967021',
+            url_for('status', 'admin', '/', date=RdiffTime(1414967021)),
         )
 
     def test_url_for_with_none(self):

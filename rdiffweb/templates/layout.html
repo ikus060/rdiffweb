@@ -39,12 +39,14 @@
       <script src="{{ url_for('/static/js/rdiffweb.js') }}"></script>
       <link href="{{ url_for('/default.css') }}" rel="stylesheet" type="text/css"/>
     {% endblock head %}
+    {% block script %}
+    {% endblock script %}
   </head>
   <body class="d-flex flex-column">
     <!-- .navbar -->
     {% if username %}
       <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container">
+        <div class="container-fluid">
           <a class="navbar-brand" href="{{ url_for('/') }}">
             <img alt="{{ header_name }}"
                  class="mr-1"
@@ -66,11 +68,11 @@
                 <a class="nav-link" href="{{ url_for('/') }}">{% trans %}Repositories{% endtrans %}</a>
               </li>
               <li class="nav-item{% if active_page=='status' %} active{% endif %}">
-                <a class="nav-link" href="{{ url_for('status') }}">{% trans %}Status{% endtrans %}</a>
+                <a class="nav-link" href="{{ url_for('status', username, '/') }}">{% trans %}Dashboard{% endtrans %}</a>
               </li>
               {% if is_admin %}
                 <li class="nav-item{% if active_page=='admin' %} active{% endif %}">
-                  <a class="nav-link" href="{{ url_for('admin') }}">{% trans %}Admin area{% endtrans %}</a>
+                  <a class="nav-link" href="{{ url_for('admin','') }}">{% trans %}Admin area{% endtrans %}</a>
                 </li>
               {% endif %}
             </ul>
@@ -86,7 +88,8 @@
                   {{ username }}
                 </a>
                 <form action="{{ url_for('logout') }}" method="post">
-                  <div aria-labelledby="navbarDropdown" class="dropdown-menu">
+                  <div aria-labelledby="navbarDropdown"
+                       class="dropdown-menu dropdown-menu-right">
                     <h6 class="dropdown-header">{% trans %}Signed in as{% endtrans %} {{ username }}</h6>
                     <a class="dropdown-item" href="{{ url_for('prefs', 'general') }}">{% trans %}Edit profile{% endtrans %}</a>
                     <a class="dropdown-item" href="{{ url_for('prefs', 'notification') }}">{% trans %}Notifications{% endtrans %}</a>

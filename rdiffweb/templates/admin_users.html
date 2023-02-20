@@ -23,7 +23,7 @@
         <th scope="col">{% trans %}Email{% endtrans %}</th>
         <th scope="col">{% trans %}User Role{% endtrans %}</th>
         <th scope="col">{% trans %}Root directory{% endtrans %}</th>
-        <th scope="col" data-sortable="false" class="text-right">{% trans %}Actions{% endtrans %}</th>
+        <th scope="col" data-sortable="false" class="text-center">{% trans %}Actions{% endtrans %}</th>
       </tr>
     </thead>
     <tbody>
@@ -59,12 +59,17 @@
             {% endif %}
           </td>
           <td class="text-right">
+            {# Dashboard #}
+            <a class="btn btn-secondary"
+               href="{{ url_for('status', user.username, '/') }}">{% trans %}Overview{% endtrans %}</a>
+            {# Edit button #}
             <button type="button"
                     class="btn btn-secondary"
                     data-toggle="modal"
                     data-target="#edit-user-{{ user.username }}-modal">
               {% trans %}Edit{% endtrans %}
             </button>
+            {# Delete button #}
             {{ button_confirm(label=_('Delete'), target="#delete-user-modal", action="delete", username=user.username) }}
           </td>
         </tr>

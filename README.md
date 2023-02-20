@@ -108,6 +108,23 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
+# Next Release - 2.6.0
+
+* Review the application layout to use Fluid container to use all the space available on the screen
+* Rename status view to Dashboard
+* Display more useful data in Dashboard view: Backups per days, Oldest backup, Storage Usage, Average duration, Least Active, Most active
+* Fix deletion confirmation of repositories within subdirectory #250
+* Properly clean-up plain text email from HTML tags
+* Send notification for inactive backup based on statistics
+* Send notification using a new template following the web interface branding
+* Send notification to user when repository get added or removed
+* Send all notification to an optional "catch-all" email address configured using `--email-catch-all` option #258
+* Redistribute logos in PNG format for better compatibility
+* Disable error page logs for 4xx errors
+* Add username and IP address to logs only for HTTP Request
+* Fix LDAP integration to support non-list attributes - credit to [Shane Robinson](https://gitlab.com/shanesq)
+* Improve System Logs view to identify "User Activity", "Threats" and "User Login"
+
 ## 2.5.8 (2023-02-19)
 
 * Support Setuptools v66 for compatibility with Debian Bookworm
@@ -120,7 +137,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 ## 2.5.6 (2023-01-11)
 
 * Fixed display of Hamburger menu on mobiles (minarca#192)
-* Change working for interupted backup
+* Change wording for interupted backup
 
 ## 2.5.5 (2022-12-23)
 

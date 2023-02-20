@@ -3,7 +3,9 @@
   <h1>
     <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
   </h1>
-  <p>{% trans %}You recently changed the password associated with your {{ header_name }} account.{% endtrans %}</p>
+  <p>
+    <a>{% trans %}You receive this e-mail to inform you that your deposit named {{ repo_path }} has been deleted from your account.{% endtrans %}</a>
+  </p>
   <p>
     {% trans %}If you did not make this change and believe your account has been compromised, please contact your administrator.{% endtrans %}
   </p>

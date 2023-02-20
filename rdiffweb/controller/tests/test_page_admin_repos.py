@@ -32,7 +32,7 @@ class AdminReposTest(rdiffweb.test.WebCase):
             .all()
         )
         # When querying the repository page
-        self.getPage("/admin/repos")
+        self.getPage("/admin/repos/")
         self.assertStatus(200)
         # Then the page contains our repos.
         for repo in repos:

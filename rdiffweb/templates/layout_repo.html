@@ -1,20 +1,20 @@
 {% extends 'layout.html' %}
 {% from 'components/nav.html' import nav_tabs %}
 {% block body %}
-  <div class="container">
+  <div class="container-fluid">
     <!-- Title -->
     <h2>{{ repo.display_name }}</h2>
     <!-- Repo Nav -->
     {% set nav_items = [
     (_('Files'), url_for('browse', repo), active_repo_page=='browse', 'fa fa-files-o'),
-    (_('History'), url_for('history', repo, path), active_repo_page=='history', 'fa fa-history'),
+    (_('History'), url_for('history', repo, path|d(None)), active_repo_page=='history', 'fa fa-history'),
     (_('Settings'), url_for('settings', repo), active_repo_page=='settings', 'fa fa-sliders'),
     (_('Graphs'), url_for('graphs', 'activities', repo), active_repo_page=='graphs', 'fa fa-area-chart'),
     (_('Logs'), url_for('logs', repo), active_repo_page=='logs', 'fa fa-file-text-o')
     ] -%}
     {{ nav_tabs(nav_items) }}
   </div>
-  <div class="container" id="{{ active_repo_page }}">
+  <div class="container-fluid" id="{{ active_repo_page }}">
     {% if repo.status[0] == 'failed' %}
       <div class="alert alert-warning alert-dismissible" role="alert">
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">

@@ -26,13 +26,13 @@ Created on Oct. 21, 2019
 def is_admin():
     # Validate the permissions.
     if not cherrypy.serving.request.currentuser or not cherrypy.serving.request.currentuser.is_admin:
-        raise cherrypy.HTTPError("403 Forbidden")
+        raise cherrypy.HTTPError(404)
 
 
 def is_maintainer():
     # Validate the permissions.
     if not cherrypy.serving.request.currentuser or not cherrypy.serving.request.currentuser.is_maintainer:
-        raise cherrypy.HTTPError("403 Forbidden")
+        raise cherrypy.HTTPError(404)
 
 
 # Make sure it's running after authentication (priority = 72)

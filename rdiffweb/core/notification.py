@@ -19,17 +19,17 @@ Plugin used to send email to users when their repository is getting too old.
 User can control the notification period.
 """
 
-import datetime
 import logging
 
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
 
-from rdiffweb.core import librdiff
-from rdiffweb.core.model import UserObject
+from rdiffweb.core.model import RepoObject, UserObject
 from rdiffweb.tools.i18n import ugettext as _
 
 logger = logging.getLogger(__name__)
+activity = logging.getLogger('activity')
+auth = logging.getLogger('auth')
 
 
 class NotificationPlugin(SimplePlugin):
@@ -37,9 +37,19 @@ class NotificationPlugin(SimplePlugin):
     Send email notification when a repository get too old (without a backup).
     """
 
+    env = None  # Jinja2 env
+
     execution_time = '23:00'
 
     send_changed = False
+
+    bcc = None
+
+    header_name = 'rdiffweb'
+
+    link_color = '#35979c'
+
+    navbar_color = '#383e45'
 
     def start(self):
         self.bus.log('Start Notification plugin')
@@ -48,6 +58,11 @@ class NotificationPlugin(SimplePlugin):
         self.bus.subscribe('authorizedkey_added', self.authorizedkey_added)
         self.bus.subscribe('user_attr_changed', self.user_attr_changed)
         self.bus.subscribe('user_password_changed', self.user_password_changed)
+        self.bus.subscribe('repo_added', self.repo_added)
+        self.bus.subscribe('repo_deleted', self.repo_deleted)
+        self.bus.subscribe('user_added', self.user_added)
+        self.bus.subscribe('user_deleted', self.user_deleted)
+        self.bus.subscribe('user_login', self.user_login)
 
     start.priority = 55
 
@@ -58,119 +73,156 @@ class NotificationPlugin(SimplePlugin):
         self.bus.unsubscribe('authorizedkey_added', self.authorizedkey_added)
         self.bus.unsubscribe('user_attr_changed', self.user_attr_changed)
         self.bus.unsubscribe('user_password_changed', self.user_password_changed)
+        self.bus.unsubscribe('repo_added', self.repo_added)
+        self.bus.unsubscribe('repo_deleted', self.repo_deleted)
+        self.bus.unsubscribe('user_added', self.user_added)
+        self.bus.unsubscribe('user_deleted', self.user_deleted)
+        self.bus.unsubscribe('user_login', self.user_login)
 
     stop.priority = 45
 
-    @property
-    def app(self):
-        return cherrypy.tree.apps['']
+    def _queue_mail(self, userobj, subject, template, to=None, **kwargs):
+        """
+        Generic function to queue email.
+        """
+        to = userobj.email if to is None else to
+        if not to and not self.bcc:
+            logger.info("can't sent mail to user [%s] without an email", userobj.username)
+            return
+
+        # Also send email to catch-all email.
+        queue_mail_kwargs = {}
+        if self.bcc:
+            queue_mail_kwargs['bcc'] = self.bcc
+
+        # Add branding variable to template creation.
+        param = {
+            'header_name': self.header_name,
+            'font_family': 'Open Sans',
+            'link_color': self.link_color,
+            'navbar_color': self.navbar_color,
+        }
+        # Compile the email body
+        body = self.env.compile_template(template, user=userobj, **dict(param, **kwargs))
+        # Queue the email.
+        self.bus.publish('queue_mail', to=to, subject=subject, message=body, **queue_mail_kwargs)
 
     def access_token_added(self, userobj, name):
-        if not self.send_changed:
-            return
-
-        if not userobj.email:
-            logger.info("can't sent mail to user [%s] without an email", userobj.username)
-            return
-
-        # Send a mail notification
-        body = self.app.templates.compile_template(
-            "email_access_token_added.html", **{"header_name": self.app.cfg.header_name, 'user': userobj, 'name': name}
-        )
-        self.bus.publish('queue_mail', to=userobj.email, subject=_("A new access token has been created"), message=body)
+        username = userobj.username
+        activity.info(f"A new access token {name} for the user {username} has been added")
+        if self.send_changed:
+            self._queue_mail(
+                userobj,
+                subject=_("A new access token has been created"),
+                template="email_access_token_added.html",
+                name=name,
+            )
 
     def authorizedkey_added(self, userobj, fingerprint, comment, **kwargs):
-        if not self.send_changed:
-            return
-
-        if not userobj.email:
-            logger.info("can't sent mail to user [%s] without an email", userobj.username)
-            return
-
-        # If the email attributes was changed, send a mail notification.
-        body = self.app.templates.compile_template(
-            "email_authorizedkey_added.html",
-            **{"header_name": self.app.cfg.header_name, 'user': userobj, 'comment': comment, 'fingerprint': fingerprint}
-        )
-        self.bus.publish('queue_mail', to=userobj.email, subject=_("A new SSH Key has been added"), message=body)
+        username = userobj.username
+        activity.info(f"A new SSH key {fingerprint} has been added for the user {username}")
+        if self.send_changed:
+            self._queue_mail(
+                userobj,
+                subject=_("A new SSH Key has been added"),
+                template="email_authorizedkey_added.html",
+                comment=comment,
+                fingerprint=fingerprint,
+            )
 
     def user_attr_changed(self, userobj, attrs={}):
-        if not self.send_changed:
-            return
-
+        username = userobj.username
         # Leave if the mail was not changed.
         if 'email' in attrs:
-            old_email = attrs['email'][0]
-            if not old_email:
-                logger.info("can't sent mail to user [%s] without an email", userobj.username)
-                return
+            activity.info(f"Email address of the user {username} has been changed")
             # If the email attributes was changed, send a mail notification.
-            subject = _("Email address changed")
-            body = self.app.templates.compile_template(
-                "email_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
-            )
-            self.bus.publish('queue_mail', to=old_email, subject=str(subject), message=body)
+            if self.send_changed:
+                old_email = attrs['email'][0]
+                self._queue_mail(
+                    userobj,
+                    to=old_email,
+                    subject=_("Email address changed"),
+                    template="email_changed.html",
+                )
 
         if 'mfa' in attrs:
-            if not userobj.email:
-                logger.info("can't sent mail to user [%s] without an email", userobj.username)
-                return
-            subject = (
-                _("Two-Factor Authentication turned off")
-                if userobj.mfa == UserObject.DISABLED_MFA
-                else _("Two-Factor Authentication turned on")
-            )
-            body = self.app.templates.compile_template(
-                "email_mfa.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
-            )
-            self.bus.publish('queue_mail', to=userobj.email, subject=str(subject), message=body)
+            state = 'activated' if userobj.mfa == UserObject.DISABLED_MFA else 'disabled'
+            activity.info(f"Two-factor authentication has been {state} for the user {username}")
+            if self.send_changed:
+                subject = (
+                    _("Two-Factor Authentication turned off")
+                    if userobj.mfa == UserObject.DISABLED_MFA
+                    else _("Two-Factor Authentication turned on")
+                )
+                self._queue_mail(
+                    userobj,
+                    subject=subject,
+                    template="email_mfa.html",
+                )
 
     def user_password_changed(self, userobj):
-        if not self.send_changed:
-            return
+        username = userobj.username
+        activity.info(f"User's password {username} changed")
+        if self.send_changed:
+            self._queue_mail(
+                userobj,
+                subject=_("Password changed"),
+                template="email_password_changed.html",
+            )
 
-        if not userobj.email:
-            logger.info("can't sent mail to user [%s] without an email", userobj.username)
-            return
+    def repo_added(self, userobj, repo_path):
+        username = userobj.username
+        activity.info(f"New repository named {repo_path} has been added for the user {username}")
+        if self.send_changed:
+            self._queue_mail(
+                userobj,
+                subject=_("New Repository detected"),
+                template="email_repo_added.html",
+                repo_path=repo_path,
+            )
 
-        # If the email attributes was changed, send a mail notification.
-        body = self.app.templates.compile_template(
-            "email_password_changed.html", **{"header_name": self.app.cfg.header_name, 'user': userobj}
-        )
-        self.bus.publish('queue_mail', to=userobj.email, subject=_("Password changed"), message=body)
+    def repo_deleted(self, userobj, repo_path):
+        username = userobj.username
+        activity.info(f"Repository {repo_path} of the user {username} has been deleted")
+        if self.send_changed:
+            self._queue_mail(
+                userobj,
+                subject=_("Repository deleted"),
+                template="email_repo_deleted.html",
+                repo_path=repo_path,
+            )
+
+    def user_added(self, userobj):
+        username = userobj.username
+        activity.info(f"New user {username} has been added")
+
+    def user_deleted(self, username):
+        activity.info(f"User {username} has been deleted")
+
+    def user_login(self, userobj):
+        username = userobj.username
+        auth.info(f"User {username} login to web application")
 
     def notification_job(self):
         """
         Loop trough all the user repository and send notifications.
         """
 
-        now = librdiff.RdiffTime()
-
-        def _user_repos():
-            """Return a generator trought user repos to be notified."""
-            for user in UserObject.query.all():
-                # Check if user has email.
-                if not user.email:
-                    continue
-                # Identify old repo for current user.
-                old_repos = []
-                for repo in user.repo_objs:
-                    # Check if repo has age configured (in days)
-                    maxage = repo.maxage
-                    if not maxage or maxage <= 0:
-                        continue
-                    # Check repo age.
-                    if repo.last_backup_date is None or repo.last_backup_date < (now - datetime.timedelta(days=maxage)):
-                        old_repos.append(repo)
-                # Return an item only if user had old repo
-                if old_repos:
-                    yield user, old_repos
-
-        # For each candidate, send mail.
-        for user, repos in _user_repos():
-            parms = {'user': user, 'repos': repos}
-            body = self.app.templates.compile_template("email_notification.html", **parms)
-            cherrypy.engine.publish('queue_mail', to=user.email, subject=_("Notification"), message=body)
+        # For Each user with an email.
+        # Identify the repository without activities using the backup statistics.
+        for userobj in UserObject.query.filter(UserObject.email != ''):
+            old_repos = [
+                repo
+                for repo in RepoObject.query.filter(RepoObject.user == userobj, RepoObject.maxage > 0)
+                if not repo.check_activity()
+            ]
+            if old_repos:
+                self._queue_mail(
+                    userobj,
+                    subject=_("Notification"),
+                    template="email_notification.html",
+                    repos=old_repos,
+                )
 
 
 cherrypy.notification = NotificationPlugin(cherrypy.engine)

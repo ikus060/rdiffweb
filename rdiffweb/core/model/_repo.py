@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import codecs
+import datetime
 import encodings
 import logging
 import os
@@ -27,10 +28,11 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, validates
 
 import rdiffweb.tools.db  # noqa
-from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo
+from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo, RdiffTime
 from rdiffweb.tools.i18n import ugettext as _
 
 Base = cherrypy.tools.db.get_base()
+Session = cherrypy.tools.db.get_session()
 
 logger = logging.getLogger(__name__)
 
@@ -179,8 +181,11 @@ class RepoObject(Base, RdiffRepo):
         logger.info("deleting repository %s", self)
         # Remove data from disk
         RdiffRepo.delete(self, path=path)
-        # Remove entry from database after deleting files.
-        # Otherwise, refresh will add this repo back.
+
+    def delete_repo(self):
+        # Delete repo on disk
+        RdiffRepo.delete_repo(self)
+        # Delete repo from database
         return super().delete()
 
     @validates('encoding')
@@ -203,9 +208,50 @@ class RepoObject(Base, RdiffRepo):
     def __str__(self):
         return "RepoObject[%s, %s]" % (self.userid, self.repopath)
 
+    def check_activity(self):
+        """
+        Check if the repository is inative according to maxage.
+        Retunr None if maxage is undefied.
+        Return True if repository is active.
+        """
+        if self.maxage <= 0:
+            return None
+        # Loop on session statistics to check backup activity.
+        from_date = RdiffTime() - datetime.timedelta(days=self.maxage)
+        for stats in self.session_statistics[from_date:]:
+            if stats.newfiles > 0 or stats.deletedfiles > 0 or stats.changedfiles > 0:
+                return True
+        return False
+
 
 @event.listens_for(RepoObject.encoding, "set")
 def encoding_set(target, value, oldvalue, initiator):
     codec = encodings.search_function(value)
     if codec:
         target._encoding = codec
+
+
+@event.listens_for(Session, 'before_flush')
+def user_before_flush(session, flush_context, instances):
+    """
+    Publish event when repo is added
+    """
+    from ._user import UserObject
+
+    for repoobj in session.new:
+        if isinstance(repoobj, RepoObject):
+            userobj = repoobj.user or UserObject.query.filter(UserObject.userid == repoobj.userid).first()
+            cherrypy.engine.publish('repo_added', userobj, repoobj.repopath)
+
+
+@event.listens_for(Session, 'after_flush')
+def user_after_flush(session, flush_context):
+    """
+    Publish event when repo is deleted.
+    """
+    from ._user import UserObject
+
+    for repoobj in session.deleted:
+        if isinstance(repoobj, RepoObject):
+            userobj = repoobj.user or UserObject.query.filter(UserObject.userid == repoobj.userid).first()
+            cherrypy.engine.publish('repo_deleted', userobj, repoobj.repopath)

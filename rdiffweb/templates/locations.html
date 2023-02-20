@@ -19,46 +19,12 @@
             <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
           </span>
         {% endif %}
-        {% if repo.last_backup_date %}
-          {% trans %}Updated {% endtrans %}
-          <time datetime="{{ repo.last_backup_date }}">{{ repo.last_backup_date | lastupdated }}</time>
-        {% endif %}
       </span>
     </a>
   {% endmacro %}
-  {# Repo Tree #}
-  {% macro repo_tree(repos) -%}
-    {% if repos|length == 0 %}
-      {% call empty('fa fa-archive', 'No repositories') %}
-        <p>
-          {% trans %}You don't have any repositories in your user directory. You may need to refresh the page if you just made a new backup.{% endtrans %}
-        </p>
-      {% endcall %}
-    {% else %}
-      <div class="list-group" itemscope itemtype="http://schema.org/ItemList">
-        {% for name, data in create_repo_tree(repos).items() recursive %}
-          {% if data.items %}
-            {# Data is a list of children #}
-            <div class="list-group-item">
-              <div class="list-group-item-heading mb-2">
-                {% set is_desktop = data.keys()[0]|length == 1 %}
-                <i class="{% if is_desktop %}fa fa-laptop{% else %}fa fa-archive{% endif %}"
-                   aria-hidden="true"></i>
-                {{ name }}
-              </div>
-              <div class="list-group" id="{{ outer_name }}{{ name }}">{{ loop(data.items()) }}</div>
-            </div>
-          {% else %}
-            {# Data is a repo #}
-            {{ repo_list_item(data) }}
-          {% endif %}
-        {% endfor %}
-      </div>
-    {% endif %}
-  {%- endmacro %}
-  <div class="container" id="locations">
-    <h2>{% trans %}Repositories{% endtrans %} ({{ repos|length }})</h2>
-    <!-- disk usage/quota -->
+  <div class="container-fluid" id="locations">
+    <h2 class="mb-2">{% trans %}Repositories{% endtrans %}</h2>
+    {# disk usage/quota #}
     {% if disk_usage and disk_quota %}
       <div class="card mb-4 bg-light">
         <div class="card-body">
@@ -66,7 +32,7 @@
           {% set used_str = disk_usage | filesize %}
           {% set size_str = disk_quota | filesize %}
           {% set avail_str = (disk_quota - disk_usage) | filesize %}
-          <strong>{% trans %}Usage{% endtrans %}</strong>
+          <strong>{% trans %}Storage Usage: {% endtrans %}</strong>
           {{ used_str }} {% trans %}used{% endtrans %} | {{ size_str }} {% trans %}total{% endtrans %} | {{ avail_str }} {% trans %}free{% endtrans %}
           <div class="progress">
             <div class="progress-bar {% if used_pct > 90 %}progress-bar bg-warning{% else %}progress-bar bg-success{% endif %}"
@@ -80,6 +46,61 @@
         </div>
       </div>
     {% endif %}
-    {{ repo_tree(repos) }}
+    {# Repositories #}
+    <div class="row">
+      {% if repos|length == 0 %}
+        <div class="col-md-12">
+          {% call empty('fa fa-archive', 'No repositories') %}
+            <p>
+              {% trans %}You don't have any repositories in your user directory. You may need to refresh the page if you just made a new backup.{% endtrans %}
+            </p>
+          {% endcall %}
+        </div>
+      {% else %}
+        {% for repo in repos|sort(attribute='display_name') %}
+          <div class="col-md-6 col-lg-4 col-xl-3 mt-2 mb-4">
+            <div class="card {% if repo.status[0] != 'ok' %}border-warning{% endif %} h-100">
+              <div class="card-header text-center display-1">
+                <a href="{{ url_for('browse', repo) }}"
+                   class="{% if repo.status[0] != 'ok' %}text-warning{% endif %}">
+                  <i class="fa fa-desktop" aria-hidden="true"></i>
+                </a>
+              </div>
+              <div class="card-body">
+                {# Format the name to highligth the significant repository name #}
+                {% set name = repo.display_name.split('/')[-1] %}
+                {% if name|length == 1 %}
+                  {% set name = repo.display_name.split('/')[-2] %}
+                  {% set prefix = '/'.join(repo.display_name.split('/')[0:-2]) %}
+                  {% set suffix = repo.display_name.split('/')[-1] %}
+                {% else %}
+                  {% set prefix = '/'.join(repo.display_name.split('/')[0:-1]) %}
+                  {% set suffix = '' %}
+                {% endif %}
+                <h5 class="card-title">
+                  <a href="{{ url_for('browse', repo) }}"
+                     class="{% if repo.status[0] != 'ok' %}text-warning{% endif %}">
+                    {% if prefix %}<small><small>{{ prefix }}/</small></small>{% endif %}
+                    {{ name }}
+                    {% if suffix %}<small><small>/{{ suffix }}</small></small>{% endif %}
+                  </a>
+                </h5>
+                {# Last backup date #}
+                <h6 class="card-subtitle text-muted small">
+                  {% if repo.status[0] != 'ok' %}
+                    {{ repo.status[1] }}
+                  {% elif repo.last_backup_date %}
+                    {% trans %}Last backup {% endtrans %}
+                    <time datetime="{{ repo.last_backup_date }}">{{ repo.last_backup_date | lastupdated }}</time>
+                  {% else %}
+                    {% trans %}Initial backup not completed.{% endtrans %}
+                  {% endif %}
+                </h6>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
   </div>
 {% endblock body %}

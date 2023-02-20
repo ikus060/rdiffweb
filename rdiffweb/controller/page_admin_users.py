@@ -228,7 +228,7 @@ class AdminUsersPage(Controller):
                 flash(e, level='error')
 
     @cherrypy.expose
-    def default(self, username=None, action=u"", **kwargs):
+    def index(self, username=None, action=u"", **kwargs):
 
         # If we're just showing the initial page, just do that
         if action == "add":

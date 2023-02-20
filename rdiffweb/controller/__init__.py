@@ -35,10 +35,15 @@ def validate(value, message=None):
         raise cherrypy.HTTPError(400, message)
 
 
-def validate_int(value, message=None):
+def validate_int(value, message=None, min=None, max=None):
     """Raise HTTP Error if the value is not an integer"""
     try:
-        return int(value)
+        value = int(value)
+        if min and value < min:
+            raise cherrypy.HTTPError(400, message)
+        if max and value > max:
+            raise cherrypy.HTTPError(400, message)
+        return value
     except ValueError:
         raise cherrypy.HTTPError(400, message)
 

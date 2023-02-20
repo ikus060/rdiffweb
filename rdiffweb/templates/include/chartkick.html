@@ -16,7 +16,11 @@
   </div>
   <script>
     //<![CDATA[
-    new Chartkick.{{ name }}(document.getElementById("chart-{{ns.chart_id}}"), {{ data|tojson }}, {{options|d({})|tojson}} );
+    new Chartkick.{{ name }}(
+      document.getElementById("chart-{{ns.chart_id}}"),
+      {% if data is string %}"{{data|safe}}"{% else %}{{ data|tojson }}{% endif %},
+      {{options|d({})|tojson}}
+    );
     //]]>
   </script>
 {% endmacro %}
@@ -25,4 +29,10 @@
 {% endmacro %}
 {% macro bar_chart(data, height="300px") %}
   {{ chartkick('BarChart', data, height, kwargs)}}
+{% endmacro %}
+{% macro column_chart(data, height="300px") %}
+  {{ chartkick('ColumnChart', data, height, kwargs)}}
+{% endmacro %}
+{% macro pie_chart(data, height="300px") %}
+  {{ chartkick('PieChart', data, height, kwargs)}}
 {% endmacro %}

@@ -112,9 +112,10 @@ def get_parser():
     parser.add_argument(
         '--default-theme',
         '--defaulttheme',
-        help='define the default theme. Either: default, blue, orange or custom. Define a default set of colors and font for the web interface. Also read more about link-color, navbar-cloor and font-family.',
+        help='define the default theme. Either: default, blue, orange or custom. Define a default set of colors and font for the web interface. Also read more about link-color, navbar-color and font-family.',
         choices=['default', 'blue', 'orange', 'custom'],
         default='default',
+        action=ThemeAction,
     )
 
     parser.add_argument(
@@ -177,6 +178,13 @@ def get_parser():
     )
 
     parser.add_argument(
+        '--email-catch-all',
+        metavar='EMAIL',
+        help='When defined, all notification email will be sent to this email address using Blind carbon copy (Bcc)',
+        default=None,
+    )
+
+    parser.add_argument(
         '--brand-favicon',
         '--favicon',
         dest='favicon',
@@ -227,6 +235,7 @@ def get_parser():
         type=css_color,
         dest='link_color',
         help='define a CSS color to be used for link. e.g.: ff0000',
+        default='#35979c',
     )
 
     parser.add_argument(
@@ -259,6 +268,7 @@ def get_parser():
         type=css_color,
         dest='navbar_color',
         help='define a CSS color to be used for navigation bar background e.g.: 00ff00',
+        default='#383e45',
     )
 
     parser.add_argument(
@@ -267,6 +277,7 @@ def get_parser():
         type=css_font,
         dest='font_family',
         help='define a CSS font to be used as main font. e.g.: Roboto',
+        default='Open Sans',
     )
 
     parser.add_argument(
@@ -459,6 +470,12 @@ def get_parser():
     )
 
     parser.add(
+        '--external-url',
+        metavar='URL',
+        help='URL that should be used to reach this service. You can use the IP of your server, but a Fully Qualified Domain Name (FQDN) is preferred. This URL is only used to generate URL for Email Notification.',
+    )
+
+    parser.add(
         '--rate-limit-dir',
         '--session-dir',
         '--sessiondir',
@@ -583,6 +600,27 @@ class LocaleAction(argparse.Action):
         items = getattr(namespace, self.dest) or {}
         items[locale] = value
         setattr(namespace, self.dest, items)
+
+
+class ThemeAction(argparse.Action):
+    """
+    Custom action used to define the branding using the "theme".
+    """
+
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        super(ThemeAction, self).__init__(option_strings, dest, **kwargs)
+
+    def __call__(self, parser, namespace, theme_value, option_string=None):
+        param = {}
+        if theme_value == 'default':
+            param = {'link_color': '#35979c', 'navbar_color': '#383e45'}
+        elif theme_value == 'blue':
+            param = {'link_color': '#153a58', 'navbar_color': '#153a58'}
+        elif theme_value == 'orange':
+            param = {'link_color': '#dd4814', 'navbar_color': '#dd4814'}
+        # Store theme values in namespace.
+        for k, v in param.items():
+            setattr(namespace, k, v)
 
 
 class ConfigFileParser(object):

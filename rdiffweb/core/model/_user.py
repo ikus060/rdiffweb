@@ -39,6 +39,7 @@ from ._token import Token
 logger = logging.getLogger(__name__)
 
 Base = cherrypy.tools.db.get_base()
+Session = cherrypy.tools.db.get_session()
 
 SEP = b'/'
 
@@ -418,39 +419,37 @@ class UserObject(Base):
 user_username_index = Index('user_username_index', func.lower(UserObject.username), unique=True)
 
 
-@event.listens_for(UserObject.hash_password, "set")
-def hash_password_set(target, value, oldvalue, initiator):
-    if value and value != oldvalue:
-        cherrypy.engine.publish('user_password_changed', target)
-
-
-@event.listens_for(UserObject, 'before_insert')
-def user_before_insert(mapper, connection, target):
+@event.listens_for(Session, 'before_flush')
+def user_before_flush(session, flush_context, instances):
     """
     Publish event when user is added
     """
-    cherrypy.engine.publish('user_added', target)
+    for userobj in session.new:
+        if isinstance(userobj, UserObject):
+            cherrypy.engine.publish('user_added', userobj)
+    for userobj in session.dirty:
+        if isinstance(userobj, UserObject):
+            changes = {}
+            state = inspect(userobj)
+            for attr in state.attrs:
+                if attr.key in ['user_root', 'email', 'role', 'mfa', 'hash_password']:
+                    hist = attr.load_history()
+                    if hist.has_changes():
+                        changes[attr.key] = (
+                            hist.deleted[0] if len(hist.deleted) >= 1 else None,
+                            hist.added[0] if len(hist.added) >= 1 else None,
+                        )
+            if changes.pop('hash_password', False):
+                cherrypy.engine.publish('user_password_changed', userobj)
+            if changes:
+                cherrypy.engine.publish('user_attr_changed', userobj, changes)
 
 
-@event.listens_for(UserObject, 'after_delete')
-def user_after_delete(mapper, connection, target):
+@event.listens_for(Session, 'after_flush')
+def user_after_flush(session, flush_context):
     """
     Publish event when user is deleted.
     """
-    cherrypy.engine.publish('user_deleted', target.username)
-
-
-@event.listens_for(UserObject, 'after_update')
-def user_attr_changed(mapper, connection, target):
-    changes = {}
-    state = inspect(target)
-    for attr in state.attrs:
-        if attr.key in ['user_root', 'email', 'role', 'mfa']:
-            hist = attr.load_history()
-            if hist.has_changes():
-                changes[attr.key] = (
-                    hist.deleted[0] if len(hist.deleted) >= 1 else None,
-                    hist.added[0] if len(hist.added) >= 1 else None,
-                )
-    if changes:
-        cherrypy.engine.publish('user_attr_changed', target, changes)
+    for userobj in session.deleted:
+        if isinstance(userobj, UserObject):
+            cherrypy.engine.publish('user_deleted', userobj.username)

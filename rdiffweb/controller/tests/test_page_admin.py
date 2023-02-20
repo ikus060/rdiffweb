@@ -29,14 +29,14 @@ class AdminPagesAsUser(rdiffweb.test.WebCase):
 
     @parameterized.expand(
         [
-            "/admin",
-            "/admin/users",
-            "/admin/repos",
-            "/admin/session",
-            "/admin/sysinfo",
-            "/admin/logs",
+            "/admin/",
+            "/admin/users/",
+            "/admin/repos/",
+            "/admin/session/",
+            "/admin/sysinfo/",
+            "/admin/logs/",
         ]
     )
     def test_forbidden_access(self, value):
         self.getPage(value)
-        self.assertStatus(403)
+        self.assertStatus(404)

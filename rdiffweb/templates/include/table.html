@@ -1,0 +1,37 @@
+{% macro table(data, columns=[], order=[], empty_message=None, info_message=None, searching=True, buttons=[], paging=False, pageLength=5, show_header=True) %}
+  {% set language = {
+  "aria": {
+  "sortAscending": _('activate to sort column ascending'),
+  "sortDescending": _('activate to sort column descending')
+  },
+  "info": info_message or (_('Showing from _START_ to _END_ of _TOTAL_ total records') if paging else _('Showing total of _TOTAL_ records')),
+  "infoFiltered": _('(filtered from _MAX_ total records)'),
+  "infoEmpty": _('No records available'),
+  "processing": _('Loading...'),
+  "search": _('Filter: '),
+  "zeroRecords": empty_message or _('List is empty'),
+  } %}
+  {% set buttons_cfg = {
+  "dom": {
+  "button": {
+  "className": 'btn btn-sm btn-primary ml-1 mb-1',
+  "active": 'active',
+  }
+  },
+  "buttons": buttons
+  } %}
+  {% set dom_cfg = "<'d-sm-flex align-items-center'<'mb-1 flex-grow-1'i><'mb-1'f><B>><'row'<'col-sm-12'rt>><'row'<'col-sm-12 col-md-7'p>>" if show_header else "<'row'<'col-sm-12'rt>><'row'<'col-sm-12 col-md-7'p>>" %}
+  <table class="table table-hover responsive"
+         width="100%"
+         data-ajax="{{ data }}"
+         data-columns='{{ columns | tojson }}'
+         data-order='{{ order | tojson | e }}'
+         data-language='{{ language | tojson }}'
+         data-searching='{{ searching | tojson }}'
+         data-buttons='{{ buttons_cfg | tojson }}'
+         data-paging="{{ paging | tojson }}"
+         data-dom="{{ dom_cfg }}"
+         data-responsive="true"
+         {% if paging %}data-page-length="{{ pageLength | tojson }}" data-length-change="false"{% endif %}>
+  </table>
+{% endmacro %}

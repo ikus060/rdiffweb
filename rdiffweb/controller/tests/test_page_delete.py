@@ -209,7 +209,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
 
         # Try to delete own own repo
         self._delete('user', 'testcases', 'testcases')
-        self.assertStatus(403)
+        self.assertStatus(404)
 
         # Check database don't change
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])
@@ -222,6 +222,25 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self._delete(self.USERNAME, repo, repo)
         # Then a 404 is return to the user
         self.assertStatus(404)
+
+    def test_delete_repo_within_subdirectory(self):
+        # Given a user with repo in subdirectory (mimic Windows layout)
+        userobj = UserObject.get_user('admin')
+        os.mkdir(os.path.join(userobj.user_root, 'MyComputer'))
+        os.rename(os.path.join(userobj.user_root, 'broker-repo'), os.path.join(userobj.user_root, 'MyComputer', 'C'))
+        os.rename(os.path.join(userobj.user_root, 'testcases'), os.path.join(userobj.user_root, 'MyComputer', 'D'))
+        userobj.refresh_repos(delete=True)
+        userobj.commit()
+        self.assertEqual(['MyComputer/C', 'MyComputer/D'], [r.name for r in userobj.repo_objs])
+        # Delete repo
+        self._delete(self.USERNAME, 'MyComputer/C', 'MyComputer/C')
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', self.baseurl + '/')
+        # Check filesystem
+        self.wait_for_tasks()
+        userobj.expire()
+        self.assertEqual(['MyComputer/D'], [r.name for r in userobj.repo_objs])
+        self.assertFalse(os.path.isdir(os.path.join(userobj.user_root, 'MyComputer', 'C')))
 
     def test_delete_method_get(self):
         # Given a user with repo

@@ -24,7 +24,7 @@ class AdminSysinfoTest(rdiffweb.test.WebCase):
     login = True
 
     def test_sysinfo(self):
-        self.getPage("/admin/sysinfo")
+        self.getPage("/admin/sysinfo/")
         self.assertStatus(200)
         self.assertInBody("Operating System Info")
         self.assertInBody("Python Info")

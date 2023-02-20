@@ -30,7 +30,9 @@ from rdiffweb.core.model import RepoObject, SessionObject, UserObject
 
 @cherrypy.tools.is_admin()
 class AdminPage(Controller):
-    """Administration pages. Allow to manage users database."""
+    """
+    Administration pages. Allow to manage users database.
+    """
 
     logs = AdminLogsPage()
     repos = AdminReposPage()
@@ -39,11 +41,11 @@ class AdminPage(Controller):
     users = AdminUsersPage()
 
     @cherrypy.expose
-    def default(self):
-        last_hour = datetime.datetime.now() - datetime.timedelta(hours=1)
+    def index(self):
+        last_hour = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(hours=1)
         params = {
             "user_count": UserObject.query.count(),
             "repo_count": RepoObject.query.count(),
             "session_count": SessionObject.query.filter(SessionObject.access_time > last_hour).count(),
         }
-        return self._compile_template("admin.html", **params)
+        return self._compile_template("admin_overview.html", **params)
