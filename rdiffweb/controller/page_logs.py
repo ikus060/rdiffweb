@@ -54,17 +54,17 @@ class LogsPage(Controller):
             return self._compile_template("logs.html", **params)
 
         # Read log file data
-        if file == 'backup.log':
-            entry = repo_obj.backup_log
-        elif file == 'restore.log':
-            entry = repo_obj.restore_log
-        elif date:
+        if date:
             try:
                 entry = repo_obj.error_log[date]
             except KeyError:
                 raise cherrypy.HTTPError(404, _('Invalid date.'))
+        elif file is None or file == 'backup.log':
+            entry = repo_obj.backup_log
+        elif file == 'restore.log':
+            entry = repo_obj.restore_log
         else:
-            entry = None
+            raise cherrypy.HTTPError(404, _('Invalid file'))
 
         try:
             data = None
