@@ -124,6 +124,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 * Add username and IP address to logs only for HTTP Request
 * Fix LDAP integration to support non-list attributes - credit to [Shane Robinson](https://gitlab.com/shanesq)
 * Improve System Logs view to identify "User Activity", "Threats" and "User Login"
+* Fix display of "* minutes ago" #264
 
 ## 2.5.8 (2023-02-19)
 
