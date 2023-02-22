@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
 import logging
 import os
 
@@ -61,6 +62,7 @@ from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import parse_args
+from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import DbSession, UserObject
 
 # Define the logger
@@ -76,6 +78,22 @@ cherrypy.config.environments['development'] = {
     'request.show_mismatched_params': True,
     'log.screen': False,
 }
+
+
+def _json_handler(*args, **kwargs):
+    """
+    Custom json handle to convert RdiffDate to string as isoformat and to use "json" instead of simplejson.
+    """
+    value = cherrypy.serving.request._json_inner_handler(*args, **kwargs)
+
+    def default(o):
+        if isinstance(o, RdiffTime):
+            return str(o)
+        raise TypeError(repr(o) + " is not JSON serializable")
+
+    encode = json.JSONEncoder(default=default, ensure_ascii=False).iterencode
+    for chunk in encode(value):
+        yield chunk.encode('utf-8')
 
 
 @cherrypy.tools.auth_form()
@@ -155,6 +173,8 @@ class RdiffwebApp(Application):
                 # Configure database plugins
                 'tools.db.uri': db_uri,
                 'tools.db.debug': cfg.debug,
+                # Configure custom json_handler
+                'tools.json_out.handler': _json_handler,
                 # Configure LDAP plugin
                 'ldap.uri': cfg.ldap_uri,
                 'ldap.base_dn': cfg.ldap_base_dn,
