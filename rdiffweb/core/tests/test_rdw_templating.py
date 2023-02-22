@@ -89,6 +89,7 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual('4 weeks ago', do_format_lastupdated(RdiffTime(value=1589127124), now=1591978846))
         self.assertEqual('5 months ago', do_format_lastupdated(RdiffTime(value=1578672724), now=1591978846))
         self.assertEqual('4 years ago', do_format_lastupdated(RdiffTime(value=1452442324), now=1591978846))
+        self.assertEqual('1 days ago', do_format_lastupdated(RdiffTime(value=1676906974), now=1676997934))
 
 
 class ListParentsTest(WebCase):

@@ -115,7 +115,7 @@ def do_format_lastupdated(value, now=None):
         return _('%d months ago') % (delta.days / 30)
     if delta.days > 7:
         return _('%d weeks ago') % (delta.days / 7)
-    elif delta.days > 1:
+    elif delta.days > 0:
         return _('%d days ago') % delta.days
     elif delta.seconds > 3600:
         return _('%d hours ago') % (delta.seconds / 3600)
