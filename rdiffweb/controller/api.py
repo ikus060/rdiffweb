@@ -19,7 +19,6 @@ Created on Nov 16, 2017
 
 @author: Patrik Dufresne
 """
-# Define the logger
 
 
 import logging
@@ -27,29 +26,9 @@ import logging
 import cherrypy
 
 from rdiffweb.controller import Controller
-from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import UserObject
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
 logger = logging.getLogger(__name__)
-
-
-def json_handler(*args, **kwargs):
-    """Custom json handle to convert RdiffDate to str."""
-    value = cherrypy.serving.request._json_inner_handler(*args, **kwargs)
-
-    def default(o):
-        if isinstance(o, RdiffTime):
-            return str(o)
-        raise TypeError(repr(o) + " is not JSON serializable")
-
-    encode = json.JSONEncoder(default=default, ensure_ascii=False).iterencode
-    for chunk in encode(value):
-        yield chunk.encode('utf-8')
 
 
 def _checkpassword(realm, username, password):
@@ -103,7 +82,7 @@ class ApiCurrentUser(Controller):
         }
 
 
-@cherrypy.tools.json_out(handler=json_handler)
+@cherrypy.tools.json_out(on=True)
 @cherrypy.config(**{'error_page.default': False})
 @cherrypy.tools.auth_basic(realm='rdiffweb', checkpassword=_checkpassword, priority=70)
 @cherrypy.tools.auth_form(on=False)
