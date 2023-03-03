@@ -101,6 +101,7 @@ def _json_handler(*args, **kwargs):
     mfa_enabled=lambda username: UserObject.get_user(username).mfa == UserObject.ENABLED_MFA,
 )
 @cherrypy.tools.currentuser(userobj=lambda username: UserObject.get_user(username))
+@cherrypy.tools.i18n(func=lambda: getattr(cherrypy.request, 'currentuser', False) and cherrypy.request.currentuser.lang)
 @cherrypy.tools.db()
 @cherrypy.tools.enrich_session()
 @cherrypy.tools.proxy(local=None, remote='X-Real-IP')
@@ -219,6 +220,10 @@ class RdiffwebApp(Application):
                 'quota.set_quota_cmd': self.cfg.quota_set_cmd,
                 'quota.get_quota_cmd': self.cfg.quota_get_cmd,
                 'quota.get_usage_cmd': self.cfg.quota_used_cmd,
+                # Configure locales
+                'tools.i18n.default': cfg.default_lang,
+                'tools.i18n.mo_dir': pkg_resources.resource_filename('rdiffweb', 'locales'),
+                'tools.i18n.domain': 'messages',
             }
         )
         # Create database if required
@@ -235,10 +240,6 @@ class RdiffwebApp(Application):
                 # ISO-8859-1 encoding for URL. This avoid any conversion of the
                 # URL into UTF-8.
                 'request.uri_encoding': 'ISO-8859-1',
-                'tools.i18n.on': True,
-                'tools.i18n.default': 'en_US',
-                'tools.i18n.mo_dir': pkg_resources.resource_filename('rdiffweb', 'locales'),  # @UndefinedVariable
-                'tools.i18n.domain': 'messages',
                 'tools.encode.on': True,
                 'tools.encode.encoding': 'utf-8',
                 'tools.gzip.on': True,

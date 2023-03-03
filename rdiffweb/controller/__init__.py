@@ -23,6 +23,7 @@ import cherrypy
 
 from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import RdiffTime
+from rdiffweb.tools.i18n import get_translation
 from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
@@ -107,9 +108,8 @@ class Controller(object):
         value.
         """
         app = self.app
-        loc = cherrypy.response.i18n.locale
         parms = {
-            "lang": loc.language,
+            "lang": str(get_translation().locale),
             "header_name": self._header_name,
             "footername": self._footername,
             "footerurl": self._footerurl,

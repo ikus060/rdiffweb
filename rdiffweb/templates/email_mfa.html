@@ -1,4 +1,11 @@
 {% extends 'email_layout.html' %}
+{% block title %}
+  {% if user.mfa %}
+    {% trans %}Two-Factor Authentication turned on{% endtrans %}
+  {% else %}
+    {% trans %}Two-Factor Authentication turned off{% endtrans %}
+  {% endif %}
+{% endblock title %}
 {% block body %}
   <h1>
     <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>

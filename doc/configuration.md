@@ -407,3 +407,11 @@ When defining the UserRoot value for a user, Rdiffweb will scan the content of t
 | Parameter | Description | Example |
 | --- | --- | --- |
 | --max-depth | Define the maximum folder depthness to search into the user's root directory to find repositories. This is commonly used if your repositories are organised with multiple sub-folders. Default: 3 | No | 10 |
+
+## Configure default language
+
+By default, the web application uses the HTTP Accept-Language headers to determine the best language to use for display. Users can also manually select a preferred language to use for all communication. The `default-language` setting is used when the user has not selected a preferred language and none of the Accept-Language headers match a translation.
+
+| Parameter | Description | Example |
+| --- | --- | --- |
+| --default-lang | default application locale. e.g.: `fr` | es |

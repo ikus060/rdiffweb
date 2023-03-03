@@ -174,6 +174,34 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self._set_profile_info(("test1" * 50) + "@test.com")
         self.assertInBody("Email too long.")
 
+    def test_change_lang(self):
+        # Given a user
+        # When updating the language
+        self.getPage(
+            self.PREFS, method='POST', body={'lang': 'fr', 'email': 'myemail@test.com', 'fullname': 'Testing User'}
+        )
+        self.assertStatus(303)
+        # Then user's lang is updated
+        userobj = UserObject.query.filter(UserObject.username == self.USERNAME).one()
+        self.assertEqual('fr', userobj.lang)
+        # Then the web interface is displayed with new language
+        self.getPage(self.PREFS)
+        self.assertInBody('Paramètres du compte')
+        self.assertInBody('lang="fr"')
+
+    def test_change_lang_invalid(self):
+        # Given a user
+        # When updating the language with an invalid value
+        self.getPage(
+            self.PREFS, method='POST', body={'lang': 'gh', 'email': 'myemail@test.com', 'fullname': 'Testing User'}
+        )
+        self.assertStatus(200)
+        # Then page is shown with defualt language
+        self.assertInBody('lang="en"')
+        # Then the language is not updated
+        userobj = UserObject.query.filter(UserObject.username == self.USERNAME).one()
+        self.assertEqual('', userobj.lang)
+
     def test_change_password(self):
         # Given a user with 3 active sessions
         self.cookies = None

@@ -20,7 +20,7 @@ to change password ans refresh it's repository view.
 """
 
 import cherrypy
-from wtforms.fields import HiddenField, PasswordField, StringField, SubmitField
+from wtforms.fields import HiddenField, PasswordField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, InputRequired, Length, Optional, Regexp, ValidationError
 
 try:
@@ -32,6 +32,7 @@ from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.model import UserObject
 from rdiffweb.tools.i18n import gettext_lazy as _
+from rdiffweb.tools.i18n import list_available_locales
 
 
 class UserProfileForm(CherryForm):
@@ -53,7 +54,15 @@ class UserProfileForm(CherryForm):
             Regexp(UserObject.PATTERN_EMAIL, message=_("Must be a valid email address.")),
         ],
     )
+    lang = SelectField(_('Preferred Language'))
     set_profile_info = SubmitField(_('Save changes'))
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        languages = [(locale.language, locale.display_name.capitalize()) for locale in list_available_locales()]
+        languages = sorted(languages, key=lambda x: x[1])
+        languages.insert(0, ('', _('(default)')))
+        self.lang.choices = languages
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
@@ -63,6 +72,7 @@ class UserProfileForm(CherryForm):
         try:
             user.fullname = self.fullname.data
             user.email = self.email.data
+            user.lang = self.lang.data
             user.commit()
         except Exception as e:
             user.rollback()

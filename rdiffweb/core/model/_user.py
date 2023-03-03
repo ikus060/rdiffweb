@@ -108,6 +108,7 @@ class UserObject(Base):
         lazy=True,
         order_by=lambda: RepoObject.repopath,
     )
+    lang = Column('lang', String, nullable=False, default='')
 
     @classmethod
     def get_user(cls, user):

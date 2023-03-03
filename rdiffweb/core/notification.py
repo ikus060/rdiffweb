@@ -20,11 +20,13 @@ User can control the notification period.
 """
 
 import logging
+import re
 
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
 
 from rdiffweb.core.model import RepoObject, UserObject
+from rdiffweb.tools.i18n import preferred_lang
 from rdiffweb.tools.i18n import ugettext as _
 
 logger = logging.getLogger(__name__)
@@ -81,7 +83,7 @@ class NotificationPlugin(SimplePlugin):
 
     stop.priority = 45
 
-    def _queue_mail(self, userobj, subject, template, to=None, **kwargs):
+    def _queue_mail(self, userobj, template, to=None, **kwargs):
         """
         Generic function to queue email.
         """
@@ -103,9 +105,13 @@ class NotificationPlugin(SimplePlugin):
             'navbar_color': self.navbar_color,
         }
         # Compile the email body
-        body = self.env.compile_template(template, user=userobj, **dict(param, **kwargs))
+        with preferred_lang(userobj.lang):
+            message_body = self.env.compile_template(template, user=userobj, **dict(param, **kwargs))
+            # Extract subject from template
+            match = re.search(r'<title>(.*)</title>', message_body, re.DOTALL)
+            subject = match.group(1).replace('\n', '').strip() if match else _('Notification')
         # Queue the email.
-        self.bus.publish('queue_mail', to=to, subject=subject, message=body, **queue_mail_kwargs)
+        self.bus.publish('queue_mail', to=to, subject=subject, message=message_body, **queue_mail_kwargs)
 
     def access_token_added(self, userobj, name):
         username = userobj.username
@@ -113,7 +119,6 @@ class NotificationPlugin(SimplePlugin):
         if self.send_changed:
             self._queue_mail(
                 userobj,
-                subject=_("A new access token has been created"),
                 template="email_access_token_added.html",
                 name=name,
             )
@@ -124,7 +129,6 @@ class NotificationPlugin(SimplePlugin):
         if self.send_changed:
             self._queue_mail(
                 userobj,
-                subject=_("A new SSH Key has been added"),
                 template="email_authorizedkey_added.html",
                 comment=comment,
                 fingerprint=fingerprint,
@@ -141,7 +145,6 @@ class NotificationPlugin(SimplePlugin):
                 self._queue_mail(
                     userobj,
                     to=old_email,
-                    subject=_("Email address changed"),
                     template="email_changed.html",
                 )
 
@@ -149,14 +152,8 @@ class NotificationPlugin(SimplePlugin):
             state = 'activated' if userobj.mfa == UserObject.DISABLED_MFA else 'disabled'
             activity.info(f"Two-factor authentication has been {state} for the user {username}")
             if self.send_changed:
-                subject = (
-                    _("Two-Factor Authentication turned off")
-                    if userobj.mfa == UserObject.DISABLED_MFA
-                    else _("Two-Factor Authentication turned on")
-                )
                 self._queue_mail(
                     userobj,
-                    subject=subject,
                     template="email_mfa.html",
                 )
 
@@ -166,7 +163,6 @@ class NotificationPlugin(SimplePlugin):
         if self.send_changed:
             self._queue_mail(
                 userobj,
-                subject=_("Password changed"),
                 template="email_password_changed.html",
             )
 
@@ -176,7 +172,6 @@ class NotificationPlugin(SimplePlugin):
         if self.send_changed:
             self._queue_mail(
                 userobj,
-                subject=_("New Repository detected"),
                 template="email_repo_added.html",
                 repo_path=repo_path,
             )
@@ -187,7 +182,6 @@ class NotificationPlugin(SimplePlugin):
         if self.send_changed:
             self._queue_mail(
                 userobj,
-                subject=_("Repository deleted"),
                 template="email_repo_deleted.html",
                 repo_path=repo_path,
             )
@@ -219,7 +213,6 @@ class NotificationPlugin(SimplePlugin):
             if old_repos:
                 self._queue_mail(
                     userobj,
-                    subject=_("Notification"),
                     template="email_notification.html",
                     repos=old_repos,
                 )

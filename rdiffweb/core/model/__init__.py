@@ -92,6 +92,9 @@ def db_after_create(target, connection, **kw):
     # Add user's mfa column
     _column_add(connection, UserObject.__table__.c.mfa)
 
+    # Add user's lang column
+    _column_add(connection, UserObject.__table__.c.lang)
+
     # Re-create session table if Number column is missing
     if not _column_exists(connection, SessionObject.__table__.c.Number):
         SessionObject.__table__.drop()
