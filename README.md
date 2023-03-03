@@ -125,6 +125,9 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 * Fix LDAP integration to support non-list attributes - credit to [Shane Robinson](https://gitlab.com/shanesq)
 * Improve System Logs view to identify "User Activity", "Threats" and "User Login"
 * Fix display of "* minutes ago" #264
+* Add `default-lang` option to configure default language #263
+* Allow user to select a preferred language #263
+* Use user's preferred language when sending notifications #263
 
 ## 2.5.8 (2023-02-19)
 

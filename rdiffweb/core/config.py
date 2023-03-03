@@ -110,6 +110,12 @@ def get_parser():
     )
 
     parser.add_argument(
+        '--default-lang',
+        help='default application locale. e.g.: `fr`',
+        default='en_US',
+    )
+
+    parser.add_argument(
         '--default-theme',
         '--defaulttheme',
         help='define the default theme. Either: default, blue, orange or custom. Define a default set of colors and font for the web interface. Also read more about link-color, navbar-color and font-family.',

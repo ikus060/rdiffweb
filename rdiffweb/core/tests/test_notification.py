@@ -282,6 +282,25 @@ class NotificationPluginTest(AbstractNotificationTest):
             message=ANY,
         )
 
+    def test_user_lang(self):
+        # Given a user's with prefered language
+        user = UserObject.get_user(self.USERNAME)
+        user.email = 'myemail@test.com'
+        user.lang = 'fr'
+        user.add().commit()
+        self.listener.queue_email.reset_mock()
+
+        # When sending notification to that user
+        user.add_access_token('TEST')
+        user.commit()
+
+        # Then the mail is sent with the prefered language
+        self.listener.queue_email.assert_called_once_with(
+            to='myemail@test.com',
+            subject="Un nouveau jeton d'accès a été créé",
+            message=ANY,
+        )
+
 
 class NotificationConfigTest(AbstractNotificationTest):
 

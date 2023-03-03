@@ -56,10 +56,8 @@ def _setup_logging(log_file, log_access_file, level):
         if cherrypy.request and cherrypy.request.request_line:
             if cherrypy.request.login:
                 record.user = cherrypy.request.login
-            elif (
-                hasattr(cherrypy.serving, 'session')
-                and cherrypy.serving.session
-                and cherrypy.serving.session.get('_cp_username', None)
+            elif getattr(cherrypy.serving, 'session', None) is not None and cherrypy.serving.session.get(
+                '_cp_username', None
             ):
                 record.user = cherrypy.serving.session['_cp_username']
             else:

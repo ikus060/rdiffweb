@@ -23,6 +23,7 @@ from wtforms.validators import InputRequired, Length
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.tools.auth_form import LOGIN_PERSISTENT, SESSION_KEY
+from rdiffweb.tools.i18n import get_translation
 from rdiffweb.tools.i18n import gettext_lazy as _
 
 # Define the logger
@@ -88,9 +89,8 @@ class LoginPage(Controller):
         # Add welcome message to params. Try to load translated message.
         welcome_msg = self.app.cfg.welcome_msg
         if welcome_msg:
-            params["welcome_msg"] = welcome_msg.get('')
-            if hasattr(cherrypy.response, 'i18n'):
-                locale = cherrypy.response.i18n.locale.language
-                params["welcome_msg"] = welcome_msg.get(locale, params["welcome_msg"])
+            default_welcome_msg = welcome_msg.get('')
+            lang = get_translation().locale.language
+            params["welcome_msg"] = welcome_msg.get(lang, default_welcome_msg)
 
         return self._compile_template("login.html", **params)
