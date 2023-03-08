@@ -19,8 +19,8 @@ stages:
     TOXENV: $CI_JOB_NAME
   before_script:
   - apt -yq update && apt install -yq rdiff-backup
-  - pip install tox
   script:
+  - pip install tox
   - export TOXENV=${TOXENV:-$CI_JOB_NAME}
   - echo TOXENV=$TOXENV
   - useradd myuser
@@ -50,6 +50,15 @@ py3:
     matrix:
     - TOXENV: py3
       IMAGE: [python:3.6, python:3.7, python:3.8, python:3.9, python:3.10]
+
+selenium:
+  <<: *tox
+  before_script:
+    - apt update && apt -y --no-install-recommends install xvfb xauth chromium-driver rdiff-backup
+  artifacts:
+    paths:
+      - coverage.xml
+      - xunit.xml
 
 rdiff-backup-beta:
   <<: *tox
