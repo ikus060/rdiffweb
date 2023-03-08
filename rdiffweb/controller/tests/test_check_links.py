@@ -25,23 +25,28 @@ class CheckLinkTest(rdiffweb.test.WebCase):
 
     login = True
 
+    start_url = [
+        "/",
+    ]
+
+    ignore_url = [
+        '.*/logout',
+        '.*/restore/admin/testcases/BrokenSymlink.*',
+        '.*/browse/admin/testcases/BrokenSymlink.*',
+        '.*/history/admin/testcases/BrokenSymlink.*',
+        'https://www.ikus-soft.com/.*',
+        'https://rdiffweb.org/.*',
+        '.*js',
+    ]
+
     def test_links(self):
         """
         Crawl all the pages to find broken links or relative links.
         """
-        ignore = [
-            '.*/logout',
-            '.*/restore/admin/testcases/BrokenSymlink.*',
-            '.*/browse/admin/testcases/BrokenSymlink.*',
-            '.*/history/admin/testcases/BrokenSymlink.*',
-            'https://www.ikus-soft.com/.*',
-            'https://rdiffweb.org/.*',
-            '.*js',
-        ]
         done = set(['#'])
         todo = OrderedDict()
-        todo["/"] = "/"
-        self.getPage("/")
+        for url in self.start_url:
+            todo[url] = 'start'
         # Store the original cookie since it get replace during execution.
         self.assertIsNotNone(self.cookies)
         cookies = self.cookies
@@ -51,18 +56,22 @@ class CheckLinkTest(rdiffweb.test.WebCase):
             self.cookies = cookies
             self.getPage(page)
             # Check status
-            self.assertStatus('200 OK', "can't access page [%s] referenced by [%s]" % (page, ref))
+            if int(self.status[:3]) in [301, 303]:
+                newpage = self.assertHeader('Location')
+                todo[newpage] = page
+            else:
+                self.assertStatus('200 OK', "can't access page [%s] referenced by [%s]" % (page, ref))
+
+                # Check if valid HTML
+                if dict(self.headers).get('Content-Type').startswith('text/html'):
+                    self.assertValidHTML()
 
             done.add(page)
 
             # Collect all link in the page.
-            for unused, newpage in re.findall("(href|src)=\"([^\"]+)\"", self.body.decode('utf8', 'replace')):
+            for unused, newpage in re.findall("(href|src|data-ajax)=\"([^\"]+)\"", self.body.decode('utf8', 'replace')):
                 newpage = newpage.replace("&amp;", "&")
                 if newpage.startswith("?"):
                     newpage = re.sub("\\?.*", "", page) + newpage
-                if newpage not in done and not any(re.match(i, newpage) for i in ignore):
+                if newpage not in done and not any(re.match(i, newpage) for i in self.ignore_url):
                     todo[newpage] = page
-                    self.assertTrue(
-                        newpage.startswith('http://'),
-                        msg='url [%s] referenced in [%s] is not absolute' % (newpage, page),
-                    )

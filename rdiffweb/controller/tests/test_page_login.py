@@ -42,6 +42,16 @@ class LoginPageTest(rdiffweb.test.WebCase):
         session.load()
         self.assertIsNone(session.get(SESSION_KEY))
 
+    def test_getpage_selenium(self):
+        # Given a user browsing the login page without authentication.
+        with self.selenium() as driver:
+            # When getting web page.
+            driver.get(self.baseurl + '/login/')
+            # Then the web page contain a login form
+            driver.find_element('css selector', 'input[name=login]')
+            # Then the web page is loaded without error.
+            self.assertFalse(driver.get_log('browser'))
+
     def test_login_success(self):
         # Given an anonymous user
         self.getPage('/')

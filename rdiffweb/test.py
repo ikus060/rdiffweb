@@ -29,12 +29,15 @@ import tempfile
 import time
 import unittest
 import unittest.mock
+from contextlib import contextmanager
 from threading import Thread
 from urllib.parse import urlencode
 
 import cherrypy
+import html5lib
 import pkg_resources
 from cherrypy.test import helper
+from selenium import webdriver
 
 from rdiffweb.core.model import UserObject
 from rdiffweb.rdw_app import RdiffwebApp
@@ -129,6 +132,20 @@ class WebCase(helper.CPWebCase):
         if hasattr(cherrypy, '_cache'):
             cherrypy._cache.clear()
 
+    def assertValidHTML(self, msg=None):
+        """
+        Verify if the current body is compliant HTML.
+        """
+        try:
+            parser = html5lib.HTMLParser(strict=True)
+            parser.parse(self.body)
+        except html5lib.html5parser.ParseError as e:
+            self.assertHeader
+            row, col_unused = parser.errors[0][0]
+            line = self.body.splitlines()[row - 1].decode('utf8', errors='replace')
+            msg = msg or ('URL %s contains invalid HTML: %s on line %s: %s' % (self.url, e, row, line))
+            self.fail(msg)
+
     @property
     def app(self):
         """
@@ -179,6 +196,31 @@ class WebCase(helper.CPWebCase):
         self.getPage("/logout", method="POST")
         self.getPage("/login/", method='POST', body={'login': username, 'password': password})
         self.assertStatus('303 See Other')
+
+    @contextmanager
+    def selenium(self):
+        """
+        Decorator to load selenium for a test.
+        """
+        # Skip selenium test is display is not available.
+        if not os.environ.get('DISPLAY', False):
+            raise unittest.SkipTest("selenium require a display")
+        # Start selenium driver
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
+        if os.geteuid() == 0:
+            options.add_argument('--no-sandbox')
+            options.add_argument('--disable-dev-shm-usage')
+        driver = webdriver.Chrome(options=options)
+        # If logged in, reuse the same session id.
+        try:
+            if self.session_id:
+                driver.get('http://%s:%s/login/' % (self.HOST, self.PORT))
+                driver.add_cookie({"name": "session_id", "value": self.session_id})
+            yield driver
+        finally:
+            # Code to release resource, e.g.:
+            driver.close()
 
     def wait_for_tasks(self):
         time.sleep(1)

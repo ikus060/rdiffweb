@@ -3,6 +3,7 @@ Section: web
 Priority: optional
 Maintainer: Patrik Dufresne <patrik@ikus-soft.com>
 Build-Depends:
+ chromium-driver,
  coreutils,
  debhelper-compat (= 13),
  dh-sequence-python3,
@@ -17,6 +18,7 @@ Build-Depends:
  python3-configargparse,
  python3-distro,
  python3-future,
+ python3-html5lib,
  python3-humanfriendly,
  python3-jinja2,
  python3-ldap3,
@@ -25,6 +27,7 @@ Build-Depends:
  python3-pip,
  python3-psutil,
  python3-pytest,
+ python3-selenium,
  python3-setuptools,
  python3-setuptools-scm,
  python3-sqlalchemy,

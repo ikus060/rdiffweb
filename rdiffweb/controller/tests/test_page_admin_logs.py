@@ -95,6 +95,19 @@ class AdminWithLogsTest(rdiffweb.test.WebCase):
         # Then an ajax table is displayed
         self.assertInBody('data-ajax="http://127.0.0.1:%s/admin/logs/data.json"' % self.PORT)
 
+    def test_get_logs_selenium(self):
+        # Given a user browsing the system logs.
+        with self.selenium() as driver:
+            # When getting web page.
+            driver.get(self.baseurl + '/admin/logs/')
+            # Then the web page contain a datatable
+            driver.find_element('css selector', 'table[data-ajax]')
+            # Then the web page is loaded without error.
+            self.assertFalse(driver.get_log('browser'))
+            # Then page contains system logs
+            driver.implicitly_wait(10)
+            driver.find_element('xpath', "//*[contains(text(), 'adding new user')]")
+
     def test_data_json(self):
         # Given a database with system logs
         # When getting data.json
