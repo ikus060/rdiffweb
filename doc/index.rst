@@ -8,10 +8,10 @@ Welcome to Rdiffweb's documentation!
 
 .. toctree::
    introduction
-   installation
    quickstart
+   installation
    configuration
-   usage
    networking
+   usage
    faq
    development
