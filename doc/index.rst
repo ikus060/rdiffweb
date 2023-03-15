@@ -7,14 +7,11 @@ Welcome to Rdiffweb's documentation!
 ====================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-   
    introduction
-   installation
    quickstart
+   installation
    configuration
-   usage
    networking
+   usage
    faq
    development

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # LDAP Plugins for cherrypy
-# # Copyright (C) 2022 IKUS Software
+# # Copyright (C) 2023 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,9 +20,11 @@ import logging
 import cherrypy
 import ldap3
 from cherrypy.process.plugins import SimplePlugin
-from ldap3.core.exceptions import LDAPException, LDAPInvalidCredentialsResult, LDAPNoSuchObjectResult
+from ldap3.core.exceptions import LDAPException, LDAPInvalidCredentialsResult
 
 logger = logging.getLogger(__name__)
+
+_safe = ldap3.utils.conv.escape_filter_chars
 
 
 def _first_attribute(attributes, key, default=None):
@@ -60,11 +62,12 @@ class LdapPlugin(SimplePlugin):
     bind_password = ''
     scope = 'subtree'
     tls = False
-    filter = '(objectClass=*)'
+    user_filter = '(objectClass=*)'
     username_attribute = 'uid'
     required_group = None
     group_attribute = 'member'
     group_attribute_is_dn = False
+    group_filter = '(objectClass=*)'
     version = 3
     network_timeout = 10
     timeout = 10
@@ -113,23 +116,8 @@ class LdapPlugin(SimplePlugin):
             conn.bind()
 
             # Search the LDAP server
-            search_filter = "(&{}({}={}))".format(self.filter, self.username_attribute, username)
-            search_scope = {'base': ldap3.BASE, 'onelevel': ldap3.LEVEL, 'subtree': ldap3.SUBTREE}.get(
-                self.scope, ldap3.SUBTREE
-            )
-            logger.debug(
-                "search ldap server: {}/{}?{}?{}?{}".format(
-                    self.uri, self.base_dn, self.username_attribute, search_scope, search_filter
-                )
-            )
-            status = conn.search(
-                search_base=self.base_dn,
-                search_filter=search_filter,
-                search_scope=search_scope,
-                time_limit=self.timeout,
-                attributes=ldap3.ALL_ATTRIBUTES,
-            )
-            if not status:
+            search_filter = "(&{}({}={}))".format(self.user_filter, _safe(self.username_attribute), _safe(username))
+            if not self._search(conn, search_filter):
                 logger.info("user %s not found in LDAP", username)
                 return False
 
@@ -151,15 +139,31 @@ class LdapPlugin(SimplePlugin):
 
             # Verify if the user is member of the required group
             if self.required_group:
+                if not isinstance(self.required_group, list):
+                    self.required_group = [self.required_group]
                 user_value = user_dn if self.group_attribute_is_dn else new_username
-                logger.info("check if user %s is member of %s", user_value, self.required_group)
-                try:
-                    if not conn.compare(self.required_group, self.group_attribute, user_value):
-                        logger.info("user %s was found but is not member of group %s", user_value, self.required_group)
-                        return False
-                except LDAPNoSuchObjectResult:
-                    logger.exception("group %s not found", self.required_group)
+                group_filter = '(&(%s=%s)(|%s)%s)' % (
+                    _safe(self.group_attribute),
+                    _safe(user_value),
+                    ''.join(['(cn=%s)' % _safe(group) for group in self.required_group]),
+                    self.group_filter,
+                )
+                # Search LDAP Server for matching groups.
+                logger.info(
+                    "check if user %s is member of any group %s",
+                    user_value,
+                    ' '.join(self.required_group),
+                )
+                if not self._search(conn, group_filter, attributes=['cn']):
+                    logger.info(
+                        "user %s was found but is not member of any group(s) %s",
+                        user_value,
+                        ' '.join(self.required_group),
+                    )
                     return False
+                # Add group membership to attributes
+                attrs['_member_of'] = [_first_attribute(row['attributes'], 'cn') for row in conn.response]
+
             # Remove entryDN from attributes list.
             if 'entryDN' in attrs:
                 del attrs['entryDN']
@@ -179,6 +183,23 @@ class LdapPlugin(SimplePlugin):
         finally:
             conn.unbind()
         return None
+
+    def _search(self, conn, filter, attributes=ldap3.ALL_ATTRIBUTES):
+        search_scope = {'base': ldap3.BASE, 'onelevel': ldap3.LEVEL, 'subtree': ldap3.SUBTREE}.get(
+            self.scope, ldap3.SUBTREE
+        )
+        logger.debug(
+            "search ldap server: {}/{}?{}?{}?{}".format(
+                self.uri, self.base_dn, self.username_attribute, search_scope, filter
+            )
+        )
+        return conn.search(
+            search_base=self.base_dn,
+            search_filter=filter,
+            search_scope=search_scope,
+            time_limit=self.timeout,
+            attributes=attributes,
+        )
 
 
 cherrypy.ldap = LdapPlugin(cherrypy.engine)

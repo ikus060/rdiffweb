@@ -108,7 +108,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 
 # Changelog
 
-# Next Release - 2.6.0
+# 2.6.0 (2023-03-15)
 
 * Review the application layout to use Fluid container to use all the space available on the screen
 * Rename status view to Dashboard
@@ -123,6 +123,7 @@ Professional support for Rdiffweb is available by contacting [IKUS Soft](https:/
 * Disable error page logs for 4xx errors
 * Add username and IP address to logs only for HTTP Request
 * Fix LDAP integration to support non-list attributes - credit to [Shane Robinson](https://gitlab.com/shanesq)
+* Add support of multiple required-group for LDAP integration
 * Improve System Logs view to identify "User Activity", "Threats" and "User Login"
 * Fix display of "* minutes ago" #264
 * Add `default-lang` option to configure default language #263

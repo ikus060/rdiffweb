@@ -14,9 +14,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import cherrypy
+import ldap3
 
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
@@ -196,3 +197,121 @@ class LoginWithAddMissingWithComplexUserroot(LoginAbstractTest):
         # Check listener
         self.listener.user_added.assert_called_once_with(userobj)
         self.listener.user_login.assert_called_once_with(userobj)
+
+
+class LdapLoginAbstractTest(LoginAbstractTest):
+    def setUp(self) -> None:
+        self.server = ldap3.Server('my_fake_server')
+        self.conn = ldap3.Connection(self.server, client_strategy=ldap3.MOCK_SYNC)
+        self.patcher = patch('ldap3.Connection', return_value=self.conn)
+        self.patcher.start()
+        return super().setUp()
+
+    def tearDown(self) -> None:
+        self.patcher.stop()
+        return super().tearDown()
+
+
+class LoginWithLdap(LdapLoginAbstractTest):
+
+    default_config = {
+        'ldap-uri': '__default__',
+        'ldap-base-dn': 'dc=example,dc=org',
+        'ldap-add-missing-user': 'true',
+        'ldap-fullname-attribute': 'displayName',
+        'ldap-email-attribute': 'email',
+    }
+
+    def test_login_valid(self):
+        # Given an LDAP server with a user
+        self.conn.strategy.add_entry(
+            'cn=user01,dc=example,dc=org',
+            {
+                'displayName': ['MyUsername'],
+                'userPassword': 'password1',
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+                'email': ['myemail@example.com'],
+            },
+        )
+        # When user try to login with valid crendentials
+        login = cherrypy.engine.publish('login', 'user01', 'password1')
+        # Then user is authenticated
+        self.assertTrue(login[0])
+        self.listener.user_added.assert_called_once_with(login[0])
+        self.listener.user_login.assert_called_once_with(login[0])
+        # Then user inherit attribute from LDAP server
+        self.assertEqual('MyUsername', login[0].fullname)
+        self.assertEqual('myemail@example.com', login[0].email)
+
+    def test_login_invalid(self):
+        # Given an LDAP server with a user
+        self.conn.strategy.add_entry(
+            'cn=user01,dc=example,dc=org',
+            {
+                'userPassword': 'password1',
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+            },
+        )
+        # When user try to login with invalid crendentials
+        login = cherrypy.engine.publish('login', 'user01', 'invalid')
+        # Then user is authenticated
+        self.assertFalse(login[0])
+        self.listener.user_added.assert_not_called()
+        self.listener.user_login.assert_not_called()
+
+
+class LoginWithLdapGroup(LdapLoginAbstractTest):
+
+    default_config = {
+        'ldap-uri': '__default__',
+        'ldap-base-dn': 'dc=example,dc=org',
+        'ldap-add-missing-user': 'true',
+        'ldap-user-filter': '(objectClass=posixAccount)',
+        'ldap-group-filter': '(objectClass=posixGroup)',
+        'ldap-required-group': 'appgroup',
+        'ldap-group-attribute': 'memberUid',
+    }
+
+    def test_login_valid(self):
+        # Given an LDAP server with a user & group
+        self.conn.strategy.add_entry(
+            'cn=user01,dc=example,dc=org',
+            {
+                'userPassword': 'password1',
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+            },
+        )
+        self.conn.strategy.add_entry(
+            'cn=appgroup,ou=Groups,dc=example,dc=org',
+            {
+                'cn': ['appgroup'],
+                'memberUid': ['user01'],
+                'objectClass': ['posixGroup'],
+            },
+        )
+        # When user try to login with valid crendentials
+        login = cherrypy.engine.publish('login', 'user01', 'password1')
+        # Then user is authenticated
+        self.assertTrue(login[0])
+        self.listener.user_added.assert_called_once_with(login[0])
+        self.listener.user_login.assert_called_once_with(login[0])
+
+    def test_login_invalid(self):
+        # Given an LDAP server with a user
+        self.conn.strategy.add_entry(
+            'cn=user01,dc=example,dc=org',
+            {
+                'userPassword': 'password1',
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+            },
+        )
+        # When user try to login with valid crendentials
+        login = cherrypy.engine.publish('login', 'user01', 'password1')
+        # Then user is authenticated
+        self.assertFalse(login[0])
+        self.listener.user_added.assert_not_called()
+        self.listener.user_login.assert_not_called()
