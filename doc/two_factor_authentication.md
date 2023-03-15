@@ -8,7 +8,7 @@ When enabled, users must log in with a username and password. Then a verificatio
 
 ## Enable 2FA as Administrator
 
-For 2FA to work properly, [SMTP must be configured properly](configuration.html#configure-email-notifications).
+For 2FA to work properly, [SMTP must be configured properly](configuration.md#configure-email-notifications).
 
 In the administration view, an administrator can enable 2FA for a specific user. By doing so, the next time this user tries to connect to Rdiffweb, he will be prompted to enter a verification code that will be sent to his email.
 
@@ -18,7 +18,7 @@ In the administration view, an administrator can enable 2FA for a specific user.
 
 ## Enabled 2FA as User
 
-For 2FA to work properly, [SMTP must be configured properly](configuration.html#configure-email-notifications).
+For 2FA to work properly, [SMTP must be configured properly](configuration.md#configure-email-notifications).
 
 A user may enabled 2FA for is own account from it's user's profile. To enabled 2FA, the user must provide the verification code that get sent to him by email.
 

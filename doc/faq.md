@@ -76,8 +76,9 @@ new encoding should take effect.
 
 Multiple solutions are available to run rdiffweb with SSL. If you are really
 serious about security, it is highly recommended to run Rdiffweb behind an
-[Apache server](settings.html#setup-users-repositories) to enable SSL and other security features. Otherwise,
-you may simply enable SSL as follow.
+[Reverse Proxy](networking.md) to enable SSL and other security features. 
+
+Otherwise, you may simply enable SSL as follow.
 
 Add the following lines to your `/etc/rdiffweb.rdw.conf`:
 

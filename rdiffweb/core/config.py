@@ -340,6 +340,7 @@ def get_parser():
     )
 
     parser.add_argument(
+        '--ldap-user-filter',
         '--ldap-filter',
         '--ldapfilter',
         help="search filter to limit LDAP lookup. If not provided, defaults to (objectClass=*), which searches for all objects in the tree.",
@@ -349,22 +350,29 @@ def get_parser():
     parser.add_argument(
         '--ldap-required-group',
         '--ldaprequiredgroup',
-        metavar='GROUPNAME',
-        help="name of the group of which the user must be a member to access rdiffweb. Should be used with ldap-group-attribute and ldap-group-attribute-is-dn.",
+        metavar='CN',
+        help="list of CN of the group(s) containing Guests. Not cn=groupname or the full DN.",
+        action='append',
+    )
+
+    parser.add_argument(
+        '--ldap-group-filter',
+        help="search filter to limit LDAP lookup of groups. If not provided, defaults to `(objectClass=*)`, which searches for all objects in the tree. For improved performance it's recommanded to narrow the search to your group object class. e.g.: `(objectClass=posixGroup)`",
+        default='(objectClass=*)',
     )
 
     parser.add_argument(
         '--ldap-group-attribute',
         '--ldapgroupattribute',
         metavar='ATTRIBUTE',
-        help="name of the attribute defining the groups of which the user is a member. Should be used with ldap-required-group and ldap-group-attribute-is-dn.",
+        help="name of the attribute on the Group that hold the list of members. Default: `member`. Other common value is: `memberUid`",
         default='member',
     )
 
     parser.add_argument(
         '--ldap-group-attribute-is-dn',
         '--ldapgroupattributeisdn',
-        help="True if the content of the attribute `ldap-group-attribute` is a DN.",
+        help="True If the group contains list of user defined with DN instead of username.",
         action='store_true',
     )
 
@@ -418,6 +426,34 @@ def get_parser():
         metavar='ENCODING',
         help="encoding used by your LDAP server.",
         default="utf-8",
+    )
+
+    parser.add_argument(
+        '--ldap-fullname-attribute',
+        help="LDAP attribute for user display name. If `fullname` is blank, the fullname is taken from the `firstname` and `lastname`. Attributes 'cn', or 'displayName' commonly carry full names.",
+        default=[],
+        action='append',
+    )
+
+    parser.add_argument(
+        '--ldap-firstname-attribute',
+        help="LDAP attribute for user first name. Used when the attribute configured for name does not exist. e.g.: `givenName`",
+        default=[],
+        action='append',
+    )
+
+    parser.add_argument(
+        '--ldap-lastname-attribute',
+        help="LDAP attribute for user last name. Used when the attribute configured for name does not exist. e.g.: `sn`",
+        default=[],
+        action='append',
+    )
+
+    parser.add_argument(
+        '--ldap-email-attribute',
+        help="LDAP attribute for user email. e.g.: mail, email, userPrincipalName",
+        default=[],
+        action='append',
     )
 
     parser.add_argument(

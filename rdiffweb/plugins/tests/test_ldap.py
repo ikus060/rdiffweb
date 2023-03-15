@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # LDAP Plugins for cherrypy
-# # Copyright (C) 2022 IKUS Software
+# # Copyright (C) 2023 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -80,6 +80,21 @@ class LdapPluginTest(helper.CPWebCase):
             },
             authenticated[1],
         )
+
+    def test_authenticate_with_wildcard(self):
+        # Given a user in LDAP
+        self.conn.strategy.add_entry(
+            'cn=user01,dc=example,dc=org',
+            {
+                'userPassword': 'password1',
+                'uid': ['user01'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+            },
+        )
+        # When authenticating with a username containing wildcard
+        authenticated = cherrypy.ldap.authenticate('user*', 'password1')
+        # Then user is NOT authenticated
+        self.assertFalse(authenticated)
 
     def test_authenticate_with_invalid_user(self):
         # Given a user in LDAP
@@ -222,7 +237,7 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
             {
                 'ldap.uri': 'my_fake_server',
                 'ldap.base_dn': 'dc=example,dc=org',
-                'ldap.required_group': 'cn=appgroup,ou=Groups,dc=nodomain',
+                'ldap.required_group': ['appgroup', 'secondgroup'],
                 'ldap.group_attribute': 'memberUid',
                 'ldap.group_attribute_is_dn': False,
             }
@@ -239,7 +254,12 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
             },
         )
         self.conn.strategy.add_entry(
-            'cn=appgroup,ou=Groups,dc=nodomain', {'memberUid': ['user01', 'user02'], 'objectClass': ['posixGroup']}
+            'cn=appgroup,ou=Groups,dc=example,dc=org',
+            {
+                'cn': ['appgroup'],
+                'memberUid': ['user01', 'user02'],
+                'objectClass': ['posixGroup'],
+            },
         )
         # When authenticating with that user
         authenticated = cherrypy.ldap.authenticate('user01', 'password1')
@@ -254,6 +274,7 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
                 'cn': ['user01'],
                 '_email': None,
                 '_fullname': None,
+                '_member_of': ['appgroup'],
             },
             authenticated[1],
         )

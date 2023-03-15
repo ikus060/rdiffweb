@@ -35,7 +35,6 @@ When launching `rdiffweb` executable, you may pass as many arguments as you want
 
 E.g. `--server-port 8081` or `--server-port=8081` are valid
 
-
 ## Configure listening port and interface
 
 For security reasons, Rdiffweb listen on port `8080` for HTTP request on loopback interface (127.0.0.1) by default. Consider configuring a reverse proxy like Nginx or Apache2 if you want to make Rdiffweb listen on port 80 for HTTP and port 443 for HTTPS request.
@@ -55,7 +54,7 @@ You can use the IP of your server, but a Fully Qualified Domain Name (FQDN) is p
 | --- | --- | --- |
 | external-url | Define the base URL used to reach your Rdiffweb application | `https://rdiffweb.mycompagny.com` |
 
-## Configure administrator username & password
+## Configure administrator username and password
 
 Using configuration file, you may setup a special administrator which cannot be
 deleted or renamed from the web interface. You may also configure a specific
@@ -64,10 +63,9 @@ password for this user that cannot be updated from the web interface either.
 In addition, you may also create other administrator users to manage Rdiffweb.
 
 | Parameter | Description | Example |
-| --- | --- | --- | 
+| --- | --- | --- |
 | admin-user | Define the name of the default admin user to be created | admin |
-| admin-password | administrator encrypted password as SSHA. Read online documentation to know more about how to encrypt your password into SSHA or use http://projects.marsching.org/weave4j/util/genpassword.php When defined, administrator password cannot be updated using the web interface. When undefined, default administrator password is `admin123` and it can be updated using the web interface. | modification |
-
+| admin-password | administrator encrypted password as SSHA. Read online documentation to know more about how to encrypt your password into SSHA or use <http://projects.marsching.org/weave4j/util/genpassword.php> When defined, administrator password cannot be updated using the web interface. When undefined, default administrator password is `admin123` and it can be updated using the web interface. | modification |
 
 ## Configure logging
 
@@ -94,8 +92,7 @@ Rdiffweb use SQL database to store user preferences. The embedded SQLite databas
 
 | Option | Description | Example |
 | --- | --- | --- |
-| database-uri | Location of the database used for persistence. SQLite and PostgreSQL database are supported officially. To use a SQLite database, you may define the location using a file path or a URI. e.g.: `/srv/rdiffweb/file.db` or `sqlite:///srv/rdiffweb/file.db`. To use PostgreSQL server, you must provide a URI similar to `postgresql://user:pass@10.255.1.34/dbname` and you must install required dependencies. By default, Rdiffweb uses a SQLite embedded database located at `/etc/rdiffweb/rdw.db`. | postgresql://user:pass@10.255.1.34/dbname | 
-
+| database-uri | Location of the database used for persistence. SQLite and PostgreSQL database are supported officially. To use a SQLite database, you may define the location using a file path or a URI. e.g.: `/srv/rdiffweb/file.db` or `sqlite:///srv/rdiffweb/file.db`. To use PostgreSQL server, you must provide a URI similar to `postgresql://user:pass@10.255.1.34/dbname` and you must install required dependencies. By default, Rdiffweb uses a SQLite embedded database located at `/etc/rdiffweb/rdw.db`. | postgresql://user:pass@10.255.1.34/dbname |
 
 ### SQLite
 
@@ -119,58 +116,12 @@ You may need to install additional dependencies to connect to PostgreSQL. Step t
 
 Rdiffweb may integrates with LDAP server to support user authentication.
 
-This integration works with most LDAP-compliant servers, including:
-
-* Microsoft Active Directory
-* Apple Open Directory
-* Open LDAP
-* 389 Server
-
-### LDAP options
-
-| Option | Description | Example |
-| --- | --- | --- |
-| ldap-add-missing-user | `True` to create users from LDAP when the credential is valid. | True |
-| ldap-add-user-default-role | Role to be used when creating a new user from LDAP. Default: user | maintainer |
-| ldap-add-user-default-userroot | Userroot to be used when creating a new user from LDAP. Default: empty | /backups/{cn[0]} |
-| ldap-base-dn | The DN of the branch of the directory where all searches should start from. | dc=my,dc=domain |
-| ldap-bind-dn | An optional DN used to bind to the server when searching for entries. If not provided, will use an anonymous bind. | cn=manager,dc=my,dc=domain |
-| ldap-bind-password | A bind password to use in conjunction with `LdapBindDn`. Note that the bind password is probably sensitive data,and should be properly protected. You should only use the LdapBindDn and LdapBindPassword if you absolutely need them to search the directory. | mypassword |
-| ldap-encoding | encoding used by your LDAP server. Default to utf-8 | cp1252 |
-| ldap-filter | A valid LDAP search filter. If not provided, defaults to `(objectClass=*)`, which will search for all objects in the tree. | (objectClass=*) |
-| ldap-group-attribute-is-dn | True if the content of the attribute ldap-group-attribute is a DN. | true |
-| ldap-group-attribute | name of the attribute defining the groups of which the user is a member. Should be used with ldap-required-group and ldap-group-attribute-is-dn. | member |
-| ldap-network-timeout | Optional timeout value. Default to 10 sec. | 10 |
-| ldap-protocol-version | Version of LDAP in use either 2 or 3. Default to 3. | 3 |
-| ldap-required-group | name of the group of which the user must be a member to access rdiffweb. Should be used with ldap-group-attribute and ldap-group-attribute-is-dn. | rdiffweb |
-| ldap-scope | The scope of the search. Can be either `base`, `onelevel` or `subtree`. Default to `subtree`. | onelevel |
-| ldap-timeout | Optional timeout value. Default to 300 sec. | 300 |
-| ldap-tls | `true` to enable TLS. Default to `false` | false |
-| ldap-uri | URIs containing only the schema, the host, and the port. | ldap://localhost:389 |
-| ldap-username-attribute | The attribute to search username. If no attributes are provided, the default is to use `uid`. It's a good idea to choose an attribute that will be unique across all entries in the subtree you will be using. | cn |
-| ldap-version | version of LDAP in use either 2 or 3. Default to 3.| 3 |
-
-### Automatically create user in Rdiffweb
-
-If you have a large number of users in your LDAP, you may want to configure Rdiffweb to automatically create user in database that has valid LDAP credentials. The user will get created on first valid login.
-
-You may optionally pass other options like `ldap-add-user-default-role` and `ldap-add-user-default-userroot` to automatically define the default user role and default user root for any new user created from LDAP.
-
-Here a working configuration:
-
-    ldap-add-missing-user=true
-    ldap-add-user-default-role=user
-    ldap-add-user-default-userroot=/backups/{cn[0]}
-
-### Restrict access to a specific LDAP group
-
-If you are making use of LDAP credentials validation, you will usually want to limit the access to member of a specific LDAP group. Rdiffweb support such scenario with the use of `ldap-required-group`, `ldap-group-attribute` and `ldap-group-attribute-is-dn`.
-
-Here is an example of how you may limit Rdiffweb access to members of *Admin_Backup* group. This configuration is known to work with LDAP PosixAccount and PosixGroup.
-
-    ldap-required-group=cn=Admin_Backup,ou=Groups,dc=nodomain
-    ldap-group-attribute=memberUid
-    ldap-group-attribute-is-dn=false
+```{toctree}
+---
+titlesonly: true
+---
+configuration-ldap
+```
 
 ## Configure User Session
 
@@ -367,7 +318,7 @@ need. Most likely, you will want to make it closer to your business brand.
 | brand-favicon | Define the FavIcon to be displayed in the browser title | /etc/rdiffweb/my-fav.ico |
 | brand-logo | location of an image (preferably a .png) to be used as a replacement for the rdiffweb logo displayed in Login page. | /etc/rdiffweb/logo2.png |
 | brand-header-logo | location of an image (preferably a .png) to be used as a replacement for the rdiffweb header logo displayed in navigation bar. | /etc/rdiffweb/logo1.png |
-| brand-link-color | define a CSS color to be used for link. | #eeffee | 
+| brand-link-color | define a CSS color to be used for link. | #eeffee |
 | brand-btn-fg-color | define a CSS color to use for the button text. Default to white if undefined | #ffffff |
 | brand-btn-bg-color | define a CSS color to use for the background of the button. Default to `link-color` if undefined | #eeeeff |
 | brand-btn-radius | activate or deactivate the rounded corners of the buttons | 0 |
@@ -398,7 +349,6 @@ If you want to enforce a different location for the temporary directory, you may
 | Parameter | Description | Example |
 | --- | --- | --- |
 | tempdir | alternate temporary folder to be used when restoring files. Might be useful if the default location has limited disk space| /tmp/rdiffweb/ |
-
 
 ## Configure repository lookup depthness
 
