@@ -22,6 +22,7 @@ import sys
 
 import cherrypy
 
+from rdiffweb.core.librdiff import find_rdiff_backup
 from rdiffweb.rdw_app import RdiffwebApp
 
 # Define logger for this module
@@ -108,6 +109,9 @@ def main(args=None, app_class=RdiffwebApp):
     _setup_logging(log_file=cfg.log_file, log_access_file=cfg.log_access_file, level=log_level)
 
     try:
+        # Prevent application from starting if rdiff-backup cannot be found.
+        find_rdiff_backup()
+
         cherrypy.config.update(
             {
                 'server.socket_host': cfg.server_host,
