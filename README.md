@@ -92,19 +92,32 @@ You should read the [Documentation](https://www.ikus-soft.com/archive/rdiffweb/d
 
     pip install rdiffweb
 
-## Support
+## Newsletter
 
-### Mailing list
+Subscribing to our newsletter is an effective way to stay up-to-date on the latest news about Rdiffweb.
+By signing up for, you will receive regular updates and notifications about new features, updates, and releases related to Rdiffweb.
 
-Rdiffweb users should use the [Rdiffweb mailing list](https://groups.google.com/forum/#!forum/rdiffweb).
+[Rdiffweb Newsletter](https://rdiffweb.org/contactus).
 
-### Bug Reports
+## Google Group
+
+Join our growing community to get answers to your technical questions.
+
+Rdiffweb users should use the [Rdiffweb Google Group](https://groups.google.com/forum/#!forum/rdiffweb).
+
+## Documentation
+
+Want to know more about Rdiffweb and learn it thoroughly? Read our complete documentation.
+
+[Rdiffweb Documentation](https://www.ikus-soft.com/archive/rdiffweb/doc/latest/html/).
+
+## Bug Reports
 
 Bug reports should be reported on the Rdiffweb Gitlab at <https://gitlab.com/ikus-soft/rdiffweb/-/issues>
 
-### Professional support
+## Professional support
 
-Professional support for Rdiffweb is available by contacting [IKUS Soft](https://www.ikus-soft.com/en/support/#form).
+Professional support for Rdiffweb is available by [contacting IKUS Soft](https://rdiffweb.org/contactus).
 
 # Changelog
 
