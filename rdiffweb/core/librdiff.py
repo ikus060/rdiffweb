@@ -1141,6 +1141,13 @@ class RdiffRepo(object):
         else:
             filename = "%s.%s" % (path_obj.display_name, kind)
 
+        # Define environment
+        env = {}
+        if os.environ.get('PATH'):
+            env['PATH'] = os.environ.get('PATH')
+        if os.environ.get('TMPDIR'):
+            env['TMPDIR'] = os.environ.get('TMPDIR')
+
         # Call external process to offload processing.
         # python -m rdiffweb.core.restore --restore-as-of 123456 --encoding utf-8 --kind zip -
         cmdline = [
@@ -1161,7 +1168,7 @@ class RdiffRepo(object):
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            env=None,
+            env=env,
         )
         # Check if the restore process is properly starting
         # Read the first 100 line until "Processing changed file"
@@ -1177,6 +1184,9 @@ class RdiffRepo(object):
                 break
             line = proc.stderr.readline()
         if not success:
+            logger.error(
+                'restore failed with the following output: ' + output.decode(STDOUT_ENCODING, errors='replace')
+            )
             raise CalledProcessError(1, cmdline, output)
         # Start a Thread to pipe the rest of the stream to the log
         t = threading.Thread(target=_readerthread, args=(proc.stderr, logger.debug))
