@@ -82,9 +82,9 @@ class TestI18nWebCase(rdiffweb.test.WebCase):
         self.assertInBody("Se connecter")
 
 
-class TestI18nDefaultLnagWebCase(rdiffweb.test.WebCase):
+class TestI18nDefaultLangWebCase(rdiffweb.test.WebCase):
 
-    default_config = {'default-lang': 'fr'}
+    default_config = {'default-lang': 'FR'}
 
     def test_default_lang_without_accept_language(self):
         # Given a default language
@@ -109,3 +109,16 @@ class TestI18nDefaultLnagWebCase(rdiffweb.test.WebCase):
         self.assertStatus(200)
         # Then page is displayed as english
         self.assertInBody('lang="fr"')
+
+
+class TestI18nInvalidDefaultLangWebCase(rdiffweb.test.WebCase):
+
+    default_config = {'default-lang': 'invalid'}
+
+    def test_default_lang_invalid(self):
+        # Given an invalid default language
+        # When user connect to the application without Accept-Language
+        self.getPage("/login/")
+        self.assertStatus(200)
+        # Then page is displayed with fallback to "en"
+        self.assertInBody('lang="en"')
