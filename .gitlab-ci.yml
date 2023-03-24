@@ -1,34 +1,34 @@
 image: python:3-bullseye
 
 stages:
-- test
-- package
-- doc
-- test-package
-- sonar
-- publish
-- deploy
+  - test
+  - package
+  - doc
+  - test-package
+  - sonar
+  - publish
+  - deploy
 
 #
 # Test Stage
 #
-.tox:  &tox
+.tox: &tox
   image: python:3.10-bullseye
   stage: test
   variables:
     TOXENV: $CI_JOB_NAME
   before_script:
-  - apt -yq update && apt install -yq rdiff-backup
+    - apt -yq update && apt install -yq rdiff-backup
   script:
-  - pip install tox
-  - export TOXENV=${TOXENV:-$CI_JOB_NAME}
-  - echo TOXENV=$TOXENV
-  - useradd myuser
-  - su myuser -c tox
+    - pip install tox
+    - export TOXENV=${TOXENV:-$CI_JOB_NAME}
+    - echo TOXENV=$TOXENV
+    - useradd myuser
+    - su myuser -c tox
   artifacts:
     paths:
-    - coverage-*.xml
-    - xunit-*.xml
+      - coverage-*.xml
+      - xunit-*.xml
     expire_in: 1 day
 
 flake8:
@@ -48,8 +48,18 @@ py3:
   image: $IMAGE
   parallel:
     matrix:
-    - TOXENV: py3
-      IMAGE: [python:3.6, python:3.7, python:3.8, python:3.9, python:3.10]
+      - TOXENV: py3
+        IMAGE: python:3.6
+      - TOXENV: buster
+        IMAGE: python:3.7-buster
+      - TOXENV: py3
+        IMAGE: python:3.8
+      - TOXENV: bullseye
+        IMAGE: python:3.9-bullseye
+      - TOXENV: py3
+        IMAGE: python:3.10
+      - TOXENV: bookworm
+        IMAGE: python:3.11
 
 selenium:
   <<: *tox
@@ -60,44 +70,26 @@ selenium:
       - coverage.xml
       - xunit.xml
 
-rdiff-backup-beta:
+rdiff-backup-latest:
   <<: *tox
   image: python:3.9-bullseye
   variables:
     TOXENV: buster
   allow_failure: true
   before_script:
-  - apt-get update
-  - apt -y install librsync-dev
-  - pip install tox
-  - pip install -U --pre rdiff-backup
-
-debian:
-  <<: *tox
-  image: $IMAGE
-  parallel:
-    matrix:
-    - TOXENV: buster
-      IMAGE: python:3.7-buster
-    - TOXENV: bullseye
-      IMAGE: python:3.9-bullseye
-    - TOXENV: bookworm
-      IMAGE: python:3.10
+    - apt-get update
+    - apt -y install librsync-dev
+    - pip install tox
+    - pip install -U rdiff-backup
 
 postgresql-12:
   <<: *tox
   image: $IMAGE
   services:
     - postgres:12.2-alpine
-  parallel:
-    matrix:
-    - TOXENV: buster
-      IMAGE: python:3.7-buster
-    - TOXENV: bullseye
-      IMAGE: python:3.9-bullseye
-    - TOXENV: bookworm
-      IMAGE: python:3.10
   variables:
+    TOXENV: bullseye
+    IMAGE: python:3.9-bullseye
     RDIFFWEB_TEST_DATABASE_URI: "postgresql://admin@postgres/test"
     POSTGRES_DB: test
     POSTGRES_USER: admin
@@ -111,53 +103,53 @@ doc:
   dependencies: []
   artifacts:
     paths:
-    - .tox/doc/tmp/html
+      - .tox/doc/tmp/html
     expire_in: 1 day
 
-package:py3: 
+package:py3:
   stage: package
   needs: []
   script:
-  - pip3 install wheel
-  - python3 setup.py sdist bdist_wheel
+    - pip3 install wheel
+    - python3 setup.py sdist bdist_wheel
   dependencies: []
   artifacts:
     paths:
-    - dist/*.whl
+      - dist/*.whl
     expire_in: 1 day
-    
+
 package:docker:
   stage: package
   needs: []
   dependencies: []
   image: docker:20
   services:
-  - name: docker:20-dind
+    - name: docker:20-dind
   script:
-  # Get docker layes
-  - docker pull ikus060/rdiffweb:latest || true
-  - docker pull ikus060/rdiffweb:$CI_COMMIT_REF_SLUG || true
-  - docker build --cache-from ikus060/rdiffweb:latest --cache-from ikus060/rdiffweb:$CI_COMMIT_REF_SLUG -t rdiffweb .
-  - mkdir dist
-  - docker save rdiffweb --output dist/rdiffweb-docker.tar
+    # Get docker layes
+    - docker pull ikus060/rdiffweb:latest || true
+    - docker pull ikus060/rdiffweb:$CI_COMMIT_REF_SLUG || true
+    - docker build --cache-from ikus060/rdiffweb:latest --cache-from ikus060/rdiffweb:$CI_COMMIT_REF_SLUG -t rdiffweb .
+    - mkdir dist
+    - docker save rdiffweb --output dist/rdiffweb-docker.tar
   artifacts:
     paths:
-    - dist/*-docker.tar
+      - dist/*-docker.tar
     expire_in: 1 day
 
-package:deb: 
+package:deb:
   stage: package
   needs: []
   image: buildpack-deps:$DIST
   parallel:
     matrix:
-    # Disable unitest on buster. Cherrypy packages doesn't include tests
-    - DIST: buster
-      DEB_BUILD_OPTIONS: nocheck
-      BACKPORTS: deb http://deb.debian.org/debian buster-backports main
-    - DIST: [bullseye, bookworm]
-    - DIST: [jammy, kinetic]
-      TZ: UTC
+      # Disable unitest on buster. Cherrypy packages doesn't include tests
+      - DIST: buster
+        DEB_BUILD_OPTIONS: nocheck
+        BACKPORTS: deb http://deb.debian.org/debian buster-backports main
+      - DIST: [bullseye, bookworm]
+      - DIST: [jammy, kinetic]
+        TZ: UTC
   script: |
     set -x
     set -e
@@ -178,7 +170,7 @@ package:deb:
     mv ../rdiffweb*.deb ./dist/$DIST/
   artifacts:
     paths:
-    - ./dist/*
+      - ./dist/*
     expire_in: 1 day
 
 test-package:deb:
@@ -187,57 +179,57 @@ test-package:deb:
   needs: ["package:deb"]
   parallel:
     matrix:
-    - DIST: [buster, bullseye, bookworm]
-    # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
-    # So we need to make it explicit using environment variable
-    - DIST: [jammy, kinetic]
-      TZ: UTC
+      - DIST: [buster, bullseye, bookworm]
+      # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
+      # So we need to make it explicit using environment variable
+      - DIST: [jammy, kinetic]
+        TZ: UTC
   script:
-  - apt update && apt install -y ./dist/$DIST/rdiffweb*.deb
-  - rdiffweb --version
-  - (/usr/bin/rdiffweb &)
-  - timeout 60 bash -c 'until curl --silent http://localhost:8080; do sleep 1; done'
-  # Check if static files are working
-  - curl http://localhost:8080/static/css/bootstrap.min.css
-  - curl http://localhost:8080/static/css/bootstrap.min.css.map
-  - curl http://localhost:8080/static/css/font-awesome.css.map
-  - curl http://localhost:8080/static/css/font-awesome.min.css
-  - curl http://localhost:8080/static/css/jquery.dataTables.min.css
-  - curl http://localhost:8080/static/css/responsive.dataTables.min.css
-  - curl http://localhost:8080/static/fonts/FontAwesome.otf
-  - curl http://localhost:8080/static/fonts/fontawesome-webfont.eot
-  - curl http://localhost:8080/static/fonts/fontawesome-webfont.svg
-  - curl http://localhost:8080/static/fonts/fontawesome-webfont.ttf
-  - curl http://localhost:8080/static/fonts/fontawesome-webfont.woff
-  - curl http://localhost:8080/static/fonts/fontawesome-webfont.woff2
-  - curl http://localhost:8080/static/images/sort_asc.png
-  - curl http://localhost:8080/static/images/sort_both.png
-  - curl http://localhost:8080/static/images/sort_desc.png
-  - curl http://localhost:8080/static/js/bootstrap.bundle.js.map
-  - curl http://localhost:8080/static/js/bootstrap.bundle.min.js
-  - curl http://localhost:8080/static/js/dataTables.buttons.min.js
-  - curl http://localhost:8080/static/js/dataTables.responsive.min.js
-  - curl http://localhost:8080/static/js/jquery.dataTables.min.js
-  - curl http://localhost:8080/static/js/jquery.min.js
-  
+    - apt update && apt install -y ./dist/$DIST/rdiffweb*.deb
+    - rdiffweb --version
+    - (/usr/bin/rdiffweb &)
+    - timeout 60 bash -c 'until curl --silent http://localhost:8080; do sleep 1; done'
+    # Check if static files are working
+    - curl http://localhost:8080/static/css/bootstrap.min.css
+    - curl http://localhost:8080/static/css/bootstrap.min.css.map
+    - curl http://localhost:8080/static/css/font-awesome.css.map
+    - curl http://localhost:8080/static/css/font-awesome.min.css
+    - curl http://localhost:8080/static/css/jquery.dataTables.min.css
+    - curl http://localhost:8080/static/css/responsive.dataTables.min.css
+    - curl http://localhost:8080/static/fonts/FontAwesome.otf
+    - curl http://localhost:8080/static/fonts/fontawesome-webfont.eot
+    - curl http://localhost:8080/static/fonts/fontawesome-webfont.svg
+    - curl http://localhost:8080/static/fonts/fontawesome-webfont.ttf
+    - curl http://localhost:8080/static/fonts/fontawesome-webfont.woff
+    - curl http://localhost:8080/static/fonts/fontawesome-webfont.woff2
+    - curl http://localhost:8080/static/images/sort_asc.png
+    - curl http://localhost:8080/static/images/sort_both.png
+    - curl http://localhost:8080/static/images/sort_desc.png
+    - curl http://localhost:8080/static/js/bootstrap.bundle.js.map
+    - curl http://localhost:8080/static/js/bootstrap.bundle.min.js
+    - curl http://localhost:8080/static/js/dataTables.buttons.min.js
+    - curl http://localhost:8080/static/js/dataTables.responsive.min.js
+    - curl http://localhost:8080/static/js/jquery.dataTables.min.js
+    - curl http://localhost:8080/static/js/jquery.min.js
+
 publish:sonar:master:
   stage: sonar
   allow_failure: True
   needs:
-  - py3
+    - py3
   image: sonarsource/sonar-scanner-cli
   only:
-  - master
+    - master
   variables:
     SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
   script:
-  - sonar-scanner -X -Dsonar.python.coverage.reportPaths=coverage-*.xml -Dsonar.python.xunit.reportPaths=xunit-py3.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.projectVersion=$(git describe) -Dsonar.qualitygate.wait=True
+    - sonar-scanner -X -Dsonar.python.coverage.reportPaths=coverage-*.xml -Dsonar.python.xunit.reportPaths=xunit-py3.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.projectVersion=$(git describe) -Dsonar.qualitygate.wait=True
 
 publish:sonar:dev:
   stage: sonar
   allow_failure: True
   needs:
-  - py3
+    - py3
   image: sonarsource/sonar-scanner-cli
   only:
     variables:
@@ -246,14 +238,14 @@ publish:sonar:dev:
   variables:
     SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
   script:
-  - sonar-scanner -X -Dsonar.python.coverage.reportPaths=coverage-*.xml -Dsonar.python.xunit.reportPaths=xunit-*.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.projectVersion=$(git describe) -Dsonar.qualitygate.wait=True
+    - sonar-scanner -X -Dsonar.python.coverage.reportPaths=coverage-*.xml -Dsonar.python.xunit.reportPaths=xunit-*.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.projectVersion=$(git describe) -Dsonar.qualitygate.wait=True
 
 publish:docker:
   needs:
-  - package:docker
+    - package:docker
   image: docker:20
   services:
-  - name: docker:20-dind
+    - name: docker:20-dind
   only:
     variables:
       - $DOCKER_USR
@@ -284,7 +276,7 @@ publish:docker:
 
 publish:docker-readme:
   needs:
-  - package:docker
+    - package:docker
   only:
     variables:
       - $DOCKER_USR
@@ -301,23 +293,23 @@ publish:docker-readme:
     PUSHRM_DEBUG: 1
     PUSHRM_FILE: $CI_PROJECT_DIR/README.md
   script:
-  # Keep top 400 lines to workarround Dockerhub limitation.
-  - cp README.md README.md.orig
-  - head -n 400 README.md.orig > README.md
-  # Push file
-  - /docker-pushrm
+    # Keep top 400 lines to workarround Dockerhub limitation.
+    - cp README.md README.md.orig
+    - head -n 400 README.md.orig > README.md
+    # Push file
+    - /docker-pushrm
   stage: publish
 
 publish:deb:
   needs:
-  - package:deb
+    - package:deb
   only:
     variables:
       - $NEXUS_USR
       - $NEXUS_PWD
   parallel:
     matrix:
-    - DIST: [buster, bullseye, bookworm, jammy, kinetic]
+      - DIST: [buster, bullseye, bookworm, jammy, kinetic]
   script: |
     set -e
     set -x
@@ -355,7 +347,7 @@ publish:doc:
       - $NEXUS_PWD
       - $NEXUS_URL
   needs:
-  - doc
+    - doc
   script:
     # publish to nexus
     - export VERSION=$(cd minarca-client; python3 setup.py --version)
@@ -366,13 +358,13 @@ publish:doc:
 deploy:demo:
   only:
     variables:
-    - $GITLAB_ANSIBLE_TOKEN
+      - $GITLAB_ANSIBLE_TOKEN
   allow_failure: True
   environment:
     name: demo
     url: https://rdiffweb-demo.ikus-soft.com/
-  needs: 
-  - package:deb
+  needs:
+    - package:deb
   image: registry.gitlab.com/finestructure/pipeline-trigger
   script:
     - apk update && apk add git
@@ -383,4 +375,3 @@ deploy:demo:
   stage: deploy
   variables:
     GIT_STRATEGY: none
-  
