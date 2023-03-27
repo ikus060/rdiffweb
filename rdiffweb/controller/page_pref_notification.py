@@ -20,12 +20,16 @@ User can control the notification period.
 """
 
 
+import logging
+
 import cherrypy
-from wtforms.fields import HiddenField, SelectField, SubmitField
+from wtforms.fields import HiddenField, RadioField, SelectField, SubmitField
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
-from rdiffweb.tools.i18n import ugettext as _
+from rdiffweb.tools.i18n import gettext_lazy as _
+
+logger = logging.getLogger(__name__)
 
 
 class MaxAgeField(SelectField):
@@ -33,7 +37,7 @@ class MaxAgeField(SelectField):
         super().__init__(
             *args,
             choices=[
-                (0, _('disabled')),
+                (0, _('Never')),
                 (1, _('1 day')),
                 (2, _('2 days')),
                 (3, _('3 days')),
@@ -49,6 +53,47 @@ class MaxAgeField(SelectField):
             coerce=int,
             **kwargs
         )
+
+
+class ReportForm(CherryForm):
+    action = HiddenField(default="set_report_info")
+    report_time_range = RadioField(
+        _('Send me a backup status report'),
+        choices=[
+            (0, _('Never')),
+            (1, _('Daily')),
+            (7, _('Weekly')),
+            (30, _('Monthly')),
+        ],
+        coerce=int,
+    )
+    set_report_info = SubmitField(_('Save changes'), render_kw={"class": "pull-left mr-2"})
+    send_report = SubmitField(_('Save and send report'), render_kw={"class": "btn-secondary pull-left"})
+
+    def is_submitted(self):
+        return self.action.data == 'set_report_info' and super().is_submitted()
+
+    def populate_obj(self, userobj):
+
+        # Simply push the time_range to user's data
+        try:
+            userobj.report_time_range = self.report_time_range.data
+            userobj.commit()
+            # Validate if a report could be sent
+            if self.send_report.data:
+                if not userobj.report_time_range:
+                    raise ValueError(_('You must select a time range and save changes before sending a report.'))
+                if not userobj.email:
+                    raise ValueError(_('Could not send report to user without configured email.'))
+                cherrypy.notification.send_report(userobj, force=True)
+                flash(_("Report sent successfully."), level='success')
+            else:
+                flash(_("Report settings updated successfully."), level='success')
+            return True
+        except Exception as e:
+            userobj.rollback()
+            flash(str(e), level='warning')
+            return False
 
 
 class NotificationForm(CherryForm):
@@ -78,22 +123,35 @@ class NotificationForm(CherryForm):
                     # Update the maxage
                     repo.maxage = self[repo.display_name].data
             userobj.commit()
+            flash(_("Notification settings updated successfully."), level='success')
+            return True
         except Exception as e:
             userobj.rollback()
             flash(str(e), level='warning')
+            return False
 
 
 class PagePrefNotification(Controller):
     @cherrypy.expose
-    def default(self, action=None, **kwargs):
+    def default(self, **kwargs):
         # Process the parameters.
-        form = NotificationForm.create_form(self.app.currentuser)
-        if form.validate_on_submit():
-            form.populate_obj(self.app.currentuser)
-            flash(_('Notification settings updated successfully.'), level='success')
-
+        report_form = ReportForm(obj=self.app.currentuser)
+        notification_form = NotificationForm.create_form(self.app.currentuser)
+        if report_form.is_submitted():
+            if report_form.validate():
+                if report_form.populate_obj(self.app.currentuser):
+                    raise cherrypy.HTTPRedirect("")
+            else:
+                flash(report_form.error_message, level='error')
+        elif notification_form.is_submitted():
+            if notification_form.validate():
+                if notification_form.populate_obj(self.app.currentuser):
+                    raise cherrypy.HTTPRedirect("")
+            else:
+                flash(notification_form.error_message, level='error')
         params = {
             'email': self.app.currentuser.email,
-            'form': form,
+            'report_form': report_form,
+            'notification_form': notification_form,
         }
         return self._compile_template("prefs_notification.html", **params)

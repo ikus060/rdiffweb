@@ -95,6 +95,7 @@ import threading
 from contextlib import contextmanager
 
 import cherrypy
+from babel import dates
 from babel.core import Locale, UnknownLocaleError
 from babel.support import LazyProxy, NullTranslations, Translations
 
@@ -266,6 +267,13 @@ def gettext_lazy(message):
         return get_translation().ugettext(message)
 
     return LazyProxy(func, enable_cache=False)
+
+
+def format_datetime(datetime=None, format='medium'):
+    """
+    Wraper arround babel format_datetime to provide a default locale.
+    """
+    return dates.format_datetime(datetime=datetime, format=format, locale=get_translation().locale)
 
 
 def _load_default_language(mo_dir, domain, default, **kwargs):

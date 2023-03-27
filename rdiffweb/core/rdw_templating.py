@@ -103,11 +103,11 @@ def do_format_lastupdated(value, now=None):
         return ""
     now = librdiff.RdiffTime(now)
     if isinstance(value, librdiff.RdiffTime):
-        delta = now.epoch() - value.epoch()
+        delta = now.epoch - value.epoch
     elif isinstance(value, datetime.datetime):
-        delta = now.epoch() - value.timestamp()
+        delta = now.epoch - value.timestamp()
     else:
-        delta = now.epoch() - value
+        delta = now.epoch - value
     delta = datetime.timedelta(seconds=delta)
     if delta.days > 365:
         return _('%d years ago') % (delta.days / 365)
@@ -170,7 +170,7 @@ def url_for(*args, **kwargs):
         else:
             raise ValueError('invalid positional arguments, url_for accept str, bytes or RepoPath: %r' % chunk)
     # Sort the arguments to have predictable results.
-    qs = [(k, v.epoch() if hasattr(v, 'epoch') else v) for k, v in sorted(kwargs.items()) if v is not None]
+    qs = [(k, v.epoch if hasattr(v, 'epoch') else v) for k, v in sorted(kwargs.items()) if v is not None]
     # Outside a request, use the external_url as base if defined
     base = None
     if not cherrypy.request.app and cherrypy.tree.apps:
@@ -203,6 +203,7 @@ class TemplateManager(object):
         self.jinja_env.filters['filter'] = do_filter
         self.jinja_env.filters['lastupdated'] = do_format_lastupdated
         self.jinja_env.filters['filesize'] = lambda x: humanfriendly.format_size(x, binary=True)
+        self.jinja_env.filters['format_datetime'] = i18n.format_datetime
 
         # Register method
         self.jinja_env.globals['attrib'] = attrib

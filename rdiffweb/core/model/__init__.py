@@ -95,6 +95,10 @@ def db_after_create(target, connection, **kw):
     # Add user's lang column
     _column_add(connection, UserObject.__table__.c.lang)
 
+    # Add user's report column
+    _column_add(connection, UserObject.__table__.c.report_time_range)
+    _column_add(connection, UserObject.__table__.c.report_last_sent)
+
     # Re-create session table if Number column is missing
     if not _column_exists(connection, SessionObject.__table__.c.Number):
         SessionObject.__table__.drop()

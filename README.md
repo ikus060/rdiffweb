@@ -124,6 +124,8 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 ## Next Release
 
 * Fix MFA verification code email's subjet #270
+* Add translation for footer not in email layout
+* Provide a Monthly, Weekly or Daily repport for user #71
 
 ## 2.6.1 (2023-03-22)
 

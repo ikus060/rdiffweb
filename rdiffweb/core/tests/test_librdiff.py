@@ -22,6 +22,7 @@ Module used to test the librdiff.
 
 @author: Patrik Dufresne
 """
+
 import datetime
 import os
 import shutil
@@ -521,7 +522,7 @@ class RdiffRepoTest(unittest.TestCase):
     def test_status(self):
         status = self.repo.status
         self.assertEqual('ok', status[0])
-        self.assertEqual('', status[1])
+        self.assertEqual('Healthy', status[1])
 
     def test_status_access_denied_current_mirror(self):
         # Skip test if running as root. Because root as access to everything.
@@ -765,7 +766,7 @@ class RdiffTimeTest(unittest.TestCase):
 
     def test_init_now(self):
         t0 = RdiffTime()
-        self.assertAlmostEqual(int(time.time()), t0.epoch(), delta=5000)
+        self.assertAlmostEqual(int(time.time()), t0.epoch, delta=5000)
 
     @parameterized.expand(
         [
@@ -778,7 +779,7 @@ class RdiffTimeTest(unittest.TestCase):
     )
     def test_init(self, value, expected_epoch):
         t1 = RdiffTime(value)
-        self.assertEqual(expected_epoch, t1.epoch())
+        self.assertEqual(expected_epoch, t1.epoch)
 
     def test_int(self):
         """Check if int(RdiffTime) return expected value."""
@@ -805,8 +806,36 @@ class RdiffTimeTest(unittest.TestCase):
         self.assertTrue((RdiffTime('2014-11-02T21:04:30Z') - RdiffTime()).days < 0)
         self.assertTrue((RdiffTime() - RdiffTime('2014-11-02T21:04:30Z')).days > 0)
 
-    def test_set_time(self):
-        self.assertEqual(RdiffTime('2014-11-05T00:00:00Z'), RdiffTime('2014-11-05T21:04:30Z').set_time(0, 0, 0))
+    def test_replace(self):
         self.assertEqual(
-            RdiffTime('2014-11-02T00:00:00-04:00'), RdiffTime('2014-11-02T21:04:30-04:00').set_time(0, 0, 0)
+            RdiffTime('2014-11-05T00:00:00Z'),
+            RdiffTime('2014-11-05T21:04:30Z').replace(hour=0, minute=0, second=0),
+        )
+        self.assertEqual(
+            RdiffTime('2014-11-02T00:00:00-04:00'),
+            RdiffTime('2014-11-02T21:04:30-04:00').replace(hour=0, minute=0, second=0),
+        )
+
+    def test_astimezone(self):
+        self.assertEqual(
+            RdiffTime('2014-11-03T01:04:30Z'),
+            RdiffTime('2014-11-02T21:04:30-04:00').astimezone(0),
+        )
+        self.assertEqual(
+            RdiffTime('2014-11-02T21:04:30-04:00'),
+            RdiffTime('2014-11-03T01:04:30Z').astimezone(-14400),
+        )
+        self.assertEqual(
+            RdiffTime('2014-11-03T01:04:30Z'),
+            RdiffTime('2014-11-03T01:04:30Z').astimezone(),
+        )
+
+    def test_weekday(self):
+        self.assertEqual(
+            4,
+            RdiffTime('2023-03-24T08:21:34-04:00').weekday(),
+        )
+        self.assertEqual(
+            6,
+            RdiffTime('2014-11-02T21:04:30-04:00').weekday(),
         )

@@ -34,6 +34,7 @@ from rdiffweb.tools.i18n import ugettext as _
 from ._repo import RepoObject
 from ._session import SessionObject
 from ._sshkey import SshKey
+from ._timestamp import Timestamp
 from ._token import Token
 
 logger = logging.getLogger(__name__)
@@ -109,6 +110,8 @@ class UserObject(Base):
         order_by=lambda: RepoObject.repopath,
     )
     lang = Column('lang', String, nullable=False, default='')
+    report_time_range = Column('report_time_range', SmallInteger, nullable=False, default=0)
+    report_last_sent = Column('report_last_sent', Timestamp, nullable=True, default=None)
 
     @classmethod
     def get_user(cls, user):

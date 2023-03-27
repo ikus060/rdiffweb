@@ -66,7 +66,7 @@ class StatusPage(Controller):
         def _key(d):
             return time.strftime(str(d).split('T')[0])
 
-        base = RdiffTime().set_time(0, 0, 0) - datetime.timedelta(days=days)
+        base = RdiffTime().replace(hour=0, minute=0, second=0) - datetime.timedelta(days=days)
         success = {_key(base + datetime.timedelta(days=i)): 0 for i in range(0, days + 1)}
         warning = success.copy()
         failed = success.copy()
@@ -111,7 +111,7 @@ class StatusPage(Controller):
         for repo in repos:
             try:
                 if repo.last_backup_date:
-                    delta = now.epoch() - repo.last_backup_date.epoch()
+                    delta = now.epoch - repo.last_backup_date.epoch
                     data[repo.display_name] = float('%.2g' % (delta / 60 / 60))
             except Exception:
                 pass

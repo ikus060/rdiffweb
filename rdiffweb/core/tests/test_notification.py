@@ -24,6 +24,7 @@ Created on Feb 13, 2016
 from unittest.mock import ANY, MagicMock
 
 import cherrypy
+from parameterized import parameterized
 
 import rdiffweb.core.notification
 import rdiffweb.test
@@ -106,6 +107,39 @@ class NotificationJobTest(AbstractNotificationTest):
 
         # Mail should not be queue.
         self.listener.queue_email.assert_not_called()
+
+    @parameterized.expand(
+        [
+            (0, None),
+            (1, 'Daily Backup Report'),
+            (7, 'Weekly Backup Report'),
+            (30, 'Monthly Backup Report'),
+            (4, 'Backup Report'),
+        ]
+    )
+    def test_report_job(self, time_range, expected_subject):
+        # Given a user with an email address and report time range
+        # Set user config
+        user = UserObject.get_user(self.USERNAME)
+        user.email = 'test@test.com'
+        user.report_time_range = time_range
+        user.report_last_sent = None
+        user.commit()
+        self.listener.queue_email.reset_mock()
+        # When running notification_job
+        cherrypy.notification.report_job()
+
+        # Then an email is queue for this user
+        if expected_subject:
+            self.listener.queue_email.assert_called_once_with(
+                to='test@test.com',
+                subject=expected_subject,
+                message=ANY,
+            )
+            user.expire()
+            self.assertIsNotNone(user.report_last_sent)
+        else:
+            self.listener.queue_email.assert_not_called()
 
 
 class NotificationPluginTest(AbstractNotificationTest):
