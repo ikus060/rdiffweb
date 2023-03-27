@@ -1,4 +1,7 @@
 {% extends 'email_layout.html' %}
+{% block title %}
+  {% trans %}Your verification code{% endtrans %}
+{% endblock title %}
 {% block body %}
   <h1>
     <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>

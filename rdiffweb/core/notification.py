@@ -110,7 +110,7 @@ class NotificationPlugin(SimplePlugin):
             # Extract subject from template
             match = re.search(r'<title>(.*)</title>', message_body, re.DOTALL)
             subject = match and match.group(1).replace('\n', '').strip()
-            subject = subject or _('Notification')
+        subject = subject or _('Notification')
         # Queue the email.
         self.bus.publish('queue_mail', to=to, subject=subject, message=message_body, **queue_mail_kwargs)
 
