@@ -121,6 +121,10 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 
 # Changelog
 
+## Next Release
+
+* Fix MFA verification code email's subjet #270
+
 ## 2.6.1 (2023-03-22)
 
 * Refused to start if `rdiff-backup` executable is not found #267

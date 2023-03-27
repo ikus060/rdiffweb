@@ -109,7 +109,6 @@ class MfaPage(Controller):
         code = cherrypy.tools.auth_mfa.generate_code()
         cherrypy.notification._queue_mail(
             userobj,
-            subject=_("Your verification code"),
             template="email_verification_code.html",
             code=code,
         )

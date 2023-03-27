@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import cherrypy
 
@@ -30,9 +30,6 @@ class MfaPageTest(rdiffweb.test.WebCase):
     login = True
 
     def _get_code(self):
-        # Register an email listeer to capture email send
-        self.listener = MagicMock()
-        cherrypy.engine.subscribe('queue_mail', self.listener.queue_email, priority=50)
         # Query MFA page to generate a code
         self.getPage("/mfa/")
         self.assertStatus(200)
@@ -40,6 +37,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         # Extract code from email between <strong> and </strong>
         self.listener.queue_email.assert_called_once()
         message = self.listener.queue_email.call_args[1]['message']
+        self.listener.queue_email.reset_mock()
         return message.split('<strong>', 1)[1].split('</strong>')[0]
 
     def setUp(self):
@@ -49,6 +47,13 @@ class MfaPageTest(rdiffweb.test.WebCase):
         userobj.mfa = UserObject.ENABLED_MFA
         userobj.email = 'admin@example.com'
         userobj.commit()
+        # Register a listener on email
+        self.listener = MagicMock()
+        cherrypy.engine.subscribe('queue_mail', self.listener.queue_email, priority=50)
+
+    def tearDown(self):
+        cherrypy.engine.unsubscribe('queue_mail', self.listener.queue_email)
+        return super().tearDown()
 
     def test_get_without_login(self):
         # Given an unauthenticated user
@@ -109,8 +114,13 @@ class MfaPageTest(rdiffweb.test.WebCase):
         session.save()
         # When requesting /mfa/ page
         self.getPage("/mfa/")
-        # Then an email get send with a new code
         self.assertStatus(200)
+        # Then an email get send with a new code
+        userobj = UserObject.get_user(self.USERNAME)
+        self.listener.queue_email.assert_called_once_with(
+            to=userobj.email, subject="Your verification code", message=ANY
+        )
+        # Then a success message is displayed to the user
         self.assertInBody("A new verification code has been sent to your email.")
 
     def test_get_with_trusted_different_ip(self):
@@ -122,16 +132,26 @@ class MfaPageTest(rdiffweb.test.WebCase):
         session.save()
         # When requesting /mfa/ page from a different ip
         self.getPage("/mfa/", headers=[('X-Forwarded-For', '10.255.14.23')])
-        # Then an email get send with a new code
         self.assertStatus(200)
+        # Then an email get send with a new code
+        userobj = UserObject.get_user(self.USERNAME)
+        self.listener.queue_email.assert_called_once_with(
+            to=userobj.email, subject="Your verification code", message=ANY
+        )
+        # Then a success message is displayed to the user
         self.assertInBody("A new verification code has been sent to your email.")
 
     def test_get_without_verified(self):
         # Given an authenticated user With MFA enabled
         # When requesting /mfa/ page
         self.getPage("/mfa/")
-        # Then an email get send with a new code
         self.assertStatus(200)
+        # Then an email get send with a new code
+        userobj = UserObject.get_user(self.USERNAME)
+        self.listener.queue_email.assert_called_once_with(
+            to=userobj.email, subject="Your verification code", message=ANY
+        )
+        # Then a success message is displayed to the user
         self.assertInBody("A new verification code has been sent to your email.")
 
     def test_verify_code_valid(self):
@@ -188,9 +208,15 @@ class MfaPageTest(rdiffweb.test.WebCase):
     def test_resend_code(self):
         # Given an authenticated user With MFA enabled with an existing code
         self._get_code()
+        self.listener.queue_email.reset_mock()
         # When user request a new code
         self.getPage("/mfa/", method='POST', body={'resend_code': '1'})
-        # Then a new code is sent to the user by email
+        # Then a new code get sent.
+        userobj = UserObject.get_user(self.USERNAME)
+        self.listener.queue_email.assert_called_once_with(
+            to=userobj.email, subject="Your verification code", message=ANY
+        )
+        # Then A success message is displayedto the user.
         self.assertInBody("A new verification code has been sent to your email.")
 
     def test_redirect_to_original_url(self):

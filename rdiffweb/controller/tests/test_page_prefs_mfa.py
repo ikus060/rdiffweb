@@ -104,7 +104,7 @@ class PagePrefMfaTest(rdiffweb.test.WebCase):
         # Then no verification code get sent
         self.assertNotInBody("A new verification code has been sent to your email.")
         # Then an email confirmation get send
-        self.listener.queue_email.assert_called_once_with(to=ANY, subject=expected_subject, message=ANY)
+        self.listener.queue_email.assert_called_once_with(to=userobj.email, subject=expected_subject, message=ANY)
         # Then next page request is still working.
         self.getPage('/')
         self.assertStatus(200)
@@ -161,4 +161,9 @@ class PagePrefMfaTest(rdiffweb.test.WebCase):
         # When requesting a new code.
         self.getPage("/prefs/mfa", method='POST', body={'resend_code': '1'})
         # Then a new code get sent.
+        userobj = UserObject.get_user(self.USERNAME)
+        self.listener.queue_email.assert_called_once_with(
+            to=userobj.email, subject="Your verification code", message=ANY
+        )
+        # Then A success message is displayedto the user.
         self.assertInBody("A new verification code has been sent to your email.")
