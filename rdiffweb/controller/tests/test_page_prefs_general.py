@@ -272,8 +272,10 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.assertEqual(['broker-repo', 'invalid', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the repository list
         self.getPage(self.PREFS, method='POST', body={'action': 'update_repos'})
-        self.assertStatus(200)
+        self.assertStatus(303)
         # Then a success message is displayed
+        self.getPage(self.PREFS)
+        self.assertStatus(200)
         self.assertInBody('Repositories successfully updated')
         # Then the list is free of inexisting repos.
         userobj.expire()

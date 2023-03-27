@@ -71,13 +71,16 @@ class TokenForm(CherryForm):
                 % token,
                 level='info',
             )
+            return True
         except ValueError as e:
             userobj.rollback()
             flash(str(e), level='warning')
+            return False
         except Exception:
             userobj.rollback()
             logger.exception("error adding access token: %s, %s" % (self.name.data, self.expiration.data))
             flash(_("Unknown error while adding the access token."), level='error')
+            return False
 
 
 class DeleteTokenForm(CherryForm):
@@ -93,28 +96,33 @@ class DeleteTokenForm(CherryForm):
         try:
             userobj.delete_access_token(self.name.data)
             flash(_('The access token has been successfully deleted.'), level='success')
+            return True
         except ValueError as e:
             userobj.rollback()
             flash(str(e), level='warning')
+            return False
         except Exception:
             userobj.rollback()
             logger.exception("error removing access token: %s" % self.name.data)
             flash(_("Unknown error while removing the access token."), level='error')
+            return False
 
 
 class PagePrefTokens(Controller):
     @cherrypy.expose
-    def default(self, action=None, **kwargs):
+    def default(self, **kwargs):
         form = TokenForm()
         delete_form = DeleteTokenForm()
         if form.is_submitted():
             if form.validate():
-                form.populate_obj(self.app.currentuser)
+                if form.populate_obj(self.app.currentuser):
+                    raise cherrypy.HTTPRedirect("")
             else:
                 flash(form.error_message, level='error')
         elif delete_form.is_submitted():
             if delete_form.validate():
-                delete_form.populate_obj(self.app.currentuser)
+                if delete_form.populate_obj(self.app.currentuser):
+                    raise cherrypy.HTTPRedirect("")
             else:
                 flash(delete_form.error_message, level='error')
         params = {

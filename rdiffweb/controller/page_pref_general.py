@@ -74,9 +74,12 @@ class UserProfileForm(CherryForm):
             user.email = self.email.data
             user.lang = self.lang.data
             user.commit()
+            flash(_("Profile updated successfully."), level='success')
+            return True
         except Exception as e:
             user.rollback()
             flash(str(e), level='warning')
+            return False
 
 
 class UserPasswordForm(CherryForm):
@@ -118,6 +121,7 @@ class UserPasswordForm(CherryForm):
         try:
             user.set_password(self.new.data)
             user.commit()
+            flash(_("Password updated successfully."), level='success')
             return True
         except ValueError as e:
             user.rollback()
@@ -143,9 +147,11 @@ class RefreshForm(CherryForm):
             if user.refresh_repos(delete=True):
                 user.commit()
             flash(_("Repositories successfully updated"), level='success')
+            return True
         except ValueError as e:
             user.rollback()
             flash(str(e), level='warning')
+            return False
 
 
 class PagePrefsGeneral(Controller):
@@ -162,21 +168,20 @@ class PagePrefsGeneral(Controller):
         refresh_form = RefreshForm()
         if profile_form.is_submitted():
             if profile_form.validate():
-                profile_form.populate_obj(self.app.currentuser)
-                flash(_("Profile updated successfully."), level='success')
-                raise cherrypy.HTTPRedirect("")
+                if profile_form.populate_obj(self.app.currentuser):
+                    raise cherrypy.HTTPRedirect("")
             else:
                 flash(profile_form.error_message, level='error')
         elif password_form.is_submitted():
             if password_form.validate():
                 if password_form.populate_obj(self.app.currentuser):
-                    flash(_("Password updated successfully."), level='success')
                     raise cherrypy.HTTPRedirect("")
             else:
                 flash(password_form.error_message, level='error')
         elif refresh_form.is_submitted():
             if refresh_form.validate():
-                refresh_form.populate_obj(self.app.currentuser)
+                if refresh_form.populate_obj(self.app.currentuser):
+                    raise cherrypy.HTTPRedirect("")
             else:
                 flash(refresh_form.error_message, level='error')
         params = {

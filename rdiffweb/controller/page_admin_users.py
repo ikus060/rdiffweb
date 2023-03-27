@@ -115,7 +115,6 @@ class UserForm(CherryForm):
         description=_(
             "When Two-Factor Authentication (2FA) is enabled for a user, a verification code get sent by email when user login from a new location."
         ),
-        render_kw={'data-beta': 1},
     )
     user_root = StringField(
         _('Root directory'),
@@ -188,6 +187,7 @@ class UserForm(CherryForm):
             if userobj.disk_quota != new_quota:
                 flash(_("Setting user's quota is not supported"), level='warning')
         userobj.commit()
+        return True
 
 
 class EditUserForm(UserForm):

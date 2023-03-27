@@ -48,7 +48,7 @@ class MfaStatusForm(AbstractMfaForm):
             (UserObject.DISABLED_MFA, _("Disabled")),
             (UserObject.ENABLED_MFA, _("Enabled")),
         ],
-        render_kw={'readonly': True, 'disabled': True, 'data-beta': '1'},
+        render_kw={'readonly': True, 'disabled': True},
     )
     enable_mfa = SubmitField(_('Enable Two-Factor Authentication'), render_kw={"class": "btn-success"})
     disable_mfa = SubmitField(_('Disable Two-Factor Authentication'), render_kw={"class": "btn-warning"})
@@ -86,9 +86,11 @@ class MfaToggleForm(AbstractMfaForm):
                 userobj.mfa = UserObject.DISABLED_MFA
                 userobj.commit()
                 flash(_("Two-Factor authentication disabled successfully."), level='success')
+            return True
         except Exception as e:
             userobj.rollback()
             flash(str(e), level='warning')
+            return False
 
     def validate_code(self, field):
         # Code is required for enable_mfa and disable_mfa
@@ -108,14 +110,15 @@ class MfaToggleForm(AbstractMfaForm):
 class PagePrefMfa(Controller):
     @cherrypy.expose
     @cherrypy.tools.ratelimit(methods=['POST'])
-    def default(self, action=None, **kwargs):
+    def default(self, **kwargs):
         form = MfaToggleForm(obj=self.app.currentuser)
         if form.is_submitted():
             if form.validate():
                 if form.resend_code.data:
                     self.send_code()
                 elif form.enable_mfa.data or form.disable_mfa.data:
-                    form.populate_obj(self.app.currentuser)
+                    if form.populate_obj(self.app.currentuser):
+                        raise cherrypy.HTTPRedirect("")
                     form = MfaStatusForm(obj=self.app.currentuser)
             # Send verification code if previous code expired.
             elif cherrypy.tools.auth_mfa.is_code_expired():

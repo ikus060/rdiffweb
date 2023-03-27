@@ -34,7 +34,7 @@ class RevokeSessionForm(CherryForm):
 @cherrypy.tools.is_admin()
 class AdminSessionPage(Controller):
     @cherrypy.expose
-    def index(self, action=None, **kwargs):
+    def index(self, **kwargs):
         # Delete session on form submit
         form = RevokeSessionForm()
         if form.is_submitted():

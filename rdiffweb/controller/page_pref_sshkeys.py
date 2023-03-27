@@ -25,7 +25,7 @@ import logging
 
 import cherrypy
 from wtforms import validators
-from wtforms.fields import StringField
+from wtforms.fields import HiddenField, StringField
 from wtforms.validators import ValidationError
 from wtforms.widgets.core import TextArea
 
@@ -49,6 +49,7 @@ def validate_key(unused_form, field):
 
 
 class SshForm(CherryForm):
+    action = HiddenField(default="add")
     title = StringField(
         _('Title'),
         description=_('The title is an optional description to identify the key. e.g.: bob@thinkpad-t530'),
@@ -69,58 +70,74 @@ class SshForm(CherryForm):
         validators=[validators.data_required(), validate_key],
     )
 
+    def is_submitted(self):
+        # Validate only if action is set_profile_info
+        return super().is_submitted() and self.action.data == 'add'
+
     def populate_obj(self, userobj):
         try:
             userobj.add_authorizedkey(key=self.key.data, comment=self.title.data)
             userobj.commit()
+            return True
         except DuplicateSSHKeyError as e:
             userobj.rollback()
             flash(str(e), level='error')
             _logger.warning("trying to add duplicate ssh key")
+            return False
         except Exception:
             userobj.rollback()
             flash(_("Unknown error while adding the SSH Key"), level='error')
             _logger.warning("error adding ssh key", exc_info=1)
+            return False
 
 
 class DeleteSshForm(CherryForm):
+    action = HiddenField(default="delete")
     fingerprint = StringField('Fingerprint', validators=[validators.data_required()])
+
+    def is_submitted(self):
+        # Validate only if action is set_profile_info
+        return super().is_submitted() and self.action.data == 'delete'
 
     def populate_obj(self, userobj):
         is_maintainer()
         try:
             userobj.delete_authorizedkey(self.fingerprint.data)
             userobj.commit()
+            return True
         except Exception:
             userobj.rollback()
             if hasattr(cherrypy.serving, 'session'):
                 flash(_("Unknown error while removing the SSH Key"), level='error')
             _logger.warning("error removing ssh key", exc_info=1)
+            return False
 
 
 class PagePrefSshKeys(Controller):
     @cherrypy.expose
-    def default(self, action=None, **kwargs):
+    def default(self, **kwargs):
 
         # Handle action
-        form = SshForm()
+        add_form = SshForm()
         delete_form = DeleteSshForm()
         if not self.app.cfg.disable_ssh_keys:
-            if action == 'add' and form.is_submitted():
-                if form.validate():
-                    form.populate_obj(self.app.currentuser)
+            if add_form.is_submitted():
+                if add_form.validate():
+                    if add_form.populate_obj(self.app.currentuser):
+                        raise cherrypy.HTTPRedirect("")
                 else:
-                    flash(form.error_message, level='warning')
-            elif action == 'delete' and delete_form.is_submitted():
+                    flash(add_form.error_message, level='warning')
+            elif delete_form.is_submitted():
                 if delete_form.validate():
-                    delete_form.populate_obj(self.app.currentuser)
+                    if delete_form.populate_obj(self.app.currentuser):
+                        raise cherrypy.HTTPRedirect("")
                 else:
                     flash(delete_form.error_message, level='warning')
 
         # Get SSH keys if file exists.
         params = {
             'disable_ssh_keys': self.app.cfg.disable_ssh_keys,
-            'form': form,
+            'form': add_form,
         }
         try:
             params["sshkeys"] = [
