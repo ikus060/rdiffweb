@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-03-29 13:11-0400\n"
+"POT-Creation-Date: 2023-04-03 17:08-0400\n"
 "PO-Revision-Date: 2014-11-14 10:00-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -406,7 +406,8 @@ msgid "Remember me"
 msgstr "Se souvenir de cet appareil"
 
 #: rdiffweb/controller/page_login.py:54 rdiffweb/controller/page_mfa.py:49
-#: rdiffweb/templates/login.html:4
+#: rdiffweb/core/tests/test_i18n.py:88 rdiffweb/core/tests/test_i18n.py:93
+#: rdiffweb/core/tests/test_i18n.py:97 rdiffweb/templates/login.html:4
 msgid "Sign in"
 msgstr "Se connecter"
 
@@ -668,11 +669,15 @@ msgstr "Enregistrer et envoyer le rapport"
 
 #: rdiffweb/controller/page_pref_notification.py:85
 msgid "You must select a time range and save changes before sending a report."
-msgstr "Vous devez sélectionner une période et enregistrer les modifications avant d'envoyer un rapport."
+msgstr ""
+"Vous devez sélectionner une période et enregistrer les modifications "
+"avant d'envoyer un rapport."
 
 #: rdiffweb/controller/page_pref_notification.py:87
 msgid "Could not send report to user without configured email."
-msgstr "Impossible d'envoyer un rapport à un utilisateur dont l'adresse courriel n'est pas configurée."
+msgstr ""
+"Impossible d'envoyer un rapport à un utilisateur dont l'adresse courriel "
+"n'est pas configurée."
 
 #: rdiffweb/controller/page_pref_notification.py:89
 msgid "Report sent successfully."
@@ -843,23 +848,23 @@ msgstr "Modifié"
 msgid "Average duration (min)"
 msgstr "Durée moyenne (min)"
 
-#: rdiffweb/core/librdiff.py:1244
+#: rdiffweb/core/librdiff.py:1243
 msgid "A backup is currently in progress to this repository."
 msgstr "Une sauvegarde est actuellement en cours dans ce dépôt."
 
-#: rdiffweb/core/librdiff.py:1252
+#: rdiffweb/core/librdiff.py:1251
 msgid "Initial backup in progress."
 msgstr "La sauvegarde initiale n'est pas achevée."
 
-#: rdiffweb/core/librdiff.py:1254
+#: rdiffweb/core/librdiff.py:1253
 msgid "The last backup has been interrupted."
 msgstr "La dernière sauvegarde a été interrompue."
 
-#: rdiffweb/core/librdiff.py:1257
+#: rdiffweb/core/librdiff.py:1256
 msgid "The repository cannot be found or is badly damaged."
 msgstr "Le dépôt ne peut pas être trouvé ou est gravement endommagé"
 
-#: rdiffweb/core/librdiff.py:1261
+#: rdiffweb/core/librdiff.py:1260
 msgid ""
 "Permissions denied. Contact administrator to check repository's "
 "permissions."
@@ -867,11 +872,11 @@ msgstr ""
 "Permissions refusées. Contactez l'administrateur pour vérifier les "
 "permissions du référentiel."
 
-#: rdiffweb/core/librdiff.py:1263 rdiffweb/templates/admin_repos.html:9
+#: rdiffweb/core/librdiff.py:1262 rdiffweb/templates/admin_repos.html:9
 msgid "Healthy"
 msgstr "Sain"
 
-#: rdiffweb/core/notification.py:128
+#: rdiffweb/core/notification.py:174
 #: rdiffweb/templates/email_notification.html:3
 #: rdiffweb/templates/prefs_notification.html:27
 #: rdiffweb/templates/settings.html:99
@@ -962,7 +967,7 @@ msgstr "Le mot de passe doit comporter entre %(min)d et %(max)d caractères."
 msgid "Password too weak."
 msgstr "Mot de passe trop simple."
 
-#: rdiffweb/core/tests/test_i18n.py:53 rdiffweb/templates/admin_users.html:70
+#: rdiffweb/core/tests/test_i18n.py:54 rdiffweb/templates/admin_users.html:70
 msgid "Edit"
 msgstr "Modifier"
 
@@ -1289,7 +1294,8 @@ msgstr "Un nouveau jeton d'accès a été créé"
 
 #: rdiffweb/templates/email_access_token_added.html:7
 #: rdiffweb/templates/email_authorizedkey_added.html:7
-#: rdiffweb/templates/email_changed.html:7 rdiffweb/templates/email_mfa.html:11
+#: rdiffweb/templates/email_changed.html:7
+#: rdiffweb/templates/email_latest.html:7 rdiffweb/templates/email_mfa.html:11
 #: rdiffweb/templates/email_notification.html:7
 #: rdiffweb/templates/email_password_changed.html:7
 #: rdiffweb/templates/email_repo_added.html:7
@@ -1343,6 +1349,32 @@ msgid ""
 msgstr ""
 "Vous avez récemment modifié l'adresse courriel associée à votre compte "
 "%(header_name)s."
+
+#: rdiffweb/templates/email_latest.html:3
+#, python-format
+msgid "Upgrade available for %(header_name)s"
+msgstr "Mise à niveau disponible pour %(header_name)s"
+
+#: rdiffweb/templates/email_latest.html:10
+#, python-format
+msgid ""
+"A new version of %(header_name)s backup management system is now "
+"available for upgrade. It's recommend that you upgrade your server to "
+"take advantage of the enhancements and bug fixes included in this "
+"version."
+msgstr ""
+"Une nouvelle version du système de gestion des sauvegardes de "
+"%(header_name) est maintenant disponible pour la mise à jour. Il est "
+"recommandé de mettre à jour votre serveur pour profiter des améliorations"
+" et des corrections de bogues incluses dans cette version."
+
+#: rdiffweb/templates/email_latest.html:13
+msgid ""
+"If you don't want to be notify about this. You need to review your server"
+" configuration."
+msgstr ""
+"Si vous ne voulez plus recevoir de notifications à ce sujet, modifiez vos"
+" configuration serveur."
 
 #: rdiffweb/templates/bootstrap_email/email_layout.html:28
 #: rdiffweb/templates/email_layout.html:259
@@ -2258,4 +2290,21 @@ msgstr "M"
 #: rdiffweb/templates/include/widget.html:4
 msgid "disabled"
 msgstr "désactivé"
+
+#~ msgid ""
+#~ "A new version of Rdiffweb backup "
+#~ "management system is now available for"
+#~ " upgrade. It's recommend that you "
+#~ "upgrade your server to take advantage"
+#~ " of the enhancements and bug fixes"
+#~ " included in this version."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "To upgrade your server, please visit "
+#~ "our website and follow the instructions"
+#~ " in the user manual. If you "
+#~ "need assistance or have any questions,"
+#~ " please contact our support team."
+#~ msgstr ""
 

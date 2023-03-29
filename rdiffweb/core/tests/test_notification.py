@@ -25,6 +25,7 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import ANY, MagicMock
 
 import cherrypy
+import responses
 from parameterized import parameterized
 
 import rdiffweb.core.notification
@@ -397,3 +398,43 @@ class NotificationCatchAllTest(AbstractNotificationTest):
             message=ANY,
             bcc='all@examples.com',
         )
+
+
+class NotificationLatest(AbstractNotificationTest):
+    url = 'https://latest.ikus-soft.com/rdiffweb/latest_version'
+
+    default_config = {'latest-version-url': url}
+
+    @responses.activate
+    def test_check_latest_job_with_upgrade(self):
+        # Given an administrator
+        adminobj = UserObject.get_user(self.USERNAME)
+        adminobj.email = 'admin@example.com'
+        adminobj.add().commit()
+        # Given a user
+        userobj = UserObject(username='user')
+        userobj.email = 'user@examples.com'
+        userobj.add().commit()
+        # Given the application may be upgraded
+        responses.add(responses.GET, self.url, body='9.9.9')
+        # When running the check_latest_job
+        cherrypy.notification.check_latest_job()
+        # Then an email is only sent to the adminstrator
+        self.listener.queue_email.assert_called_once_with(
+            to='admin@example.com',
+            subject='Upgrade available for Rdiffweb',
+            message=ANY,
+        )
+
+    @responses.activate
+    def test_check_latest_job_without_upgrade(self):
+        # Given an administrator
+        adminobj = UserObject.get_user(self.USERNAME)
+        adminobj.email = 'admin@example.com'
+        adminobj.add().commit()
+        # Given the application may be upgraded
+        responses.add(responses.GET, self.url, body='0.0.1')
+        # When running the check_latest_job
+        cherrypy.notification.check_latest_job()
+        # Then an email is send to the adminstrator
+        self.listener.queue_email.assert_not_called()

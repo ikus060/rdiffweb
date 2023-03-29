@@ -27,6 +27,8 @@ Build-Depends:
  python3-pip,
  python3-psutil,
  python3-pytest,
+ python3-requests,
+ python3-responses,
  python3-selenium,
  python3-setuptools,
  python3-setuptools-scm,
