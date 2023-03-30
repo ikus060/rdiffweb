@@ -18,13 +18,14 @@
 Plugin used to send email to users when their repository is getting too old.
 User can control the notification period.
 """
-
+import datetime
 import logging
 import re
 
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
 
+from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import RepoObject, UserObject
 from rdiffweb.tools.i18n import preferred_lang
 from rdiffweb.tools.i18n import ugettext as _
@@ -32,6 +33,18 @@ from rdiffweb.tools.i18n import ugettext as _
 logger = logging.getLogger(__name__)
 activity = logging.getLogger('activity')
 auth = logging.getLogger('auth')
+
+
+def _sum(iterable):
+    if len(iterable) == 0:
+        return None
+    return sum(iterable)
+
+
+def _avg(iterable):
+    if len(iterable) == 0:
+        return None
+    return sum(iterable) / len(iterable)
 
 
 class NotificationPlugin(SimplePlugin):
@@ -56,6 +69,7 @@ class NotificationPlugin(SimplePlugin):
     def start(self):
         self.bus.log('Start Notification plugin')
         self.bus.publish('schedule_job', self.execution_time, self.notification_job)
+        self.bus.publish('schedule_job', self.execution_time, self.report_job)
         self.bus.subscribe('access_token_added', self.access_token_added)
         self.bus.subscribe('authorizedkey_added', self.authorizedkey_added)
         self.bus.subscribe('user_attr_changed', self.user_attr_changed)
@@ -71,6 +85,7 @@ class NotificationPlugin(SimplePlugin):
     def stop(self):
         self.bus.log('Stop Notification plugin')
         self.bus.publish('unschedule_job', self.notification_job)
+        self.bus.publish('unschedule_job', self.report_job)
         self.bus.unsubscribe('access_token_added', self.access_token_added)
         self.bus.unsubscribe('authorizedkey_added', self.authorizedkey_added)
         self.bus.unsubscribe('user_attr_changed', self.user_attr_changed)
@@ -206,17 +221,100 @@ class NotificationPlugin(SimplePlugin):
         # For Each user with an email.
         # Identify the repository without activities using the backup statistics.
         for userobj in UserObject.query.filter(UserObject.email != ''):
-            old_repos = [
-                repo
-                for repo in RepoObject.query.filter(RepoObject.user == userobj, RepoObject.maxage > 0)
-                if not repo.check_activity()
-            ]
-            if old_repos:
-                self._queue_mail(
-                    userobj,
-                    template="email_notification.html",
-                    repos=old_repos,
-                )
+            try:
+                old_repos = [
+                    repo
+                    for repo in RepoObject.query.filter(RepoObject.user == userobj, RepoObject.maxage > 0)
+                    if not repo.check_activity()
+                ]
+                if old_repos:
+                    self._queue_mail(
+                        userobj,
+                        template="email_notification.html",
+                        repos=old_repos,
+                    )
+            except Exception:
+                logger.exception('fail to send notification to user %s', userobj)
+
+    def report_job(self):
+        """
+        Loop trough all the user to sent backup report.
+        """
+        # For each user that want to receive a report.
+        query = UserObject.query.filter(UserObject.email != '', UserObject.report_time_range > 0)
+        for userobj in query.all():
+            try:
+                if self.send_report(userobj):
+                    userobj.report_last_sent = datetime.datetime.now(tz=datetime.timezone.utc)
+                    userobj.add()
+                    userobj.commit()
+            except Exception:
+                # In case of error, continue with next user.
+                userobj.rollback()
+                logger.exception('fail to send report to user %s', userobj)
+
+    def send_report(self, userobj, force=False):
+        """
+        Generate the repport data to be sent.
+        """
+        # Compute the start & end time for the repport using server timezone
+        assert userobj.report_time_range, 'invalid time_range'
+        time_range = userobj.report_time_range
+        now = RdiffTime().astimezone().replace(hour=0, minute=0, second=0)
+        if time_range == 30:
+            # Monthly
+            end_time = now - datetime.timedelta(days=now.day)
+            start_time = now.replace(month=now.month - 1, day=1)
+        elif time_range == 7:
+            # Weekly
+            end_time = now - datetime.timedelta(days=now.weekday())
+            start_time = end_time - datetime.timedelta(days=time_range)
+        else:
+            # Other
+            end_time = now
+            start_time = end_time - datetime.timedelta(days=time_range)
+
+        # Check if we need to sent a new report
+        if not force and userobj.report_last_sent is not None and userobj.report_last_sent > start_time:
+            return False
+
+        # Compute the data for each repository
+        data = []
+        for repo in sorted(userobj.repo_objs, key=lambda r: r.display_name):
+            stats = repo.session_statistics[start_time:end_time]
+            data.append(
+                {
+                    'display_name': repo.display_name,
+                    'last_backup_date': repo.last_backup_date,
+                    'maxage': repo.maxage,
+                    'errors': _sum([s.errors for s in stats]),
+                    'status': repo.status,
+                    'sourcefilesize': repo.session_statistics[-1].sourcefilesize
+                    if len(repo.session_statistics)
+                    else None,
+                    'totaldestinationsizechange': _sum([s.totaldestinationsizechange for s in stats]),
+                    'elapsedtime': _avg([s.elapsedtime for s in stats]),
+                    'newfiles': _sum([s.newfiles for s in stats]),
+                    'deletedfiles': _sum([s.newfiles for s in stats]),
+                    'changedfiles': _sum([s.newfiles for s in stats]),
+                    'newfilesize': _sum([s.newfiles for s in stats]),
+                    'deletedfilesize': _sum([s.newfiles for s in stats]),
+                    'changedsourcesize': _sum([s.newfiles for s in stats]),
+                }
+            )
+
+        # Generate email.
+        self._queue_mail(
+            userobj,
+            template="email_report.html",
+            data=data,
+            disk_usage=userobj.disk_usage,
+            disk_quota=userobj.disk_quota,
+            time_range=time_range,
+            start_time=start_time,
+            end_time=end_time,
+        )
+        return True
 
 
 cherrypy.notification = NotificationPlugin(cherrypy.engine)

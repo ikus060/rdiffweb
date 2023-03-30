@@ -177,14 +177,7 @@ class DoesNotExistError(Exception):
 
 
 class RdiffTime(object):
-
-    """Time information has two components: the local time, stored in GMT as
-    seconds since Epoch, and the timezone, stored as a seconds offset. Since
-    the server may not be in the same timezone as the user, we cannot rely on
-    the built-in localtime() functions, but look at the rdiff-backup string
-    for timezone information.  As a general rule, we always display the
-    "local" time, but pass the timezone information on to rdiff-backup, so
-    it can restore to the correct state"""
+    """Faster implementation of datetime optimized for parsing date from string."""
 
     def __init__(self, value=None, tz_offset=None):
         assert value is None or isinstance(value, int) or isinstance(value, str)
@@ -196,9 +189,10 @@ class RdiffTime(object):
             self._time_seconds = value
             self._tz_offset = tz_offset or 0
         else:
-            self._from_str(value)
+            self._time_seconds, self._tz_offset = self._from_str(value)
 
-    def _from_str(self, time_string):
+    @classmethod
+    def _from_str(cls, time_string):
         if time_string[10] != 'T':
             raise ValueError('missing date time separator (T): ' + time_string)
         if time_string[19] not in ['-', '+', 'Z']:
@@ -227,12 +221,24 @@ class RdiffTime(object):
             if not (0 <= second <= 61):  # leap seconds
                 raise ValueError('unexpected second value between 1 and 61: ' + str(second))
             timetuple = (year, month, day, hour, minute, second, -1, -1, 0)
-            self._time_seconds = calendar.timegm(timetuple)
-            self._tz_offset = self._tzdtoseconds(time_string[19:])
-            self._tz_str()  # to get assertions there
+            return calendar.timegm(timetuple), cls._tzdtoseconds(time_string[19:])
         except (TypeError, ValueError, AssertionError):
             raise ValueError(time_string)
 
+    @classmethod
+    def _tzdtoseconds(cls, tzd):
+        """Given w3 compliant TZD, converts it to number of seconds from UTC"""
+        if tzd == "Z":
+            return 0
+        assert len(tzd) == 6  # only accept forms like +08:00 or +08-00 for now
+        assert (tzd[0] == "-" or tzd[0] == "+") and tzd[3] in [":", '-']
+        if tzd[0] == "+":
+            plus_minus = 1
+        else:
+            plus_minus = -1
+        return plus_minus * 60 * (60 * int(tzd[1:3]) + int(tzd[4:]))
+
+    @property
     def epoch(self):
         return self._time_seconds - self._tz_offset
 
@@ -249,24 +255,51 @@ class RdiffTime(object):
         else:
             return "Z"
 
-    def set_time(self, hour, minute, second):
-        year = time.gmtime(self._time_seconds)[0]
-        month = time.gmtime(self._time_seconds)[1]
-        day = time.gmtime(self._time_seconds)[2]
+    def astimezone(self, tz=None):
+        """
+        Return a datetime object with new tzinfo attribute tz, adjusting the date and time data so the result is the same UTC time as self, but in tz’s local time.
+        """
+        if tz is None:
+            # Use local timezone
+            localtm = time.localtime(self._time_seconds)
+            offset = localtm.tm_gmtoff
+        elif hasattr(tz, 'utcoffset'):
+            offset = tz.utcoffset(None)
+        elif type(tz) == int:
+            offset = tz
+        else:
+            raise TypeError('astimezone() argument must be a timezone, int or None')
+        return RdiffTime(self._time_seconds - self._tz_offset + offset, offset)
+
+    @property
+    def day(self):
+        """day (1-31)"""
+        return time.gmtime(self._time_seconds).tm_mday
+
+    @property
+    def month(self):
+        """day (1-31)"""
+        return time.gmtime(self._time_seconds).tm_mon
+
+    def replace(self, year=None, month=None, day=None, hour=None, minute=None, second=None, microsecond=None):
+        """
+        Return a datetime with the same attributes, except for those attributes given new values by whichever keyword arguments are specified.
+        """
+        t = time.gmtime(self._time_seconds)
+        year = t.tm_year if year is None else year
+        month = t.tm_mon if month is None else month
+        day = t.tm_mday if day is None else day
+        hour = t.tm_hour if hour is None else hour
+        minute = t.tm_min if minute is None else minute
+        second = t.tm_sec if second is None else second
         _time_seconds = calendar.timegm((year, month, day, hour, minute, second, -1, -1, 0))
         return RdiffTime(_time_seconds, self._tz_offset)
 
-    def _tzdtoseconds(self, tzd):
-        """Given w3 compliant TZD, converts it to number of seconds from UTC"""
-        if tzd == "Z":
-            return 0
-        assert len(tzd) == 6  # only accept forms like +08:00 or +08-00 for now
-        assert (tzd[0] == "-" or tzd[0] == "+") and tzd[3] in [":", '-']
-        if tzd[0] == "+":
-            plus_minus = 1
-        else:
-            plus_minus = -1
-        return plus_minus * 60 * (60 * int(tzd[1:3]) + int(tzd[4:]))
+    def weekday(self):
+        """
+        Return the day of the week as an integer, where Monday is 0 and Sunday is 6.
+        """
+        return time.gmtime(self._time_seconds).tm_wday
 
     def __add__(self, other):
         """Support plus (+) timedelta"""
@@ -286,29 +319,29 @@ class RdiffTime(object):
 
     def __int__(self):
         """Return this date as seconds since epoch."""
-        return self.epoch()
+        return self.epoch
 
     def __lt__(self, other):
         assert isinstance(other, RdiffTime)
-        return self.epoch() < other.epoch()
+        return self.epoch < other.epoch
 
     def __le__(self, other):
         assert isinstance(other, RdiffTime)
-        return self.epoch() <= other.epoch()
+        return self.epoch <= other.epoch
 
     def __gt__(self, other):
         assert isinstance(other, RdiffTime)
-        return self.epoch() > other.epoch()
+        return self.epoch > other.epoch
 
     def __ge__(self, other):
         assert isinstance(other, RdiffTime)
-        return self.epoch() >= other.epoch()
+        return self.epoch >= other.epoch
 
     def __eq__(self, other):
-        return isinstance(other, RdiffTime) and self.epoch() == other.epoch()
+        return isinstance(other, RdiffTime) and self.epoch == other.epoch
 
     def __hash__(self):
-        return hash(self.epoch())
+        return hash(self.epoch)
 
     def __str__(self):
         """return utf-8 string"""
@@ -1141,13 +1174,6 @@ class RdiffRepo(object):
         else:
             filename = "%s.%s" % (path_obj.display_name, kind)
 
-        # Define environment
-        env = {}
-        if os.environ.get('PATH'):
-            env['PATH'] = os.environ.get('PATH')
-        if os.environ.get('TMPDIR'):
-            env['TMPDIR'] = os.environ.get('TMPDIR')
-
         # Call external process to offload processing.
         # python -m rdiffweb.core.restore --restore-as-of 123456 --encoding utf-8 --kind zip -
         cmdline = [
@@ -1168,7 +1194,7 @@ class RdiffRepo(object):
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            env=env,
+            env=None,
         )
         # Check if the restore process is properly starting
         # Read the first 100 line until "Processing changed file"
@@ -1184,9 +1210,6 @@ class RdiffRepo(object):
                 break
             line = proc.stderr.readline()
         if not success:
-            logger.error(
-                'restore failed with the following output: ' + output.decode(STDOUT_ENCODING, errors='replace')
-            )
             raise CalledProcessError(1, cmdline, output)
         # Start a Thread to pipe the rest of the stream to the log
         t = threading.Thread(target=_readerthread, args=(proc.stderr, logger.debug))
@@ -1232,4 +1255,4 @@ class RdiffRepo(object):
             logger.warning('error reading current_mirror files', exc_info=1)
             return ('failed', _("Permissions denied. Contact administrator to check repository's permissions."))
 
-        return ('ok', '')
+        return ('ok', _('Healthy'))

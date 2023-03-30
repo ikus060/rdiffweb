@@ -97,8 +97,14 @@ class PagePrefMfaTest(rdiffweb.test.WebCase):
         code = self._get_code(action=action)
         # When sending a valid code
         self.getPage("/prefs/mfa", method='POST', body={action: '1', 'code': code})
+        self.assertStatus(303)
         # Then mfa get enabled or disable accordingly
+        self.getPage("/prefs/mfa")
         self.assertStatus(200)
+        if expected_mfa:
+            self.assertInBody('Two-Factor authentication enabled successfully.')
+        else:
+            self.assertInBody('Two-Factor authentication disabled successfully.')
         userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(userobj.mfa, expected_mfa)
         # Then no verification code get sent

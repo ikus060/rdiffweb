@@ -24,6 +24,7 @@ Module used to test the i18n tools. Check if translation are properly loaded.
 
 import gettext
 import unittest
+from datetime import datetime, timezone
 
 import cherrypy
 import pkg_resources
@@ -81,10 +82,31 @@ class TestI18nWebCase(rdiffweb.test.WebCase):
         self.assertHeaderItemValue("Content-Language", "fr_CA")
         self.assertInBody("Se connecter")
 
+    def test_with_preferred_lang(self):
+        # Given a default lang 'en'
+        date = datetime.utcfromtimestamp(1680111611).replace(tzinfo=timezone.utc)
+        self.assertEqual('Sign in', i18n.ugettext('Sign in'))
+        self.assertIn('March', i18n.format_datetime(date, format='long'))
+        # When using preferred_lang with french
+        with i18n.preferred_lang('fr'):
+            # Then french translation is used
+            self.assertEqual('Se connecter', i18n.ugettext('Sign in'))
+            # Then date time formating used french locale
+            self.assertIn('mars', i18n.format_datetime(date, format='long'))
+        # Then ouside the block, settings goest back to english
+        self.assertEqual('Sign in', i18n.ugettext('Sign in'))
+        self.assertIn('March', i18n.format_datetime(date, format='long'))
+
 
 class TestI18nDefaultLangWebCase(rdiffweb.test.WebCase):
 
     default_config = {'default-lang': 'FR'}
+
+    @classmethod
+    def teardown_class(cls):
+        # Reset default-lang to avoid issue with other test
+        cherrypy.config['tools.i18n.default'] = 'en'
+        super().teardown_class()
 
     def test_default_lang_without_accept_language(self):
         # Given a default language

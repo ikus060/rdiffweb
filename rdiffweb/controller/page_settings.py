@@ -35,7 +35,7 @@ class SettingsPage(Controller):
             AccessDeniedError: 403,
         }
     )
-    def default(self, path=b"", action=None, **kwargs):
+    def default(self, path=b"", **kwargs):
         repo_obj = RepoObject.get_repo(path)
         if cherrypy.request.method == 'POST':
             if kwargs.get('keepdays'):

@@ -40,8 +40,10 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
             body={'add_access_token': '1', 'name': 'test-token-name', 'expiration_time': ''},
         )
         # Then page return without error
-        self.assertStatus(200)
+        self.assertStatus(303)
         # Then token name get displayed in the view
+        self.getPage("/prefs/tokens")
+        self.assertStatus(200)
         self.assertInBody('test-token-name')
         # Then access token get created
         self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').count())
@@ -56,8 +58,10 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
             body={'add_access_token': '1', 'name': 'test-token-name', 'expiration_time': '1999-01-01'},
         )
         # Then page return without error
-        self.assertStatus(200)
+        self.assertStatus(303)
         # Then token name get displayed in the view
+        self.getPage("/prefs/tokens")
+        self.assertStatus(200)
         self.assertInBody('test-token-name')
         # Then access token get created
         self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').count())
@@ -121,8 +125,10 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
             body={'revoke': '1', 'name': 'test-token-name'},
         )
         # Then page return without error
-        self.assertStatus(200)
+        self.assertStatus(303)
         # Then token name get displayed in the view
+        self.getPage("/prefs/tokens")
+        self.assertStatus(200)
         self.assertInBody('The access token has been successfully deleted.')
         # Then access token is not created
         self.assertEqual(0, Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').count())

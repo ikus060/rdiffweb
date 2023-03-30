@@ -75,7 +75,7 @@ class StatusTest(rdiffweb.test.WebCase):
         # Then json data is returned
         userobj = UserObject.query.filter(UserObject.username == self.USERNAME).one()
         repo = RepoObject.get_repo('admin/testcases', userobj)
-        delta = (RdiffTime().epoch() - repo.last_backup_date.epoch()) / 60 / 60
+        delta = (RdiffTime().epoch - repo.last_backup_date.epoch) / 60 / 60
         self.assertEqual(
             data,
             [

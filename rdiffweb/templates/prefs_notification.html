@@ -3,22 +3,32 @@
 {% from 'include/widget.html' import maxage_dropdown %}
 {% set active_panelid='notification' %}
 {% block panel %}
-  <h3>{% trans %}Notification settings{% endtrans %}</h3>
-  <div class="form-group">
-    <label for="email">{% trans %}Notification sent to{% endtrans %}</label>
-    <div>
+  {% include 'message.html' %}
+  {% call panel(title=_("Notification settings")) %}
+    <div class="panel-body">
+      <b>{% trans %}Notification sent to{% endtrans %}</b>
       <input class="form-control"
              type="text"
              id="email"
              readonly="readonly"
              value="{{ email }}"/>
+      <small>{% trans %}To receive notification, configure your email address in your profile.{% endtrans %}</small>
     </div>
-  </div>
-  {% include 'message.html' %}
-  <div class="form-horizontal">
-    <p>{% trans %}Send notification for the following repositories:{% endtrans %}</p>
-    <form action="#" method="post" role="form">
-      {{ form }}
-    </form>
-  </div>
+  {% endcall %}
+  {# Report config #}
+  {% call panel(title=_("Report"), description=_("Configure how often you want to receive a backup report in your mailbox.")) %}
+    <div class="panel-body">
+      <form action="#" method="post" role="form" class="clearfix">
+        {{ report_form }}
+      </form>
+    </div>
+  {% endcall %}
+  {# Notification config #}
+  {% call panel(title=_("Notification"), description=_("Configure when you will be notified if your backup is inactive.")) %}
+    <div class="panel-body">
+      <form action="#" method="post" role="form" class="clearfix">
+        {{ notification_form }}
+      </form>
+    </div>
+  {% endcall %}
 {% endblock %}
