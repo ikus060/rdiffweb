@@ -21,6 +21,7 @@ Created on Feb 13, 2016
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
+from datetime import datetime, timedelta, timezone
 from unittest.mock import ANY, MagicMock
 
 import cherrypy
@@ -110,24 +111,37 @@ class NotificationJobTest(AbstractNotificationTest):
 
     @parameterized.expand(
         [
-            (0, None),
-            (1, 'Daily Backup Report'),
-            (7, 'Weekly Backup Report'),
-            (30, 'Monthly Backup Report'),
-            (4, 'Backup Report'),
+            ('disabled', 0, None, None),
+            ('daily_never_sent', 1, None, 'Daily Backup Report'),
+            ('daily_sent_today', 1, 0, None),
+            ('daily_sent_yesterday', 1, 1, None),
+            ('daily_sent_two_day_ago', 1, 2, 'Daily Backup Report'),
+            ('weekly_never_sent', 7, None, 'Weekly Backup Report'),
+            ('weekly_sent_today', 7, 0, None),
+            ('weekly_sent_yesterday', 7, 1, None),
+            ('weekly_sent_12_days_ago', 7, 12, None),
+            ('weekly_sent_13_days_ago', 7, 13, 'Weekly Backup Report'),
+            ('monthly_never_sent', 30, None, 'Monthly Backup Report'),
+            ('monthly_sent_today', 30, 0, None),
+            ('monthly_sent_yesterday', 30, 1, None),
+            ('monthly_sent_31_days_ago', 30, 31, None),
+            ('monthly_sent_1_month_ago', 30, 32, 'Monthly Backup Report'),
+            ('random_never_sent', 4, None, 'Backup Report'),
         ]
     )
-    def test_report_job(self, time_range, expected_subject):
+    def test_report_job(self, unused, time_range, last_sent, expected_subject):
+        # Given we are the 1 April 2023, Saturday
+        now = datetime(2023, 4, 1, 14, 39, 16, tzinfo=timezone(timedelta(hours=-4)))
         # Given a user with an email address and report time range
         # Set user config
         user = UserObject.get_user(self.USERNAME)
         user.email = 'test@test.com'
         user.report_time_range = time_range
-        user.report_last_sent = None
+        user.report_last_sent = now - timedelta(days=last_sent) if last_sent is not None else None
         user.commit()
         self.listener.queue_email.reset_mock()
         # When running notification_job
-        cherrypy.notification.report_job()
+        cherrypy.notification.report_job(_now=now)
 
         # Then an email is queue for this user
         if expected_subject:

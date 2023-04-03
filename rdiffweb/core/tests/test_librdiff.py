@@ -775,6 +775,7 @@ class RdiffTimeTest(unittest.TestCase):
             ('2014-11-05T16:04:30-05:00', 1415221470),
             ('2014-11-05T23:04:30+02:00', 1415221470),
             ('2014-11-05T23-04-30+02-00', 1415221470),
+            (datetime.datetime(2014, 11, 5, 21, 4, 30, tzinfo=datetime.timezone.utc), 1415221470),
         ]
     )
     def test_init(self, value, expected_epoch):
