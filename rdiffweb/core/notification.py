@@ -18,12 +18,13 @@
 Plugin used to send email to users when their repository is getting too old.
 User can control the notification period.
 """
-import datetime
 import logging
 import re
+from datetime import datetime, timedelta, timezone
 
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
+from sqlalchemy import func, or_
 
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import RepoObject, UserObject
@@ -236,16 +237,26 @@ class NotificationPlugin(SimplePlugin):
             except Exception:
                 logger.exception('fail to send notification to user %s', userobj)
 
-    def report_job(self):
+    def report_job(self, _now=None):
         """
         Loop trough all the user to sent backup report.
+
+        _now is only used for testing
         """
         # For each user that want to receive a report.
-        query = UserObject.query.filter(UserObject.email != '', UserObject.report_time_range > 0)
+        sql_now = int(_now.timestamp()) if _now else func.epoch(func.now())
+        query = UserObject.query.filter(
+            UserObject.email != '',
+            UserObject.report_time_range > 0,
+            or_(
+                UserObject.report_last_sent.is_(None),
+                (sql_now - func.epoch(UserObject.report_last_sent)) > (UserObject.report_time_range * 86400),
+            ),
+        )
         for userobj in query.all():
             try:
-                if self.send_report(userobj):
-                    userobj.report_last_sent = datetime.datetime.now(tz=datetime.timezone.utc)
+                if self.send_report(userobj, _now=_now):
+                    userobj.report_last_sent = datetime.now(tz=timezone.utc)
                     userobj.add()
                     userobj.commit()
             except Exception:
@@ -253,29 +264,29 @@ class NotificationPlugin(SimplePlugin):
                 userobj.rollback()
                 logger.exception('fail to send report to user %s', userobj)
 
-    def send_report(self, userobj, force=False):
+    def send_report(self, userobj, force=False, _now=None):
         """
         Generate the repport data to be sent.
         """
         # Compute the start & end time for the repport using server timezone
         assert userobj.report_time_range, 'invalid time_range'
         time_range = userobj.report_time_range
-        now = RdiffTime().astimezone().replace(hour=0, minute=0, second=0)
+        now = RdiffTime(_now).astimezone().replace(hour=0, minute=0, second=0)
         if time_range == 30:
             # Monthly
-            end_time = now - datetime.timedelta(days=now.day)
+            end_time = now - timedelta(days=now.day - 1)
             start_time = now.replace(month=now.month - 1, day=1)
         elif time_range == 7:
             # Weekly
-            end_time = now - datetime.timedelta(days=now.weekday())
-            start_time = end_time - datetime.timedelta(days=time_range)
+            end_time = now - timedelta(days=now.weekday())
+            start_time = end_time - timedelta(days=time_range)
         else:
             # Other
             end_time = now
-            start_time = end_time - datetime.timedelta(days=time_range)
+            start_time = end_time - timedelta(days=time_range)
 
         # Check if we need to sent a new report
-        if not force and userobj.report_last_sent is not None and userobj.report_last_sent > start_time:
+        if not force and userobj.report_last_sent is not None and RdiffTime(userobj.report_last_sent) > start_time:
             return False
 
         # Compute the data for each repository

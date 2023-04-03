@@ -17,7 +17,30 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import TypeDecorator
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.sql.functions import GenericFunction
 from sqlalchemy.sql.sqltypes import DateTime
+
+
+class epoch(GenericFunction):
+    name = "epoch"
+    inherit_cache = True
+
+
+@compiles(epoch, "postgresql")
+def _render_to_tsvector_of_pg(element, compiler, **kw):
+    """
+    On Postgresql, use extract(epoch FROM ...)
+    """
+    return "extract(epoch FROM %s)" % compiler.process(element.clauses, **kw)
+
+
+@compiles(epoch, 'sqlite')
+def _render_to_tsvector_of_sqlite(element, compiler, **kw):
+    """
+    On SQLite, use STRFTIME('%s', ...) function.
+    """
+    return "STRFTIME('%%s', %s)" % compiler.process(element.clauses, **kw)
 
 
 class Timestamp(TypeDecorator):

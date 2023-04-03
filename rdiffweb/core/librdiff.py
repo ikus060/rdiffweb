@@ -180,7 +180,7 @@ class RdiffTime(object):
     """Faster implementation of datetime optimized for parsing date from string."""
 
     def __init__(self, value=None, tz_offset=None):
-        assert value is None or isinstance(value, int) or isinstance(value, str)
+        assert value is None or isinstance(value, int) or isinstance(value, str) or hasattr(value, 'timestamp')
         if value is None:
             # Get GMT time.
             self._time_seconds = int(time.time())
@@ -188,6 +188,10 @@ class RdiffTime(object):
         elif isinstance(value, int):
             self._time_seconds = value
             self._tz_offset = tz_offset or 0
+        elif hasattr(value, 'timestamp'):
+            # Datetime
+            self._time_seconds = int(value.timestamp())
+            self._tz_offset = 0
         else:
             self._time_seconds, self._tz_offset = self._from_str(value)
 
