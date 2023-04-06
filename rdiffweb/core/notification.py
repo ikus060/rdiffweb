@@ -19,11 +19,15 @@ Plugin used to send email to users when their repository is getting too old.
 User can control the notification period.
 """
 import logging
+import platform
 import re
 from datetime import datetime, timedelta, timezone
 
 import cherrypy
+import distro
+import requests
 from cherrypy.process.plugins import SimplePlugin
+from packaging.version import InvalidVersion, Version
 from sqlalchemy import func, or_
 
 from rdiffweb.core.librdiff import RdiffTime
@@ -67,8 +71,13 @@ class NotificationPlugin(SimplePlugin):
 
     navbar_color = '#383e45'
 
+    current_version = None
+
+    latest_version_url = None
+
     def start(self):
         self.bus.log('Start Notification plugin')
+        self.bus.publish('schedule_job', self.execution_time, self.check_latest_job)
         self.bus.publish('schedule_job', self.execution_time, self.notification_job)
         self.bus.publish('schedule_job', self.execution_time, self.report_job)
         self.bus.subscribe('access_token_added', self.access_token_added)
@@ -85,6 +94,7 @@ class NotificationPlugin(SimplePlugin):
 
     def stop(self):
         self.bus.log('Stop Notification plugin')
+        self.bus.publish('unschedule_job', self.check_latest_job)
         self.bus.publish('unschedule_job', self.notification_job)
         self.bus.publish('unschedule_job', self.report_job)
         self.bus.unsubscribe('access_token_added', self.access_token_added)
@@ -98,6 +108,40 @@ class NotificationPlugin(SimplePlugin):
         self.bus.unsubscribe('user_login', self.user_login)
 
     stop.priority = 45
+
+    def _is_latest(self):
+        """
+        Check if the current minarca client is up to date.
+
+        Return True if latest
+        False if old
+        None if undeterminate.
+        """
+        # Skip verification if not configured
+        if self.current_version is None or self.latest_version_url is None:
+            return None
+
+        # Get current version.
+        try:
+            current_version = Version(self.current_version)
+        except InvalidVersion:
+            logger.warning('invalid current_version: ' + self.current_version, exc_info=1)
+            return None
+
+        # Get latest version
+        try:
+            headers = {
+                'User-Agent': f'{self.header_name}-server/{current_version} python/{platform.python_version()} {platform.system()}/{platform.release()} ({distro.name(True)} {platform.machine()})'
+            }
+            response = requests.get(self.latest_version_url, headers=headers, timeout=0.5)
+            response.raise_for_status()
+            latest_version = Version(response.text)
+        except requests.exceptions.RequestException:
+            logger.warning('fail to get latest version', exc_info=1)
+            return None
+
+        # Compare them
+        return current_version >= latest_version
 
     def _queue_mail(self, userobj, template, to=None, **kwargs):
         """
@@ -218,7 +262,6 @@ class NotificationPlugin(SimplePlugin):
         """
         Loop trough all the user repository and send notifications.
         """
-
         # For Each user with an email.
         # Identify the repository without activities using the backup statistics.
         for userobj in UserObject.query.filter(UserObject.email != ''):
@@ -236,6 +279,18 @@ class NotificationPlugin(SimplePlugin):
                     )
             except Exception:
                 logger.exception('fail to send notification to user %s', userobj)
+
+    def check_latest_job(self):
+        """
+        Check if running latest version.
+        """
+        # Check if current version and send email to administrator if required
+        if self._is_latest() is False:
+            for userobj in UserObject.query.filter(UserObject.email != '', UserObject.role == UserObject.ADMIN_ROLE):
+                self._queue_mail(
+                    userobj,
+                    template="email_latest.html",
+                )
 
     def report_job(self, _now=None):
         """

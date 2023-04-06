@@ -222,6 +222,9 @@ class RdiffwebApp(Application):
                 'notification.bcc': self.cfg.email_catch_all,
                 'notification.link_color': self.cfg.link_color,
                 'notification.navbar_color': self.cfg.navbar_color,
+                # Configure latest lookup notification.
+                'notification.current_version': self.version,
+                'notification.latest_version_url': self.cfg.latest_version_url,
                 # Configure quota plugin
                 'quota.set_quota_cmd': self.cfg.quota_set_cmd,
                 'quota.get_quota_cmd': self.cfg.quota_get_cmd,

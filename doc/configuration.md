@@ -365,3 +365,14 @@ By default, the web application uses the HTTP Accept-Language headers to determi
 | Parameter | Description | Example |
 | --- | --- | --- |
 | --default-lang | default application locale. e.g.: `fr` | es |
+
+## Configure Version Check
+
+Rdiffweb include a feature to check version and notify administrator if an upgrade is available.
+
+```{toctree}
+---
+titlesonly: true
+---
+configuration-latest
+```

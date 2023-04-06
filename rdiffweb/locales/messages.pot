@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: rdiffweb 2.6.2.dev9+gf12bb02f\n"
+"Project-Id-Version: rdiffweb 2.7.0a2.dev3+gf7535ca2.d20230403\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-03-29 13:11-0400\n"
+"POT-Creation-Date: 2023-04-03 17:08-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -385,7 +385,8 @@ msgid "Remember me"
 msgstr ""
 
 #: rdiffweb/controller/page_login.py:54 rdiffweb/controller/page_mfa.py:49
-#: rdiffweb/templates/login.html:4
+#: rdiffweb/core/tests/test_i18n.py:88 rdiffweb/core/tests/test_i18n.py:93
+#: rdiffweb/core/tests/test_i18n.py:97 rdiffweb/templates/login.html:4
 msgid "Sign in"
 msgstr ""
 
@@ -786,31 +787,31 @@ msgstr ""
 msgid "Average duration (min)"
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1244
+#: rdiffweb/core/librdiff.py:1243
 msgid "A backup is currently in progress to this repository."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1252
+#: rdiffweb/core/librdiff.py:1251
 msgid "Initial backup in progress."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1254
+#: rdiffweb/core/librdiff.py:1253
 msgid "The last backup has been interrupted."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1257
+#: rdiffweb/core/librdiff.py:1256
 msgid "The repository cannot be found or is badly damaged."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1261
+#: rdiffweb/core/librdiff.py:1260
 msgid "Permissions denied. Contact administrator to check repository's permissions."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1263 rdiffweb/templates/admin_repos.html:9
+#: rdiffweb/core/librdiff.py:1262 rdiffweb/templates/admin_repos.html:9
 msgid "Healthy"
 msgstr ""
 
-#: rdiffweb/core/notification.py:128 rdiffweb/templates/email_notification.html:3
+#: rdiffweb/core/notification.py:174 rdiffweb/templates/email_notification.html:3
 #: rdiffweb/templates/prefs_notification.html:27
 #: rdiffweb/templates/settings.html:99
 msgid "Notification"
@@ -896,7 +897,7 @@ msgstr ""
 msgid "Password too weak."
 msgstr ""
 
-#: rdiffweb/core/tests/test_i18n.py:53 rdiffweb/templates/admin_users.html:70
+#: rdiffweb/core/tests/test_i18n.py:54 rdiffweb/templates/admin_users.html:70
 msgid "Edit"
 msgstr ""
 
@@ -1208,7 +1209,8 @@ msgstr ""
 
 #: rdiffweb/templates/email_access_token_added.html:7
 #: rdiffweb/templates/email_authorizedkey_added.html:7
-#: rdiffweb/templates/email_changed.html:7 rdiffweb/templates/email_mfa.html:11
+#: rdiffweb/templates/email_changed.html:7 rdiffweb/templates/email_latest.html:7
+#: rdiffweb/templates/email_mfa.html:11
 #: rdiffweb/templates/email_notification.html:7
 #: rdiffweb/templates/email_password_changed.html:7
 #: rdiffweb/templates/email_repo_added.html:7
@@ -1255,6 +1257,25 @@ msgstr ""
 msgid ""
 "You recently changed the email address associated with your %(header_name)s "
 "account."
+msgstr ""
+
+#: rdiffweb/templates/email_latest.html:3
+#, python-format
+msgid "Upgrade available for %(header_name)s"
+msgstr ""
+
+#: rdiffweb/templates/email_latest.html:10
+#, python-format
+msgid ""
+"A new version of %(header_name)s backup management system is now available "
+"for upgrade. It's recommend that you upgrade your server to take advantage of"
+" the enhancements and bug fixes included in this version."
+msgstr ""
+
+#: rdiffweb/templates/email_latest.html:13
+msgid ""
+"If you don't want to be notify about this. You need to review your server "
+"configuration."
 msgstr ""
 
 #: rdiffweb/templates/bootstrap_email/email_layout.html:28

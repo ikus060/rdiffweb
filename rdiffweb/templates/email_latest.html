@@ -1,0 +1,15 @@
+{% extends 'email_layout.html' %}
+{% block title %}
+  {% trans %}Upgrade available for {{ header_name }}{% endtrans %}
+{% endblock title %}
+{% block body %}
+  <h1>
+    <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
+  </h1>
+  <p>
+    {% trans %}A new version of {{ header_name }} backup management system is now available for upgrade. It's recommend that you upgrade your server to take advantage of the enhancements and bug fixes included in this version.{% endtrans %}
+  </p>
+  <p>
+    {% trans %}If you don't want to be notify about this. You need to review your server configuration.{% endtrans %}
+  </p>
+{% endblock body %}

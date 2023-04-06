@@ -602,6 +602,12 @@ def get_parser():
         default=2,
     )
 
+    parser.add_argument(
+        '--latest-version-url',
+        help="URL used to check if the current version is the latest version. To disable this feature, the URL could be empty. Default to: https://latest.ikus-soft.com/rdiffweb/latest_version",
+        default='https://latest.ikus-soft.com/rdiffweb/latest_version',
+    )
+
     parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
 
     # Here we append a list of arguments for each locale.
