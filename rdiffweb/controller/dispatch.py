@@ -78,7 +78,7 @@ def restapi():
     return decorated
 
 
-def poppath(*args, **kwargs):
+def poppath(*args):
     """
     A decorator for _cp_dispatch
     (cherrypy.dispatch.Dispatcher.dispatch_method_name).
@@ -89,19 +89,6 @@ def poppath(*args, **kwargs):
 
     # Since keyword arg comes after *args, we have to process it ourselves
     # for lower versions of python.
-
-    handler = None
-    handler_call = False
-    for k, v in kwargs.items():
-        if k == 'handler':
-            handler = v
-        else:
-            raise TypeError("cherrypy.popargs() got an unexpected keyword argument '{0}'".format(k))
-
-    import inspect
-
-    if handler is not None and (hasattr(handler, '__call__') or inspect.isclass(handler)):
-        handler_call = True
 
     def decorated(cls_or_self=None, vpath=None):
         if inspect.isclass(cls_or_self):
@@ -124,22 +111,9 @@ def poppath(*args, **kwargs):
             path.append(unquote_url(vpath.pop(0)))
         parms['path'] = b"/".join(path)
 
-        if handler is not None:
-            if handler_call:
-                return handler(**parms)
-            else:
-                cherrypy.request.params.update(parms)  # @UndefinedVariable
-                return handler
-
         cherrypy.request.params.update(parms)  # @UndefinedVariable
 
-        # If we are the ultimate handler, then to prevent our _cp_dispatch
-        # from being called again, we will resolve remaining elements through
-        # getattr() directly.
-        if vpath:
-            return getattr(self, vpath.pop(0), None)
-        else:
-            return self
+        return self
 
     return decorated
 

@@ -23,8 +23,76 @@ Created on Dec 26, 2015
 
 import os
 
+from parameterized import parameterized
+
 import rdiffweb.test
 from rdiffweb.core.model import RepoObject, UserObject
+from rdiffweb.core.rdw_templating import url_for
+
+_matrix = [
+    (
+        'root',
+        '',
+        [
+            "Fichier @ <root>",
+            "Répertoire (@vec) {càraçt#èrë} $épêcial",
+            "test\\test",
+            "<F!chïer> (@vec) {càraçt#èrë} $épêcial",
+            "Répertoire Existant",
+            "Répertoire Supprimé",
+            "Char Z to quote",
+            "Fichier avec non asci char �velyne M�re.txt",
+        ],
+    ),
+    ('loop_symlink', 'Subdirectory/LoopSymlink', ['LoopSymlink', 'Foldèr with éncodïng']),
+    ('loop_loop_symlink', 'Subdirectory/LoopSymlink/LoopSymlink/', ['LoopSymlink', 'Foldèr with éncodïng']),
+    (
+        'loop_loop_symlink',
+        'Subdirectory/LoopSymlink/LoopSymlink/LoopSymlink/',
+        ['LoopSymlink', 'Foldèr with éncodïng'],
+    ),
+    (
+        'subdir_symlink',
+        'SymlinkToSubdirectory/LoopSymlink',
+        [
+            'LoopSymlink',
+            'Foldèr with éncodïng',
+        ],
+    ),
+    (
+        'sub_directory_deleted',
+        'R%C3%A9pertoire%20Supprim%C3%A9/',
+        [
+            'Untitled Empty Text File',
+            'Untitled Empty Text File 2',
+            'Untitled Empty Text File 3',
+        ],
+    ),
+    (
+        'sub_directory_exists',
+        'R%C3%A9pertoire%20Existant/',
+        [
+            'Fichier supprim',
+            'Untitled Empty Text File',
+            'Untitled Empty Text File 2',
+        ],
+    ),
+    (
+        'sub_directory_with_special_chars',
+        'R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/',
+        [
+            'Untitled Testcase.doc',
+        ],
+    ),
+    (
+        'quoted_path',
+        'Char%20%3B090%20to%20quote/',
+        [
+            'Untitled Testcase.doc',
+            'Data',
+        ],
+    ),
+]
 
 
 class BrowsePageTest(rdiffweb.test.WebCase):
@@ -68,132 +136,32 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         )
         self.assertInBody("")
 
-    def test_root(self):
+    @parameterized.expand(_matrix)
+    def test_browse(self, unused, path, expected_in_body):
+        # Given a repository
+        # When brwosing the path
+        self.getPage(url_for('browse', self.USERNAME, self.REPO, path))
+        # Then page return without error
+        self.assertStatus(200)
+        # Then is contains our expected data
+        for value in expected_in_body:
+            self.assertInBody(value.replace('<', '&lt;').replace('>', '&gt;'))
+
+    @parameterized.expand(_matrix)
+    def test_browse_with_selenim(self, unused, path, expected_in_body):
         """
         Browse repository root.
         """
-        self._browse(self.USERNAME, self.REPO, "")
-        #  Fichier @ <root>
-        self.assertInBody("Fichier @ &lt;root&gt;")
-        self.assertInBody("/Fichier%20%40%20%3Croot%3E?date=")
-        #  Répertoire (@vec) {càraçt#èrë} $épêcial
-        self.assertInBody("Répertoire (@vec) {càraçt#èrë} $épêcial")
-        self.assertInBody(
-            "/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial"
-        )
-        #  test\test
-        self.assertInBody("test\\test")
-        self.assertInBody("/test%5Ctest")
-        #  <F!chïer> (@vec) {càraçt#èrë} $épêcial
-        self.assertInBody("&lt;F!chïer&gt; (@vec) {càraçt#èrë} $épêcial")
-        self.assertInBody(
-            "/%3CF%21ch%C3%AFer%3E%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial?date="
-        )
-        #  Répertoire Existant
-        self.assertInBody("Répertoire Existant")
-        self.assertInBody("/R%C3%A9pertoire%20Existant")
-        #  Répertoire Supprimé
-        self.assertInBody("Répertoire Supprimé")
-        self.assertInBody("/R%C3%A9pertoire%20Supprim%C3%A9")
-        #  Quoted folder
-        self.assertInBody("Char Z to quote")
-        self.assertInBody("/Char%20%3B090%20to%20quote")
-        #  Invalid encoding
-        self.assertInBody("Fichier avec non asci char �velyne M�re.txt")
-        self.assertInBody("/Fichier%20avec%20non%20asci%20char%20%C9velyne%20M%E8re.txt")
-        #  Make sure "rdiff-backup-data" is not listed
-        self.assertNotInBody("rdiff-backup-data")
-
-    def test_loop_symlink(self):
-        """
-        Browse a symlink.
-        """
-        self._browse(self.USERNAME, self.REPO, "Subdirectory/LoopSymlink")
-        self.assertStatus(200)
-        self.assertInBody("LoopSymlink")
-        self.assertInBody("Foldèr with éncodïng")
-        self._browse(self.USERNAME, self.REPO, "Subdirectory/LoopSymlink/LoopSymlink/")
-        self.assertStatus(200)
-        self.assertInBody("LoopSymlink")
-        self.assertInBody("Foldèr with éncodïng")
-        self._browse(self.USERNAME, self.REPO, "Subdirectory/LoopSymlink/LoopSymlink/LoopSymlink")
-        self.assertStatus(200)
-        self.assertInBody("LoopSymlink")
-        self.assertInBody("Foldèr with éncodïng")
-
-    def test_subdir_symlink(self):
-        self._browse(self.USERNAME, self.REPO, "SymlinkToSubdirectory")
-        self.assertStatus(200)
-        self.assertInBody("LoopSymlink")
-        self.assertInBody("Foldèr with éncodïng")
-        self._browse(self.USERNAME, self.REPO, "SymlinkToSubdirectory/LoopSymlink")
-        self.assertStatus(200)
-        self.assertInBody("LoopSymlink")
-        self.assertInBody("Foldèr with éncodïng")
-
-    def test_sub_directory_deleted(self):
-        """
-        Browse to a sub directory being deleted.
-        """
-        self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Supprim%C3%A9/")
-        self.assertStatus(200)
-        self.assertInBody("Untitled Empty Text File")
-        self.assertInBody("Untitled Empty Text File 2")
-        self.assertInBody("Untitled Empty Text File 3")
-        #  Also check if the filesize are properly retrieve.
-        self.assertInBody(
-            "The size of deleted files is available in the file history using the `Show more...` function."
-        )
-        #  Also check dates
-        self.assertInBody("data-order=\"1414871475\"")
-
-    def test_sub_directory_exists(self):
-        """
-        Browse to a sub directory.
-        """
-        self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Existant/")
-        self.assertStatus(200)
-        self.assertInBody("Fichier supprimé")
-        self.assertInBody("Untitled Empty Text File")
-        self.assertInBody("Untitled Empty Text File 2")
-
-    def test_sub_directory_with_special_chars(self):
-        """
-        Browse to a sub directory containing special chars.
-        """
-        self._browse(
-            self.USERNAME,
-            self.REPO,
-            "R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial/",
-        )
-        self.assertStatus(200)
-        self.assertInBody("Untitled Testcase.doc")
-
-    def test_sub_directory_with_encoding(self):
-        """
-        Browse to sub directory with non-ascii.
-        """
-        self._browse(self.USERNAME, self.REPO, "R%C3%A9pertoire%20Existant/")
-        self.assertStatus(200)
-        self.assertInBody("Répertoire Existant")
-
-    def test_quoted_path(self):
-        """
-        Browse to a directory with quoted path ';090'.
-        """
-        #  Char ;090 to quote
-        #  Char Z to quote
-        self._browse(self.USERNAME, self.REPO, "Char%20%3B090%20to%20quote/")
-        self.assertStatus(200)
-        #  browser location
-        self.assertInBody("Char Z to quote")
-        #  Content of the folder
-        self.assertInBody("Untitled Testcase.doc")
-        self.assertInBody("Data")
-        #  Check size
-        self.assertInBody(
-            "The size of deleted files is available in the file history using the `Show more...` function."
-        )
+        # Given a repository
+        with self.selenium() as driver:
+            # When browsing repository
+            driver.get(url_for('browse', self.USERNAME, self.REPO, path))
+            # Then page load without error
+            self.assertFalse(driver.get_log('browser'))
+            # Then page contains expected strings.
+            text = driver.find_element('css selector', "#table1").text
+            for value in expected_in_body:
+                self.assertIn(value, text)
 
     def test_invalid_repo(self):
         """
@@ -275,7 +243,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         self.getPage('/browse/anotheruser/testcases/Revisions/')
         self.assertStatus('403 Forbidden')
 
-    def test_browser_with_failed_repo(self):
+    def test_browse_with_failed_repo(self):
         # Given a failed repo
         admin = UserObject.get_user('admin')
         admin.user_root = 'invalid'
@@ -285,3 +253,13 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         # Then the page is return with an error message
         self.assertStatus(200)
         self.assertInBody('The repository cannot be found or is badly damaged.')
+        self.assertInBody('The displayed data may be inconsistent')
+
+    def test_browse_with_interupted_repo(self):
+        # Given a failed repo
+        # When querying the repo
+        self._browse(self.USERNAME, 'broker-repo', '')
+        # Then the page is return with an error message
+        self.assertStatus(200)
+        self.assertInBody('Initial backup in progress.')
+        self.assertInBody('The displayed data may be inconsistent')

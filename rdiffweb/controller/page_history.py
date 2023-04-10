@@ -18,11 +18,10 @@
 
 import cherrypy
 
-from rdiffweb.controller import Controller, flash, validate_int
+from rdiffweb.controller import Controller, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
-from rdiffweb.tools.i18n import ugettext as _
 
 
 @poppath()
@@ -40,10 +39,6 @@ class HistoryPage(Controller):
         repo, path = RepoObject.get_repo_path(path)
 
         # Set up warning about in-progress backups, if necessary
-        status = repo.status
-        if status[0] != 'ok':
-            flash(status[1] + ' ' + _("The displayed data may be inconsistent."), level='warning')
-
         path_obj = repo.fstat(path)
         parms = {
             "limit": limit,

@@ -405,6 +405,7 @@ class RdiffDirEntry(object):
                 # Ignore missing increment...
                 continue
             return increment.isdir
+        return False
 
     @cached_property
     def file_size(self):
@@ -1073,26 +1074,30 @@ class RdiffRepo(object):
         except (OSError, ValueError):
             exists = False
 
-        # Get incrmement data
-        increment_items = os.listdir(increment_path)
-
         # Create dir entry
         prefix = os.path.basename(full_path)
         entry = RdiffDirEntry(self, relative_path, exists, [])
-        for item in increment_items:
-            if not item.startswith(prefix):
-                # Ignore increment not matching our path
-                continue
-            try:
-                increment = IncrementEntry(item)
-            except ValueError:
-                # Ignore any increment that cannot be parsed
-                continue
-            if increment.name != prefix:
-                # Ignore increment not matching our path
-                continue
-            # Add increment to dir entry
-            bisect.insort_left(entry._increments, increment)
+
+        # Get incremement data
+        try:
+            for item in os.listdir(increment_path):
+                if not item.startswith(prefix):
+                    # Ignore increment not matching our path
+                    continue
+                try:
+                    increment = IncrementEntry(item)
+                except ValueError:
+                    # Ignore any increment that cannot be parsed
+                    continue
+                if increment.name != prefix:
+                    # Ignore increment not matching our path
+                    continue
+                # Add increment to dir entry
+                bisect.insort_left(entry._increments, increment)
+        except FileNotFoundError:
+            # Nothing to do when path doesn't has increments.
+            # This happen for symlink.
+            pass
 
         # Check if path exists or has increment. If not raise an exception.
         if not exists and not entry._increments:
