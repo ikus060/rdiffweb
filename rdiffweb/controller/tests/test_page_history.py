@@ -114,7 +114,7 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         # Then a 404 error is return to the user
         self.assertStatus(404)
 
-    def test_browser_with_failed_repo(self):
+    def test_history_with_failed_repo(self):
         # Given a failed repo
         admin = UserObject.get_user('admin')
         admin.user_root = 'invalid'
@@ -124,6 +124,16 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         # Then the page is return with an error message
         self.assertStatus(200)
         self.assertInBody('The repository cannot be found or is badly damaged.')
+        self.assertInBody('The displayed data may be inconsistent')
+
+    def test_history_with_interupted_repo(self):
+        # Given a failed repo
+        # When querying the history
+        self.getPage("/history/" + self.USERNAME + "/broker-repo")
+        # Then the page is return with an error message
+        self.assertStatus(200)
+        self.assertInBody('Initial backup in progress.')
+        self.assertInBody('The displayed data may be inconsistent')
 
     def test_history_with_root_within_subdirectory(self):
         # Given a user with repo in subdirectory (mimic Windows layout)

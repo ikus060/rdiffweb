@@ -78,6 +78,14 @@ a:hover, .btn-link:hover {
 }
 {% endif %}
 
+/* Show hide Action button */
+tr .btn-hover {
+    opacity: 0;
+}
+tr:hover .btn-hover, tr.child .btn-hover {
+    opacity: 1;
+}
+
 /* DataTable adjustments */
 .dataTables_wrapper .dataTables_info{
     padding-top: 0;
