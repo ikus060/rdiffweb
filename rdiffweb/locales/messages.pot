@@ -6,16 +6,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: rdiffweb 2.7.0a2.dev3+gf7535ca2.d20230403\n"
+"Project-Id-Version: rdiffweb 2.7.0a3.dev5+g62a65d62\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-04-03 17:08-0400\n"
+"POT-Creation-Date: 2023-04-12 14:24-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.3\n"
+"Generated-By: Babel 2.12.1\n"
 
 #: rdiffweb/controller/__init__.py:63 rdiffweb/controller/page_logs.py:61
 msgid "Invalid date."
@@ -328,15 +328,15 @@ msgstr ""
 msgid "Invalid value, must be: %s"
 msgstr ""
 
-#: rdiffweb/controller/page_graphs.py:41 rdiffweb/templates/email_report.html:433
+#: rdiffweb/controller/page_graphs.py:41 rdiffweb/templates/email_report.html:118
 msgid "New files"
 msgstr ""
 
-#: rdiffweb/controller/page_graphs.py:48 rdiffweb/templates/email_report.html:455
+#: rdiffweb/controller/page_graphs.py:48 rdiffweb/templates/email_report.html:131
 msgid "Deleted files"
 msgstr ""
 
-#: rdiffweb/controller/page_graphs.py:55 rdiffweb/templates/email_report.html:477
+#: rdiffweb/controller/page_graphs.py:55 rdiffweb/templates/email_report.html:144
 msgid "Changed files"
 msgstr ""
 
@@ -374,10 +374,6 @@ msgstr ""
 
 #: rdiffweb/controller/page_graphs.py:139
 msgid "Error count"
-msgstr ""
-
-#: rdiffweb/controller/page_history.py:45
-msgid "The displayed data may be inconsistent."
 msgstr ""
 
 #: rdiffweb/controller/page_login.py:50 rdiffweb/controller/page_mfa.py:45
@@ -440,7 +436,7 @@ msgstr ""
 
 #: rdiffweb/controller/page_pref_general.py:58
 #: rdiffweb/controller/page_pref_notification.py:70
-#: rdiffweb/controller/page_pref_notification.py:110
+#: rdiffweb/controller/page_pref_notification.py:111
 #: rdiffweb/templates/admin_users.html:115 rdiffweb/templates/settings.html:32
 #: rdiffweb/templates/settings.html:88 rdiffweb/templates/settings.html:111
 msgid "Save changes"
@@ -641,7 +637,7 @@ msgstr ""
 msgid "Report settings updated successfully."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_notification.py:126
+#: rdiffweb/controller/page_pref_notification.py:127
 msgid "Notification settings updated successfully."
 msgstr ""
 
@@ -787,31 +783,31 @@ msgstr ""
 msgid "Average duration (min)"
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1243
+#: rdiffweb/core/librdiff.py:1248
 msgid "A backup is currently in progress to this repository."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1251
+#: rdiffweb/core/librdiff.py:1256
 msgid "Initial backup in progress."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1253
+#: rdiffweb/core/librdiff.py:1258
 msgid "The last backup has been interrupted."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1256
+#: rdiffweb/core/librdiff.py:1261
 msgid "The repository cannot be found or is badly damaged."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1260
+#: rdiffweb/core/librdiff.py:1265
 msgid "Permissions denied. Contact administrator to check repository's permissions."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1262 rdiffweb/templates/admin_repos.html:9
+#: rdiffweb/core/librdiff.py:1267 rdiffweb/templates/admin_repos.html:9
 msgid "Healthy"
 msgstr ""
 
-#: rdiffweb/core/notification.py:174 rdiffweb/templates/email_notification.html:3
+#: rdiffweb/core/notification.py:173 rdiffweb/templates/email_notification.html:3
 #: rdiffweb/templates/prefs_notification.html:27
 #: rdiffweb/templates/settings.html:99
 msgid "Notification"
@@ -1215,7 +1211,7 @@ msgstr ""
 #: rdiffweb/templates/email_password_changed.html:7
 #: rdiffweb/templates/email_repo_added.html:7
 #: rdiffweb/templates/email_repo_deleted.html:7
-#: rdiffweb/templates/email_report.html:15
+#: rdiffweb/templates/email_report.html:27
 #: rdiffweb/templates/email_verification_code.html:7
 #, python-format
 msgid "Hey %(username)s,"
@@ -1278,8 +1274,7 @@ msgid ""
 "configuration."
 msgstr ""
 
-#: rdiffweb/templates/bootstrap_email/email_layout.html:28
-#: rdiffweb/templates/email_layout.html:259
+#: rdiffweb/templates/email_layout.html:359
 #, python-format
 msgid ""
 "You received this email to let you know about important changes to your "
@@ -1356,100 +1351,88 @@ msgid ""
 "has been deleted from your account."
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:4
+#: rdiffweb/templates/email_report.html:16
 msgid "Monthly Backup Report"
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:6
+#: rdiffweb/templates/email_report.html:18
 msgid "Weekly Backup Report"
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:8
+#: rdiffweb/templates/email_report.html:20
 msgid "Daily Backup Report"
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:10
+#: rdiffweb/templates/email_report.html:22
 msgid "Backup Report"
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:21
+#: rdiffweb/templates/email_report.html:33
 #, python-format
 msgid ""
-"Here is your monthly backup report for last month presenting and overview of "
+"Here is your monthly backup report for last month presenting an overview of "
 "the activities within your backup from %(start)s to %(end)s."
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:23
+#: rdiffweb/templates/email_report.html:35
 #, python-format
 msgid ""
-"Here is your weekly backup report for previous week presenting and overview "
-"of the activities within your backup from %(start)s to %(end)s."
+"Here is your weekly backup report for previous week presenting an overview of"
+" the activities within your backup from %(start)s to %(end)s."
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:25
+#: rdiffweb/templates/email_report.html:37
 #, python-format
 msgid ""
-"Here is your daily backup report for yesterday presenting and overview of the"
-" activities within your backup for %(start)s."
+"Here is your daily backup report for yesterday presenting an overview of the "
+"activities within your backup for %(start)s."
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:27
+#: rdiffweb/templates/email_report.html:39
 #, python-format
 msgid ""
-"Here is your backup report presenting and overview of the activities within "
+"Here is your backup report presenting an overview of the activities within "
 "your backup from %(start)s to %(end)s."
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:32 rdiffweb/templates/locations.html:35
-msgid "Storage Usage: "
+#: rdiffweb/templates/email_report.html:45
+msgid "Storage Usage"
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:88
+#: rdiffweb/templates/email_report.html:50
 msgid "Used"
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:111
+#: rdiffweb/templates/email_report.html:57
 msgid "Free"
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:133
+#: rdiffweb/templates/email_report.html:64
 msgid "Total"
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:239
-msgid "Last backup Date"
-msgstr ""
-
-#: rdiffweb/templates/email_report.html:261
-msgid "Error Count"
-msgstr ""
-
-#: rdiffweb/templates/email_report.html:277
+#: rdiffweb/templates/email_report.html:82
 msgid "Status"
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:330
+#: rdiffweb/templates/email_report.html:91
+msgid "Last backup Date"
+msgstr ""
+
+#: rdiffweb/templates/email_report.html:100
 msgid "Current size"
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:352
-msgid "Increase size"
-msgstr ""
-
-#: rdiffweb/templates/email_report.html:374
+#: rdiffweb/templates/email_report.html:109
 msgid "Avg. Time"
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:536
-msgid "New file size"
+#: rdiffweb/templates/email_report.html:157
+msgid "Error Count"
 msgstr ""
 
-#: rdiffweb/templates/email_report.html:558
-msgid "Deleted file size"
-msgstr ""
-
-#: rdiffweb/templates/email_report.html:580
-msgid "Changed file size"
+#: rdiffweb/templates/email_report.html:167
+msgid "A small number of errors does not indicate a problem with your backup."
 msgstr ""
 
 #: rdiffweb/templates/email_verification_code.html:3
@@ -1584,6 +1567,14 @@ msgstr ""
 
 #: rdiffweb/templates/layout_repo.html:13
 msgid "Logs"
+msgstr ""
+
+#: rdiffweb/templates/layout_repo.html:25
+msgid "The displayed data may be inconsistent."
+msgstr ""
+
+#: rdiffweb/templates/locations.html:35
+msgid "Storage Usage: "
 msgstr ""
 
 #: rdiffweb/templates/locations.html:36

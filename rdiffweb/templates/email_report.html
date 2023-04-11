@@ -1,4 +1,16 @@
 {% extends 'email_layout.html' %}
+{% macro emphasis()%}
+  <h3 style="padding-top: 0;
+             padding-bottom: 0;
+             font-weight: 500;
+             vertical-align: baseline;
+             font-size: 28px;
+             line-height: 33.6px;
+             margin: 0;"
+      align="left">
+    {{ caller()}}
+  </h3>
+{% endmacro %}
 {% block title %}
   {% if time_range == 30 %}
     {% trans %}Monthly Backup Report{% endtrans %}
@@ -15,614 +27,146 @@
     <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
   </h1>
   <p>
-    {% set start =  start_time.epoch|format_datetime("long") %}
-    {% set end =  end_time.epoch|format_datetime("long") %}
+    {% set start =  start_time.epoch|format_date("medium") %}
+    {% set end =  end_time.epoch|format_date("medium") %}
     {% if time_range == 30 %}
-      {% trans %}Here is your monthly backup report for last month presenting and overview of the activities within your backup from {{ start }} to {{ end }}.{% endtrans %}
+      {% trans %}Here is your monthly backup report for last month presenting an overview of the activities within your backup from {{ start }} to {{ end }}.{% endtrans %}
     {% elif time_range == 7 %}
-      {% trans %}Here is your weekly backup report for previous week presenting and overview of the activities within your backup from {{ start }} to {{ end }}.{% endtrans %}
+      {% trans %}Here is your weekly backup report for previous week presenting an overview of the activities within your backup from {{ start }} to {{ end }}.{% endtrans %}
     {% elif time_range == 1 %}
-      {% trans %}Here is your daily backup report for yesterday presenting and overview of the activities within your backup for {{ start }}.{% endtrans %}
+      {% trans %}Here is your daily backup report for yesterday presenting an overview of the activities within your backup for {{ start }}.{% endtrans %}
     {% else %}
-      {% trans %}Here is your backup report presenting and overview of the activities within your backup from {{ start }} to {{ end }}.{% endtrans %}
+      {% trans %}Here is your backup report presenting an overview of the activities within your backup from {{ start }} to {{ end }}.{% endtrans %}
     {% endif %}
   </p>
+  {# Quota Usage #}
   {% if disk_usage and disk_quota %}
     {% set used_pct = disk_usage / disk_quota * 100 %}
-    <b>{% trans %}Storage Usage: {% endtrans %} {{ used_pct|int }}%</b>
-    <table border="0"
-           cellpadding="0"
-           cellspacing="0"
-           style="border-radius: 6px;
-                  border-collapse: separate !important;
-                  width: 100%;
-                  overflow: hidden;
-                  border: 1px solid #e2e8f0;"
-           bgcolor="#ffffff">
-      <tbody>
-        <tr>
-          <td style="line-height: 24px;
-                     font-size: 16px;
-                     width: 100%;
-                     margin: 0;"
-              align="left"
-              bgcolor="#ffffff">
-            <table class="card-body bg-light"
-                   role="presentation"
-                   border="0"
-                   cellpadding="0"
-                   cellspacing="0"
-                   style="width: 100%;"
-                   bgcolor="#f7fafc">
-              <tbody>
-                <tr>
-                  <td style="line-height: 24px;
-                             font-size: 16px;
-                             width: 100%;
-                             margin: 0;
-                             padding: 20px;"
-                      align="left"
-                      bgcolor="#f7fafc">
-                    <div class="row" style="margin-right: -24px;">
-                      <table class=""
-                             role="presentation"
-                             border="0"
-                             cellpadding="0"
-                             cellspacing="0"
-                             style="table-layout: fixed;
-                                    width: 100%;"
-                             width="100%">
-                        <tbody>
-                          <tr>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       {% if used_pct>90 %}color: #ffc107;
-                                       {% endif %} margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Used{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ disk_usage | filesize }}
-                              </h5>
-                            </td>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       {% if used_pct>90 %}color: #ffc107;
-                                       {% endif %} margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Free{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ (disk_quota - disk_usage) | filesize }}
-                              </h5>
-                            </td>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Total{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ disk_quota | filesize }}
-                              </h5>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <!-- mb-4 -->
-    <table class="s-4 w-full"
-           role="presentation"
-           border="0"
-           cellpadding="0"
-           cellspacing="0"
-           style="width: 100%;"
-           width="100%">
-      <tbody>
-        <tr>
-          <td style="line-height: 16px;
-                     font-size: 16px;
-                     width: 100%;
-                     height: 16px;
-                     margin: 0;"
-              align="left"
-              width="100%"
-              height="16">
-            &#160;
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <b>{% trans %}Storage Usage{% endtrans %}</b>
+    {% call card('bg-light') %}
+      {% call card_body() %}
+        {% call row() %}
+          {% call col('text-warning' if used_pct>90 else '') %}
+            {% trans %}Used{% endtrans %}
+            {% call emphasis()%}
+              {{ used_pct|int }}%
+            {% endcall %}
+            <small>{{ disk_usage | filesize }}</small>
+          {% endcall %}
+          {% call col('text-warning' if used_pct>90 else '') %}
+            {% trans %}Free{% endtrans %}
+            {% call emphasis()%}
+              {{ (100 - used_pct)|int }}%
+            {% endcall %}
+            {{ (disk_quota - disk_usage) | filesize }}
+          {% endcall %}
+          {% call col('text-warning' if used_pct>90 else '') %}
+            {% trans %}Total{% endtrans %}
+            {% call emphasis()%}
+              {{ disk_quota | filesize }}
+            {% endcall %}
+          {% endcall %}
+        {% endcall %}
+      {% endcall %}
+    {% endcall %}
+    {{ mb4() }}
   {% endif %}
+  {# Repo statistics #}
   {% for repo in data %}
     <b>{{ repo.display_name }}</b>
-    <table class="card"
-           role="presentation"
-           border="0"
-           cellpadding="0"
-           cellspacing="0"
-           style="border-radius: 6px;
-                  border-collapse: separate !important;
-                  width: 100%;
-                  overflow: hidden;
-                  border: 1px solid #e2e8f0;"
-           bgcolor="#ffffff">
-      <tbody>
-        <tr>
-          <td style="line-height: 24px;
-                     font-size: 16px;
-                     width: 100%;
-                     margin: 0;"
-              align="left"
-              bgcolor="#ffffff">
-            <table class="card-body bg-light"
-                   role="presentation"
-                   border="0"
-                   cellpadding="0"
-                   cellspacing="0"
-                   style="width: 100%;"
-                   bgcolor="#f7fafc">
-              <tbody>
-                <tr>
-                  <td style="line-height: 24px;
-                             font-size: 16px;
-                             width: 100%;
-                             margin: 0;
-                             padding: 20px;"
-                      align="left"
-                      bgcolor="#f7fafc">
-                    <div class="row" style="margin-right: -24px;">
-                      <table class=""
-                             role="presentation"
-                             border="0"
-                             cellpadding="0"
-                             cellspacing="0"
-                             style="table-layout: fixed;
-                                    width: 100%;"
-                             width="100%">
-                        <tbody>
-                          <tr>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Last backup Date{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ repo.last_backup_date.epoch|format_datetime("short") if repo.last_backup_date else '-' }}
-                              </h5>
-                            </td>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Error Count{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ repo.errors if repo.errors is not none else '-' }}
-                              </h5>
-                            </td>
-                            <td class="col-4"
-                                style="line-height: 24px; font-size: 16px; min-height: 1px; font-weight: normal; padding-right: 24px; width: 33.333333%; {% if repo.status[0] == 'ok' %}color: #13795b;{% else %}color: #ffc107;{% endif %} margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Status{% endtrans %}
-                              <h5 style="padding-top: 0; padding-bottom: 0; font-weight: 500; vertical-align: baseline; {% if repo.status[0] == 'ok' %}font-size: 20px;{% else %}font-size: 16px;{% endif %} line-height: 24px; margin: 0;"
-                                  align="left">
-                                {{ repo.status[1] }}
-                              </h5>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    <table class="s-4 w-full"
-                           role="presentation"
-                           border="0"
-                           cellpadding="0"
-                           cellspacing="0"
-                           style="width: 100%;"
-                           width="100%">
-                      <tbody>
-                        <tr>
-                          <td style="line-height: 16px;
-                                     font-size: 16px;
-                                     width: 100%;
-                                     height: 16px;
-                                     margin: 0;"
-                              align="left"
-                              width="100%"
-                              height="16">
-                            &#160;
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <div class="row" style="margin-right: -24px;">
-                      <table class=""
-                             role="presentation"
-                             border="0"
-                             cellpadding="0"
-                             cellspacing="0"
-                             style="table-layout: fixed;
-                                    width: 100%;"
-                             width="100%">
-                        <tbody>
-                          <tr>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Current size{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ repo.sourcefilesize|filesize if repo.sourcefilesize is not none else '-' }}
-                              </h5>
-                            </td>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Increase size{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ repo.totaldestinationsizechange|filesize if repo.totaldestinationsizechange is not none else '-' }}
-                              </h5>
-                            </td>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Avg. Time{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ repo.elapsedtime if repo.elapsedtime is not none else '-' }}
-                              </h5>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    <table class="s-4 w-full"
-                           role="presentation"
-                           border="0"
-                           cellpadding="0"
-                           cellspacing="0"
-                           style="width: 100%;"
-                           width="100%">
-                      <tbody>
-                        <tr>
-                          <td style="line-height: 16px;
-                                     font-size: 16px;
-                                     width: 100%;
-                                     height: 16px;
-                                     margin: 0;"
-                              align="left"
-                              width="100%"
-                              height="16">
-                            &#160;
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <div class="row" style="margin-right: -24px;">
-                      <table class=""
-                             role="presentation"
-                             border="0"
-                             cellpadding="0"
-                             cellspacing="0"
-                             style="table-layout: fixed;
-                                    width: 100%;"
-                             width="100%">
-                        <tbody>
-                          <tr>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}New files{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ repo.newfiles if repo.newfiles is not none else '-' }}
-                              </h5>
-                            </td>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Deleted files{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ repo.deletedfiles if repo.deletedfiles is not none else '-' }}
-                              </h5>
-                            </td>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Changed files{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ repo.changedfiles if repo.changedfiles is not none else '-' }}
-                              </h5>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    <table class="s-4 w-full"
-                           role="presentation"
-                           border="0"
-                           cellpadding="0"
-                           cellspacing="0"
-                           style="width: 100%;"
-                           width="100%">
-                      <tbody>
-                        <tr>
-                          <td style="line-height: 16px;
-                                     font-size: 16px;
-                                     width: 100%;
-                                     height: 16px;
-                                     margin: 0;"
-                              align="left"
-                              width="100%"
-                              height="16">
-                            &#160;
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <div class="row" style="margin-right: -24px;">
-                      <table class=""
-                             role="presentation"
-                             border="0"
-                             cellpadding="0"
-                             cellspacing="0"
-                             style="table-layout: fixed;
-                                    width: 100%;"
-                             width="100%">
-                        <tbody>
-                          <tr>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}New file size{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ repo.newfilesize|filesize if repo.newfilesize is not none else '-' }}
-                              </h5>
-                            </td>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Deleted file size{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ repo.deletedfilesize|filesize if repo.deletedfilesize is not none else '-' }}
-                              </h5>
-                            </td>
-                            <td class="col-4"
-                                style="line-height: 24px;
-                                       font-size: 16px;
-                                       min-height: 1px;
-                                       font-weight: normal;
-                                       padding-right: 24px;
-                                       width: 33.333333%;
-                                       margin: 0;"
-                                align="left"
-                                valign="top">
-                              {% trans %}Changed file size{% endtrans %}
-                              <h5 style="padding-top: 0;
-                                         padding-bottom: 0;
-                                         font-weight: 500;
-                                         vertical-align: baseline;
-                                         font-size: 20px;
-                                         line-height: 24px;
-                                         margin: 0;"
-                                  align="left">
-                                {{ repo.changedsourcesize|filesize if repo.changedsourcesize is not none else '-' }}
-                              </h5>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <!-- mb-4 -->
-    <table class="s-4 w-full"
-           role="presentation"
-           border="0"
-           cellpadding="0"
-           cellspacing="0"
-           style="width: 100%;"
-           width="100%">
-      <tbody>
-        <tr>
-          <td style="line-height: 16px;
-                     font-size: 16px;
-                     width: 100%;
-                     height: 16px;
-                     margin: 0;"
-              align="left"
-              width="100%"
-              height="16">
-            &#160;
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    {% call card('bg-light') %}
+      {% call card_body() %}
+        {# Status #}
+        {% call row() %}
+          {% call col('text-success' if repo.status[0] == 'ok' else 'text-warning') %}
+            <b>{% trans %}Status{% endtrans %}</b>
+          {% endcall %}
+          {% call col('text-success' if repo.status[0] == 'ok' else 'text-warning') %}
+            <b>{{ repo.status[1] }}</b>
+          {% endcall %}
+        {% endcall %}
+        {# Last backup Date #}
+        {% call row() %}
+          {% call col() %}
+            {% trans %}Last backup Date{% endtrans %}
+          {% endcall %}
+          {% call col() %}
+            {{ repo.last_backup_date.epoch|format_datetime("long") if repo.last_backup_date else '-' }}
+          {% endcall %}
+        {% endcall %}
+        {# Current size #}
+        {% call row() %}
+          {% call col() %}
+            {% trans %}Current size{% endtrans %}
+          {% endcall %}
+          {% call col() %}
+            {{ repo.sourcefilesize|filesize if repo.sourcefilesize is not none else '-' }}
+          {% endcall %}
+        {% endcall %}
+        {# Avg. Time #}
+        {% call row() %}
+          {% call col() %}
+            {% trans %}Avg. Time{% endtrans %}
+          {% endcall %}
+          {% call col() %}
+            {% if repo.elapsedtime %}
+              {{ repo.elapsedtime|timespan }}
+            {% else %}
+              -
+            {% endif %}
+          {% endcall %}
+        {% endcall %}
+        {# New files #}
+        {% call row() %}
+          {% call col() %}
+            {% trans %}New files{% endtrans %}
+          {% endcall %}
+          {% call col() %}
+            {% if repo.newfiles %}
+              {{ repo.newfiles }} ({{ repo.newfilesize|filesize if repo.newfilesize is not none else '-' }})
+            {% else %}
+              -
+            {% endif %}
+          {% endcall %}
+        {% endcall %}
+        {# Deleted files #}
+        {% call row() %}
+          {% call col() %}
+            {% trans %}Deleted files{% endtrans %}
+          {% endcall %}
+          {% call col() %}
+            {% if repo.deletedfiles %}
+              {{ repo.deletedfiles }}  ({{ repo.deletedfilesize|filesize if repo.deletedfilesize is not none else '-' }})
+            {% else %}
+              -
+            {% endif %}
+          {% endcall %}
+        {% endcall %}
+        {# Changed files #}
+        {% call row() %}
+          {% call col() %}
+            {% trans %}Changed files{% endtrans %}
+          {% endcall %}
+          {% call col() %}
+            {% if repo.changedfiles %}
+              {{ repo.changedfiles }} ({{ repo.changedsourcesize|filesize if repo.changedsourcesize is not none else '-' }})
+            {% else %}
+              -
+            {% endif %}
+          {% endcall %}
+        {% endcall %}
+        {# Error Count #}
+        {% call row() %}
+          {% call col() %}
+            {% trans %}Error Count{% endtrans %}*
+          {% endcall %}
+          {% call col() %}
+            {{ repo.errors if repo.errors is not none else '-' }}
+          {% endcall %}
+        {% endcall %}
+      {% endcall %}
+    {% endcall %}
+    {{ mb4() }}
   {% endfor %}
+  *{% trans %}A small number of errors does not indicate a problem with your backup.{% endtrans %}
 {% endblock body %}

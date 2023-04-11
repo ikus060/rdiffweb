@@ -397,6 +397,12 @@ class UserObject(Base):
     def __eq__(self, other):
         return type(self) == type(other) and inspect(self).key == inspect(other).key
 
+    def __str__(self):
+        return self.username
+
+    def __repr__(self):
+        return f'UserObject({self.username})'
+
     @validates('username')
     def validates_username(self, key, value):
         if self.username:

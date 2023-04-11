@@ -347,27 +347,34 @@ class NotificationPlugin(SimplePlugin):
         # Compute the data for each repository
         data = []
         for repo in sorted(userobj.repo_objs, key=lambda r: r.display_name):
-            stats = repo.session_statistics[start_time:end_time]
             data.append(
                 {
                     'display_name': repo.display_name,
                     'last_backup_date': repo.last_backup_date,
                     'maxage': repo.maxage,
-                    'errors': _sum([s.errors for s in stats]),
                     'status': repo.status,
-                    'sourcefilesize': repo.session_statistics[-1].sourcefilesize
-                    if len(repo.session_statistics)
-                    else None,
-                    'totaldestinationsizechange': _sum([s.totaldestinationsizechange for s in stats]),
-                    'elapsedtime': _avg([s.elapsedtime for s in stats]),
-                    'newfiles': _sum([s.newfiles for s in stats]),
-                    'deletedfiles': _sum([s.newfiles for s in stats]),
-                    'changedfiles': _sum([s.newfiles for s in stats]),
-                    'newfilesize': _sum([s.newfiles for s in stats]),
-                    'deletedfilesize': _sum([s.newfiles for s in stats]),
-                    'changedsourcesize': _sum([s.newfiles for s in stats]),
                 }
             )
+            try:
+                stats = repo.session_statistics[start_time:end_time]
+                data[-1].update(
+                    {
+                        'elapsedtime': _avg([s.elapsedtime for s in stats]),
+                        'newfiles': _sum([s.newfiles for s in stats]),
+                        'deletedfiles': _sum([s.deletedfiles for s in stats]),
+                        'changedfiles': _sum([s.changedfiles for s in stats]),
+                        'newfilesize': _sum([s.newfilesize for s in stats]),
+                        'deletedfilesize': _sum([s.deletedfilesize for s in stats]),
+                        'changedsourcesize': _sum([s.changedsourcesize for s in stats]),
+                        'totaldestinationsizechange': _sum([s.totaldestinationsizechange for s in stats]),
+                        'sourcefilesize': repo.session_statistics[-1].sourcefilesize
+                        if len(repo.session_statistics)
+                        else None,
+                        'errors': _sum([s.errors for s in stats]),
+                    }
+                )
+            except Exception:
+                logger.warning('fail to collect data for %s %s', userobj, repo, exc_info=1)
 
         # Generate email.
         self._queue_mail(

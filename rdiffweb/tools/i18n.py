@@ -269,11 +269,21 @@ def gettext_lazy(message):
     return LazyProxy(func, enable_cache=False)
 
 
-def format_datetime(datetime=None, format='medium'):
+def format_datetime(datetime=None, format='medium', tzinfo=None):
     """
     Wraper arround babel format_datetime to provide a default locale.
     """
-    return dates.format_datetime(datetime=datetime, format=format, locale=get_translation().locale)
+    return dates.format_datetime(
+        datetime=datetime, format=format, locale=get_translation().locale, tzinfo=tzinfo or dates.get_timezone()
+    )
+
+
+def format_date(date=None, format='medium', tzinfo=None):
+    """
+    Wraper arround babel format_datetime to provide a default locale.
+    """
+    date = dates._ensure_datetime_tzinfo(dates._get_datetime(date), tzinfo=tzinfo or dates.get_timezone())
+    return dates.format_date(date=date, format=format, locale=get_translation().locale)
 
 
 def _load_default_language(mo_dir, domain, default, **kwargs):
