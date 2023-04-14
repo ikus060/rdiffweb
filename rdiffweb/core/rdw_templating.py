@@ -210,7 +210,9 @@ class TemplateManager(object):
         self.jinja_env.filters['filter'] = do_filter
         self.jinja_env.filters['lastupdated'] = do_format_lastupdated
         self.jinja_env.filters['filesize'] = lambda x: humanfriendly.format_size(x, binary=True)
+        self.jinja_env.filters['timespan'] = lambda x: humanfriendly.format_timespan(x, max_units=1)
         self.jinja_env.filters['format_datetime'] = i18n.format_datetime
+        self.jinja_env.filters['format_date'] = i18n.format_date
 
         # Register method
         self.jinja_env.globals['attrib'] = attrib

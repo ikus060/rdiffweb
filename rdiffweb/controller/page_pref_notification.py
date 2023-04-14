@@ -92,6 +92,7 @@ class ReportForm(CherryForm):
             return True
         except Exception as e:
             userobj.rollback()
+            logger.warning('fail to save report settings', exc_info=1)
             flash(str(e), level='warning')
             return False
 
