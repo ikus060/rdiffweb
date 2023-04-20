@@ -172,11 +172,12 @@ class UserForm(CherryForm):
             flash(_("User email is required to enabled Two-Factor Authentication"), level='error')
         else:
             userobj.mfa = self.mfa.data
-        if not userobj.valid_user_root():
-            flash(_("User's root directory %s is not accessible!") % userobj.user_root, level='error')
-            logger.warning("user's root directory %s is not accessible" % userobj.user_root)
-        else:
-            userobj.refresh_repos(delete=True)
+        if userobj.user_root:
+            if not userobj.valid_user_root():
+                flash(_("User's root directory %s is not accessible!") % userobj.user_root, level='error')
+                logger.warning("user's root directory %s is not accessible" % userobj.user_root)
+            else:
+                userobj.refresh_repos(delete=True)
         # Try to update disk quota if the human readable value changed.
         # Report error using flash.
         new_quota = self.disk_quota.data or 0

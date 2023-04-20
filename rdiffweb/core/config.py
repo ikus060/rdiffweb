@@ -215,7 +215,7 @@ def get_parser():
         '--brand-logo',
         '--logo',
         dest='logo',
-        help='location of an image (preferably a .svg) to be used as a replacement for the rdiffweb logo displayed in Login page.',
+        help='location of an image (preferably a .png) to be used as a replacement for the rdiffweb logo displayed in Login page.',
     )
 
     parser.add_argument(
@@ -223,7 +223,7 @@ def get_parser():
         '--header-logo',
         '--headerlogo',
         dest='header_logo',
-        help='location of an image (preferably a .svg) to be used as a replacement for the rdiffweb header logo displayed in navigation bar.',
+        help='location of an image (preferably a .png) to be used as a replacement for the rdiffweb header logo displayed in navigation bar.',
     )
 
     parser.add_argument(
