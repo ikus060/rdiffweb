@@ -121,11 +121,14 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 
 # Changelog
 
-## Next Release
+## 2.7.0 (2023-04-20)
 
+* Support Python 3.11
+* Provide a Monthly, Weekly or Daily repport for user #71
 * Fix MFA verification code email's subjet #270
 * Add translation for footer not in email layout
-* Provide a Monthly, Weekly or Daily repport for user #71
+* Send email to administrator when a new version is available #266
+* Improve automatic testing
 
 ## 2.6.1 (2023-03-22)
 
