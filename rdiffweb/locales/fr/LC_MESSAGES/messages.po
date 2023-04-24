@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-04-12 14:24-0400\n"
+"POT-Creation-Date: 2023-04-26 13:55-0400\n"
 "PO-Revision-Date: 2014-11-14 10:00-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -90,8 +90,8 @@ msgstr "Groupe"
 #: rdiffweb/controller/page_admin_users.py:132
 #: rdiffweb/templates/admin_logs.html:42
 #: rdiffweb/templates/admin_session.html:22
-#: rdiffweb/templates/admin_users.html:22
-#: rdiffweb/templates/admin_users.html:49
+#: rdiffweb/templates/admin_users.html:18
+#: rdiffweb/templates/admin_users.html:45
 msgid "User"
 msgstr "Utilisateurs"
 
@@ -143,71 +143,67 @@ msgstr "Support LDAP SASL (Cyrus-SASL)"
 msgid "LDAP TLS Support (OpenSSL)"
 msgstr "Support LDAP TLS (OpenSSL)"
 
-#: rdiffweb/controller/page_admin_users.py:72
+#: rdiffweb/controller/page_admin_users.py:73
 msgid "Not a valid file size value"
 msgstr "La taille du fichier n'est pas valide"
 
-#: rdiffweb/controller/page_admin_users.py:76
+#: rdiffweb/controller/page_admin_users.py:77
 msgid "UserID"
 msgstr "Identifiant utilisateur"
 
-#: rdiffweb/controller/page_admin_users.py:78
-#: rdiffweb/controller/page_admin_users.py:202
+#: rdiffweb/controller/page_admin_users.py:79
+#: rdiffweb/controller/page_admin_users.py:237
 #: rdiffweb/controller/page_login.py:37 rdiffweb/controller/page_login.py:41
 #: rdiffweb/controller/page_pref_general.py:40
 msgid "Username"
 msgstr "Nom d'utilisateur"
 
-#: rdiffweb/controller/page_admin_users.py:81
+#: rdiffweb/controller/page_admin_users.py:82
 #: rdiffweb/controller/page_login.py:39
 msgid "Username too long."
 msgstr "Nom d'utilisateur trop long."
 
-#: rdiffweb/controller/page_admin_users.py:82
+#: rdiffweb/controller/page_admin_users.py:83
 msgid "Username too short."
 msgstr "Nom d'utilisateur trop court."
 
-#: rdiffweb/controller/page_admin_users.py:83
-#: rdiffweb/controller/page_admin_users.py:91
+#: rdiffweb/controller/page_admin_users.py:84
+#: rdiffweb/controller/page_admin_users.py:92
 #: rdiffweb/controller/page_pref_general.py:46
 msgid "Must not contain any special characters."
 msgstr "Ne doit contenir aucun caractère spécial."
 
-#: rdiffweb/controller/page_admin_users.py:87
+#: rdiffweb/controller/page_admin_users.py:88
 #: rdiffweb/controller/page_pref_general.py:42
 msgid "Fullname"
 msgstr "Nom complet"
 
-#: rdiffweb/controller/page_admin_users.py:90
+#: rdiffweb/controller/page_admin_users.py:91
 #: rdiffweb/controller/page_pref_general.py:45
 msgid "Fullname too long."
 msgstr "Nom complet trop long."
 
-#: rdiffweb/controller/page_admin_users.py:95
+#: rdiffweb/controller/page_admin_users.py:96
 #: rdiffweb/controller/page_pref_general.py:50
-#: rdiffweb/templates/admin_users.html:23
+#: rdiffweb/templates/admin_users.html:19
 msgid "Email"
 msgstr "Courriel"
 
-#: rdiffweb/controller/page_admin_users.py:98
+#: rdiffweb/controller/page_admin_users.py:99
 #: rdiffweb/controller/page_pref_general.py:53
 msgid "Email too long."
 msgstr "Courriel trop long."
 
-#: rdiffweb/controller/page_admin_users.py:99
+#: rdiffweb/controller/page_admin_users.py:100
 #: rdiffweb/controller/page_pref_general.py:54
 msgid "Must be a valid email address."
 msgstr "Doit être une adresse électronique valide."
 
-#: rdiffweb/controller/page_admin_users.py:103
+#: rdiffweb/controller/page_admin_users.py:104
 #: rdiffweb/controller/page_login.py:48
 #: rdiffweb/templates/prefs_general.html:15
 msgid "Password"
 msgstr "Mot de passe"
-
-#: rdiffweb/controller/page_admin_users.py:105
-msgid "To create an LDAP user, you must leave the password empty."
-msgstr "Pour créer un utilisateur LDAP, vous devez laisser le mot de passe vide."
 
 #: rdiffweb/controller/page_admin_users.py:108
 msgid "Two-Factor Authentication (2FA)"
@@ -233,7 +229,7 @@ msgstr ""
 "l'utilisateur se connecte depuis un nouveau lieu."
 
 #: rdiffweb/controller/page_admin_users.py:120
-#: rdiffweb/templates/admin_users.html:25
+#: rdiffweb/templates/admin_users.html:21
 msgid "Root directory"
 msgstr "Répertoire racine"
 
@@ -246,17 +242,17 @@ msgid "Root directory too long."
 msgstr "Répertoire racine trop long."
 
 #: rdiffweb/controller/page_admin_users.py:127
-#: rdiffweb/templates/admin_users.html:24
+#: rdiffweb/templates/admin_users.html:20
 msgid "User Role"
 msgstr "Rôle d'utilisateur"
 
 #: rdiffweb/controller/page_admin_users.py:130
-#: rdiffweb/templates/admin_users.html:45
+#: rdiffweb/templates/admin_users.html:41
 msgid "Admin"
 msgstr "Administrateur"
 
 #: rdiffweb/controller/page_admin_users.py:131
-#: rdiffweb/templates/admin_users.html:47
+#: rdiffweb/templates/admin_users.html:43
 msgid "Maintainer"
 msgstr "Mainteneur"
 
@@ -287,55 +283,60 @@ msgstr "Quota utilisé"
 msgid "Disk spaces (in bytes) used by this user."
 msgstr "Espace disque (en octets) utilisé par cet utilisateur."
 
-#: rdiffweb/controller/page_admin_users.py:155
+#: rdiffweb/controller/page_admin_users.py:161
+msgid "To create an LDAP user, you must leave the password empty."
+msgstr "Pour créer un utilisateur LDAP, vous devez laisser le mot de passe vide."
+
+#: rdiffweb/controller/page_admin_users.py:167
 msgid "Cannot edit your own role."
 msgstr "Vous ne pouvez pas modifier votre propre rôle."
 
-#: rdiffweb/controller/page_admin_users.py:161
+#: rdiffweb/controller/page_admin_users.py:173
 msgid "Cannot change your own two-factor authentication settings."
 msgstr ""
 "Vous ne pouvez pas modifier vos propres paramètres d'authentification à "
 "deux facteurs."
 
-#: rdiffweb/controller/page_admin_users.py:172
+#: rdiffweb/controller/page_admin_users.py:185
 msgid "User email is required to enabled Two-Factor Authentication"
 msgstr ""
 "Un courriel est nécessaire pour activer l'authentification à deux "
 "facteurs."
 
-#: rdiffweb/controller/page_admin_users.py:176
+#: rdiffweb/controller/page_admin_users.py:190
 #, python-format
 msgid "User's root directory %s is not accessible!"
 msgstr "Le répertoire racine de l'utilisateur %s n'est pas accessible !"
 
-#: rdiffweb/controller/page_admin_users.py:188
+#: rdiffweb/controller/page_admin_users.py:212
 msgid "Setting user's quota is not supported"
 msgstr "La définition du quota de l'utilisateur n'est pas prise en charge"
 
-#: rdiffweb/controller/page_admin_users.py:217
-msgid "You cannot remove your own account!"
-msgstr "Vous ne pouvez pas supprimer votre propre compte!"
+#: rdiffweb/controller/page_admin_users.py:233
+msgid "Cannot change username of and existing user."
+msgstr "Impossible de modifier le nom d'utilisateur d'un utilisateur existant."
 
-#: rdiffweb/controller/page_admin_users.py:224
-msgid "User account removed."
-msgstr "Le compte utilisateur a été effacé."
-
-#: rdiffweb/controller/page_admin_users.py:226
-msgid "User doesn't exists!"
-msgstr "L'utilisateur n'existe pas!"
-
-#: rdiffweb/controller/page_admin_users.py:240
+#: rdiffweb/controller/page_admin_users.py:266
 msgid "User added successfully."
 msgstr "Utilisateur ajouté avec succès."
 
-#: rdiffweb/controller/page_admin_users.py:253
+#: rdiffweb/controller/page_admin_users.py:276
+#: rdiffweb/controller/page_admin_users.py:296
+#, python-format
+msgid "User %s doesn't exists"
+msgstr "L'utilisateur %s n'existe pas"
+
+#: rdiffweb/controller/page_admin_users.py:281
 msgid "User information modified successfully."
 msgstr "Information utilisateur modifié avec succès."
 
-#: rdiffweb/controller/page_admin_users.py:260
-#, python-format
-msgid "Cannot edit user `%s`: user doesn't exists"
-msgstr "Impossible de modifier l'utilisateur `%s` : l'utilisateur n'existe pas."
+#: rdiffweb/controller/page_admin_users.py:299
+msgid "You cannot remove your own account!"
+msgstr "Vous ne pouvez pas supprimer votre propre compte!"
+
+#: rdiffweb/controller/page_admin_users.py:303
+msgid "User account removed."
+msgstr "Le compte utilisateur a été effacé."
 
 #: rdiffweb/controller/page_delete.py:50
 msgid "Confirmation"
@@ -347,17 +348,17 @@ msgid "Invalid value, must be: %s"
 msgstr "Valeur incorrecte, doit être : %s"
 
 #: rdiffweb/controller/page_graphs.py:41
-#: rdiffweb/templates/email_report.html:118
+#: rdiffweb/templates/email_report.html:122
 msgid "New files"
 msgstr "Nouveaux fichiers"
 
 #: rdiffweb/controller/page_graphs.py:48
-#: rdiffweb/templates/email_report.html:131
+#: rdiffweb/templates/email_report.html:135
 msgid "Deleted files"
 msgstr "Fichiers supprimés"
 
 #: rdiffweb/controller/page_graphs.py:55
-#: rdiffweb/templates/email_report.html:144
+#: rdiffweb/templates/email_report.html:148
 msgid "Changed files"
 msgstr "Fichiers modifiés"
 
@@ -462,8 +463,9 @@ msgstr "Langue préférée"
 #: rdiffweb/controller/page_pref_general.py:58
 #: rdiffweb/controller/page_pref_notification.py:70
 #: rdiffweb/controller/page_pref_notification.py:111
-#: rdiffweb/templates/admin_users.html:115 rdiffweb/templates/settings.html:32
-#: rdiffweb/templates/settings.html:88 rdiffweb/templates/settings.html:111
+#: rdiffweb/templates/admin_user_edit.html:11
+#: rdiffweb/templates/settings.html:32 rdiffweb/templates/settings.html:88
+#: rdiffweb/templates/settings.html:111
 msgid "Save changes"
 msgstr "Enregistrer modifications"
 
@@ -844,23 +846,23 @@ msgstr "Modifié"
 msgid "Average duration (min)"
 msgstr "Durée moyenne (min)"
 
-#: rdiffweb/core/librdiff.py:1248
+#: rdiffweb/core/librdiff.py:1249
 msgid "A backup is currently in progress to this repository."
 msgstr "Une sauvegarde est actuellement en cours dans ce dépôt."
 
-#: rdiffweb/core/librdiff.py:1256
+#: rdiffweb/core/librdiff.py:1257
 msgid "Initial backup in progress."
 msgstr "La sauvegarde initiale n'est pas achevée."
 
-#: rdiffweb/core/librdiff.py:1258
+#: rdiffweb/core/librdiff.py:1259
 msgid "The last backup has been interrupted."
 msgstr "La dernière sauvegarde a été interrompue."
 
-#: rdiffweb/core/librdiff.py:1261
+#: rdiffweb/core/librdiff.py:1262
 msgid "The repository cannot be found or is badly damaged."
 msgstr "Le dépôt ne peut pas être trouvé ou est gravement endommagé"
 
-#: rdiffweb/core/librdiff.py:1265
+#: rdiffweb/core/librdiff.py:1266
 msgid ""
 "Permissions denied. Contact administrator to check repository's "
 "permissions."
@@ -868,7 +870,7 @@ msgstr ""
 "Permissions refusées. Contactez l'administrateur pour vérifier les "
 "permissions du référentiel."
 
-#: rdiffweb/core/librdiff.py:1267 rdiffweb/templates/admin_repos.html:9
+#: rdiffweb/core/librdiff.py:1268 rdiffweb/templates/admin_repos.html:9
 msgid "Healthy"
 msgstr "Bon"
 
@@ -963,7 +965,7 @@ msgstr "Le mot de passe doit comporter entre %(min)d et %(max)d caractères."
 msgid "Password too weak."
 msgstr "Mot de passe trop simple."
 
-#: rdiffweb/core/tests/test_i18n.py:54 rdiffweb/templates/admin_users.html:70
+#: rdiffweb/core/tests/test_i18n.py:54 rdiffweb/templates/admin_users.html:65
 msgid "Edit"
 msgstr "Modifier"
 
@@ -972,7 +974,7 @@ msgstr "Modifier"
 msgid "Admin area"
 msgstr "Espace admin"
 
-#: rdiffweb/templates/admin.html:11 rdiffweb/templates/admin_users.html:64
+#: rdiffweb/templates/admin.html:11 rdiffweb/templates/admin_users.html:61
 msgid "Overview"
 msgstr "Aperçu"
 
@@ -1081,7 +1083,6 @@ msgstr "Tableau de bord"
 
 #: rdiffweb/templates/admin_repos.html:19
 #: rdiffweb/templates/admin_session.html:27
-#: rdiffweb/templates/admin_users.html:26
 msgid "Actions"
 msgstr "Actions"
 
@@ -1199,58 +1200,58 @@ msgstr "Version des dépendances"
 msgid "Python Info"
 msgstr "Informations sur Python"
 
-#: rdiffweb/templates/admin_users.html:13
-#: rdiffweb/templates/admin_users.html:108
+#: rdiffweb/templates/admin_user_edit.html:4
+#: rdiffweb/templates/admin_user_edit.html:8
+msgid "Edit user"
+msgstr "Modifier un utilisateur"
+
+#: rdiffweb/templates/admin_user_edit.html:12
+#: rdiffweb/templates/admin_user_new.html:12
+msgid "Cancel"
+msgstr "Annuler"
+
+#: rdiffweb/templates/admin_user_new.html:4
+#: rdiffweb/templates/admin_user_new.html:8
+#: rdiffweb/templates/admin_user_new.html:11
+#: rdiffweb/templates/admin_users.html:10
 msgid "Add user"
 msgstr "Ajouter un utilisateur"
 
-#: rdiffweb/templates/admin_users.html:17
+#: rdiffweb/templates/admin_users.html:13
 msgid "Admins"
 msgstr "Administrateurs"
 
-#: rdiffweb/templates/admin_users.html:18
-#: rdiffweb/templates/admin_users.html:36
+#: rdiffweb/templates/admin_users.html:14
+#: rdiffweb/templates/admin_users.html:32
 msgid "LDAP"
 msgstr "LDAP"
 
-#: rdiffweb/templates/admin_users.html:19
+#: rdiffweb/templates/admin_users.html:15
 msgid "User list"
 msgstr "Liste des utilisateurs"
 
-#: rdiffweb/templates/admin_users.html:39
+#: rdiffweb/templates/admin_users.html:35
 msgid "It's you"
 msgstr "C'est vous"
 
-#: rdiffweb/templates/admin_users.html:57
+#: rdiffweb/templates/admin_users.html:53
 msgid "Root directory not accessible!"
 msgstr "Le répertoire racine n'est pas accessible !"
 
-#: rdiffweb/templates/admin_users.html:73
-#: rdiffweb/templates/admin_users.html:126 rdiffweb/templates/history.html:99
+#: rdiffweb/templates/admin_users.html:69
+#: rdiffweb/templates/admin_users.html:71
+#: rdiffweb/templates/admin_users.html:85 rdiffweb/templates/history.html:99
 #: rdiffweb/templates/prefs_sshkeys.html:29
 #: rdiffweb/templates/prefs_sshkeys.html:53
 #: rdiffweb/templates/settings.html:122 rdiffweb/templates/settings.html:135
 msgid "Delete"
 msgstr "Supprimer"
 
-#: rdiffweb/templates/admin_users.html:94 rdiffweb/templates/locations.html:36
-msgid "used"
-msgstr "utilisé"
-
-#: rdiffweb/templates/admin_users.html:102 rdiffweb/templates/locations.html:36
-msgid "free"
-msgstr "disponible"
-
-#: rdiffweb/templates/admin_users.html:115
-#, python-format
-msgid "Edit user %(name)s"
-msgstr "Modifier l'utilisateur %(name)s"
-
-#: rdiffweb/templates/admin_users.html:123
+#: rdiffweb/templates/admin_users.html:82
 msgid "Delete User"
 msgstr "Supprimer l'utilisateur"
 
-#: rdiffweb/templates/admin_users.html:124
+#: rdiffweb/templates/admin_users.html:83
 msgid "Are you sure you want to delete this User?"
 msgstr "Voulez-vous vraiment supprimer cet utilisateur?"
 
@@ -1556,11 +1557,11 @@ msgstr "Taille actuelle"
 msgid "Avg. Time"
 msgstr "Temps Moyen"
 
-#: rdiffweb/templates/email_report.html:157
+#: rdiffweb/templates/email_report.html:161
 msgid "Error Count"
 msgstr "Nombre d'erreurs"
 
-#: rdiffweb/templates/email_report.html:167
+#: rdiffweb/templates/email_report.html:171
 msgid "A small number of errors does not indicate a problem with your backup."
 msgstr "Un petit nombre d'erreurs n'indique pas un problème avec votre sauvegarde."
 
@@ -1720,8 +1721,16 @@ msgid "Storage Usage: "
 msgstr "Utilisation du stockage : "
 
 #: rdiffweb/templates/locations.html:36
+msgid "used"
+msgstr "utilisé"
+
+#: rdiffweb/templates/locations.html:36
 msgid "total"
 msgstr "total"
+
+#: rdiffweb/templates/locations.html:36
+msgid "free"
+msgstr "disponible"
 
 #: rdiffweb/templates/locations.html:55
 msgid ""

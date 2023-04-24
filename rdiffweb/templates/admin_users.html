@@ -6,12 +6,8 @@
 {% set admin_nav_active="users" %}
 {% block content %}
   {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
-  <button type="button"
-          class="btn btn-success mb-2"
-          data-toggle="modal"
-          data-target="#add-user-modal">
-    {% trans %}Add user{% endtrans %}
-  </button>
+  <a class="btn btn-success mb-2"
+     href="{{ url_for('admin','users', 'new')}}">{% trans %}Add user{% endtrans %}</a>
   <!-- Users View -->
   {% set filter_buttons = [
   (_('Admins'), 2, 'admin'),
@@ -23,16 +19,16 @@
         <th scope="col">{% trans %}Email{% endtrans %}</th>
         <th scope="col">{% trans %}User Role{% endtrans %}</th>
         <th scope="col">{% trans %}Root directory{% endtrans %}</th>
-        <th scope="col" data-sortable="false" class="text-center">{% trans %}Actions{% endtrans %}</th>
+        <th scope="col" data-sortable="false"></th>
       </tr>
     </thead>
     <tbody>
       {% for user in users %}
         <tr>
           <td>
-            {{ user.username }}
+            <a href="{{ url_for('admin','users','edit', user.username)}}">{{ user.username }}</a>
             <span class="badge badge-secondary">#{{ user.userid }}</span>
-            {% if user.is_ldap %}
+            {% if ldap_enabled and user.is_ldap %}
               <span class="badge badge-secondary">{% trans %}LDAP{% endtrans %}</span>
             {% endif %}
             {% if user.username == username %}
@@ -59,69 +55,32 @@
             {% endif %}
           </td>
           <td class="text-right">
-            {# Dashboard #}
-            <a class="btn btn-secondary"
-               href="{{ url_for('status', user.username, '/') }}">{% trans %}Overview{% endtrans %}</a>
-            {# Edit button #}
-            <button type="button"
-                    class="btn btn-secondary"
-                    data-toggle="modal"
-                    data-target="#edit-user-{{ user.username }}-modal">
-              {% trans %}Edit{% endtrans %}
-            </button>
-            {# Delete button #}
-            {{ button_confirm(label=_('Delete'), target="#delete-user-modal", action="delete", username=user.username) }}
+            <div class="btn-hover">
+              {# Dashboard #}
+              <a class="btn btn-secondary"
+                 href="{{ url_for('status', user.username, '/') }}">{% trans %}Overview{% endtrans %}</a>
+              {# Edit button #}
+              <a class="btn btn-secondary"
+                 href="{{ url_for('admin','users','edit', user.username)}}">
+                {% trans %}Edit{% endtrans %}
+              </a>
+              {# Delete button #}
+              {% if user.username != username %}
+                {{ button_confirm(label=_('Delete'), target="#delete-user-modal", username=user.username, url=url_for('admin', 'users', 'delete')) }}
+              {% else %}
+                <button type="button" class="btn btn-danger" disabled>{% trans %}Delete{% endtrans %}</button>
+              {% endif %}
+            </div>
           </td>
         </tr>
       {% endfor %}
     </tbody>
   {% endcall %}
-  {% macro user_form(form, id=None, user=None) %}
-    {% if user %}{{ form.process(obj=user) or '' }}{% endif %}
-    {{ form }}
-    {% if form.disk_quota.data and form.disk_usage.data %}
-      {% set used_pct = form.disk_usage.data / form.disk_quota.data * 100 | round %}
-      {% set used_pct_display = 10 if used_pct < 10 else used_pct %}
-      {% set used_str=form.disk_usage.data | filesize %}
-      {% set avail_str=(form.disk_quota.data - form.disk_usage.data) | filesize %}
-      <div class="progress">
-        <div class="progress-bar progress-bar bg-warning progress-bar-striped"
-             role="progressbar"
-             aria-valuenow="{{ used_pct }}"
-             aria-valuemin="0"
-             aria-valuemax="100"
-             style="width: {{ used_pct_display }}%">
-          {{ used_str }} {% trans %}used{% endtrans %}
-        </div>
-        <div class="progress-bar progress-bar bg-success"
-             role="progressbar"
-             aria-valuenow="{{ used_pct }}"
-             aria-valuemin="0"
-             aria-valuemax="100"
-             style="width: {{ 100 - used_pct_display }}%">
-          {{ avail_str }} {% trans %}free{% endtrans %}
-        </div>
-      </div>
-    {% endif %}
-  {% endmacro %}
-  {# Dialog to create new user. #}
-  {% call modal_dialog('add-user-modal',_('Add user'), _('Add user')) %}
-    <input type="hidden" name="action" value="add" />
-    {{ user_form(form=add_form) }}
-  {% endcall %}
-  {# Dialogs to edit user. #}
-  {% for user in users %}
-    {% set modalid = "edit-user-" + user.username + "-modal" %}
-    {% call modal_dialog(modalid, _('Edit user %(name)s', name=user.username), _('Save changes')) %}
-      <input type="hidden" name="action" value="edit" />
-      {{ user_form(form=edit_form, id=loop.idx, user=user) }}
-    {% endcall %}
-  {% endfor %}
   <!-- Delete User Modal -->
   {{ modal_confirm(
   id="delete-user-modal",
   title=_('Delete User'),
   message=_("Are you sure you want to delete this User?"),
-  fields=['action', 'username'],
+  fields=['username'],
   submit=_('Delete')) }}
 {% endblock content %}

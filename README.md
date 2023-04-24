@@ -121,6 +121,13 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 
 # Changelog
 
+## Next Release
+
+* Log error message when restore command failed
+* Improve User management interfaces #237
+* Disable Disk Quota in users view when quota command is not configured #237
+* Hide LDAP label in users view when LDAP is not configured #237
+
 ## 2.7.1 (2023-04-27)
 
 * Fix encoding problem with older Outlook 2007 client #273

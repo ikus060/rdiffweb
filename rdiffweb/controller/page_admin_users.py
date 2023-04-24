@@ -31,6 +31,7 @@ except ImportError:
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.model import UserObject
+from rdiffweb.core.rdw_templating import url_for
 from rdiffweb.tools.i18n import gettext_lazy as _
 
 # Define the logger
@@ -102,7 +103,6 @@ class UserForm(CherryForm):
     password = PasswordField(
         _('Password'),
         validators=[validators.optional()],
-        description=_('To create an LDAP user, you must leave the password empty.'),
     )
     mfa = SelectField(
         _('Two-Factor Authentication (2FA)'),
@@ -148,6 +148,18 @@ class UserForm(CherryForm):
         widget=widgets.HiddenInput(),
     )
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Make quota field readonly if quota is not enabled.
+        self.quota_enabled = len(cherrypy.engine.listeners.get('set_disk_quota', [])) > 0
+        if not self.quota_enabled:
+            self.disk_quota.render_kw = {'readonly': True, 'disabled': True}
+            self.disk_usage.render_kw = {'readonly': True, 'disabled': True}
+        # Add help text for LDAP user
+        cfg = cherrypy.request.app.cfg
+        if cfg.ldap_uri:
+            self.password.description = _('To create an LDAP user, you must leave the password empty.')
+
     def validate_role(self, field):
         # Don't allow the user to changes it's "role" state.
         currentuser = cherrypy.request.currentuser
@@ -159,35 +171,44 @@ class UserForm(CherryForm):
         currentuser = cherrypy.request.currentuser
         if self.username.data == currentuser.username and self.mfa.data != currentuser.mfa:
             raise ValidationError(_('Cannot change your own two-factor authentication settings.'))
+        if not self.email.data and self.mfa.data:
+            raise ValidationError(_('User email is required to enabled Two-Factor Authentication.'))
 
     def populate_obj(self, userobj):
-        # Save password if defined
-        if self.password.data:
-            userobj.set_password(self.password.data)
-        userobj.role = self.role.data
-        userobj.fullname = self.fullname.data or ''
-        userobj.email = self.email.data or ''
-        userobj.user_root = self.user_root.data
-        if self.mfa.data and not userobj.email:
-            flash(_("User email is required to enabled Two-Factor Authentication"), level='error')
-        else:
+        try:
+            # Save password if defined
+            if self.password.data:
+                userobj.set_password(self.password.data)
+            userobj.role = self.role.data
+            userobj.fullname = self.fullname.data or ''
+            userobj.email = self.email.data or ''
+            userobj.user_root = self.user_root.data
             userobj.mfa = self.mfa.data
-        if userobj.user_root:
-            if not userobj.valid_user_root():
-                flash(_("User's root directory %s is not accessible!") % userobj.user_root, level='error')
-                logger.warning("user's root directory %s is not accessible" % userobj.user_root)
-            else:
-                userobj.refresh_repos(delete=True)
+            if userobj.user_root:
+                if not userobj.valid_user_root():
+                    flash(_("User's root directory %s is not accessible!") % userobj.user_root, level='error')
+                    logger.warning("user's root directory %s is not accessible" % userobj.user_root)
+                else:
+                    userobj.refresh_repos(delete=True)
+            userobj.commit()
+
+        except Exception as e:
+            userobj.rollback()
+            flash(str(e), level='warning')
+            return False
+
         # Try to update disk quota if the human readable value changed.
         # Report error using flash.
-        new_quota = self.disk_quota.data or 0
-        old_quota = humanfriendly.parse_size(humanfriendly.format_size(self.disk_quota.object_data or 0, binary=True))
-        if old_quota != new_quota:
-            userobj.disk_quota = new_quota
-            # Setting quota will silently fail. Check if quota was updated.
-            if userobj.disk_quota != new_quota:
-                flash(_("Setting user's quota is not supported"), level='warning')
-        userobj.commit()
+        if self.quota_enabled:
+            new_quota = self.disk_quota.data or 0
+            old_quota = humanfriendly.parse_size(
+                humanfriendly.format_size(self.disk_quota.object_data or 0, binary=True)
+            )
+            if old_quota != new_quota:
+                userobj.disk_quota = new_quota
+                # Setting quota will silently fail. Check if quota was updated.
+                if userobj.disk_quota != new_quota:
+                    flash(_("Setting user's quota is not supported"), level='warning')
         return True
 
 
@@ -195,8 +216,20 @@ class EditUserForm(UserForm):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Make username field read-only
-        self.username.render_kw = {'readonly': True}
-        self.username.populate_obj = lambda *args, **kwargs: None
+        self.username.render_kw = {'readonly': True, 'disabled': True}
+
+        # When editing ourself.
+        currentuser = cherrypy.request.currentuser
+        if self.username.object_data == currentuser.username:
+            # Disable MFA
+            self.mfa.render_kw = {'readonly': True, 'disabled': True}
+            # Disable Role
+            self.role.render_kw = {'readonly': True, 'disabled': True}
+
+    def validate_username(self, field):
+        # Raise an error if username doesn't matches our user object
+        if field.data != field.object_data:
+            raise ValidationError(_('Cannot change username of and existing user.'))
 
 
 class DeleteUserForm(CherryForm):
@@ -205,70 +238,74 @@ class DeleteUserForm(CherryForm):
 
 @cherrypy.tools.is_admin()
 class AdminUsersPage(Controller):
-    """Administration pages. Allow to manage users database."""
-
-    def _delete_user(self, action, form):
-        assert action == 'delete'
-        assert form
-        # Validate form.
-        if not form.validate():
-            flash(form.error_message, level='error')
-            return
-        if form.username.data == self.app.currentuser.username:
-            flash(_("You cannot remove your own account!"), level='error')
-        else:
-            try:
-                user = UserObject.get_user(form.username.data)
-                if user:
-                    user.delete()
-                    user.commit()
-                    flash(_("User account removed."))
-                else:
-                    flash(_("User doesn't exists!"), level='warning')
-            except ValueError as e:
-                flash(e, level='error')
+    """
+    Administration pages. Allow to manage users database.
+    """
 
     @cherrypy.expose
-    def index(self, username=None, action=u"", **kwargs):
+    def index(self):
+        # Build users page
+        return self._compile_template(
+            "admin_users.html",
+            users=UserObject.query.all(),
+            ldap_enabled=self.app.cfg.ldap_uri,
+        )
 
-        # If we're just showing the initial page, just do that
-        if action == "add":
-            form = UserForm()
-            if form.validate_on_submit():
+    @cherrypy.expose()
+    def new(self, **kwargs):
+        form = UserForm()
+        if form.is_submitted():
+            if form.validate():
                 try:
-                    user = UserObject.add_user(username)
-                    form.populate_obj(user)
-                    flash(_("User added successfully."))
+                    user = UserObject.add_user(form.username.data)
                 except Exception as e:
-                    UserObject.session.rollback()
                     flash(str(e), level='error')
+                else:
+                    if form.populate_obj(user):
+                        flash(_("User added successfully."))
+                        raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
             else:
                 flash(form.error_message, level='error')
-        elif action == "edit":
-            user = UserObject.get_user(username)
-            if user:
-                form = EditUserForm(obj=user)
-                if form.validate_on_submit():
-                    try:
-                        form.populate_obj(user)
-                        flash(_("User information modified successfully."))
-                    except Exception as e:
-                        user.rollback()
-                        flash(str(e), level='error')
-                else:
-                    flash(form.error_message, level='error')
+        return self._compile_template("admin_user_new.html", form=form)
+
+    @cherrypy.expose()
+    def edit(self, username_vpath, **kwargs):
+        user = UserObject.get_user(username_vpath)
+        if not user:
+            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username_vpath)
+        form = EditUserForm(obj=user)
+        if form.is_submitted():
+            if form.validate():
+                if form.populate_obj(user):
+                    flash(_("User information modified successfully."))
+                    raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
             else:
-                flash(_("Cannot edit user `%s`: user doesn't exists") % username, level='error')
-        elif action == 'delete':
-            form = DeleteUserForm()
-            if form.validate_on_submit():
-                self._delete_user(action, form)
+                flash(form.error_message, level='error')
+        return self._compile_template("admin_user_edit.html", form=form)
 
-        params = {
-            "add_form": UserForm(formdata=None),
-            "edit_form": EditUserForm(formdata=None),
-            "users": UserObject.query.all(),
-        }
+    @cherrypy.expose()
+    def delete(self, username=None, **kwargs):
+        # Validate form method.
+        form = DeleteUserForm()
+        if not form.is_submitted():
+            raise cherrypy.HTTPError(405)
+        # Get user
+        user = UserObject.get_user(username)
+        if not user:
+            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
+        if form.validate():
+            if form.username.data == self.app.currentuser.username:
+                raise cherrypy.HTTPError(400, _("You cannot remove your own account!"))
+            try:
+                user.delete()
+                user.commit()
+                flash(_("User account removed."))
+            except Exception as e:
+                user.rollback()
+                flash(str(e), level='error')
+        else:
+            flash(form.error_message, level='error')
+        raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
 
-        # Build users page
-        return self._compile_template("admin_users.html", **params)
+
+# TODO Allow configuration of notification settigns

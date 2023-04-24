@@ -24,7 +24,7 @@ import rdiffweb.test
 from rdiffweb.core.model import UserObject
 
 
-class AbstractAdminTest(rdiffweb.test.WebCase):
+class AdminTest(rdiffweb.test.WebCase):
 
     login = True
 
@@ -76,7 +76,7 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
             b['mfa'] = str(mfa)
         if fullname is not None:
             b['fullname'] = str(fullname)
-        self.getPage("/admin/users/", method='POST', body=b)
+        self.getPage("/admin/users/new", method='POST', body=b)
 
     def _edit_user(
         self, username=None, email=None, password=None, user_root=None, role=None, disk_quota=None, mfa=None
@@ -97,17 +97,17 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
             b['disk_quota'] = disk_quota
         if mfa is not None:
             b['mfa'] = str(mfa)
-        self.getPage("/admin/users/", method='POST', body=b)
+        self.getPage("/admin/users/edit/" + username, method='POST', body=b)
 
     def _delete_user(self, username='test1'):
         b = {'action': 'delete', 'username': username}
-        self.getPage("/admin/users/", method='POST', body=b)
+        self.getPage("/admin/users/delete", method='POST', body=b)
 
     def test_add_user_with_role_admin(self):
         # When trying to create a new user with role admin
         self._add_user("admin_role", "admin_role@test.com", "pr3j5Dwi", "/home/", UserObject.ADMIN_ROLE)
         # Then page return success
-        self.assertStatus(200)
+        self.assertStatus(303)
         # Then database is updated
         userobj = UserObject.get_user('admin_role')
         self.assertEqual(UserObject.ADMIN_ROLE, userobj.role)
@@ -116,12 +116,12 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
 
     def test_add_user_with_role_maintainer(self):
         self._add_user("maintainer_role", "maintainer_role@test.com", "pr3j5Dwi", "/home/", UserObject.MAINTAINER_ROLE)
-        self.assertStatus(200)
+        self.assertStatus(303)
         self.assertEqual(UserObject.MAINTAINER_ROLE, UserObject.get_user('maintainer_role').role)
 
     def test_add_user_with_role_user(self):
         self._add_user("user_role", "user_role@test.com", "pr3j5Dwi", "/home/", UserObject.USER_ROLE)
-        self.assertStatus(200)
+        self.assertStatus(303)
         self.assertEqual(UserObject.USER_ROLE, UserObject.get_user('user_role').role)
 
     def test_add_user_with_invalid_role(self):
@@ -147,6 +147,8 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self._add_user(
             "test2", "test2@test.com", "pr3j5Dwi", "/home/", UserObject.USER_ROLE, mfa=UserObject.DISABLED_MFA
         )
+        self.assertStatus(303)
+        self.getPage('/admin/users/')
         self.assertInBody("User added successfully.")
         self.assertInBody("test2")
         self.assertInBody("test2@test.com")
@@ -156,6 +158,8 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self._edit_user(
             "test2", "chaned@test.com", "new-password", "/tmp/", UserObject.ADMIN_ROLE, mfa=UserObject.ENABLED_MFA
         )
+        self.assertStatus(303)
+        self.getPage('/admin/users/')
         self.listener.user_attr_changed.assert_called()
         self.listener.user_password_changed.assert_called_once()
         self.assertInBody("User information modified successfully.")
@@ -166,7 +170,8 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
 
         self._delete_user("test2")
         self.listener.user_deleted.assert_called()
-        self.assertStatus(200)
+        self.assertStatus(303)
+        self.getPage('/admin/users/')
         self.assertInBody("User account removed.")
         self.assertNotInBody("test2")
 
@@ -188,17 +193,48 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         # Given an existing user
         # When updating the user's fullname
         self.getPage(
-            "/admin/users/",
+            "/admin/users/edit/" + self.USERNAME,
             method='POST',
             body={'action': 'edit', 'username': self.USERNAME, 'fullname': new_fullname},
         )
-        self.assertStatus(200)
         if expected_valid:
+            self.assertStatus(303)
+            self.getPage('/admin/users/')
             self.assertInBody("User information modified successfully.")
             self.assertNotInBody("Fullname: Must not contain any special characters.")
         else:
+            self.assertStatus(200)
             self.assertNotInBody("User information modified successfully.")
             self.assertInBody("Fullname: Must not contain any special characters.")
+
+    def test_edit_wrong_username(self):
+        # Given a new user
+        UserObject(username='newuser').add().commit()
+        # When trying to edit a user object with wrong username in path vs form
+        self.getPage(
+            "/admin/users/edit/" + self.USERNAME,
+            method='POST',
+            body={'action': 'edit', 'username': 'newuser'},
+        )
+        # Then an error is raised
+        self.assertStatus(200)
+        self.assertInBody('Cannot change username of and existing user.')
+
+    def test_edit_enable_mfa_without_email(self):
+        # Given a new user
+        newuser = UserObject(username='newuser').add().commit()
+        # When trying to enable mfa without user's email
+        self.getPage(
+            "/admin/users/edit/newuser",
+            method='POST',
+            body={'action': 'edit', 'username': 'newuser', 'mfa': '1'},
+        )
+        # Then error message is displayed.
+        self.assertStatus(200)
+        self.assertInBody('User email is required to enabled Two-Factor Authentication')
+        # Then change is not saved
+        newuser.expire()
+        self.assertEqual(0, newuser.mfa)
 
     @parameterized.expand(
         [
@@ -215,11 +251,13 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
     )
     def test_add_user_with_special_character(self, new_username, expected_valid):
         self._add_user(new_username, "eric@test.com", "pr3j5Dwi", "/home/", UserObject.USER_ROLE)
-        self.assertStatus(200)
         if expected_valid:
+            self.assertStatus(303)
+            self.getPage('/admin/users/')
             self.assertInBody("User added successfully.")
             self.assertNotInBody("Username: Must not contain any special characters.")
         else:
+            self.assertStatus(200)
             self.assertNotInBody("User added successfully.")
             self.assertInBody("Username: Must not contain any special characters.")
 
@@ -252,19 +290,26 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         except Exception:
             pass
         self._add_user("test5", "test1@test.com", "pr3j5Dwi", "/var/invalid/", UserObject.USER_ROLE)
+        self.assertStatus(303)
+        self.getPage("/admin/users/")
         self.assertInBody("User added successfully.")
         self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
 
     def test_add_without_email(self):
-        #  Add user to be listed
+        # When adding a user without email address
         self._add_user("test2", None, "pr3j5Dwi", "/tmp/", UserObject.USER_ROLE)
+        self.assertStatus(303)
+        # Then user get added.
+        self.getPage("/admin/users/")
         self.assertInBody("User added successfully.")
 
     def test_add_without_user_root(self):
-        #  Add user to be listed
+        # When adding user without user_root
         self._add_user("test6", None, "pr3j5Dwi", None, UserObject.USER_ROLE)
+        self.assertStatus(303)
+        # Then user get added
+        self.getPage("/admin/users/")
         self.assertInBody("User added successfully.")
-
         user = UserObject.get_user('test6')
         self.assertEqual('', user.user_root)
 
@@ -305,23 +350,20 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.assertInBody("Fullname too long.")
 
     def test_delete_user_with_not_existing_username(self):
-        """
-        Verify failure to delete invalid username.
-        """
+        # When trying to delete an invalid user
         self._delete_user("test3")
-        self.assertInBody("User doesn&#39;t exists!")
+        # Then an error is returned
+        self.assertStatus(400)
+        self.assertInBody("User test3 doesn&#39;t exists")
 
     def test_delete_our_self(self):
-        """
-        Verify failure to delete our self.
-        """
+        # When trying to delete your self
         self._delete_user(self.USERNAME)
+        # Then and error is returned
+        self.assertStatus(400)
         self.assertInBody("You cannot remove your own account!")
 
     def test_delete_user_admin(self):
-        """
-        Verify failure to delete our self.
-        """
         # Create another admin user
         self._add_user('admin2', '', 'pr3j5Dwi', '', UserObject.ADMIN_ROLE)
         self.getPage("/logout", method="POST")
@@ -329,9 +371,11 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         self._login('admin2', 'pr3j5Dwi')
 
-        # Try deleting admin user
+        # When trying to delete admin user
         self._delete_user(self.USERNAME)
-        self.assertStatus(200)
+        # Then an error is returned
+        self.assertStatus(303)
+        self.getPage('/admin/users/')
         self.assertInBody("can&#39;t delete admin user")
 
     def test_delete_user_method_get(self):
@@ -339,9 +383,9 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         user = UserObject.add_user('newuser')
         user.commit()
         # When trying to delete this user using method GET
-        self.getPage("/admin/users/?action=delete&username=newuser", method='GET')
+        self.getPage("/admin/users/delete?username=newuser", method='GET')
         # Then page return without error
-        self.assertStatus(200)
+        self.assertStatus(405)
         # Then user is not deleted
         self.assertIsNotNone(UserObject.get_user('newuser'))
 
@@ -367,13 +411,16 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
             self.app.cfg.admin_password = None
 
     def test_edit_user_with_invalid_path(self):
-        """
-        Verify failure trying to update user with invalid path.
-        """
+        # Given an existing user.
         userobj = UserObject.add_user('test1')
         userobj.commit()
+        # When updating user oot with invalid path
         self._edit_user("test1", "test1@test.com", "pr3j5Dwi", "/var/invalid/", UserObject.USER_ROLE)
+        # Then user is updated
+        self.assertStatus(303)
+        self.getPage("/admin/users/")
         self.assertNotInBody("User added successfully.")
+        # Then an error message is displayed.
         self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
 
     def test_list(self):
@@ -383,16 +430,13 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.assertInBody("Add user")
 
     def test_edit_user_with_not_existing_username(self):
-        """
-        Verify failure trying to update invalid user.
-        """
         # Given an invalid username
         username = 'invalid'
         # When trying to edit the user
         self._edit_user(username, "test1@test.com", "test", "/var/invalid/", UserObject.USER_ROLE)
         # Then the user list is displayed with an error message
-        self.assertStatus(200)
-        self.assertInBody("Cannot edit user `invalid`: user doesn&#39;t exists")
+        self.assertStatus(400)
+        self.assertInBody("User invalid doesn&#39;t exists")
 
     def test_user_invalid_root(self):
         # Change the user's root
@@ -413,8 +457,8 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         # Mock a quota.
         self.listener.get_disk_quota.side_effect = None
         self.listener.get_disk_quota.return_value = 654321
-        # When querying the user list
-        self.getPage("/admin/users/")
+        # When edigint users
+        self.getPage("/admin/users/edit/admin")
         self.assertStatus(200)
         # Then get_disk_quota listenre is called
         self.listener.get_disk_quota.assert_called()
@@ -422,49 +466,31 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.assertInBody("638.99 KiB")
         self.assertStatus(200)
 
-    def test_set_quota(self):
+    @parameterized.expand(
+        [
+            ('8765432', 8765432),
+            ('1GiB', 1073741824),
+            ('1,5 GiB', 1610612736),
+            ('1.5 GiB', 1610612736),
+            ('.5 GiB', 536870912),
+        ]
+    )
+    def test_set_quota(self, form_value, expected_value):
         # When updating user quota.
-        self._edit_user("admin", disk_quota='8765432')
+        self._edit_user("admin", disk_quota=form_value)
+        self.assertStatus(303)
         # Then listenr get called
-        self.listener.set_disk_quota.assert_called_once_with(ANY, 8765432)
+        self.listener.set_disk_quota.assert_called_once_with(ANY, expected_value)
         # Then a success message is displayed
+        self.getPage("/admin/users/")
         self.assertInBody("User information modified successfully.")
-        self.assertStatus(200)
-
-    def test_set_quota_as_gib(self):
-        # When updating user quota
-        self._edit_user("admin", disk_quota='1GiB')
-        # Then listern get called
-        self.listener.set_disk_quota.assert_called_once_with(ANY, 1073741824)
-        # Then a success message is displayed
-        self.assertInBody("User information modified successfully.")
-        self.assertStatus(200)
-
-    def test_set_quota_as_with_comma(self):
-        # When updating quota with comma value
-        self._edit_user("admin", disk_quota='1,5 GiB')
-        # Then listner get called
-        self.listener.set_disk_quota.assert_called_once_with(ANY, 1610612736)
-        # Then a success message is displayed
-        self.assertInBody("User information modified successfully.")
-        self.assertStatus(200)
-
-    def test_set_quota_as_with_leading_dot(self):
-        # When updating quota with leading dot
-        self._edit_user("admin", disk_quota='.5 GiB')
-        # Then listener get called
-        self.listener.set_disk_quota.assert_called_once_with(ANY, 536870912)
-        # Then a success message is displayed
-        self.assertInBody("User information modified successfully.")
-        self.assertStatus(200)
 
     def test_set_quota_empty(self):
         # When quota is not defined
         self._edit_user("admin", disk_quota='')
+        self.assertStatus(303)
         # Then listener is not called.
         self.listener.set_disk_quota.assert_not_called()
-        # Then message is not displayed
-        self.assertStatus(200)
 
     def test_set_quota_same_value(self):
         # Given an exiting quota
@@ -472,10 +498,9 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.listener.get_disk_quota.return_value = 1234567890
         # When setting the quota value to the same value
         self._edit_user("admin", disk_quota='1.15 GiB')
+        self.assertStatus(303)
         #  Then listener is not called
         self.listener.set_disk_quota.assert_not_called()
-        # Then message is not displayed
-        self.assertStatus(200)
 
     def test_set_quota_unsupported(self):
         # Given setting quota is not supported
@@ -483,10 +508,11 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         self.listener.set_disk_quota.return_value = None
         # When updating the quota
         self._edit_user("admin", disk_quota='8765432')
-        # Then
+        self.assertStatus(303)
+        # Then error message is displayed
         self.listener.set_disk_quota.assert_called_once_with(ANY, 8765432)
+        self.getPage("/admin/users/")
         self.assertInBody("Setting user&#39;s quota is not supported")
-        self.assertStatus(200)
 
     def test_edit_own_role(self):
         # Given an administrator
@@ -503,3 +529,14 @@ class AbstractAdminTest(rdiffweb.test.WebCase):
         # Then an error is returned
         self.assertStatus(200)
         self.assertInBody("Cannot change your own two-factor authentication settings.")
+
+
+class AdminTestWithoutQuota(rdiffweb.test.WebCase):
+    login = True
+
+    def test_edit(self):
+        # When editing user
+        self.getPage("/admin/users/edit/admin")
+        # Then quota field is readonly
+        self.assertStatus(200)
+        self.assertInBody('<input class="form-control" disabled name="disk_quota" readonly')
