@@ -1219,7 +1219,8 @@ class RdiffRepo(object):
                 break
             line = proc.stderr.readline()
         if not success:
-            raise CalledProcessError(1, cmdline, output)
+            logger.error('rdiffweb-restore: ' + output)
+            raise CalledProcessError(1, cmdline)
         # Start a Thread to pipe the rest of the stream to the log
         t = threading.Thread(target=_readerthread, args=(proc.stderr, logger.debug))
         t.daemon = True
