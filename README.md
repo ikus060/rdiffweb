@@ -121,6 +121,10 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 
 # Changelog
 
+## 2.7.1 (2023-04-27)
+
+* Fix encoding problem with older Outlook 2007 client #273
+
 ## 2.7.0 (2023-04-20)
 
 * Support Python 3.11

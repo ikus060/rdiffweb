@@ -64,7 +64,8 @@ py3:
 selenium:
   <<: *tox
   before_script:
-    - apt update && apt -y --no-install-recommends install xvfb xauth chromium-driver rdiff-backup
+    - apt update
+    - apt -y --no-install-recommends install xvfb xauth chromium-driver rdiff-backup
   artifacts:
     paths:
       - coverage.xml
@@ -185,7 +186,8 @@ test-package:deb:
       - DIST: [jammy, kinetic]
         TZ: UTC
   script:
-    - apt update && apt install -y ./dist/$DIST/rdiffweb*.deb
+    - apt update
+    - apt install -y ./dist/$DIST/rdiffweb*.deb
     - rdiffweb --version
     - (/usr/bin/rdiffweb &)
     - timeout 60 bash -c 'until curl --silent http://localhost:8080; do sleep 1; done'
