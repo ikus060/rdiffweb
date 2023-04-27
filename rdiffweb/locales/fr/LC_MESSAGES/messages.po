@@ -93,7 +93,7 @@ msgstr "Groupe"
 #: rdiffweb/templates/admin_users.html:18
 #: rdiffweb/templates/admin_users.html:45
 msgid "User"
-msgstr "Utilisateurs"
+msgstr "Utilisateur"
 
 #: rdiffweb/controller/page_admin_sysinfo.py:85
 msgid "Group Membership"

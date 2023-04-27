@@ -147,6 +147,17 @@ class UserForm(CherryForm):
         description=_("Disk spaces (in bytes) used by this user."),
         widget=widgets.HiddenInput(),
     )
+    report_time_range = SelectField(
+        _('Send Backup report'),
+        choices=[
+            (0, _('Never')),
+            (1, _('Daily')),
+            (7, _('Weekly')),
+            (30, _('Monthly')),
+        ],
+        coerce=int,
+        default='0',
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -184,6 +195,7 @@ class UserForm(CherryForm):
             userobj.email = self.email.data or ''
             userobj.user_root = self.user_root.data
             userobj.mfa = self.mfa.data
+            userobj.report_time_range = self.report_time_range.data
             if userobj.user_root:
                 if not userobj.valid_user_root():
                     flash(_("User's root directory %s is not accessible!") % userobj.user_root, level='error')
@@ -245,8 +257,10 @@ class AdminUsersPage(Controller):
     @cherrypy.expose
     def index(self):
         # Build users page
+        form = UserForm()
         return self._compile_template(
             "admin_users.html",
+            form=form,
             users=UserObject.query.all(),
             ldap_enabled=self.app.cfg.ldap_uri,
         )

@@ -79,7 +79,15 @@ class AdminTest(rdiffweb.test.WebCase):
         self.getPage("/admin/users/new", method='POST', body=b)
 
     def _edit_user(
-        self, username=None, email=None, password=None, user_root=None, role=None, disk_quota=None, mfa=None
+        self,
+        username=None,
+        email=None,
+        password=None,
+        user_root=None,
+        role=None,
+        disk_quota=None,
+        mfa=None,
+        report_time_range=None,
     ):
         b = {}
         b['action'] = 'edit'
@@ -97,6 +105,8 @@ class AdminTest(rdiffweb.test.WebCase):
             b['disk_quota'] = disk_quota
         if mfa is not None:
             b['mfa'] = str(mfa)
+        if report_time_range is not None:
+            b['report_time_range'] = str(report_time_range)
         self.getPage("/admin/users/edit/" + username, method='POST', body=b)
 
     def _delete_user(self, username='test1'):
@@ -529,6 +539,14 @@ class AdminTest(rdiffweb.test.WebCase):
         # Then an error is returned
         self.assertStatus(200)
         self.assertInBody("Cannot change your own two-factor authentication settings.")
+
+    def test_edit_report_time_range(self):
+        # Given a user
+        # When editing the report_time_range
+        self._edit_user(username=self.USERNAME, report_time_range=7)
+        # Then report_time_range is updated
+        userobj = UserObject.get_user(self.USERNAME)
+        self.assertEqual(7, userobj.report_time_range)
 
 
 class AdminTestWithoutQuota(rdiffweb.test.WebCase):

@@ -12,13 +12,20 @@
   {% set filter_buttons = [
   (_('Admins'), 2, 'admin'),
   (_('LDAP'), 0, 'LDAP')] %}
+  {% set role_class = {0:'danger', 5:'warning', 10:'info'} %}
+  {% set role_choices = dict(form.role.choices) %}
+  {% set mfa_choices = dict(form.mfa.choices) %}
+  {% set report_time_range_choices = dict(form.report_time_range.choices) %}
   {% call datatables(_('User list'), filter_buttons)%}
     <thead>
       <tr>
-        <th scope="col">{% trans %}User{% endtrans %}</th>
-        <th scope="col">{% trans %}Email{% endtrans %}</th>
-        <th scope="col">{% trans %}User Role{% endtrans %}</th>
-        <th scope="col">{% trans %}Root directory{% endtrans %}</th>
+        <th scope="col">{{ form.username.label.text  }}</th>
+        <th scope="col">{{ form.fullname.label.text  }}</th>
+        <th scope="col">{{ form.email.label.text  }}</th>
+        <th scope="col">{{ form.role.label.text  }}</th>
+        <th scope="col">{{ form.user_root.label.text  }}</th>
+        <th scope="col">{{ form.mfa.label.text }}</th>
+        <th scope="col">{{ form.report_time_range.label.text }}</th>
         <th scope="col" data-sortable="false"></th>
       </tr>
     </thead>
@@ -35,15 +42,10 @@
               <span class="badge badge-success">{% trans %}It's you{% endtrans %}</span>
             {% endif %}
           </td>
+          <td>{{ user.fullname }}</td>
           <td>{{ user.email }}</td>
           <td>
-            {% if user.is_admin %}
-              <span class="badge badge-danger">{% trans %}Admin{% endtrans %}</span>
-            {% elif user.is_maintainer %}
-              <span class="badge badge-warning">{% trans %}Maintainer{% endtrans %}</span>
-            {% else %}
-              <span class="badge badge-info">{% trans %}User{% endtrans %}</span>
-            {% endif %}
+            <span class="badge badge-{{ role_class.get(user.role)}}">{{ role_choices.get(user.role) }}</span>
           </td>
           <td>
             {{ user.user_root }}
@@ -54,6 +56,8 @@
               </span>
             {% endif %}
           </td>
+          <td>{{ mfa_choices.get(user.mfa) }}</td>
+          <td>{{ report_time_range_choices.get(user.report_time_range) }}</td>
           <td class="text-right">
             <div class="btn-hover">
               {# Dashboard #}
