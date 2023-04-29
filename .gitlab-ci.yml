@@ -149,7 +149,7 @@ package:deb:
         DEB_BUILD_OPTIONS: nocheck
         BACKPORTS: deb http://deb.debian.org/debian buster-backports main
       - DIST: [bullseye, bookworm]
-      - DIST: [jammy, kinetic]
+      - DIST: [jammy, kinetic, lunar]
         TZ: UTC
   script: |
     set -x
@@ -183,7 +183,7 @@ test-package:deb:
       - DIST: [buster, bullseye, bookworm]
       # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
       # So we need to make it explicit using environment variable
-      - DIST: [jammy, kinetic]
+      - DIST: [jammy, kinetic, lunar]
         TZ: UTC
   script:
     - apt update
@@ -311,7 +311,7 @@ publish:deb:
       - $NEXUS_PWD
   parallel:
     matrix:
-      - DIST: [buster, bullseye, bookworm, jammy, kinetic]
+      - DIST: [buster, bullseye, bookworm, jammy, kinetic, lunar]
   script: |
     set -e
     set -x
