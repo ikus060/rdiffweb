@@ -1,0 +1,15 @@
+{% extends 'admin.html' %}
+{% set admin_nav_active="users" %}
+{% block title %}
+  {% trans %}Edit user{% endtrans %}
+{% endblock %}
+{% block content %}
+  <div class="container">
+    <h3>{% trans %}Edit user{% endtrans %}</h3>
+    <form method="post" action="{{ url_for()}}">
+      {{ form }}
+      <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
+      <a href="{{ url_for('admin','users')}}" class="btn btn-secondary">{% trans %}Cancel{% endtrans %}</a>
+    </form>
+  </div>
+{% endblock content %}
