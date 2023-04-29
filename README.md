@@ -127,6 +127,7 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 * Improve User management interfaces #237
 * Disable Disk Quota in users view when quota command is not configured #237
 * Hide LDAP label in users view when LDAP is not configured #237
+* Add support for Ubuntu Lunar
 
 ## 2.7.1 (2023-04-27)
 
