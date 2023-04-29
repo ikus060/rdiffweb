@@ -179,8 +179,8 @@ class SmtpPlugin(SimplePlugin):
         if reply_to:
             msg['Reply-To'] = reply_to
         msg['Message-ID'] = email.utils.make_msgid()
-        msg.attach(MIMEText(text, 'plain', 'utf8'))
-        msg.attach(MIMEText(message, 'html', 'utf8'))
+        msg.attach(MIMEText(text, 'plain', 'UTF-8'))
+        msg.attach(MIMEText(message, 'html', 'UTF-8'))
 
         host, unused, port = self.server.partition(':')
         if self.encryption == 'ssl':
