@@ -84,26 +84,25 @@ COMMIT;
 
 @parameterized_class(
     [
-        {"version": "1.5.0", "create_all_sql": SQL_1_5_0},
-        {"version": "unknown", "create_all_sql": SQL_ROLE_WITHOUT_DEFAULT},
+        {"version": "1.5.0", "init_sql": SQL_1_5_0},
+        {"version": "unknown", "init_sql": SQL_ROLE_WITHOUT_DEFAULT},
     ]
 )
 @skipIf(os.environ.get('RDIFFWEB_TEST_DATABASE_URI'), 'custom database')
 class LoginAbstractTest(rdiffweb.test.WebCase):
 
-    create_all_sql = ""
+    init_sql = ""
 
     def setUp(self):
         cherrypy.test.helper.CPWebCase.setUp(self)
         cherrypy.tools.db.drop_all()
-        # Create custom database
-        base = cherrypy.tools.db.get_base()
-        conn = base.metadata.bind.raw_connection()
-        if self.create_all_sql:
+        # Create custom database ONLY SQLITE here
+        dbapi = cherrypy.tools.db.get_session().bind.raw_connection()
+        if self.init_sql:
             try:
-                conn.executescript(self.create_all_sql)
+                dbapi.executescript(self.init_sql)
             finally:
-                conn.close()
+                dbapi.close()
         # Upgrade database
         cherrypy.tools.db.create_all()
 

@@ -23,8 +23,15 @@ import cherrypy
 from sqlalchemy import create_engine, event, inspect
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
+
+try:
+    # SQLAlchemy>=1.4
+    from sqlalchemy.orm import declarative_base
+except ImportError:
+    # SQLAlchmey<=1.3
+    from sqlalchemy.ext.declarative import declarative_base
+
 
 logger = logging.getLogger(__name__)
 
@@ -108,20 +115,11 @@ class Base:
         return self
 
 
-class BaseExtensions(DeclarativeMeta):
-    @property
-    def query(self):
-        return self.session.query(self)
-
-    @property
-    def session(self):
-        return cherrypy.tools.db.get_session()
-
-
 class SQLA(cherrypy.Tool):
     _name = 'sqla'
     _base = None
     _session = None
+    _engine = None
 
     def __init__(self, **kw):
         cherrypy.Tool.__init__(self, None, None, priority=20)
@@ -132,15 +130,22 @@ class SQLA(cherrypy.Tool):
     def create_all(self):
         # Release opened sessions.
         self.on_end_resource()
-        # Create new metadata binding
         base = self.get_base()
-        if base.metadata.bind is None:
+        # Create a new engine to connect to database
+        if self._engine is None:
             dburi = cherrypy.config.get('tools.db.uri')
+            self._engine = create_engine(dburi)
+
+            # Configure logging level
             debug = cherrypy.config.get('tools.db.debug')
-            base.metadata.bind = create_engine(dburi)
             if debug:
                 logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG)
-        base.metadata.create_all()
+
+            # Associate our session to our engine
+            self.get_session().configure(bind=self._engine)
+
+        # Create tables
+        base.metadata.create_all(bind=self._engine)
         self.get_session().commit()
 
     def drop_all(self):
@@ -148,18 +153,25 @@ class SQLA(cherrypy.Tool):
         self.on_end_resource()
         # Drop all
         base = self.get_base()
-        base.metadata.drop_all()
+        base.metadata.drop_all(bind=self._engine)
         self.get_session().commit()
 
     def get_base(self):
+        """
+        Return a singleton instance of the Base classe for ORM.
+        """
         if self._base is None:
-            self._base = declarative_base(metaclass=BaseExtensions, cls=Base)
+            self._base = declarative_base(cls=Base)
+            self._base.session = self.get_session()
+            self._base.query = self.get_session().query_property()
         return self._base
 
     def get_session(self):
+        """
+        Return a singleton database session.
+        """
         if self._session is None:
             self._session = scoped_session(sessionmaker(autoflush=False, autocommit=False))
-            self._session.bind = self.get_base().metadata.bind
         return self._session
 
     def on_end_resource(self):
