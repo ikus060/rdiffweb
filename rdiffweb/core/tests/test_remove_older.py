@@ -35,30 +35,30 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         # Then remove_older job should be schedule
         self.assertEqual(1, len([job for job in cherrypy.scheduler.list_jobs() if job.name == 'remove_older_job']))
 
-    @patch("rdiffweb.core.model.RepoObject.session.query")
+    @patch("rdiffweb.core.model.RepoObject.query")
     def test_remove_older_job_without_last_backup_date(self, mock_query):
         # Given a store with repos with last_backup_date undefined
         repo = MagicMock()
         repo.keepdays = 0
         repo.last_backup_date = None
-        mock_query.return_value.filter.return_value.all.return_value = [repo]
+        mock_query.filter.return_value.all.return_value = [repo]
         # When the job is running.
         cherrypy.remove_older.remove_older_job()
         # Then remove_older function is not called.
-        mock_query.return_value.filter.return_value.all.assert_called()
+        mock_query.filter.return_value.all.assert_called()
         repo.remove_older.assert_not_called()
 
-    @patch("rdiffweb.core.model.RepoObject.session.query")
+    @patch("rdiffweb.core.model.RepoObject.query")
     def test_remove_older_job_with_keepdays(self, mock_query):
         # Given a store with repos with keepdays equals to 30
         repo = MagicMock()
         repo.keepdays = 30
         repo.last_backup_date = RdiffTime('2014-11-02T17:23:41-05:00')
-        mock_query.return_value.filter.return_value.all.return_value = [repo]
+        mock_query.filter.return_value.all.return_value = [repo]
         # When the job is running.
         cherrypy.remove_older.remove_older_job()
         # Then remove_older function get called on the repo.
-        mock_query.return_value.filter.return_value.all.assert_called()
+        mock_query.filter.return_value.all.assert_called()
         repo.remove_older.assert_called()
 
     def test_remove_older_without_mock(self):

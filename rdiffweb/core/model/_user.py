@@ -88,7 +88,7 @@ class UserObject(Base):
             doc="DEPRECATED This column is replaced by 'role'",
         )
     )
-    email = Column('UserEmail', String, nullable=False, default="")
+    email = Column('UserEmail', String, nullable=False, default='', server_default='')
     restore_format = deferred(
         Column(
             'RestoreFormat',
@@ -99,8 +99,8 @@ class UserObject(Base):
         )
     )
     role = Column('role', SmallInteger, nullable=False, server_default=str(USER_ROLE), default=USER_ROLE)
-    fullname = Column('fullname', String, nullable=False, default="")
-    mfa = Column('mfa', SmallInteger, nullable=False, default=DISABLED_MFA)
+    fullname = Column('fullname', String, nullable=False, default='', server_default='')
+    mfa = Column('mfa', SmallInteger, nullable=False, default=DISABLED_MFA, server_default=str(DISABLED_MFA))
     repo_objs = relationship(
         'RepoObject',
         foreign_keys='UserObject.userid',
@@ -109,8 +109,8 @@ class UserObject(Base):
         lazy=True,
         order_by=lambda: RepoObject.repopath,
     )
-    lang = Column('lang', String, nullable=False, default='')
-    report_time_range = Column('report_time_range', SmallInteger, nullable=False, default=0)
+    lang = Column('lang', String, nullable=False, default='', server_default='')
+    report_time_range = Column('report_time_range', SmallInteger, nullable=False, default=0, server_default=str(0))
     report_last_sent = Column('report_last_sent', Timestamp, nullable=True, default=None)
 
     @classmethod

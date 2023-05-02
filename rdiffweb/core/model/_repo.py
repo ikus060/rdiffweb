@@ -23,13 +23,25 @@ import os
 import sys
 
 import cherrypy
-from sqlalchemy import Column, Integer, SmallInteger, String, and_, case, event, orm
+from sqlalchemy import Column, Integer, SmallInteger, String
+from sqlalchemy import __version__ as sqlalchemy_version
+from sqlalchemy import and_, case, event, orm
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, validates
 
 import rdiffweb.tools.db  # noqa
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo, RdiffTime
 from rdiffweb.tools.i18n import ugettext as _
+
+
+def case_wrapper(*whens, else_=None):
+    """
+    Wrapper to support SQLAlchemy v1.2 to v2.0
+    """
+    if sqlalchemy_version.startswith('1.'):
+        return case(list(whens), else_=else_)
+    return case(*whens, else_=else_)
+
 
 Base = cherrypy.tools.db.get_base()
 Session = cherrypy.tools.db.get_session()
@@ -167,8 +179,8 @@ class RepoObject(Base, RdiffRepo):
 
     @keepdays.expression
     def keepdays(cls):
-        return case(
-            [(and_(cls._keepdays != None, cls._keepdays != ''), cls._keepdays.cast(Integer))],  # noqa
+        return case_wrapper(
+            (and_(cls._keepdays != None, cls._keepdays != ''), cls._keepdays.cast(Integer)),  # noqa
             else_=-1,
         )
 
