@@ -45,6 +45,15 @@ class AbstractNotificationTest(rdiffweb.test.WebCase):
 
 
 class NotificationJobTest(AbstractNotificationTest):
+    def setUp(self):
+        super().setUp()
+        cherrypy.engine.subscribe("get_disk_quota", self.listener.get_disk_quota, priority=40)
+        self.listener.get_disk_quota.return_value = False
+
+    def tearDown(self):
+        cherrypy.engine.unsubscribe("get_disk_quota", self.listener.get_disk_quota)
+        return super().tearDown()
+
     def test_check_schedule(self):
         # Given the application is started
         # Then remove_older job should be schedule
@@ -88,6 +97,27 @@ class NotificationJobTest(AbstractNotificationTest):
         cherrypy.notification.notification_job()
 
         # Then a notification is sent to the user.
+        self.listener.queue_email.assert_called_once_with(
+            to='test@test.com',
+            subject='Notification',
+            message=ANY,
+        )
+
+    def test_notification_job_disk_usage(self):
+        # Given a user with an email address and a disk quota
+        # Set user config
+        user = UserObject.get_user(self.USERNAME)
+        user.email = 'test@test.com'
+        user.commit()
+        self.listener.get_disk_quota.return_value = user.disk_usage
+        # Given a user with a repo without max age.
+        repo = RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
+        repo.commit()
+        self.listener.queue_email.reset_mock()
+        # When running notification_job
+        cherrypy.notification.notification_job()
+
+        # Then an email is queue for this user
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
             subject='Notification',
