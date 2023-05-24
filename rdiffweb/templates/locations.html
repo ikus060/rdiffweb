@@ -1,4 +1,5 @@
 {% extends 'layout.html' %}
+{% from 'include/storage_usage.html' import storage_usage %}
 {% from 'include/empty.html' import empty %}
 {% set active_page='repo' %}
 {% block title %}
@@ -25,27 +26,7 @@
   <div class="container-fluid" id="locations">
     <h2 class="mb-2">{% trans %}Repositories{% endtrans %}</h2>
     {# disk usage/quota #}
-    {% if disk_usage and disk_quota %}
-      <div class="card mb-4 bg-light">
-        <div class="card-body">
-          {% set used_pct = disk_usage / disk_quota * 100 %}
-          {% set used_str = disk_usage | filesize %}
-          {% set size_str = disk_quota | filesize %}
-          {% set avail_str = (disk_quota - disk_usage) | filesize %}
-          <strong>{% trans %}Storage Usage: {% endtrans %}</strong>
-          {{ used_str }} {% trans %}used{% endtrans %} | {{ size_str }} {% trans %}total{% endtrans %} | {{ avail_str }} {% trans %}free{% endtrans %}
-          <div class="progress">
-            <div class="progress-bar {% if used_pct > 90 %}progress-bar bg-warning{% else %}progress-bar bg-success{% endif %}"
-                 role="progressbar"
-                 aria-valuenow="{{ used_pct }}"
-                 aria-valuemin="0"
-                 aria-valuemax="100"
-                 style="width: {{ used_pct }}%">
-            </div>
-          </div>
-        </div>
-      </div>
-    {% endif %}
+    {{ storage_usage(disk_usage, disk_quota) }}
     {# Repositories #}
     <div class="row">
       {% if repos|length == 0 %}

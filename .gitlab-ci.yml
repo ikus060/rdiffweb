@@ -372,7 +372,6 @@ deploy:demo:
     - package:deb
   image: registry.gitlab.com/finestructure/pipeline-trigger
   script:
-    - apk update && apk add git
     - export DEB_VERSION=$(ls -1 ./dist/bullseye/rdiffweb_*_all.deb | cut -d '_' -f 2)
     - echo DEB_VERSION=$DEB_VERSION
     # Trigger ansible-config pipeline

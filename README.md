@@ -129,6 +129,7 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 * Hide LDAP label in users view when LDAP is not configured #237
 * Add support for Ubuntu Lunar
 * Add support for SQLAlchemy v2.0
+* When reaching 100% disk usage, show quota in red to improve visibility
 
 ## 2.7.1 (2023-04-27)
 
