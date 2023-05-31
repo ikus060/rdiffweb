@@ -39,11 +39,11 @@
         </div>
         {{ pre_code(data)}}
       {% elif file or date %}
-        {% call empty('icon-file', 'Log file empty') %}
+        {% call empty('icon-file', _('Log file empty')) %}
           <p>{% trans %}This log file is empty. Select another log file to show it's contents.{% endtrans %}</p>
         {% endcall %}
       {% else %}
-        {% call empty('icon-file', 'No log file selected') %}
+        {% call empty('icon-file', _('No log file selected')) %}
           <p>{% trans %}Select a log file to show it's contents.{% endtrans %}</p>
         {% endcall %}
       {% endif %}

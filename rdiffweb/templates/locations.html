@@ -24,14 +24,14 @@
     </a>
   {% endmacro %}
   <div class="container-fluid" id="locations">
-    <h2 class="mb-2">{% trans %}Repositories{% endtrans %}</h2>
     {# disk usage/quota #}
     {{ storage_usage(disk_usage, disk_quota) }}
     {# Repositories #}
+    <h2 class="mb-2">{% trans %}Repositories{% endtrans %}</h2>
     <div class="row">
       {% if repos|length == 0 %}
         <div class="col-md-12">
-          {% call empty('fa fa-archive', 'No repositories') %}
+          {% call empty('fa fa-archive', _('No repositories')) %}
             <p>
               {% trans %}You don't have any repositories in your user directory. You may need to refresh the page if you just made a new backup.{% endtrans %}
             </p>
