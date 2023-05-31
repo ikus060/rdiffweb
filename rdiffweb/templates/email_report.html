@@ -1,16 +1,4 @@
 {% extends 'email_layout.html' %}
-{% macro emphasis()%}
-  <h3 style="padding-top: 0;
-             padding-bottom: 0;
-             font-weight: 500;
-             vertical-align: baseline;
-             font-size: 28px;
-             line-height: 33.6px;
-             margin: 0;"
-      align="left">
-    {{ caller()}}
-  </h3>
-{% endmacro %}
 {% block title %}
   {% if time_range == 30 %}
     {% trans %}Monthly Backup Report{% endtrans %}
@@ -40,37 +28,7 @@
     {% endif %}
   </p>
   {# Quota Usage #}
-  {% if disk_usage and disk_quota %}
-    {% set used_pct = disk_usage / disk_quota * 100 %}
-    <b>{% trans %}Storage Usage{% endtrans %}</b>
-    {% call card('bg-light') %}
-      {% call card_body() %}
-        {% call row() %}
-          {% call col('text-warning' if used_pct>90 else '') %}
-            {% trans %}Used{% endtrans %}
-            {% call emphasis()%}
-              {{ used_pct|int }}%
-            {% endcall %}
-            <small>{{ disk_usage | filesize }}</small>
-          {% endcall %}
-          {% call col('text-warning' if used_pct>90 else '') %}
-            {% trans %}Free{% endtrans %}
-            {% call emphasis()%}
-              {{ (100 - used_pct)|int }}%
-            {% endcall %}
-            {{ (disk_quota - disk_usage) | filesize }}
-          {% endcall %}
-          {% call col('text-warning' if used_pct>90 else '') %}
-            {% trans %}Total{% endtrans %}
-            {% call emphasis()%}
-              {{ disk_quota | filesize }}
-            {% endcall %}
-          {% endcall %}
-        {% endcall %}
-      {% endcall %}
-    {% endcall %}
-    {{ mb4() }}
-  {% endif %}
+  {{ storage_usage(disk_quota, disk_usage) }}
   {# Repo statistics #}
   {% for repo in data %}
     <b>{{ repo.display_name }}</b>

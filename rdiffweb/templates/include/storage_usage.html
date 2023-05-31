@@ -1,0 +1,37 @@
+{% macro storage_usage(disk_usage, disk_quota) %}
+  {% if disk_usage and disk_quota %}
+    <div class="card mb-4 bg-light">
+      <div class="card-body">
+        {% set used_pct = disk_usage / disk_quota * 100 %}
+        {% set used_str = disk_usage | filesize %}
+        {% set size_str = disk_quota | filesize %}
+        <strong>{% trans %}Storage Usage{% endtrans %}</strong>
+        <div class="progress mb-2">
+          <div class="progress-bar {% if used_pct >= 100 %}bg-danger{% elif used_pct > 90 %}bg-warning{% else %}bg-success{% endif %}"
+               role="progressbar"
+               aria-valuenow="{{ used_pct }}"
+               aria-valuemin="0"
+               aria-valuemax="100"
+               style="width: {{ used_pct }}%">
+          </div>
+        </div>
+        <div class="row {% if used_pct >= 100 %}text-danger{% elif used_pct > 90 %}text-warning{% endif %}">
+          <div class="col">
+            {% trans %}Used{% endtrans %}
+            <div class="h3 mb-0">{{ used_pct|int }}%</div>
+            <small>{{ disk_usage | filesize }}</small>
+          </div>
+          <div class="col">
+            {% trans %}Free{% endtrans %}
+            <div class="h3 mb-0">{{ [0, 100 - used_pct]| max |int }}%</div>
+            <small>{{ [0, disk_quota - disk_usage] | max | filesize  }}</small>
+          </div>
+          <div class="col">
+            {% trans %}Total{% endtrans %}
+            <div class="h3 mb-0">{{ disk_quota | filesize }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endmacro %}

@@ -263,19 +263,27 @@ class NotificationPlugin(SimplePlugin):
         Loop trough all the user repository and send notifications.
         """
         # For Each user with an email.
-        # Identify the repository without activities using the backup statistics.
+
         for userobj in UserObject.query.filter(UserObject.email != ''):
             try:
+                # Identify the repository without activities using the backup statistics.
                 old_repos = [
                     repo
                     for repo in RepoObject.query.filter(RepoObject.user == userobj, RepoObject.maxage > 0)
                     if not repo.check_activity()
                 ]
-                if old_repos:
+                # Check user's disk usage
+                disk_usage = userobj.disk_usage
+                disk_quota = userobj.disk_quota
+                used_pct = disk_usage / disk_quota * 100 if disk_quota else 0
+                # Send email if required
+                if old_repos or used_pct > 90:
                     self._queue_mail(
                         userobj,
                         template="email_notification.html",
                         repos=old_repos,
+                        disk_usage=disk_usage,
+                        disk_quota=disk_quota,
                     )
             except Exception:
                 logger.exception('fail to send notification to user %s', userobj)

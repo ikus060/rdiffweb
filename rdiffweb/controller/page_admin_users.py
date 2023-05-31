@@ -136,17 +136,6 @@ class UserForm(CherryForm):
             "Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo."
         ),
     )
-    disk_quota = SizeField(
-        _('Disk space'),
-        validators=[validators.optional()],
-        description=_("Users disk spaces (in bytes). Set to 0 to remove quota (unlimited)."),
-    )
-    disk_usage = SizeField(
-        _('Quota Used'),
-        validators=[validators.optional()],
-        description=_("Disk spaces (in bytes) used by this user."),
-        widget=widgets.HiddenInput(),
-    )
     report_time_range = SelectField(
         _('Send Backup report'),
         choices=[
@@ -157,6 +146,17 @@ class UserForm(CherryForm):
         ],
         coerce=int,
         default='0',
+    )
+    disk_quota = SizeField(
+        _('Disk space'),
+        validators=[validators.optional()],
+        description=_("Users disk spaces (in bytes). Set to 0 to remove quota (unlimited)."),
+    )
+    disk_usage = SizeField(
+        _('Quota Used'),
+        validators=[validators.optional()],
+        description=_("Disk spaces (in bytes) used by this user."),
+        widget=widgets.HiddenInput(),
     )
 
     def __init__(self, **kwargs):
