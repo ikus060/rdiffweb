@@ -131,6 +131,7 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 * Add support for SQLAlchemy v2.0
 * When reaching 100% disk usage, show quota in red to improve visibility
 * Send notification when user's quota reach 90% #46
+* Add ratelimit to "send me a status report" to avoid email flooding #272 - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
 
 ## 2.7.1 (2023-04-27)
 
