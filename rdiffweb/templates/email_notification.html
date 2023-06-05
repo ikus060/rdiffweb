@@ -8,7 +8,7 @@
   </h1>
   <p>{% trans %}You are receiving this email to notify you about your backups.{% endtrans %}</p>
   {# Quota Usage #}
-  {{ storage_usage(disk_quota, disk_usage) }}
+  {{ storage_usage(disk_usage, disk_quota) }}
   {# Inactive repo #}
   {% if repos %}
     <p>
