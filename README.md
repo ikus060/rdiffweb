@@ -83,8 +83,9 @@ You should read the [Documentation](https://www.ikus-soft.com/archive/rdiffweb/d
 
 **Debian**
 
-    curl -L https://www.ikus-soft.com/archive/rdiffweb/public.key | apt-key add - 
-    echo "deb https://nexus.ikus-soft.com/repository/apt-release-bullseye/ bullseye main" > /etc/apt/sources.list.d/rdiffweb.list
+    apt install lsb-release
+    curl -L https://www.ikus-soft.com/archive/rdiffweb/public.key | gpg --dearmor > /usr/share/keyrings/rdiffweb-keyring.gpg
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/rdiffweb-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-release-$(lsb_release -sc)/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/rdiffweb.list
     apt update
     apt install rdiffweb
 
@@ -132,6 +133,7 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 * When reaching 100% disk usage, show quota in red to improve visibility
 * Send notification when user's quota reach 90% #46
 * Add ratelimit to "send me a status report" to avoid email flooding #272 - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
+* Fix creation of access token with expiration time #277
 
 ## 2.7.1 (2023-04-27)
 
