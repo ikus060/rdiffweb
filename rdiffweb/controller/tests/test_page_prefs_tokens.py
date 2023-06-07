@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from datetime import datetime, timedelta, timezone
 
 import rdiffweb.test
 from rdiffweb.core.model import Token, UserObject
@@ -37,7 +37,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration_time': ''},
+            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration': ''},
         )
         # Then page return without error
         self.assertStatus(303)
@@ -55,7 +55,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration_time': '1999-01-01'},
+            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration': '1999-01-01'},
         )
         # Then page return without error
         self.assertStatus(303)
@@ -64,7 +64,12 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody('test-token-name')
         # Then access token get created
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').count())
+        token = Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').one()
+        self.assertIsNotNone(token.expiration_time)
+        # Expiration is almost equals to consider the timezone.
+        self.assertAlmostEqual(
+            token.expiration_time, datetime(1999, 1, 1, tzinfo=timezone.utc), delta=timedelta(hours=24)
+        )
 
     def test_add_access_token_without_name(self):
         # Given an existing user
@@ -73,7 +78,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'add_access_token': '1', 'name': '', 'expiration_time': ''},
+            body={'add_access_token': '1', 'name': '', 'expiration': ''},
         )
         # Then page return without error
         self.assertStatus(200)
@@ -88,7 +93,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'add_access_token': '1', 'name': 'token' * 52, 'expiration_time': ''},
+            body={'add_access_token': '1', 'name': 'token' * 52, 'expiration': ''},
         )
         # Then page return with error message
         self.assertStatus(200)
@@ -104,7 +109,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration_time': ''},
+            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration': ''},
         )
         # Then page return without error
         self.assertStatus(200)

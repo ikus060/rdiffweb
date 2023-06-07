@@ -19,7 +19,7 @@
 import logging
 
 import cherrypy
-from wtforms.fields import DateField, StringField, SubmitField
+from wtforms.fields import DateTimeField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional
 
 from rdiffweb.controller import Controller, flash
@@ -27,6 +27,13 @@ from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.model import Token
 from rdiffweb.tools.i18n import gettext_lazy as _
+
+try:
+    # wtform>=3
+    from wtforms.widgets import DateInput
+except ImportError:
+    # wtform<3
+    from wtforms.widgets.html5 import DateInput
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +49,7 @@ class TokenForm(CherryForm):
             Length(max=256, message=_('Token name too long')),
         ],
     )
-    expiration = DateField(
+    expiration = DateTimeField(
         _('Expiration date'),
         description=_(
             'Allows the creation of a temporary token by defining an expiration date. Leave empty to keep the token forever.'
@@ -50,6 +57,8 @@ class TokenForm(CherryForm):
         render_kw={
             "placeholder": _('YYYY-MM-DD'),
         },
+        format="%Y-%m-%d",
+        widget=DateInput(),
         validators=[Optional()],
     )
     add_access_token = SubmitField(_('Create access token'))
