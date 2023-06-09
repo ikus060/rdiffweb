@@ -1,4 +1,4 @@
-# Networking
+# How to configure a reverse Proxy
 
 ## Configure Rdiffweb behind Apache Reverse Proxy with SSL
 
