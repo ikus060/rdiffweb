@@ -11,7 +11,7 @@ Welcome to Rdiffweb's documentation!
    quickstart
    installation
    configuration
-   networking
+   hardening
    usage
    faq
    development
