@@ -28,7 +28,7 @@
     {% endif %}
   </p>
   {# Quota Usage #}
-  {{ storage_usage(disk_quota, disk_usage) }}
+  {{ storage_usage(disk_usage, disk_quota) }}
   {# Repo statistics #}
   {% for repo in data %}
     <b>{{ repo.display_name }}</b>
