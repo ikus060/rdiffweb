@@ -43,7 +43,6 @@ class BrowsePage(Controller):
         }
     )
     def default(self, path=b""):
-
         # Check user access to the given repo & path
         repo, path = RepoObject.get_repo_path(path, refresh=True)
 

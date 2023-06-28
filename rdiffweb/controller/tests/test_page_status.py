@@ -28,7 +28,6 @@ from rdiffweb.core.model import RepoObject, UserObject
 
 
 class StatusTest(rdiffweb.test.WebCase):
-
     login = True
 
     @parameterized.expand(

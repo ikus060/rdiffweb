@@ -27,12 +27,11 @@ from rdiffweb.core.model import RepoObject, UserObject
 
 
 class SettingsTest(rdiffweb.test.WebCase):
-
     login = True
 
     def test_page(self):
         self.getPage("/settings/" + self.USERNAME + "/" + self.REPO)
-        self.assertInBody("Character encoding")
+        self.assertInBody("General Settings")
         self.assertStatus(200)
 
     def test_as_another_user(self):
@@ -42,7 +41,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         user_obj.refresh_repos()
         user_obj.commit()
         self.getPage("/settings/anotheruser/testcases")
-        self.assertInBody("Character encoding")
+        self.assertInBody("General Settings")
         self.assertStatus('200 OK')
 
         # Remove admin right
@@ -55,9 +54,14 @@ class SettingsTest(rdiffweb.test.WebCase):
         self.assertStatus('403 Forbidden')
 
     def test_set_maxage(self):
+        # When updating maxage
         self.getPage("/settings/" + self.USERNAME + "/" + self.REPO + "/", method="POST", body={'maxage': '4'})
+        self.assertStatus(303)
+        # Then a succes message is displayed to user
+        self.getPage("/settings/" + self.USERNAME + "/" + self.REPO + "/")
         self.assertStatus(200)
-        # Check database update
+        self.assertInBody("Settings modified successfully.")
+        # Then repo get updated
         repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         self.assertEqual(4, repo_obj.maxage)
 

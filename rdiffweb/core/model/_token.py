@@ -54,7 +54,6 @@ class Token(Base):
 
 
 class TokenCleanup(SimplePlugin):
-
     execution_time = '23:00'
 
     def start(self):

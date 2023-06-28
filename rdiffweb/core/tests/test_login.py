@@ -77,7 +77,6 @@ class LoginTest(LoginAbstractTest):
 
 
 class LoginWithAddMissing(LoginAbstractTest):
-
     default_config = {'ldap-uri': '__default__', 'ldap-base-dn': 'dc=nodomain', 'ldap-add-missing-user': 'true'}
 
     def setUp(self):
@@ -126,7 +125,6 @@ class LoginWithAddMissing(LoginAbstractTest):
 
 
 class LoginWithAddMissingWithDefaults(LoginAbstractTest):
-
     default_config = {
         'ldap-uri': '__default__',
         'ldap-base-dn': 'dc=nodomain',
@@ -163,7 +161,6 @@ class LoginWithAddMissingWithDefaults(LoginAbstractTest):
 
 
 class LoginWithAddMissingWithComplexUserroot(LoginAbstractTest):
-
     default_config = {
         'ldap-uri': '__default__',
         'ldap-base-dn': 'dc=nodomain',
@@ -213,7 +210,6 @@ class LdapLoginAbstractTest(LoginAbstractTest):
 
 
 class LoginWithLdap(LdapLoginAbstractTest):
-
     default_config = {
         'ldap-uri': '__default__',
         'ldap-base-dn': 'dc=example,dc=org',
@@ -263,7 +259,6 @@ class LoginWithLdap(LdapLoginAbstractTest):
 
 
 class LoginWithLdapGroup(LdapLoginAbstractTest):
-
     default_config = {
         'ldap-uri': '__default__',
         'ldap-base-dn': 'dc=example,dc=org',

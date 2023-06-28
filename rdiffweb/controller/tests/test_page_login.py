@@ -220,7 +220,6 @@ class LoginPageTest(rdiffweb.test.WebCase):
 
 
 class LoginPageWithWelcomeMsgTest(rdiffweb.test.WebCase):
-
     default_config = {'welcomemsg': 'default message', 'welcomemsg[fr]': 'french message'}
 
     def test_getpage_default(self):
@@ -241,7 +240,6 @@ class LoginPageWithWelcomeMsgTest(rdiffweb.test.WebCase):
 
 
 class LoginPageWithHeaderName(rdiffweb.test.WebCase):
-
     default_config = {'header-name': 'HEADER-NAME'}
 
     def test_getpage_default(self):
@@ -279,7 +277,6 @@ class LoginPageRateLimitTest(rdiffweb.test.WebCase):
 
 
 class LoginPageRateLimitTest2(rdiffweb.test.WebCase):
-
     default_config = {'rate-limit': 5}
 
     def test_login_ratelimit_forwarded_for(self):

@@ -88,7 +88,6 @@ def get_flashed_messages():
 
 
 class Controller(object):
-
     _header_name = Option("header_name")
 
     _footername = Option("footer_name")

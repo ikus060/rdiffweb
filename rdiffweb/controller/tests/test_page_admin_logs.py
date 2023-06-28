@@ -24,7 +24,6 @@ import rdiffweb.test
 
 
 class AdminWithNoLogsTest(rdiffweb.test.WebCase):
-
     login = True
 
     def test_logs(self):
@@ -43,7 +42,6 @@ class AdminWithNoLogsTest(rdiffweb.test.WebCase):
 
 
 class AdminWithLogMissingTest(rdiffweb.test.WebCase):
-
     login = True
     default_config = {'logfile': './rdiffweb.log', 'logaccessfile': './rdiffweb-access.log'}
 
@@ -63,7 +61,6 @@ class AdminWithLogMissingTest(rdiffweb.test.WebCase):
 
 
 class AdminWithLogsTest(rdiffweb.test.WebCase):
-
     login = True
     default_config = {'logfile': '/tmp/rdiffweb.log', 'logaccessfile': '/tmp/rdiffweb-access.log'}
 

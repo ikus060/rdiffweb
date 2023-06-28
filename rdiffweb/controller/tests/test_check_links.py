@@ -22,7 +22,6 @@ import rdiffweb.test
 
 
 class CheckLinkTest(rdiffweb.test.WebCase):
-
     login = True
 
     start_url = [

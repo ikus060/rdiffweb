@@ -31,7 +31,6 @@ from rdiffweb.core.model import UserObject
 
 
 class DeleteRepoTest(rdiffweb.test.WebCase):
-
     login = True
 
     def _delete(self, user, repo, confirm):

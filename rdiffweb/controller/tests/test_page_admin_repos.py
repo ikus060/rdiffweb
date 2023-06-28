@@ -21,7 +21,6 @@ from rdiffweb.core.model import RepoObject, UserObject
 
 
 class AdminReposTest(rdiffweb.test.WebCase):
-
     login = True
 
     def test_repos(self):

@@ -116,7 +116,6 @@ class DeleteSshForm(CherryForm):
 class PagePrefSshKeys(Controller):
     @cherrypy.expose
     def default(self, **kwargs):
-
         # Handle action
         add_form = SshForm()
         delete_form = DeleteSshForm()

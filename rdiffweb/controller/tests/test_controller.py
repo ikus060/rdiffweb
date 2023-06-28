@@ -30,7 +30,6 @@ from rdiffweb.core.rdw_templating import url_for
 
 
 class ControllerTest(rdiffweb.test.WebCase):
-
     login = True
 
     default_config = {'HeaderName': 'MyTest'}
@@ -115,7 +114,6 @@ class ControllerTest(rdiffweb.test.WebCase):
     ]
 )
 class ControllerThemeTest(rdiffweb.test.WebCase):
-
     default_config = {}
 
     expect_color = ''

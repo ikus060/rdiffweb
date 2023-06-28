@@ -29,7 +29,6 @@ PREFS_SSHKEYS = "/prefs/sshkeys"
 
 
 class PagePrefSshKeysTest(rdiffweb.test.WebCase):
-
     login = True
 
     def _delete_ssh_key(self, fingerprint):
@@ -172,7 +171,6 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
 
 
 class ApiSshKeysTest(rdiffweb.test.WebCase):
-
     headers = [("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))]
 
     def test_post(self):
@@ -315,7 +313,6 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
 
 
 class PagePrefSshKeysWithSSHKeyDisabled(rdiffweb.test.WebCase):
-
     login = True
 
     default_config = {

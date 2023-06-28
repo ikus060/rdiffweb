@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 
 
 class PreferencesPage(Controller):
-
     general = PagePrefsGeneral()
     mfa = PagePrefMfa()
     notification = PagePrefNotification()

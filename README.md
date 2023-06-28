@@ -124,16 +124,18 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 
 ## Next Release
 
-* Log error message when restore command failed
+* Log detailed error message when restore command failed for debugging
 * Improve User management interfaces #237
 * Disable Disk Quota in users view when quota command is not configured #237
 * Hide LDAP label in users view when LDAP is not configured #237
+* Allow administrator to change user's reporting preferences
 * Add support for Ubuntu Lunar
-* Add support for SQLAlchemy v2.0
+* Add support for SQLAlchemy v2.0 for forward compatibility
 * When reaching 100% disk usage, show quota in red to improve visibility
 * Send notification when user's quota reach 90% #46
 * Add ratelimit to "send me a status report" to avoid email flooding #272 - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
 * Fix creation of access token with expiration time #277
+* Allow user to disable notification for selected day of week #278
 
 ## 2.7.1 (2023-04-27)
 

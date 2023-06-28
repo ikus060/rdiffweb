@@ -15,7 +15,6 @@ _logger = logging.getLogger(__name__)
 
 
 class RemoveOlder(SimplePlugin):
-
     execution_time = '23:00'
 
     def start(self):

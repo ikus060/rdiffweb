@@ -21,7 +21,6 @@ from rdiffweb.core.model import DbSession, SessionObject
 
 
 class PagePrefSessionTest(rdiffweb.test.WebCase):
-
     PREFS = "/prefs/session"
 
     login = True

@@ -30,7 +30,6 @@ from rdiffweb.core.model import RepoObject, SessionObject, UserObject
 
 
 class PagePrefGeneralTest(rdiffweb.test.WebCase):
-
     PREFS = "/prefs/general"
 
     login = True

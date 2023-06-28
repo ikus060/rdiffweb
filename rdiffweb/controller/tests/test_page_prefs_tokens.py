@@ -21,7 +21,6 @@ from rdiffweb.core.model import Token, UserObject
 
 
 class PagePrefTokensTest(rdiffweb.test.WebCase):
-
     login = True
 
     def test_get(self):

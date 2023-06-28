@@ -79,7 +79,6 @@ def db_after_create(target, connection, **kw):
     """
 
     with connection.engine.connect() as connection:
-
         # Add repo's Encoding
         _column_add(connection, RepoObject.__table__.c.Encoding)
         _column_add(connection, RepoObject.__table__.c.keepdays)
@@ -107,6 +106,9 @@ def db_after_create(target, connection, **kw):
         if not _column_exists(connection, SessionObject.__table__.c.Number):
             SessionObject.__table__.drop()
             SessionObject.__table__.create()
+
+        # Add ignore_weekday column to repo table
+        _column_add(connection, RepoObject.__table__.c.IgnoreWeekday)
 
         if getattr(connection, '_transaction', None):
             connection._transaction.commit()

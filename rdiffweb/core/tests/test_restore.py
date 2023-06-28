@@ -77,7 +77,6 @@ def restore_async(*args, **kwargs):
 
 
 class RestoreTest(rdiffweb.test.WebCase):
-
     maxDiff = None
 
     def setUp(self):

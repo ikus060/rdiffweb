@@ -25,7 +25,6 @@ from rdiffweb.core.model import UserObject
 
 
 class AdminTest(rdiffweb.test.WebCase):
-
     login = True
 
     def setUp(self):

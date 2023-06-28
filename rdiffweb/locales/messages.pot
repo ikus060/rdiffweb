@@ -6,16 +6,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: rdiffweb 2.8.0a2.dev2+g426b1c0c.d20230531\n"
+"Project-Id-Version: rdiffweb 2.8.0a5.dev4+gf526c70e\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-05-31 11:04-0400\n"
+"POT-Creation-Date: 2023-06-26 15:20-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.3\n"
+"Generated-By: Babel 2.12.1\n"
 
 #: rdiffweb/controller/__init__.py:63 rdiffweb/controller/page_logs.py:61
 msgid "Invalid date."
@@ -252,24 +252,24 @@ msgid "Send Backup report"
 msgstr ""
 
 #: rdiffweb/controller/page_admin_users.py:142
-#: rdiffweb/controller/page_pref_notification.py:40
-#: rdiffweb/controller/page_pref_notification.py:63
-#: rdiffweb/templates/prefs_tokens.html:44 rdiffweb/templates/prefs_tokens.html:53
+#: rdiffweb/controller/page_pref_notification.py:41
+#: rdiffweb/controller/page_settings.py:38 rdiffweb/templates/prefs_tokens.html:44
+#: rdiffweb/templates/prefs_tokens.html:53
 msgid "Never"
 msgstr ""
 
 #: rdiffweb/controller/page_admin_users.py:143
-#: rdiffweb/controller/page_pref_notification.py:64
+#: rdiffweb/controller/page_pref_notification.py:42
 msgid "Daily"
 msgstr ""
 
 #: rdiffweb/controller/page_admin_users.py:144
-#: rdiffweb/controller/page_pref_notification.py:65
+#: rdiffweb/controller/page_pref_notification.py:43
 msgid "Weekly"
 msgstr ""
 
 #: rdiffweb/controller/page_admin_users.py:145
-#: rdiffweb/controller/page_pref_notification.py:66
+#: rdiffweb/controller/page_pref_notification.py:44
 msgid "Monthly"
 msgstr ""
 
@@ -456,10 +456,10 @@ msgid "Preferred Language"
 msgstr ""
 
 #: rdiffweb/controller/page_pref_general.py:58
-#: rdiffweb/controller/page_pref_notification.py:70
-#: rdiffweb/controller/page_pref_notification.py:111
-#: rdiffweb/templates/admin_user_edit.html:13 rdiffweb/templates/settings.html:32
-#: rdiffweb/templates/settings.html:88 rdiffweb/templates/settings.html:111
+#: rdiffweb/controller/page_pref_notification.py:48
+#: rdiffweb/controller/page_pref_notification.py:88
+#: rdiffweb/controller/page_settings.py:207
+#: rdiffweb/templates/admin_user_edit.html:13
 msgid "Save changes"
 msgstr ""
 
@@ -561,86 +561,31 @@ msgstr ""
 msgid "To continue, you must set up an email address for your account."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_notification.py:41
-#: rdiffweb/templates/include/widget.html:6 rdiffweb/templates/settings.html:52
-msgid "1 day"
-msgstr ""
-
-#: rdiffweb/controller/page_pref_notification.py:42
-#: rdiffweb/templates/include/widget.html:8 rdiffweb/templates/settings.html:53
-msgid "2 days"
-msgstr ""
-
-#: rdiffweb/controller/page_pref_notification.py:43
-#: rdiffweb/templates/include/widget.html:10 rdiffweb/templates/settings.html:54
-msgid "3 days"
-msgstr ""
-
-#: rdiffweb/controller/page_pref_notification.py:44
-#: rdiffweb/templates/include/widget.html:12 rdiffweb/templates/settings.html:55
-msgid "4 days"
-msgstr ""
-
-#: rdiffweb/controller/page_pref_notification.py:45
-#: rdiffweb/templates/include/widget.html:14 rdiffweb/templates/settings.html:56
-msgid "5 days"
-msgstr ""
-
-#: rdiffweb/controller/page_pref_notification.py:46
-#: rdiffweb/templates/include/widget.html:16 rdiffweb/templates/settings.html:57
-msgid "6 days"
-msgstr ""
-
-#: rdiffweb/controller/page_pref_notification.py:47
-#: rdiffweb/templates/include/widget.html:18 rdiffweb/templates/settings.html:58
-msgid "1 week"
-msgstr ""
-
-#: rdiffweb/controller/page_pref_notification.py:48
-#: rdiffweb/templates/include/widget.html:20 rdiffweb/templates/settings.html:59
-msgid "2 weeks"
-msgstr ""
-
-#: rdiffweb/controller/page_pref_notification.py:49
-#: rdiffweb/templates/include/widget.html:22 rdiffweb/templates/settings.html:60
-msgid "3 weeks"
-msgstr ""
-
-#: rdiffweb/controller/page_pref_notification.py:50
-#: rdiffweb/templates/include/widget.html:24
-msgid "4 weeks"
-msgstr ""
-
-#: rdiffweb/controller/page_pref_notification.py:51
-#: rdiffweb/templates/include/widget.html:26 rdiffweb/templates/settings.html:61
-msgid "1 month"
-msgstr ""
-
-#: rdiffweb/controller/page_pref_notification.py:61
+#: rdiffweb/controller/page_pref_notification.py:39
 msgid "Send me a backup status report"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_notification.py:71
+#: rdiffweb/controller/page_pref_notification.py:49
 msgid "Save and send report"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_notification.py:85
+#: rdiffweb/controller/page_pref_notification.py:62
 msgid "You must select a time range and save changes before sending a report."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_notification.py:87
+#: rdiffweb/controller/page_pref_notification.py:64
 msgid "Could not send report to user without configured email."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_notification.py:89
+#: rdiffweb/controller/page_pref_notification.py:66
 msgid "Report sent successfully."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_notification.py:91
+#: rdiffweb/controller/page_pref_notification.py:68
 msgid "Report settings updated successfully."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_notification.py:127
+#: rdiffweb/controller/page_pref_notification.py:104
 msgid "Notification settings updated successfully."
 msgstr ""
 
@@ -680,43 +625,43 @@ msgstr ""
 msgid "Unknown error while removing the SSH Key"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_sshkeys.py:148
+#: rdiffweb/controller/page_pref_sshkeys.py:147
 msgid "Failed to get SSH keys"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:36
+#: rdiffweb/controller/page_pref_tokens.py:43
 msgid "Token name"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:37
+#: rdiffweb/controller/page_pref_tokens.py:44
 msgid ""
 "Used only to identify the purpose of the token. For example, the application "
 "that uses the token."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:42
+#: rdiffweb/controller/page_pref_tokens.py:49
 msgid "Token name too long"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:46
+#: rdiffweb/controller/page_pref_tokens.py:53
 msgid "Expiration date"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:47
+#: rdiffweb/controller/page_pref_tokens.py:54
 msgid ""
 "Allows the creation of a temporary token by defining an expiration date. "
 "Leave empty to keep the token forever."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:51
+#: rdiffweb/controller/page_pref_tokens.py:58
 msgid "YYYY-MM-DD"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:55
+#: rdiffweb/controller/page_pref_tokens.py:64
 msgid "Create access token"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:66
+#: rdiffweb/controller/page_pref_tokens.py:75
 #, python-format
 msgid ""
 "Your new personal access token has been created.\n"
@@ -724,11 +669,11 @@ msgid ""
 "%s"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:82
+#: rdiffweb/controller/page_pref_tokens.py:91
 msgid "Unknown error while adding the access token."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:88
+#: rdiffweb/controller/page_pref_tokens.py:97
 #: rdiffweb/templates/admin_session.html:62
 #: rdiffweb/templates/admin_session.html:74
 #: rdiffweb/templates/prefs_session.html:19
@@ -737,21 +682,212 @@ msgstr ""
 msgid "Revoke"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:98
+#: rdiffweb/controller/page_pref_tokens.py:107
 msgid "The access token has been successfully deleted."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:107
+#: rdiffweb/controller/page_pref_tokens.py:116
 msgid "Unknown error while removing the access token."
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:63
-msgid "invalid encoding value"
+#: rdiffweb/controller/page_settings.py:39 rdiffweb/controller/page_settings.py:113
+#: rdiffweb/templates/include/widget.html:6
+msgid "1 day"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:64 rdiffweb/controller/page_settings.py:72
-#: rdiffweb/controller/page_settings.py:79
-msgid "Updated"
+#: rdiffweb/controller/page_settings.py:40 rdiffweb/controller/page_settings.py:114
+#: rdiffweb/templates/include/widget.html:8
+msgid "2 days"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:41 rdiffweb/controller/page_settings.py:115
+#: rdiffweb/templates/include/widget.html:10
+msgid "3 days"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:42 rdiffweb/controller/page_settings.py:116
+#: rdiffweb/templates/include/widget.html:12
+msgid "4 days"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:43 rdiffweb/controller/page_settings.py:117
+#: rdiffweb/templates/include/widget.html:14
+msgid "5 days"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:44 rdiffweb/controller/page_settings.py:118
+#: rdiffweb/templates/include/widget.html:16
+msgid "6 days"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:45 rdiffweb/controller/page_settings.py:119
+#: rdiffweb/templates/include/widget.html:18
+msgid "1 week"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:46 rdiffweb/controller/page_settings.py:120
+#: rdiffweb/templates/include/widget.html:20
+msgid "2 weeks"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:47 rdiffweb/controller/page_settings.py:121
+#: rdiffweb/templates/include/widget.html:22
+msgid "3 weeks"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:48
+#: rdiffweb/templates/include/widget.html:24
+msgid "4 weeks"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:49 rdiffweb/controller/page_settings.py:122
+#: rdiffweb/templates/include/widget.html:26
+msgid "1 month"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:59
+msgid "Monday"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:60
+msgid "Tuesday"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:61
+msgid "Wednesday"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:62
+msgid "Thursday"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:63
+msgid "Friday"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:64
+msgid "Saturday"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:65
+msgid "Sunday"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:93
+msgid "Inactivity Notification Period"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:94
+msgid ""
+"The period refers to the duration of inactivity after which a notification is"
+" triggered and sent to the user. It determines the number of days of "
+"inactivity that must pass before the system generates a notification to "
+"inform the user about the lack of activity in the backup repository."
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:100
+msgid "Excluded Days of the Week"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:101
+msgid ""
+"This field allows to select specific days of the week to exclude from "
+"considering as part of the inactivity period. By selecting the days to "
+"ignore, such as Saturday and Sunday, the system will not count the selected "
+"days when calculating the inactivity period for generating notifications."
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:107
+msgid "Data Retention Duration"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:108
+msgid ""
+"The retention period determines how long the backup data will be stored in "
+"the repository before it is automatically deleted or purged. By adjusting "
+"this setting, you can specify the duration for which the backup data should "
+"be retained before being removed."
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:112
+msgid "Forever"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:123
+msgid "2 months"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:124
+msgid "3 months"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:125
+msgid "4 months"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:126
+msgid "5 months"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:127
+msgid "6 months"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:128
+msgid "7 months"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:129
+msgid "8 months"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:130
+msgid "9 months"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:131
+msgid "10 months"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:132
+msgid "11 months"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:133
+msgid "1 year"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:134
+msgid "2 years"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:135
+msgid "3 years"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:136
+msgid "4 years"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:137
+msgid "5 years"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:141
+msgid "Display Encoding"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:142
+msgid ""
+"This setting relates to the representation or format in which the backup "
+"repository is displayed. It may include considerations such as language or "
+"character encoding to match your specific locale. By adjusting this setting, "
+"you can ensure that the repository's content is displayed correctly and in a "
+"manner that is suitable for your locale."
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:224
+msgid "Settings modified successfully."
 msgstr ""
 
 #: rdiffweb/controller/page_status.py:91
@@ -786,33 +922,32 @@ msgstr ""
 msgid "Average duration (min)"
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1249
+#: rdiffweb/core/librdiff.py:1250
 msgid "A backup is currently in progress to this repository."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1257
+#: rdiffweb/core/librdiff.py:1258
 msgid "Initial backup in progress."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1259
+#: rdiffweb/core/librdiff.py:1260
 msgid "The last backup has been interrupted."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1262
+#: rdiffweb/core/librdiff.py:1263
 msgid "The repository cannot be found or is badly damaged."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1266
+#: rdiffweb/core/librdiff.py:1267
 msgid "Permissions denied. Contact administrator to check repository's permissions."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:1268 rdiffweb/templates/admin_repos.html:9
+#: rdiffweb/core/librdiff.py:1269 rdiffweb/templates/admin_repos.html:9
 msgid "Healthy"
 msgstr ""
 
 #: rdiffweb/core/notification.py:173 rdiffweb/templates/email_notification.html:3
 #: rdiffweb/templates/prefs_notification.html:27
-#: rdiffweb/templates/settings.html:99
 msgid "Notification"
 msgstr ""
 
@@ -851,7 +986,7 @@ msgstr ""
 msgid "%d seconds ago"
 msgstr ""
 
-#: rdiffweb/core/model/_repo.py:207
+#: rdiffweb/core/model/_repo.py:208
 #, python-format
 msgid "invalid encoding %s"
 msgstr ""
@@ -883,16 +1018,16 @@ msgstr ""
 msgid "token name doesn't exists: %s"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:365
+#: rdiffweb/core/model/_user.py:366
 msgid "can't update admin-password defined in configuration file"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:370
+#: rdiffweb/core/model/_user.py:371
 #, python-format
 msgid "Password must have between %(min)d and %(max)d characters."
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:377
+#: rdiffweb/core/model/_user.py:378
 msgid "Password too weak."
 msgstr ""
 
@@ -1017,7 +1152,7 @@ msgid "Updated "
 msgstr ""
 
 #: rdiffweb/templates/admin_repos.html:44 rdiffweb/templates/layout_repo.html:11
-#: rdiffweb/templates/settings.html:8
+#: rdiffweb/templates/settings.html:7
 msgid "Settings"
 msgstr ""
 
@@ -1160,8 +1295,8 @@ msgstr ""
 #: rdiffweb/templates/admin_users.html:73 rdiffweb/templates/admin_users.html:75
 #: rdiffweb/templates/admin_users.html:89 rdiffweb/templates/history.html:99
 #: rdiffweb/templates/prefs_sshkeys.html:29
-#: rdiffweb/templates/prefs_sshkeys.html:53 rdiffweb/templates/settings.html:122
-#: rdiffweb/templates/settings.html:135
+#: rdiffweb/templates/prefs_sshkeys.html:53 rdiffweb/templates/settings.html:20
+#: rdiffweb/templates/settings.html:33
 msgid "Delete"
 msgstr ""
 
@@ -1539,7 +1674,7 @@ msgstr ""
 msgid "Toggle Dropdown"
 msgstr ""
 
-#: rdiffweb/templates/history.html:97 rdiffweb/templates/settings.html:132
+#: rdiffweb/templates/history.html:97 rdiffweb/templates/settings.html:30
 msgid "Confirmation required"
 msgstr ""
 
@@ -1830,125 +1965,37 @@ msgid ""
 "this access token to authenticate will stop working."
 msgstr ""
 
-#: rdiffweb/templates/settings.html:20
-msgid "Character encoding"
+#: rdiffweb/templates/settings.html:10
+msgid "General Settings"
 msgstr ""
 
-#: rdiffweb/templates/settings.html:28
-msgid "Encoding"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:38
-msgid "Remove older"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:38
+#: rdiffweb/templates/settings.html:10
 msgid ""
-"You can parameterize the storage time of earlier versions for each "
-"repository. Changing this value may free up disk space."
+"You can modify the backup repository settings to suit your requirements. "
+"These settings allow you to adjust the notification period, retention period,"
+" and display format (encoding) of the repository to align with your preferred"
+" frequency, data storage duration, and localization needs."
 msgstr ""
 
-#: rdiffweb/templates/settings.html:46
-msgid "Keep history for"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:51
-msgid "Forever"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:62
-msgid "2 months"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:63
-msgid "3 months"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:64
-msgid "4 months"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:65
-msgid "5 months"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:66
-msgid "6 months"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:67
-msgid "7 months"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:68
-msgid "8 months"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:69
-msgid "9 months"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:70
-msgid "10 months"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:71
-msgid "11 months"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:72
-msgid "1 year"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:73
-msgid "2 years"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:74
-msgid "3 years"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:75
-msgid "4 years"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:76
-msgid "5 years"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:93
-msgid "Ask your administrator to change this setting."
-msgstr ""
-
-#: rdiffweb/templates/settings.html:99
-msgid ""
-"An email notification will be sent if backup is inactive for the given period"
-" of time."
-msgstr ""
-
-#: rdiffweb/templates/settings.html:107
-msgid "Notify after"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:118
+#: rdiffweb/templates/settings.html:16
 msgid "Delete repository"
 msgstr ""
 
-#: rdiffweb/templates/settings.html:118
+#: rdiffweb/templates/settings.html:16
 msgid ""
 "Deleting the repository will permanently delete all related resources "
 "including files, history, status etc."
 msgstr ""
 
-#: rdiffweb/templates/settings.html:120
+#: rdiffweb/templates/settings.html:18
 msgid "Deleted repository cannot be restored!"
 msgstr ""
 
-#: rdiffweb/templates/settings.html:125
+#: rdiffweb/templates/settings.html:23
 msgid "Ask your administrator if you want to delete this repository."
 msgstr ""
 
-#: rdiffweb/templates/settings.html:133
+#: rdiffweb/templates/settings.html:31
 msgid ""
 "You are about to permanently delete this repository. Deleted repository "
 "CANNOT be restored! Are you ABSOLUTELY sure?"

@@ -38,7 +38,6 @@ class AuthorizedKeysTest(unittest.TestCase):
     """
 
     def test_add(self):
-
         # Create a key
         key = authorizedkeys.AuthorizedKey(options=False, keytype='ssh-rsa', key='AAAAA', comment='bobo@computer')
 

@@ -99,7 +99,6 @@ class TestI18nWebCase(rdiffweb.test.WebCase):
 
 
 class TestI18nDefaultLangWebCase(rdiffweb.test.WebCase):
-
     default_config = {'default-lang': 'FR'}
 
     @classmethod
@@ -134,7 +133,6 @@ class TestI18nDefaultLangWebCase(rdiffweb.test.WebCase):
 
 
 class TestI18nInvalidDefaultLangWebCase(rdiffweb.test.WebCase):
-
     default_config = {'default-lang': 'invalid'}
 
     def test_default_lang_invalid(self):
