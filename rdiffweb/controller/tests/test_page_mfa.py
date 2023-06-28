@@ -25,7 +25,6 @@ from rdiffweb.core.model import DbSession, UserObject
 
 
 class MfaPageTest(rdiffweb.test.WebCase):
-
     # Authenticated by default.
     login = True
 
@@ -297,7 +296,6 @@ class MfaPageTest(rdiffweb.test.WebCase):
 
 
 class MfaPageWithWelcomeMsgTest(rdiffweb.test.WebCase):
-
     login = True
 
     default_config = {'welcomemsg': 'default message', 'welcomemsg[fr]': 'french message'}

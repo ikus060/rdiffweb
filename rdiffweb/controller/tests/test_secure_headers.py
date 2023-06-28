@@ -25,7 +25,6 @@ import rdiffweb.test
 
 
 class SecureHeadersTest(rdiffweb.test.WebCase):
-
     login = True
 
     def test_cookie_samesite_lax(self):

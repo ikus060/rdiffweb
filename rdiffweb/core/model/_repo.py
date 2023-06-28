@@ -16,11 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import codecs
-import datetime
 import encodings
 import logging
 import os
 import sys
+from datetime import timedelta
 
 import cherrypy
 from sqlalchemy import Column, Integer, SmallInteger, String
@@ -84,6 +84,7 @@ class RepoObject(Base, RdiffRepo):
     maxage = Column('MaxAge', SmallInteger, nullable=False, server_default="0")
     encoding = Column('Encoding', String, default=DEFAULT_REPO_ENCODING)
     _keepdays = Column('keepdays', String, nullable=False, default="-1")
+    _ignore_weekday = Column('IgnoreWeekday', Integer, nullable=False, server_default="0")
 
     @classmethod
     def get_repo(cls, name, as_user=None, refresh=False):
@@ -229,11 +230,38 @@ class RepoObject(Base, RdiffRepo):
         if self.maxage <= 0:
             return None
         # Loop on session statistics to check backup activity.
-        from_date = RdiffTime() - datetime.timedelta(days=self.maxage)
-        for stats in self.session_statistics[from_date:]:
-            if stats.newfiles > 0 or stats.deletedfiles > 0 or stats.changedfiles > 0:
-                return True
+        age = 0
+        start = RdiffTime()
+        ignore_weekday = self.ignore_weekday
+        while age < self.maxage:
+            end = start
+            start = end - timedelta(days=1)
+            for stats in self.session_statistics[start:end]:
+                if stats.newfiles > 0 or stats.deletedfiles > 0 or stats.changedfiles > 0:
+                    # Activity found !
+                    return True
+            # Only increase age if weekday is not ignored.
+            if start.weekday() not in ignore_weekday:
+                age += 1
         return False
+
+    @property
+    def ignore_weekday(self):
+        """
+        Return list of days to ignore. Index 0 is monday.
+        """
+        value = self._ignore_weekday
+        return [idx for idx in range(0, 7) if value & (1 << idx)]
+
+    @ignore_weekday.setter
+    def ignore_weekday(self, value):
+        """
+        Set list of days to ignore. Index 0 is monday.
+        """
+        if not value:
+            self._ignore_weekday = 0
+        else:
+            self._ignore_weekday = sum([1 << idx for idx in range(0, 7) if idx in value])
 
 
 @event.listens_for(RepoObject.encoding, "set")

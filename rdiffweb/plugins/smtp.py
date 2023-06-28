@@ -112,7 +112,6 @@ def _formataddr(value):
 
 
 class SmtpPlugin(SimplePlugin):
-
     server = None
     username = None
     password = None

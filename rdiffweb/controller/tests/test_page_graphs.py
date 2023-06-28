@@ -26,7 +26,6 @@ from rdiffweb.core.model import UserObject
 
 
 class SettingsTest(rdiffweb.test.WebCase):
-
     login = True
 
     def test_activities(self):

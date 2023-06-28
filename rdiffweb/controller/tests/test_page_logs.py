@@ -28,7 +28,6 @@ from rdiffweb.core.rdw_templating import url_for
 
 
 class LogsPageTest(rdiffweb.test.WebCase):
-
     login = True
 
     def _log(self, user, repo, limit=None, date=None, file=None, raw=None):

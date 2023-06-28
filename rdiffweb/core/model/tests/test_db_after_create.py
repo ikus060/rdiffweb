@@ -90,7 +90,6 @@ COMMIT;
 )
 @skipIf(os.environ.get('RDIFFWEB_TEST_DATABASE_URI'), 'custom database')
 class LoginAbstractTest(rdiffweb.test.WebCase):
-
     init_sql = ""
 
     def setUp(self):

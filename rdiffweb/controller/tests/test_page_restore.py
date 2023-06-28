@@ -49,7 +49,6 @@ class RestorePageTest(unittest.TestCase):
 
 
 class RestoreTest(rdiffweb.test.WebCase):
-
     login = True
 
     maxDiff = None

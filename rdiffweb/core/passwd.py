@@ -36,7 +36,6 @@ try:
         return _argon.hash(password)
 
 except ImportError:
-
     _argon = None
 
     def hash_password(password):

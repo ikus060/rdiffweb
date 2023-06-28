@@ -26,19 +26,18 @@ from rdiffweb.core.model import RepoObject, UserObject
 
 
 class SetEncodingTest(rdiffweb.test.WebCase):
-
     login = True
 
     def _settings(self, user, repo):
         self.getPage("/settings/" + user + "/" + repo + "/")
 
     def _set_encoding(self, user, repo, encoding):
-        self.getPage("/settings/" + user + "/" + repo + "/", method="POST", body={'new_encoding': encoding})
+        self.getPage("/settings/" + user + "/" + repo + "/", method="POST", body={'encoding': encoding})
 
     def test_check_default_encoding(self):
         # Default encoding for broker-repo is the default system encoding.
         self._settings('admin', 'broker-repo')
-        self.assertInBody("Character encoding")
+        self.assertInBody("Display Encoding")
         self.assertInBody('selected value="%s"' % RepoObject.DEFAULT_REPO_ENCODING)
 
     def test_set_encoding(self):
@@ -46,12 +45,12 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         Check to update the encoding with cp1252.
         """
         self._set_encoding('admin', 'testcases', 'cp1252')
-        self.assertStatus(200)
-        self.assertInBody("Updated")
+        self.assertStatus(303)
+        self._settings('admin', 'testcases')
+        self.assertInBody("Settings modified successfully.")
         repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         self.assertEqual('cp1252', repo.encoding)
         # Get back encoding.
-        self._settings('admin', 'testcases')
         self.assertInBody('selected value="cp1252"')
 
     def test_set_encoding_capital_case(self):
@@ -59,32 +58,32 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         Check to update the encoding with US-ASCII.
         """
         self._set_encoding('admin', 'testcases', 'US-ASCII')
-        self.assertStatus(200)
-        self.assertInBody("Updated")
+        self.assertStatus(303)
+        self._settings('admin', 'testcases')
+        self.assertInBody("Settings modified successfully.")
         repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         self.assertEqual('ascii', repo.encoding)
         # Get back encoding.
-        self._settings('admin', 'testcases')
         self.assertInBody('selected value="ascii"')
 
     def test_set_encoding_invalid(self):
         """
         Check to update the encoding with invalid value.
         """
-        self._set_encoding('admin', 'testcases', 'invalid')
-        self.assertStatus(400)
-        self.assertInBody("invalid encoding value")
+        self._set_encoding('admin', 'testcases', 'unknown')
+        self.assertStatus(200)
+        self.assertInBody("Invalid Choice: could not coerce")
 
     def test_set_encoding_windows_1252(self):
         """
         Check to update the encoding with windows 1252.
         """
-        # Update encoding
+        # UWhen updating to encoding windows_1252
         self._set_encoding('admin', 'testcases', 'windows_1252')
-        self.assertStatus(200)
-        self.assertInBody("Updated")
-        # Get back encoding.
+        self.assertStatus(303)
         self._settings('admin', 'testcases')
+        self.assertInBody("Settings modified successfully.")
+        # Then encoding is "normalized" to cp1252
         self.assertInBody('selected value="cp1252"')
         repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         self.assertEqual('cp1252', repo.encoding)
@@ -96,7 +95,7 @@ class SetEncodingTest(rdiffweb.test.WebCase):
         user_obj.refresh_repos()
         user_obj.commit()
         self._set_encoding('anotheruser', 'testcases', 'cp1252')
-        self.assertStatus('200 OK')
+        self.assertStatus(303)
         repo = RepoObject.query.filter(RepoObject.user == user_obj, RepoObject.repopath == self.REPO).first()
         self.assertEqual('cp1252', repo.encoding)
 

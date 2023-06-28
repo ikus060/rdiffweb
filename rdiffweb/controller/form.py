@@ -98,3 +98,17 @@ class CherryForm(Form):
         env = cherrypy.tree.apps[''].templates.jinja_env
         tmpl = env.get_template('components/form.html')
         return Markup(tmpl.render(form=self, **kwargs))
+
+    def populate_obj(self, obj):
+        """
+        Populates the attributes of the passed `obj` with data from the form's
+        fields.
+
+        :note: This is a destructive operation; Any attribute with the same name
+               as a field will be overridden. Use with caution.
+        """
+        for name, field in self._fields.items():
+            if field.render_kw is not None and field.render_kw.get('readonly'):
+                # Skip readonly fields.
+                continue
+            field.populate_obj(obj, name)

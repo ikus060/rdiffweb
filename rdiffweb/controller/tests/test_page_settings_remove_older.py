@@ -26,7 +26,6 @@ from rdiffweb.core.model import RepoObject, UserObject
 
 
 class RemoveOlderTest(rdiffweb.test.WebCase):
-
     login = True
 
     def _settings(self, user, repo):
@@ -37,7 +36,7 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
 
     def test_page_set_keepdays(self):
         self._remove_older(self.USERNAME, self.REPO, '1')
-        self.assertStatus(200)
+        self.assertStatus(303)
         # Make sure the right value is selected.
         self._settings(self.USERNAME, self.REPO)
         self.assertStatus(200)
@@ -54,7 +53,7 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
         user_obj.refresh_repos()
         user_obj.commit()
         self._remove_older('anotheruser', 'testcases', '1')
-        self.assertStatus('200 OK')
+        self.assertStatus(303)
         repo = RepoObject.query.filter(RepoObject.user == user_obj, RepoObject.repopath == self.REPO).first()
         self.assertEqual(1, repo.keepdays)
 

@@ -939,6 +939,7 @@ class RdiffRepo(object):
 
     def delete_repo(self):
         """Delete the repository permanently."""
+
         # Try to change the permissions of the file or directory to delete
         # them.
         def handle_error(func, path, exc_info):

@@ -79,6 +79,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
 
     def test_add_user_updated_by_listener(self):
         """Add user to database."""
+
         # Given a listener with side effet
         def change_user_obj(userobj):
             userobj.user_root = '/new/value'

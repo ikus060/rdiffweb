@@ -161,6 +161,17 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         with self.assertRaises(ValueError):
             repo_obj.keepdays = "invalid"
 
+    def test_set_get_ignore_weekday(self):
+        # Given a repo object
+        userobj = UserObject.get_user(self.USERNAME)
+        repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
+        # When setting ignore_weekday
+        repo_obj.ignore_weekday = [5, 6]
+        repo_obj.commit()
+        # Then ignore ignore_weekday is updated
+        self.assertEqual(repo_obj._ignore_weekday, 96, 'should return bitwise sum of weekdays')
+        self.assertEqual(repo_obj.ignore_weekday, [5, 6])
+
     def test_keepdays_default_value_from_get_repo(self):
         # Given a User with repository
         userobj = UserObject.get_user(self.USERNAME)

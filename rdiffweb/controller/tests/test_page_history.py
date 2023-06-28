@@ -27,7 +27,6 @@ from rdiffweb.core.model import UserObject
 
 
 class HistoryPageTest(rdiffweb.test.WebCase):
-
     login = True
 
     def _history(self, user, path, limit=None):

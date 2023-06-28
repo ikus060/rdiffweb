@@ -188,7 +188,6 @@ class NotificationJobTest(AbstractNotificationTest):
 
 
 class NotificationPluginTest(AbstractNotificationTest):
-
     default_config = {
         'email-send-changed-notification': True,
     }
@@ -382,7 +381,6 @@ class NotificationPluginTest(AbstractNotificationTest):
 
 
 class NotificationConfigTest(AbstractNotificationTest):
-
     default_config = {
         'email-send-changed-notification': True,
         'link-color': '123456',
@@ -409,7 +407,6 @@ class NotificationConfigTest(AbstractNotificationTest):
 
 
 class NotificationCatchAllTest(AbstractNotificationTest):
-
     default_config = {'email-send-changed-notification': True, 'email-catch-all': 'all@examples.com'}
 
     def test_notification_catch_all(self):

@@ -30,7 +30,6 @@ from rdiffweb.core.model import UserObject
 
 
 class QuotaPluginTest(test.WebCase):
-
     default_config = {
         'quota-get-cmd': 'echo 123456',
         'quota-used-cmd': 'echo 21474836',
@@ -66,7 +65,6 @@ class QuotaPluginTest(test.WebCase):
 
 
 class QuotaPluginTestWithFailure(test.WebCase):
-
     default_config = {
         'quota-get-cmd': 'exit 1',
         'quota-used-cmd': 'exit 2',

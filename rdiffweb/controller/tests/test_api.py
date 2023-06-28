@@ -28,7 +28,6 @@ from rdiffweb.core.model import UserObject
 
 
 class APITest(rdiffweb.test.WebCase):
-
     headers = [("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))]
 
     def test_get_index(self):
@@ -119,7 +118,6 @@ class APITest(rdiffweb.test.WebCase):
 
 
 class APIRatelimitTest(rdiffweb.test.WebCase):
-
     default_config = {
         'rate-limit': 5,
     }

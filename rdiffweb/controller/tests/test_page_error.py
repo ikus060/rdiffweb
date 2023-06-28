@@ -35,7 +35,6 @@ import rdiffweb.test
     ]
 )
 class ErrorPageTest(rdiffweb.test.WebCase):
-
     login = True
 
     def test_error_page_html(self):

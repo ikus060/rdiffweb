@@ -20,7 +20,6 @@ import rdiffweb.test
 
 
 class AdminSysinfoTest(rdiffweb.test.WebCase):
-
     login = True
 
     def test_sysinfo(self):

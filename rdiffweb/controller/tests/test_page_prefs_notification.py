@@ -24,7 +24,6 @@ from rdiffweb.core.model import RepoObject, UserObject
 
 
 class PagePrefNotificationTest(rdiffweb.test.WebCase):
-
     login = True
 
     def setUp(self):

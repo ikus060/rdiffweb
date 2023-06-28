@@ -23,36 +23,14 @@ User can control the notification period.
 import logging
 
 import cherrypy
-from wtforms.fields import HiddenField, RadioField, SelectField, SubmitField
+from wtforms.fields import HiddenField, RadioField, SubmitField
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
+from rdiffweb.controller.page_settings import MaxAgeField
 from rdiffweb.tools.i18n import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
-
-
-class MaxAgeField(SelectField):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args,
-            choices=[
-                (0, _('Never')),
-                (1, _('1 day')),
-                (2, _('2 days')),
-                (3, _('3 days')),
-                (4, _('4 days')),
-                (5, _('5 days')),
-                (6, _('6 days')),
-                (7, _('1 week')),
-                (14, _('2 weeks')),
-                (21, _('3 weeks')),
-                (28, _('4 weeks')),
-                (31, _('1 month')),
-            ],
-            coerce=int,
-            **kwargs
-        )
 
 
 class ReportForm(CherryForm):
@@ -74,7 +52,6 @@ class ReportForm(CherryForm):
         return self.action.data == 'set_report_info' and super().is_submitted()
 
     def populate_obj(self, userobj):
-
         # Simply push the time_range to user's data
         try:
             userobj.report_time_range = self.report_time_range.data

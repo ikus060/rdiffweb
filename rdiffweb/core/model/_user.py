@@ -297,6 +297,7 @@ class UserObject(Base):
 
         Return a RepoObject for each sub directories under `user_root` with `rdiff-backup-data`.
         """
+
         # Update the repositories by walking in the directory tree.
         def _onerror(unused):
             logger.error('error updating user [%s] repos' % self.username, exc_info=1)
