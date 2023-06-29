@@ -33,6 +33,20 @@ function toDate(n) {
   return n;
 }
 
+const UNITS = [' bytes', ' KiB', ' MiB', ' GiB', ' TiB'];
+function toFileSize(value) {
+  value = parseInt(value);
+  if (isNaN(value)) {
+    return data;
+  }
+  let i = 0;
+  while (value > 1024 && i < UNITS.length) {
+    value /= 1024;
+    i++;
+  }
+  return value.toFixed(1).replace('.0', '') + UNITS[i];
+}
+
 $(document).ready(function () {
 
   /**
@@ -87,19 +101,19 @@ $(document).ready(function () {
 /** Filter button for DataTables */
 $.fn.dataTable.ext.buttons.filter = {
   text: 'Filter',
+  init: function (dt, node, config) {
+    const that = this;
+    dt.on('search.dt', function () {
+      const activate = dt.column(config.column).search() === config.search;
+      that.active(activate);
+    });
+  },
   action: function (e, dt, node, config) {
     if (node.hasClass('active')) {
-      dt.column(config.column).search('');
+      dt.column(config.column).search(config.search_off || '', config.regex);
     } else {
-      dt.column(config.column).search(config.search);
+      dt.column(config.column).search(config.search, config.regex);
     }
-    // Update each buttons status
-    dt.buttons().each(function (data, idx) {
-      let conf = data.inst.s.buttons[idx].conf;
-      if (conf && conf.column) {
-        dt.button(idx).active(dt.column(conf.column).search() === conf.search);
-      }
-    });
     dt.draw(true);
   }
 };
@@ -109,7 +123,15 @@ $.fn.dataTable.ext.buttons.clear = {
   text: 'Clear',
   action: function (e, dt, node, config) {
     dt.search('');
-    dt.columns().search('');
+    if (dt.init().aoSearchCols) {
+      const searchCols = dt.init().aoSearchCols;
+      for (let i = 0; i < searchCols.length; i++) {
+        const search = searchCols[i].search || "";
+        dt.column(i).search(search);
+      }
+    } else {
+      dt.columns().search('');
+    }
     dt.draw(true);
   }
 };
@@ -127,6 +149,34 @@ $.fn.dataTable.render.datetime = function () {
     },
     sort: function (data, type, row, meta) {
       return toDate(data).getTime();
+    }
+  };
+}
+
+$.fn.dataTable.render.choices = function (choices) {
+  return {
+    display: function (data, type, row, meta) {
+      for (const choice of choices) {
+        if (choice[0] == data) {
+          return choice[1];
+        }
+      }
+      return data;
+    },
+  };
+}
+
+$.fn.dataTable.render.filesize = function () {
+  return {
+    display: function (data, type, row, meta) {
+      if (!data || data == '' || data == 'NA') {
+        return data
+      }
+      return toFileSize(data);
+    },
+    sort: function (data, type, row, meta) {
+      const value = parseInt(data);
+      return isNaN(value) ? -1 : value;
     }
   };
 }

@@ -21,32 +21,28 @@ Created on Jan 1, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
+from parameterized import parameterized
+
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
+from rdiffweb.core.rdw_templating import url_for
 
 
-class SettingsTest(rdiffweb.test.WebCase):
+class GraphsTest(rdiffweb.test.WebCase):
     login = True
 
-    def test_activities(self):
-        self.getPage("/graphs/activities/" + self.USERNAME + "/" + self.REPO + "/")
+    @parameterized.expand(['activities', 'errors', 'files', 'sizes', 'times', 'statistics', 'statistics.json'])
+    def test_graph(self, graph):
+        self.getPage(url_for('graphs', graph, self.USERNAME, self.REPO, ''))
         self.assertStatus('200 OK')
 
-    def test_errors(self):
-        self.getPage("/graphs/errors/" + self.USERNAME + "/" + self.REPO + "/")
-        self.assertStatus('200 OK')
-
-    def test_files(self):
-        self.getPage("/graphs/files/" + self.USERNAME + "/" + self.REPO + "/")
-        self.assertStatus('200 OK')
-
-    def test_sizes(self):
-        self.getPage("/graphs/sizes/" + self.USERNAME + "/" + self.REPO + "/")
-        self.assertStatus('200 OK')
-
-    def test_times(self):
-        self.getPage("/graphs/times/" + self.USERNAME + "/" + self.REPO + "/")
-        self.assertStatus('200 OK')
+    @parameterized.expand(['activities', 'errors', 'files', 'sizes', 'times', 'statistics'])
+    def test_graph_selenium(self, graph):
+        with self.selenium() as driver:
+            # When browsing graph
+            driver.get(url_for('graphs', graph, self.USERNAME, self.REPO, ''))
+            # Then page load without error
+            self.assertFalse(driver.get_log('browser'))
 
     def test_as_another_user(self):
         # Create another user with admin right
@@ -55,7 +51,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         user_obj.refresh_repos()
         user_obj.commit()
 
-        self.getPage("/graphs/activities/anotheruser/testcases")
+        self.getPage("/graphs/activities/anotheruser/testcases/")
         self.assertStatus('200 OK')
         self.assertInBody("Activities")
 
@@ -65,7 +61,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         admin.commit()
 
         # Browse admin's repos
-        self.getPage("/graphs/activities/anotheruser/testcases")
+        self.getPage("/graphs/activities/anotheruser/testcases/")
         self.assertStatus('403 Forbidden')
 
     def test_chartkick_js(self):

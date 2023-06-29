@@ -198,7 +198,7 @@ class WebCase(helper.CPWebCase):
         self.assertStatus('303 See Other')
 
     @contextmanager
-    def selenium(self):
+    def selenium(self, headless=True):
         """
         Decorator to load selenium for a test.
         """
@@ -207,7 +207,8 @@ class WebCase(helper.CPWebCase):
             raise unittest.SkipTest("selenium require a display")
         # Start selenium driver
         options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
+        if headless:
+            options.add_argument('--headless')
         if os.geteuid() == 0:
             options.add_argument('--no-sandbox')
             options.add_argument('--disable-dev-shm-usage')

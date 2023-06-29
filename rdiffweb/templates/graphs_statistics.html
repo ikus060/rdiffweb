@@ -1,0 +1,30 @@
+{% extends 'graphs.html' %}
+{% from 'include/table.html' import table %}
+{% block graph_body %}
+  <h2>{% trans %}File Statistics{% endtrans %}</h2>
+  <p>
+    {% trans %}The file statistics view presents a comprehensive list of changes in the backup, including new, deleted and changed files, allowing users to easily track and manage modifications to their data.{% endtrans %}
+  </p>
+  {% set buttons = [
+  {'text': _('Clear'), 'extend': 'clear'},
+  {'text': _('New'), 'extend': 'filter', 'column': 'state:name', 'search': 'new'},
+  {'text': _('Deleted'), 'extend': 'filter', 'column': 'state:name', 'search': 'deleted'},
+  {'text': _('Changed'), 'extend': 'filter', 'column': 'state:name', 'search': '^changed', 'regex':True},
+  ] %}
+  {% set columns = [
+  {'name':'date', 'title':_('Date'), 'orderable': True, 'render':'datetime', 'width':'150px'},
+  {'name':'path', 'title': _('File'), 'orderable': True },
+  {'name':'state', 'title':_('State'), 'orderable': True, 'render':'choices', 'render_arg': [ ['new',_('New')], ['deleted',_('Deleted')], ['changed',_('Changed')], ['unchanged',_('Unchanged')]] },
+  {'name':'size', 'title':_('File Size'), 'orderable': True, 'render':'filesize' },
+  ] %}
+  {{ table(url_for('graphs', 'statistics.json', repo, limit=limit),
+  columns=columns,
+  buttons=buttons,
+  order=[[ 0, 'desc' ]],
+  searching=True,
+  show_header=True,
+  empty_message=_('File statistics are not available'),
+  info_message=_('Displaying _START_-_END_ of _TOTAL_ file statistics'),
+  paging=True,
+  pageLength=20) }}
+{% endblock %}
