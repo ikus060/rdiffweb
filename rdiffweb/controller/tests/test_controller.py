@@ -68,7 +68,7 @@ class ControllerTest(rdiffweb.test.WebCase):
     @parameterized.expand(
         [
             '/favicon.ico',
-            '/default.css',
+            '/main.css',
             '/logo',
             '/header_logo',
             '/static/css/bootstrap.min.css',
@@ -77,7 +77,7 @@ class ControllerTest(rdiffweb.test.WebCase):
             '/static/js/bootstrap.bundle.min.js',
             '/static/js/jquery.dataTables.min.js',
             '/static/js/jquery.min.js',
-            '/static/js/rdiffweb.js',
+            '/static/js/main.js',
         ]
     )
     def test_static_files(self, path):
@@ -120,7 +120,7 @@ class ControllerThemeTest(rdiffweb.test.WebCase):
 
     def test_static(self):
         # Query css with uniq value to avoid caching.
-        self.getPage("/default.css")
+        self.getPage("/main.css")
         self.assertStatus('200 OK')
         self.assertInBody(self.expect_color)
 

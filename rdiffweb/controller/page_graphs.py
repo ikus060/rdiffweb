@@ -18,7 +18,7 @@
 
 import cherrypy
 
-from rdiffweb.controller import Controller, validate_int, validate_isinstance
+from rdiffweb.controller import Controller, validate_int
 from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
@@ -27,6 +27,31 @@ from rdiffweb.tools.i18n import ugettext as _
 
 def bytes_to_mb(v):
     return round(v / 1024 / 1024, 2)
+
+
+def line_to_state(line):
+    """
+    For a file statistics entry, determine if the file was changed.
+    """
+    if line.changed == '0':
+        return 'unchanged'
+    elif line.source_size == 'NA':
+        return 'deleted'
+    elif line.mirror_size == 'NA':
+        return 'new'
+    else:
+        return 'changed'
+
+
+def line_to_size(line):
+    """
+    Return either the source or mirror file size.
+    """
+    if line.source_size != 'NA':
+        return line.source_size
+    elif line.mirror_size != 'NA':
+        return line.mirror_size
+    return 0
 
 
 class Data:
@@ -141,33 +166,77 @@ class Data:
             }
         ]
 
-
-@poppath('graph')
-class GraphsPage(Controller):
-    @cherrypy.expose
-    @cherrypy.tools.errors(
-        error_table={
-            DoesNotExistError: 404,
-            AccessDeniedError: 403,
+    @property
+    def statistics(self):
+        return {
+            'data': [
+                [
+                    stat.date,
+                    line.path,
+                    line_to_state(line),
+                    line_to_size(line),
+                    line.increment_size,
+                ]
+                for stat in self.repo_obj.file_statistics[-self.limit :]
+                for line in stat.readlines()
+            ],
         }
-    )
-    def default(self, graph, path, limit='30', **kwargs):
+
+
+@poppath()
+class GraphPage(Controller):
+    def __init__(self, graph) -> None:
+        assert graph
+        super().__init__()
+        self.graph = graph
+
+    @cherrypy.expose
+    def index(self, path, limit='30', **kwargs):
         """
         Called to show every graphs
         """
-        validate_isinstance(graph, bytes)
-        graph = graph.decode('ascii', 'replace')
         repo_obj = RepoObject.get_repo(path)
         limit = validate_int(limit)
-        if graph not in ['activities', 'errors', 'files', 'sizes', 'times']:
-            raise cherrypy.NotFound()
+        data = Data(repo_obj, limit)
 
         # Check if any action to process.
         params = {
             'repo': repo_obj,
-            'graph': graph,
+            'graph': self.graph,
             'limit': limit,
-            'data': Data(repo_obj, limit),
+            'data': data,
         }
         # Generate page.
-        return self._compile_template("graphs_%s.html" % graph, **params)
+        return self._compile_template("graphs_%s.html" % self.graph, **params)
+
+
+@poppath()
+class GraphData(Controller):
+    def __init__(self, graph) -> None:
+        assert graph
+        super().__init__()
+        self.graph = graph
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def index(self, path, limit='30', **kwargs):
+        repo_obj = RepoObject.get_repo(path)
+        limit = validate_int(limit)
+        data = Data(repo_obj, limit)
+        return getattr(data, self.graph, None)
+
+
+@cherrypy.tools.errors(
+    error_table={
+        DoesNotExistError: 404,
+        AccessDeniedError: 403,
+    }
+)
+class GraphsPage(Controller):
+    activities = GraphPage('activities')
+    errors = GraphPage('errors')
+    files = GraphPage('files')
+    sizes = GraphPage('sizes')
+    times = GraphPage('times')
+    statistics = GraphPage('statistics')
+    statistics_json = GraphData('statistics')

@@ -140,7 +140,7 @@ class Root(LocationsPage):
     @cherrypy.tools.sessions(on=False)
     @cherrypy.tools.secure_headers(on=False)
     @cherrypy.tools.caching(on=True)
-    def default_css(self):
+    def main_css(self):
         if cherrypy.request.method not in ('GET', 'HEAD'):
             raise cherrypy.HTTPError(400)
         cfg = self.app.cfg
@@ -150,7 +150,7 @@ class Root(LocationsPage):
             if getattr(cfg, key, None):
                 param[key] = getattr(cfg, key, None)
         cherrypy.response.headers['Content-Type'] = 'text/css'
-        return self._compile_template("default.css", **param)
+        return self._compile_template("main.css", **param)
 
 
 class RdiffwebApp(Application):

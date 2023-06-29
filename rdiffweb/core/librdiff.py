@@ -26,6 +26,7 @@ import subprocess
 import sys
 import threading
 import time
+from collections import namedtuple
 from datetime import timedelta
 from subprocess import CalledProcessError
 
@@ -607,6 +608,9 @@ class IncrementEntry(AbstractEntry):
         return self.date.__lt__(other.date)
 
 
+FileStatisticLine = namedtuple('FileStatisticLine', 'path,changed,source_size,mirror_size,increment_size')
+
+
 class FileStatisticsEntry(MetadataEntry):
 
     """
@@ -659,6 +663,18 @@ class FileStatisticsEntry(MetadataEntry):
         # From array create an entry
         return {'changed': data[1], 'source_size': data[2], 'mirror_size': data[3], 'increment_size': data[4]}
 
+    def readlines(self):
+        """
+        Read content of the file line by line and return a named tuple for each entry.
+        """
+        with self._open() as f:
+            for line in f:
+                if line.startswith(b'#'):
+                    # Skip comments.
+                    continue
+                data = self.repo._decode(line).rstrip('\r\n').rsplit(' ', 4)
+                yield FileStatisticLine(*data)
+
 
 class SessionStatisticsEntry(MetadataEntry):
     """Represent a single session_statistics."""
@@ -694,7 +710,7 @@ class SessionStatisticsEntry(MetadataEntry):
         File Statistics contains different information related to each file of
         the backup. This class provide a simple and easy way to access this
         data."""
-
+        # FIXME Don't load if already loaded
         with self._open() as f:
             for line in f.readlines():
                 # Read the line into array
