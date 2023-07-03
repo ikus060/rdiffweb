@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-06-26 15:20-0400\n"
-"PO-Revision-Date: 2023-06-26 15:25-0400\n"
+"POT-Creation-Date: 2023-07-03 14:58-0400\n"
+"PO-Revision-Date: 2023-07-03 15:01-0400\n"
 "Last-Translator: \n"
 "Language-Team: fr <LL@li.org>\n"
 "Language: fr\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"Generated-By: Babel 2.12.1\n"
+"Generated-By: Babel 2.10.3\n"
 "X-Generator: Poedit 3.0.1\n"
 
 #: rdiffweb/controller/__init__.py:63 rdiffweb/controller/page_logs.py:61
@@ -89,7 +89,7 @@ msgstr "Groupe"
 
 #: rdiffweb/controller/page_admin_sysinfo.py:83
 #: rdiffweb/controller/page_admin_users.py:132
-#: rdiffweb/templates/admin_logs.html:42 rdiffweb/templates/admin_session.html:22
+#: rdiffweb/templates/admin_logs.html:38 rdiffweb/templates/admin_session.html:22
 msgid "User"
 msgstr "Utilisateur"
 
@@ -261,7 +261,7 @@ msgstr "Envoyer le rapport de sauvegarde"
 
 #: rdiffweb/controller/page_admin_users.py:142
 #: rdiffweb/controller/page_pref_notification.py:41
-#: rdiffweb/controller/page_settings.py:38 rdiffweb/templates/prefs_tokens.html:44
+#: rdiffweb/controller/page_settings.py:47 rdiffweb/templates/prefs_tokens.html:44
 #: rdiffweb/templates/prefs_tokens.html:53
 msgid "Never"
 msgstr "Jamais"
@@ -363,51 +363,51 @@ msgstr "Confirmation"
 msgid "Invalid value, must be: %s"
 msgstr "Valeur incorrecte, doit être : %s"
 
-#: rdiffweb/controller/page_graphs.py:41 rdiffweb/templates/email_report.html:80
+#: rdiffweb/controller/page_graphs.py:66 rdiffweb/templates/email_report.html:80
 msgid "New files"
 msgstr "Nouveaux fichiers"
 
-#: rdiffweb/controller/page_graphs.py:48 rdiffweb/templates/email_report.html:93
+#: rdiffweb/controller/page_graphs.py:73 rdiffweb/templates/email_report.html:93
 msgid "Deleted files"
 msgstr "Fichiers supprimés"
 
-#: rdiffweb/controller/page_graphs.py:55 rdiffweb/templates/email_report.html:106
+#: rdiffweb/controller/page_graphs.py:80 rdiffweb/templates/email_report.html:106
 msgid "Changed files"
 msgstr "Fichiers modifiés"
 
-#: rdiffweb/controller/page_graphs.py:67
+#: rdiffweb/controller/page_graphs.py:92
 msgid "Number of files"
 msgstr "Nombre de fichiers"
 
-#: rdiffweb/controller/page_graphs.py:76
+#: rdiffweb/controller/page_graphs.py:101
 msgid "New file size (MiB)"
 msgstr "Taille des nouveaux fichiers (MiB)"
 
-#: rdiffweb/controller/page_graphs.py:82
+#: rdiffweb/controller/page_graphs.py:107
 msgid "Deleted file size (MiB)"
 msgstr "Taille des fichiers supprimés (MiB)"
 
-#: rdiffweb/controller/page_graphs.py:89
+#: rdiffweb/controller/page_graphs.py:114
 msgid "Changed file size (MiB)"
 msgstr "Taille des fichiers modifiés (MiB)"
 
-#: rdiffweb/controller/page_graphs.py:96
+#: rdiffweb/controller/page_graphs.py:121
 msgid "Increment file size (MiB)"
 msgstr "Taille des fichiers incrémentals (MiB)"
 
-#: rdiffweb/controller/page_graphs.py:103
+#: rdiffweb/controller/page_graphs.py:128
 msgid "Destination size change (MiB)"
 msgstr "Changement de la taille de la destination (MiB)"
 
-#: rdiffweb/controller/page_graphs.py:115
+#: rdiffweb/controller/page_graphs.py:140
 msgid "Source file size (MiB)"
 msgstr "Taille du fichier source (MiB)"
 
-#: rdiffweb/controller/page_graphs.py:127
+#: rdiffweb/controller/page_graphs.py:152
 msgid "Elapsed Time (minutes)"
 msgstr "Temps écoulé (minutes)"
 
-#: rdiffweb/controller/page_graphs.py:139
+#: rdiffweb/controller/page_graphs.py:164
 msgid "Error count"
 msgstr "Nombre d'erreurs"
 
@@ -476,7 +476,7 @@ msgstr "Langue préférée"
 #: rdiffweb/controller/page_pref_general.py:58
 #: rdiffweb/controller/page_pref_notification.py:48
 #: rdiffweb/controller/page_pref_notification.py:88
-#: rdiffweb/controller/page_settings.py:207
+#: rdiffweb/controller/page_settings.py:218
 #: rdiffweb/templates/admin_user_edit.html:13
 msgid "Save changes"
 msgstr "Enregistrer modifications"
@@ -726,94 +726,99 @@ msgstr "Le jeton d'accès a été supprimé avec succès."
 msgid "Unknown error while removing the access token."
 msgstr "Erreur inconnue lors de la suppression du jeton d'accès."
 
-#: rdiffweb/controller/page_settings.py:39 rdiffweb/controller/page_settings.py:113
+#: rdiffweb/controller/page_settings.py:38 rdiffweb/core/model/_repo.py:208
+#, python-format
+msgid "invalid encoding %s"
+msgstr "encodage %s invalide"
+
+#: rdiffweb/controller/page_settings.py:48 rdiffweb/controller/page_settings.py:123
 #: rdiffweb/templates/include/widget.html:6
 msgid "1 day"
 msgstr "1 jour"
 
-#: rdiffweb/controller/page_settings.py:40 rdiffweb/controller/page_settings.py:114
+#: rdiffweb/controller/page_settings.py:49 rdiffweb/controller/page_settings.py:124
 #: rdiffweb/templates/include/widget.html:8
 msgid "2 days"
 msgstr "2 jours"
 
-#: rdiffweb/controller/page_settings.py:41 rdiffweb/controller/page_settings.py:115
+#: rdiffweb/controller/page_settings.py:50 rdiffweb/controller/page_settings.py:125
 #: rdiffweb/templates/include/widget.html:10
 msgid "3 days"
 msgstr "3 jours"
 
-#: rdiffweb/controller/page_settings.py:42 rdiffweb/controller/page_settings.py:116
+#: rdiffweb/controller/page_settings.py:51 rdiffweb/controller/page_settings.py:126
 #: rdiffweb/templates/include/widget.html:12
 msgid "4 days"
 msgstr "4 jours"
 
-#: rdiffweb/controller/page_settings.py:43 rdiffweb/controller/page_settings.py:117
+#: rdiffweb/controller/page_settings.py:52 rdiffweb/controller/page_settings.py:127
 #: rdiffweb/templates/include/widget.html:14
 msgid "5 days"
 msgstr "5 jours"
 
-#: rdiffweb/controller/page_settings.py:44 rdiffweb/controller/page_settings.py:118
+#: rdiffweb/controller/page_settings.py:53 rdiffweb/controller/page_settings.py:128
 #: rdiffweb/templates/include/widget.html:16
 msgid "6 days"
 msgstr "6 jours"
 
-#: rdiffweb/controller/page_settings.py:45 rdiffweb/controller/page_settings.py:119
+#: rdiffweb/controller/page_settings.py:54 rdiffweb/controller/page_settings.py:129
 #: rdiffweb/templates/include/widget.html:18
 msgid "1 week"
 msgstr "1 semaine"
 
-#: rdiffweb/controller/page_settings.py:46 rdiffweb/controller/page_settings.py:120
+#: rdiffweb/controller/page_settings.py:55 rdiffweb/controller/page_settings.py:130
 #: rdiffweb/templates/include/widget.html:20
 msgid "2 weeks"
 msgstr "2 semaines"
 
-#: rdiffweb/controller/page_settings.py:47 rdiffweb/controller/page_settings.py:121
+#: rdiffweb/controller/page_settings.py:56 rdiffweb/controller/page_settings.py:131
 #: rdiffweb/templates/include/widget.html:22
 msgid "3 weeks"
 msgstr "3 semaines"
 
-#: rdiffweb/controller/page_settings.py:48
+#: rdiffweb/controller/page_settings.py:57
 #: rdiffweb/templates/include/widget.html:24
 msgid "4 weeks"
 msgstr "4 semaines"
 
-#: rdiffweb/controller/page_settings.py:49 rdiffweb/controller/page_settings.py:122
+#: rdiffweb/controller/page_settings.py:58 rdiffweb/controller/page_settings.py:132
 #: rdiffweb/templates/include/widget.html:26
 msgid "1 month"
 msgstr "1 mois"
 
-#: rdiffweb/controller/page_settings.py:59
+#: rdiffweb/controller/page_settings.py:68
 msgid "Monday"
 msgstr "Lundi"
 
-#: rdiffweb/controller/page_settings.py:60
+#: rdiffweb/controller/page_settings.py:69
 msgid "Tuesday"
 msgstr "Mardi"
 
-#: rdiffweb/controller/page_settings.py:61
+#: rdiffweb/controller/page_settings.py:70
 msgid "Wednesday"
 msgstr "Mercredi"
 
-#: rdiffweb/controller/page_settings.py:62
+#: rdiffweb/controller/page_settings.py:71
 msgid "Thursday"
 msgstr "Jeudi"
 
-#: rdiffweb/controller/page_settings.py:63
+#: rdiffweb/controller/page_settings.py:72
 msgid "Friday"
 msgstr "Vendredi"
 
-#: rdiffweb/controller/page_settings.py:64
+#: rdiffweb/controller/page_settings.py:73
 msgid "Saturday"
 msgstr "Samedi"
 
-#: rdiffweb/controller/page_settings.py:65
+#: rdiffweb/controller/page_settings.py:74
 msgid "Sunday"
 msgstr "Dimanche"
 
-#: rdiffweb/controller/page_settings.py:93
+#: rdiffweb/controller/page_settings.py:102
 msgid "Inactivity Notification Period"
 msgstr "Période de préavis d'inactivité"
 
-#: rdiffweb/controller/page_settings.py:94
+#: rdiffweb/controller/page_settings.py:103
 msgid ""
 "The period refers to the duration of inactivity after which a notification is "
 "triggered and sent to the user. It determines the number of days of inactivity "
@@ -826,11 +831,11 @@ msgstr ""
 "notification pour informer l'utilisateur de l'absence d'activité dans le dépot "
 "de sauvegarde."
 
-#: rdiffweb/controller/page_settings.py:100
+#: rdiffweb/controller/page_settings.py:109
 msgid "Excluded Days of the Week"
 msgstr "Jours de la semaine exclus"
 
-#: rdiffweb/controller/page_settings.py:101
+#: rdiffweb/controller/page_settings.py:110
 msgid ""
 "This field allows to select specific days of the week to exclude from "
 "considering as part of the inactivity period. By selecting the days to ignore, "
@@ -842,11 +847,11 @@ msgstr ""
 "samedi et le dimanche, le système ne comptera pas les jours sélectionnés lors du "
 "calcul de la période d'inactivité pour la génération de notifications."
 
-#: rdiffweb/controller/page_settings.py:107
+#: rdiffweb/controller/page_settings.py:116
 msgid "Data Retention Duration"
 msgstr "Durée de rétention des données"
 
-#: rdiffweb/controller/page_settings.py:108
+#: rdiffweb/controller/page_settings.py:117
 msgid ""
 "The retention period determines how long the backup data will be stored in the "
 "repository before it is automatically deleted or purged. By adjusting this "
@@ -859,75 +864,75 @@ msgstr ""
 "laquelle les données de sauvegarde doivent être conservées avant d'être "
 "supprimées."
 
-#: rdiffweb/controller/page_settings.py:112
+#: rdiffweb/controller/page_settings.py:122
 msgid "Forever"
 msgstr "Pour toujours"
 
-#: rdiffweb/controller/page_settings.py:123
+#: rdiffweb/controller/page_settings.py:133
 msgid "2 months"
 msgstr "2 mois"
 
-#: rdiffweb/controller/page_settings.py:124
+#: rdiffweb/controller/page_settings.py:134
 msgid "3 months"
 msgstr "3 mois"
 
-#: rdiffweb/controller/page_settings.py:125
+#: rdiffweb/controller/page_settings.py:135
 msgid "4 months"
 msgstr "4 mois"
 
-#: rdiffweb/controller/page_settings.py:126
+#: rdiffweb/controller/page_settings.py:136
 msgid "5 months"
 msgstr "5 mois"
 
-#: rdiffweb/controller/page_settings.py:127
+#: rdiffweb/controller/page_settings.py:137
 msgid "6 months"
 msgstr "6 mois"
 
-#: rdiffweb/controller/page_settings.py:128
+#: rdiffweb/controller/page_settings.py:138
 msgid "7 months"
 msgstr "7 mois"
 
-#: rdiffweb/controller/page_settings.py:129
+#: rdiffweb/controller/page_settings.py:139
 msgid "8 months"
 msgstr "8 mois"
 
-#: rdiffweb/controller/page_settings.py:130
+#: rdiffweb/controller/page_settings.py:140
 msgid "9 months"
 msgstr "9 mois"
 
-#: rdiffweb/controller/page_settings.py:131
+#: rdiffweb/controller/page_settings.py:141
 msgid "10 months"
 msgstr "10 mois"
 
-#: rdiffweb/controller/page_settings.py:132
+#: rdiffweb/controller/page_settings.py:142
 msgid "11 months"
 msgstr "11 mois"
 
-#: rdiffweb/controller/page_settings.py:133
+#: rdiffweb/controller/page_settings.py:143
 msgid "1 year"
 msgstr "1 an"
 
-#: rdiffweb/controller/page_settings.py:134
+#: rdiffweb/controller/page_settings.py:144
 msgid "2 years"
 msgstr "2 ans"
 
-#: rdiffweb/controller/page_settings.py:135
+#: rdiffweb/controller/page_settings.py:145
 msgid "3 years"
 msgstr "3 ans"
 
-#: rdiffweb/controller/page_settings.py:136
+#: rdiffweb/controller/page_settings.py:146
 msgid "4 years"
 msgstr "4 ans"
 
-#: rdiffweb/controller/page_settings.py:137
+#: rdiffweb/controller/page_settings.py:147
 msgid "5 years"
 msgstr "5 ans"
 
-#: rdiffweb/controller/page_settings.py:141
+#: rdiffweb/controller/page_settings.py:151
 msgid "Display Encoding"
 msgstr "Encodage du système de fichiers"
 
-#: rdiffweb/controller/page_settings.py:142
+#: rdiffweb/controller/page_settings.py:152
 msgid ""
 "This setting relates to the representation or format in which the backup "
 "repository is displayed. It may include considerations such as language or "
@@ -941,7 +946,7 @@ msgstr ""
 "spécifiques. En ajustant ce paramètre, vous pouvez vous assurer que le contenu "
 "du référentiel est affiché correctement et d'une manière adaptée à votre langue."
 
-#: rdiffweb/controller/page_settings.py:224
+#: rdiffweb/controller/page_settings.py:235
 msgid "Settings modified successfully."
 msgstr "Paramètres modifiés avec succès."
 
@@ -962,10 +967,14 @@ msgid "Hours since last backup"
 msgstr "Heures depuis la dernière sauvegarde"
 
 #: rdiffweb/controller/page_status.py:188
+#: rdiffweb/templates/graphs_statistics.html:10
+#: rdiffweb/templates/graphs_statistics.html:17
 msgid "New"
 msgstr "Créé"
 
 #: rdiffweb/controller/page_status.py:189
+#: rdiffweb/templates/graphs_statistics.html:11
+#: rdiffweb/templates/graphs_statistics.html:17
 msgid "Deleted"
 msgstr "Supprimé"
 
@@ -977,30 +986,30 @@ msgstr "Modifié"
 msgid "Average duration (min)"
 msgstr "Durée moyenne (min)"
 
-#: rdiffweb/core/librdiff.py:1250
+#: rdiffweb/core/librdiff.py:1266
 msgid "A backup is currently in progress to this repository."
 msgstr "Une sauvegarde est actuellement en cours dans ce dépôt."
 
-#: rdiffweb/core/librdiff.py:1258
+#: rdiffweb/core/librdiff.py:1274
 msgid "Initial backup in progress."
 msgstr "La sauvegarde initiale n'est pas achevée."
 
-#: rdiffweb/core/librdiff.py:1260
+#: rdiffweb/core/librdiff.py:1276
 msgid "The last backup has been interrupted."
 msgstr "La dernière sauvegarde a été interrompue."
 
-#: rdiffweb/core/librdiff.py:1263
+#: rdiffweb/core/librdiff.py:1279
 msgid "The repository cannot be found or is badly damaged."
 msgstr "Le dépôt ne peut pas être trouvé ou est gravement endommagé."
 
-#: rdiffweb/core/librdiff.py:1267
+#: rdiffweb/core/librdiff.py:1283
 msgid ""
 "Permissions denied. Contact administrator to check repository's permissions."
 msgstr ""
 "Permissions refusées. Contactez l'administrateur pour vérifier les permissions "
 "du référentiel."
 
-#: rdiffweb/core/librdiff.py:1269 rdiffweb/templates/admin_repos.html:9
+#: rdiffweb/core/librdiff.py:1285 rdiffweb/templates/admin_repos.html:9
 msgid "Healthy"
 msgstr "Bon"
 
@@ -1043,11 +1052,6 @@ msgstr "Il y a %d minutes"
 #, python-format
 msgid "%d seconds ago"
 msgstr "Il y a %d secondes"
-
-#: rdiffweb/core/model/_repo.py:208
-#, python-format
-msgid "invalid encoding %s"
-msgstr "encodage %s invalide"
 
 #: rdiffweb/core/model/_user.py:145
 #, python-format
@@ -1119,7 +1123,7 @@ msgstr "Dépôts"
 msgid "User Sessions"
 msgstr "Sessions utilisateurs"
 
-#: rdiffweb/templates/admin.html:15 rdiffweb/templates/admin_logs.html:8
+#: rdiffweb/templates/admin.html:15 rdiffweb/templates/admin_logs.html:4
 msgid "System Logs"
 msgstr "Journaux système"
 
@@ -1127,47 +1131,48 @@ msgstr "Journaux système"
 msgid "System Info"
 msgstr "Information système"
 
-#: rdiffweb/templates/admin_logs.html:17
+#: rdiffweb/templates/admin_logs.html:13
 msgid "Threat"
 msgstr "Menace"
 
-#: rdiffweb/templates/admin_logs.html:19 rdiffweb/templates/admin_logs.html:33
+#: rdiffweb/templates/admin_logs.html:15 rdiffweb/templates/admin_logs.html:29
 msgid "User Login"
 msgstr "Connexion"
 
-#: rdiffweb/templates/admin_logs.html:21 rdiffweb/templates/admin_logs.html:35
+#: rdiffweb/templates/admin_logs.html:17 rdiffweb/templates/admin_logs.html:31
 msgid "User Activity"
 msgstr "Activité"
 
-#: rdiffweb/templates/admin_logs.html:32
+#: rdiffweb/templates/admin_logs.html:28
 msgid "All"
 msgstr "Tout"
 
-#: rdiffweb/templates/admin_logs.html:34
+#: rdiffweb/templates/admin_logs.html:30
 msgid "Threats"
 msgstr "Menaces"
 
-#: rdiffweb/templates/admin_logs.html:36
+#: rdiffweb/templates/admin_logs.html:32
+#: rdiffweb/templates/graphs_statistics.html:9
 msgid "Clear"
 msgstr "Réinitialiser"
 
-#: rdiffweb/templates/admin_logs.html:40
+#: rdiffweb/templates/admin_logs.html:36
 msgid "When"
 msgstr "Quand"
 
-#: rdiffweb/templates/admin_logs.html:41 rdiffweb/templates/admin_session.html:21
+#: rdiffweb/templates/admin_logs.html:37 rdiffweb/templates/admin_session.html:21
 msgid "IP Address"
 msgstr "Adresse IP"
 
-#: rdiffweb/templates/admin_logs.html:43
+#: rdiffweb/templates/admin_logs.html:39
 msgid "Event Description"
 msgstr "Description de l'événement"
 
-#: rdiffweb/templates/admin_logs.html:52
+#: rdiffweb/templates/admin_logs.html:48
 msgid "Logs is empty"
 msgstr "Les journaux sont vides"
 
-#: rdiffweb/templates/admin_logs.html:53
+#: rdiffweb/templates/admin_logs.html:49
 msgid "Displaying _START_-_END_ of _TOTAL_ most recent log systems"
 msgstr ""
 "Affichage de _START_-_END_ des _TOTAL_ journaux des événements les plus récents"
@@ -1384,6 +1389,7 @@ msgid "Name"
 msgstr "Nom"
 
 #: rdiffweb/templates/browse.html:24 rdiffweb/templates/graphs.html:15
+#: rdiffweb/templates/graphs_statistics.html:18
 msgid "Size"
 msgstr "Taille"
 
@@ -1739,6 +1745,10 @@ msgstr "Temps écoulé"
 msgid "Errors"
 msgstr "Erreurs"
 
+#: rdiffweb/templates/graphs.html:18 rdiffweb/templates/graphs_statistics.html:4
+msgid "File Statistics"
+msgstr "Statistiques sur les fichiers"
+
 #: rdiffweb/templates/graphs_activities.html:6
 msgid "Cumulative number of new, deleted and changed files by period of time."
 msgstr ""
@@ -1763,6 +1773,50 @@ msgstr "Taille du dépôt excluant les données d'historique."
 #: rdiffweb/templates/graphs_sizes.html:7
 msgid "Increment file size"
 msgstr "Incrémenter la taille du fichier"
+
+#: rdiffweb/templates/graphs_statistics.html:6
+msgid ""
+"The file statistics view presents a comprehensive list of changes in the backup, "
+"including new, deleted and changed files, allowing users to easily track and "
+"manage modifications to their data."
+msgstr ""
+"L'affichage des statistiques de fichiers présente une liste complète des "
+"modifications apportées à la sauvegarde, y compris les nouveaux fichiers, les "
+"fichiers supprimés et les fichiers modifiés, ce qui permet aux utilisateurs de "
+"suivre et de gérer facilement les modifications apportées à leurs données."
+
+#: rdiffweb/templates/graphs_statistics.html:12
+#: rdiffweb/templates/graphs_statistics.html:17
+msgid "Changed"
+msgstr "Modifié"
+
+#: rdiffweb/templates/graphs_statistics.html:15
+msgid "Date"
+msgstr "Date"
+
+#: rdiffweb/templates/graphs_statistics.html:16
+msgid "Path"
+msgstr "Chemin d'accès"
+
+#: rdiffweb/templates/graphs_statistics.html:17
+msgid "State"
+msgstr "État"
+
+#: rdiffweb/templates/graphs_statistics.html:17
+msgid "Unchanged"
+msgstr "Inchangé"
+
+#: rdiffweb/templates/graphs_statistics.html:19
+msgid "Increment Size"
+msgstr "Taille de l'incrément"
+
+#: rdiffweb/templates/graphs_statistics.html:27
+msgid "File statistics are not available"
+msgstr "Les statistiques sur les fichiers ne sont pas disponibles"
+
+#: rdiffweb/templates/graphs_statistics.html:28
+msgid "Displaying _START_-_END_ of _TOTAL_ file statistics"
+msgstr "Affichage des statistiques sur les fichiers _START_-_END_ de _TOTAL_"
 
 #: rdiffweb/templates/graphs_times.html:5
 msgid "Average time to complete backup."

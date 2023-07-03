@@ -13,9 +13,10 @@
   ] %}
   {% set columns = [
   {'name':'date', 'title':_('Date'), 'orderable': True, 'render':'datetime', 'width':'150px'},
-  {'name':'path', 'title': _('File'), 'orderable': True },
+  {'name':'path', 'title': _('Path'), 'orderable': True },
   {'name':'state', 'title':_('State'), 'orderable': True, 'render':'choices', 'render_arg': [ ['new',_('New')], ['deleted',_('Deleted')], ['changed',_('Changed')], ['unchanged',_('Unchanged')]] },
-  {'name':'size', 'title':_('File Size'), 'orderable': True, 'render':'filesize' },
+  {'name':'size', 'title':_('Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
+  {'name':'increment_size', 'title':_('Increment Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
   ] %}
   {{ table(url_for('graphs', 'statistics.json', repo, limit=limit),
   columns=columns,
