@@ -136,6 +136,7 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 * Add ratelimit to "send me a status report" to avoid email flooding #272 - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
 * Fix creation of access token with expiration time #277
 * Allow user to disable notification for selected day of week #278
+* Trim extra space from verification code #279
 
 ## 2.7.1 (2023-04-27)
 

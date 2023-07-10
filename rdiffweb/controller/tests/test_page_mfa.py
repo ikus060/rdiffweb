@@ -168,6 +168,21 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.getPage("/")
         self.assertStatus(200)
 
+    def test_verify_code_valid_include_spaces(self):
+        prev_session_id = self.session_id
+        # Given an authenticated user With MFA enabled
+        code = self._get_code()
+        # When sending a valid verification code that include extra spaces.
+        self.getPage("/mfa/", method='POST', body={'code': ' ' + code + ' ', 'submit': '1'})
+        # Then a new session_id is generated
+        self.assertNotEqual(prev_session_id, self.session_id)
+        # Then user is redirected to root page
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', self.baseurl + '/')
+        # Then user has access
+        self.getPage("/")
+        self.assertStatus(200)
+
     def test_verify_code_invalid(self):
         # Given an authenticated user With MFA enabled
         # When sending an invalid verification code

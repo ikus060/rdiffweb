@@ -114,6 +114,19 @@ class PagePrefMfaTest(rdiffweb.test.WebCase):
         self.getPage('/')
         self.assertStatus(200)
 
+    def test_with_valid_code_including_spaces(self):
+        # Define mfa for user
+        self._set_mfa(False)
+        # Given a user with email requesting a code
+        code = self._get_code('enable_mfa')
+        # When sending a valid code with extra spaces
+        self.getPage("/prefs/mfa", method='POST', body={'enable_mfa': '1', 'code': ' ' + code + ' '})
+        self.assertStatus(303)
+        # Then mfa get enabled or disable accordingly
+        self.getPage("/prefs/mfa")
+        self.assertStatus(200)
+        self.assertInBody('Two-Factor authentication enabled successfully.')
+
     @parameterized.expand(
         [
             ('enable_mfa', UserObject.DISABLED_MFA, UserObject.DISABLED_MFA),

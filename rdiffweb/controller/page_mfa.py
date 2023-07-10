@@ -33,6 +33,8 @@ logger = logging.getLogger(__name__)
 class MfaForm(CherryForm):
     code = StringField(
         _('Verification code'),
+        # Trim spaces
+        filters=[lambda v: v.strip() if v else v],
         render_kw={
             "class": "form-control-lg",
             "placeholder": _('Enter verification code here'),
