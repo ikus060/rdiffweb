@@ -3,5 +3,5 @@
 {% block graph_body %}
   <h2>{% trans %}Elapsed Time{% endtrans %}</h2>
   <p>{% trans %}Average time to complete backup.{% endtrans %}</p>
-  {{ chartkick.line_chart(data.elapsedtime, prefix='min') }}
+  {{ chartkick.line_chart(data.elapsedtime) }}
 {% endblock %}
