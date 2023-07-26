@@ -135,10 +135,18 @@ class LoginPageTest(rdiffweb.test.WebCase):
         # Then page return without error
         self.assertStatus(200)
 
-    def test_getpage_with_redirect_post(self):
-        """
-        Check encoding of redirect url when send using POST method.
-        """
+    def test_getpage_with_redirect_fill_login_default(self):
+        # Given an unauthenticated user
+        # Query the page without login-in
+        self.getPage('/browse/admin/testcases/')
+        # Then user is redirected to login page.
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', self.baseurl + '/login/')
+        # Then login page default username is "admin"
+        self.getPage('/login/')
+        self.assertInBody('value="admin"')
+
+    def test_getpage_with_redirect_post_ignored(self):
         # When posting invalid credentials
         b = {'login': 'admin', 'password': 'invalid', 'redirect': '/browse/' + self.REPO + '/DIR%EF%BF%BD/'}
         self.getPage('/login/', method='POST', body=b)
@@ -147,7 +155,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         # Then page display an error
         self.assertInBody('Invalid username or password.')
         self.assertInBody('form-login')
-        # Then redirect URL is ignored
+        # Then redirect URL is IGNORED
         self.assertNotInBody('/browse/' + self.REPO + '/DIR%EF%BF%BD/"')
 
     def test_getpage_without_username(self):

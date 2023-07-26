@@ -83,6 +83,14 @@ class LoginPage(Controller):
                     cherrypy.tools.auth_form.redirect_to_original_url()
                 else:
                     flash(_("Invalid username or password."))
+        else:
+            if not form.login.data:
+                # If user got redirected to login page, let use the URL to fill the login name by default.
+                redirect_url = cherrypy.tools.auth_form._get_redirect_url()
+                parts = redirect_url.strip('/').split('/', 2)
+                if len(parts) == 3:
+                    form.login.data = parts[1]
+
         params = {
             'form': form,
         }
