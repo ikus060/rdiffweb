@@ -15,7 +15,7 @@
       <tr>
         <th scope="col">{% trans %}Display Name{% endtrans %}</th>
         <th scope="col">{% trans %}Owner{% endtrans %}</th>
-        <th scope="col">{% trans %}Dashboard{% endtrans %}</th>
+        <th scope="col" data-type="num">{% trans %}Status{% endtrans %}</th>
         <th scope="col" data-sortable="false">{% trans %}Actions{% endtrans %}</th>
       </tr>
     </thead>
@@ -31,7 +31,8 @@
             <a href="{{ url_for('browse', repo) }}">{{ repo.display_name }}</a>
           </td>
           <td data-search="{{ repo.owner }}">{{ repo.owner }}</td>
-          <td data-search="{{ repo.status[0] }}">
+          <td data-search="{{ repo.status[0] }}"
+              data-order="{{ repo.last_backup_date.epoch }}">
             {% if repo.last_backup_date %}
               {% trans %}Updated {% endtrans %}
               <time datetime="{{ repo.last_backup_date }}">{{ repo.last_backup_date | lastupdated }}</time>
