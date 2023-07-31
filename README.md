@@ -122,10 +122,10 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 
 # Changelog
 
-## Next Release
+## 2.8.0 (2023-07-31)
 
-* Log detailed error message when restore command failed for debugging
-* Improve User management interfaces #237
+* Log detailed error message when restore command failed to help debugging
+* Update interface used to manage users to be more user friendly #237
 * Disable Disk Quota in users view when quota command is not configured #237
 * Hide LDAP label in users view when LDAP is not configured #237
 * Allow administrator to change user's reporting preferences
@@ -136,7 +136,14 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 * Add ratelimit to "send me a status report" to avoid email flooding #272 - credit to [Nehal Pillai](https://www.linkedin.com/in/nehal-pillai-02a854172)
 * Fix creation of access token with expiration time #277
 * Allow user to disable notification for selected day of week #278
-* Trim extra space from verification code #279
+* Add detailed file statistics to show created, modified and deleted files #103
+* Trim spaces on verification code to improve usability #279
+* Determine default username when user get redirected to login page #283
+* Sort repository by dates in administration view #282
+* Document how to configure fail2ban to improve server hardening
+* Document how to configure certbot for automatic SSL certificate generation
+* Update installation steps to include `arch=amd64`
+* Update french translation
 
 ## 2.7.1 (2023-04-27)
 
