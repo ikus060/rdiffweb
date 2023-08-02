@@ -209,10 +209,18 @@ class WebCase(helper.CPWebCase):
         options = webdriver.ChromeOptions()
         if headless:
             options.add_argument('--headless')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--window-size=1280,800')
         if os.geteuid() == 0:
             options.add_argument('--no-sandbox')
             options.add_argument('--disable-dev-shm-usage')
-        driver = webdriver.Chrome(options=options)
+        # for selenium >=4.11, explicitly define location of chronium driver.
+        if hasattr(webdriver, 'ChromeService'):
+            chrome_service_cls = getattr(webdriver, 'ChromeService')
+            service = chrome_service_cls(executable_path=shutil.which('chromedriver'))
+        else:
+            service = None
+        driver = webdriver.Chrome(options=options, service=service)
         # If logged in, reuse the same session id.
         try:
             if self.session_id:

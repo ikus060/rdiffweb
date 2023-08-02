@@ -122,6 +122,15 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 
 # Changelog
 
+## Next release
+
+* Unpin version of selenium
+* Add support for Ubuntu Mantic 23.10
+
+## 2.8.1 (2023-08-01)
+
+* Pin version of selenium to v4.10
+
 ## 2.8.0 (2023-07-31)
 
 * Log detailed error message when restore command failed to help debugging
