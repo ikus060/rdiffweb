@@ -22,7 +22,6 @@ from cherrypy.lib.static import mimetypes
 
 import rdiffweb.tools.errors  # noqa: cherrypy.tools.errors
 from rdiffweb.controller import Controller, validate, validate_date, validate_isinstance
-from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 from rdiffweb.core.rdw_helpers import quote_url
@@ -94,7 +93,7 @@ class _file_generator(object):
             self.input.close()
 
 
-@poppath()
+@cherrypy.tools.poppath()
 class RestorePage(Controller):
     _cp_config = {"response.stream": True}
 

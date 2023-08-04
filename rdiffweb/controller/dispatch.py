@@ -78,41 +78,20 @@ def restapi():
     return decorated
 
 
-def poppath(*args):
+def convert_path():
     """
-    A decorator for _cp_dispatch
-    (cherrypy.dispatch.Dispatcher.dispatch_method_name).
+    A tool to conver vpath to path once the handler was found.
 
     Used to merge the segment of URI into a single parameter denoting the
     repository path.
     """
+    handler = cherrypy.serving.request.handler
+    if hasattr(handler, 'kwargs'):
+        handler.kwargs = {'path': b"/".join([unquote_url(segment) for segment in handler.args])}
+        handler.args = []
 
-    # Since keyword arg comes after *args, we have to process it ourselves
-    # for lower versions of python.
 
-    def decorated(cls_or_func):
-        def _dispatch(cls_or_func=None, vpath=None):
-            # We're in the actual function
-            parms = {}
-            for arg in args:
-                if not vpath:
-                    break
-                parms[arg] = unquote_url(vpath.pop(0))
-
-            # Build repo path.
-            path = []
-            while len(vpath) > 0:
-                path.append(unquote_url(vpath.pop(0)))
-            parms['path'] = b"/".join(path)
-
-            cherrypy.request.params.update(parms)  # @UndefinedVariable
-            return cls_or_func
-
-        # Let decorate the class or function using _cp_dispatch.
-        setattr(cls_or_func, cherrypy.dispatch.Dispatcher.dispatch_method_name, _dispatch)
-        return cls_or_func
-
-    return decorated
+cherrypy.tools.poppath = cherrypy.Tool('on_start_resource', convert_path, priority=15)
 
 
 def staticdir(path):

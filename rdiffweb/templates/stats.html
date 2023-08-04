@@ -1,0 +1,61 @@
+{% extends 'layout_repo.html' %}
+{% from 'include/empty.html' import empty %}
+{% from 'include/table.html' import table %}
+{% set active_page='repo' %}
+{% set active_repo_page='stats' %}
+{% block title %}
+  {% trans %}File Statistics{% endtrans %}
+{% endblock %}
+{% block content %}
+  <div class="row">
+    <div class="col-md-3">
+      <ul class="list-group">
+        {% for item in file_statistics %}
+          <a href="{{ url_for('stats', repo, date=item.date, limit=limit) }}"
+             class="list-group-item{% if item.date==date %} active{% endif %}">
+            <time class="js-datetime" datetime="{{ item.date }}">{{ item.date | lastupdated }}</time>
+          </a>
+        {% endfor %}
+        {% if limit == error_logs|count %}
+          <a href="{{ url_for('logs', repo, limit=limit * 2) }}"
+             class="list-group-item">{% trans %}Show more...{% endtrans %}</a>
+        {% endif %}
+      </ul>
+    </div>
+    <div class="col-md-9">
+      <h2>{% trans %}File Statistics{% endtrans %}</h2>
+      <p>
+        {% trans %}The file statistics view presents a comprehensive list of changes in the backup, including new, deleted and changed files, allowing users to easily track and manage modifications to their data.{% endtrans %}
+      </p>
+      {% if date %}
+        {% set buttons = [
+        {'text': _('Clear'), 'extend': 'clear'},
+        {'text': _('New'), 'extend': 'filter', 'column': 'state:name', 'search': 'new'},
+        {'text': _('Deleted'), 'extend': 'filter', 'column': 'state:name', 'search': 'deleted'},
+        {'text': _('Changed'), 'extend': 'filter', 'column': 'state:name', 'search': '^changed', 'regex':True},
+        ] %}
+        {% set columns = [
+        {'name':'path', 'title': _('Path'), 'orderable': True },
+        {'name':'state', 'title':_('State'), 'orderable': True, 'render':'choices', 'render_arg': [ ['new',_('New')], ['deleted',_('Deleted')], ['changed',_('Changed')], ['unchanged',_('Unchanged')]] },
+        {'name':'size', 'title':_('Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
+        {'name':'increment_size', 'title':_('Increment Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
+        ] %}
+        {{ table(url_for('stats', 'data.json', repo, date=date),
+        columns=columns,
+        buttons=buttons,
+        order=[[ 0, 'desc' ]],
+        searching=True,
+        show_header=True,
+        empty_message=_('File statistics are not available'),
+        info_message=_('Displaying _START_-_END_ of _TOTAL_ file statistics'),
+        paging=True,
+        pageLength=20) }}
+      {% else %}
+        {% call empty('fa fa-list-alt', _('No File Statistics Selected')) %}
+          <p>{% trans %}Select a backup date on the left to display detailed statistics for that date.{% endtrans %}</p>
+        {% endcall %}
+      {% endif %}
+    </div>
+  </div>
+  <!-- /.row -->
+{% endblock %}

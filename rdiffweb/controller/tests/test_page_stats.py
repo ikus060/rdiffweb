@@ -21,26 +21,35 @@ Created on Jan 1, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-from parameterized import parameterized
 
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
 from rdiffweb.core.rdw_templating import url_for
 
 
-class GraphsTest(rdiffweb.test.WebCase):
+class StatsTest(rdiffweb.test.WebCase):
     login = True
 
-    @parameterized.expand(['activities', 'errors', 'files', 'sizes', 'times'])
-    def test_graph(self, graph):
-        self.getPage(url_for('graphs', graph, self.USERNAME, self.REPO, ''))
+    def test_stats_index(self):
+        self.getPage(url_for('stats', self.USERNAME, self.REPO, ''))
+        self.assertStatus('200 OK')
+        self.assertInBody('No File Statistics Selected')
+
+    def test_stats_date(self):
+        self.getPage(url_for('stats', self.USERNAME, self.REPO, date=1454448640, limit=10))
+        self.assertStatus('200 OK')
+        # Then a table is displayed
+        self.assertInBody('<table')
+        self.assertNotInBody('No File Statistics Selected')
+
+    def test_stats_data_json(self):
+        self.getPage(url_for('stats', 'data.json', self.USERNAME, self.REPO, date=1454448640, limit=10))
         self.assertStatus('200 OK')
 
-    @parameterized.expand(['activities', 'errors', 'files', 'sizes', 'times'])
-    def test_graph_selenium(self, graph):
+    def test_stats_date_selenium(self):
         with self.selenium() as driver:
             # When browsing graph
-            driver.get(url_for('graphs', graph, self.USERNAME, self.REPO, ''))
+            driver.get(url_for('stats', self.USERNAME, self.REPO, date=1454448640, limit=10))
             # Then page load without error
             self.assertFalse(driver.get_log('browser'))
 
@@ -51,9 +60,9 @@ class GraphsTest(rdiffweb.test.WebCase):
         user_obj.refresh_repos()
         user_obj.commit()
 
-        self.getPage("/graphs/activities/anotheruser/testcases/")
+        self.getPage("/stats/anotheruser/testcases/")
         self.assertStatus('200 OK')
-        self.assertInBody("Activities")
+        self.assertInBody("No File Statistics Selected")
 
         # Remove admin role
         admin = UserObject.get_user('admin')
@@ -61,24 +70,14 @@ class GraphsTest(rdiffweb.test.WebCase):
         admin.commit()
 
         # Browse admin's repos
-        self.getPage("/graphs/activities/anotheruser/testcases/")
+        self.getPage("/stats/anotheruser/testcases/")
         self.assertStatus('403 Forbidden')
-
-    def test_chartkick_js(self):
-        self.getPage("/static/js/chart.min.js")
-        self.assertStatus('200 OK')
-        self.assertInBody("Chart")
-
-    def test_chart_js(self):
-        self.getPage("/static/js/chartkick.min.js")
-        self.assertStatus('200 OK')
-        self.assertInBody("Chartkick")
 
     def test_does_not_exists(self):
         # Given an invalid repo
         repo = 'invalid'
         # When trying to get graphs of it
-        self.getPage("/graphs/activities/" + self.USERNAME + "/" + repo + "/")
+        self.getPage("/stats/" + self.USERNAME + "/" + repo + "/")
         # Then a 404 error is return
         self.assertStatus(404)
 
@@ -88,7 +87,7 @@ class GraphsTest(rdiffweb.test.WebCase):
         admin.user_root = 'invalid'
         admin.commit()
         # When querying the logs
-        self.getPage("/graphs/activities/" + self.USERNAME + "/" + self.REPO + "/")
+        self.getPage("/stats/" + self.USERNAME + "/" + self.REPO + "/")
         # Then the page is return with an error message
         self.assertStatus(200)
         self.assertInBody('The repository cannot be found or is badly damaged.')

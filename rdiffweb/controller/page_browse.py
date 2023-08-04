@@ -21,7 +21,6 @@ import cherrypy
 
 import rdiffweb.tools.errors  # noqa
 from rdiffweb.controller import Controller
-from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 
@@ -29,7 +28,7 @@ from rdiffweb.core.model import RepoObject
 logger = logging.getLogger(__name__)
 
 
-@poppath()
+@cherrypy.tools.poppath()
 class BrowsePage(Controller):
 
     """This contoller provide a browser view to the user. It displays file in a

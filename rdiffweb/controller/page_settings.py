@@ -24,7 +24,6 @@ from wtforms.fields import SelectField, SelectMultipleField, SubmitField
 from wtforms.widgets import html_params
 
 from rdiffweb.controller import Controller, flash
-from rdiffweb.controller.dispatch import poppath
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
@@ -240,7 +239,7 @@ class RepoSettingsForm(CherryForm):
             return False
 
 
-@poppath()
+@cherrypy.tools.poppath()
 class SettingsPage(Controller):
     @cherrypy.expose
     @cherrypy.tools.errors(

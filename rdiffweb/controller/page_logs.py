@@ -21,7 +21,6 @@ import cherrypy
 from cherrypy.lib.static import serve_fileobj
 
 from rdiffweb.controller import Controller, validate_date, validate_int
-from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 from rdiffweb.tools.i18n import ugettext as _
@@ -30,7 +29,7 @@ from rdiffweb.tools.i18n import ugettext as _
 logger = logging.getLogger(__name__)
 
 
-@poppath()
+@cherrypy.tools.poppath()
 class LogsPage(Controller):
     @cherrypy.expose
     @cherrypy.tools.errors(
