@@ -126,6 +126,7 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 
 * Unpin version of selenium
 * Add support for Ubuntu Mantic 23.10
+* Change layout of file statistics to display a single day #286
 
 ## 2.8.1 (2023-08-01)
 

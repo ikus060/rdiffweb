@@ -19,7 +19,6 @@
 import cherrypy
 
 from rdiffweb.controller import Controller, validate_int
-from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 from rdiffweb.tools.i18n import ugettext as _
@@ -166,24 +165,8 @@ class Data:
             }
         ]
 
-    @property
-    def statistics(self):
-        return {
-            'data': [
-                [
-                    stat.date,
-                    line.path,
-                    line_to_state(line),
-                    line_to_size(line),
-                    line.increment_size,
-                ]
-                for stat in self.repo_obj.file_statistics[-self.limit :]
-                for line in stat.readlines()
-            ],
-        }
 
-
-@poppath()
+@cherrypy.tools.poppath()
 class GraphPage(Controller):
     def __init__(self, graph) -> None:
         assert graph
@@ -191,7 +174,7 @@ class GraphPage(Controller):
         self.graph = graph
 
     @cherrypy.expose
-    def index(self, path, limit='30', **kwargs):
+    def default(self, path, limit='30', **kwargs):
         """
         Called to show every graphs
         """
@@ -210,22 +193,6 @@ class GraphPage(Controller):
         return self._compile_template("graphs_%s.html" % self.graph, **params)
 
 
-@poppath()
-class GraphData(Controller):
-    def __init__(self, graph) -> None:
-        assert graph
-        super().__init__()
-        self.graph = graph
-
-    @cherrypy.expose
-    @cherrypy.tools.json_out()
-    def index(self, path, limit='30', **kwargs):
-        repo_obj = RepoObject.get_repo(path)
-        limit = validate_int(limit)
-        data = Data(repo_obj, limit)
-        return getattr(data, self.graph, None)
-
-
 @cherrypy.tools.errors(
     error_table={
         DoesNotExistError: 404,
@@ -238,5 +205,3 @@ class GraphsPage(Controller):
     files = GraphPage('files')
     sizes = GraphPage('sizes')
     times = GraphPage('times')
-    statistics = GraphPage('statistics')
-    statistics_json = GraphData('statistics')

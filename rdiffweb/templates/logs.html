@@ -11,12 +11,12 @@
     <div class="col-md-3">
       <ul class="list-group">
         <a href="{{ url_for('logs', repo, file='backup.log', limit=limit) }}"
-           class="list-group-item">Backup Log</a>
+           class="list-group-item{% if file=='backup.log' %} active{% endif %}">Backup Log</a>
         <a href="{{ url_for('logs', repo, file='restore.log', limit=limit) }}"
-           class="list-group-item">Restore Log</a>
+           class="list-group-item{% if file=='restore.log' %} active{% endif %}">Restore Log</a>
         {% for e in error_logs %}
           <a href="{{ url_for('logs', repo, date=e.date, limit=limit) }}"
-             class="list-group-item">
+             class="list-group-item{% if e.date==date %} active{% endif %}">
             Error log <time class="js-datetime" datetime="{{ e.date }}">{{ e.date | lastupdated }}</time>
             {% if not e.is_empty %}
               <span class="badge badge-warning">not empty</span>

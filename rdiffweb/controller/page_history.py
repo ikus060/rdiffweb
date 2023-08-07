@@ -19,12 +19,11 @@
 import cherrypy
 
 from rdiffweb.controller import Controller, validate_int
-from rdiffweb.controller.dispatch import poppath
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 
 
-@poppath()
+@cherrypy.tools.poppath()
 class HistoryPage(Controller):
     @cherrypy.expose
     @cherrypy.tools.errors(

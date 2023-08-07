@@ -59,6 +59,7 @@ from rdiffweb.controller.page_pref_sshkeys import ApiSshKeys
 from rdiffweb.controller.page_prefs import PreferencesPage
 from rdiffweb.controller.page_restore import RestorePage
 from rdiffweb.controller.page_settings import SettingsPage
+from rdiffweb.controller.page_stats import StatsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import parse_args
@@ -117,6 +118,7 @@ class Root(LocationsPage):
         self.restore = RestorePage()
         self.history = HistoryPage()
         self.status = StatusPage()
+        self.stats = StatsPage()
         self.admin = AdminPage()
         self.prefs = PreferencesPage()
         self.settings = SettingsPage()
