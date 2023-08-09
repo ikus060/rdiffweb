@@ -223,8 +223,8 @@ class RepoObject(Base, RdiffRepo):
 
     def check_activity(self):
         """
-        Check if the repository is inative according to maxage.
-        Retunr None if maxage is undefied.
+        Check if the repository is inactive according to maxage.
+        Return None if maxage is undefied.
         Return True if repository is active.
         """
         if self.maxage <= 0:
