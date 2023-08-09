@@ -1169,7 +1169,9 @@ class RdiffRepo(object):
             logger.info('remove-older: %s' % line)
         retcode = process.wait()
         self.clear_cache()
-        if retcode:
+        # 0 return for success
+        # 2 return when nothing was removed
+        if retcode not in [0, 2]:
             raise CalledProcessError(retcode, cmdline)
 
     def restore(self, path, restore_as_of, kind=None):
