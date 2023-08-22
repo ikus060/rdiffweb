@@ -263,7 +263,7 @@ class NotificationPlugin(SimplePlugin):
         Loop trough all the user repository and send notifications.
         """
         # For Each user with an email.
-
+        now = RdiffTime()
         for userobj in UserObject.query.filter(UserObject.email != ''):
             try:
                 # Identify the repository without activities using the backup statistics.
@@ -271,6 +271,7 @@ class NotificationPlugin(SimplePlugin):
                     repo
                     for repo in RepoObject.query.filter(RepoObject.user == userobj, RepoObject.maxage > 0)
                     if not repo.check_activity()
+                    if now.weekday not in repo.ignore_weekday
                 ]
                 # Check user's disk usage
                 disk_usage = userobj.disk_usage
