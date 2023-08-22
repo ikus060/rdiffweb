@@ -134,6 +134,7 @@ package:docker:
     - docker pull ikus060/rdiffweb:latest || true
     - docker pull ikus060/rdiffweb:$CI_COMMIT_REF_SLUG || true
     - docker build --cache-from ikus060/rdiffweb:latest --cache-from ikus060/rdiffweb:$CI_COMMIT_REF_SLUG -t rdiffweb .
+    - docker build --target test .
     - mkdir dist
     - docker save rdiffweb --output dist/rdiffweb-docker.tar
   artifacts:

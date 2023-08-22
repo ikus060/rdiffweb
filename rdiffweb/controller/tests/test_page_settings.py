@@ -34,6 +34,16 @@ class SettingsTest(rdiffweb.test.WebCase):
         self.assertInBody("General Settings")
         self.assertStatus(200)
 
+    def test_page_encoding_none(self):
+        # Given a repo where encoding is not defined.
+        RepoObject.query.update({RepoObject.encoding: None})
+        repo = RepoObject.query.first()
+        repo.commit()
+        # When browsing settings pages
+        self.getPage("/settings/" + self.USERNAME + "/" + self.REPO)
+        # Then not error is report.
+        self.assertStatus(200)
+
     def test_as_another_user(self):
         # Create a nother user with admin right
         user_obj = UserObject.add_user('anotheruser', 'password')

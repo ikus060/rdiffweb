@@ -32,6 +32,9 @@ from rdiffweb.tools.i18n import gettext_lazy as _
 
 
 def normalize_encoding(value):
+    if value is None:
+        # In some case the value of encoding could be null, so let use the default encoding value.
+        return RepoObject.DEFAULT_REPO_ENCODING
     codec = encodings.search_function(value.lower())
     if not codec:
         raise ValueError(_('invalid encoding %s') % value)
