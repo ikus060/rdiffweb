@@ -265,7 +265,8 @@ class AdminUsersPage(Controller):
             ldap_enabled=self.app.cfg.ldap_uri,
         )
 
-    @cherrypy.expose()
+    @cherrypy.expose
+    @cherrypy.tools.ratelimit(methods=['POST'])
     def new(self, **kwargs):
         form = UserForm()
         if form.is_submitted():
@@ -282,7 +283,7 @@ class AdminUsersPage(Controller):
                 flash(form.error_message, level='error')
         return self._compile_template("admin_user_new.html", form=form)
 
-    @cherrypy.expose()
+    @cherrypy.expose
     def edit(self, username_vpath, **kwargs):
         user = UserObject.get_user(username_vpath)
         if not user:
@@ -297,7 +298,7 @@ class AdminUsersPage(Controller):
                 flash(form.error_message, level='error')
         return self._compile_template("admin_user_edit.html", form=form)
 
-    @cherrypy.expose()
+    @cherrypy.expose
     def delete(self, username=None, **kwargs):
         # Validate form method.
         form = DeleteUserForm()
@@ -320,6 +321,3 @@ class AdminUsersPage(Controller):
         else:
             flash(form.error_message, level='error')
         raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
-
-
-# TODO Allow configuration of notification settigns

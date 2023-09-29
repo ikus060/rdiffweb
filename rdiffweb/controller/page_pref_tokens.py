@@ -119,6 +119,7 @@ class DeleteTokenForm(CherryForm):
 
 class PagePrefTokens(Controller):
     @cherrypy.expose
+    @cherrypy.tools.ratelimit(methods=['POST'])
     def default(self, **kwargs):
         form = TokenForm()
         delete_form = DeleteTokenForm()
