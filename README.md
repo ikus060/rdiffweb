@@ -122,11 +122,21 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 
 # Changelog
 
-## Next release
+## 2.8.4 (2023-09-29)
 
-* Unpin version of selenium
-* Add support for Ubuntu Mantic 23.10
-* Change layout of file statistics to display a single day #286
+* Add ratelimit to Access Token, SSH Keys and User creation [CVE-2023-5289](https://nvd.nist.gov/vuln/detail/CVE-2023-5289)
+
+## 2.8.3 (2023-08-22)
+
+* Drop support of Ubuntu Kinetic
+
+## 2.8.2 (2023-08-22)
+
+* Add Ubuntu Mantic Support
+* Use Multi-Step to build Docker image
+* Update layout of file statistics to display a single day
+* Stop sending notification for ignored days #284
+* Handle warning exit code 2 return by rdiff-backup version 2.2
 
 ## 2.8.1 (2023-08-01)
 
