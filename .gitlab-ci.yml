@@ -18,7 +18,8 @@ stages:
   variables:
     TOXENV: $CI_JOB_NAME
   before_script:
-    - apt -yq update && apt install -yq rdiff-backup
+    - apt-get -yq update
+    - apt-get install -yq rdiff-backup
   script:
     - pip install tox
     - export TOXENV=${TOXENV:-$CI_JOB_NAME}
@@ -162,14 +163,17 @@ package:deb:
       echo "$BACKPORTS" > /etc/apt/sources.list.d/backports.list
     fi
     apt update
-    apt -y --no-install-recommends install devscripts
-    export VERSION=$(curl -L https://gitlab.com/ikus-soft/maven-scm-version/-/raw/master/version.sh 2>/dev/null | bash -s DEB)
+    apt -y --no-install-recommends install devscripts lsb-release
     if [ ! -z "$BACKPORTS" ]; then
       apt build-dep -t $DIST-backports -y .
     else
       apt build-dep -y .
     fi
-    dch -v "$VERSION" "automated build"
+    export DEB_VERSION=$(lsb_release -rs)
+    export APP_VERSION=$(python3 setup.py --version)
+    export VERSION=${APP_VERSION}+deb${DEB_VERSION}
+    export DEBEMAIL=${CI_COMMIT_AUTHOR}
+    dch -v "$VERSION" "Automated build"
     dpkg-buildpackage -b
     mkdir -p ./dist/$DIST
     mv ../rdiffweb*.deb ./dist/$DIST/
@@ -373,7 +377,7 @@ deploy:demo:
     - package:deb
   image: registry.gitlab.com/finestructure/pipeline-trigger
   script:
-    - export DEB_VERSION=$(ls -1 ./dist/bullseye/rdiffweb_*_all.deb | cut -d '_' -f 2)
+    - export DEB_VERSION=$(ls -1 ./dist/bookworm/rdiffweb_*_all.deb | cut -d '_' -f 2)
     - echo DEB_VERSION=$DEB_VERSION
     # Trigger ansible-config pipeline
     - trigger -a "$ANSIBLE_PIPELINE_GITLAB_API_TOKEN" -t master -e "RDIFFWEB_VERSION=$DEB_VERSION" -p 36bae86778d901fc6b2d6453a41844 18716492
