@@ -80,7 +80,11 @@ class WeekdayField(SelectMultipleField):
     def widget(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         html = ['<div>']
-        for val, label, selected in field.iter_choices():
+        for entry in field.iter_choices():
+            val = entry[0]
+            label = entry[1]
+            selected = entry[2]
+            render_kw = entry[3] if len(entry) >= 4 else {}
             field_id = '%s_%s' % (field.id, val)
             html.append(
                 '<input type="checkbox" %s /> <label for="%s">%s</label> '
@@ -90,6 +94,7 @@ class WeekdayField(SelectMultipleField):
                         name=field.name,
                         value=val,
                         checked=selected,
+                        **render_kw,
                     ),
                     field_id,
                     escape(label),
