@@ -126,6 +126,7 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 
 * Fix reported version in Debian package #289
 * Add support for WTForms v3.1.0
+* Add last backup date to email notiication
 
 ## 2.8.4 (2023-09-29)
 

@@ -59,19 +59,19 @@ class TestI18nWebCase(rdiffweb.test.WebCase):
         #  Query the page without login-in
         self.getPage("/login/", headers=[("Accept-Language", "it")])
         self.assertStatus('200 OK')
-        self.assertHeaderItemValue("Content-Language", "en_US")
+        self.assertHeaderItemValue("Content-Language", "en")
         self.assertInBody("Sign in")
 
     def test_language_en(self):
         self.getPage("/login/", headers=[("Accept-Language", "en-US,en;q=0.8")])
         self.assertStatus('200 OK')
-        self.assertHeaderItemValue("Content-Language", "en_US")
+        self.assertHeaderItemValue("Content-Language", "en")
         self.assertInBody("Sign in")
 
     def test_language_en_fr(self):
         self.getPage("/login/", headers=[("Accept-Language", "en-US,en;q=0.8,fr-CA;q=0.8")])
         self.assertStatus('200 OK')
-        self.assertHeaderItemValue("Content-Language", "en_US")
+        self.assertHeaderItemValue("Content-Language", "en")
         self.assertInBody("Sign in")
 
     def test_language_fr(self):
@@ -79,7 +79,7 @@ class TestI18nWebCase(rdiffweb.test.WebCase):
         self.assertInBody("Sign in")
         self.getPage("/login/", headers=[("Accept-Language", "fr-CA;q=0.8,fr;q=0.6")])
         self.assertStatus('200 OK')
-        self.assertHeaderItemValue("Content-Language", "fr_CA")
+        self.assertHeaderItemValue("Content-Language", "fr")
         self.assertInBody("Se connecter")
 
     def test_with_preferred_lang(self):
