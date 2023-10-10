@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2012-2023 rdiffweb contributors
+# Copyright (C) 2012-2021 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,14 +18,15 @@
 """Internationalization and Localization for CherryPy
 
 This tool provides locales and loads translations in the following order:
-- `tools.i18n.default` value
-- HTTP Accept-Language headers
-- `tools.i18n.preferred_lang` callback function (optional)
 
-The tool uses `babel<http://babel.edgewall.org>`_ for localization and
+1. `with i18n.preferred_lang()`
+2. `tools.i18n.func` callback function (optional)
+3. HTTP Accept-Language headers
+4. `tools.i18n.default` value
+
+The tool uses `babel` <http://babel.edgewall.org> for localization and
 handling translations. Within your Python code you can use four functions
-defined in this module and the loaded locale provided as
-`cherrypy.response.i18n.locale`.
+defined in this module and the loaded locale provided as `i18n.get_translation()`
 
 Example::
 
@@ -95,14 +96,13 @@ import threading
 from contextlib import contextmanager
 
 import cherrypy
+import pytz
 from babel import dates
-from babel.core import Locale, UnknownLocaleError
+from babel.core import Locale, get_global
 from babel.support import LazyProxy, NullTranslations, Translations
 
-# Cache for Translations and Locale objects
-_languages = {}
-
-_override = threading.local()
+# Store current translation and preferred_lang
+_current = threading.local()
 
 
 @contextmanager
@@ -113,19 +113,45 @@ def preferred_lang(lang):
     with i18n.preferred_lang('fr'):
         i18n.gettext('some string')
     """
-    prev_lang = getattr(_override, 'lang', False)
+    assert lang is None or isinstance(lang, str)
+    prev_lang = getattr(_current, 'preferred_lang', [])
+    prev_trans = getattr(_current, 'translation', None)
     try:
-        if lang and isinstance(lang, str):
-            _override.lang = lang
+        # Update prefered lang and clear translation.
+        _current.preferred_lang = [lang] + prev_lang
+        _current.translation = None
         yield
     finally:
-        _override.lang = prev_lang
+        # Restore previous value
+        _current.preferred_lang = prev_lang
+        _current.translation = prev_trans
 
 
-def _search_translation(preferred_langs, dirname, domain):
+@contextmanager
+def preferred_timezone(timezone):
     """
-    Loads the first existing translations for known locale and saves the
-    `Translations` object in a global cache for faster lookup on the next request.
+    Re-define the preferred timezone to be used for date format within a given context.
+
+    with i18n.preferred_lang('America/Montreal'):
+        i18n.format_datetime(...)
+    """
+    assert timezone is None or isinstance(timezone, str)
+    prev_timezone = getattr(_current, 'preferred_timezone', [])
+    prev_tzinfo = getattr(_current, 'tzinfo', None)
+    try:
+        # Update prefered lang and clear translation.
+        _current.preferred_timezone = [timezone] + prev_timezone
+        _current.tzinfo = None
+        yield
+    finally:
+        # Restore previous value
+        _current.preferred_timezone = prev_timezone
+        _current.tzinfo = prev_tzinfo
+
+
+def _search_translation(langs, dirname, domain):
+    """
+    Loads the first existing translations for known locale.
 
     :parameters:
         langs : List
@@ -138,75 +164,65 @@ def _search_translation(preferred_langs, dirname, domain):
 
     :returns: Translations, the corresponding Locale object.
     """
-    if not isinstance(dirname, (list, tuple)):
-        dirname = [dirname]
-    if not isinstance(preferred_langs, list):
-        preferred_langs = [preferred_langs]
-    locale = None
-    trans = None
-    for lang in preferred_langs:
+    if not isinstance(langs, list):
+        langs = [langs]
+    t = Translations.load(dirname, langs, domain)
+    # Ignore null translation
+    if t.__class__ is NullTranslations:
+        return None
+    # Get Locale from file name
+    lang = t.files[0].split('/')[-3]
+    t.locale = Locale.parse(lang)
+    return t
+
+
+def get_timezone():
+    """
+    Get the best timezone information for the current context.
+    """
+    # When tzinfo is defined, use it
+    tzinfo = getattr(_current, 'tzinfo', None)
+    if tzinfo is not None:
+        return tzinfo
+    # Otherwise search for a valid timezone.
+    tzinfo = None
+    default_timezone = cherrypy.config.get('tools.i18n.default_timezone')
+    preferred_timezone = getattr(_current, 'preferred_timezone', [default_timezone])
+    for timezone in preferred_timezone:
         try:
-            locale = Locale.parse(lang)
-            if (domain, lang) in _languages:
-                return _languages[(domain, lang)]
-            # Get all translation from all directories.
-            trans = None
-            for d in dirname:
-                t = Translations.load(d, lang, domain)
-                if not isinstance(t, Translations):
-                    continue
-                if trans:
-                    trans.add_fallback(t)
-                else:
-                    trans = t
-        except (ValueError, UnknownLocaleError):
-            continue
-        # If the translation was found, exit loop
-        if isinstance(trans, Translations):
+            tzinfo = dates.get_timezone(timezone)
             break
-    if not trans:
-        trans = NullTranslations()
-        locale = Locale.parse('en_US')
-    trans.locale = locale
-    _languages[(domain, lang)] = res = trans
-    return res
+        except Exception:
+            pass
+    # If we can't find a valid timezone using the default and preferred value, fall back to server timezone.
+    if tzinfo is None:
+        tzinfo = dates.get_timezone(None)
+    _current.tzinfo = tzinfo
+    return _current.tzinfo
 
 
 def get_translation():
     """
     Get the best translation for the current context.
     """
+    # When translation is defined, use it
+    translation = getattr(_current, 'translation', None)
+    if translation is not None:
+        return translation
 
-    #
-    # When override is in use. Let use it.
-    #
-    if getattr(_override, 'lang', False):
-        default = cherrypy.config.get('tools.i18n.default')
-        mo_dir = cherrypy.config.get('tools.i18n.mo_dir')
-        domain = cherrypy.config.get('tools.i18n.domain')
-        return _search_translation([_override.lang, default], mo_dir, domain)
-
-    #
-    # When we are in a request, determine the best translation using `preferred_lang`.
-    # And store the value into the response variable to re-usability.
-    #
-    if hasattr(cherrypy.response, "i18n") and cherrypy.response.i18n._preferred_lang == cherrypy.request.preferred_lang:
-        return cherrypy.response.i18n
-    if getattr(cherrypy.request, "preferred_lang", False):
-        preferred_lang = cherrypy.request.preferred_lang
-        mo_dir = cherrypy.request._i18n_mo_dir
-        domain = cherrypy.request._i18n_domain
-        cherrypy.response.i18n = _search_translation(preferred_lang, mo_dir, domain)
-        cherrypy.response.i18n._preferred_lang = preferred_lang
-        return cherrypy.response.i18n
-
-    #
-    # When we are not in a request, get language from default server value.
-    #
+    # Otherwise, we need to search the translation.
+    # `preferred_lang` should always has a sane value within a cherrypy request because of hooks
+    # But we also need to support calls outside cherrypy.
     default = cherrypy.config.get('tools.i18n.default')
+    preferred_lang = getattr(_current, 'preferred_lang', [default])
     mo_dir = cherrypy.config.get('tools.i18n.mo_dir')
     domain = cherrypy.config.get('tools.i18n.domain')
-    return _search_translation(default, mo_dir, domain)
+    trans = _search_translation(preferred_lang, mo_dir, domain)
+    if trans is None:
+        trans = NullTranslations()
+        trans.locale = Locale('en')
+    _current.translation = trans
+    return _current.translation
 
 
 def list_available_locales():
@@ -219,8 +235,17 @@ def list_available_locales():
         return
     for lang in os.listdir(mo_dir):
         trans = _search_translation(lang, mo_dir, domain)
-        if type(trans) != NullTranslations:
+        if trans is not None:
             yield trans.locale
+
+
+def list_available_timezones():
+    """
+    Return list of available timezone.
+    """
+    # Babel only support a narrow list of timezone.
+    babel_timezone = get_global('zone_territories').keys()
+    return [t for t in pytz.all_timezones if t in babel_timezone]
 
 
 # Public translation functions
@@ -236,6 +261,9 @@ def ugettext(message):
     :rtype: Unicode
     """
     return get_translation().ugettext(message)
+
+
+gettext = ugettext
 
 
 def ungettext(singular, plural, num):
@@ -256,6 +284,9 @@ def ungettext(singular, plural, num):
     return get_translation().ungettext(singular, plural, num)
 
 
+ngettext = ungettext
+
+
 def gettext_lazy(message):
     """Like ugettext, but lazy.
 
@@ -272,28 +303,45 @@ def gettext_lazy(message):
 def format_datetime(datetime=None, format='medium', tzinfo=None):
     """
     Wraper arround babel format_datetime to provide a default locale.
+    The timezone used to format the date is determine with the following priorities:
+    * value of tzinfo
+    * value of get_timezone()
+    * default server time.
     """
+    # When formating date or english, let use en_GB as it's to most complete translation.
     return dates.format_datetime(
-        datetime=datetime, format=format, locale=get_translation().locale, tzinfo=tzinfo or dates.get_timezone()
+        datetime=datetime,
+        format=format,
+        locale=get_translation().locale,
+        tzinfo=tzinfo or get_timezone(),
     )
 
 
-def format_date(date=None, format='medium', tzinfo=None):
+def format_date(datetime=None, format='medium', tzinfo=None):
     """
-    Wraper arround babel format_datetime to provide a default locale.
+    Wraper arround babel format_date to provide a default locale.
     """
-    date = dates._ensure_datetime_tzinfo(dates._get_datetime(date), tzinfo=tzinfo or dates.get_timezone())
-    return dates.format_date(date=date, format=format, locale=get_translation().locale)
+    return format_datetime(datetime=datetime, format=dates.get_date_format(format), tzinfo=tzinfo)
 
 
-def _load_default_language(mo_dir, domain, default, **kwargs):
+def get_timezone_name(tzinfo):
+    locale = Locale(get_translation().locale.language)
+    return dates.get_timezone_name(tzinfo, width='long', locale=locale)
+
+
+def _load_default(mo_dir, domain, default, **kwargs):
     """
     Initialize the language using the default value from the configuration.
     """
-    cherrypy.request.preferred_lang = [default]
-    cherrypy.request._i18n_mo_dir = mo_dir
-    cherrypy.request._i18n_domain = domain
-    cherrypy.request._i18n_func = kwargs.get('func', False)
+    # Clear current translation
+    _current.preferred_lang = [default]
+    _current.preferred_timezone = [kwargs['default_timezone']] if 'default_timezone' in kwargs else []
+    cherrypy.request._i18n_lang_func = kwargs.get('lang', kwargs.get('func', False))
+    cherrypy.request._i18n_tzinfo_func = kwargs.get('tzinfo', False)
+    # Clear current translation
+    _current.translation = None
+    # Clear current timezone
+    _current.tzinfo = None
 
 
 def _load_accept_language(**kwargs):
@@ -301,26 +349,51 @@ def _load_accept_language(**kwargs):
     When running within a request, load the prefered language from Accept-Language
     """
 
-    preferred_lang = cherrypy.request.preferred_lang
-
     if cherrypy.request.headers.elements('Accept-Language'):
         count = 0
         for x in cherrypy.request.headers.elements('Accept-Language'):
-            preferred_lang.insert(count, x.value.replace('-', '_'))
+            _current.preferred_lang.insert(count, x.value.replace('-', '_'))
             count += 1
+    # Clear current translation
+    _current.translation = None
 
 
 def _load_func_language(**kwargs):
     """
-    When running a request where a current user is found, load prefered language from user preferance.
+    When running a request where a current user is found, load prefered language from user preferences.
     """
-    preferred_lang = cherrypy.request.preferred_lang
-
-    func = getattr(cherrypy.request, '_i18n_func', False)
-    if func:
+    func = getattr(cherrypy.request, '_i18n_lang_func', False)
+    if not func:
+        return
+    try:
         lang = func()
-        if lang:
-            preferred_lang.insert(0, lang)
+    except Exception:
+        return
+    if not lang:
+        return
+    # Add custom lang to preferred_lang
+    _current.preferred_lang.insert(0, lang)
+    # Clear current translation
+    _current.translation = None
+
+
+def _load_func_tzinfo(**kwargs):
+    """
+    When running a request, load the prefered timezone information from user preferences.
+    """
+    func = getattr(cherrypy.request, '_i18n_tzinfo_func', False)
+    if not func:
+        return
+    try:
+        tzinfo = func()
+    except Exception:
+        return
+    if not tzinfo:
+        return
+    # Add custom lang to preferred_lang
+    _current.preferred_timezone.insert(0, tzinfo)
+    # Clear current translation
+    _current.tzinfo = None
 
 
 def _set_content_language(**kwargs):
@@ -328,21 +401,22 @@ def _set_content_language(**kwargs):
     Sets the Content-Language response header (if not already set) to the
     language of `cherrypy.response.i18n.locale`.
     """
-    if hasattr(cherrypy.response, 'i18n') and 'Content-Language' not in cherrypy.response.headers:
-        cherrypy.response.headers['Content-Language'] = str(cherrypy.response.i18n.locale)
+    if 'Content-Language' not in cherrypy.response.headers:
+        cherrypy.response.headers['Content-Language'] = str(get_translation().locale)
 
 
 class I18nTool(cherrypy.Tool):
     """Tool to integrate babel translations in CherryPy."""
 
     def __init__(self):
-        super().__init__('before_handler', _load_default_language, 'i18n')
+        super().__init__('before_handler', _load_default, 'i18n')
 
     def _setup(self):
         cherrypy.Tool._setup(self)
         # Attach additional hooks as different priority to update preferred lang with more accurate preferences.
         cherrypy.request.hooks.attach('before_handler', _load_accept_language, priority=60)
         cherrypy.request.hooks.attach('before_handler', _load_func_language, priority=75)
+        cherrypy.request.hooks.attach('before_handler', _load_func_tzinfo, priority=75)
         cherrypy.request.hooks.attach('before_finalize', _set_content_language)
 
 

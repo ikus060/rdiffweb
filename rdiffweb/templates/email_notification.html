@@ -18,6 +18,15 @@
       {% for r in repos %}
         <li>
           <a>{{ r.display_name }}</a>
+          <br/>
+          <small>
+            {% if r.last_backup_date %}
+              {% trans %}Last backup {% endtrans %}
+              <time datetime="{{ r.last_backup_date }}">{{ r.last_backup_date | lastupdated }}</time>
+            {% else %}
+              {% trans %}Initial backup not completed.{% endtrans %}
+            {% endif %}
+          </small>
         </li>
       {% endfor %}
     </ul>

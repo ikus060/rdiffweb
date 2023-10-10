@@ -122,6 +122,12 @@ Professional support for Rdiffweb is available by [contacting IKUS Soft](https:/
 
 # Changelog
 
+## 2.8.5 (2023-10-10)
+
+* Fix reported version in Debian package #289
+* Add support for WTForms v3.1.0
+* Add last backup date to email notiication
+
 ## 2.8.4 (2023-09-29)
 
 * Add ratelimit to Access Token, SSH Keys and User creation [CVE-2023-5289](https://nvd.nist.gov/vuln/detail/CVE-2023-5289)

@@ -2,7 +2,8 @@
 
 include /usr/share/dpkg/pkg-info.mk
 
-export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_RDIFFWEB=$(shell python3 setup.py --version)
+# Cannot use "_FOR_RDIFFWEB" to keep support for Debian Bullseye
+export SETUPTOOLS_SCM_PRETEND_VERSION=$(shell dpkg-parsechangelog -SVersion | sed 's/+deb[0-9]*//')
 export PYBUILD_BEFORE_TEST=python{version} setup.py develop
 
 %:
