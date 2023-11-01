@@ -120,6 +120,10 @@ Bug reports should be reported on the Rdiffweb Gitlab at <https://gitlab.com/iku
 
 Professional support for Rdiffweb is available by [contacting IKUS Soft](https://rdiffweb.org/contactus).
 
+## Support Us Through Github Sponsorship
+
+We are passionate about developing and maintaining this open-source project to make it better with each update. Your support can help us continue our efforts and enhance the project for the entire community. By becoming a Github Sponsor, you directly contribute to the project's sustainability and growth.
+
 # Changelog
 
 ## 2.8.5 (2023-10-10)
