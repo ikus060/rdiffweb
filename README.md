@@ -126,13 +126,13 @@ We are passionate about developing and maintaining this open-source project to m
 
 [Becoming a Sponsor](https://github.com/sponsors/ikus060)
 
-
 # Changelog
 
 ## Next Release
 
 * Fix broken URL to <https://ikus-soft.com>
 * Fix "Remember me" check box to allow cliking on label to ease usability #293
+* Fix translation of backup status in email report #291
 
 ## 2.8.5 (2023-10-10)
 
