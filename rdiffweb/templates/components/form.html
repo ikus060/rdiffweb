@@ -24,7 +24,7 @@
       </div>
     {% elif field.widget.__class__.__name__ == 'CheckboxInput' %}
       <div class="form-group form-check">
-        {{ field(id=False, class=field_class) }}
+        {{ field(class=field_class) }}
         {{ field.label(class="font-weight-bold" + extra_label_class) }}
         {% if field.description %}<div class="form-text small test-secondary">{{ field.description }}</div>{% endif %}
         {% for error in field.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
