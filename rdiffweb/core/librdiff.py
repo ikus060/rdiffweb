@@ -33,7 +33,7 @@ from subprocess import CalledProcessError
 import psutil
 from cached_property import cached_property
 
-from rdiffweb.tools.i18n import ugettext as _
+from rdiffweb.tools.i18n import gettext_lazy as _
 
 # Define the logger
 logger = logging.getLogger(__name__)
