@@ -388,7 +388,7 @@ msgstr "Contraseña equivocada."
 #: rdiffweb/core/store.py:522
 #, fuzzy, python-format
 msgid "invalid encoding %s"
-msgstr "Valor de codificación inválido"
+msgstr "Valor de codificación inválido %s"
 
 #: rdiffweb/core/store.py:586
 #, python-format
@@ -1154,7 +1154,7 @@ msgid ""
 "Please type <b id=\"%(id)s-confirm-placeholder\"></b> to proceed or close"
 " this modal to cancel."
 msgstr ""
-"Por favor escriba <b>%(repo_name)s</b> para proceder o cancele cerrando "
+"Por favor escriba <b id=\"%(id)s-confirm-placeholder\"></b> para proceder o cancele cerrando "
 "este diálogo"
 
 #: rdiffweb/templates/include/search.html:22
