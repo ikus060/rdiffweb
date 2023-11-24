@@ -128,11 +128,12 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
-## Next Release
+## 2.8.6 (2023-11-24)
 
 * Fix broken URL to <https://ikus-soft.com>
 * Fix "Remember me" check box to allow cliking on label to ease usability #293
 * Fix translation of backup status in email report #291
+* Adding German translation file - credit to [Michael Nitzsche](https://github.com/einzelfabrik)
 
 ## 2.8.5 (2023-10-10)
 
