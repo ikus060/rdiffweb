@@ -537,14 +537,14 @@ def get_parser():
         '--session-idle-timeout',
         metavar='MINUTES',
         help='This timeout defines the amount of time a session will remain active in case there is no activity in the session. User Session will be revoke after this period of inactivity, unless the user selected "remember me". Default 5 minutes.',
-        default=5,
+        default=10,
     )
 
     parser.add(
         '--session-absolute-timeout',
         metavar='MINUTES',
         help='This timeout defines the maximum amount of time a session can be active. After this period, user is forced to (re)authenticate, unless the user selected "remember me". Default 20 minutes.',
-        default=20,
+        default=30,
     )
 
     parser.add(

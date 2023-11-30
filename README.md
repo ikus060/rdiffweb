@@ -128,6 +128,10 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
+## Next Release
+
+* Adjust the session idle and absolute timeouts to 10 and 30 minutes, respectively.
+
 ## 2.8.6 (2023-11-24)
 
 * Fix broken URL to <https://ikus-soft.com>
