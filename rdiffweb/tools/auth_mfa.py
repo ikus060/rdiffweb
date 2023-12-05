@@ -148,7 +148,8 @@ class CheckAuthMfa(cherrypy.Tool):
     def _set_redirect_url(self):
         # Keep reference to the current URL
         request = cherrypy.serving.request
-        original_url = urllib.parse.quote(request.path_info, encoding=request.uri_encoding)
+        uri_encoding = getattr(request, 'uri_encoding', 'utf-8')
+        original_url = urllib.parse.quote(request.path_info, encoding=uri_encoding)
         qs = request.query_string
         new_url = cherrypy.url(original_url, qs=qs, base='')
         if hasattr(cherrypy.serving, 'session'):
