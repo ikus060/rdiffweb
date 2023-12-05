@@ -360,8 +360,7 @@ publish:doc:
     - doc
   script:
     # publish to nexus
-    - export VERSION=$(cd minarca-client; python3 setup.py --version)
-    - export FILE=$(ls -1d $FILENAME)
+    - export VERSION=$(python3 setup.py --version)
     - cd .tox/doc/tmp/html
     - find * -type f -exec curl --fail -u "$NEXUS_USR:$NEXUS_PWD" --upload-file "{}" $NEXUS_URL/repository/archive/rdiffweb/$VERSION/doc/{} \;
 
