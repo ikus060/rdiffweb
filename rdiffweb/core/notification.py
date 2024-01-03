@@ -339,7 +339,7 @@ class NotificationPlugin(SimplePlugin):
         if time_range == 30:
             # Monthly
             end_time = now - timedelta(days=now.day - 1)
-            start_time = now.replace(month=now.month - 1, day=1)
+            start_time = (end_time - timedelta(days=27)).replace(day=1)
         elif time_range == 7:
             # Weekly
             end_time = now - timedelta(days=now.weekday())
