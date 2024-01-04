@@ -131,6 +131,7 @@ We are passionate about developing and maintaining this open-source project to m
 ## Next Release
 
 * Adjust the session idle and absolute timeouts to 10 and 30 minutes, respectively.
+* Fix date calculation when generating report in January #295
 
 ## 2.8.6 (2023-11-24)
 
