@@ -536,6 +536,7 @@ def get_parser():
     parser.add(
         '--session-idle-timeout',
         metavar='MINUTES',
+        type=int,
         help='This timeout defines the amount of time a session will remain active in case there is no activity in the session. User Session will be revoke after this period of inactivity, unless the user selected "remember me". Default 5 minutes.',
         default=10,
     )
@@ -543,6 +544,7 @@ def get_parser():
     parser.add(
         '--session-absolute-timeout',
         metavar='MINUTES',
+        type=int,
         help='This timeout defines the maximum amount of time a session can be active. After this period, user is forced to (re)authenticate, unless the user selected "remember me". Default 20 minutes.',
         default=30,
     )
@@ -550,6 +552,7 @@ def get_parser():
     parser.add(
         '--session-persistent-timeout',
         metavar='MINUTES',
+        type=int,
         help='This timeout defines the maximum amount of time to remember and trust a user device. This timeout is used when user select "remember me". Default 30 days.',
         default=43200,
     )
