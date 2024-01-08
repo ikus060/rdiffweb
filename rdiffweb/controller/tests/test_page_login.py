@@ -332,6 +332,28 @@ class LoginPageRateLimitTest3(rdiffweb.test.WebCase):
         self.assertStatus(429)
 
 
+class LoginPageWithTimeout(rdiffweb.test.WebCase):
+    default_config = {
+        'session-idle-timeout': '5',
+        'session-absolute-timeout': '10',
+        'session-persistent-timeout': '15',
+    }
+
+    def test_login(self):
+        # Given a valid user in database with a password
+        userobj = UserObject.add_user('tom', 'password')
+        userobj.commit()
+        # When trying to login
+        self.getPage(
+            '/login/',
+            method='POST',
+            body={'login': 'tom', 'password': 'password'},
+        )
+        # Then login is successful
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', self.baseurl + '/')
+
+
 class LogoutPageTest(rdiffweb.test.WebCase):
     def test_getpage_without_login(self):
         # Given an unauthenticated user

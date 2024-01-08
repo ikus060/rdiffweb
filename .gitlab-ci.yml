@@ -176,6 +176,7 @@ package:deb:
     dch -v "$VERSION" "Automated build"
     dpkg-buildpackage -b
     mkdir -p ./dist/$DIST
+    rm -Rf ./dist/$DIST/*
     mv ../rdiffweb*.deb ./dist/$DIST/
   artifacts:
     paths:

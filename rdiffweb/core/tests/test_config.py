@@ -82,6 +82,15 @@ class TestParseArg(unittest.TestCase):
         args = parse_args([], config_file_contents='##########\n# this is a comment\nserver-host=0.0.0.0')
         self.assertEqual(args.server_host, "0.0.0.0")
 
+    def test_config_timeout(self):
+        args = parse_args(
+            args=[],
+            config_file_contents='session-idle-timeout=1\nsession-absolute-timeout=2\nsession-absolute-timeout=2\nsession-persistent-timeout=3',
+        )
+        self.assertEqual(args.session_idle_timeout, 1)
+        self.assertEqual(args.session_absolute_timeout, 2)
+        self.assertEqual(args.session_persistent_timeout, 3)
+
 
 class TestConfigFileParser(unittest.TestCase):
     """

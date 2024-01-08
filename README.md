@@ -128,7 +128,11 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
-## Next Release
+## 2.8.8 (2023-01-08)
+
+* Fix usage of `session-idle-timeout` in config file #296
+
+## 2.8.7 (2024-01-04)
 
 * Adjust the session idle and absolute timeouts to 10 and 30 minutes, respectively.
 * Fix date calculation when generating report in January #295
