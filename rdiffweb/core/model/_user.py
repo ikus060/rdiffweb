@@ -190,7 +190,7 @@ class UserObject(Base):
         cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
         cherrypy.engine.publish('authorizedkey_added', self, fingerprint=key.fingerprint, comment=comment)
 
-    def add_access_token(self, name, expiration_time=None, length=16):
+    def add_access_token(self, name, expiration_time=None, length=16, scope=[]):
         """
         Create a new access token. Return the un-encrypted value of the token.
         """
@@ -201,7 +201,11 @@ class UserObject(Base):
         # Store hash token
         try:
             Token(
-                userid=self.userid, name=name, hash_token=hash_password(token), expiration_time=expiration_time
+                userid=self.userid,
+                name=name,
+                hash_token=hash_password(token),
+                expiration_time=expiration_time,
+                scope=scope,
             ).add().flush()
         except IntegrityError:
             raise ValueError(_("Duplicate token name: %s") % name)

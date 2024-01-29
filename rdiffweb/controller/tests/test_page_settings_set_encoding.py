@@ -42,16 +42,16 @@ class SetEncodingTest(rdiffweb.test.WebCase):
 
     def test_set_encoding(self):
         """
-        Check to update the encoding with cp1252.
+        Check to update the encoding with latin_1 (normalized to iso8859-1).
         """
-        self._set_encoding('admin', 'testcases', 'cp1252')
+        self._set_encoding('admin', 'testcases', 'latin_1')
         self.assertStatus(303)
         self._settings('admin', 'testcases')
         self.assertInBody("Settings modified successfully.")
         repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
-        self.assertEqual('cp1252', repo.encoding)
+        self.assertEqual('iso8859-1', repo.encoding)
         # Get back encoding.
-        self.assertInBody('selected value="cp1252"')
+        self.assertInBody('selected value="iso8859-1"')
 
     def test_set_encoding_capital_case(self):
         """
