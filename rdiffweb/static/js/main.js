@@ -48,6 +48,9 @@ function toFileSize(value) {
 }
 
 $(document).ready(function () {
+  
+  /* Enable Bootstrap tooltip */
+  $('[data-toggle="tooltip"]').tooltip();
 
   /**
    * Handle flexible Ajax form submit.

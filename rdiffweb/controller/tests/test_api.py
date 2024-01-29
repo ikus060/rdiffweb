@@ -23,6 +23,8 @@ Created on Nov 16, 2017
 
 from base64 import b64encode
 
+from parameterized import parameterized
+
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
 
@@ -33,6 +35,28 @@ class APITest(rdiffweb.test.WebCase):
     def test_get_index(self):
         data = self.getJson('/api/', headers=self.headers)
         self.assertIsNotNone(data.get('version'))
+
+    @parameterized.expand(
+        [
+            ('all', True),
+            ('write_user', True),
+            ('read_user', True),
+            (None, True),
+        ]
+    )
+    def test_get_index_with_access_token(self, scope, success):
+        # Given a user with access token
+        user = UserObject.get_user('admin')
+        token = user.add_access_token(name='test', scope=scope)
+        user.commit()
+        headers = [("Authorization", "Basic " + b64encode(f"admin:{token}".encode('ascii')).decode('ascii'))]
+        # When querying current user info
+        self.getPage('/api/', headers=headers)
+        # Then an error is raised or data is returned
+        if success:
+            self.assertStatus(200)
+        else:
+            self.assertStatus(403)
 
     def test_get_currentuser(self):
         data = self.getJson('/api/currentuser/', headers=self.headers)
@@ -48,6 +72,28 @@ class APITest(rdiffweb.test.WebCase):
         self.assertEqual(repo.get('encoding'), 'utf-8')
         self.assertEqual(repo.get('name'), 'testcases')
         self.assertEqual(repo.get('maxage'), 0)
+
+    @parameterized.expand(
+        [
+            ('all', True),
+            ('write_user', True),
+            ('read_user', True),
+            (None, False),
+        ]
+    )
+    def test_get_currentuser_with_access_token(self, scope, success):
+        # Given a user with access token
+        user = UserObject.get_user('admin')
+        token = user.add_access_token(name='test', scope=scope)
+        user.commit()
+        headers = [("Authorization", "Basic " + b64encode(f"admin:{token}".encode('ascii')).decode('ascii'))]
+        # When querying current user info
+        self.getPage('/api/currentuser/', headers=headers)
+        # Then an error is raised or data is returned
+        if success:
+            self.assertStatus(200)
+        else:
+            self.assertStatus(403)
 
     def test_getapi_without_authorization(self):
         """

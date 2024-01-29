@@ -30,7 +30,6 @@ from wtforms.validators import ValidationError
 from wtforms.widgets.core import TextArea
 
 from rdiffweb.controller import Controller, flash
-from rdiffweb.controller.dispatch import restapi
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.core import authorizedkeys
@@ -151,21 +150,19 @@ class PagePrefSshKeys(Controller):
         return self._compile_template("prefs_sshkeys.html", **params)
 
 
-@restapi()
+@cherrypy.expose
 @cherrypy.tools.json_out()
 class ApiSshKeys(Controller):
-    @cherrypy.expose
     def list(self):
         return [{'title': key.comment, 'fingerprint': key.fingerprint} for key in self.app.currentuser.authorizedkeys]
 
-    @cherrypy.expose
     def get(self, fingerprint):
         for key in self.app.currentuser.authorizedkeys:
             if key.fingerprint == fingerprint:
                 return {'title': key.comment, 'fingerprint': key.fingerprint}
         raise cherrypy.HTTPError(404)
 
-    @cherrypy.expose
+    @cherrypy.tools.required_scope(scope='all,write_user')
     def delete(self, fingerprint):
         form = DeleteSshForm(fingerprint=fingerprint)
         if form.validate():
@@ -174,7 +171,7 @@ class ApiSshKeys(Controller):
         else:
             raise cherrypy.HTTPError(400, form.error_message)
 
-    @cherrypy.expose
+    @cherrypy.tools.required_scope(scope='all,write_user')
     def post(self, **kwargs):
         form = SshForm()
         if form.validate():

@@ -42,6 +42,7 @@ class Token(Base):
     access_time = Column('AccessTime', Timestamp, nullable=True)
     creation_time = Column('CreationTime', Timestamp, nullable=False, server_default=func.now())
     expiration_time = Column('ExpirationTime', Timestamp, nullable=True)
+    _scope = Column('Scope', String, nullable=False, server_default="")
 
     @property
     def is_expired(self):
@@ -51,6 +52,18 @@ class Token(Base):
 
     def accessed(self):
         self.access_time = datetime.datetime.now(tz=datetime.timezone.utc)
+
+    @property
+    def scope(self):
+        if self._scope:
+            return self._scope.split(',')
+        return []
+
+    @scope.setter
+    def scope(self, value):
+        if isinstance(value, (tuple, list)):
+            value = ','.join(value)
+        self._scope = value
 
 
 class TokenCleanup(SimplePlugin):

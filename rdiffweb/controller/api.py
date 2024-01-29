@@ -31,6 +31,27 @@ from rdiffweb.core.model import UserObject
 logger = logging.getLogger(__name__)
 
 
+def required_scope(scope):
+    """
+    Check the current authentication has the requried scope to access the resource.
+    """
+    # Convert single scope or scope list to array.
+    if isinstance(scope, str):
+        scope = scope.split(',')
+    # Get the current user scope
+    current_scope = getattr(cherrypy.serving.request, 'scope', [])
+    # Check if our current_scope match any of the required scope.
+    if current_scope:
+        for s in scope:
+            if s in current_scope:
+                return True
+    raise cherrypy.HTTPError(403)
+
+
+# Make sure it's running after authentication (priority = 72)
+cherrypy.tools.required_scope = cherrypy.Tool('before_handler', required_scope, priority=75)
+
+
 def _checkpassword(realm, username, password):
     """
     Check basic authentication.
@@ -43,6 +64,7 @@ def _checkpassword(realm, username, password):
         if access_token:
             access_token.accessed()
             access_token.commit()
+            cherrypy.serving.request.scope = access_token.scope
             return True
         # Disable password authentication for MFA
         if userobj.mfa == UserObject.ENABLED_MFA:
@@ -50,21 +72,29 @@ def _checkpassword(realm, username, password):
             return False
     # Otherwise validate username password
     valid = any(cherrypy.engine.publish('login', username, password))
-    if not valid:
-        # When invalid, we need to increase the rate limit.
-        cherrypy.tools.ratelimit.hit()
-    return valid
+    if valid:
+        # Store scope
+        cherrypy.serving.request.scope = ['all']
+        return True
+    # When invalid, we need to increase the rate limit.
+    cherrypy.tools.ratelimit.hit()
+    return False
 
 
+@cherrypy.expose
+@cherrypy.tools.required_scope(scope='all,read_user,write_user')
 class ApiCurrentUser(Controller):
     @cherrypy.expose
-    def default(self):
+    def get(self):
+
         u = self.app.currentuser
         if u.refresh_repos():
             u.commit()
         return {
             "email": u.email,
             "username": u.username,
+            "disk_usage": u.disk_usage,
+            "disk_quota": u.disk_quota,
             "repos": [
                 {
                     # Database fields.
@@ -82,6 +112,7 @@ class ApiCurrentUser(Controller):
         }
 
 
+@cherrypy.expose
 @cherrypy.tools.json_out(on=True)
 @cherrypy.config(**{'error_page.default': False})
 @cherrypy.tools.auth_basic(realm='rdiffweb', checkpassword=_checkpassword, priority=70)
@@ -98,7 +129,7 @@ class ApiPage(Controller):
     currentuser = ApiCurrentUser()
 
     @cherrypy.expose
-    def index(self):
+    def get(self):
         return {
             "version": self.app.version,
         }

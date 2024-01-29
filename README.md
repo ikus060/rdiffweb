@@ -128,6 +128,12 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
+## Next Release
+
+* Add API entry point to create and list access token
+* Add access token scope #298
+* Add user's quota to Rdiffweb API #299
+
 ## 2.8.8 (2023-01-08)
 
 * Fix usage of `session-idle-timeout` in config file #296
