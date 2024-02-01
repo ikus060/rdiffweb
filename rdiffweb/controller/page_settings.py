@@ -294,13 +294,12 @@ class ApiRepos(Controller):
         """
         Return repository settings for the given id or name
         """
-        assert name_or_id
         u = self.app.currentuser
         query = RepoObject.query.filter(RepoObject.userid == u.userid)
         if str(name_or_id).isdigit():
-            query.filter(RepoObject.repoid == int(name_or_id))
+            query = query.filter(RepoObject.repoid == int(name_or_id))
         else:
-            query.filter(RepoObject.repopath == name_or_id)
+            query = query.filter(RepoObject.repopath == name_or_id)
         repo_obj = query.first()
         if not repo_obj:
             raise cherrypy.NotFound()
@@ -323,14 +322,13 @@ class ApiRepos(Controller):
         """
         Used to update repository settings.
         """
-        assert name_or_id
         # Search for matching repo
         u = self.app.currentuser
         query = RepoObject.query.filter(RepoObject.userid == u.userid)
         if str(name_or_id).isdigit():
-            query.filter(RepoObject.repoid == int(name_or_id))
+            query = query.filter(RepoObject.repoid == int(name_or_id))
         else:
-            query.filter(RepoObject.repopath == name_or_id)
+            query = query.filter(RepoObject.repopath == name_or_id)
         repo_obj = query.first()
         if not repo_obj:
             raise cherrypy.NotFound()

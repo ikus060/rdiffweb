@@ -119,6 +119,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
         data = self.getJson('/api/currentuser/repos', headers=self.auth)
 
         # Then the list is returned
+        self.assertEqual(2, len(data))
         self.assertEqual(
             data,
             [
@@ -177,20 +178,21 @@ class ApiReposTest(rdiffweb.test.WebCase):
         user = UserObject.get_user('admin')
         self.assertEqual(2, len(user.repo_objs))
         # When querying repos settings with repoid
-        data = self.getJson('/api/currentuser/repos/%s' % user.repo_objs[0].repoid, headers=self.auth)
+        repo = user.repo_objs[0]
+        data = self.getJson('/api/currentuser/repos/%s' % repo.repoid, headers=self.auth)
 
         # Then the list is returned
         self.assertEqual(
             data,
             {
-                'repoid': 1,
-                'name': 'testcases',
-                'maxage': 0,
-                'keepdays': -1,
+                'repoid': repo.repoid,
+                'name': repo.name,
+                'maxage': repo.maxage,
+                'keepdays': repo.keepdays,
                 'ignore_weekday': [],
-                'display_name': 'testcases',
-                'last_backup_date': '2016-02-02T16:30:40-05:00',
-                'status': 'ok',
+                'display_name': repo.display_name,
+                'last_backup_date': repo.last_backup_date,
+                'status': repo.status[0],
                 'encoding': 'utf-8',
             },
         )
