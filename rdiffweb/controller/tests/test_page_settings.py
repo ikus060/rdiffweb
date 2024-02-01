@@ -279,7 +279,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
         # Then it's working or not
         repo.expire()
         if success:
-            self.assertStatus(200)
+            self.assertStatus(200, 'BODY:' + self.body)
             self.assertEqual(str(getattr(repo, field)), new_value if expected_value is None else expected_value)
         else:
             self.assertStatus(400)
