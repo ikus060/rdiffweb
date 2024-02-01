@@ -173,10 +173,19 @@ class WebCase(helper.CPWebCase):
     def getPage(self, url, headers=None, method="GET", body=None, protocol=None):
         if headers is None:
             headers = []
+        else:
+            headers = list(headers)  # Make a copy of headers because if get updated.
+
         # When body is a dict, send the data as form data.
         if isinstance(body, dict) and method in ['POST', 'PUT']:
-            data = [(k.encode(encoding='latin1'), v.encode(encoding='utf-8')) for k, v in body.items()]
-            body = urlencode(data)
+            is_json_content = ('Content-Type', 'application/json') in headers
+            if is_json_content:
+                body = json.dumps(body).encode('utf-8')
+                headers.append(('Content-length', str(len(body))))
+            else:
+                # Default Post form
+                data = [(k.encode(encoding='latin1'), v.encode(encoding='utf-8')) for k, v in body.items()]
+                body = urlencode(data)
         # Send back cookies if any
         if hasattr(self, 'cookies') and self.cookies:
             headers.extend(self.cookies)

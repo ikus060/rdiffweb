@@ -61,7 +61,7 @@ from rdiffweb.controller.page_pref_sshkeys import ApiSshKeys
 from rdiffweb.controller.page_pref_tokens import ApiTokens
 from rdiffweb.controller.page_prefs import PreferencesPage
 from rdiffweb.controller.page_restore import RestorePage
-from rdiffweb.controller.page_settings import SettingsPage
+from rdiffweb.controller.page_settings import ApiRepos, SettingsPage
 from rdiffweb.controller.page_stats import StatsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
@@ -130,6 +130,7 @@ class Root(LocationsPage):
         self.api = ApiPage()
         self.api.currentuser.sshkeys = ApiSshKeys()
         self.api.currentuser.tokens = ApiTokens()
+        self.api.currentuser.repos = ApiRepos()
         self.graphs = GraphsPage()
         self.logs = LogsPage()
 

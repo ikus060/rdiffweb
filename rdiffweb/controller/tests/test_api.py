@@ -19,8 +19,6 @@ Created on Nov 16, 2017
 
 @author: Patrik Dufresne
 """
-
-
 from base64 import b64encode
 
 from parameterized import parameterized
@@ -94,6 +92,51 @@ class APITest(rdiffweb.test.WebCase):
             self.assertStatus(200)
         else:
             self.assertStatus(403)
+
+    @parameterized.expand(
+        [
+            # Not suported field
+            ('userid', '1234', False),
+            ('username', 'myuser', False),
+            ('role', 'guest', False),
+            ('mfa', '1', False),
+            # Supported field.
+            ('fullname', 'My Name', True),
+            ('email', 'test@test.com', True),
+            ('lang', 'fr', True),
+            ('report_time_range', '30', True),
+        ]
+    )
+    def test_post_currentuser(self, field, new_value, success):
+        # When trying to update user's settings
+        self.getPage(
+            '/api/currentuser',
+            headers=self.headers,
+            method='POST',
+            body={field: new_value},
+        )
+        # Then it's working or not
+        user = UserObject.get_user('admin')
+        if success:
+            self.assertStatus(200)
+            self.assertEqual(str(getattr(user, field)), new_value)
+        else:
+            self.assertStatus(400)
+            self.assertNotEqual(str(getattr(user, field)), new_value)
+
+    def test_post_currentuser_json(self):
+        # When trying to update currentuser with json payload
+        self.getPage(
+            '/api/currentuser',
+            headers=self.headers + [('Content-Type', 'application/json')],
+            method='POST',
+            body={"fullname": "My Name", "lang": "fr"},
+        )
+        # Then it's working.
+        user = UserObject.get_user('admin')
+        self.assertStatus(200)
+        self.assertEqual(user.fullname, "My Name")
+        self.assertEqual(user.lang, "fr")
 
     def test_getapi_without_authorization(self):
         """

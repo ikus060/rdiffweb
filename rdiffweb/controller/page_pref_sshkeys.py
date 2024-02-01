@@ -173,7 +173,13 @@ class ApiSshKeys(Controller):
 
     @cherrypy.tools.required_scope(scope='all,write_user')
     def post(self, **kwargs):
+        # Support Json or Form data
+        cherrypy.request.params = getattr(cherrypy.request, 'json', cherrypy.request.params)
+        # Validate input data.
         form = SshForm()
+        for key in kwargs.keys():
+            if key not in form:
+                raise cherrypy.HTTPError(400, _("unsuported field: %s" % key))
         if form.validate():
             # Create the SSH Key
             userobj = self.app.currentuser

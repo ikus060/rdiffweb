@@ -183,7 +183,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
 
 
 class ApiTokensTest(rdiffweb.test.WebCase):
-    headers = [("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))]
+    auth = [("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))]
 
     def test_post(self):
         # Given a user without tokens
@@ -192,7 +192,23 @@ class ApiTokensTest(rdiffweb.test.WebCase):
         # When POST a valid token
         data = self.getJson(
             '/api/currentuser/tokens',
-            headers=self.headers,
+            headers=self.auth,
+            method='POST',
+            body={'name': "my-token"},
+        )
+        # Then page return a new secret
+        self.assertIn('token', data)
+        # Then key get added to the user
+        self.assertEqual(1, Token.query.filter(Token.user == user).count())
+
+    def test_post_json(self):
+        # Given a user without tokens
+        user = UserObject.get_user('admin')
+
+        # When POST a valid token
+        data = self.getJson(
+            '/api/currentuser/tokens',
+            headers=self.auth + [('Content-Type', 'application/json')],
             method='POST',
             body={'name': "my-token"},
         )
@@ -210,7 +226,7 @@ class ApiTokensTest(rdiffweb.test.WebCase):
         # When POST a duplicate ssh key
         self.getPage(
             '/api/currentuser/tokens',
-            headers=self.headers,
+            headers=self.auth,
             method='POST',
             body={'name': "my-token"},
         )
@@ -256,7 +272,7 @@ class ApiTokensTest(rdiffweb.test.WebCase):
         # When deleting the ssh key
         self.getPage(
             '/api/currentuser/tokens/my-token',
-            headers=self.headers,
+            headers=self.auth,
             method='DELETE',
         )
         # Then page return with success
@@ -274,7 +290,7 @@ class ApiTokensTest(rdiffweb.test.WebCase):
         # When deleting the ssh key
         data = self.getJson(
             '/api/currentuser/tokens/my-token',
-            headers=self.headers,
+            headers=self.auth,
             method='GET',
         )
         # Then page return with success with sshkey
@@ -291,7 +307,7 @@ class ApiTokensTest(rdiffweb.test.WebCase):
         # When deleting the ssh key
         self.getPage(
             '/api/currentuser/tokens/invalid',
-            headers=self.headers,
+            headers=self.auth,
             method='GET',
         )
         # Then page return with success with sshkey
@@ -305,7 +321,7 @@ class ApiTokensTest(rdiffweb.test.WebCase):
         # When deleting the ssh key
         data = self.getJson(
             '/api/currentuser/tokens',
-            headers=self.headers,
+            headers=self.auth,
             method='GET',
         )
         # Then page return with success with sshkey

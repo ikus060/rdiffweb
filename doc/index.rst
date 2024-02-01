@@ -15,3 +15,4 @@ Welcome to Rdiffweb's documentation!
    usage
    faq
    development
+   api

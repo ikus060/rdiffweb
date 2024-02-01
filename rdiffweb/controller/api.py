@@ -24,9 +24,20 @@ Created on Nov 16, 2017
 import logging
 
 import cherrypy
+from wtforms.fields import SelectField, StringField
+from wtforms.validators import Length, Optional, Regexp
 
 from rdiffweb.controller import Controller
+from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.model import UserObject
+
+try:
+    from wtforms.fields import EmailField  # wtform >=3
+except ImportError:
+    from wtforms.fields.html5 import EmailField  # wtform <3
+
+from rdiffweb.tools.i18n import gettext_lazy as _
+from rdiffweb.tools.i18n import list_available_locales
 
 logger = logging.getLogger(__name__)
 
@@ -81,26 +92,80 @@ def _checkpassword(realm, username, password):
     return False
 
 
+class CurrentUserForm(CherryForm):
+    """
+    Form used to validate input data for REST api request.
+    """
+
+    fullname = StringField(
+        validators=[
+            Optional(),
+            Length(max=256, message=_('Fullname too long.')),
+            Regexp(UserObject.PATTERN_FULLNAME, message=_('Must not contain any special characters.')),
+        ],
+    )
+    email = EmailField(
+        validators=[
+            Optional(),
+            Length(max=256, message=_("Email too long.")),
+            Regexp(UserObject.PATTERN_EMAIL, message=_("Must be a valid email address.")),
+        ],
+    )
+    lang = SelectField()
+    report_time_range = SelectField(
+        choices=[
+            (0, _('Never')),
+            (1, _('Daily')),
+            (7, _('Weekly')),
+            (30, _('Monthly')),
+        ],
+        coerce=int,
+        default='0',
+    )
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        languages = [(locale.language, locale.display_name.capitalize()) for locale in list_available_locales()]
+        languages = sorted(languages, key=lambda x: x[1])
+        languages.insert(0, ('', _('(default)')))
+        self.lang.choices = languages
+
+    def populate_obj(self, user):
+        user.fullname = self.fullname.data
+        user.email = self.email.data
+        user.lang = self.lang.data
+        user.report_time_range = self.report_time_range.data
+        user.add()
+
+
 @cherrypy.expose
 @cherrypy.tools.required_scope(scope='all,read_user,write_user')
 class ApiCurrentUser(Controller):
-    @cherrypy.expose
     def get(self):
-
+        """
+        Return current user information and settings.
+        """
         u = self.app.currentuser
         if u.refresh_repos():
             u.commit()
         return {
-            "email": u.email,
+            "userid": u.userid,
             "username": u.username,
+            "fullname": u.fullname,
+            "email": u.email,
             "disk_usage": u.disk_usage,
             "disk_quota": u.disk_quota,
+            "lang": u.lang,
+            "mfa": u.lang,
+            "role": u.role,
+            "report_time_range": u.report_time_range,
             "repos": [
                 {
                     # Database fields.
                     "name": repo_obj.name,
                     "maxage": repo_obj.maxage,
                     "keepdays": repo_obj.keepdays,
+                    "ignore_weekday": repo_obj.ignore_weekday,
                     # Repository fields.
                     "display_name": repo_obj.display_name,
                     "last_backup_date": repo_obj.last_backup_date,
@@ -111,9 +176,30 @@ class ApiCurrentUser(Controller):
             ],
         }
 
+    @cherrypy.tools.required_scope(scope='all,write_user')
+    def post(self, **kwargs):
+        # Support Json or Form data
+        cherrypy.request.params = getattr(cherrypy.request, 'json', cherrypy.request.params)
+        # Validate input data.
+        userobj = self.app.currentuser
+        form = CurrentUserForm(obj=userobj)
+        for key in cherrypy.request.params.keys():
+            if key not in form:
+                raise cherrypy.HTTPError(400, _("unsuported field: %s" % key))
+        if not form.validate():
+            raise cherrypy.HTTPError(400, form.error_message)
+        # Apply changes
+        try:
+            form.populate_obj(userobj)
+            userobj.commit()
+        except Exception as e:
+            userobj.rollback()
+            raise cherrypy.HTTPError(400, str(e))
+
 
 @cherrypy.expose
 @cherrypy.tools.json_out(on=True)
+@cherrypy.tools.json_in(on=True, force=False)
 @cherrypy.config(**{'error_page.default': False})
 @cherrypy.tools.auth_basic(realm='rdiffweb', checkpassword=_checkpassword, priority=70)
 @cherrypy.tools.auth_form(on=False)
@@ -128,7 +214,6 @@ class ApiPage(Controller):
 
     currentuser = ApiCurrentUser()
 
-    @cherrypy.expose
     def get(self):
         return {
             "version": self.app.version,

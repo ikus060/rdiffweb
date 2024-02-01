@@ -249,7 +249,13 @@ class ApiTokens(Controller):
 
     @cherrypy.tools.required_scope(scope='all,write_user')
     def post(self, **kwargs):
+        # Support Json or Form data
+        cherrypy.request.params = getattr(cherrypy.request, 'json', cherrypy.request.params)
+        # Validate input data.
         form = TokenForm()
+        for key in cherrypy.request.params.keys():
+            if key not in form:
+                raise cherrypy.HTTPError(400, _("unsuported field: %s" % key))
         if not form.validate():
             raise cherrypy.HTTPError(400, form.error_message)
 

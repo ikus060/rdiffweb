@@ -236,15 +236,7 @@ class RepoSettingsForm(CherryForm):
         # Only maintainer is allowed to change keepdays
         if self.keepdays.data != repo_obj.keepdays:
             is_maintainer()
-
-        try:
-            super().populate_obj(repo_obj)
-            flash(_("Settings modified successfully."), level='success')
-            return True
-        except Exception as e:
-            repo_obj.rollback()
-            flash(str(e), level='warning')
-            return False
+        super().populate_obj(repo_obj)
 
 
 @cherrypy.tools.poppath()
@@ -261,8 +253,100 @@ class SettingsPage(Controller):
         form = RepoSettingsForm(obj=repo_obj)
         if form.is_submitted():
             if form.validate():
-                if form.populate_obj(repo_obj):
+                try:
+                    form.populate_obj(repo_obj)
+                    flash(_("Settings modified successfully."), level='success')
+                except Exception as e:
+                    repo_obj.rollback()
+                    flash(str(e), level='warning')
+                else:
                     raise cherrypy.HTTPRedirect("")
             else:
                 flash(form.error_message, level='error')
         return self._compile_template("settings.html", form=form, repo=repo_obj)
+
+
+@cherrypy.expose
+@cherrypy.tools.required_scope(scope='all,read_user,write_user')
+class ApiRepos(Controller):
+    def list(self):
+        u = self.app.currentuser
+        if u.refresh_repos():
+            u.commit()
+        return [
+            {
+                "repoid": repo_obj.repoid,
+                # Database fields.
+                "name": repo_obj.name,
+                "maxage": repo_obj.maxage,
+                "keepdays": repo_obj.keepdays,
+                "ignore_weekday": repo_obj.ignore_weekday,
+                # Repository fields.
+                "display_name": repo_obj.display_name,
+                "last_backup_date": repo_obj.last_backup_date,
+                "status": repo_obj.status[0],
+                "encoding": repo_obj.encoding,
+            }
+            for repo_obj in u.repo_objs
+        ]
+
+    def get(self, name_or_id):
+        """
+        Return repository settings for the given id or name
+        """
+        u = self.app.currentuser
+        query = RepoObject.query.filter(RepoObject.userid == u.userid)
+        if str(name_or_id).isdigit():
+            query.filter(RepoObject.repoid == int(name_or_id))
+        else:
+            query.filter(RepoObject.repopath == name_or_id)
+        repo_obj = query.first()
+        if not repo_obj:
+            raise cherrypy.NotFound()
+        return {
+            "repoid": repo_obj.repoid,
+            # Database fields.
+            "name": repo_obj.name,
+            "maxage": repo_obj.maxage,
+            "keepdays": repo_obj.keepdays,
+            "ignore_weekday": repo_obj.ignore_weekday,
+            # Repository fields.
+            "display_name": repo_obj.display_name,
+            "last_backup_date": repo_obj.last_backup_date,
+            "status": repo_obj.status[0],
+            "encoding": repo_obj.encoding,
+        }
+
+    @cherrypy.tools.required_scope(scope='all,write_user')
+    def post(self, name_or_id=None, **kwargs):
+        """
+        Used to update repository settings.
+        """
+        # Search for matching repo
+        u = self.app.currentuser
+        query = RepoObject.query.filter(RepoObject.userid == u.userid)
+        if str(name_or_id).isdigit():
+            query.filter(RepoObject.repoid == int(name_or_id))
+        else:
+            query.filter(RepoObject.repopath == name_or_id)
+        repo_obj = query.first()
+        if not repo_obj:
+            raise cherrypy.NotFound()
+
+        # Support Json or Form data
+        cherrypy.request.params = getattr(cherrypy.request, 'json', cherrypy.request.params)
+        # Validate incomming data.
+        form = RepoSettingsForm(obj=repo_obj)
+        for key in cherrypy.request.params.keys():
+            if key not in form:
+                raise cherrypy.HTTPError(400, _("unsuported field: %s" % key))
+        if not form.validate():
+            raise cherrypy.HTTPError(400, form.error_message)
+
+        # Update repo object.
+        try:
+            form.populate_obj(repo_obj)
+            repo_obj.commit()
+        except Exception as e:
+            repo_obj.rollback()
+            raise cherrypy.HTTPError(400, str(e))
