@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import json
 from base64 import b64encode
 from datetime import datetime, timedelta, timezone
 from unittest.mock import ANY
@@ -253,12 +254,23 @@ class ApiTokensTest(rdiffweb.test.WebCase):
             '/api/currentuser/tokens',
             headers=headers,
             method='POST',
-            body={'name': "my-token"},
+            body={'name': "my-token", "scope": "all"},
         )
         # Then sh get added or permissions is refused
         if success:
             self.assertStatus(200)
             self.assertEqual(2, Token.query.filter(Token.user == user).count())
+            self.assertEqual(
+                json.loads(self.body.decode('utf8')),
+                {
+                    'title': 'my-token',
+                    'access_time': None,
+                    'creation_time': ANY,
+                    'expiration_time': None,
+                    'token': ANY,
+                    'scope': ["all"],
+                },
+            )
         else:
             self.assertStatus(403)
             self.assertEqual(1, Token.query.filter(Token.user == user).count())
@@ -284,7 +296,7 @@ class ApiTokensTest(rdiffweb.test.WebCase):
     def test_get(self):
         # Given a user with an existing ssh key
         user = UserObject.get_user('admin')
-        user.add_access_token('my-token', None)
+        user.add_access_token('my-token', None, scope='all,read_user')
         user.commit()
 
         # When deleting the ssh key
@@ -296,7 +308,14 @@ class ApiTokensTest(rdiffweb.test.WebCase):
         # Then page return with success with sshkey
         self.assertStatus('200 OK')
         self.assertEqual(
-            data, {'title': 'my-token', 'access_time': None, 'creation_time': ANY, 'expiration_time': None}
+            data,
+            {
+                'title': 'my-token',
+                'access_time': None,
+                'creation_time': ANY,
+                'expiration_time': None,
+                'scope': ['all', 'read_user'],
+            },
         )
 
     def test_get_invalid(self):
@@ -327,5 +346,6 @@ class ApiTokensTest(rdiffweb.test.WebCase):
         # Then page return with success with sshkey
         self.assertStatus('200 OK')
         self.assertEqual(
-            data, [{'title': 'my-token', 'access_time': None, 'creation_time': ANY, 'expiration_time': None}]
+            data,
+            [{'title': 'my-token', 'access_time': None, 'creation_time': ANY, 'expiration_time': None, 'scope': []}],
         )

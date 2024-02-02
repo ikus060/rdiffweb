@@ -222,6 +222,7 @@ class ApiTokens(Controller):
                 'access_time': token.access_time,
                 'creation_time': token.creation_time,
                 'expiration_time': token.expiration_time,
+                'scope': token.scope,
             }
             for token in tokens
         ]
@@ -235,6 +236,7 @@ class ApiTokens(Controller):
             'access_time': token.access_time,
             'creation_time': token.creation_time,
             'expiration_time': token.expiration_time,
+            'scope': token.scope,
         }
 
     @cherrypy.tools.required_scope(scope='all,write_user')
@@ -249,20 +251,17 @@ class ApiTokens(Controller):
 
     @cherrypy.tools.required_scope(scope='all,write_user')
     def post(self, **kwargs):
-        # Support Json or Form data
-        cherrypy.request.params = getattr(cherrypy.request, 'json', cherrypy.request.params)
         # Validate input data.
-        form = TokenForm()
-        for key in cherrypy.request.params.keys():
-            if key not in form:
-                raise cherrypy.HTTPError(400, _("unsuported field: %s" % key))
-        if not form.validate():
+        form = TokenForm(json=1)
+        if not form.strict_validate():
             raise cherrypy.HTTPError(400, form.error_message)
 
         # Create the Access Token
         userobj = self.app.currentuser
         try:
-            secret = userobj.add_access_token(form.name.data, form.expiration.data)
+            secret = userobj.add_access_token(
+                name=form.name.data, expiration_time=form.expiration.data, scope=form.scope.data
+            )
             userobj.commit()
             token = Token.query.filter(
                 Token.userid == self.app.currentuser.userid, Token.name == form.name.data
@@ -275,6 +274,7 @@ class ApiTokens(Controller):
                 'creation_time': token.creation_time,
                 'expiration_time': token.expiration_time,
                 'token': secret,
+                'scope': token.scope,
             }
         except Exception as e:
             userobj.rollback()

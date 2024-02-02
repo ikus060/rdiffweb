@@ -40,6 +40,7 @@ def normalize_encoding(value):
         raise ValueError(_('invalid encoding %s') % value)
     return codec.name
 
+
 _codecs = [
     ('utf-8', 'UTF-8 (all languages)'),
     ('ascii', 'US-ASCII (English)'),
@@ -101,7 +102,7 @@ _codecs = [
     ('utf_16_le', 'UTF-16LE (all languages)'),
     ('utf_7', 'UTF-7 (all languages)'),
 ]
-_codecs = [(normalize_encoding(name), label) for name,label in _codecs]
+_codecs = [(normalize_encoding(name), label) for name, label in _codecs]
 
 
 class MaxAgeField(SelectField):
@@ -336,14 +337,9 @@ class ApiRepos(Controller):
         if not repo_obj:
             raise cherrypy.NotFound()
 
-        # Support Json or Form data
-        cherrypy.request.params = getattr(cherrypy.request, 'json', cherrypy.request.params)
         # Validate incomming data.
-        form = RepoSettingsForm(obj=repo_obj)
-        for key in cherrypy.request.params.keys():
-            if key not in form:
-                raise cherrypy.HTTPError(400, _("unsuported field: %s" % key))
-        if not form.validate():
+        form = RepoSettingsForm(obj=repo_obj, json=1)
+        if not form.strict_validate():
             raise cherrypy.HTTPError(400, form.error_message)
 
         # Update repo object.

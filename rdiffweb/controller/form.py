@@ -52,6 +52,10 @@ class CherryForm(Form):
     """
 
     def __init__(self, **kwargs):
+        # Seamlessly support Json input if available.
+        if 'json' in kwargs and kwargs.pop('json'):
+            cherrypy.request.params = getattr(cherrypy.request, 'json', cherrypy.request.params)
+        # Support explicit formdata
         if 'formdata' in kwargs:
             formdata = kwargs.pop('formdata')
         else:
@@ -61,9 +65,19 @@ class CherryForm(Form):
     def is_submitted(self):
         """
         Consider the form submitted if there is an active request and
-        the method is ``POST``, ``PUT``, ``PATCH``, or ``DELETE``.
+        the method is ``POST``.
         """
         return cherrypy.request.method == 'POST'
+
+    def strict_validate(self):
+        """
+        Special validation to verify if all the field submited exists in this form.
+        Raise an error if some fields are unknown.
+        """
+        for key in cherrypy.request.params.keys():
+            if key not in self:
+                raise cherrypy.HTTPError(400, "unsuported field: %s" % key)
+        return self.validate()
 
     def validate_on_submit(self):
         """

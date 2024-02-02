@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 def required_scope(scope):
     """
-    Check the current authentication has the requried scope to access the resource.
+    Check the current authentication has the required scope to access the resource.
     """
     # Convert single scope or scope list to array.
     if isinstance(scope, str):
@@ -178,15 +178,10 @@ class ApiCurrentUser(Controller):
 
     @cherrypy.tools.required_scope(scope='all,write_user')
     def post(self, **kwargs):
-        # Support Json or Form data
-        cherrypy.request.params = getattr(cherrypy.request, 'json', cherrypy.request.params)
         # Validate input data.
         userobj = self.app.currentuser
-        form = CurrentUserForm(obj=userobj)
-        for key in cherrypy.request.params.keys():
-            if key not in form:
-                raise cherrypy.HTTPError(400, _("unsuported field: %s" % key))
-        if not form.validate():
+        form = CurrentUserForm(obj=userobj, json=1)
+        if not form.strict_validate():
             raise cherrypy.HTTPError(400, form.error_message)
         # Apply changes
         try:

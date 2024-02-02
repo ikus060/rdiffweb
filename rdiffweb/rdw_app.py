@@ -185,9 +185,6 @@ class RdiffwebApp(Application):
         cherrypy.config.update(
             {
                 'environment': 'development' if cfg.debug else cfg.environment,
-                # To work around the new behaviour in CherryPy >= 5.5.0, force usage of
-                # ISO-8859-1 encoding for URL. This avoid any conversion of the
-                # URL into UTF-8.
                 'tools.encode.on': True,
                 'tools.encode.encoding': 'utf-8',
                 'tools.gzip.on': True,

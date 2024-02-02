@@ -20,10 +20,7 @@ import cherrypy
 
 class Dispatcher(cherrypy.dispatch.Dispatcher):
     """
-    A decorator for _cp_dispatch
-    (cherrypy.dispatch.Dispatcher.dispatch_method_name).
-
-    Will use the HTTP method to find the proper function to be called.
+    Dispatcher using HTTP method to find the proper function to be called.
 
     e.g.:
     GET /api/users      -> list()
@@ -57,12 +54,11 @@ class Dispatcher(cherrypy.dispatch.Dispatcher):
             request.handler = cherrypy.dispatch.LateParamPageHandler(resource, *vpath)
             return
 
-        # Find the subhandler
+        # Call "list()" instead of "get()" when path doesn't have an id or name.
         if meth == 'get' and not vpath and hasattr(resource, 'list'):
             meth = 'list'
+        # Find the subhandler
         func = getattr(resource, meth, None)
-        if func is None and meth == 'head':
-            func = getattr(resource, 'get', None)
         if func:
             # Grab any _cp_config on the subhandler.
             if hasattr(func, '_cp_config'):
