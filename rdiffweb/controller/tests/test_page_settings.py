@@ -257,7 +257,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
             ('maxage', '7', True),
             ('keepdays', '30', True),
             ('ignore_weekday', '6', True, '[6]'),
-            ('encoding', 'latin1', True, 'iso8859-1'),
+            ('encoding', 'latin_1', True, 'iso8859-1'),
         ]
     )
     def test_post_repo(self, field, new_value, success, expected_value=None):

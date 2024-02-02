@@ -159,6 +159,7 @@ class RepoSettingsForm(CherryForm):
         description=_(
             "This setting relates to the representation or format in which the backup repository is displayed. It may include considerations such as language or character encoding to match your specific locale. By adjusting this setting, you can ensure that the repository's content is displayed correctly and in a manner that is suitable for your locale."
         ),
+        validate_choice=False,
         coerce=normalize_encoding,
         choices=[
             ('utf-8', 'UTF-8 (all languages)'),
