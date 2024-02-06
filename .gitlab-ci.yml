@@ -171,7 +171,7 @@ package:deb:
     fi
     export DEB_VERSION=$(lsb_release -rs)
     export APP_VERSION=$(python3 setup.py --version)
-    export VERSION=${APP_VERSION}+deb${DEB_VERSION}
+    export VERSION=${APP_VERSION}+deb${DEB_VERSION/./}
     export DEBEMAIL=${CI_COMMIT_AUTHOR}
     dch -v "$VERSION" "Automated build"
     dpkg-buildpackage -b
