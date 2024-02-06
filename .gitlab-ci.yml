@@ -169,7 +169,7 @@ package:deb:
     else
       apt build-dep -y .
     fi
-    export DEB_VERSION=$(lsb_release -rs)
+    export DEB_VERSION=$(lsb_release -is | sed -e 's/\(.*\)/\L\1/')$(lsb_release -rs| sed -e 's/\.//')
     export APP_VERSION=$(python3 setup.py --version)
     export VERSION=${APP_VERSION}+deb${DEB_VERSION/./}
     export DEBEMAIL=${CI_COMMIT_AUTHOR}
