@@ -46,3 +46,4 @@ xunit*.xml
 /.pybuild/
 /.pytest_cache/
 /.coverage*
+/.vscode

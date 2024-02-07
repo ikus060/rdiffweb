@@ -22,6 +22,7 @@ Created on Feb 13, 2016
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 from datetime import datetime, timedelta, timezone
+from unittest import skipIf
 from unittest.mock import ANY, MagicMock
 
 import cherrypy
@@ -432,6 +433,7 @@ class NotificationLatest(AbstractNotificationTest):
 
     default_config = {'latest-version-url': url}
 
+    @skipIf(rdiffweb.__version__ == 'DEV', 'not working with dev version')
     @responses.activate
     def test_check_latest_job_with_upgrade(self):
         # Given an administrator
