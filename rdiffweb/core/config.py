@@ -150,14 +150,14 @@ def get_parser():
         '--email-sender',
         '--emailsender',
         metavar='EMAIL',
-        help='email addres used for the `from:` field when sending email.',
+        help='email address used for the `from:` field when sending email.',
     )
 
     parser.add_argument(
         '--email-notification-time',
         '--emailnotificationtime',
         metavar='TIME',
-        help='time when the email notifcation should be sent for inactive backups. e.g.: 22:00 Default value: 23:00',
+        help='time when the email notification should be sent for inactive backups. e.g.: 22:00 Default value: 23:00',
         default='23:00',
     )
 
@@ -357,7 +357,7 @@ def get_parser():
 
     parser.add_argument(
         '--ldap-group-filter',
-        help="search filter to limit LDAP lookup of groups. If not provided, defaults to `(objectClass=*)`, which searches for all objects in the tree. For improved performance it's recommanded to narrow the search to your group object class. e.g.: `(objectClass=posixGroup)`",
+        help="search filter to limit LDAP lookup of groups. If not provided, defaults to `(objectClass=*)`, which searches for all objects in the tree. For improved performance it's recommended to narrow the search to your group object class. e.g.: `(objectClass=posixGroup)`",
         default='(objectClass=*)',
     )
 

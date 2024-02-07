@@ -1,5 +1,6 @@
 [Unit]
 Description=Rdiffweb server
+Documentation=man:rdiffweb(1)
 
 [Service]
 ExecStart=/usr/bin/rdiffweb

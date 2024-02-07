@@ -155,29 +155,25 @@ package:deb:
         BACKPORTS: deb http://deb.debian.org/debian buster-backports main
       - DIST: [bullseye, bookworm]
       - DIST: [jammy, lunar, mantic]
-        TZ: UTC
-  script: |
-    set -x
-    set -e
-    if [ ! -z "$BACKPORTS" ]; then
-      echo "$BACKPORTS" > /etc/apt/sources.list.d/backports.list
-    fi
-    apt update
-    apt -y --no-install-recommends install devscripts lsb-release
-    if [ ! -z "$BACKPORTS" ]; then
-      apt build-dep -t $DIST-backports -y .
-    else
-      apt build-dep -y .
-    fi
-    export DEB_VERSION=$(lsb_release -rs)
-    export APP_VERSION=$(python3 setup.py --version)
-    export VERSION=${APP_VERSION}+deb${DEB_VERSION}
-    export DEBEMAIL=${CI_COMMIT_AUTHOR}
-    dch -v "$VERSION" "Automated build"
-    dpkg-buildpackage -b
-    mkdir -p ./dist/$DIST
-    rm -Rf ./dist/$DIST/*
-    mv ../rdiffweb*.deb ./dist/$DIST/
+  script:
+    # Clean-up
+    - rm -f ../rdiffweb_*
+    - rm -Rf ./dist/$DIST/*
+    # Install dependencies
+    - if [ ! -z "$BACKPORTS" ]; then echo "$BACKPORTS" > /etc/apt/sources.list.d/backports.list; fi
+    - apt update
+    - apt -y --no-install-recommends install devscripts lsb-release
+    - if [ ! -z "$BACKPORTS" ]; then apt build-dep -t $DIST-backports -y . ; else apt build-dep -y .; fi
+    # Generate change log
+    - export DEBEMAIL=${CI_COMMIT_AUTHOR}
+    - debian/rules changelog
+    # Generate orig.tar.gz
+    - debian/rules gentarball
+    # Run build in separate target
+    - debuild -us -uc
+    # Move files to archives
+    - mkdir -p ./dist/$DIST
+    - mv ../rdiffweb_* ./dist/$DIST/
   artifacts:
     paths:
       - ./dist/*
@@ -207,10 +203,8 @@ test-package:deb:
     - curl http://localhost:8080/static/css/font-awesome.min.css
     - curl http://localhost:8080/static/css/jquery.dataTables.min.css
     - curl http://localhost:8080/static/css/responsive.dataTables.min.css
-    - curl http://localhost:8080/static/fonts/FontAwesome.otf
     - curl http://localhost:8080/static/fonts/fontawesome-webfont.eot
     - curl http://localhost:8080/static/fonts/fontawesome-webfont.svg
-    - curl http://localhost:8080/static/fonts/fontawesome-webfont.ttf
     - curl http://localhost:8080/static/fonts/fontawesome-webfont.woff
     - curl http://localhost:8080/static/fonts/fontawesome-webfont.woff2
     - curl http://localhost:8080/static/images/sort_asc.png

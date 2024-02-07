@@ -4,10 +4,11 @@ Priority: optional
 Maintainer: Patrik Dufresne <patrik@ikus-soft.com>
 Build-Depends:
  chromium-driver,
- coreutils,
+ coreutils (>= 8.30),
  debhelper-compat (= 13),
  dh-sequence-python3,
- gzip,
+ gzip (>= 1.9),
+ help2man,
  python3,
  python3-all-dev,
  python3-apscheduler,
@@ -45,8 +46,8 @@ Vcs-Browser: https://gitlab.com/ikus-soft/rdiffweb
 Package: rdiffweb
 Architecture: all
 Depends:
- coreutils,
- gzip,
+ coreutils (>= 8.30),
+ gzip (>= 1.9),
  fonts-font-awesome,
  libjs-bootstrap4,
  libjs-chart.js,
@@ -57,6 +58,7 @@ Depends:
  python3-future,
  rdiff-backup,
  ${python3:Depends},
+ ${misc:Depends},
 Suggests:
  python3-psycopg2,
 Description: web interface to rdiff-backup repositories

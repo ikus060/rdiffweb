@@ -2,38 +2,34 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: rdiffweb
 Upstream-Contact: Patrik Dufresne <patrik@ikus-soft.com>
 Source: https://github.com/rdiff-backup/rdiff-backup
+Files-Excluded: extras
+ rdiffweb/static/css/bootstrap.min.css
+ rdiffweb/static/css/bootstrap.min.css.map
+ rdiffweb/static/css/font-awesome.css.map
+ rdiffweb/static/css/font-awesome.min.css
+ rdiffweb/static/css/jquery.dataTables.min.css
+ rdiffweb/static/css/responsive.dataTables.min.css
+ rdiffweb/static/fonts/fontawesome-webfont.eot
+ rdiffweb/static/fonts/fontawesome-webfont.svg
+ rdiffweb/static/fonts/fontawesome-webfont.woff
+ rdiffweb/static/fonts/fontawesome-webfont.woff2
+ rdiffweb/static/images/sort_asc.png
+ rdiffweb/static/images/sort_asc_disabled.png
+ rdiffweb/static/images/sort_both.png
+ rdiffweb/static/images/sort_desc.png
+ rdiffweb/static/images/sort_desc_disabled.png
+ rdiffweb/static/js/bootstrap.bundle.js.map
+ rdiffweb/static/js/bootstrap.bundle.min.js
+ rdiffweb/static/js/chartkick.min.js
+ rdiffweb/static/js/chart.min.js
+ rdiffweb/static/js/dataTables.buttons.min.js
+ rdiffweb/static/js/dataTables.responsive.min.js
+ rdiffweb/static/js/jquery.dataTables.min.js
+ rdiffweb/static/js/jquery.min.js
 
 Files: *
 Copyright: 2019-2021 Patrik Dufresne <patrik@ikus-soft.com>
 License: GPL-3+
-
-Files:
- rdiffweb/static/js/bootstrap.*
-Copyright: 2011-2019, Twitter, Inc.
-           2014, jQuery Foundation and other contributors
-           2014, "Cowboy" Ben Alman, contributors
-           HTML5 Boilerplate
-           2011, Nicolas Gallagher <nicolas@nicolasgallagher.com>
-           2012, 2013, Tim Kadlec <tim@timkadlec.com>
-License-Grant:
- Code and documentation copyright 2011-2019 Twitter, Inc.
- Code released under the MIT license
- <https://github.com/twbs/bootstrap/blob/master/LICENSE>.
- Docs released under Creative Commons
- <https://github.com/twbs/bootstrap/blob/master/docs/LICENSE>.
-License: Expat
-
-Files: rdiffweb/static/js/chart.min.js
-Copyright: Copyright (C) 2021 Chart.js Contributors
-License: MIT
-
-Files: rdiffweb/static/js/chartkick.min.js
-Copyright: Copyright (c) 2013-2021 Andrew Kane
-License: MIT
-
-Files: rdiffweb/static/js/jquery.min.js
-Copyright: 2005-2011 John Resig, Brandon Aaron & Jörn Zaefferer
-License: GPL-2 or MIT
 
 License: GPL-3+
  This program is free software: you can redistribute it and/or modify
@@ -51,79 +47,3 @@ License: GPL-3+
  .
  The full text of the GNU General Public License version 3
  can be found in the file /usr/share/common-licenses/GPL-3.
-
-License: Expat
- Permission is hereby granted, free of charge, to any person obtaining
- a copy of this software and associated documentation files (the
- "Software"), to deal in the Software without restriction, including
- without limitation the rights to use, copy, modify, merge, publish,
- distribute, sublicense, and/or sell copies of the Software, and to
- permit persons to whom the Software is furnished to do so, subject to
- the following conditions:
- .
- The above copyright notice and this permission notice shall be
- included in all copies or substantial portions of the Software.
- .
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-License: BSD-3-Clause
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
-     * Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-     * Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-     * Neither the name of the <organization> nor the
-       names of its contributors may be used to endorse or promote products
-       derived from this software without specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY Michael Bostock ''AS IS'' AND ANY
- EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL <copyright holder> BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-License: GPL-2
- On Debian GNU/Linux systems,
- the complete text of the GNU General  Public License
- can be found in </usr/share/common-licenses/GPL-2>.
-
-License: MIT
- Copyright (c) 2011 John Resig, https://jquery.com/
- .
- Permission is hereby granted, free of charge,
- to any person obtaining a copy
- of this software and associated documentation files (the "Software"),
- to deal in the Software without restriction,
- including without limitation
- the rights to use, copy, modify, merge, publish, distribute,
- sublicense, and/or sell copies of the Software,
- and to permit persons to whom the Software is furnished to do so,
- subject to the following conditions:
- .
- The above copyright notice and this permission notice
- shall be included in all copies
- or substantial portions of the Software.
- .
- THE SOFTWARE IS PROVIDED "AS IS",
- WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- INCLUDING BUT NOT LIMITED TO
- THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
- FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
- OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
