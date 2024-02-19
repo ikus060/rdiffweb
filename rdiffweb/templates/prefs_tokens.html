@@ -53,6 +53,18 @@
                 {% trans %}Never{% endtrans %}
               {% endif %}
             </strong>
+            <br />
+            {% trans %}Scopes{% endtrans %}
+            <strong>
+              {% set scope_table = dict(form.scope.choices) %}
+              {%- for s in token.scope -%}
+                {%- if loop.index > 1 %},
+                {% endif -%}
+                {{ scope_table.get(s, s).split(' - ')[0] }}
+              {%- else -%}
+                {% trans %}Default access{% endtrans %}
+              {%- endfor -%}
+            </strong>
           </p>
         </li>
       {% else %}

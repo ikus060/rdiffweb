@@ -110,6 +110,11 @@ def db_after_create(target, connection, **kw):
         # Add ignore_weekday column to repo table
         _column_add(connection, RepoObject.__table__.c.IgnoreWeekday)
 
+        # Add Token.scope column - since v2.9.0 with value of All for backward compatibility
+        if not _column_exists(connection, Token._scope):
+            _column_add(connection, Token._scope)
+            Token.query.update({Token._scope: 'all'})
+
         if getattr(connection, '_transaction', None):
             connection._transaction.commit()
 
