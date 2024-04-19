@@ -36,8 +36,10 @@
             rel="stylesheet"
             type="text/css"/>
       <!-- Custom -->
-      <script src="{{ url_for('/static/js/main.js') }}"></script>
-      <link href="{{ url_for('/main.css') }}" rel="stylesheet" type="text/css"/>
+      <script src="{{ url_for('/static/js/main.js', v=cache_invalid) }}"></script>
+      <link href="{{ url_for('/main.css', v=cache_invalid) }}"
+            rel="stylesheet"
+            type="text/css"/>
     {% endblock head %}
     {% block script %}
     {% endblock script %}

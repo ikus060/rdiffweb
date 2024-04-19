@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import json
 import logging
 import os
@@ -31,6 +32,7 @@ import rdiffweb.core.notification
 import rdiffweb.core.quota
 import rdiffweb.core.remove_older
 import rdiffweb.plugins.ldap
+import rdiffweb.plugins.restapi
 import rdiffweb.plugins.scheduler
 import rdiffweb.plugins.smtp
 import rdiffweb.tools.auth_form
@@ -56,9 +58,10 @@ from rdiffweb.controller.page_login import LoginPage
 from rdiffweb.controller.page_logs import LogsPage
 from rdiffweb.controller.page_mfa import MfaPage
 from rdiffweb.controller.page_pref_sshkeys import ApiSshKeys
+from rdiffweb.controller.page_pref_tokens import ApiTokens
 from rdiffweb.controller.page_prefs import PreferencesPage
 from rdiffweb.controller.page_restore import RestorePage
-from rdiffweb.controller.page_settings import SettingsPage
+from rdiffweb.controller.page_settings import ApiRepos, SettingsPage
 from rdiffweb.controller.page_stats import StatsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
@@ -90,6 +93,8 @@ def _json_handler(*args, **kwargs):
     def default(o):
         if isinstance(o, RdiffTime):
             return str(o)
+        elif isinstance(o, datetime.datetime):
+            return str(RdiffTime(o))
         raise TypeError(repr(o) + " is not JSON serializable")
 
     encode = json.JSONEncoder(default=default, ensure_ascii=False).iterencode
@@ -124,6 +129,8 @@ class Root(LocationsPage):
         self.settings = SettingsPage()
         self.api = ApiPage()
         self.api.currentuser.sshkeys = ApiSshKeys()
+        self.api.currentuser.tokens = ApiTokens()
+        self.api.currentuser.repos = ApiRepos()
         self.graphs = GraphsPage()
         self.logs = LogsPage()
 
@@ -142,7 +149,7 @@ class Root(LocationsPage):
     @cherrypy.tools.sessions(on=False)
     @cherrypy.tools.secure_headers(on=False)
     @cherrypy.tools.caching(on=True)
-    def main_css(self):
+    def main_css(self, **kwargs):
         if cherrypy.request.method not in ('GET', 'HEAD'):
             raise cherrypy.HTTPError(400)
         cfg = self.app.cfg
@@ -168,14 +175,39 @@ class RdiffwebApp(Application):
         # Initialise the template engine.
         self.templates = rdw_templating.TemplateManager()
 
+        # Pick the right implementation for storage
+        rate_limit_storage_class = rdiffweb.tools.ratelimit.RamRateLimit
+        if cfg.rate_limit_dir:
+            rate_limit_storage_class = rdiffweb.tools.ratelimit.FileRateLimit
+
         # Configure all the plugins.
         db_uri = self.cfg.database_uri if '://' in self.cfg.database_uri else "sqlite:///" + self.cfg.database_uri
         cherrypy.config.update(
             {
                 'environment': 'development' if cfg.debug else cfg.environment,
+                'tools.encode.on': True,
+                'tools.encode.encoding': 'utf-8',
+                'tools.gzip.on': True,
+                # Define error page handler.
+                'error_page.default': self.error_page,
                 # Configure database plugins
                 'tools.db.uri': db_uri,
                 'tools.db.debug': cfg.debug,
+                # Configure session storage
+                'tools.sessions.on': True,
+                'tools.sessions.debug': cfg.debug,
+                'tools.sessions.storage_class': DbSession,
+                'tools.sessions.httponly': True,
+                'tools.sessions.timeout': cfg.session_idle_timeout,  # minutes
+                'tools.sessions.persistent': False,  # auth_form should update this.
+                'tools.auth_form.persistent_timeout': cfg.session_persistent_timeout,  # minutes
+                'tools.auth_form.absolute_timeout': cfg.session_absolute_timeout,  # minutes
+                # Configure rate limit
+                'tools.ratelimit.debug': cfg.debug,
+                'tools.ratelimit.delay': 3600,
+                'tools.ratelimit.limit': cfg.rate_limit,
+                'tools.ratelimit.storage_class': rate_limit_storage_class,
+                'tools.ratelimit.storage_path': cfg.rate_limit_dir,
                 # Configure custom json_handler
                 'tools.json_out.handler': _json_handler,
                 # Configure LDAP plugin
@@ -240,35 +272,14 @@ class RdiffwebApp(Application):
         # Create database if required
         cherrypy.tools.db.create_all()
 
-        # Pick the right implementation for storage
-        rate_limit_storage_class = rdiffweb.tools.ratelimit.RamRateLimit
-        if cfg.rate_limit_dir:
-            rate_limit_storage_class = rdiffweb.tools.ratelimit.FileRateLimit
-
         config = {
             '/': {
                 # To work around the new behaviour in CherryPy >= 5.5.0, force usage of
                 # ISO-8859-1 encoding for URL. This avoid any conversion of the
                 # URL into UTF-8.
                 'request.uri_encoding': 'ISO-8859-1',
-                'tools.encode.on': True,
-                'tools.encode.encoding': 'utf-8',
-                'tools.gzip.on': True,
-                'error_page.default': self.error_page,
-                'tools.sessions.on': True,
-                'tools.sessions.debug': cfg.debug,
-                'tools.sessions.storage_class': DbSession,
-                'tools.sessions.httponly': True,
-                'tools.sessions.timeout': cfg.session_idle_timeout,  # minutes
-                'tools.sessions.persistent': False,  # auth_form should update this.
-                'tools.auth_form.persistent_timeout': cfg.session_persistent_timeout,  # minutes
-                'tools.auth_form.absolute_timeout': cfg.session_absolute_timeout,  # minutes
-                'tools.ratelimit.debug': cfg.debug,
-                'tools.ratelimit.delay': 3600,
-                'tools.ratelimit.limit': cfg.rate_limit,
-                'tools.ratelimit.storage_class': rate_limit_storage_class,
-                'tools.ratelimit.storage_path': cfg.rate_limit_dir,
             },
+            '/api': {'request.dispatch': rdiffweb.plugins.restapi.Dispatcher()},
         }
 
         # Initialize the application

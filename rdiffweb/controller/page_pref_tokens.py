@@ -19,8 +19,10 @@
 import logging
 
 import cherrypy
-from wtforms.fields import DateTimeField, StringField, SubmitField
+from markupsafe import Markup, escape
+from wtforms.fields import DateTimeField, SelectMultipleField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional
+from wtforms.widgets import html_params
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.filter_authorization import is_maintainer
@@ -36,6 +38,70 @@ except ImportError:
     from wtforms.widgets.html5 import DateInput
 
 logger = logging.getLogger(__name__)
+
+
+class ScopeField(SelectMultipleField):
+    def __init__(self, label=None, **kwargs):
+        choices = [
+            ('all', _('Everything - Allow read write access to everything.')),
+            (
+                'read_user',
+                _(
+                    'Read user settings - Grant read access to your profile, notification settings, ssh keys and access token.'
+                ),
+            ),
+            (
+                'write_user',
+                _(
+                    'Write user settings - Grant write access to your profile, notification settings, ssh keys and access token.'
+                ),
+            ),
+        ]
+        super().__init__(label, choices=choices, **kwargs)
+
+    def process_formdata(self, valuelist):
+        try:
+            self.data = list(self.coerce(x) for x in valuelist)
+        except ValueError as exc:
+            raise ValueError(self.gettext("Invalid choice(s): one or more data inputs could not be coerced.")) from exc
+
+    def populate_obj(self, obj, name):
+        """
+        Populates `obj.<name>` with the field's data.
+
+        :note: This is a destructive operation. If `obj.<name>` already exists,
+               it will be overridden. Use with caution.
+        """
+        setattr(obj, name, self.data)
+
+    def widget(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        html = []
+        for entry in field.iter_choices():
+            val = entry[0]
+            label = entry[1]
+            if ' - ' in label:
+                label, description = label.split(' - ', 2)
+            else:
+                description = ''
+            field_id = '%s_%s' % (field.id, val)
+            html.append(
+                '<div><input type="checkbox" %s/> <label %s data-toggle="tooltip" data-placement="right">%s</label></div>'
+                % (
+                    html_params(
+                        id=field_id,
+                        name=field.name,
+                        value=val,
+                        checked=entry[2],
+                    ),
+                    html_params(
+                        for_=field_id,
+                        title=description,
+                    ),
+                    escape(label),
+                )
+            )
+        return Markup(''.join(html))
 
 
 class TokenForm(CherryForm):
@@ -61,6 +127,7 @@ class TokenForm(CherryForm):
         widget=DateInput(),
         validators=[Optional()],
     )
+    scope = ScopeField(_('Select scopes'), description=_('Scopes set the permissions level of this access token.'))
     add_access_token = SubmitField(_('Create access token'))
 
     def is_submitted(self):
@@ -69,7 +136,9 @@ class TokenForm(CherryForm):
 
     def populate_obj(self, userobj):
         try:
-            token = userobj.add_access_token(self.name.data, self.expiration.data)
+            secret = userobj.add_access_token(
+                name=self.name.data, expiration_time=self.expiration.data, scope=self.scope.data
+            )
             userobj.commit()
             flash(
                 _(
@@ -77,7 +146,7 @@ class TokenForm(CherryForm):
                     "Make sure to save it - you won't be able to access it again.\n"
                     "%s"
                 )
-                % token,
+                % secret,
                 level='info',
             )
             return True
@@ -140,3 +209,73 @@ class PagePrefTokens(Controller):
             'tokens': Token.query.filter(Token.userid == self.app.currentuser.userid),
         }
         return self._compile_template("prefs_tokens.html", **params)
+
+
+@cherrypy.expose
+@cherrypy.tools.json_out()
+class ApiTokens(Controller):
+    def list(self):
+        tokens = Token.query.filter(Token.userid == self.app.currentuser.userid).all()
+        return [
+            {
+                'title': token.name,
+                'access_time': token.access_time,
+                'creation_time': token.creation_time,
+                'expiration_time': token.expiration_time,
+                'scope': token.scope,
+            }
+            for token in tokens
+        ]
+
+    def get(self, name):
+        token = Token.query.filter(Token.userid == self.app.currentuser.userid, Token.name == name).first()
+        if not token:
+            raise cherrypy.HTTPError(404)
+        return {
+            'title': token.name,
+            'access_time': token.access_time,
+            'creation_time': token.creation_time,
+            'expiration_time': token.expiration_time,
+            'scope': token.scope,
+        }
+
+    @cherrypy.tools.required_scope(scope='all,write_user')
+    def delete(self, name):
+        userobj = self.app.currentuser
+        token = Token.query.filter(Token.userid == userobj.userid, Token.name == name).first()
+        if not token:
+            raise cherrypy.HTTPError(404)
+        userobj.delete_access_token(name)
+        userobj.commit()
+        return {}
+
+    @cherrypy.tools.required_scope(scope='all,write_user')
+    def post(self, **kwargs):
+        # Validate input data.
+        form = TokenForm(json=1)
+        if not form.strict_validate():
+            raise cherrypy.HTTPError(400, form.error_message)
+
+        # Create the Access Token
+        userobj = self.app.currentuser
+        try:
+            secret = userobj.add_access_token(
+                name=form.name.data, expiration_time=form.expiration.data, scope=form.scope.data
+            )
+            userobj.commit()
+            token = Token.query.filter(
+                Token.userid == self.app.currentuser.userid, Token.name == form.name.data
+            ).first()
+            if not token:
+                raise cherrypy.HTTPError(400)
+            return {
+                'title': token.name,
+                'access_time': token.access_time,
+                'creation_time': token.creation_time,
+                'expiration_time': token.expiration_time,
+                'token': secret,
+                'scope': token.scope,
+            }
+        except Exception as e:
+            userobj.rollback()
+            raise cherrypy.HTTPError(400, str(e))
