@@ -128,12 +128,13 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
-## Next Release
+## 2.9.0 (2024-04-22)
 
 * Add API entry point to create and list access token
 * Add access token scope #298
 * Add user's quota to Rdiffweb API #299
 * Change Debian and Ubuntu version numbering
+* Drop support for Debian Buster
 
 ## 2.8.9 (2023-02-19)
 

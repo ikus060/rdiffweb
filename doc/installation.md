@@ -28,7 +28,7 @@ These minimum requirements are solely for evaluation and shall not be used in a 
 
 If you are running a Debian-based system, you should use `apt` to install Rdiffweb.
 
-The following Debian Release as supported: Buster (10), Bullseye (11), Bookworm (12)
+The following Debian Release as supported: Bullseye (11), Bookworm (12)
 
 The following Ubuntu Release are supported: Jammy (22.04), Kinetic (22.10), Lunar (23.04), Mantic (23.10)
 
