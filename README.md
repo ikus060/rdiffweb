@@ -128,6 +128,17 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
+## Next Release
+
+* Add API entry point to create and list access token
+* Add access token scope #298
+* Add user's quota to Rdiffweb API #299
+* Change Debian and Ubuntu version numbering
+
+## 2.8.9 (2023-02-19)
+
+* Fix display of page settings for user with role "user"
+
 ## 2.8.8 (2023-01-08)
 
 * Fix usage of `session-idle-timeout` in config file #296
@@ -148,7 +159,7 @@ We are passionate about developing and maintaining this open-source project to m
 
 * Fix reported version in Debian package #289
 * Add support for WTForms v3.1.0
-* Add last backup date to email notiication
+* Add last backup date to email notification
 
 ## 2.8.4 (2023-09-29)
 
