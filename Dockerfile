@@ -1,4 +1,4 @@
-# rdiff-backup is compatible with Debian Buster python 3.7
+# rdiff-backup is compatible with Debian bullseye python 3.10
 FROM python:3.10-bullseye AS base
 
 LABEL author="Patrik Dufresne <patrik@ikus-soft.com>"

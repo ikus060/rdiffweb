@@ -51,8 +51,6 @@ py3:
     matrix:
       - TOXENV: py3
         IMAGE: python:3.6
-      - TOXENV: buster
-        IMAGE: python:3.7-buster
       - TOXENV: py3
         IMAGE: python:3.8
       - TOXENV: bullseye
@@ -79,7 +77,7 @@ rdiff-backup-latest:
   <<: *tox
   image: python:3.9-bullseye
   variables:
-    TOXENV: buster
+    TOXENV: bullseye
   allow_failure: true
   before_script:
     - apt-get update
@@ -149,10 +147,6 @@ package:deb:
   image: buildpack-deps:$DIST
   parallel:
     matrix:
-      # Disable unitest on buster. Cherrypy packages doesn't include tests
-      - DIST: buster
-        DEB_BUILD_OPTIONS: nocheck
-        BACKPORTS: deb http://deb.debian.org/debian buster-backports main
       - DIST: [bullseye, bookworm]
       - DIST: [jammy, lunar, mantic]
   script:
@@ -160,10 +154,9 @@ package:deb:
     - rm -f ../rdiffweb_*
     - rm -Rf ./dist/$DIST/*
     # Install dependencies
-    - if [ ! -z "$BACKPORTS" ]; then echo "$BACKPORTS" > /etc/apt/sources.list.d/backports.list; fi
     - apt update
     - apt -y --no-install-recommends install devscripts lsb-release
-    - if [ ! -z "$BACKPORTS" ]; then apt build-dep -t $DIST-backports -y . ; else apt build-dep -y .; fi
+    - apt build-dep -y .
     # Generate change log
     - export DEBEMAIL=${CI_COMMIT_AUTHOR}
     - debian/rules changelog
@@ -185,7 +178,7 @@ test-package:deb:
   needs: ["package:deb"]
   parallel:
     matrix:
-      - DIST: [buster, bullseye, bookworm]
+      - DIST: [bullseye, bookworm]
       # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
       # So we need to make it explicit using environment variable
       - DIST: [jammy, lunar, mantic]
@@ -314,7 +307,7 @@ publish:deb:
       - $NEXUS_PWD
   parallel:
     matrix:
-      - DIST: [buster, bullseye, bookworm, jammy, lunar, mantic]
+      - DIST: [bullseye, bookworm, jammy, lunar, mantic]
   script: |
     set -e
     set -x
