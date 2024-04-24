@@ -82,7 +82,7 @@ class RepoObject(Base, RdiffRepo):
     )
     repopath = Column('RepoPath', String, nullable=False, default='')
     maxage = Column('MaxAge', SmallInteger, nullable=False, server_default="0")
-    encoding = Column('Encoding', String, default=DEFAULT_REPO_ENCODING)
+    _encoding_name = Column('Encoding', String)
     _keepdays = Column('keepdays', String, nullable=False, default="-1")
     _ignore_weekday = Column('IgnoreWeekday', Integer, nullable=False, server_default="0")
 
@@ -189,6 +189,30 @@ class RepoObject(Base, RdiffRepo):
     def keepdays(self, value):
         self._keepdays = value
 
+    @hybrid_property
+    def encoding(self):
+        return (
+            self._encoding_name
+            if self._encoding_name is not None and self._encoding_name != ''
+            else RepoObject.DEFAULT_REPO_ENCODING
+        )
+
+    @encoding.expression
+    def encoding(cls):
+        return case_wrapper(
+            (and_(cls._encoding_name != None, cls._encoding_name != ''), cls._encoding_name),  # noqa
+            else_=RepoObject.DEFAULT_REPO_ENCODING,
+        )
+
+    @encoding.setter
+    def encoding(self, value):
+        if value is None:
+            raise ValueError(_('invalid encoding %s') % value)
+        codec = encodings.search_function(value.lower())
+        if not codec:
+            raise ValueError(_('invalid encoding %s') % value)
+        self._encoding_name = codec.name
+
     def delete(self, path=b''):
         """Properly remove the given repository by updating the user's repositories."""
         logger.info("deleting repository %s", self)
@@ -200,13 +224,6 @@ class RepoObject(Base, RdiffRepo):
         RdiffRepo.delete_repo(self)
         # Delete repo from database
         return super().delete()
-
-    @validates('encoding')
-    def validate_encoding(self, key, value):
-        codec = encodings.search_function(value.lower())
-        if not codec:
-            raise ValueError(_('invalid encoding %s') % value)
-        return codec.name
 
     @validates('maxage')
     def validate_maxage(self, key, value):
@@ -264,8 +281,12 @@ class RepoObject(Base, RdiffRepo):
             self._ignore_weekday = sum([1 << idx for idx in range(0, 7) if idx in value])
 
 
-@event.listens_for(RepoObject.encoding, "set")
+@event.listens_for(RepoObject._encoding_name, "set")
 def encoding_set(target, value, oldvalue, initiator):
+    """When updating encoding, also update the codec in backend."""
+    if value is None:
+        # Do nothing
+        return
     codec = encodings.search_function(value)
     if codec:
         target._encoding = codec
