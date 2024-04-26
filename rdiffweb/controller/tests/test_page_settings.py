@@ -62,7 +62,7 @@ class SettingsTest(rdiffweb.test.WebCase):
 
     def test_page_with_encoding_none(self):
         # Given a repo where encoding is not defined.
-        RepoObject.query.update({RepoObject.encoding: None})
+        RepoObject.query.update({RepoObject._encoding_name: None})
         repo = RepoObject.query.first()
         repo.commit()
         # When browsing settings pages
@@ -455,6 +455,29 @@ class ApiReposTest(rdiffweb.test.WebCase):
             self.assertStatus(400)
             self.assertNotEqual(str(getattr(repo, field)), new_value if expected_value is None else expected_value)
 
+    def test_post_repo_with_encoding_empty(self):
+        # Given a user repo where the encoding is define as NULL in database
+        user = UserObject.get_user('admin')
+        repo = RepoObject.get_repo('admin/testcases', as_user=user)
+        RepoObject.query.update({RepoObject._encoding_name: ''})
+        user.commit()
+        self.assertEqual(repo.name, 'testcases')
+
+        # When updating repo settings
+        self.getPage(
+            '/api/currentuser/repos/testcases',
+            headers=self.auth + [('Content-Type', 'application/json')],
+            method='POST',
+            body={
+                'maxage': '7',
+            },
+        )
+
+        # Then it's working
+        repo.expire()
+        self.assertStatus(200)
+        self.assertEqual(repo.maxage, 7)
+
     def test_post_repo_maxage_json(self):
         # Given a user with repos
         user = UserObject.get_user('admin')
@@ -471,7 +494,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
             },
         )
 
-        # Then it's working or not
+        # Then it's working
         repo.expire()
         self.assertStatus(200)
         self.assertEqual(repo.maxage, 7)
