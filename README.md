@@ -128,6 +128,12 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
+## 2.9.1 (2024-06-11)
+
+* Add "Preferred Language" to Admin view to allow administrator to update the value
+* Improve DockerImage by removing cache files
+* Upgrade rdiff-backup to v2.2.6 in DockerFile
+
 ## 2.9.0 (2024-04-22)
 
 * Add API entry point to create and list access token

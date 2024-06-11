@@ -19,12 +19,13 @@ COPY . /src/
 
 RUN set -x; \
   cd /src/ && \
-  pip3 install rdiff-backup==2.0.5
-
-CMD ["/usr/local/bin/rdiffweb"]
+  pip3 install --no-cache-dir rdiff-backup==2.2.6
 
 FROM base AS test
 RUN set -x; \
   cd /src/ && \
-  pip3 install . ".[test]" && \
-  pytest
+  pip3 install --no-cache-dir . ".[test]" && \
+  pytest && \
+  rm -Rf /tmp/* /src/
+
+CMD ["/usr/local/bin/rdiffweb"]
