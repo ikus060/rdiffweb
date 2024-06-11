@@ -86,6 +86,7 @@ class AdminTest(rdiffweb.test.WebCase):
         role=None,
         disk_quota=None,
         mfa=None,
+        lang=None,
         report_time_range=None,
     ):
         b = {}
@@ -104,6 +105,8 @@ class AdminTest(rdiffweb.test.WebCase):
             b['disk_quota'] = disk_quota
         if mfa is not None:
             b['mfa'] = str(mfa)
+        if lang is not None:
+            b['lang'] = str(lang)
         if report_time_range is not None:
             b['report_time_range'] = str(report_time_range)
         self.getPage("/admin/users/edit/" + username, method='POST', body=b)
@@ -546,6 +549,14 @@ class AdminTest(rdiffweb.test.WebCase):
         # Then report_time_range is updated
         userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(7, userobj.report_time_range)
+
+    def test_edit_lang(self):
+        # Given a user
+        # When editing the lang
+        self._edit_user(username=self.USERNAME, lang='fr')
+        # Then lang is updated
+        userobj = UserObject.get_user(self.USERNAME)
+        self.assertEqual('fr', userobj.lang)
 
 
 class AdminTestWithoutQuota(rdiffweb.test.WebCase):

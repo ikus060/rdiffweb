@@ -33,6 +33,7 @@ from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.model import UserObject
 from rdiffweb.core.rdw_templating import url_for
 from rdiffweb.tools.i18n import gettext_lazy as _
+from rdiffweb.tools.i18n import list_available_locales
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -136,6 +137,7 @@ class UserForm(CherryForm):
             "Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo."
         ),
     )
+    lang = SelectField(_('Preferred Language'), default='')
     report_time_range = SelectField(
         _('Send Backup report'),
         choices=[
@@ -166,6 +168,11 @@ class UserForm(CherryForm):
         if not self.quota_enabled:
             self.disk_quota.render_kw = {'readonly': True, 'disabled': True}
             self.disk_usage.render_kw = {'readonly': True, 'disabled': True}
+        # Define selectable language
+        languages = [(locale.language, locale.display_name.capitalize()) for locale in list_available_locales()]
+        languages = sorted(languages, key=lambda x: x[1])
+        languages.insert(0, ('', _('(default)')))
+        self.lang.choices = languages
         # Add help text for LDAP user
         cfg = cherrypy.request.app.cfg
         if cfg.ldap_uri:
@@ -195,6 +202,7 @@ class UserForm(CherryForm):
             userobj.email = self.email.data or ''
             userobj.user_root = self.user_root.data
             userobj.mfa = self.mfa.data
+            userobj.lang = self.lang.data or ''
             userobj.report_time_range = self.report_time_range.data
             if userobj.user_root:
                 if not userobj.valid_user_root():
