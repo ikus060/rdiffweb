@@ -128,6 +128,10 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
+## 2.9.2 (2024-07-03)
+
+* Use default language to send notification if user doesn't have a "Preferred Language" #306
+
 ## 2.9.1 (2024-06-11)
 
 * Add "Preferred Language" to Admin view to allow administrator to update the value

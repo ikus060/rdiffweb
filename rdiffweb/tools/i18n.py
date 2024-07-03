@@ -118,7 +118,10 @@ def preferred_lang(lang):
     prev_trans = getattr(_current, 'translation', None)
     try:
         # Update prefered lang and clear translation.
-        _current.preferred_lang = [lang] + prev_lang
+        if lang:
+            _current.preferred_lang = [lang]
+        elif hasattr(_current, 'preferred_lang'):
+            del _current.preferred_lang
         _current.translation = None
         yield
     finally:
