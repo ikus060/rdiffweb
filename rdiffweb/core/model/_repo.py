@@ -82,7 +82,7 @@ class RepoObject(Base, RdiffRepo):
     )
     repopath = Column('RepoPath', String, nullable=False, default='')
     maxage = Column('MaxAge', SmallInteger, nullable=False, server_default="0")
-    _encoding_name = Column('Encoding', String)
+    _encoding_name = Column('Encoding', String, default='')
     _keepdays = Column('keepdays', String, nullable=False, default="-1")
     _ignore_weekday = Column('IgnoreWeekday', Integer, nullable=False, server_default="0")
 
