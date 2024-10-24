@@ -1,4 +1,4 @@
-image: python:3-bullseye
+image: python:3.10-bullseye
 
 stages:
   - test
@@ -13,7 +13,6 @@ stages:
 # Test Stage
 #
 .tox: &tox
-  image: python:3.10-bullseye
   stage: test
   variables:
     TOXENV: $CI_JOB_NAME
