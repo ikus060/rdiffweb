@@ -128,6 +128,18 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
+## 2.9.5 (2024-11-05)
+
+* Add support for Ubuntu Noble 24.04 LTS #317
+
+## 2.9.4 (2024-10-24)
+
+* Complete french translation #315
+
+## 2.9.3 (2024-08-02)
+
+* Provide default encoding value to support old database with NOT NULL contrains
+
 ## 2.9.2 (2024-07-03)
 
 * Use default language to send notification if user doesn't have a "Preferred Language" #306
