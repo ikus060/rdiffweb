@@ -95,10 +95,17 @@ class LoginAbstractTest(rdiffweb.test.WebCase):
     def setUp(self):
         cherrypy.test.helper.CPWebCase.setUp(self)
         cherrypy.tools.db.drop_all()
+
         # Create custom database ONLY SQLITE here
         dbapi = cherrypy.tools.db.get_session().bind.raw_connection()
+
         if self.init_sql:
             try:
+                # Make sure the tables are deleted
+                cursor = dbapi.execute("SELECT name FROM sqlite_master WHERE type='table';")
+                tables = cursor.fetchall()
+                self.assertEqual(['sqlite_sequence'], [table[0] for table in tables])
+                # Execute custom script to initialize the database.
                 dbapi.executescript(self.init_sql)
             finally:
                 dbapi.close()

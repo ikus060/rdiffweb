@@ -130,7 +130,7 @@ We are passionate about developing and maintaining this open-source project to m
 
 ## 2.9.5 (2024-11-05)
 
-* Add support for Ubuntu Noble 24.04 LTS #317
+* Add support for Ubuntu Noble 24.04 LTS & Oracular 24.10 #317
 
 ## 2.9.4 (2024-10-24)
 

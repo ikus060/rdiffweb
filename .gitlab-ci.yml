@@ -147,7 +147,7 @@ package:deb:
   parallel:
     matrix:
       - DIST: [bullseye, bookworm]
-      - DIST: [jammy, lunar, mantic, noble]
+      - DIST: [jammy, lunar, mantic, noble, oracular]
   script:
     # Clean-up
     - rm -f ../rdiffweb_*
@@ -180,7 +180,7 @@ test-package:deb:
       - DIST: [bullseye, bookworm]
       # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
       # So we need to make it explicit using environment variable
-      - DIST: [jammy, lunar, mantic, noble]
+      - DIST: [jammy, lunar, mantic, noble, oracular]
         TZ: UTC
   script:
     - apt update
@@ -306,7 +306,7 @@ publish:deb:
       - $NEXUS_PWD
   parallel:
     matrix:
-      - DIST: [bullseye, bookworm, jammy, lunar, mantic, noble]
+      - DIST: [bullseye, bookworm, jammy, lunar, mantic, noble, oracular]
   script: |
     set -e
     set -x
