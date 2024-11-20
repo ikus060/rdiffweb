@@ -30,7 +30,7 @@ If you are running a Debian-based system, you should use `apt` to install Rdiffw
 
 The following Debian Release as supported: Bullseye (11), Bookworm (12)
 
-The following Ubuntu Release are supported: Jammy (22.04 LTS), Kinetic (22.10), Lunar (23.04), Mantic (23.10), Noble (24.04 LTS) and Oracular (24.10)
+The following Ubuntu Release are supported: Jammy (22.04 LTS), Lunar (23.04), Mantic (23.10), Noble (24.04 LTS) and Oracular (24.10)
 
     apt install lsb-release
     curl -L https://www.ikus-soft.com/archive/rdiffweb/public.key | gpg --dearmor > /usr/share/keyrings/rdiffweb-keyring.gpg

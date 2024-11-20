@@ -128,6 +128,8 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
+* Remove Ubuntu Mantic
+
 ## 2.9.5 (2024-11-05)
 
 * Add support for Ubuntu Noble 24.04 LTS & Oracular 24.10 #317
