@@ -123,7 +123,7 @@ $.fn.dataTable.ext.buttons.filter = {
 
 /** Button to clear filter and reset the state of the table. */
 $.fn.dataTable.ext.buttons.clear = {
-  text: 'Clear',
+  text: 'All',
   action: function (e, dt, node, config) {
     dt.search('');
     if (dt.init().aoSearchCols) {

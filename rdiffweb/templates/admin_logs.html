@@ -25,11 +25,10 @@
 {% block content %}
   {# Lazy loaded Table #}
   {% set buttons = [
-  {'text': _('All'), 'extend': 'filter', 'column': 'tag:name', 'search': ''},
+  {'text': _('All'), 'extend': 'clear'},
   {'text': _('User Login'), 'extend': 'filter', 'column': 'tag:name', 'search': 'auth'},
   {'text': _('Threats'), 'extend': 'filter', 'column': 'tag:name', 'search': 'threat'},
   {'text': _('User Activity'), 'extend': 'filter', 'column': 'tag:name', 'search': 'activity'},
-  {'text': _('Clear'), 'extend': 'clear'},
   ] %}
   {% set columns = [
   {'name':'filename', 'visible': False },
