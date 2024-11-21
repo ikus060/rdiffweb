@@ -41,13 +41,13 @@ class Test(unittest.TestCase):
 
     def test_search_translation(self):
         # Load default translation
-        t = i18n._search_translation('en', self.mo_dir, 'messages')
+        t = i18n._search_translation(self.mo_dir, 'messages', 'en')
         self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("en", t.locale.language)
 
     def test_search_translation_with_date_format(self):
         # Get trans
-        t = i18n._search_translation('fr_CA', self.mo_dir, 'messages')
+        t = i18n._search_translation(self.mo_dir, 'messages', 'fr_CA')
         self.assertIsInstance(t, gettext.GNUTranslations)
         self.assertEqual("fr", t.locale.language)
         # Test translation object
