@@ -38,8 +38,8 @@ class LogsPageTest(rdiffweb.test.WebCase):
         self._log(self.USERNAME, self.REPO)
         self.assertStatus(200)
         # Check revisions
-        self.assertInBody("Backup Log")
-        self.assertInBody("Restore Log")
+        self.assertInBody("Last backup log")
+        self.assertInBody("Last restore log")
         # Check show more button get displayed
         self.assertInBody("Show more")
 
