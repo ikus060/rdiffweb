@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rdiffweb 0.6.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-10-24 14:07-0400\n"
-"PO-Revision-Date: 2024-10-24 14:12-0400\n"
+"POT-Creation-Date: 2024-12-06 13:59-0500\n"
+"PO-Revision-Date: 2024-12-06 14:01-0500\n"
 "Last-Translator: \n"
 "Language-Team: fr <LL@li.org>\n"
 "Language: fr\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"Generated-By: Babel 2.12.1\n"
+"Generated-By: Babel 2.16.0\n"
 "X-Generator: Poedit 3.0.1\n"
 
 #: rdiffweb/controller/__init__.py:63 rdiffweb/controller/page_logs.py:60
@@ -138,7 +138,7 @@ msgstr "Groupe"
 
 #: rdiffweb/controller/page_admin_sysinfo.py:83
 #: rdiffweb/controller/page_admin_users.py:133
-#: rdiffweb/templates/admin_logs.html:38 rdiffweb/templates/admin_session.html:22
+#: rdiffweb/templates/admin_logs.html:37 rdiffweb/templates/admin_session.html:23
 msgid "User"
 msgstr "Utilisateur"
 
@@ -232,7 +232,7 @@ msgid "Two-Factor Authentication (2FA)"
 msgstr "Authentification à deux facteurs (2FA)"
 
 #: rdiffweb/controller/page_admin_users.py:112
-#: rdiffweb/controller/page_pref_mfa.py:48
+#: rdiffweb/controller/page_pref_mfa.py:48 rdiffweb/templates/admin_repos.html:59
 msgid "Disabled"
 msgstr "Désactivé"
 
@@ -526,7 +526,7 @@ msgstr "Le mot de passe de confirmation est vide."
 
 #: rdiffweb/controller/page_pref_general.py:102
 msgid "Update password"
-msgstr "Nouveau mot de passe"
+msgstr "Mettre à jour le mot de passe"
 
 #: rdiffweb/controller/page_pref_general.py:113
 msgid "The new password must be different from the current password."
@@ -749,8 +749,8 @@ msgid "Unknown error while adding the access token."
 msgstr "Erreur inconnue lors de l'ajout du jeton d'accès."
 
 #: rdiffweb/controller/page_pref_tokens.py:166
-#: rdiffweb/templates/admin_session.html:62
-#: rdiffweb/templates/admin_session.html:74
+#: rdiffweb/templates/admin_session.html:63
+#: rdiffweb/templates/admin_session.html:75
 #: rdiffweb/templates/prefs_session.html:19
 #: rdiffweb/templates/prefs_session.html:53 rdiffweb/templates/prefs_tokens.html:28
 #: rdiffweb/templates/prefs_tokens.html:83
@@ -773,66 +773,55 @@ msgstr "encodage %s invalide"
 
 #: rdiffweb/controller/page_settings.py:117
 #: rdiffweb/controller/page_settings.py:197
-#: rdiffweb/templates/include/widget.html:6
 msgid "1 day"
 msgstr "1 jour"
 
 #: rdiffweb/controller/page_settings.py:118
 #: rdiffweb/controller/page_settings.py:198
-#: rdiffweb/templates/include/widget.html:8
 msgid "2 days"
 msgstr "2 jours"
 
 #: rdiffweb/controller/page_settings.py:119
 #: rdiffweb/controller/page_settings.py:199
-#: rdiffweb/templates/include/widget.html:10
 msgid "3 days"
 msgstr "3 jours"
 
 #: rdiffweb/controller/page_settings.py:120
 #: rdiffweb/controller/page_settings.py:200
-#: rdiffweb/templates/include/widget.html:12
 msgid "4 days"
 msgstr "4 jours"
 
 #: rdiffweb/controller/page_settings.py:121
 #: rdiffweb/controller/page_settings.py:201
-#: rdiffweb/templates/include/widget.html:14
 msgid "5 days"
 msgstr "5 jours"
 
 #: rdiffweb/controller/page_settings.py:122
 #: rdiffweb/controller/page_settings.py:202
-#: rdiffweb/templates/include/widget.html:16
 msgid "6 days"
 msgstr "6 jours"
 
 #: rdiffweb/controller/page_settings.py:123
 #: rdiffweb/controller/page_settings.py:203
-#: rdiffweb/templates/include/widget.html:18
 msgid "1 week"
 msgstr "1 semaine"
 
 #: rdiffweb/controller/page_settings.py:124
 #: rdiffweb/controller/page_settings.py:204
-#: rdiffweb/templates/include/widget.html:20
 msgid "2 weeks"
 msgstr "2 semaines"
 
 #: rdiffweb/controller/page_settings.py:125
 #: rdiffweb/controller/page_settings.py:205
-#: rdiffweb/templates/include/widget.html:22
 msgid "3 weeks"
 msgstr "3 semaines"
 
 #: rdiffweb/controller/page_settings.py:126
-#: rdiffweb/templates/include/widget.html:24
 msgid "4 weeks"
 msgstr "4 semaines"
 
 #: rdiffweb/controller/page_settings.py:127
 #: rdiffweb/controller/page_settings.py:206
-#: rdiffweb/templates/include/widget.html:26
 msgid "1 month"
 msgstr "1 mois"
 
@@ -864,7 +853,7 @@ msgstr "Samedi"
 msgid "Sunday"
 msgstr "Dimanche"
 
-#: rdiffweb/controller/page_settings.py:176
+#: rdiffweb/controller/page_settings.py:176 rdiffweb/templates/admin_repos.html:32
 msgid "Inactivity Notification Period"
 msgstr "Période de préavis d'inactivité"
 
@@ -897,7 +886,7 @@ msgstr ""
 "samedi et le dimanche, le système ne comptera pas les jours sélectionnés lors du "
 "calcul de la période d'inactivité pour la génération de notifications."
 
-#: rdiffweb/controller/page_settings.py:190
+#: rdiffweb/controller/page_settings.py:190 rdiffweb/templates/admin_repos.html:33
 msgid "Data Retention Duration"
 msgstr "Durée de rétention des données"
 
@@ -914,7 +903,7 @@ msgstr ""
 "laquelle les données de sauvegarde doivent être conservées avant d'être "
 "supprimées."
 
-#: rdiffweb/controller/page_settings.py:196
+#: rdiffweb/controller/page_settings.py:196 rdiffweb/templates/admin_repos.html:60
 msgid "Forever"
 msgstr "Pour toujours"
 
@@ -1014,7 +1003,7 @@ msgstr "Succès"
 msgid "Warning"
 msgstr "Avertissement"
 
-#: rdiffweb/controller/page_status.py:93 rdiffweb/templates/admin_repos.html:10
+#: rdiffweb/controller/page_status.py:93 rdiffweb/templates/admin_repos.html:22
 msgid "Failed"
 msgstr "Échoué"
 
@@ -1023,12 +1012,12 @@ msgid "Hours since last backup"
 msgstr "Heures depuis la dernière sauvegarde"
 
 #: rdiffweb/controller/page_status.py:188 rdiffweb/templates/stats.html:33
-#: rdiffweb/templates/stats.html:39
+#: rdiffweb/templates/stats.html:40
 msgid "New"
 msgstr "Créé"
 
 #: rdiffweb/controller/page_status.py:189 rdiffweb/templates/stats.html:34
-#: rdiffweb/templates/stats.html:39
+#: rdiffweb/templates/stats.html:40
 msgid "Deleted"
 msgstr "Supprimé"
 
@@ -1040,35 +1029,35 @@ msgstr "Modifié"
 msgid "Average duration (min)"
 msgstr "Durée moyenne (min)"
 
-#: rdiffweb/core/librdiff.py:1268
+#: rdiffweb/core/librdiff.py:1184
 msgid "A backup is currently in progress to this repository."
 msgstr "Une sauvegarde est actuellement en cours dans ce dépôt."
 
-#: rdiffweb/core/librdiff.py:1276
+#: rdiffweb/core/librdiff.py:1192
 msgid "Initial backup in progress."
 msgstr "La sauvegarde initiale n'est pas achevée."
 
-#: rdiffweb/core/librdiff.py:1278
+#: rdiffweb/core/librdiff.py:1194
 msgid "The last backup has been interrupted."
 msgstr "La dernière sauvegarde a été interrompue."
 
-#: rdiffweb/core/librdiff.py:1281
+#: rdiffweb/core/librdiff.py:1197
 msgid "The repository cannot be found or is badly damaged."
 msgstr "Le dépôt ne peut pas être trouvé ou est gravement endommagé."
 
-#: rdiffweb/core/librdiff.py:1285
+#: rdiffweb/core/librdiff.py:1201
 msgid ""
 "Permissions denied. Contact administrator to check repository's permissions."
 msgstr ""
 "Permissions refusées. Contactez l'administrateur pour vérifier les permissions "
 "du référentiel."
 
-#: rdiffweb/core/librdiff.py:1287 rdiffweb/templates/admin_repos.html:9
+#: rdiffweb/core/librdiff.py:1203 rdiffweb/templates/admin_repos.html:21
 msgid "Healthy"
 msgstr "Bon"
 
-#: rdiffweb/core/notification.py:173 rdiffweb/templates/email_notification.html:3
-#: rdiffweb/templates/prefs_notification.html:27
+#: rdiffweb/core/notification.py:173 rdiffweb/templates/email_notification.html:6
+#: rdiffweb/templates/prefs_notification.html:26
 msgid "Notification"
 msgstr "Notification"
 
@@ -1150,7 +1139,7 @@ msgstr "Le mot de passe doit comporter entre %(min)d et %(max)d caractères."
 msgid "Password too weak."
 msgstr "Mot de passe trop simple."
 
-#: rdiffweb/core/tests/test_i18n.py:54 rdiffweb/templates/admin_users.html:69
+#: rdiffweb/core/tests/test_i18n.py:54 rdiffweb/templates/admin_users.html:76
 msgid "Edit"
 msgstr "Modifier"
 
@@ -1159,7 +1148,7 @@ msgstr "Modifier"
 msgid "Admin area"
 msgstr "Espace admin"
 
-#: rdiffweb/templates/admin.html:11 rdiffweb/templates/admin_users.html:65
+#: rdiffweb/templates/admin.html:11 rdiffweb/templates/admin_users.html:77
 msgid "Overview"
 msgstr "Aperçu"
 
@@ -1197,7 +1186,9 @@ msgstr "Connexion"
 msgid "User Activity"
 msgstr "Activité"
 
-#: rdiffweb/templates/admin_logs.html:28
+#: rdiffweb/templates/admin_logs.html:28 rdiffweb/templates/admin_repos.html:20
+#: rdiffweb/templates/admin_session.html:14 rdiffweb/templates/admin_users.html:24
+#: rdiffweb/templates/stats.html:32
 msgid "All"
 msgstr "Tout"
 
@@ -1205,27 +1196,23 @@ msgstr "Tout"
 msgid "Threats"
 msgstr "Menaces"
 
-#: rdiffweb/templates/admin_logs.html:32 rdiffweb/templates/stats.html:32
-msgid "Clear"
-msgstr "Réinitialiser"
-
-#: rdiffweb/templates/admin_logs.html:36
+#: rdiffweb/templates/admin_logs.html:35
 msgid "When"
 msgstr "Quand"
 
-#: rdiffweb/templates/admin_logs.html:37 rdiffweb/templates/admin_session.html:21
+#: rdiffweb/templates/admin_logs.html:36 rdiffweb/templates/admin_session.html:22
 msgid "IP Address"
 msgstr "Adresse IP"
 
-#: rdiffweb/templates/admin_logs.html:39
+#: rdiffweb/templates/admin_logs.html:38
 msgid "Event Description"
 msgstr "Description de l'événement"
 
-#: rdiffweb/templates/admin_logs.html:48
+#: rdiffweb/templates/admin_logs.html:47
 msgid "Logs is empty"
 msgstr "Les journaux sont vides"
 
-#: rdiffweb/templates/admin_logs.html:49
+#: rdiffweb/templates/admin_logs.html:48
 msgid "Displaying _START_-_END_ of _TOTAL_ most recent log systems"
 msgstr ""
 "Affichage de _START_-_END_ des _TOTAL_ journaux des événements les plus récents"
@@ -1238,42 +1225,68 @@ msgstr "Sessions actives (dernière heure)"
 msgid "User management"
 msgstr "Gestion des utilisateurs"
 
-#: rdiffweb/templates/admin_repos.html:11
+#: rdiffweb/templates/admin_repos.html:23
 msgid "Interrupted"
 msgstr "Interrompu"
 
-#: rdiffweb/templates/admin_repos.html:12
+#: rdiffweb/templates/admin_repos.html:24
 msgid "In progress"
 msgstr "En cours"
 
-#: rdiffweb/templates/admin_repos.html:13 rdiffweb/templates/admin_session.html:17
+#: rdiffweb/templates/admin_repos.html:26 rdiffweb/templates/admin_session.html:18
 msgid "Repository list"
 msgstr "Dépôts"
 
-#: rdiffweb/templates/admin_repos.html:16
+#: rdiffweb/templates/admin_repos.html:29
 msgid "Display Name"
 msgstr "Nom d'affichage"
 
-#: rdiffweb/templates/admin_repos.html:17
+#: rdiffweb/templates/admin_repos.html:30
 msgid "Owner"
 msgstr "Propriétaire"
 
-#: rdiffweb/templates/admin_repos.html:18 rdiffweb/templates/email_report.html:40
+#: rdiffweb/templates/admin_repos.html:31 rdiffweb/templates/email_report.html:40
 msgid "Status"
 msgstr "État"
 
-#: rdiffweb/templates/admin_repos.html:19 rdiffweb/templates/admin_session.html:27
-msgid "Actions"
-msgstr "Actions"
+#: rdiffweb/templates/admin_repos.html:34
+msgid "Errors were detected in the last backup"
+msgstr "Des erreurs ont été détectées lors de la dernière sauvegarde"
 
-#: rdiffweb/templates/admin_repos.html:37
+#: rdiffweb/templates/admin_repos.html:53
 msgid "Updated "
 msgstr "Mis à jour "
 
-#: rdiffweb/templates/admin_repos.html:45 rdiffweb/templates/layout_repo.html:11
+#: rdiffweb/templates/admin_repos.html:59 rdiffweb/templates/admin_repos.html:60
+#, fuzzy, python-format
+msgid "%(num)s days"
+msgstr "%(num)s jours"
+
+#: rdiffweb/templates/admin_repos.html:62 rdiffweb/templates/admin_session.html:51
+msgid "No"
+msgstr "Non"
+
+#: rdiffweb/templates/admin_repos.html:62 rdiffweb/templates/admin_session.html:51
+msgid "Yes"
+msgstr "Oui"
+
+#: rdiffweb/templates/admin_repos.html:66 rdiffweb/templates/layout_repo.html:11
 #: rdiffweb/templates/settings.html:7
 msgid "Settings"
 msgstr "Paramètres"
+
+#: rdiffweb/templates/admin_repos.html:67 rdiffweb/templates/graphs.html:6
+#: rdiffweb/templates/layout_repo.html:12
+msgid "Graphs"
+msgstr "Graphiques"
+
+#: rdiffweb/templates/admin_repos.html:68 rdiffweb/templates/layout_repo.html:13
+msgid "Stats"
+msgstr "Statistiques"
+
+#: rdiffweb/templates/admin_repos.html:69 rdiffweb/templates/layout_repo.html:14
+msgid "Logs"
+msgstr "Logs"
 
 #: rdiffweb/templates/admin_session.html:7 rdiffweb/templates/prefs.html:19
 #: rdiffweb/templates/prefs_session.html:8
@@ -1291,62 +1304,58 @@ msgstr ""
 "révoquer toute session que vous ne reconnaissez pas, à l'exception de votre "
 "session actuelle."
 
-#: rdiffweb/templates/admin_session.html:14
-#: rdiffweb/templates/admin_session.html:23
+#: rdiffweb/templates/admin_session.html:15
+#: rdiffweb/templates/admin_session.html:24
 msgid "Authenticated"
 msgstr "Authentifié"
 
-#: rdiffweb/templates/admin_session.html:15
+#: rdiffweb/templates/admin_session.html:16
 msgid "Anonymous"
 msgstr "Anonyme"
 
-#: rdiffweb/templates/admin_session.html:20
+#: rdiffweb/templates/admin_session.html:21
 msgid "Device"
 msgstr "Appareil"
 
-#: rdiffweb/templates/admin_session.html:24
+#: rdiffweb/templates/admin_session.html:25
 #: rdiffweb/templates/prefs_session.html:34 rdiffweb/templates/prefs_tokens.html:39
 msgid "Last accessed"
 msgstr "Dernier accès"
 
-#: rdiffweb/templates/admin_session.html:25
+#: rdiffweb/templates/admin_session.html:26
 #: rdiffweb/templates/prefs_session.html:39
 msgid "Signed in"
 msgstr "Connecté"
 
-#: rdiffweb/templates/admin_session.html:26
+#: rdiffweb/templates/admin_session.html:27
 msgid "Expiration Time"
 msgstr "Expire le"
 
-#: rdiffweb/templates/admin_session.html:36
+#: rdiffweb/templates/admin_session.html:28
+msgid "Actions"
+msgstr "Actions"
+
+#: rdiffweb/templates/admin_session.html:37
 #: rdiffweb/templates/prefs_session.html:24
 msgid "running on"
 msgstr "fonctionnant sur"
 
-#: rdiffweb/templates/admin_session.html:39
+#: rdiffweb/templates/admin_session.html:40
 #: rdiffweb/templates/prefs_session.html:27
 msgid "current session"
 msgstr "session en cours"
 
-#: rdiffweb/templates/admin_session.html:42
+#: rdiffweb/templates/admin_session.html:43
 #: rdiffweb/templates/prefs_session.html:30
 msgid "persistent"
 msgstr "persistante"
 
-#: rdiffweb/templates/admin_session.html:50
-msgid "Yes"
-msgstr "Oui"
-
-#: rdiffweb/templates/admin_session.html:50
-msgid "No"
-msgstr "Non"
-
-#: rdiffweb/templates/admin_session.html:71
+#: rdiffweb/templates/admin_session.html:72
 #: rdiffweb/templates/prefs_session.html:50
 msgid "Revoke Session"
 msgstr "Révoquer la session"
 
-#: rdiffweb/templates/admin_session.html:72
+#: rdiffweb/templates/admin_session.html:73
 #: rdiffweb/templates/prefs_session.html:51
 msgid "Are you sure? The device will be signed out from the application."
 msgstr "Vous êtes sûr ? L'appareil sera déconnecté de l'application."
@@ -1391,43 +1400,43 @@ msgstr "Annuler"
 
 #: rdiffweb/templates/admin_user_new.html:4
 #: rdiffweb/templates/admin_user_new.html:8
-#: rdiffweb/templates/admin_user_new.html:11 rdiffweb/templates/admin_users.html:10
+#: rdiffweb/templates/admin_user_new.html:11 rdiffweb/templates/admin_users.html:21
 msgid "Add user"
 msgstr "Ajouter un utilisateur"
 
-#: rdiffweb/templates/admin_users.html:13
+#: rdiffweb/templates/admin_users.html:25
 msgid "Admins"
 msgstr "Administrateurs"
 
-#: rdiffweb/templates/admin_users.html:14 rdiffweb/templates/admin_users.html:39
+#: rdiffweb/templates/admin_users.html:26 rdiffweb/templates/admin_users.html:52
 msgid "LDAP"
 msgstr "LDAP"
 
-#: rdiffweb/templates/admin_users.html:19
+#: rdiffweb/templates/admin_users.html:32
 msgid "User list"
 msgstr "Liste des utilisateurs"
 
-#: rdiffweb/templates/admin_users.html:42
+#: rdiffweb/templates/admin_users.html:55
 msgid "It's you"
 msgstr "C'est vous"
 
-#: rdiffweb/templates/admin_users.html:55
+#: rdiffweb/templates/admin_users.html:68
 msgid "Root directory not accessible!"
 msgstr "Le répertoire racine n'est pas accessible !"
 
-#: rdiffweb/templates/admin_users.html:73 rdiffweb/templates/admin_users.html:75
-#: rdiffweb/templates/admin_users.html:89 rdiffweb/templates/history.html:99
+#: rdiffweb/templates/admin_users.html:80 rdiffweb/templates/admin_users.html:82
+#: rdiffweb/templates/admin_users.html:96 rdiffweb/templates/history.html:99
 #: rdiffweb/templates/prefs_sshkeys.html:29
 #: rdiffweb/templates/prefs_sshkeys.html:53 rdiffweb/templates/settings.html:20
 #: rdiffweb/templates/settings.html:33
 msgid "Delete"
 msgstr "Supprimer"
 
-#: rdiffweb/templates/admin_users.html:86
+#: rdiffweb/templates/admin_users.html:93
 msgid "Delete User"
 msgstr "Supprimer l'utilisateur"
 
-#: rdiffweb/templates/admin_users.html:87
+#: rdiffweb/templates/admin_users.html:94
 msgid "Are you sure you want to delete this User?"
 msgstr "Voulez-vous vraiment supprimer cet utilisateur?"
 
@@ -1441,7 +1450,7 @@ msgid "Name"
 msgstr "Nom"
 
 #: rdiffweb/templates/browse.html:24 rdiffweb/templates/graphs.html:15
-#: rdiffweb/templates/stats.html:40
+#: rdiffweb/templates/stats.html:41
 msgid "Size"
 msgstr "Taille"
 
@@ -1470,7 +1479,7 @@ msgstr "Un nouveau jeton d'accès a été créé"
 #: rdiffweb/templates/email_authorizedkey_added.html:7
 #: rdiffweb/templates/email_changed.html:7 rdiffweb/templates/email_latest.html:7
 #: rdiffweb/templates/email_mfa.html:11
-#: rdiffweb/templates/email_notification.html:7
+#: rdiffweb/templates/email_notification.html:11
 #: rdiffweb/templates/email_password_changed.html:7
 #: rdiffweb/templates/email_repo_added.html:7
 #: rdiffweb/templates/email_repo_deleted.html:7
@@ -1606,11 +1615,15 @@ msgstr ""
 "Votre compte %(header_name)s n'est plus protégé par l'authentification à deux "
 "facteurs. Vous n'avez pas besoin de votre deuxième facteur pour vous connecter."
 
-#: rdiffweb/templates/email_notification.html:9
+#: rdiffweb/templates/email_notification.html:4
+msgid "Backup inactive"
+msgstr "Sauvegarde inactive"
+
+#: rdiffweb/templates/email_notification.html:13
 msgid "You are receiving this email to notify you about your backups."
 msgstr "Vous recevez cet e-mail pour vous informer de vos sauvegardes."
 
-#: rdiffweb/templates/email_notification.html:15
+#: rdiffweb/templates/email_notification.html:19
 msgid ""
 "The following repositories are inactive for some time. We invite you to have a "
 "look at your last backup schedule."
@@ -1618,17 +1631,12 @@ msgstr ""
 "Les dépôts suivants sont inactifs depuis un certain temps. Nous vous invitons à "
 "consulter votre dernier plan de sauvegarde."
 
-#: rdiffweb/templates/email_notification.html:24
+#: rdiffweb/templates/email_notification.html:28
 #: rdiffweb/templates/locations.html:74
 msgid "Last backup "
 msgstr "Dernière sauvegarde "
 
-#: rdiffweb/templates/email_notification.html:27
-#: rdiffweb/templates/locations.html:77
-msgid "Initial backup not completed."
-msgstr "La sauvegarde initiale n'est pas achevée."
-
-#: rdiffweb/templates/email_notification.html:33
+#: rdiffweb/templates/email_notification.html:37
 msgid ""
 "If you don't want to be notify about this. You need to review your user "
 "preferences."
@@ -1783,10 +1791,6 @@ msgstr "Oups!"
 msgid "Sorry, an error has occured."
 msgstr "Désolé, une erreur s'est produite."
 
-#: rdiffweb/templates/graphs.html:6 rdiffweb/templates/layout_repo.html:12
-msgid "Graphs"
-msgstr "Graphiques"
-
 #: rdiffweb/templates/graphs.html:13 rdiffweb/templates/graphs_activities.html:5
 msgid "Activities"
 msgstr "Activités"
@@ -1891,14 +1895,6 @@ msgstr "Déconnexion"
 msgid "Powered by"
 msgstr "Propulsé par"
 
-#: rdiffweb/templates/layout_repo.html:13
-msgid "Stats"
-msgstr "Statistiques"
-
-#: rdiffweb/templates/layout_repo.html:14
-msgid "Logs"
-msgstr "Logs"
-
 #: rdiffweb/templates/layout_repo.html:26
 msgid "The displayed data may be inconsistent."
 msgstr "Les données affichées peuvent ne pas correspondre."
@@ -1915,6 +1911,10 @@ msgstr ""
 "Vous n'avez aucun dépôt configuré. Vous devrez peut-être actualiser vos dépôts à "
 "partir de votre profil utilisateur si vous venez de faire une nouvelle "
 "sauvegarde."
+
+#: rdiffweb/templates/locations.html:77
+msgid "Initial backup not completed."
+msgstr "La sauvegarde initiale n'est pas achevée."
 
 #: rdiffweb/templates/login.html:22
 msgid ""
@@ -1940,6 +1940,14 @@ msgstr "Content de vous revoir"
 #: rdiffweb/templates/logs.html:7
 msgid "Repository Logs"
 msgstr "Logs du dépôt"
+
+#: rdiffweb/templates/logs.html:14
+msgid "Last backup log"
+msgstr "Journal de sauvegarde"
+
+#: rdiffweb/templates/logs.html:16
+msgid "Last restore log"
+msgstr "Journal de la restauration"
 
 #: rdiffweb/templates/logs.html:37
 msgid ""
@@ -2041,31 +2049,31 @@ msgstr ""
 "courriel chaque fois que vous vous connectez à partir d'un nouvel emplacement "
 "pour vérifier qu'il s'agit bien de vous."
 
-#: rdiffweb/templates/prefs_notification.html:7
+#: rdiffweb/templates/prefs_notification.html:6
 msgid "Notification settings"
 msgstr "Paramètre de notification"
 
-#: rdiffweb/templates/prefs_notification.html:9
+#: rdiffweb/templates/prefs_notification.html:8
 msgid "Notification sent to"
 msgstr "Notification envoyé à"
 
-#: rdiffweb/templates/prefs_notification.html:15
+#: rdiffweb/templates/prefs_notification.html:14
 msgid "To receive notification, configure your email address in your profile."
 msgstr ""
 "Pour recevoir des notifications, configurez votre adresse e-mail dans votre "
 "profil."
 
-#: rdiffweb/templates/prefs_notification.html:19
+#: rdiffweb/templates/prefs_notification.html:18
 msgid "Report"
 msgstr "Rapport"
 
-#: rdiffweb/templates/prefs_notification.html:19
+#: rdiffweb/templates/prefs_notification.html:18
 msgid "Configure how often you want to receive a backup report in your mailbox."
 msgstr ""
 "Configurez la fréquence à laquelle vous souhaitez recevoir un rapport de "
 "sauvegarde dans votre boîte courriel."
 
-#: rdiffweb/templates/prefs_notification.html:27
+#: rdiffweb/templates/prefs_notification.html:26
 msgid "Configure when you will be notified if your backup is inactive."
 msgstr ""
 "Configurez le moment où vous serez averti si votre sauvegarde est inactive."
@@ -2248,39 +2256,39 @@ msgstr ""
 "fichiers supprimés et les fichiers modifiés, ce qui permet aux utilisateurs de "
 "suivre et de gérer facilement les modifications apportées à leurs données."
 
-#: rdiffweb/templates/stats.html:35 rdiffweb/templates/stats.html:39
+#: rdiffweb/templates/stats.html:35 rdiffweb/templates/stats.html:40
 msgid "Changed"
 msgstr "Modifié"
 
-#: rdiffweb/templates/stats.html:38
-msgid "Path"
-msgstr "Chemin d'accès"
-
-#: rdiffweb/templates/stats.html:39
-msgid "State"
-msgstr "État"
-
-#: rdiffweb/templates/stats.html:39
+#: rdiffweb/templates/stats.html:36 rdiffweb/templates/stats.html:40
 msgid "Unchanged"
 msgstr "Inchangé"
 
-#: rdiffweb/templates/stats.html:41
+#: rdiffweb/templates/stats.html:39
+msgid "Path"
+msgstr "Chemin d'accès"
+
+#: rdiffweb/templates/stats.html:40
+msgid "State"
+msgstr "État"
+
+#: rdiffweb/templates/stats.html:42
 msgid "Increment Size"
 msgstr "Taille de l'incrément"
 
-#: rdiffweb/templates/stats.html:49
+#: rdiffweb/templates/stats.html:50
 msgid "File statistics are not available"
 msgstr "Les statistiques sur les fichiers ne sont pas disponibles"
 
-#: rdiffweb/templates/stats.html:50
+#: rdiffweb/templates/stats.html:51
 msgid "Displaying _START_-_END_ of _TOTAL_ file statistics"
 msgstr "Affichage des statistiques sur les fichiers _START_-_END_ de _TOTAL_"
 
-#: rdiffweb/templates/stats.html:54
+#: rdiffweb/templates/stats.html:55
 msgid "No File Statistics Selected"
 msgstr "Pas de statistiques de fichier sélectionnées"
 
-#: rdiffweb/templates/stats.html:55
+#: rdiffweb/templates/stats.html:56
 msgid ""
 "Select a backup date on the left to display detailed statistics for that date."
 msgstr ""
@@ -2321,33 +2329,33 @@ msgstr "Plus active"
 msgid "Loading..."
 msgstr "Chargement..."
 
-#: rdiffweb/templates/include/datatables.html:24
+#: rdiffweb/templates/include/datatables.html:23
 #: rdiffweb/templates/include/table.html:4
 msgid "activate to sort column ascending"
 msgstr "activer pour trier la colonne en ordre croissant"
 
-#: rdiffweb/templates/include/datatables.html:25
+#: rdiffweb/templates/include/datatables.html:24
 #: rdiffweb/templates/include/table.html:5
 msgid "activate to sort column descending"
 msgstr "activer pour trier la colonne en ordre décroissant"
 
-#: rdiffweb/templates/include/datatables.html:27
+#: rdiffweb/templates/include/datatables.html:26
 msgid "Showing _TOTAL_ entries"
 msgstr "Affichage de _TOTAL_ entrées"
 
-#: rdiffweb/templates/include/datatables.html:28
+#: rdiffweb/templates/include/datatables.html:27
 msgid "(filtered from _MAX_ total entries)"
 msgstr "(filtré à partir de _MAX_ entrées totales)"
 
-#: rdiffweb/templates/include/datatables.html:29
+#: rdiffweb/templates/include/datatables.html:28
 msgid "Showing 0 entries"
 msgstr "Affichage de 0 entrées"
 
-#: rdiffweb/templates/include/datatables.html:30
+#: rdiffweb/templates/include/datatables.html:29
 msgid "No matching records found"
 msgstr "Aucun élément correspondant trouvé"
 
-#: rdiffweb/templates/include/datatables.html:31
+#: rdiffweb/templates/include/datatables.html:30
 #: rdiffweb/templates/include/table.html:11
 msgid "Filter: "
 msgstr "Filtrer : "
@@ -2407,7 +2415,9 @@ msgstr "Plage de temps"
 #: rdiffweb/templates/include/timerange.html:10
 #, python-format
 msgid "%(num)s Day"
-msgstr "%(num)s jours"
+msgid_plural "%(num)s Days"
+msgstr[0] "%(num)s jour"
+msgstr[1] "%(num)s jours"
 
 #: rdiffweb/templates/include/timerange.html:10
 msgid "D"
@@ -2416,7 +2426,9 @@ msgstr "J"
 #: rdiffweb/templates/include/timerange.html:14
 #, python-format
 msgid "%(num)s Week"
-msgstr "%(num)s semaines"
+msgid_plural "%(num)s Weeks"
+msgstr[0] "%(num)s semaine"
+msgstr[1] "%(num)s semaines"
 
 #: rdiffweb/templates/include/timerange.html:14
 msgid "W"
@@ -2425,15 +2437,13 @@ msgstr "S"
 #: rdiffweb/templates/include/timerange.html:18
 #, python-format
 msgid "%(num)s Month"
-msgstr "%(num)s mois"
+msgid_plural "%(num)s Months"
+msgstr[0] "%(num)s mois"
+msgstr[1] "%(num)s mois"
 
 #: rdiffweb/templates/include/timerange.html:18
 msgid "M"
 msgstr "M"
-
-#: rdiffweb/templates/include/widget.html:4
-msgid "disabled"
-msgstr "désactivé"
 
 #~ msgid "invalid encoding value"
 #~ msgstr "valeur d'encodage invalide"
@@ -2475,3 +2485,12 @@ msgstr "désactivé"
 
 #~ msgid "Date"
 #~ msgstr "Date"
+
+#~ msgid "Clear"
+#~ msgstr "Réinitialiser"
+
+#~ msgid "disabled"
+#~ msgstr "désactivé"
+
+#~ msgid "%s days"
+#~ msgstr "%s jours"
