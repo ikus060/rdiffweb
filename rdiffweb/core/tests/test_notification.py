@@ -79,7 +79,7 @@ class NotificationJobTest(AbstractNotificationTest):
         # Then an email is queue for this user
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
-            subject='Notification',
+            subject='Backup inactive',
             message=ANY,
         )
 
@@ -100,7 +100,7 @@ class NotificationJobTest(AbstractNotificationTest):
         # Then a notification is sent to the user.
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
-            subject='Notification',
+            subject='Backup inactive',
             message=ANY,
         )
 
