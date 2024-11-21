@@ -4,19 +4,35 @@
   {% trans %}User management{% endtrans %}
 {% endblock %}
 {% set admin_nav_active="repos" %}
+{% macro btn(url, label, icon) %}
+  <a class="btn btn-secondary"
+     href="{{ url }}"
+     aria-label="{{ label }}"
+     data-bs-toggle="tooltip"
+     data-bs-placement="top"
+     title="{{ label }}"
+     role="button">
+    <i class="{{ icon }}" aria-hidden="true"></i>
+  </a>
+{% endmacro %}
 {% block content %}
-  {% set filter_buttons = [
-  (_('Healthy'), 2, 'ok'),
-  (_('Failed'), 2, 'failed'),
-  (_('Interrupted'), 2, 'interrupted'),
-  (_('In progress'), 2, 'in_progress')] %}
-  {% call() datatables(_('Repository list'), filter_buttons) %}
+  {% set buttons = [
+  {'text': _('All'), 'extend': 'clear'},
+  {'text': _('Healthy'), 'extend': 'filter', 'column': 2, 'search': 'ok'},
+  {'text': _('Failed'), 'extend': 'filter', 'column': 2, 'search': 'failed'},
+  {'text': _('Interrupted'), 'extend': 'filter', 'column': 2, 'search': 'interrupted'},
+  {'text': _('In progress'), 'extend': 'filter', 'column': 2, 'search': 'in_progress'},
+  ] %}
+  {% call() datatables(_('Repository list'), buttons) %}
     <thead>
       <tr>
         <th scope="col">{% trans %}Display Name{% endtrans %}</th>
         <th scope="col">{% trans %}Owner{% endtrans %}</th>
         <th scope="col" data-type="num">{% trans %}Status{% endtrans %}</th>
-        <th scope="col" data-sortable="false">{% trans %}Actions{% endtrans %}</th>
+        <th scope="col" data-type="num">{% trans %}Inactivity Notification Period{% endtrans %}</th>
+        <th scope="col" data-type="num">{% trans %}Data Retention Duration{% endtrans %}</th>
+        <th scope="col" data-type="num">{% trans %}Errors were detected in the last backup{% endtrans %}</th>
+        <th scope="col" data-sortable="false"></th>
       </tr>
     </thead>
     <tbody>
@@ -35,14 +51,35 @@
               data-order="{{ repo.last_backup_date.epoch }}">
             {% if repo.last_backup_date %}
               {% trans %}Updated {% endtrans %}
-              <time datetime="{{ repo.last_backup_date }}">{{ repo.last_backup_date | lastupdated }}</time>
+              <time datetime="{{ repo.last_backup_date }}"
+                    title="{{ repo.last_backup_date }}">{{ repo.last_backup_date | lastupdated }}</time>
             {% endif %}
             {% if repo.status[0] != 'ok' %}{{ repo.status[1] }}{% endif %}
           </td>
+          <td data-search="{{ repo.maxage }}">
+            {% if repo.maxage %}
+              {% trans num=repo.maxage %}{{ num }} days{% endtrans %}
+            {% else %}
+              {% trans %}Disabled{% endtrans %}
+            {% endif %}
+          </td>
           <td data-search="">
-            <a class="btn btn-secondary"
-               href="{{ url_for('settings', repo) }}"
-               role="button">{% trans %}Settings{% endtrans %}</a>
+            {% if repo.keepdays>=1 %}
+              {% trans num=repo.keepdays %}{{ num }} days{% endtrans %}
+            {% else %}
+              {% trans %}Forever{% endtrans %}
+            {% endif %}
+          </td>
+          <td data-search="">
+            {% if repo.error_log %}{{ _('No') if repo.error_log[-1].is_empty else _('Yes') }}{% endif %}
+          </td>
+          <td data-search="">
+            <div class="btn-hover text-nowrap">
+              {{ btn(url_for('settings', repo), _('Settings'), 'fa fa-sliders') }}
+              {{ btn(url_for('graphs', 'activities', repo), _('Graphs'), 'fa fa-area-chart') }}
+              {{ btn(url_for('stats', repo), _('Stats'), 'fa fa-list-alt') }}
+              {{ btn(url_for('logs', repo), _('Logs'), 'fa fa-file-text-o') }}
+            </div>
           </td>
         </tr>
       {% endfor %}
