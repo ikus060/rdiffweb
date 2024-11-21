@@ -49,8 +49,6 @@ py3:
   parallel:
     matrix:
       - TOXENV: py3
-        IMAGE: python:3.6
-      - TOXENV: py3
         IMAGE: python:3.8
       - TOXENV: bullseye
         IMAGE: python:3.9-bullseye
@@ -112,8 +110,8 @@ package:py3:
   stage: package
   needs: []
   script:
-    - pip3 install wheel
-    - python3 setup.py sdist bdist_wheel
+    - pip3 install wheel build
+    - python -m build
   dependencies: []
   artifacts:
     paths:
@@ -146,16 +144,20 @@ package:deb:
   image: buildpack-deps:$DIST
   parallel:
     matrix:
-      - DIST: [bullseye, bookworm]
+      - DIST: bullseye
+        BACKPORT: deb http://deb.debian.org/debian $DIST-backports main
+      - DIST: bookworm
       - DIST: [jammy, lunar, noble, oracular]
   script:
     # Clean-up
     - rm -f ../rdiffweb_*
     - rm -Rf ./dist/$DIST/*
     # Install dependencies
+    - '[ -z "$BACKPORT" ] || echo "$BACKPORT" >> /etc/apt/sources.list'
     - apt update
-    - apt -y --no-install-recommends install devscripts lsb-release
-    - apt build-dep -y .
+    - apt -y --no-install-recommends install devscripts
+    - '[ -z "$BACKPORT" ] && apt build-dep -y . || apt build-dep -t "${DIST}-backports" -y .'
+    - '[ -x "$EXTRA" ] || $EXTRA'
     # Generate change log
     - export DEBEMAIL=${CI_COMMIT_AUTHOR}
     - debian/rules changelog
@@ -347,7 +349,7 @@ publish:doc:
     - doc
   script:
     # publish to nexus
-    - export VERSION=$(python3 setup.py --version)
+    - export VERSION=$(python3 -c "import setuptools_scm; print(setuptools_scm.get_version())")
     - cd .tox/doc/tmp/html
     - find * -type f -exec curl --fail -u "$NEXUS_USR:$NEXUS_PWD" --upload-file "{}" $NEXUS_URL/repository/archive/rdiffweb/$VERSION/doc/{} \;
 
