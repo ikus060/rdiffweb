@@ -1,3 +1,63 @@
+[build-system]
+requires = ["setuptools>=66", "setuptools_scm[toml]>=6.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "minarca-server"
+authors = [
+    {name = "Patrik Dufresne", email = "patrik@ikus-soft.com"},
+]
+description = "Minarca is a self-hosted open source data backup software that allows you to manage your computer and server backups for free from a direct online accessible centralized view of your data with easy retrieval in case of displacement, loss or breakage."
+readme = "README.md"
+requires-python = ">=3.8, <4"
+license = {text = "GPLv3"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Framework :: CherryPy"
+]
+dependencies = [
+    "cryptography",
+    "cherrypy>=18.0.0",
+    "rdiffweb==2.9.5",
+    "requests",
+    "snakeoil",
+    "tzlocal~=2.0",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = [
+    "html5lib",
+    "parameterized",
+    "pytest",
+    "responses",
+    "selenium",
+]
+
+[tool.setuptools]
+packages = ["minarca_server"]
+
+[project.scripts]
+minarca-server = "minarca_server.main:main"
+minarca-shell = "minarca_server.shell:main"
+
+[project.urls]
+Homepage = "https://minarca.org"
+documentation = "https://ikus-soft.com/archive/minarca/doc/"
+source = "https://gitlab.com/ikus-soft/minarca"
+bug_tracker = "https://gitlab.com/ikus-soft/minarca/-/issues"
+
 [tool.black]
 line-length = 120
 skip-string-normalization = "True"
+
+[tool.setuptools_scm]

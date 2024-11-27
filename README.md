@@ -82,6 +82,12 @@ For more information, visit the [Minarca Website](https://minarca.org).
 
 # Changelog
 
+## Next Release
+
+* Minimum required version of libc version 2.28
+* Build binary package with `pyinstaller` instead of `dpkg` to improve portability to older Debian based distribution by freezing all dependencies.
+* Migrate from `setup.py` to `pyproject.toml`
+
 ## 6.0.4 (2025-01-07)
 
 * Remove Ubuntu Mantic support

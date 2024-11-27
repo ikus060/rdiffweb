@@ -1,6 +1,8 @@
+#!/bin/bash
 # Copyright (C) 2023 IKUS Software. All rights reserved.
 # IKUS Software inc. PROPRIETARY/CONFIDENTIAL.
 # Use is subject to license terms.
+set -e
 
 MINARCA_USER=minarca
 DEFAULT_MINARCA_HOME=/backups/
@@ -97,8 +99,10 @@ case "$1" in
         chmod 0750 "$MINARCA_HOME"
         # Enable user namespace (Disable debian hardening)
         if [ -f /proc/sys/kernel/unprivileged_userns_clone ]; then
-          echo 1 > /proc/sys/kernel/unprivileged_userns_clone
           echo 'kernel.unprivileged_userns_clone=1' > /etc/sysctl.d/00-minarca-local-userns.conf
+        fi
+        if [ -w /proc/sys/kernel/unprivileged_userns_clone ]; then
+          echo 1 > /proc/sys/kernel/unprivileged_userns_clone
         fi
         # Add APT repository if not configured
         if [ -e "$APT_SOURCESDIR/minarca.list" ]; then
@@ -107,6 +111,29 @@ case "$1" in
     ;;
 esac
 
-#DEBHELPER#
+if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
+	# The following line should be removed in trixie or trixie+1
+	deb-systemd-helper unmask 'minarca-server.service' >/dev/null || true
 
-exit 0
+	# was-enabled defaults to true, so new installations run enable.
+	if deb-systemd-helper --quiet was-enabled 'minarca-server.service'; then
+		# Enables the unit on first installation, creates new
+		# symlinks on upgrades if the unit file has changed.
+		deb-systemd-helper enable 'minarca-server.service' >/dev/null || true
+	else
+		# Update the statefile to add new symlinks (if any), which need to be
+		# cleaned up on purge. Also remove old symlinks.
+		deb-systemd-helper update-state 'minarca-server.service' >/dev/null || true
+	fi
+fi
+if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
+	if [ -d /run/systemd/system ]; then
+		systemctl --system daemon-reload >/dev/null || true
+		if [ -n "$2" ]; then
+			_dh_action=restart
+		else
+			_dh_action=start
+		fi
+		deb-systemd-invoke $_dh_action 'minarca-server.service' >/dev/null || true
+	fi
+fi

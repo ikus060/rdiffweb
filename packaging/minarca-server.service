@@ -3,7 +3,7 @@ Description=Minarca Web Server
 Documentation=https://minarca.org/
 
 [Service]
-ExecStart=/opt/minarca-server/bin/minarca-server
+ExecStart=/opt/minarca-server/minarca-server
 User=minarca
 Group=minarca
 

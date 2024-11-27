@@ -1,5 +1,5 @@
 *.py[co]
-
+.debbuild
 # Packages
 .eggs
 *.egg-info
@@ -12,7 +12,7 @@ var
 sdist
 develop-eggs
 .installed.cfg
-
+.venv
 # Installer logs
 pip-log.txt
 
