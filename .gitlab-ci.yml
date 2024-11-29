@@ -1,0 +1,243 @@
+variables:
+  MINARCA_DEV_REMOTE_URL: https://minarca-dev.ikus-soft.com
+  MINARCA_DEV_USERNAME: admin
+  MINARCA_DEV_PASSWORD: admin123
+
+stages:
+- test
+- bdist
+- doc
+- upload
+- deploy
+- e2e-test
+
+test-server:
+  artifacts:
+    paths:
+      - "./coverage.xml"
+      - "./xunit.xml"
+    expire_in: 1 day
+  image: python:3.10
+  variables:
+    PIP_EXTRA_INDEX_URL: https://nexus.ikus-soft.com/repository/pypi-group/simple/
+  before_script:
+    - apt update
+    - apt -y --no-install-recommends install python3-dev python3-pip python3-setuptools
+    - pip3 install tox
+  script:
+    - tox
+  stage: test
+
+bdist-server:deb:
+  artifacts:
+    paths:
+    - "./dist/*/*_amd64.deb"
+    expire_in: 1 day
+  image: buildpack-deps:$DIST
+  needs: []
+  parallel:
+    matrix:
+    - DIST: bullseye
+      BACKPORT: deb http://deb.debian.org/debian $DIST-backports main
+      PIP_EXTRA_INDEX_URL: https://nexus.ikus-soft.com/repository/pypi-group/simple/
+      TZ: UTC
+    - DIST: [bookworm, jammy, noble, oracular]
+      PIP_EXTRA_INDEX_URL: https://nexus.ikus-soft.com/repository/pypi-group/simple/
+      TZ: UTC
+  script:
+  # Install dependencies
+  - '[ -z "$BACKPORT" ] || echo "$BACKPORT" >> /etc/apt/sources.list'
+  - apt update
+  - apt -y --no-install-recommends install devscripts lsb-release
+  - '[ -z "$BACKPORT" ] && apt build-dep -y . || apt build-dep -t "${DIST}-backports" -y .'
+  # Generate change log
+  - export DEBEMAIL=${CI_COMMIT_AUTHOR}
+  - debian/rules changelog
+  # Run build
+  - dpkg-buildpackage -b
+  # Move files to archives
+  - mkdir -p "./dist/$DIST/"
+  - mv ../*.deb "./dist/$DIST/"
+  stage: bdist
+  variables:
+   DH_VERBOSE: "1"
+   GIT_DEPTH: "0"
+
+test-bdist-server:deb:
+  stage: bdist
+  image: buildpack-deps:$DIST
+  needs: ["bdist-server:deb"]
+  parallel:
+    matrix:
+    - DIST: [bullseye, bookworm]
+    # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
+    # So we need to make it explicit using environment variable
+    - DIST: [jammy, noble, oracular]
+      TZ: UTC
+  script:
+  - apt update
+  - apt install -y apt-transport-https ca-certificates lsb-release gpg
+  - curl -L https://www.ikus-soft.com/archive/minarca/public.key | gpg --dearmor > /usr/share/keyrings/minarca-keyring.gpg
+  - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/minarca-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-release-$(lsb_release -sc)/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/minarca.list
+  - apt update
+  - apt install -y ./dist/$DIST/minarca-server_*_amd64.deb
+  - /opt/minarca-server/bin/minarca-server --version
+  - (/opt/minarca-server/bin/minarca-server &)
+  - timeout 60 bash -c 'until curl --silent http://localhost:8080; do sleep 1; done'
+
+upload:deb:
+  image: python:3.10
+  needs:
+  - bdist-server:deb
+  parallel:
+    matrix:
+    - DIST: [bullseye, bookworm, jammy, noble, oracular]
+      DIST_SPECIFIC: 1
+  script: |
+    set -e
+    set -x
+    if [[ "$CI_COMMIT_TAG" == *.*.? ]]; then
+      APT_URL="https://nexus.ikus-soft.com/repository/apt-release-${DIST}/"
+    else
+      APT_URL="https://nexus.ikus-soft.com/repository/apt-dev-${DIST}/"
+    fi
+    export FILE=$(ls -1 ./dist/$DIST/minarca-server_*_amd64.deb)
+    curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$FILE" "$APT_URL"
+    sleep 2
+    curl --fail ${APT_URL}/dists/$DIST/main/binary-amd64/Packages | grep "$(basename $FILE)"
+  stage: upload
+
+upload:sonar:
+  allow_failure: true
+  stage: upload
+  needs:
+  - test-server
+  - bdist-server:deb
+  image: sonarsource/sonar-scanner-cli
+  only:
+    variables:
+      - $SONAR_URL
+      - $SONAR_TOKEN
+  variables:
+    SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
+  script:
+  # Patch coverage repport
+  #- sed -i "s|<source>minarca_client|<source>minarca-client/minarca_client|g" minarca-client/coverage-*.xml
+  - sonar-scanner -X -Dsonar.qualitygate.wait=True -Dsonar.python.coverage.reportPaths=coverage*.xml -Dsonar.python.xunit.reportPath=xunit*.xml -Dsonar.host.url=$SONAR_URL -Dsonar.token=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.projectVersion=$(git describe)
+
+deploy:dev:
+  allow_failure: True
+  environment:
+    name: dev
+    url: https://dev.minarca.net
+  needs: 
+  - bdist-server:deb
+  - upload:deb
+  image: registry.gitlab.com/finestructure/pipeline-trigger
+  script:
+    - export DEB_VERSION=$(ls -1 dist/bookworm/minarca-server_*_amd64.deb | cut -d '_' -f 2)
+    - echo DEB_VERSION=$DEB_VERSION
+    # Trigger ansible-config pipeline
+    - trigger -a "$ANSIBLE_PIPELINE_GITLAB_API_TOKEN" -t master -e "MINARCA_VERSION=$DEB_VERSION" -p 36bae86778d901fc6b2d6453a41844 18716492
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+
+e2e-test:deb:
+  allow_failure: True
+  needs:
+  - deploy:dev
+  image: buildpack-deps:$DIST
+  parallel:
+    matrix:
+    - DIST: [bullseye, bookworm, jammy, noble, oracular]
+  script:
+    # Install latest minarca-client release
+    - apt update
+    - apt install -y apt-transport-https ca-certificates lsb-release gpg
+    - curl -L https://www.ikus-soft.com/archive/minarca/public.key | gpg --dearmor > /usr/share/keyrings/minarca-keyring.gpg
+    - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/minarca-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-dev-$(lsb_release -sc)/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/minarca.list
+    - apt update
+    - apt install -y minarca-client
+    # Smoke test
+    - minarca --version
+    - /opt/minarca/minarcaw --version
+    # Check backup
+    - minarca -d link --remoteurl "$MINARCA_DEV_REMOTE_URL" --username "$MINARCA_DEV_USERNAME" --password "$MINARCA_DEV_PASSWORD" --name "e2e-test-${DIST}-${CI_JOB_ID}"
+    - minarca -d status
+    - minarca -d include /etc /var /home
+    - minarca -d backup --force
+  stage: e2e-test
+
+e2e-test:linux:
+  allow_failure: True
+  needs:
+  - deploy:dev
+  image: buildpack-deps:jammy
+  script:
+    # Install latest minarca-client release
+    - apt update
+    - apt install -y cron openssh-client locales locales-all
+    - wget https://www.ikus-soft.com/archive/minarca/minarca-client-latest.tar.gz
+    - tar -zxvf ./minarca-client-latest.tar.gz --strip 1
+    # Smoke test
+    - ./minarca --version
+    - ./minarcaw --version
+    # Check backup
+    - ./minarca -d link --remoteurl "$MINARCA_DEV_REMOTE_URL" --username "$MINARCA_DEV_USERNAME" --password "$MINARCA_DEV_PASSWORD" --name "e2e-test-linux-${CI_JOB_ID}"
+    - ./minarca -d include /etc /var /home
+    - ./minarca -d status
+    - ./minarca -d backup --force
+  stage: e2e-test
+
+e2e-test:macos:
+  allow_failure: True
+  needs:
+  - deploy:dev
+  before_script:
+  - rm -Rf /Applications/Minarca.app
+  - rm -Rf $HOME/Library/Preferences/Minarca
+  script:
+  # Install latest minarca-client release
+  - "[ ! -e /Volumes/Minarca ] || hdiutil detach /Volumes/Minarca"
+  - curl -L -O https://www.ikus-soft.com/archive/minarca/minarca-client-latest.dmg
+  - hdiutil attach ./minarca-client-latest.dmg
+  - cp -r /Volumes/Minarca/Minarca.app /Applications/
+  # Smoke test
+  - /Applications/Minarca.app/Contents/MacOS/minarca --version
+  - /Applications/Minarca.app/Contents/MacOS/minarcaw --version
+  # Check backup
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d forget --force
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d link --remoteurl "$MINARCA_DEV_REMOTE_URL" --username "$MINARCA_DEV_USERNAME" --password "$MINARCA_DEV_PASSWORD" --name "e2e-test-macos-${CI_JOB_ID}"
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d include "$HOME/Documents"
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d status
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d backup --force
+  stage: e2e-test
+  tags:
+  - macos
+  variables:
+    LC_ALL: "en_US.UTF-8"
+
+e2e-test:win32:
+  allow_failure: True
+  needs:
+  - deploy:dev
+  script:
+  # Install minarca
+  - Invoke-WebRequest -Uri https://www.ikus-soft.com/archive/minarca/minarca-client-latest.exe -OutFile minarca-client-latest.exe
+  - Start-Process -wait "minarca-client-latest.exe" /S
+  - dir "C:\Program Files\Minarca"
+  - $Env:path = "C:\Program Files\Minarca;$Env:path"
+  - $Env:path
+  # Smoke test
+  - minarca.exe --version
+  - minarcaw.exe --version
+  # Check backup
+  - minarca.exe -d forget --force
+  - minarca.exe -d link --force --remoteurl "$MINARCA_DEV_REMOTE_URL" --username "$MINARCA_DEV_USERNAME" --password "$MINARCA_DEV_PASSWORD" --name "e2e-test-win32-${CI_JOB_ID}"
+  - minarca.exe -d include /etc /var /home
+  - minarca.exe -d status
+  - minarca.exe -d backup --force
+  stage: e2e-test
+  tags:
+  - windows

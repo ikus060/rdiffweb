@@ -12,7 +12,7 @@ import setuptools
 
 setuptools.setup(
     name="minarca_server",
-    use_scm_version={"root": "..", "relative_to": __file__},
+    use_scm_version=True,
     description="Minarca Web Server",
     long_description="Minarca is a self-hosted open source data backup software that allows you to manage your computer and server backups for free from a direct online accessible centralized view of your data with easy retrieval in case of displacement, loss or breakage.",
     author="IKUS Software inc.",
