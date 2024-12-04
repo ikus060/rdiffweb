@@ -23,16 +23,14 @@ Test archiver module.
 """
 import io
 import os
-import sys
 import tarfile
 import tempfile
-import threading
 import unittest
 from zipfile import ZipFile
 
 import rdiffweb.test
-from rdiffweb.core.librdiff import popen
-from rdiffweb.core.restore import restore
+from rdiffweb.core.librdiff import find_rdiff_backup
+from rdiffweb.core.restore import RestoreException, _restore, pipe_restore
 
 EXPECTED = {}
 EXPECTED["이루마 YIRUMA - River Flows in You.mp3"] = 3636731
@@ -68,14 +66,6 @@ TAR_EXPECTED["SymlinkToSubdirectory"] = 0
 TAR_EXPECTED["Fichier avec non asci char \udcc9velyne M\udce8re.txt"] = 18
 
 
-def restore_async(*args, **kwargs):
-    """
-    Run the restore into a separate thread to avoid blocking on pipe.
-    """
-    thread = threading.Thread(target=restore, args=args, kwargs=kwargs)
-    thread.start()
-
-
 class RestoreTest(rdiffweb.test.WebCase):
     maxDiff = None
 
@@ -85,6 +75,9 @@ class RestoreTest(rdiffweb.test.WebCase):
         # Define path to be archived
         self.path = os.path.join(self.testcases.encode('ascii'), b'testcases')
         assert os.path.isdir(self.path)
+
+        # Define location of rdiff-backup
+        self.rdiff_backup = find_rdiff_backup()
 
     def assertInZip(self, expected_files, filename, equal=True):
         """
@@ -156,34 +149,14 @@ class RestoreTest(rdiffweb.test.WebCase):
             for expected_file in expected_files:
                 self.assertIn(expected_file, actual)
 
-    def test_cmdline(self):
-        # Test the command line call.
-        fh = popen(
-            [
-                os.fsencode(sys.executable),
-                b'-m',
-                b'rdiffweb.core.restore',
-                b'--restore-as-of',
-                b'1454448640',
-                b'--encoding',
-                'utf-8',
-                b'--kind',
-                'zip',
-                self.path,
-                b'-',
-            ]
-        )
-        self.assertInZip(ZIP_EXPECTED, fh)
-
     def test_restore_pipe_zip_file(self):
         """
         Check creation of a zip trough a pipe.
         """
-        rfd, wfd = os.pipe()
         # Run archiver
-        restore_async(self.path, restore_as_of=1454448640, dest=io.open(wfd, 'wb'), encoding='utf-8', kind='zip')
+        fileobj = pipe_restore(self.rdiff_backup, self.path, restore_as_of=1454448640, encoding='utf-8', kind='zip')
         # Check result.
-        self.assertInZip(ZIP_EXPECTED, io.open(rfd, 'rb'))
+        self.assertInZip(ZIP_EXPECTED, fileobj)
 
     def test_restore_raw_singlefile(self):
         # Define path to be archived
@@ -191,7 +164,8 @@ class RestoreTest(rdiffweb.test.WebCase):
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(
+                _restore(
+                    self.rdiff_backup,
                     os.path.join(self.path, b'Fichier @ <root>'),
                     restore_as_of=1454448640,
                     dest=f,
@@ -210,7 +184,8 @@ class RestoreTest(rdiffweb.test.WebCase):
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(
+                _restore(
+                    self.rdiff_backup,
                     os.path.join(self.path, b'Char ;090 to quote', b'Data'),
                     restore_as_of=1454448640,
                     dest=f,
@@ -222,7 +197,8 @@ class RestoreTest(rdiffweb.test.WebCase):
                 self.assertEqual(f.read(), b"Bring me some Data !\n")
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(
+                _restore(
+                    self.rdiff_backup,
                     os.path.join(self.path, b'Char Z to quote', b'Data'),
                     restore_as_of=1414921853,
                     dest=f,
@@ -244,7 +220,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(self.path, restore_as_of=1454448640, dest=f, encoding='utf-8', kind='zip')
+                _restore(self.rdiff_backup, self.path, restore_as_of=1454448640, dest=f, encoding='utf-8', kind='zip')
             # Check result.
             self.assertInZip(ZIP_EXPECTED, filename)
         finally:
@@ -259,7 +235,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(self.path, restore_as_of=1454448640, dest=f, encoding='cp1252', kind='zip')
+                _restore(self.rdiff_backup, self.path, restore_as_of=1454448640, dest=f, encoding='cp1252', kind='zip')
             # Check result.
             expected = {
                 "Fichier avec non asci char Évelyne Mère.txt": 18,
@@ -272,11 +248,10 @@ class RestoreTest(rdiffweb.test.WebCase):
         """
         Check creation of tar.gz.
         """
-        rfd, wfd = os.pipe()
         # Run archiver
-        restore_async(self.path, restore_as_of=1454448640, dest=io.open(wfd, 'wb'), encoding='utf-8', kind='tar')
+        fileobj = pipe_restore(self.rdiff_backup, self.path, restore_as_of=1454448640, encoding='utf-8', kind='tar')
         # Check result.
-        self.assertInTar(TAR_EXPECTED, io.open(rfd, 'rb'), mode='r|')
+        self.assertInTar(TAR_EXPECTED, fileobj, mode='r|')
 
     def test_restore_tar_file(self):
         """
@@ -286,7 +261,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(self.path, restore_as_of=1454448640, dest=f, encoding='utf-8', kind='tar')
+                _restore(self.rdiff_backup, self.path, restore_as_of=1454448640, dest=f, encoding='utf-8', kind='tar')
             # Check result.
             self.assertInTar(TAR_EXPECTED, filename)
         finally:
@@ -300,7 +275,7 @@ class RestoreTest(rdiffweb.test.WebCase):
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(self.path, restore_as_of=1454448640, dest=f, encoding='cp1252', kind='tar')
+                _restore(self.rdiff_backup, self.path, restore_as_of=1454448640, dest=f, encoding='cp1252', kind='tar')
             # Check result.
             expected = {
                 "Fichier avec non asci char Évelyne Mère.txt": 18,
@@ -313,11 +288,10 @@ class RestoreTest(rdiffweb.test.WebCase):
         """
         Check creation of tar.gz.
         """
-        rfd, wfd = os.pipe()
         # Run archiver
-        restore_async(self.path, restore_as_of=1454448640, dest=io.open(wfd, 'wb'), encoding='utf-8', kind='tar.gz')
+        fileobj = pipe_restore(self.rdiff_backup, self.path, restore_as_of=1454448640, encoding='utf-8', kind='tar.gz')
         # Check result.
-        self.assertInTar(TAR_EXPECTED, io.open(rfd, 'rb'), mode='r|gz')
+        self.assertInTar(TAR_EXPECTED, fileobj, mode='r|gz')
 
     def test_restore_tar_gz_file(self):
         """
@@ -327,7 +301,9 @@ class RestoreTest(rdiffweb.test.WebCase):
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(self.path, restore_as_of=1454448640, dest=f, encoding='utf-8', kind='tar.gz')
+                _restore(
+                    self.rdiff_backup, self.path, restore_as_of=1454448640, dest=f, encoding='utf-8', kind='tar.gz'
+                )
             # Check result.
             self.assertInTar(TAR_EXPECTED, filename)
         finally:
@@ -337,11 +313,10 @@ class RestoreTest(rdiffweb.test.WebCase):
         """
         Check creation of tar.gz.
         """
-        rfd, wfd = os.pipe()
         # Run archiver
-        restore_async(self.path, restore_as_of=1454448640, dest=io.open(wfd, 'wb'), encoding='utf-8', kind='tar.bz2')
+        fileobj = pipe_restore(self.rdiff_backup, self.path, restore_as_of=1454448640, encoding='utf-8', kind='tar.bz2')
         # Check result.
-        self.assertInTar(TAR_EXPECTED, io.open(rfd, 'rb'), mode='r|bz2')
+        self.assertInTar(TAR_EXPECTED, fileobj, mode='r|bz2')
 
     def test_restore_tar_bz2_file(self):
         """
@@ -351,11 +326,42 @@ class RestoreTest(rdiffweb.test.WebCase):
         try:
             # Run archiver
             with open(filename, 'wb') as f:
-                restore(self.path, restore_as_of=1454448640, dest=f, encoding='utf-8', kind='tar.bz2')
+                _restore(
+                    self.rdiff_backup, self.path, restore_as_of=1454448640, dest=f, encoding='utf-8', kind='tar.bz2'
+                )
             # Check result.
             self.assertInTar(TAR_EXPECTED, filename)
         finally:
             os.remove(filename)
+
+    def test_restore_pipe_single_file(self):
+        # Given a single file
+        path = os.path.join(self.path, b'Revisions/Data')
+        # When trying to restore that file
+        fileobj = pipe_restore(self.rdiff_backup, path, restore_as_of=1454448640, encoding='utf-8', kind='raw')
+        # Then file content is returned
+        with fileobj:
+            data = fileobj.read()
+        self.assertEqual(b'Version3\n', data)
+
+    def test_restore_pipe_invalid_file(self):
+        # Given a single file
+        path = os.path.join(self.path, b'Revisions/invalid')
+        # When trying to restore that file
+        # Then an error get raised
+        with self.assertRaises(RestoreException):
+            pipe_restore(self.rdiff_backup, path, restore_as_of=1454448640, encoding='utf-8', kind='raw')
+
+    def test_restore_pipe_with_interrupted_repo(self):
+        # Given a repository with last backup interrupted
+        new_current_mirror = os.path.join(self.path, b'rdiff-backup-data/current_mirror.2024-12-04T16:30:40-05:00.data')
+        with open(new_current_mirror, 'w') as f:
+            f.write('1234')
+        # When trying to restore a file
+        # Then an error get raised
+        path = os.path.join(self.path, b'Revisions/Data')
+        with self.assertRaises(RestoreException):
+            pipe_restore(self.rdiff_backup, path, restore_as_of=1454448640, encoding='utf-8', kind='raw')
 
 
 if __name__ == "__main__":

@@ -24,7 +24,6 @@ import re
 import shutil
 import subprocess
 import sys
-import threading
 import time
 from collections import namedtuple
 from datetime import timedelta
@@ -33,6 +32,7 @@ from subprocess import CalledProcessError
 import psutil
 from cached_property import cached_property
 
+from rdiffweb.core.restore import pipe_restore
 from rdiffweb.tools.i18n import gettext_lazy as _
 
 # Define the logger
@@ -102,71 +102,6 @@ def unquote(name):
 
     # Remove quote using regex
     return re.sub(b";[0-9]{3}", unquoted_char, name, re.S)
-
-
-def popen(cmd, stderr=None, env=None):
-    """
-    Alternative to os.popen() to support a `cmd` with a list of arguments and
-    return a file object that return bytes instead of string.
-
-    `stderr` could be subprocess.STDOUT or subprocess.DEVNULL or a function.
-    Otherwise, the error is redirect to logger.
-    """
-    # Check if stderr should be pipe.
-    pipe_stderr = stderr == subprocess.PIPE or hasattr(stderr, '__call__') or stderr is None
-    proc = subprocess.Popen(
-        cmd,
-        shell=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE if pipe_stderr else stderr,
-        env=env,
-    )
-    if pipe_stderr:
-        t = threading.Thread(target=_readerthread, args=(proc.stderr, stderr))
-        t.daemon = True
-        t.start()
-    return _wrap_close(proc.stdout, proc)
-
-
-# Helper for popen() to redirect stderr to a logger.
-
-
-def _readerthread(stream, func):
-    """
-    Read stderr and pipe each line to logger.
-    """
-    func = func or logger.debug
-    for line in stream:
-        func(line.decode(STDOUT_ENCODING, 'replace').strip('\n'))
-    stream.close()
-
-
-# Helper for popen() to close process when the pipe is closed.
-
-
-class _wrap_close:
-    def __init__(self, stream, proc):
-        self._stream = stream
-        self._proc = proc
-
-    def close(self):
-        self._stream.close()
-        returncode = self._proc.wait()
-        if returncode == 0:
-            return None
-        return returncode
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        self.close()
-
-    def __getattr__(self, name):
-        return getattr(self._stream, name)
-
-    def __iter__(self):
-        return iter(self._stream)
 
 
 class AccessDeniedError(Exception):
@@ -529,7 +464,8 @@ class MetadataEntry(AbstractEntry):
         compressed vs not-compressed file.
         """
         if self._is_compressed:
-            return popen(['zcat', self.path])
+            process = subprocess.Popen(['zcat', self.path], stdout=subprocess.PIPE)
+            return process.stdout
         return open(self.path, 'rb')
 
     @property
@@ -1202,49 +1138,29 @@ class RdiffRepo(object):
         else:
             filename = "%s.%s" % (path_obj.display_name, kind)
 
-        # Call external process to offload processing.
-        # python -m rdiffweb.core.restore --restore-as-of 123456 --encoding utf-8 --kind zip -
-        cmdline = [
-            os.fsencode(sys.executable),
-            b'-m',
-            b'rdiffweb.core.restore',
-            b'--restore-as-of',
-            str(restore_as_of).encode('latin'),
-            b'--encoding',
-            self._encoding.name.encode('latin'),
-            b'--kind',
-            kind.encode('latin'),
-            os.path.join(self.full_path, unquote(path_obj.path)),
-            b'-',
-        ]
-        proc = subprocess.Popen(
-            cmdline,
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env=None,
+        # Search full path location of rdiff-backup.
+        rdiff_backup = find_rdiff_backup()
+
+        # Need to explicitly export some environment variable. Do not export
+        # all of them otherwise it also export some python environment variable
+        # and might brake rdiff-backup process.
+        env = {
+            'LANG': LANG,
+        }
+        if os.environ.get('TMPDIR'):
+            env['TMPDIR'] = os.environ['TMPDIR']
+
+        # Execute the restore process and pipe the result.
+        fileobj = pipe_restore(
+            rdiff_backup,
+            path=os.path.join(self.full_path, unquote(path_obj.path)),
+            restore_as_of=restore_as_of,
+            kind=kind,
+            encoding=self._encoding.name,
+            env=env,
         )
-        # Check if the restore process is properly starting
-        # Read the first 100 line until "Processing changed file"
-        max_line = 100
-        output = b''
-        success = False
-        line = proc.stderr.readline()
-        while max_line > 0 and line:
-            max_line -= 1
-            output += line
-            if b'Processing changed file' in line:
-                success = True
-                break
-            line = proc.stderr.readline()
-        if not success:
-            logger.error('rdiffweb-restore: ' + output.decode(STDOUT_ENCODING))
-            raise CalledProcessError(1, cmdline)
-        # Start a Thread to pipe the rest of the stream to the log
-        t = threading.Thread(target=_readerthread, args=(proc.stderr, logger.debug))
-        t.daemon = True
-        t.start()
-        return filename, _wrap_close(proc.stdout, proc)
+
+        return filename, fileobj
 
     @property
     def restore_log(self):
