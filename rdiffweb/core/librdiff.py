@@ -453,7 +453,7 @@ class RdiffDirEntry(object):
             # If the increment is a "missing" increment, need to get the date
             # before the folder was removed.
             if increment.is_missing:
-                change_date = self._get_previous_backup_date(change_date)
+                continue
 
             if change_date:
                 change_dates.add(change_date)

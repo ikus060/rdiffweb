@@ -286,7 +286,6 @@ class RdiffRepoTest(unittest.TestCase):
                 False,
                 -1,
                 [
-                    '2014-11-05T16:04:55-05:00',
                     '2016-01-20T10:42:21-05:00',
                     '2016-02-02T16:30:40-05:00',
                 ],
@@ -300,7 +299,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 False,
                 -1,
-                ['2014-11-05T16:04:55-05:00', '2016-02-02T16:30:40-05:00'],
+                ['2016-02-02T16:30:40-05:00'],
             ),
             (
                 "with_dir",
@@ -312,7 +311,6 @@ class RdiffRepoTest(unittest.TestCase):
                 False,
                 -1,
                 [
-                    '2014-11-03T19:04:57-05:00',
                     '2014-11-05T16:04:30-05:00',
                     '2014-11-05T16:04:55-05:00',
                     '2014-11-05T16:05:07-05:00',
@@ -329,7 +327,6 @@ class RdiffRepoTest(unittest.TestCase):
                 False,
                 9,
                 [
-                    '2014-11-03T19:04:57-05:00',
                     '2014-11-05T16:04:30-05:00',
                     '2014-11-05T16:04:55-05:00',
                     '2014-11-05T16:05:07-05:00',
@@ -345,7 +342,7 @@ class RdiffRepoTest(unittest.TestCase):
                 False,
                 False,
                 7,
-                ['2014-11-05T16:05:07-05:00', '2016-02-02T16:30:40-05:00'],
+                ['2016-02-02T16:30:40-05:00'],
             ),
             (
                 "with_char_to_quote",
@@ -356,7 +353,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 False,
                 -1,
-                ['2014-11-01T18:07:19-04:00', '2014-11-01T20:18:11-04:00', '2014-11-03T19:04:57-05:00'],
+                ['2014-11-01T20:18:11-04:00', '2014-11-03T19:04:57-05:00'],
             ),
             (
                 "with_char_to_quote",
@@ -367,7 +364,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 False,
                 -1,
-                ['2014-11-03T15:46:47-05:00', '2014-11-05T16:05:07-05:00', '2016-02-02T16:30:40-05:00'],
+                ['2014-11-05T16:05:07-05:00', '2016-02-02T16:30:40-05:00'],
             ),
             (
                 "with_char_to_quote",
@@ -378,7 +375,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 False,
                 -1,
-                ['2014-11-05T16:04:55-05:00', '2016-01-20T10:42:21-05:00'],
+                ['2016-01-20T10:42:21-05:00'],
             ),
             (
                 "with_loop_symlink",
@@ -389,7 +386,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 False,
                 -1,
-                ['2014-11-05T16:05:07-05:00', '2016-02-02T16:30:40-05:00'],
+                ['2016-02-02T16:30:40-05:00'],
             ),
             (
                 "with_subdir_symlink",
@@ -400,7 +397,7 @@ class RdiffRepoTest(unittest.TestCase):
                 True,
                 False,
                 -1,
-                ['2014-11-05T16:05:07-05:00', '2016-02-02T16:30:40-05:00'],
+                ['2016-02-02T16:30:40-05:00'],
             ),
         ]
     )
@@ -498,7 +495,6 @@ class RdiffRepoTest(unittest.TestCase):
         self.assertEqual(9, dir_entry.file_size)
         self.assertEqual(
             [
-                RdiffTime('2014-11-03T19:04:57-05:00'),
                 RdiffTime('2014-11-05T16:04:30-05:00'),
                 RdiffTime('2014-11-05T16:04:55-05:00'),
                 RdiffTime('2014-11-05T16:05:07-05:00'),
