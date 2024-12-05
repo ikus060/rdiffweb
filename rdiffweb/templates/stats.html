@@ -36,7 +36,7 @@
         {'text': _('Unchanged'), 'extend': 'filter', 'column': 'state:name', 'search': '^unchanged'},
         ] %}
         {% set columns = [
-        {'name':'path', 'title': _('Path'), 'orderable': True },
+        {'name':'path', 'title': _('Path'), 'orderable': True, 'render':'text' },
         {'name':'state', 'title':_('State'), 'orderable': True, 'render':'choices', 'render_arg': [ ['new',_('New')], ['deleted',_('Deleted')], ['changed',_('Changed')], ['unchanged',_('Unchanged')]] },
         {'name':'size', 'title':_('Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
         {'name':'increment_size', 'title':_('Increment Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
