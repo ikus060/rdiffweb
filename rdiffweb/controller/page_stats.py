@@ -83,7 +83,7 @@ class StatsPage(Controller):
         if limit < len(repo_obj.file_statistics):
             file_statistics = repo_obj.file_statistics[: -limit - 1 : -1]
         else:
-            file_statistics = repo_obj.file_statistics
+            file_statistics = repo_obj.file_statistics[::-1]
         params = {'repo': repo_obj, 'limit': limit, 'date': date, 'file_statistics': file_statistics}
         return self._compile_template("stats.html", **params)
 

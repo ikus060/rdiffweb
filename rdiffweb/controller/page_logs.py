@@ -80,7 +80,7 @@ class LogsPage(Controller):
         if limit < len(repo_obj.error_log):
             error_logs = repo_obj.error_log[: -limit - 1 : -1]
         else:
-            error_logs = repo_obj.error_log
+            error_logs = repo_obj.error_log[::-1]
 
         params = {'repo': repo_obj, 'limit': limit, 'date': date, 'file': file, 'data': data, 'error_logs': error_logs}
         return self._compile_template("logs.html", **params)
