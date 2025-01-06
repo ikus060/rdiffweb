@@ -128,7 +128,11 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
-* Remove Ubuntu Mantic
+=======
+## 2.9.6 (2025-01-06)
+
+* Remove Ubuntu Mantic & Ubuntu Lunar
+* Explicitly declare pytz dependency
 
 ## 2.9.5 (2024-11-05)
 
