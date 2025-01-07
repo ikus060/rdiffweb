@@ -82,7 +82,10 @@ For more information, visit the [Minarca Website](https://minarca.org).
 
 # Changelog
 
+## 6.0.4 (2025-01-07)
+
 * Remove Ubuntu Mantic support
+* Remove `zenity` dependency introduced by mistake (Github #23)
 
 ## 6.0.3 (2024-11-27)
 

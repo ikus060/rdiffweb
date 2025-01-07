@@ -11,7 +11,6 @@ Build-Depends:
  python3-pip,
  python3-dev,
  libffi-dev,
- zenity,
 Standards-Version: 3.9.5
 
 Package: minarca-server
@@ -27,7 +26,6 @@ Depends:
  rdiff-backup-2.2,
  openssh-client,
  openssh-server | ssh-server,
- zenity,
  ${python3:Depends},
  ${misc:Depends},
  coreutils,
