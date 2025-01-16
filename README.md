@@ -82,6 +82,24 @@ For more information, visit the [Minarca Website](https://minarca.org).
 
 # Changelog
 
+## Next Release
+
+* Minimum required version of libc version 2.28
+* Build binary package with `pyinstaller` instead of `dpkg` to improve portability to older Debian based distribution by freezing all dependencies.
+* Migrate from `setup.py` to `pyproject.toml`
+* Bump rdiffweb version to 2.10.0b1
+  * Adjusted table filter button labels for better clarity
+  * Removed Ubuntu Lunar and UbuntuMantic support due to end-of-life
+  * Migrated project configuration to pyproject.toml (#281)
+  * Added keepdays and maxage display in admin repos view (#310)
+  * Improved translation loading with caching
+  * Renamed "Backup Log" and "Restore Log" labels for clarity (#316)
+  * Enhanced backup inactivity email notifications for better clarity (#312)
+  * Add pytz as dependency
+  * Use forking instead of subprocess to restore files
+  * Fix changes dates reported to exclude '.missing' entries
+  * Fix display of filename containing `<` or `>` in file statistics view
+
 ## 6.0.4 (2025-01-07)
 
 * Remove Ubuntu Mantic support

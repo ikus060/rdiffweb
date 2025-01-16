@@ -1,0 +1,8 @@
+#!/bin/sh
+# Copyright (C) 2023 IKUS Software. All rights reserved.
+# IKUS Software inc. PROPRIETARY/CONFIDENTIAL.
+# Use is subject to license terms.
+set -e
+if [ -z "${DPKG_ROOT:-}" ] && [ "$1" = remove ] && [ -d /run/systemd/system ] ; then
+	deb-systemd-invoke stop 'minarca-server.service' >/dev/null || true
+fi

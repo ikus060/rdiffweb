@@ -45,7 +45,7 @@ class MinarcaPlugin(SimplePlugin):
     user_dir_group_id = 65534  # nobody
     user_base_dir = '/backups'
     home_dir = '/backups'
-    shell = '/opt/minarca-server/bin/minarca-shell'
+    shell = '/opt/minarca-server/minarca-shell'
     auth_options = 'no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty'
     remote_host = None
     remote_host_identity = '/etc/ssh'

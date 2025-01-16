@@ -11,15 +11,12 @@ stages:
 - deploy
 - e2e-test
 
-test-server:
-  artifacts:
-    paths:
-      - "./coverage.xml"
-      - "./xunit.xml"
-    expire_in: 1 day
-  image: python:3.10
+.tox: &tox
+  image: python:3.10-buster
   variables:
+    TOXENV: $CI_JOB_NAME
     PIP_EXTRA_INDEX_URL: https://nexus.ikus-soft.com/repository/pypi-group/simple/
+    TZ: UTC
   before_script:
     - apt update
     - apt -y --no-install-recommends install python3-dev python3-pip python3-setuptools
@@ -28,52 +25,38 @@ test-server:
     - tox
   stage: test
 
-bdist-server:deb:
+flake8:
+  <<: *tox
+
+black:
+  <<: *tox
+
+isort:
+  <<: *tox
+
+py3:
+  <<: *tox
   artifacts:
     paths:
-    - "./dist/*/*_amd64.deb"
+      - "./coverage.xml"
+      - "./xunit.xml"
     expire_in: 1 day
-  image: buildpack-deps:$DIST
-  needs: []
-  parallel:
-    matrix:
-    - DIST: bullseye
-      BACKPORT: deb http://deb.debian.org/debian $DIST-backports main
-      PIP_EXTRA_INDEX_URL: https://nexus.ikus-soft.com/repository/pypi-group/simple/
-      TZ: UTC
-    - DIST: [bookworm, jammy, noble, oracular]
-      PIP_EXTRA_INDEX_URL: https://nexus.ikus-soft.com/repository/pypi-group/simple/
-      TZ: UTC
-  script:
-  # Install dependencies
-  - '[ -z "$BACKPORT" ] || echo "$BACKPORT" >> /etc/apt/sources.list'
-  - apt update
-  - apt -y --no-install-recommends install devscripts lsb-release
-  - '[ -z "$BACKPORT" ] && apt build-dep -y . || apt build-dep -t "${DIST}-backports" -y .'
-  # Generate change log
-  - export DEBEMAIL=${CI_COMMIT_AUTHOR}
-  - debian/rules changelog
-  # Run build
-  - dpkg-buildpackage -b
-  # Move files to archives
-  - mkdir -p "./dist/$DIST/"
-  - mv ../*.deb "./dist/$DIST/"
+
+pyinstaller:
+  <<: *tox
   stage: bdist
-  variables:
-   DH_VERBOSE: "1"
-   GIT_DEPTH: "0"
-   GIT_STRATEGY: clone
+  artifacts:
+    paths:
+    - "./dist/*_amd64.deb"
+    expire_in: 1 day
 
 test-bdist-server:deb:
   stage: bdist
   image: buildpack-deps:$DIST
-  needs: ["bdist-server:deb"]
+  needs: ["pyinstaller"]
   parallel:
     matrix:
-    - DIST: [bullseye, bookworm]
-    # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
-    # So we need to make it explicit using environment variable
-    - DIST: [jammy, noble, oracular]
+    - DIST: [bullseye, bookworm, jammy, noble, oracular]
       TZ: UTC
   script:
   - apt update
@@ -81,20 +64,19 @@ test-bdist-server:deb:
   - curl -L https://www.ikus-soft.com/archive/minarca/public.key | gpg --dearmor > /usr/share/keyrings/minarca-keyring.gpg
   - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/minarca-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-release-$(lsb_release -sc)/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/minarca.list
   - apt update
-  - apt install -y ./dist/$DIST/minarca-server_*_amd64.deb
-  - /opt/minarca-server/bin/minarca-server --version
+  - apt install -y ./dist/minarca-server_*_amd64.deb
+  - /opt/minarca-server/minarca-server --version
   - if [[ -n "$CI_COMMIT_TAG" && "$(/opt/minarca-server/bin/minarca-server --version)" != "minarca-server $CI_COMMIT_TAG" ]]; then echo "Version mismatches"; exit 1; fi
-  - (/opt/minarca-server/bin/minarca-server &)
+  - (/opt/minarca-server/minarca-server --logfile= &)
   - timeout 60 bash -c 'until curl --silent http://localhost:8080; do sleep 1; done'
 
 upload:deb:
-  image: python:3.10
+  image: python:3.10-buster
   needs:
-  - bdist-server:deb
+  - pyinstaller
   parallel:
     matrix:
     - DIST: [bullseye, bookworm, jammy, noble, oracular]
-      DIST_SPECIFIC: 1
   script: |
     set -e
     set -x
@@ -103,7 +85,7 @@ upload:deb:
     else
       APT_URL="https://nexus.ikus-soft.com/repository/apt-dev-${DIST}/"
     fi
-    export FILE=$(ls -1 ./dist/$DIST/minarca-server_*_amd64.deb)
+    export FILE=$(ls -1 ./dist/minarca-server_*_amd64.deb)
     curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$FILE" "$APT_URL"
     sleep 2
     curl --fail ${APT_URL}/dists/$DIST/main/binary-amd64/Packages | grep "$(basename $FILE)"
@@ -113,8 +95,7 @@ upload:sonar:
   allow_failure: true
   stage: upload
   needs:
-  - test-server
-  - bdist-server:deb
+  - py3
   image: sonarsource/sonar-scanner-cli
   only:
     variables:
@@ -123,21 +104,19 @@ upload:sonar:
   variables:
     SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
   script:
-  # Patch coverage repport
-  #- sed -i "s|<source>minarca_client|<source>minarca-client/minarca_client|g" minarca-client/coverage-*.xml
   - sonar-scanner -X -Dsonar.qualitygate.wait=True -Dsonar.python.coverage.reportPaths=coverage*.xml -Dsonar.python.xunit.reportPath=xunit*.xml -Dsonar.host.url=$SONAR_URL -Dsonar.token=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.projectVersion=$(git describe)
 
 deploy:dev:
   allow_failure: True
   environment:
     name: dev
-    url: https://dev.minarca.net
+    url: https://minarca-dev.ikus-soft.com
   needs: 
-  - bdist-server:deb
+  - pyinstaller
   - upload:deb
   image: registry.gitlab.com/finestructure/pipeline-trigger
   script:
-    - export DEB_VERSION=$(ls -1 dist/bookworm/minarca-server_*_amd64.deb | cut -d '_' -f 2)
+    - export DEB_VERSION=$(ls -1 dist/minarca-server_*_amd64.deb | cut -d '_' -f 2)
     - echo DEB_VERSION=$DEB_VERSION
     # Trigger ansible-config pipeline
     - trigger -a "$ANSIBLE_PIPELINE_GITLAB_API_TOKEN" -t master -e "MINARCA_VERSION=$DEB_VERSION" -p 36bae86778d901fc6b2d6453a41844 18716492

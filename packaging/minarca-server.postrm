@@ -1,0 +1,13 @@
+#!/bin/sh
+# Copyright (C) 2023 IKUS Software. All rights reserved.
+# IKUS Software inc. PROPRIETARY/CONFIDENTIAL.
+# Use is subject to license terms.
+set -e
+if [ "$1" = remove ] && [ -d /run/systemd/system ] ; then
+    systemctl --system daemon-reload >/dev/null || true
+fi
+if [ "$1" = "purge" ]; then
+    if [ -x "/usr/bin/deb-systemd-helper" ]; then
+        deb-systemd-helper purge 'minarca-server.service' >/dev/null || true
+    fi
+fi

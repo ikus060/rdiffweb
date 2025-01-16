@@ -115,7 +115,7 @@ def get_parser():
         help="""location of minarca-shell to be used to handle SSH
             connection. This is used to configure `authorized_keys` to
             restrict SSH command line to be executed""",
-        default='/opt/minarca-server/bin/minarca-shell',
+        default='/opt/minarca-server/minarca-shell',
     )
 
     parser.add(
