@@ -15,8 +15,8 @@ export TZ=UTC
 %:
 	dh $@ --buildsystem=pybuild --test-tox
 
-# Test files are not required for runtime
 execute_after_dh_auto_install:
+	# Test files are not required for runtime
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/controller/tests
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/core/tests
 	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/tests
