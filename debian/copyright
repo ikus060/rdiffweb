@@ -28,7 +28,7 @@ Files-Excluded: extras
  rdiffweb/static/js/jquery.min.js
 
 Files: *
-Copyright: 2019-2021 Patrik Dufresne <patrik@ikus-soft.com>
+Copyright: 2019-2025 Patrik Dufresne <patrik@ikus-soft.com>
 License: GPL-3+
 
 License: GPL-3+
