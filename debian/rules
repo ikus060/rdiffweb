@@ -23,7 +23,7 @@ execute_after_dh_auto_install:
 	rm -f  debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/test.py
 	
 override_dh_installman:
-	mkdir -p debian/rdiffweb/usr/share/man/man1/
+	mkdir -p debian/rdiffweb/usr/share/man/man1
 	PATH=debian/rdiffweb/usr/bin:$(PATH) \
 	PYTHONPATH=debian/rdiffweb/usr/lib/python{version}/dist-packages:$(PYTHONPATH) \
 	help2man --version-string "$(SETUPTOOLS_SCM_PRETEND_VERSION)" \
