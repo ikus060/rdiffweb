@@ -33,9 +33,8 @@ override_dh_installman:
 		rdiffweb > \
 		debian/rdiffweb/usr/share/man/man1/rdiffweb.1
 
-override_dh_auto_clean:
+execute_before_dh_auto_clean:
 	rm -rf rdiffweb.egg-info
-	dh_auto_clean
 
 # For maintainer use only
 # Generate change log with appropriate version.
