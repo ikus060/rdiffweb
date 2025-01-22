@@ -37,7 +37,7 @@ Build-Depends:
  rdiff-backup,
 Rules-Requires-Root: no
 Standards-Version: 4.7.0
-Homepage: https://rdiffweb.org/
+Homepage: https://rdiffweb.org
 Vcs-Git: https://gitlab.com/ikus-soft/rdiffweb.git
 Vcs-Browser: https://gitlab.com/ikus-soft/rdiffweb
 
