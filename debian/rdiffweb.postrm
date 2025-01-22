@@ -6,6 +6,7 @@ case "${1}" in
 	purge)
 		# Remove default session directory
 		rm -rf /var/lib/rdiffweb
+
 		# Remove symlink
 		rm -f /usr/lib/python3/dist-packages/rdiffweb/static/js/chart.min.js
 		rm -f /usr/lib/python3/dist-packages/rdiffweb/static/js/chartkick.min.js
