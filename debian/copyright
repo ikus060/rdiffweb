@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: rdiffweb
 Upstream-Contact: Patrik Dufresne <patrik@ikus-soft.com>
-Source: https://github.com/rdiff-backup/rdiff-backup
+Source: https://gitlab.com/ikus-soft/rdiffweb/-/tags
 Files-Excluded: extras
  rdiffweb/static/css/bootstrap.min.css
  rdiffweb/static/css/bootstrap.min.css.map
