@@ -147,7 +147,7 @@ package:deb:
       - DIST: bullseye
         BACKPORT: deb http://deb.debian.org/debian $DIST-backports main
       - DIST: bookworm
-      - DIST: [jammy, lunar, noble, oracular]
+      - DIST: [jammy, noble, oracular]
   script:
     # Clean-up
     - rm -f ../rdiffweb_*
@@ -157,7 +157,6 @@ package:deb:
     - apt update
     - apt -y --no-install-recommends install devscripts
     - '[ -z "$BACKPORT" ] && apt build-dep -y . || apt build-dep -t "${DIST}-backports" -y .'
-    - '[ -x "$EXTRA" ] || $EXTRA'
     # Generate change log
     - export DEBEMAIL=${CI_COMMIT_AUTHOR}
     - debian/rules changelog
@@ -182,7 +181,7 @@ test-package:deb:
       - DIST: [bullseye, bookworm]
       # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
       # So we need to make it explicit using environment variable
-      - DIST: [jammy, lunar, noble, oracular]
+      - DIST: [jammy, noble, oracular]
         TZ: UTC
   script:
     - apt update
@@ -308,7 +307,7 @@ publish:deb:
       - $NEXUS_PWD
   parallel:
     matrix:
-      - DIST: [bullseye, bookworm, jammy, lunar, noble, oracular]
+      - DIST: [bullseye, bookworm, jammy, noble, oracular]
   script: |
     set -e
     set -x
@@ -349,7 +348,7 @@ publish:doc:
     - doc
   script:
     # publish to nexus
-    - export VERSION=$(python3 -c "import setuptools_scm; print(setuptools_scm.get_version())")
+    - export VERSION=$(python3 -m setuptools_scm)
     - cd .tox/doc/tmp/html
     - find * -type f -exec curl --fail -u "$NEXUS_USR:$NEXUS_PWD" --upload-file "{}" $NEXUS_URL/repository/archive/rdiffweb/$VERSION/doc/{} \;
 
