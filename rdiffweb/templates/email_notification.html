@@ -1,6 +1,10 @@
 {% extends 'email_layout.html' %}
 {% block title %}
-  {% trans %}Notification{% endtrans %}
+  {% if repos %}
+    {% trans %}Backup inactive{% endtrans %}
+  {% else %}
+    {% trans %}Notification{% endtrans %}
+  {% endif %}
 {% endblock title %}
 {% block body %}
   <h1>
@@ -15,18 +19,18 @@
       {% trans %}The following repositories are inactive for some time. We invite you to have a look at your last backup schedule.{% endtrans %}
     </p>
     <ul>
-      {% for r in repos %}
+      {% for repo in repos %}
         <li>
-          <a>{{ r.display_name }}</a>
+          <a>{{ repo.display_name }}</a>
           <br/>
-          <small>
-            {% if r.last_backup_date %}
+          <strong style="color: {{ fgcolor(cls) }}">
+            {% if repo.last_backup_date %}
               {% trans %}Last backup {% endtrans %}
-              <time datetime="{{ r.last_backup_date }}">{{ r.last_backup_date | lastupdated }}</time>
-            {% else %}
-              {% trans %}Initial backup not completed.{% endtrans %}
+              <time datetime="{{ repo.last_backup_date }}"
+                    title="{{ repo.last_backup_date }}">{{ repo.last_backup_date | lastupdated }}</time>
             {% endif %}
-          </small>
+            {% if repo.status[0] != 'ok' %}{{ repo.status[1] }}{% endif %}
+          </strong>
         </li>
       {% endfor %}
     </ul>
