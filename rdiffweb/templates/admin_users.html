@@ -4,26 +4,39 @@
   {% trans %}User management{% endtrans %}
 {% endblock %}
 {% set admin_nav_active="users" %}
+{% macro btn(url, label, icon) %}
+  <a class="btn btn-secondary"
+     href="{{ url }}"
+     aria-label="{{ label }}"
+     data-bs-toggle="tooltip"
+     data-bs-placement="top"
+     title="{{ label }}"
+     role="button">
+    <i class="{{ icon }}" aria-hidden="true"></i>
+  </a>
+{% endmacro %}
 {% block content %}
   {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
   <a class="btn btn-success mb-2"
      href="{{ url_for('admin','users', 'new')}}">{% trans %}Add user{% endtrans %}</a>
   <!-- Users View -->
-  {% set filter_buttons = [
-  (_('Admins'), 2, 'admin'),
-  (_('LDAP'), 0, 'LDAP')] %}
+  {% set buttons = [
+  {'text': _('All'), 'extend': 'clear'},
+  {'text': _('Admins'), 'extend': 'filter', 'column': 2, 'search': 'admin'},
+  {'text': _('LDAP'), 'extend': 'filter', 'column': 0, 'search': 'LDAP'},
+  ] %}
   {% set role_class = {0:'danger', 5:'warning', 10:'info'} %}
   {% set role_choices = dict(form.role.choices) %}
   {% set mfa_choices = dict(form.mfa.choices) %}
   {% set report_time_range_choices = dict(form.report_time_range.choices) %}
-  {% call datatables(_('User list'), filter_buttons)%}
+  {% call datatables(_('User list'), buttons)%}
     <thead>
       <tr>
-        <th scope="col">{{ form.username.label.text  }}</th>
-        <th scope="col">{{ form.fullname.label.text  }}</th>
-        <th scope="col">{{ form.email.label.text  }}</th>
-        <th scope="col">{{ form.role.label.text  }}</th>
-        <th scope="col">{{ form.user_root.label.text  }}</th>
+        <th scope="col">{{ form.username.label.text }}</th>
+        <th scope="col">{{ form.fullname.label.text }}</th>
+        <th scope="col">{{ form.email.label.text }}</th>
+        <th scope="col">{{ form.role.label.text }}</th>
+        <th scope="col">{{ form.user_root.label.text }}</th>
         <th scope="col">{{ form.mfa.label.text }}</th>
         <th scope="col">{{ form.report_time_range.label.text }}</th>
         <th scope="col" data-sortable="false"></th>
@@ -59,15 +72,9 @@
           <td>{{ mfa_choices.get(user.mfa) }}</td>
           <td>{{ report_time_range_choices.get(user.report_time_range) }}</td>
           <td class="text-right">
-            <div class="btn-hover">
-              {# Dashboard #}
-              <a class="btn btn-secondary"
-                 href="{{ url_for('status', user.username, '/') }}">{% trans %}Overview{% endtrans %}</a>
-              {# Edit button #}
-              <a class="btn btn-secondary"
-                 href="{{ url_for('admin','users','edit', user.username)}}">
-                {% trans %}Edit{% endtrans %}
-              </a>
+            <div class="btn-hover text-nowrap">
+              {{ btn(url_for('admin','users','edit', user.username), _('Edit'), "fa fa-pencil-square-o") }}
+              {{ btn(url_for('status', user.username, '/'), _('Overview'), "fa fa-tachometer") }}
               {# Delete button #}
               {% if user.username != username %}
                 {{ button_confirm(label=_('Delete'), target="#delete-user-modal", username=user.username, url=url_for('admin', 'users', 'delete')) }}

@@ -24,7 +24,7 @@ class AdminReposTest(rdiffweb.test.WebCase):
     login = True
 
     def test_repos(self):
-        # Given an administrator user with repos
+        # Given an admin user with repos
         repos = (
             RepoObject.query.join(UserObject, RepoObject.userid == UserObject.userid)
             .filter(UserObject.username == self.USERNAME)
@@ -36,3 +36,35 @@ class AdminReposTest(rdiffweb.test.WebCase):
         # Then the page contains our repos.
         for repo in repos:
             self.assertInBody(repo.name)
+
+    def test_repos_with_maxage(self):
+        # Given an admin user with repos
+        repos = (
+            RepoObject.query.join(UserObject, RepoObject.userid == UserObject.userid)
+            .filter(UserObject.username == self.USERNAME)
+            .all()
+        )
+        # Given a repo with maxage
+        repos[0].maxage = 3
+        repos[0].commit()
+        # When querying the repository page
+        self.getPage("/admin/repos/")
+        self.assertStatus(200)
+        # Then the page contains "3 days".
+        self.assertInBody("3 days")
+
+    def test_repos_with_keepdays(self):
+        # Given an admin user with repos
+        repos = (
+            RepoObject.query.join(UserObject, RepoObject.userid == UserObject.userid)
+            .filter(UserObject.username == self.USERNAME)
+            .all()
+        )
+        # Given a repo with maxage
+        repos[0].keepdays = 6
+        repos[0].commit()
+        # When querying the repository page
+        self.getPage("/admin/repos/")
+        self.assertStatus(200)
+        # Then the page contains "3 days".
+        self.assertInBody("6 days")

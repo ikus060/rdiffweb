@@ -10,11 +10,12 @@
   <p>
     {% trans %}This is a list of devices that are logged into this application. It may include authenticated and unauthenticated users. You may revoke any sessions that you do not recognize except your current session.{% endtrans %}
   </p>
-  {% set filter_buttons = [
-  (_('Authenticated'), 3, 1),
-  (_('Anonymous'), 3, 0),
+  {% set buttons = [
+  {'text': _('All'), 'extend': 'clear'},
+  {'text': _('Authenticated'), 'extend': 'filter', 'column': 3, 'search': 1},
+  {'text': _('Anonymous'), 'extend': 'filter', 'column': 3, 'search': 0},
   ] %}
-  {% call() datatables(_('Repository list'), filter_buttons=filter_buttons) %}
+  {% call() datatables(_('Repository list'), buttons) %}
     <thead>
       <tr>
         <th scope="col">{% trans %}Device{% endtrans %}</th>

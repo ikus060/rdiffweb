@@ -1,6 +1,5 @@
 {% set table_id = 1 %}
-{% macro datatables(label, filter_buttons=[]) %}
-  {# filter_buttons define a list of filter buttons. Should be a list of tuple (label, column, search) #}
+{% macro datatables(label, buttons=[]) %}
   {% set id = 'table' + table_id|string %}
   {% set table_id = table_id + 1 %}
   <table id="{{ id }}"
@@ -41,16 +40,7 @@
             active: 'active',
           }
         },
-        buttons: [
-          {% for label, column, search in filter_buttons %}
-          {
-            text: "{{label}}",
-            extend: 'filter',
-            column: "{{column}}",
-            search: "{{search}}",
-          },
-         {% endfor %}
-        ],
+        buttons: {{ buttons | tojson }}
       }
     });
   </script>

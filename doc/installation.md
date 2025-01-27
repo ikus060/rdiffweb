@@ -19,7 +19,7 @@ These minimum requirements are solely for evaluation and shall not be used in a 
 
 ### Recommended server requirement
 
-* Cpu: 64bit x86-64 or amd64, 4 core
+* Cpu: 64bit x86-64 or amd64, 4 core
 * Memory: minimum 4 GiB
 * Storage: consider the storage according to your backup needs. A couple of terabytes should be considered for the long term. Ideally, you should consider hardware or ZFS raid for your storage. If you plan to support user quota, make sure that your file system supports it. E.g. ext4 and ZFS. Other file systems might not be well supported.
 * Temporary storage: Rdiffweb requires a temporary storage location that is used during the restoration process. This location should be greater than 8gb. This temporary storage will be closer to the web application. Ideally, it should be in ram using tmpfs.

@@ -28,7 +28,7 @@
       {% set restore_dates = path_obj.change_dates[: -limit - 1 : -1] %}
       {% for restore_date in restore_dates %}
         <li class="list-group-item">
-          <i class="{{ 'fa fa-folder' if path_obj.isdir else 'fa fa-file-o' }}"
+          <i class="{{ 'fa fa-folder' if path_obj.isdir else 'fa fa-file-o' }}"
              aria-hidden="true"></i>
           <time class="js-datetime" datetime="{{ restore_date }}">{{ restore_date | lastupdated }}</time>
           <div class="pull-right">
