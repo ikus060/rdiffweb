@@ -23,27 +23,29 @@ It also handle all the encoding and decoding of filenames to generate an
 appropriate archive usable by the target system. In few circumstances it's
 impossible to properly generate a valid filename depending of the archive types.
 """
-
-import argparse
 import logging
 import os
 import shutil
-import sys
+import stat
+import subprocess
 import tarfile
 import tempfile
-import traceback
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
-
-import rdiffweb
-from rdiffweb.core.librdiff import LANG, STDOUT_ENCODING, find_rdiff_backup, popen
 
 logger = logging.getLogger(__name__)
 
-# Increase the chunk size to improve performance.
-CHUNK_SIZE = 4096 * 10
+# Log used by rdiff-backup
+TOKEN1 = b'* Processing changed file '
+TOKEN2 = b'Processing changed file '
 
-# Token used by rdiff-backup
-TOKEN = b'Processing changed file '
+# Pick random exit code when exception are raised
+CUST_EXIT_CODE = 65
+
+
+class RestoreException(Exception):
+    """Raised when restore fail."""
+
+    pass
 
 
 class TarArchiver(object):
@@ -155,16 +157,37 @@ ARCHIVERS = {
 }
 
 
-# Log everything to stderr.
-def _print_stderr(msg, exc_info=False):
-    """
-    Print messages to stderr.
-    """
-    assert isinstance(msg, str)
-    print(msg, file=sys.stderr)
-    if exc_info:
-        traceback.print_exc(file=sys.stderr)
-    sys.stderr.flush()
+class _wrap_close:
+    """Wrap fileobject."""
+
+    def __init__(self, stream, pid):
+        assert isinstance(pid, int) and pid > 0
+        self._stream = stream
+        self._pid = pid
+        self._return_code = None
+
+    def close(self):
+        self._stream.close()
+        if self._return_code is None:
+            try:
+                _pid, exit_status = os.waitpid(self._pid, 0)
+                self._return_code = exit_status >> 8
+                if self._return_code != 0:
+                    logger.error(f'rdiff-backup restore return non-zero exit status: {self._return_code}')
+            except ChildProcessError:
+                logger.exception('fail to get child process exit status')
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
+    def __getattr__(self, name):
+        return getattr(self._stream, name)
+
+    def __iter__(self):
+        return iter(self._stream)
 
 
 def _lookup_filename(base, path):
@@ -182,124 +205,172 @@ def _lookup_filename(base, path):
     dirname = os.path.dirname(os.path.join(base, path))
     basename = os.path.basename(path)
     for file in os.listdir(dirname):
-        if basename == file.decode(STDOUT_ENCODING, 'replace').encode(STDOUT_ENCODING, 'replace'):
+        if basename == file.decode('utf-8', 'replace').encode('utf-8', 'replace'):
             fullpath = os.path.join(dirname, file)
             arcname = os.path.relpath(fullpath, base)
             return fullpath, arcname
     return None, None
 
 
-def restore(restore, restore_as_of, kind, encoding, dest, log=logger.debug):
+def _yield_previous_lines(stream):
     """
+    Generator to yield previous_line from a stream.
+
+    This is particularly useful in scenarios like parsing the output of `rdiff-backup`,
+    where the program logs messages such as "Processing changed file <file_path>"
+    before actually processing the file. Using this generator, we can determine
+    when the processing of a file is complete by observing when the next file starts
+    being logged, allowing us to execute post-processing logic for the previous file
+    before moving on to the next.
+    """
+    previous_line = None
+    for current_line in stream:
+        current_line = current_line.rstrip(b'\n')
+        if previous_line is not None:
+            yield previous_line
+        previous_line = current_line
+    if previous_line is not None:
+        yield previous_line
+
+
+def pipe_restore(rdiff_backup, path, restore_as_of, kind, encoding, env={}):
+    """
+    Fork execution to restore and archive files in a separate process to woraround python Global Interpreter Lock.
+
     Used to restore a file or a directory.
-    restore: relative or absolute file or folder to be restored (unquoted)
+
+    rdiff_backup: location of rdiff-backup executable to be used.
+    path: relative or absolute file or folder to be restored (unquoted)
     restore_as_of: date to restore
     kind: type of archive to generate or raw to stream a single file.
     encoding: encoding of the repository (used to properly encode the filename in archive)
-    dest: a filename or a file handler where to write the archive.
     """
-    assert isinstance(restore, bytes)
+    assert rdiff_backup
+    assert isinstance(path, bytes)
+    assert isinstance(restore_as_of, int)
+    assert kind in ARCHIVERS
+
+    # Create a pipe for file transfert
+    rfile, wfile = os.pipe()
+
+    # Fork the process
+    pid = os.fork()
+    if pid > 0:
+        # Parent - Close unused end
+        os.close(wfile)
+        # Parent receive response header, then file body.
+        # This could later be expended to transport more status information.
+        fileobj = os.fdopen(rfile, 'rb')
+        # Expect "ok", then file content
+        header_status = fileobj.readline()
+        if header_status != b'ok\n':
+            raise RestoreException()
+        return _wrap_close(fileobj, pid)
+
+    else:
+        # Child - Close unused end
+        os.close(rfile)
+        try:
+            with os.fdopen(wfile, 'wb') as dest:
+                return_code = _restore(
+                    rdiff_backup=rdiff_backup,
+                    path=path,
+                    restore_as_of=restore_as_of,
+                    kind=kind,
+                    encoding=encoding,
+                    dest=dest,
+                    env=env,
+                    send_header=1,
+                )
+                os._exit(return_code)
+        except Exception as e:
+            # We need to catch _any_ exception so that it doesn't
+            # propagate out of this function and cause exiting
+            # with anything other than os._exit()
+            logger.exception(f'restore failed: {e}')
+            os._exit(CUST_EXIT_CODE)
+
+
+def _restore(rdiff_backup, path, restore_as_of, kind, encoding, dest, env={}, send_header=False):
+    assert isinstance(path, bytes)
     assert isinstance(restore_as_of, int)
     assert kind in ARCHIVERS
 
     # Generate a temporary location used to restore data.
     # This location will be deleted after restore.
     tmp_output = tempfile.mkdtemp(prefix=b'rdiffweb_restore_')
-    log('restoring data into temporary folder: %r' % tmp_output)
-
-    # Search full path location of rdiff-backup.
-    rdiff_backup_path = find_rdiff_backup()
-
-    # Need to explicitly export some environment variable. Do not export
-    # all of them otherwise it also export some python environment variable
-    # and might brake rdiff-backup process.
-    env = {
-        'LANG': LANG,
-    }
-    if os.environ.get('TMPDIR'):
-        env['TMPDIR'] = os.environ['TMPDIR']
+    logger.debug('restoring data into temporary folder: %r' % tmp_output)
 
     cmd = [
-        rdiff_backup_path,
+        rdiff_backup,
         b'-v',
         b'5',
         b'--restore-as-of=' + str(restore_as_of).encode('latin'),
-        restore,
+        path,
         tmp_output,
     ]
-    log('executing %r with env %r' % (cmd, env))
+    logger.debug('executing %r with env %r' % (cmd, env))
 
-    # Open an archive.
-    archive = ARCHIVERS[kind](dest)
+    archive = None
     try:
-        # Read the output of rdiff-backup
-        with popen(cmd, env=env) as output:
-            for line in output:
-                # Since rdiff-backup 2.1.2b1 the line start with b'* '
-                if line.startswith(b'* '):
-                    line = line[2:]
-                line = line.rstrip(b'\n')
-                log('rdiff-backup: %r' % line)
-                if not line.startswith(TOKEN):
-                    continue
-                # A new file or directory was processed. Extract the filename and
-                # look for it on filesystem.
-                value = line[len(TOKEN) :]
-                fullpath, arcname = _lookup_filename(tmp_output, line[len(TOKEN) :])
-                if not fullpath:
-                    log('error: file not found %r' % value)
-                    continue
+        proc = subprocess.Popen(
+            cmd,
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            env=env,
+        )
+        for line in _yield_previous_lines(proc.stdout):
+            logger.debug('rdiff-backup: %s' % line.decode('utf-8', 'replace'))
+            # Since rdiff-backup 2.1.2b1 the line start with b'* '
+            if line.startswith(TOKEN1):
+                value = line[len(TOKEN1) :]
+            elif line.startswith(TOKEN2):
+                value = line[len(TOKEN2) :]
+            else:
+                continue
+            # A new file or directory was processed. Extract the filename and
+            # look for it on filesystem.
+            fullpath, arcname = _lookup_filename(tmp_output, value)
+            if not fullpath:
+                logger.debug('error: file not found %r' % value)
+                continue
 
-                # Add the file to the archive.
-                log('adding %r' % fullpath)
-                try:
-                    archive.addfile(fullpath, arcname, encoding)
-                except Exception:
-                    # Many error may happen when trying to add a file to the
-                    # archive. To be more resilient, capture error and continue
-                    # with the next file.
-                    log('error: fail to add %r' % fullpath, exc_info=1)
+            # Add the file to the archive.
+            logger.debug('adding %s' % fullpath.decode('utf-8', 'replace'))
+            try:
+                # Send status header.
+                if archive is None and send_header:
+                    dest.write(b'ok\n')
+                if archive is None:
+                    # Then send archive.
+                    archive = ARCHIVERS[kind](dest)
+                archive.addfile(fullpath, arcname, encoding)
+            except Exception:
+                # Many error may happen when trying to add a file to the
+                # archive. To be more resilient, capture error and continue
+                # with the next file.
+                logger.debug('error: fail to add %r' % fullpath, exc_info=1)
 
-                # Delete file once added to the archive.
-                if os.path.isfile(fullpath) or os.path.islink(fullpath):
+            # Delete file once added to the archive.
+            try:
+                file_stat = os.lstat(fullpath)
+                if stat.S_ISREG(file_stat.st_mode) or stat.S_ISLNK(file_stat.st_mode):
                     os.remove(fullpath)
+            except (OSError, ValueError):
+                pass
+
+        # return rdiff-backup restore exit-code
+        return proc.wait()
     finally:
         # Close the pipe
-        archive.close()
+        if archive:
+            archive.close()
+        elif send_header:
+            dest.write(b'fail\n')
+            dest.flush()
         # Clean-up the directory.
         if os.path.isdir(tmp_output):
             shutil.rmtree(tmp_output, ignore_errors=True)
         elif os.path.isfile(tmp_output):
             os.remove(tmp_output)
-
-
-def main():
-    parser = argparse.ArgumentParser(description='Rdiffweb restore script.')
-    parser.add_argument('--restore-as-of', type=int, required=True)
-    parser.add_argument('--encoding', type=str, default='utf-8', help='Define the encoding of the repository.')
-    parser.add_argument(
-        '--kind', type=str, choices=ARCHIVERS, default='zip', help='Define the type of archive to generate.'
-    )
-    parser.add_argument('restore', type=str, help='Define the path of the file or directory to restore.')
-    parser.add_argument('output', type=str, default='-', help='Define the location of the archive. Default to stdout.')
-    parser.add_argument('--version', action='version', version='%(prog)s ' + rdiffweb.__version__)
-    args = parser.parse_args()
-    # handle encoding of the path.
-    path = args.restore
-    if isinstance(path, str):
-        path = os.fsencode(path)
-    # handle output
-    if args.output == '-':
-        output = sys.stdout.buffer
-    else:
-        output = open(args.output, 'wb')
-    # Execute the restore.
-    try:
-        restore(path, args.restore_as_of, args.kind, args.encoding, output, log=_print_stderr)
-    except Exception:
-        _print_stderr('error: failure to create the archive', exc_info=1)
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()

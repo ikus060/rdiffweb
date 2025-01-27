@@ -36,6 +36,8 @@ class CheckLinkTest(rdiffweb.test.WebCase):
         'https://www.ikus-soft.com/.*',
         'https://rdiffweb.org/.*',
         '.*js',
+        # Bug in rdiff-backup >=2.2.x with test\test - see https://github.com/rdiff-backup/rdiff-backup/issues/1040
+        '.*/restore/admin/testcases/test.*test',
     ]
 
     def test_links(self):

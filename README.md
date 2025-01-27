@@ -131,12 +131,16 @@ We are passionate about developing and maintaining this open-source project to m
 # Next Release
 
 * Adjusted table filter button labels for better clarity
-* Removed Ubuntu Mantic support due to end-of-life
+* Removed Ubuntu Lunar and UbuntuMantic support due to end-of-life
 * Migrated project configuration to pyproject.toml (#281)
 * Added keepdays and maxage display in admin repos view (#310)
-* Improved translation loading by implementing caching
+* Improved translation loading with caching
 * Renamed "Backup Log" and "Restore Log" labels for clarity (#316)
 * Enhanced backup inactivity email notifications for better clarity (#312)
+* Add pytz as dependency
+* Use forking instead of subprocess to restore files
+* Fix changes dates reported to exclude '.missing' entries
+* Fix display of filename containing `<` or `>` in file statistics view
 
 ## 2.9.5 (2024-11-05)
 
