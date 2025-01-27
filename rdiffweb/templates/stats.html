@@ -16,7 +16,7 @@
             <time class="js-datetime" datetime="{{ item.date }}">{{ item.date | lastupdated }}</time>
           </a>
         {% endfor %}
-        {% if limit == error_logs|count %}
+        {% if limit == file_statistics|count %}
           <a href="{{ url_for('logs', repo, limit=limit * 2) }}"
              class="list-group-item">{% trans %}Show more...{% endtrans %}</a>
         {% endif %}
@@ -29,10 +29,11 @@
       </p>
       {% if date %}
         {% set buttons = [
-        {'text': _('Clear'), 'extend': 'clear'},
+        {'text': _('All'), 'extend': 'clear'},
         {'text': _('New'), 'extend': 'filter', 'column': 'state:name', 'search': 'new'},
         {'text': _('Deleted'), 'extend': 'filter', 'column': 'state:name', 'search': 'deleted'},
         {'text': _('Changed'), 'extend': 'filter', 'column': 'state:name', 'search': '^changed', 'regex':True},
+        {'text': _('Unchanged'), 'extend': 'filter', 'column': 'state:name', 'search': '^unchanged'},
         ] %}
         {% set columns = [
         {'name':'path', 'title': _('Path'), 'orderable': True },
