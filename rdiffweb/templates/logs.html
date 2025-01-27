@@ -11,9 +11,9 @@
     <div class="col-md-3">
       <ul class="list-group">
         <a href="{{ url_for('logs', repo, file='backup.log', limit=limit) }}"
-           class="list-group-item{% if file=='backup.log' %} active{% endif %}">Backup Log</a>
+           class="list-group-item{% if file=='backup.log' %} active{% endif %}">{% trans %}Last backup log{% endtrans %}</a>
         <a href="{{ url_for('logs', repo, file='restore.log', limit=limit) }}"
-           class="list-group-item{% if file=='restore.log' %} active{% endif %}">Restore Log</a>
+           class="list-group-item{% if file=='restore.log' %} active{% endif %}">{% trans %}Last restore log{% endtrans %}</a>
         {% for e in error_logs %}
           <a href="{{ url_for('logs', repo, date=e.date, limit=limit) }}"
              class="list-group-item{% if e.date==date %} active{% endif %}">
