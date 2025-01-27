@@ -128,7 +128,15 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
-* Remove Ubuntu Mantic
+# Next Release
+
+* Adjusted table filter button labels for better clarity
+* Removed Ubuntu Mantic support due to end-of-life
+* Migrated project configuration to pyproject.toml (#281)
+* Added keepdays and maxage display in admin repos view (#310)
+* Improved translation loading by implementing caching
+* Renamed "Backup Log" and "Restore Log" labels for clarity (#316)
+* Enhanced backup inactivity email notifications for better clarity (#312)
 
 ## 2.9.5 (2024-11-05)
 

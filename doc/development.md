@@ -11,15 +11,19 @@ how to translate rdiffweb. It's not a complete instruction set, it's merely a re
 
 Extract the strings to be translated:
 
-    python setup.py extract_messages
+    tox -e babel_extract
 
 Create a new translation:
 
-    python setup.py init_catalog --local fr
+    tox -e babel_init -- --local fr
 
 Update an existing translation:
 
-    python setup.py update_catalog --local fr
+    tox -e babel_update -- --local fr
+
+Compile all existing translation:
+
+    tox -e babel_compile
 
 ## Running tests
 
