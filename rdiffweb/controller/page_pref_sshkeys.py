@@ -114,8 +114,12 @@ class DeleteSshForm(CherryForm):
 
 class PagePrefSshKeys(Controller):
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
     def default(self, **kwargs):
+        """
+        Show user's SSH keys
+        """
         # Handle action
         add_form = SshForm()
         delete_form = DeleteSshForm()
@@ -154,9 +158,37 @@ class PagePrefSshKeys(Controller):
 @cherrypy.tools.json_out()
 class ApiSshKeys(Controller):
     def list(self):
+        """
+        List current user keys
+
+        Returns a list of registered public SSH keys for the current user.
+
+        **Example Response**
+
+        ```json
+        [{"title": "my-laptop", "fingerprint": "b5:f0:40:ee:41:53:9d:68:e1:9b:02:3e:39:99:a8:9b"}]
+        ```
+
+        **Fields in JSON Payload**
+
+        - `title`: The title or name associated with the SSH key.
+        - `fingerprint`: The fingerprint of the public SSH key.
+
+        """
         return [{'title': key.comment, 'fingerprint': key.fingerprint} for key in self.app.currentuser.authorizedkeys]
 
     def get(self, fingerprint):
+        """
+        Return SSH key for given fingerprint
+
+        Returns SSH key information identified by `<fingerprint>`.
+
+        **Example Response**
+
+        ```json
+        {"title": "my-laptop", "fingerprint": "b5:f0:40:ee:41:53:9d:68:e1:9b:02:3e:39:99:a8:9b"}
+        ```
+        """
         for key in self.app.currentuser.authorizedkeys:
             if key.fingerprint == fingerprint:
                 return {'title': key.comment, 'fingerprint': key.fingerprint}
@@ -164,6 +196,13 @@ class ApiSshKeys(Controller):
 
     @cherrypy.tools.required_scope(scope='all,write_user')
     def delete(self, fingerprint):
+        """
+        Delete a SSH key
+
+        Deletes the SSH key identified by `<fingerprint>`.
+
+        Returns status 200 OK on success.
+        """
         form = DeleteSshForm(fingerprint=fingerprint)
         if form.validate():
             form.populate_obj(self.app.currentuser)
@@ -173,6 +212,11 @@ class ApiSshKeys(Controller):
 
     @cherrypy.tools.required_scope(scope='all,write_user')
     def post(self, **kwargs):
+        """
+        Add a SSH key to current user
+
+        Registers a new public SSH key for the current user.
+        """
         # Validate input data.
         form = SshForm(json=1)
         if form.strict_validate():

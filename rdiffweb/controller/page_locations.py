@@ -26,13 +26,11 @@ logger = logging.getLogger(__name__)
 
 
 class LocationsPage(Controller):
-    """
-    Shows the repository page. Will show all available destination
-    backup directories. This is the root (/) page.
-    """
-
     @cherrypy.expose
     def index(self):
+        """
+        Shows repositories of current user
+        """
         # Get page params
         if self.app.currentuser.refresh_repos():
             self.app.currentuser.commit()

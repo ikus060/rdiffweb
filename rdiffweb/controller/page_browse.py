@@ -30,10 +30,6 @@ logger = logging.getLogger(__name__)
 
 @cherrypy.tools.poppath()
 class BrowsePage(Controller):
-
-    """This contoller provide a browser view to the user. It displays file in a
-    repository."""
-
     @cherrypy.expose
     @cherrypy.tools.errors(
         error_table={
@@ -42,6 +38,9 @@ class BrowsePage(Controller):
         }
     )
     def default(self, path=b""):
+        """
+        Browser view displaying files and folders in user's repository
+        """
         # Check user access to the given repo & path
         repo, path = RepoObject.get_repo_path(path, refresh=True)
 

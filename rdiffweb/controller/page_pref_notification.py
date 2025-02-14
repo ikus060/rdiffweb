@@ -111,8 +111,12 @@ class NotificationForm(CherryForm):
 
 class PagePrefNotification(Controller):
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
     def default(self, **kwargs):
+        """
+        Show user notification settings
+        """
         # Process the parameters.
         report_form = ReportForm(obj=self.app.currentuser)
         notification_form = NotificationForm.create_form(self.app.currentuser)

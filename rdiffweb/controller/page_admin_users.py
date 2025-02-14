@@ -258,12 +258,11 @@ class DeleteUserForm(CherryForm):
 
 @cherrypy.tools.is_admin()
 class AdminUsersPage(Controller):
-    """
-    Administration pages. Allow to manage users database.
-    """
-
     @cherrypy.expose
     def index(self):
+        """
+        Show user list
+        """
         # Build users page
         form = UserForm()
         return self._compile_template(
@@ -274,8 +273,12 @@ class AdminUsersPage(Controller):
         )
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
     def new(self, **kwargs):
+        """
+        Show form to create a new user
+        """
         form = UserForm()
         if form.is_submitted():
             if form.validate():
@@ -292,7 +295,12 @@ class AdminUsersPage(Controller):
         return self._compile_template("admin_user_new.html", form=form)
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['GET', 'POST'])
+    @cherrypy.tools.ratelimit(methods=['POST'])
     def edit(self, username_vpath, **kwargs):
+        """
+        Show form to edit user
+        """
         user = UserObject.get_user(username_vpath)
         if not user:
             raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username_vpath)
@@ -307,11 +315,14 @@ class AdminUsersPage(Controller):
         return self._compile_template("admin_user_edit.html", form=form)
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
+    @cherrypy.tools.ratelimit(methods=['POST'])
     def delete(self, username=None, **kwargs):
+        """
+        Delete a user
+        """
         # Validate form method.
         form = DeleteUserForm()
-        if not form.is_submitted():
-            raise cherrypy.HTTPError(405)
         # Get user
         user = UserObject.get_user(username)
         if not user:

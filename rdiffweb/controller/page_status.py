@@ -225,6 +225,9 @@ class StatusPage(Controller):
 
     @cherrypy.expose
     def index(self, path, days=DAYS_DEFAULT, count=COUNT_DEFAULT, **kwargs):
+        """
+        Show current user status
+        """
         days = validate_int(days, min=DAYS_MIN, max=DAYS_MAX)
         count = validate_int(count, min=COUNT_MIN, max=COUNT_MAX)
         repos = self._list_repo(path)

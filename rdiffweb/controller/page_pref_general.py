@@ -160,8 +160,12 @@ class PagePrefsGeneral(Controller):
     """
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'], logout=True)
     def default(self, **kwargs):
+        """
+        Show user settings
+        """
         # Process the parameters.
         profile_form = UserProfileForm(obj=self.app.currentuser)
         password_form = UserPasswordForm()

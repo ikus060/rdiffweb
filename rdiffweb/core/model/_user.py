@@ -400,7 +400,7 @@ class UserObject(Base):
         ).delete()
 
     def __eq__(self, other):
-        return type(self) == type(other) and inspect(self).key == inspect(other).key
+        return isinstance(other, UserObject) and inspect(self).key == inspect(other).key
 
     def __str__(self):
         return self.username

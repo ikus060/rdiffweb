@@ -54,7 +54,7 @@ from rdiffweb.controller.page_delete import DeletePage
 from rdiffweb.controller.page_graphs import GraphsPage
 from rdiffweb.controller.page_history import HistoryPage
 from rdiffweb.controller.page_locations import LocationsPage
-from rdiffweb.controller.page_login import LoginPage
+from rdiffweb.controller.page_login import LoginPage, LogoutPage
 from rdiffweb.controller.page_logs import LogsPage
 from rdiffweb.controller.page_mfa import MfaPage
 from rdiffweb.controller.page_pref_sshkeys import ApiSshKeys
@@ -102,6 +102,7 @@ def _json_handler(*args, **kwargs):
         yield chunk.encode('utf-8')
 
 
+@cherrypy.tools.allow(methods=['GET'])
 @cherrypy.tools.auth_form()
 @cherrypy.tools.auth_mfa(
     mfa_enabled=lambda username: UserObject.get_user(username).mfa == UserObject.ENABLED_MFA,
@@ -117,6 +118,7 @@ def _json_handler(*args, **kwargs):
 class Root(LocationsPage):
     def __init__(self):
         self.login = LoginPage()
+        self.logout = LogoutPage()
         self.mfa = MfaPage()
         self.browse = BrowsePage()
         self.delete = DeletePage()
@@ -136,11 +138,11 @@ class Root(LocationsPage):
 
         # Register static dir.
         static_dir = pkg_resources.resource_filename('rdiffweb', 'static')  # @UndefinedVariable
-        self.static = staticdir(static_dir)
+        self.static = staticdir(static_dir, doc="Serve static files")
 
         # Register robots.txt
         robots_txt = pkg_resources.resource_filename('rdiffweb', 'static/robots.txt')  # @UndefinedVariable
-        self.robots_txt = staticfile(robots_txt)
+        self.robots_txt = staticfile(robots_txt, doc="robots.txt to disable search crawler")
 
     @cherrypy.expose
     @cherrypy.tools.auth_form(on=False)
@@ -149,16 +151,18 @@ class Root(LocationsPage):
     @cherrypy.tools.sessions(on=False)
     @cherrypy.tools.secure_headers(on=False)
     @cherrypy.tools.caching(on=True)
+    @cherrypy.tools.response_headers(headers=[('Content-Type', 'text/css')])
+    @cherrypy.tools.allow(methods=['GET'])
     def main_css(self, **kwargs):
-        if cherrypy.request.method not in ('GET', 'HEAD'):
-            raise cherrypy.HTTPError(400)
+        """
+        Return CSS file based on branding configuration
+        """
         cfg = self.app.cfg
         param = {}
         # Get values from configuration.
         for key in ['link_color', 'btn_bg_color', 'btn_fg_color', 'navbar_color', 'font_family']:
             if getattr(cfg, key, None):
                 param[key] = getattr(cfg, key, None)
-        cherrypy.response.headers['Content-Type'] = 'text/css'
         return self._compile_template("main.css", **param)
 
 
@@ -287,19 +291,24 @@ class RdiffwebApp(Application):
 
         # Register favicon.ico
         self.root.favicon_ico = staticfile(
-            cfg.favicon if cfg.favicon else pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico')
+            cfg.favicon if cfg.favicon else pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico'),
+            doc="Return favicon image file.",
         )
 
         # Register header_logo
         self.root.header_logo = staticfile(
-            cfg.header_logo
-            if cfg.header_logo
-            else pkg_resources.resource_filename('rdiffweb', 'static/header-logo.png')
+            (
+                cfg.header_logo
+                if cfg.header_logo
+                else pkg_resources.resource_filename('rdiffweb', 'static/header-logo.png')
+            ),
+            doc="Return static `header-logo` image file.",
         )
 
         # Register logo
         self.root.logo = staticfile(
-            cfg.logo if cfg.logo else pkg_resources.resource_filename('rdiffweb', 'static/logo1.png')
+            cfg.logo if cfg.logo else pkg_resources.resource_filename('rdiffweb', 'static/logo1.png'),
+            doc="Return static `logo` image file.",
         )
 
         # Define TEMP env

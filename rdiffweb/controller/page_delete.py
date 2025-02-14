@@ -62,7 +62,11 @@ class DeletePage(Controller):
             AccessDeniedError: 403,
         }
     )
+    @cherrypy.tools.allow(methods=['POST'])
     def default(self, path=b"", **kwargs):
+        """
+        Delete a repo, a file or folder history
+        """
         # Check permissions on path/repo
         repo, path = RepoObject.get_repo_path(path)
         # Check if path exists with fstats
@@ -85,5 +89,3 @@ class DeletePage(Controller):
                     raise cherrypy.HTTPRedirect(url_for('browse', repo, parent_path))
             else:
                 raise cherrypy.HTTPError(400, form.error_message)
-        else:
-            raise cherrypy.HTTPError(405)

@@ -94,7 +94,7 @@ class Controller(object):
 
     _footerurl = Option("footer_url")
 
-    cache_invalid = int(time.time())
+    _cache_invalid = int(time.time())
 
     @property
     def app(self):
@@ -113,7 +113,7 @@ class Controller(object):
             "footername": self._footername,
             "footerurl": self._footerurl,
             "get_flashed_messages": get_flashed_messages,
-            "cache_invalid": self.cache_invalid,
+            "cache_invalid": self._cache_invalid,
         }
         if app.currentuser:
             parms.update(

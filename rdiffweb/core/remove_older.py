@@ -3,6 +3,7 @@ Created on Mar. 23, 2021
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 '''
+
 import logging
 
 import cherrypy

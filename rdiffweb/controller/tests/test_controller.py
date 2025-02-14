@@ -89,7 +89,7 @@ class ControllerTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         # Test with invalid method.
         self.getPage(path, method="POST")
-        self.assertStatus(400)
+        self.assertStatus(405)
 
     def test_static_invalid_file(self):
         """

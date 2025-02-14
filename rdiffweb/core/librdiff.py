@@ -205,7 +205,7 @@ class RdiffTime(object):
             offset = localtm.tm_gmtoff
         elif hasattr(tz, 'utcoffset'):
             offset = tz.utcoffset(None)
-        elif type(tz) == int:
+        elif isinstance(tz, int):
             offset = tz
         else:
             raise TypeError('astimezone() argument must be a timezone, int or None')
@@ -484,7 +484,6 @@ class MirrorMetadataEntry(MetadataEntry):
 
 
 class IncrementEntry(AbstractEntry):
-
     """Instance of the class represent one increment at a specific date for one
     repository. The base repository is provided in the default constructor
     and the date is provided using an error_log.* file"""
@@ -548,7 +547,6 @@ FileStatisticLine = namedtuple('FileStatisticLine', 'path,changed,source_size,mi
 
 
 class FileStatisticsEntry(MetadataEntry):
-
     """
     Represent a single file_statistics.
 
@@ -832,7 +830,6 @@ class MetadataDict(object):
 
 
 class RdiffRepo(object):
-
     """Represent one rdiff-backup repository."""
 
     def __init__(self, full_path, encoding):

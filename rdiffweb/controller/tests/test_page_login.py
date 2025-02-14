@@ -186,7 +186,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
 
     def test_post_with_invalid_url(self):
         self.getPage('/login/kefuxian.mvc', method='POST')
-        self.assertStatus('303 See Other')
+        self.assertStatus(405)
 
     def test_login_twice(self):
         # Given an authenticated user

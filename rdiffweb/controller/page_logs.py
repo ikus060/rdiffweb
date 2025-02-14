@@ -40,7 +40,7 @@ class LogsPage(Controller):
     )
     def default(self, path, limit='10', date=None, file=None, raw=0):
         """
-        Called to show every graphs
+        Show repository backup and restore logs
         """
         limit = validate_int(limit)
         if date is not None:

@@ -33,7 +33,11 @@ class RevokeSessionForm(CherryForm):
 
 class PagePrefSession(Controller):
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['GET', 'POST'])
     def default(self, **kwargs):
+        """
+        Show user sessions
+        """
         # Delete session on form submit
         form = RevokeSessionForm()
         if form.is_submitted():

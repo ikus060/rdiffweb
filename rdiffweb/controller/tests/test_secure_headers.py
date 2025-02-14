@@ -57,7 +57,6 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
             ('/invalid', 404),
             ('/browse/invalid', 404),
             ('/login', 301),
-            ('/logout', 405),
         ]
     )
     def test_cookie_with_https_http_error(self, url, expected_error_code):
@@ -87,7 +86,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
     def test_post_with_wrong_origin(self):
         # Given a POST request made to rdiffweb
         # When the request is made using a different origin
-        self.getPage('/', headers=[('Origin', 'http://www.examples.com')], method='POST')
+        self.getPage('/logout', headers=[('Origin', 'http://www.examples.com')], method='POST')
         # Then the request is refused with 403 Forbiden
         self.assertStatus(403)
         self.assertInBody('Unexpected Origin header')
@@ -96,7 +95,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
         # Given a POST request made to rdiffweb
         # When the request is made using a different origin
         base = 'http://%s:%s' % (self.HOST + 'anything.com', self.PORT)
-        self.getPage('/dashboard/', headers=[('Origin', base)], method='POST')
+        self.getPage('/logout', headers=[('Origin', base)], method='POST')
         # Then the request is accepted with 200 OK
         self.assertStatus(403)
         self.assertInBody('Unexpected Origin header')
@@ -105,16 +104,16 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
         # Given a POST request made to rdiffweb
         # When the request is made using a different origin
         base = 'http://%s:%s' % (self.HOST, self.PORT)
-        self.getPage('/', headers=[('Origin', base)], method='POST')
+        self.getPage('/logout', headers=[('Origin', base)], method='POST')
         # Then the request is accepted with 200 OK
-        self.assertStatus(200)
+        self.assertStatus(303)
 
     def test_post_without_origin(self):
         # Given a POST request made to rdiffweb
         # When the request is made without an origin
-        self.getPage('/', method='POST')
+        self.getPage('/logout', method='POST')
         # Then the request is accepted with 200 OK
-        self.assertStatus(200)
+        self.assertStatus(303)
 
     def test_clickjacking_defense(self):
         # Given a POST request made to rdiffweb

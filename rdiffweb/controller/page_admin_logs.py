@@ -132,13 +132,18 @@ class AdminLogsPage(Controller):
 
     @cherrypy.expose
     def index(self):
+        """
+        Show server logs.
+        """
         return self._compile_template("admin_logs.html")
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def data_json(self, limit='2000', **kwargs):
         """
-        Return log file as json. To reduce the payload size we use one letter for the key.
+        Return log file as json.
+
+        To reduce the payload size we use one letter for the key.
         """
         # Release session lock
         cherrypy.session.release_lock()

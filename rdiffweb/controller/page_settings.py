@@ -254,7 +254,11 @@ class SettingsPage(Controller):
             AccessDeniedError: 403,
         }
     )
+    @cherrypy.tools.allow(methods=['GET', 'POST'])
     def default(self, path=b"", **kwargs):
+        """
+        Show user general settings
+        """
         repo_obj = RepoObject.get_repo(path)
         form = RepoSettingsForm(obj=repo_obj)
         if form.is_submitted():
@@ -281,6 +285,11 @@ class SettingsPage(Controller):
 @cherrypy.tools.required_scope(scope='all,read_user,write_user')
 class ApiRepos(Controller):
     def list(self):
+        """
+        Return current user repositories
+
+        Returns information about the current user's repositories, identical to the information provided by `/api/currentuser`.
+        """
         u = self.app.currentuser
         if u.refresh_repos():
             u.commit()
@@ -304,6 +313,8 @@ class ApiRepos(Controller):
     def get(self, name_or_id):
         """
         Return repository settings for the given id or name
+
+        Returns information specific to the repository identified by `<id>` or `<name>`.
         """
         u = self.app.currentuser
         query = RepoObject.query.filter(RepoObject.userid == u.userid)
@@ -332,6 +343,12 @@ class ApiRepos(Controller):
     def post(self, name_or_id=None, **kwargs):
         """
         Used to update repository settings.
+
+        Updates repository settings for the repository identified by `<id>` or `<name>`.
+        Fields such as `maxage`, `ignore_weekday`, `keepdays`, and `encoding` can be updated.
+
+        Returns status 200 OK on success.
+
         """
         # Search for matching repo
         u = self.app.currentuser

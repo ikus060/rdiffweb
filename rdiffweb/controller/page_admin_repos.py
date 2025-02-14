@@ -25,6 +25,9 @@ from rdiffweb.core.model import RepoObject
 class AdminReposPage(Controller):
     @cherrypy.expose
     def index(self):
+        """
+        Show all user repositories
+        """
         params = {
             "repos": RepoObject.query.all(),
         }

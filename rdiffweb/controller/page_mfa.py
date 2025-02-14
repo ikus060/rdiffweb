@@ -73,8 +73,12 @@ class MfaForm(CherryForm):
 
 class MfaPage(Controller):
     @cherrypy.expose()
+    @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
     def index(self, **kwargs):
+        """
+        Show Multi Factor Authentication form
+        """
         form = MfaForm()
 
         # Validate MFA

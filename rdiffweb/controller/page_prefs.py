@@ -42,4 +42,7 @@ class PreferencesPage(Controller):
 
     @cherrypy.expose
     def index(self, panelid=None, **kwargs):
+        """
+        Redirect user to general settings
+        """
         raise cherrypy.HTTPRedirect(url_for('/prefs/general'))

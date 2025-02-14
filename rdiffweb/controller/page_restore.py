@@ -106,6 +106,9 @@ class RestorePage(Controller):
         }
     )
     def default(self, path=b"", date=None, kind=None):
+        """
+        Restore a file or a folder
+        """
         validate_isinstance(path, bytes)
         validate(kind is None or kind in ARCHIVERS)
         date = validate_date(date)

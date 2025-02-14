@@ -33,6 +33,9 @@ class HistoryPage(Controller):
         }
     )
     def default(self, path=b"", limit='10', **kwargs):
+        """
+        Show repository, file or folder history
+        """
         limit = validate_int(limit)
 
         repo, path = RepoObject.get_repo_path(path)

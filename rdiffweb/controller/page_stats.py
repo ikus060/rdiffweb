@@ -52,6 +52,7 @@ def line_to_size(line):
 @cherrypy.tools.poppath()
 class StatsPage(Controller):
     @cherrypy.expose()
+    @cherrypy.tools.allow(methods=['GET'])
     @cherrypy.tools.errors(
         error_table={
             DoesNotExistError: 404,
@@ -60,7 +61,7 @@ class StatsPage(Controller):
     )
     def default(self, path, limit='10', date=None):
         """
-        Called to show file statistics
+        Show file statistics
         """
         limit = validate_int(limit)
         if date is not None:
@@ -97,7 +98,7 @@ class StatsPage(Controller):
     @cherrypy.tools.json_out()
     def data_json(self, path, limit='10', date=None, **kwargs):
         """
-        Create a json array with stats
+        Return a json array with stats
         """
         limit = validate_int(limit)
         date = validate_date(date)

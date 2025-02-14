@@ -141,6 +141,7 @@ We are passionate about developing and maintaining this open-source project to m
 * Use forking instead of subprocess to restore files
 * Fix changes dates reported to exclude '.missing' entries
 * Fix display of filename containing `<` or `>` in file statistics view
+* Add swagger to document Rdiffweb API #325
 
 ## 2.9.7 (2025-02-19)
 

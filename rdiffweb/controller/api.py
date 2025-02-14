@@ -36,6 +36,7 @@ try:
 except ImportError:
     from wtforms.fields.html5 import EmailField  # wtform <3
 
+from rdiffweb.controller.api_openapi import OpenAPI
 from rdiffweb.tools.i18n import gettext_lazy as _
 from rdiffweb.tools.i18n import list_available_locales
 
@@ -143,7 +144,48 @@ class CurrentUserForm(CherryForm):
 class ApiCurrentUser(Controller):
     def get(self):
         """
-        Return current user information and settings.
+        Returns information about the current user, including user settings and a list of repositories.
+
+        **Example Response**
+
+        ```json
+        {
+            "email": "user@example.com",
+            "username": "admin",
+            "fullname": "John Smith",
+            "disk_usage": 6642954240,
+            "disk_quota": 7904514048,
+            "repos": [
+                {
+                "name": "backups/Desktop/C",
+                "maxage": 0,
+                "keepdays": -1,
+                "last_backup_date": "2019-08-29T09:42:38-04:00",
+                "status": "ok",
+                "encoding": "utf-8"
+                },
+                // ... additional repository entries ...
+            ]
+        }
+        ```
+
+        **Fields in JSON Payload**
+
+        - `email`: The email address of the user.
+        - `username`: The username of the user.
+        - `fullname`: The user full name.
+        - `disk_usage`: The current disk space usage of the user.
+        - `disk_quota`: The quota of disk space allocated to the user.
+        - `report_time_range`: The interval between email report sent to user in number of days.
+        - `repos`: An array of repositories associated with the user.
+
+        - `name`: The name of the repository.
+        - `maxage`: Maximum age for stored backups.
+        - `keepdays`: Number of days to keep backups (-1 for indefinite).
+        - `last_backup_date`: The date and time of the last backup.
+        - `status`: Current status of the repository (e.g., "ok" or "in_progress").
+        - `encoding`: The encoding used for the repository.
+
         """
         u = self.app.currentuser
         if u.refresh_repos():
@@ -178,6 +220,13 @@ class ApiCurrentUser(Controller):
 
     @cherrypy.tools.required_scope(scope='all,write_user')
     def post(self, **kwargs):
+        """
+        Update current user information: fullname, email, lang and report_time_range
+
+        Updates some of the user's settings, such as fullname, email, lang, and report_time_range.
+
+        Returns status 200 OK on success.
+        """
         # Validate input data.
         userobj = self.app.currentuser
         form = CurrentUserForm(obj=userobj, json=1)
@@ -193,6 +242,7 @@ class ApiCurrentUser(Controller):
 
 
 @cherrypy.expose
+@cherrypy.tools.allow(on=False)
 @cherrypy.tools.json_out(on=True)
 @cherrypy.tools.json_in(on=True, force=False)
 @cherrypy.config(**{'error_page.default': False})
@@ -208,8 +258,21 @@ class ApiPage(Controller):
     """
 
     currentuser = ApiCurrentUser()
+    openapi_json = OpenAPI()
 
     def get(self):
+        """
+        Returns the current application version in JSON format.
+
+        **Example Response**
+
+        ```json
+        {
+            "version": "1.2.8"
+        }
+        ```
+
+        """
         return {
             "version": self.app.version,
         }

@@ -619,7 +619,7 @@ def get_parser():
         *flags,
         metavar='HTML',
         help='replace the welcome message displayed in the login page for default locale or for a specific locale',
-        action=LocaleAction
+        action=LocaleAction,
     )
     return parser
 

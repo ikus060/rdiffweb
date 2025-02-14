@@ -42,6 +42,9 @@ class AdminPage(Controller):
 
     @cherrypy.expose
     def index(self):
+        """
+        Admin dashboard
+        """
         last_hour = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(hours=1)
         params = {
             "user_count": UserObject.query.count(),

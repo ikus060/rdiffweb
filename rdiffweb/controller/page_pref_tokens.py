@@ -188,8 +188,12 @@ class DeleteTokenForm(CherryForm):
 
 class PagePrefTokens(Controller):
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
     def default(self, **kwargs):
+        """
+        Show current user access token
+        """
         form = TokenForm()
         delete_form = DeleteTokenForm()
         if form.is_submitted():
@@ -215,6 +219,28 @@ class PagePrefTokens(Controller):
 @cherrypy.tools.json_out()
 class ApiTokens(Controller):
     def list(self):
+        """
+        Return list of current user access token
+
+        Lists the access tokens associated with the current user.
+
+        **Example Response**
+
+        ```json
+        [
+            {"title": "<h1>hold</h1>", "access_time": null, "creation_time": "2023-11-09T04:31:18Z", "expiration_time": null},
+            {"title": "test2", "access_time": "2024-01-30T17:59:08Z", "creation_time": "2024-01-30T17:57:51Z", "expiration_time": null}
+        ]
+        ```
+
+        **Fields in JSON Payload**
+
+        - `title`: The title or name of the access token.
+        - `access_time`: The time of the last access using the token (null if never used).
+        - `creation_time`: The creation time of the access token.
+        - `expiration_time`: The time when the access token expires (null if never expires).
+
+        """
         tokens = Token.query.filter(Token.userid == self.app.currentuser.userid).all()
         return [
             {
@@ -228,6 +254,18 @@ class ApiTokens(Controller):
         ]
 
     def get(self, name):
+        """
+        Return a specific access token info
+
+        Returns access token information identified by `<name>`.
+
+        **Example Response**
+
+        ```json
+        {"title": "test2", "access_time": "2024-01-30T17:59:08Z", "creation_time": "2024-01-30T17:57:51Z", "expiration_time": null}
+        ```
+
+        """
         token = Token.query.filter(Token.userid == self.app.currentuser.userid, Token.name == name).first()
         if not token:
             raise cherrypy.HTTPError(404)
@@ -241,6 +279,13 @@ class ApiTokens(Controller):
 
     @cherrypy.tools.required_scope(scope='all,write_user')
     def delete(self, name):
+        """
+        Delete a specific access token.
+
+        Revokes the access token identified by `<title>`.
+
+        Returns status 200 OK on success.
+        """
         userobj = self.app.currentuser
         token = Token.query.filter(Token.userid == userobj.userid, Token.name == name).first()
         if not token:
@@ -251,6 +296,11 @@ class ApiTokens(Controller):
 
     @cherrypy.tools.required_scope(scope='all,write_user')
     def post(self, **kwargs):
+        """
+        Create a new access token
+
+        Returns status 200 OK on success.
+        """
         # Validate input data.
         form = TokenForm(json=1)
         if not form.strict_validate():

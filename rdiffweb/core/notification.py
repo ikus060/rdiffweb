@@ -376,9 +376,9 @@ class NotificationPlugin(SimplePlugin):
                         'deletedfilesize': _sum([s.deletedfilesize for s in stats]),
                         'changedsourcesize': _sum([s.changedsourcesize for s in stats]),
                         'totaldestinationsizechange': _sum([s.totaldestinationsizechange for s in stats]),
-                        'sourcefilesize': repo.session_statistics[-1].sourcefilesize
-                        if len(repo.session_statistics)
-                        else None,
+                        'sourcefilesize': (
+                            repo.session_statistics[-1].sourcefilesize if len(repo.session_statistics) else None
+                        ),
                         'errors': _sum([s.errors for s in stats]),
                     }
                 )

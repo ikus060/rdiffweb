@@ -90,7 +90,7 @@ class CheckAuthForm(cherrypy.Tool):
         # Redirect user to original URL
         raise cherrypy.HTTPRedirect(self._get_redirect_url())
 
-    def run(self, login_url='/login/', logout_url='/logout', persistent_timeout=43200, absolute_timeout=30):
+    def run(self, login_url='/login/', persistent_timeout=43200, absolute_timeout=30):
         """
         A tool that verify if the session is associated to a user by tracking
         a session key. If session is not authenticated, redirect user to login page.
@@ -101,13 +101,6 @@ class CheckAuthForm(cherrypy.Tool):
             if self._is_login():
                 raise cherrypy.HTTPRedirect('/')
             return
-
-        # Clear session when browsing /logout
-        if request.path_info == logout_url or request.path_info.startswith(logout_url):
-            if request.method != 'POST':
-                raise cherrypy.HTTPError(405)
-            self.logout()
-            raise cherrypy.HTTPRedirect('/')
 
         # Check if login
         if not self._is_login():

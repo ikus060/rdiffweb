@@ -122,10 +122,11 @@ def get_pkginfo():
 
 @cherrypy.tools.is_admin()
 class AdminSysinfoPage(Controller):
-    """Administration pages. Allow to manage users database."""
-
     @cherrypy.expose
     def index(self, **kwargs):
+        """
+        Show system information and application config
+        """
         params = {
             "version": self.app.version,
             # Config

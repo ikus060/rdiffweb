@@ -64,6 +64,7 @@ class LoginPage(Controller):
     @cherrypy.expose()
     @cherrypy.tools.auth_mfa(on=False)
     @cherrypy.tools.ratelimit(methods=['POST'])
+    @cherrypy.tools.allow(methods=['GET', 'POST'])
     def index(self, **kwargs):
         """
         Called by auth_form to generate the /login/ page.
@@ -102,3 +103,15 @@ class LoginPage(Controller):
             params["welcome_msg"] = welcome_msg.get(lang, default_welcome_msg)
 
         return self._compile_template("login.html", **params)
+
+
+class LogoutPage(Controller):
+    @cherrypy.expose()
+    @cherrypy.tools.auth_form(on=False)
+    @cherrypy.tools.auth_mfa(on=False)
+    @cherrypy.tools.ratelimit(methods=['POST'])
+    @cherrypy.tools.allow(methods=['POST'])
+    def default(self, **kwargs):
+        """Logout user"""
+        cherrypy.tools.auth_form.logout()
+        raise cherrypy.HTTPRedirect('/')

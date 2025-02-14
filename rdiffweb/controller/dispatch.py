@@ -32,7 +32,7 @@ from rdiffweb.core.rdw_helpers import unquote_url
 
 def convert_path():
     """
-    A tool to conver vpath to path once the handler was found.
+    A tool to convert vpath to path once the handler was found.
 
     Used to merge the segment of URI into a single parameter denoting the
     repository path.
@@ -46,7 +46,7 @@ def convert_path():
 cherrypy.tools.poppath = cherrypy.Tool('on_start_resource', convert_path, priority=15)
 
 
-def staticdir(path):
+def staticdir(path, doc=''):
     """
     Create a page handler to serve static directory.
     """
@@ -61,10 +61,12 @@ def staticdir(path):
     def handler(*args, **kwargs):
         raise cherrypy.HTTPError(400)
 
+    if doc:
+        handler.__doc__ = doc
     return handler
 
 
-def staticfile(path):
+def staticfile(path, doc=''):
     """
     Create a page handler to serve static file.
     """
@@ -79,4 +81,6 @@ def staticfile(path):
     def handler(*args, **kwargs):
         raise cherrypy.HTTPError(400)
 
+    if doc:
+        handler.__doc__ = doc
     return handler
