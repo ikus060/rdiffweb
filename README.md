@@ -1,4 +1,4 @@
-![Minarca Logo]([minarca-client/doc/_static/banner.png](https://gitlab.com/ikus-soft/minarca/-/blob/master/doc/_static/banner.png))
+![Minarca Logo](https://gitlab.com/ikus-soft/minarca/-/raw/master/doc/_static/banner.png)
 
 
 <p align="center">
@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/ikus060/minarca-server"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/ikus060/minarca"></a>
   <a href="https://gitlab.com/ikus-soft/minarca-server/pipelines"><img alt="Build" src="https://gitlab.com/ikus-soft/minarca-server/badges/master/pipeline.svg"></a>
   <a href="https://sonar.ikus-soft.com/dashboard?id=minarca-server"><img alt="Quality Gate Minarca" src="https://sonar.ikus-soft.com/api/project_badges/measure?project=minarca-server&metric=alert_status"></a>
   <a href="https://sonar.ikus-soft.com/dashboard?id=minarca-server"><img alt="Coverage" src="https://sonar.ikus-soft.com/api/project_badges/measure?project=minarca-server&metric=coverage"></a>
