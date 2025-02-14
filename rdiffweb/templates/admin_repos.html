@@ -31,7 +31,7 @@
         <th scope="col" data-type="num">{% trans %}Status{% endtrans %}</th>
         <th scope="col" data-type="num">{% trans %}Inactivity Notification Period{% endtrans %}</th>
         <th scope="col" data-type="num">{% trans %}Data Retention Duration{% endtrans %}</th>
-        <th scope="col" data-type="num">{% trans %}Errors were detected in the last backup{% endtrans %}</th>
+        <th scope="col">{% trans %}Errors were detected in the last backup{% endtrans %}</th>
         <th scope="col" data-sortable="false"></th>
       </tr>
     </thead>
@@ -56,14 +56,14 @@
             {% endif %}
             {% if repo.status[0] != 'ok' %}{{ repo.status[1] }}{% endif %}
           </td>
-          <td data-search="{{ repo.maxage }}">
+          <td data-search="{{ repo.maxage }}" data-order="{{ repo.maxage }}">
             {% if repo.maxage %}
               {% trans num=repo.maxage %}{{ num }} days{% endtrans %}
             {% else %}
               {% trans %}Disabled{% endtrans %}
             {% endif %}
           </td>
-          <td data-search="">
+          <td data-search="" data-order="{{ repo.keepdays }}">
             {% if repo.keepdays>=1 %}
               {% trans num=repo.keepdays %}{{ num }} days{% endtrans %}
             {% else %}

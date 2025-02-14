@@ -15,6 +15,10 @@ develop-eggs
 .installed.cfg
 .eggs
 .sass-cache
+.venv
+rdw.db
+rdw.db-shm
+rdw.db-wal
 
 # Installer logs
 pip-log.txt
