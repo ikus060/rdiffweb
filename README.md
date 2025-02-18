@@ -129,6 +129,11 @@ We are passionate about developing and maintaining this open-source project to m
 # Changelog
 
 =======
+
+## 2.9.7 (2025-02-19)
+
+* Trigger creation of default user `admin` after plugin startup  minarca#295
+
 ## 2.9.6 (2025-01-06)
 
 * Remove Ubuntu Mantic & Ubuntu Lunar
