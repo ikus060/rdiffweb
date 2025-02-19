@@ -82,6 +82,10 @@ For more information, visit the [Minarca Website](https://minarca.org).
 
 # Changelog
 
+## 6.0.5 (2025-02-20)
+
+* Bump rdiffweb version to 2.9.7 to fix admin user creation minarca#293
+
 ## 6.0.4 (2025-01-07)
 
 * Remove Ubuntu Mantic support
