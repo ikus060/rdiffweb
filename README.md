@@ -142,6 +142,15 @@ We are passionate about developing and maintaining this open-source project to m
 * Fix changes dates reported to exclude '.missing' entries
 * Fix display of filename containing `<` or `>` in file statistics view
 
+## 2.9.7 (2025-02-19)
+
+* Trigger creation of default user `admin` after plugin startup  minarca#295
+
+## 2.9.6 (2025-01-06)
+
+* Remove Ubuntu Mantic & Ubuntu Lunar
+* Explicitly declare pytz dependency
+
 ## 2.9.5 (2024-11-05)
 
 * Add support for Ubuntu Noble 24.04 LTS & Oracular 24.10 #317

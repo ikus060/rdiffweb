@@ -306,8 +306,15 @@ class RdiffwebApp(Application):
         if cfg.tempdir:
             os.environ["TMPDIR"] = cfg.tempdir
 
+        # Register a late callback to create admin user when starting
+        cherrypy.engine.subscribe('start', self.on_start, priority=250)
+
+    def on_start(self):
+        # Since we are not a real plugin, let unsubscribe to avoid interference if server get restarted.
+        cherrypy.engine.unsubscribe('start', self.on_start)
+
         # create user manager
-        user = UserObject.create_admin_user(cfg.admin_user, cfg.admin_password)
+        user = UserObject.create_admin_user(self.cfg.admin_user, self.cfg.admin_password)
         user.commit()
 
     @property
