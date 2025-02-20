@@ -314,7 +314,6 @@ need. Most likely, you will want to make it closer to your business brand.
 | --- | --- | --- |
 | welcome-msg | Replace the headline displayed in the login page. It may contains HTML. | Custom message displayed on login page.|
 | brand-header-name | Define the application name displayed in the title bar and header menu. | My Backup |
-| brand-default-theme | Define the theme. Either: `default`, `blue` or `orange`. Define the css file to be loaded in the web interface. | orange |
 | brand-favicon | Define the FavIcon to be displayed in the browser title | /etc/rdiffweb/my-fav.ico |
 | brand-logo | location of an image (preferably a .png) to be used as a replacement for the rdiffweb logo displayed in Login page. | /etc/rdiffweb/logo2.png |
 | brand-header-logo | location of an image (preferably a .png) to be used as a replacement for the rdiffweb header logo displayed in navigation bar. | /etc/rdiffweb/logo1.png |
