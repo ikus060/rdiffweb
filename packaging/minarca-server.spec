@@ -144,7 +144,6 @@ debbuild(
         'openssh-server',
         'libc6',
         'libstdc++6',
-        'libxcb1',
     ],
 )
 
