@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+{% set active_page='repo' %}
+{% set active_repo_page='browse' %}
+{% block title %}
+  {% trans %}Downloading{% endtrans %}
+{% endblock %}
+{% block head %}
+  {{ super() }}
+  {% if download_url %}
+    {# Let use meta refresh to start download. #}
+    <meta http-equiv="refresh" content="0;url={{ download_url }}" />
+  {% endif %}
+{% endblock %}
+{% block body %}
+  <div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="text-center">
+      {% if download_url %}
+        <p class="h2 mt-3">
+          <i class="text-success fa fa-check-circle" aria-hidden="true"></i>
+          {% trans %}Your download will start shortly...{% endtrans %}
+        </p>
+        <p>{% trans %}If the download doesn't start automatically, please click the link below:{% endtrans %}</p>
+        <a href="{{ download_url }}" class="btn btn-secondary mt-3">{% trans %}Download Now{% endtrans %}</a>
+      {% else %}
+        <p class="h2 mt-3">
+          <i class="text-warning fa fa-exclamation-triangle" aria-hidden="true"></i>
+          <b>{% trans %}Download is not possible in the current state of your repository:{% endtrans %}</b>
+          <br/>
+          <br/>
+          {{ repo.status[1] }}
+        </p>
+        <a href="javascript:history.back()" class="btn btn-secondary mt-3">{% trans %}Go Back{% endtrans %}</a>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

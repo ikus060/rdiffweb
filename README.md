@@ -143,6 +143,7 @@ We are passionate about developing and maintaining this open-source project to m
 * Fix display of filename containing `<` or `>` in file statistics view
 * Add swagger to document Rdiffweb API #325
 * Adjust quota settings to align with the nearest block size, preventing the 'Setting user's quota is not supported' error.
+* Add intermediate loading page when restoring a file or folder #322
 
 ## 2.9.7 (2025-02-19)
 

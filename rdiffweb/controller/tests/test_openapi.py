@@ -559,6 +559,7 @@ class APITest(rdiffweb.test.WebCase):
                                 {'name': 'path', 'in': 'path', 'schema': {'type': 'string'}, 'required': True},
                                 {'name': 'date', 'in': 'query', 'schema': {'type': 'string', 'default': 'None'}},
                                 {'name': 'kind', 'in': 'query', 'schema': {'type': 'string', 'default': 'None'}},
+                                {'name': 'raw', 'in': 'query', 'schema': {'type': 'string', 'default': '0'}},
                             ],
                         }
                     },

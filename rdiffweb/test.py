@@ -142,7 +142,6 @@ class WebCase(helper.CPWebCase):
             parser = html5lib.HTMLParser(strict=True)
             parser.parse(self.body)
         except html5lib.html5parser.ParseError as e:
-            self.assertHeader
             row, col_unused = parser.errors[0][0]
             line = self.body.splitlines()[row - 1].decode('utf8', errors='replace')
             msg = msg or ('URL %s contains invalid HTML: %s on line %s: %s' % (self.url, e, row, line))

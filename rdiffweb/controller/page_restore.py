@@ -25,6 +25,7 @@ from rdiffweb.controller import Controller, validate, validate_date, validate_is
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 from rdiffweb.core.rdw_helpers import quote_url
+from rdiffweb.core.rdw_templating import url_for
 from rdiffweb.core.restore import ARCHIVERS
 
 # Define the logger
@@ -101,13 +102,40 @@ class RestorePage(Controller):
     @cherrypy.tools.gzip(on=False)
     @cherrypy.tools.errors(
         error_table={
+            ValueError: 400,
             DoesNotExistError: 404,
             AccessDeniedError: 403,
         }
     )
-    def default(self, path=b"", date=None, kind=None):
+    def default(self, path=b"", date=None, kind=None, raw=0):
         """
-        Restore a file or a folder
+        Display a webpage to prepare download or trigger download of a file or folder.
+        """
+        if raw:
+            return self.restore_raw(path=path, date=date, kind=kind)
+        return self.restore_html(path=path, date=date, kind=kind)
+
+    def restore_html(self, path=b"", date=None, kind=None):
+        """
+        Display a HTML page with `preparing download...` to let the user know the download will start.
+        """
+        validate_isinstance(path, bytes)
+        validate(kind is None or kind in ARCHIVERS)
+        date = validate_date(date)
+        repo, path = RepoObject.get_repo_path(path, refresh=False)
+        params = {"repo": repo}
+        if repo.status[0] == 'ok':
+            # If repo is healthy, return a download url
+            params['download_url'] = url_for('restore', repo, path, date=date, kind=kind, raw=1)
+        else:
+            # Otherwise, return a HTTP error.
+            # 400 might not be the best error code.
+            cherrypy.response.status = 400
+        return self._compile_template("restore.html", **params)
+
+    def restore_raw(self, path=b"", date=None, kind=None):
+        """
+        Restore a file or folder.
         """
         validate_isinstance(path, bytes)
         validate(kind is None or kind in ARCHIVERS)
@@ -117,7 +145,7 @@ class RestorePage(Controller):
         cherrypy.session.release_lock()
 
         # Check user access to repo / path.
-        repo, path = RepoObject.get_repo_path(path)
+        repo, path = RepoObject.get_repo_path(path, refresh=False)
 
         # Restore file(s)
         filename, fileobj = repo.restore(path, int(date), kind=kind)
