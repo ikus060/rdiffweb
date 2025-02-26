@@ -226,8 +226,9 @@ class UserForm(CherryForm):
             )
             if old_quota != new_quota:
                 userobj.disk_quota = new_quota
-                # Setting quota will silently fail. Check if quota was updated.
-                if userobj.disk_quota != new_quota:
+                # Setting quota may silently fail.
+                # Align with the nearest block size.
+                if abs(userobj.disk_quota - new_quota) > 4096:
                     flash(_("Setting user's quota is not supported"), level='warning')
         return True
 
