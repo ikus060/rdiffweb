@@ -237,6 +237,8 @@ class WebCase(helper.CPWebCase):
             if self.session_id:
                 driver.get('http://%s:%s/login/' % (self.HOST, self.PORT))
                 driver.add_cookie({"name": "session_id", "value": self.session_id})
+            # Get log to clear them
+            _ = driver.get_log('browser')
             yield driver
         finally:
             # Code to release resource, e.g.:
