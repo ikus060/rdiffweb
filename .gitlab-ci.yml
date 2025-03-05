@@ -106,6 +106,64 @@ upload:sonar:
   script:
   - sonar-scanner -X -Dsonar.qualitygate.wait=True -Dsonar.python.coverage.reportPaths=coverage*.xml -Dsonar.python.xunit.reportPath=xunit*.xml -Dsonar.host.url=$SONAR_URL -Dsonar.token=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.projectVersion=$(git describe)
 
+upload:docker:
+  needs:
+    - pyinstaller
+    - upload:deb
+  stage: upload
+  image: docker:20
+  services:
+    - name: docker:20-dind
+  only:
+    variables:
+      - $DOCKER_USR
+      - $DOCKER_PWD
+  variables:
+      IMAGE_NAME: "ikus060/minarca-server"
+  script: 
+    # Login to docker registry
+    - docker login $DOCKER_REGISTRY -u $DOCKER_USR -p $DOCKER_PWD
+    # Use PACKAGE_VERSION as docker tag
+    - export PACKAGE_VERSION=$(ls -1 dist/minarca-server_*_amd64.deb | cut -d '_' -f 2)
+    - export IMAGE_TAG=${PACKAGE_VERSION//+/-}
+    - echo PACKAGE_VERSION=$PACKAGE_VERSION
+    - echo IMAGE_TAG=$IMAGE_TAG
+    # Build docker image
+    - cd docker
+    - docker build --build-arg PACKAGE_VERSION=$PACKAGE_VERSION -t $IMAGE_NAME:$IMAGE_TAG  .
+    # Push image to registry
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+    # Push more tags for releases
+    - if ! echo "$PACKAGE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then exit 0; fi
+    - MAJOR=$(echo "$PACKAGE_VERSION" | cut -d. -f1)
+    - MINOR=$(echo "$PACKAGE_VERSION" | cut -d. -f1,2)
+    - docker tag "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$MAJOR"
+    - docker tag "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$MINOR"
+    - docker push "$IMAGE_NAME:$MINOR"
+    - docker push "$IMAGE_NAME:$MAJOR"
+
+upload:docker-readme:
+  needs:
+    - upload:docker
+  only:
+    variables:
+      - $DOCKER_USR
+      - $DOCKER_PWD
+      #- $CI_COMMIT_TAG
+  image:
+    name: chko/docker-pushrm
+    entrypoint: ["/bin/sh", "-c"]
+  variables:
+    DOCKER_USER: $DOCKER_USR
+    DOCKER_PASS: $DOCKER_PWD
+    PUSHRM_SHORT: Your open-source, user-friendly data backup solution
+    PUSHRM_TARGET: ikus060/minarca-server
+    PUSHRM_DEBUG: 1
+    PUSHRM_FILE: $CI_PROJECT_DIR/docker/README.md
+  script:
+    - /docker-pushrm
+  stage: upload
+
 deploy:dev:
   allow_failure: True
   environment:
