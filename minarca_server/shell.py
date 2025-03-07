@@ -192,10 +192,8 @@ def main(args=None):
                 _jail(userroot, cmd)
                 logger.info("rdiff-backup terminated successfully")
             except PermissionError:
-                logger.error(
-                    "Fail to create rdiff-backup jail. If you are running minarca-shell in Docker, make sure you started the container with `--privileged`. If you are on Debian, make sure to disable userns hardening `echo 1 > /proc/sys/kernel/unprivileged_userns_clone`.",
-                    exc_info=1,
-                )
+                logger.error("fail to create rdiff-backup jail", exc_info=1)
+                print("ERROR: fail to create rdiff-backup jail", file=sys.stderr)
                 sys.exit(_EXIT_PERM_ERROR)
     except subprocess.CalledProcessError as e:
         logger.warning("%s Last output: \n%s" % (e, e.stderr))
