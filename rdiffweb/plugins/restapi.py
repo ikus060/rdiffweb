@@ -54,7 +54,7 @@ class Dispatcher(cherrypy.dispatch.Dispatcher):
         if meth not in self.supported_method:
             request.handler = cherrypy.HTTPError(405)
         if meth == 'get' and not hasattr(resource, 'list') and not hasattr(resource, 'get'):
-            request.handler = cherrypy.dispatch.LateParamPageHandler(resource, *vpath)
+            request.handler = cherrypy.HTTPError(405)
             return
 
         # Call "list()" instead of "get()" when path doesn't have an id or name.
