@@ -49,7 +49,7 @@ class OpenAPI(Controller):
 
     def _create_method_object(self, node, cp_config, method):
         # Get Summary and description
-        description = textwrap.dedent(node.__doc__).strip() or "No description available"
+        description = textwrap.dedent(node.__doc__ or "No description available").strip()
         summary = description.split('\n')[0]
 
         # Define default content-type as HTML
