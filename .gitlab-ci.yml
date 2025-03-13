@@ -56,7 +56,7 @@ test-bdist-server:deb:
   needs: ["pyinstaller"]
   parallel:
     matrix:
-    - DIST: [bullseye, bookworm, jammy, noble, oracular]
+    - DIST: [bullseye, bookworm, trixie, jammy, noble, oracular]
       TZ: UTC
   script:
   - apt update
@@ -76,7 +76,7 @@ upload:deb:
   - pyinstaller
   parallel:
     matrix:
-    - DIST: [bullseye, bookworm, jammy, noble, oracular]
+    - DIST: [bullseye, bookworm, trixie, jammy, noble, oracular]
   script: |
     set -e
     set -x
@@ -189,7 +189,7 @@ e2e-test:deb:
   image: buildpack-deps:$DIST
   parallel:
     matrix:
-    - DIST: [bullseye, bookworm, jammy, noble, oracular]
+    - DIST: [bullseye, bookworm, trixie, jammy, noble, oracular]
   script:
     # Install latest minarca-client release
     - apt update
