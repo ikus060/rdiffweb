@@ -130,20 +130,20 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Next Release
 
-* Adjusted table filter button labels for better clarity
-* Removed Ubuntu Lunar and UbuntuMantic support due to end-of-life
-* Migrated project configuration to pyproject.toml (#281)
-* Added keepdays and maxage display in admin repos view (#310)
-* Improved translation loading with caching
-* Renamed "Backup Log" and "Restore Log" labels for clarity (#316)
-* Enhanced backup inactivity email notifications for better clarity (#312)
-* Add pytz as dependency
-* Use forking instead of subprocess to restore files
-* Fix changes dates reported to exclude '.missing' entries
-* Fix display of filename containing `<` or `>` in file statistics view
-* Add swagger to document Rdiffweb API #325
-* Adjust quota settings to align with the nearest block size, preventing the 'Setting user's quota is not supported' error.
-* Add intermediate loading page when restoring a file or folder #322
+* Updated Debian packaging to conform to Debian packaging rules.
+* Adjusted filter button labels for better clarity.
+* Migrated project configuration to `pyproject.toml` (#281).
+* Added `keepdays` and `maxage` display in the admin repositories view (#310).
+* Improved translation loading with caching.
+* Renamed "Backup Log" and "Restore Log" labels for better clarity (#316).
+* Enhanced backup inactivity email notifications for better clarity (#312).
+* Used forking instead of subprocess to restore files.
+* Fixed reported change dates to exclude `.missing` entries.
+* Fixed display of filenames containing `<` or `>` in the file statistics view.
+* Added Swagger documentation for the Rdiffweb API (#325).
+* Adjusted quota settings to align with the nearest block size, preventing the "Setting user's quota is not supported" error.
+* Added an intermediate loading page when restoring a file or folder (#322).
+* Renamed the Admin repository view page title.
 
 ## 2.9.7 (2025-02-19)
 
