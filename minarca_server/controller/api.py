@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 import cherrypy
 import pkg_resources
 from cherrypy.lib.auth_basic import basic_auth
+from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage, _checkpassword
 from rdiffweb.core.model import SshKey, UserObject
 
@@ -61,17 +62,15 @@ def minarca_auth(realm):
 cherrypy.tools.minarca_auth = cherrypy.Tool('before_handler', minarca_auth, priority=70)
 
 
-# Replace basic auth by our custom implementation
-@cherrypy.tools.auth_basic(on=False)
-@cherrypy.tools.minarca_auth(realm='minarca')
-class MinarcaApiPage(ApiPage):
-    """
-    Replacement of /api for Minarca server
-    """
+@cherrypy.expose
+class MinarcaServerInfo(Controller):
+    def get(self):
+        """
+        Return Minarca server information.
 
-    @cherrypy.expose
-    @cherrypy.tools.json_out()
-    def minarca(self):
+        The server information include the current server version, the remote SSH
+        server URL and SSH server identity to be used by agents to establish connection.
+        """
         # RemoteHost
         cfg = self.app.cfg
         remotehost = cfg.minarca_remote_host
@@ -97,3 +96,15 @@ class MinarcaApiPage(ApiPage):
             "remotehost": remotehost,
             "identity": identity,
         }
+
+
+@cherrypy.tools.auth_basic(on=False)
+@cherrypy.tools.minarca_auth(realm='minarca')
+class MinarcaApiPage(ApiPage):
+    """
+    Replacement of /api for Minarca server.
+
+    This class replace basic_auth by minarca_auth plugin.
+    """
+
+    minarca = MinarcaServerInfo()

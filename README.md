@@ -87,6 +87,7 @@ For more information, visit the [Minarca Website](https://minarca.org).
 * Minimum required version of libc version 2.28
 * Build binary package with `pyinstaller` instead of `dpkg` to improve portability to older Debian based distribution by freezing all dependencies.
 * Migrate from `setup.py` to `pyproject.toml`
+* Add support for Debian Trixie
 * Bump rdiffweb version to 2.10.0b1
   * Adjusted table filter button labels for better clarity
   * Removed Ubuntu Lunar and UbuntuMantic support due to end-of-life
