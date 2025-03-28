@@ -144,6 +144,7 @@ We are passionate about developing and maintaining this open-source project to m
 * Adjusted quota settings to align with the nearest block size, preventing the "Setting user's quota is not supported" error.
 * Added an intermediate loading page when restoring a file or folder (#322).
 * Renamed the Admin repository view page title.
+* Remove wsgi entrypoint that was never officially supported.
 
 ## 2.9.7 (2025-02-19)
 
