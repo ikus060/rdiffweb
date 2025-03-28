@@ -18,8 +18,6 @@ stages:
     PIP_EXTRA_INDEX_URL: https://nexus.ikus-soft.com/repository/pypi-group/simple/
     TZ: UTC
   before_script:
-    - apt update
-    - apt -y --no-install-recommends install python3-dev python3-pip python3-setuptools
     - pip3 install tox
   script:
     - tox
