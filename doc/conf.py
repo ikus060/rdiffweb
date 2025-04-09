@@ -17,7 +17,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Rdiffweb'
-copyright = 'Copyright 2021 Rdiffweb contributors'
+copyright = 'Copyright (C) 2012-2025 rdiffweb contributors'
 author = 'Patrik Dufresne'
 
 # -- General configuration ---------------------------------------------------

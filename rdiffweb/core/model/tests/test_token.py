@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2012-2023 rdiffweb contributors
+# Copyright (C) 2012-2025 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,13 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-Created on June 30, 2022
-
-Module to test `user` model.
-
-@author: Patrik Dufresne <patrik@ikus-soft.com>
-"""
 import datetime
 from io import open
 from unittest.mock import MagicMock
