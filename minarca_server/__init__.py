@@ -1,3 +1,6 @@
+# Copyright (C) 2025 IKUS Software. All rights reserved.
+# IKUS Software inc. PROPRIETARY/CONFIDENTIAL.
+# Use is subject to license terms.
 try:
     import pkg_resources
 

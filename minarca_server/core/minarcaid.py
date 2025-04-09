@@ -2,16 +2,9 @@
 #
 # Minarca
 #
-# Copyright (C) 2023 IKUS Software. All rights reserved.
+# Copyright (C) 2025 IKUS Software. All rights reserved.
 # IKUS Software inc. PROPRIETARY/CONFIDENTIAL.
 # Use is subject to license terms.
-"""
-Created on Jan 30, 2024
-
-Reusable module to generate and validate minarcaid
-
-@author: Patrik Dufresne <patrik@ikus-soft.com>
-"""
 
 import base64
 import hashlib
