@@ -17,7 +17,7 @@
           </a>
         {% endfor %}
         {% if limit == file_statistics|count %}
-          <a href="{{ url_for('logs', repo, limit=limit * 2) }}"
+          <a href="{{ url_for('stats', repo, limit=limit * 2) }}"
              class="list-group-item">{% trans %}Show more...{% endtrans %}</a>
         {% endif %}
       </ul>
