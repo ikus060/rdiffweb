@@ -37,7 +37,7 @@ class BrowsePage(Controller):
             AccessDeniedError: 403,
         }
     )
-    def default(self, path=b""):
+    def default(self, path):
         """
         Browser view displaying files and folders in user's repository
         """

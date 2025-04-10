@@ -107,7 +107,7 @@ class RestorePage(Controller):
             AccessDeniedError: 403,
         }
     )
-    def default(self, path=b"", date=None, kind=None, raw=0):
+    def default(self, path, date=None, kind=None, raw=0):
         """
         Display a webpage to prepare download or trigger download of a file or folder.
         """

@@ -23,98 +23,28 @@ import rdiffweb.test
 
 class APITest(rdiffweb.test.WebCase):
     headers = [("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))]
+    maxDiff = None
 
     def test_get_openapi_json(self):
         data = self.getJson('/api/openapi.json', headers=self.headers)
+        # Clear description
+        for path, path_object in data['paths'].items():
+            for method, method_object in path_object.items():
+                method_object['description'] = ANY
         self.assertEqual(
             data,
             {
                 'openapi': '3.0.0',
                 'info': {
                     'title': 'rdiffweb',
-                    'description': 'Auto-generated OpenAPI documentation',
-                    'version': rdiffweb.__version__,
+                    'description': ANY,
+                    'version': ANY,
                 },
-                'servers': [{'url': 'http://127.0.0.1:54583/'}],
+                'servers': [{'url': ANY}],
                 'paths': {
-                    '/api': {
-                        'get': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
-                            'parameters': [],
-                        }
-                    },
-                    '/favicon_ico': {
-                        'get': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'application/octet-stream': {}}}},
-                            'parameters': [],
-                        }
-                    },
-                    '/header_logo': {
-                        'get': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'application/octet-stream': {}}}},
-                            'parameters': [],
-                        }
-                    },
-                    '/': {
-                        'get': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
-                            'parameters': [],
-                        }
-                    },
-                    '/logo': {
-                        'get': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'application/octet-stream': {}}}},
-                            'parameters': [],
-                        }
-                    },
-                    '/main_css': {
-                        'get': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'text/css': {}}}},
-                            'parameters': [],
-                        }
-                    },
-                    '/robots_txt': {
-                        'get': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'application/octet-stream': {}}}},
-                            'parameters': [],
-                        }
-                    },
-                    '/static/{filename}': {
-                        'get': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {
-                                '200': {'description': 'OK', 'content': {'text/html': {}}},
-                                '404': {'description': 'File not found'},
-                            },
-                            'parameters': [
-                                {
-                                    'name': 'filename',
-                                    'in': 'path',
-                                    'required': True,
-                                    'description': 'The name of the static file to retrieve.',
-                                    'schema': {'type': 'string'},
-                                }
-                            ],
-                        }
-                    },
                     '/admin/': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Admin dashboard',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -122,7 +52,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/admin/logs/data.json': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Return log file as json.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [
@@ -132,7 +62,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/admin/logs/': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show server logs.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -140,7 +70,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/admin/repos/': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show all user repositories',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -148,13 +78,13 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/admin/session/': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show or remove user sessions',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
                         },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Show or remove user sessions',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -162,7 +92,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/admin/sysinfo/': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show system information and application config',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -170,45 +100,33 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/admin/users/delete': {
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Delete a user',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
-                            'parameters': [
-                                {'name': 'username', 'in': 'query', 'schema': {'type': 'string', 'default': 'None'}}
-                            ],
+                            'parameters': [],
                         }
                     },
-                    '/admin/users/edit': {
+                    '/admin/users/edit/{username_vpath}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show form to edit user',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
-                                {
-                                    'name': 'username_vpath',
-                                    'in': 'query',
-                                    'schema': {'type': 'string'},
-                                    'required': True,
-                                }
+                                {'name': 'username_vpath', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
                             ],
                         },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Show form to edit user',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
-                                {
-                                    'name': 'username_vpath',
-                                    'in': 'query',
-                                    'schema': {'type': 'string'},
-                                    'required': True,
-                                }
+                                {'name': 'username_vpath', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
                             ],
                         },
                     },
                     '/admin/users/': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show user list',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -216,113 +134,145 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/admin/users/new': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show form to create a new user',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
                         },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Show form to create a new user',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
                         },
                     },
-                    '/api/currentuser': {
+                    '/api': {
                         'get': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
-                            'parameters': [],
-                        },
-                        'post': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
-                            'parameters': [],
-                            'requestBody': {'required': True, 'content': {'application/json': {}}},
-                        },
-                    },
-                    '/api/openapi_json': {
-                        'get': {
-                            'summary': ANY,
+                            'summary': 'Returns the current application version in JSON format.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [],
                         }
                     },
-                    '/api/currentuser/repos': {
+                    '/api/currentuser': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Returns information about the current user, including user settings and a list of repositories.',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
+                            'parameters': [],
+                        },
+                        'post': {
+                            'summary': 'Update current user information: fullname, email, lang and report_time_range',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
+                            'parameters': [],
+                            'requestBody': {'required': True, 'content': {'application/json': {}}},
+                        },
+                    },
+                    '/api/currentuser/repos/{name_or_repoid}': {
+                        'get': {
+                            'summary': 'Return repository settings for the given id or name',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [
-                                {'name': 'name_or_id', 'in': 'query', 'schema': {'type': 'string'}, 'required': True}
+                                {'name': 'name_or_repoid', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
                             ],
                         },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Used to update repository settings.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [
-                                {'name': 'name_or_id', 'in': 'query', 'schema': {'type': 'string', 'default': 'None'}}
+                                {'name': 'name_or_repoid', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
                             ],
                             'requestBody': {'required': True, 'content': {'application/json': {}}},
+                        },
+                    },
+                    '/api/currentuser/repos': {
+                        'get': {
+                            'summary': 'Return current user repositories',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
+                            'parameters': [],
+                        }
+                    },
+                    '/api/currentuser/sshkeys/{fingerprint}': {
+                        'get': {
+                            'summary': 'Return SSH key for given fingerprint',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
+                            'parameters': [
+                                {'name': 'fingerprint', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
+                            ],
+                        },
+                        'delete': {
+                            'summary': 'Delete a SSH key',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
+                            'parameters': [
+                                {'name': 'fingerprint', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
+                            ],
                         },
                     },
                     '/api/currentuser/sshkeys': {
-                        'get': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
-                            'parameters': [
-                                {'name': 'fingerprint', 'in': 'query', 'schema': {'type': 'string'}, 'required': True}
-                            ],
-                        },
-                        'delete': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
-                            'parameters': [
-                                {'name': 'fingerprint', 'in': 'query', 'schema': {'type': 'string'}, 'required': True}
-                            ],
-                        },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Add a SSH key to current user',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [],
                             'requestBody': {'required': True, 'content': {'application/json': {}}},
+                        },
+                        'get': {
+                            'summary': 'List current user keys',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
+                            'parameters': [],
+                        },
+                    },
+                    '/api/currentuser/tokens/{name}': {
+                        'get': {
+                            'summary': 'Return a specific access token info',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
+                            'parameters': [
+                                {'name': 'name', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
+                            ],
+                        },
+                        'delete': {
+                            'summary': 'Delete a specific access token.',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
+                            'parameters': [
+                                {'name': 'name', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
+                            ],
                         },
                     },
                     '/api/currentuser/tokens': {
-                        'get': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
-                            'parameters': [
-                                {'name': 'name', 'in': 'query', 'schema': {'type': 'string'}, 'required': True}
-                            ],
-                        },
-                        'delete': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
-                            'parameters': [
-                                {'name': 'name', 'in': 'query', 'schema': {'type': 'string'}, 'required': True}
-                            ],
-                        },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Create a new access token',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [],
                             'requestBody': {'required': True, 'content': {'application/json': {}}},
                         },
+                        'get': {
+                            'summary': 'Return list of current user access token',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
+                            'parameters': [],
+                        },
+                    },
+                    '/api/openapi_json': {
+                        'get': {
+                            'summary': 'Generate OpenAPI JSON for a given CherryPy root application.',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
+                            'parameters': [],
+                        }
                     },
                     '/browse/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': "Browser view displaying files and folders in user's repository",
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -332,7 +282,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/delete/{path}': {
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Delete a repo, a file or folder history',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -340,9 +290,17 @@ class APITest(rdiffweb.test.WebCase):
                             ],
                         }
                     },
+                    '/favicon_ico': {
+                        'get': {
+                            'summary': 'Return favicon image file.',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/octet-stream': {}}}},
+                            'parameters': [],
+                        }
+                    },
                     '/graphs/activities/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Called to show every graphs',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -353,7 +311,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/graphs/errors/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Called to show every graphs',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -364,7 +322,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/graphs/files/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Called to show every graphs',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -375,7 +333,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/graphs/sizes/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Called to show every graphs',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -386,7 +344,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/graphs/times/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Called to show every graphs',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -395,9 +353,17 @@ class APITest(rdiffweb.test.WebCase):
                             ],
                         }
                     },
+                    '/header_logo': {
+                        'get': {
+                            'summary': 'Return static `header-logo` image file.',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/octet-stream': {}}}},
+                            'parameters': [],
+                        }
+                    },
                     '/history/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show repository, file or folder history',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -406,23 +372,39 @@ class APITest(rdiffweb.test.WebCase):
                             ],
                         }
                     },
+                    '/': {
+                        'get': {
+                            'summary': 'Shows repositories of current user',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
+                            'parameters': [],
+                        }
+                    },
                     '/login/': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Called by auth_form to generate the /login/ page.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
                         },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Called by auth_form to generate the /login/ page.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
                         },
                     },
+                    '/logo': {
+                        'get': {
+                            'summary': 'Return static `logo` image file.',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/octet-stream': {}}}},
+                            'parameters': [],
+                        }
+                    },
                     '/logout': {
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Logout user',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -430,7 +412,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/logs/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show repository backup and restore logs',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -442,15 +424,37 @@ class APITest(rdiffweb.test.WebCase):
                             ],
                         }
                     },
+                    '/main_css': {
+                        'get': {
+                            'summary': 'Return CSS file based on branding configuration',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'text/css': {}}}},
+                            'parameters': [],
+                        }
+                    },
                     '/mfa/': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show Multi Factor Authentication form',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
                         },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Show Multi Factor Authentication form',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
+                            'parameters': [],
+                        },
+                    },
+                    '/prefs/general': {
+                        'get': {
+                            'summary': 'Show user settings',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
+                            'parameters': [],
+                        },
+                        'post': {
+                            'summary': 'Show user settings',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -458,7 +462,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/prefs/': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Redirect user to general settings',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -466,29 +470,15 @@ class APITest(rdiffweb.test.WebCase):
                             ],
                         }
                     },
-                    '/prefs/general': {
-                        'get': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
-                            'parameters': [],
-                        },
-                        'post': {
-                            'summary': ANY,
-                            'description': ANY,
-                            'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
-                            'parameters': [],
-                        },
-                    },
                     '/prefs/mfa': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show MFA settings',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
                         },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Show MFA settings',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -496,13 +486,13 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/prefs/notification': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show user notification settings',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
                         },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Show user notification settings',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -510,13 +500,13 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/prefs/session': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show user sessions',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
                         },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Show user sessions',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -524,13 +514,13 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/prefs/sshkeys': {
                         'get': {
-                            'summary': ANY,
+                            'summary': "Show user's SSH keys",
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
                         },
                         'post': {
-                            'summary': ANY,
+                            'summary': "Show user's SSH keys",
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -538,13 +528,13 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/prefs/tokens': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show current user access token',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
                         },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Show current user access token',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
@@ -552,7 +542,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/restore/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Display a webpage to prepare download or trigger download of a file or folder.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -563,9 +553,17 @@ class APITest(rdiffweb.test.WebCase):
                             ],
                         }
                     },
+                    '/robots_txt': {
+                        'get': {
+                            'summary': 'robots.txt to disable search crawler',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/octet-stream': {}}}},
+                            'parameters': [],
+                        }
+                    },
                     '/settings/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show user general settings',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -573,7 +571,7 @@ class APITest(rdiffweb.test.WebCase):
                             ],
                         },
                         'post': {
-                            'summary': ANY,
+                            'summary': 'Show user general settings',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -581,9 +579,27 @@ class APITest(rdiffweb.test.WebCase):
                             ],
                         },
                     },
+                    '/static/{filename}': {
+                        'get': {
+                            'summary': 'Serve static files',
+                            'description': ANY,
+                            'responses': {
+                                '200': {'description': 'OK', 'content': {'text/html': {}}},
+                                '404': {'description': 'File not found'},
+                            },
+                            'parameters': [
+                                {
+                                    'name': 'filename',
+                                    'in': 'path',
+                                    'required': True,
+                                    'schema': {'type': 'string'},
+                                }
+                            ],
+                        }
+                    },
                     '/stats/data.json/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Return a json array with stats',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [
@@ -595,7 +611,7 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/stats/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show file statistics',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
@@ -605,71 +621,71 @@ class APITest(rdiffweb.test.WebCase):
                             ],
                         }
                     },
-                    '/status/activities.json': {
+                    '/status/activities.json/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Return list of repositories with less activities (new ,modified, deleted files).',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [
-                                {'name': 'path', 'in': 'query', 'schema': {'type': 'string'}, 'required': True},
+                                {'name': 'path', 'in': 'path', 'schema': {'type': 'string'}, 'required': True},
                                 {'name': 'days', 'in': 'query', 'schema': {'type': 'string', 'default': '7'}},
                                 {'name': 'count', 'in': 'query', 'schema': {'type': 'string', 'default': '10'}},
                                 {'name': 'sort', 'in': 'query', 'schema': {'type': 'string', 'default': '1'}},
                             ],
                         }
                     },
-                    '/status/age.json': {
+                    '/status/age.json/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Return the oldest backup.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [
-                                {'name': 'path', 'in': 'query', 'schema': {'type': 'string'}, 'required': True},
+                                {'name': 'path', 'in': 'path', 'schema': {'type': 'string'}, 'required': True},
                                 {'name': 'count', 'in': 'query', 'schema': {'type': 'string', 'default': '10'}},
                             ],
                         }
                     },
-                    '/status/disk_usage.json': {
+                    '/status/disk_usage.json/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Return disk usage.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [
-                                {'name': 'path', 'in': 'query', 'schema': {'type': 'string'}, 'required': True}
+                                {'name': 'path', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
                             ],
                         }
                     },
-                    '/status/elapsetime.json': {
+                    '/status/elapsetime.json/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Return list of repositories with average elapse time (in minute).',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [
-                                {'name': 'path', 'in': 'query', 'schema': {'type': 'string'}, 'required': True},
+                                {'name': 'path', 'in': 'path', 'schema': {'type': 'string'}, 'required': True},
                                 {'name': 'days', 'in': 'query', 'schema': {'type': 'string', 'default': '7'}},
                                 {'name': 'count', 'in': 'query', 'schema': {'type': 'string', 'default': '10'}},
                             ],
                         }
                     },
-                    '/status/': {
+                    '/status/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Show current user status',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
-                                {'name': 'path', 'in': 'query', 'schema': {'type': 'string'}, 'required': True},
+                                {'name': 'path', 'in': 'path', 'schema': {'type': 'string'}, 'required': True},
                                 {'name': 'days', 'in': 'query', 'schema': {'type': 'string', 'default': '7'}},
                                 {'name': 'count', 'in': 'query', 'schema': {'type': 'string', 'default': '10'}},
                             ],
                         }
                     },
-                    '/status/per_days.json': {
+                    '/status/per_days.json/{path}': {
                         'get': {
-                            'summary': ANY,
+                            'summary': 'Count number of backup per days.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [
-                                {'name': 'path', 'in': 'query', 'schema': {'type': 'string'}, 'required': True},
+                                {'name': 'path', 'in': 'path', 'schema': {'type': 'string'}, 'required': True},
                                 {'name': 'days', 'in': 'query', 'schema': {'type': 'string', 'default': '7'}},
                             ],
                         }

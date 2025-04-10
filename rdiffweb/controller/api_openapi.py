@@ -55,7 +55,9 @@ class OpenAPI(Controller):
                 'schema': {'type': 'string'},
             }
             if param.default == inspect.Signature.empty:
+                # If no default value. We assumed it to be a vpath.
                 param_object['required'] = True
+                param_object['in'] = 'path'
             elif is_poppath and name == 'path':
                 # If poppath is enabled, 'path' parameters is required
                 param_object['required'] = True
@@ -109,7 +111,6 @@ class OpenAPI(Controller):
                     'name': 'filename',
                     'in': 'path',
                     'required': True,
-                    'description': 'The name of the static file to retrieve.',
                     'schema': {'type': 'string'},
                 }
             ]
@@ -121,50 +122,48 @@ class OpenAPI(Controller):
 
         return method_object
 
+    def _create_path_object_api(self, path, node, cp_config):
+
+        # For RESTapi merge all function method into a single path_object
+        for method in ['get', 'delete', 'post', 'put', 'list']:
+            func = getattr(node, method, False)
+            if func and callable(func):
+                # Build co_config for this node
+                nodeconf = dict(cp_config)
+                nodeconf.update(getattr(func, '_cp_config', {}))
+                # Build Path object from the method's function
+                method_object = self._create_method_object(func, nodeconf, method=method)
+
+                # Handle required vpath.
+                if method_object['parameters'] and method_object['parameters'][0]['in'] == 'path':
+                    vpath = method_object['parameters'][0]['name']
+                    yield '%s/{%s}' % (path.rstrip('/'), vpath), method, method_object
+                else:
+                    yield path, 'get' if method == 'list' else method, method_object
+
     def _create_path_object(self, path, node, cp_config):
-
-        path_object = {}
-
-        # Check if RESTapi
-        if_rest_api = path.startswith('/api')
-        if if_rest_api:
-            # For RESTapi merge all function metho into a single path_object
-            for method in ['get', 'delete', 'post', 'put']:
-                func = getattr(node, method, False)
-                if func and callable(func):
-                    # Build co_config for this node
-                    nodeconf = dict(cp_config)
-                    nodeconf.update(getattr(func, '_cp_config', {}))
-                    # Build Path object from the method's function
-                    path_object[method] = self._create_method_object(func, nodeconf, method=method)
-            return path, path_object
-
         # Clean-up the path
         if path.endswith('/index'):
-            # Strip index
+            # Strip `index`
             path = path[:-5]
         elif path.endswith('/default'):
-            # Strip default
+            # Strip `/default`
             path = path[:-8]
         elif path.endswith('_json'):
             # Replace _json by '.json'
             path = path[:-5] + '.json'
 
-        # If static, add "{filename}" segment to the path
-        is_staticdir = cp_config.get('tools.staticdir.on', False)
-        if is_staticdir:
-            path = path + "/{filename}"
-
-        # Same for poppath
-        is_poppath = cp_config.get('tools.poppath.on', False)
-        if is_poppath:
-            path = path + "/{path}"
-
         methods = cp_config.get('tools.allow.methods', [])
         for method in methods:
-            path_object[method.lower()] = self._create_method_object(node, cp_config, method=method.lower())
+            method = method.lower()
+            method_object = self._create_method_object(node, cp_config, method=method)
 
-        return path, path_object
+            # Handle required vpath.
+            if method_object['parameters'] and method_object['parameters'][0]['in'] == 'path':
+                vpath = method_object['parameters'][0]['name']
+                yield '%s/{%s}' % (path.rstrip('/'), vpath), method, method_object
+            else:
+                yield path, method, method_object
 
     def _walk_exposed_nodes(self, root_node):
         """
@@ -211,9 +210,14 @@ class OpenAPI(Controller):
 
     def _generate_spec(self, root_node):
         paths = {}
-        for path, node, config in self._walk_exposed_nodes(root_node):
-            path, path_object = self._create_path_object(path, node, config)
-            paths[path] = path_object
+        # Collect all exposed node
+        sorted_nodes = sorted(list(self._walk_exposed_nodes(root_node)))
+        # Assemble all the nodes
+        for path, node, config in sorted_nodes:
+            # Check if RESTapi
+            generator = self._create_path_object_api if path.startswith('/api') else self._create_path_object
+            for path, method, data in generator(path, node, config):
+                paths.setdefault(path, {}).setdefault(method, {}).update(data)
 
         return {
             "openapi": "3.0.0",

@@ -318,18 +318,19 @@ class AdminUsersPage(Controller):
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
-    def delete(self, username=None, **kwargs):
+    def delete(self, **kwargs):
         """
         Delete a user
         """
         # Validate form method.
         form = DeleteUserForm()
-        # Get user
-        user = UserObject.get_user(username)
-        if not user:
-            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
         if form.validate():
-            if form.username.data == self.app.currentuser.username:
+            # Get user
+            username = form.username.data
+            user = UserObject.get_user(username)
+            if not user:
+                raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
+            if username == self.app.currentuser.username:
                 raise cherrypy.HTTPError(400, _("You cannot remove your own account!"))
             try:
                 user.delete()

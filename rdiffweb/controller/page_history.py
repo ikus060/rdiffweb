@@ -32,7 +32,7 @@ class HistoryPage(Controller):
             AccessDeniedError: 403,
         }
     )
-    def default(self, path=b"", limit='10', **kwargs):
+    def default(self, path, limit='10', **kwargs):
         """
         Show repository, file or folder history
         """

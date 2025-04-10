@@ -255,7 +255,7 @@ class SettingsPage(Controller):
         }
     )
     @cherrypy.tools.allow(methods=['GET', 'POST'])
-    def default(self, path=b"", **kwargs):
+    def default(self, path, **kwargs):
         """
         Show user general settings
         """
@@ -310,7 +310,7 @@ class ApiRepos(Controller):
             for repo_obj in u.repo_objs
         ]
 
-    def get(self, name_or_id):
+    def get(self, name_or_repoid):
         """
         Return repository settings for the given id or name
 
@@ -318,10 +318,10 @@ class ApiRepos(Controller):
         """
         u = self.app.currentuser
         query = RepoObject.query.filter(RepoObject.userid == u.userid)
-        if str(name_or_id).isdigit():
-            query = query.filter(RepoObject.repoid == int(name_or_id))
+        if str(name_or_repoid).isdigit():
+            query = query.filter(RepoObject.repoid == int(name_or_repoid))
         else:
-            query = query.filter(RepoObject.repopath == name_or_id)
+            query = query.filter(RepoObject.repopath == name_or_repoid)
         repo_obj = query.first()
         if not repo_obj:
             raise cherrypy.NotFound()
@@ -340,7 +340,7 @@ class ApiRepos(Controller):
         }
 
     @cherrypy.tools.required_scope(scope='all,write_user')
-    def post(self, name_or_id=None, **kwargs):
+    def post(self, name_or_repoid, **kwargs):
         """
         Used to update repository settings.
 
@@ -353,10 +353,10 @@ class ApiRepos(Controller):
         # Search for matching repo
         u = self.app.currentuser
         query = RepoObject.query.filter(RepoObject.userid == u.userid)
-        if str(name_or_id).isdigit():
-            query = query.filter(RepoObject.repoid == int(name_or_id))
+        if str(name_or_repoid).isdigit():
+            query = query.filter(RepoObject.repoid == int(name_or_repoid))
         else:
-            query = query.filter(RepoObject.repopath == name_or_id)
+            query = query.filter(RepoObject.repopath == name_or_repoid)
         repo_obj = query.first()
         if not repo_obj:
             raise cherrypy.NotFound()

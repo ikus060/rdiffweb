@@ -59,7 +59,7 @@ class DeletePage(Controller):
         }
     )
     @cherrypy.tools.allow(methods=['POST'])
-    def default(self, path=b"", **kwargs):
+    def default(self, path, **kwargs):
         """
         Delete a repo, a file or folder history
         """
