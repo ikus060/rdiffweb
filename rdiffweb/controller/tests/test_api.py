@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import json
 from base64 import b64encode
 
 from parameterized import parameterized
@@ -132,6 +133,21 @@ class APITest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertEqual(user.fullname, "My Name")
         self.assertEqual(user.lang, "fr")
+
+    def test_post_currentuser_invalid_json(self):
+        # When trying to update invalid field
+        self.getPage(
+            '/api/currentuser',
+            headers=self.headers + [('Content-Type', 'application/json')],
+            method='POST',
+            body={"invalid_field": "My Name"},
+        )
+        # Then an error is return as Json
+        self.assertStatus(400)
+        self.assertEqual(
+            json.loads(self.body.decode('utf8')),
+            {"message": "unsuported field: invalid_field", "status": "400 Bad Request"},
+        )
 
     def test_getapi_without_authorization(self):
         """

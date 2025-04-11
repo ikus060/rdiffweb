@@ -239,7 +239,6 @@ class ApiCurrentUser(Controller):
 @cherrypy.tools.allow(on=False)
 @cherrypy.tools.json_out(on=True)
 @cherrypy.tools.json_in(on=True, force=False)
-@cherrypy.config(**{'error_page.default': False})
 @cherrypy.tools.auth_basic(realm='rdiffweb', checkpassword=_checkpassword, priority=70)
 @cherrypy.tools.auth_form(on=False)
 @cherrypy.tools.auth_mfa(on=False)

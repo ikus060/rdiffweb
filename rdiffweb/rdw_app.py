@@ -350,9 +350,13 @@ class RdiffwebApp(Application):
             kwargs['message'] = 'Nothing matches the given URI'
 
         # Check expected response type.
-        mtype = cherrypy.tools.accept.callable(['text/html', 'text/plain'])  # @UndefinedVariable
+        mtype = cherrypy.serving.response.headers.get('Content-Type') or cherrypy.tools.accept.callable(
+            ['text/html', 'text/plain', 'application/json']
+        )
         if mtype == 'text/plain':
             return kwargs.get('message')
+        elif mtype == 'application/json':
+            return json.dumps({'message': kwargs.get('message', ''), 'status': kwargs.get('status', '')})
 
         # Try to build a nice error page.
         try:
