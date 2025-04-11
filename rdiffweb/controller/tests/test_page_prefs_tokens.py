@@ -224,7 +224,7 @@ class ApiTokensTest(rdiffweb.test.WebCase):
         user.add_access_token('my-token', None)
         user.commit()
 
-        # When POST a duplicate ssh key
+        # When POST a duplicate token
         self.getPage(
             '/api/currentuser/tokens',
             headers=self.auth,
@@ -276,12 +276,12 @@ class ApiTokensTest(rdiffweb.test.WebCase):
             self.assertEqual(1, Token.query.filter(Token.user == user).count())
 
     def test_delete(self):
-        # Given a user with an existing ssh key
+        # Given a user with an existing token
         user = UserObject.get_user('admin')
         user.add_access_token('my-token', None)
         user.commit()
 
-        # When deleting the ssh key
+        # When deleting the token
         self.getPage(
             '/api/currentuser/tokens/my-token',
             headers=self.auth,
@@ -294,18 +294,18 @@ class ApiTokensTest(rdiffweb.test.WebCase):
         self.assertEqual(0, Token.query.filter(Token.user == user).count())
 
     def test_get(self):
-        # Given a user with an existing ssh key
+        # Given a user with an existing token
         user = UserObject.get_user('admin')
         user.add_access_token('my-token', None, scope='all,read_user')
         user.commit()
 
-        # When deleting the ssh key
+        # When querying the token
         data = self.getJson(
             '/api/currentuser/tokens/my-token',
             headers=self.auth,
             method='GET',
         )
-        # Then page return with success with sshkey
+        # Then page return with success with token
         self.assertStatus('200 OK')
         self.assertEqual(
             data,
@@ -319,31 +319,31 @@ class ApiTokensTest(rdiffweb.test.WebCase):
         )
 
     def test_get_invalid(self):
-        # Given a user with an existing ssh key
+        # Given a user with an existing token
         user = UserObject.get_user('admin')
         user.add_access_token('my-token', None)
         user.commit()
-        # When deleting the ssh key
+        # When querying the token
         self.getPage(
             '/api/currentuser/tokens/invalid',
             headers=self.auth,
             method='GET',
         )
-        # Then page return with success with sshkey
+        # Then page return NotFound
         self.assertStatus(404)
 
     def test_list(self):
-        # Given a user with an existing ssh key
+        # Given a user with an existing token
         user = UserObject.get_user('admin')
         user.add_access_token('my-token', None)
         user.commit()
-        # When deleting the ssh key
+        # When querying the ssh key
         data = self.getJson(
             '/api/currentuser/tokens',
             headers=self.auth,
             method='GET',
         )
-        # Then page return with success with sshkey
+        # Then page return with success with token
         self.assertStatus('200 OK')
         self.assertEqual(
             data,

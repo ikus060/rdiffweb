@@ -340,7 +340,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
         )
         user.commit()
         self.assertEqual(1, len(list(user.authorizedkeys)))
-        # When deleting the ssh key
+        # When querying the ssh key
         data = self.getJson(
             '/api/currentuser/sshkeys/4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91',
             headers=self.headers,
@@ -363,7 +363,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
         )
         user.commit()
         self.assertEqual(1, len(list(user.authorizedkeys)))
-        # When deleting the ssh key
+        # When querying the ssh key
         self.getPage(
             '/api/currentuser/sshkeys/invalid',
             headers=self.headers,
