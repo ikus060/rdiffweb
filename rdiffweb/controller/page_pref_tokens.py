@@ -218,6 +218,21 @@ class PagePrefTokens(Controller):
 @cherrypy.expose
 @cherrypy.tools.json_out()
 class ApiTokens(Controller):
+    def _query(self, name):
+        token = Token.query.filter(Token.userid == self.app.currentuser.userid, Token.name == name).first()
+        if not token:
+            raise cherrypy.NotFound()
+        return token
+
+    def _to_json(self, token):
+        return {
+            'title': token.name,
+            'access_time': token.access_time,
+            'creation_time': token.creation_time,
+            'expiration_time': token.expiration_time,
+            'scope': token.scope,
+        }
+
     def list(self):
         """
         Return list of current user access token
@@ -242,16 +257,7 @@ class ApiTokens(Controller):
 
         """
         tokens = Token.query.filter(Token.userid == self.app.currentuser.userid).all()
-        return [
-            {
-                'title': token.name,
-                'access_time': token.access_time,
-                'creation_time': token.creation_time,
-                'expiration_time': token.expiration_time,
-                'scope': token.scope,
-            }
-            for token in tokens
-        ]
+        return [self._to_json(token) for token in tokens]
 
     def get(self, name):
         """
@@ -264,18 +270,9 @@ class ApiTokens(Controller):
         ```json
         {"title": "test2", "access_time": "2024-01-30T17:59:08Z", "creation_time": "2024-01-30T17:57:51Z", "expiration_time": null}
         ```
-
         """
-        token = Token.query.filter(Token.userid == self.app.currentuser.userid, Token.name == name).first()
-        if not token:
-            raise cherrypy.HTTPError(404)
-        return {
-            'title': token.name,
-            'access_time': token.access_time,
-            'creation_time': token.creation_time,
-            'expiration_time': token.expiration_time,
-            'scope': token.scope,
-        }
+        token = self._query(name)
+        return self._to_json(token)
 
     @cherrypy.tools.required_scope(scope='all,write_user')
     def delete(self, name):
@@ -287,9 +284,7 @@ class ApiTokens(Controller):
         Returns status 200 OK on success.
         """
         userobj = self.app.currentuser
-        token = Token.query.filter(Token.userid == userobj.userid, Token.name == name).first()
-        if not token:
-            raise cherrypy.HTTPError(404)
+        self._query(name)
         userobj.delete_access_token(name)
         userobj.commit()
         return {}
@@ -313,19 +308,11 @@ class ApiTokens(Controller):
                 name=form.name.data, expiration_time=form.expiration.data, scope=form.scope.data
             )
             userobj.commit()
-            token = Token.query.filter(
-                Token.userid == self.app.currentuser.userid, Token.name == form.name.data
-            ).first()
-            if not token:
-                raise cherrypy.HTTPError(400)
-            return {
-                'title': token.name,
-                'access_time': token.access_time,
-                'creation_time': token.creation_time,
-                'expiration_time': token.expiration_time,
-                'token': secret,
-                'scope': token.scope,
-            }
+            token = self._query(form.name.data)
+            # Return token info as Json
+            data = self._to_json(token)
+            data['token'] = secret
+            return data
         except Exception as e:
             userobj.rollback()
             raise cherrypy.HTTPError(400, str(e))
