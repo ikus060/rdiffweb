@@ -18,6 +18,7 @@ import logging
 import os
 import secrets
 import string
+import sys
 
 import cherrypy
 from sqlalchemy import Column, Index, Integer, SmallInteger, String, and_, event, func, inspect, or_
@@ -36,6 +37,7 @@ from ._session import SessionObject
 from ._sshkey import SshKey
 from ._timestamp import Timestamp
 from ._token import Token
+from ._update import column_add, column_exists, index_exists
 
 logger = logging.getLogger(__name__)
 
@@ -432,6 +434,52 @@ class UserObject(Base):
 
 # Username should be case insensitive
 user_username_index = Index('user_username_index', func.lower(UserObject.username), unique=True)
+
+
+@event.listens_for(Base.metadata, 'after_create', insert=True)
+def update_user_schema(target, conn, **kw):
+    # Create column for roles using "isadmin" column. Keep the
+    # original column in case we need to revert to previous version.
+    if not column_exists(conn, UserObject.role):
+        column_add(conn, UserObject.role)
+        UserObject.query.filter(UserObject._is_admin == 1).update({UserObject.role: UserObject.ADMIN_ROLE})
+
+    # Add user's fullname column
+    if not column_exists(conn, UserObject.fullname):
+        column_add(conn, UserObject.fullname)
+
+    # Add user's mfa column
+    if not column_exists(conn, UserObject.mfa):
+        column_add(conn, UserObject.mfa)
+
+    # Add user's lang column
+    if not column_exists(conn, UserObject.lang):
+        column_add(conn, UserObject.lang)
+
+    # Add user's report column
+    if not column_exists(conn, UserObject.report_time_range):
+        column_add(conn, UserObject.report_time_range)
+    if not column_exists(conn, UserObject.report_last_sent):
+        column_add(conn, UserObject.report_last_sent)
+
+    # Fix username case insensitive unique
+    if not index_exists(conn, 'user_username_index'):
+        duplicate_users = (
+            UserObject.query.with_entities(func.lower(UserObject.username))
+            .group_by(func.lower(UserObject.username))
+            .having(func.count(UserObject.username) > 1)
+        ).all()
+        try:
+            user_username_index.create(bind=conn)
+        except IntegrityError:
+            msg = (
+                'Failure to upgrade your database to make Username case insensitive. '
+                'You must downgrade and deleted duplicate Username: '
+                '%s' % '\n'.join([str(k) for k in duplicate_users]),
+            )
+            logger.error(msg)
+            print(msg, file=sys.stderr)
+            raise SystemExit(12)
 
 
 @event.listens_for(Session, 'before_flush')

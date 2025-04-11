@@ -81,52 +81,83 @@ INSERT INTO sqlite_sequence VALUES('repos',3);
 COMMIT;
 """
 
+SQL_WITH_DUPLICATE_USERS = """
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE users (
+UserID integer primary key autoincrement,
+Username varchar (50) unique NOT NULL,
+Password varchar (40) NOT NULL DEFAULT "",
+UserRoot varchar (255) NOT NULL DEFAULT "",
+IsAdmin tinyint NOT NULL DEFAULT FALSE,
+UserEmail varchar (255) NOT NULL DEFAULT "",
+RestoreFormat tinyint NOT NULL DEFAULT TRUE, fullname VARCHAR, role SMALLINT);
+INSERT INTO users VALUES(1,'admin','{SSHA}eFF2vTUKbfA4qGyQlscj3Z8dtdR4Uilt','/home/root-mail',0,'',1,NULL,NULL);
+INSERT INTO users VALUES(2,'Patrik','{SSHA}eFF2vTUKbfA4qGyQlscj3Z8dtdR4Uilt','/home/Patrik',0,'',1,NULL,NULL);
+INSERT INTO users VALUES(3,'patrik','{SSHA}eFF2vTUKbfA4qGyQlscj3Z8dtdR4Uilt','/home/patrik',0,'',1,NULL,NULL);
+CREATE TABLE repos (
+RepoID integer primary key autoincrement,
+UserID int(11) NOT NULL,
+RepoPath varchar (255) NOT NULL,
+MaxAge tinyint NOT NULL DEFAULT 0, Encoding VARCHAR, keepdays VARCHAR);
+INSERT INTO repos VALUES(1,1,'test',1,NULL,NULL);
+INSERT INTO repos VALUES(2,1,'desktop',0,NULL,NULL);
+CREATE TABLE sshkeys (
+    "Fingerprint" TEXT,
+    "Key" TEXT,
+    "UserID" INTEGER NOT NULL,
+    UNIQUE ("Key")
+);
+DELETE FROM sqlite_sequence;
+INSERT INTO sqlite_sequence VALUES('users',2);
+INSERT INTO sqlite_sequence VALUES('repos',3);
+COMMIT;
+"""
+
 
 @parameterized_class(
     [
-        {"version": "1.5.0", "init_sql": SQL_1_5_0},
-        {"version": "unknown", "init_sql": SQL_ROLE_WITHOUT_DEFAULT},
+        {"name": "from_1.5.0", "init_sql": SQL_1_5_0, "success": True},
+        {"name": "unknown", "init_sql": SQL_ROLE_WITHOUT_DEFAULT, "success": True},
+        {"name": "with_duplicate_users", "init_sql": SQL_WITH_DUPLICATE_USERS, "success": False},
     ]
 )
 @skipIf(os.environ.get('RDIFFWEB_TEST_DATABASE_URI'), 'custom database')
-class LoginAbstractTest(rdiffweb.test.WebCase):
+class DbUpdateSchemaTest(rdiffweb.test.WebCase):
     init_sql = ""
+    success = True
 
-    def setUp(self):
-        cherrypy.test.helper.CPWebCase.setUp(self)
+    def test_update_schema(self):
+        assert self.init_sql
+
+        # Given a older database Schema.
         cherrypy.tools.db.drop_all()
-
-        # Create custom database ONLY SQLITE here
+        # Make sure the tables are deleted
         dbapi = cherrypy.tools.db.get_session().bind.raw_connection()
+        cursor = dbapi.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+        self.assertEqual(['sqlite_sequence'], [table[0] for table in tables])
+        try:
+            dbapi.executescript(self.init_sql)
+        finally:
+            dbapi.close()
 
-        if self.init_sql:
-            try:
-                # Make sure the tables are deleted
-                cursor = dbapi.execute("SELECT name FROM sqlite_master WHERE type='table';")
-                tables = cursor.fetchall()
-                self.assertEqual(['sqlite_sequence'], [table[0] for table in tables])
-                # Execute custom script to initialize the database.
-                dbapi.executescript(self.init_sql)
-            finally:
-                dbapi.close()
-        # Upgrade database
-        cherrypy.tools.db.create_all()
-
-    def tearDown(self):
-        super().tearDown()
-
-    def test_sanity_check(self):
-        # Get index page
-        self.getPage('/')
-        self.assertStatus(303)
-        # Login
-        self._login()
-        # Get index page
-        self.getPage('/')
-        self.assertStatus(200)
-
-    def test_get_user(self):
-        # Given admin user
-        admin = UserObject.get_user('admin')
-        # No error when getting is_admin status.
-        admin.is_admin
+        # When updating existing schema
+        if self.success:
+            cherrypy.tools.db.create_all()
+            # Then index page is working
+            self.getPage('/')
+            self.assertStatus(303)
+            # Then login is working
+            self._login()
+            # Then location is working
+            self.getPage('/')
+            self.assertStatus(200)
+            # Then admin user is working
+            admin = UserObject.get_user('admin')
+            # No error when getting is_admin status.
+            admin.is_admin
+        else:
+            # Then an error is raised
+            with self.assertRaises(SystemExit):
+                cherrypy.tools.db.create_all()

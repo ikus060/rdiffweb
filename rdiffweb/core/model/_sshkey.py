@@ -15,10 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import sys
+
 import cherrypy
-from sqlalchemy import Column, Index, Integer, Text
+from sqlalchemy import Column, Index, Integer, Text, event, func
+from sqlalchemy.exc import IntegrityError
+
+from ._update import index_exists
 
 Base = cherrypy.tools.db.get_base()
+
+logger = logging.getLogger(__name__)
 
 
 class SshKey(Base):
@@ -31,3 +39,26 @@ class SshKey(Base):
 
 # Make finger print unique
 sshkey_fingerprint_index = Index('sshkey_fingerprint_index', SshKey.fingerprint, unique=True)
+
+
+@event.listens_for(Base.metadata, 'after_create')
+def update_sshkeys_schema(target, conn, **kw):
+
+    # Fix SSH Key uniqueness - since 2.5.4
+    if not index_exists(conn, 'sshkey_fingerprint_index'):
+        duplicate_sshkeys = (
+            SshKey.query.with_entities(SshKey.fingerprint)
+            .group_by(SshKey.fingerprint)
+            .having(func.count(SshKey.fingerprint) > 1)
+        ).all()
+        try:
+            sshkey_fingerprint_index.create(bind=conn)
+        except IntegrityError:
+            msg = (
+                'Failure to upgrade your database to make SSH Keys unique. '
+                'You must downgrade and deleted duplicate SSH Keys. '
+                '%s' % '\n'.join([str(k) for k in duplicate_sshkeys]),
+            )
+            logger.error(msg)
+            print(msg, file=sys.stderr)
+            raise SystemExit(12)

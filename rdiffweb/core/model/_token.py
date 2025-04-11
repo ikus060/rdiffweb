@@ -18,11 +18,12 @@ import datetime
 
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, event
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from ._timestamp import Timestamp
+from ._update import column_add, column_exists
 
 Base = cherrypy.tools.db.get_base()
 
@@ -90,3 +91,11 @@ cherrypy.token_cleanup = TokenCleanup(cherrypy.engine)
 cherrypy.token_cleanup.subscribe()
 
 cherrypy.config.namespaces['token_cleanup'] = lambda key, value: setattr(cherrypy.token_cleanup, key, value)
+
+
+@event.listens_for(Base.metadata, 'after_create')
+def update_token_schema(target, conn, **kw):
+    # Add Token.scope column - since v2.9.0 with value of All for backward compatibility
+    if not column_exists(conn, Token._scope):
+        column_add(conn, Token._scope)
+        Token.query.update({Token._scope: 'all'})

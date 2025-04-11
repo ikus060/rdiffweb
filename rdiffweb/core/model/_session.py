@@ -21,10 +21,11 @@ import threading
 
 import cherrypy
 from cherrypy.lib.sessions import Session
-from sqlalchemy import Column, Integer, PickleType, String
+from sqlalchemy import Column, Integer, PickleType, String, event
 from sqlalchemy.orm import validates
 
 from ._timestamp import Timestamp
+from ._update import column_exists
 
 SESSION_KEY = '_cp_username'
 
@@ -113,3 +114,11 @@ class DbSession(Session):
     def now(self):
         """Generate a timezone aware, versions of 'now'."""
         return datetime.datetime.now(tz=datetime.timezone.utc)
+
+
+@event.listens_for(Base.metadata, 'after_create')
+def update_session_schema(target, conn, **kw):
+    # Re-create session table if Number column is missing
+    if not column_exists(conn, SessionObject.__table__.c.Number):
+        SessionObject.__table__.drop()
+        SessionObject.__table__.create()
