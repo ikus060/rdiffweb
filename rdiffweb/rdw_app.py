@@ -44,6 +44,7 @@ import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
 import rdiffweb.tools.proxy
 import rdiffweb.tools.ratelimit
+import rdiffweb.tools.required_scope
 import rdiffweb.tools.secure_headers
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
