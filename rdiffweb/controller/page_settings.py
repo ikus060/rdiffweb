@@ -25,7 +25,7 @@ from wtforms.fields import SelectField, SelectMultipleField, SubmitField
 from wtforms.validators import ValidationError
 from wtforms.widgets import html_params
 
-from rdiffweb.controller import Controller, flash
+from rdiffweb.controller import Controller, flash, get_flashed_messages
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
@@ -244,6 +244,19 @@ class RepoSettingsForm(CherryForm):
         if field.object_data != field.data and not cherrypy.serving.request.currentuser.is_maintainer:
             raise ValidationError(_('Only maintainers or administrators can update data retention settings.'))
 
+    def populate_obj(self, repo_obj):
+        try:
+            repo_obj.maxage = self.maxage.data
+            repo_obj.ignore_weekday = self.ignore_weekday.data
+            repo_obj.keepdays = self.keepdays.data
+            repo_obj.encoding = self.encoding.data
+            repo_obj.commit()
+            return True
+        except Exception as e:
+            repo_obj.rollback()
+            flash(str(e), level='error')
+            return False
+
 
 @cherrypy.tools.poppath()
 class SettingsPage(Controller):
@@ -263,18 +276,8 @@ class SettingsPage(Controller):
         form = RepoSettingsForm(obj=repo_obj)
         if form.is_submitted():
             if form.validate():
-                try:
-                    form.populate_obj(repo_obj)
+                if form.populate_obj(repo_obj):
                     flash(_("Settings modified successfully."), level='success')
-                except cherrypy.HTTPError:
-                    # If is user is not a maintainer.
-                    repo_obj.rollback()
-                    raise
-                except Exception as e:
-                    logger.exception('fail to update repository settings')
-                    repo_obj.rollback()
-                    flash(str(e), level='warning')
-                else:
                     raise cherrypy.HTTPRedirect("")
             else:
                 flash(form.error_message, level='error')
@@ -284,47 +287,16 @@ class SettingsPage(Controller):
 @cherrypy.expose
 @cherrypy.tools.required_scope(scope='all,read_user,write_user')
 class ApiRepos(Controller):
-    def list(self):
-        """
-        Return current user repositories
-
-        Returns information about the current user's repositories, identical to the information provided by `/api/currentuser`.
-        """
-        u = self.app.currentuser
-        if u.refresh_repos():
-            u.commit()
-        return [
-            {
-                "repoid": repo_obj.repoid,
-                # Database fields.
-                "name": repo_obj.name,
-                "maxage": repo_obj.maxage,
-                "keepdays": repo_obj.keepdays,
-                "ignore_weekday": repo_obj.ignore_weekday,
-                # Repository fields.
-                "display_name": repo_obj.display_name,
-                "last_backup_date": repo_obj.last_backup_date,
-                "status": repo_obj.status[0],
-                "encoding": repo_obj.encoding,
-            }
-            for repo_obj in u.repo_objs
-        ]
-
-    def get(self, name_or_repoid):
-        """
-        Return repository settings for the given id or name
-
-        Returns information specific to the repository identified by `<id>` or `<name>`.
-        """
+    def _query(self, name_or_repoid):
         u = self.app.currentuser
         query = RepoObject.query.filter(RepoObject.userid == u.userid)
         if str(name_or_repoid).isdigit():
             query = query.filter(RepoObject.repoid == int(name_or_repoid))
         else:
             query = query.filter(RepoObject.repopath == name_or_repoid)
-        repo_obj = query.first()
-        if not repo_obj:
-            raise cherrypy.NotFound()
+        return query.first()
+
+    def _to_json(self, repo_obj):
         return {
             "repoid": repo_obj.repoid,
             # Database fields.
@@ -339,6 +311,28 @@ class ApiRepos(Controller):
             "encoding": repo_obj.encoding,
         }
 
+    def list(self):
+        """
+        Return current user repositories
+
+        Returns information about the current user's repositories, identical to the information provided by `/api/currentuser`.
+        """
+        u = self.app.currentuser
+        if u.refresh_repos():
+            u.commit()
+        return [self._to_json(repo_obj) for repo_obj in u.repo_objs]
+
+    def get(self, name_or_repoid):
+        """
+        Return repository settings for the given id or name
+
+        Returns information specific to the repository identified by `<id>` or `<name>`.
+        """
+        repo_obj = self._query(name_or_repoid)
+        if repo_obj is None:
+            raise cherrypy.NotFound()
+        return self._to_json(repo_obj)
+
     @cherrypy.tools.required_scope(scope='all,write_user')
     def post(self, name_or_repoid, **kwargs):
         """
@@ -351,29 +345,17 @@ class ApiRepos(Controller):
 
         """
         # Search for matching repo
-        u = self.app.currentuser
-        query = RepoObject.query.filter(RepoObject.userid == u.userid)
-        if str(name_or_repoid).isdigit():
-            query = query.filter(RepoObject.repoid == int(name_or_repoid))
-        else:
-            query = query.filter(RepoObject.repopath == name_or_repoid)
-        repo_obj = query.first()
+        repo_obj = self._query(name_or_repoid)
         if not repo_obj:
             raise cherrypy.NotFound()
 
         # Validate incomming data.
         form = RepoSettingsForm(obj=repo_obj, json=1)
-        if not form.strict_validate():
+        if form.strict_validate():
+            # Update repo object.
+            if not form.populate_obj(repo_obj):
+                raise cherrypy.HTTPError(400, str(get_flashed_messages()))
+            # Return the updated repo object.
+            return self._to_json(repo_obj)
+        else:
             raise cherrypy.HTTPError(400, form.error_message)
-
-        # Update repo object.
-        try:
-            form.populate_obj(repo_obj)
-            repo_obj.commit()
-        except cherrypy.HTTPError:
-            # If is user is not a maintainer.
-            repo_obj.rollback()
-            raise
-        except Exception as e:
-            repo_obj.rollback()
-            raise cherrypy.HTTPError(400, str(e))
