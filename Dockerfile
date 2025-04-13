@@ -1,5 +1,5 @@
-# rdiff-backup is compatible with Debian bullseye python 3.10
-FROM python:3.10-bullseye AS base
+# rdiff-backup is compatible with Debian bookworm python 3.12
+FROM python:3.12-bookworm AS base
 
 LABEL author="Patrik Dufresne <patrik@ikus-soft.com>"
 
