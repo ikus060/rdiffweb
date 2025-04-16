@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
+import tempfile
 from unittest import skipIf
 
 import cherrypy
@@ -127,13 +128,29 @@ class DbUpdateSchemaTest(rdiffweb.test.WebCase):
     init_sql = ""
     success = True
 
+    @classmethod
+    def setup_class(cls):
+        # Delete database file
+        db_file = tempfile.gettempdir() + '/test_rdiffweb_data.db'
+        if os.path.exists(db_file):
+            os.remove(db_file)
+        super().setup_class()
+
+    @classmethod
+    def teardown_class(cls):
+        super().teardown_class()
+        # Delete database file
+        db_file = tempfile.gettempdir() + '/test_rdiffweb_data.db'
+        if os.path.exists(db_file):
+            os.remove(db_file)
+
     def test_update_schema(self):
         assert self.init_sql
 
         # Given a older database Schema.
-        cherrypy.tools.db.drop_all()
+        cherrypy.db.drop_all()
         # Make sure the tables are deleted
-        dbapi = cherrypy.tools.db.get_session().bind.raw_connection()
+        dbapi = cherrypy.db.get_session().bind.raw_connection()
         cursor = dbapi.execute("SELECT name FROM sqlite_master WHERE type='table';")
         tables = cursor.fetchall()
         self.assertEqual(['sqlite_sequence'], [table[0] for table in tables])
@@ -144,7 +161,7 @@ class DbUpdateSchemaTest(rdiffweb.test.WebCase):
 
         # When updating existing schema
         if self.success:
-            cherrypy.tools.db.create_all()
+            cherrypy.db.create_all()
             # Then index page is working
             self.getPage('/')
             self.assertStatus(303)
@@ -160,4 +177,4 @@ class DbUpdateSchemaTest(rdiffweb.test.WebCase):
         else:
             # Then an error is raised
             with self.assertRaises(SystemExit):
-                cherrypy.tools.db.create_all()
+                cherrypy.db.create_all()

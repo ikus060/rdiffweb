@@ -25,7 +25,7 @@ from sqlalchemy.sql import func
 from ._timestamp import Timestamp
 from ._update import column_add, column_exists
 
-Base = cherrypy.tools.db.get_base()
+Base = cherrypy.db.get_base()
 
 
 class Token(Base):

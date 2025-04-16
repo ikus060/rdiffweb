@@ -79,7 +79,7 @@ class WebCase(helper.CPWebCase):
     @classmethod
     def teardown_class(cls):
         super().teardown_class()
-        cherrypy.tools.db.drop_all()
+        cherrypy.db.drop_all()
         if hasattr(cherrypy, '_cache'):
             cherrypy._cache.clear()
 
@@ -104,8 +104,8 @@ class WebCase(helper.CPWebCase):
         helper.CPWebCase.setUp(self)
         if hasattr(cherrypy, '_cache'):
             cherrypy._cache.clear()
-        cherrypy.tools.db.drop_all()
-        cherrypy.tools.db.create_all()
+        cherrypy.db.drop_all()
+        cherrypy.db.create_all()
         # Create default admin
         admin_user = UserObject.create_admin_user(self.USERNAME, self.PASSWORD)
         admin_user.commit()
@@ -123,7 +123,8 @@ class WebCase(helper.CPWebCase):
         if hasattr(self, 'testcases'):
             shutil.rmtree(self.testcases)
             delattr(self, 'testcases')
-        cherrypy.tools.db.drop_all()
+        cherrypy.db.clear_sessions()
+        cherrypy.db.drop_all()
         if hasattr(cherrypy, '_cache'):
             cherrypy._cache.clear()
 
@@ -149,7 +150,7 @@ class WebCase(helper.CPWebCase):
 
     @property
     def session(self):
-        return cherrypy.tools.db.get_session()
+        return cherrypy.db.get_session()
 
     @property
     def session_id(self):

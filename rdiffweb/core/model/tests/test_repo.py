@@ -29,7 +29,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         RepoObject(userid=userobj.userid, repopath='/testcases').add().commit()
         self.assertEqual(['/testcases', 'broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
         # When creating database
-        cherrypy.tools.db.create_all()
+        cherrypy.db.create_all()
         # Then duplicates are removed
         userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
@@ -45,7 +45,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
             sorted([r.name for r in userobj.repo_objs]),
         )
         # When creating database
-        cherrypy.tools.db.create_all()
+        cherrypy.db.create_all()
         # Then nested path are removed
         userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
@@ -57,7 +57,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         RepoObject(userid=userobj.userid, repopath='/testcases').add().commit()
         self.assertEqual(['/testcases'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the database schema
-        cherrypy.tools.db.create_all()
+        cherrypy.db.create_all()
         # Then the repository name stripped the "/"
         userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(['testcases'], sorted([r.name for r in userobj.repo_objs]))

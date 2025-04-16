@@ -31,6 +31,7 @@ import rdiffweb.core.login  # noqa
 import rdiffweb.core.notification
 import rdiffweb.core.quota
 import rdiffweb.core.remove_older
+import rdiffweb.plugins.db
 import rdiffweb.plugins.ldap
 import rdiffweb.plugins.restapi
 import rdiffweb.plugins.scheduler
@@ -38,7 +39,6 @@ import rdiffweb.plugins.smtp
 import rdiffweb.tools.auth_form
 import rdiffweb.tools.auth_mfa
 import rdiffweb.tools.currentuser
-import rdiffweb.tools.db
 import rdiffweb.tools.enrich_session
 import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
@@ -110,7 +110,6 @@ def _json_handler(*args, **kwargs):
 )
 @cherrypy.tools.currentuser(userobj=lambda username: UserObject.get_user(username))
 @cherrypy.tools.i18n(func=lambda: getattr(cherrypy.request, 'currentuser', False) and cherrypy.request.currentuser.lang)
-@cherrypy.tools.db()
 @cherrypy.tools.enrich_session()
 @cherrypy.tools.proxy(local=None, remote='X-Real-IP')
 @cherrypy.tools.secure_headers(
@@ -196,8 +195,8 @@ class RdiffwebApp(Application):
                 # Define error page handler.
                 'error_page.default': self.error_page,
                 # Configure database plugins
-                'tools.db.uri': db_uri,
-                'tools.db.debug': cfg.debug,
+                'db.uri': db_uri,
+                'db.debug': cfg.debug,
                 # Configure session storage
                 'tools.sessions.on': True,
                 'tools.sessions.debug': cfg.debug,
@@ -274,8 +273,6 @@ class RdiffwebApp(Application):
                 'tools.i18n.domain': 'messages',
             }
         )
-        # Create database if required
-        cherrypy.tools.db.create_all()
 
         config = {
             '/': {
@@ -322,6 +319,9 @@ class RdiffwebApp(Application):
     def on_start(self):
         # Since we are not a real plugin, let unsubscribe to avoid interference if server get restarted.
         cherrypy.engine.unsubscribe('start', self.on_start)
+
+        # Create database if required
+        cherrypy.db.create_all()
 
         # create user manager
         user = UserObject.create_admin_user(self.cfg.admin_user, self.cfg.admin_password)

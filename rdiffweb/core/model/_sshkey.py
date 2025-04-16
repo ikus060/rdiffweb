@@ -24,7 +24,7 @@ from sqlalchemy.exc import IntegrityError
 
 from ._update import index_exists
 
-Base = cherrypy.tools.db.get_base()
+Base = cherrypy.db.get_base()
 
 logger = logging.getLogger(__name__)
 

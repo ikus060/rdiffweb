@@ -33,7 +33,7 @@ def catch_exception(func):
         try:
             func(*args, **kwargs)
         finally:
-            cherrypy.tools.db.on_end_resource()
+            cherrypy.db.clear_sessions()
 
     wrapper._func = func
     return wrapper

@@ -490,7 +490,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         userobj.add().commit()
         UserObject.session.expire_all()
         # Then close session
-        cherrypy.tools.db.on_end_resource()
+        cherrypy.db.clear_sessions()
         # Then repo status is "broken"
         userobj = UserObject.get_user(self.USERNAME)
         self.assertFalse(userobj.valid_user_root())

@@ -29,7 +29,7 @@ from sqlalchemy import and_, case, event, orm
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, validates
 
-import rdiffweb.tools.db  # noqa
+import rdiffweb.plugins.db  # noqa
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo, RdiffTime
 from rdiffweb.tools.i18n import ugettext as _
 
@@ -45,8 +45,8 @@ def case_wrapper(*whens, else_=None):
     return case(*whens, else_=else_)
 
 
-Base = cherrypy.tools.db.get_base()
-Session = cherrypy.tools.db.get_session()
+Base = cherrypy.db.get_base()
+Session = cherrypy.db.get_session()
 
 logger = logging.getLogger(__name__)
 
@@ -300,10 +300,10 @@ def update_repo_schema(target, conn, **kw):
     for row in result:
         if row.repopath.startswith('/') or row.repopath.endswith('/'):
             row.repopath = row.repopath.strip('/')
-            row.commit()
+            row.add().flush()
         if row.repopath == '.':
             row.repopath = ''
-            row.commit()
+            row.add().flush()
 
     # Remove duplicates and nested repositories.
     result = RepoObject.query.order_by(RepoObject.userid, RepoObject.repopath).all()

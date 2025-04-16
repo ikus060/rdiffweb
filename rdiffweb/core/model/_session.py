@@ -29,7 +29,7 @@ from ._update import column_exists
 
 SESSION_KEY = '_cp_username'
 
-Base = cherrypy.tools.db.get_base()
+Base = cherrypy.db.get_base()
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +90,7 @@ class DbSession(Session):
         except Exception:
             logger.error('fail to clean-up sessions', exc_info=1)
         finally:
-            cherrypy.tools.db.on_end_resource()
+            cherrypy.db.clear_sessions()
 
     def __len__(self):
         """Return the number of active sessions."""
@@ -119,6 +119,6 @@ class DbSession(Session):
 @event.listens_for(Base.metadata, 'after_create')
 def update_session_schema(target, conn, **kw):
     # Re-create session table if Number column is missing
-    if not column_exists(conn, SessionObject.__table__.c.Number):
-        SessionObject.__table__.drop()
-        SessionObject.__table__.create()
+    if not column_exists(conn, SessionObject.number):
+        SessionObject.__table__.drop(bind=conn)
+        SessionObject.__table__.create(bind=conn)

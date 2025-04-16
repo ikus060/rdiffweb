@@ -27,7 +27,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import deferred, relationship, validates
 from zxcvbn import zxcvbn
 
-import rdiffweb.tools.db  # noqa
+import rdiffweb.plugins.db  # noqa
 from rdiffweb.core import authorizedkeys
 from rdiffweb.core.passwd import check_password, hash_password
 from rdiffweb.tools.i18n import ugettext as _
@@ -41,8 +41,8 @@ from ._update import column_add, column_exists, index_exists
 
 logger = logging.getLogger(__name__)
 
-Base = cherrypy.tools.db.get_base()
-Session = cherrypy.tools.db.get_session()
+Base = cherrypy.db.get_base()
+Session = cherrypy.db.get_session()
 
 SEP = b'/'
 
@@ -443,10 +443,15 @@ def update_user_schema(target, conn, **kw):
     if not column_exists(conn, UserObject.role):
         column_add(conn, UserObject.role)
         UserObject.query.filter(UserObject._is_admin == 1).update({UserObject.role: UserObject.ADMIN_ROLE})
+    else:
+        # If column exists, make sure to define a non-null value.
+        UserObject.query.filter(UserObject.role.is_(None)).update({UserObject.role: UserObject.USER_ROLE})
 
     # Add user's fullname column
     if not column_exists(conn, UserObject.fullname):
         column_add(conn, UserObject.fullname)
+    else:
+        UserObject.query.filter(UserObject.fullname.is_(None)).update({UserObject.fullname: ""})
 
     # Add user's mfa column
     if not column_exists(conn, UserObject.mfa):
