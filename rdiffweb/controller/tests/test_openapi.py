@@ -106,13 +106,13 @@ class APITest(rdiffweb.test.WebCase):
                             'parameters': [],
                         }
                     },
-                    '/admin/users/edit/{username_vpath}': {
+                    '/admin/users/edit/{username_or_id}': {
                         'get': {
                             'summary': 'Show form to edit user',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
-                                {'name': 'username_vpath', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
+                                {'name': 'username_or_id', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
                             ],
                         },
                         'post': {
@@ -120,7 +120,7 @@ class APITest(rdiffweb.test.WebCase):
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [
-                                {'name': 'username_vpath', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
+                                {'name': 'username_or_id', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
                             ],
                         },
                     },
@@ -269,6 +269,45 @@ class APITest(rdiffweb.test.WebCase):
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [],
                         }
+                    },
+                    '/api/users': {
+                        'get': {
+                            'description': ANY,
+                            'parameters': [],
+                            'responses': {'200': {'content': {'application/json': {}}, 'description': 'OK'}},
+                            'summary': 'List all users.',
+                        },
+                        'post': {
+                            'description': ANY,
+                            'parameters': [
+                                {
+                                    'in': 'query',
+                                    'name': 'username_or_id',
+                                    'schema': {'default': 'None', 'type': 'string'},
+                                }
+                            ],
+                            'requestBody': {'content': {'application/json': {}}, 'required': True},
+                            'responses': {'200': {'content': {'application/json': {}}, 'description': 'OK'}},
+                            'summary': 'Create new user or update existing user.',
+                        },
+                    },
+                    '/api/users/{username_or_id}': {
+                        'delete': {
+                            'description': ANY,
+                            'parameters': [
+                                {'in': 'path', 'name': 'username_or_id', 'required': True, 'schema': {'type': 'string'}}
+                            ],
+                            'responses': {'200': {'content': {'application/json': {}}, 'description': 'OK'}},
+                            'summary': 'Delete the user identified by the given username or id.',
+                        },
+                        'get': {
+                            'description': ANY,
+                            'parameters': [
+                                {'in': 'path', 'name': 'username_or_id', 'required': True, 'schema': {'type': 'string'}}
+                            ],
+                            'responses': {'200': {'content': {'application/json': {}}, 'description': 'OK'}},
+                            'summary': 'Return specific user information for the given id or username.',
+                        },
                     },
                     '/browse/{path}': {
                         'get': {

@@ -28,7 +28,7 @@ try:
 except ImportError:
     from wtforms.fields.html5 import EmailField  # wtform <3
 
-from rdiffweb.controller import Controller, flash
+from rdiffweb.controller import Controller, flash, get_flashed_messages
 from rdiffweb.controller.form import CherryForm
 from rdiffweb.core.model import UserObject
 from rdiffweb.core.rdw_templating import url_for
@@ -82,7 +82,12 @@ class UserForm(CherryForm):
             validators.data_required(),
             validators.length(max=256, message=_('Username too long.')),
             validators.length(min=3, message=_('Username too short.')),
-            validators.regexp(UserObject.PATTERN_USERNAME, message=_('Must not contain any special characters.')),
+            validators.regexp(
+                UserObject.PATTERN_USERNAME,
+                message=_(
+                    'Must start with a letter and contain only letters, numbers, underscores (_), hyphens (-), or periods (.).'
+                ),
+            ),
         ],
     )
     fullname = StringField(
@@ -214,7 +219,7 @@ class UserForm(CherryForm):
 
         except Exception as e:
             userobj.rollback()
-            flash(str(e), level='warning')
+            flash(str(e), level='error')
             return False
 
         # Try to update disk quota if the human readable value changed.
@@ -255,6 +260,11 @@ class EditUserForm(UserForm):
 
 class DeleteUserForm(CherryForm):
     username = StringField(_('Username'), validators=[validators.data_required()])
+
+    def validate_username(self, field):
+        currentuser = cherrypy.request.currentuser
+        if field.data == currentuser.username:
+            raise ValidationError(_("You cannot remove your own account!"))
 
 
 @cherrypy.tools.is_admin()
@@ -298,13 +308,13 @@ class AdminUsersPage(Controller):
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
-    def edit(self, username_vpath, **kwargs):
+    def edit(self, username_or_id, **kwargs):
         """
         Show form to edit user
         """
-        user = UserObject.get_user(username_vpath)
-        if not user:
-            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username_vpath)
+        user = UserObject.get_user(username_or_id)
+        if user is None:
+            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username_or_id)
         form = EditUserForm(obj=user)
         if form.is_submitted():
             if form.validate():
@@ -330,8 +340,6 @@ class AdminUsersPage(Controller):
             user = UserObject.get_user(username)
             if not user:
                 raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
-            if username == self.app.currentuser.username:
-                raise cherrypy.HTTPError(400, _("You cannot remove your own account!"))
             try:
                 user.delete()
                 user.commit()
@@ -342,3 +350,191 @@ class AdminUsersPage(Controller):
         else:
             flash(form.error_message, level='error')
         raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
+
+
+@cherrypy.expose
+@cherrypy.tools.required_scope(scope='all,admin_read_users')
+class AdminApiUsers(Controller):
+    ROLES_MAP = {v: k for k, v in UserObject.ROLES.items()}
+
+    def _to_json(self, user_obj, detailed=False):
+        """User object as json."""
+        data = {
+            "userid": user_obj.userid,
+            "username": user_obj.username,
+            "fullname": user_obj.fullname,
+            "email": user_obj.email,
+            "lang": user_obj.lang,
+            "mfa": user_obj.mfa,
+            "role": self.ROLES_MAP.get(user_obj.role, None),
+            "report_time_range": user_obj.report_time_range,
+        }
+        if detailed:
+            data.update(
+                {
+                    "disk_usage": user_obj.disk_usage,
+                    "disk_quota": user_obj.disk_quota,
+                    "repos": [
+                        {
+                            # database fields.
+                            "name": repo_obj.name,
+                            "maxage": repo_obj.maxage,
+                            "keepdays": repo_obj.keepdays,
+                            "ignore_weekday": repo_obj.ignore_weekday,
+                            # repository fields.
+                            "display_name": repo_obj.display_name,
+                            "last_backup_date": repo_obj.last_backup_date,
+                            "status": repo_obj.status[0],
+                            "encoding": repo_obj.encoding,
+                        }
+                        for repo_obj in user_obj.repo_objs
+                    ],
+                }
+            )
+        return data
+
+    def list(self):
+        """
+        List all users.
+
+        Return a list of user information without repositories and disk quota.
+
+        **Example Response**
+
+        ```json
+        [
+            {
+                "userid": 1,
+                "username": "admin",
+                "fullname": "",
+                "email": "",
+                "lang": "",
+                "mfa": 0,
+                "role": "admin",
+                "report_time_range": 0
+            },
+            {
+                "userid": 2,
+                "username": "newuser",
+                "fullname": "New User",
+                "email": "test@example.com",
+                "lang": "fr",
+                "mfa": 1,
+                "role": "user",
+                "report_time_range": 0
+            }
+        ]
+        ```
+
+        **Fields in JSON Payload**
+
+        - `userid`: The title or name associated with the SSH key.
+        - `email`: The email address of the user.
+        - `username`: The username of the user.
+        - `fullname`: The user full name.
+        - `report_time_range`: The interval between email report sent to user in number of days.
+        - `lang` : The user prefered language.
+        - `mfa`: Multi-factor enabled (1) or disabled (0).
+        - `role`: User's role.
+
+        """
+        return [self._to_json(user_obj) for user_obj in UserObject.query.all()]
+
+    def get(self, username_or_id):
+        """
+        Return specific user information for the given id or username.
+
+        Returns detailed information for the user identified by `<userid>` or `<username>`.
+
+        **Example Response**
+
+        ```json
+        {
+          "userid": 2,
+          "username": "newuser",
+          "fullname": "New User",
+          "email": "test@example.com",
+          "lang": "fr",
+          "mfa": 1,
+          "role": "user",
+          "report_time_range": 0,
+          "repos":[],
+          "disk_quota":0,
+          "disk_usage":0
+        }
+        ```
+        """
+        user_obj = UserObject.get_user(username_or_id)
+        if user_obj is None:
+            raise cherrypy.NotFound()
+        return self._to_json(user_obj, detailed=True)
+
+    @cherrypy.tools.required_scope(scope='all,admin_write_users')
+    def delete(self, username_or_id):
+        """
+        Delete the user identified by the given username or id.
+
+        Returns status 200 OK on success.
+        """
+        user_obj = UserObject.get_user(username_or_id)
+        if user_obj is None:
+            raise cherrypy.NotFound()
+        form = DeleteUserForm(obj=user_obj)
+        if form.validate():
+            try:
+                user_obj.delete()
+                user_obj.commit()
+                return {}
+            except Exception as e:
+                user_obj.rollback()
+                raise cherrypy.HTTPError(400, str(e))
+        else:
+            raise cherrypy.HTTPError(400, form.error_message)
+
+    @cherrypy.tools.required_scope(scope='all,admin_write_users')
+    def post(self, username_or_id=None, **kwargs):
+        """
+        Create new user or update existing user.
+
+        To create a new user, the minimum is to provide a value for `username`.
+
+        **Example Body**
+
+        ```
+        {
+          "username": "newuser",
+          "fullname": "New User",
+          "email": "test@example.com",
+          "lang": "fr",
+          "mfa": 1,
+          "role": "user",
+          "report_time_range": 0,
+          "disk_quota": 0,
+          "disk_usage": 0
+        }
+        ```
+
+        Returns status 200 OK on success with user object created as Json.
+        """
+        # Query existing object for update.
+        user_obj = None
+        if username_or_id is not None:
+            user_obj = UserObject.get_user(username_or_id)
+            if user_obj is None:
+                raise cherrypy.NotFound()
+        # Validate input data.
+        form = UserForm(obj=user_obj, json=1)
+        if form.strict_validate():
+            # Create object if required.
+            if user_obj is None:
+                try:
+                    user_obj = UserObject.add_user(form.username.data)
+                except Exception as e:
+                    raise cherrypy.HTTPError(400, str(e))
+            if not form.populate_obj(user_obj):
+                raise cherrypy.HTTPError(400, str(get_flashed_messages()))
+            # Return Location and object as json.
+            cherrypy.response.headers['Location'] = url_for(cherrypy.url(base=''), str(user_obj.userid))
+            return self._to_json(user_obj)
+        else:
+            raise cherrypy.HTTPError(400, form.error_message)

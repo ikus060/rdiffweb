@@ -21,7 +21,20 @@ import string
 import sys
 
 import cherrypy
-from sqlalchemy import Column, Index, Integer, SmallInteger, String, and_, event, func, inspect, or_
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    Index,
+    Integer,
+    SmallInteger,
+    String,
+    and_,
+    event,
+    func,
+    inspect,
+    not_,
+    or_,
+)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import deferred, relationship, validates
@@ -38,7 +51,7 @@ from ._session import SessionObject
 from ._sshkey import SshKey
 from ._timestamp import Timestamp
 from ._token import Token
-from ._update import column_add, column_exists, index_exists
+from ._update import column_add, column_exists, constraint_add, constraint_exists, index_exists
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +89,7 @@ class UserObject(Base):
     # Regex pattern to be used for validation.
     PATTERN_EMAIL = r"[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
     PATTERN_FULLNAME = r"""[^!"#$%&()*+,./:;<=>?@[\]_{|}~]+$"""
-    PATTERN_USERNAME = r"[a-zA-Z0-9_.\-]+$"
+    PATTERN_USERNAME = r"^[a-zA-Z][a-zA-Z0-9_.\-]+$"
 
     userid = Column('UserID', Integer, primary_key=True)
     username = Column('Username', String, nullable=False)
@@ -117,9 +130,14 @@ class UserObject(Base):
     report_last_sent = Column('report_last_sent', Timestamp, nullable=True, default=None)
 
     @classmethod
-    def get_user(cls, user):
+    def get_user(cls, username_or_id):
         """Return a user object with username case-insensitive"""
-        return UserObject.query.filter(func.lower(UserObject.username) == user.lower()).first()
+        query = UserObject.query
+        if str(username_or_id).isdigit():
+            query = query.filter(UserObject.userid == int(username_or_id))
+        else:
+            query = query.filter(func.lower(UserObject.username) == username_or_id.lower())
+        return query.first()
 
     @classmethod
     def create_admin_user(cls, default_username, default_password):
@@ -436,6 +454,14 @@ class UserObject(Base):
 # Username should be case insensitive
 user_username_index = Index('user_username_index', func.lower(UserObject.username), unique=True)
 
+users_username_nan_ck = CheckConstraint(
+    UserObject.username.regexp_match(UserObject.PATTERN_USERNAME),
+    name="users_username_nan_ck",
+    info={
+        "description": "Make sure username are not a number (NaN) to avoid conflict when searching user by username vs userid."
+    },
+)
+
 
 @event.listens_for(Base.metadata, 'after_create', insert=True)
 def update_user_schema(target, conn, **kw):
@@ -475,17 +501,34 @@ def update_user_schema(target, conn, **kw):
             .group_by(func.lower(UserObject.username))
             .having(func.count(UserObject.username) > 1)
         ).all()
-        try:
-            user_username_index.create(bind=conn)
-        except IntegrityError:
+        if duplicate_users:
             msg = (
                 'Failure to upgrade your database to make Username case insensitive. '
                 'You must downgrade and deleted duplicate Username: '
-                '%s' % '\n'.join([str(k) for k in duplicate_users]),
+                '%s' % '\n'.join([str(k) for k in duplicate_users])
             )
             logger.error(msg)
             print(msg, file=sys.stderr)
             raise SystemExit(12)
+        user_username_index.create(bind=conn)
+
+    # Enforce username regex pattern
+    if not constraint_exists(conn, users_username_nan_ck):
+        invalid_users = (
+            UserObject.query.with_entities(UserObject.username).filter(
+                not_(UserObject.username.regexp_match(UserObject.PATTERN_USERNAME))
+            )
+        ).all()
+        if invalid_users:
+            msg = (
+                'Failure to upgrade your database to ensure that the Username does not include special characters. '
+                'You must downgrade and delete the users: '
+                '%s' % '\n'.join([str(k) for k in invalid_users])
+            )
+            logger.error(msg)
+            print(msg, file=sys.stderr)
+            raise SystemExit(12)
+        constraint_add(conn, users_username_nan_ck)
 
 
 @event.listens_for(Session, 'before_flush')

@@ -115,12 +115,45 @@ INSERT INTO sqlite_sequence VALUES('repos',3);
 COMMIT;
 """
 
+SQL_WITH_INVALID_USERNAMES = """
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE users (
+UserID integer primary key autoincrement,
+Username varchar (50) unique NOT NULL,
+Password varchar (40) NOT NULL DEFAULT "",
+UserRoot varchar (255) NOT NULL DEFAULT "",
+IsAdmin tinyint NOT NULL DEFAULT FALSE,
+UserEmail varchar (255) NOT NULL DEFAULT "",
+RestoreFormat tinyint NOT NULL DEFAULT TRUE, fullname VARCHAR, role SMALLINT);
+INSERT INTO users VALUES(1,'admin','{SSHA}eFF2vTUKbfA4qGyQlscj3Z8dtdR4Uilt','/home/root-mail',0,'',1,NULL,NULL);
+INSERT INTO users VALUES(2,'1user','{SSHA}eFF2vTUKbfA4qGyQlscj3Z8dtdR4Uilt','/home/Patrik',0,'',1,NULL,NULL);
+CREATE TABLE repos (
+RepoID integer primary key autoincrement,
+UserID int(11) NOT NULL,
+RepoPath varchar (255) NOT NULL,
+MaxAge tinyint NOT NULL DEFAULT 0, Encoding VARCHAR, keepdays VARCHAR);
+INSERT INTO repos VALUES(1,1,'test',1,NULL,NULL);
+INSERT INTO repos VALUES(2,1,'desktop',0,NULL,NULL);
+CREATE TABLE sshkeys (
+    "Fingerprint" TEXT,
+    "Key" TEXT,
+    "UserID" INTEGER NOT NULL,
+    UNIQUE ("Key")
+);
+DELETE FROM sqlite_sequence;
+INSERT INTO sqlite_sequence VALUES('users',3);
+INSERT INTO sqlite_sequence VALUES('repos',3);
+COMMIT;
+"""
+
 
 @parameterized_class(
     [
         {"name": "from_1.5.0", "init_sql": SQL_1_5_0, "success": True},
         {"name": "unknown", "init_sql": SQL_ROLE_WITHOUT_DEFAULT, "success": True},
         {"name": "with_duplicate_users", "init_sql": SQL_WITH_DUPLICATE_USERS, "success": False},
+        {"name": "with_invalid_usernames", "init_sql": SQL_WITH_INVALID_USERNAMES, "success": False},
     ]
 )
 @skipIf(os.environ.get('RDIFFWEB_TEST_DATABASE_URI'), 'custom database')

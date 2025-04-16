@@ -57,6 +57,22 @@ class ScopeField(SelectMultipleField):
                 ),
             ),
         ]
+        # Include admin scope if user is admin.
+        # This is only for display.
+        currentuser = cherrypy.request.currentuser
+        if currentuser.is_admin:
+            choices.extend(
+                [
+                    (
+                        'admin_read_users',
+                        _('Admin read all user settings - Grant read access to all users data.'),
+                    ),
+                    (
+                        'admin_write_user',
+                        _('Admin write all user settings - Grant write access to all users data.'),
+                    ),
+                ]
+            )
         super().__init__(label, choices=choices, **kwargs)
 
     def process_formdata(self, valuelist):

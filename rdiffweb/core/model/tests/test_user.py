@@ -21,6 +21,7 @@ from unittest.mock import MagicMock
 import cherrypy
 import pkg_resources
 from parameterized import parameterized, parameterized_class
+from sqlalchemy.exc import IntegrityError
 
 import rdiffweb.test
 from rdiffweb.core import authorizedkeys
@@ -495,6 +496,30 @@ class UserObjectTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         self.assertFalse(userobj.valid_user_root())
         self.assertEqual(['failed', 'failed'], [r.status[0] for r in userobj.repo_objs])
+
+    @parameterized.expand(
+        [
+            ('test1', True),
+            ('123456', False),
+            ('1foo', False),
+            ('foo bar', False),
+            ('foo@', False),
+            ('foo#', False),
+            ('foo!', False),
+        ]
+    )
+    def test_users_username_nan_ck(self, username, success):
+        # Given a username
+        # When creating the user
+        userobj = UserObject.add_user(username)
+        # Then it's working or it fail.
+        if success:
+            userobj.commit()
+        else:
+            with self.assertRaises(IntegrityError) as ctx:
+                userobj.commit()
+            UserObject.session.rollback()
+            self.assertIn('users_username_nan_ck', str(ctx.exception))
 
 
 # password: test

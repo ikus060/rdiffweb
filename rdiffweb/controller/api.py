@@ -31,6 +31,7 @@ except ImportError:
     from wtforms.fields.html5 import EmailField  # wtform <3
 
 from rdiffweb.controller.api_openapi import OpenAPI
+from rdiffweb.controller.page_admin_users import AdminApiUsers
 from rdiffweb.tools.i18n import gettext_lazy as _
 from rdiffweb.tools.i18n import list_available_locales
 
@@ -151,7 +152,6 @@ class ApiCurrentUser(Controller):
         - `disk_quota`: The quota of disk space allocated to the user.
         - `report_time_range`: The interval between email report sent to user in number of days.
         - `repos`: An array of repositories associated with the user.
-
         - `name`: The name of the repository.
         - `maxage`: Maximum age for stored backups.
         - `keepdays`: Number of days to keep backups (-1 for indefinite).
@@ -231,6 +231,7 @@ class ApiPage(Controller):
 
     currentuser = ApiCurrentUser()
     openapi_json = OpenAPI()
+    users = AdminApiUsers()
 
     def get(self):
         """

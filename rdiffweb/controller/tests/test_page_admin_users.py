@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
+from base64 import b64encode
 from unittest.mock import ANY, MagicMock
 
 import cherrypy
@@ -254,6 +256,12 @@ class AdminTest(rdiffweb.test.WebCase):
             ('http://username', False),
             ('username@test.test', False),
             ('/username/', False),
+            ('123456', False),
+            ('1foo', False),
+            ('foo bar', False),
+            ('foo@', False),
+            ('foo#', False),
+            ('foo!', False),
             # Valid
             ('username.com', True),
             ('admin_user', True),
@@ -271,7 +279,9 @@ class AdminTest(rdiffweb.test.WebCase):
         else:
             self.assertStatus(200)
             self.assertNotInBody("User added successfully.")
-            self.assertInBody("Username: Must not contain any special characters.")
+            self.assertInBody(
+                "Username: Must start with a letter and contain only letters, numbers, underscores (_), hyphens (-), or periods (.)."
+            )
 
     def test_add_user_with_empty_username(self):
         """
@@ -371,8 +381,11 @@ class AdminTest(rdiffweb.test.WebCase):
     def test_delete_our_self(self):
         # When trying to delete your self
         self._delete_user(self.USERNAME)
+        # Then user is redirected.
+        self.assertStatus(303)
+        self.getPage('/admin/users/')
         # Then and error is returned
-        self.assertStatus(400)
+        self.assertStatus(200)
         self.assertInBody("You cannot remove your own account!")
 
     def test_delete_user_admin(self):
@@ -568,3 +581,244 @@ class AdminTestWithoutQuota(rdiffweb.test.WebCase):
         # Then quota field is readonly
         self.assertStatus(200)
         self.assertInBody('<input class="form-control" disabled name="disk_quota" readonly')
+
+
+class AdminApiUsersTest(rdiffweb.test.WebCase):
+
+    auth = [("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))]
+
+    @parameterized.expand(
+        [
+            ('with_id'),
+            ('with_username'),
+        ]
+    )
+    def test_delete(self, query):
+        # Given a new user
+        user_obj = (
+            UserObject(username='newuser', fullname='New User', email='test@example.com', lang='fr', mfa=1)
+            .add()
+            .commit()
+        )
+
+        # When deleting the user
+        if query == 'with_id':
+            self.getPage(
+                f'/api/users/{user_obj.userid}',
+                headers=self.auth,
+                method='DELETE',
+            )
+        elif query == 'with_username':
+            self.getPage(
+                f'/api/users/{user_obj.username}',
+                headers=self.auth,
+                method='DELETE',
+            )
+        # Then page return with success
+        self.assertStatus('200 OK')
+
+        # Then user get deleted from database
+        self.assertIsNone(UserObject.get_user('newuser'))
+
+    @parameterized.expand(
+        [
+            ('with_id'),
+            ('with_username'),
+        ]
+    )
+    def test_get(self, query):
+        # Given a new user
+        user_obj = (
+            UserObject(username='newuser', fullname='New User', email='test@example.com', lang='fr', mfa=1)
+            .add()
+            .commit()
+        )
+
+        # When querying our user with Id.
+        if query == 'with_id':
+            data = self.getJson(
+                f'/api/users/{user_obj.userid}',
+                headers=self.auth,
+                method='GET',
+            )
+        elif query == 'with_username':
+            data = self.getJson(
+                f'/api/users/{user_obj.username}',
+                headers=self.auth,
+                method='GET',
+            )
+        # Then page return with success with sshkey
+        self.assertStatus('200 OK')
+        self.assertEqual(
+            data,
+            {
+                'userid': 2,
+                'username': 'newuser',
+                'fullname': 'New User',
+                'email': 'test@example.com',
+                'lang': 'fr',
+                'mfa': 1,
+                'role': 'user',
+                'report_time_range': 0,
+                'repos': [],
+                'disk_quota': 0,
+                'disk_usage': 0,
+            },
+        )
+
+    def test_get_invalid(self):
+        # When querying invalid user
+        self.getPage(
+            '/api/users/invalid',
+            headers=self.auth,
+            method='GET',
+        )
+        # Then page return NotFound
+        self.assertStatus(404)
+
+    def test_list(self):
+        # Given a new user
+        UserObject(username='newuser', fullname='New User', email='test@example.com', lang='fr', mfa=1).add().commit()
+
+        # When querying the list of user.
+        data = self.getJson(
+            '/api/users',
+            headers=self.auth,
+            method='GET',
+        )
+        # Then page return with success with sshkey
+        self.assertStatus('200 OK')
+        self.assertEqual(
+            data,
+            [
+                {
+                    'userid': 1,
+                    'username': 'admin',
+                    'fullname': '',
+                    'email': '',
+                    'lang': '',
+                    'mfa': 0,
+                    'role': 'admin',
+                    'report_time_range': 0,
+                },
+                {
+                    'userid': 2,
+                    'username': 'newuser',
+                    'fullname': 'New User',
+                    'email': 'test@example.com',
+                    'lang': 'fr',
+                    'mfa': 1,
+                    'role': 'user',
+                    'report_time_range': 0,
+                },
+            ],
+        )
+
+    @parameterized.expand(
+        [
+            (
+                'as_json',
+                [('Content-Type', 'application/json')],
+            ),
+            (
+                'as_form',
+                [],
+            ),  # Default to 'application/x-www-form-urlencoded'
+        ]
+    )
+    def test_post(self, unused, content_type):
+        # When creating a user
+        data = self.getJson(
+            '/api/users',
+            headers=self.auth + content_type,
+            method='POST',
+            body={'username': 'newuser', 'fullname': "My Fullname"},
+        )
+        # Then user object is returned
+        self.assertEqual("My Fullname", data['fullname'])
+        # Then user obj is created
+        self.assertTrue(UserObject.query.filter(UserObject.userid == data['userid']))
+        # Then location of object is returned
+        self.assertHeaderItemValue('Location', f'{self.baseurl}/api/users/{data["userid"]}')
+
+    def test_post_duplicate(self):
+        # Given a new user
+        UserObject(username='newuser', fullname='New User', email='test@example.com', lang='fr', mfa=1).add().commit()
+
+        # When creating a user with existing username
+        self.getPage(
+            '/api/users',
+            headers=self.auth,
+            method='POST',
+            body={'username': 'newuser', 'fullname': "My duplicate user"},
+        )
+        # Then page return error
+        self.assertStatus(400)
+        # Check if exception return json data.
+        self.assertEqual(
+            json.loads(self.body.decode('utf8')),
+            {"message": "User newuser already exists.", "status": "400 Bad Request"},
+        )
+
+    @parameterized.expand(
+        [
+            ('all', True),
+            ('admin_write_users', True),
+            ('admin_read_users', False),
+            (None, False),
+        ]
+    )
+    def test_post_with_access_token_scope(self, scope, success):
+        # Given a user with an access token
+        user = UserObject.get_user('admin')
+        token = user.add_access_token(name='test', scope=scope)
+        user.commit()
+        headers = [("Authorization", "Basic " + b64encode(f"admin:{token}".encode('ascii')).decode('ascii'))]
+        # When adding a ssh key
+        self.getPage(
+            '/api/users',
+            headers=headers,
+            method='POST',
+            body={'username': 'newuser', 'fullname': "My new user"},
+        )
+        # Then sh get added or permissions is refused
+        if success:
+            self.assertStatus(200)
+            self.assertIsNotNone(UserObject.get_user('newuser'))
+        else:
+            self.assertStatus(403)
+            self.assertIsNone(UserObject.get_user('newuser'))
+
+    @parameterized.expand(
+        [
+            ('with_id'),
+            ('with_username'),
+        ]
+    )
+    def test_post_update(self, query):
+        # Given a new user
+        user_obj = (
+            UserObject(username='newuser', fullname='New User', email='test@example.com', lang='fr', mfa=1)
+            .add()
+            .commit()
+        )
+
+        # When deleting the user
+        if query == 'with_id':
+            data = self.getJson(
+                f'/api/users/{user_obj.userid}',
+                headers=self.auth,
+                method='POST',
+                body={'fullname': "Updated fullname"},
+            )
+        elif query == 'with_username':
+            data = self.getJson(
+                f'/api/users/{user_obj.username}',
+                headers=self.auth,
+                method='POST',
+                body={'fullname': "Updated fullname"},
+            )
+        # Then user get update
+        user_obj.expire()
+        self.assertEqual("Updated fullname", user_obj.fullname)
+        self.assertEqual("Updated fullname", data['fullname'])
