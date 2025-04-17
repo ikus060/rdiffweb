@@ -27,6 +27,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import deferred, relationship, validates
 from zxcvbn import zxcvbn
 
+import rdiffweb.core.model._regexp  # noqa
 import rdiffweb.plugins.db  # noqa
 from rdiffweb.core import authorizedkeys
 from rdiffweb.core.passwd import check_password, hash_password

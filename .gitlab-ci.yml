@@ -72,9 +72,9 @@ selenium:
 
 rdiff-backup-latest:
   <<: *tox
-  image: python:3.9-bullseye
+  image: python:3.9-bookworm
   variables:
-    TOXENV: bullseye
+    TOXENV: bookworm
   allow_failure: true
   before_script:
     - apt-get update
@@ -88,8 +88,8 @@ postgresql-12:
   services:
     - postgres:12.2-alpine
   variables:
-    TOXENV: bullseye
-    IMAGE: python:3.9-bullseye
+    TOXENV: bookworm
+    IMAGE: python:3.9-bookworm
     RDIFFWEB_TEST_DATABASE_URI: "postgresql://admin@postgres/test"
     POSTGRES_DB: test
     POSTGRES_USER: admin

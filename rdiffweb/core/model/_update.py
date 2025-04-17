@@ -17,8 +17,16 @@
 
 import time
 
+import sqlalchemy
 from sqlalchemy import select, text
 from sqlalchemy.sql import ddl
+
+# With SQLAlchemy<=1.4, the select() function signature is different
+if sqlalchemy.__version__.startswith("1.3"):
+
+    def select(*columns, orig_select=select):
+        return orig_select(columns=columns)
+
 
 """
 Collection of utility function to update database schema.
