@@ -98,11 +98,11 @@ case "$1" in
         chown minarca:minarca "$MINARCA_HOME"
         chmod 0750 "$MINARCA_HOME"
         # Enable user namespace (Disable debian hardening)
-        if [ -f /proc/sys/kernel/unprivileged_userns_clone ]; then
-          echo 'kernel.unprivileged_userns_clone=1' > /etc/sysctl.d/00-minarca-local-userns.conf
-        fi
         if [ -w /proc/sys/kernel/unprivileged_userns_clone ]; then
           echo 1 > /proc/sys/kernel/unprivileged_userns_clone
+        fi
+        if [ -w /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]; then
+          echo 0 > /proc/sys/kernel/apparmor_restrict_unprivileged_userns
         fi
         # Add APT repository if not configured
         if [ -e "$APT_SOURCESDIR/minarca.list" ]; then

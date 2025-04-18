@@ -101,6 +101,10 @@ For more information, visit the [Minarca Website](https://minarca.org).
   * Fix changes dates reported to exclude '.missing' entries
   * Fix display of filename containing `<` or `>` in file statistics view
 
+## 6.0.6 (2025-04-18)
+
+* Fix to disable Ubuntu hardening for unpriviledge user namespace.
+
 ## 6.0.5 (2025-02-20)
 
 * Bump rdiffweb version to 2.9.7 to fix admin user creation minarca#293
