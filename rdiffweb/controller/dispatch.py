@@ -21,29 +21,11 @@ Default page handler
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
 
-
 import cherrypy
 
 import rdiffweb.tools.auth_form  # noqa
 import rdiffweb.tools.auth_mfa  # noqa
 import rdiffweb.tools.ratelimit  # noqa
-from rdiffweb.core.rdw_helpers import unquote_url
-
-
-def convert_path():
-    """
-    A tool to convert vpath to path once the handler was found.
-
-    Used to merge the segment of URI into a single parameter denoting the
-    repository path.
-    """
-    handler = cherrypy.serving.request.handler
-    if hasattr(handler, 'kwargs'):
-        handler.kwargs = {'path': b"/".join([unquote_url(segment) for segment in handler.args])}
-        handler.args = []
-
-
-cherrypy.tools.poppath = cherrypy.Tool('on_start_resource', convert_path, priority=15)
 
 
 def staticdir(path, doc=''):

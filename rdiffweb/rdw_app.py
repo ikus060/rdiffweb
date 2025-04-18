@@ -42,6 +42,7 @@ import rdiffweb.tools.currentuser
 import rdiffweb.tools.enrich_session
 import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
+import rdiffweb.tools.poppath
 import rdiffweb.tools.proxy
 import rdiffweb.tools.ratelimit
 import rdiffweb.tools.required_scope
@@ -58,11 +59,9 @@ from rdiffweb.controller.page_locations import LocationsPage
 from rdiffweb.controller.page_login import LoginPage, LogoutPage
 from rdiffweb.controller.page_logs import LogsPage
 from rdiffweb.controller.page_mfa import MfaPage
-from rdiffweb.controller.page_pref_sshkeys import ApiSshKeys
-from rdiffweb.controller.page_pref_tokens import ApiTokens
 from rdiffweb.controller.page_prefs import PreferencesPage
 from rdiffweb.controller.page_restore import RestorePage
-from rdiffweb.controller.page_settings import ApiRepos, SettingsPage
+from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_stats import StatsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
@@ -130,9 +129,6 @@ class Root(LocationsPage):
         self.prefs = PreferencesPage()
         self.settings = SettingsPage()
         self.api = ApiPage()
-        self.api.currentuser.sshkeys = ApiSshKeys()
-        self.api.currentuser.tokens = ApiTokens()
-        self.api.currentuser.repos = ApiRepos()
         self.graphs = GraphsPage()
         self.logs = LogsPage()
 
