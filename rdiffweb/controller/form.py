@@ -74,9 +74,11 @@ class CherryForm(Form):
         Special validation to verify if all the field submited exists in this form.
         Raise an error if some fields are unknown.
         """
+        form_errors = self.form_errors if hasattr(self, 'form_errors') else self.errors.setdefault(None, [])
         for key in cherrypy.request.params.keys():
             if key not in self:
-                raise cherrypy.HTTPError(400, "unsuported field: %s" % key)
+                form_errors.append("unsuported field: %s" % key)
+                return False
         return self.validate()
 
     def validate_on_submit(self):
@@ -96,7 +98,7 @@ class CherryForm(Form):
                 # Field name
                 if field in self:
                     msg += "%s: " % self[field].label.text
-                else:
+                elif field:
                     msg += "%s: " % field
                 for m in messages:
                     msg += m
