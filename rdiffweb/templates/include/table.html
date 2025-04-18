@@ -1,4 +1,4 @@
-{% macro table(data, columns=[], order=[], empty_message=None, info_message=None, searching=True, buttons=[], paging=False, pageLength=5, show_header=True) %}
+{% macro table(data, columns=[], order=[], empty_message=None, info_message=None, searching=True, buttons=[], paging=False, pageLength=5, show_header=True, state_save=True) %}
   {% set language = {
   "aria": {
   "sortAscending": _('activate to sort column ascending'),
@@ -32,6 +32,7 @@
          data-paging="{{ paging | tojson }}"
          data-dom="{{ dom_cfg }}"
          data-responsive="true"
-         {% if paging %}data-page-length="{{ pageLength | tojson }}" data-length-change="false"{% endif %}>
+         {% if paging %}data-page-length="{{ pageLength | tojson }}" data-length-change="false"{% endif %}
+         data-state-save="{{ state_save | tojson }}">
   </table>
 {% endmacro %}
