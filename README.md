@@ -88,6 +88,7 @@ For more information, visit the [Minarca Website](https://minarca.org).
 * Build binary package with `pyinstaller` instead of `dpkg` to improve portability to older Debian based distribution by freezing all dependencies.
 * Migrate from `setup.py` to `pyproject.toml`
 * Add support for Debian Trixie
+* Add support for Ubuntu Plucky 25.04
 * Bump rdiffweb version to 2.10.0b1
   * Adjusted table filter button labels for better clarity
   * Removed Ubuntu Lunar and UbuntuMantic support due to end-of-life
@@ -100,6 +101,10 @@ For more information, visit the [Minarca Website](https://minarca.org).
   * Use forking instead of subprocess to restore files
   * Fix changes dates reported to exclude '.missing' entries
   * Fix display of filename containing `<` or `>` in file statistics view
+
+## 6.0.6 (2025-04-18)
+
+* Fix to disable Ubuntu hardening for unpriviledge user namespace.
 
 ## 6.0.5 (2025-02-20)
 
