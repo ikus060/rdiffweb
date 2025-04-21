@@ -19,6 +19,7 @@ from rdiffweb.core import authorizedkeys
 from rdiffweb.core.authorizedkeys import AuthorizedKey
 from rdiffweb.core.config import Option
 from rdiffweb.core.model import UserObject
+from sqlalchemy.exc import OperationalError, ProgrammingError
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -80,12 +81,18 @@ class MinarcaPlugin(SimplePlugin):
         # Monkey patch get_log_file
         self._orig_get_log_files = self.app.root.admin.logs._get_log_files
         self.app.root.admin.logs._get_log_files = self._get_log_files
+
         # On startup Upgrade the authorized_keys in case the configuration
         # changed.
         try:
             self._update_authorized_keys()
-        except Exception:
-            logger.error("fail to update authorized_keys files on startup", exc_info=1)
+        except (ProgrammingError, OperationalError):
+            # Raised, when UserObject table doesn't exists on first start.
+            # It's not an issue as it will get called indirectly when admin user get created.
+            logger.warning("fail to update authorized_keys files on startup", exc_info=1)
+
+    # Subscribe right before rdiffweb create database and admin user.
+    start.priority = 249
 
     def stop(self):
         self.bus.log('Stop Minarca plugin')
