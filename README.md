@@ -145,6 +145,7 @@ We are passionate about developing and maintaining this open-source project to m
 * Added an intermediate loading page when restoring a file or folder (#322).
 * Renamed the Admin repository view page title.
 * Remove wsgi entrypoint that was never officially supported.
+* Lookup for `rdiff-backup` and `rdiff-backup-delete` in current executable location.
 
 ## 2.9.7 (2025-02-19)
 

@@ -67,7 +67,10 @@ def find_rdiff_backup():
     """
     Lookup for `rdiff-backup` executable. Raise an exception if not found.
     """
-    cmd = shutil.which('rdiff-backup')
+    # Add current executable dirname to search path
+    path = os.environ.get('PATH', os.defpath)
+    path = os.path.dirname(sys.executable) + os.pathsep + path
+    cmd = shutil.which('rdiff-backup', path=path)
     if not cmd:
         raise FileNotFoundError("can't find `rdiff-backup` executable in PATH: %s" % os.environ['PATH'])
     return os.fsencode(cmd)
@@ -77,7 +80,10 @@ def find_rdiff_backup_delete():
     """
     Lookup for `rdiff-backup-delete` executable. Raise an exception if not found.
     """
-    cmd = shutil.which('rdiff-backup-delete')
+    # Add current executable dirname to search path
+    path = os.environ.get('PATH', os.defpath)
+    path = os.path.dirname(sys.executable) + os.pathsep + path
+    cmd = shutil.which('rdiff-backup-delete', path=path)
     if not cmd:
         raise FileNotFoundError(
             "can't find `rdiff-backup-delete` executable in PATH: %s, make sure you have rdiff-backup >= 2.0.1 installed"
