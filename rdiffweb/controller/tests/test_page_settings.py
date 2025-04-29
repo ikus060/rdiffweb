@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # rdiffweb, A web interface to rdiff-backup repositories
 # Copyright (C) 2012-2025 rdiffweb contributors
 #

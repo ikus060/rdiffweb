@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # udb, A web interface to manage IT network
 # Copyright (C) 2025 IKUS Software inc.
 #

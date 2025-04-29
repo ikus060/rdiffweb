@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Scheduler plugins for Cherrypy
 # Copyright (C) 2025 IKUS Software
 #

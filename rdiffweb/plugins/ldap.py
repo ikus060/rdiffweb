@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # LDAP Plugins for cherrypy
 # Copyright (C) 2025 IKUS Software
 #

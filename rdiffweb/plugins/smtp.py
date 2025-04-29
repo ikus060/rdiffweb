@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SMTP Plugins for cherrypy
 # Copyright (C) 2025 IKUS Software
 #
