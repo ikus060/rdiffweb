@@ -12,7 +12,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 Module is responsible to restore rdiff-backup repository into an archive in a
 transparent way to restore and archive at the same time allowing creation of the
