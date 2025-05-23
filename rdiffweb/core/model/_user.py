@@ -482,14 +482,21 @@ def update_user_schema(target, conn, **kw):
     # Add user's mfa column
     if not column_exists(conn, UserObject.mfa):
         column_add(conn, UserObject.mfa)
+    else:
+        UserObject.query.filter(UserObject.mfa.is_(None)).update({UserObject.mfa: UserObject.DISABLED_MFA})
 
     # Add user's lang column
     if not column_exists(conn, UserObject.lang):
         column_add(conn, UserObject.lang)
+    else:
+        UserObject.query.filter(UserObject.lang.is_(None)).update({UserObject.lang: ""})
 
     # Add user's report column
     if not column_exists(conn, UserObject.report_time_range):
         column_add(conn, UserObject.report_time_range)
+    else:
+        UserObject.query.filter(UserObject.report_time_range.is_(None)).update({UserObject.report_time_range: 0})
+
     if not column_exists(conn, UserObject.report_last_sent):
         column_add(conn, UserObject.report_last_sent)
 

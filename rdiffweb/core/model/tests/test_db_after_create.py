@@ -146,6 +146,39 @@ INSERT INTO sqlite_sequence VALUES('repos',3);
 COMMIT;
 """
 
+# Some database have been created with null values
+# Recent database enforce NOT NULL constraints.
+SQL_WITH_NULL_FIELDS = """
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE users (
+UserID integer primary key autoincrement,
+Username varchar (50) unique NOT NULL,
+Password varchar (40) NOT NULL DEFAULT "",
+UserRoot varchar (255) NOT NULL DEFAULT "",
+IsAdmin tinyint NOT NULL DEFAULT FALSE,
+UserEmail varchar (255) NOT NULL DEFAULT "",
+RestoreFormat tinyint NOT NULL DEFAULT TRUE, role tinyint NOT NULL DEFAULT "10", fullname VARCHAR, mfa SMALLINT, lang VARCHAR, report_time_range SMALLINT, report_last_sent DATETIME);
+INSERT INTO "main"."users" ("UserID", "Username", "Password", "UserRoot", "IsAdmin", "UserEmail", "RestoreFormat", "role", "fullname", "mfa", "lang", "report_time_range", "report_last_sent") VALUES ('1', 'admin', '{SSHA}eFF2vTUKbfA4qGyQlscj3Z8dtdR4Uilt', '/backups/admin', '0', 'info@ikus-soft.com', 'TRUE', '10', NULL, NULL, NULL, NULL, NULL);
+CREATE TABLE repos (
+RepoID integer primary key autoincrement,
+UserID int(11) NOT NULL,
+RepoPath varchar (255) NOT NULL,
+MaxAge tinyint NOT NULL DEFAULT 0, Encoding VARCHAR, keepdays VARCHAR);
+INSERT INTO repos VALUES(1,1,'test',1,NULL,NULL);
+INSERT INTO repos VALUES(2,1,'desktop',0,NULL,NULL);
+CREATE TABLE sshkeys (
+    "Fingerprint" TEXT,
+    "Key" TEXT,
+    "UserID" INTEGER NOT NULL,
+    UNIQUE ("Key")
+);
+DELETE FROM sqlite_sequence;
+INSERT INTO sqlite_sequence VALUES('users',3);
+INSERT INTO sqlite_sequence VALUES('repos',3);
+COMMIT;
+"""
+
 
 @parameterized_class(
     [
@@ -153,6 +186,7 @@ COMMIT;
         {"name": "unknown", "init_sql": SQL_ROLE_WITHOUT_DEFAULT, "success": True},
         {"name": "with_duplicate_users", "init_sql": SQL_WITH_DUPLICATE_USERS, "success": False},
         {"name": "with_invalid_usernames", "init_sql": SQL_WITH_INVALID_USERNAMES, "success": False},
+        {"name": "with_null_fields", "init_sql": SQL_WITH_NULL_FIELDS, "success": True},
     ]
 )
 @skipIf(os.environ.get('RDIFFWEB_TEST_DATABASE_URI'), 'custom database')
