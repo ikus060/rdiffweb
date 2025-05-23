@@ -89,7 +89,7 @@ For more information, visit the [Minarca Website](https://minarca.org).
 * Migrate from `setup.py` to `pyproject.toml`
 * Add support for Debian Trixie
 * Add support for Ubuntu Plucky 25.04
-* Bump rdiffweb version to 2.10.0b1
+* Bump rdiffweb version to v2.10.3b1
   * Adjusted table filter button labels for better clarity
   * Removed Ubuntu Lunar and UbuntuMantic support due to end-of-life
   * Migrated project configuration to pyproject.toml (#281)
