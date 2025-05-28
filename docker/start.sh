@@ -67,7 +67,7 @@ echo "Starting OpenSSH service..."
 
 # Start the Minarca service
 echo "Starting Minarca service..."
-su minarca /opt/minarca-server/minarca-server "$@" &
+su -c - minarca /opt/minarca-server/minarca-server "$@" &
 
 # Get the PID of the Python service
 PYTHON_PID=$!

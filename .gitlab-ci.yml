@@ -278,3 +278,18 @@ e2e-test:win32:
   stage: e2e-test
   tags:
   - windows
+
+e2e-test:docker:
+  stage: e2e-test
+  needs:
+    - pyinstaller
+    - upload:docker
+  services:
+    - docker:dind
+  script:
+    - export PACKAGE_VERSION=$(ls -1 dist/minarca-server_*_amd64.deb | cut -d '_' -f 2)
+    - export IMAGE_TAG=${PACKAGE_VERSION//+/-}
+    - docker run --privileged -d --name minarca -p 8080:8080 ikus060/minarca-server:$IMAGE_TAG
+    - sleep 5
+    - docker ps
+    - timeout 60 sh -c 'until wget --spider http://docker:8080; do sleep 1; done'
