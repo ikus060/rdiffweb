@@ -40,7 +40,7 @@ docker run -d \
   ikus060/minarca-server
 ```
 
-### Docker Command Breakdown:
+### Docker Command Breakdown
 
 - `-p 8080:8080`: Exposes port 8080 on your host machine for the Minarca web interface.
 - `-p 22:22`: Exposes port 2222 on your host machine for SSH access by Minarca Agents.
@@ -77,13 +77,48 @@ services:
       MINARCA_MINARCA_REMOTE_HOST: localhost:2222
 ```
 
-### Notes:
+**Notes**  
 
 - **MINARCA_EXTERNAL_URL**: This environment variable is optional. It should be set if you are using a reverse proxy to handle connections to the Minarca Server on port 8080.
 - **MINARCA_MINARCA_REMOTE_HOST**: This environment variable is also optional. Set it only if the SSH port is not the default port 22, which is commonly used by the host system.
 
 By following these instructions, you can have Minarca Server up and running with minimal configuration, ready to manage your backup needs effectively.
 
-## Accessing the Minarca Server
+**Accessing the Minarca Server**  
 
 Once the container is running, you can access the Minarca web interface by navigating to the external URL you defined in the `MINARCA_EXTERNAL_URL` environment variable (e.g., https://minarca.mycompany.com). From there, you can monitor backups and more.
+
+### Running Minarca Server With PostgreSQL
+
+If you prefer using PostgreSQL instead of SQLite database, here's a sample `docker-compose.yml` file:
+
+```yaml
+services:
+  minarca-server:
+    image: ikus060/minarca-server:6.1.0b3.dev5-g29def11
+    ports:
+      - "8080:8080"
+      - "2222:22"
+    volumes:
+      # Location of the backups
+      - ./backups:/backups
+      # Configuration file and local database
+      - ./conf:/etc/minarca
+      # Application logs
+      - ./logs:/var/log/minarca
+    restart: always
+    privileged: true
+    environment:
+      MINARCA_DATABASE_URI: postgresql://minarca:changeme@db/minarca
+      MINARCA_BRAND_HEADER_NAME: Test Backup Server
+      # Define the URL to be used by users to connect to this container port 8080 running the webserver.
+      #MINARCA_EXTERNAL_URL: https://minarca.mycompagny.com
+      # Define the hostname and ip address to be used by Minarca Agent to connect to this container on port 2222 running SSH Server.
+      MINARCA_MINARCA_REMOTE_HOST: localhost:2222
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_PASSWORD=changeme
+      - POSTGRES_USER=minarca
+      - POSTGRES_DB=minarca
+```
