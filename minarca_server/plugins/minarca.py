@@ -81,11 +81,13 @@ class MinarcaPlugin(SimplePlugin):
         # On startup Upgrade the authorized_keys in case the configuration
         # changed.
         try:
-            self._update_authorized_keys()
+            UserObject.query.count()
         except (ProgrammingError, OperationalError):
             # Raised, when UserObject table doesn't exists on first start.
             # It's not an issue as it will get called indirectly when admin user get created.
-            logger.warning("fail to update authorized_keys files on startup", exc_info=1)
+            UserObject.session.rollback()
+        else:
+            self._update_authorized_keys()
 
     # Subscribe right before rdiffweb create database and admin user.
     start.priority = 249

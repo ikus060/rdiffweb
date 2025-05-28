@@ -36,6 +36,9 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+postgresql = [
+    "psycopg2-binary",
+]
 test = [
     "html5lib",
     "parameterized",
