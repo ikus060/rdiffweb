@@ -15,12 +15,28 @@
   <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="text-center">
       {% if download_url %}
-        <p class="h2 mt-3">
-          <i class="text-success fa fa-check-circle" aria-hidden="true"></i>
+        <p id="download-pending" class="h2 mt-3">
+          <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
           {% trans %}Your download will start shortly...{% endtrans %}
+        </p>
+        <p id="download-started" class="h2 mt-3 d-none">
+          <i class="text-success fa fa-check-circle" aria-hidden="true"></i>
+          {% trans %}Your download has started.{% endtrans %}
         </p>
         <p>{% trans %}If the download doesn't start automatically, please click the link below:{% endtrans %}</p>
         <a href="{{ download_url }}" class="btn btn-secondary mt-3">{% trans %}Download Now{% endtrans %}</a>
+        <script>
+          /* The following is used to detect when the download start to stop the animation. */
+          document.cookie = "downloadStarted=0";
+          const loop = setInterval(() => {
+            if (document.cookie.includes("downloadStarted=1")) {  
+              console.log("Download started (server confirmed via cookie)");
+              clearInterval(loop);
+              document.getElementById("download-pending").classList.add("d-none");
+              document.getElementById("download-started").classList.remove("d-none");
+            }
+          }, 250);
+        </script>
       {% else %}
         <p class="h2 mt-3">
           <i class="text-warning fa fa-exclamation-triangle" aria-hidden="true"></i>

@@ -156,5 +156,9 @@ class RestorePage(Controller):
         content_type = _content_type(filename)
         cherrypy.response.headers['Content-Type'] = content_type
 
+        # Set-Cookie: downloadStarted=1
+        # To detect download in restore page.
+        cherrypy.response.cookie['downloadStarted'] = 1
+
         # Stream the data.
         return _file_generator(fileobj)
