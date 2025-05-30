@@ -28,6 +28,10 @@ license = pkg.read_text('LICENSE')
 pkg_info = message_from_string(pkg.read_text('PKG-INFO') or pkg.read_text('METADATA'))
 block_cipher = None
 
+# Include cheroot SSL for https support
+hiddenimports=[]
+hiddenimports.extend(collect_submodules('cheroot.ssl'))
+
 # Include theme resources and locales
 datas = []
 datas.extend(collect_data_files('rdiffweb'))
@@ -43,6 +47,7 @@ executables = [("minarca-server", minarca_server_pkg / 'main.py'), ("minarca-she
 for exe_name, script in executables:
     a = Analysis(
         [script],
+        hiddenimports=hiddenimports,
         datas=datas,
         win_no_prefer_redirects=False,
         win_private_assemblies=False,
