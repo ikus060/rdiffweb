@@ -82,25 +82,83 @@ For more information, visit the [Minarca Website](https://minarca.org).
 
 # Changelog
 
-## Next Release
+## 6.1.0 (2025-06-13)
 
-* Minimum required version of libc version 2.28
-* Build binary package with `pyinstaller` instead of `dpkg` to improve portability to older Debian based distribution by freezing all dependencies.
-* Migrate from `setup.py` to `pyproject.toml`
+**New Features**
+
 * Add support for Debian Trixie
 * Add support for Ubuntu Plucky 25.04
-* Bump rdiffweb version to v2.10.3b1
-  * Adjusted table filter button labels for better clarity
-  * Removed Ubuntu Lunar and UbuntuMantic support due to end-of-life
-  * Migrated project configuration to pyproject.toml (#281)
-  * Added keepdays and maxage display in admin repos view (#310)
-  * Improved translation loading with caching
-  * Renamed "Backup Log" and "Restore Log" labels for clarity (#316)
-  * Enhanced backup inactivity email notifications for better clarity (#312)
-  * Add pytz as dependency
-  * Use forking instead of subprocess to restore files
-  * Fix changes dates reported to exclude '.missing' entries
-  * Fix display of filename containing `<` or `>` in file statistics view
+* Provide Docker Image (#7)
+
+**Improvements**
+
+* Build binary package with PyInstaller instead of DPKG to improve portability to older Debian based distributions by freezing all dependencies.
+* Optimize PyInstaller packaging
+    * Change implementation of spec file to improve maintainability
+    * Disable use of archive to reduce package size
+    * Move symlink for rdiff-backup & rdiff-backup-delete
+* Disable Python warning in runtime
+* Disable Ubuntu hardening `apparmor_restrict_unprivileged_userns`
+* Add `--no-install-recommends` in Dockerfile
+
+**Bug Fixes**
+
+* Add GitLab CI/CD test for docker image minarca#312
+* Fix `/api/minarca` entrypoint
+* Add documentation to the endpoint
+* Add OpenAPI test
+* Explicitly return error when jail fail
+* Fix version check in CI/CD pipeline
+* Fix license badge in README
+* Fix startup with PostgreSQL when table doesn't exist
+
+**Internal Changes**
+
+* Minimum required version of libc version 2.28
+* Migrate from setup.py to pyproject.toml
+* Update Docker documentation for PostgreSQL
+* Removing `# -*- coding: utf-8 -*-` header
+* Update copyright year to 2025
+* Add missing copyright
+* Add check to tox.ini to verify copyright
+* Remove apt install from CI/CD build
+* Bump Python version to 3.12 (minarca#297)
+* Remove dependencies on libxcb1
+* Include SSL dependencies for HTTPS
+* Include required dependencies for PostgreSQL
+
+**rdiffweb-Specific Changes**
+
+* Upgrade rdiffweb to version 2.10.4
+
+* **New Features:**
+
+    * Added Swagger documentation for the Rdiffweb API (#325).
+    * Added keepdays and maxage display in the admin repositories view (#310).
+    * Added an intermediate loading page when restoring a file or folder (#322).
+
+* **Improvements:**
+
+    * Adjusted filter button labels for better clarity.
+    * Improved translation loading with caching.
+    * Renamed "Backup Log" and "Restore Log" labels for better clarity (#316).
+    * Enhanced backup inactivity email notifications for better clarity (#312).
+    * Adjusted quota settings to align with the nearest block size, preventing the "Setting user's quota is not supported" error.
+    * Renamed the Admin repository view page title.
+
+* **Bug Fixes:**
+
+    * Fixed reported change dates to exclude .missing entries.
+    * Fixed display of filenames containing < or > in the file statistics view.
+    * Fix database schema upgrade with null mfa, lang or report_time_range.
+
+* **Internal/Under-the-Hood Changes:**
+
+    * Updated Debian packaging to conform to Debian packaging rules.
+    * Migrated project configuration to pyproject.toml (#281).
+    * Used forking instead of subprocess to restore files.
+    * Remove wsgi entrypoint that was never officially supported.
+    * Lookup for rdiff-backup and rdiff-backup-delete in current executable location.
 
 ## 6.0.6 (2025-04-18)
 
