@@ -128,25 +128,29 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
-# Next Release
+# 2.10.4 (2025-06-13)
 
-* Updated Debian packaging to conform to Debian packaging rules.
-* Adjusted filter button labels for better clarity.
-* Migrated project configuration to `pyproject.toml` (#281).
-* Added `keepdays` and `maxage` display in the admin repositories view (#310).
-* Improved translation loading with caching.
-* Renamed "Backup Log" and "Restore Log" labels for better clarity (#316).
-* Enhanced backup inactivity email notifications for better clarity (#312).
-* Used forking instead of subprocess to restore files.
-* Fixed reported change dates to exclude `.missing` entries.
-* Fixed display of filenames containing `<` or `>` in the file statistics view.
-* Added Swagger documentation for the Rdiffweb API (#325).
-* Adjusted quota settings to align with the nearest block size, preventing the "Setting user's quota is not supported" error.
-* Added an intermediate loading page when restoring a file or folder (#322).
-* Renamed the Admin repository view page title.
-* Remove wsgi entrypoint that was never officially supported.
-* Lookup for `rdiff-backup` and `rdiff-backup-delete` in current executable location.
-* Fix database schema upgrade with null mfa, lang or report_time_range.
+* **New Features:**
+    * Added Swagger documentation for the Rdiffweb API (#325).
+    * Added keepdays and maxage display in the admin repositories view (#310).
+    * Added an intermediate loading page when restoring a file or folder (#322).
+* **Improvements:**
+    * Adjusted filter button labels for better clarity.
+    * Improved translation loading with caching.
+    * Renamed "Backup Log" and "Restore Log" labels for better clarity (#316).
+    * Enhanced backup inactivity email notifications for better clarity (#312).
+    * Adjusted quota settings to align with the nearest block size, preventing the "Setting user's quota is not supported" error.
+    * Renamed the Admin repository view page title.
+* **Bug Fixes:**
+    * Fixed reported change dates to exclude .missing entries.
+    * Fixed display of filenames containing < or > in the file statistics view.
+    * Fix database schema upgrade with null mfa, lang or report_time_range.
+* **Internal/Under-the-Hood Changes:**
+    * Updated Debian packaging to conform to Debian packaging rules.
+    * Migrated project configuration to pyproject.toml (#281).
+    * Used forking instead of subprocess to restore files.
+    * Remove wsgi entrypoint that was never officially supported.
+    * Lookup for rdiff-backup and rdiff-backup-delete in current executable location.
 
 ## 2.9.7 (2025-02-19)
 
