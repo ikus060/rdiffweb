@@ -82,6 +82,10 @@ For more information, visit the [Minarca Website](https://minarca.org).
 
 # Changelog
 
+## 6.1.1 (2025-06-18)
+
+* Mark `/etc/minarca/minarca-server.conf` as config file to enable Debian version conflict checks during upgrades.
+
 ## 6.1.0 (2025-06-13)
 
 **New Features**
