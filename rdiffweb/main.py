@@ -72,6 +72,8 @@ def _setup_logging(log_file, log_access_file, level):
     # Configure root logger
     logger = logging.getLogger('')
     logger.level = logging.getLevelName(level)
+    # Capture warnings
+    logging.captureWarnings(True)
     if log_file:
         print("continue logging to %s" % log_file)
         default_handler = logging.handlers.RotatingFileHandler(log_file, maxBytes=10485760, backupCount=20)
