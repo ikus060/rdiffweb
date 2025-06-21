@@ -94,7 +94,7 @@ debbuild(
     data_src=[
         ('/etc/minarca/minarca-server.conf', join(SPECPATH, 'minarca-server.conf')),
         ('/etc/minarca/conf.d/placeholder', join(SPECPATH, 'placeholder')),
-        ('/etc/sysctl.d/00-minarca-server-userns.conf', join(SPECPATH, '00-minarca-server-userns.conf')),
+        ('/etc/sysctl.d/10-minarca-server-userns.conf', join(SPECPATH, '10-minarca-server-userns.conf')),
         ('/lib/systemd/system/minarca-server.service', join(SPECPATH, 'minarca-server.service')),
         ('/opt/minarca-server/share/minarca.ico', join(minarca_server_pkg, 'minarca.ico')),
         ('/opt/minarca-server/share/minarca_logo.svg', join(minarca_server_pkg, 'minarca_logo.svg')),
