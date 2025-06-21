@@ -41,10 +41,22 @@ _EXIT_NO_COMMAND = 204
 _EXIT_NO_USER_HOME = 205
 
 
-def _setup_logging(cfg):
+logger = logging.getLogger(__name__)
+
+
+def _setup_logging(cfg, user, ip):
     """
     Configure minarca-shell log file.
     """
+
+    def add_user_and_ip(record):
+        record.user = user or "-"
+        record.ip = ip or "-"
+        return True
+
+    # Capture warnings
+    logging.captureWarnings(True)
+
     # For backward compatibility use logfile as a reference to define the
     # location of the minarca-shell log file.
     if cfg.log_file:
@@ -52,6 +64,7 @@ def _setup_logging(cfg):
         root = logging.getLogger()
         root.setLevel(logging.DEBUG)
         default_handler = logging.handlers.RotatingFileHandler(shell_logfile, maxBytes=10485760, backupCount=20)
+        default_handler.addFilter(add_user_and_ip)
         default_handler.setFormatter(
             logging.Formatter("[%(asctime)s][%(levelname)-7s][%(ip)s][%(user)s][PID:%(process)d][%(name)s] %(message)s")
         )
@@ -114,16 +127,14 @@ def main(args=None):
 
     # Try to configure logging system using minarca-server config.
     cfg = _parse_config()
-    _setup_logging(cfg)
 
     # Parse arguments
     username = os.environ.get('MINARCA_USERNAME')
     userroot = os.environ.get('MINARCA_USER_ROOT')
 
-    # Add current user and ip address to logging context
+    # Configure logging
     ip = os.environ.get('SSH_CLIENT', '').split(' ')[0]
-    logger = logging.getLogger(__name__)
-    logger = logging.LoggerAdapter(logger, {'user': username, 'ip': ip})
+    _setup_logging(cfg, username, ip)
 
     # Check if folder exists
     if not userroot or not os.path.isdir(userroot):

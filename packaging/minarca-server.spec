@@ -67,10 +67,6 @@ for exe_name, script in executables:
         bootloader_ignore_signals=False,
         strip=False,
         upx=False,
-        options=[
-            # Suppress warnings
-            ('W ignore', None, 'OPTION'),
-        ],
         console=True,
     )
     analyses.append(a)
