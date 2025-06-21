@@ -82,7 +82,23 @@ For more information, visit the [Minarca Website](https://minarca.org).
 
 # Changelog
 
+## 6.1.2 (2025-06-21)
+
+**Bug Fixes**
+
+* Adjust warnings handling
+
+  * Ensure warnings are no longer ignored
+  * Capture warnings in the `minarca-shell` logging system
+  * Downgrade `setuptools` to avoid `pkg_resources`-related warnings
+
+* Rename sysctl config file
+
+  * Mitigate compatibility issue with Ubuntu by renaming `00-minarca-server-userns.conf` to `10-minarca-server-userns.conf`
+
 ## 6.1.1 (2025-06-18)
+
+**Bug Fixes**
 
 * Mark `/etc/minarca/minarca-server.conf` as config file to enable Debian version conflict checks during upgrades.
 
