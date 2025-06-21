@@ -46,3 +46,5 @@ deb_dist
 /.DS_Store
 pytestdebug.log
 xunit.xml
+.vscode
+rdw.db*
