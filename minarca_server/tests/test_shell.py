@@ -16,7 +16,7 @@ import unittest
 from unittest import mock
 
 from parameterized import parameterized
-from tzlocal import get_localzone
+from tzlocal import get_localzone_name
 
 from minarca_server import shell
 from minarca_server.shell import Jail
@@ -146,7 +146,7 @@ class Test(unittest.TestCase):
         self.assertEqual(e.exception.stderr, 'FOO\nÉric\n')
 
     def test_jail_tz(self):
-        tz = get_localzone().zone
+        tz = get_localzone_name()
         shell._jail(USERROOT, ['/bin/bash', '-c', 'echo $TZ > tz.txt'])
         with open(os.path.join(USERROOT, 'tz.txt'), 'r') as f:
             self.assertEqual(tz + '\n', f.read(), "timezone should be define in jail")

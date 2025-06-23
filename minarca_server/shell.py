@@ -19,7 +19,7 @@ import sys
 from collections import deque
 
 import configargparse
-from tzlocal import get_localzone
+from tzlocal import get_localzone_name
 
 from minarca_server.config import get_parser
 from minarca_server.core.jail import Jail
@@ -31,8 +31,16 @@ try:
 except Exception:
     __version__ = 'DEV'
 
-DEFAULT_RDIFF_BACKUP_VERSION = '2.0'
+# Enforce a specific timezone when running rdiff-backup
+try:
+    TZ = get_localzone_name()
+except Exception:
+    TZ = "UTC"
 
+# Enforce a specific local and encoding when running rdiff-backup.
+LANG = 'en_US.utf-8'
+
+DEFAULT_RDIFF_BACKUP_VERSION = '2.0'
 
 _EXIT_EXCEPTION = 201
 _EXIT_PERM_ERROR = 202
@@ -76,10 +84,9 @@ def _jail(userroot, args):
     Create a chroot jail using namespaces to isolate completely
     rdiff-backup execution.
     """
-    tz = get_localzone().zone
     with Jail(userroot):
         process = subprocess.Popen(
-            args, cwd=userroot, env={'LANG': 'en_US.utf-8', 'TZ': tz, 'HOME': userroot}, stderr=subprocess.PIPE
+            args, cwd=userroot, env={'LANG': LANG, 'TZ': TZ, 'HOME': userroot}, stderr=subprocess.PIPE
         )
         # This implementation capture the last 25 lines of output.
         last_logs = deque(maxlen=25)
@@ -162,7 +169,7 @@ def main(args=None):
             # Used by backup-ninja to verify connectivity
             subprocess.check_call(
                 ssh_original_command.split(' '),
-                env={'LANG': 'en_US.utf-8'},
+                env={'LANG': LANG},
                 stdout=sys.stdout.fileno(),
                 stderr=sys.stderr.fileno(),
             )
@@ -170,7 +177,7 @@ def main(args=None):
             rdiff_backup = _find_rdiff_backup()
             subprocess.check_call(
                 [rdiff_backup, '-V'],
-                env={'LANG': 'en_US.utf-8'},
+                env={'LANG': LANG},
                 stdout=sys.stdout.fileno(),
                 stderr=sys.stderr.fileno(),
             )
