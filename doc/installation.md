@@ -45,24 +45,32 @@ The following Ubuntu Release are supported: Jammy (22.04 LTS), Noble (24.04 LTS)
 If you are not running a Debian-based system, use `pip` to install Rdiffweb.
 Using pip to install Rdiffweb has its disadvantages. Extra steps are required: creating a service unit, a directory structure, and a default config file.
 
-**RedHat/CentOS 7 & 8:**
+**RedHat/CentOS/Rocky Linux/AlmaLinux 8 (or newer):**
 
-    sudo yum install epel-release
-    sudo yum install python3-devel openldap-devel rdiff-backup gcc python3-pip
-    sudo pip install -U rdiffweb
-
-If needed, create a service unit to start Rdiffweb on reboot:
-
-    sudo curl -L https://gitlab.com/ikus-soft/rdiffweb/-/raw/master/extras/systemd/rdiffweb.service -o /etc/systemd/system/rdiffweb.service
-    sudo systemctl daemon-reload
-    sudo service rdiffweb start
-
+```
+sudo dnf update
+sudo dnf install epel-release
+sudo /usr/bin/crb enable
+sudo dnf install rdiff-backup openssh-server python312
+sudo bash -c 'cd /opt && python3.12 -m venv rdiffweb && source /opt/rdiffweb/bin/activate && pip install -U rdiffweb'
+sudo mkdir -p /var/lib/rdiffweb/session
+```
 By default Rdiffweb is looking for a configuration file located at `/etc/rdiffweb/rdw.conf`.
 
 Create a default configuration file:
 
-    sudo mkdir -p /etc/rdiffweb 
+    sudo mkdir /etc/rdiffweb 
     sudo curl -L https://gitlab.com/ikus-soft/rdiffweb/-/raw/master/rdw.conf -o /etc/rdiffweb/rdw.conf
+
+If needed, create a service unit to start Rdiffweb on reboot:
+
+    sudo curl -L https://gitlab.com/ikus-soft/rdiffweb/-/raw/master/extras/systemd/rdiffweb.service -o /etc/systemd/system/rdiffweb.service
+    sudo ln -s /opt/rdiffweb/bin/rdiffweb /usr/local/bin/rdiffweb
+    
+    sudo systemctl enable --now sshd
+    sudo systemctl enable --now rdiffweb
+
+
 
 > **_NOTE:_**  Access the web interface `http://<ip-or-dns-name>:8080` with username  **admin** and password **admin123**. Then browse to the **Admin Area** to add users and assign backup locations to these users.
 
