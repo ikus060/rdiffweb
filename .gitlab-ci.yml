@@ -346,11 +346,19 @@ publish:doc:
       - $NEXUS_URL
   needs:
     - doc
-  script:
+  script: |
     # publish to nexus
-    - export VERSION=$(python3 -m setuptools_scm)
-    - cd .tox/doc/tmp/html
-    - find * -type f -exec curl --fail -u "$NEXUS_USR:$NEXUS_PWD" --upload-file "{}" $NEXUS_URL/repository/archive/rdiffweb/$VERSION/doc/{} \;
+    pip install setuptools_scm
+    export VERSION=$(python3 -m setuptools_scm)
+    cd .tox/doc/tmp/html
+    find * -type f | while read -r FILE
+    do
+      # Publish to nexus
+      curl --fail -u "$NEXUS_USR:$NEXUS_PWD" --upload-file "$FILE" "$NEXUS_URL/repository/archive/rdiffweb/$VERSION/doc/$FILE"
+      sleep 2
+      # Because Nexus server fail, make sure the file is accessible.
+      curl --fail "$NEXUS_URL/service/rest/repository/browse/archive/rdiffweb/$VERSION/doc/$(dirname $FILE)/" | grep "$(basename $FILE)"
+    done
 
 deploy:demo:
   only:
