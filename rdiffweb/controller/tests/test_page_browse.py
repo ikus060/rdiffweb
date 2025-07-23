@@ -141,7 +141,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
             self.assertInBody(value.replace('<', '&lt;').replace('>', '&gt;'))
 
     @parameterized.expand(_matrix)
-    def test_browse_with_selenim(self, unused, path, expected_in_body):
+    def test_browse_with_selenium(self, unused, path, expected_in_body):
         """
         Browse repository root.
         """

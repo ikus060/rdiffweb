@@ -1,4 +1,4 @@
-image: python:3.10-bullseye
+image: python:3.11-bookworm
 
 stages:
   - test
@@ -50,8 +50,6 @@ py3:
     matrix:
       - TOXENV: py3
         IMAGE: python:3.8
-      - TOXENV: bullseye
-        IMAGE: python:3.9-bullseye
       - TOXENV: py3
         IMAGE: python:3.10
       - TOXENV: bookworm
@@ -62,6 +60,8 @@ sqlalchemy2:
 
 selenium:
   <<: *tox
+  # Keep bulseye until we figureout why the same fail with bookworm.
+  image: python:3.11-bullseye
   before_script:
     - apt update
     - apt -y --no-install-recommends install xvfb xauth chromium-driver rdiff-backup
@@ -72,7 +72,7 @@ selenium:
 
 rdiff-backup-latest:
   <<: *tox
-  image: python:3.9-bookworm
+  image: python:3.11-bookworm
   variables:
     TOXENV: bookworm
   allow_failure: true
@@ -89,7 +89,7 @@ postgresql-12:
     - postgres:12.2-alpine
   variables:
     TOXENV: bookworm
-    IMAGE: python:3.9-bookworm
+    IMAGE: python:3.11-bookworm
     RDIFFWEB_TEST_DATABASE_URI: "postgresql://admin@postgres/test"
     POSTGRES_DB: test
     POSTGRES_USER: admin
@@ -144,8 +144,6 @@ package:deb:
   image: buildpack-deps:$DIST
   parallel:
     matrix:
-      - DIST: bullseye
-        BACKPORT: deb http://deb.debian.org/debian $DIST-backports main
       - DIST: bookworm
       - DIST: [jammy, noble, oracular]
   script:
@@ -178,7 +176,7 @@ test-package:deb:
   needs: ["package:deb"]
   parallel:
     matrix:
-      - DIST: [bullseye, bookworm]
+      - DIST: [bookworm]
       # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
       # So we need to make it explicit using environment variable
       - DIST: [jammy, noble, oracular]
@@ -307,7 +305,7 @@ publish:deb:
       - $NEXUS_PWD
   parallel:
     matrix:
-      - DIST: [bullseye, bookworm, jammy, noble, oracular]
+      - DIST: [bookworm, jammy, noble, oracular]
   script: |
     set -e
     set -x
