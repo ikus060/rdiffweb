@@ -23,8 +23,7 @@ stages:
     - pip install tox
     - export TOXENV=${TOXENV:-$CI_JOB_NAME}
     - echo TOXENV=$TOXENV
-    - useradd myuser
-    - su myuser -c tox
+    - tox
   artifacts:
     paths:
       - coverage-*.xml
@@ -60,8 +59,6 @@ sqlalchemy2:
 
 selenium:
   <<: *tox
-  # Keep bulseye until we figureout why the same fail with bookworm.
-  image: python:3.11-bullseye
   before_script:
     - apt update
     - apt -y --no-install-recommends install xvfb xauth chromium-driver rdiff-backup
