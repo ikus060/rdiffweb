@@ -28,7 +28,7 @@ dependencies = [
     "argon2-cffi>=18.3.0",
     "babel>=0.9.6",
     "cached-property",
-    "CherryPy>=8.9.1",
+    "CherryPy>=18",
     "configargparse",
     "distro",
     "humanfriendly",
@@ -39,8 +39,8 @@ dependencies = [
     "psutil>=2.1.1",
     "pytz",
     "requests",
-    "sqlalchemy>=1.2,<3",
-    "WTForms",
+    "sqlalchemy>=1.4,<3",
+    "WTForms>=2.2,<4",
     "zxcvbn>=4.4.27"
 ]
 dynamic = ["version"]

@@ -23,15 +23,7 @@ from cherrypy.process.plugins import SimplePlugin
 from sqlalchemy import create_engine, event, inspect
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import scoped_session, sessionmaker
-
-try:
-    # SQLAlchemy>=1.4
-    from sqlalchemy.orm import declarative_base
-except ImportError:
-    # SQLAlchmey<=1.3
-    from sqlalchemy.ext.declarative import declarative_base
-
+from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
 
 logger = logging.getLogger(__name__)
 

@@ -235,7 +235,7 @@ class RepoSettingsForm(CherryForm):
         # Make keepdays readonly if not a maintainer
         if not cherrypy.serving.request.currentuser.is_maintainer:
             self.keepdays.render_kw = {'readonly': True, 'disabled': True}
-        # Disable choices validation for WTForms>=2.2
+        # Disable choices validation for WTForms
         self.encoding.validate_choice = False
 
     def validate_keepdays(self, field):

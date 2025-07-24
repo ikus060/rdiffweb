@@ -16,16 +16,8 @@
 
 import time
 
-import sqlalchemy
 from sqlalchemy import select, text
 from sqlalchemy.sql import ddl
-
-# With SQLAlchemy<=1.4, the select() function signature is different
-if sqlalchemy.__version__.startswith("1.3"):
-
-    def select(*columns, orig_select=select):
-        return orig_select(columns=columns)
-
 
 """
 Collection of utility function to update database schema.
@@ -91,7 +83,7 @@ def recreate_table(conn, table, query):
     conn.execute(
         text(
             'INSERT INTO %s (%s) %s'
-            % (temp_table, ','.join([c.name for c in query.columns]), query.compile(conn.engine))
+            % (temp_table, ','.join([c.name for c in query.subquery().columns]), query.compile(conn.engine))
         )
     )
     # Drop previous table

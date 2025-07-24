@@ -42,7 +42,6 @@ import rdiffweb.tools.enrich_session
 import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
 import rdiffweb.tools.poppath
-import rdiffweb.tools.proxy
 import rdiffweb.tools.ratelimit
 import rdiffweb.tools.required_scope
 import rdiffweb.tools.secure_headers
