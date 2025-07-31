@@ -22,6 +22,12 @@ import cherrypy
 # Define the logger
 logger = logging.getLogger(__name__)
 
+DEFAULT_CSP = {
+    'default-src': 'self',
+    'style-src': ('self', 'unsafe-inline'),
+    'script-src': ('self' 'unsafe-inline'),
+}
+
 #
 # Patch Morsel prior to 3.8
 # Allow SameSite attribute to be define on the cookie.
@@ -30,13 +36,22 @@ if not http.cookies.Morsel().isReservedKey("samesite"):
     http.cookies.Morsel._reserved['samesite'] = 'SameSite'
 
 
+def _build_csp(csp):
+    if isinstance(csp, dict):
+        return "; ".join(
+            f"{directive} {' '.join(sources) if isinstance(sources, (list,tuple)) else str(sources)}"
+            for directive, sources in csp.items()
+        )
+    return str(csp)
+
+
 def set_headers(
     xfo='DENY',
     no_cache=True,
     referrer='same-origin',
     nosniff=True,
     xxp='1; mode=block',
-    csp="default-src 'self'",
+    csp=DEFAULT_CSP,
 ):
     """
     This tool provide CSRF mitigation.
@@ -98,7 +113,7 @@ def set_headers(
 
     # Add Content-Security-Policy
     if csp:
-        response.headers['Content-Security-Policy'] = csp
+        response.headers['Content-Security-Policy'] = _build_csp(csp)
 
     # Add Strict-Transport-Security to force https use.
     if https:

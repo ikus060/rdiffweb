@@ -171,7 +171,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertHeaderItemValue(
             'Content-Security-Policy',
-            "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:;",
+            "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:",
         )
 
     def test_strict_transport_security(self):
