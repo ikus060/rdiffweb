@@ -926,7 +926,27 @@ class RdiffRepo(object):
 
     @cached_property
     def _entries(self):
-        return sorted(os.listdir(self._data_path))
+        """
+        List content of rdiff-backup-data.
+        """
+        try:
+            return sorted(os.listdir(self._data_path))
+        except FileNotFoundError:
+            logger.warning(f'folder not found {self._data_path}', exc_info=1)
+            self._entries_status = ('failed', _('The repository cannot be found or is badly damaged.'))
+        except PermissionError:
+            logger.warning(f'permissions error listing {self._data_path}', exc_info=1)
+            self._entries_status = (
+                'failed',
+                _("Permissions denied. Contact administrator to check repository's permissions."),
+            )
+        except OSError:
+            logger.warning(f'error listing folder {self._data_path}', exc_info=1)
+            self._entries_status = (
+                'failed',
+                _("Permissions denied. Contact administrator to check repository's permissions."),
+            )
+        return []
 
     def clear_cache(self):
         """
@@ -1176,30 +1196,30 @@ class RdiffRepo(object):
         """Check if a backup is in progress for the current repo."""
 
         # Read content of the file and check if pid still exists
-        try:
-            # Make sure repoRoot is a valid rdiff-backup repository
-            for current_mirror in self.current_mirror:
+
+        # Make sure repoRoot is a valid rdiff-backup repository
+        for current_mirror in self.current_mirror:
+            try:
                 pid = current_mirror.extract_pid()
-                try:
-                    p = psutil.Process(pid)
-                    if any('rdiff-backup' in c for c in p.cmdline()):
-                        return ('in_progress', _('A backup is currently in progress to this repository.'))
-                except psutil.NoSuchProcess:
-                    logger.debug('pid [%s] does not exists', pid)
+            except PermissionError:
+                logger.warning('permissions error trying to read current_mirror', exc_info=1)
+                return ('failed', _("Permissions denied. Contact administrator to check repository's permissions."))
+            try:
+                p = psutil.Process(pid)
+                if any('rdiff-backup' in c for c in p.cmdline()):
+                    return ('in_progress', _('A backup is currently in progress to this repository.'))
+            except psutil.NoSuchProcess:
+                logger.debug('pid [%s] does not exists', pid)
 
-            # If multiple current_mirror file exists and none of them are associated to a PID, this mean the last backup was interrupted.
-            # Also, if the last backup date is undefined, this mean the first
-            # initial backup was interrupted.
-            if len(self.current_mirror) == 0:
-                return ('in_progress', _('Initial backup in progress.'))
-            elif len(self.current_mirror) > 1:
-                return ('interrupted', _('The last backup has been interrupted.'))
-        except FileNotFoundError:
-            self._entries = []
-            return ('failed', _('The repository cannot be found or is badly damaged.'))
-        except PermissionError:
-            self._entries = []
-            logger.warning('error reading current_mirror files', exc_info=1)
-            return ('failed', _("Permissions denied. Contact administrator to check repository's permissions."))
+        # If entries status is defined return this status.
+        if getattr(self, '_entries_status', False):
+            return self._entries_status
 
+        # If multiple current_mirror file exists and none of them are associated to a PID, this mean the last backup was interrupted.
+        # Also, if the last backup date is undefined, this mean the first
+        # initial backup was interrupted.
+        if len(self.current_mirror) == 0:
+            return ('in_progress', _('Initial backup in progress.'))
+        elif len(self.current_mirror) > 1:
+            return ('interrupted', _('The last backup has been interrupted.'))
         return ('ok', _('Healthy'))

@@ -134,6 +134,26 @@ class NotificationJobTest(AbstractNotificationTest):
         # Mail should not be queue.
         self.listener.queue_email.assert_not_called()
 
+    def test_notification_job_with_broken_repo(self):
+        # Given a user with an email address
+        user = UserObject.get_user(self.USERNAME)
+        user.email = 'test@test.com'
+        user.commit()
+        # Given a broken repository with a maxage
+        repo = RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == 'broker-repo').first()
+        repo.maxage = 1
+        repo.commit()
+        self.listener.queue_email.reset_mock()
+        # When running notification_job
+        cherrypy.notification.notification_job()
+
+        # Then an email is queue for this user
+        self.listener.queue_email.assert_called_once_with(
+            to='test@test.com',
+            subject='Backup inactive',
+            message=ANY,
+        )
+
     @parameterized.expand(
         [
             ('disabled', 0, None, None),
