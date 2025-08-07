@@ -18,11 +18,11 @@ import pwd
 import time
 import unittest
 from base64 import b64encode
+from importlib.resources import files
 from io import open
 from unittest.mock import ANY
 
 import cherrypy
-import pkg_resources
 import responses
 from rdiffweb.core.model import SshKey, UserObject
 
@@ -303,7 +303,7 @@ class MinarcaPluginTestWithOwnerAndGroup(minarca_server.tests.AbstractMinarcaTes
     }
 
     def _read_ssh_key(self, filename):
-        filename = pkg_resources.resource_filename(__name__, filename)
+        filename = files(__package__) / filename
         with open(filename, 'r', encoding='utf8') as f:
             return f.readline()
 

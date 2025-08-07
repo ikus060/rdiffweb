@@ -4,9 +4,9 @@
 
 import logging
 import pwd
+from importlib.resources import files
 
 import cherrypy
-import pkg_resources
 from rdiffweb.controller.dispatch import staticfile
 from rdiffweb.rdw_app import RdiffwebApp
 
@@ -58,7 +58,7 @@ class MinarcaApplication(RdiffwebApp):
         # Provide /help
         self.root.help = self.get_help
         # Add background
-        self.root.static.bg_jpg = staticfile(pkg_resources.resource_filename(__name__, 'bg.jpg'))
+        self.root.static.bg_jpg = staticfile(str(files(__package__) / 'bg.jpg'))
 
     @cherrypy.expose
     @cherrypy.tools.i18n(on=False)

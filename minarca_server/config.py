@@ -11,15 +11,9 @@ import argparse
 import grp
 import pwd
 import sys
+from importlib.resources import files
 
-import pkg_resources
 from rdiffweb.core.config import get_parser as get_rdiffweb_parser
-
-# Get rdiffweb version.
-try:
-    VERSION = pkg_resources.get_distribution("minarca_server").version
-except pkg_resources.DistributionNotFound:
-    VERSION = "DEV"
 
 
 def user(user_name):
@@ -164,8 +158,10 @@ def get_parser():
     parser.add('--minarca-quota-api-url', '--minarcaquotaapiurl', metavar='URL', help="url to minarca-quota-api server")
 
     # Replace --version
+    from minarca_server import __version__
+
     parser.conflict_handler = 'resolve'
-    parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
+    parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
 
     # Replace default config file
     parser._default_config_files = ['/etc/minarca/minarca-server.conf', '/etc/minarca/conf.d/*.conf']
@@ -184,12 +180,12 @@ def get_parser():
         '''
     parser.set_defaults(
         database_uri='/etc/minarca/rdw.db',
-        favicon=pkg_resources.resource_filename(__name__, 'minarca.ico'),  # @UndefinedVariable
+        favicon=str(files(__package__) / 'minarca.ico'),
         footer_name='Minarca',
         footer_url='https://minarca.org/',
         header_name='Minarca',
-        header_logo=pkg_resources.resource_filename(__name__, 'minarca_logo.png'),  # @UndefinedVariable
-        logo=pkg_resources.resource_filename(__name__, 'logo.png'),  # @UndefinedVariable
+        header_logo=str(files(__package__) / 'minarca_logo.png'),
+        logo=str(files(__package__) / 'logo.png'),
         link_color='1C4062',
         navbar_color='0E2933',
         btn_fg_color='FFFFFF',

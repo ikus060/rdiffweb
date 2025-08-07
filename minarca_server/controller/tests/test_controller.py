@@ -9,8 +9,8 @@ Created on Jan 30, 2024
 
 import time
 from base64 import b64encode
+from importlib.resources import files
 
-import pkg_resources
 from rdiffweb.core.model import UserObject
 
 import minarca_server
@@ -65,7 +65,7 @@ class MinarcaApplicationTestWithRemoteIdentity(minarca_server.tests.AbstractMina
 
     default_config = {
         'minarca-remote-host': "test.examples:2222",
-        'minarca-remote-host-identity': pkg_resources.resource_filename('minarca_server.tests', ''),
+        'minarca-remote-host-identity': str(files('minarca_server') / 'tests'),
     }
 
     def test_get_api_minarca_identity(self):

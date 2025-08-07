@@ -21,15 +21,9 @@ from collections import deque
 import configargparse
 from tzlocal import get_localzone_name
 
+from minarca_server import __version__
 from minarca_server.config import get_parser
 from minarca_server.core.jail import Jail
-
-try:
-    import pkg_resources
-
-    __version__ = pkg_resources.get_distribution("minarca-server").version
-except Exception:
-    __version__ = 'DEV'
 
 # Enforce a specific timezone when running rdiff-backup
 try:

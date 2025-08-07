@@ -5,12 +5,12 @@ import os
 from urllib.parse import urlparse
 
 import cherrypy
-import pkg_resources
 from cherrypy.lib.auth_basic import basic_auth
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage, _checkpassword
 from rdiffweb.core.model import SshKey, UserObject
 
+from minarca_server import __version__
 from minarca_server.core.minarcaid import verify_minarcaid
 
 
@@ -88,7 +88,7 @@ class MinarcaServerInfo(Controller):
 
         # Get remote host value from config or from URL
         return {
-            "version": pkg_resources.get_distribution("minarca-server").version,
+            "version": __version__,
             "remotehost": remotehost,
             "identity": identity,
         }
