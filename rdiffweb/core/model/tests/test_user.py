@@ -24,7 +24,7 @@ from sqlalchemy.exc import IntegrityError
 
 import rdiffweb.test
 from rdiffweb.core import authorizedkeys
-from rdiffweb.core.model import DuplicateSSHKeyError, RepoObject, UserObject
+from rdiffweb.core.model import RepoObject, UserObject
 from rdiffweb.core.passwd import check_password
 
 
@@ -46,6 +46,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         self.listener = MagicMock()
         cherrypy.engine.subscribe('access_token_added', self.listener.access_token_added, priority=50)
         cherrypy.engine.subscribe('queue_mail', self.listener.queue_mail, priority=50)
+        cherrypy.engine.subscribe('user_adding', self.listener.user_adding, priority=50)
         cherrypy.engine.subscribe('user_added', self.listener.user_added, priority=50)
         cherrypy.engine.subscribe('user_attr_changed', self.listener.user_attr_changed, priority=50)
         cherrypy.engine.subscribe('user_deleted', self.listener.user_deleted, priority=50)
@@ -55,6 +56,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
     def tearDown(self):
         cherrypy.engine.unsubscribe('access_token_added', self.listener.access_token_added)
         cherrypy.engine.unsubscribe('queue_mail', self.listener.queue_mail)
+        cherrypy.engine.unsubscribe('user_adding', self.listener.user_adding)
         cherrypy.engine.unsubscribe('user_added', self.listener.user_added)
         cherrypy.engine.unsubscribe('user_attr_changed', self.listener.user_attr_changed)
         cherrypy.engine.unsubscribe('user_deleted', self.listener.user_deleted)
@@ -77,12 +79,13 @@ class UserObjectTest(rdiffweb.test.WebCase):
         def change_user_obj(userobj):
             userobj.user_root = '/new/value'
 
-        self.listener.user_added.side_effect = change_user_obj
+        self.listener.user_adding.side_effect = change_user_obj
         # When adding user
         userobj = UserObject.add_user('joe')
         userobj.commit()
         self.assertIsNotNone(UserObject.get_user('joe'))
         # Then lister get called
+        self.listener.user_adding.assert_called_once_with(userobj)
         self.listener.user_added.assert_called_once_with(userobj)
         # Then object was updated by listener
         self.assertEqual('/new/value', userobj.user_root)
@@ -92,20 +95,24 @@ class UserObjectTest(rdiffweb.test.WebCase):
         user = UserObject.add_user('denise')
         user.commit()
         self.listener.user_added.reset_mock()
-        with self.assertRaises(ValueError):
-            UserObject.add_user('denise')
+        with self.assertRaises(IntegrityError) as ctx:
+            UserObject.add_user('denise').commit()
         # Check if listener called
         self.listener.user_added.assert_not_called()
+        # Then the right contrains is identified
+        self.assertEqual('user_username_index', ctx.exception.constraint.name)
 
     def test_add_user_with_duplicate_caseinsensitive(self):
         """Add user to database."""
         user = UserObject.add_user('denise')
         user.commit()
         self.listener.user_added.reset_mock()
-        with self.assertRaises(ValueError):
-            UserObject.add_user('dEnIse')
+        with self.assertRaises(IntegrityError) as ctx:
+            UserObject.add_user('dEnIse').commit()
         # Check if listener called
         self.listener.user_added.assert_not_called()
+        # Then the right contrains is identified
+        self.assertEqual('user_username_index', ctx.exception.constraint.name)
 
     def test_add_user_with_password(self):
         """Add user to database with password."""
@@ -278,12 +285,19 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Then listner was called
         self.listener.user_deleted.assert_called_once_with('vicky')
 
-    def test_set_password_empty(self):
+    @parameterized.expand(
+        [
+            ('empty', ''),
+            ('spaces', '  '),
+            ('newline', '\n'),
+        ]
+    )
+    def test_set_password(self, unused, new_password):
         """Expect error when trying to update password of invalid user."""
         userobj = UserObject.add_user('john')
         userobj.commit()
         with self.assertRaises(ValueError):
-            self.assertFalse(userobj.set_password(''))
+            self.assertFalse(userobj.set_password(new_password))
 
     def test_disk_quota(self):
         """
@@ -326,9 +340,10 @@ class UserObjectTest(rdiffweb.test.WebCase):
 
         # When adding the same identical key.
         # Then an error is raised
-        with self.assertRaises(DuplicateSSHKeyError):
+        with self.assertRaises(IntegrityError) as ctx:
             userobj.add_authorizedkey(key)
             userobj.commit()
+        self.assertIn(ctx.exception.constraint.name, ['sshkey_fingerprint_index', 'sshkeys_pkey'])
 
     def test_add_authorizedkey_duplicate_new_comment(self):
         # Read the pub key
@@ -340,9 +355,10 @@ class UserObjectTest(rdiffweb.test.WebCase):
 
         # When adding the same key with a different comment
         # Then an error is raised
-        with self.assertRaises(DuplicateSSHKeyError):
+        with self.assertRaises(IntegrityError) as ctx:
             userobj.add_authorizedkey(key, comment="new comment")
             userobj.commit()
+        self.assertIn(ctx.exception.constraint.name, ['sshkey_fingerprint_index', 'sshkeys_pkey'])
 
     def test_add_authorizedkey_duplicate_new_user(self):
         # Read the pub key
@@ -356,9 +372,10 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Then an error is raised
         newuser = UserObject.add_user("newuser")
         newuser.commit()
-        with self.assertRaises(DuplicateSSHKeyError):
+        with self.assertRaises(IntegrityError) as ctx:
             newuser.add_authorizedkey(key, comment="new comment")
             newuser.commit()
+        self.assertIn(ctx.exception.constraint.name, ['sshkey_fingerprint_index', 'sshkeys_pkey'])
 
     def test_add_authorizedkey_with_file(self):
         """

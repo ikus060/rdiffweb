@@ -23,15 +23,15 @@ def enrich_session():
     Store ephemeral information into user's session. e.g.: last IP address, user-agent
     """
     # When session is not enable, simply validate credentials
-    sessions_on = cherrypy.request.config.get('tools.sessions.on', False)
-    if not sessions_on:
+    if not hasattr(cherrypy.serving, 'session'):
         return
     # Get information related to the current request
     request = cherrypy.serving.request
     ip_address = request.remote.ip
-    cherrypy.session['ip_address'] = ip_address
-    cherrypy.session['user_agent'] = request.headers.get('User-Agent', None)
-    cherrypy.session['access_time'] = datetime.datetime.now(tz=datetime.timezone.utc)
+    session = cherrypy.serving.session
+    session['ip_address'] = ip_address
+    session['user_agent'] = request.headers.get('User-Agent', None)
+    session['access_time'] = datetime.datetime.now(tz=datetime.timezone.utc)
 
 
 cherrypy.tools.enrich_session = cherrypy.Tool('before_handler', enrich_session, priority=60)

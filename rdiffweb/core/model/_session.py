@@ -26,14 +26,14 @@ from sqlalchemy.orm import validates
 from ._timestamp import Timestamp
 from ._update import column_exists
 
-SESSION_KEY = '_cp_username'
-
 Base = cherrypy.db.get_base()
 
 logger = logging.getLogger(__name__)
 
 
 class SessionObject(Base):
+    SESSION_USER_KEY = '_cp_username'
+
     __tablename__ = 'sessions'
     __table_args__ = {'sqlite_autoincrement': True}
     number = Column('Number', Integer, unique=True, primary_key=True)
@@ -48,7 +48,7 @@ class SessionObject(Base):
         # Extract specific fields from data into column to speed up SQL query.
         if value:
             self.access_time = value.get('access_time')
-            self.username = value.get(SESSION_KEY)
+            self.username = value.get(SessionObject.SESSION_USER_KEY)
         return value
 
 

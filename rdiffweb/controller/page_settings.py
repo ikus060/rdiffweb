@@ -24,8 +24,8 @@ from wtforms.fields import SelectField, SelectMultipleField, SubmitField
 from wtforms.validators import ValidationError
 from wtforms.widgets import html_params
 
-from rdiffweb.controller import Controller, flash, get_flashed_messages
-from rdiffweb.controller.form import CherryForm
+from rdiffweb.controller import Controller, flash
+from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 from rdiffweb.tools.i18n import gettext_lazy as _
@@ -170,7 +170,7 @@ class WeekdayField(SelectMultipleField):
         return Markup(''.join(html))
 
 
-class RepoSettingsForm(CherryForm):
+class RepoSettingsForm(DbForm):
     maxage = MaxAgeField(
         _('Inactivity Notification Period'),
         description=_(
@@ -244,17 +244,10 @@ class RepoSettingsForm(CherryForm):
             raise ValidationError(_('Only maintainers or administrators can update data retention settings.'))
 
     def populate_obj(self, repo_obj):
-        try:
-            repo_obj.maxage = self.maxage.data
-            repo_obj.ignore_weekday = self.ignore_weekday.data
-            repo_obj.keepdays = self.keepdays.data
-            repo_obj.encoding = self.encoding.data
-            repo_obj.commit()
-            return True
-        except Exception as e:
-            repo_obj.rollback()
-            flash(str(e), level='error')
-            return False
+        repo_obj.maxage = self.maxage.data
+        repo_obj.ignore_weekday = self.ignore_weekday.data
+        repo_obj.keepdays = self.keepdays.data
+        repo_obj.encoding = self.encoding.data
 
 
 @cherrypy.tools.poppath()
@@ -273,13 +266,11 @@ class SettingsPage(Controller):
         """
         repo_obj = RepoObject.get_repo(path)
         form = RepoSettingsForm(obj=repo_obj)
-        if form.is_submitted():
-            if form.validate():
-                if form.populate_obj(repo_obj):
-                    flash(_("Settings modified successfully."), level='success')
-                    raise cherrypy.HTTPRedirect("")
-            else:
-                flash(form.error_message, level='error')
+        if form.validate_on_submit() and form.save_to_db(repo_obj):
+            flash(_("Settings modified successfully."), level='success')
+            raise cherrypy.HTTPRedirect("")
+        if form.error_message:
+            flash(form.error_message, level='error')
         return self._compile_template("settings.html", form=form, repo=repo_obj)
 
 
@@ -287,7 +278,7 @@ class SettingsPage(Controller):
 @cherrypy.tools.required_scope(scope='all,read_user,write_user')
 class ApiRepos(Controller):
     def _query(self, name_or_repoid):
-        u = self.app.currentuser
+        u = cherrypy.serving.request.currentuser
         query = RepoObject.query.filter(RepoObject.userid == u.userid)
         if str(name_or_repoid).isdigit():
             query = query.filter(RepoObject.repoid == int(name_or_repoid))
@@ -316,7 +307,7 @@ class ApiRepos(Controller):
 
         Returns information about the current user's repositories, identical to the information provided by `/api/currentuser`.
         """
-        u = self.app.currentuser
+        u = cherrypy.serving.request.currentuser
         if u.refresh_repos():
             u.commit()
         return [self._to_json(repo_obj) for repo_obj in u.repo_objs]
@@ -352,9 +343,7 @@ class ApiRepos(Controller):
         form = RepoSettingsForm(obj=repo_obj, json=1)
         if form.strict_validate():
             # Update repo object.
-            if not form.populate_obj(repo_obj):
-                raise cherrypy.HTTPError(400, str(get_flashed_messages()))
-            # Return the updated repo object.
-            return self._to_json(repo_obj)
-        else:
-            raise cherrypy.HTTPError(400, form.error_message)
+            if form.save_to_db(repo_obj):
+                # Return the updated repo object.
+                return self._to_json(repo_obj)
+        raise cherrypy.HTTPError(400, form.error_message)

@@ -99,7 +99,7 @@ class RepoObject(Base, RdiffRepo):
         repopath = os.fsdecode(repopath).strip('/')
 
         # Check permissions
-        as_user = as_user or cherrypy.tree.apps[''].currentuser
+        as_user = getattr(cherrypy.serving.request, 'currentuser', as_user)
         if not as_user:
             raise AccessDeniedError("as_user or current user must be defined")
         if username != as_user.username and not as_user.is_admin:

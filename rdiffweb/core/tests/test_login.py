@@ -17,12 +17,44 @@ from unittest.mock import MagicMock, patch
 
 import cherrypy
 import ldap3
+import responses
 
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
 
 
-class LoginAbstractTest(rdiffweb.test.WebCase):
+class AbstractLdapLoginTest:
+    @classmethod
+    def teardown_class(cls):
+        cherrypy.ldap.uri = None
+        # Release Ldap mock server.
+        cls.patcher.stop()
+        return super().teardown_class()
+
+    @classmethod
+    def setup_server(cls):
+        # Configure Ldap Mock server early.
+        cls.server = ldap3.Server('my_fake_server')
+        cls.conn = ldap3.Connection(cls.server, client_strategy=ldap3.MOCK_ASYNC, raise_exceptions=True)
+        cls.patcher = patch('ldap3.Connection', return_value=cls.conn)
+        cls.patcher.start()
+        # Create a default user
+        cls.conn.strategy.add_entry(
+            'cn=tony,dc=example,dc=org',
+            {
+                'displayName': ['Tony Martinez'],
+                'userPassword': 'password1',
+                'uid': ['tony'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+                'mail': ['myemail@example.com'],
+            },
+        )
+        # Get defaultconfig from test class
+        default_config = getattr(cls, 'default_config', {})
+        default_config['ldap-uri'] = 'my_fake_server'
+        default_config['ldap-base-dn'] = 'dc=example,dc=org'
+        return super().setup_server()
+
     def setUp(self):
         super().setUp()
         self.listener = MagicMock()
@@ -41,271 +73,280 @@ class LoginAbstractTest(rdiffweb.test.WebCase):
         return super().tearDown()
 
 
-class LoginTest(LoginAbstractTest):
-    def test_login(self):
-        # Given a valid user in database with a password
-        userobj = UserObject.add_user('tom', 'password')
-        userobj.commit()
-        # When trying to login with valid password
-        login = cherrypy.engine.publish('login', 'tom', 'password')
-        # Then login is successful
-        self.assertEqual(login, [userobj])
-        # Check if listener called
-        self.listener.user_login.assert_called_once_with(userobj)
-
-    def test_login_with_invalid_password(self):
-        userobj = UserObject.add_user('jeff', 'password')
-        userobj.commit()
-        self.assertFalse(any(cherrypy.engine.publish('login', 'jeff', 'invalid')))
-        # password is case sensitive
-        self.assertFalse(any(cherrypy.engine.publish('login', 'jeff', 'Password')))
-        # Match entire password
-        self.assertFalse(any(cherrypy.engine.publish('login', 'jeff', 'pass')))
-        self.assertFalse(any(cherrypy.engine.publish('login', 'jeff', '')))
-        # Check if listener called
-        self.listener.user_login.assert_not_called()
-
-    def test_login_with_invalid_user(self):
-        # Given a database without users
-        # When trying to login with an invalid user
-        login = cherrypy.engine.publish('login', 'josh', 'password')
-        # Then login is not successful
-        self.assertEqual(login, [None])
-        # Check if listener called
-        self.listener.user_login.assert_not_called()
-
-
-class LoginWithAddMissing(LoginAbstractTest):
-    default_config = {'ldap-uri': '__default__', 'ldap-base-dn': 'dc=nodomain', 'ldap-add-missing-user': 'true'}
-
-    def setUp(self):
-        super().setUp()
-        cherrypy.engine.subscribe('authenticate', self.listener.authenticate, priority=50)
-
-    def tearDown(self):
-        cherrypy.engine.unsubscribe('authenticate', self.listener.authenticate)
-        super().tearDown()
-
-    def test_login_with_create_user(self):
-        # Given an external authentication
-        self.listener.authenticate.return_value = ('tony', {})
-        # Given a user doesn't exists in database
-        self.assertIsNone(UserObject.get_user('tony'))
-        # When login successfully with that user
-        login = cherrypy.engine.publish('login', 'tony', 'password')
-        self.assertIsNotNone(login)
-        userobj = login[0]
-        # Then user is created in database
-        self.assertIsNotNone(UserObject.get_user('tony'))
-        self.assertFalse(userobj.is_admin)
-        self.assertEqual(UserObject.USER_ROLE, userobj.role)
-        self.assertEqual('', userobj.user_root)
-        self.assertEqual('', userobj.email)
-        # Check listener
-        self.listener.authenticate.assert_called_once_with('tony', 'password')
-        self.listener.user_added.assert_called_once_with(userobj)
-        self.listener.user_login.assert_called_once_with(userobj)
-
-    def test_login_with_create_user_with_email(self):
-        # Given an external authentication with email attribute
-        self.listener.authenticate.return_value = ('userwithemail', {'_email': 'user@example.com'})
-        # Given a user doesn't exists in database
-        self.assertIsNone(UserObject.get_user('userwithemail'))
-        # When login successfully with that user
-        login = cherrypy.engine.publish('login', 'userwithemail', 'password')
-        self.assertIsNotNone(login)
-        userobj = login[0]
-        # Then user is created in database
-        self.assertIsNotNone(UserObject.get_user('userwithemail'))
-        self.assertFalse(userobj.is_admin)
-        self.assertEqual(UserObject.USER_ROLE, userobj.role)
-        self.assertEqual('', userobj.user_root)
-        self.assertEqual('user@example.com', userobj.email)
-
-
-class LoginWithAddMissingWithDefaults(LoginAbstractTest):
+class LdapLoginTest(AbstractLdapLoginTest, rdiffweb.test.WebCase):
     default_config = {
         'ldap-uri': '__default__',
         'ldap-base-dn': 'dc=nodomain',
-        'ldap-add-missing-user': 'true',
-        'ldap-add-user-default-role': 'maintainer',
-        'ldap-add-user-default-userroot': '/backups/users/{uid[0]}',
+        'ldap-email-attribute': 'mail',
+        'ldap-fullname-attribute': 'displayName',
     }
 
-    def setUp(self):
-        super().setUp()
-        cherrypy.engine.subscribe('authenticate', self.listener.authenticate, priority=50)
+    def test_login_invalid(self):
+        # Given an existing user in database.
+        UserObject.add_user(username='tony').add().commit()
+        # When trying tol ogin with invalid password with that user
+        self.getPage("/logout", method="POST")
+        self.getPage("/login/", method='POST', body={'login': 'tony', 'password': 'invalid'})
+        self.assertStatus(200)
+        # Then user is not authenticated.
+        self.assertInBody('Invalid username or password.')
 
-    def tearDown(self):
-        cherrypy.engine.unsubscribe('authenticate', self.listener.authenticate)
-        super().tearDown()
+    def test_login_with_existing_user(self):
+        # Given an existing user in database.
+        userobj = UserObject.add_user(username='tony').add().commit()
+        # When login successfully with that user
+        self._login('tony', 'password1')
+        # Then user is updated
+        userobj = UserObject.get_user('tony')
+        self.assertFalse(userobj.is_admin)
+        self.assertEqual('myemail@example.com', userobj.email)
+        self.assertEqual('Tony Martinez', userobj.fullname)
+
+
+class LdapLoginAddMissingTest(AbstractLdapLoginTest, rdiffweb.test.WebCase):
+    default_config = {
+        'ldap-uri': '__default__',
+        'ldap-base-dn': 'dc=nodomain',
+        'ldap-email-attribute': 'mail',
+        'ldap-fullname-attribute': 'displayName',
+        'add-missing-user': 'true',
+        'add-user-default-role': 'maintainer',
+        'add-user-default-userroot': '/backups/users/{uid[0]}',
+    }
 
     def test_login_with_create_user(self):
-        # Given an external authentication with email attribute
-        self.listener.authenticate.return_value = ('tony', {'uid': ['tony']})
         # Given a user doesn't exists in database
         self.assertIsNone(UserObject.get_user('tony'))
         # When login successfully with that user
-        login = cherrypy.engine.publish('login', 'tony', 'password')
-        self.assertIsNotNone(login)
-        userobj = login[0]
+        self._login('tony', 'password1')
         # Then user is create in database
-        self.assertIsNotNone(UserObject.get_user('tony'))
+        userobj = UserObject.get_user('tony')
+        self.assertIsNotNone(userobj)
         self.assertFalse(userobj.is_admin)
         self.assertEqual(UserObject.MAINTAINER_ROLE, userobj.role)
         self.assertEqual('/backups/users/tony', userobj.user_root)
+        self.assertEqual('myemail@example.com', userobj.email)
+        self.assertEqual('Tony Martinez', userobj.fullname)
         # Check listener
         self.listener.user_added.assert_called_once_with(userobj)
         self.listener.user_login.assert_called_once_with(userobj)
 
+    def test_login_with_update_user(self):
+        # Given an existing user in database.
+        userobj = UserObject.add_user(username='tony').add().commit()
+        # When login successfully with that user
+        self._login('tony', 'password1')
+        # Then user is updated
+        userobj = UserObject.get_user('tony')
+        self.assertFalse(userobj.is_admin)
+        self.assertEqual('myemail@example.com', userobj.email)
+        self.assertEqual('Tony Martinez', userobj.fullname)
 
-class LoginWithAddMissingWithComplexUserroot(LoginAbstractTest):
-    default_config = {
-        'ldap-uri': '__default__',
-        'ldap-base-dn': 'dc=nodomain',
-        'ldap-add-missing-user': 'true',
-        'ldap-add-user-default-role': 'maintainer',
-        'ldap-add-user-default-userroot': '/home/{sAMAccountName[0]}/backups',
-    }
 
+class AbstractOAuthLoginTest:
     def setUp(self):
         super().setUp()
-        cherrypy.engine.subscribe('authenticate', self.listener.authenticate, priority=50)
+        # Mock OAuth provider.
+        responses.add(
+            responses.POST,
+            "https://mock-provider.com/oauth/token",
+            json={
+                "access_token": "mock_access_token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+                "refresh_token": "mock_refresh_token",
+            },
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            "https://mock-provider.com/user",
+            json={"id": "12345", "email": "tony@example.com", "name": "Tony Martinez", "nickname": "tony"},
+            status=200,
+            headers={"Authorization": "Bearer mock_access_token"},
+        )
+        responses.start()
+        self.listener = MagicMock()
+        cherrypy.engine.subscribe('user_added', self.listener.user_added, priority=50)
+        cherrypy.engine.subscribe('user_login', self.listener.user_login, priority=50)
 
     def tearDown(self):
-        cherrypy.engine.unsubscribe('authenticate', self.listener.authenticate)
-        super().tearDown()
-
-    def test_login_with_create_user(self):
-        # Given an external authentication with email attribute
-        self.listener.authenticate.return_value = ('tony', {'sAMAccountName': ['tony']})
-        # Given a user doesn't exists in database
-        self.assertIsNone(UserObject.get_user('tony'))
-        # When login successfully with that user
-        login = cherrypy.engine.publish('login', 'tony', 'password')
-        self.assertIsNotNone(login)
-        userobj = login[0]
-        # Then user is created in database
-        self.assertIsNotNone(UserObject.get_user('tony'))
-        self.assertFalse(userobj.is_admin)
-        self.assertEqual(UserObject.MAINTAINER_ROLE, userobj.role)
-        self.assertEqual('/home/tony/backups', userobj.user_root)
-        # Check listener
-        self.listener.user_added.assert_called_once_with(userobj)
-        self.listener.user_login.assert_called_once_with(userobj)
-
-
-class LdapLoginAbstractTest(LoginAbstractTest):
-    def setUp(self) -> None:
-        self.server = ldap3.Server('my_fake_server')
-        self.conn = ldap3.Connection(self.server, client_strategy=ldap3.MOCK_SYNC)
-        self.patcher = patch('ldap3.Connection', return_value=self.conn)
-        self.patcher.start()
-        return super().setUp()
-
-    def tearDown(self) -> None:
-        self.patcher.stop()
+        responses.stop()
+        responses.reset()
+        cherrypy.engine.unsubscribe('user_added', self.listener.user_added)
+        cherrypy.engine.unsubscribe('user_login', self.listener.user_login)
         return super().tearDown()
 
 
-class LoginWithLdap(LdapLoginAbstractTest):
+class OAuthLoginWithUsernameTest(AbstractOAuthLoginTest, rdiffweb.test.WebCase):
     default_config = {
-        'ldap-uri': '__default__',
-        'ldap-base-dn': 'dc=example,dc=org',
-        'ldap-add-missing-user': 'true',
-        'ldap-fullname-attribute': 'displayName',
-        'ldap-email-attribute': 'email',
+        'oauth-client-id': "test_client_id",
+        'oauth-client-secret': "test_client_secret",
+        'oauth-auth-url': "https://mock-provider.com/oauth/authorize",
+        'oauth-token-url': "https://mock-provider.com/oauth/token",
+        'oauth-userinfo-url': "https://mock-provider.com/user",
+        'oauth-fullname-claim': "name",
+        'oauth-userkey-claim': "nickname",
+        'login-with-email': False,
     }
 
-    def test_login_valid(self):
-        # Given an LDAP server with a user
-        self.conn.strategy.add_entry(
-            'cn=user01,dc=example,dc=org',
-            {
-                'displayName': ['MyUsername'],
-                'userPassword': 'password1',
-                'uid': ['user01'],
-                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
-                'email': ['myemail@example.com'],
-            },
+    def test_login_success(self):
+        # Given user exists
+        userobj = UserObject.add_user('tony', email='random@email.com').commit()
+        # When user try to loging with OAuth
+        self.getPage('/oauth/login')
+        # Then user is redirect to oauth provider
+        self.assertStatus(303)
+        redirect = self.assertHeader('Location')
+        self.assertIn(
+            'https://mock-provider.com/oauth/authorize?response_type=code&client_id=test_client_id&redirect_uri=http%3A%2F%2F127.0.0.1%3A54583%2Foauth%2Fcallback&scope=openid+profile+email&state=',
+            redirect,
         )
-        # When user try to login with valid crendentials
-        login = cherrypy.engine.publish('login', 'user01', 'password1')
+        state = redirect.split('state=')[1]
+        # When OAuth provider redirect to callback
+        self.getPage(f'/oauth/callback?code=test&state={state}')
+        # Then user is redirect to main page.
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', 'http://%s:%s/' % (self.HOST, self.PORT))
         # Then user is authenticated
-        self.assertTrue(login[0])
-        self.listener.user_added.assert_called_once_with(login[0])
-        self.listener.user_login.assert_called_once_with(login[0])
-        # Then user inherit attribute from LDAP server
-        self.assertEqual('MyUsername', login[0].fullname)
-        self.assertEqual('myemail@example.com', login[0].email)
-
-    def test_login_invalid(self):
-        # Given an LDAP server with a user
-        self.conn.strategy.add_entry(
-            'cn=user01,dc=example,dc=org',
-            {
-                'userPassword': 'password1',
-                'uid': ['user01'],
-                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
-            },
-        )
-        # When user try to login with invalid crendentials
-        login = cherrypy.engine.publish('login', 'user01', 'invalid')
-        # Then user is authenticated
-        self.assertFalse(login[0])
-        self.listener.user_added.assert_not_called()
-        self.listener.user_login.assert_not_called()
+        self.getPage('/', headers=self.cookies)
+        self.assertStatus(200)
+        # Then user is create in database
+        self.assertEqual('Tony Martinez', userobj.fullname)
+        # Then listener got called.
+        self.listener.user_login.assert_called_once_with(userobj)
 
 
-class LoginWithLdapGroup(LdapLoginAbstractTest):
+class OAuthLoginWithEmailTest(AbstractOAuthLoginTest, rdiffweb.test.WebCase):
     default_config = {
-        'ldap-uri': '__default__',
-        'ldap-base-dn': 'dc=example,dc=org',
-        'ldap-add-missing-user': 'true',
-        'ldap-user-filter': '(objectClass=posixAccount)',
-        'ldap-group-filter': '(objectClass=posixGroup)',
-        'ldap-required-group': 'appgroup',
-        'ldap-group-attribute': 'memberUid',
+        'oauth-client-id': "test_client_id",
+        'oauth-client-secret': "test_client_secret",
+        'oauth-auth-url': "https://mock-provider.com/oauth/authorize",
+        'oauth-token-url': "https://mock-provider.com/oauth/token",
+        'oauth-userinfo-url': "https://mock-provider.com/user",
+        'oauth-fullname-claim': "name",
+        'oauth-userkey-claim': "email",
+        'login-with-email': True,
     }
 
-    def test_login_valid(self):
-        # Given an LDAP server with a user & group
-        self.conn.strategy.add_entry(
-            'cn=user01,dc=example,dc=org',
-            {
-                'userPassword': 'password1',
-                'uid': ['user01'],
-                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
-            },
+    def test_login_success(self):
+        # Given user exists
+        userobj = UserObject.add_user('myuser', email='tony@example.com').commit()
+        # When user try to loging with OAuth
+        self.getPage('/oauth/login')
+        # Then user is redirect to oauth provider
+        self.assertStatus(303)
+        redirect = self.assertHeader('Location')
+        self.assertIn(
+            'https://mock-provider.com/oauth/authorize?response_type=code&client_id=test_client_id&redirect_uri=http%3A%2F%2F127.0.0.1%3A54583%2Foauth%2Fcallback&scope=openid+profile+email&state=',
+            redirect,
         )
-        self.conn.strategy.add_entry(
-            'cn=appgroup,ou=Groups,dc=example,dc=org',
-            {
-                'cn': ['appgroup'],
-                'memberUid': ['user01'],
-                'objectClass': ['posixGroup'],
-            },
-        )
-        # When user try to login with valid crendentials
-        login = cherrypy.engine.publish('login', 'user01', 'password1')
+        state = redirect.split('state=')[1]
+        # When OAuth provider redirect to callback
+        self.getPage(f'/oauth/callback?code=test&state={state}')
+        # Then user is redirect to main page.
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', 'http://%s:%s/' % (self.HOST, self.PORT))
         # Then user is authenticated
-        self.assertTrue(login[0])
-        self.listener.user_added.assert_called_once_with(login[0])
-        self.listener.user_login.assert_called_once_with(login[0])
+        self.getPage('/', headers=self.cookies)
+        self.assertStatus(200)
+        # Then user is create in database
+        self.assertEqual('Tony Martinez', userobj.fullname)
+        # Then listener got called.
+        self.listener.user_login.assert_called_once_with(userobj)
 
-    def test_login_invalid(self):
-        # Given an LDAP server with a user
-        self.conn.strategy.add_entry(
-            'cn=user01,dc=example,dc=org',
-            {
-                'userPassword': 'password1',
-                'uid': ['user01'],
-                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
-            },
+
+class OAuthLoginAddMissingTest(AbstractOAuthLoginTest, rdiffweb.test.WebCase):
+    default_config = {
+        'oauth-client-id': "test_client_id",
+        'oauth-client-secret': "test_client_secret",
+        'oauth-auth-url': "https://mock-provider.com/oauth/authorize",
+        'oauth-token-url': "https://mock-provider.com/oauth/token",
+        'oauth-userinfo-url': "https://mock-provider.com/user",
+        'oauth-fullname-claim': "name",
+        'oauth-userkey-claim': "nickname",
+        'add-missing-user': 'true',
+        'add-user-default-role': 'maintainer',
+        'add-user-default-userroot': '/backups/users/{username}',
+    }
+
+    def test_login_with_create_user(self):
+        # Given a user doesn't exists in database
+        self.assertIsNone(UserObject.get_user('tony'))
+        # When user try to loging with OAuth
+        self.getPage('/oauth/login')
+        # Then user is redirect to oauth provider
+        self.assertStatus(303)
+        redirect = self.assertHeader('Location')
+        self.assertIn(
+            'https://mock-provider.com/oauth/authorize?response_type=code&client_id=test_client_id&redirect_uri=http%3A%2F%2F127.0.0.1%3A54583%2Foauth%2Fcallback&scope=openid+profile+email&state=',
+            redirect,
         )
-        # When user try to login with valid crendentials
-        login = cherrypy.engine.publish('login', 'user01', 'password1')
+        state = redirect.split('state=')[1]
+        # When OAuth provider redirect to callback
+        self.getPage(f'/oauth/callback?code=test&state={state}')
+        # Then user is redirect to main page.
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', 'http://%s:%s/' % (self.HOST, self.PORT))
         # Then user is authenticated
-        self.assertFalse(login[0])
-        self.listener.user_added.assert_not_called()
-        self.listener.user_login.assert_not_called()
+        self.getPage('/', headers=self.cookies)
+        self.assertStatus(200)
+        # Then user is create in database
+        userobj = UserObject.get_user('tony')
+        self.assertIsNotNone(userobj)
+        self.assertFalse(userobj.is_admin)
+        self.assertEqual(UserObject.MAINTAINER_ROLE, userobj.role)
+        self.assertEqual('/backups/users/tony', userobj.user_root)
+        self.assertEqual('tony@example.com', userobj.email)
+        self.assertEqual('Tony Martinez', userobj.fullname)
+        # Then listener got called.
+        self.listener.user_added.assert_called_once_with(userobj)
+        self.listener.user_login.assert_called_once_with(userobj)
+
+
+class OAuthLoginAddMissingWithEmailTest(AbstractOAuthLoginTest, rdiffweb.test.WebCase):
+    default_config = {
+        'oauth-client-id': "test_client_id",
+        'oauth-client-secret': "test_client_secret",
+        'oauth-auth-url': "https://mock-provider.com/oauth/authorize",
+        'oauth-token-url': "https://mock-provider.com/oauth/token",
+        'oauth-userinfo-url': "https://mock-provider.com/user",
+        'oauth-fullname-claim': "name",
+        'oauth-userkey-claim': "email",
+        'add-missing-user': 'true',
+        'add-user-default-role': 'maintainer',
+        'add-user-default-userroot': '/backups/users/{username}',
+    }
+
+    def test_login_with_create_user(self):
+        # Given a user doesn't exists in database
+        self.assertIsNone(UserObject.get_user('tony'))
+        # When user try to loging with OAuth
+        self.getPage('/oauth/login')
+        # Then user is redirect to oauth provider
+        self.assertStatus(303)
+        redirect = self.assertHeader('Location')
+        self.assertIn(
+            'https://mock-provider.com/oauth/authorize?response_type=code&client_id=test_client_id&redirect_uri=http%3A%2F%2F127.0.0.1%3A54583%2Foauth%2Fcallback&scope=openid+profile+email&state=',
+            redirect,
+        )
+        state = redirect.split('state=')[1]
+        # When OAuth provider redirect to callback
+        self.getPage(f'/oauth/callback?code=test&state={state}')
+        # Then user is redirect to main page.
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', 'http://%s:%s/' % (self.HOST, self.PORT))
+        # Then user is authenticated
+        self.getPage('/', headers=self.cookies)
+        self.assertStatus(200)
+        # Then user is create in database
+        userobj = UserObject.get_user('tony_example.com')
+        self.assertIsNotNone(userobj)
+        self.assertFalse(userobj.is_admin)
+        self.assertEqual(UserObject.MAINTAINER_ROLE, userobj.role)
+        self.assertEqual('/backups/users/tony_example.com', userobj.user_root)
+        self.assertEqual('tony@example.com', userobj.email)
+        self.assertEqual('Tony Martinez', userobj.fullname)
+        # Then listener got called.
+        self.listener.user_added.assert_called_once_with(userobj)
+        self.listener.user_login.assert_called_once_with(userobj)

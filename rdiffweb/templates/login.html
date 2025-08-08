@@ -41,6 +41,12 @@
             {% include 'message.html' %}
             {{ form }}
           </form>
+          {% if oauth_enabled %}
+            <p class="mt-4 mb-4 text-center">──────── OR ────────</p>
+            <p class="mt-4 text-center">
+              <a href="{{ url_for('/oauth/login') }}">{% trans %}Sign in with {{ oauth_provider_name }}{% endtrans %}</a>
+            </p>
+          {% endif %}
         </div>
       </div>
     </div>

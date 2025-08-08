@@ -18,8 +18,10 @@ import logging
 import sys
 
 import cherrypy
-from sqlalchemy import Column, Index, Integer, Text, event, func
+from sqlalchemy import Column, Index, Integer, PrimaryKeyConstraint, Text, event, func
 from sqlalchemy.exc import IntegrityError
+
+from rdiffweb.tools.i18n import gettext_lazy as _
 
 from ._update import index_exists
 
@@ -30,14 +32,26 @@ logger = logging.getLogger(__name__)
 
 class SshKey(Base):
     __tablename__ = 'sshkeys'
-    __table_args__ = {'sqlite_autoincrement': True}
+    __table_args__ = (
+        PrimaryKeyConstraint(
+            'Key',
+            name='sshkeys_pkey',
+            info={'error_message': _("Duplicate key. This key already exists or is associated to another user.")},
+        ),
+        {'sqlite_autoincrement': True},
+    )
     fingerprint = Column('Fingerprint', Text)
     key = Column('Key', Text, unique=True, primary_key=True)
     userid = Column('UserID', Integer, nullable=False)
 
 
 # Make finger print unique
-sshkey_fingerprint_index = Index('sshkey_fingerprint_index', SshKey.fingerprint, unique=True)
+sshkey_fingerprint_index = Index(
+    'sshkey_fingerprint_index',
+    SshKey.fingerprint,
+    unique=True,
+    info={'error_message': _("Duplicate key. This key already exists or is associated to another user.")},
+)
 
 
 @event.listens_for(Base.metadata, 'after_create')

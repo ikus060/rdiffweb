@@ -39,6 +39,7 @@ dependencies = [
     "psutil>=2.1.1",
     "pytz",
     "requests",
+    "requests_oauthlib",
     "sqlalchemy>=1.4,<3",
     "WTForms>=2.2,<4",
     "zxcvbn>=4.4.27"

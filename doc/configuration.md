@@ -123,6 +123,17 @@ titlesonly: true
 configuration-ldap
 ```
 
+## Configure OAuth
+
+Rdiffweb may also integrate with OAuth provider to support user authentication.
+
+```{toctree}
+---
+titlesonly: true
+---
+configuration-oauth
+```
+
 ## Configure User Session
 
 A user session is a sequence of request and response transactions associated with a single user. The user session is the means to track each authenticated user.

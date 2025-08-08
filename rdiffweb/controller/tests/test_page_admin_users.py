@@ -300,7 +300,7 @@ class AdminTest(rdiffweb.test.WebCase):
         self._add_user("test1", "test1@test.com", "pr3j5Dwi", "/tmp/", UserObject.USER_ROLE)
         # Then the user list is displayed with an error message.
         self.assertStatus(200)
-        self.assertInBody("User test1 already exists.")
+        self.assertInBody("A user with this username address already exists.")
 
     def test_add_user_with_invalid_root_directory(self):
         """
@@ -756,7 +756,7 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
         # Check if exception return json data.
         self.assertEqual(
             json.loads(self.body.decode('utf8')),
-            {"message": "User newuser already exists.", "status": "400 Bad Request"},
+            {"message": "A user with this username address already exists.", "status": "400 Bad Request"},
         )
 
     @parameterized.expand(

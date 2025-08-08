@@ -31,12 +31,13 @@ class LocationsPage(Controller):
         Shows repositories of current user
         """
         # Get page params
-        if self.app.currentuser.refresh_repos():
-            self.app.currentuser.commit()
+        currentuser = cherrypy.serving.request.currentuser
+        if currentuser.refresh_repos():
+            currentuser.commit()
         params = {
-            "repos": self.app.currentuser.repo_objs,
-            "disk_usage": self.app.currentuser.disk_usage,
-            "disk_quota": self.app.currentuser.disk_quota,
+            "repos": currentuser.repo_objs,
+            "disk_usage": currentuser.disk_usage,
+            "disk_quota": currentuser.disk_quota,
         }
         # Render the page.
         return self._compile_template("locations.html", **params)

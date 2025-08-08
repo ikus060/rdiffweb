@@ -420,13 +420,13 @@ class APITest(rdiffweb.test.WebCase):
                     },
                     '/login/': {
                         'get': {
-                            'summary': 'Called by auth_form to generate the /login/ page.',
+                            'summary': 'Display form to authenticate user.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],
                         },
                         'post': {
-                            'summary': 'Called by auth_form to generate the /login/ page.',
+                            'summary': 'Display form to authenticate user.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
                             'parameters': [],

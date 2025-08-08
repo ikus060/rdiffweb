@@ -25,7 +25,7 @@ from wtforms.validators import DataRequired, ValidationError
 
 from rdiffweb.controller import Controller
 from rdiffweb.controller.filter_authorization import is_maintainer
-from rdiffweb.controller.form import CherryForm
+from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 from rdiffweb.core.rdw_templating import url_for
@@ -40,7 +40,7 @@ def _delete_repo(repoid, path):
     repoobj.commit()
 
 
-class DeleteRepoForm(CherryForm):
+class DeleteRepoForm(DbForm):
     confirm = StringField(_('Confirmation'), validators=[DataRequired()])
 
     def validate_confirm(self, field):
@@ -73,14 +73,13 @@ class DeletePage(Controller):
         form = DeleteRepoForm()
 
         form.expected_confirm = repo.display_name if path_obj.isroot else path_obj.display_name
-        if form.is_submitted():
-            if form.validate():
-                cherrypy.engine.publish('schedule_task', _delete_repo, repo.repoid, path)
-                # Redirect to parent folder or to root if repo get deleted
-                if path_obj.isroot:
-                    raise cherrypy.HTTPRedirect(url_for('/'))
-                else:
-                    parent_path = repo.fstat(os.path.dirname(path_obj.path))
-                    raise cherrypy.HTTPRedirect(url_for('browse', repo, parent_path))
+        if form.validate_on_submit():
+            cherrypy.engine.publish('schedule_task', _delete_repo, repo.repoid, path)
+            # Redirect to parent folder or to root if repo get deleted
+            if path_obj.isroot:
+                raise cherrypy.HTTPRedirect(url_for('/'))
             else:
-                raise cherrypy.HTTPError(400, form.error_message)
+                parent_path = repo.fstat(os.path.dirname(path_obj.path))
+                raise cherrypy.HTTPRedirect(url_for('browse', repo, parent_path))
+        if form.error_message:
+            raise cherrypy.HTTPError(400, form.error_message)

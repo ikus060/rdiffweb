@@ -22,7 +22,7 @@ Default page handler
 
 import cherrypy
 
-import rdiffweb.tools.auth_form  # noqa
+import rdiffweb.tools.auth  # noqa
 import rdiffweb.tools.auth_mfa  # noqa
 import rdiffweb.tools.ratelimit  # noqa
 
@@ -33,7 +33,7 @@ def staticdir(path, doc=''):
     """
 
     @cherrypy.expose
-    @cherrypy.tools.auth_form(on=False)
+    @cherrypy.tools.auth(on=False)
     @cherrypy.tools.auth_mfa(on=False)
     @cherrypy.tools.ratelimit(on=False)
     @cherrypy.tools.sessions(on=False)
@@ -53,7 +53,7 @@ def staticfile(path, doc=''):
     """
 
     @cherrypy.expose
-    @cherrypy.tools.auth_form(on=False)
+    @cherrypy.tools.auth(on=False)
     @cherrypy.tools.auth_mfa(on=False)
     @cherrypy.tools.ratelimit(on=False)
     @cherrypy.tools.sessions(on=False)

@@ -37,22 +37,31 @@ The following settings are available for basic LDAP integration with Rdiffweb:
 | --ldap-base-dn (Required) | This setting specifies the DN of the branch of the directory where all searches should start from. For example: dc=my,dc=domain |
 | --ldap-bind-dn | This setting specifies the DN used to bind to the server when searching for entries. If not provided, Rdiffweb will use an anonymous bind. |
 | --ldap-bind-password | This setting specifies the password to use in conjunction with LdapBindDn. Note that the bind password is probably sensitive data and should be properly protected. You should only use the LdapBindDn and LdapBindPassword if you absolutely need them to search the directory. |
-| --ldap-add-missing-user | This setting enables the creation of users from LDAP when the credentials are valid. |
 | --ldap-username-attribute | This setting specifies the attribute to search for the username. If no attributes are provided, the default is to use uid. It's a good idea to choose an attribute that will be unique across all entries in the subtree you will be using. |
 | --ldap-user-filter | This setting specifies the search filter to limit LDAP lookup. If not provided, defaults to (objectClass=*), which searches for all objects in the tree. |
 
-## Attribute Configuration Settings
+## Create or update user from LDAP
 
-The following settings allow you to specify LDAP attributes for user display names, email addresses, and other attributes:
+When LDAP integration is enabled, the application can automatically create users in the internal database upon their first successful login. If this feature is disabled, users must be created manually before they can log in successfully.
 
-| Option | Description |
-| --- | --- |
-| --ldap-add-user-default-role | This setting specifies the default role used when creating users from LDAP. This parameter is only useful when --ldap-add-missing-user is enabled. |
-| --ldap-add-user-default-userroot | This setting specifies the default user root directory used when creating users from LDAP. LDAP attributes may be used to define the default location. For example: /backups/{uid[0]}/. This parameter is only useful when --ldap-add-missing-user is enabled. |
-| --ldap-fullname-attribute | This setting specifies the LDAP attribute for the user's display name. If fullname is blank, the full name is taken from the firstname and lastname. Common attributes for full names include 'cn' or 'displayName'. |
-| --ldap-firstname-attribute | This setting specifies the LDAP attribute for the user's first name. Used when the attribute configured for name does not exist. For example: givenName |
-| --ldap-lastname-attribute | This setting specifies the LDAP attribute for the user's last name. Used when the attribute configured for name does not exist. For example: sn |
-| --ldap-email-attribute | This setting specifies the LDAP attribute for the user's email address. For example: mail, email, userPrincipalName |
+### Enabling automatic user creation
+
+To enable automatic user creation from LDAP, use the `--add-missing-user` option. When enabled, you can control how new users are created using additional configuration options.
+
+### Configuration options
+
+The following settings control user creation and attribute mapping from LDAP:
+
+| Option | Description | Example |
+| --- | --- | --- |
+| `--add-missing-user` | Enables automatic creation of users from LDAP when authentication is successful. | `--add-missing-user` |
+| `--add-user-default-role` | Specifies the default role assigned to users created from LDAP. Only effective when `--add-missing-user` is enabled. | `--add-user-default-role=user` |
+| `--add-user-default-userroot` | Specifies the default root directory for users created from LDAP. Supports LDAP attribute substitution using `{attribute}` syntax. Only effective when `--add-missing-user` is enabled. | `--add-user-default-userroot=/backups/{uid}/` |
+| `--ldap-fullname-attribute` | LDAP attribute containing the user's full display name. If not found or empty, the full name is constructed from first name and last name attributes. | `--ldap-fullname-attribute=displayName` |
+| `--ldap-firstname-attribute` | LDAP attribute containing the user's first name. Used as fallback when full name attribute is not available. | `--ldap-firstname-attribute=givenName` |
+| `--ldap-lastname-attribute` | LDAP attribute containing the user's last name. Used as fallback when full name attribute is not available. | `--ldap-lastname-attribute=sn` |
+| `--ldap-email-attribute` | LDAP attribute containing the user's email address. | `--ldap-email-attribute=userPrincipalName` |
+
 
 ## Configure LDAP Group Access
 
