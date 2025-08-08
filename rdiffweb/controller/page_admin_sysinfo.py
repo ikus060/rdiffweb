@@ -129,7 +129,7 @@ class AdminSysinfoPage(Controller):
         params = {
             "version": self.app.version,
             # Config
-            "cfg": {k: '********' if 'password' in k else v for k, v in vars(self.app.cfg).items()},
+            "cfg": {k: '********' if '_password' in k or '_secret' in k else v for k, v in vars(self.app.cfg).items()},
             # System Info entries
             "pyinfo": list(get_pyinfo()),
             "osinfo": list(get_osinfo()),

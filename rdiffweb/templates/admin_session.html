@@ -52,8 +52,8 @@
           <td data-order="{{ session.access_time }}">
             <time datetime="{{ session.access_time }}">{{ session.access_time | lastupdated }}</time>
           </td>
-          <td data-order="{{ session.login_time }}">
-            <time datetime="{{ session.login_time }}">{{ session.login_time | lastupdated }}</time>
+          <td data-order="{{ session.start_time }}">
+            <time datetime="{{ session.start_time }}">{{ session.start_time | lastupdated }}</time>
           </td>
           <td data-order="{{ session.expiration_time }}">
             <time class="js-datetime" datetime="{{ session.expiration_time }}">{{ session.expiration_time }}</time>

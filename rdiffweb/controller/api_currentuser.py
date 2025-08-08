@@ -19,7 +19,7 @@ from wtforms.fields import SelectField, StringField
 from wtforms.validators import Length, Optional, Regexp
 
 from rdiffweb.controller import Controller
-from rdiffweb.controller.form import CherryForm
+from rdiffweb.controller.formdb import DbForm
 from rdiffweb.controller.page_pref_sshkeys import ApiSshKeys
 from rdiffweb.controller.page_pref_tokens import ApiTokens
 from rdiffweb.controller.page_settings import ApiRepos
@@ -33,7 +33,7 @@ except ImportError:
     from wtforms.fields.html5 import EmailField  # wtform <3
 
 
-class CurrentUserForm(CherryForm):
+class CurrentUserForm(DbForm):
     """
     Form used to validate input data for REST api request.
     """
@@ -76,7 +76,6 @@ class CurrentUserForm(CherryForm):
         user.email = self.email.data
         user.lang = self.lang.data
         user.report_time_range = self.report_time_range.data
-        user.add()
 
 
 @cherrypy.expose
@@ -130,7 +129,7 @@ class ApiCurrentUser(Controller):
         - `encoding`: The encoding used for the repository.
 
         """
-        u = self.app.currentuser
+        u = cherrypy.serving.request.currentuser
         if u.refresh_repos():
             u.commit()
         return {
@@ -171,14 +170,11 @@ class ApiCurrentUser(Controller):
         Returns status 200 OK on success.
         """
         # Validate input data.
-        userobj = self.app.currentuser
+        userobj = cherrypy.serving.request.currentuser
         form = CurrentUserForm(obj=userobj, json=1)
         if not form.strict_validate():
             raise cherrypy.HTTPError(400, form.error_message)
         # Apply changes
-        try:
-            form.populate_obj(userobj)
-            userobj.commit()
-        except Exception as e:
-            userobj.rollback()
-            raise cherrypy.HTTPError(400, str(e))
+        if form.save_to_db(userobj):
+            return None
+        raise cherrypy.HTTPError(400, form.error_message)

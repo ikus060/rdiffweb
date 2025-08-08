@@ -17,11 +17,10 @@ import logging
 
 import cherrypy
 from wtforms.fields import BooleanField, PasswordField, StringField, SubmitField
-from wtforms.validators import InputRequired, Length
+from wtforms.validators import DataRequired, Length
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
-from rdiffweb.tools.auth_form import LOGIN_PERSISTENT, SESSION_KEY
 from rdiffweb.tools.i18n import get_translation
 from rdiffweb.tools.i18n import gettext_lazy as _
 
@@ -34,8 +33,9 @@ class LoginForm(CherryForm):
     # redirect = HiddenField(default='/', filters=[lambda v: v if v.startswith('/') else '/'])
     login = StringField(
         _('Username'),
-        default=lambda: cherrypy.session.get(SESSION_KEY, None),
-        validators=[InputRequired(), Length(max=256, message=_('Username too long.'))],
+        # Default to last MFA username (if any).
+        default=lambda: cherrypy.tools.auth.get_user_key() or "",
+        validators=[DataRequired(), Length(max=256, message=_('Username too long.'))],
         render_kw={
             "placeholder": _('Username'),
             "autocorrect": "off",
@@ -44,15 +44,23 @@ class LoginForm(CherryForm):
             "autofocus": "autofocus",
         },
     )
-    password = PasswordField(_('Password'), validators=[InputRequired()], render_kw={"placeholder": _('Password')})
+    password = PasswordField(_('Password'), validators=[DataRequired()], render_kw={"placeholder": _('Password')})
     persistent = BooleanField(
         _('Remember me'),
-        default=lambda: cherrypy.session.get(LOGIN_PERSISTENT, False),
+        default=lambda: cherrypy.tools.sessions_timeout.is_persistent(),
     )
     submit = SubmitField(
         _('Sign in'),
         render_kw={"class": "btn-primary btn-lg btn-block"},
     )
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # If user got redirected to login page, let use the URL to fill the login name by default.
+        # e.g.: /browser/<username>/reponame
+        original_url = cherrypy.tools.auth.get_original_url()
+        if original_url and original_url.count('/') >= 3 and not self.login.data:
+            self.login.data = original_url.strip('/').split('/', 2)[1]
 
 
 class LoginPage(Controller):
@@ -61,38 +69,32 @@ class LoginPage(Controller):
     """
 
     @cherrypy.expose()
+    @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.auth_mfa(on=False)
     @cherrypy.tools.ratelimit(methods=['POST'])
-    @cherrypy.tools.allow(methods=['GET', 'POST'])
     def index(self, **kwargs):
         """
-        Called by auth_form to generate the /login/ page.
+        Display form to authenticate user.
         """
-        form = LoginForm()
+
+        # Redirect user to location page if already login
+        if getattr(cherrypy.request, 'login', False):
+            raise cherrypy.HTTPRedirect('/')
 
         # Validate user's credentials
+        form = LoginForm()
         if form.validate_on_submit():
-            try:
-                results = [r for r in cherrypy.engine.publish('login', form.login.data, form.password.data) if r]
-            except Exception:
-                logger.exception('fail to validate user [%s] credentials', form.login.data)
-                flash(_("Failed to validate user credentials."), level='error')
+            userobj = cherrypy.tools.auth.login_with_credentials(form.login.data, form.password.data)
+            if userobj:
+                cherrypy.tools.sessions_timeout.set_persistent(form.persistent.data)
+                raise cherrypy.tools.auth.redirect_to_original_url()
             else:
-                if len(results) > 0 and results[0]:
-                    cherrypy.tools.auth_form.login(username=results[0].username, persistent=form.persistent.data)
-                    cherrypy.tools.auth_form.redirect_to_original_url()
-                else:
-                    flash(_("Invalid username or password."))
-        else:
-            if not form.login.data:
-                # If user got redirected to login page, let use the URL to fill the login name by default.
-                redirect_url = cherrypy.tools.auth_form._get_redirect_url()
-                parts = redirect_url.strip('/').split('/', 2)
-                if len(parts) == 3:
-                    form.login.data = parts[1]
-
+                flash(_("Invalid username or password."))
+        cfg = self.app.cfg
         params = {
             'form': form,
+            'oauth_enabled': cfg.oauth_client_id and cfg.oauth_client_secret,
+            'oauth_provider_name': cfg.oauth_provider_name,
         }
         # Add welcome message to params. Try to load translated message.
         welcome_msg = self.app.cfg.welcome_msg
@@ -106,11 +108,13 @@ class LoginPage(Controller):
 
 class LogoutPage(Controller):
     @cherrypy.expose()
-    @cherrypy.tools.auth_form(on=False)
+    @cherrypy.tools.allow(methods=['POST'])
+    @cherrypy.tools.auth(on=False)
     @cherrypy.tools.auth_mfa(on=False)
     @cherrypy.tools.ratelimit(methods=['POST'])
-    @cherrypy.tools.allow(methods=['POST'])
     def default(self, **kwargs):
-        """Logout user"""
-        cherrypy.tools.auth_form.logout()
+        """
+        Logout user
+        """
+        cherrypy.tools.auth.clear_session()
         raise cherrypy.HTTPRedirect('/')

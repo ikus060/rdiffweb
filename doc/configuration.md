@@ -123,15 +123,26 @@ titlesonly: true
 configuration-ldap
 ```
 
+## Configure OAuth
+
+Rdiffweb may also integrate with OAuth provider to support user authentication.
+
+```{toctree}
+---
+titlesonly: true
+---
+configuration-oauth
+```
+
 ## Configure User Session
 
 A user session is a sequence of request and response transactions associated with a single user. The user session is the means to track each authenticated user.
 
 | Option | Description | Example |
 | --- | --- | --- |
-| session-idle-timeout | This timeout defines the amount of time a session will remain active in case there is no activity in the session. User Session will be revoke after this period of inactivity, unless the user selected "remember me". Default 10 minutes. | 5 |
-| session-absolute-timeout | This timeout defines the maximum amount of time a session can be active. After this period, user is forced to (re)authenticate, unless the user selected "remember me". Default 20 minutes. | 30 |
-| session-persistent-timeout | This timeout defines the maximum amount of time to remember and trust a user device. This timeout is used when user select "remember me". Default 30 days | 43200 |
+| session-idle-timeout | Sliding inactivity timeout for non‑persistent sessions; renews on user activity. Default 15 minutes | 30 |
+| session-absolute-timeout | Absolute maximum session lifetime from initial authentication; never renews on activity. Default 30 days. | 43200 |
+| session-persistent-timeout | Sliding inactivity timeout for persistent (“remember me”) sessions; renews on activity. Default 7 days | 10080 |
 
 ## Configure email notifications
 

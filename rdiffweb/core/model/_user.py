@@ -32,18 +32,16 @@ from sqlalchemy import (
     func,
     inspect,
     not_,
-    or_,
 )
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import deferred, relationship, validates
 from zxcvbn import zxcvbn
 
-import rdiffweb.core.model._regexp  # noqa
 import rdiffweb.plugins.db  # noqa
 from rdiffweb.core import authorizedkeys
 from rdiffweb.core.passwd import check_password, hash_password
-from rdiffweb.tools.i18n import ugettext as _
+from rdiffweb.tools.i18n import gettext_lazy as _
 
 from ._repo import RepoObject
 from ._session import SessionObject
@@ -58,14 +56,6 @@ Base = cherrypy.db.get_base()
 Session = cherrypy.db.get_session()
 
 SEP = b'/'
-
-
-class DuplicateSSHKeyError(Exception):
-    """
-    Raised by add_authorizedkey when trying to add the same SSH Key twice.
-    """
-
-    pass
 
 
 class UserObject(Base):
@@ -129,14 +119,84 @@ class UserObject(Base):
     report_last_sent = Column('report_last_sent', Timestamp, nullable=True, default=None)
 
     @classmethod
+    def authenticate(cls, login, password):
+        """
+        Verify username password against local database.
+        """
+        # Check user password.
+        userobj = cls.get_user_by_login(login)
+        return userobj and userobj.validate_password(password)
+
+    @classmethod
     def get_user(cls, username_or_id):
-        """Return a user object with username case-insensitive"""
+        """Return a user object from username or id case-insensitive"""
         query = UserObject.query
         if str(username_or_id).isdigit():
             query = query.filter(UserObject.userid == int(username_or_id))
         else:
             query = query.filter(func.lower(UserObject.username) == username_or_id.lower())
-        return query.first()
+        return query.one_or_none()
+
+    @classmethod
+    def get_user_by_login(cls, login):
+        """
+        Return a user objectt from username or email (if enabled).
+        """
+        query = UserObject.query
+        cfg = cherrypy.tree.apps[''].cfg
+        if cfg.login_with_email and '@' in login:
+            query = query.filter(func.lower(UserObject.email) == login.lower())
+        else:
+            query = query.filter(func.lower(UserObject.username) == login.lower())
+        return query.one_or_none()
+
+    @classmethod
+    def get_create_or_update_user(cls, login, user_info=None):
+        """
+        Used during authentication process to search for existing user,
+        create user if missing and update user if required.
+        """
+        assert login
+        # When enabled, create missing userobj in database.
+        fullname = user_info.get('fullname') if user_info else None
+        email = user_info.get('email') if user_info else None
+        # Need to support lookup by username or email
+        userobj = cls.get_user_by_login(login)
+        cfg = cherrypy.tree.apps[''].cfg
+        if userobj is None and cfg.add_missing_user:
+            try:
+                # At this point, we need to create a new user in database.
+                # In case default values are invalid, let evaluate them
+                # before creating the user in database.
+                username = login if '@' not in login else login.replace('@', '_')
+                default_user_root = cfg.add_user_default_userroot and cfg.add_user_default_userroot.format(
+                    username=username, **user_info
+                )
+                default_role = UserObject.ROLES.get(cfg.add_user_default_role)
+                userobj = UserObject.add_user(
+                    username=username,
+                    fullname=fullname,
+                    email=email,
+                    role=default_role,
+                    user_root=default_user_root,
+                ).commit()
+            except Exception:
+                UserObject.session.rollback()
+                logger.error('fail to create new user', exc_info=1)
+        if userobj is None:
+            # User doesn't exists in database
+            return None
+        # Update user attributes
+        dirty = False
+        if fullname:
+            userobj.fullname = fullname
+            dirty = True
+        if email:
+            userobj.email = email
+            dirty = True
+        if dirty:
+            userobj.commit()
+        return userobj
 
     @classmethod
     def create_admin_user(cls, default_username, default_password):
@@ -160,10 +220,6 @@ class UserObject(Base):
         Used to add a new user with an optional password.
         """
         assert password is None or isinstance(password, str)
-        # Check if user already exists.
-        if UserObject.get_user(username):
-            raise ValueError(_("User %s already exists." % (username,)))
-
         # Find a database where to add the user
         logger.info("adding new user [%s]", username)
         userobj = UserObject(
@@ -194,19 +250,14 @@ class UserObject(Base):
         if os.path.isfile(filename):
             with open(filename, mode="r+", encoding='utf-8') as fh:
                 if authorizedkeys.exists(fh, key):
-                    raise DuplicateSSHKeyError(_("SSH key already exists"))
+                    raise ValueError(_("SSH key already exists"))
                 logger.info("add key [%s] to [%s] authorized_keys", key, self.username)
                 authorizedkeys.add(fh, key)
         else:
             # Also look in database.
             logger.info("add key [%s] to [%s] database", key, self.username)
-            try:
-                sshkey = SshKey(userid=self.userid, fingerprint=key.fingerprint, key=key.getvalue())
-                sshkey.add().flush()
-            except IntegrityError:
-                raise DuplicateSSHKeyError(
-                    _("Duplicate key. This key already exists or is associated to another user.")
-                )
+            sshkey = SshKey(userid=self.userid, fingerprint=key.fingerprint, key=key.getvalue())
+            sshkey.add().flush()
         cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
         cherrypy.engine.publish('authorizedkey_added', self, fingerprint=key.fingerprint, comment=comment)
 
@@ -364,14 +415,6 @@ class UserObject(Base):
         return self.role is not None and self.role <= self.ADMIN_ROLE
 
     @hybrid_property
-    def is_ldap(self):
-        return self.hash_password is None or self.hash_password == ''
-
-    @is_ldap.expression
-    def is_ldap(cls):
-        return or_(cls.hash_password.is_(None), cls.hash_password == '')
-
-    @hybrid_property
     def is_maintainer(self):
         return self.role is not None and self.role <= self.MAINTAINER_ROLE
 
@@ -380,9 +423,8 @@ class UserObject(Base):
         Change the user's password. Raise a ValueError if the username or
         the password are invalid.
         """
-        assert isinstance(password, str)
-        if not password:
-            raise ValueError("password can't be empty")
+        if not isinstance(password, str) or len(password.strip()) == 0:
+            raise ValueError(_("password can't be empty"))
         cfg = cherrypy.tree.apps[''].cfg
 
         # Cannot update admin-password if defined
@@ -451,13 +493,21 @@ class UserObject(Base):
 
 
 # Username should be case insensitive
-user_username_index = Index('user_username_index', func.lower(UserObject.username), unique=True)
+user_username_index = Index(
+    'user_username_index',
+    func.lower(UserObject.username),
+    unique=True,
+    info={
+        "error_message": _('A user with this username address already exists.'),
+    },
+)
 
 users_username_nan_ck = CheckConstraint(
     UserObject.username.regexp_match(UserObject.PATTERN_USERNAME),
     name="users_username_nan_ck",
     info={
-        "description": "Make sure username are not a number (NaN) to avoid conflict when searching user by username vs userid."
+        "error_message": _('Username must start with a letter and contain only letters, numbers, _, ., and -'),
+        "description": "Make sure username are not a number (NaN) to avoid conflict when searching user by username vs userid.",
     },
 )
 
@@ -515,7 +565,7 @@ def update_user_schema(target, conn, **kw):
             )
             logger.error(msg)
             print(msg, file=sys.stderr)
-            raise SystemExit(12)
+            raise RuntimeError(msg)
         user_username_index.create(bind=conn)
 
     # Enforce username regex pattern
@@ -533,18 +583,63 @@ def update_user_schema(target, conn, **kw):
             )
             logger.error(msg)
             print(msg, file=sys.stderr)
-            raise SystemExit(12)
+            raise RuntimeError(msg)
         constraint_add(conn, users_username_nan_ck)
+
+    # Enforce unique email if login by email is enabled.
+    cfg = cherrypy.tree.apps[''].cfg
+    if cfg.login_with_email:
+        if not index_exists(conn, 'users_email_index'):
+            duplicate_emails = (
+                UserObject.query.with_entities(func.lower(UserObject.email))
+                .filter(func.trim(UserObject.email) != "")
+                .group_by(func.lower(UserObject.email))
+                .having(func.count(UserObject.email) > 1)
+            ).all()
+            if duplicate_emails:
+                msg = (
+                    'Failure to upgrade your database to make email unique. '
+                    'You must downgrade and deleted duplicate email: '
+                    '%s' % '\n'.join([str(k) for k in duplicate_emails])
+                )
+                logger.error(msg)
+                print(msg, file=sys.stderr)
+                raise RuntimeError(msg)
+        # Make sure the index is declared only once.
+        if 'users_email_index' not in [idx.name for idx in UserObject.__table__.indexes]:
+            users_email_index = Index(
+                'users_email_index',
+                func.lower(UserObject.email),
+                unique=True,
+                sqlite_where=UserObject.email != '',
+                postgresql_where=UserObject.email != '',
+                info={'error_message': _('A user with this email address already exists.')},
+            )
+            if not index_exists(conn, 'users_email_index'):
+                users_email_index.create(bind=conn)
 
 
 @event.listens_for(Session, 'before_flush')
 def user_before_flush(session, flush_context, instances):
     """
-    Publish event when user is added
+    Publish event when user is about to get added.
+    """
+    for userobj in session.new:
+        if isinstance(userobj, UserObject):
+            cherrypy.engine.publish('user_adding', userobj)
+
+
+@event.listens_for(Session, 'after_flush')
+def user_after_flush(session, flush_context):
+    """
+    Publish event when user is added, updated or deleted.
     """
     for userobj in session.new:
         if isinstance(userobj, UserObject):
             cherrypy.engine.publish('user_added', userobj)
+    for userobj in session.deleted:
+        if isinstance(userobj, UserObject):
+            cherrypy.engine.publish('user_deleted', userobj.username)
     for userobj in session.dirty:
         if isinstance(userobj, UserObject):
             changes = {}
@@ -561,13 +656,3 @@ def user_before_flush(session, flush_context, instances):
                 cherrypy.engine.publish('user_password_changed', userobj)
             if changes:
                 cherrypy.engine.publish('user_attr_changed', userobj, changes)
-
-
-@event.listens_for(Session, 'after_flush')
-def user_after_flush(session, flush_context):
-    """
-    Publish event when user is deleted.
-    """
-    for userobj in session.deleted:
-        if isinstance(userobj, UserObject):
-            cherrypy.engine.publish('user_deleted', userobj.username)

@@ -30,9 +30,8 @@ from wtforms.widgets.core import TextArea
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.filter_authorization import is_maintainer
-from rdiffweb.controller.form import CherryForm
+from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core import authorizedkeys
-from rdiffweb.core.model import DuplicateSSHKeyError
 from rdiffweb.tools.i18n import gettext_lazy as _
 
 _logger = logging.getLogger(__name__)
@@ -46,7 +45,7 @@ def validate_key(unused_form, field):
         raise ValidationError(_("Invalid SSH key."))
 
 
-class SshForm(CherryForm):
+class SshForm(DbForm):
     action = HiddenField(default="add")
     title = StringField(
         _('Title'),
@@ -70,45 +69,23 @@ class SshForm(CherryForm):
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
-        return super().is_submitted() and self.action.data == 'add'
+        return super().is_submitted() and self.action.default in self.action.raw_data
 
     def populate_obj(self, userobj):
-        try:
-            userobj.add_authorizedkey(key=self.key.data, comment=self.title.data)
-            userobj.commit()
-            return True
-        except DuplicateSSHKeyError as e:
-            userobj.rollback()
-            flash(str(e), level='error')
-            _logger.warning("trying to add duplicate ssh key")
-            return False
-        except Exception:
-            userobj.rollback()
-            flash(_("Unknown error while adding the SSH Key"), level='error')
-            _logger.warning("error adding ssh key", exc_info=1)
-            return False
+        userobj.add_authorizedkey(key=self.key.data, comment=self.title.data)
 
 
-class DeleteSshForm(CherryForm):
+class DeleteSshForm(DbForm):
     action = HiddenField(default="delete")
     fingerprint = StringField('Fingerprint', validators=[validators.data_required()])
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
-        return super().is_submitted() and self.action.data == 'delete'
+        return super().is_submitted() and self.action.default in self.action.raw_data
 
     def populate_obj(self, userobj):
         is_maintainer()
-        try:
-            userobj.delete_authorizedkey(self.fingerprint.data)
-            userobj.commit()
-            return True
-        except Exception:
-            userobj.rollback()
-            if hasattr(cherrypy.serving, 'session'):
-                flash(_("Unknown error while removing the SSH Key"), level='error')
-            _logger.warning("error removing ssh key", exc_info=1)
-            return False
+        userobj.delete_authorizedkey(self.fingerprint.data)
 
 
 class PagePrefSshKeys(Controller):
@@ -119,23 +96,21 @@ class PagePrefSshKeys(Controller):
         """
         Show user's SSH keys
         """
+        currentuser = cherrypy.serving.request.currentuser
         # Handle action
         add_form = SshForm()
         delete_form = DeleteSshForm()
         if not self.app.cfg.disable_ssh_keys:
-            if add_form.is_submitted():
-                if add_form.validate():
-                    if add_form.populate_obj(self.app.currentuser):
-                        raise cherrypy.HTTPRedirect("")
-                else:
-                    flash(add_form.error_message, level='warning')
-            elif delete_form.is_submitted():
-                if delete_form.validate():
-                    if delete_form.populate_obj(self.app.currentuser):
-                        raise cherrypy.HTTPRedirect("")
-                else:
-                    flash(delete_form.error_message, level='warning')
-
+            if add_form.validate_on_submit():
+                if add_form.save_to_db(currentuser):
+                    raise cherrypy.HTTPRedirect("")
+            elif delete_form.validate_on_submit():
+                if delete_form.save_to_db(currentuser):
+                    raise cherrypy.HTTPRedirect("")
+            if add_form.error_message:
+                flash(add_form.error_message, level='warning')
+            if delete_form.error_message:
+                flash(delete_form.error_message, level='warning')
         # Get SSH keys if file exists.
         params = {
             'disable_ssh_keys': self.app.cfg.disable_ssh_keys,
@@ -143,7 +118,7 @@ class PagePrefSshKeys(Controller):
         }
         try:
             params["sshkeys"] = [
-                {'title': key.comment, 'fingerprint': key.fingerprint} for key in self.app.currentuser.authorizedkeys
+                {'title': key.comment, 'fingerprint': key.fingerprint} for key in currentuser.authorizedkeys
             ]
         except IOError:
             params["sshkeys"] = []
@@ -174,7 +149,8 @@ class ApiSshKeys(Controller):
         - `fingerprint`: The fingerprint of the public SSH key.
 
         """
-        return [{'title': key.comment, 'fingerprint': key.fingerprint} for key in self.app.currentuser.authorizedkeys]
+        currentuser = cherrypy.serving.request.currentuser
+        return [{'title': key.comment, 'fingerprint': key.fingerprint} for key in currentuser.authorizedkeys]
 
     def get(self, fingerprint):
         """
@@ -188,7 +164,8 @@ class ApiSshKeys(Controller):
         {"title": "my-laptop", "fingerprint": "b5:f0:40:ee:41:53:9d:68:e1:9b:02:3e:39:99:a8:9b"}
         ```
         """
-        for key in self.app.currentuser.authorizedkeys:
+        currentuser = cherrypy.serving.request.currentuser
+        for key in currentuser.authorizedkeys:
             if key.fingerprint == fingerprint:
                 return {'title': key.comment, 'fingerprint': key.fingerprint}
         raise cherrypy.HTTPError(404)
@@ -202,12 +179,11 @@ class ApiSshKeys(Controller):
 
         Returns status 200 OK on success.
         """
+        currentuser = cherrypy.serving.request.currentuser
         form = DeleteSshForm(fingerprint=fingerprint)
-        if form.validate():
-            form.populate_obj(self.app.currentuser)
+        if form.validate() and form.save_to_db(currentuser):
             return {}
-        else:
-            raise cherrypy.HTTPError(400, form.error_message)
+        raise cherrypy.HTTPError(400, form.error_message)
 
     @cherrypy.tools.required_scope(scope='all,write_user')
     def post(self, **kwargs):
@@ -216,17 +192,11 @@ class ApiSshKeys(Controller):
 
         Registers a new public SSH key for the current user.
         """
+        currentuser = cherrypy.serving.request.currentuser
         # Validate input data.
         form = SshForm(json=1)
         if form.strict_validate():
             # Create the SSH Key
-            userobj = self.app.currentuser
-            try:
-                userobj.add_authorizedkey(key=form.key.data, comment=form.title.data)
-                userobj.commit()
-            except DuplicateSSHKeyError as e:
-                userobj.rollback()
-                raise cherrypy.HTTPError(400, str(e))
-            return kwargs
-        else:
-            raise cherrypy.HTTPError(400, form.error_message)
+            if form.save_to_db(currentuser):
+                return kwargs
+        raise cherrypy.HTTPError(400, form.error_message)

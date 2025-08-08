@@ -37,7 +37,7 @@
           <strong>{{ session.ip_address }}</strong>
           <br/>
           {% trans %}Signed in{% endtrans %}
-          <strong><time datetime="{{ session.login_time }}">{{ session.login_time | lastupdated }}</time></strong>
+          <strong><time datetime="{{ session.start_time }}">{{ session.start_time | lastupdated }}</time></strong>
           <br/>
           {% trans %}Expired on{% endtrans %}
           <strong><time class="js-datetime" datetime="{{ session.expiration_time }}">{{ session.expiration_time }}</time></strong>

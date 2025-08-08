@@ -1,5 +1,5 @@
 # LDAP Plugins for cherrypy
-# Copyright (C) 2025 IKUS Software
+# # Copyright (C) 2025 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,7 +13,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+Created on Oct 17, 2015
 
+@author: Patrik Dufresne <patrik@ikus-soft.com>
+"""
 import os
 from unittest import mock, skipUnless
 
@@ -25,19 +29,13 @@ from .. import ldap  # noqa
 
 
 class LdapPluginTest(helper.CPWebCase):
-    def setUp(self) -> None:
-        self.server = ldap3.Server('my_fake_server')
-        self.conn = ldap3.Connection(self.server, client_strategy=ldap3.MOCK_SYNC)
-        self.patcher = mock.patch('ldap3.Connection', return_value=self.conn)
-        self.patcher.start()
-        return super().setUp()
-
-    def tearDown(self) -> None:
-        self.patcher.stop()
-        return super().tearDown()
-
     @classmethod
     def setup_server(cls):
+        # Configure Mock server early.
+        cls.server = ldap3.Server('my_fake_server')
+        cls.conn = ldap3.Connection(cls.server, client_strategy=ldap3.MOCK_ASYNC, raise_exceptions=True)
+        cls.patcher = mock.patch('ldap3.Connection', return_value=cls.conn)
+        cls.patcher.start()
         cherrypy.config.update(
             {
                 'ldap.uri': 'my_fake_server',
@@ -48,6 +46,21 @@ class LdapPluginTest(helper.CPWebCase):
                 'ldap.lastname_attribute': ['sn'],
             }
         )
+
+    @classmethod
+    def teardown_class(cls):
+        cherrypy.ldap.uri = None
+        # Release mock server.
+        cls.patcher.stop()
+        return super().teardown_class()
+
+    def setUp(self) -> None:
+        # Clear LDAP entries before test.
+        for entry in list(self.conn.strategy.connection.server.dit):
+            if entry == 'cn=schema':
+                continue
+            self.conn.strategy.remove_entry(entry)
+        return super().setUp()
 
     def test_authenticate(self):
         # Given a user in LDAP
@@ -70,8 +83,8 @@ class LdapPluginTest(helper.CPWebCase):
                 'uid': ['user01'],
                 'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
                 'cn': ['user01'],
-                '_email': None,
-                '_fullname': None,
+                'email': None,
+                'fullname': '',
             },
             authenticated[1],
         )
@@ -121,7 +134,7 @@ class LdapPluginTest(helper.CPWebCase):
         # Then user is not authenticated
         self.assertEqual(False, authenticated)
 
-    def test_authenticate_with_email(self):
+    def test_authenticate_withemail(self):
         # Given a user in LDAP with firstname and lastname
         self.conn.strategy.add_entry(
             'cn=user01,dc=example,dc=org',
@@ -145,13 +158,13 @@ class LdapPluginTest(helper.CPWebCase):
                 'uid': ['user01'],
                 'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
                 'mail': ['john@test.com'],
-                '_email': 'john@test.com',
-                '_fullname': None,
+                'email': 'john@test.com',
+                'fullname': '',
             },
             authenticated[1],
         )
 
-    def test_authenticate_with_fullname(self):
+    def test_authenticate_withfullname(self):
         # Given a user in LDAP with firstname and lastname
         self.conn.strategy.add_entry(
             'cn=user01,dc=example,dc=org',
@@ -175,8 +188,8 @@ class LdapPluginTest(helper.CPWebCase):
                 'uid': ['user01'],
                 'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
                 'displayName': ['John Kennedy'],
-                '_email': None,
-                '_fullname': 'John Kennedy',
+                'email': None,
+                'fullname': 'John Kennedy',
             },
             authenticated[1],
         )
@@ -207,27 +220,21 @@ class LdapPluginTest(helper.CPWebCase):
                 'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
                 'givenName': ['John'],
                 'sn': ['Kennedy'],
-                '_email': None,
-                '_fullname': 'John Kennedy',
+                'email': None,
+                'fullname': 'John Kennedy',
             },
             authenticated[1],
         )
 
 
 class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
-    def setUp(self) -> None:
-        self.server = ldap3.Server('my_fake_server')
-        self.conn = ldap3.Connection(self.server, client_strategy=ldap3.MOCK_SYNC)
-        self.patcher = mock.patch('ldap3.Connection', return_value=self.conn)
-        self.patcher.start()
-        return super().setUp()
-
-    def tearDown(self) -> None:
-        self.patcher.stop()
-        return super().tearDown()
-
     @classmethod
     def setup_server(cls):
+        # Configure Mock server early.
+        cls.server = ldap3.Server('my_fake_server')
+        cls.conn = ldap3.Connection(cls.server, client_strategy=ldap3.MOCK_ASYNC, raise_exceptions=True)
+        cls.patcher = mock.patch('ldap3.Connection', return_value=cls.conn)
+        cls.patcher.start()
         cherrypy.config.update(
             {
                 'ldap.uri': 'my_fake_server',
@@ -237,6 +244,21 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
                 'ldap.group_attribute_is_dn': False,
             }
         )
+
+    @classmethod
+    def teardown_class(cls):
+        cherrypy.ldap.uri = None
+        # Release mock server.
+        cls.patcher.stop()
+        return super().teardown_class()
+
+    def setUp(self) -> None:
+        # Clear LDAP entries before test.
+        for entry in list(self.conn.strategy.connection.server.dit):
+            if entry == 'cn=schema':
+                continue
+            self.conn.strategy.remove_entry(entry)
+        return super().setUp()
 
     def test_authenticate_with_valid_group(self):
         # Given a user and a group in LDAP
@@ -267,9 +289,8 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
                 'uid': ['user01'],
                 'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
                 'cn': ['user01'],
-                '_email': None,
-                '_fullname': None,
-                '_member_of': ['appgroup'],
+                'email': None,
+                'fullname': '',
             },
             authenticated[1],
         )
@@ -311,21 +332,6 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
         self.assertEqual(False, authenticated)
 
 
-class LdapPluginTestWithUnavailableServer(helper.CPWebCase):
-    @classmethod
-    def setup_server(cls):
-        cherrypy.config.update(
-            {
-                'ldap.uri': '127.0.0.1:34578',
-                'ldap.base_dn': 'dc=example,dc=org',
-            }
-        )
-
-    def test_authenticate_with_unavailable_server(self):
-        user = cherrypy.ldap.authenticate('user01', 'password1')
-        self.assertIsNone(user)
-
-
 @skipUnless(os.environ.get('TEST_LDAP_URI', None), "required TEST_LDAP_URI pointing to openldap server")
 class LdapPluginTestWithOpenldap(helper.CPWebCase):
     """
@@ -340,6 +346,11 @@ class LdapPluginTestWithOpenldap(helper.CPWebCase):
                 'ldap.base_dn': os.environ.get('TEST_LDAP_BASE_DN', 'dc=example,dc=org'),
             }
         )
+
+    @classmethod
+    def teardown_class(cls):
+        cherrypy.ldap.uri = None
+        return super().teardown_class()
 
     def test_authenticate(self):
         user = cherrypy.ldap.authenticate('user01', 'password1')

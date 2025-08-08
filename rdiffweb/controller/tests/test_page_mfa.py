@@ -21,6 +21,9 @@ import cherrypy
 
 import rdiffweb.test
 from rdiffweb.core.model import DbSession, UserObject
+from rdiffweb.tools.auth import AUTH_LAST_PASSWORD_AT
+from rdiffweb.tools.auth_mfa import MFA_DEFAULT_CODE_TIMEOUT, MFA_DEFAULT_TRUST_DURATION
+from rdiffweb.tools.sessions_timeout import SESSION_PERSISTENT
 
 
 class MfaPageTest(rdiffweb.test.WebCase):
@@ -196,7 +199,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         # When sending a valid verification code that expired
         session = DbSession(id=self.session_id)
         session.load()
-        session['_auth_mfa_code_time'] = session.now() - datetime.timedelta(minutes=session.timeout + 1)
+        session['_auth_mfa_code_time'] = session.now() - datetime.timedelta(minutes=MFA_DEFAULT_CODE_TIMEOUT + 1)
         session.save()
         self.getPage("/mfa/", method='POST', body={'code': code, 'submit': '1'})
         # Then a new code get generated.
@@ -245,9 +248,9 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/prefs/general')
 
-    def test_login_persistent_when_login_timout(self):
+    def test_login_persistent_when_login_timeout(self):
         prev_session_id = self.session_id
-        # Given a user authenticated with MFA with "login_persistent"
+        # Given a user authenticated with MFA with "persistent"
         code = self._get_code()
         self.getPage("/mfa/", method='POST', body={'code': code, 'submit': '1', 'persistent': '1'})
         self.assertStatus(303)
@@ -256,23 +259,22 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.assertNotEqual(prev_session_id, self.session_id)
         session = DbSession(id=self.session_id)
         session.load()
-        self.assertTrue(session['login_persistent'])
-        # When the login_time expired (after 15 min)
-        session['login_time'] = session.now() - datetime.timedelta(minutes=15, seconds=1)
+        self.assertTrue(session[SESSION_PERSISTENT])
+        # When the re-auth time expired (after 15 min)
+        session[AUTH_LAST_PASSWORD_AT] = session.now() - datetime.timedelta(minutes=15, seconds=1)
         session.save()
-        # Then next query redirect user to same page (by mfa)
+        # Then next query redirect user to /login/ page (by mfa)
         self.getPage("/prefs/general")
-        self.assertStatus(303)
-        self.assertHeaderItemValue('Location', self.baseurl + '/prefs/general')
-        self.getPage("/prefs/general")
-        # Then user is redirected to /login/ page (by auth_form)
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/login/')
         prev_session_id = self.session_id
+        # Then the username is pre-filled
+        self.getPage("/login/")
+        self.assertInBody(self.USERNAME)
         # When user enter valid username password
         self.getPage("/login/", method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD})
         self.assertNotEqual(prev_session_id, self.session_id)
-        # Then user is redirected to original url
+        # Then user is redirected to original url without need to pass MFA again.
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/prefs/general')
         self.getPage("/")
@@ -281,7 +283,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
 
     def test_login_persistent_when_mfa_timeout(self):
         prev_session_id = self.session_id
-        # Given a user authenticated with MFA with "login_persistent"
+        # Given a user authenticated with MFA with "persistent"
         code = self._get_code()
         self.getPage("/mfa/", method='POST', body={'code': code, 'submit': '1', 'persistent': '1'})
         self.assertStatus(303)
@@ -290,9 +292,9 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.assertNotEqual(prev_session_id, self.session_id)
         session = DbSession(id=self.session_id)
         session.load()
-        self.assertTrue(session['login_persistent'])
-        # When the mfa verification timeout (after 30 days)
-        session['_auth_mfa_time'] = session.now() - datetime.timedelta(days=30, seconds=1)
+        self.assertTrue(session[SESSION_PERSISTENT])
+        # When the mfa verification timeout (after 15 min)
+        session['_auth_mfa_time'] = session.now() - datetime.timedelta(minutes=MFA_DEFAULT_TRUST_DURATION, seconds=1)
         session.save()
         # Then next query redirect user to mfa page
         self.getPage("/prefs/general")

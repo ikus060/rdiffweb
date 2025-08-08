@@ -71,17 +71,22 @@ def flash(message, level='info'):
     """
     assert message
     assert level in ['info', 'error', 'warning', 'success']
-    assert hasattr(cherrypy, 'session'), 'flash message requires user session'
-    if 'flash' not in cherrypy.session:  # @UndefinedVariable
-        cherrypy.session['flash'] = []  # @UndefinedVariable
-    flash_message = FlashMessage(str(message), level)
-    cherrypy.session['flash'].append(flash_message)
+    session = cherrypy.serving.session
+    if 'flash' not in session:
+        session['flash'] = []
+    # Support Markup and string
+    if hasattr(message, '__html__'):
+        flash_message = FlashMessage(message, level)
+    else:
+        flash_message = FlashMessage(str(message), level)
+    session['flash'].append(flash_message)
 
 
 def get_flashed_messages():
-    if 'flash' in cherrypy.session:  # @UndefinedVariable
-        messages = cherrypy.session['flash']  # @UndefinedVariable
-        del cherrypy.session['flash']  # @UndefinedVariable
+    session = cherrypy.serving.session
+    if 'flash' in session:
+        messages = session['flash']
+        del session['flash']
         return messages
     return []
 
@@ -114,13 +119,14 @@ class Controller(object):
             "get_flashed_messages": get_flashed_messages,
             "cache_invalid": self._cache_invalid,
         }
-        if app.currentuser:
+        currentuser = getattr(cherrypy.request, 'currentuser', None)
+        if currentuser:
             parms.update(
                 {
-                    'username': app.currentuser.username,
-                    'fullname': app.currentuser.fullname,
-                    'is_admin': app.currentuser.is_admin,
-                    'is_maintainer': app.currentuser.is_maintainer,
+                    'username': currentuser.username,
+                    'fullname': currentuser.fullname,
+                    'is_admin': currentuser.is_admin,
+                    'is_maintainer': currentuser.is_maintainer,
                 }
             )
         elif getattr(cherrypy.serving.request, 'login', None):

@@ -35,7 +35,11 @@ except pkg_resources.DistributionNotFound:
     VERSION = "DEV"
 
 
-def css_color(value):
+def _css_color(value):
+    """
+    Arg type to handle CSS Color as hex.
+    """
+    # Validate the color code.
     if not re.match('^#?(?:[0-9a-fA-F]{3}){1,2}$', value):
         raise argparse.ArgumentTypeError("invalid CSS Color")
     if value.startswith('#'):
@@ -43,10 +47,46 @@ def css_color(value):
     return '#' + value
 
 
-def css_font(value):
+def _css_font(value):
+    """
+    Arg type to handle CSS Font.
+    """
+    # Only validate the name of the font.
     if not re.match('^[a-zA-Z0-9 ]+$', value):
         raise argparse.ArgumentTypeError("invalid CSS Font name")
     return value
+
+
+def _comma_or_space_separated(value):
+    """
+    Parse comma or space separated values for argparse.
+
+    Args:
+        value (str): Input string containing comma or space separated values
+
+    Returns:
+        list: List of parsed values with whitespace stripped
+
+    Raises:
+        argparse.ArgumentTypeError: If the input cannot be parsed
+    """
+    if not isinstance(value, str):
+        raise argparse.ArgumentTypeError(f"Expected string, got {type(value).__name__}")
+
+    if not value.strip():
+        return []
+
+    # Split by comma first, then by spaces if no commas found
+    if ',' in value:
+        # Split by comma and strip whitespace from each item
+        items = [item.strip() for item in value.split(',')]
+    else:
+        # Split by any whitespace
+        items = value.split()
+
+    # Filter out empty strings
+    items = [item for item in items if item]
+    return items
 
 
 def get_parser():
@@ -237,7 +277,7 @@ def get_parser():
     parser.add_argument(
         '--brand-link-color',
         '--link-color',
-        type=css_color,
+        type=_css_color,
         dest='link_color',
         help='define a CSS color to be used for link. e.g.: ff0000',
         default='#35979c',
@@ -246,7 +286,7 @@ def get_parser():
     parser.add_argument(
         '--brand-btn-bg-color',
         '--btn-bg-color',
-        type=css_color,
+        type=_css_color,
         dest='btn_bg_color',
         help="define a CSS color to be used for button's background. Default to `link-color` if undefined",
     )
@@ -254,7 +294,7 @@ def get_parser():
     parser.add_argument(
         '--brand-btn-fg-color',
         '--btn-fg-color',
-        type=css_color,
+        type=_css_color,
         dest='btn_fg_color',
         help="define a CSS color to be used for button's text. Default to white if undefined",
     )
@@ -270,7 +310,7 @@ def get_parser():
     parser.add_argument(
         '--brand-navbar-color',
         '--navbar-color',
-        type=css_color,
+        type=_css_color,
         dest='navbar_color',
         help='define a CSS color to be used for navigation bar background e.g.: 00ff00',
         default='#383e45',
@@ -279,31 +319,41 @@ def get_parser():
     parser.add_argument(
         '--brand-font-family',
         '--font-family',
-        type=css_font,
+        type=_css_font,
         dest='font_family',
         help='define a CSS font to be used as main font. e.g.: Roboto',
         default='Open Sans',
     )
 
     parser.add_argument(
+        '--add-missing-user',
         '--ldap-add-missing-user',
         '--addmissinguser',
         action='store_true',
-        help='enable creation of users from LDAP when the credential are valid.',
+        help='enable creation of users from LDAP or OAuth when the credential are valid.',
         default=False,
     )
 
     parser.add_argument(
+        '--add-user-default-role',
         '--ldap-add-user-default-role',
-        help='default role used when creating users from LDAP. This parameter is only useful when `--ldap-add-missing-user` is enabled.',
+        help='default role used when creating users from LDAP or OAuth. This parameter is only useful when `--add-missing-user` is enabled.',
         default='user',
         choices=['admin', 'maintainer', 'user'],
     )
 
     parser.add_argument(
+        '--add-user-default-userroot',
         '--ldap-add-user-default-userroot',
-        help='default user root directory used when creating users from LDAP. LDAP attributes may be used to define the default location. e.g.: `/backups/{uid[0]}/`. This parameter is only useful when `--ldap-add-missing-user` is enabled.',
+        help='default user root directory used when creating users from LDAP or OAuth. LDAP or OAuth attributes may be used to define the default location. e.g.: `/backups/{uid[0]}/`. This parameter is only useful when `--add-missing-user` is enabled.',
         default='',
+    )
+
+    parser.add_argument(
+        '--login-with-email',
+        help="Allow users to login with email. When enabled, user's email must be unique. This option is required when using OAuth.",
+        action='store_true',
+        default=False,
     )
 
     parser.add_argument(
@@ -430,28 +480,94 @@ def get_parser():
     parser.add_argument(
         '--ldap-fullname-attribute',
         help="LDAP attribute for user display name. If `fullname` is blank, the fullname is taken from the `firstname` and `lastname`. Attributes 'cn', or 'displayName' commonly carry full names.",
-        default=[],
-        action='append',
+        type=_comma_or_space_separated,
     )
 
     parser.add_argument(
         '--ldap-firstname-attribute',
         help="LDAP attribute for user first name. Used when the attribute configured for name does not exist. e.g.: `givenName`",
-        default=[],
-        action='append',
+        type=_comma_or_space_separated,
     )
 
     parser.add_argument(
         '--ldap-lastname-attribute',
         help="LDAP attribute for user last name. Used when the attribute configured for name does not exist. e.g.: `sn`",
-        default=[],
-        action='append',
+        type=_comma_or_space_separated,
     )
 
     parser.add_argument(
         '--ldap-email-attribute',
         help="LDAP attribute for user email. e.g.: mail, email, userPrincipalName",
-        default=[],
+        type=_comma_or_space_separated,
+    )
+    parser.add_argument(
+        '--oauth-provider-name',
+        help="The Oauth provider friendly name.",
+        default="OAuth",
+    )
+    parser.add_argument(
+        '--oauth-client-id',
+        help="Client ID provided by your OAuth provider when you register your application.",
+        default="",
+    )
+    parser.add_argument(
+        '--oauth-client-secret',
+        help="Client secret provided by your OAuth provider",
+        default="",
+    )
+    parser.add_argument(
+        '--oauth-scope',
+        help="OAuth scopes to request from the provider. Common scopes include openid, profile, email. Multiple scopes should be space-separated. Default: openid profile email",
+        default="openid profile email",
+    )
+    parser.add_argument(
+        '--oauth-auth-url',
+        help="Authorization endpoint URL of your OAuth provider",
+        default="",
+    )
+    parser.add_argument(
+        '--oauth-token-url',
+        help="The token endpoint URL of your OAuth provider where access tokens are obtained.",
+        default="",
+    )
+    parser.add_argument(
+        '--oauth-userinfo-url',
+        help="The user information endpoint URL where user profile data can be retrieved.",
+        default="",
+    )
+    parser.add_argument(
+        '--oauth-userkey-claim',
+        help="OAuth claim containing a unique key matching internal database username or email (if email login is enabled).",
+        default="email",
+    )
+    parser.add_argument(
+        '--oauth-fullname-claim',
+        help="OAuth claim containing the user's full display name. If not found or empty, the full name is constructed from first name and last name claims.",
+        default="name,displayName,full_name",
+    )
+
+    parser.add_argument(
+        '--oauth-firstname-claim',
+        help="OAuth claim containing the user's first name. Used as fallback when full name claim is not available.",
+        default="given_name,first_name,givenName",
+        type=_comma_or_space_separated,
+    )
+    parser.add_argument(
+        '--oauth-lastname-claim',
+        help="OAuth claim containing the user's last name. Used as fallback when full name claim is not available.",
+        default="family_name,last_name,surname",
+        type=_comma_or_space_separated,
+    )
+    parser.add_argument(
+        '--oauth-email-claim',
+        help="OAuth claim containing the user's email address.",
+        default="email,mail,email_address",
+        type=_comma_or_space_separated,
+    )
+    parser.add_argument(
+        '--oauth-required-claims',
+        help="OAuth claim required defined as <claim> <value>",
+        type=_comma_or_space_separated,
         action='append',
     )
 
@@ -536,24 +652,24 @@ def get_parser():
         '--session-idle-timeout',
         metavar='MINUTES',
         type=int,
-        help='This timeout defines the amount of time a session will remain active in case there is no activity in the session. User Session will be revoke after this period of inactivity, unless the user selected "remember me". Default 5 minutes.',
-        default=10,
+        help='Sliding inactivity timeout for non‑persistent sessions; renews on user activity. Default 15 minutes.',
+        default=15,
     )
 
     parser.add(
         '--session-absolute-timeout',
         metavar='MINUTES',
         type=int,
-        help='This timeout defines the maximum amount of time a session can be active. After this period, user is forced to (re)authenticate, unless the user selected "remember me". Default 20 minutes.',
-        default=30,
+        help='Absolute maximum session lifetime from initial authentication; never renews on activity.  Default 30 days (or 43200 minutes).',
+        default=43200,
     )
 
     parser.add(
         '--session-persistent-timeout',
         metavar='MINUTES',
         type=int,
-        help='This timeout defines the maximum amount of time to remember and trust a user device. This timeout is used when user select "remember me". Default 30 days.',
-        default=43200,
+        help='Sliding inactivity timeout for persistent (“remember me”) sessions; renews on activity (e.g., 7 days). Default 7 days.',
+        default=10080,
     )
 
     parser.add(

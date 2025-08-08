@@ -34,4 +34,4 @@ def required_scope(scope):
 
 
 # Make sure it's running after authentication (priority = 72)
-cherrypy.tools.required_scope = cherrypy.Tool('before_handler', required_scope, priority=75)
+cherrypy.tools.required_scope = cherrypy.Tool('before_handler', required_scope, priority=85)

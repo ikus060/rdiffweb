@@ -28,13 +28,13 @@ except ImportError:
     from wtforms.fields.html5 import EmailField  # wtform <3
 
 from rdiffweb.controller import Controller, flash
-from rdiffweb.controller.form import CherryForm
+from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.model import UserObject
 from rdiffweb.tools.i18n import gettext_lazy as _
 from rdiffweb.tools.i18n import list_available_locales
 
 
-class UserProfileForm(CherryForm):
+class UserProfileForm(DbForm):
     action = HiddenField(default='set_profile_info')
     username = StringField(_('Username'), render_kw={'readonly': True})
     fullname = StringField(
@@ -65,23 +65,15 @@ class UserProfileForm(CherryForm):
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
-        return super().is_submitted() and self.action.data == 'set_profile_info'
+        return super().is_submitted() and self.action.default in self.action.raw_data
 
     def populate_obj(self, user):
-        try:
-            user.fullname = self.fullname.data
-            user.email = self.email.data
-            user.lang = self.lang.data
-            user.commit()
-            flash(_("Profile updated successfully."), level='success')
-            return True
-        except Exception as e:
-            user.rollback()
-            flash(str(e), level='warning')
-            return False
+        user.fullname = self.fullname.data
+        user.email = self.email.data
+        user.lang = self.lang.data
 
 
-class UserPasswordForm(CherryForm):
+class UserPasswordForm(DbForm):
     action = HiddenField(default='set_password')
     current = PasswordField(
         _('Current password'),
@@ -102,7 +94,7 @@ class UserPasswordForm(CherryForm):
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
-        return super().is_submitted() and self.action.data == 'set_password'
+        return super().is_submitted() and self.action.default in self.action.raw_data
 
     def validate_new(self, field):
         """
@@ -112,23 +104,15 @@ class UserPasswordForm(CherryForm):
             raise ValidationError(_('The new password must be different from the current password.'))
 
     def populate_obj(self, user):
-        # Check if current password is "valid" if Not, rate limit the
-        # number of attempts and logout user after too many invalid attempts.
         if not user.validate_password(self.current.data):
-            self.current.errors = [_("Wrong current password.")]
-            return False
+            raise ValueError(_("Wrong current password."))
         try:
             user.set_password(self.new.data)
-            user.commit()
-            flash(_("Password updated successfully."), level='success')
-            return True
         except ValueError as e:
-            user.rollback()
-            self.new.errors = [str(e)]
-            return False
+            raise ValidationError(e)
 
 
-class RefreshForm(CherryForm):
+class RefreshForm(DbForm):
     action = HiddenField(default='update_repos')
     update_repos = SubmitField(
         _('Refresh repositories'),
@@ -139,18 +123,10 @@ class RefreshForm(CherryForm):
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
-        return super().is_submitted() and self.action.data == 'update_repos'
+        return super().is_submitted() and self.action.default in self.action.raw_data
 
     def populate_obj(self, user):
-        try:
-            if user.refresh_repos(delete=True):
-                user.commit()
-            flash(_("Repositories successfully updated"), level='success')
-            return True
-        except ValueError as e:
-            user.rollback()
-            flash(str(e), level='warning')
-            return False
+        user.refresh_repos(delete=True)
 
 
 class PagePrefsGeneral(Controller):
@@ -165,28 +141,29 @@ class PagePrefsGeneral(Controller):
         """
         Show user settings
         """
+        currentuser = cherrypy.serving.request.currentuser
         # Process the parameters.
-        profile_form = UserProfileForm(obj=self.app.currentuser)
+        profile_form = UserProfileForm(obj=currentuser)
         password_form = UserPasswordForm()
         refresh_form = RefreshForm()
-        if profile_form.is_submitted():
-            if profile_form.validate():
-                if profile_form.populate_obj(self.app.currentuser):
-                    raise cherrypy.HTTPRedirect("")
-            else:
-                flash(profile_form.error_message, level='error')
-        elif password_form.is_submitted():
-            if password_form.validate():
-                if password_form.populate_obj(self.app.currentuser):
-                    raise cherrypy.HTTPRedirect("")
-            else:
-                flash(password_form.error_message, level='error')
-        elif refresh_form.is_submitted():
-            if refresh_form.validate():
-                if refresh_form.populate_obj(self.app.currentuser):
-                    raise cherrypy.HTTPRedirect("")
-            else:
-                flash(refresh_form.error_message, level='error')
+        if profile_form.validate_on_submit():
+            if profile_form.save_to_db(currentuser):
+                flash(_("Profile updated successfully."), level='success')
+                raise cherrypy.HTTPRedirect("")
+        elif password_form.validate_on_submit():
+            if password_form.save_to_db(currentuser):
+                flash(_("Password updated successfully."), level='success')
+                raise cherrypy.HTTPRedirect("")
+        elif refresh_form.validate_on_submit():
+            if refresh_form.save_to_db(currentuser):
+                flash(_("Repositories successfully updated"), level='success')
+                raise cherrypy.HTTPRedirect("")
+        if profile_form.error_message:
+            flash(profile_form.error_message, level='error')
+        if password_form.error_message:
+            flash(password_form.error_message, level='error')
+        if refresh_form.error_message:
+            flash(refresh_form.error_message, level='error')
         params = {
             'profile_form': profile_form,
             'password_form': password_form,

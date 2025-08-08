@@ -12,7 +12,7 @@ ENV RDIFFWEB_SERVER_HOST=0.0.0.0
 
 RUN set -x; \
   apt -y update && \
-  apt install -y --no-install-recommends librsync-dev python3-pyxattr python3-pylibacl && \
+  apt install -y --no-install-recommends librsync-dev python3-pylibacl python3-pyxattr && \
   rm -Rf /var/lib/apt/lists/*
 
 COPY . /src/

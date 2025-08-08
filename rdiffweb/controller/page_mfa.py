@@ -21,7 +21,6 @@ from wtforms.validators import ValidationError
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.form import CherryForm
-from rdiffweb.tools.auth_form import LOGIN_PERSISTENT
 from rdiffweb.tools.i18n import get_translation
 from rdiffweb.tools.i18n import gettext_lazy as _
 
@@ -44,7 +43,7 @@ class MfaForm(CherryForm):
     )
     persistent = BooleanField(
         _('Remember me'),
-        default=lambda: cherrypy.session.get(LOGIN_PERSISTENT, False),
+        default=lambda: cherrypy.tools.sessions_timeout.is_persistent(),
     )
     submit = SubmitField(
         _('Sign in'),
@@ -81,12 +80,11 @@ class MfaPage(Controller):
         form = MfaForm()
 
         # Validate MFA
-        if form.is_submitted():
-            if form.validate():
-                if form.submit.data:
-                    cherrypy.tools.auth_mfa.redirect_to_original_url()
-                elif form.resend_code.data:
-                    self.send_code()
+        if form.validate_on_submit():
+            if form.submit.data:
+                raise cherrypy.tools.auth.redirect_to_original_url()
+            elif form.resend_code.data:
+                self.send_code()
         if cherrypy.tools.auth_mfa.is_code_expired():
             # Send verification code if previous code expired.
             self.send_code()

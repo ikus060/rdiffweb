@@ -21,12 +21,12 @@ from wtforms.validators import ValidationError
 from wtforms.widgets import HiddenInput
 
 from rdiffweb.controller import Controller, flash
-from rdiffweb.controller.form import CherryForm
+from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.model import UserObject
 from rdiffweb.tools.i18n import gettext_lazy as _
 
 
-class AbstractMfaForm(CherryForm):
+class AbstractMfaForm(DbForm):
     def __init__(self, obj, **kwargs):
         assert obj
         super().__init__(obj=obj, **kwargs)
@@ -78,20 +78,10 @@ class MfaToggleForm(AbstractMfaForm):
 
     def populate_obj(self, userobj):
         # Enable or disable MFA only when a code is provided.
-        try:
-            if self.enable_mfa.data:
-                userobj.mfa = UserObject.ENABLED_MFA
-                userobj.commit()
-                flash(_("Two-Factor authentication enabled successfully."), level='success')
-            elif self.disable_mfa.data:
-                userobj.mfa = UserObject.DISABLED_MFA
-                userobj.commit()
-                flash(_("Two-Factor authentication disabled successfully."), level='success')
-            return True
-        except Exception as e:
-            userobj.rollback()
-            flash(str(e), level='warning')
-            return False
+        if self.enable_mfa.data:
+            userobj.mfa = UserObject.ENABLED_MFA
+        elif self.disable_mfa.data:
+            userobj.mfa = UserObject.DISABLED_MFA
 
     def validate_code(self, field):
         # Code is required for enable_mfa and disable_mfa
@@ -116,27 +106,33 @@ class PagePrefMfa(Controller):
         """
         Show MFA settings
         """
-        form = MfaToggleForm(obj=self.app.currentuser)
+        currentuser = cherrypy.serving.request.currentuser
+        form = MfaToggleForm(obj=currentuser)
         if form.is_submitted():
             if form.validate():
                 if form.resend_code.data:
                     self.send_code()
-                elif form.enable_mfa.data or form.disable_mfa.data:
-                    if form.populate_obj(self.app.currentuser):
+                elif form.enable_mfa.data:
+                    if form.save_to_db(currentuser):
+                        flash(_("Two-Factor authentication enabled successfully."), level='success')
                         raise cherrypy.HTTPRedirect("")
-                    form = MfaStatusForm(obj=self.app.currentuser)
+                elif form.disable_mfa.data:
+                    if form.save_to_db(currentuser):
+                        flash(_("Two-Factor authentication disabled successfully."), level='success')
+                        raise cherrypy.HTTPRedirect("")
+                    form = MfaStatusForm(obj=currentuser)
             # Send verification code if previous code expired.
             elif cherrypy.tools.auth_mfa.is_code_expired():
                 self.send_code()
         else:
-            form = MfaStatusForm(obj=self.app.currentuser)
+            form = MfaStatusForm(obj=currentuser)
         params = {
             'form': form,
         }
         return self._compile_template("prefs_mfa.html", **params)
 
     def send_code(self):
-        userobj = self.app.currentuser
+        userobj = cherrypy.serving.request.currentuser
         if not userobj.email:
             flash(_("To continue, you must set up an email address for your account."), level='warning')
             return

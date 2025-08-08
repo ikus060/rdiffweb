@@ -27,8 +27,8 @@ try:
 except ImportError:
     from wtforms.fields.html5 import EmailField  # wtform <3
 
-from rdiffweb.controller import Controller, flash, get_flashed_messages
-from rdiffweb.controller.form import CherryForm
+from rdiffweb.controller import Controller, flash
+from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.model import UserObject
 from rdiffweb.core.rdw_templating import url_for
 from rdiffweb.tools.i18n import gettext_lazy as _
@@ -73,7 +73,7 @@ class SizeField(Field):
                 raise ValidationError(self.gettext('Not a valid file size value'))
 
 
-class UserForm(CherryForm):
+class UserForm(DbForm):
     userid = HiddenField(_('UserID'))
     username = StringField(
         _('Username'),
@@ -197,44 +197,43 @@ class UserForm(CherryForm):
             raise ValidationError(_('User email is required to enabled Two-Factor Authentication.'))
 
     def populate_obj(self, userobj):
-        try:
-            # Save password if defined
-            if self.password.data:
-                userobj.set_password(self.password.data)
-            userobj.role = self.role.data
-            userobj.fullname = self.fullname.data or ''
-            userobj.email = self.email.data or ''
-            userobj.user_root = self.user_root.data
-            userobj.mfa = self.mfa.data
-            userobj.lang = self.lang.data or ''
-            userobj.report_time_range = self.report_time_range.data
-            if userobj.user_root:
-                if not userobj.valid_user_root():
+        # Save password if defined
+        if self.password.data:
+            userobj.set_password(self.password.data)
+        userobj.role = self.role.data
+        userobj.fullname = self.fullname.data or ''
+        userobj.email = self.email.data or ''
+        userobj.user_root = self.user_root.data
+        userobj.mfa = self.mfa.data
+        userobj.lang = self.lang.data or ''
+        userobj.report_time_range = self.report_time_range.data
+        # Verify user's root directory and update repos.
+        if userobj.user_root:
+            if not userobj.valid_user_root():
+                if hasattr(cherrypy.serving, 'session'):
                     flash(_("User's root directory %s is not accessible!") % userobj.user_root, level='error')
-                    logger.warning("user's root directory %s is not accessible" % userobj.user_root)
-                else:
-                    userobj.refresh_repos(delete=True)
-            userobj.commit()
+            else:
+                userobj.refresh_repos(delete=True)
 
-        except Exception as e:
-            userobj.rollback()
-            flash(str(e), level='error')
-            return False
+    def save_to_db(self, obj):
+        return_value = super().save_to_db(obj)
 
         # Try to update disk quota if the human readable value changed.
         # Report error using flash.
-        if self.quota_enabled:
+        if return_value and self.quota_enabled:
             new_quota = self.disk_quota.data or 0
             old_quota = humanfriendly.parse_size(
                 humanfriendly.format_size(self.disk_quota.object_data or 0, binary=True)
             )
             if old_quota != new_quota:
-                userobj.disk_quota = new_quota
+                obj.disk_quota = new_quota
                 # Setting quota may silently fail.
                 # Align with the nearest block size.
-                if abs(userobj.disk_quota - new_quota) > 4096:
-                    flash(_("Setting user's quota is not supported"), level='warning')
-        return True
+                if abs(obj.disk_quota - new_quota) > 4096:
+                    if hasattr(cherrypy.serving, 'session'):
+                        flash(_("Setting user's quota is not supported"), level='warning')
+
+        return return_value
 
 
 class EditUserForm(UserForm):
@@ -257,7 +256,7 @@ class EditUserForm(UserForm):
             raise ValidationError(_('Cannot change username of and existing user.'))
 
 
-class DeleteUserForm(CherryForm):
+class DeleteUserForm(DbForm):
     username = StringField(_('Username'), validators=[validators.data_required()])
 
     def validate_username(self, field):
@@ -279,7 +278,6 @@ class AdminUsersPage(Controller):
             "admin_users.html",
             form=form,
             users=UserObject.query.all(),
-            ldap_enabled=self.app.cfg.ldap_uri,
         )
 
     @cherrypy.expose
@@ -290,18 +288,13 @@ class AdminUsersPage(Controller):
         Show form to create a new user
         """
         form = UserForm()
-        if form.is_submitted():
-            if form.validate():
-                try:
-                    user = UserObject.add_user(form.username.data)
-                except Exception as e:
-                    flash(str(e), level='error')
-                else:
-                    if form.populate_obj(user):
-                        flash(_("User added successfully."))
-                        raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
-            else:
-                flash(form.error_message, level='error')
+        if form.validate_on_submit():
+            user = UserObject.add_user(form.username.data)
+            if form.save_to_db(user):
+                flash(_("User added successfully."))
+                raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
+        if form.error_message:
+            flash(form.error_message, level='error')
         return self._compile_template("admin_user_new.html", form=form)
 
     @cherrypy.expose
@@ -315,13 +308,11 @@ class AdminUsersPage(Controller):
         if user is None:
             raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username_or_id)
         form = EditUserForm(obj=user)
-        if form.is_submitted():
-            if form.validate():
-                if form.populate_obj(user):
-                    flash(_("User information modified successfully."))
-                    raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
-            else:
-                flash(form.error_message, level='error')
+        if form.validate_on_submit() and form.save_to_db(user):
+            flash(_("User information modified successfully."))
+            raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
+        if form.error_message:
+            flash(form.error_message, level='error')
         return self._compile_template("admin_user_edit.html", form=form)
 
     @cherrypy.expose
@@ -524,16 +515,11 @@ class AdminApiUsers(Controller):
         # Validate input data.
         form = UserForm(obj=user_obj, json=1)
         if form.strict_validate():
-            # Create object if required.
+            # Create user if required.
             if user_obj is None:
-                try:
-                    user_obj = UserObject.add_user(form.username.data)
-                except Exception as e:
-                    raise cherrypy.HTTPError(400, str(e))
-            if not form.populate_obj(user_obj):
-                raise cherrypy.HTTPError(400, str(get_flashed_messages()))
-            # Return Location and object as json.
-            cherrypy.response.headers['Location'] = url_for(cherrypy.url(base=''), str(user_obj.userid))
-            return self._to_json(user_obj)
-        else:
-            raise cherrypy.HTTPError(400, form.error_message)
+                user_obj = UserObject.add_user(form.username.data)
+            if form.save_to_db(user_obj):
+                # Return Location and object as json.
+                cherrypy.response.headers['Location'] = url_for(cherrypy.url(base=''), str(user_obj.userid))
+                return self._to_json(user_obj)
+        raise cherrypy.HTTPError(400, form.error_message)

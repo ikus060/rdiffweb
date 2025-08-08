@@ -43,16 +43,16 @@ def _checkpassword(realm, username, password):
             return True
         # Disable password authentication for MFA
         if userobj.mfa == UserObject.ENABLED_MFA:
-            cherrypy.tools.ratelimit.hit()
+            cherrypy.tools.ratelimit.increase_hit()
             return False
     # Otherwise validate username password
-    valid = any(cherrypy.engine.publish('login', username, password))
+    valid = cherrypy.tools.auth.login_with_credentials(username, password)
     if valid:
         # Store scope
         cherrypy.serving.request.scope = ['all']
         return True
     # When invalid, we need to increase the rate limit.
-    cherrypy.tools.ratelimit.hit()
+    cherrypy.tools.ratelimit.increase_hit()
     return False
 
 
@@ -61,7 +61,7 @@ def _checkpassword(realm, username, password):
 @cherrypy.tools.json_out(on=True)
 @cherrypy.tools.json_in(on=True, force=False)
 @cherrypy.tools.auth_basic(realm='rdiffweb', checkpassword=_checkpassword, priority=70)
-@cherrypy.tools.auth_form(on=False)
+@cherrypy.tools.auth(on=True, redirect=False)
 @cherrypy.tools.auth_mfa(on=False)
 @cherrypy.tools.i18n(on=False)
 @cherrypy.tools.ratelimit(scope='rdiffweb-api', hit=0, priority=69)

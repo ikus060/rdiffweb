@@ -171,7 +171,9 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         # Given a user
         # When updating the language
         self.getPage(
-            self.PREFS, method='POST', body={'lang': 'fr', 'email': 'myemail@test.com', 'fullname': 'Testing User'}
+            self.PREFS,
+            method='POST',
+            body={'action': 'set_profile_info', 'lang': 'fr', 'email': 'myemail@test.com', 'fullname': 'Testing User'},
         )
         self.assertStatus(303)
         # Then user's lang is updated
@@ -186,10 +188,12 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         # Given a user
         # When updating the language with an invalid value
         self.getPage(
-            self.PREFS, method='POST', body={'lang': 'gh', 'email': 'myemail@test.com', 'fullname': 'Testing User'}
+            self.PREFS,
+            method='POST',
+            body={'action': 'set_profile_info', 'lang': 'gh', 'email': 'myemail@test.com', 'fullname': 'Testing User'},
         )
         self.assertStatus(200)
-        # Then page is shown with defualt language
+        # Then page is shown with default language
         self.assertInBody('lang="en"')
         # Then the language is not updated
         userobj = UserObject.query.filter(UserObject.username == self.USERNAME).one()
@@ -282,7 +286,7 @@ class PagePrefGeneralRateLimitTest(rdiffweb.test.WebCase):
 
     def test_change_password_too_many_attemps(self):
         # When udating user's password with wrong current password 5 times
-        for _i in range(1, 5):
+        for _i in range(0, 5):
             self.getPage(
                 '/prefs/general',
                 method='POST',

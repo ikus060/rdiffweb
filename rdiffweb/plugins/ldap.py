@@ -1,5 +1,5 @@
 # LDAP Plugins for cherrypy
-# Copyright (C) 2025 IKUS Software
+# # Copyright (C) 2025 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,22 +26,49 @@ logger = logging.getLogger(__name__)
 _safe = ldap3.utils.conv.escape_filter_chars
 
 
-def _first_attribute(attributes, key, default=None):
+def all_attribute(attributes, keys, default=None):
+    """
+    Extract the all value from LDAP attributes.
+    """
+    # Skip loopkup if key is not defined.
+    if not keys:
+        return default
+    # Convert key to a list.
+    keys = keys if isinstance(keys, list) else [keys]
+    # Loop on each attribute name.
+    values = []
+    for attr in keys:
+        try:
+            value = attributes[attr]
+            if isinstance(value, list) and len(value) > 0:
+                values.append(value[0])
+            else:
+                values.append(value)
+        except KeyError:
+            pass
+    # Default to None.
+    return values if values else default
+
+
+def first_attribute(attributes, keys, default=None):
     """
     Extract the first value from LDAP attributes.
     """
     # Skip loopkup if key is not defined.
-    if not key:
+    if not keys:
         return default
     # Convert key to a list.
-    keys = key if isinstance(key, list) else [key]
+    keys = keys if isinstance(keys, list) else [keys]
     # Loop on each attribute name to find a value.
     for attr in keys:
-        value = attributes.get(attr, None)
-        if isinstance(value, list) and len(value) > 0:
-            return value[0]
-        else:
-            return value
+        try:
+            value = attributes[attr]
+            if isinstance(value, list) and len(value) > 0:
+                return value[0]
+            else:
+                return value
+        except KeyError:
+            pass
     # Default to None.
     return default
 
@@ -76,13 +103,28 @@ class LdapPlugin(SimplePlugin):
     email_attribute = None
 
     def start(self):
-        if self.uri:
-            self.bus.log('Start LDAP connection')
-            self.bus.subscribe("authenticate", self.authenticate)
+        # Don't configure this plugin if the ldap URI is not provided.
+        if not self.uri:
+            return
+        self.bus.log('Start LDAP connection')
+        # Set up the LDAP server object
+        server = ldap3.Server(self.uri, connect_timeout=self.network_timeout, mode=ldap3.IP_V4_PREFERRED)
+        # Create a pool of reusable connections
+        self._pool = ldap3.Connection(
+            server,
+            user=self.bind_dn,
+            password=self.bind_password,
+            auto_bind=ldap3.AUTO_BIND_TLS_BEFORE_BIND if self.tls else ldap3.AUTO_BIND_NO_TLS,
+            version=self.version,
+            raise_exceptions=True,
+            client_strategy=ldap3.REUSABLE,
+        )
 
     def stop(self):
         self.bus.log('Stop LDAP connection')
-        self.bus.unsubscribe("authenticate", self.authenticate)
+        # Release the connection pool.
+        if hasattr(self, '_pool'):
+            self._pool.unbind()
 
     def authenticate(self, username, password):
         """
@@ -94,96 +136,90 @@ class LdapPlugin(SimplePlugin):
         assert isinstance(username, str)
         assert isinstance(password, str)
 
-        server = ldap3.Server(self.uri, connect_timeout=self.network_timeout)
-        conn = ldap3.Connection(
-            server,
-            user=self.bind_dn,
-            password=self.bind_password,
-            auto_bind=False,
-            version=self.version,
-            client_strategy=ldap3.SYNC,
-            raise_exceptions=True,
-        )
-        conn.raise_exceptions = True
+        if not hasattr(self, '_pool'):
+            return None
 
-        try:
-            if self.tls:
-                conn.start_tls()
+        # Connect to LDAP Server.
+        with self._pool as conn:
+            try:
+                # Search the LDAP server for user's DN.
+                search_filter = "(&{}({}={}))".format(self.user_filter, _safe(self.username_attribute), _safe(username))
+                response = self._search(conn, search_filter)
+                if not response:
+                    logger.info("user %s not found in LDAP", username)
+                    return False
+                logger.info("user %s found in LDAP", username)
+                user_dn = response[0]['dn']
 
-            # Bind to the LDAP server
-            logger.debug("binding to ldap server {}".format(self.uri))
-            conn.bind()
+                # Let "rebind" with user's full DN to verify password.
+                if not conn.rebind(user=user_dn, password=password):
+                    logger.info("user %s not found in LDAP", username)
+                    return False
 
-            # Search the LDAP server
-            search_filter = "(&{}({}={}))".format(self.user_filter, _safe(self.username_attribute), _safe(username))
-            if not self._search(conn, search_filter):
-                logger.info("user %s not found in LDAP", username)
-                return False
-
-            logger.info("user %s found in LDAP", username)
-            response = conn.response
-            user_dn = response[0]['dn']
-            conn.rebind(user=user_dn, password=password)
-
-            # Get username
-            attrs = response[0]['attributes']
-            new_username = _first_attribute(attrs, self.username_attribute)
-            if not new_username:
-                logger.info(
-                    "user object %s was found but the username attribute %s doesn't exists",
-                    user_dn,
-                    self.username_attribute,
-                )
-                return False
-
-            # Verify if the user is member of the required group
-            if self.required_group:
-                if not isinstance(self.required_group, list):
-                    self.required_group = [self.required_group]
-                user_value = user_dn if self.group_attribute_is_dn else new_username
-                group_filter = '(&(%s=%s)(|%s)%s)' % (
-                    _safe(self.group_attribute),
-                    _safe(user_value),
-                    ''.join(['(cn=%s)' % _safe(group) for group in self.required_group]),
-                    self.group_filter,
-                )
-                # Search LDAP Server for matching groups.
-                logger.info(
-                    "check if user %s is member of any group %s",
-                    user_value,
-                    ' '.join(self.required_group),
-                )
-                if not self._search(conn, group_filter, attributes=['cn']):
+                # Get username
+                attrs = response[0]['attributes']
+                new_username = first_attribute(attrs, self.username_attribute)
+                if not new_username:
                     logger.info(
-                        "user %s was found but is not member of any group(s) %s",
+                        "user object %s was found but the username attribute %s doesn't exists",
+                        user_dn,
+                        self.username_attribute,
+                    )
+                    return False
+
+                # Verify if the user is member of the required group
+                if self.required_group:
+                    if not isinstance(self.required_group, list):
+                        self.required_group = [self.required_group]
+                    user_value = user_dn if self.group_attribute_is_dn else new_username
+                    group_filter = '(&(%s=%s)(|%s)%s)' % (
+                        _safe(self.group_attribute),
+                        _safe(user_value),
+                        ''.join(['(cn=%s)' % _safe(group) for group in self.required_group]),
+                        self.group_filter,
+                    )
+                    # Search LDAP Server for matching groups.
+                    logger.info(
+                        "check if user %s is member of any group %s",
                         user_value,
                         ' '.join(self.required_group),
                     )
-                    return False
-                # Add group membership to attributes
-                attrs['_member_of'] = [_first_attribute(row['attributes'], 'cn') for row in conn.response]
+                    response = self._search(conn, group_filter, attributes=['cn'])
+                    if not response:
+                        logger.info(
+                            "user %s was found but is not member of any group(s) %s",
+                            user_value,
+                            ' '.join(self.required_group),
+                        )
+                        return False
 
-            # Remove entryDN from attributes list.
-            if 'entryDN' in attrs:
-                del attrs['entryDN']
-            # Extract common attribute from LDAP
-            attrs['_email'] = _first_attribute(attrs, self.email_attribute)
-            attrs['_fullname'] = fullname = _first_attribute(attrs, self.fullname_attribute)
-            if not fullname:
-                firstname = _first_attribute(attrs, self.firstname_attribute, '')
-                lastname = _first_attribute(attrs, self.lastname_attribute, '')
-                if firstname or lastname:
-                    attrs['_fullname'] = '%s %s' % (firstname, lastname)
-            return (new_username, attrs)
-        except LDAPInvalidCredentialsResult:
-            return False
-        except LDAPException:
-            logger.exception("can't validate user %s credentials", username)
-        finally:
-            conn.unbind()
-        return None
+                # Extract common attribute from LDAP
+                attrs['email'] = first_attribute(attrs, self.email_attribute)
+                attrs['fullname'] = fullname = first_attribute(attrs, self.fullname_attribute)
+                if not fullname:
+                    firstname = first_attribute(attrs, self.firstname_attribute, '')
+                    lastname = first_attribute(attrs, self.lastname_attribute, '')
+                    attrs['fullname'] = ' '.join([name for name in [firstname, lastname] if name])
+                return (new_username, attrs)
+            except LDAPInvalidCredentialsResult:
+                return False
+            except LDAPException:
+                logger.exception("can't validate user %s credentials", username)
+            finally:
+                # Rebind to original user.
+                conn.unbind()
+                conn.user = self.bind_dn
+                conn.password = self.bind_password
+                conn.authentication = ldap3.SIMPLE if self.bind_dn else ldap3.ANONYMOUS
+            return None
 
-    def _search(self, conn, filter, attributes=ldap3.ALL_ATTRIBUTES):
+    def search(self, filter, attributes=ldap3.ALL_ATTRIBUTES, search_base=None, paged_size=None):
+        with self._pool as conn:
+            return self._search(
+                conn, filter=filter, attributes=attributes, search_base=search_base, paged_size=paged_size
+            )
+
+    def _search(self, conn, filter, attributes=ldap3.ALL_ATTRIBUTES, search_base=None, paged_size=None):
         search_scope = {'base': ldap3.BASE, 'onelevel': ldap3.LEVEL, 'subtree': ldap3.SUBTREE}.get(
             self.scope, ldap3.SUBTREE
         )
@@ -192,13 +228,16 @@ class LdapPlugin(SimplePlugin):
                 self.uri, self.base_dn, self.username_attribute, search_scope, filter
             )
         )
-        return conn.search(
-            search_base=self.base_dn,
+        msg_id = conn.search(
+            search_base=search_base or self.base_dn,
             search_filter=filter,
             search_scope=search_scope,
             time_limit=self.timeout,
             attributes=attributes,
+            paged_size=paged_size,
         )
+        response, _result_unused = conn.get_response(msg_id)
+        return response
 
 
 cherrypy.ldap = LdapPlugin(cherrypy.engine)

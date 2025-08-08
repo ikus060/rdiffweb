@@ -13,17 +13,34 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from unittest.mock import MagicMock
 
-import os
-
+import cherrypy
 from parameterized import parameterized, parameterized_class
 
 import rdiffweb.test
 from rdiffweb.core.model import DbSession, SessionObject, UserObject
-from rdiffweb.tools.auth_form import LOGIN_TIME, SESSION_KEY
+from rdiffweb.tools.sessions_timeout import SESSION_PERSISTENT, SESSION_START_TIME
 
 
 class LoginPageTest(rdiffweb.test.WebCase):
+    def setUp(self):
+        super().setUp()
+        self.listener = MagicMock()
+        cherrypy.engine.subscribe('user_added', self.listener.user_added, priority=50)
+        cherrypy.engine.subscribe('user_attr_changed', self.listener.user_attr_changed, priority=50)
+        cherrypy.engine.subscribe('user_deleted', self.listener.user_deleted, priority=50)
+        cherrypy.engine.subscribe('user_login', self.listener.user_login, priority=50)
+        cherrypy.engine.subscribe('user_password_changed', self.listener.user_password_changed, priority=50)
+
+    def tearDown(self):
+        cherrypy.engine.unsubscribe('user_added', self.listener.user_added)
+        cherrypy.engine.unsubscribe('user_attr_changed', self.listener.user_attr_changed)
+        cherrypy.engine.unsubscribe('user_deleted', self.listener.user_deleted)
+        cherrypy.engine.unsubscribe('user_login', self.listener.user_login)
+        cherrypy.engine.unsubscribe('user_password_changed', self.listener.user_password_changed)
+        return super().tearDown()
+
     def test_getpage(self):
         # When making a query to a page while unauthenticated
         self.getPage('/')
@@ -35,7 +52,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         SessionObject.query.filter(SessionObject.id == self.session_id).first()
         session = DbSession(id=self.session_id)
         session.load()
-        self.assertIsNone(session.get(SESSION_KEY))
+        self.assertIsNone(session.get(SessionObject.SESSION_USER_KEY))
 
     def test_getpage_selenium(self):
         # Given a user browsing the login page without authentication.
@@ -66,8 +83,11 @@ class LoginPageTest(rdiffweb.test.WebCase):
         SessionObject.query.filter(SessionObject.id == self.session_id).first()
         session = DbSession(id=self.session_id)
         session.load()
-        self.assertEqual('admin', session.get(SESSION_KEY))
-        self.assertIsNotNone(session.get(LOGIN_TIME))
+        self.assertEqual('admin', session.get(SessionObject.SESSION_USER_KEY))
+        self.assertIsNotNone(session.get(SESSION_START_TIME))
+        # Check if listener called
+        userobj = UserObject.get_user(self.USERNAME)
+        self.listener.user_login.assert_called_once_with(userobj)
 
     def test_login_case_insensitive(self):
         # When authenticating with valid credentials with all uppercase username
@@ -141,18 +161,6 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.getPage('/login/')
         self.assertInBody('value="admin"')
 
-    def test_getpage_with_redirect_post_ignored(self):
-        # When posting invalid credentials
-        b = {'login': 'admin', 'password': 'invalid', 'redirect': '/browse/' + self.REPO + '/DIR%EF%BF%BD/'}
-        self.getPage('/login/', method='POST', body=b)
-        # Then page return without HTTP Error
-        self.assertStatus('200 OK')
-        # Then page display an error
-        self.assertInBody('Invalid username or password.')
-        self.assertInBody('form-login')
-        # Then redirect URL is IGNORED
-        self.assertNotInBody('/browse/' + self.REPO + '/DIR%EF%BF%BD/"')
-
     def test_getpage_without_username(self):
         """
         Check if error is raised when requesting /login without a username.
@@ -174,6 +182,8 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.getPage('/login/', method='POST', body=b)
         self.assertStatus('200 OK')
         self.assertInBody('This field is required.')
+        # Then listener is not called
+        self.listener.user_login.assert_not_called()
 
     def test_getpage_with_invalid_url(self):
         self.getPage('/login/kefuxian.mvc', method='GET')
@@ -217,13 +227,17 @@ class LoginPageTest(rdiffweb.test.WebCase):
         # Then a session is created with persistent flag
         session = DbSession(id=self.session_id)
         session.load()
-        self.assertTrue(session['login_persistent'])
+        self.assertTrue(session[SESSION_PERSISTENT])
         # Then session timeout is 30 days in future
-        self.assertAlmostEqual(session.timeout, 43200, delta=2)
+        self.assertAlmostEqual(session.timeout, 10080, delta=2)
 
 
-class LoginPageWithWelcomeMsgTest(rdiffweb.test.WebCase):
-    default_config = {'welcomemsg': 'default message', 'welcomemsg[fr]': 'french message'}
+class LoginPageWithCustomConfig(rdiffweb.test.WebCase):
+    default_config = {
+        'welcomemsg': 'default message',
+        'welcomemsg[fr]': 'french message',
+        'header-name': 'MY-HEADER-NAME',
+    }
 
     def test_getpage_default(self):
         """
@@ -232,6 +246,7 @@ class LoginPageWithWelcomeMsgTest(rdiffweb.test.WebCase):
         self.getPage('/login/', headers=[("Accept-Language", "it")])
         self.assertStatus('200 OK')
         self.assertInBody('default message')
+        self.assertInBody('MY-HEADER-NAME')
 
     def test_getpage_french(self):
         """
@@ -242,18 +257,6 @@ class LoginPageWithWelcomeMsgTest(rdiffweb.test.WebCase):
         self.assertInBody('french message')
 
 
-class LoginPageWithHeaderName(rdiffweb.test.WebCase):
-    default_config = {'header-name': 'HEADER-NAME'}
-
-    def test_getpage_default(self):
-        # Given a custom header-name
-        # When querying the loging page
-        self.getPage('/login/')
-        # Then the page display the header-name
-        self.assertStatus('200 OK')
-        self.assertInBody('HEADER-NAME')
-
-
 @parameterized_class(
     [
         {"default_config": {'rate-limit': 5}},
@@ -262,30 +265,27 @@ class LoginPageWithHeaderName(rdiffweb.test.WebCase):
 )
 class LoginPageRateLimitTest(rdiffweb.test.WebCase):
     def setUp(self):
-        if os.path.isfile('/tmp/ratelimit-127.0.0.1'):
-            os.unlink('/tmp/ratelimit-127.0.0.1')
-        if os.path.isfile('/tmp/ratelimit-127.0.0.1.-login'):
-            os.unlink('/tmp/ratelimit-127.0.0.1.-login')
+        cherrypy.tools.ratelimit.reset()
         return super().setUp()
+
+    def tearDown(self):
+        cherrypy.tools.ratelimit.reset()
+        return super().tearDown()
 
     def test_login_ratelimit(self):
         # Given an unauthenticate
         # When requesting multiple time the login page
-        for i in range(1, 5):
+        for i in range(0, 5):
             self.getPage('/login/', method='POST', body={'login': 'invalid', 'password': 'invalid'})
             self.assertStatus(200)
         # Then a 429 error (too many request) is return
         self.getPage('/login/', method='POST', body={'login': 'invalid', 'password': 'invalid'})
         self.assertStatus(429)
 
-
-class LoginPageRateLimitTest2(rdiffweb.test.WebCase):
-    default_config = {'rate-limit': 5}
-
     def test_login_ratelimit_forwarded_for(self):
         # Given an unauthenticate
         # When requesting multiple time the login page with different `X-Forwarded-For`
-        for i in range(1, 5):
+        for i in range(0, 5):
             self.getPage(
                 '/login/',
                 headers=[('X-Forwarded-For', '127.0.0.%s' % i)],
@@ -300,16 +300,15 @@ class LoginPageRateLimitTest2(rdiffweb.test.WebCase):
             method='POST',
             body={'login': 'invalid', 'password': 'invalid'},
         )
+        self.assertHeaderItemValue('X-Ratelimit-Limit', '5')
+        self.assertHeaderItemValue('X-Ratelimit-Remaining', '0')
+        self.assertHeader('X-Ratelimit-Reset')
         self.assertStatus(429)
-
-
-class LoginPageRateLimitTest3(rdiffweb.test.WebCase):
-    default_config = {'rate-limit': 5}
 
     def test_login_ratelimit_real_ip(self):
         # Given an unauthenticate
         # When requesting multiple time the login page with different `X-Real-IP`
-        for i in range(1, 5):
+        for i in range(0, 5):
             self.getPage(
                 '/login/',
                 headers=[('X-Real-IP', '127.0.0.128')],
@@ -328,11 +327,6 @@ class LoginPageRateLimitTest3(rdiffweb.test.WebCase):
 
 
 class LoginPageWithTimeout(rdiffweb.test.WebCase):
-    default_config = {
-        'session-idle-timeout': '5',
-        'session-absolute-timeout': '10',
-        'session-persistent-timeout': '15',
-    }
 
     def test_login(self):
         # Given a valid user in database with a password

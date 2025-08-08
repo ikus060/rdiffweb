@@ -224,12 +224,15 @@ class APIRatelimitTest(rdiffweb.test.WebCase):
     def test_login_ratelimit(self):
         # Given invalid credentials sent to API
         headers = [("Authorization", "Basic " + b64encode(b"admin:invalid").decode('ascii'))]
-        for i in range(1, 5):
+        for i in range(0, 5):
             self.getPage('/api/', headers=headers)
             self.assertStatus(401)
         # Then the 6th request is refused
         self.getPage('/api/', headers=headers)
         self.assertStatus(429)
+        self.assertHeaderItemValue('X-Ratelimit-Limit', '5')
+        self.assertHeaderItemValue('X-Ratelimit-Remaining', '0')
+        self.assertHeader('X-Ratelimit-Reset')
         # Next request is also refused event if credentials are valid.
         self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))])
         self.assertStatus(429)

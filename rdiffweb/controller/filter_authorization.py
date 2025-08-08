@@ -29,5 +29,5 @@ def is_maintainer():
 
 
 # Make sure it's running after authentication (priority = 72)
-cherrypy.tools.is_admin = cherrypy.Tool('before_handler', is_admin, priority=75)
-cherrypy.tools.is_maintainer = cherrypy.Tool('before_handler', is_maintainer, priority=75)
+cherrypy.tools.is_admin = cherrypy.Tool('before_handler', is_admin, priority=80)
+cherrypy.tools.is_maintainer = cherrypy.Tool('before_handler', is_maintainer, priority=80)

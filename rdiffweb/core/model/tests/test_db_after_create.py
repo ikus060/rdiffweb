@@ -242,5 +242,5 @@ class DbUpdateSchemaTest(rdiffweb.test.WebCase):
             admin.is_admin
         else:
             # Then an error is raised
-            with self.assertRaises(SystemExit):
+            with self.assertRaises(RuntimeError):
                 cherrypy.db.create_all()

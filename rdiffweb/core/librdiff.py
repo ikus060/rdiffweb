@@ -940,11 +940,11 @@ class RdiffRepo(object):
                 'failed',
                 _("Permissions denied. Contact administrator to check repository's permissions."),
             )
-        except OSError:
+        except OSError as e:
             logger.warning(f'error listing folder {self._data_path}', exc_info=1)
             self._entries_status = (
                 'failed',
-                _("Permissions denied. Contact administrator to check repository's permissions."),
+                _("%s. Contact administrator if problem persist.") % e,
             )
         return []
 

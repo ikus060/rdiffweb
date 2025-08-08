@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_CSP = {
     'default-src': 'self',
     'style-src': ('self', 'unsafe-inline'),
-    'script-src': ('self' 'unsafe-inline'),
+    'script-src': ('self', 'unsafe-inline'),
 }
 
 #
@@ -39,7 +39,7 @@ if not http.cookies.Morsel().isReservedKey("samesite"):
 def _build_csp(csp):
     if isinstance(csp, dict):
         return "; ".join(
-            f"{directive} {' '.join(sources) if isinstance(sources, (list,tuple)) else str(sources)}"
+            f"{directive} {' '.join(sources) if isinstance(sources, (list, tuple)) else str(sources)}"
             for directive, sources in csp.items()
         )
     return str(csp)

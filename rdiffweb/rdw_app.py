@@ -26,18 +26,17 @@ from cherrypy import Application
 
 import rdiffweb
 import rdiffweb.controller.filter_authorization
-import rdiffweb.core.login  # noqa
 import rdiffweb.core.notification
 import rdiffweb.core.quota
 import rdiffweb.core.remove_older
 import rdiffweb.plugins.db
 import rdiffweb.plugins.ldap
+import rdiffweb.plugins.oauth
 import rdiffweb.plugins.restapi
 import rdiffweb.plugins.scheduler
 import rdiffweb.plugins.smtp
-import rdiffweb.tools.auth_form
+import rdiffweb.tools.auth
 import rdiffweb.tools.auth_mfa
-import rdiffweb.tools.currentuser
 import rdiffweb.tools.enrich_session
 import rdiffweb.tools.errors
 import rdiffweb.tools.i18n
@@ -45,6 +44,7 @@ import rdiffweb.tools.poppath
 import rdiffweb.tools.ratelimit
 import rdiffweb.tools.required_scope
 import rdiffweb.tools.secure_headers
+import rdiffweb.tools.sessions_timeout
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
 from rdiffweb.controller.dispatch import staticdir, staticfile
@@ -65,7 +65,7 @@ from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import parse_args
 from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.core.model import DbSession, UserObject
+from rdiffweb.core.model import DbSession, SessionObject, UserObject
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -101,14 +101,16 @@ def _json_handler(*args, **kwargs):
 
 
 @cherrypy.tools.allow(methods=['GET'])
-@cherrypy.tools.auth_form()
-@cherrypy.tools.auth_mfa(
-    mfa_enabled=lambda username: UserObject.get_user(username).mfa == UserObject.ENABLED_MFA,
+@cherrypy.tools.auth(
+    session_user_key=SessionObject.SESSION_USER_KEY,
+    userobj_func=UserObject.get_create_or_update_user,
+    checkpassword=[UserObject.authenticate, cherrypy.ldap.authenticate],
 )
-@cherrypy.tools.currentuser(userobj=lambda username: UserObject.get_user(username))
-@cherrypy.tools.i18n(func=lambda: getattr(cherrypy.request, 'currentuser', False) and cherrypy.request.currentuser.lang)
+@cherrypy.tools.auth_mfa(mfa_enabled=lambda: cherrypy.request.currentuser.mfa == UserObject.ENABLED_MFA)
 @cherrypy.tools.enrich_session()
+@cherrypy.tools.i18n(func=lambda: getattr(cherrypy.request, 'currentuser', False) and cherrypy.request.currentuser.lang)
 @cherrypy.tools.proxy(local=None, remote='X-Real-IP')
+@cherrypy.tools.ratelimit(on=False)
 @cherrypy.tools.secure_headers(
     csp={
         "default-src": "'self'",
@@ -117,6 +119,8 @@ def _json_handler(*args, **kwargs):
         "img-src": ("'self'", "data:"),
     }
 )
+@cherrypy.tools.sessions()
+@cherrypy.tools.sessions_timeout()
 class Root(LocationsPage):
     def __init__(self):
         self.login = LoginPage()
@@ -144,14 +148,14 @@ class Root(LocationsPage):
         self.robots_txt = staticfile(robots_txt, doc="robots.txt to disable search crawler")
 
     @cherrypy.expose
-    @cherrypy.tools.auth_form(on=False)
+    @cherrypy.tools.allow(methods=['GET'])
+    @cherrypy.tools.auth(on=False)
     @cherrypy.tools.auth_mfa(on=False)
+    @cherrypy.tools.caching(on=True)
     @cherrypy.tools.ratelimit(on=False)
+    @cherrypy.tools.response_headers(headers=[('Content-Type', 'text/css')])
     @cherrypy.tools.sessions(on=False)
     @cherrypy.tools.secure_headers(on=False)
-    @cherrypy.tools.caching(on=True)
-    @cherrypy.tools.response_headers(headers=[('Content-Type', 'text/css')])
-    @cherrypy.tools.allow(methods=['GET'])
     def main_css(self, **kwargs):
         """
         Return CSS file based on branding configuration
@@ -197,14 +201,17 @@ class RdiffwebApp(Application):
                 'db.uri': db_uri,
                 'db.debug': cfg.debug,
                 # Configure session storage
-                'tools.sessions.on': True,
                 'tools.sessions.debug': cfg.debug,
                 'tools.sessions.storage_class': DbSession,
                 'tools.sessions.httponly': True,
                 'tools.sessions.timeout': cfg.session_idle_timeout,  # minutes
-                'tools.sessions.persistent': False,  # auth_form should update this.
-                'tools.auth_form.persistent_timeout': cfg.session_persistent_timeout,  # minutes
-                'tools.auth_form.absolute_timeout': cfg.session_absolute_timeout,  # minutes
+                'tools.sessions.persistent': False,
+                # Configure session timeouts
+                'tools.sessions_timeout.persistent_timeout': cfg.session_persistent_timeout,  # minutes
+                'tools.sessions_timeout.absolute_timeout': cfg.session_absolute_timeout,  # minutes
+                # Configure Auth & MFA timeout
+                'tools.auth.reauth_timeout': cfg.session_idle_timeout,  # minutes
+                'tools.auth_mfa.trust_duration': cfg.session_persistent_timeout,  # minutes
                 # Configure rate limit
                 'tools.ratelimit.debug': cfg.debug,
                 'tools.ratelimit.delay': 3600,
@@ -234,10 +241,19 @@ class RdiffwebApp(Application):
                 'ldap.firstname_attribute': cfg.ldap_firstname_attribute,
                 'ldap.lastname_attribute': cfg.ldap_lastname_attribute,
                 'ldap.email_attribute': cfg.ldap_email_attribute,
-                # Configure login
-                'login.add_missing_user': cfg.ldap_add_missing_user,
-                'login.add_user_default_role': cfg.ldap_add_user_default_role,
-                'login.add_user_default_userroot': cfg.ldap_add_user_default_userroot,
+                # Configure OAuth
+                'oauth.auth_url': cfg.oauth_auth_url,
+                'oauth.client_id': cfg.oauth_client_id,
+                'oauth.client_secret': cfg.oauth_client_secret,
+                'oauth.email_claim': cfg.oauth_email_claim,
+                'oauth.firstname_claim': cfg.oauth_firstname_claim,
+                'oauth.fullname_claim': cfg.oauth_fullname_claim,
+                'oauth.lastname_claim': cfg.oauth_lastname_claim,
+                'oauth.scope': cfg.oauth_scope,
+                'oauth.token_url': cfg.oauth_token_url,
+                'oauth.userinfo_url': cfg.oauth_userinfo_url,
+                'oauth.userkey_claim': cfg.oauth_userkey_claim,
+                'oauth.required_claims': cfg.oauth_required_claims,
                 # Configure SMTP plugin
                 'smtp.server': cfg.email_host,
                 'smtp.username': cfg.email_username,
@@ -325,14 +341,6 @@ class RdiffwebApp(Application):
         # create user manager
         user = UserObject.create_admin_user(self.cfg.admin_user, self.cfg.admin_password)
         user.commit()
-
-    @property
-    def currentuser(self):
-        """
-        Proxy property to get current user from cherrypy request object.
-        Return a UserObject when logged in or None.
-        """
-        return getattr(cherrypy.serving.request, 'currentuser', None)
 
     def error_page(self, **kwargs):
         """

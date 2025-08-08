@@ -48,20 +48,20 @@ class TestParseArg(unittest.TestCase):
 
     def test_ldap_add_user_default_role_with_default_value(self):
         args = parse_args([])
-        self.assertEqual(args.ldap_add_user_default_role, 'user')
+        self.assertEqual(args.add_user_default_role, 'user')
 
     def test_ldap_add_user_default_role_with_valu(self):
         for value in ['user', 'admin', 'maintainer']:
             args = parse_args(['--ldap-add-user-default-role', value])
-            self.assertEqual(args.ldap_add_user_default_role, value)
+            self.assertEqual(args.add_user_default_role, value)
 
     def test_ldap_add_user_default_role_with_invalid(self):
         with self.assertRaises(SystemExit):
             parse_args(['--ldap-add-user-default-role', 'invalid'])
 
     def test_ldap_add_user_default_userroot(self):
-        args = parse_args(['--ldap-add-user-default-userroot', '/this/is/a/path'])
-        self.assertEqual(args.ldap_add_user_default_userroot, '/this/is/a/path')
+        args = parse_args(['--add-user-default-userroot', '/this/is/a/path'])
+        self.assertEqual(args.add_user_default_userroot, '/this/is/a/path')
 
     def test_enable_ssh_keys_default(self):
         args = parse_args([])

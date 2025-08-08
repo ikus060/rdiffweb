@@ -13,8 +13,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import hashlib
 import os
-import pickle
+import tempfile
 import threading
 import time
 from collections import namedtuple
@@ -40,7 +41,7 @@ class _DataStore:
                 tracker = Tracker(token=token, hits=0, timeout=int(time.time() + delay))
             tracker = tracker._replace(hits=tracker.hits + hit)
             self._save(tracker)
-        return tracker.hits
+        return tracker.hits, tracker.timeout
 
     def _save(self, tracker):
         raise NotImplementedError
@@ -59,129 +60,196 @@ class RamRateLimit(_DataStore):
         self._data = {}
 
     def _load(self, token):
-        return self._data.get(token, None)
+        return self._data.get(token)
 
     def _save(self, tracker):
         self._data[tracker.token] = tracker
 
+    def reset(self):
+        self._data = {}
+
 
 class FileRateLimit(_DataStore):
-    """
-    Store rate limit information in files.
-    """
-
     PREFIX = 'ratelimit-'
-    pickle_protocol = pickle.HIGHEST_PROTOCOL
 
     def __init__(self, storage_path, **kwargs):
         super().__init__(**kwargs)
-        # The 'storage_path' arg is required for file-based datastore.
-        assert (
-            storage_path
-        ), 'FileRateLimit required a storage_path `tools.ratelimit.storage_path = "/home/site/ratelimit"`'
+        assert storage_path, 'FileRateLimit requires storage_path'
         self.storage_path = os.path.abspath(storage_path)
+        os.makedirs(self.storage_path, exist_ok=True)
 
     def _path(self, token):
-        assert token
-        f = os.path.join(self.storage_path, self.PREFIX + token.strip('/').replace('/', '-'))
-        if not os.path.abspath(f).startswith(self.storage_path):
-            raise ValueError('invalid token')
-        return f
+        # Hash the token to avoid max path limit and invalid chars.
+        digest = hashlib.sha256(token.encode('utf-8')).hexdigest()
+        return os.path.join(self.storage_path, self.PREFIX + digest + '.txt')
 
     def _load(self, token):
         path = self._path(token)
         try:
-            f = open(path, 'rb')
-            try:
-                return pickle.load(f)
-            finally:
-                f.close()
-        except Exception:
-            # Drop session data if invalid
-            pass
-        return None
+            with open(path, 'r', encoding='utf-8') as f:
+                line = f.readline().strip()
+        except FileNotFoundError:
+            return None
+        except OSError:
+            return None
+
+        if not line:
+            return None
+
+        parts = line.split()
+        if len(parts) != 2:
+            return None
+
+        try:
+            hits = int(parts[0])
+            timeout = int(parts[1])
+            if hits < 0 or timeout < 0:
+                return None
+        except ValueError:
+            return None
+
+        return Tracker(token=token, hits=hits, timeout=timeout)
 
     def _save(self, tracker):
         path = self._path(tracker.token)
-        f = open(path, 'wb')
+        # Atomic write: temp file in same directory
+        fd, tmp = tempfile.mkstemp(dir=self.storage_path)
         try:
-            pickle.dump(tracker, f, self.pickle_protocol)
+            with os.fdopen(fd, 'w', encoding='utf-8') as f:
+                f.write(f"{tracker.hits} {int(tracker.timeout)}\n")
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp, path)
+            # On POSIX, chmod on first write
+            try:
+                os.chmod(path, 0o600)
+            except OSError:
+                pass
         finally:
-            f.close()
+            try:
+                if os.path.exists(tmp):
+                    os.remove(tmp)
+            except Exception:
+                pass
+
+    def reset(self):
+        for item in os.listdir(self.storage_path):
+            if not item.startswith(self.PREFIX):
+                continue
+            fn = os.path.join(self.storage_path, item)
+            if not os.path.isfile(fn):
+                continue
+            try:
+                os.remove(fn)
+            except OSError:
+                pass
 
 
-def check_ratelimit(
-    delay=3600, limit=25, return_status=429, logout=False, scope=None, methods=None, debug=False, hit=1, **conf
-):
-    """
-    Verify the ratelimit. By default return a 429 HTTP error code (Too Many Request). After 25 request within the same hour.
+class Ratelimit(cherrypy.Tool):
+    def __init__(self, priority=60):
+        super().__init__('before_handler', self.check_ratelimit, 'ratelimit', priority)
 
-    Arguments:
-        delay:         Time window for analysis in seconds. Default per hour (3600 seconds)
-        limit:         Number of request allowed for an entry point. Default 25
-        return_status: HTTP Error code to return.
-        logout:        True to logout user when limit is reached
-        scope:         if specify, define the scope of rate limit. Default to path_info.
-        methods:       if specify, only the methods in the list will be rate limited.
-    """
-    assert delay > 0, 'invalid delay'
+    def check_ratelimit(
+        self,
+        delay=3600,
+        limit=25,
+        return_status=429,
+        logout=False,
+        scope=None,
+        methods=None,
+        debug=False,
+        hit=1,
+        **conf,
+    ):
+        """
+        Verify the ratelimit. By default return a 429 HTTP error code (Too Many Request). After 25 request within the same hour.
 
-    # Check if limit is enabled
-    if limit <= 0:
-        return
+        Arguments:
+            delay:         Time window for analysis in seconds
+            limit:         Number of request allowed for an entry point
+            return_status: HTTP Error code to return.
+            logout:        True to logout user when limit is reached
+            scope:         if specify, define the scope of rate limit. Default to path_info.
+            methods:       if specify, only the methods in the list will be rate limited.
+        """
+        assert delay > 0, 'invalid delay'
 
-    # Check if this 'method' should be rate limited
-    request = cherrypy.request
-    if methods is not None and request.method not in methods:
+        # Check if limit is enabled
+        if limit <= 0:
+            return
+
+        # Check if this 'method' should be rate limited
+        request = cherrypy.request
+        if methods is not None and request.method not in methods:
+            if debug:
+                cherrypy.log(
+                    'skip rate limit for HTTP method %s' % (request.method,),
+                    'TOOLS.RATELIMIT',
+                )
+            return
+
+        # If datastore is not pass as configuration, create it for the first time.
+        datastore = getattr(self, '_ratelimit_datastore', None)
+        if datastore is None:
+            # Create storage using storage class
+            storage_class = conf.get('storage_class', RamRateLimit)
+            datastore = storage_class(**conf)
+            self._ratelimit_datastore = datastore
+
+        # Identifier: prefer authenticated user; else client IP
+        identifier = getattr(cherrypy.serving.request, 'login', None) or cherrypy.request.remote.ip
+
+        # Include method unless methods is explicitly a single method
+        method_part = request.method
+        if methods and len(methods) == 1:
+            method_part = next(iter(methods))
+
+        # Scope: allow explicit; else normalized path (e.g., strip trailing slash)
+        path = request.path_info.rstrip('/') or '/'
+        scope_value = scope or path
+
+        token = f"{identifier}|{method_part}|{scope_value}"
+
+        # Get hits count using datastore.
+        hits, timeout = datastore.get_and_increment(token, delay, hit)
         if debug:
             cherrypy.log(
-                'skip rate limit for HTTP method %s' % (request.method,),
+                'check and increase rate limit for scope %s, limit %s, hits %s' % (token, limit, hits),
                 'TOOLS.RATELIMIT',
             )
-        return
 
-    # If datastore is not pass as configuration, create it for the first time.
-    datastore = getattr(cherrypy.request.app, '_ratelimit_datastore', None)
-    if datastore is None:
-        # Create storage using storage class
-        storage_class = conf.get('storage_class', RamRateLimit)
-        datastore = storage_class(**conf)
-        cherrypy.request.app._ratelimit_datastore = datastore
+        # Verify user has not exceeded rate limit
+        remaining = max(0, limit - hits)
 
-    # If user is authenticated, use the username else use the ip address
-    identifier = request.remote.ip
-    if hasattr(cherrypy.serving, 'session') and cherrypy.serving.session.get('_cp_username', None):
-        identifier = cherrypy.serving.session.get('_cp_username', None)
-    token = identifier + '.' + (scope or request.path_info)
+        # Define headers
+        cherrypy.response.headers['X-RateLimit-Limit'] = str(limit)
+        cherrypy.response.headers['X-RateLimit-Remaining'] = str(remaining)
+        cherrypy.response.headers['X-RateLimit-Reset'] = str(timeout)
 
-    # Get hits count using datastore.
-    hits = datastore.get_and_increment(token, delay, hit)
-    if debug:
-        cherrypy.log(
-            'check and increase rate limit for scope %s, limit %s, hits %s' % (token, limit, hits), 'TOOLS.RATELIMIT'
-        )
+        if limit < hits:  # block only after 'limit' successful requests
+            cherrypy.log('ratelimit access to `%s`' % request.path_info, 'TOOLS.RATELIMIT')
+            if logout:
+                if hasattr(cherrypy.serving, 'session'):
+                    cherrypy.serving.session.clear()
+                raise cherrypy.HTTPRedirect("/")
+            raise cherrypy.HTTPError(return_status)
 
-    # Verify user has not exceeded rate limit
-    if limit <= hits:
-        cherrypy.log('ratelimit access to `%s`' % request.path_info, 'TOOLS.RATELIMIT')
-        if logout:
-            if hasattr(cherrypy.serving, 'session'):
-                cherrypy.serving.session.clear()
-            raise cherrypy.HTTPRedirect("/")
+    def increase_hit(self, hit=1):
+        """
+        May be called directly by handlers to add a hit for the given request.
+        """
+        conf = cherrypy.tools.ratelimit._merged_args()
+        conf['hit'] = hit
+        cherrypy.tools.ratelimit.callable(**conf)
 
-        raise cherrypy.HTTPError(return_status)
-
-
-def hit(hit=1):
-    """
-    May be called directly by handlers to add a hit for the given request.
-    """
-    conf = cherrypy.tools.ratelimit._merged_args()
-    conf['hit'] = hit
-    cherrypy.tools.ratelimit.callable(**conf)
+    def reset(self):
+        """
+        Used to reset the ratelimit.
+        """
+        datastore = getattr(self, '_ratelimit_datastore', False)
+        if not datastore:
+            return
+        datastore.reset()
 
 
-cherrypy.tools.ratelimit = cherrypy.Tool('before_handler', check_ratelimit, priority=60)
-
-
-cherrypy.tools.ratelimit.hit = hit
+cherrypy.tools.ratelimit = Ratelimit()

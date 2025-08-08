@@ -59,7 +59,7 @@ class AdminSessionTest(rdiffweb.test.WebCase):
         # Given another user session
         session = DbSession()
         session.load()
-        session['_cp_username'] = 'test'
+        session[SessionObject.SESSION_USER_KEY] = 'test'
         session.save()
         self.assertEqual(2, len(SessionObject.query.all()))
         session_number = SessionObject.query.filter(SessionObject.id == session.id).first().number
@@ -75,7 +75,7 @@ class AdminSessionTest(rdiffweb.test.WebCase):
         # Given a user with multiple sessionid
         session = DbSession()
         session.load()
-        session['_cp_username'] = self.USERNAME
+        session[SessionObject.SESSION_USER_KEY] = self.USERNAME
         session.save()
         self.assertEqual(2, len(SessionObject.query.all()))
         session_number = SessionObject.query.filter(SessionObject.id == session.id).first().number

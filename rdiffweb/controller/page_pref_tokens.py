@@ -25,7 +25,7 @@ from wtforms.widgets import html_params
 
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.filter_authorization import is_maintainer
-from rdiffweb.controller.form import CherryForm
+from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.model import Token
 from rdiffweb.tools.i18n import gettext_lazy as _
 
@@ -119,7 +119,7 @@ class ScopeField(SelectMultipleField):
         return Markup(''.join(html))
 
 
-class TokenForm(CherryForm):
+class TokenForm(DbForm):
     name = StringField(
         _('Token name'),
         description=_(
@@ -150,33 +150,12 @@ class TokenForm(CherryForm):
         return super().is_submitted() and self.add_access_token.data
 
     def populate_obj(self, userobj):
-        try:
-            secret = userobj.add_access_token(
-                name=self.name.data, expiration_time=self.expiration.data, scope=self.scope.data
-            )
-            userobj.commit()
-            flash(
-                _(
-                    "Your new personal access token has been created.\n"
-                    "Make sure to save it - you won't be able to access it again.\n"
-                    "%s"
-                )
-                % secret,
-                level='info',
-            )
-            return True
-        except ValueError as e:
-            userobj.rollback()
-            flash(str(e), level='warning')
-            return False
-        except Exception:
-            userobj.rollback()
-            logger.exception("error adding access token: %s, %s" % (self.name.data, self.expiration.data))
-            flash(_("Unknown error while adding the access token."), level='error')
-            return False
+        self.secret = userobj.add_access_token(
+            name=self.name.data, expiration_time=self.expiration.data, scope=self.scope.data
+        )
 
 
-class DeleteTokenForm(CherryForm):
+class DeleteTokenForm(DbForm):
     name = StringField(validators=[DataRequired()])
     revoke = SubmitField(_('Revoke'))
 
@@ -186,19 +165,7 @@ class DeleteTokenForm(CherryForm):
 
     def populate_obj(self, userobj):
         is_maintainer()
-        try:
-            userobj.delete_access_token(self.name.data)
-            flash(_('The access token has been successfully deleted.'), level='success')
-            return True
-        except ValueError as e:
-            userobj.rollback()
-            flash(str(e), level='warning')
-            return False
-        except Exception:
-            userobj.rollback()
-            logger.exception("error removing access token: %s" % self.name.data)
-            flash(_("Unknown error while removing the access token."), level='error')
-            return False
+        userobj.delete_access_token(self.name.data)
 
 
 class PagePrefTokens(Controller):
@@ -209,23 +176,33 @@ class PagePrefTokens(Controller):
         """
         Show current user access token
         """
+        currentuser = cherrypy.serving.request.currentuser
         form = TokenForm()
         delete_form = DeleteTokenForm()
-        if form.is_submitted():
-            if form.validate():
-                if form.populate_obj(self.app.currentuser):
-                    raise cherrypy.HTTPRedirect("")
-            else:
-                flash(form.error_message, level='error')
-        elif delete_form.is_submitted():
-            if delete_form.validate():
-                if delete_form.populate_obj(self.app.currentuser):
-                    raise cherrypy.HTTPRedirect("")
-            else:
-                flash(delete_form.error_message, level='error')
+        if form.validate_on_submit():
+            if form.save_to_db(currentuser):
+                flash(
+                    _(
+                        "Your new personal access token has been created.\n"
+                        "Make sure to save it - you won't be able to access it again.\n"
+                        "%s"
+                    )
+                    % form.secret,
+                    level='info',
+                )
+                raise cherrypy.HTTPRedirect("")
+
+        elif delete_form.validate_on_submit():
+            if delete_form.save_to_db(currentuser):
+                flash(_('The access token has been successfully deleted.'), level='success')
+                raise cherrypy.HTTPRedirect("")
+        if form.error_message:
+            flash(form.error_message, level='error')
+        if delete_form.error_message:
+            flash(delete_form.error_message, level='error')
         params = {
             'form': form,
-            'tokens': Token.query.filter(Token.userid == self.app.currentuser.userid),
+            'tokens': Token.query.filter(Token.userid == currentuser.userid),
         }
         return self._compile_template("prefs_tokens.html", **params)
 
@@ -234,7 +211,8 @@ class PagePrefTokens(Controller):
 @cherrypy.tools.json_out()
 class ApiTokens(Controller):
     def _query(self, name):
-        token = Token.query.filter(Token.userid == self.app.currentuser.userid, Token.name == name).first()
+        currentuser = cherrypy.serving.request.currentuser
+        token = Token.query.filter(Token.userid == currentuser.userid, Token.name == name).first()
         if not token:
             raise cherrypy.NotFound()
         return token
@@ -271,7 +249,8 @@ class ApiTokens(Controller):
         - `expiration_time`: The time when the access token expires (null if never expires).
 
         """
-        tokens = Token.query.filter(Token.userid == self.app.currentuser.userid).all()
+        currentuser = cherrypy.serving.request.currentuser
+        tokens = Token.query.filter(Token.userid == currentuser.userid).all()
         return [self._to_json(token) for token in tokens]
 
     def get(self, name):
@@ -298,7 +277,7 @@ class ApiTokens(Controller):
 
         Returns status 200 OK on success.
         """
-        userobj = self.app.currentuser
+        userobj = cherrypy.serving.request.currentuser
         self._query(name)
         userobj.delete_access_token(name)
         userobj.commit()
@@ -313,21 +292,13 @@ class ApiTokens(Controller):
         """
         # Validate input data.
         form = TokenForm(json=1)
-        if not form.strict_validate():
-            raise cherrypy.HTTPError(400, form.error_message)
-
-        # Create the Access Token
-        userobj = self.app.currentuser
-        try:
-            secret = userobj.add_access_token(
-                name=form.name.data, expiration_time=form.expiration.data, scope=form.scope.data
-            )
-            userobj.commit()
-            token = self._query(form.name.data)
-            # Return token info as Json
-            data = self._to_json(token)
-            data['token'] = secret
-            return data
-        except Exception as e:
-            userobj.rollback()
-            raise cherrypy.HTTPError(400, str(e))
+        if form.strict_validate():
+            # Create the Access Token
+            userobj = cherrypy.serving.request.currentuser
+            if form.save_to_db(userobj):
+                token = self._query(form.name.data)
+                # Return token info as Json
+                data = self._to_json(token)
+                data['token'] = form.secret
+                return data
+        raise cherrypy.HTTPError(400, form.error_message)

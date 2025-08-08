@@ -17,12 +17,13 @@
 SQLAlchemy Tool for CherryPy.
 '''
 import logging
+import re
 
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
 from sqlalchemy import create_engine, event, inspect
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
 
 logger = logging.getLogger(__name__)
@@ -38,6 +39,61 @@ def _set_sqlite_journal_mode_wal(connection, connection_record):
         cursor.execute('PRAGMA journal_mode=WAL;')
         cursor.execute("PRAGMA foreign_keys=ON;")
         cursor.close()
+
+
+@event.listens_for(Engine, "handle_error")
+def enhance_database_errors(exception_context):
+    """
+    Enhance SQLAlchemy error by adding more information.
+    """
+    if isinstance(exception_context.sqlalchemy_exception, IntegrityError):
+        constraint = _find_constraint(exception_context.sqlalchemy_exception)
+        exception_context.sqlalchemy_exception.constraint = constraint
+
+
+def _find_constraint(exception):
+    """
+    Search reference of constraint within the error message. Return None if not found.
+    """
+    # Extract the constraint name for Postgresql and SQLite
+    # Postgresql: duplicate key value violates unique constraint "subnet_name_key"\nDETAIL:  Key (name)=() already exists.\n
+    # Postgresql: violates check constraint "dnsrecord_value_domain_name"
+    # Postgresql: foreign key constraint "dnsrecord_dnszone_subnet_fk"
+    # SQLite: UNIQUE constrain: subnet.name
+    # SQLite: UNIQUE constraint failed: index 'dnszone_name_index'
+    # SQLite: CHECK constraint failed: dnsrecord_value_domain_name
+    error = exception._message()
+    constraint_match = (
+        re.search(r'unique constraint "([^"]+)"', error)
+        or re.search(r'check constraint "([^"]+)"', error)
+        or re.search(r"UNIQUE constraint failed: index '([^']+)'", error)
+        or re.search(r"UNIQUE constraint failed: (.+)$", error)
+        or re.search(r"CHECK constraint failed: (.+)", error)
+        or re.search(r'foreign key constraint "([^"]+)"', error)
+    )
+    if not constraint_match:
+        return None
+    name = constraint_match[1]
+
+    # Use a lookup cache to simplify the search of index and constraints.
+    if not getattr(_find_constraint, '_cache', False):
+        cache = {}
+        metadata = cherrypy.db.get_base().metadata
+        for table in metadata.tables.values():
+            for item in table.constraints:
+                if item.name:
+                    cache[item.name] = item
+            for item in table.indexes:
+                # Keep reference to unique index only.
+                if item.unique:
+                    if item.name:
+                        cache[item.name] = item
+                    # SQLite return <table>.<column>
+                    key = ', '.join([f'{table.name}.{c.name}' for c in item.columns])
+                    cache[key] = item
+        _find_constraint._cache = cache
+
+    return _find_constraint._cache.get(name, None)
 
 
 def _get_model_changes(model):

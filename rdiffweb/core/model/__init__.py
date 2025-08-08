@@ -18,4 +18,4 @@ from ._repo import RepoObject  # noqa
 from ._session import DbSession, SessionObject  # noqa
 from ._sshkey import SshKey, sshkey_fingerprint_index  # noqa
 from ._token import Token  # noqa
-from ._user import DuplicateSSHKeyError, UserObject, user_username_index  # noqa
+from ._user import UserObject, user_username_index  # noqa
