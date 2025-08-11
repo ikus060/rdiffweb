@@ -21,6 +21,17 @@ from sqlalchemy.exc import OperationalError, ProgrammingError
 logger = logging.getLogger(__name__)
 
 
+def update_attr_task(user_root, project_id):
+    # Update user root attribute
+    try:
+        # Add +P attribute to user's home directory
+        subprocess.check_output(
+            ["/usr/bin/chattr", "-R", "+P", "-p", str(project_id), user_root], stderr=subprocess.STDOUT
+        )
+    except Exception:
+        logger.warning("fail to update user quota", exc_info=1)
+
+
 class TimeoutHTTPAdapter(requests.adapters.HTTPAdapter):
     def send(self, *args, **kwargs):
         # Enforce a timeout value if not defined.
@@ -64,8 +75,10 @@ class MinarcaPlugin(SimplePlugin):
 
     def start(self):
         self.bus.log('Start Minarca plugin')
+        self.bus.subscribe('user_adding', self.user_adding)
         self.bus.subscribe('user_added', self.user_added)
-        self.bus.subscribe('user_attr_changed', self.user_attr_changed)
+        self.bus.subscribe('user_updating', self.user_updating)
+        self.bus.subscribe('user_updated', self.user_updated)
         self.bus.subscribe('user_deleted', self.user_deleted)
         if self.quota_api_url:
             self.bus.subscribe("set_disk_quota", self.set_disk_quota)
@@ -94,8 +107,10 @@ class MinarcaPlugin(SimplePlugin):
 
     def stop(self):
         self.bus.log('Stop Minarca plugin')
-        self.bus.unsubscribe('user_attr_changed', self.user_attr_changed)
-        self.bus.unsubscribe('user_attr_changed', self.user_attr_changed)
+        self.bus.unsubscribe('user_adding', self.user_adding)
+        self.bus.unsubscribe('user_added', self.user_added)
+        self.bus.unsubscribe('user_updating', self.user_updating)
+        self.bus.unsubscribe('user_updated', self.user_updated)
         self.bus.unsubscribe('user_deleted', self.user_deleted)
         if self.quota_api_url:
             self.bus.unsubscribe("set_disk_quota", self.set_disk_quota)
@@ -116,41 +131,61 @@ class MinarcaPlugin(SimplePlugin):
             os.path.dirname(self._log_file or '/var/log/minarca/server.log'), 'shell.log'
         )
         logfiles = self._orig_get_log_files()
-        logfiles.append(minarca_shell_logfile)
+        logfiles['minarca_shell'] = minarca_shell_logfile
         return logfiles
+
+    def user_adding(self, userobj):
+        """
+        When added (manually or not). Update user's attributes.
+        """
+        assert isinstance(userobj, UserObject)
+        try:
+            userobj.user_root = self._get_user_root(userobj)
+        except Exception:
+            logger.warning('fail to update user root [%s]', userobj.username, exc_info=1)
 
     def user_added(self, userobj):
         """
         When added (manually or not). Update user's attributes.
         """
         assert isinstance(userobj, UserObject)
+
         # Assign new user_root
         try:
-            userobj.user_root = self._get_user_root(userobj)
             self._create_user_root(userobj)
         except Exception:
-            logger.warning('fail to update user [%s] root', userobj.username, exc_info=1)
+            logger.warning('fail to create user root [%s]', userobj.username, exc_info=1)
         # Refresh list of repo
         try:
             userobj.refresh_repos(delete=True)
         except Exception:
             logger.warning('fail to refresh user [%s] repositories', userobj.username, exc_info=1)
+        # Also update the keys
+        if userobj.authorizedkeys:
+            try:
+                self._update_authorized_keys()
+            except Exception:
+                logger.error("fail to update authorized_keys files on user_updated", exc_info=1)
 
-    def user_attr_changed(self, userobj, attrs={}):
+    def user_updating(self, userobj, attrs={}):
         """
-        Listen to users attributes change to update the minarca authorized_keys.
+        Listen to users attributes change and adjust the user_root as required.
         """
         if 'user_root' in attrs:
             user_root = self._get_user_root(userobj)
             if attrs['user_root'][1] != user_root:
                 userobj.user_root = user_root
 
+    def user_updated(self, userobj, attrs={}):
+        """
+        Listen for user attributes changes. Once changes are commit. Update the authorized_keys file.
+        """
         # Update minarca's authorized_keys when users update their ssh keys.
-        if 'authorizedkeys' in attrs or 'user_root' in attrs:
+        if 'authorizedkeys' in attrs or 'user_root' in attrs or 'status' in attrs:
             try:
                 self._update_authorized_keys()
             except Exception:
-                logger.error("fail to update authorized_keys files on user_attr_changed", exc_info=1)
+                logger.error("fail to update authorized_keys files on user_updated", exc_info=1)
 
     def user_deleted(self, username):
         """
@@ -221,26 +256,25 @@ class MinarcaPlugin(SimplePlugin):
         # Get list of keys
         seen = set()
         new_data = StringIO()
-        for userobj in UserObject.query.all():
+        active_users = (
+            UserObject.query.filter(UserObject.status != UserObject.STATUS_DISABLED)
+            .filter(UserObject.status != UserObject.STATUS_DELETING)
+            .all()
+        )
+        for userobj in active_users:
             for key in userobj.authorizedkeys:
                 if key.fingerprint in seen:
                     logger.warning("duplicates key %s, sshd will ignore it")
+                    continue
                 else:
                     seen.add(key.fingerprint)
 
                 # Add option to the key
-
-                options = """command="export MINARCA_USERNAME='{username}' MINARCA_USER_ROOT='{user_root}';{minarca_shell}",{auth_options}""".format(
-                    minarca_shell=self.shell,
-                    username=userobj.username,
-                    user_root=userobj.user_root,
-                    auth_options=self.auth_options,
-                )
-
-                key = AuthorizedKey(options=options, keytype=key.keytype, key=key.key, comment=key.comment)
+                options = f"""command="export MINARCA_USERNAME='{userobj.username}' MINARCA_USER_ROOT='{userobj.user_root}';{self.shell}",{self.auth_options}"""
+                authorizedkey = AuthorizedKey(options=options, keytype=key.keytype, key=key.key, comment=key.comment)
 
                 # Write the new key
-                authorizedkeys.add(new_data, key)
+                authorizedkeys.add(new_data, authorizedkey)
 
         # Write the new file
         logger.info("updating authorized_keys file [%s]", filename)
@@ -253,7 +287,7 @@ class MinarcaPlugin(SimplePlugin):
         """
         assert isinstance(userobj, UserObject)
         # Get Quota from web service
-        url = os.path.join(self.quota_api_url, 'quota', str(userobj.userid))
+        url = os.path.join(self.quota_api_url, 'quota', str(userobj.id))
         try:
             r = self.session.get(url, timeout=1)
             r.raise_for_status()
@@ -268,7 +302,7 @@ class MinarcaPlugin(SimplePlugin):
         Get's user's disk quota.
         """
         # Get Quota from web service
-        url = os.path.join(self.quota_api_url, 'quota', str(userobj.userid))
+        url = os.path.join(self.quota_api_url, 'quota', str(userobj.id))
         try:
             r = self.session.get(url, timeout=1)
             r.raise_for_status()
@@ -285,7 +319,7 @@ class MinarcaPlugin(SimplePlugin):
         # Always update unless quota not define
         try:
             logger.info('set user [%s] quota [%s]', userobj.username, quota)
-            url = os.path.join(self.quota_api_url, 'quota', str(userobj.userid))
+            url = os.path.join(self.quota_api_url, 'quota', str(userobj.id))
             r = self.session.post(url, data={'size': quota}, timeout=1)
             r.raise_for_status()
         except Exception:
@@ -293,19 +327,9 @@ class MinarcaPlugin(SimplePlugin):
             return False
 
         # Schedule update attribute task in background
-        cherrypy.engine.publish('schedule_task', self._update_attr_task, userobj.user_root, userobj.userid)
+        cherrypy.engine.publish('scheduler:add_job_now', update_attr_task, userobj.user_root, userobj.id)
 
         return quota
-
-    def _update_attr_task(self, user_root, project_id):
-        # Update user root attribute
-        try:
-            # Add +P attribute to user's home directory
-            subprocess.check_output(
-                ["/usr/bin/chattr", "-R", "+P", "-p", str(project_id), user_root], stderr=subprocess.STDOUT
-            )
-        except Exception:
-            logger.warning("fail to update user quota", exc_info=1)
 
 
 cherrypy.minarca = MinarcaPlugin(cherrypy.engine)

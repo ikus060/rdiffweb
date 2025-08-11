@@ -61,10 +61,10 @@ class MinarcaApplication(RdiffwebApp):
         self.root.static.bg_jpg = staticfile(str(files(__package__) / 'bg.jpg'))
 
     @cherrypy.expose
+    @cherrypy.tools.auth(on=False)
     @cherrypy.tools.i18n(on=False)
     @cherrypy.tools.sessions(on=False)
     @cherrypy.tools.auth_mfa(on=False)
-    @cherrypy.tools.auth_form(on=False)
     def get_help(self):
         raise cherrypy.HTTPRedirect(self.cfg.minarca_help_url)
 

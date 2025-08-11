@@ -9,6 +9,7 @@ from cherrypy.lib.auth_basic import basic_auth
 from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage, _checkpassword
 from rdiffweb.core.model import SshKey, UserObject
+from sqlalchemy.exc import NoResultFound
 
 from minarca_server import __version__
 from minarca_server.core.minarcaid import verify_minarcaid
@@ -18,16 +19,18 @@ def _public_key_lockup(fingerprint):
     """
     Search database for matching key and username.
     """
-    row = (
-        SshKey.query.with_entities(SshKey.key, UserObject.username)
-        .join(UserObject, SshKey.userid == UserObject.userid)
-        .filter(SshKey.fingerprint == fingerprint)
-        .first()
-    )
-    if row is None:
+    try:
+        row = (
+            SshKey.query.with_entities(SshKey._key, UserObject.username)
+            .join(SshKey.user)
+            .filter(SshKey.fingerprint == fingerprint)
+            .filter(UserObject.status != UserObject.STATUS_DISABLED)
+            .filter(UserObject.status != UserObject.STATUS_DELETING)
+            .one()
+        )
+        return (row._key, row.username)
+    except NoResultFound:
         return None
-    # Return a tuple.
-    return (row.key, row.username)
 
 
 def minarca_auth(realm):
@@ -41,7 +44,7 @@ def minarca_auth(realm):
         # Get all valid public keys.
         try:
             # If valid, define scope as write_user to allow editing user's settings only.
-            public_key, username = verify_minarcaid(minarcaid, _public_key_lockup)
+            _key, username = verify_minarcaid(minarcaid, _public_key_lockup)
             cherrypy.request.login = username
             cherrypy.serving.request.scope = ['write_user']
             return  # successful authentication
