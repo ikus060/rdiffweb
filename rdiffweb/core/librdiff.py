@@ -49,6 +49,33 @@ INCREMENTS = b"increments"
 STDOUT_ENCODING = 'utf-8'
 LANG = "en_US." + STDOUT_ENCODING
 
+_cache_entries = {}
+
+
+def sorted_cached_listdir(path):
+    """Return cached entries (names) for 'path' if directory mtime_ns is unchanged."""
+    try:
+        mtime = os.lstat(path).st_mtime_ns
+    except FileNotFoundError:
+        _cache_entries.pop(path, None)
+        raise
+
+    cached = _cache_entries.get(path)
+    if cached and cached[0] == mtime:
+        logger.debug('using cached entries for %s', path)
+        return cached[1]
+
+    # Refresh
+    logger.debug('cache miss for %s', path)
+    entries = sorted(os.listdir(path))
+
+    # Re-check mtime to reduce race window; cache only if unchanged
+    mtime2 = os.lstat(path).st_mtime_ns
+    if mtime == mtime2:
+        _cache_entries[path] = (mtime2, entries)
+
+    return entries
+
 
 def rdiff_backup_version():
     """
@@ -795,7 +822,7 @@ class MetadataDict(object):
         self._prefix = cls.PREFIX
         self._cls = cls
 
-    @cached_property
+    @property
     def _entries(self):
         return [e for e in self._repo._entries if e.startswith(self._prefix)]
 
@@ -924,13 +951,13 @@ class RdiffRepo(object):
         assert isinstance(value, bytes)
         return self._encoding.decode(value, errors)[0]
 
-    @cached_property
+    @property
     def _entries(self):
         """
         List content of rdiff-backup-data.
         """
         try:
-            return sorted(os.listdir(self._data_path))
+            return sorted_cached_listdir(self._data_path)
         except FileNotFoundError:
             logger.warning(f'folder not found {self._data_path}', exc_info=1)
             self._entries_status = ('failed', _('The repository cannot be found or is badly damaged.'))
@@ -955,11 +982,6 @@ class RdiffRepo(object):
         cached_properties = [
             (self, '_entries'),
             (self, 'status'),
-            (self.current_mirror, '_entries'),
-            (self.error_log, '_entries'),
-            (self.mirror_metadata, '_entries'),
-            (self.file_statistics, '_entries'),
-            (self.session_statistics, '_entries'),
         ]
         for obj, attr in cached_properties:
             if attr in obj.__dict__:
