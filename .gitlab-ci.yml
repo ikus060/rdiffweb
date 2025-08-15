@@ -51,6 +51,8 @@ py3:
         IMAGE: python:3.10
       - TOXENV: bookworm
         IMAGE: python:3.11
+      - TOXENV: py3 # trixie
+        IMAGE: python:3.13
 
 sqlalchemy2:
   <<: *tox
