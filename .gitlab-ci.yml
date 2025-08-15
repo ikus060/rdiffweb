@@ -48,8 +48,6 @@ py3:
   parallel:
     matrix:
       - TOXENV: py3
-        IMAGE: python:3.8
-      - TOXENV: py3
         IMAGE: python:3.10
       - TOXENV: bookworm
         IMAGE: python:3.11
