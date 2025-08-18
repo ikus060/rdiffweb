@@ -13,6 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import importlib.resources
 import json
 import os
 import shutil
@@ -27,7 +28,6 @@ from urllib.parse import urlencode
 
 import cherrypy
 import html5lib
-import pkg_resources
 from cherrypy.test import helper
 from selenium import webdriver
 
@@ -41,7 +41,7 @@ Thread.isAlive = Thread.is_alive
 def create_testcases_repo():
     """Extract testcases."""
     # Extract 'testcases.tar.gz'
-    testcases = pkg_resources.resource_filename('rdiffweb.tests', 'testcases.tar.gz')  # @UndefinedVariable
+    testcases = importlib.resources.files('rdiffweb.tests') / 'testcases.tar.gz'
     new = str(tempfile.mkdtemp(prefix='rdiffweb_tests_'))
     subdir = os.path.join(new, 'admin')
     os.makedirs(subdir)

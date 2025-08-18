@@ -62,7 +62,7 @@ def _content_type(filename):
     i = filename.rfind('.')
     if i != -1:
         ext = filename[i:].lower()
-    return mimetypes.types_map.get(ext, "application/octet-stream")  # @UndefinedVariable
+    return mimetypes.types_map.get(ext, "application/octet-stream")
 
 
 class _file_generator(object):

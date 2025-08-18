@@ -113,8 +113,8 @@ def get_pkginfo():
         import ldap
 
         yield _('LDAP Version'), getattr(ldap, '__version__')
-        yield _('LDAP SASL Support (Cyrus-SASL)'), ldap.SASL_AVAIL  # @UndefinedVariable
-        yield _('LDAP TLS Support (OpenSSL)'), ldap.TLS_AVAIL  # @UndefinedVariable
+        yield _('LDAP SASL Support (Cyrus-SASL)'), ldap.SASL_AVAIL
+        yield _('LDAP TLS Support (OpenSSL)'), ldap.TLS_AVAIL
     except Exception:
         pass
 

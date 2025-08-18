@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import datetime
+import importlib.resources
 import os
 import shutil
 import tarfile
@@ -24,7 +25,6 @@ import unittest
 from inspect import isclass
 from unittest.case import skipIf
 
-import pkg_resources
 from parameterized import parameterized
 
 from rdiffweb.core.librdiff import (
@@ -43,7 +43,7 @@ from rdiffweb.core.librdiff import (
 
 class MockRdiffRepo(RdiffRepo):
     def __init__(self):
-        p = bytes(pkg_resources.resource_filename('rdiffweb.core', 'tests'), encoding='utf-8')  # @UndefinedVariable
+        p = os.fsencode(importlib.resources.files('rdiffweb.core') / 'tests')
         RdiffRepo.__init__(self, p, encoding='utf-8')
         self.root_path = MockDirEntry(self)
 
@@ -207,7 +207,7 @@ class LogEntryTest(unittest.TestCase):
 class RdiffRepoTest(unittest.TestCase):
     def setUp(self):
         # Extract 'testcases.tar.gz'
-        testcases = pkg_resources.resource_filename('rdiffweb.tests', 'testcases.tar.gz')  # @UndefinedVariable
+        testcases = importlib.resources.files('rdiffweb.tests') / 'testcases.tar.gz'
         self.temp_dir = tempfile.mkdtemp(prefix='rdiffweb_tests_')
         tarfile.open(testcases).extractall(self.temp_dir)
         # Define location of testcases

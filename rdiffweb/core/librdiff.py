@@ -106,7 +106,7 @@ def unquote(name):
             return match.group
 
     # Remove quote using regex
-    return re.sub(b";[0-9]{3}", unquoted_char, name, re.S)
+    return re.sub(pattern=b";[0-9]{3}", repl=unquoted_char, string=name, flags=re.S)
 
 
 class AccessDeniedError(Exception):

@@ -16,11 +16,10 @@
 
 
 import contextlib
+import importlib.resources
 import io
 import unittest
 from unittest.mock import patch
-
-import pkg_resources
 
 from rdiffweb.main import main
 
@@ -28,7 +27,7 @@ from rdiffweb.main import main
 @patch('cherrypy.quickstart')
 class Test(unittest.TestCase):
     def test_main_with_config(self, *args):
-        config = pkg_resources.resource_filename('rdiffweb.tests', 'rdw.conf')  # @UndefinedVariable
+        config = str(importlib.resources.files(__package__) / 'rdw.conf')
         main(['-f', config])
 
     def test_main_without_config(self, *args):

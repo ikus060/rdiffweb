@@ -38,7 +38,7 @@ def staticdir(path, doc=''):
     @cherrypy.tools.ratelimit(on=False)
     @cherrypy.tools.sessions(on=False)
     @cherrypy.tools.secure_headers(on=False)
-    @cherrypy.tools.staticdir(section="", dir=path)
+    @cherrypy.tools.staticdir(section="", dir=str(path))
     def handler(*args, **kwargs):
         raise cherrypy.HTTPError(400)
 
@@ -58,7 +58,7 @@ def staticfile(path, doc=''):
     @cherrypy.tools.ratelimit(on=False)
     @cherrypy.tools.sessions(on=False)
     @cherrypy.tools.secure_headers(on=False)
-    @cherrypy.tools.staticfile(filename=path)
+    @cherrypy.tools.staticfile(filename=str(path))
     def handler(*args, **kwargs):
         raise cherrypy.HTTPError(400)
 

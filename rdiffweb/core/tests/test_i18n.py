@@ -15,11 +15,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import gettext
+import importlib.resources
 import unittest
 from datetime import datetime, timezone
 
 import cherrypy
-import pkg_resources
 from cherrypy import _cpconfig
 
 import rdiffweb.test
@@ -28,7 +28,7 @@ from rdiffweb.tools import i18n
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.mo_dir = pkg_resources.resource_filename('rdiffweb', 'locales')  # @UndefinedVariable
+        self.mo_dir = importlib.resources.files('rdiffweb') / 'locales'
         cherrypy.request.config = _cpconfig.Config()
 
     def test_search_translation(self):
@@ -76,7 +76,7 @@ class TestI18nWebCase(rdiffweb.test.WebCase):
 
     def test_with_preferred_lang(self):
         # Given a default lang 'en'
-        date = datetime.utcfromtimestamp(1680111611).replace(tzinfo=timezone.utc)
+        date = datetime.fromtimestamp(1680111611, timezone.utc)
         self.assertEqual('Sign in', i18n.ugettext('Sign in'))
         self.assertIn('March', i18n.format_datetime(date, format='long'))
         # When using preferred_lang with french

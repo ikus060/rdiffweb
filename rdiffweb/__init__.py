@@ -13,11 +13,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from importlib.metadata import distribution
 
-# Find the version
 try:
-    import pkg_resources
-
-    __version__ = pkg_resources.get_distribution("rdiffweb").version
+    __version__ = distribution("rdiffweb").version
 except Exception:
-    __version__ = "DEV"
+    __version__ = 'DEV'

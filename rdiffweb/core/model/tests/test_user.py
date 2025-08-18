@@ -13,12 +13,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import importlib.resources
 import os
 from io import StringIO, open
 from unittest.mock import MagicMock
 
 import cherrypy
-import pkg_resources
 from parameterized import parameterized, parameterized_class
 from sqlalchemy.exc import IntegrityError
 
@@ -31,13 +31,13 @@ from rdiffweb.core.passwd import check_password
 class UserObjectTest(rdiffweb.test.WebCase):
     def _read_ssh_key(self):
         """Readthe pub key from test packages"""
-        filename = pkg_resources.resource_filename('rdiffweb.core.tests', 'test_publickey_ssh_rsa.pub')
+        filename = importlib.resources.files('rdiffweb.core.tests') / 'test_publickey_ssh_rsa.pub'
         with open(filename, 'r', encoding='utf8') as f:
             return f.readline()
 
     def _read_authorized_keys(self):
         """Read the content of test_authorized_keys"""
-        filename = pkg_resources.resource_filename('rdiffweb.core.tests', 'test_authorized_keys')
+        filename = importlib.resources.files('rdiffweb.core.tests') / 'test_authorized_keys'
         with open(filename, 'r', encoding='utf8') as f:
             return f.read()
 

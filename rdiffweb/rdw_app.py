@@ -15,13 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import datetime
+import importlib.resources
 import json
 import logging
 import os
 
 import cherrypy
 import cherrypy.lib.sessions
-import pkg_resources
 from cherrypy import Application
 
 import rdiffweb
@@ -140,11 +140,11 @@ class Root(LocationsPage):
         self.logs = LogsPage()
 
         # Register static dir.
-        static_dir = pkg_resources.resource_filename('rdiffweb', 'static')  # @UndefinedVariable
+        static_dir = importlib.resources.files('rdiffweb') / 'static'
         self.static = staticdir(static_dir, doc="Serve static files")
 
         # Register robots.txt
-        robots_txt = pkg_resources.resource_filename('rdiffweb', 'static/robots.txt')  # @UndefinedVariable
+        robots_txt = importlib.resources.files('rdiffweb') / 'static/robots.txt'
         self.robots_txt = staticfile(robots_txt, doc="robots.txt to disable search crawler")
 
     @cherrypy.expose
@@ -284,7 +284,7 @@ class RdiffwebApp(Application):
                 'quota.get_usage_cmd': self.cfg.quota_used_cmd,
                 # Configure locales
                 'tools.i18n.default': cfg.default_lang,
-                'tools.i18n.mo_dir': pkg_resources.resource_filename('rdiffweb', 'locales'),
+                'tools.i18n.mo_dir': importlib.resources.files('rdiffweb') / 'locales',
                 'tools.i18n.domain': 'messages',
             }
         )
@@ -304,23 +304,19 @@ class RdiffwebApp(Application):
 
         # Register favicon.ico
         self.root.favicon_ico = staticfile(
-            cfg.favicon if cfg.favicon else pkg_resources.resource_filename('rdiffweb', 'static/favicon.ico'),
+            cfg.favicon if cfg.favicon else importlib.resources.files('rdiffweb') / 'static/favicon.ico',
             doc="Return favicon image file.",
         )
 
         # Register header_logo
         self.root.header_logo = staticfile(
-            (
-                cfg.header_logo
-                if cfg.header_logo
-                else pkg_resources.resource_filename('rdiffweb', 'static/header-logo.png')
-            ),
+            (cfg.header_logo if cfg.header_logo else importlib.resources.files('rdiffweb') / 'static/header-logo.png'),
             doc="Return static `header-logo` image file.",
         )
 
         # Register logo
         self.root.logo = staticfile(
-            cfg.logo if cfg.logo else pkg_resources.resource_filename('rdiffweb', 'static/logo1.png'),
+            cfg.logo if cfg.logo else importlib.resources.files('rdiffweb') / 'static/logo1.png',
             doc="Return static `logo` image file.",
         )
 

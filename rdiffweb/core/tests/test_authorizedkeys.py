@@ -14,13 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import importlib.resources
 import os
 import shutil
 import tempfile
 import unittest
 from io import open
-
-import pkg_resources
 
 from rdiffweb.core import authorizedkeys
 
@@ -36,7 +35,7 @@ class AuthorizedKeysTest(unittest.TestCase):
 
         # Copy file
         tempfilename = tempfile.mktemp()
-        filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable
+        filename = importlib.resources.files(__package__) / 'test_authorized_keys'
         shutil.copyfile(filename, tempfilename)
 
         try:
@@ -55,7 +54,7 @@ class AuthorizedKeysTest(unittest.TestCase):
             os.remove(tempfilename)
 
     def test_check_publickey_with_rsa(self):
-        filename = pkg_resources.resource_filename(__name__, 'test_publickey_ssh_rsa.pub')  # @UndefinedVariable
+        filename = importlib.resources.files(__package__) / 'test_publickey_ssh_rsa.pub'
         f = open(filename, 'r', encoding='utf8')
         line = f.readline()
         f.close()
@@ -68,7 +67,7 @@ class AuthorizedKeysTest(unittest.TestCase):
         self.assertEqual('3c:99:ed:a7:82:a8:71:09:2c:15:3d:78:4a:8c:11:99', key.fingerprint)
 
     def test_check_publickey_with_dsa(self):
-        filename = pkg_resources.resource_filename(__name__, 'test_publickey_ssh_dsa.pub')  # @UndefinedVariable
+        filename = importlib.resources.files(__package__) / 'test_publickey_ssh_dsa.pub'
         f = open(filename, 'r', encoding='utf8')
         line = f.readline()
         f.close()
@@ -85,7 +84,7 @@ class AuthorizedKeysTest(unittest.TestCase):
             authorizedkeys.check_publickey('123445342')
 
     def test_exists(self):
-        filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable
+        filename = importlib.resources.files(__package__) / 'test_authorized_keys'
         # Check if key exists.
         key = authorizedkeys.AuthorizedKey(
             options=False, keytype='ssh-rsa', key='AAAAB3NzaC1yc2EAAAADAQABAAUGK', comment='bobo@computer'
@@ -120,7 +119,7 @@ class AuthorizedKeysTest(unittest.TestCase):
         )
 
     def test_read(self):
-        filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable
+        filename = importlib.resources.files(__package__) / 'test_authorized_keys'
         keys = list(authorizedkeys.read(filename))
         self.assertEqual(5, len(list(keys)))
 
@@ -156,7 +155,7 @@ class AuthorizedKeysTest(unittest.TestCase):
     def test_remove(self):
         # Copy file
         tempfilename = tempfile.mktemp()
-        filename = pkg_resources.resource_filename(__name__, 'test_authorized_keys')  # @UndefinedVariable
+        filename = importlib.resources.files(__package__) / 'test_authorized_keys'
         shutil.copyfile(filename, tempfilename)
 
         try:

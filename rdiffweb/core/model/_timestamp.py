@@ -50,7 +50,7 @@ class Timestamp(TypeDecorator):
 
     cache_ok = True
     impl = DateTime
-    LOCAL_TIMEZONE = datetime.utcnow().astimezone().tzinfo
+    LOCAL_TIMEZONE = datetime.now(timezone.utc).astimezone().tzinfo
 
     def process_bind_param(self, value: datetime, dialect):
         if value is None:

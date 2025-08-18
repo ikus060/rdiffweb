@@ -22,17 +22,12 @@ from collections import OrderedDict
 
 import cherrypy
 import configargparse
-import pkg_resources
 from cherrypy import Application
+
+from rdiffweb import __version__
 
 # Define the logger
 logger = logging.getLogger(__name__)
-
-# Get rdiffweb version.
-try:
-    VERSION = pkg_resources.get_distribution("rdiffweb").version
-except pkg_resources.DistributionNotFound:
-    VERSION = "DEV"
 
 
 def _css_color(value):
@@ -234,21 +229,21 @@ def get_parser():
         '--favicon',
         dest='favicon',
         help='location of an icon to be used as a favicon displayed in web browser.',
-    )  # @UndefinedVariable
+    )
 
     parser.add_argument(
         '--footer-name',
         '--footername',
         help=argparse.SUPPRESS,
         default='rdiffweb',
-    )  # @UndefinedVariable
+    )
 
     parser.add_argument(
         '--footer-url',
         '--footerurl',
         help=argparse.SUPPRESS,
         default='https://rdiffweb.org/',
-    )  # @UndefinedVariable
+    )
 
     parser.add_argument(
         '--brand-logo',
@@ -726,7 +721,7 @@ def get_parser():
         default='https://latest.ikus-soft.com/rdiffweb/latest_version',
     )
 
-    parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
+    parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
 
     # Here we append a list of arguments for each locale.
     flags = ['--welcome-msg'] + ['--welcome-msg-' + i for i in ['ca', 'en', 'es', 'fr', 'ru']] + ['--welcomemsg']
