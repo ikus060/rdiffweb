@@ -16,7 +16,6 @@ import os
 import shutil
 import subprocess
 import sys
-from collections import deque
 
 import configargparse
 from tzlocal import get_localzone_name
@@ -79,28 +78,7 @@ def _jail(userroot, args):
     rdiff-backup execution.
     """
     with Jail(userroot):
-        process = subprocess.Popen(
-            args, cwd=userroot, env={'LANG': LANG, 'TZ': TZ, 'HOME': userroot}, stderr=subprocess.PIPE
-        )
-        # This implementation capture the last 25 lines of output.
-        last_logs = deque(maxlen=25)
-        out = sys.stderr.buffer
-        try:
-            line = process.stderr.readline()
-            while line:
-                last_logs.append(line)
-                out.write(line)
-                out.flush()
-                line = process.stderr.readline()
-        except BrokenPipeError:
-            pass
-        # Wait for the process to finish
-        process.stderr.close()
-        retcode = process.wait()
-        if retcode:
-            raise subprocess.CalledProcessError(
-                retcode, args[0], stderr=''.join([line.decode('utf-8', 'replace') for line in last_logs])
-            )
+        subprocess.check_call(args, cwd=userroot, env={'LANG': 'en_US.utf-8', 'TZ': TZ, 'HOME': userroot})
 
 
 def _find_rdiff_backup(version=DEFAULT_RDIFF_BACKUP_VERSION):

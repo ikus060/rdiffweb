@@ -142,8 +142,6 @@ class Test(unittest.TestCase):
         self.assertIsInstance(e.exception, subprocess.CalledProcessError)
         # The exit code is matching
         self.assertEqual(e.exception.returncode, 22)
-        # The last lines of logs are logged.
-        self.assertEqual(e.exception.stderr, 'FOO\nÉric\n')
 
     def test_jail_tz(self):
         tz = get_localzone_name()
