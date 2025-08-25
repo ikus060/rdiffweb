@@ -50,3 +50,4 @@ xunit*.xml
 /.pytest_cache/
 /.coverage*
 /.vscode
+.DS_Store
