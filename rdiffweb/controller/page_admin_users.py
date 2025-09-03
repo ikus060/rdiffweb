@@ -130,7 +130,8 @@ class UserForm(DbForm):
     )
     role = SelectField(
         _('User Role'),
-        coerce=int,
+        # Support string and integer value.
+        coerce=lambda v: UserObject.ROLES[v] if v in UserObject.ROLES else int(v),
         choices=[
             (UserObject.ADMIN_ROLE, _("Admin")),
             (UserObject.MAINTAINER_ROLE, _("Maintainer")),

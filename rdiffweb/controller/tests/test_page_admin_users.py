@@ -138,8 +138,8 @@ class AdminTest(rdiffweb.test.WebCase):
         self.assertEqual(UserObject.USER_ROLE, UserObject.get_user('user_role').role)
 
     def test_add_user_with_invalid_role(self):
-        # When trying to create a new user with an invalid role (admin instead of 0)
-        self._add_user("invalid", "invalid@test.com", "pr3j5Dwi", "/home/", 'admin')
+        # When trying to create a new user with an invalid role
+        self._add_user("invalid", "invalid@test.com", "pr3j5Dwi", "/home/", 'invalid')
         # Then an error message is displayed to the user
         self.assertStatus(200)
         self.assertInBody('Role: Invalid Choice: could not coerce')
@@ -715,23 +715,51 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
 
     @parameterized.expand(
         [
-            (
-                'as_json',
-                [('Content-Type', 'application/json')],
-            ),
+            ('as_json', [('Content-Type', 'application/json')], {'username': 'newuser', 'fullname': "My Fullname"}),
             (
                 'as_form',
-                [],
-            ),  # Default to 'application/x-www-form-urlencoded'
+                [],  # Default to 'application/x-www-form-urlencoded'
+                {'username': 'newuser', 'fullname': "My Fullname"},
+            ),
+            (
+                'admin_role_as_int',
+                [('Content-Type', 'application/json')],
+                {'username': 'newuser', 'fullname': "My Fullname", 'role': '0'},
+            ),
+            (
+                'admin_role_as_string',
+                [('Content-Type', 'application/json')],
+                {'username': 'newuser', 'fullname': "My Fullname", 'role': 'admin'},
+            ),
+            (
+                'maintainer_role_as_int',
+                [('Content-Type', 'application/json')],
+                {'username': 'newuser', 'fullname': "My Fullname", 'role': '5'},
+            ),
+            (
+                'maintainer_role_as_string',
+                [('Content-Type', 'application/json')],
+                {'username': 'newuser', 'fullname': "My Fullname", 'role': 'maintainer'},
+            ),
+            (
+                'user_role_as_int',
+                [('Content-Type', 'application/json')],
+                {'username': 'newuser', 'fullname': "My Fullname", 'role': '10'},
+            ),
+            (
+                'user_role_as_string',
+                [('Content-Type', 'application/json')],
+                {'username': 'newuser', 'fullname': "My Fullname", 'role': 'user'},
+            ),
         ]
     )
-    def test_post(self, unused, content_type):
+    def test_post(self, unused, content_type, body):
         # When creating a user
         data = self.getJson(
             '/api/users',
             headers=self.auth + content_type,
             method='POST',
-            body={'username': 'newuser', 'fullname': "My Fullname"},
+            body=body,
         )
         # Then user object is returned
         self.assertEqual("My Fullname", data['fullname'])
