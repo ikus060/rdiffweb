@@ -22,6 +22,13 @@ import responses
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
 
+original_connection = ldap3.Connection
+
+
+def mock_ldap_connection(*args, **kwargs):
+    kwargs.pop('client_strategy', None)
+    return original_connection(*args, client_strategy=ldap3.MOCK_ASYNC, **kwargs)
+
 
 class AbstractLdapLoginTest:
     @classmethod
@@ -33,27 +40,25 @@ class AbstractLdapLoginTest:
 
     @classmethod
     def setup_server(cls):
-        # Configure Ldap Mock server early.
+        # Configure Mock server early.
         cls.server = ldap3.Server('my_fake_server')
-        cls.conn = ldap3.Connection(cls.server, client_strategy=ldap3.MOCK_ASYNC, raise_exceptions=True)
-        cls.patcher = patch('ldap3.Connection', return_value=cls.conn)
+        cls.patcher = patch('ldap3.Connection', side_effect=mock_ldap_connection)
         cls.patcher.start()
-        # Create a default user
-        cls.conn.strategy.add_entry(
-            'cn=tony,dc=example,dc=org',
+        cherrypy.config.update(
             {
-                'displayName': ['Tony Martinez'],
-                'userPassword': 'password1',
-                'uid': ['tony'],
-                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
-                'mail': ['myemail@example.com'],
-            },
+                'ldap.uri': 'my_fake_server',
+                'ldap.base_dn': 'dc=example,dc=org',
+                'ldap.email_attribute': ['mail', 'email'],
+                'ldap.fullname_attribute': ['displayName'],
+                'ldap.firstname_attribute': ['givenName'],
+                'ldap.lastname_attribute': ['sn'],
+            }
         )
         # Get defaultconfig from test class
         default_config = getattr(cls, 'default_config', {})
         default_config['ldap-uri'] = 'my_fake_server'
         default_config['ldap-base-dn'] = 'dc=example,dc=org'
-        return super().setup_server()
+        super().setup_server()
 
     def setUp(self):
         super().setUp()
@@ -63,6 +68,22 @@ class AbstractLdapLoginTest:
         cherrypy.engine.subscribe('user_deleted', self.listener.user_deleted, priority=50)
         cherrypy.engine.subscribe('user_login', self.listener.user_login, priority=50)
         cherrypy.engine.subscribe('user_password_changed', self.listener.user_password_changed, priority=50)
+        # Clear LDAP entries before test.
+        for entry in list(cherrypy.ldap._pool.strategy.connection.server.dit):
+            if entry == 'cn=schema':
+                continue
+            cherrypy.ldap._pool.strategy.remove_entry(entry)
+        # Create a default user
+        cherrypy.ldap._pool.strategy.add_entry(
+            'cn=tony,dc=example,dc=org',
+            {
+                'displayName': ['Tony Martinez'],
+                'userPassword': 'password1',
+                'uid': ['tony'],
+                'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
+                'mail': ['myemail@example.com'],
+            },
+        )
 
     def tearDown(self):
         cherrypy.engine.unsubscribe('user_added', self.listener.user_added)

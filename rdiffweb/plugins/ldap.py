@@ -151,9 +151,17 @@ class LdapPlugin(SimplePlugin):
                 logger.info("user %s found in LDAP", username)
                 user_dn = response[0]['dn']
 
-                # Let "rebind" with user's full DN to verify password.
-                if not conn.rebind(user=user_dn, password=password):
-                    logger.info("user %s not found in LDAP", username)
+                # Use a separate connection to validate credentials
+                login_conn = ldap3.Connection(
+                    self._pool.server,
+                    user=user_dn,
+                    password=password,
+                    version=self.version,
+                    raise_exceptions=True,
+                    client_strategy=ldap3.ASYNC,
+                )
+                if not login_conn.bind():
+                    logger.warning("LDAP authentication failed for user %s", username)
                     return False
 
                 # Get username
@@ -194,6 +202,7 @@ class LdapPlugin(SimplePlugin):
                         return False
 
                 # Extract common attribute from LDAP
+                attrs['dn'] = user_dn
                 attrs['email'] = first_attribute(attrs, self.email_attribute)
                 attrs['fullname'] = fullname = first_attribute(attrs, self.fullname_attribute)
                 if not fullname:
@@ -205,12 +214,6 @@ class LdapPlugin(SimplePlugin):
                 return False
             except LDAPException:
                 logger.exception("can't validate user %s credentials", username)
-            finally:
-                # Rebind to original user.
-                conn.unbind()
-                conn.user = self.bind_dn
-                conn.password = self.bind_password
-                conn.authentication = ldap3.SIMPLE if self.bind_dn else ldap3.ANONYMOUS
             return None
 
     def search(self, filter, attributes=ldap3.ALL_ATTRIBUTES, search_base=None, paged_size=None):

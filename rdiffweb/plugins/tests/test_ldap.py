@@ -27,14 +27,21 @@ from cherrypy.test import helper
 
 from .. import ldap  # noqa
 
+original_connection = ldap3.Connection
+
+
+def mock_ldap_connection(*args, **kwargs):
+    kwargs.pop('client_strategy', None)
+    return original_connection(*args, client_strategy=ldap3.MOCK_ASYNC, **kwargs)
+
 
 class LdapPluginTest(helper.CPWebCase):
+
     @classmethod
     def setup_server(cls):
         # Configure Mock server early.
         cls.server = ldap3.Server('my_fake_server')
-        cls.conn = ldap3.Connection(cls.server, client_strategy=ldap3.MOCK_ASYNC, raise_exceptions=True)
-        cls.patcher = mock.patch('ldap3.Connection', return_value=cls.conn)
+        cls.patcher = mock.patch('ldap3.Connection', side_effect=mock_ldap_connection)
         cls.patcher.start()
         cherrypy.config.update(
             {
@@ -56,15 +63,15 @@ class LdapPluginTest(helper.CPWebCase):
 
     def setUp(self) -> None:
         # Clear LDAP entries before test.
-        for entry in list(self.conn.strategy.connection.server.dit):
+        for entry in list(cherrypy.ldap._pool.strategy.connection.server.dit):
             if entry == 'cn=schema':
                 continue
-            self.conn.strategy.remove_entry(entry)
+            cherrypy.ldap._pool.strategy.remove_entry(entry)
         return super().setUp()
 
     def test_authenticate(self):
         # Given a user in LDAP
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=user01,dc=example,dc=org',
             {
                 'userPassword': 'password1',
@@ -79,6 +86,7 @@ class LdapPluginTest(helper.CPWebCase):
         self.assertEqual(authenticated[0], 'user01')
         self.assertEqual(
             {
+                'dn': 'cn=user01,dc=example,dc=org',
                 'userPassword': ['password1'],
                 'uid': ['user01'],
                 'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
@@ -91,7 +99,7 @@ class LdapPluginTest(helper.CPWebCase):
 
     def test_authenticate_with_wildcard(self):
         # Given a user in LDAP
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=user01,dc=example,dc=org',
             {
                 'userPassword': 'password1',
@@ -106,7 +114,7 @@ class LdapPluginTest(helper.CPWebCase):
 
     def test_authenticate_with_invalid_user(self):
         # Given a user in LDAP
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=user01,dc=example,dc=org',
             {
                 'userPassword': 'password1',
@@ -121,7 +129,7 @@ class LdapPluginTest(helper.CPWebCase):
 
     def test_authenticate_with_invalid_password(self):
         # Given a user in LDAP
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=user01,dc=example,dc=org',
             {
                 'userPassword': 'password1',
@@ -133,10 +141,14 @@ class LdapPluginTest(helper.CPWebCase):
         authenticated = cherrypy.ldap.authenticate('user01', 'invalid')
         # Then user is not authenticated
         self.assertEqual(False, authenticated)
+        # When authenticating with an valid password
+        authenticated = cherrypy.ldap.authenticate('user01', 'password1')
+        # Then user is not authenticated
+        self.assertTrue(authenticated)
 
-    def test_authenticate_withemail(self):
+    def test_authenticate_with_email(self):
         # Given a user in LDAP with firstname and lastname
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=user01,dc=example,dc=org',
             {
                 'cn': ['user01'],
@@ -153,6 +165,7 @@ class LdapPluginTest(helper.CPWebCase):
         self.assertEqual(authenticated[0], 'user01')
         self.assertEqual(
             {
+                'dn': 'cn=user01,dc=example,dc=org',
                 'cn': ['user01'],
                 'userPassword': ['password1'],
                 'uid': ['user01'],
@@ -164,9 +177,9 @@ class LdapPluginTest(helper.CPWebCase):
             authenticated[1],
         )
 
-    def test_authenticate_withfullname(self):
+    def test_authenticate_with_fullname(self):
         # Given a user in LDAP with firstname and lastname
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=user01,dc=example,dc=org',
             {
                 'cn': ['user01'],
@@ -183,6 +196,7 @@ class LdapPluginTest(helper.CPWebCase):
         self.assertEqual(authenticated[0], 'user01')
         self.assertEqual(
             {
+                'dn': 'cn=user01,dc=example,dc=org',
                 'cn': ['user01'],
                 'userPassword': ['password1'],
                 'uid': ['user01'],
@@ -196,7 +210,7 @@ class LdapPluginTest(helper.CPWebCase):
 
     def test_authenticate_with_firstname_lastname(self):
         # Given a user in LDAP with firstname and lastname
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=user01,dc=example,dc=org',
             {
                 'cn': ['user01'],
@@ -214,6 +228,7 @@ class LdapPluginTest(helper.CPWebCase):
         self.assertEqual(authenticated[0], 'user01')
         self.assertEqual(
             {
+                'dn': 'cn=user01,dc=example,dc=org',
                 'cn': ['user01'],
                 'userPassword': ['password1'],
                 'uid': ['user01'],
@@ -228,6 +243,7 @@ class LdapPluginTest(helper.CPWebCase):
 
 
 class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
+
     @classmethod
     def setup_server(cls):
         # Configure Mock server early.
@@ -254,15 +270,15 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
 
     def setUp(self) -> None:
         # Clear LDAP entries before test.
-        for entry in list(self.conn.strategy.connection.server.dit):
+        for entry in list(cherrypy.ldap._pool.strategy.connection.server.dit):
             if entry == 'cn=schema':
                 continue
-            self.conn.strategy.remove_entry(entry)
+            cherrypy.ldap._pool.strategy.remove_entry(entry)
         return super().setUp()
 
     def test_authenticate_with_valid_group(self):
         # Given a user and a group in LDAP
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=user01,dc=example,dc=org',
             {
                 'userPassword': 'password1',
@@ -270,7 +286,7 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
                 'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
             },
         )
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=appgroup,ou=Groups,dc=example,dc=org',
             {
                 'cn': ['appgroup'],
@@ -285,6 +301,7 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
         self.assertEqual(authenticated[0], 'user01')
         self.assertEqual(
             {
+                'dn': 'cn=user01,dc=example,dc=org',
                 'userPassword': ['password1'],
                 'uid': ['user01'],
                 'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
@@ -297,7 +314,7 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
 
     def test_authenticate_with_not_member(self):
         # Given a user and a group in LDAP
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=user01,dc=example,dc=org',
             {
                 'userPassword': 'password1',
@@ -305,7 +322,7 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
                 'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
             },
         )
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=appgroup,ou=Groups,dc=nodomain', {'memberUid': ['invalid', 'user02'], 'objectClass': ['posixGroup']}
         )
         # When authenticating with that user
@@ -315,7 +332,7 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
 
     def test_authenticate_with_invalid_group(self):
         # Given a user and a group in LDAP
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=user01,dc=example,dc=org',
             {
                 'userPassword': 'password1',
@@ -323,7 +340,7 @@ class LdapPluginTestWithRequiredGroup(helper.CPWebCase):
                 'objectClass': ['person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount'],
             },
         )
-        self.conn.strategy.add_entry(
+        cherrypy.ldap._pool.strategy.add_entry(
             'cn=invalid,ou=Groups,dc=nodomain', {'memberUid': ['user01', 'user02'], 'objectClass': ['posixGroup']}
         )
         # When authenticating with that user
