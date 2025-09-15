@@ -28,11 +28,16 @@ from collections import namedtuple
 from datetime import timedelta
 from subprocess import CalledProcessError
 
+import cherrypy
 import psutil
 from cached_property import cached_property
 
+import rdiffweb.core.dircache  # noqa
 from rdiffweb.core.restore import pipe_restore
 from rdiffweb.tools.i18n import gettext_lazy as _
+
+# Cached os.listdir
+listdir = cherrypy.dircache.listdir
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -48,33 +53,6 @@ INCREMENTS = b"increments"
 # we end up with \x encoded characters.
 STDOUT_ENCODING = 'utf-8'
 LANG = "en_US." + STDOUT_ENCODING
-
-_cache_entries = {}
-
-
-def sorted_cached_listdir(path):
-    """Return cached entries (names) for 'path' if directory mtime_ns is unchanged."""
-    try:
-        mtime = os.lstat(path).st_mtime_ns
-    except FileNotFoundError:
-        _cache_entries.pop(path, None)
-        raise
-
-    cached = _cache_entries.get(path)
-    if cached and cached[0] == mtime:
-        logger.debug('using cached entries for %s', path)
-        return cached[1]
-
-    # Refresh
-    logger.debug('cache miss for %s', path)
-    entries = sorted(os.listdir(path))
-
-    # Re-check mtime to reduce race window; cache only if unchanged
-    mtime2 = os.lstat(path).st_mtime_ns
-    if mtime == mtime2:
-        _cache_entries[path] = (mtime2, entries)
-
-    return entries
 
 
 def rdiff_backup_version():
@@ -957,7 +935,7 @@ class RdiffRepo(object):
         List content of rdiff-backup-data.
         """
         try:
-            return sorted_cached_listdir(self._data_path)
+            return listdir(self._data_path)
         except FileNotFoundError:
             logger.warning(f'folder not found {self._data_path}', exc_info=1)
             self._entries_status = ('failed', _('The repository cannot be found or is badly damaged.'))
