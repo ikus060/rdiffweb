@@ -36,7 +36,6 @@ from sqlalchemy import (
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import deferred, relationship, validates
-from zxcvbn import zxcvbn
 
 import rdiffweb.plugins.db  # noqa
 from rdiffweb.core import authorizedkeys
@@ -49,6 +48,29 @@ from ._sshkey import SshKey
 from ._timestamp import Timestamp
 from ._token import Token
 from ._update import column_add, column_exists, constraint_add, constraint_exists, index_exists
+
+# Debian trixie drop python3-zxcvbn.
+# Until further notice, let use zxcvbn-rs-py as a replacement
+try:
+    from zxcvbn import zxcvbn
+except ImportError:
+    from zxcvbn_rs_py import zxcvbn as _zxcvbn
+
+    def zxcvbn(password):
+        # Return a dict.
+        entropy = _zxcvbn(password)
+        return {
+            'score': int(entropy.score),
+            'feedback': (
+                {
+                    'warning': str(entropy.feedback.warning),
+                    'suggestions': map(str, entropy.feedback.suggestions),
+                }
+                if entropy.feedback
+                else {}
+            ),
+        }
+
 
 logger = logging.getLogger(__name__)
 

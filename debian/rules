@@ -2,9 +2,7 @@
 
 include /usr/share/dpkg/pkg-info.mk
 
-# Strip everything after + (plus). e.g. +dfsg.2-1
-# Cannot use "_FOR_RDIFFWEB" to keep support for Debian Bullseye
-export SETUPTOOLS_SCM_PRETEND_VERSION=$(shell dpkg-parsechangelog -SVersion | sed 's/\+dfsg.*//')
+export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_RDIFFWEB := $(DEB_VERSION_UPSTREAM)
 
 # Force use of pyproject.toml
 export PYBUILD_SYSTEM=pyproject
@@ -33,7 +31,7 @@ override_dh_installman:
 	mkdir -p debian/rdiffweb/usr/share/man/man1
 	PATH=debian/rdiffweb/usr/bin:$(PATH) \
 	PYTHONPATH=debian/rdiffweb/usr/lib/python{version}/dist-packages:$(PYTHONPATH) \
-	help2man --version-string "$(SETUPTOOLS_SCM_PRETEND_VERSION)" \
+	help2man --version-string "$(DEB_VERSION_UPSTREAM)" \
 		--no-info \
 		--name "A web interface to rdiff-backup repositories" \
 		--no-discard-stderr \
@@ -41,21 +39,10 @@ override_dh_installman:
 		debian/rdiffweb/usr/share/man/man1/rdiffweb.1
 
 execute_before_dh_auto_clean:
-	rm -rf rdiffweb.egg-info
+	rm -rf *.egg-info
 
-# For maintainer use only
-# Generate change log with appropriate version.
-changelog: APP_VERSION=$(shell python3 -m setuptools_scm)
-changelog: DEB_ID=$(shell lsb_release -is | sed -e 's/\(.*\)/\L\1/')
-changelog: DEB_VER=$(shell lsb_release -rs)
-changelog: VERSION=${APP_VERSION}+dfsg-1${DEB_ID}${DEB_VER}
-changelog:
-	dch --newversion "$(VERSION)" "Automated build"
-	sed -i 's/UNRELEASED/unstable/' debian/changelog
-
-# Exclude files shipped by Debian
+# Generate orig.tar.gz
 gentarball: SOURCE=rdiffweb
-gentarball: UV=${SETUPTOOLS_SCM_PRETEND_VERSION}
 gentarball:
-	git archive --format=tar HEAD --prefix=$(SOURCE)-$(UV)/ | gzip -9 > ../$(SOURCE)_$(UV).orig.tar.gz
-	mk-origtargz --compression gzip ../$(SOURCE)_$(UV).orig.tar.gz
+	git archive --format=tar HEAD --prefix=$(SOURCE)-$(DEB_VERSION_UPSTREAM)/ | gzip -9 > ../$(SOURCE)_$(DEB_VERSION_UPSTREAM).orig.tar.gz
+	mk-origtargz --compression gzip ../$(SOURCE)_$(DEB_VERSION_UPSTREAM).orig.tar.gz

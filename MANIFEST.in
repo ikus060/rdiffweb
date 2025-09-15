@@ -31,3 +31,18 @@ recursive-include rdiffweb/static *
 
 # Include translation file
 recursive-include rdiffweb/locales *.po *.pot *.mo
+
+# Exclude gitignore
+exclude .gitignore
+
+# Exclude gitlab CICD from source
+exclude .gitlab-ci.yml
+
+# Exclude "debian" folder
+prune debian
+
+# Exclude Dockerfile
+exclude Dockerfile .dockerignore
+
+# Exclude sonarqube CICD config
+exclude sonar-project.properties

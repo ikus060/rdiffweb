@@ -1,4 +1,4 @@
-image: python:3.11-bookworm
+image: python:3.13-trixie
 
 stages:
   - test
@@ -51,11 +51,8 @@ py3:
         IMAGE: python:3.10
       - TOXENV: bookworm
         IMAGE: python:3.11
-      - TOXENV: py3 # trixie
+      - TOXENV: trixie
         IMAGE: python:3.13
-
-sqlalchemy2:
-  <<: *tox
 
 selenium:
   <<: *tox
@@ -69,9 +66,9 @@ selenium:
 
 rdiff-backup-latest:
   <<: *tox
-  image: python:3.11-bookworm
+  image: python:3.13-trixie
   variables:
-    TOXENV: bookworm
+    TOXENV: trixie
   allow_failure: true
   before_script:
     - apt-get update
@@ -85,8 +82,8 @@ postgresql-12:
   services:
     - postgres:12.2-alpine
   variables:
-    TOXENV: bookworm
-    IMAGE: python:3.11-bookworm
+    TOXENV: trixie
+    IMAGE: python:3.13-trixie
     RDIFFWEB_TEST_DATABASE_URI: "postgresql://admin@postgres/test"
     POSTGRES_DB: test
     POSTGRES_USER: admin
@@ -113,6 +110,7 @@ package:py3:
   artifacts:
     paths:
       - dist/*.whl
+      - dist/*.tar.gz
     expire_in: 1 day
 
 package:docker:
@@ -141,20 +139,24 @@ package:deb:
   image: buildpack-deps:$DIST
   parallel:
     matrix:
-      - DIST: bookworm
-      - DIST: [jammy, noble, oracular]
+      - DIST: [bookworm, trixie]
+      - DIST: [jammy, noble, plucky]
   script:
     # Clean-up
     - rm -f ../rdiffweb_*
     - rm -Rf ./dist/$DIST/*
     # Install dependencies
-    - '[ -z "$BACKPORT" ] || echo "$BACKPORT" >> /etc/apt/sources.list'
     - apt update
     - apt -y --no-install-recommends install devscripts
-    - '[ -z "$BACKPORT" ] && apt build-dep -y . || apt build-dep -t "${DIST}-backports" -y .'
+    - apt build-dep -y .
     # Generate change log
-    - export DEBEMAIL=${CI_COMMIT_AUTHOR}
-    - debian/rules changelog
+    - export DEBEMAIL="${CI_COMMIT_AUTHOR}"
+    - export UPSTREAM_VERSION="$(python3 -m setuptools_scm)"
+    - export VENDOR="$(lsb_release -is  | tr 'A-Z' 'a-z')"
+    - export DISTVER="$(lsb_release -rs)"
+    - export CHANGELOG_VERSION="${UPSTREAM_VERSION}-1${VENDOR}${DISTVER}"
+    - dch --newversion "${CHANGELOG_VERSION}" "Automated build"
+    - sed -i 's/UNRELEASED/unstable/' debian/changelog
     # Generate orig.tar.gz
     - debian/rules gentarball
     # Run build in separate target
@@ -173,10 +175,10 @@ test-package:deb:
   needs: ["package:deb"]
   parallel:
     matrix:
-      - DIST: [bookworm]
+      - DIST: [bookworm, trixie]
       # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
       # So we need to make it explicit using environment variable
-      - DIST: [jammy, noble, oracular]
+      - DIST: [jammy, noble, plucky]
         TZ: UTC
   script:
     - apt update
@@ -302,7 +304,8 @@ publish:deb:
       - $NEXUS_PWD
   parallel:
     matrix:
-      - DIST: [bookworm, jammy, noble, oracular]
+      - DIST: [bookworm, trixie]
+      - DIST: [jammy, noble, plucky]
   script: |
     set -e
     set -x
@@ -322,14 +325,16 @@ publish:wheel:
       - $NEXUS_USR
       - $NEXUS_PWD
       - $NEXUS_PYPI_URL
+  needs:
+    - package:py3
   script: |
     set -x
     # Publish wheel
     pip3 install wheel twine readme_renderer[md] --upgrade
     LANG="C.UTF-8" python3 -m readme_renderer README.md -o /tmp/README.html
-    twine upload dist/*.whl -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
+    twine upload dist/*.whl dist/*.tar.gz -u $NEXUS_USR -p $NEXUS_PWD --repository-url $NEXUS_PYPI_URL
     if [ ! -z "$CI_COMMIT_TAG" ]; then
-      twine upload dist/*.whl -u $PYPI_USR -p $PYPI_PWD
+      twine upload dist/*.whl dist/*.tar.gz -u $PYPI_USR -p $PYPI_PWD
     fi
 
 publish:doc:
