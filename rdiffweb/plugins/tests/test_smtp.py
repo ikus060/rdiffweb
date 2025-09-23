@@ -1,5 +1,5 @@
 # SMTP Plugins for cherrypy
-# Copyright (C) 2025 IKUS Software
+# Copyright (C) 2022-2025 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from unittest import mock
+from unittest import mock, skipUnless
 
 import cherrypy
 from cherrypy.test import helper
@@ -61,6 +61,7 @@ class SmtpPluginTest(helper.CPWebCase):
             smtplib.SMTP.return_value.send_message.assert_called_once_with(mock.ANY)
             smtplib.SMTP.return_value.quit.assert_called_once_with()
 
+    @skipUnless(hasattr(cherrypy, 'scheduler'), reason='Required scheduler')
     def test_queue_mail(self):
         # Given a paused scheduler plugin
         cherrypy.scheduler._scheduler.pause()
@@ -93,7 +94,9 @@ class SmtpPluginTest(helper.CPWebCase):
 
         expected = """**Hi!**
 How are you?
-Here is the link you wanted."""
+Here is the link [1] you wanted.
+
+[1] https://www.python.org"""
         self.assertEqual(expected, smtp._html2plaintext(html))
 
     def test_formataddr(self):

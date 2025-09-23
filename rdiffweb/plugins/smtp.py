@@ -24,10 +24,8 @@ from xml.etree.ElementTree import fromstring, tostring
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
 
-from . import scheduler  # noqa: This plugin required scheduler
 
-
-def _html2plaintext(html, body_id=None, encoding='utf-8'):
+def _html2plaintext(html, encoding='utf-8'):
     """From an HTML text, convert the HTML to plain text.
     If @param body_id is provided then this is the tag where the
     body (not necessarily <body>) starts.
@@ -36,17 +34,12 @@ def _html2plaintext(html, body_id=None, encoding='utf-8'):
     # <peter@fry-it.com>
     # download here: http://www.peterbe.com/plog/html2plaintext
     assert isinstance(html, str)
+    # &#160; are non-breaking space
+    html = html.replace('&#160;', ' ')
     url_index = []
     try:
         tree = fromstring(html)
-
-        if body_id is not None:
-            source = tree.xpath('//*[@id=%s]' % (body_id,))
-        else:
-            source = tree.xpath('//body')
-        if len(source):
-            tree = source[0]
-
+        tree = tree.find('body')
         i = 0
         for link in tree.findall('.//a'):
             url = link.get('href')
@@ -55,15 +48,12 @@ def _html2plaintext(html, body_id=None, encoding='utf-8'):
                 link.tag = 'span'
                 link.text = '%s [%s]' % (link.text, i)
                 url_index.append(url)
-
-        html = tostring(tree, encoding=encoding)
+        html = tostring(tree, encoding=encoding).decode(encoding)
     except Exception:
         # Don't fail if the html is invalid.
         pass
-    # &#13; are new line \r
+    # \r char is converted into &#13;, must remove it
     html = html.replace('&#13;', '')
-    # &#160; are non-braking space
-    html = html.replace('&#160;', ' ')
     # Remove new line & spaces defined for html formating.
     html = re.sub('\n *', '', html)
     # Replace tags
@@ -111,6 +101,7 @@ def _formataddr(value):
 
 
 class SmtpPlugin(SimplePlugin):
+
     server = None
     username = None
     password = None
@@ -140,7 +131,7 @@ class SmtpPlugin(SimplePlugin):
             return
         self.bus.publish('schedule_task', self.send_mail, *args, **kwargs)
 
-    def send_mail(self, subject: str, message: str, to=None, cc=None, bcc=None, reply_to=None):
+    def send_mail(self, subject: str, message: str, to=None, cc=None, bcc=None, reply_to=None, headers={}):
         """
         Reusable method to be called to send email to the user user.
         `user` user object where to send the email.
@@ -148,10 +139,6 @@ class SmtpPlugin(SimplePlugin):
         assert subject
         assert message
         assert to or bcc
-        to = _formataddr(to)
-        cc = _formataddr(cc)
-        bcc = _formataddr(bcc)
-        reply_to = _formataddr(reply_to)
 
         # Skip sending email if smtp server is not configured.
         if not self.server:
@@ -161,24 +148,25 @@ class SmtpPlugin(SimplePlugin):
             self.bus.log('cannot send email because SMTP From is not configured')
             return
 
-        # Compile both template.
-        text = _html2plaintext(message)
-
         # Record the MIME types of both parts - text/plain and text/html.
         msg = MIMEMultipart('alternative')
         msg['Subject'] = str(subject)
-        msg['From'] = self.email_from
+        msg['From'] = _formataddr(self.email_from)
         if to:
-            msg['To'] = to
+            msg['To'] = _formataddr(to)
         if cc:
-            msg['Cc'] = cc
+            msg['Cc'] = _formataddr(cc)
         if bcc:
-            msg['Bcc'] = bcc
+            msg['Bcc'] = _formataddr(bcc)
         if reply_to:
-            msg['Reply-To'] = reply_to
+            msg['Reply-To'] = _formataddr(reply_to)
         msg['Message-ID'] = email.utils.make_msgid()
-        msg.attach(MIMEText(text, 'plain', 'UTF-8'))
-        msg.attach(MIMEText(message, 'html', 'UTF-8'))
+        if headers:
+            for key, value in headers.items():
+                msg[key] = value
+        text = _html2plaintext(message)
+        msg.attach(MIMEText(text, 'plain', 'utf8'))
+        msg.attach(MIMEText(message, 'html', 'utf8'))
 
         host, unused, port = self.server.partition(':')
         if self.encryption == 'ssl':
