@@ -1,5 +1,5 @@
-# rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2012-2025 rdiffweb contributors
+# Session timeout tool for cherrypy
+# Copyright (C) 2012-2025 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

@@ -1,5 +1,5 @@
-# rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2012-2025 rdiffweb contributors
+# Authentication tools for cherrypy
+# Copyright (C) 2025 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +34,13 @@ logger = logging.getLogger(__name__)
 
 class AuthManager(cherrypy.Tool):
     """
-    This tools handle authentication of users.
+    CherryPy tool handling authentication.
+
+    Required config:
+      - tools.auth.user_lookup_func(login, user_info) -> (user_key, userobj)
+      - tools.auth.user_from_key_func(user_key) -> userobj | None
+      - tools.auth.checkpassword: callable or list of callables (login, password) ->
+          False | (login, user_info) | str(login)
     """
 
     def __init__(self):
@@ -62,18 +68,17 @@ class AuthManager(cherrypy.Tool):
 
     def _restore_from_session(self, **kwargs):
         """
-        Run early, let try to "authenticate" the user by restoring information from session.
+        Early hook: attempt to restore 'authenticated' state from session.
         """
         # Verify if session is enabled, if not the user is not authenticated.
         if not hasattr(cherrypy.serving, 'session'):
             return
-        # Check if a username is stored in session.
+        # Check if a user_key is stored in session.
         session = cherrypy.serving.session
-        login = session.get(self._session_user_key())
-        if not login:
+        user_key = session.get(self._session_user_key())
+        if not user_key:
             return
 
-        # Check if re-auth is required.
         last = session.get(AUTH_LAST_PASSWORD_AT)
         if last is None:
             return  # never had a password login in this session
@@ -81,38 +86,40 @@ class AuthManager(cherrypy.Tool):
         if (last + datetime.timedelta(minutes=timeout)) < session.now():
             return
 
-        # User is authenticated and doesn't need to re-authenticate.
-        cherrypy.serving.request.login = login
+        # Mark request as authenticated by key; user object will be resolved later.
+        cherrypy.serving.request.login = user_key
 
-    def _forbidden_or_redirect(self, userobj_func, redirect=AUTH_DEFAULT_REDIRECT, **kwargs):
+    def _forbidden_or_redirect(self, user_from_key_func, redirect=AUTH_DEFAULT_REDIRECT, **kwargs):
         """
-        If we reach this point, the user is not authenticated. Raise a 403 Forbidden or redirect the user.
+        If authenticated via session, resolve user object; else redirect/403.
         """
-        # Do nothing if user request the login page.
+        # Allow access to the login page itself
         if cherrypy.serving.request.path_info == redirect:
             return
 
-        # Previous hooks should define 'login'. If not we raise Error 403.
-        login = getattr(cherrypy.serving.request, 'login', False)
-        if login:
-            # Query user object
-            currentuser = userobj_func(login, None)
+        user_key = getattr(cherrypy.serving.request, 'login', False)
+        if user_key:
+            try:
+                currentuser = user_from_key_func(user_key)
+            except Exception:
+                logger.exception('error while resolving user from key')
+                currentuser = None
+
             if currentuser:
                 cherrypy.serving.request.currentuser = currentuser
                 return
 
-        # Determine which exception need to be raised.
+        # Not authenticated or user not found.
         if redirect:
             self.save_original_url()
             raise cherrypy.HTTPRedirect(redirect)
         raise cherrypy.HTTPError(403)
 
-    # ---- API for the login page handlers ----
+    # ---- Login flows ----
 
     def login_with_credentials(self, login, password):
         """
-        Delegate validation of username password to authenticate plugins.
-        If valid, let the user login.
+        Validate credentials with configured checkers; on success, call login_with_result.
         """
         if not login or not password:
             logger.warning('empty login or password provided')
@@ -135,10 +142,7 @@ class AuthManager(cherrypy.Tool):
                 else:
                     login, user_info = login, None
                 # If authentication is successful, initiate login process.
-                return self.login_with_result(
-                    login=login,
-                    user_info=user_info,
-                )
+                return self.login_with_result(login=login, user_info=user_info)
             except Exception as e:
                 logger.exception(
                     'unexpected error during authentication for [%s] with [%s]: %s', login, func.__qualname__, e
@@ -151,37 +155,42 @@ class AuthManager(cherrypy.Tool):
 
         return None
 
-    def login_with_result(self, login=None, user_info={}, auth_method='password'):
+    def login_with_result(self, login=None, user_info=None, auth_method='password'):
         """
-        Could be called directly to authentication user.
+        Called after credentials were validated or via SSO.
+        Resolves user via user_lookup_func and establishes the session.
         """
         conf = self._merged_args()
-        userobj_func = conf.get('userobj_func')
+        user_lookup_func = conf.get('user_lookup_func')
 
-        # Get or create user object - this function should handle both username and email lookups
-        userobj = userobj_func(login=login, user_info=user_info)
+        try:
+            user_key, userobj = user_lookup_func(login=login, user_info=user_info or {})
+        except Exception:
+            logger.exception('failed to lookup user object for login=%s', login)
+            return None
+
         if not userobj:
-            logger.warning('failed to get/create user object for login=%s', login)
+            logger.warning('failed to lookup user object for login=%s', login)
             return None
 
         # Notify plugins about user login
         cherrypy.engine.publish('user_login', userobj)
 
-        # Store data into session
-        username = getattr(userobj, 'username', login)
+        # Store in session
         if hasattr(cherrypy.serving, 'session'):
             session = cherrypy.serving.session
             session_user_key = self._session_user_key()
-            session[session_user_key] = username
+            session[session_user_key] = user_key
             session[AUTH_METHOD] = auth_method
             session[AUTH_LAST_PASSWORD_AT] = session.now()
             # Generate a new session id
             session.regenerate()
 
-        # When authenticated, store current login name in request.
-        cherrypy.serving.request.login = username
-
+        # When authenticated, store user_key in request.
+        cherrypy.serving.request.login = user_key
         return userobj
+
+    # ---- Session helpers ----
 
     def clear_session(self):
         """

@@ -90,6 +90,8 @@ class LoginPage(Controller):
                 raise cherrypy.tools.auth.redirect_to_original_url()
             else:
                 flash(_("Invalid username or password."))
+        elif form.error_message:
+            flash(form.error_message)
         cfg = self.app.cfg
         params = {
             'form': form,

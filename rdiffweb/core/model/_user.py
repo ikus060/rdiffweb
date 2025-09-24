@@ -178,7 +178,6 @@ class UserObject(Base):
         Used during authentication process to search for existing user,
         create user if missing and update user if required.
         """
-        assert login
         # When enabled, create missing userobj in database.
         fullname = user_info.get('fullname') if user_info else None
         email = user_info.get('email') if user_info else None
@@ -218,7 +217,7 @@ class UserObject(Base):
             dirty = True
         if dirty:
             userobj.commit()
-        return userobj
+        return userobj.username, userobj
 
     @classmethod
     def create_admin_user(cls, default_username, default_password):

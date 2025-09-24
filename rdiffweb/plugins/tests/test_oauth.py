@@ -27,17 +27,27 @@ from .. import oauth  # noqa
 UserObj = namedtuple('UserObj', 'username,email,fullname')
 
 
-def userobj_func(login, user_info):
+def user_lookup_func(login, user_info):
     if login in 'test@example.com':
         # Called with email by OAuth
-        return UserObj(username='my-user', email=user_info['email'], fullname=user_info['fullname'])
+        user = UserObj(username='my-user', email=user_info['email'], fullname=user_info['fullname'])
+        return user.username, user
     elif login == 'my-user':
         # Called with username to restore session.
-        return UserObj(username='my-user', email='test@example.com', fullname='Test User')
+        user = UserObj(username='my-user', email='test@example.com', fullname='Test User')
+        return user.username, user
     return None
 
 
-@cherrypy.tools.auth(on=True, userobj_func=userobj_func)
+def user_from_key_func(user_key):
+    if user_key == 'my-user':
+        # Called with username to restore session.
+        user = UserObj(username='my-user', email='test@example.com', fullname='Test User')
+        return user
+    return None
+
+
+@cherrypy.tools.auth(on=True, user_lookup_func=user_lookup_func, user_from_key_func=user_from_key_func)
 @cherrypy.tools.sessions()
 class Root:
     @cherrypy.expose

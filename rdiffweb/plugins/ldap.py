@@ -1,5 +1,5 @@
 # LDAP Plugins for cherrypy
-# # Copyright (C) 2025 IKUS Software
+# Copyright (C) 2025 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -89,7 +89,7 @@ class LdapPlugin(SimplePlugin):
     scope = 'subtree'
     tls = False
     user_filter = '(objectClass=*)'
-    username_attribute = 'uid'
+    username_attribute = ['uid']
     required_group = None
     group_attribute = 'member'
     group_attribute_is_dn = False
@@ -143,7 +143,9 @@ class LdapPlugin(SimplePlugin):
         with self._pool as conn:
             try:
                 # Search the LDAP server for user's DN.
-                search_filter = "(&{}({}={}))".format(self.user_filter, _safe(self.username_attribute), _safe(username))
+                safe_username = _safe(username)
+                attr_filter = ''.join([f'({_safe(attr)}={safe_username})' for attr in self.username_attribute])
+                search_filter = f"(&{self.user_filter}(|{attr_filter}))"
                 response = self._search(conn, search_filter)
                 if not response:
                     logger.info("user %s not found in LDAP", username)
@@ -226,11 +228,7 @@ class LdapPlugin(SimplePlugin):
         search_scope = {'base': ldap3.BASE, 'onelevel': ldap3.LEVEL, 'subtree': ldap3.SUBTREE}.get(
             self.scope, ldap3.SUBTREE
         )
-        logger.debug(
-            "search ldap server: {}/{}?{}?{}?{}".format(
-                self.uri, self.base_dn, self.username_attribute, search_scope, filter
-            )
-        )
+        logger.debug("search ldap server: {}/{}?{}?{}".format(self.uri, self.base_dn, search_scope, filter))
         msg_id = conn.search(
             search_base=search_base or self.base_dn,
             search_filter=filter,

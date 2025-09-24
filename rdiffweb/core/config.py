@@ -381,6 +381,7 @@ def get_parser():
         metavar='ATTRIBUTE',
         help="The attribute to search username. If no attributes are provided, the default is to use `uid`. It's a good idea to choose an attribute that will be unique across all entries in the subtree you will be using.",
         default='uid',
+        type=_comma_or_space_separated,
     )
 
     parser.add_argument(
@@ -482,18 +483,21 @@ def get_parser():
         '--ldap-firstname-attribute',
         help="LDAP attribute for user first name. Used when the attribute configured for name does not exist. e.g.: `givenName`",
         type=_comma_or_space_separated,
+        default='givenName',
     )
 
     parser.add_argument(
         '--ldap-lastname-attribute',
         help="LDAP attribute for user last name. Used when the attribute configured for name does not exist. e.g.: `sn`",
         type=_comma_or_space_separated,
+        default='sn',
     )
 
     parser.add_argument(
         '--ldap-email-attribute',
         help="LDAP attribute for user email. e.g.: mail, email, userPrincipalName",
         type=_comma_or_space_separated,
+        default='mail,email',
     )
     parser.add_argument(
         '--oauth-provider-name',

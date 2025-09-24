@@ -1,5 +1,5 @@
-# rdiffweb, A web interface to rdiff-backup repositories
-# Copyright (C) 2012-2025 rdiffweb contributors
+# Internationalisation tool for cherrypy
+# Copyright (C) 2012-2025 Patrik Dufresne
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -178,6 +178,15 @@ def _search_translation(dirname, domain, *langs):
     lang = t.files[0].split('/')[-3]
     t.locale = Locale.parse(lang)
     return t
+
+
+def get_language_name(lang_code):
+    """
+    Translate the language code into it's language display name.
+    """
+    locale = Locale.parse(lang_code)
+    trans = get_translation()
+    return locale.get_language_name(trans.locale)
 
 
 def get_timezone():

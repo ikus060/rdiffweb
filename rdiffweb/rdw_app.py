@@ -103,7 +103,8 @@ def _json_handler(*args, **kwargs):
 @cherrypy.tools.allow(methods=['GET'])
 @cherrypy.tools.auth(
     session_user_key=SessionObject.SESSION_USER_KEY,
-    userobj_func=UserObject.get_create_or_update_user,
+    user_lookup_func=UserObject.get_create_or_update_user,
+    user_from_key_func=UserObject.get_user,
     checkpassword=[UserObject.authenticate, cherrypy.ldap.authenticate],
 )
 @cherrypy.tools.auth_mfa(mfa_enabled=lambda: cherrypy.request.currentuser.mfa == UserObject.ENABLED_MFA)
