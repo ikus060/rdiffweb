@@ -29,6 +29,7 @@ dependencies = [
     "babel>=0.9.6",
     "cached-property",
     "CherryPy>=8.9.1",
+    "cheroot<11",
     "configargparse",
     "distro",
     "humanfriendly",
