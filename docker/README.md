@@ -15,12 +15,11 @@ For more information and resources on Minarca, check out the following links:
 
 The Minarca Server Docker image is available in multiple tags to suit different needs:
 
-- `latest`: The latest stable release.
 - `6`: The latest release of major version 6.
-- `6.0`: The latest release of minor version 6.0.
-- `6.0.3`: A specific version release.
-- `6.0.3b1`: A beta release.
-- `6.0.4.dev30+g4502de8`: A development version.
+- `6.1`: The latest release of minor version 6.0.
+- `6.1.3`: A specific version release.
+- `6.1.3b1`: A beta release.
+- `6.1.4.dev30+g4502de8`: A development version.
 
 ## Using the Docker Image
 
@@ -35,9 +34,10 @@ docker run -d \
   -v /path/to/backups:/backups \
   -v /path/to/conf:/etc/minarca \
   -v /path/to/logs:/var/log/minarca \
+  --privileged \
   --restart always \
   --name minarca-server \
-  ikus060/minarca-server
+  ikus060/minarca-server:6
 ```
 
 ### Docker Command Breakdown
@@ -47,6 +47,7 @@ docker run -d \
 - `-v /path/to/backups:/backups`: Maps the backup directory inside the container to a directory on your host machine.
 - `-v /path/to/conf:/etc/minarca`: Maps the configuration directory inside the container to a directory on your host machine.
 - `-v /path/to/logs:/var/log/minarca`: Maps the log directory inside the container to a directory on your host machine.
+- `--privileged`: Ensures the container has enough privilege to create user namespace.
 - `--restart always`: Ensures the container restarts automatically if it stops.
 
 ### Running Minarca Server with Docker Compose
@@ -56,7 +57,7 @@ If you prefer using Docker Compose, here's a sample `docker-compose.yml` file:
 ```yaml
 services:
   minarca-server:
-    image: ikus060/minarca-server
+    image: ikus060/minarca-server:6
     ports:
       - "8080:8080"
       - "2222:22"
@@ -95,7 +96,7 @@ If you prefer using PostgreSQL instead of SQLite database, here's a sample `dock
 ```yaml
 services:
   minarca-server:
-    image: ikus060/minarca-server:6.1.0b3.dev5-g29def11
+    image: ikus060/minarca-server:6
     ports:
       - "8080:8080"
       - "2222:22"
