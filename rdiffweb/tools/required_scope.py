@@ -1,5 +1,5 @@
-# udb, A web interface to manage IT network
-# Copyright (C) 2023 IKUS Software inc.
+# Required scope tools for cherrypy
+# Copyright (C) 2023 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

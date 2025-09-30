@@ -1,5 +1,5 @@
-# udb, A web interface to manage IT network
-# Copyright (C) 2025 IKUS Software inc.
+# SQLAlchemy plugins for cherrypy
+# Copyright (C) 2022-2025 IKUS Software
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,9 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-SQLAlchemy Tool for CherryPy.
-'''
 import logging
 import re
 
