@@ -205,6 +205,17 @@ class APITest(rdiffweb.test.WebCase):
         # Then authentication is successful
         self.assertStatus('200 OK')
 
+    def test_auth_with_access_token_different_user(self):
+        # Given a user with an access token
+        userobj = UserObject.add_user('testuser', 'password')
+        userobj.commit()
+        token = userobj.add_access_token('test2').encode('ascii')
+        userobj.commit()
+        # When using this token to authenticated with /api
+        self.getPage('/api/', headers=[("Authorization", "Basic " + b64encode(b"admin:" + token).decode('ascii'))])
+        # Then authentication is successful
+        self.assertStatus(401)
+
     def test_auth_failed_with_mfa_enabled(self):
         # Given a user with MFA enabled
         userobj = UserObject.get_user(self.USERNAME)
