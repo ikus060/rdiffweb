@@ -501,7 +501,7 @@ class UserObject(Base):
         """
         Check if the given token matches.
         """
-        for access_token in Token.query.all():
+        for access_token in Token.query.filter(Token.user == self).all():
             if access_token.is_expired:
                 continue
             if check_password(token, access_token.hash_token):

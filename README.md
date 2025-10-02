@@ -128,6 +128,14 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
+# 2.10.6 (2025-10-02)
+
+* Security: fix token impersonation vulnerability.
+
+# 2.10.5 (2025-06-20)
+
+* Send deprecation warning into the logs
+
 # 2.10.4 (2025-06-13)
 
 * **New Features:**
