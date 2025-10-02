@@ -82,6 +82,10 @@ For more information, visit the [Minarca Website](https://minarca.org).
 
 # Changelog
 
+## 6.1.3 (2025-10-03)
+
+* Security: fix token impersonation vulnerability.
+
 ## 6.1.2 (2025-06-21)
 
 **Bug Fixes**
