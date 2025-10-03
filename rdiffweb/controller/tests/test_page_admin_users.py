@@ -603,7 +603,7 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
         # When deleting the user
         if query == 'with_id':
             self.getPage(
-                f'/api/users/{user_obj.userid}',
+                f'/api/users/{user_obj.id}',
                 headers=self.auth,
                 method='DELETE',
             )
@@ -636,7 +636,7 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
         # When querying our user with Id.
         if query == 'with_id':
             data = self.getJson(
-                f'/api/users/{user_obj.userid}',
+                f'/api/users/{user_obj.id}',
                 headers=self.auth,
                 method='GET',
             )
@@ -651,7 +651,7 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
         self.assertEqual(
             data,
             {
-                'userid': 2,
+                'id': 2,
                 'username': 'newuser',
                 'fullname': 'New User',
                 'email': 'test@example.com',
@@ -691,7 +691,7 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
             data,
             [
                 {
-                    'userid': 1,
+                    'id': 1,
                     'username': 'admin',
                     'fullname': '',
                     'email': '',
@@ -701,7 +701,7 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
                     'report_time_range': 0,
                 },
                 {
-                    'userid': 2,
+                    'id': 2,
                     'username': 'newuser',
                     'fullname': 'New User',
                     'email': 'test@example.com',
@@ -764,9 +764,9 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
         # Then user object is returned
         self.assertEqual("My Fullname", data['fullname'])
         # Then user obj is created
-        self.assertTrue(UserObject.query.filter(UserObject.userid == data['userid']))
+        self.assertTrue(UserObject.query.filter(UserObject.id == data['id']))
         # Then location of object is returned
-        self.assertHeaderItemValue('Location', f'{self.baseurl}/api/users/{data["userid"]}')
+        self.assertHeaderItemValue('Location', f'{self.baseurl}/api/users/{data["id"]}')
 
     def test_post_duplicate(self):
         # Given a new user
@@ -833,7 +833,7 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
         # When deleting the user
         if query == 'with_id':
             data = self.getJson(
-                f'/api/users/{user_obj.userid}',
+                f'/api/users/{user_obj.id}',
                 headers=self.auth,
                 method='POST',
                 body={'fullname': "Updated fullname"},

@@ -279,16 +279,16 @@ class SettingsPage(Controller):
 class ApiRepos(Controller):
     def _query(self, name_or_repoid):
         u = cherrypy.serving.request.currentuser
-        query = RepoObject.query.filter(RepoObject.userid == u.userid)
+        query = RepoObject.query.filter(RepoObject.userid == u.id)
         if str(name_or_repoid).isdigit():
-            query = query.filter(RepoObject.repoid == int(name_or_repoid))
+            query = query.filter(RepoObject.id == int(name_or_repoid))
         else:
             query = query.filter(RepoObject.repopath == name_or_repoid)
         return query.first()
 
     def _to_json(self, repo_obj):
         return {
-            "repoid": repo_obj.repoid,
+            "id": repo_obj.id,
             # Database fields.
             "name": repo_obj.name,
             "maxage": repo_obj.maxage,

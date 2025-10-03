@@ -72,12 +72,12 @@ class RepoObject(Base, RdiffRepo):
     __tablename__ = 'repos'
     __table_args__ = {'sqlite_autoincrement': True}
 
-    repoid = Column('RepoID', Integer, primary_key=True, autoincrement=True)
+    id = Column('RepoID', Integer, primary_key=True, autoincrement=True)
     userid = Column('UserID', Integer, nullable=False)
     user = relationship(
         'UserObject',
         foreign_keys=[userid],
-        primaryjoin='UserObject.userid == RepoObject.userid',
+        primaryjoin='UserObject.id == RepoObject.userid',
         uselist=False,
         lazy=True,
     )
@@ -106,7 +106,7 @@ class RepoObject(Base, RdiffRepo):
             raise AccessDeniedError(name)
 
         # Search the repo in database
-        query = RepoObject.query.join(UserObject, UserObject.userid == RepoObject.userid).filter(
+        query = RepoObject.query.join(UserObject, UserObject.id == RepoObject.userid).filter(
             and_(UserObject.username == username, RepoObject.repopath == repopath)
         )
         record = query.first()
@@ -237,7 +237,7 @@ class RepoObject(Base, RdiffRepo):
         return value
 
     def __str__(self):
-        return "RepoObject[%s, %s]" % (self.userid, self.repopath)
+        return "RepoObject[%s, %s]" % (self.id, self.repopath)
 
     def check_activity(self):
         """
@@ -334,7 +334,7 @@ def user_before_flush(session, flush_context, instances):
 
     for repoobj in session.new:
         if isinstance(repoobj, RepoObject):
-            userobj = repoobj.user or UserObject.query.filter(UserObject.userid == repoobj.userid).first()
+            userobj = repoobj.user or UserObject.query.filter(UserObject.id == repoobj.userid).first()
             cherrypy.engine.publish('repo_added', userobj, repoobj.repopath)
 
 
@@ -347,5 +347,5 @@ def user_after_flush(session, flush_context):
 
     for repoobj in session.deleted:
         if isinstance(repoobj, RepoObject):
-            userobj = repoobj.user or UserObject.query.filter(UserObject.userid == repoobj.userid).first()
+            userobj = repoobj.user or UserObject.query.filter(UserObject.id == repoobj.userid).first()
             cherrypy.engine.publish('repo_deleted', userobj, repoobj.repopath)

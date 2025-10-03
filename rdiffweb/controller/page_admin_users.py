@@ -351,7 +351,7 @@ class AdminApiUsers(Controller):
     def _to_json(self, user_obj, detailed=False):
         """User object as json."""
         data = {
-            "userid": user_obj.userid,
+            "id": user_obj.id,
             "username": user_obj.username,
             "fullname": user_obj.fullname,
             "email": user_obj.email,
@@ -395,7 +395,7 @@ class AdminApiUsers(Controller):
         ```json
         [
             {
-                "userid": 1,
+                "id": 1,
                 "username": "admin",
                 "fullname": "",
                 "email": "",
@@ -405,7 +405,7 @@ class AdminApiUsers(Controller):
                 "report_time_range": 0
             },
             {
-                "userid": 2,
+                "id": 2,
                 "username": "newuser",
                 "fullname": "New User",
                 "email": "test@example.com",
@@ -419,7 +419,7 @@ class AdminApiUsers(Controller):
 
         **Fields in JSON Payload**
 
-        - `userid`: The title or name associated with the SSH key.
+        - `id`: The title or name associated with the SSH key.
         - `email`: The email address of the user.
         - `username`: The username of the user.
         - `fullname`: The user full name.
@@ -441,7 +441,7 @@ class AdminApiUsers(Controller):
 
         ```json
         {
-          "userid": 2,
+          "id": 2,
           "username": "newuser",
           "fullname": "New User",
           "email": "test@example.com",
@@ -521,6 +521,6 @@ class AdminApiUsers(Controller):
                 user_obj = UserObject.add_user(form.username.data)
             if form.save_to_db(user_obj):
                 # Return Location and object as json.
-                cherrypy.response.headers['Location'] = url_for(cherrypy.url(base=''), str(user_obj.userid))
+                cherrypy.response.headers['Location'] = url_for(cherrypy.url(base=''), str(user_obj.id))
                 return self._to_json(user_obj)
         raise cherrypy.HTTPError(400, form.error_message)

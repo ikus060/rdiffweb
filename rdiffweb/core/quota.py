@@ -51,7 +51,7 @@ class QuotaPlugin(SimplePlugin):
 
     def _exec(self, cmd, userobj, quota=None):
         env = {
-            "RDIFFWEB_USERID": str(userobj.userid),
+            "RDIFFWEB_USERID": str(userobj.id),
             "RDIFFWEB_USERNAME": userobj.username,
             "RDIFFWEB_USERROOT": userobj.user_root,
             "RDIFFWEB_ROLE": str(userobj.role),

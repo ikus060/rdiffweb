@@ -35,7 +35,7 @@ _logger = logging.getLogger(__name__)
 
 
 def _delete_repo(repoid, path):
-    repoobj = RepoObject.query.filter(RepoObject.repoid == repoid).one()
+    repoobj = RepoObject.query.filter(RepoObject.id == repoid).one()
     repoobj.delete(path)
     repoobj.commit()
 
@@ -74,7 +74,7 @@ class DeletePage(Controller):
 
         form.expected_confirm = repo.display_name if path_obj.isroot else path_obj.display_name
         if form.validate_on_submit():
-            cherrypy.engine.publish('schedule_task', _delete_repo, repo.repoid, path)
+            cherrypy.engine.publish('schedule_task', _delete_repo, repo.id, path)
             # Redirect to parent folder or to root if repo get deleted
             if path_obj.isroot:
                 raise cherrypy.HTTPRedirect(url_for('/'))

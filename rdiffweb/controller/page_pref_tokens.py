@@ -204,7 +204,7 @@ class PagePrefTokens(Controller):
             flash(delete_form.error_message, level='error')
         params = {
             'form': form,
-            'tokens': Token.query.filter(Token.userid == currentuser.userid),
+            'tokens': Token.query.filter(Token.userid == currentuser.id),
         }
         return self._compile_template("prefs_tokens.html", **params)
 
@@ -214,7 +214,7 @@ class PagePrefTokens(Controller):
 class ApiTokens(Controller):
     def _query(self, name):
         currentuser = cherrypy.serving.request.currentuser
-        token = Token.query.filter(Token.userid == currentuser.userid, Token.name == name).first()
+        token = Token.query.filter(Token.userid == currentuser.id, Token.name == name).first()
         if not token:
             raise cherrypy.NotFound()
         return token
@@ -252,7 +252,7 @@ class ApiTokens(Controller):
 
         """
         currentuser = cherrypy.serving.request.currentuser
-        tokens = Token.query.filter(Token.userid == currentuser.userid).all()
+        tokens = Token.query.filter(Token.userid == currentuser.id).all()
         return [self._to_json(token) for token in tokens]
 
     def get(self, name):

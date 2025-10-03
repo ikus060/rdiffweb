@@ -49,7 +49,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody('test-token-name')
         # Then access token get created
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').count())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.id, Token.name == 'test-token-name').count())
 
     def test_add_access_token_with_expiration_time(self):
         # Given an existing user
@@ -67,7 +67,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody('test-token-name')
         # Then access token get created
-        token = Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').one()
+        token = Token.query.filter(Token.userid == userobj.id, Token.name == 'test-token-name').one()
         self.assertIsNotNone(token.expiration_time)
         # Expiration is almost equals to consider the timezone.
         self.assertAlmostEqual(
@@ -88,7 +88,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         # Then token name get displayed in the view
         self.assertInBody('Token name: This field is required.')
         # Then access token is not created
-        self.assertEqual(0, Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').count())
+        self.assertEqual(0, Token.query.filter(Token.userid == userobj.id, Token.name == 'test-token-name').count())
 
     def test_add_access_token_with_name_too_long(self):
         # Given an existing user
@@ -119,7 +119,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         # Then token name get displayed in the view
         self.assertInBody('Duplicate token name: test-token-name')
         # Then access token get created
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').count())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.id, Token.name == 'test-token-name').count())
 
     @parameterized.expand(
         [
@@ -145,7 +145,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.assertInBody('test-token-name')
         self.assertInBody(expected_text)
         # Then access token get created
-        token = Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').first()
+        token = Token.query.filter(Token.userid == userobj.id, Token.name == 'test-token-name').first()
         self.assertEqual(token.scope, [scope])
 
     def test_add_access_token_with_invalid_scope(self):
@@ -179,7 +179,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody('The access token has been successfully deleted.')
         # Then access token is not created
-        self.assertEqual(0, Token.query.filter(Token.userid == userobj.userid, Token.name == 'test-token-name').count())
+        self.assertEqual(0, Token.query.filter(Token.userid == userobj.id, Token.name == 'test-token-name').count())
 
 
 class ApiTokensTest(rdiffweb.test.WebCase):

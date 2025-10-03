@@ -91,7 +91,7 @@ class APITest(rdiffweb.test.WebCase):
     @parameterized.expand(
         [
             # Not suported field
-            ('userid', '1234', False),
+            ('id', '1234', False),
             ('username', 'myuser', False),
             ('role', 'guest', False),
             ('mfa', '1', False),

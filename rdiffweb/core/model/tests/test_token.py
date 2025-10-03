@@ -91,7 +91,7 @@ class TokenTest(rdiffweb.test.WebCase):
         userobj.commit()
         # Then a new token get created
         self.assertTrue(token)
-        tokenobj = Token.query.filter(Token.userid == userobj.userid).first()
+        tokenobj = Token.query.filter(Token.userid == userobj.id).first()
         self.assertTrue(tokenobj)
         self.assertEqual(None, tokenobj.expiration_time)
         self.assertEqual(None, tokenobj.access_time)
@@ -104,14 +104,14 @@ class TokenTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_access_token('test')
         userobj.commit()
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.id).count())
         # When adding a new token with the same name
         with self.assertRaises(ValueError):
             userobj.add_access_token('test')
             userobj.commit()
         userobj.rollback()
         # Then token is not created
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.id).count())
         # Then an email is not sent.
         self.listener.access_token_added.assert_called_once_with(userobj, 'test')
 
@@ -120,24 +120,24 @@ class TokenTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_access_token('test')
         userobj.commit()
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.id).count())
         # When deleting an access token
         userobj.delete_access_token('test')
         userobj.commit()
         # Then Token get deleted
-        self.assertEqual(0, Token.query.filter(Token.userid == userobj.userid).count())
+        self.assertEqual(0, Token.query.filter(Token.userid == userobj.id).count())
 
     def test_delete_access_token_invalid(self):
         # Given a user with an existing token
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_access_token('test')
         userobj.commit()
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.id).count())
         # When deleting an invalid access token
         with self.assertRaises(ValueError):
             userobj.delete_access_token('invalid')
         # Then Token not deleted
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.id).count())
 
     def test_delete_user_remove_access_tokens(self):
         # Given a user with an existing token
@@ -145,19 +145,19 @@ class TokenTest(rdiffweb.test.WebCase):
         userobj.commit()
         userobj.add_access_token('test')
         userobj.commit()
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.id).count())
         # When deleting the user
         userobj.delete()
         userobj.commit()
         # Then Token get deleted
-        self.assertEqual(0, Token.query.filter(Token.userid == userobj.userid).count())
+        self.assertEqual(0, Token.query.filter(Token.userid == userobj.id).count())
 
     def test_verify_access_token(self):
         # Given a user with an existing token
         userobj = UserObject.get_user(self.USERNAME)
         token = userobj.add_access_token('test')
         userobj.commit()
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.id).count())
         # When validating the token
         # Then token is valid
         self.assertTrue(userobj.validate_access_token(token))
@@ -169,19 +169,19 @@ class TokenTest(rdiffweb.test.WebCase):
             'test', expiration_time=datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(seconds=1)
         )
         userobj.commit()
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.id).count())
         # When validating the token
         # Then token is invalid
         self.assertFalse(userobj.validate_access_token(token))
         # Then token is not removed
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.id).count())
 
     def test_verify_access_token_with_invalid(self):
         # Given a user with an existing token
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_access_token('test', expiration_time=datetime.datetime.now(tz=datetime.timezone.utc))
         userobj.commit()
-        self.assertEqual(1, Token.query.filter(Token.userid == userobj.userid).count())
+        self.assertEqual(1, Token.query.filter(Token.userid == userobj.id).count())
         # When validating the token
         # Then token is invalid
         self.assertFalse(userobj.validate_access_token('invalid'))

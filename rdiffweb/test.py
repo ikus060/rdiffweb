@@ -101,6 +101,7 @@ class WebCase(helper.CPWebCase):
 
     def setUp(self):
         helper.CPWebCase.setUp(self)
+        # Clear cherrypy.tools.caching
         if hasattr(cherrypy, '_cache'):
             cherrypy._cache.clear()
         cherrypy.db.drop_all()
@@ -124,6 +125,7 @@ class WebCase(helper.CPWebCase):
             delattr(self, 'testcases')
         cherrypy.db.clear_sessions()
         cherrypy.db.drop_all()
+        # Clear cherrypy.tools.caching
         if hasattr(cherrypy, '_cache'):
             cherrypy._cache.clear()
 

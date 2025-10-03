@@ -25,7 +25,7 @@ class AdminReposTest(rdiffweb.test.WebCase):
     def test_repos(self):
         # Given an admin user with repos
         repos = (
-            RepoObject.query.join(UserObject, RepoObject.userid == UserObject.userid)
+            RepoObject.query.join(UserObject, RepoObject.userid == UserObject.id)
             .filter(UserObject.username == self.USERNAME)
             .all()
         )
@@ -39,7 +39,7 @@ class AdminReposTest(rdiffweb.test.WebCase):
     def test_repos_with_maxage(self):
         # Given an admin user with repos
         repos = (
-            RepoObject.query.join(UserObject, RepoObject.userid == UserObject.userid)
+            RepoObject.query.join(UserObject, RepoObject.userid == UserObject.id)
             .filter(UserObject.username == self.USERNAME)
             .all()
         )
@@ -55,7 +55,7 @@ class AdminReposTest(rdiffweb.test.WebCase):
     def test_repos_with_keepdays(self):
         # Given an admin user with repos
         repos = (
-            RepoObject.query.join(UserObject, RepoObject.userid == UserObject.userid)
+            RepoObject.query.join(UserObject, RepoObject.userid == UserObject.id)
             .filter(UserObject.username == self.USERNAME)
             .all()
         )

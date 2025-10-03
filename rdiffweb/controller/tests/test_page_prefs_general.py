@@ -265,7 +265,7 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
     def test_update_repos(self):
         # Given a user with invalid repositories
         userobj = UserObject.get_user(self.USERNAME)
-        RepoObject(userid=userobj.userid, repopath='invalid').add().commit()
+        RepoObject(userid=userobj.id, repopath='invalid').add().commit()
         self.assertEqual(['broker-repo', 'invalid', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the repository list
         self.getPage(self.PREFS, method='POST', body={'action': 'update_repos'})

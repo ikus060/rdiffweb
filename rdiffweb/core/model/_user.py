@@ -102,7 +102,7 @@ class UserObject(Base):
     PATTERN_FULLNAME = r"""[^!"#$%&()*+,./:;<=>?@[\]_{|}~]+$"""
     PATTERN_USERNAME = r"^[a-zA-Z][a-zA-Z0-9_.\-]+$"
 
-    userid = Column('UserID', Integer, primary_key=True)
+    id = Column('UserID', Integer, primary_key=True)
     username = Column('Username', String, nullable=False)
     hash_password = Column('Password', String, nullable=False, default="")
     user_root = Column('UserRoot', String, nullable=False, default="")
@@ -130,8 +130,8 @@ class UserObject(Base):
     mfa = Column('mfa', SmallInteger, nullable=False, default=DISABLED_MFA, server_default=str(DISABLED_MFA))
     repo_objs = relationship(
         'RepoObject',
-        foreign_keys='UserObject.userid',
-        primaryjoin='UserObject.userid == RepoObject.userid',
+        foreign_keys='UserObject.id',
+        primaryjoin='UserObject.id == RepoObject.userid',
         uselist=True,
         lazy=True,
         order_by=lambda: RepoObject.repopath,
@@ -154,7 +154,7 @@ class UserObject(Base):
         """Return a user object from username or id case-insensitive"""
         query = UserObject.query
         if str(username_or_id).isdigit():
-            query = query.filter(UserObject.userid == int(username_or_id))
+            query = query.filter(UserObject.id == int(username_or_id))
         else:
             query = query.filter(func.lower(UserObject.username) == username_or_id.lower())
         return query.one_or_none()
@@ -277,7 +277,7 @@ class UserObject(Base):
         else:
             # Also look in database.
             logger.info("add key [%s] to [%s] database", key, self.username)
-            sshkey = SshKey(userid=self.userid, fingerprint=key.fingerprint, key=key.getvalue())
+            sshkey = SshKey(userid=self.id, fingerprint=key.fingerprint, key=key.getvalue())
             sshkey.add().flush()
         cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
         cherrypy.engine.publish('authorizedkey_added', self, fingerprint=key.fingerprint, comment=comment)
@@ -293,7 +293,7 @@ class UserObject(Base):
         # Store hash token
         try:
             Token(
-                userid=self.userid,
+                userid=self.id,
                 name=name,
                 hash_token=hash_password(token),
                 expiration_time=expiration_time,
@@ -318,9 +318,9 @@ class UserObject(Base):
         if self.username == cfg.admin_user:
             raise ValueError(_("can't delete admin user"))
         # FIXME This should be deleted by cascade
-        SshKey.query.filter(SshKey.userid == self.userid).delete()
-        RepoObject.query.filter(RepoObject.userid == self.userid).delete()
-        Token.query.filter(Token.userid == self.userid).delete()
+        SshKey.query.filter(SshKey.userid == self.id).delete()
+        RepoObject.query.filter(RepoObject.userid == self.id).delete()
+        Token.query.filter(Token.userid == self.id).delete()
         # Delete ourself
         return Base.delete(self)
 
@@ -338,12 +338,12 @@ class UserObject(Base):
         else:
             # Also look in database.
             logger.info("removing key [%s] from [%s] database", fingerprint, self.username)
-            SshKey.query.filter(and_(SshKey.userid == self.userid, SshKey.fingerprint == fingerprint)).delete()
+            SshKey.query.filter(and_(SshKey.userid == self.id, SshKey.fingerprint == fingerprint)).delete()
         cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
 
     def delete_access_token(self, name):
         assert name
-        if not Token.query.filter(Token.userid == self.userid, Token.name == name).delete():
+        if not Token.query.filter(Token.userid == self.id, Token.name == name).delete():
             raise ValueError(_("token name doesn't exists: %s") % name)
 
     @property
@@ -384,7 +384,7 @@ class UserObject(Base):
                 yield k
 
         # Also look in database.
-        for record in SshKey.query.filter(SshKey.userid == self.userid).all():
+        for record in SshKey.query.filter(SshKey.userid == self.id).all():
             yield authorizedkeys.check_publickey(record.key)
 
     def refresh_repos(self, delete=False):
@@ -402,7 +402,7 @@ class UserObject(Base):
         cfg = cherrypy.tree.apps[''].cfg
 
         dirty = False
-        records = RepoObject.query.filter(RepoObject.userid == self.userid).order_by(RepoObject.repopath).all()
+        records = RepoObject.query.filter(RepoObject.userid == self.id).order_by(RepoObject.repopath).all()
         user_root = os.fsencode(self.user_root)
         for root, dirs, unused_files in os.walk(user_root, _onerror):
             for name in dirs.copy():
@@ -425,10 +425,10 @@ class UserObject(Base):
                     records.remove(record_match)
             if root.count(SEP) - user_root.count(SEP) >= cfg.max_depth:
                 del dirs[:]
-        # If enabled, remove entried from database
+        # If enabled, remove entries from database
         if delete:
             for record in records:
-                RepoObject.query.filter(RepoObject.repoid == record.repoid).delete()
+                RepoObject.query.filter(RepoObject.id == record.id).delete()
         return dirty
 
     @hybrid_property

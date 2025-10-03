@@ -133,7 +133,7 @@ class ApiCurrentUser(Controller):
         if u.refresh_repos():
             u.commit()
         return {
-            "userid": u.userid,
+            "id": u.id,
             "username": u.username,
             "fullname": u.fullname,
             "email": u.email,

@@ -47,7 +47,7 @@
         <tr>
           <td>
             <a href="{{ url_for('admin','users','edit', user.username)}}">{{ user.username }}</a>
-            <span class="badge badge-secondary">#{{ user.userid }}</span>
+            <span class="badge badge-secondary">#{{ user.id }}</span>
             {% if user.username == username %}
               <span class="badge badge-success">{% trans %}It's you{% endtrans %}</span>
             {% endif %}

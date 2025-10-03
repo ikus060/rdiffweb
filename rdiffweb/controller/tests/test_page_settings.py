@@ -287,7 +287,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
             data,
             [
                 {
-                    'repoid': user.repo_objs[0].repoid,
+                    'id': user.repo_objs[0].id,
                     'name': 'broker-repo',
                     'maxage': 0,
                     'keepdays': -1,
@@ -298,7 +298,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
                     'encoding': 'utf-8',
                 },
                 {
-                    'repoid': user.repo_objs[1].repoid,
+                    'id': user.repo_objs[1].id,
                     'name': 'testcases',
                     'maxage': 0,
                     'keepdays': -1,
@@ -342,13 +342,13 @@ class ApiReposTest(rdiffweb.test.WebCase):
         self.assertEqual(2, len(user.repo_objs))
         # When querying repos settings with repoid
         repo = user.repo_objs[0]
-        data = self.getJson('/api/currentuser/repos/%s' % repo.repoid, headers=self.auth)
+        data = self.getJson('/api/currentuser/repos/%s' % repo.id, headers=self.auth)
 
         # Then the list is returned
         self.assertEqual(
             data,
             {
-                'repoid': repo.repoid,
+                'id': repo.id,
                 'name': repo.name,
                 'maxage': repo.maxage,
                 'keepdays': repo.keepdays,
@@ -372,7 +372,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
         self.assertEqual(
             data,
             {
-                'repoid': repo.repoid,
+                'id': repo.id,
                 'name': 'testcases',
                 'maxage': 0,
                 'keepdays': -1,
@@ -400,7 +400,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
         user.commit()
         auth = [("Authorization", "Basic " + b64encode(f"admin:{token}".encode('ascii')).decode('ascii'))]
         # When querying repos settings with repoid
-        self.getPage('/api/currentuser/repos/%s' % user.repo_objs[0].repoid, headers=auth)
+        self.getPage('/api/currentuser/repos/%s' % user.repo_objs[0].id, headers=auth)
 
         # Then the list is returned
         if success:
@@ -411,7 +411,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
     @parameterized.expand(
         [
             # Not working
-            ('repoid', '4', False),
+            ('id', '4', False),
             ('name', 'newrepo', False),
             ('display_name', 'newrepo', False),
             ('last_backup_date', '2024-02-02T16:30:40-05:00', False),
@@ -563,7 +563,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
             data,
             [
                 {
-                    'repoid': ANY,
+                    'id': ANY,
                     'name': 'admin/broker-repo',
                     'maxage': 0,
                     'keepdays': -1,
@@ -574,7 +574,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
                     'encoding': 'utf-8',
                 },
                 {
-                    'repoid': ANY,
+                    'id': ANY,
                     'name': 'admin/testcases',
                     'maxage': 0,
                     'keepdays': -1,
@@ -592,7 +592,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
         self.assertEqual(
             data,
             {
-                'repoid': ANY,
+                'id': ANY,
                 'name': 'admin/testcases',
                 'maxage': 0,
                 'keepdays': -1,

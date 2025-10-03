@@ -461,7 +461,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Given a user with invalid repositories
         userobj = UserObject.get_user(self.USERNAME)
         RepoObject.query.delete()
-        RepoObject(userid=userobj.userid, repopath='invalid').add().commit()
+        RepoObject(userid=userobj.id, repopath='invalid').add().commit()
         self.assertEqual(['invalid'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the repository list without deletion
         userobj.refresh_repos()
@@ -473,7 +473,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Given a user with invalid repositories
         userobj = UserObject.get_user(self.USERNAME)
         RepoObject.query.delete()
-        RepoObject(userid=userobj.userid, repopath='invalid').add().commit()
+        RepoObject(userid=userobj.id, repopath='invalid').add().commit()
         self.assertEqual(['invalid'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the repository list without deletion
         userobj.refresh_repos(delete=True)

@@ -34,7 +34,7 @@ class Token(Base):
     user = relationship(
         'UserObject',
         foreign_keys=[userid],
-        primaryjoin='UserObject.userid == Token.userid',
+        primaryjoin='UserObject.id == Token.userid',
         uselist=False,
         lazy=True,
     )
