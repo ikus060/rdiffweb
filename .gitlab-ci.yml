@@ -80,13 +80,15 @@ upload:deb:
     set -x
     if [[ "$CI_COMMIT_TAG" == *.*.? ]]; then
       APT_URL="https://nexus.ikus-soft.com/repository/apt-release-${DIST}/"
+      APT_COMPONENT=${DIST}
     else
       APT_URL="https://nexus.ikus-soft.com/repository/apt-dev-${DIST}/"
+      APT_COMPONENT=${DIST}-dev
     fi
     export FILE=$(ls -1 ./dist/minarca-server_*_amd64.deb)
     curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$FILE" "$APT_URL"
     sleep 2
-    curl --fail ${APT_URL}/dists/$DIST/main/binary-amd64/Packages | grep "$(basename $FILE)"
+    curl --fail ${APT_URL}dists/$APT_COMPONENT/main/binary-amd64/Packages | grep "$(basename $FILE)"
   stage: upload
 
 upload:sonar:
@@ -193,7 +195,7 @@ e2e-test:deb:
     - apt update
     - apt install -y apt-transport-https ca-certificates lsb-release gpg
     - curl -L https://www.ikus-soft.com/archive/minarca/public.key | gpg --dearmor > /usr/share/keyrings/minarca-keyring.gpg
-    - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/minarca-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-dev-$(lsb_release -sc)/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/minarca.list
+    - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/minarca-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-dev-$(lsb_release -sc)/ $(lsb_release -sc)-dev main" > /etc/apt/sources.list.d/minarca.list
     - apt update
     - apt install -y minarca-client
     # Smoke test
