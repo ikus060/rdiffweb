@@ -43,20 +43,14 @@ def _render_to_tsvector_of_sqlite(element, compiler, **kw):
 
 
 class Timestamp(TypeDecorator):
-    """
-    Adjust datetime to store timezone info and restore timezone
-    info whether or not the datetime object as it.
-    """
-
     cache_ok = True
     impl = DateTime
-    LOCAL_TIMEZONE = datetime.now(timezone.utc).astimezone().tzinfo
 
     def process_bind_param(self, value: datetime, dialect):
         if value is None:
             return None
         if value.tzinfo is None:
-            value = value.astimezone(self.LOCAL_TIMEZONE)
+            raise ValueError('datetime without tzinfo: %s' % value)
         return value.astimezone(timezone.utc)
 
     def process_result_value(self, value, dialect):

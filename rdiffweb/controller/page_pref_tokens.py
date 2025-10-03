@@ -16,6 +16,7 @@
 
 
 import logging
+from datetime import timezone
 
 import cherrypy
 from markupsafe import Markup, escape
@@ -150,8 +151,9 @@ class TokenForm(DbForm):
         return super().is_submitted() and self.add_access_token.data
 
     def populate_obj(self, userobj):
+        expiration_time = self.expiration.data.replace(tzinfo=timezone.utc) if self.expiration.data else None
         self.secret = userobj.add_access_token(
-            name=self.name.data, expiration_time=self.expiration.data, scope=self.scope.data
+            name=self.name.data, expiration_time=expiration_time, scope=self.scope.data
         )
 
 
