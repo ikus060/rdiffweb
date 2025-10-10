@@ -33,7 +33,7 @@ from sqlalchemy import (
     inspect,
     not_,
 )
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import deferred, relationship, validates
 
@@ -42,6 +42,7 @@ from rdiffweb.core import authorizedkeys
 from rdiffweb.core.passwd import check_password, hash_password
 from rdiffweb.tools.i18n import gettext_lazy as _
 
+from ._message import MessageMixin
 from ._repo import RepoObject
 from ._session import SessionObject
 from ._sshkey import SshKey
@@ -80,7 +81,7 @@ Session = cherrypy.db.get_session()
 SEP = b'/'
 
 
-class UserObject(Base):
+class UserObject(MessageMixin, Base):
     __tablename__ = 'users'
     __table_args__ = {'sqlite_autoincrement': True}
 
@@ -235,6 +236,16 @@ class UserObject(Base):
         userobj.add()
         return userobj
 
+    def add_change(self, new_message):
+        """
+        Override implementation to hide changes made to password field.
+        """
+        changes = new_message.changes
+        if 'password' in changes:
+            changes['password'] = ['unknown', '•••••••']
+            new_message.changes = changes
+        super().add_change(new_message)
+
     @classmethod
     def add_user(cls, username, password=None, role=USER_ROLE, **attrs):
         """
@@ -277,7 +288,7 @@ class UserObject(Base):
         else:
             # Also look in database.
             logger.info("add key [%s] to [%s] database", key, self.username)
-            sshkey = SshKey(userid=self.id, fingerprint=key.fingerprint, key=key.getvalue())
+            sshkey = SshKey(user=self, fingerprint=key.fingerprint, key=key.getvalue())
             sshkey.add().flush()
         cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
         cherrypy.engine.publish('authorizedkey_added', self, fingerprint=key.fingerprint, comment=comment)
@@ -293,7 +304,7 @@ class UserObject(Base):
         # Store hash token
         try:
             Token(
-                userid=self.id,
+                user=self,
                 name=name,
                 hash_token=hash_password(token),
                 expiration_time=expiration_time,
@@ -343,8 +354,11 @@ class UserObject(Base):
 
     def delete_access_token(self, name):
         assert name
-        if not Token.query.filter(Token.userid == self.id, Token.name == name).delete():
+        try:
+            token_obj = Token.query.filter(Token.user == self, Token.name == name).one()
+        except NoResultFound:
             raise ValueError(_("token name doesn't exists: %s") % name)
+        token_obj.delete()
 
     @property
     def disk_usage(self):

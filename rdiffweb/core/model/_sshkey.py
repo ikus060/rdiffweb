@@ -20,9 +20,11 @@ import sys
 import cherrypy
 from sqlalchemy import Column, Index, Integer, PrimaryKeyConstraint, Text, event, func
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import relationship
 
 from rdiffweb.tools.i18n import gettext_lazy as _
 
+from ._message import Message
 from ._update import index_exists
 
 Base = cherrypy.db.get_base()
@@ -43,6 +45,27 @@ class SshKey(Base):
     fingerprint = Column('Fingerprint', Text)
     key = Column('Key', Text, unique=True, primary_key=True)
     userid = Column('UserID', Integer, nullable=False)
+    user = relationship(
+        'UserObject',
+        foreign_keys=[userid],
+        primaryjoin='UserObject.id == SshKey.userid',
+        uselist=False,
+        lazy=True,
+    )
+
+    def add_change(self, new_message):
+        """
+        Specific implementation to propagate changes to parent user.
+        """
+        # Update message to be added to the parent user.
+        if new_message.type == Message.TYPE_NEW and self.user:
+            new_message.type = Message.TYPE_DIRTY
+            new_message.changes = {'authorizedkeys': [[], [[self.fingerprint]]]}
+            self.user.add_change(new_message)
+        elif new_message.type == Message.TYPE_DELETE and self.user:
+            new_message.type = Message.TYPE_DIRTY
+            new_message.changes = {'authorizedkeys': [[[self.fingerprint]], []]}
+            self.user.add_change(new_message)
 
 
 # Make finger print unique

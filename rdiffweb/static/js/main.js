@@ -184,6 +184,93 @@ $.fn.dataTable.render.filesize = function () {
   };
 }
 
+$.fn.dataTable.render.changes = function () {
+    return {
+        display: function (data, type, row, meta) {
+            const api = new $.fn.dataTable.Api(meta.settings);
+            let html = '';
+            const body_idx = api.column('body:name').index();
+            if (body_idx && row[body_idx]) {
+                html += safe(row[body_idx]);
+            }
+            const type_idx = api.column('type:name').index();
+            if (data) {
+                const null_value = api.settings().i18n(`rdiffweb.null`, 'undefined')
+                html += '<ul class="mb-0">';
+                if (row[type_idx] === 'new') {
+                    /* For new record display only the new value. */
+                    for (const [key, values] of Object.entries(data)) {
+                        const field_name = safe(api.settings().i18n(`rdiffweb.field.${key}`, key));
+                        if(values[1] !== null ) {
+                            const new_value = safe(api.settings().i18n(`rdiffweb.value.${key}.${values[1]}`, `${values[1]}` )) ;
+                            html += '<li><strong>' + field_name + '</strong>: ' + new_value + ' </li>';
+                        }
+                    }
+                } else {
+                    /* For updates, display old and new value */
+                    for (const [key, values] of Object.entries(data)) {
+                        const field_name = safe(api.settings().i18n(`rdiffweb.field.${key}`, key));
+                        html += '<li><strong>' + field_name + '</strong>: '
+                        if (Array.isArray(values[0])) {
+                            for (const deleted of values[0]) {
+                                html += '<br/> - ' + safe(deleted);
+                            }
+                            for (const added of values[1]) {
+                                html += '<br/> + ' + safe(added);
+                            }
+                        } else {
+                            const old_value = safe(api.settings().i18n(`rdiffweb.value.${key}.${values[0]}`, `${values[0] !== null ? values[0] : undefined }`)) ;
+                            const new_value = safe(api.settings().i18n(`rdiffweb.value.${key}.${values[1]}`, `${values[1] !== null ? values[1] : undefined }`)) ;
+                            html += old_value + ' → ' + new_value + '</li>';
+                        }
+                    }
+                }
+                html += '</ul>';
+            }
+            return html;
+        }
+    };
+}
+
+$.fn.dataTable.render.message_body = function () {
+
+    const datetime = $.fn.dataTable.render.datetime().display;
+
+    const changes = $.fn.dataTable.render.changes().display;
+
+    return {
+        display: function (data, type, row, meta) {
+            const api = new $.fn.dataTable.Api(meta.settings);
+            let html = '';
+
+            const type_idx = api.column('type:name').index();
+            if (type_idx) {
+                const type = row[type_idx];
+                html += api.settings().i18n(`rdiffweb.value.type.${type}`, type);
+            }
+
+            const author_idx = api.column('author:name').index();
+            if (author_idx) {
+                html += ' <em>' + row[author_idx] + '</em> • ';
+            }
+
+            const date_idx = api.column('date:name').index();
+            if (date_idx) {
+                html += datetime(row[date_idx], type, row, meta);
+            }
+
+            html += '<br />' + changes(data, type, row, meta);
+            return html;
+        },
+        sort: function (data, type, row, meta) {
+            const api = new $.fn.dataTable.Api(meta.settings);
+            const date_idx = api.column('date:name').index();
+            const value = toDate(row[date_idx]);
+            return value ? value.getTime() : 0;
+        },
+    };
+}
+
 jQuery(function () {
   $('table[data-ajax]').each(function (_idx) {
     /* Load column properties */

@@ -1,4 +1,6 @@
 {% extends 'admin.html' %}
+{% from 'include/panel.html' import panel %}
+{% from 'include/messages.html' import messages %}
 {% from 'include/storage_usage.html' import storage_usage %}
 {% set admin_nav_active="users" %}
 {% block title %}
@@ -6,12 +8,15 @@
 {% endblock %}
 {% block content %}
   <div class="container">
-    <h3>{% trans %}Edit user{% endtrans %}</h3>
-    <form method="post" action="{{ url_for()}}">
-      {{ form }}
-      {{ storage_usage(form.disk_usage.data, form.disk_quota.data) }}
-      <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
-      <a href="{{ url_for('admin','users')}}" class="btn btn-secondary">{% trans %}Cancel{% endtrans %}</a>
+    <form method="post" action="{{ url_for() }}">
+      {% call panel(
+        title=_("Edit user"),
+        show_submit_area=True) %}
+        {{ form }}
+        {{ storage_usage(form.disk_usage.data, form.disk_quota.data) }}
+      {% endcall %}
     </form>
+    {# Message thread #}
+    {{ messages(data_url=url_for('admin','users', 'messages', form.id.data|string)) }}
   </div>
 {% endblock content %}

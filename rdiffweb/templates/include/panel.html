@@ -1,10 +1,24 @@
-{% macro panel(title, description=None, class="default") -%}
-  <div class="row">
-    <div class="col-md-3">
-      <h3>{{ title }}</h3>
-      {% if description %}<p>{{ description }}</p>{% endif %}
-    </div>
-    <div class="col-md-9">{{ caller() }}</div>
+{% macro panel(title, description=None, show_submit_area=False) -%}
+  <h3>{{ title }}</h3>
+  {% if description %}<p>{{ description }}</p>{% endif %}
+  <div class="card mb-5">
+    <div class="card-body">{{ caller() }}</div>
+    {% if show_submit_area %}
+      <div class="card-footer">
+        {# Submit Area #}
+        <div class="mb-2 form-floating">
+          <textarea name="body" class="form-control" placeholder="{{ _('Leave an internal note') }}" id="floatingTextarea2" style="height: 80px"></textarea>
+        </div>
+        <div class="text-end">
+          <button type="button"
+                  class="btn btn-secondary"
+                  onclick="window.history.back();">
+            {% trans %}Cancel{% endtrans %}
+          </button>
+          <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
+        </div>
+        {# /Submit Area #}
+      </div>
+    {% endif %}
   </div>
-  <hr />
 {%- endmacro %}

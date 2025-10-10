@@ -29,7 +29,7 @@ class SettingsTest(rdiffweb.test.WebCase):
 
     def test_page(self):
         self.getPage("/settings/" + self.USERNAME + "/" + self.REPO)
-        self.assertInBody("General Settings")
+        self.assertInBody("Repository Settings")
         self.assertStatus(200)
 
     @parameterized.expand(
@@ -70,7 +70,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         user_obj.refresh_repos()
         user_obj.commit()
         self.getPage("/settings/anotheruser/testcases")
-        self.assertInBody("General Settings")
+        self.assertInBody("Repository Settings")
         self.assertStatus('200 OK')
 
         # Remove admin right

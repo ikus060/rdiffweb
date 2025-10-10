@@ -1,0 +1,22 @@
+{% from 'include/table.html' import table %}
+{% macro messages(data_url) -%}
+  <div id="messages" class="card">
+    {% set columns = [
+    {'name':'id', 'visible':False},
+    {'name':'author', 'visible':False},
+    {'name':'date', 'visible':False},
+    {'name':'type', 'visible':False },
+    {'name':'body', 'visible':False},
+    {'name':'changes', 'title':_('Audit log'), 'render':'message_body' }] %}
+    {{ table(data_url,
+    columns=columns,
+    order=[[ 5, 'desc' ]],
+    state_save=False,
+    searching=False,
+    empty_message=_('No audit trail'),
+    info_message=_('Displaying _START_-_END_ of _TOTAL_ most recent log systems'),
+    paging=True,
+    layout="audit",
+    pageLength=10) }}
+  </div>
+{% endmacro %}

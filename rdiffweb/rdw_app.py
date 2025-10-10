@@ -59,7 +59,7 @@ from rdiffweb.controller.page_logs import LogsPage
 from rdiffweb.controller.page_mfa import MfaPage
 from rdiffweb.controller.page_prefs import PreferencesPage
 from rdiffweb.controller.page_restore import RestorePage
-from rdiffweb.controller.page_settings import SettingsPage
+from rdiffweb.controller.page_settings import AuditLogData, SettingsPage
 from rdiffweb.controller.page_stats import StatsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.core import rdw_templating
@@ -139,6 +139,7 @@ class Root(LocationsPage):
         self.api = ApiPage()
         self.graphs = GraphsPage()
         self.logs = LogsPage()
+        self.audit = AuditLogData()
 
         # Register static dir.
         static_dir = importlib.resources.files('rdiffweb') / 'static'

@@ -18,21 +18,23 @@ import itertools
 import json
 
 import cherrypy
-from sqlalchemy import Boolean, Column, String, and_, event, inspect
+from sqlalchemy import Column, String, and_, event, inspect
 from sqlalchemy.orm import backref, declared_attr, foreign, relationship, remote
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import Integer
 
-from rdiffweb.tools.i18n import gettext as _
+import rdiffweb.plugins.db  # noqa
 
 from ._timestamp import Timestamp
 
 Base = cherrypy.db.get_base()
 Session = cherrypy.db.get_session()
 
+AUDIT_IGNORE = 'audit_ignore'
 
-def _get_model_changes(model, ignore=['messages']):
+
+def _get_model_changes(model):
     """
     Return a dictionary containing changes made to the model since it was
     fetched from the database.
@@ -43,7 +45,8 @@ def _get_model_changes(model, ignore=['messages']):
     changes = {}
     for attr in state.attrs:
         # Ignore `messages` field and other private field
-        if attr.key == 'messages' or attr.key.startswith('_'):
+        mapper = state.mapper
+        if mapper.has_property(attr.key) and mapper.get_property(attr.key).info.get('audit_ignore', False):
             continue
         # Ignore attribute without history changes.
         hist = attr.load_history()
@@ -58,7 +61,12 @@ def _get_model_changes(model, ignore=['messages']):
                 hist.deleted[0] if len(hist.deleted) >= 1 else None,
                 hist.added[0] if len(hist.added) >= 1 else None,
             ]
-    change_type = 'dirty' if state.has_identity else 'new'
+    if model in state.session.deleted:
+        change_type = 'deleted'
+    elif state.has_identity:
+        change_type = 'dirty'
+    else:
+        change_type = 'new'
     return change_type, changes
 
 
@@ -69,18 +77,18 @@ def create_messages(session, flush_context, instances):
     """
     # Get current user
     author_id = None
-    currentuser = getattr(cherrypy.serving.request, 'currentuser', None)
-    if currentuser:
-        author_id = currentuser.id
     # Create message if object is created or modified
     # Call "add_change" to let the object decide what should be updated.
-    for obj in itertools.chain(session.new, session.dirty):
+    for obj in itertools.chain(session.new, session.dirty, session.deleted):
         if hasattr(obj, 'add_change'):
             # compute the list of changes base on sqlalchemy history
             change_type, changes = _get_model_changes(obj)
-            if not changes:
+            if change_type == 'dirty' and not changes:
                 continue
             # Append the changes to a new message or a message in the current session flush.
+            currentuser = getattr(cherrypy.serving.request, 'currentuser', None)
+            if currentuser:
+                author_id = currentuser.id
             message = Message(author_id=author_id, changes=changes, type=change_type)
             obj.add_change(message)
 
@@ -89,19 +97,18 @@ class Message(Base):
     TYPE_COMMENT = 'comment'
     TYPE_NEW = 'new'
     TYPE_DIRTY = 'dirty'
-    TYPE_PARENT = "parent"  # For parent changes
+    TYPE_DELETE = 'deleted'
 
-    __tablename__ = 'message'
+    __tablename__ = 'messages'
     id = Column(Integer, primary_key=True)
     model_name = Column(String, nullable=False)
     model_id = Column(Integer, nullable=False)
-    author_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    author_id = Column(Integer, ForeignKey('users.UserID'), nullable=True)
     author = relationship("UserObject", lazy=False)
     type = Column(String, nullable=False, default=TYPE_COMMENT)
     body = Column(String, nullable=False, default='')
     _changes = Column('changes', String, nullable=True)
     date = Column(Timestamp(timezone=True), default=func.now())
-    sent = Column(Boolean, default=False)
 
     @property
     def changes(self):
@@ -117,10 +124,6 @@ class Message(Base):
         except Exception:
             self._changes = str(value)
 
-    @classmethod
-    def _search_string(cls):
-        return cls.body + " " + cls._changes
-
     @property
     def model_object(self):
         """
@@ -129,20 +132,6 @@ class Message(Base):
         if self.model_name is None:
             return None
         return getattr(self, "%s_object" % self.model_name)
-
-    def get_summary(self):
-        """
-        Provide a summary to be displayed in table.
-        """
-        model_object = getattr(self, "%s_object" % self.model_name, None)
-        if model_object:
-            return model_object.summary
-
-    @property
-    def author_name(self):
-        if self.author is None:
-            return _('System')
-        return str(self.author)
 
     @classmethod
     def json_changes(cls, value):
@@ -162,8 +151,13 @@ class MessageMixin:
     Mixin to support messages.
     """
 
+    @classmethod
+    def _get_message_model_name(cls):
+        # Strip ending 's' from table name
+        return cls.__tablename__[0:-1] if cls.__tablename__[-1] == 's' else cls.__tablename__
+
     def add_message(self, message):
-        message.model_name = self.__tablename__
+        message.model_name = self._get_message_model_name()
         self.messages.append(message)
 
     def add_change(self, new_message):
@@ -200,46 +194,52 @@ class MessageMixin:
 
     @declared_attr
     def messages(cls):
+        model_name = cls._get_message_model_name()
         return relationship(
             Message,
             primaryjoin=lambda: and_(
-                cls.__tablename__ == remote(foreign(Message.model_name)), cls.id == remote(foreign(Message.model_id))
+                model_name == remote(foreign(Message.model_name)), cls.id == remote(foreign(Message.model_id))
             ),
             order_by=Message.date,
             lazy=True,
             cascade="all, delete",
-            overlaps="messages",
+            overlaps="messages,user_object,repo_object",
             backref=backref(
-                '%s_object' % cls.__tablename__,
+                '%s_object' % model_name,
                 lazy=True,
-                overlaps="messages",
+                overlaps="messages,user_object,repo_object",
             ),
+            info={AUDIT_IGNORE: True},
         )
 
     @declared_attr
     def comments(cls):
+        model_name = cls._get_message_model_name()
         return relationship(
             Message,
             primaryjoin=lambda: and_(
-                cls.__tablename__ == remote(foreign(Message.model_name)),
+                model_name == remote(foreign(Message.model_name)),
                 cls.id == remote(foreign(Message.model_id)),
                 Message.type == Message.TYPE_COMMENT,
             ),
             order_by=Message.date,
             viewonly=True,
             lazy=True,
+            info={AUDIT_IGNORE: True},
         )
 
     @declared_attr
     def changes(cls):
+        model_name = cls._get_message_model_name()
         return relationship(
             Message,
             primaryjoin=lambda: and_(
-                cls.__tablename__ == remote(foreign(Message.model_name)),
+                model_name == remote(foreign(Message.model_name)),
                 cls.id == remote(foreign(Message.model_id)),
                 Message.type != Message.TYPE_COMMENT,
             ),
             order_by=Message.date,
             viewonly=True,
             lazy=True,
+            info={AUDIT_IGNORE: True},
         )

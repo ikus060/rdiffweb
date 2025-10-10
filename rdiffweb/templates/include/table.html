@@ -1,4 +1,4 @@
-{% macro table(data, columns=[], order=[], empty_message=None, info_message=None, searching=True, buttons=[], paging=False, pageLength=5, show_header=True, state_save=True) %}
+{% macro table(data, columns=[], order=[], empty_message=None, info_message=None, searching=True, buttons=[], paging=False, pageLength=5, layout="default", state_save=True) %}
   {% set language = {
   "aria": {
   "sortAscending": _('activate to sort column ascending'),
@@ -8,6 +8,35 @@
   "infoFiltered": _('(filtered from _MAX_ total records)'),
   "infoEmpty": _('No records available'),
   "processing": _('Loading...'),
+  "rdiffweb": {
+  "null": _('undefined'),
+  "value": {
+  "type": {
+  "new": _('Created by'),
+  "dirty": _('Modified by'),
+  "comment": _('Comment on'),
+  "parent": _('Parent modified by'),
+  },
+  },
+  "field": {
+  "authorizedkeys": _('SSH Keys'),
+  "tokens": _('Access Token'),
+  "report_time_range": _('Send Backup report'),
+  "lang": _('Preferred Language'),
+  "user_root": _('Root directory'),
+  "password": _('Password'),
+  "email": _('Email'),
+  "fullname": _('Fullname'),
+  "mfa": _('Two-Factor Authentication'),
+  "role": _('User Role'),
+  "maxage": _('Inactivity Notification Period'),
+  "user": _('Owner'),
+  "repopath": _('Display Name'),
+  "_encoding_name": _('Display Encoding'),
+  "_keepdays": _('Data Retention Duration'),
+  "_ignore_weekday": _('Excluded Days of the Week'),
+  }
+  },
   "search": _('Filter: '),
   "zeroRecords": empty_message or _('List is empty'),
   } %}
@@ -20,7 +49,11 @@
   },
   "buttons": buttons
   } %}
-  {% set dom_cfg = "<'d-sm-flex align-items-center'<'mb-1 flex-grow-1'i><'mb-1'f><B>><'row'<'col-sm-12'rt>><'row'<'col-sm-12 col-md-7'p>>" if show_header else "<'row'<'col-sm-12'rt>><'row'<'col-sm-12 col-md-7'p>>" %}
+  {# Pick the right layout #}
+  {% set dom_cfg = {
+  "default": "<'d-sm-flex align-items-center'<'mb-1 flex-grow-1'i><'mb-1'f><B>><'row'<'col-sm-12'rt>><'row'<'col-sm-12 col-md-7'p>>",
+  "audit" : "<'row'<'col-sm-12'rt>><'row'<'col-sm-12 col-md-7'p>>"}.get(layout)
+  %}
   <table class="table table-hover responsive"
          width="100%"
          data-ajax="{{ data }}"

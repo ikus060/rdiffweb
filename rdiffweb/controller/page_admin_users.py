@@ -27,9 +27,11 @@ try:
 except ImportError:
     from wtforms.fields.html5 import EmailField  # wtform <3
 
+from collections import namedtuple
+
 from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.formdb import DbForm
-from rdiffweb.core.model import UserObject
+from rdiffweb.core.model import Message, UserObject
 from rdiffweb.core.rdw_templating import url_for
 from rdiffweb.tools.i18n import gettext_lazy as _
 from rdiffweb.tools.i18n import list_available_locales
@@ -39,6 +41,8 @@ logger = logging.getLogger(__name__)
 
 # Max root directory path length
 MAX_PATH = 260
+
+HistoryRow = namedtuple('HistoryRow', ['id', 'author', 'date', 'type', 'body', 'changes'])
 
 
 class SizeField(Field):
@@ -74,7 +78,7 @@ class SizeField(Field):
 
 
 class UserForm(DbForm):
-    userid = HiddenField(_('UserID'))
+    id = HiddenField()
     username = StringField(
         _('Username'),
         validators=[
@@ -216,7 +220,13 @@ class UserForm(DbForm):
             else:
                 userobj.refresh_repos(delete=True)
 
-    def save_to_db(self, obj):
+    def save_to_db(self, obj, message_body=None):
+        # Add Message to explain changes.
+        if message_body:
+            currentuser = cherrypy.request.currentuser
+            message_obj = Message(body=message_body, author=currentuser)
+            obj.add_message(message_obj)
+
         return_value = super().save_to_db(obj)
 
         # Try to update disk quota if the human readable value changed.
@@ -309,7 +319,8 @@ class AdminUsersPage(Controller):
         if user is None:
             raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username_or_id)
         form = EditUserForm(obj=user)
-        if form.validate_on_submit() and form.save_to_db(user):
+        message_body = kwargs.get('body', False)
+        if form.validate_on_submit() and form.save_to_db(user, message_body=message_body):
             flash(_("User information modified successfully."))
             raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
         if form.error_message:
@@ -341,6 +352,42 @@ class AdminUsersPage(Controller):
         else:
             flash(form.error_message, level='error')
         raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def messages(self, username_or_id, **kwargs):
+        # Return Not found if user doesn't exists
+        user = UserObject.get_user(username_or_id)
+        if user is None:
+            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username_or_id)
+        # Query Object Messages
+        query = (
+            Message.query.with_entities(
+                Message.id,
+                UserObject.username.label('author_name'),
+                Message.date,
+                Message.type,
+                Message.body,
+                Message._changes.label('changes'),
+            )
+            .outerjoin(Message.author)
+            .order_by(Message.date.desc())
+            .filter(Message.model_id == user.id, Message.model_name == user._get_message_model_name())
+        )
+        data = query.all()
+        return {
+            'data': [
+                HistoryRow(
+                    id=obj.id,
+                    author=obj.author_name or str(_('System')),
+                    date=obj.date.isoformat(),
+                    type=obj.type,
+                    body=obj.body,
+                    changes=Message.json_changes(obj.changes),
+                )
+                for obj in data
+            ]
+        }
 
 
 @cherrypy.expose

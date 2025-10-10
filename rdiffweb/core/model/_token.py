@@ -21,6 +21,7 @@ from sqlalchemy import Column, Integer, String, event
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
+from ._message import Message
 from ._timestamp import Timestamp
 from ._update import column_add, column_exists
 
@@ -43,6 +44,20 @@ class Token(Base):
     creation_time = Column('CreationTime', Timestamp, nullable=False, server_default=func.now())
     expiration_time = Column('ExpirationTime', Timestamp, nullable=True)
     _scope = Column('Scope', String, nullable=False, server_default="")
+
+    def add_change(self, new_message):
+        """
+        Specific implementation to propagate changes to parent user.
+        """
+        # Update message to be added to the parent user.
+        if new_message.type == Message.TYPE_NEW and self.user:
+            new_message.type = Message.TYPE_DIRTY
+            new_message.changes = {'tokens': [[], [[self.name]]]}
+            self.user.add_change(new_message)
+        elif new_message.type == Message.TYPE_DELETE and self.user:
+            new_message.type = Message.TYPE_DIRTY
+            new_message.changes = {'tokens': [[[self.name]], []]}
+            self.user.add_change(new_message)
 
     @property
     def is_expired(self):

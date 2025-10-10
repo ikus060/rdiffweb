@@ -131,6 +131,16 @@ class APITest(rdiffweb.test.WebCase):
                             'parameters': [],
                         }
                     },
+                    '/admin/users/messages/{username_or_id}': {
+                        'get': {
+                            'description': ANY,
+                            'parameters': [
+                                {'in': 'path', 'name': 'username_or_id', 'required': True, 'schema': {'type': 'string'}}
+                            ],
+                            'responses': {'200': {'content': {'application/json': {}}, 'description': 'OK'}},
+                            'summary': 'No description available',
+                        }
+                    },
                     '/admin/users/new': {
                         'get': {
                             'summary': 'Show form to create a new user',
@@ -307,6 +317,16 @@ class APITest(rdiffweb.test.WebCase):
                             'responses': {'200': {'content': {'application/json': {}}, 'description': 'OK'}},
                             'summary': 'Return specific user information for the given id or username.',
                         },
+                    },
+                    '/audit/{path}': {
+                        'get': {
+                            'summary': 'No description available',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
+                            'parameters': [
+                                {'name': 'path', 'in': 'path', 'schema': {'type': 'string'}, 'required': True}
+                            ],
+                        }
                     },
                     '/browse/{path}': {
                         'get': {

@@ -32,6 +32,7 @@ import rdiffweb.plugins.db  # noqa
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo, RdiffTime
 from rdiffweb.tools.i18n import ugettext as _
 
+from ._message import MessageMixin
 from ._update import column_add, column_exists
 
 
@@ -66,7 +67,7 @@ def _split_path(path):
         return path.decode('utf-8'), b''
 
 
-class RepoObject(Base, RdiffRepo):
+class RepoObject(MessageMixin, Base, RdiffRepo):
     DEFAULT_REPO_ENCODING = codecs.lookup((sys.getfilesystemencoding() or 'utf-8').lower()).name
 
     __tablename__ = 'repos'
@@ -84,7 +85,7 @@ class RepoObject(Base, RdiffRepo):
     repopath = Column('RepoPath', String, nullable=False, default='')
     maxage = Column('MaxAge', SmallInteger, nullable=False, server_default="0")
     _encoding_name = Column('Encoding', String, default='')
-    _keepdays = Column('keepdays', String, nullable=False, default="-1")
+    _keepdays = Column('keepdays', String, nullable=False, default="-1", info={'foo': 'bar'})
     _ignore_weekday = Column('IgnoreWeekday', Integer, nullable=False, server_default="0")
 
     @classmethod
@@ -188,7 +189,10 @@ class RepoObject(Base, RdiffRepo):
 
     @keepdays.setter
     def keepdays(self, value):
-        self._keepdays = value
+        if value is None:
+            self._keepdays = None
+        else:
+            self._keepdays = str(value)
 
     @hybrid_property
     def encoding(self):
