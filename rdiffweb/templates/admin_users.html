@@ -21,7 +21,6 @@
      href="{{ url_for('admin','users', 'new')}}">{% trans %}Add user{% endtrans %}</a>
   <!-- Users View -->
   {% set buttons = [
-  {'text': _('All'), 'extend': 'clear'},
   {'text': _('Admins'), 'extend': 'filter', 'column': 2, 'search': 'admin'},
   {'text': _('LDAP'), 'extend': 'filter', 'column': 0, 'search': 'LDAP'},
   ] %}
@@ -39,6 +38,7 @@
         <th scope="col">{{ form.user_root.label.text }}</th>
         <th scope="col">{{ form.mfa.label.text }}</th>
         <th scope="col">{{ form.report_time_range.label.text }}</th>
+        <th scope="col">{{ form.notes.label.text }}</th>
         <th scope="col" data-sortable="false"></th>
       </tr>
     </thead>
@@ -68,6 +68,7 @@
           </td>
           <td>{{ mfa_choices.get(user.mfa) }}</td>
           <td>{{ report_time_range_choices.get(user.report_time_range) }}</td>
+          <td class="notes">{{ user.notes }}</td>
           <td class="text-right">
             <div class="btn-hover text-nowrap">
               {{ btn(url_for('admin','users','edit', user.username), _('Edit'), "fa fa-pencil-square-o") }}

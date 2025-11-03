@@ -101,41 +101,94 @@ $(document).ready(function () {
 
 });
 
-/** Filter button for DataTables */
+/**
+ * Buttons to filter content of datatable.
+ *
+ * Options:
+ * - search: Define the search criteria when filter is active
+ * - search_off: Define the search criteria when filter is not active (optional)
+ * - regex: True to enable regex lookup (optional)
+ * - multi: True to enablemultiple selection for the same column.
+ */
 $.fn.dataTable.ext.buttons.filter = {
-  text: 'Filter',
-  init: function (dt, node, config) {
-    const that = this;
-    dt.on('search.dt', function () {
-      const activate = dt.column(config.column).search() === config.search;
-      that.active(activate);
-    });
-  },
-  action: function (e, dt, node, config) {
-    if (node.hasClass('active')) {
-      dt.column(config.column).search(config.search_off || '', config.regex);
-    } else {
-      dt.column(config.column).search(config.search, config.regex);
+    init: function(dt, node, config) {
+        if (config.search_off && config.multi) {
+            console.error('search_off and multi are not supported together');
+        }
+        const that = this;
+        dt.on('search.dt', function() {
+            let activate;
+            const curSearch = dt.column(config.column).search();
+            if (config.multi) {
+                const terms = curSearch.replace(/^\(/, '').replace(/\)$/, '').split('|');
+                activate = terms.includes(config.search);
+            } else {
+                activate = dt.column(config.column).search() === config.search;
+            }
+            that.active(activate);
+        });
+    },
+    action: function(e, dt, node, config) {
+        const curSearch = dt.column(config.column).search();
+        let terms = curSearch.replace(/^\(/, '').replace(/\)$/, '').split('|').filter(item => item !== '');
+        if (node.hasClass('active')) {
+            if (config.search_off) {
+                // Disable - replace by our search_off pattern
+                terms = [config.search_off];
+            } else {
+                // Disable - remove from term.
+                terms = terms.filter(item => item != config.search)
+            }
+        } else if (config.multi) {
+            // Enable - add new terms
+            terms.push(config.search)
+        } else {
+            // Enable - replace all terms
+            terms = [config.search];
+        }
+        let search;
+        if (terms.length == 0) {
+            search = '';
+        } else if (terms.length == 1) {
+            search = terms[0];
+        } else {
+            search = '(' + terms.join('|') + ')';
+        }
+        dt.column(config.column).search(search, true);
+        dt.draw(true);
     }
-    dt.draw(true);
-  }
+};
+
+$.fn.dataTable.ext.buttons.collectionfilter = {
+    align: 'button-right',
+    autoClose: true,
+    background: false,
+    extend: 'collection',
+    className: 'cdt-btn-collectionfilter',
+    init: function(dt, node, config) {
+        const that = this;
+        dt.on('search.dt', function() {
+            const activate = dt.column(config.column).search() !== '';
+            that.active(activate);
+        });
+    },
 };
 
 /** Button to clear filter and reset the state of the table. */
 $.fn.dataTable.ext.buttons.clear = {
-  text: 'All',
-  action: function (e, dt, node, config) {
-    dt.search('');
-    if (dt.init().aoSearchCols) {
-      const searchCols = dt.init().aoSearchCols;
-      for (let i = 0; i < searchCols.length; i++) {
-        const search = searchCols[i].search || "";
-        dt.column(i).search(search);
+  text: 'Reset',
+  action: function(e, dt, node, config) {
+      dt.search('');
+      if (dt.init().aoSearchCols) {
+          const searchCols = dt.init().aoSearchCols;
+          for (let i = 0; i < searchCols.length; i++) {
+              const search = searchCols[i].search || "";
+              dt.column(i).search(search);
+          }
+      } else {
+          dt.columns().search('');
       }
-    } else {
-      dt.columns().search('');
-    }
-    dt.draw(true);
+      dt.draw(true);
   }
 };
 
@@ -182,6 +235,49 @@ $.fn.dataTable.render.filesize = function () {
       return isNaN(value) ? -1 : value;
     }
   };
+}
+
+$.fn.dataTable.render.summary = function (render_arg) {
+    let icon_table = {
+        'user': 'fa-user',
+        'repo': 'fa-archive',
+    };
+
+    const model_name = typeof render_arg === 'string' ? render_arg : null;
+    const model_name_column = render_arg?.model_name_column || 'model_name:name';
+    const url_column = render_arg?.url_column || 'url:name';
+
+    return {
+        display: function (data, type, row, meta) {
+            if (!data) return '-';
+            const api = new $.fn.dataTable.Api(meta.settings);
+            /* Get model_name from arguments or from row data */
+            let effective_model_name = model_name;
+            if (effective_model_name == null) {
+                const model_idx = api.column(model_name_column).index();
+                if (model_idx) {
+                    effective_model_name = row[model_idx];
+                }
+            }
+
+            /* Define the URL */
+            let url = "#";
+            const url_idx = api.column(url_column).index();
+            if (url_idx) {
+                url = encodeURI(row[url_idx])
+            }
+
+            let html = '<a href="' + url + '">' +
+                '<i class="fa ' + icon_table[effective_model_name] + ' mr-1" aria-hidden="true"></i>' +
+                '<strong>' + safe(data) + '</strong>' +
+                '</a>';
+
+            return html;
+        },
+        sort: function (data, type, row, meta) {
+            return data;
+        }
+    };
 }
 
 $.fn.dataTable.render.changes = function () {
@@ -234,9 +330,11 @@ $.fn.dataTable.render.changes = function () {
 
 $.fn.dataTable.render.message_body = function () {
 
+    const changes = $.fn.dataTable.render.changes().display;
+
     const datetime = $.fn.dataTable.render.datetime().display;
 
-    const changes = $.fn.dataTable.render.changes().display;
+    const summary = $.fn.dataTable.render.summary().display;
 
     return {
         display: function (data, type, row, meta) {
@@ -244,22 +342,25 @@ $.fn.dataTable.render.message_body = function () {
             let html = '';
 
             const type_idx = api.column('type:name').index();
-            if (type_idx) {
+            if (type_idx !== undefined) {
                 const type = row[type_idx];
                 html += api.settings().i18n(`rdiffweb.value.type.${type}`, type);
             }
 
             const author_idx = api.column('author:name').index();
-            if (author_idx) {
-                html += ' <em>' + row[author_idx] + '</em> • ';
+            if (author_idx !== undefined) {
+                html += ' <em>' + row[author_idx] + '</em>';
             }
 
             const date_idx = api.column('date:name').index();
-            if (date_idx) {
-                html += datetime(row[date_idx], type, row, meta);
+            if (date_idx !== undefined) {
+                html += ' • ' + datetime(row[date_idx], type, row, meta);
             }
 
-            html += '<br />' + changes(data, type, row, meta);
+            html += '<br />'
+            
+            html += changes(data, type, row, meta);
+
             return html;
         },
         sort: function (data, type, row, meta) {
@@ -321,15 +422,6 @@ jQuery(function () {
       processing: true,
       stateSave: true,
       deferRender: true,
-    });
-    // Update each buttons status
-    dt.on('search.dt', function (e, settings) {
-      dt.buttons().each(function (data, idx) {
-        let conf = data.inst.s.buttons[idx].conf;
-        if (conf && conf.column) {
-          dt.button(idx).active(dt.column(conf.column).search() === conf.search);
-        }
-      });
     });
   });
 });

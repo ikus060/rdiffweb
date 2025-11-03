@@ -34,7 +34,7 @@ Session = cherrypy.db.get_session()
 AUDIT_IGNORE = 'audit_ignore'
 
 
-def _get_model_changes(model):
+def get_model_changes(model):
     """
     Return a dictionary containing changes made to the model since it was
     fetched from the database.
@@ -82,7 +82,7 @@ def create_messages(session, flush_context, instances):
     for obj in itertools.chain(session.new, session.dirty, session.deleted):
         if hasattr(obj, 'add_change'):
             # compute the list of changes base on sqlalchemy history
-            change_type, changes = _get_model_changes(obj)
+            change_type, changes = get_model_changes(obj)
             if change_type == 'dirty' and not changes:
                 continue
             # Append the changes to a new message or a message in the current session flush.
@@ -95,6 +95,7 @@ def create_messages(session, flush_context, instances):
 
 class Message(Base):
     TYPE_COMMENT = 'comment'
+    TYPE_EVENT = 'event'
     TYPE_NEW = 'new'
     TYPE_DIRTY = 'dirty'
     TYPE_DELETE = 'deleted'
@@ -103,6 +104,7 @@ class Message(Base):
     id = Column(Integer, primary_key=True)
     model_name = Column(String, nullable=False)
     model_id = Column(Integer, nullable=False)
+    model_summary = Column(String, nullable=False, default='')
     author_id = Column(Integer, ForeignKey('users.UserID'), nullable=True)
     author = relationship("UserObject", lazy=False)
     type = Column(String, nullable=False, default=TYPE_COMMENT)
@@ -158,6 +160,7 @@ class MessageMixin:
 
     def add_message(self, message):
         message.model_name = self._get_message_model_name()
+        message.model_summary = str(self)
         self.messages.append(message)
 
     def add_change(self, new_message):
@@ -202,7 +205,7 @@ class MessageMixin:
             ),
             order_by=Message.date,
             lazy=True,
-            cascade="all, delete",
+            cascade="save-update",
             overlaps="messages,user_object,repo_object",
             backref=backref(
                 '%s_object' % model_name,
@@ -210,6 +213,7 @@ class MessageMixin:
                 overlaps="messages,user_object,repo_object",
             ),
             info={AUDIT_IGNORE: True},
+            passive_deletes="all",
         )
 
     @declared_attr
@@ -236,7 +240,7 @@ class MessageMixin:
             primaryjoin=lambda: and_(
                 model_name == remote(foreign(Message.model_name)),
                 cls.id == remote(foreign(Message.model_id)),
-                Message.type != Message.TYPE_COMMENT,
+                Message.type.in_([Message.TYPE_NEW, Message.TYPE_DIRTY, Message.TYPE_DELETE]),
             ),
             order_by=Message.date,
             viewonly=True,

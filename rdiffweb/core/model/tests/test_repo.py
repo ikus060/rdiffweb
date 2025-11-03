@@ -25,7 +25,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         # Given a database with duplicate path
         userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
-        RepoObject(userid=userobj.id, repopath='/testcases').add().commit()
+        RepoObject(user=userobj, repopath='/testcases').add().commit()
         self.assertEqual(['/testcases', 'broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
         # When creating database
         cherrypy.db.create_all()
@@ -37,8 +37,8 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         # Given a database with nested path
         userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
-        RepoObject(userid=userobj.id, repopath='testcases/home/admin/testcases').add()
-        RepoObject(userid=userobj.id, repopath='/testcases/home/admin/data').add().commit()
+        RepoObject(user=userobj, repopath='testcases/home/admin/testcases').add()
+        RepoObject(user=userobj, repopath='/testcases/home/admin/data').add().commit()
         self.assertEqual(
             ['/testcases/home/admin/data', 'broker-repo', 'testcases', 'testcases/home/admin/testcases'],
             sorted([r.name for r in userobj.repo_objs]),
@@ -53,7 +53,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         # Given a user with a repository named "/testcases"
         userobj = UserObject.get_user(self.USERNAME)
         RepoObject.query.filter(RepoObject.userid == userobj.id).delete()
-        RepoObject(userid=userobj.id, repopath='/testcases').add().commit()
+        RepoObject(user=userobj, repopath='/testcases').add().commit()
         self.assertEqual(['/testcases'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the database schema
         cherrypy.db.create_all()
@@ -74,7 +74,8 @@ class RepoObjectTest(rdiffweb.test.WebCase):
     def test_get_repo_refresh(self):
         # Given a user with a valid user without any repository
         userobj = UserObject.get_user(self.USERNAME)
-        RepoObject.query.filter(RepoObject.userid == userobj.id).delete()
+        userobj.repo_objs.clear()
+        userobj.commit()
         with self.assertRaises(DoesNotExistError):
             RepoObject.get_repo('admin/testcases', userobj)
         # When getting a repo with refresh
@@ -109,10 +110,15 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         self.assertEqual('testcases', repo_obj3.name)
         self.assertEqual('bernie', repo_obj3.owner)
 
+    def test_repr(self):
+        userobj = UserObject.get_user(self.USERNAME)
+        repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
+        self.assertEqual("RepoObject(%s, testcases)" % repo_obj.id, repr(repo_obj))
+
     def test_str(self):
         userobj = UserObject.get_user(self.USERNAME)
         repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
-        self.assertEqual("RepoObject[%s, testcases]" % repo_obj.id, str(repo_obj))
+        self.assertEqual("admin/testcases", str(repo_obj))
 
     def test_eq(self):
         userobj = UserObject.get_user(self.USERNAME)

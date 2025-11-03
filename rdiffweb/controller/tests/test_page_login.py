@@ -88,6 +88,10 @@ class LoginPageTest(rdiffweb.test.WebCase):
         # Check if listener called
         userobj = UserObject.get_user(self.USERNAME)
         self.listener.user_login.assert_called_once_with(userobj)
+        # Then a message get logged.
+        self.wait_for_tasks()
+        user = UserObject.get_user(self.USERNAME)
+        self.assertEqual("User login to web application", user.messages[-1].body)
 
     def test_login_case_insensitive(self):
         # When authenticating with valid credentials with all uppercase username

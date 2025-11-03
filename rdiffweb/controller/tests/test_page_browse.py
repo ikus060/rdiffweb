@@ -110,8 +110,8 @@ class BrowsePageTest(rdiffweb.test.WebCase):
 
     def test_locations_with_broken_tree(self):
         userobj = UserObject.get_user(self.USERNAME)
-        RepoObject(userid=userobj.id, repopath='testcases/broker-repo').add().commit()
-        RepoObject(userid=userobj.id, repopath='testcases/testcases').add().commit()
+        RepoObject(user=userobj, repopath='testcases/broker-repo').add().commit()
+        RepoObject(user=userobj, repopath='testcases/testcases').add().commit()
         self.getPage("/")
 
     def test_WithRelativePath(self):

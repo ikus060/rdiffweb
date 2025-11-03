@@ -18,16 +18,17 @@ import logging
 import sys
 
 import cherrypy
-from sqlalchemy import Column, Index, Integer, PrimaryKeyConstraint, Text, event, func
+from sqlalchemy import Column, ForeignKey, Index, Integer, PrimaryKeyConstraint, Text, event, func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import reconstructor, relationship, validates
 
+from rdiffweb.core.authorizedkeys import AuthorizedKey, check_publickey
 from rdiffweb.tools.i18n import gettext_lazy as _
 
-from ._message import Message
 from ._update import index_exists
 
 Base = cherrypy.db.get_base()
+Session = cherrypy.db.get_session()
 
 logger = logging.getLogger(__name__)
 
@@ -43,29 +44,60 @@ class SshKey(Base):
         {'sqlite_autoincrement': True},
     )
     fingerprint = Column('Fingerprint', Text)
-    key = Column('Key', Text, unique=True, primary_key=True)
-    userid = Column('UserID', Integer, nullable=False)
-    user = relationship(
-        'UserObject',
-        foreign_keys=[userid],
-        primaryjoin='UserObject.id == SshKey.userid',
-        uselist=False,
-        lazy=True,
-    )
+    _key = Column('Key', Text, unique=True, primary_key=True)
+    userid = Column('UserID', Integer, ForeignKey("users.UserID"), nullable=False)
+    user = relationship('UserObject', back_populates="authorizedkeys", lazy="joined")
+    # Transient value.
+    _authorizedkey = None
 
-    def add_change(self, new_message):
+    @classmethod
+    def from_authorizedkey(cls, data, comment=None):
         """
-        Specific implementation to propagate changes to parent user.
+        Create a new SshKey from a given public ssh key and comment.
         """
-        # Update message to be added to the parent user.
-        if new_message.type == Message.TYPE_NEW and self.user:
-            new_message.type = Message.TYPE_DIRTY
-            new_message.changes = {'authorizedkeys': [[], [[self.fingerprint]]]}
-            self.user.add_change(new_message)
-        elif new_message.type == Message.TYPE_DELETE and self.user:
-            new_message.type = Message.TYPE_DIRTY
-            new_message.changes = {'authorizedkeys': [[[self.fingerprint]], []]}
-            self.user.add_change(new_message)
+        # Parse/validate the key
+        authorizedkey = check_publickey(data)
+        # Remove option & Remove comment for SQL storage
+        authorizedkey = AuthorizedKey(
+            options=None, keytype=authorizedkey.keytype, key=authorizedkey.key, comment=comment or authorizedkey.comment
+        )
+        return SshKey(_key=authorizedkey.getvalue())
+
+    @reconstructor
+    def __init_on_load__(self):
+        """
+        Called when object get constructed by ORM.
+
+        This implementation initialize the comment field.
+        """
+        try:
+            self._authorizedkey = check_publickey(self._key)
+        except ValueError:
+            # Ignore error.
+            pass
+
+    @validates('_key')
+    def validate_key(self, _key, value):
+        # Parse ssh key. Will raise error if invalid.
+        self._authorizedkey = check_publickey(value)
+        # Update fingerprint at the same time.
+        self.fingerprint = self._authorizedkey.fingerprint
+        return value
+
+    @property
+    def key(self):
+        return self._authorizedkey.key
+
+    @property
+    def comment(self):
+        return self._authorizedkey.comment
+
+    @property
+    def keytype(self):
+        return self._authorizedkey.keytype
+
+    def __str__(self):
+        return self.fingerprint
 
 
 # Make finger print unique
@@ -98,3 +130,12 @@ def update_sshkeys_schema(target, conn, **kw):
             logger.error(msg)
             print(msg, file=sys.stderr)
             raise SystemExit(12)
+
+
+@event.listens_for(Session, 'after_flush')
+def sshkey_after_flush(session, flush_context):
+    for sshkey in session.new:
+        if isinstance(sshkey, SshKey):
+            cherrypy.engine.publish(
+                'authorizedkey_added', sshkey.user, fingerprint=sshkey.fingerprint, comment=sshkey.comment
+            )

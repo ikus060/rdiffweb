@@ -16,7 +16,7 @@
 import importlib.resources
 import os
 from io import StringIO, open
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import cherrypy
 from parameterized import parameterized, parameterized_class
@@ -45,6 +45,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         super().setUp()
         self.listener = MagicMock()
         cherrypy.engine.subscribe('access_token_added', self.listener.access_token_added, priority=50)
+        cherrypy.engine.subscribe('authorizedkey_added', self.listener.authorizedkey_added, priority=50)
         cherrypy.engine.subscribe('queue_mail', self.listener.queue_mail, priority=50)
         cherrypy.engine.subscribe('user_adding', self.listener.user_adding, priority=50)
         cherrypy.engine.subscribe('user_added', self.listener.user_added, priority=50)
@@ -55,6 +56,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
 
     def tearDown(self):
         cherrypy.engine.unsubscribe('access_token_added', self.listener.access_token_added)
+        cherrypy.engine.unsubscribe('authorizedkey_added', self.listener.authorizedkey_added)
         cherrypy.engine.unsubscribe('queue_mail', self.listener.queue_mail)
         cherrypy.engine.unsubscribe('user_adding', self.listener.user_adding)
         cherrypy.engine.unsubscribe('user_added', self.listener.user_added)
@@ -192,19 +194,21 @@ class UserObjectTest(rdiffweb.test.WebCase):
         user.user_root = self.testcases
         user.refresh_repos()
         user.commit()
-        self.listener.user_attr_changed.assert_called_with(user, {'user_root': ('', self.testcases)})
+        self.listener.user_attr_changed.assert_called_with(
+            user, {'user_root': ['', self.testcases], 'repo_objs': [[], [ANY, ANY]]}
+        )
         self.listener.user_attr_changed.reset_mock()
         user = UserObject.get_user('larry')
         user.role = UserObject.ADMIN_ROLE
         user.commit()
         self.listener.user_attr_changed.assert_called_with(
-            user, {'role': (UserObject.USER_ROLE, UserObject.ADMIN_ROLE)}
+            user, {'role': [UserObject.USER_ROLE, UserObject.ADMIN_ROLE]}
         )
         self.listener.user_attr_changed.reset_mock()
         user = UserObject.get_user('larry')
         user.email = 'larry@gmail.com'
         user.commit()
-        self.listener.user_attr_changed.assert_called_with(user, {'email': ('', 'larry@gmail.com')})
+        self.listener.user_attr_changed.assert_called_with(user, {'email': ['', 'larry@gmail.com']})
         self.listener.user_attr_changed.reset_mock()
 
         self.assertEqual('larry@gmail.com', user.email)
@@ -314,7 +318,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         disk_usage = userobj.disk_usage
         self.assertIsInstance(disk_usage, int)
 
-    def test_add_authorizedkey_without_file(self):
+    def test_add_authorizedkey(self):
         """
         Add an ssh key for a user without an authorizedkey file.
         """
@@ -323,12 +327,21 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Add the key to the user
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_authorizedkey(key)
+        self.listener.user_attr_changed.reset_mock()
+        self.listener.authorizedkey_added.reset_mock()
         userobj.commit()
 
         # validate
         keys = list(userobj.authorizedkeys)
+        self.assertEqual(len(keys), 1)
         self.assertEqual(1, len(keys), "expecting one key")
         self.assertEqual("3c:99:ed:a7:82:a8:71:09:2c:15:3d:78:4a:8c:11:99", keys[0].fingerprint)
+
+        # Then listener should be called.
+        self.listener.user_attr_changed.assert_called_with(userobj, {'authorizedkeys': [[], [ANY]]})
+        self.listener.authorizedkey_added.assert_called_with(
+            userobj, fingerprint="3c:99:ed:a7:82:a8:71:09:2c:15:3d:78:4a:8c:11:99", comment="ikus060@ikus060-t530"
+        )
 
     def test_add_authorizedkey_duplicate(self):
         # Read the pub key
@@ -337,6 +350,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_authorizedkey(key)
         userobj.commit()
+        self.listener.user_attr_changed.reset_mock()
 
         # When adding the same identical key.
         # Then an error is raised
@@ -344,6 +358,9 @@ class UserObjectTest(rdiffweb.test.WebCase):
             userobj.add_authorizedkey(key)
             userobj.commit()
         self.assertIn(ctx.exception.constraint.name, ['sshkey_fingerprint_index', 'sshkeys_pkey'])
+
+        # Then listener is not called.
+        self.listener.user_attr_changed.assert_not_called()
 
     def test_add_authorizedkey_duplicate_new_comment(self):
         # Read the pub key
@@ -377,27 +394,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
             newuser.commit()
         self.assertIn(ctx.exception.constraint.name, ['sshkey_fingerprint_index', 'sshkeys_pkey'])
 
-    def test_add_authorizedkey_with_file(self):
-        """
-        Add an ssh key for a user with an authorizedkey file.
-        """
-        userobj = UserObject.get_user(self.USERNAME)
-
-        # Create empty authorized_keys file
-        os.mkdir(os.path.join(userobj.user_root, '.ssh'))
-        filename = os.path.join(userobj.user_root, '.ssh', 'authorized_keys')
-        open(filename, 'a').close()
-
-        # Read the pub key
-        key = self._read_ssh_key()
-        userobj.add_authorizedkey(key)
-        userobj.commit()
-
-        # Validate
-        with open(filename, 'r') as fh:
-            self.assertEqual(key, fh.read())
-
-    def test_delete_authorizedkey_without_file(self):
+    def test_delete_authorizedkey(self):
         """
         Remove an ssh key for a user without authorizedkey file.
         """
@@ -410,6 +407,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
             except ValueError:
                 # Some ssh key in the testing file are not valid.
                 pass
+        userobj.commit()
 
         # Get the keys
         keys = list(userobj.authorizedkeys)
@@ -422,29 +420,6 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Validate
         keys = list(userobj.authorizedkeys)
         self.assertEqual(1, len(keys))
-
-    def test_delete_authorizedkey_with_file(self):
-        """
-        Remove an ssh key for a user with authorizedkey file.
-        """
-        # Create authorized_keys file
-        data = self._read_authorized_keys()
-        userobj = UserObject.get_user(self.USERNAME)
-        os.mkdir(os.path.join(userobj.user_root, '.ssh'))
-        filename = os.path.join(userobj.user_root, '.ssh', 'authorized_keys')
-        with open(filename, 'w') as f:
-            f.write(data)
-
-        # Get the keys
-        keys = list(userobj.authorizedkeys)
-        self.assertEqual(5, len(keys))
-
-        # Remove a key
-        userobj.delete_authorizedkey("9a:f1:69:3c:bc:5a:cd:02:5e:33:bc:cd:c0:01:eb:4c")
-
-        # Validate
-        keys = list(userobj.authorizedkeys)
-        self.assertEqual(4, len(keys))
 
     def test_repo_objs(self):
         # Given a user with a list of repositories
@@ -461,7 +436,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Given a user with invalid repositories
         userobj = UserObject.get_user(self.USERNAME)
         RepoObject.query.delete()
-        RepoObject(userid=userobj.id, repopath='invalid').add().commit()
+        RepoObject(user=userobj, repopath='invalid').add().commit()
         self.assertEqual(['invalid'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the repository list without deletion
         userobj.refresh_repos()
@@ -473,7 +448,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Given a user with invalid repositories
         userobj = UserObject.get_user(self.USERNAME)
         RepoObject.query.delete()
-        RepoObject(userid=userobj.id, repopath='invalid').add().commit()
+        RepoObject(user=userobj, repopath='invalid').add().commit()
         self.assertEqual(['invalid'], sorted([r.name for r in userobj.repo_objs]))
         # When updating the repository list without deletion
         userobj.refresh_repos(delete=True)

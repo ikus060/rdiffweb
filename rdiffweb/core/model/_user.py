@@ -38,11 +38,10 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import deferred, relationship, validates
 
 import rdiffweb.plugins.db  # noqa
-from rdiffweb.core import authorizedkeys
 from rdiffweb.core.passwd import check_password, hash_password
 from rdiffweb.tools.i18n import gettext_lazy as _
 
-from ._message import MessageMixin
+from ._message import MessageMixin, get_model_changes
 from ._repo import RepoObject
 from ._session import SessionObject
 from ._sshkey import SshKey
@@ -131,15 +130,27 @@ class UserObject(MessageMixin, Base):
     mfa = Column('mfa', SmallInteger, nullable=False, default=DISABLED_MFA, server_default=str(DISABLED_MFA))
     repo_objs = relationship(
         'RepoObject',
-        foreign_keys='UserObject.id',
-        primaryjoin='UserObject.id == RepoObject.userid',
-        uselist=True,
-        lazy=True,
-        order_by=lambda: RepoObject.repopath,
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+        order_by="RepoObject.repopath",
     )
     lang = Column('lang', String, nullable=False, default='', server_default='')
     report_time_range = Column('report_time_range', SmallInteger, nullable=False, default=0, server_default=str(0))
     report_last_sent = Column('report_last_sent', Timestamp, nullable=True, default=None)
+    notes = Column(String, nullable=False, default='', server_default='')
+    authorizedkeys = relationship(
+        'SshKey',
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    tokens = relationship(
+        'Token',
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
 
     @classmethod
     def authenticate(cls, login, password):
@@ -241,8 +252,8 @@ class UserObject(MessageMixin, Base):
         Override implementation to hide changes made to password field.
         """
         changes = new_message.changes
-        if 'password' in changes:
-            changes['password'] = ['unknown', '•••••••']
+        if 'hash_password' in changes:
+            changes['hash_password'] = ['unknown', '•••••••']
             new_message.changes = changes
         super().add_change(new_message)
 
@@ -268,30 +279,9 @@ class UserObject(MessageMixin, Base):
         Add the given key to the user. Adding the key to his `authorized_keys`
         file if it exists and adding it to database.
         """
-        # Parse and validate ssh key
-        assert key
-        key = authorizedkeys.check_publickey(key)
-
-        # Remove option & Remove comment for SQL storage
-        key = authorizedkeys.AuthorizedKey(
-            options=None, keytype=key.keytype, key=key.key, comment=comment or key.comment
-        )
-
-        # If a filename exists, use it by default.
-        filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
-        if os.path.isfile(filename):
-            with open(filename, mode="r+", encoding='utf-8') as fh:
-                if authorizedkeys.exists(fh, key):
-                    raise ValueError(_("SSH key already exists"))
-                logger.info("add key [%s] to [%s] authorized_keys", key, self.username)
-                authorizedkeys.add(fh, key)
-        else:
-            # Also look in database.
-            logger.info("add key [%s] to [%s] database", key, self.username)
-            sshkey = SshKey(user=self, fingerprint=key.fingerprint, key=key.getvalue())
-            sshkey.add().flush()
-        cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
-        cherrypy.engine.publish('authorizedkey_added', self, fingerprint=key.fingerprint, comment=comment)
+        logger.info("add key [%s] to [%s] database", key, self.username)
+        sshkey = SshKey.from_authorizedkey(data=key, comment=comment)
+        self.authorizedkeys.append(sshkey)
 
     def add_access_token(self, name, expiration_time=None, length=16, scope=[]):
         """
@@ -303,16 +293,16 @@ class UserObject(MessageMixin, Base):
         token = ''.join(secrets.choice(string.ascii_lowercase) for i in range(length))
         # Store hash token
         try:
-            Token(
-                user=self,
+            token_obj = Token(
                 name=name,
                 hash_token=hash_password(token),
                 expiration_time=expiration_time,
                 scope=scope,
-            ).add().flush()
+            )
+            self.tokens.append(token_obj)
+            self.flush()
         except IntegrityError:
             raise ValueError(_("Duplicate token name: %s") % name)
-        cherrypy.engine.publish('access_token_added', self, name)
         return token
 
     def valid_user_root(self):
@@ -328,10 +318,6 @@ class UserObject(MessageMixin, Base):
         cfg = cherrypy.tree.apps[''].cfg
         if self.username == cfg.admin_user:
             raise ValueError(_("can't delete admin user"))
-        # FIXME This should be deleted by cascade
-        SshKey.query.filter(SshKey.userid == self.id).delete()
-        RepoObject.query.filter(RepoObject.userid == self.id).delete()
-        Token.query.filter(Token.userid == self.id).delete()
         # Delete ourself
         return Base.delete(self)
 
@@ -340,17 +326,13 @@ class UserObject(MessageMixin, Base):
         Remove the given key from the user. Remove the key from his
         `authorized_keys` file if it exists and from database database.
         """
-        # If a filename exists, use it by default.
-        filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
-        if os.path.isfile(filename):
-            with open(filename, mode='r+', encoding='utf-8') as fh:
-                logger.info("removing key [%s] from [%s] authorized_keys", fingerprint, self.username)
-                authorizedkeys.remove(fh, fingerprint)
-        else:
-            # Also look in database.
-            logger.info("removing key [%s] from [%s] database", fingerprint, self.username)
-            SshKey.query.filter(and_(SshKey.userid == self.id, SshKey.fingerprint == fingerprint)).delete()
-        cherrypy.engine.publish('user_attr_changed', self, {'authorizedkeys': True})
+        # Also look in database.
+        logger.info("removing key [%s] from [%s] database", fingerprint, self.username)
+        try:
+            record = SshKey.query.filter(and_(SshKey.user == self, SshKey.fingerprint == fingerprint)).one()
+        except NoResultFound:
+            raise ValueError(_("fingerprint doesn't exists: %s") % fingerprint)
+        self.authorizedkeys.remove(record)
 
     def delete_access_token(self, name):
         assert name
@@ -358,7 +340,7 @@ class UserObject(MessageMixin, Base):
             token_obj = Token.query.filter(Token.user == self, Token.name == name).one()
         except NoResultFound:
             raise ValueError(_("token name doesn't exists: %s") % name)
-        token_obj.delete()
+        self.tokens.remove(token_obj)
 
     @property
     def disk_usage(self):
@@ -385,22 +367,6 @@ class UserObject(MessageMixin, Base):
             return
         cherrypy.engine.publish('set_disk_quota', self, value)
 
-    @property
-    def authorizedkeys(self):
-        """
-        Return an iterator on the authorized key. Either from his
-        `authorized_keys` file if it exists or from database.
-        """
-        # If a filename exists, use it by default.
-        filename = os.path.join(self.user_root, '.ssh', 'authorized_keys')
-        if os.path.isfile(filename):
-            for k in authorizedkeys.read(filename):
-                yield k
-
-        # Also look in database.
-        for record in SshKey.query.filter(SshKey.userid == self.id).all():
-            yield authorizedkeys.check_publickey(record.key)
-
     def refresh_repos(self, delete=False):
         """
         Return list of repositories object to reflect the filesystem folders.
@@ -416,7 +382,7 @@ class UserObject(MessageMixin, Base):
         cfg = cherrypy.tree.apps[''].cfg
 
         dirty = False
-        records = RepoObject.query.filter(RepoObject.userid == self.id).order_by(RepoObject.repopath).all()
+        records = list(self.repo_objs)
         user_root = os.fsencode(self.user_root)
         for root, dirs, unused_files in os.walk(user_root, _onerror):
             for name in dirs.copy():
@@ -442,7 +408,7 @@ class UserObject(MessageMixin, Base):
         # If enabled, remove entries from database
         if delete:
             for record in records:
-                RepoObject.query.filter(RepoObject.id == record.id).delete()
+                self.repo_objs.remove(record)
         return dirty
 
     @hybrid_property
@@ -585,6 +551,10 @@ def update_user_schema(target, conn, **kw):
     if not column_exists(conn, UserObject.report_last_sent):
         column_add(conn, UserObject.report_last_sent)
 
+    # Add notes column
+    if not column_exists(conn, UserObject.notes):
+        column_add(conn, UserObject.notes)
+
     # Fix username case insensitive unique
     if not index_exists(conn, 'user_username_index'):
         duplicate_users = (
@@ -662,6 +632,9 @@ def user_before_flush(session, flush_context, instances):
     for userobj in session.new:
         if isinstance(userobj, UserObject):
             cherrypy.engine.publish('user_adding', userobj)
+    for userobj in session.deleted:
+        if isinstance(userobj, UserObject):
+            cherrypy.engine.publish('user_deleting', userobj)
 
 
 @event.listens_for(Session, 'after_flush')
@@ -677,16 +650,7 @@ def user_after_flush(session, flush_context):
             cherrypy.engine.publish('user_deleted', userobj.username)
     for userobj in session.dirty:
         if isinstance(userobj, UserObject):
-            changes = {}
-            state = inspect(userobj)
-            for attr in state.attrs:
-                if attr.key in ['user_root', 'email', 'role', 'mfa', 'hash_password']:
-                    hist = attr.load_history()
-                    if hist.has_changes():
-                        changes[attr.key] = (
-                            hist.deleted[0] if len(hist.deleted) >= 1 else None,
-                            hist.added[0] if len(hist.added) >= 1 else None,
-                        )
+            _change_type, changes = get_model_changes(userobj)
             if changes.pop('hash_password', False):
                 cherrypy.engine.publish('user_password_changed', userobj)
             if changes:

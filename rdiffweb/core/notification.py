@@ -35,8 +35,6 @@ from rdiffweb.tools.i18n import preferred_lang
 from rdiffweb.tools.i18n import ugettext as _
 
 logger = logging.getLogger(__name__)
-activity = logging.getLogger('activity')
-auth = logging.getLogger('auth')
 
 
 def _sum(iterable):
@@ -85,8 +83,8 @@ class NotificationPlugin(SimplePlugin):
         self.bus.subscribe('user_password_changed', self.user_password_changed)
         self.bus.subscribe('repo_added', self.repo_added)
         self.bus.subscribe('repo_deleted', self.repo_deleted)
-        self.bus.subscribe('user_added', self.user_added)
         self.bus.subscribe('user_deleted', self.user_deleted)
+        self.bus.subscribe('user_added', self.user_added)
         self.bus.subscribe('user_login', self.user_login)
 
     start.priority = 55
@@ -102,8 +100,8 @@ class NotificationPlugin(SimplePlugin):
         self.bus.unsubscribe('user_password_changed', self.user_password_changed)
         self.bus.unsubscribe('repo_added', self.repo_added)
         self.bus.unsubscribe('repo_deleted', self.repo_deleted)
-        self.bus.unsubscribe('user_added', self.user_added)
         self.bus.unsubscribe('user_deleted', self.user_deleted)
+        self.bus.unsubscribe('user_added', self.user_added)
         self.bus.unsubscribe('user_login', self.user_login)
 
     stop.priority = 45
@@ -175,7 +173,7 @@ class NotificationPlugin(SimplePlugin):
 
     def access_token_added(self, userobj, name):
         username = userobj.username
-        activity.info(f"A new access token {name} for the user {username} has been added")
+        logger.info(f"A new access token {name} for the user {username} has been added")
         if self.send_changed:
             self._queue_mail(
                 userobj,
@@ -185,7 +183,7 @@ class NotificationPlugin(SimplePlugin):
 
     def authorizedkey_added(self, userobj, fingerprint, comment, **kwargs):
         username = userobj.username
-        activity.info(f"A new SSH key {fingerprint} has been added for the user {username}")
+        logger.info(f"A new SSH key {fingerprint} has been added for the user {username}")
         if self.send_changed:
             self._queue_mail(
                 userobj,
@@ -198,7 +196,7 @@ class NotificationPlugin(SimplePlugin):
         username = userobj.username
         # Leave if the mail was not changed.
         if 'email' in attrs:
-            activity.info(f"Email address of the user {username} has been changed")
+            logger.info(f"Email address of the user {username} has been changed")
             # If the email attributes was changed, send a mail notification.
             if self.send_changed:
                 old_email = attrs['email'][0]
@@ -210,7 +208,7 @@ class NotificationPlugin(SimplePlugin):
 
         if 'mfa' in attrs:
             state = 'activated' if userobj.mfa == UserObject.DISABLED_MFA else 'disabled'
-            activity.info(f"Two-factor authentication has been {state} for the user {username}")
+            logger.info(f"Two-factor authentication has been {state} for the user {username}")
             if self.send_changed:
                 self._queue_mail(
                     userobj,
@@ -219,7 +217,7 @@ class NotificationPlugin(SimplePlugin):
 
     def user_password_changed(self, userobj):
         username = userobj.username
-        activity.info(f"User's password {username} changed")
+        logger.info(f"User's password {username} changed")
         if self.send_changed:
             self._queue_mail(
                 userobj,
@@ -228,7 +226,7 @@ class NotificationPlugin(SimplePlugin):
 
     def repo_added(self, userobj, repo_path):
         username = userobj.username
-        activity.info(f"New repository named {repo_path} has been added for the user {username}")
+        logger.info(f"New repository named {repo_path} has been added for the user {username}")
         if self.send_changed:
             self._queue_mail(
                 userobj,
@@ -238,7 +236,7 @@ class NotificationPlugin(SimplePlugin):
 
     def repo_deleted(self, userobj, repo_path):
         username = userobj.username
-        activity.info(f"Repository {repo_path} of the user {username} has been deleted")
+        logger.info(f"Repository {repo_path} of the user {username} has been deleted")
         if self.send_changed:
             self._queue_mail(
                 userobj,
@@ -248,14 +246,14 @@ class NotificationPlugin(SimplePlugin):
 
     def user_added(self, userobj):
         username = userobj.username
-        activity.info(f"New user {username} has been added")
+        logger.info(f"New user {username} has been added")
 
     def user_deleted(self, username):
-        activity.info(f"User {username} has been deleted")
+        logger.info(f"User {username} has been deleted")
 
     def user_login(self, userobj):
         username = userobj.username
-        auth.info(f"User {username} login to web application")
+        logger.info(f"User {username} login to web application")
 
     def notification_job(self):
         """

@@ -21,8 +21,8 @@ from collections import namedtuple
 
 import cherrypy
 from markupsafe import Markup, escape
-from wtforms.fields import SelectField, SelectMultipleField
-from wtforms.validators import ValidationError
+from wtforms.fields import SelectField, SelectMultipleField, TextAreaField
+from wtforms.validators import Length, ValidationError
 from wtforms.widgets import html_params
 
 from rdiffweb.controller import Controller, flash
@@ -108,7 +108,7 @@ _codecs = [
 _codecs = [(normalize_encoding(name), label) for name, label in _codecs]
 
 
-HistoryRow = namedtuple('HistoryRow', ['id', 'author', 'date', 'type', 'body', 'changes'])
+RepoActivityRow = namedtuple('RepoActivityRow', ['id', 'author', 'date', 'type', 'body', 'changes'])
 
 
 class MaxAgeField(SelectField):
@@ -232,6 +232,12 @@ class RepoSettingsForm(DbForm):
         coerce=normalize_encoding,
         choices=_codecs,
     )
+    notes = TextAreaField(
+        _('Notes'),
+        default='',
+        validators=[Length(max=256, message=_('Notes too long.'))],
+        render_kw={"placeholder": _("Enter notes about this repository.")},
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -251,6 +257,7 @@ class RepoSettingsForm(DbForm):
         repo_obj.ignore_weekday = self.ignore_weekday.data
         repo_obj.keepdays = self.keepdays.data
         repo_obj.encoding = self.encoding.data
+        repo_obj.notes = self.notes.data
 
     def save_to_db(self, repo_obj, message_body=None):
         # Add Message to explain changes.
@@ -320,7 +327,7 @@ class AuditLogData(Controller):
         data = query.all()
         return {
             'data': [
-                HistoryRow(
+                RepoActivityRow(
                     id=obj.id,
                     author=obj.author_name or str(_('System')),
                     date=obj.date.isoformat(),

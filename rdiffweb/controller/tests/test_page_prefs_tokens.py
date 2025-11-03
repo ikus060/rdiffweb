@@ -50,6 +50,9 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.assertInBody('test-token-name')
         # Then access token get created
         self.assertEqual(1, Token.query.filter(Token.userid == userobj.id, Token.name == 'test-token-name').count())
+        # Then and audit log is added
+        userobj.expire()
+        self.assertEqual({'tokens': [[], ['test-token-name']]}, userobj.changes[-1].changes)
 
     def test_add_access_token_with_expiration_time(self):
         # Given an existing user
@@ -114,6 +117,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
             method='POST',
             body={'add_access_token': '1', 'name': 'test-token-name', 'expiration': ''},
         )
+        userobj.expire()
         # Then page return without error
         self.assertStatus(200)
         # Then token name get displayed in the view
@@ -180,6 +184,8 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.assertInBody('The access token has been successfully deleted.')
         # Then access token is not created
         self.assertEqual(0, Token.query.filter(Token.userid == userobj.id, Token.name == 'test-token-name').count())
+        # Then and audit log is added
+        self.assertEqual({'tokens': [['test-token-name'], []]}, userobj.changes[-1].changes)
 
 
 class ApiTokensTest(rdiffweb.test.WebCase):

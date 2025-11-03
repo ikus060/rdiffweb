@@ -16,7 +16,6 @@
 
 # Define the logger
 
-import logging
 import os
 
 import cherrypy
@@ -31,11 +30,10 @@ from rdiffweb.core.model import RepoObject
 from rdiffweb.core.rdw_templating import url_for
 from rdiffweb.tools.i18n import gettext_lazy as _
 
-_logger = logging.getLogger(__name__)
-
 
 def _delete_repo(repoid, path):
     repoobj = RepoObject.query.filter(RepoObject.id == repoid).one()
+    cherrypy.engine.publish('delete_path', repoobj, path)
     repoobj.delete(path)
     repoobj.commit()
 

@@ -51,6 +51,7 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
             "test@mysshkey",
             "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
         )
+        user.expire()
         self.assertStatus(303)
         self.assertEqual(1, len(list(user.authorizedkeys)))
 
@@ -58,6 +59,12 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
         self.getPage(PREFS_SSHKEYS)
         self.assertInBody("test@mysshkey")
         self.assertInBody("4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91")
+
+        # Then and audit log is added
+        user.expire()
+        self.assertEqual(
+            {'authorizedkeys': [[], ['4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91']]}, user.changes[-1].changes
+        )
 
     def test_add_duplicate(self):
         # Delete existing keys
@@ -72,6 +79,7 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
             "test@mysshkey",
             "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
         )
+        user.expire()
         self.assertStatus(303)
         self.assertEqual(1, len(list(user.authorizedkeys)))
 
@@ -80,6 +88,7 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
             "test@mysshkey",
             "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
         )
+        user.expire()
         self.assertStatus('200 OK')
         self.assertInBody("Duplicate key.")
         self.assertEqual(1, len(list(user.authorizedkeys)))
@@ -92,6 +101,7 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
 
         # Add key
         self._add_ssh_key("test@mysshkey", "lkjasdfoiuwerlk")
+        user.expire()
         self.assertStatus(200)
         self.assertInBody("Invalid SSH key.")
         self.assertEqual(0, len(list(user.authorizedkeys)))
@@ -119,6 +129,7 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
             "title" * 52,
             "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
         )
+        user.expire()
         # Then page return with error
         self.assertStatus('200 OK')
         self.assertInBody('Title too long.')
@@ -137,11 +148,13 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
             "test@mysshkey",
             "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
         )
+        user.expire()
         self.assertStatus(303)
         self.assertEqual(1, len(list(user.authorizedkeys)))
 
         # Delete Key
         self._delete_ssh_key("4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91")
+        user.expire()
         self.assertStatus(303)
         self.assertEqual(0, len(list(user.authorizedkeys)))
 
@@ -157,12 +170,15 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
             "test@mysshkey",
             "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
         )
+        user.expire()
         self.assertStatus(303)
         self.assertEqual(1, len(list(user.authorizedkeys)))
 
         # Delete Key
         self._delete_ssh_key("invalid")
-        self.assertStatus(303)
+        user.expire()
+        self.assertStatus(200)
+        self.assertInBody("fingerprint doesn&#39;t exists: invalid")
         self.assertEqual(1, len(list(user.authorizedkeys)))
 
 
@@ -186,6 +202,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
                 'key': "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
             },
         )
+        user.expire()
         # Then page return success
         self.assertStatus(200)
         # Then key get added to the user
@@ -208,7 +225,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
                 'key': "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
             },
         )
-
+        user.expire()
         # Then page return success
         self.assertStatus(200)
         # Then key get added to the user
@@ -290,6 +307,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
             headers=self.headers,
             method='DELETE',
         )
+        user.expire()
         # Then page return with success
         self.assertStatus('200 OK')
 
@@ -320,6 +338,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
             headers=headers,
             method='DELETE',
         )
+        user.expire()
         # Then ssh key get added or permissions is refused
         if success:
             self.assertStatus(200)

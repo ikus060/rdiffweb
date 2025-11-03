@@ -1,51 +1,50 @@
 {% extends 'admin.html' %}
-{% from 'include/table.html' import table %}
+{% from 'include/empty.html' import empty %}
+{% from 'components/log.html' import pre_code %}
 {% block title %}
   {% trans %}System Logs{% endtrans %}
 {% endblock title %}
 {% set admin_nav_active="logs" %}
-{% block script %}
-  <script>
-  $.fn.dataTable.render.description = function () {
-      return function (data, type, row, meta) {
-          switch(row[5]){
-              case 'threat':
-                  return '<span class="badge badge-pill badge-primary">{% trans %}Threat{% endtrans %}</span> ' + safe(row[4]);
-              case 'auth':
-                  return '<span class="badge badge-pill badge-primary">{% trans %}User Login{% endtrans %}</span> ' + safe(row[4]);
-              case 'activity':
-                  return '<span class="badge badge-pill badge-primary">{% trans %}User Activity{% endtrans %}</span> ' + safe(row[4]);
-              default:
-                return safe(row[4]);
-          }
-      };
-  }
-  </script>
-{% endblock script %}
 {% block content %}
-  {# Lazy loaded Table #}
-  {% set buttons = [
-  {'text': _('All'), 'extend': 'clear'},
-  {'text': _('User Login'), 'extend': 'filter', 'column': 'tag:name', 'search': 'auth'},
-  {'text': _('Threats'), 'extend': 'filter', 'column': 'tag:name', 'search': 'threat'},
-  {'text': _('User Activity'), 'extend': 'filter', 'column': 'tag:name', 'search': 'activity'},
-  ] %}
-  {% set columns = [
-  {'name':'filename', 'visible': False },
-  {'name':'date', 'title':_('When'), 'orderable': True, 'render':'datetime', 'width':'150px'},
-  {'name':'ip', 'title':_('IP Address'), 'orderable': True, 'width':'120px'},
-  {'name':'username', 'title':_('User'), 'orderable': True, 'width':'120px'},
-  {'name':'description', 'title':_('Event Description'), 'orderable': True, 'render':'description' },
-  {'name':'tag', 'visible': False},
-  ] %}
-  {{ table(url_for('/admin/logs/data.json'),
-  columns=columns,
-  buttons=buttons,
-  order=[[ 1, 'desc' ]],
-  state_save=False,
-  searching=True,
-  empty_message=_('Logs is empty'),
-  info_message=_('Displaying _START_-_END_ of _TOTAL_ most recent log systems'),
-  paging=True,
-  pageLength=20) }}
+  <div class="row">
+    {% if log_files %}
+      <div class="col-md-3">
+        <ul class="list-group">
+          {% set active_name = name %}
+          {% for name, filename in log_files.items() %}
+            <a href="{{ url_for('admin', 'logs', name=name, limit=limit) }}"
+               class="list-group-item{% if name==active_name %} active{% endif %}">{{ filename.split('/') | last }}</a>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="col-md-9">
+        {% if data %}
+          {# Show log file data #}
+          <div class="alert alert-info">
+            {% trans %}Notice: To prevent performance issues, only the last {{ limit }} lines of the log files are displayed.{% endtrans %}
+            <a href="{{ url_for('admin', 'logs', 'raw', name=name)}}"><b><i class="icon icon-download"></i>{% trans %}Show all logs{% endtrans %}</b></a>
+          </div>
+          {{ pre_code(data)}}
+        {% elif name or date %}
+          {# Log file is empty. #}
+          {% call empty('icon-file', _('Log file empty')) %}
+            <p>{% trans %}This log file is empty. Select another log file to show it's contents.{% endtrans %}</p>
+          {% endcall %}
+        {% else %}
+          {# Log file not selected #}
+          {% call empty('icon-file', _('No log file selected')) %}
+            <p>{% trans %}Select a log file to show it's contents.{% endtrans %}</p>
+          {% endcall %}
+        {% endif %}
+      </div>
+    {% else %}
+      {# Log file not selected #}
+      <div class="col-md-12">
+        {% call empty('icon-file', _('No log file available')) %}
+          <p>{% trans %}The server is not configured to log in any file.{% endtrans %}</p>
+        {% endcall %}
+      </div>
+    {% endif %}
+  </div>
+  <!-- /.row -->
 {% endblock %}

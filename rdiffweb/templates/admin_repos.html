@@ -32,6 +32,7 @@
         <th scope="col" data-type="num">{% trans %}Inactivity Notification Period{% endtrans %}</th>
         <th scope="col" data-type="num">{% trans %}Data Retention Duration{% endtrans %}</th>
         <th scope="col">{% trans %}Errors were detected in the last backup{% endtrans %}</th>
+        <th scope="col">{% trans %}Notes{% endtrans %}</th>
         <th scope="col" data-sortable="false"></th>
       </tr>
     </thead>
@@ -73,6 +74,7 @@
           <td data-search="">
             {% if repo.error_log %}{{ _('No') if repo.error_log[-1].is_empty else _('Yes') }}{% endif %}
           </td>
+          <td class="notes">{{ repo.notes }}</td>
           <td data-search="">
             <div class="btn-hover text-nowrap">
               {{ btn(url_for('settings', repo), _('Settings'), 'fa fa-sliders') }}

@@ -49,13 +49,37 @@ class APITest(rdiffweb.test.WebCase):
                             'parameters': [],
                         }
                     },
-                    '/admin/logs/data.json': {
+                    '/admin/activity/data.json': {
                         'get': {
-                            'summary': 'Return log file as json.',
+                            'summary': 'Return list of messages.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'application/json': {}}}},
                             'parameters': [
-                                {'name': 'limit', 'in': 'query', 'schema': {'type': 'string', 'default': '2000'}}
+                                {'name': 'draw', 'in': 'query', 'schema': {'type': 'string', 'default': 'None'}},
+                                {'name': 'start', 'in': 'query', 'schema': {'type': 'string', 'default': '0'}},
+                                {'name': 'length', 'in': 'query', 'schema': {'type': 'string', 'default': '10'}},
+                            ],
+                        }
+                    },
+                    '/admin/activity/': {
+                        'get': {
+                            'summary': 'Show server activity.',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
+                            'parameters': [],
+                        }
+                    },
+                    '/admin/logs/raw': {
+                        'get': {
+                            'summary': 'Download full server logs.',
+                            'description': ANY,
+                            'responses': {'200': {'description': 'OK', 'content': {'text/plain': {}}}},
+                            'parameters': [
+                                {
+                                    'name': 'name',
+                                    'in': 'query',
+                                    'schema': {'type': 'string', 'default': 'None'},
+                                }
                             ],
                         }
                     },
@@ -64,7 +88,10 @@ class APITest(rdiffweb.test.WebCase):
                             'summary': 'Show server logs.',
                             'description': ANY,
                             'responses': {'200': {'description': 'OK', 'content': {'text/html': {}}}},
-                            'parameters': [],
+                            'parameters': [
+                                {'name': 'name', 'in': 'query', 'schema': {'type': 'string', 'default': 'None'}},
+                                {'name': 'limit', 'in': 'query', 'schema': {'type': 'string', 'default': '2000'}},
+                            ],
                         }
                     },
                     '/admin/repos/': {

@@ -19,7 +19,7 @@ import logging
 import cherrypy
 import humanfriendly
 from wtforms import validators, widgets
-from wtforms.fields import Field, HiddenField, PasswordField, SelectField, StringField
+from wtforms.fields import Field, HiddenField, PasswordField, SelectField, StringField, TextAreaField
 from wtforms.validators import ValidationError
 
 try:
@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 # Max root directory path length
 MAX_PATH = 260
 
-HistoryRow = namedtuple('HistoryRow', ['id', 'author', 'date', 'type', 'body', 'changes'])
+UserActivityRow = namedtuple('UserActivityRow', ['id', 'author', 'date', 'type', 'body', 'changes'])
 
 
 class SizeField(Field):
@@ -169,6 +169,12 @@ class UserForm(DbForm):
         description=_("Disk spaces (in bytes) used by this user."),
         widget=widgets.HiddenInput(),
     )
+    notes = TextAreaField(
+        _('Notes'),
+        default='',
+        validators=[validators.length(max=256, message=_('Notes too long.'))],
+        render_kw={"placeholder": _("Enter notes about this user.")},
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -212,6 +218,7 @@ class UserForm(DbForm):
         userobj.mfa = self.mfa.data
         userobj.lang = self.lang.data or ''
         userobj.report_time_range = self.report_time_range.data
+        userobj.notes = self.notes.data
         # Verify user's root directory and update repos.
         if userobj.user_root:
             if not userobj.valid_user_root():
@@ -377,7 +384,7 @@ class AdminUsersPage(Controller):
         data = query.all()
         return {
             'data': [
-                HistoryRow(
+                UserActivityRow(
                     id=obj.id,
                     author=obj.author_name or str(_('System')),
                     date=obj.date.isoformat(),

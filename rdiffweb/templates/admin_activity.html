@@ -1,0 +1,33 @@
+{% extends 'admin.html' %}
+{% from 'include/table.html' import table %}
+{% block title %}
+  {% trans %}System Logs{% endtrans %}
+{% endblock title %}
+{% set admin_nav_active="activity" %}
+{% block content %}
+  {# Lazy loaded Table #}
+  {% set user_model = {'text': _('Show User Activities'), 'extend': 'filter', 'column': 'model_name:name', 'search':'user'} %}
+  {% set repo_model = {'text': _('Show Repository Activities'), 'extend': 'filter', 'column': 'model_name:name', 'search':'repo'} %}
+  {% set buttons = [user_model, repo_model, {'text': _('Reset'), 'extend': 'clear'}] %}
+  {% set columns = [
+  {'name':'date', 'title':_('Date'), 'render':'datetime'},
+  {'name':'author', 'title':_('Actor'), 'orderable':True},
+  {'name':'model_id', 'visible':False},
+  {'name':'model_name', 'title':_('Model Type'), 'orderable':True, 'render':'choices', 'render_arg': [('user',_('User')), ('repo', _('Repository'))] },
+  {'name':'model_summary', 'title':_('Target'), 'orderable':True},
+  {'name':'type', 'title':_('Action'), 'render':'choices', 'render_arg': [ ['new',_('Create')], ['dirty',_('Modify')], ['deleted', _('Delete')], ['comment', _('Comment')], ['event', _('Event')] ] },
+  {'name':'body', 'visible':False},
+  {'name':'changes', 'title':_('Details'), 'render':'message_body' },
+  ] %}
+  {{ table(url_for('/admin/activity/data.json'),
+  columns=columns,
+  buttons=buttons,
+  order=[[ 0, 'desc' ]],
+  state_save=False,
+  searching=True,
+  empty_message=_('No Activity'),
+  info_message=_('Displaying _START_-_END_ of _TOTAL_ most recent activity'),
+  paging=True,
+  page_length=20,
+  server_side=True) }}
+{% endblock %}

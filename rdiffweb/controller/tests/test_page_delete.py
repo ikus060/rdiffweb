@@ -16,16 +16,27 @@
 
 import os
 from unittest.case import skipIf
+from unittest.mock import ANY, MagicMock
 
+import cherrypy
 from parameterized import parameterized
 
 import rdiffweb.test
 from rdiffweb.core.librdiff import rdiff_backup_version
-from rdiffweb.core.model import UserObject
+from rdiffweb.core.model import Message, UserObject
 
 
 class DeleteRepoTest(rdiffweb.test.WebCase):
     login = True
+
+    def setUp(self):
+        super().setUp()
+        self.listener = MagicMock()
+        cherrypy.engine.subscribe('delete_path', self.listener.delete_path, priority=50)
+
+    def tearDown(self):
+        cherrypy.engine.unsubscribe('delete_path', self.listener.delete_path)
+        return super().tearDown()
 
     def _delete(self, user, repo, confirm):
         body = {}
@@ -35,9 +46,27 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
 
     @parameterized.expand(
         [
-            ("with_dir", 'admin', '/testcases/Revisions', 'Revisions', 303, 404, '/browse/admin/testcases'),
+            (
+                "with_dir",
+                'admin',
+                '/testcases/Revisions',
+                'Revisions',
+                303,
+                404,
+                'Revisions',
+                '/browse/admin/testcases',
+            ),
             ("with_dir_wrong_confirmation", 'admin', '/testcases/Revisions', 'invalid', 400, 200),
-            ("with_file", 'admin', '/testcases/Revisions/Data', 'Data', 303, 404, '/browse/admin/testcases/Revisions'),
+            (
+                "with_file",
+                'admin',
+                '/testcases/Revisions/Data',
+                'Data',
+                303,
+                404,
+                'Revisions/Data',
+                '/browse/admin/testcases/Revisions',
+            ),
             ("with_file_wrong_confirmation", 'admin', '/testcases/Revisions/Data', 'invalid', 400, 200),
             ("with_invalid", 'admin', '/testcases/invalid', 'invalid', 404, 404),
             (
@@ -47,6 +76,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
                 'BrokenSymlink',
                 303,
                 404,
+                'BrokenSymlink',
                 '/browse/admin/testcases',
             ),
             (
@@ -56,6 +86,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
                 'Répertoire Existant',
                 303,
                 404,
+                'Répertoire Existant',
                 '/browse/admin/testcases',
             ),
             ("with_rdiff_backup_data", 'admin', '/testcases/rdiff-backup-data', 'rdiff-backup-data', 404, 404),
@@ -66,14 +97,24 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
                 'Char Z to quote',
                 303,
                 404,
+                'Char Z to quote',
                 '/browse/admin/testcases',
             ),
         ]
     )
     @skipIf(rdiff_backup_version() < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
     def test_delete_path(
-        self, unused, username, path, confirmation, expected_status, expected_history_status, expected_redirect=None
+        self,
+        unused,
+        username,
+        path,
+        confirmation,
+        expected_status,
+        expected_history_status,
+        expected_audit_log=False,
+        expected_redirect=None,
     ):
+        self.listener.delete_path.reset_mock()
         # When trying to delete a file or a folder with a confirmation
         self._delete(username, path, confirmation)
         # Then a status is returned
@@ -84,6 +125,12 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.wait_for_tasks()
         self.getPage("/history/" + username + "/" + path)
         self.assertStatus(expected_history_status)
+        # Then an event was raised
+        if expected_status == 303:
+            self.listener.delete_path.assert_called_once()
+        if expected_audit_log:
+            # Then an audit log is created
+            self.assertEqual(f'Delete file path: {expected_audit_log}', Message.query.all()[-1].body)
 
     def test_delete_repo(self):
         """
@@ -93,6 +140,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user('admin')
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in userobj.repo_objs])
         # Delete repo
+        self.listener.delete_path.reset_mock()
         self._delete(self.USERNAME, self.REPO, 'testcases')
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
@@ -101,6 +149,10 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         userobj.expire()
         self.assertEqual(['broker-repo'], [r.name for r in userobj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
+        # Then an event was raised
+        self.listener.delete_path.assert_called_once_with(ANY, b'')
+        # Then an audit log is created
+        self.assertEqual('Delete repository admin/testcases', Message.query.all()[-2].body)
 
     def test_delete_repo_with_slash(self):
         # Check initial list of repo

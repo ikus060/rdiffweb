@@ -125,3 +125,7 @@ table.dataTable.dtr-inline.collapsed>tbody>tr.parent>td:first-child:before, tabl
 #activity.card thead th {
     border-bottom: 1px solid rgba(0, 0, 0, .125)
 }
+
+.notes {
+    white-space: pre-wrap;
+}

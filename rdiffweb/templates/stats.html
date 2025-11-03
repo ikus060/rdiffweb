@@ -49,7 +49,7 @@
         empty_message=_('File statistics are not available'),
         info_message=_('Displaying _START_-_END_ of _TOTAL_ file statistics'),
         paging=True,
-        pageLength=20) }}
+        page_length=20) }}
       {% else %}
         {% call empty('fa fa-list-alt', _('No File Statistics Selected')) %}
           <p>{% trans %}Select a backup date on the left to display detailed statistics for that date.{% endtrans %}</p>

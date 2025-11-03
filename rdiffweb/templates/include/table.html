@@ -1,4 +1,4 @@
-{% macro table(data, columns=[], order=[], empty_message=None, info_message=None, searching=True, buttons=[], paging=False, pageLength=5, layout="default", state_save=True) %}
+{% macro table(data, columns=[], order=[], empty_message=None, info_message=None, searching=True, buttons=[], paging=False, page_length=5, layout="default", state_save=True, server_side=False) %}
   {% set language = {
   "aria": {
   "sortAscending": _('activate to sort column ascending'),
@@ -11,30 +11,39 @@
   "rdiffweb": {
   "null": _('undefined'),
   "value": {
+  "role": {
+  "0": _("Admin"),
+  "5": _("Maintainer"),
+  "10": _("User"),
+  },
   "type": {
   "new": _('Created by'),
+  "deleted": _('Deleted by'),
   "dirty": _('Modified by'),
-  "comment": _('Comment on'),
-  "parent": _('Parent modified by'),
+  "comment": _('Comment by'),
+  "event": _('Event log by'),
   },
   },
   "field": {
+  "_encoding_name": _('Display Encoding'),
+  "_ignore_weekday": _('Excluded Days of the Week'),
+  "_keepdays": _('Data Retention Duration'),
   "authorizedkeys": _('SSH Keys'),
-  "tokens": _('Access Token'),
-  "report_time_range": _('Send Backup report'),
-  "lang": _('Preferred Language'),
-  "user_root": _('Root directory'),
-  "password": _('Password'),
   "email": _('Email'),
   "fullname": _('Fullname'),
-  "mfa": _('Two-Factor Authentication'),
-  "role": _('User Role'),
+  "hash_password": _('Password'),
+  "lang": _('Preferred Language'),
   "maxage": _('Inactivity Notification Period'),
-  "user": _('Owner'),
+  "mfa": _('Two-Factor Authentication'),
+  "notes": _('Notes'),
+  "repo_objs": _('Repositories'),
   "repopath": _('Display Name'),
-  "_encoding_name": _('Display Encoding'),
-  "_keepdays": _('Data Retention Duration'),
-  "_ignore_weekday": _('Excluded Days of the Week'),
+  "report_time_range": _('Send Backup report'),
+  "role": _('User Role'),
+  "tokens": _('Access Token'),
+  "user": _('Owner'),
+  "user_root": _('Root directory'),
+  "username": _('Username'),
   }
   },
   "search": _('Filter: '),
@@ -65,7 +74,8 @@
          data-paging="{{ paging | tojson }}"
          data-dom="{{ dom_cfg }}"
          data-responsive="true"
-         {% if paging %}data-page-length="{{ pageLength | tojson }}" data-length-change="false"{% endif %}
-         data-state-save="{{ state_save | tojson }}">
+         {% if paging %}data-page-length="{{ page_length | tojson }}" data-length-change="false"{% endif %}
+         data-state-save="{{ state_save | tojson }}"
+         data-server-side="{{ server_side | tojson }}">
   </table>
 {% endmacro %}

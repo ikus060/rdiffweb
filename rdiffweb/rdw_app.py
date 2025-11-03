@@ -26,6 +26,7 @@ from cherrypy import Application
 
 import rdiffweb
 import rdiffweb.controller.filter_authorization
+import rdiffweb.core.activity
 import rdiffweb.core.notification
 import rdiffweb.core.quota
 import rdiffweb.core.remove_older
@@ -107,9 +108,14 @@ def _json_handler(*args, **kwargs):
     user_from_key_func=UserObject.get_user,
     checkpassword=[UserObject.authenticate, cherrypy.ldap.authenticate],
 )
-@cherrypy.tools.auth_mfa(mfa_enabled=lambda: cherrypy.request.currentuser.mfa == UserObject.ENABLED_MFA)
+@cherrypy.tools.auth_mfa(
+    mfa_enabled=lambda: getattr(cherrypy.serving.request, 'currentuser', False)
+    and cherrypy.request.currentuser.mfa == UserObject.ENABLED_MFA
+)
 @cherrypy.tools.enrich_session()
-@cherrypy.tools.i18n(func=lambda: getattr(cherrypy.request, 'currentuser', False) and cherrypy.request.currentuser.lang)
+@cherrypy.tools.i18n(
+    func=lambda: getattr(cherrypy.serving.request, 'currentuser', False) and cherrypy.request.currentuser.lang
+)
 @cherrypy.tools.proxy(local=None, remote='X-Real-IP')
 @cherrypy.tools.ratelimit(on=False)
 @cherrypy.tools.secure_headers(

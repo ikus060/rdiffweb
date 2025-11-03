@@ -19,6 +19,7 @@ import datetime
 import cherrypy
 
 from rdiffweb.controller import Controller
+from rdiffweb.controller.page_admin_activity import AdminActivityPage
 from rdiffweb.controller.page_admin_logs import AdminLogsPage
 from rdiffweb.controller.page_admin_repos import AdminReposPage
 from rdiffweb.controller.page_admin_session import AdminSessionPage
@@ -38,6 +39,7 @@ class AdminPage(Controller):
     session = AdminSessionPage()
     sysinfo = AdminSysinfoPage()
     users = AdminUsersPage()
+    activity = AdminActivityPage()
 
     @cherrypy.expose
     def index(self):

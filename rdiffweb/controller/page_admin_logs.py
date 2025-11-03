@@ -14,40 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import datetime
 import os
 import subprocess
-from collections import namedtuple
 
 import cherrypy
+from cherrypy.lib.static import serve_file
 
 from rdiffweb.controller import Controller, validate_int
-from rdiffweb.core.config import Option
-
-
-def _parse_access_log_date(value):
-    """
-    Return epoch from date formated as `[03/Feb/2023:10:07:22]`
-    """
-    try:
-        date = datetime.datetime.strptime(value, "[%d/%b/%Y:%H:%M:%S]")
-        return int(date.strftime('%s'))
-    except ValueError:
-        return value
-
-
-def _parse_server_log_date(value):
-    """
-    Return epoch from date formated as `2023-02-07 15:06:59,943`
-    """
-    try:
-        date = datetime.datetime.strptime(value, "%Y-%m-%d %H:%M:%S,%f")
-        return float(date.strftime('%s.%f'))
-    except ValueError:
-        return value
-
-
-LogRow = namedtuple('LogRow', ['filename', 'date', 'ip', 'username', 'description', 'tag'])
 
 
 @cherrypy.tools.is_admin()
@@ -56,103 +29,60 @@ class AdminLogsPage(Controller):
     Controller responsible to re-format the logs into usable Json format.
     """
 
-    logfile = Option('log_file')
-    logaccessfile = Option('log_access_file')
-
     def _get_log_files(self):
-        """
-        Return a list of log files to be shown in admin area.
-        """
-        return [fn for fn in [self.logfile, self.logaccessfile] if fn]
+        cfg = cherrypy.tree.apps[''].cfg
+        return_value = {}
+        if cfg.log_file:
+            return_value['log_file'] = os.path.abspath(cfg.log_file)
+        if cfg.log_access_file:
+            return_value['log_access_file'] = os.path.abspath(cfg.log_access_file)
+        return return_value
 
-    def _tail(self, filename, limit):
+    def _tail(self, filename, limit, encoding='utf-8'):
         """
         Return a list of log files to be shown in admin area.
         """
-        return subprocess.Popen(
-            ['tail', '-n', str(limit), filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, encoding='utf-8'
+        return subprocess.check_output(
+            ['tail', '-n', str(limit), filename], stderr=subprocess.STDOUT, encoding=encoding, errors='replace'
         )
 
-    def _parser_access_log(self, filename, limit):
-        basename = os.path.basename(filename)
-        with self._tail(filename, limit) as proc:
-            while True:
-                line = proc.stdout.readline()
-                if not line:
-                    break
-                # Ignore line with wrong number of parts
-                parts = line.split(' ', 4)
-                if len(parts) != 5:
-                    continue
-                yield LogRow(
-                    filename=basename,
-                    date=_parse_access_log_date(parts[3]),
-                    ip=parts[0].strip(),
-                    username=parts[2] if parts[2] != '-' else 'anonymous',
-                    description=parts[4].strip(),
-                    tag=None,
-                )
-
-    def _parse_server_log(self, filename, limit):
-        basename = os.path.basename(filename)
-        with self._tail(filename, limit) as proc:
-            entry = None
-            while True:
-                line = proc.stdout.readline()
-                if not line:
-                    break
-                # Support multiline logs.
-                if not line.startswith('[') and entry:
-                    entry = entry._replace(description=entry.description + '\n' + line.rstrip('\n'))
-                    continue
-                if line.startswith('[') and entry:
-                    yield entry
-                parts = [p.lstrip('[') for p in line.split(']', 6)]
-                # Ignore line with wrong number of parts
-                if len(parts) != 7:
-                    entry = None
-                    continue
-                # Tag entry using logger name
-                tag = None
-                if parts[5] in ['activity', 'auth', 'threat']:
-                    tag = parts[5]
-                elif parts[6].startswith(' TOOLS.RATELIMIT ratelimit access to'):
-                    tag = 'threat'
-                entry = LogRow(
-                    filename=basename,
-                    date=_parse_server_log_date(parts[0]),
-                    ip=parts[2],
-                    username=parts[3],
-                    description=(parts[1].strip() + ' ' + parts[6].strip()),
-                    tag=tag,
-                )
-            if entry:
-                yield entry
-
     @cherrypy.expose
-    def index(self):
+    def index(self, name=None, limit='2000'):
         """
         Show server logs.
         """
-        return self._compile_template("admin_logs.html")
+        limit = validate_int(limit, min=1, max=20000)
+
+        # Validate filename
+        log_files = self._get_log_files()
+        if name is not None and name not in log_files:
+            raise cherrypy.NotFound()
+
+        # Read file
+        data = None
+        if name:
+            filename = log_files[name]
+            try:
+                data = self._tail(filename, limit)
+            except subprocess.CalledProcessError:
+                data = ''
+
+        return self._compile_template("admin_logs.html", log_files=log_files, name=name, limit=limit, data=data)
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
-    def data_json(self, limit='2000', **kwargs):
+    @cherrypy.tools.response_headers(headers=[('Content-Type', 'text/plain')])
+    def raw(self, name=None):
         """
-        Return log file as json.
+        Download full server logs.
+        """
+        # Validate filename
+        log_files = self._get_log_files()
+        if name not in log_files:
+            raise cherrypy.NotFound()
+        filename = log_files[name]
 
-        To reduce the payload size we use one letter for the key.
-        """
         # Release session lock
         cherrypy.session.release_lock()
 
-        limit = validate_int(limit, min=1, max=5000)
-        # List all log file.
-        log_entries = []
-        for filename in self._get_log_files():
-            # Read the file line by line
-            func = self._parser_access_log if filename == self.logaccessfile else self._parse_server_log
-            for entry in func(filename, limit):
-                log_entries.append(entry)
-        return {'data': log_entries}
+        # Return log file
+        return serve_file(filename, content_type="text/plain", disposition=True)

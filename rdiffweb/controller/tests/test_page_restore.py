@@ -18,6 +18,9 @@ import io
 import tarfile
 import unittest
 import zipfile
+from unittest.mock import ANY, MagicMock
+
+import cherrypy
 
 import rdiffweb.test
 from rdiffweb.controller.page_restore import _content_disposition
@@ -45,6 +48,15 @@ class RestoreTest(rdiffweb.test.WebCase):
     login = True
 
     maxDiff = None
+
+    def setUp(self):
+        super().setUp()
+        self.listener = MagicMock()
+        cherrypy.engine.subscribe('restore_path', self.listener.restore_path, priority=50)
+
+    def tearDown(self):
+        cherrypy.engine.unsubscribe('restore_path', self.listener.restore_path)
+        return super().tearDown()
 
     def _restore(self, user, repo, path, date, kind=None):
         url = f"/restore/{user}/{repo}/{path}?date={date}"
@@ -91,9 +103,14 @@ class RestoreTest(rdiffweb.test.WebCase):
         """
         Restore a simple file.
         """
+        # Given a repo
+        # When restoring a file
         self._restore(self.USERNAME, self.REPO, "Fichier%20%40%20%3Croot%3E", "1414921853", False)
+        # Then the file get downloaded
         self.assertInBody("Ajout d'info")
         self.assertHeader('Content-Type', 'application/octet-stream')
+        # Then an event is emit
+        self.listener.restore_path.assert_called_with(repo=ANY, path=b'Fichier @ <root>')
 
     def test_broken_link(self):
         # Given a a broken symlink

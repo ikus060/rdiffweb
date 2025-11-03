@@ -174,6 +174,7 @@ class AuthManager(cherrypy.Tool):
             return None
 
         # Notify plugins about user login
+        logger.info(f"User {userobj} login to web application")
         cherrypy.engine.publish('user_login', userobj)
 
         # Store in session
