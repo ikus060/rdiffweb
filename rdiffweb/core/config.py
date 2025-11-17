@@ -19,6 +19,7 @@ import logging
 import re
 import sys
 from collections import OrderedDict
+from urllib.parse import urlparse
 
 import cherrypy
 import configargparse
@@ -82,6 +83,18 @@ def _comma_or_space_separated(value):
     # Filter out empty strings
     items = [item for item in items if item]
     return items
+
+
+def _url(value):
+    """
+    Validate the URL.
+    """
+    if value == '':
+        return value
+    parsed = urlparse(value)
+    if parsed.scheme not in ('http', 'https'):
+        raise argparse.ArgumentTypeError('invalid URL value %s' % value)
+    return value
 
 
 def get_parser():
@@ -523,16 +536,19 @@ def get_parser():
         '--oauth-auth-url',
         help="Authorization endpoint URL of your OAuth provider",
         default="",
+        type=_url,
     )
     parser.add_argument(
         '--oauth-token-url',
         help="The token endpoint URL of your OAuth provider where access tokens are obtained.",
         default="",
+        type=_url,
     )
     parser.add_argument(
         '--oauth-userinfo-url',
         help="The user information endpoint URL where user profile data can be retrieved.",
         default="",
+        type=_url,
     )
     parser.add_argument(
         '--oauth-userkey-claim',
@@ -543,6 +559,7 @@ def get_parser():
         '--oauth-fullname-claim',
         help="OAuth claim containing the user's full display name. If not found or empty, the full name is constructed from first name and last name claims.",
         default="name,displayName,full_name",
+        type=_comma_or_space_separated,
     )
 
     parser.add_argument(
@@ -629,6 +646,7 @@ def get_parser():
         '--external-url',
         metavar='URL',
         help='URL that should be used to reach this service. You can use the IP of your server, but a Fully Qualified Domain Name (FQDN) is preferred. This URL is only used to generate URL for Email Notification.',
+        type=_url,
     )
 
     parser.add(

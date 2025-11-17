@@ -18,6 +18,7 @@ import os
 import unittest
 
 import configargparse
+from parameterized import parameterized
 
 from rdiffweb.core.config import ConfigFileParser, parse_args
 
@@ -89,6 +90,26 @@ class TestParseArg(unittest.TestCase):
         self.assertEqual(args.session_idle_timeout, 1)
         self.assertEqual(args.session_absolute_timeout, 2)
         self.assertEqual(args.session_persistent_timeout, 3)
+
+    @parameterized.expand(
+        [
+            ('oauth-auth-url',),
+            ('oauth-token-url',),
+            ('oauth-userinfo-url',),
+            ('external-url',),
+        ]
+    )
+    def test_config_invalid_url(self, config_key):
+        # Given an invalud URL
+        invalid_url = 'invalid'
+        # When parding config
+        # Then an error get raised.
+        with self.assertRaises(SystemExit) as ctx:
+            parse_args(
+                args=[],
+                config_file_contents=f'oauth-auth-url={invalid_url}\n',
+            )
+        self.assertIn('invalid URL value', str(ctx.exception.__context__))
 
 
 class TestConfigFileParser(unittest.TestCase):
