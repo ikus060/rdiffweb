@@ -877,13 +877,13 @@ class RdiffRepo(object):
         """
         return BackupLogEntry(self, b'backup.log')
 
-    def delete(self, path):
+    def delete_path(self, path):
         """
         Delete this entry from the repository history using rdiff-backup-delete.
         """
         path_obj = self.fstat(path)
         if path_obj.isroot:
-            return self.delete_repo()
+            raise ValueError('path is root, call delete_repo instead')
 
         rdiff_backup_delete = find_rdiff_backup_delete()
         cmdline = [rdiff_backup_delete, path_obj.full_path]

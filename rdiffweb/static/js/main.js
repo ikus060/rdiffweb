@@ -334,8 +334,6 @@ $.fn.dataTable.render.message_body = function () {
 
     const datetime = $.fn.dataTable.render.datetime().display;
 
-    const summary = $.fn.dataTable.render.summary().display;
-
     return {
         display: function (data, type, row, meta) {
             const api = new $.fn.dataTable.Api(meta.settings);

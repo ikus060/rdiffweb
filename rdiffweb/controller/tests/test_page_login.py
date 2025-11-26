@@ -89,7 +89,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         self.listener.user_login.assert_called_once_with(userobj)
         # Then a message get logged.
-        self.wait_for_tasks()
+        cherrypy.scheduler.wait_for_jobs()
         user = UserObject.get_user(self.USERNAME)
         self.assertEqual("User login to web application", user.messages[-1].body)
 

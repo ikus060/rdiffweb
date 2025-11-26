@@ -467,7 +467,7 @@ class RdiffRepoTest(unittest.TestCase):
     @skipIf(rdiff_backup_version() < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
     def test_listdir_empty_folder(self):
         # Given a folder without data
-        self.repo.delete(b"Revisions/Data")
+        self.repo.delete_path(b"Revisions/Data")
         # When listing entries
         entries = self.repo.listdir(b"Revisions")
         # Then the list is empty.
@@ -696,7 +696,7 @@ Starting restore of /home/ikus060/Downloads/testcases to /tmp/tmpBRxRxe/root as 
     @skipIf(rdiff_backup_version() < (2, 0, 1), "rdiff-backup-delete is available since 2.0.1")
     def test_delete_file(self, unused, path):
         # Delete a file
-        self.repo.delete(path)
+        self.repo.delete_path(path)
         # Check file is deleted
         with self.assertRaises(DoesNotExistError):
             self.repo.fstat(path)

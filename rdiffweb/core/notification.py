@@ -74,9 +74,15 @@ class NotificationPlugin(SimplePlugin):
 
     def start(self):
         self.bus.log('Start Notification plugin')
-        self.bus.publish('schedule_job', self.execution_time, self.check_latest_job)
-        self.bus.publish('schedule_job', self.execution_time, self.notification_job)
-        self.bus.publish('schedule_job', self.execution_time, self.report_job)
+        self.bus.publish(
+            'scheduler:add_job_daily', self.execution_time, f'{self.__module__}:cherrypy.notification.check_latest_job'
+        )
+        self.bus.publish(
+            'scheduler:add_job_daily', self.execution_time, f'{self.__module__}:cherrypy.notification.notification_job'
+        )
+        self.bus.publish(
+            'scheduler:add_job_daily', self.execution_time, f'{self.__module__}:cherrypy.notification.report_job'
+        )
         self.bus.subscribe('access_token_added', self.access_token_added)
         self.bus.subscribe('authorizedkey_added', self.authorizedkey_added)
         self.bus.subscribe('user_attr_changed', self.user_attr_changed)
@@ -87,13 +93,11 @@ class NotificationPlugin(SimplePlugin):
         self.bus.subscribe('user_added', self.user_added)
         self.bus.subscribe('user_login', self.user_login)
 
-    start.priority = 55
-
     def stop(self):
         self.bus.log('Stop Notification plugin')
-        self.bus.publish('unschedule_job', self.check_latest_job)
-        self.bus.publish('unschedule_job', self.notification_job)
-        self.bus.publish('unschedule_job', self.report_job)
+        self.bus.publish('scheduler:remove_job', f'{self.__module__}:cherrypy.notification.check_latest_job')
+        self.bus.publish('scheduler:remove_job', f'{self.__module__}:cherrypy.notification.notification_job')
+        self.bus.publish('scheduler:remove_job', f'{self.__module__}:cherrypy.notification.report_job')
         self.bus.unsubscribe('access_token_added', self.access_token_added)
         self.bus.unsubscribe('authorizedkey_added', self.authorizedkey_added)
         self.bus.unsubscribe('user_attr_changed', self.user_attr_changed)
@@ -104,7 +108,10 @@ class NotificationPlugin(SimplePlugin):
         self.bus.unsubscribe('user_added', self.user_added)
         self.bus.unsubscribe('user_login', self.user_login)
 
-    stop.priority = 45
+    def graceful(self):
+        """Reload of subscribers."""
+        self.stop()
+        self.start()
 
     def _is_latest(self):
         """

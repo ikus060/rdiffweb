@@ -70,15 +70,18 @@ class TokenCleanup(SimplePlugin):
 
     def start(self):
         self.bus.log('Start Token Clean Up plugin')
-        self.bus.publish('schedule_job', self.execution_time, self.clean_up)
-
-    start.priority = 55
+        self.bus.publish(
+            'scheduler:add_job_daily', self.execution_time, f'{self.__module__}:cherrypy.token_cleanup.clean_up'
+        )
 
     def stop(self):
         self.bus.log('Stop Token Clean Up plugin')
-        self.bus.publish('unschedule_job', self.clean_up)
+        self.bus.publish('scheduler:remove_job', f'{self.__module__}:cherrypy.token_cleanup.clean_up')
 
-    stop.priority = 45
+    def graceful(self):
+        """Reload of subscribers."""
+        self.stop()
+        self.start()
 
     def clean_up(self):
         Token.query.filter(Token.expiration_time <= datetime.datetime.now(tz=datetime.timezone.utc)).delete()

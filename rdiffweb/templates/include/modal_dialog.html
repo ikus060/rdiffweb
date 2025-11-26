@@ -41,6 +41,7 @@
 {%- endmacro %}
 {# modal dialog for confirmation #}
 {% macro modal_confirm(id, title, message, fields, submit, confirm_value=None) -%}
+  {% set parent_caller = caller | d(None) %}
   {% call modal_dialog(id, title, submit, class="danger") %}
     {% for f in fields %}<input type="hidden" name="{{ f }}" value="" />{% endfor %}
     <p {% if confirm_value %}class="lead text-danger"{% endif %}>{{ message }}</p>
@@ -57,6 +58,8 @@
              pattern="{{ regex_escape(confirm_value) }}"
              required/>
     {% endif %}
+    {# Extra content #}
+    {% if parent_caller %}{{ parent_caller() }}{% endif %}
   {% endcall %}
   <script>
     $('#{{id}}').on('show.bs.modal', function (event) {

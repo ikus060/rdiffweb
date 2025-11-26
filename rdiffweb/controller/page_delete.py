@@ -31,13 +31,6 @@ from rdiffweb.core.rdw_templating import url_for
 from rdiffweb.tools.i18n import gettext_lazy as _
 
 
-def _delete_repo(repoid, path):
-    repoobj = RepoObject.query.filter(RepoObject.id == repoid).one()
-    cherrypy.engine.publish('delete_path', repoobj, path)
-    repoobj.delete(path)
-    repoobj.commit()
-
-
 class DeleteRepoForm(DbForm):
     confirm = StringField(_('Confirmation'), validators=[DataRequired()])
 
@@ -69,14 +62,15 @@ class DeletePage(Controller):
 
         # validate form
         form = DeleteRepoForm()
-
         form.expected_confirm = repo.display_name if path_obj.isroot else path_obj.display_name
         if form.validate_on_submit():
-            cherrypy.engine.publish('schedule_task', _delete_repo, repo.id, path)
-            # Redirect to parent folder or to root if repo get deleted
             if path_obj.isroot:
+                repo.schedule_delete_repo()
+                # Redirect to main page
                 raise cherrypy.HTTPRedirect(url_for('/'))
             else:
+                repo.schedule_delete_path(path)
+                # Redirect to parent folder.
                 parent_path = repo.fstat(os.path.dirname(path_obj.path))
                 raise cherrypy.HTTPRedirect(url_for('browse', repo, parent_path))
         if form.error_message:

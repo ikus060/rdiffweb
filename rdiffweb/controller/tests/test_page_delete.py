@@ -16,7 +16,7 @@
 
 import os
 from unittest.case import skipIf
-from unittest.mock import ANY, MagicMock
+from unittest.mock import MagicMock
 
 import cherrypy
 from parameterized import parameterized
@@ -122,7 +122,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         if expected_redirect:
             self.assertHeaderItemValue('Location', self.baseurl + expected_redirect)
         # Check filesystem
-        self.wait_for_tasks()
+        cherrypy.scheduler.wait_for_jobs()
         self.getPage("/history/" + username + "/" + path)
         self.assertStatus(expected_history_status)
         # Then an event was raised
@@ -136,23 +136,25 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         """
         Check to delete a repo.
         """
-        # Check initial list of repo
+        # Given a user with 2 repositories
         userobj = UserObject.get_user('admin')
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in userobj.repo_objs])
-        # Delete repo
+        # When trying to delete a repository
         self.listener.delete_path.reset_mock()
         self._delete(self.USERNAME, self.REPO, 'testcases')
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
-        # Check filesystem
-        self.wait_for_tasks()
+        cherrypy.scheduler.wait_for_jobs()
         userobj.expire()
+        # Then the repository is deleted.
         self.assertEqual(['broker-repo'], [r.name for r in userobj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
         # Then an event was raised
-        self.listener.delete_path.assert_called_once_with(ANY, b'')
+        self.listener.delete_path.assert_not_called()
         # Then an audit log is created
-        self.assertEqual('Delete repository admin/testcases', Message.query.all()[-2].body)
+        last_message = Message.query.all()[-1]
+        self.assertEqual('deleted', last_message.type)
+        self.assertEqual('admin/testcases', last_message.model_summary)
 
     def test_delete_repo_with_slash(self):
         # Check initial list of repo
@@ -163,7 +165,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         # Check filesystem
-        self.wait_for_tasks()
+        cherrypy.scheduler.wait_for_jobs()
         userobj.expire()
         self.assertEqual(['broker-repo'], [r.name for r in userobj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
@@ -210,7 +212,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertHeaderItemValue('Location', self.baseurl + '/')
 
         # Check filesystem
-        self.wait_for_tasks()
+        cherrypy.scheduler.wait_for_jobs()
         user_obj.expire()
         self.assertEqual(['broker-repo'], [r.name for r in user_obj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
@@ -235,7 +237,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertHeaderItemValue('Location', self.baseurl + '/')
 
         # Check filesystem
-        self.wait_for_tasks()
+        cherrypy.scheduler.wait_for_jobs()
         user_obj.expire()
         self.assertEqual(['broker-repo'], [r.name for r in user_obj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
@@ -282,7 +284,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         # Check filesystem
-        self.wait_for_tasks()
+        cherrypy.scheduler.wait_for_jobs()
         userobj.expire()
         self.assertEqual(['MyComputer/D'], [r.name for r in userobj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(userobj.user_root, 'MyComputer', 'C')))

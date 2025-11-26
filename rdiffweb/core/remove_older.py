@@ -30,15 +30,18 @@ class RemoveOlder(SimplePlugin):
 
     def start(self):
         self.bus.log('Start RemoveOlder plugin')
-        self.bus.publish('schedule_job', self.execution_time, self.remove_older_job)
-
-    start.priority = 55
+        self.bus.publish(
+            'scheduler:add_job_daily', self.execution_time, f'{self.__module__}:cherrypy.remove_older.remove_older_job'
+        )
 
     def stop(self):
         self.bus.log('Stop RemoveOlder plugin')
-        self.bus.publish('unschedule_job', self.remove_older_job)
+        self.bus.publish('scheduler:remove_job', f'{self.__module__}:cherrypy.remove_older.remove_older_job')
 
-    stop.priority = 45
+    def graceful(self):
+        """Reload of subscribers."""
+        self.stop()
+        self.start()
 
     def remove_older_job(self):
         # Create a generator to loop on repositories.

@@ -182,6 +182,7 @@ class AdminTest(rdiffweb.test.WebCase):
         self.assertInBody("/tmp/")
 
         self._delete_user("test2")
+        cherrypy.scheduler.wait_for_jobs()
         self.listener.user_deleted.assert_called()
         self.assertStatus(303)
         self.getPage('/admin/users/')
@@ -588,12 +589,14 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
 
     @parameterized.expand(
         [
-            ('with_id'),
-            ('with_username'),
+            ('with_userid', False),
+            ('with_userid', True),
+            ('with_username', False),
+            ('with_username', True),
         ]
     )
-    def test_delete(self, query):
-        # Given a new user
+    def test_delete(self, query, with_data):
+        # Given a new user with repositories
         user_obj = (
             UserObject(username='newuser', fullname='New User', email='test@example.com', lang='fr', mfa=1)
             .add()
@@ -601,13 +604,13 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
         )
 
         # When deleting the user
-        if query == 'with_id':
+        if query == 'with_userid':
             self.getPage(
                 f'/api/users/{user_obj.id}',
                 headers=self.auth,
                 method='DELETE',
             )
-        elif query == 'with_username':
+        else:
             self.getPage(
                 f'/api/users/{user_obj.username}',
                 headers=self.auth,

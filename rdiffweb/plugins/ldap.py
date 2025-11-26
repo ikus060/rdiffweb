@@ -21,8 +21,6 @@ import ldap3
 from cherrypy.process.plugins import SimplePlugin
 from ldap3.core.exceptions import LDAPException, LDAPInvalidCredentialsResult
 
-logger = logging.getLogger(__name__)
-
 _safe = ldap3.utils.conv.escape_filter_chars
 
 
@@ -126,6 +124,11 @@ class LdapPlugin(SimplePlugin):
         if hasattr(self, '_pool'):
             self._pool.unbind()
 
+    def graceful(self):
+        """Reload of subscribers."""
+        self.stop()
+        self.start()
+
     def authenticate(self, username, password):
         """
         Check if the given credential as valid according to LDAP.
@@ -148,9 +151,9 @@ class LdapPlugin(SimplePlugin):
                 search_filter = f"(&{self.user_filter}(|{attr_filter}))"
                 response = self._search(conn, search_filter)
                 if not response:
-                    logger.info("user %s not found in LDAP", username)
+                    cherrypy.log(f"lookup failed username={username} reason=not_found", context='LDAP')
                     return False
-                logger.info("user %s found in LDAP", username)
+                cherrypy.log(f"lookup successful username={username}", context='LDAP')
                 user_dn = response[0]['dn']
 
                 # Use a separate connection to validate credentials
@@ -163,17 +166,21 @@ class LdapPlugin(SimplePlugin):
                     client_strategy=ldap3.ASYNC,
                 )
                 if not login_conn.bind():
-                    logger.warning("LDAP authentication failed for user %s", username)
+                    cherrypy.log(
+                        f'ldap authentication failed username={username} reason=wrong_password',
+                        context='LDAP',
+                        severity=logging.WARNING,
+                    )
                     return False
 
                 # Get username
                 attrs = response[0]['attributes']
                 new_username = first_attribute(attrs, self.username_attribute)
                 if not new_username:
-                    logger.info(
-                        "user object %s was found but the username attribute %s doesn't exists",
-                        user_dn,
-                        self.username_attribute,
+                    cherrypy.log(
+                        f"object missing username attribute user_dn={user_dn} attribute={self.username_attribute}",
+                        context='LDAP',
+                        severity=logging.WARNING,
                     )
                     return False
 
@@ -189,17 +196,15 @@ class LdapPlugin(SimplePlugin):
                         self.group_filter,
                     )
                     # Search LDAP Server for matching groups.
-                    logger.info(
-                        "check if user %s is member of any group %s",
-                        user_value,
-                        ' '.join(self.required_group),
+                    cherrypy.log(
+                        f"group check start username={user_value} required_groups={' '.join(self.required_group)}",
+                        context='LDAP',
                     )
                     response = self._search(conn, group_filter, attributes=['cn'])
                     if not response:
-                        logger.info(
-                            "user %s was found but is not member of any group(s) %s",
-                            user_value,
-                            ' '.join(self.required_group),
+                        cherrypy.log(
+                            f"group check failed username={user_value} required_groups={' '.join(self.required_group)}",
+                            context='LDAP',
                         )
                         return False
 
@@ -215,7 +220,9 @@ class LdapPlugin(SimplePlugin):
             except LDAPInvalidCredentialsResult:
                 return False
             except LDAPException:
-                logger.exception("can't validate user %s credentials", username)
+                cherrypy.log(
+                    f"unexpected error username={username}", context='LDAP', severity=logging.ERROR, traceback=True
+                )
             return None
 
     def search(self, filter, attributes=ldap3.ALL_ATTRIBUTES, search_base=None, paged_size=None):
@@ -228,9 +235,10 @@ class LdapPlugin(SimplePlugin):
         search_scope = {'base': ldap3.BASE, 'onelevel': ldap3.LEVEL, 'subtree': ldap3.SUBTREE}.get(
             self.scope, ldap3.SUBTREE
         )
-        logger.debug("search ldap server: {}/{}?{}?{}".format(self.uri, self.base_dn, search_scope, filter))
+        search_base = search_base or self.base_dn
+        cherrypy.log(f"search {self.uri}/{search_base}?{search_scope}?{filter}", context='LDAP')
         msg_id = conn.search(
-            search_base=search_base or self.base_dn,
+            search_base=search_base,
             search_filter=filter,
             search_scope=search_scope,
             time_limit=self.timeout,

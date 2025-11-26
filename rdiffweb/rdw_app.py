@@ -294,6 +294,10 @@ class RdiffwebApp(Application):
                 'tools.i18n.default': cfg.default_lang,
                 'tools.i18n.mo_dir': importlib.resources.files('rdiffweb') / 'locales',
                 'tools.i18n.domain': 'messages',
+                # Configure scheduler with peristant storage.
+                'scheduler.jobstores': {
+                    "default": {"type": "sqlalchemy", "engine": f"{self.__module__}:cherrypy.db.engine"}
+                },
             }
         )
 
@@ -342,7 +346,7 @@ class RdiffwebApp(Application):
         # Create database if required
         cherrypy.db.create_all()
 
-        # create user manager
+        # Create admin user
         user = UserObject.create_admin_user(self.cfg.admin_user, self.cfg.admin_password)
         user.commit()
 

@@ -51,7 +51,7 @@ class TokenTest(rdiffweb.test.WebCase):
     def test_check_schedule(self):
         # Given the application is started
         # Then remove_older job should be schedule
-        self.assertEqual(1, len([job for job in cherrypy.scheduler.list_jobs() if job.name == 'clean_up']))
+        self.assertEqual(1, len([job for job in cherrypy.scheduler.get_jobs() if job.name.endswith('clean_up')]))
 
     def test_clean_up_without_expired(self):
         # Given a user with 3 Token

@@ -16,6 +16,7 @@
 
 import logging
 
+import cherrypy
 from sqlalchemy.exc import IntegrityError
 from wtforms.validators import ValidationError
 
@@ -25,6 +26,8 @@ from .form import CherryForm
 
 logger = logging.getLogger(__name__)
 
+Session = cherrypy.db.get_session()
+
 
 class DbForm(CherryForm):
     """
@@ -32,18 +35,18 @@ class DbForm(CherryForm):
     """
 
     def save_to_db(self, obj):
+
         form_errors = self.form_errors if hasattr(self, 'form_errors') else self.errors.setdefault(None, [])
         try:
             self.populate_obj(obj)
-            obj.add()
-            obj.commit()
+            Session.commit()
             return True
         except (ValueError, ValidationError) as e:
-            obj.rollback()
+            Session.rollback()
             form_errors.append(str(e))
             return False
         except IntegrityError as e:
-            obj.rollback()
+            Session.rollback()
             if e.constraint and e.constraint.info and 'error_message' in e.constraint.info:
                 error_message = e.constraint.info['error_message']
                 form_errors.append(error_message)
@@ -52,7 +55,7 @@ class DbForm(CherryForm):
                 logger.error("database error occurred", exc_info=1)
             return False
         except Exception:
-            obj.rollback()
+            Session.rollback()
             logger.exception("unexpected error occurred while saving data", exc_info=1)
             form_errors.append(_("An unexpected error occurred while saving your data."))
             return False

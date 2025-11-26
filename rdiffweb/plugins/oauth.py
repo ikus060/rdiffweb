@@ -111,6 +111,11 @@ class OAuthPlugin(SimplePlugin):
     def stop(self):
         self.bus.log('Stopping OAuth plugin')
 
+    def graceful(self):
+        """Reload of subscribers."""
+        self.stop()
+        self.start()
+
     @cherrypy.expose()
     def login(self, **kwargs):
         # Create a redirect URI.

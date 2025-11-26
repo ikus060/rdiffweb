@@ -19,9 +19,7 @@ import os
 import shutil
 import subprocess
 import tempfile
-import time
 import unittest
-import unittest.mock
 from contextlib import contextmanager
 from threading import Thread
 from urllib.parse import urlencode
@@ -72,13 +70,13 @@ class WebCase(helper.CPWebCase):
     def setup_class(cls):
         if cls is WebCase:
             raise unittest.SkipTest("%s is an abstract base class" % cls.__name__)
+
         super().setup_class()
         cls.do_gc_test = False
 
     @classmethod
     def teardown_class(cls):
         super().teardown_class()
-        cherrypy.db.drop_all()
         if hasattr(cherrypy, '_cache'):
             cherrypy._cache.clear()
 
@@ -104,8 +102,10 @@ class WebCase(helper.CPWebCase):
         # Clear cherrypy.tools.caching
         if hasattr(cherrypy, '_cache'):
             cherrypy._cache.clear()
+        # Create a clean environment by creating a new database and restarting all plugins.
         cherrypy.db.drop_all()
         cherrypy.db.create_all()
+        cherrypy.engine.publish('graceful')
         # Create default admin
         admin_user = UserObject.create_admin_user(self.USERNAME, self.PASSWORD)
         admin_user.commit()
@@ -124,7 +124,7 @@ class WebCase(helper.CPWebCase):
             shutil.rmtree(self.testcases)
             delattr(self, 'testcases')
         cherrypy.db.clear_sessions()
-        cherrypy.db.drop_all()
+        # cherrypy.db.drop_all()
         # Clear cherrypy.tools.caching
         if hasattr(cherrypy, '_cache'):
             cherrypy._cache.clear()
@@ -230,8 +230,3 @@ class WebCase(helper.CPWebCase):
         finally:
             # Code to release resource, e.g.:
             driver.close()
-
-    def wait_for_tasks(self):
-        time.sleep(1)
-        while len(cherrypy.scheduler.list_tasks()) or cherrypy.scheduler.is_job_running():
-            time.sleep(1)

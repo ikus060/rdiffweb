@@ -73,23 +73,10 @@
             <div class="btn-hover text-nowrap">
               {{ btn(url_for('admin','users','edit', user.username), _('Edit'), "fa fa-pencil-square-o") }}
               {{ btn(url_for('status', user.username, '/'), _('Overview'), "fa fa-tachometer") }}
-              {# Delete button #}
-              {% if user.username != username %}
-                {{ button_confirm(label=_('Delete'), target="#delete-user-modal", username=user.username, url=url_for('admin', 'users', 'delete')) }}
-              {% else %}
-                <button type="button" class="btn btn-danger" disabled>{% trans %}Delete{% endtrans %}</button>
-              {% endif %}
             </div>
           </td>
         </tr>
       {% endfor %}
     </tbody>
   {% endcall %}
-  <!-- Delete User Modal -->
-  {{ modal_confirm(
-  id="delete-user-modal",
-  title=_('Delete User'),
-  message=_("Are you sure you want to delete this User?"),
-  fields=['username'],
-  submit=_('Delete')) }}
 {% endblock content %}

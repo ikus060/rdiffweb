@@ -2,12 +2,16 @@
 {% from 'include/panel.html' import panel %}
 {% from 'include/messages.html' import messages %}
 {% from 'include/storage_usage.html' import storage_usage %}
+{% from 'include/modal_dialog.html' import button_confirm, modal_confirm %}
 {% set admin_nav_active="users" %}
 {% block title %}
   {% trans %}Edit user{% endtrans %}
 {% endblock %}
 {% block content %}
   <div class="container">
+    {# Delete button #}
+    {{ button_confirm(label=_('Delete User'), class="btn-danger float-right", target="#delete-user-modal", url=url_for('admin', 'users', 'delete'), disabled=(form.username.data == username)) }}
+    {# User Form #}
     <form method="post" action="{{ url_for() }}">
       {% call panel(
         title=_("Edit user"),
@@ -19,4 +23,23 @@
     {# Message thread #}
     {{ messages(data_url=url_for('admin','users', 'messages', form.id.data|string)) }}
   </div>
+  {#  Delete User Modal #}
+  {% call modal_confirm(
+    id="delete-user-modal",
+    title=_('Confirm User Deletion'),
+    message=_("Deleting this user will remove their account and access. You can also choose to delete all backup data associated with this user. Are you sure you want to delete this User?"),
+    fields=[],
+    submit=_('Delete User'),
+    confirm_value=form.username.data) %}
+    <div class="form-check mt-3">
+      <input class="form-check-input"
+             type="checkbox"
+             value="checked"
+             name="delete_data">
+      <label class="form-check-label" for="delete_data">
+        {% trans %}Also delete this user's backup data (all associated backups will be permanently removed){% endtrans %}
+      </label>
+    </div>
+    <input type="hidden" name="username" value="{{ form.username.data }}" />
+  {% endcall %}
 {% endblock content %}

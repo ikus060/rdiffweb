@@ -23,8 +23,6 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
 
-logger = logging.getLogger(__name__)
-
 
 @event.listens_for(Engine, 'connect')
 def _set_sqlite_journal_mode_wal(connection, connection_record):
@@ -168,7 +166,13 @@ class SQLA(SimplePlugin):
     _session = None
     _engine = None
 
+    @property
+    def engine(self):
+        return self._engine
+
     def start(self):
+        if self.uri is None:
+            return
         # Adjust debug level.
         if self.debug:
             logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG)
@@ -178,14 +182,22 @@ class SQLA(SimplePlugin):
         self.clear_sessions()
         # Associate our session to our engine
         self.get_session().configure(bind=self._engine)
-        self.bus.log("Database session plugin started.")
+        self.bus.log("database session plugin started")
+
+    # This is slightly lower priority to get database started first.
+    start.priority = 45
 
     def stop(self):
         if self._session:
             self.clear_sessions()
         if self._engine:
             self._engine.dispose()
-        self.bus.log("Database session plugin stopped.")
+        self.bus.log("database session plugin stopped")
+
+    def graceful(self):
+        """Reload of subscribers."""
+        self.stop()
+        self.start()
 
     def create_all(self):
         try:
@@ -240,11 +252,27 @@ class SQLA(SimplePlugin):
         try:
             # When terminating, raise an error if objects are not commit.
             if self._session.dirty or self._session.new or self._session.deleted:
-                changes = ', '.join([str(_get_model_changes(obj)) for obj in self._session.dirty])
-                logger.exception(
-                    'session is dirty, some database object(s) are not commited, this indicate a bug in the application '
-                    'dirty %s new %s deleted %s' % (changes, self._session.new, self._session.deleted)
+                cherrypy.log(
+                    'database session dirty; uncommitted objects detected — potential application bug',
+                    context='DB',
+                    severity=logging.ERROR,
                 )
+                if self._session.dirty:
+                    changes = ', '.join([str(_get_model_changes(obj)) for obj in self._session.dirty])
+                    cherrypy.log(
+                        f'database session dirty_objects={self._session.dirty}', context='DB', severity=logging.ERROR
+                    )
+                    cherrypy.log(f'database session pending_changes={changes}', context='DB', severity=logging.ERROR)
+                if self._session.new:
+                    cherrypy.log(
+                        f'database session new_objects={self._session.new}', context='DB', severity=logging.ERROR
+                    )
+                if self._session.deleted:
+                    cherrypy.log(
+                        f'database session deleted_objects={self._session.deleted}',
+                        context='DB',
+                        severity=logging.ERROR,
+                    )
                 raise SQLAlchemyError('session is dirty')
         finally:
             self._session.rollback()

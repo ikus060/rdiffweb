@@ -63,12 +63,15 @@ class SmtpPluginTest(helper.CPWebCase):
 
     @skipUnless(hasattr(cherrypy, 'scheduler'), reason='Required scheduler')
     def test_queue_mail(self):
-        # Given a paused scheduler plugin
-        cherrypy.scheduler._scheduler.pause()
-        # When queueing a email
-        cherrypy.engine.publish('queue_mail', to='target@test.com', subject='subjet', message='body')
-        # Then a new job get schedule
-        self.assertEqual(1, len(cherrypy.scheduler.list_tasks()))
+        with mock.patch(smtp.__name__ + '.smtplib') as smtplib:
+            # Given a mail being queued.
+            cherrypy.engine.publish('queue_mail', to='target@test.com', subject='subjet', message='body')
+            # When waiting for all task to be processed
+            cherrypy.scheduler.wait_for_jobs()
+            # Then smtplib is called to send the mail.
+            smtplib.SMTP.assert_called_once_with('__default__', 25)
+            smtplib.SMTP.return_value.send_message.assert_called_once_with(mock.ANY)
+            smtplib.SMTP.return_value.quit.assert_called_once_with()
 
     def test_html2plaintext(self):
         """

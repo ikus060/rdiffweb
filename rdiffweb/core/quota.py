@@ -49,6 +49,11 @@ class QuotaPlugin(SimplePlugin):
         self.bus.unsubscribe("get_disk_quota", self.get_quota)
         self.bus.unsubscribe("get_disk_usage", self.get_usage)
 
+    def graceful(self):
+        """Reload of subscribers."""
+        self.stop()
+        self.start()
+
     def _exec(self, cmd, userobj, quota=None):
         env = {
             "RDIFFWEB_USERID": str(userobj.id),

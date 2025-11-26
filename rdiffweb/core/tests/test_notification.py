@@ -51,7 +51,13 @@ class NotificationJobTest(AbstractNotificationTest):
     def test_check_schedule(self):
         # Given the application is started
         # Then remove_older job should be schedule
-        self.assertEqual(1, len([job for job in cherrypy.scheduler.list_jobs() if job.name == 'notification_job']))
+        self.assertEqual(
+            1, len([job for job in cherrypy.scheduler.get_jobs() if job.name.endswith('check_latest_job')])
+        )
+        self.assertEqual(
+            1, len([job for job in cherrypy.scheduler.get_jobs() if job.name.endswith('notification_job')])
+        )
+        self.assertEqual(1, len([job for job in cherrypy.scheduler.get_jobs() if job.name.endswith('report_job')]))
 
     def test_notification_job(self):
         """

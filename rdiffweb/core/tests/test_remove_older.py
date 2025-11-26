@@ -28,7 +28,9 @@ class RemoveOlderTest(rdiffweb.test.WebCase):
     def test_check_schedule(self):
         # Given the application is started
         # Then remove_older job should be schedule
-        self.assertEqual(1, len([job for job in cherrypy.scheduler.list_jobs() if job.name == 'remove_older_job']))
+        self.assertEqual(
+            1, len([job for job in cherrypy.scheduler.get_jobs() if job.name.endswith('remove_older_job')])
+        )
 
     @patch("rdiffweb.core.model.RepoObject.query")
     def test_remove_older_job_without_last_backup_date(self, mock_query):

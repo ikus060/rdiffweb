@@ -39,9 +39,10 @@ from sqlalchemy.orm import deferred, relationship, validates
 
 import rdiffweb.plugins.db  # noqa
 from rdiffweb.core.passwd import check_password, hash_password
+from rdiffweb.plugins.scheduler import clear_db_sessions
 from rdiffweb.tools.i18n import gettext_lazy as _
 
-from ._message import MessageMixin, get_model_changes
+from ._message import AUDIT_IGNORE, MessageMixin, get_model_changes
 from ._repo import RepoObject
 from ._session import SessionObject
 from ._sshkey import SshKey
@@ -80,6 +81,20 @@ Session = cherrypy.db.get_session()
 SEP = b'/'
 
 
+@clear_db_sessions
+def delete_user_with_data(userid):
+    """
+    Job to delete user with all data.
+    """
+    # Let start by deleting all repositories from disk.
+    userobj = UserObject.get_user(userid)
+    for repoobj in userobj.repo_objs:
+        repoobj.delete_repo()
+    # Finish by deleting the user it self.
+    userobj.delete()
+    userobj.commit()
+
+
 class UserObject(MessageMixin, Base):
     __tablename__ = 'users'
     __table_args__ = {'sqlite_autoincrement': True}
@@ -102,6 +117,10 @@ class UserObject(MessageMixin, Base):
     PATTERN_FULLNAME = r"""[^!"#$%&()*+,./:;<=>?@[\]_{|}~]+$"""
     PATTERN_USERNAME = r"^[a-zA-Z][a-zA-Z0-9_.\-]+$"
 
+    # Status values
+    STATUS_DELETING = 'deleting'  # Mark for deletion.
+    STATUS_DISABLED = 'disabled'  # User is disabled.
+
     id = Column('UserID', Integer, primary_key=True)
     username = Column('Username', String, nullable=False)
     hash_password = Column('Password', String, nullable=False, default="")
@@ -113,6 +132,7 @@ class UserObject(MessageMixin, Base):
             nullable=False,
             server_default="0",
             doc="DEPRECATED This column is replaced by 'role'",
+            info={AUDIT_IGNORE: True},
         )
     )
     email = Column('UserEmail', String, nullable=False, default='', server_default='')
@@ -137,8 +157,9 @@ class UserObject(MessageMixin, Base):
     )
     lang = Column('lang', String, nullable=False, default='', server_default='')
     report_time_range = Column('report_time_range', SmallInteger, nullable=False, default=0, server_default=str(0))
-    report_last_sent = Column('report_last_sent', Timestamp, nullable=True, default=None)
-    notes = Column(String, nullable=False, default='', server_default='')
+    report_last_sent = Column('report_last_sent', Timestamp, nullable=True, default=None, info={AUDIT_IGNORE: True})
+    notes = Column('notes', String, nullable=False, default='', server_default='')
+    status = Column('status', String, nullable=False, default='', server_default='')
     authorizedkeys = relationship(
         'SshKey',
         back_populates="user",
@@ -314,11 +335,26 @@ class UserObject(MessageMixin, Base):
         except Exception:
             return False
 
-    def delete(self, *args, **kwargs):
+    def schedule_delete(self, delete_data=False):
+        """Schedule deletion of the user."""
+        cfg = cherrypy.tree.apps[''].cfg
+        # Mark this user for deletion
+        if self.username == cfg.admin_user:
+            raise ValueError(_("can't delete admin user"))
+        if delete_data:
+            self.status = UserObject.STATUS_DELETING
+            for repoobj in self.repo_objs:
+                repoobj._status = RepoObject.STATUS_DELETING
+            cherrypy.engine.publish('scheduler:add_job_now', delete_user_with_data, self.id)
+        else:
+            # Otherwise, let delete use directly.
+            return Base.delete(self)
+        
+    def delete(self):
+        """Delete used from database."""
         cfg = cherrypy.tree.apps[''].cfg
         if self.username == cfg.admin_user:
             raise ValueError(_("can't delete admin user"))
-        # Delete ourself
         return Base.delete(self)
 
     def delete_authorizedkey(self, fingerprint):
@@ -554,6 +590,10 @@ def update_user_schema(target, conn, **kw):
     # Add notes column
     if not column_exists(conn, UserObject.notes):
         column_add(conn, UserObject.notes)
+
+    # Add status column
+    if not column_exists(conn, UserObject.status):
+        column_add(conn, UserObject.status)
 
     # Fix username case insensitive unique
     if not index_exists(conn, 'user_username_index'):

@@ -25,9 +25,18 @@ from cherrypy.process.plugins import SimplePlugin
 
 from rdiffweb.core.librdiff import unquote
 from rdiffweb.core.model import Message, UserObject
+from rdiffweb.plugins.scheduler import clear_db_sessions
 from rdiffweb.tools.i18n import ugettext as _
 
 logger = logging.getLogger(__name__)
+
+
+@clear_db_sessions
+def _log_user_login(user_id, date):
+    """Used to log user loging asynchronously."""
+    user = UserObject.get_user(user_id)
+    user.add_message(Message(body=_("User login to web application"), type=Message.TYPE_EVENT, date=date))
+    user.commit()
 
 
 class ActivityPlugin(SimplePlugin):
@@ -41,37 +50,29 @@ class ActivityPlugin(SimplePlugin):
         self.bus.subscribe('delete_path', self.delete_path)
         self.bus.subscribe('user_login', self.user_login)
 
-    start.priority = 55
-
     def stop(self):
         self.bus.log('Stop Activity plugin')
         self.bus.unsubscribe('restore_path', self.restore_path)
         self.bus.unsubscribe('delete_path', self.delete_path)
         self.bus.unsubscribe('user_login', self.user_login)
 
-    stop.priority = 45
+    def graceful(self):
+        """Reload of subscribers."""
+        self.stop()
+        self.start()
 
     def restore_path(self, repo, path):
         repo.add_message(Message(body=_("Restore file path %s") % path, type=Message.TYPE_EVENT))
 
     def delete_path(self, repo, path):
-        if path == b'':
-            repo.user.add_message(Message(body=_("Delete repository %s") % str(repo), type=Message.TYPE_EVENT))
-        else:
-            display_name = repo._decode(unquote(path))
-            repo.add_message(Message(body=_("Delete file path: %s") % display_name, type=Message.TYPE_EVENT))
+        display_name = repo._decode(unquote(path))
+        repo.add_message(Message(body=_("Delete file path: %s") % display_name, type=Message.TYPE_EVENT))
 
     def user_login(self, userobj):
         # Log user_login in a different thread.
         if hasattr(userobj, 'add_message'):
             now = datetime.now(timezone.utc)
-            self.bus.publish('schedule_task', self._log_user_login, user_id=userobj.id, date=now)
-
-    def _log_user_login(self, user_id, date):
-        """Used to log user loging asynchronously."""
-        user = UserObject.get_user(user_id)
-        user.add_message(Message(body=_("User login to web application"), type=Message.TYPE_EVENT, date=date))
-        user.commit()
+            self.bus.publish('scheduler:add_job_now', _log_user_login, user_id=userobj.id, date=now)
 
 
 cherrypy.activity = ActivityPlugin(cherrypy.engine)

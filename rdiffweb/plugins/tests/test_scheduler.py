@@ -14,71 +14,87 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import time
+from datetime import datetime, timezone
+from threading import Event
 
 import cherrypy
 from cherrypy.test import helper
 
 from .. import scheduler  # noqa
 
+done = Event()
+
+
+def a_task(*args, **kwargs):
+    done.set()
+
 
 class SchedulerPluginTest(helper.CPWebCase):
     def setUp(self) -> None:
-        self.called = False
+        done.clear()
+        cherrypy.scheduler.remove_all_jobs()
         return super().setUp()
+
+    def tearDown(self):
+        return super().tearDown()
 
     @classmethod
     def setup_server(cls):
         pass
 
-    def wait_for_tasks(self):
-        time.sleep(1)
-        while len(cherrypy.scheduler.list_tasks()) or cherrypy.scheduler.is_job_running():
-            time.sleep(1)
-
-    def test_schedule_job(self):
-        # Given a scheduler with a specific number of jobs
-        count = len(cherrypy.scheduler.list_jobs())
-
-        # Given a job schedule every seconds
-        def a_job(*args, **kwargs):
-            self.called = True
-
-        scheduled = cherrypy.engine.publish('schedule_job', '23:00', a_job, 1, 2, 3, foo=1, bar=2)
+    def test_add_job(self):
+        # Given a scheduled job
+        scheduled = cherrypy.engine.publish(
+            'scheduler:add_job',
+            a_task,
+            name='custom_name',
+            args=(1, 2, 3),
+            kwargs={'foo': 'bar'},
+            next_run_time=datetime.now(timezone.utc),
+            misfire_grace_time=None,
+        )
         self.assertTrue(scheduled)
-        self.assertEqual(count + 1, len(cherrypy.scheduler.list_jobs()))
+        self.assertEqual('custom_name', scheduled[0].name)
+        # When waiting for all jobs
+        cherrypy.scheduler.wait_for_jobs()
+        # Then the job is done
+        self.assertTrue(done.is_set())
 
-    def test_scheduler_task(self):
+    def test_add_job_daily(self):
+        # Given a scheduler with a specific number of jobs
+        count = len(cherrypy.scheduler.get_jobs())
+        # When scheduling a daily job.
+        scheduled = cherrypy.engine.publish('scheduler:add_job_daily', '23:00', a_task, 1, 2, 3, foo=1, bar=2)
+        # Then the job is scheduled
+        self.assertTrue(scheduled)
+        self.assertEqual('a_task', scheduled[0].name)
+        # Then the number of jobs increase.
+        self.assertEqual(count + 1, len(cherrypy.scheduler.get_jobs()))
+
+    def test_add_job_now(self):
         # Given a task
-
-        def a_task(*args, **kwargs):
-            self.called = True
-
         # When scheduling that task
-        scheduled = cherrypy.engine.publish('schedule_task', a_task, 1, 2, 3, foo=1, bar=2)
+        scheduled = cherrypy.engine.publish('scheduler:add_job_now', a_task, 1, 2, 3, foo=1, bar=2)
         self.assertTrue(scheduled)
-        self.wait_for_tasks()
+        # When waiting for all tasks
+        cherrypy.scheduler.wait_for_jobs()
         # Then the task get called
-        self.assertTrue(self.called)
+        self.assertTrue(done.is_set())
 
-    def test_unschedule_job(self):
+    def test_remove_job(self):
         # Given a scheduler with a specific number of jobs
-        count = len(cherrypy.scheduler.list_jobs())
-
+        count = len(cherrypy.scheduler.get_jobs())
         # Given a job schedule every seconds
-        def a_job(*args, **kwargs):
-            self.called = True
+        cherrypy.engine.publish('scheduler:add_job_daily', '23:00', a_task, 1, 2, 3, foo=1, bar=2)
+        # Then number of job increase
+        self.assertEqual(count + 1, len(cherrypy.scheduler.get_jobs()))
+        # When the job is unscheduled.
+        cherrypy.engine.publish('scheduler:remove_job', a_task)
+        # Then the number of job decrease.
+        self.assertEqual(count, len(cherrypy.scheduler.get_jobs()))
 
-        cherrypy.engine.publish('schedule_job', '23:00', a_job, 1, 2, 3, foo=1, bar=2)
-        self.assertEqual(count + 1, len(cherrypy.scheduler.list_jobs()))
-        cherrypy.engine.publish('unschedule_job', a_job)
-        self.assertEqual(count, len(cherrypy.scheduler.list_jobs()))
-
-    def test_unschedule_job_with_invalid_job(self):
+    def test_remove_job_with_invalid_job(self):
         # Given an unschedule job
-        def a_job(*args, **kwargs):
-            self.called = True
-
         # When unscheduling an invalid job
-        cherrypy.engine.publish('unschedule_job', a_job)
-        # Then no error are raised
+        cherrypy.engine.publish('scheduler:remove_job', a_task)
+        # Then an error is not raised.

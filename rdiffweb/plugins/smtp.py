@@ -100,6 +100,26 @@ def _formataddr(value):
     return ', '.join(map(_formataddr, value))
 
 
+def _send_message(server, encryption, username, password, msg):
+    """
+    Send message using SMTP.
+    """
+    host, unused, port = server.partition(':')
+    if encryption == 'ssl':
+        conn = smtplib.SMTP_SSL(host, port or 465)
+    else:
+        conn = smtplib.SMTP(host, port or 25)
+    try:
+        if encryption == 'starttls':
+            conn.starttls()
+        # Authenticate if required.
+        if username:
+            conn.login(username, password)
+        conn.send_message(msg)
+    finally:
+        conn.quit()
+
+
 class SmtpPlugin(SimplePlugin):
 
     server = None
@@ -108,45 +128,10 @@ class SmtpPlugin(SimplePlugin):
     encryption = None
     email_from = None
 
-    def start(self):
-        self.bus.log('Start SMTP plugin')
-        self.bus.subscribe("send_mail", self.send_mail)
-        self.bus.subscribe("queue_mail", self.queue_mail)
-
-    def stop(self):
-        self.bus.log('Stop SMTP plugin')
-        self.bus.unsubscribe("send_mail", self.send_mail)
-        self.bus.unsubscribe("queue_mail", self.queue_mail)
-
-    def queue_mail(self, *args, **kwargs):
-        """
-        Queue mail to be sent.
-        """
-        # Skip sending email if smtp server is not configured.
-        if not self.server:
-            self.bus.log('cannot send email because SMTP Server is not configured')
-            return
-        if not self.email_from:
-            self.bus.log('cannot send email because SMTP From is not configured')
-            return
-        self.bus.publish('schedule_task', self.send_mail, *args, **kwargs)
-
-    def send_mail(self, subject: str, message: str, to=None, cc=None, bcc=None, reply_to=None, headers={}):
-        """
-        Reusable method to be called to send email to the user user.
-        `user` user object where to send the email.
-        """
+    def _create_msg(self, subject: str, message: str, to=None, cc=None, bcc=None, reply_to=None, headers={}):
         assert subject
         assert message
         assert to or bcc
-
-        # Skip sending email if smtp server is not configured.
-        if not self.server:
-            self.bus.log('cannot send email because SMTP Server is not configured')
-            return
-        if not self.email_from:
-            self.bus.log('cannot send email because SMTP From is not configured')
-            return
 
         # Record the MIME types of both parts - text/plain and text/html.
         msg = MIMEMultipart('alternative')
@@ -167,21 +152,62 @@ class SmtpPlugin(SimplePlugin):
         text = _html2plaintext(message)
         msg.attach(MIMEText(text, 'plain', 'utf8'))
         msg.attach(MIMEText(message, 'html', 'utf8'))
+        return msg
 
-        host, unused, port = self.server.partition(':')
-        if self.encryption == 'ssl':
-            conn = smtplib.SMTP_SSL(host, port or 465)
-        else:
-            conn = smtplib.SMTP(host, port or 25)
-        try:
-            if self.encryption == 'starttls':
-                conn.starttls()
-            # Authenticate if required.
-            if self.username:
-                conn.login(self.username, self.password)
-            conn.send_message(msg)
-        finally:
-            conn.quit()
+    def start(self):
+        self.bus.log('Start SMTP plugin')
+        self.bus.subscribe("send_mail", self.send_mail)
+        self.bus.subscribe("queue_mail", self.queue_mail)
+
+    def stop(self):
+        self.bus.log('Stop SMTP plugin')
+        self.bus.unsubscribe("send_mail", self.send_mail)
+        self.bus.unsubscribe("queue_mail", self.queue_mail)
+
+    def graceful(self):
+        """Reload of subscribers."""
+        self.stop()
+        self.start()
+
+    def queue_mail(self, *args, **kwargs):
+        """
+        Queue mail to be sent.
+        """
+        # Skip sending email if smtp server is not configured.
+        if not self.server:
+            cherrypy.log('cannot send email because SMTP Server is not configured', context='SMTP')
+            return
+        if not self.email_from:
+            cherrypy.log('cannot send email because SMTP From is not configured', context='SMTP')
+            return
+
+        msg = self._create_msg(*args, **kwargs)
+        self.bus.publish(
+            'scheduler:add_job_now',
+            _send_message,
+            server=self.server,
+            encryption=self.encryption,
+            username=self.username,
+            password=self.password,
+            msg=msg,
+        )
+
+    def send_mail(self, *args, **kwargs):
+        """
+        Reusable method to be called to send email to the user user.
+        `user` user object where to send the email.
+        """
+        # Skip sending email if smtp server is not configured.
+        if not self.server:
+            cherrypy.log('cannot send email because SMTP Server is not configured', context='SMTP')
+            return
+        if not self.email_from:
+            cherrypy.log('cannot send email because SMTP From is not configured', context='SMTP')
+            return
+        msg = self._create_msg(*args, **kwargs)
+        _send_message(
+            server=self.server, encryption=self.encryption, username=self.username, password=self.password, msg=msg
+        )
 
 
 # Register SMTP plugin

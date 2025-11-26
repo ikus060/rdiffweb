@@ -19,7 +19,7 @@ import logging
 import cherrypy
 import humanfriendly
 from wtforms import validators, widgets
-from wtforms.fields import Field, HiddenField, PasswordField, SelectField, StringField, TextAreaField
+from wtforms.fields import BooleanField, Field, HiddenField, PasswordField, SelectField, StringField, TextAreaField
 from wtforms.validators import ValidationError
 
 try:
@@ -276,11 +276,18 @@ class EditUserForm(UserForm):
 
 class DeleteUserForm(DbForm):
     username = StringField(_('Username'), validators=[validators.data_required()])
+    delete_data = BooleanField(_("Delete user's data"), default=False)
 
     def validate_username(self, field):
         currentuser = cherrypy.request.currentuser
         if field.data == currentuser.username:
             raise ValidationError(_("You cannot remove your own account!"))
+
+    def populate_obj(self, userobj):
+        """
+        Run the deletion process.
+        """
+        userobj.schedule_delete(delete_data=self.delete_data.data)
 
 
 @cherrypy.tools.is_admin()
@@ -346,17 +353,12 @@ class AdminUsersPage(Controller):
         if form.validate():
             # Get user
             username = form.username.data
-            user = UserObject.get_user(username)
-            if not user:
+            userobj = UserObject.get_user(username)
+            if not userobj:
                 raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
-            try:
-                user.delete()
-                user.commit()
+            if form.save_to_db(userobj):
                 flash(_("User account removed."))
-            except Exception as e:
-                user.rollback()
-                flash(str(e), level='error')
-        else:
+        if form.error_message:
             flash(form.error_message, level='error')
         raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
 
