@@ -21,6 +21,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, event
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
+from ._callbacks import add_post_commit_tasks
 from ._timestamp import Timestamp
 from ._update import column_add, column_exists
 
@@ -106,4 +107,4 @@ def update_token_schema(target, conn, **kw):
 def token_after_flush(session, flush_context):
     for token in session.new:
         if isinstance(token, Token):
-            cherrypy.engine.publish('access_token_added', token.user, token.name)
+            add_post_commit_tasks(session, 'access_token_added', token.user, token.name)

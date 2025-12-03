@@ -33,6 +33,7 @@ from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRe
 from rdiffweb.plugins.scheduler import clear_db_sessions
 from rdiffweb.tools.i18n import ugettext as _
 
+from ._callbacks import add_post_commit_tasks
 from ._message import AUDIT_IGNORE, MessageMixin
 from ._update import column_add, column_exists
 
@@ -250,7 +251,7 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
         Mark this repo for deletion.
         """
         self._status = RepoObject.STATUS_DELETING
-        cherrypy.engine.publish('scheduler:add_job_now', delete_repo, self.id)
+        add_post_commit_tasks(Session, 'scheduler:add_job_now', delete_repo, self.id)
 
     def delete_repo(self):
         # Delete repo on disk
@@ -402,4 +403,4 @@ def repo_after_flush(session, flush_context):
     for repoobj in session.deleted:
         if isinstance(repoobj, RepoObject):
             userobj = repoobj.user or UserObject.query.filter(UserObject.id == repoobj.userid).first()
-            cherrypy.engine.publish('repo_deleted', userobj, repoobj.repopath)
+            add_post_commit_tasks(session, 'repo_deleted', userobj, repoobj.repopath)

@@ -85,7 +85,7 @@ class NotificationPlugin(SimplePlugin):
         )
         self.bus.subscribe('access_token_added', self.access_token_added)
         self.bus.subscribe('authorizedkey_added', self.authorizedkey_added)
-        self.bus.subscribe('user_attr_changed', self.user_attr_changed)
+        self.bus.subscribe('user_updated', self.user_updated)
         self.bus.subscribe('user_password_changed', self.user_password_changed)
         self.bus.subscribe('repo_added', self.repo_added)
         self.bus.subscribe('repo_deleted', self.repo_deleted)
@@ -100,7 +100,7 @@ class NotificationPlugin(SimplePlugin):
         self.bus.publish('scheduler:remove_job', f'{self.__module__}:cherrypy.notification.report_job')
         self.bus.unsubscribe('access_token_added', self.access_token_added)
         self.bus.unsubscribe('authorizedkey_added', self.authorizedkey_added)
-        self.bus.unsubscribe('user_attr_changed', self.user_attr_changed)
+        self.bus.unsubscribe('user_updated', self.user_updated)
         self.bus.unsubscribe('user_password_changed', self.user_password_changed)
         self.bus.unsubscribe('repo_added', self.repo_added)
         self.bus.unsubscribe('repo_deleted', self.repo_deleted)
@@ -199,7 +199,7 @@ class NotificationPlugin(SimplePlugin):
                 fingerprint=fingerprint,
             )
 
-    def user_attr_changed(self, userobj, attrs={}):
+    def user_updated(self, userobj, attrs={}):
         username = userobj.username
         # Leave if the mail was not changed.
         if 'email' in attrs:

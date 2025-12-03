@@ -175,6 +175,10 @@ class UserForm(DbForm):
         validators=[validators.length(max=256, message=_('Notes too long.'))],
         render_kw={"placeholder": _("Enter notes about this user.")},
     )
+    disabled = BooleanField(
+        _('Disabled'),
+        description=_("Disables the account and blocks the user from logging in."),
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -219,6 +223,11 @@ class UserForm(DbForm):
         userobj.lang = self.lang.data or ''
         userobj.report_time_range = self.report_time_range.data
         userobj.notes = self.notes.data
+        # Update user's status
+        if self.disabled.data is True:
+            userobj.status = UserObject.STATUS_DISABLED
+        elif userobj.status == UserObject.STATUS_DISABLED:
+            userobj.status = ""
         # Verify user's root directory and update repos.
         if userobj.user_root:
             if not userobj.valid_user_root():
@@ -275,8 +284,13 @@ class EditUserForm(UserForm):
 
 
 class DeleteUserForm(DbForm):
+    confirm = StringField(_('Confirmation'), validators=[validators.data_required()])
     username = StringField(_('Username'), validators=[validators.data_required()])
     delete_data = BooleanField(_("Delete user's data"), default=False)
+
+    def validate_confirm(self, field):
+        if self.confirm.data != self.username.data:
+            raise ValidationError(_('Invalid confirmation'))
 
     def validate_username(self, field):
         currentuser = cherrypy.request.currentuser
@@ -517,7 +531,7 @@ class AdminApiUsers(Controller):
         return self._to_json(user_obj, detailed=True)
 
     @cherrypy.tools.required_scope(scope='all,admin_write_users')
-    def delete(self, username_or_id):
+    def delete(self, username_or_id, **kwargs):
         """
         Delete the user identified by the given username or id.
 
@@ -527,15 +541,11 @@ class AdminApiUsers(Controller):
         if user_obj is None:
             raise cherrypy.NotFound()
         form = DeleteUserForm(obj=user_obj)
-        if form.validate():
-            try:
-                user_obj.delete()
-                user_obj.commit()
-                return {}
-            except Exception as e:
-                user_obj.rollback()
-                raise cherrypy.HTTPError(400, str(e))
-        else:
+        # Don't validation confirmation in API.
+        del form.confirm
+        if form.validate() and form.save_to_db(user_obj):
+            return {}
+        if form.error_message:
             raise cherrypy.HTTPError(400, form.error_message)
 
     @cherrypy.tools.required_scope(scope='all,admin_write_users')

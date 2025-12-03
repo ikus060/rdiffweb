@@ -1,5 +1,5 @@
-# udb, A web interface to manage IT network
-# Copyright (C) 2022-2025 IKUS Software inc.
+# rdiffweb, A web interface to rdiff-backup repositories
+# Copyright (C) 2012-2025 rdiffweb contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from sqlalchemy.sql.sqltypes import Integer
 import rdiffweb.plugins.db  # noqa
 
 from ._timestamp import Timestamp
+from ._update import column_add, column_exists
 
 Base = cherrypy.db.get_base()
 Session = cherrypy.db.get_session()
@@ -85,11 +86,18 @@ def create_messages(session, flush_context, instances):
             change_type, changes = get_model_changes(obj)
             if change_type == 'dirty' and not changes:
                 continue
-            # Append the changes to a new message or a message in the current session flush.
+
+            # Enrich event using current user, IP address and User-Agent
+            request = cherrypy.serving.request
             currentuser = getattr(cherrypy.serving.request, 'currentuser', None)
             if currentuser:
                 author_id = currentuser.id
-            message = Message(author_id=author_id, changes=changes, type=change_type)
+            ip_address = request.remote.ip
+            user_agent = request.headers.get('User-Agent', '')
+            # Append the changes to a new message or a message in the current session flush.
+            message = Message(
+                author_id=author_id, changes=changes, type=change_type, ip_address=ip_address, user_agent=user_agent
+            )
             obj.add_change(message)
 
 
@@ -104,11 +112,13 @@ class Message(Base):
     id = Column(Integer, primary_key=True)
     model_name = Column(String, nullable=False)
     model_id = Column(Integer, nullable=False)
-    model_summary = Column(String, nullable=False, default='')
+    model_summary = Column(String, nullable=False, default='', server_default='')
     author_id = Column(Integer, ForeignKey('users.UserID'), nullable=True)
     author = relationship("UserObject", lazy=False)
-    type = Column(String, nullable=False, default=TYPE_COMMENT)
-    body = Column(String, nullable=False, default='')
+    ip_address = Column(String, nullable=False, default='', server_default='')
+    user_agent = Column(String, nullable=False, default='', server_default='')
+    type = Column(String, nullable=False, default=TYPE_COMMENT, server_default=TYPE_COMMENT)
+    body = Column(String, nullable=False, default='', server_default='')
     _changes = Column('changes', String, nullable=True)
     date = Column(Timestamp(timezone=True), default=func.now())
 
@@ -247,3 +257,11 @@ class MessageMixin:
             lazy=True,
             info={AUDIT_IGNORE: True},
         )
+
+
+@event.listens_for(Base.metadata, 'after_create', insert=True)
+def update_message_schema(target, conn, **kw):
+    if not column_exists(conn, Message.ip_address):
+        column_add(conn, Message.ip_address)
+    if not column_exists(conn, Message.user_agent):
+        column_add(conn, Message.user_agent)

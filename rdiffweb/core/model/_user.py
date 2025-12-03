@@ -42,6 +42,7 @@ from rdiffweb.core.passwd import check_password, hash_password
 from rdiffweb.plugins.scheduler import clear_db_sessions
 from rdiffweb.tools.i18n import gettext_lazy as _
 
+from ._callbacks import add_post_commit_tasks
 from ._message import AUDIT_IGNORE, MessageMixin, get_model_changes
 from ._repo import RepoObject
 from ._session import SessionObject
@@ -180,7 +181,7 @@ class UserObject(MessageMixin, Base):
         """
         # Check user password.
         userobj = cls.get_user_by_login(login)
-        return userobj and userobj.validate_password(password)
+        return userobj and userobj.status == '' and userobj.validate_password(password)
 
     @classmethod
     def get_user(cls, username_or_id):
@@ -345,11 +346,11 @@ class UserObject(MessageMixin, Base):
             self.status = UserObject.STATUS_DELETING
             for repoobj in self.repo_objs:
                 repoobj._status = RepoObject.STATUS_DELETING
-            cherrypy.engine.publish('scheduler:add_job_now', delete_user_with_data, self.id)
+            add_post_commit_tasks(Session, 'scheduler:add_job_now', delete_user_with_data, self.id)
         else:
             # Otherwise, let delete use directly.
             return Base.delete(self)
-        
+
     def delete(self):
         """Delete used from database."""
         cfg = cherrypy.tree.apps[''].cfg
@@ -447,6 +448,10 @@ class UserObject(MessageMixin, Base):
                 self.repo_objs.remove(record)
         return dirty
 
+    @property
+    def disabled(self):
+        return self.status == UserObject.STATUS_DISABLED
+
     @hybrid_property
     def is_admin(self):
         return self.role is not None and self.role <= self.ADMIN_ROLE
@@ -507,8 +512,16 @@ class UserObject(MessageMixin, Base):
     def __repr__(self):
         return f'UserObject({self.username})'
 
+    @validates('status')
+    def _validate_status(self, key, value):
+        if value != "":
+            cfg = cherrypy.tree.apps[''].cfg
+            if self.username == cfg.admin_user:
+                raise ValueError(_("can't delete or disable admin user"))
+        return value
+
     @validates('username')
-    def validates_username(self, key, value):
+    def _validates_username(self, key, value):
         if self.username:
             raise ValueError('Username cannot be modified.')
         return value
@@ -675,6 +688,11 @@ def user_before_flush(session, flush_context, instances):
     for userobj in session.deleted:
         if isinstance(userobj, UserObject):
             cherrypy.engine.publish('user_deleting', userobj)
+    for userobj in session.dirty:
+        if isinstance(userobj, UserObject):
+            _change_type, changes = get_model_changes(userobj)
+            if changes:
+                cherrypy.engine.publish('user_updating', userobj, changes)
 
 
 @event.listens_for(Session, 'after_flush')
@@ -684,14 +702,14 @@ def user_after_flush(session, flush_context):
     """
     for userobj in session.new:
         if isinstance(userobj, UserObject):
-            cherrypy.engine.publish('user_added', userobj)
+            add_post_commit_tasks(session, 'user_added', userobj)
     for userobj in session.deleted:
         if isinstance(userobj, UserObject):
-            cherrypy.engine.publish('user_deleted', userobj.username)
+            add_post_commit_tasks(session, 'user_deleted', userobj.username)
     for userobj in session.dirty:
         if isinstance(userobj, UserObject):
             _change_type, changes = get_model_changes(userobj)
             if changes.pop('hash_password', False):
-                cherrypy.engine.publish('user_password_changed', userobj)
+                add_post_commit_tasks(session, 'user_password_changed', userobj)
             if changes:
-                cherrypy.engine.publish('user_attr_changed', userobj, changes)
+                add_post_commit_tasks(session, 'user_updated', userobj, changes)

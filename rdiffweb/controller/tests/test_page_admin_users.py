@@ -13,8 +13,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 import json
+import os
 from base64 import b64encode
 from unittest.mock import ANY, MagicMock
 
@@ -33,7 +33,7 @@ class AdminTest(rdiffweb.test.WebCase):
         self._quota = {}
         self.listener = MagicMock()
         cherrypy.engine.subscribe('user_added', self.listener.user_added, priority=50)
-        cherrypy.engine.subscribe('user_attr_changed', self.listener.user_attr_changed, priority=50)
+        cherrypy.engine.subscribe('user_updated', self.listener.user_updated, priority=50)
         cherrypy.engine.subscribe('user_deleted', self.listener.user_deleted, priority=50)
         cherrypy.engine.subscribe('user_password_changed', self.listener.user_password_changed, priority=50)
         self.listener.get_disk_quota.side_effect = self._load_quota
@@ -45,7 +45,7 @@ class AdminTest(rdiffweb.test.WebCase):
 
     def tearDown(self):
         cherrypy.engine.unsubscribe('user_added', self.listener.user_added)
-        cherrypy.engine.unsubscribe('user_attr_changed', self.listener.user_attr_changed)
+        cherrypy.engine.unsubscribe('user_updated', self.listener.user_updated)
         cherrypy.engine.unsubscribe('user_deleted', self.listener.user_deleted)
         cherrypy.engine.unsubscribe('user_password_changed', self.listener.user_password_changed)
         cherrypy.engine.unsubscribe('get_disk_quota', self.listener.get_disk_quota)
@@ -89,6 +89,7 @@ class AdminTest(rdiffweb.test.WebCase):
         mfa=None,
         lang=None,
         report_time_range=None,
+        disabled=None,
     ):
         b = {}
         b['action'] = 'edit'
@@ -110,11 +111,17 @@ class AdminTest(rdiffweb.test.WebCase):
             b['lang'] = str(lang)
         if report_time_range is not None:
             b['report_time_range'] = str(report_time_range)
+        if disabled is not None:
+            b['disabled'] = str(disabled)
         self.getPage("/admin/users/edit/" + username, method='POST', body=b)
 
-    def _delete_user(self, username='test1'):
-        b = {'action': 'delete', 'username': username}
-        self.getPage("/admin/users/delete", method='POST', body=b)
+    def _delete_user(self, username, confirm=None, delete_data=None):
+        body = {'username': username}
+        if confirm is not None:
+            body['confirm'] = confirm
+        if delete_data is not None:
+            body['delete_data'] = str(delete_data)
+        self.getPage("/admin/users/delete", method='POST', body=body)
 
     def test_add_user_with_role_admin(self):
         # When trying to create a new user with role admin
@@ -173,7 +180,7 @@ class AdminTest(rdiffweb.test.WebCase):
         )
         self.assertStatus(303)
         self.getPage('/admin/users/')
-        self.listener.user_attr_changed.assert_called()
+        self.listener.user_updated.assert_called()
         self.listener.user_password_changed.assert_called_once()
         self.assertInBody("User information modified successfully.")
         self.assertInBody("test2")
@@ -181,7 +188,7 @@ class AdminTest(rdiffweb.test.WebCase):
         self.assertNotInBody("/home/")
         self.assertInBody("/tmp/")
 
-        self._delete_user("test2")
+        self._delete_user("test2", confirm="test2")
         cherrypy.scheduler.wait_for_jobs()
         self.listener.user_deleted.assert_called()
         self.assertStatus(303)
@@ -308,7 +315,7 @@ class AdminTest(rdiffweb.test.WebCase):
         Verify failure to add a user with invalid root directory.
         """
         try:
-            self._delete_user("test5")
+            self._delete_user("test5", confirm="test5")
         except Exception:
             pass
         self._add_user("test5", "test1@test.com", "pr3j5Dwi", "/var/invalid/", UserObject.USER_ROLE)
@@ -371,16 +378,32 @@ class AdminTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody("Fullname too long.")
 
+    def test_delete_user_with_delete_data(self):
+        # Given a user with data
+        admin = UserObject.get_user(self.USERNAME)
+        self._add_user('my-user', user_root=admin.user_root)
+        myuser = UserObject.get_user('my-user')
+        self.assertTrue(myuser.repo_objs)
+        self.assertTrue(os.listdir(admin.user_root))
+        # When deleting the user with data
+        self._delete_user('my-user', confirm='my-user', delete_data=1)
+        cherrypy.scheduler.wait_for_jobs()
+        # Then the user is deleted
+        myuser = UserObject.get_user('my-user')
+        self.assertIsNone(myuser)
+        # Then the data is also deleted
+        self.assertFalse(os.listdir(admin.user_root))
+
     def test_delete_user_with_not_existing_username(self):
         # When trying to delete an invalid user
-        self._delete_user("test3")
+        self._delete_user("test3", confirm="test3")
         # Then an error is returned
         self.assertStatus(400)
         self.assertInBody("User test3 doesn&#39;t exists")
 
     def test_delete_our_self(self):
         # When trying to delete your self
-        self._delete_user(self.USERNAME)
+        self._delete_user(self.USERNAME, confirm=self.USERNAME)
         # Then user is redirected.
         self.assertStatus(303)
         self.getPage('/admin/users/')
@@ -397,7 +420,7 @@ class AdminTest(rdiffweb.test.WebCase):
         self._login('admin2', 'pr3j5Dwi')
 
         # When trying to delete admin user
-        self._delete_user(self.USERNAME)
+        self._delete_user(self.USERNAME, confirm=self.USERNAME)
         # Then an error is returned
         self.assertStatus(303)
         self.getPage('/admin/users/')
@@ -571,6 +594,29 @@ class AdminTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual('fr', userobj.lang)
 
+    def test_disable_user(self):
+        # Given a user
+        user = UserObject.add_user('newuser')
+        user.commit()
+        # When editing the lang
+        self._edit_user(username=user.username, disabled='checked')
+        self.assertStatus(303)
+        # Then lang is updated
+        user.expire()
+        self.assertTrue(user.disabled)
+        self.assertEqual(user.status, UserObject.STATUS_DISABLED)
+
+    def test_disable_admin_user(self):
+        # Given an admin user
+        # When editing the lang
+        self._edit_user(username=self.USERNAME, disabled='checked')
+        self.assertStatus(200)
+        # Then an error is raised.
+        self.assertInBody("can&#39;t delete or disable admin user")
+        user = UserObject.get_user(self.USERNAME)
+        self.assertFalse(user.disabled)
+        self.assertEqual(user.status, '')
+
 
 class AdminTestWithoutQuota(rdiffweb.test.WebCase):
     login = True
@@ -589,10 +635,10 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
 
     @parameterized.expand(
         [
-            ('with_userid', False),
-            ('with_userid', True),
-            ('with_username', False),
-            ('with_username', True),
+            ('with_userid', 0),
+            ('with_userid', 1),
+            ('with_username', 0),
+            ('with_username', 1),
         ]
     )
     def test_delete(self, query, with_data):
@@ -609,12 +655,14 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
                 f'/api/users/{user_obj.id}',
                 headers=self.auth,
                 method='DELETE',
+                body={'delete_data': str(with_data)},
             )
         else:
             self.getPage(
                 f'/api/users/{user_obj.username}',
                 headers=self.auth,
                 method='DELETE',
+                body={'delete_data': str(with_data)},
             )
         # Then page return with success
         self.assertStatus('200 OK')

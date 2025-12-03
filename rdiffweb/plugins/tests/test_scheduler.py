@@ -98,3 +98,13 @@ class SchedulerPluginTest(helper.CPWebCase):
         # When unscheduling an invalid job
         cherrypy.engine.publish('scheduler:remove_job', a_task)
         # Then an error is not raised.
+
+    def test_remove_job_with_job_name(self):
+        # Given a scheduled job
+        count = len(cherrypy.scheduler.get_jobs())
+        cherrypy.engine.publish('scheduler:add_job_daily', '23:00', f'{__name__}:a_task', 1, 2, 3, foo=1, bar=2)
+        self.assertEqual(count + 1, len(cherrypy.scheduler.get_jobs()))
+        # When unscheduling an invalid job
+        cherrypy.engine.publish('scheduler:remove_job', f'{__name__}:a_task')
+        # Then an error is not raised.
+        self.assertEqual(count, len(cherrypy.scheduler.get_jobs()))

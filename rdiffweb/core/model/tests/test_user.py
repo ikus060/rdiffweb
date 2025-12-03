@@ -49,7 +49,8 @@ class UserObjectTest(rdiffweb.test.WebCase):
         cherrypy.engine.subscribe('queue_mail', self.listener.queue_mail, priority=50)
         cherrypy.engine.subscribe('user_adding', self.listener.user_adding, priority=50)
         cherrypy.engine.subscribe('user_added', self.listener.user_added, priority=50)
-        cherrypy.engine.subscribe('user_attr_changed', self.listener.user_attr_changed, priority=50)
+        cherrypy.engine.subscribe('user_updating', self.listener.user_updating, priority=50)
+        cherrypy.engine.subscribe('user_updated', self.listener.user_updated, priority=50)
         cherrypy.engine.subscribe('user_deleted', self.listener.user_deleted, priority=50)
         cherrypy.engine.subscribe('user_login', self.listener.user_login, priority=50)
         cherrypy.engine.subscribe('user_password_changed', self.listener.user_password_changed, priority=50)
@@ -60,7 +61,8 @@ class UserObjectTest(rdiffweb.test.WebCase):
         cherrypy.engine.unsubscribe('queue_mail', self.listener.queue_mail)
         cherrypy.engine.unsubscribe('user_adding', self.listener.user_adding)
         cherrypy.engine.unsubscribe('user_added', self.listener.user_added)
-        cherrypy.engine.unsubscribe('user_attr_changed', self.listener.user_attr_changed)
+        cherrypy.engine.unsubscribe('user_updating', self.listener.user_updating)
+        cherrypy.engine.unsubscribe('user_updated', self.listener.user_updated)
         cherrypy.engine.unsubscribe('user_deleted', self.listener.user_deleted)
         cherrypy.engine.unsubscribe('user_login', self.listener.user_login)
         cherrypy.engine.unsubscribe('user_password_changed', self.listener.user_password_changed)
@@ -193,23 +195,26 @@ class UserObjectTest(rdiffweb.test.WebCase):
 
         user.user_root = self.testcases
         user.refresh_repos()
-        user.commit()
-        self.listener.user_attr_changed.assert_called_with(
+        user.flush()
+        self.listener.user_updating.assert_called_with(
             user, {'user_root': ['', self.testcases], 'repo_objs': [[], [ANY, ANY]]}
         )
-        self.listener.user_attr_changed.reset_mock()
+        self.listener.user_updated.assert_not_called()
+        user.commit()
+        self.listener.user_updated.assert_called_with(
+            user, {'user_root': ['', self.testcases], 'repo_objs': [[], [ANY, ANY]]}
+        )
+        self.listener.user_updated.reset_mock()
         user = UserObject.get_user('larry')
         user.role = UserObject.ADMIN_ROLE
         user.commit()
-        self.listener.user_attr_changed.assert_called_with(
-            user, {'role': [UserObject.USER_ROLE, UserObject.ADMIN_ROLE]}
-        )
-        self.listener.user_attr_changed.reset_mock()
+        self.listener.user_updated.assert_called_with(user, {'role': [UserObject.USER_ROLE, UserObject.ADMIN_ROLE]})
+        self.listener.user_updated.reset_mock()
         user = UserObject.get_user('larry')
         user.email = 'larry@gmail.com'
         user.commit()
-        self.listener.user_attr_changed.assert_called_with(user, {'email': ['', 'larry@gmail.com']})
-        self.listener.user_attr_changed.reset_mock()
+        self.listener.user_updated.assert_called_with(user, {'email': ['', 'larry@gmail.com']})
+        self.listener.user_updated.reset_mock()
 
         self.assertEqual('larry@gmail.com', user.email)
         self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in user.repo_objs]))
@@ -327,7 +332,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Add the key to the user
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_authorizedkey(key)
-        self.listener.user_attr_changed.reset_mock()
+        self.listener.user_updated.reset_mock()
         self.listener.authorizedkey_added.reset_mock()
         userobj.commit()
 
@@ -338,9 +343,9 @@ class UserObjectTest(rdiffweb.test.WebCase):
         self.assertEqual("3c:99:ed:a7:82:a8:71:09:2c:15:3d:78:4a:8c:11:99", keys[0].fingerprint)
 
         # Then listener should be called.
-        self.listener.user_attr_changed.assert_called_with(userobj, {'authorizedkeys': [[], [ANY]]})
+        self.listener.user_updated.assert_called_with(userobj, {'authorizedkeys': [[], [ANY]]})
         self.listener.authorizedkey_added.assert_called_with(
-            userobj, fingerprint="3c:99:ed:a7:82:a8:71:09:2c:15:3d:78:4a:8c:11:99", comment="ikus060@ikus060-t530"
+            userobj, "3c:99:ed:a7:82:a8:71:09:2c:15:3d:78:4a:8c:11:99", "ikus060@ikus060-t530"
         )
 
     def test_add_authorizedkey_duplicate(self):
@@ -350,7 +355,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         userobj.add_authorizedkey(key)
         userobj.commit()
-        self.listener.user_attr_changed.reset_mock()
+        self.listener.user_updated.reset_mock()
 
         # When adding the same identical key.
         # Then an error is raised
@@ -360,7 +365,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         self.assertIn(ctx.exception.constraint.name, ['sshkey_fingerprint_index', 'sshkeys_pkey'])
 
         # Then listener is not called.
-        self.listener.user_attr_changed.assert_not_called()
+        self.listener.user_updated.assert_not_called()
 
     def test_add_authorizedkey_duplicate_new_comment(self):
         # Read the pub key

@@ -32,10 +32,18 @@ logger = logging.getLogger(__name__)
 
 
 @clear_db_sessions
-def _log_user_login(user_id, date):
+def _log_user_login(user_id, date, ip_address, user_agent):
     """Used to log user loging asynchronously."""
     user = UserObject.get_user(user_id)
-    user.add_message(Message(body=_("User login to web application"), type=Message.TYPE_EVENT, date=date))
+    user.add_message(
+        Message(
+            body=_("User login to web application"),
+            type=Message.TYPE_EVENT,
+            date=date,
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+    )
     user.commit()
 
 
@@ -71,8 +79,16 @@ class ActivityPlugin(SimplePlugin):
     def user_login(self, userobj):
         # Log user_login in a different thread.
         if hasattr(userobj, 'add_message'):
+            request = cherrypy.serving.request
             now = datetime.now(timezone.utc)
-            self.bus.publish('scheduler:add_job_now', _log_user_login, user_id=userobj.id, date=now)
+            self.bus.publish(
+                'scheduler:add_job_now',
+                _log_user_login,
+                user_id=userobj.id,
+                date=now,
+                ip_address=request.remote.ip,
+                user_agent=request.headers.get('User-Agent', ''),
+            )
 
 
 cherrypy.activity = ActivityPlugin(cherrypy.engine)

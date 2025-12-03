@@ -51,6 +51,17 @@
             {% if user.username == username %}
               <span class="badge badge-success">{% trans %}It's you{% endtrans %}</span>
             {% endif %}
+            {% if user.status != '' %}
+              <span class="badge badge-danger">
+                {% if user.status == user.STATUS_DISABLED %}
+                  {% trans %}Disabled{% endtrans %}
+                {% elif user.status == user.STATUS_DELETING %}
+                  {% trans %}Deleting{% endtrans %}
+                {% else %}
+                  {{ user.status }}
+                {% endif %}
+              </span>
+            {% endif %}
           </td>
           <td>{{ user.fullname }}</td>
           <td>{{ user.email }}</td>

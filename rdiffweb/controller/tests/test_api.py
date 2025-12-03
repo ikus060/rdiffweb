@@ -103,6 +103,8 @@ class APITest(rdiffweb.test.WebCase):
         ]
     )
     def test_post_currentuser(self, field, new_value, success):
+        # Given a user
+        user = UserObject.get_user('admin')
         # When trying to update user's settings
         self.getPage(
             '/api/currentuser',
@@ -111,7 +113,7 @@ class APITest(rdiffweb.test.WebCase):
             body={field: new_value},
         )
         # Then it's working or not
-        user = UserObject.get_user('admin')
+        user.expire()
         if success:
             self.assertStatus(200)
             self.assertEqual(str(getattr(user, field)), new_value)

@@ -205,6 +205,7 @@ class Scheduler(SimplePlugin):
         """
         hour, minute = execution_time.split(':', 2)
         return self.add_job(
+            id=getattr(func, '__name__', str(func)),
             func=func,
             name=getattr(func, '__name__', str(func)),
             args=args,
@@ -214,6 +215,7 @@ class Scheduler(SimplePlugin):
             minute=minute,
             misfire_grace_time=None,
             coalesce=True,
+            replace_existing=True,
         )
 
     def add_job_now(self, func, *args, **kwargs):
@@ -243,9 +245,12 @@ class Scheduler(SimplePlugin):
         Remove the given job from scheduler.
         """
         # Search for a matching job
+        return_value = False
         for j in self._scheduler.get_jobs(jobstore=jobstore):
-            if j.func == job:
+            if j.func == job or j.name == job:
                 self._scheduler.remove_job(job_id=j.id, jobstore=jobstore)
+                return_value = True
+        return return_value
 
     def remove_all_jobs(self, jobstore=None):
         """

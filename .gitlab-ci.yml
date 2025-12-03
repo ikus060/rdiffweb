@@ -81,7 +81,7 @@ postgresql-12:
   <<: *tox
   image: $IMAGE
   services:
-    - postgres:12.2-alpine
+    - postgres:16
   variables:
     TOXENV: trixie
     IMAGE: python:3.13-trixie

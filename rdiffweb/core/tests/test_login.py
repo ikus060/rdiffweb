@@ -64,7 +64,7 @@ class AbstractLdapLoginTest:
         super().setUp()
         self.listener = MagicMock()
         cherrypy.engine.subscribe('user_added', self.listener.user_added, priority=50)
-        cherrypy.engine.subscribe('user_attr_changed', self.listener.user_attr_changed, priority=50)
+        cherrypy.engine.subscribe('user_updated', self.listener.user_updated, priority=50)
         cherrypy.engine.subscribe('user_deleted', self.listener.user_deleted, priority=50)
         cherrypy.engine.subscribe('user_login', self.listener.user_login, priority=50)
         cherrypy.engine.subscribe('user_password_changed', self.listener.user_password_changed, priority=50)
@@ -87,7 +87,7 @@ class AbstractLdapLoginTest:
 
     def tearDown(self):
         cherrypy.engine.unsubscribe('user_added', self.listener.user_added)
-        cherrypy.engine.unsubscribe('user_attr_changed', self.listener.user_attr_changed)
+        cherrypy.engine.unsubscribe('user_updated', self.listener.user_updated)
         cherrypy.engine.unsubscribe('user_deleted', self.listener.user_deleted)
         cherrypy.engine.unsubscribe('user_login', self.listener.user_login)
         cherrypy.engine.unsubscribe('user_password_changed', self.listener.user_password_changed)
@@ -118,7 +118,7 @@ class LdapLoginTest(AbstractLdapLoginTest, rdiffweb.test.WebCase):
         # When login successfully with that user
         self._login('tony', 'password1')
         # Then user is updated
-        userobj = UserObject.get_user('tony')
+        userobj.expire()
         self.assertFalse(userobj.is_admin)
         self.assertEqual('myemail@example.com', userobj.email)
         self.assertEqual('Tony Martinez', userobj.fullname)
@@ -158,7 +158,7 @@ class LdapLoginAddMissingTest(AbstractLdapLoginTest, rdiffweb.test.WebCase):
         # When login successfully with that user
         self._login('tony', 'password1')
         # Then user is updated
-        userobj = UserObject.get_user('tony')
+        userobj.expire()
         self.assertFalse(userobj.is_admin)
         self.assertEqual('myemail@example.com', userobj.email)
         self.assertEqual('Tony Martinez', userobj.fullname)
@@ -233,6 +233,7 @@ class OAuthLoginWithUsernameTest(AbstractOAuthLoginTest, rdiffweb.test.WebCase):
         self.getPage('/', headers=self.cookies)
         self.assertStatus(200)
         # Then user is create in database
+        userobj.expire()
         self.assertEqual('Tony Martinez', userobj.fullname)
         # Then listener got called.
         self.listener.user_login.assert_called_once_with(userobj)
@@ -272,6 +273,7 @@ class OAuthLoginWithEmailTest(AbstractOAuthLoginTest, rdiffweb.test.WebCase):
         self.getPage('/', headers=self.cookies)
         self.assertStatus(200)
         # Then user is create in database
+        userobj.expire()
         self.assertEqual('Tony Martinez', userobj.fullname)
         # Then listener got called.
         self.listener.user_login.assert_called_once_with(userobj)

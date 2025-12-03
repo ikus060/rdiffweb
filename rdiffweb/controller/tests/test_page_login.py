@@ -28,14 +28,14 @@ class LoginPageTest(rdiffweb.test.WebCase):
         super().setUp()
         self.listener = MagicMock()
         cherrypy.engine.subscribe('user_added', self.listener.user_added, priority=50)
-        cherrypy.engine.subscribe('user_attr_changed', self.listener.user_attr_changed, priority=50)
+        cherrypy.engine.subscribe('user_updated', self.listener.user_updated, priority=50)
         cherrypy.engine.subscribe('user_deleted', self.listener.user_deleted, priority=50)
         cherrypy.engine.subscribe('user_login', self.listener.user_login, priority=50)
         cherrypy.engine.subscribe('user_password_changed', self.listener.user_password_changed, priority=50)
 
     def tearDown(self):
         cherrypy.engine.unsubscribe('user_added', self.listener.user_added)
-        cherrypy.engine.unsubscribe('user_attr_changed', self.listener.user_attr_changed)
+        cherrypy.engine.unsubscribe('user_updated', self.listener.user_updated)
         cherrypy.engine.unsubscribe('user_deleted', self.listener.user_deleted)
         cherrypy.engine.unsubscribe('user_login', self.listener.user_login)
         cherrypy.engine.unsubscribe('user_password_changed', self.listener.user_password_changed)
@@ -234,6 +234,17 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.assertTrue(session[SESSION_PERSISTENT])
         # Then session timeout is 30 days in future
         self.assertAlmostEqual(session.timeout, 10080, delta=2)
+
+    def test_disabled_user(self):
+        # Given a disabled user
+        userobj = UserObject.add_user('myuser', password='password')
+        userobj.status = UserObject.STATUS_DISABLED
+        userobj.commit()
+        # When trying to login
+        self.getPage('/login/', method='POST', body={'login': 'myuser', 'password': 'password'})
+        self.assertStatus(200)
+        # Then authentication is refused
+        self.assertInBody("Invalid username or password.")
 
 
 class LoginPageWithCustomConfig(rdiffweb.test.WebCase):

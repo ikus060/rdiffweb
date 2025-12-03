@@ -25,6 +25,7 @@ from sqlalchemy.orm import reconstructor, relationship, validates
 from rdiffweb.core.authorizedkeys import AuthorizedKey, check_publickey
 from rdiffweb.tools.i18n import gettext_lazy as _
 
+from ._callbacks import add_post_commit_tasks
 from ._update import index_exists
 
 Base = cherrypy.db.get_base()
@@ -136,6 +137,4 @@ def update_sshkeys_schema(target, conn, **kw):
 def sshkey_after_flush(session, flush_context):
     for sshkey in session.new:
         if isinstance(sshkey, SshKey):
-            cherrypy.engine.publish(
-                'authorizedkey_added', sshkey.user, fingerprint=sshkey.fingerprint, comment=sshkey.comment
-            )
+            add_post_commit_tasks(session, 'authorizedkey_added', sshkey.user, sshkey.fingerprint, sshkey.comment)

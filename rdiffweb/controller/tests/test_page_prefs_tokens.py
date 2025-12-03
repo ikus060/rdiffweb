@@ -261,6 +261,7 @@ class ApiTokensTest(rdiffweb.test.WebCase):
             method='POST',
             body={'name': "my-token", "scope": "all"},
         )
+        user.expire()
         # Then sh get added or permissions is refused
         if success:
             self.assertStatus(200)

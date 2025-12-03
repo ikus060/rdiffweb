@@ -119,6 +119,7 @@ class PagePrefNotificationTest(rdiffweb.test.WebCase):
 
     def test_update_notification(self):
         # Given a user with a repository
+        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         # When updating the notification settings
         self.getPage("/prefs/notification", method='POST', body={'action': 'set_notification_info', 'testcases': '7'})
         # Then the page return successfully with the modification
@@ -127,11 +128,12 @@ class PagePrefNotificationTest(rdiffweb.test.WebCase):
         self.assertInBody('Notification settings updated successfully.')
         self.assertInBody('<option selected value="7">')
         # Then database is updated too
-        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        repo_obj.expire()
         self.assertEqual(7, repo_obj.maxage)
 
     def test_update_notification_method_get(self):
         # Given a user with repositories
+        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         # When trying to update notification with GET method
         self.getPage("/prefs/notification?action=set_notification_info&testcases=7")
         # Then page return with success
@@ -140,11 +142,12 @@ class PagePrefNotificationTest(rdiffweb.test.WebCase):
         # Then page doesn't update values
         self.assertNotInBody('Notification settings updated successfully.')
         # Then database is not updated
-        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        repo_obj.expire()
         self.assertEqual(0, repo_obj.maxage)
 
     def test_update_notification_with_invalid_string(self):
         # Given a user with a repository
+        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         # When updating the notification settings
         self.getPage(
             "/prefs/notification", method='POST', body={'action': 'set_notification_info', 'testcases': 'invalid'}
@@ -154,11 +157,12 @@ class PagePrefNotificationTest(rdiffweb.test.WebCase):
         self.assertInBody('Invalid Choice:')
         self.assertNotInBody('Notification settings updated successfully.')
         # Then database is not updated
-        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        repo_obj.expire()
         self.assertEqual(0, repo_obj.maxage)
 
     def test_update_notification_with_invalid_number(self):
         # Given a user with a repository
+        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         # When updating the notification settings
         self.getPage("/prefs/notification", method='POST', body={'action': 'set_notification_info', 'testcases': '365'})
         # Then the page return successfully with the modification
@@ -166,5 +170,5 @@ class PagePrefNotificationTest(rdiffweb.test.WebCase):
         self.assertInBody('Not a valid choice')
         self.assertNotInBody('Notification settings updated successfully.')
         # Then database is not updated
-        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        repo_obj.expire()
         self.assertEqual(0, repo_obj.maxage)

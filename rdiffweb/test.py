@@ -103,6 +103,7 @@ class WebCase(helper.CPWebCase):
         if hasattr(cherrypy, '_cache'):
             cherrypy._cache.clear()
         # Create a clean environment by creating a new database and restarting all plugins.
+        cherrypy.db.clear_sessions()
         cherrypy.db.drop_all()
         cherrypy.db.create_all()
         cherrypy.engine.publish('graceful')
@@ -124,7 +125,6 @@ class WebCase(helper.CPWebCase):
             shutil.rmtree(self.testcases)
             delattr(self, 'testcases')
         cherrypy.db.clear_sessions()
-        # cherrypy.db.drop_all()
         # Clear cherrypy.tools.caching
         if hasattr(cherrypy, '_cache'):
             cherrypy._cache.clear()
@@ -173,7 +173,7 @@ class WebCase(helper.CPWebCase):
             headers = list(headers)  # Make a copy of headers because if get updated.
 
         # When body is a dict, send the data as form data.
-        if isinstance(body, dict) and method in ['POST', 'PUT']:
+        if isinstance(body, dict):
             is_json_content = ('Content-Type', 'application/json') in headers
             if is_json_content:
                 body = json.dumps(body).encode('utf-8')

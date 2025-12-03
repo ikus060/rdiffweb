@@ -83,6 +83,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         self.assertStatus('403 Forbidden')
 
     def test_set_maxage(self):
+        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         # When updating maxage
         self.getPage("/settings/" + self.USERNAME + "/" + self.REPO + "/", method="POST", body={'maxage': '4'})
         self.assertStatus(303)
@@ -91,7 +92,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody("Settings modified successfully.")
         # Then repo get updated
-        repo_obj = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        repo_obj.expire()
         self.assertEqual(4, repo_obj.maxage)
 
     def test_set_maxage_method_get(self):
@@ -140,6 +141,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         self._login('anotheruser', 'password')
         # When trying to update the keepdays
         self.getPage("/settings/anotheruser/testcases/", method="POST", body={'keepdays': '1'})
+        user_obj.expire()
         # Then it's success or not
         if success:
             self.assertStatus(303)
@@ -162,9 +164,10 @@ class SettingsTest(rdiffweb.test.WebCase):
         user_obj.user_root = self.testcases
         user_obj.refresh_repos()
         user_obj.commit()
+        repo = RepoObject.query.filter(RepoObject.user == user_obj, RepoObject.repopath == self.REPO).first()
         self.getPage("/settings/anotheruser/testcases/", method="POST", body={'keepdays': '1'})
         self.assertStatus(303)
-        repo = RepoObject.query.filter(RepoObject.user == user_obj, RepoObject.repopath == self.REPO).first()
+        repo.expire()
         self.assertEqual(1, repo.keepdays)
 
         # Remove admin right
@@ -196,11 +199,12 @@ class SettingsTest(rdiffweb.test.WebCase):
         """
         Check to update the encoding with latin_1 (normalized to iso8859-1).
         """
+        repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         self.getPage("/settings/admin/testcases/", method="POST", body={'encoding': 'latin_1'})
         self.assertStatus(303)
         self.getPage("/settings/admin/testcases")
         self.assertInBody("Settings modified successfully.")
-        repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        repo.expire()
         self.assertEqual('iso8859-1', repo.encoding)
         # Get back encoding.
         self.assertInBody('selected value="iso8859-1"')
@@ -209,11 +213,12 @@ class SettingsTest(rdiffweb.test.WebCase):
         """
         Check to update the encoding with US-ASCII.
         """
+        repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         self.getPage("/settings/admin/testcases/", method="POST", body={'encoding': 'US-ASCII'})
         self.assertStatus(303)
         self.getPage("/settings/admin/testcases")
         self.assertInBody("Settings modified successfully.")
-        repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
+        repo.expire()
         self.assertEqual('ascii', repo.encoding)
         # Get back encoding.
         self.assertInBody('selected value="ascii"')
@@ -230,11 +235,13 @@ class SettingsTest(rdiffweb.test.WebCase):
         """
         Check to update the encoding with windows 1252.
         """
-        # UWhen updating to encoding windows_1252
+        # When updating to encoding windows_1252
+        repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
         self.getPage("/settings/admin/testcases/", method="POST", body={'encoding': 'windows_1252'})
         self.assertStatus(303)
         self.getPage("/settings/admin/testcases")
         self.assertInBody("Settings modified successfully.")
+        repo.expire()
         # Then encoding is "normalized" to cp1252
         self.assertInBody('selected value="cp1252"')
         repo = RepoObject.query.filter(RepoObject.repopath == self.REPO).first()
@@ -246,9 +253,10 @@ class SettingsTest(rdiffweb.test.WebCase):
         user_obj.user_root = self.testcases
         user_obj.refresh_repos()
         user_obj.commit()
+        repo = RepoObject.query.filter(RepoObject.user == user_obj, RepoObject.repopath == self.REPO).first()
         self.getPage("/settings/anotheruser/testcases/", method="POST", body={'encoding': 'cp1252'})
         self.assertStatus(303)
-        repo = RepoObject.query.filter(RepoObject.user == user_obj, RepoObject.repopath == self.REPO).first()
+        repo.expire()
         self.assertEqual('cp1252', repo.encoding)
 
         # Remove admin right
