@@ -37,7 +37,6 @@ class LoginForm(CherryForm):
         default=lambda: cherrypy.tools.auth.get_user_key() or "",
         validators=[DataRequired(), Length(max=256, message=_('Username too long.'))],
         render_kw={
-            "placeholder": _('Username'),
             "autocorrect": "off",
             "autocapitalize": "none",
             "autocomplete": "off",
@@ -48,6 +47,7 @@ class LoginForm(CherryForm):
     persistent = BooleanField(
         _('Remember me'),
         default=lambda: cherrypy.tools.sessions_timeout.is_persistent(),
+        render_kw={},
     )
     submit = SubmitField(
         _('Sign in'),
@@ -57,10 +57,26 @@ class LoginForm(CherryForm):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # If user got redirected to login page, let use the URL to fill the login name by default.
-        # e.g.: /browser/<username>/reponame
+        # e.g.: /browse/<username>/reponame
         original_url = cherrypy.tools.auth.get_original_url()
-        if original_url and original_url.count('/') >= 3 and not self.login.data:
+        if (
+            original_url
+            and original_url.startswith('/browse/')
+            and original_url.count('/') >= 3
+            and not self.login.data
+        ):
             self.login.data = original_url.strip('/').split('/', 2)[1]
+        # Update place holder based on application config
+        cfg = cherrypy.tree.apps[''].cfg
+        self.login.render_kw['placeholder'] = _('Username or Email') if cfg.login_with_email else _('Username')
+        # Add a tooltip on remember me to include session timeout.
+        persistent_timeout = cherrypy.config.get('tools.sessions_timeout.persistent_timeout')
+        idle_timeout = cherrypy.config.get('tools.sessions.timeout')
+        title = _(
+            "Check this to stay signed in for %d day(s). If you leave it unchecked, your session will last for %d hour(s)."
+        ) % (persistent_timeout // 1440, idle_timeout // 60)
+        self.persistent.render_kw['title'] = title
+        self.persistent.render_kw['label-title'] = title
 
 
 class LoginPage(Controller):
