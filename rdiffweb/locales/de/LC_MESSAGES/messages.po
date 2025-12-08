@@ -1937,7 +1937,7 @@ msgid "You are about to permanently delete this repository. Deleted repository C
 msgstr "Sie sind dabei, dieses Repository dauerhaft zu löschen. Gelöschtes Repository KANN NICHT wiederhergestellt werden! Sind Sie ABSOLUT sicher?"
 
 #: rdiffweb/templates/stats.html:7 rdiffweb/templates/stats.html:26
-msgid "File Statistics"
+msgid "Snapshot Changes"
 msgstr "Dateistatistiken"
 
 #: rdiffweb/templates/stats.html:28
@@ -1973,7 +1973,7 @@ msgid "Displaying _START_-_END_ of _TOTAL_ file statistics"
 msgstr "Anzeige von _START_-_END_ von _TOTAL_ Dateistatistiken"
 
 #: rdiffweb/templates/stats.html:54
-msgid "No File Statistics Selected"
+msgid "No Snapshot Changes Selected"
 msgstr "Keine Dateistatistiken ausgewählt"
 
 #: rdiffweb/templates/stats.html:55

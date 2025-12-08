@@ -10,7 +10,7 @@
     (_('Settings'), url_for('settings', repo), active_repo_page=='settings', 'fa fa-sliders'),
     (_('Graphs'), url_for('graphs', 'activities', repo), active_repo_page=='graphs', 'fa fa-area-chart'),
     (_('Snapshot Changes'), url_for('stats', repo), active_repo_page=='stats', 'fa fa-list-alt'),
-    (_('Job Logs'), url_for('logs', repo), active_repo_page=='logs', 'fa fa-file-text-o'),
+    (_('Logs'), url_for('logs', repo), active_repo_page=='logs', 'fa fa-file-text-o'),
     ] -%}
     {{ nav_tabs(nav_items) }}
   </div>

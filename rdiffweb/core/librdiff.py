@@ -560,7 +560,7 @@ class FileStatisticsEntry(MetadataEntry):
     """
     Represent a single file_statistics.
 
-    File Statistics contains different information related to each file of
+    Snapshot Changes contains different information related to each file of
     the backup. This class provide a simple and easy way to access this
     data.
     """
@@ -651,7 +651,7 @@ class SessionStatisticsEntry(MetadataEntry):
         """This method is used to read the session_statistics and create the
         appropriate structure to quickly get the data.
 
-        File Statistics contains different information related to each file of
+        Snapshot Changes contains different information related to each file of
         the backup. This class provide a simple and easy way to access this
         data."""
         # FIXME Don't load if already loaded

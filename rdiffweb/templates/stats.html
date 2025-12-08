@@ -4,7 +4,7 @@
 {% set active_page='repo' %}
 {% set active_repo_page='stats' %}
 {% block title %}
-  {% trans %}File Statistics{% endtrans %}
+  {% trans %}Snapshot Changes{% endtrans %}
 {% endblock %}
 {% block content %}
   <div class="row">
@@ -23,9 +23,9 @@
       </ul>
     </div>
     <div class="col-md-9">
-      <h2>{% trans %}File Statistics{% endtrans %}</h2>
+      <h2>{% trans %}Snapshot Changes{% endtrans %}</h2>
       <p>
-        {% trans %}The file statistics view presents a comprehensive list of changes in the backup, including new, deleted and changed files, allowing users to easily track and manage modifications to their data.{% endtrans %}
+        {% trans %}The snapshot changes view presents a comprehensive list of changes in the backup, including new, deleted and changed files, allowing users to easily track and manage modifications to their data.{% endtrans %}
       </p>
       {% if date %}
         {% set buttons = [
@@ -46,13 +46,13 @@
         buttons=buttons,
         order=[[ 0, 'desc' ]],
         searching=True,
-        empty_message=_('File statistics are not available'),
-        info_message=_('Displaying _START_-_END_ of _TOTAL_ file statistics'),
+        empty_message=_('Changes are not available'),
+        info_message=_('Displaying _START_-_END_ of _TOTAL_ changes'),
         paging=True,
         page_length=20) }}
       {% else %}
-        {% call empty('fa fa-list-alt', _('No File Statistics Selected')) %}
-          <p>{% trans %}Select a backup date on the left to display detailed statistics for that date.{% endtrans %}</p>
+        {% call empty('fa fa-list-alt', _('No snapshot selected')) %}
+          <p>{% trans %}Select a backup date on the left to display detailed changes for that date.{% endtrans %}</p>
         {% endcall %}
       {% endif %}
     </div>

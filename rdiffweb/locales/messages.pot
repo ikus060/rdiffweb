@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-08 10:33-0400\n"
+"POT-Creation-Date: 2025-12-12 14:17-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,68 +23,82 @@ msgid "Invalid date."
 msgstr ""
 
 #: rdiffweb/controller/api_currentuser.py:44
-#: rdiffweb/controller/page_admin_users.py:96
+#: rdiffweb/controller/page_admin_users.py:100
 #: rdiffweb/controller/page_pref_general.py:44
 msgid "Fullname too long."
 msgstr ""
 
 #: rdiffweb/controller/api_currentuser.py:45
-#: rdiffweb/controller/page_admin_users.py:97
+#: rdiffweb/controller/page_admin_users.py:101
 #: rdiffweb/controller/page_pref_general.py:45
 msgid "Must not contain any special characters."
 msgstr ""
 
 #: rdiffweb/controller/api_currentuser.py:51
-#: rdiffweb/controller/page_admin_users.py:104
+#: rdiffweb/controller/page_admin_users.py:108
 #: rdiffweb/controller/page_pref_general.py:52
 msgid "Email too long."
 msgstr ""
 
 #: rdiffweb/controller/api_currentuser.py:52
-#: rdiffweb/controller/page_admin_users.py:105
+#: rdiffweb/controller/page_admin_users.py:109
 #: rdiffweb/controller/page_pref_general.py:53
 msgid "Must be a valid email address."
 msgstr ""
 
 #: rdiffweb/controller/api_currentuser.py:58
-#: rdiffweb/controller/page_admin_users.py:148
+#: rdiffweb/controller/page_admin_users.py:153
 #: rdiffweb/controller/page_pref_notification.py:40
-#: rdiffweb/controller/page_settings.py:115
+#: rdiffweb/controller/page_settings.py:119
+#: rdiffweb/templates/include/table.html:19
 #: rdiffweb/templates/prefs_tokens.html:44
 #: rdiffweb/templates/prefs_tokens.html:53
 msgid "Never"
 msgstr ""
 
 #: rdiffweb/controller/api_currentuser.py:59
-#: rdiffweb/controller/page_admin_users.py:149
+#: rdiffweb/controller/page_admin_users.py:154
 #: rdiffweb/controller/page_pref_notification.py:41
+#: rdiffweb/templates/include/table.html:20
 msgid "Daily"
 msgstr ""
 
 #: rdiffweb/controller/api_currentuser.py:60
-#: rdiffweb/controller/page_admin_users.py:150
+#: rdiffweb/controller/page_admin_users.py:155
 #: rdiffweb/controller/page_pref_notification.py:42
+#: rdiffweb/templates/include/table.html:21
 msgid "Weekly"
 msgstr ""
 
 #: rdiffweb/controller/api_currentuser.py:61
-#: rdiffweb/controller/page_admin_users.py:151
+#: rdiffweb/controller/page_admin_users.py:156
 #: rdiffweb/controller/page_pref_notification.py:43
+#: rdiffweb/templates/include/table.html:22
 msgid "Monthly"
 msgstr ""
 
 #: rdiffweb/controller/api_currentuser.py:71
-#: rdiffweb/controller/page_admin_users.py:178
+#: rdiffweb/controller/page_admin_users.py:193
 #: rdiffweb/controller/page_pref_general.py:63
 msgid "(default)"
 msgstr ""
 
-#: rdiffweb/controller/formdb.py:51
+#: rdiffweb/controller/formdb.py:54
 msgid "A database error occurred. Please check your input."
 msgstr ""
 
-#: rdiffweb/controller/formdb.py:57
+#: rdiffweb/controller/formdb.py:60
 msgid "An unexpected error occurred while saving your data."
+msgstr ""
+
+#: rdiffweb/controller/page_admin_activity.py:73
+msgid "Invalid column for sorting"
+msgstr ""
+
+#: rdiffweb/controller/page_admin_activity.py:112
+#: rdiffweb/controller/page_admin_users.py:405
+#: rdiffweb/controller/page_settings.py:332
+msgid "System"
 msgstr ""
 
 #: rdiffweb/controller/page_admin_session.py:49
@@ -152,9 +166,10 @@ msgid "Group"
 msgstr ""
 
 #: rdiffweb/controller/page_admin_sysinfo.py:82
-#: rdiffweb/controller/page_admin_users.py:137
-#: rdiffweb/templates/admin_logs.html:37
+#: rdiffweb/controller/page_admin_users.py:142
+#: rdiffweb/templates/admin_activity.html:16
 #: rdiffweb/templates/admin_session.html:23
+#: rdiffweb/templates/include/table.html:27
 msgid "User"
 msgstr ""
 
@@ -206,184 +221,224 @@ msgstr ""
 msgid "LDAP TLS Support (OpenSSL)"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:73
+#: rdiffweb/controller/page_admin_users.py:77
 msgid "Not a valid file size value"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:77
-msgid "UserID"
-msgstr ""
-
-#: rdiffweb/controller/page_admin_users.py:79
-#: rdiffweb/controller/page_admin_users.py:260
-#: rdiffweb/controller/page_login.py:35 rdiffweb/controller/page_login.py:39
+#: rdiffweb/controller/page_admin_users.py:83
+#: rdiffweb/controller/page_admin_users.py:288
+#: rdiffweb/controller/page_login.py:35 rdiffweb/controller/page_login.py:71
 #: rdiffweb/controller/page_pref_general.py:39
+#: rdiffweb/templates/include/table.html:56
 msgid "Username"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:82
-#: rdiffweb/controller/page_login.py:37
+#: rdiffweb/controller/page_admin_users.py:86
+#: rdiffweb/controller/page_login.py:38
 msgid "Username too long."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:83
+#: rdiffweb/controller/page_admin_users.py:87
 msgid "Username too short."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:87
+#: rdiffweb/controller/page_admin_users.py:91
 msgid ""
 "Must start with a letter and contain only letters, numbers, underscores "
 "(_), hyphens (-), or periods (.)."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:93
+#: rdiffweb/controller/page_admin_users.py:97
 #: rdiffweb/controller/page_pref_general.py:41
+#: rdiffweb/templates/include/table.html:43
 msgid "Fullname"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:101
+#: rdiffweb/controller/page_admin_users.py:105
 #: rdiffweb/controller/page_pref_general.py:49
+#: rdiffweb/templates/include/table.html:42
 msgid "Email"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:109
+#: rdiffweb/controller/page_admin_users.py:113
 #: rdiffweb/controller/page_login.py:46
+#: rdiffweb/templates/include/table.html:44
 #: rdiffweb/templates/prefs_general.html:15
 msgid "Password"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:113
+#: rdiffweb/controller/page_admin_users.py:117
 msgid "Two-Factor Authentication (2FA)"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:116
+#: rdiffweb/controller/page_admin_users.py:120
+#: rdiffweb/controller/page_admin_users.py:179
 #: rdiffweb/controller/page_pref_mfa.py:47
-#: rdiffweb/templates/admin_repos.html:63
+#: rdiffweb/templates/admin_repos.html:64
+#: rdiffweb/templates/admin_users.html:57
+#: rdiffweb/templates/include/table.html:15
 msgid "Disabled"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:117
+#: rdiffweb/controller/page_admin_users.py:121
 #: rdiffweb/controller/page_pref_mfa.py:48
+#: rdiffweb/templates/include/table.html:16
 msgid "Enabled"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:121
+#: rdiffweb/controller/page_admin_users.py:125
 msgid ""
 "When Two-Factor Authentication (2FA) is enabled for a user, a "
 "verification code get sent by email when user login from a new location."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:125
+#: rdiffweb/controller/page_admin_users.py:129
+#: rdiffweb/templates/include/table.html:55
 msgid "Root directory"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:126
+#: rdiffweb/controller/page_admin_users.py:130
 msgid "Absolute path defining the location of the repositories for this user."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:128
+#: rdiffweb/controller/page_admin_users.py:132
 msgid "Root directory too long."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:132
+#: rdiffweb/controller/page_admin_users.py:136
+#: rdiffweb/templates/include/table.html:52
 msgid "User Role"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:135
+#: rdiffweb/controller/page_admin_users.py:140
+#: rdiffweb/templates/include/table.html:25
 msgid "Admin"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:136
+#: rdiffweb/controller/page_admin_users.py:141
+#: rdiffweb/templates/include/table.html:26
 msgid "Maintainer"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:141
+#: rdiffweb/controller/page_admin_users.py:146
 msgid ""
 "Admin: may browse and delete everything. Maintainer: may browse and "
 "delete their own repo. User: may only browser their own repo."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:144
+#: rdiffweb/controller/page_admin_users.py:149
 #: rdiffweb/controller/page_pref_general.py:56
+#: rdiffweb/templates/include/table.html:45
 msgid "Preferred Language"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:146
+#: rdiffweb/controller/page_admin_users.py:151
+#: rdiffweb/templates/include/table.html:51
 msgid "Send Backup report"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:157
+#: rdiffweb/controller/page_admin_users.py:162
 msgid "Disk space"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:159
+#: rdiffweb/controller/page_admin_users.py:164
 msgid "Users disk spaces (in bytes). Set to 0 to remove quota (unlimited)."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:162
+#: rdiffweb/controller/page_admin_users.py:167
 msgid "Quota Used"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:164
+#: rdiffweb/controller/page_admin_users.py:169
 msgid "Disk spaces (in bytes) used by this user."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:183
+#: rdiffweb/controller/page_admin_users.py:173
+#: rdiffweb/controller/page_settings.py:236
+#: rdiffweb/templates/admin_repos.html:35
+#: rdiffweb/templates/include/table.html:48
+msgid "Notes"
+msgstr ""
+
+#: rdiffweb/controller/page_admin_users.py:175
+#: rdiffweb/controller/page_settings.py:238
+msgid "Notes too long."
+msgstr ""
+
+#: rdiffweb/controller/page_admin_users.py:176
+msgid "Enter notes about this user."
+msgstr ""
+
+#: rdiffweb/controller/page_admin_users.py:180
+msgid "Disables the account and blocks the user from logging in."
+msgstr ""
+
+#: rdiffweb/controller/page_admin_users.py:198
 msgid "To create an LDAP user, you must leave the password empty."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:189
+#: rdiffweb/controller/page_admin_users.py:204
 msgid "Cannot edit your own role."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:195
+#: rdiffweb/controller/page_admin_users.py:210
 msgid "Cannot change your own two-factor authentication settings."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:197
+#: rdiffweb/controller/page_admin_users.py:212
 msgid "User email is required to enabled Two-Factor Authentication."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:214
+#: rdiffweb/controller/page_admin_users.py:235
 #, python-format
 msgid "User's root directory %s is not accessible!"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:234
+#: rdiffweb/controller/page_admin_users.py:261
 msgid "Setting user's quota is not supported"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:256
+#: rdiffweb/controller/page_admin_users.py:283
 msgid "Cannot change username of and existing user."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:265
+#: rdiffweb/controller/page_admin_users.py:287
+#: rdiffweb/controller/page_delete.py:35
+msgid "Confirmation"
+msgstr ""
+
+#: rdiffweb/controller/page_admin_users.py:289
+msgid "Delete user's data"
+msgstr ""
+
+#: rdiffweb/controller/page_admin_users.py:293
+msgid "Invalid confirmation"
+msgstr ""
+
+#: rdiffweb/controller/page_admin_users.py:298
 msgid "You cannot remove your own account!"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:294
+#: rdiffweb/controller/page_admin_users.py:333
 msgid "User added successfully."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:309
-#: rdiffweb/controller/page_admin_users.py:332
+#: rdiffweb/controller/page_admin_users.py:348
+#: rdiffweb/controller/page_admin_users.py:372
+#: rdiffweb/controller/page_admin_users.py:385
 #, python-format
 msgid "User %s doesn't exists"
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:312
+#: rdiffweb/controller/page_admin_users.py:352
 msgid "User information modified successfully."
 msgstr ""
 
-#: rdiffweb/controller/page_admin_users.py:336
+#: rdiffweb/controller/page_admin_users.py:374
 msgid "User account removed."
 msgstr ""
 
-#: rdiffweb/controller/page_delete.py:44
-msgid "Confirmation"
-msgstr ""
-
-#: rdiffweb/controller/page_delete.py:48
+#: rdiffweb/controller/page_delete.py:39
 #, python-format
 msgid "Invalid value, must be: %s"
 msgstr ""
@@ -443,13 +498,24 @@ msgstr ""
 msgid "Remember me"
 msgstr ""
 
-#: rdiffweb/controller/page_login.py:52 rdiffweb/controller/page_mfa.py:49
+#: rdiffweb/controller/page_login.py:53 rdiffweb/controller/page_mfa.py:49
 #: rdiffweb/core/tests/test_i18n.py:80 rdiffweb/core/tests/test_i18n.py:85
-#: rdiffweb/core/tests/test_i18n.py:89 rdiffweb/templates/login.html:4
+#: rdiffweb/core/tests/test_i18n.py:89
 msgid "Sign in"
 msgstr ""
 
-#: rdiffweb/controller/page_login.py:91
+#: rdiffweb/controller/page_login.py:71
+msgid "Username or Email"
+msgstr ""
+
+#: rdiffweb/controller/page_login.py:76
+#, python-format
+msgid ""
+"Check this to stay signed in for %d day(s). If you leave it unchecked, "
+"your session will last for %d hour(s)."
+msgstr ""
+
+#: rdiffweb/controller/page_login.py:108
 msgid "Invalid username or password."
 msgstr ""
 
@@ -492,8 +558,7 @@ msgstr ""
 #: rdiffweb/controller/page_pref_general.py:57
 #: rdiffweb/controller/page_pref_notification.py:47
 #: rdiffweb/controller/page_pref_notification.py:76
-#: rdiffweb/controller/page_settings.py:231
-#: rdiffweb/templates/admin_user_edit.html:13
+#: rdiffweb/templates/include/panel.html:18
 msgid "Save changes"
 msgstr ""
 
@@ -655,75 +720,75 @@ msgstr ""
 msgid "Failed to get SSH keys"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:45
+#: rdiffweb/controller/page_pref_tokens.py:46
 msgid "Everything - Allow read write access to everything."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:49
+#: rdiffweb/controller/page_pref_tokens.py:50
 msgid ""
 "Read user settings - Grant read access to your profile, notification "
 "settings, ssh keys and access token."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:55
+#: rdiffweb/controller/page_pref_tokens.py:56
 msgid ""
 "Write user settings - Grant write access to your profile, notification "
 "settings, ssh keys and access token."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:67
+#: rdiffweb/controller/page_pref_tokens.py:68
 msgid "Admin read all user settings - Grant read access to all users data."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:71
+#: rdiffweb/controller/page_pref_tokens.py:72
 msgid "Admin write all user settings - Grant write access to all users data."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:81
+#: rdiffweb/controller/page_pref_tokens.py:82
 msgid "Invalid choice(s): one or more data inputs could not be coerced."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:124
+#: rdiffweb/controller/page_pref_tokens.py:125
 msgid "Token name"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:126
+#: rdiffweb/controller/page_pref_tokens.py:127
 msgid ""
 "Used only to identify the purpose of the token. For example, the "
 "application that uses the token."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:130
+#: rdiffweb/controller/page_pref_tokens.py:131
 msgid "Token name too long"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:134
+#: rdiffweb/controller/page_pref_tokens.py:135
 msgid "Expiration date"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:136
+#: rdiffweb/controller/page_pref_tokens.py:137
 msgid ""
 "Allows the creation of a temporary token by defining an expiration date. "
 "Leave empty to keep the token forever."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:139
+#: rdiffweb/controller/page_pref_tokens.py:140
 msgid "YYYY-MM-DD"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:145
+#: rdiffweb/controller/page_pref_tokens.py:146
 msgid "Select scopes"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:145
+#: rdiffweb/controller/page_pref_tokens.py:146
 msgid "Scopes set the permissions level of this access token."
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:146
+#: rdiffweb/controller/page_pref_tokens.py:147
 msgid "Create access token"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:160
+#: rdiffweb/controller/page_pref_tokens.py:162
 #: rdiffweb/templates/admin_session.html:63
 #: rdiffweb/templates/admin_session.html:75
 #: rdiffweb/templates/prefs_session.html:19
@@ -733,7 +798,7 @@ msgstr ""
 msgid "Revoke"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:186
+#: rdiffweb/controller/page_pref_tokens.py:188
 #, python-format
 msgid ""
 "Your new personal access token has been created.\n"
@@ -741,104 +806,105 @@ msgid ""
 "%s"
 msgstr ""
 
-#: rdiffweb/controller/page_pref_tokens.py:197
+#: rdiffweb/controller/page_pref_tokens.py:199
 msgid "The access token has been successfully deleted."
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:42 rdiffweb/core/model/_repo.py:211
-#: rdiffweb/core/model/_repo.py:214
+#: rdiffweb/controller/page_settings.py:43 rdiffweb/core/model/_repo.py:239
+#: rdiffweb/core/model/_repo.py:242
 #, python-format
 msgid "invalid encoding %s"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:116
-#: rdiffweb/controller/page_settings.py:196
-msgid "1 day"
-msgstr ""
-
-#: rdiffweb/controller/page_settings.py:117
-#: rdiffweb/controller/page_settings.py:197
-msgid "2 days"
-msgstr ""
-
-#: rdiffweb/controller/page_settings.py:118
-#: rdiffweb/controller/page_settings.py:198
-msgid "3 days"
-msgstr ""
-
-#: rdiffweb/controller/page_settings.py:119
-#: rdiffweb/controller/page_settings.py:199
-msgid "4 days"
-msgstr ""
-
 #: rdiffweb/controller/page_settings.py:120
 #: rdiffweb/controller/page_settings.py:200
-msgid "5 days"
+msgid "1 day"
 msgstr ""
 
 #: rdiffweb/controller/page_settings.py:121
 #: rdiffweb/controller/page_settings.py:201
-msgid "6 days"
+msgid "2 days"
 msgstr ""
 
 #: rdiffweb/controller/page_settings.py:122
 #: rdiffweb/controller/page_settings.py:202
-msgid "1 week"
+msgid "3 days"
 msgstr ""
 
 #: rdiffweb/controller/page_settings.py:123
 #: rdiffweb/controller/page_settings.py:203
-msgid "2 weeks"
+msgid "4 days"
 msgstr ""
 
 #: rdiffweb/controller/page_settings.py:124
 #: rdiffweb/controller/page_settings.py:204
-msgid "3 weeks"
+msgid "5 days"
 msgstr ""
 
 #: rdiffweb/controller/page_settings.py:125
-msgid "4 weeks"
+#: rdiffweb/controller/page_settings.py:205
+msgid "6 days"
 msgstr ""
 
 #: rdiffweb/controller/page_settings.py:126
-#: rdiffweb/controller/page_settings.py:205
+#: rdiffweb/controller/page_settings.py:206
+msgid "1 week"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:127
+#: rdiffweb/controller/page_settings.py:207
+msgid "2 weeks"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:128
+#: rdiffweb/controller/page_settings.py:208
+msgid "3 weeks"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:129
+msgid "4 weeks"
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:130
+#: rdiffweb/controller/page_settings.py:209
 msgid "1 month"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:136
+#: rdiffweb/controller/page_settings.py:140
 msgid "Monday"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:137
+#: rdiffweb/controller/page_settings.py:141
 msgid "Tuesday"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:138
+#: rdiffweb/controller/page_settings.py:142
 msgid "Wednesday"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:139
+#: rdiffweb/controller/page_settings.py:143
 msgid "Thursday"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:140
+#: rdiffweb/controller/page_settings.py:144
 msgid "Friday"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:141
+#: rdiffweb/controller/page_settings.py:145
 msgid "Saturday"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:142
+#: rdiffweb/controller/page_settings.py:146
 msgid "Sunday"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:175
+#: rdiffweb/controller/page_settings.py:179
 #: rdiffweb/templates/admin_repos.html:32
+#: rdiffweb/templates/include/table.html:46
 msgid "Inactivity Notification Period"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:177
+#: rdiffweb/controller/page_settings.py:181
 msgid ""
 "The period refers to the duration of inactivity after which a "
 "notification is triggered and sent to the user. It determines the number "
@@ -847,11 +913,12 @@ msgid ""
 "repository."
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:182
+#: rdiffweb/controller/page_settings.py:186
+#: rdiffweb/templates/include/table.html:39
 msgid "Excluded Days of the Week"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:184
+#: rdiffweb/controller/page_settings.py:188
 msgid ""
 "This field allows to select specific days of the week to exclude from "
 "considering as part of the inactivity period. By selecting the days to "
@@ -860,12 +927,13 @@ msgid ""
 "notifications."
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:189
+#: rdiffweb/controller/page_settings.py:193
 #: rdiffweb/templates/admin_repos.html:33
+#: rdiffweb/templates/include/table.html:40
 msgid "Data Retention Duration"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:191
+#: rdiffweb/controller/page_settings.py:195
 msgid ""
 "The retention period determines how long the backup data will be stored "
 "in the repository before it is automatically deleted or purged. By "
@@ -873,76 +941,77 @@ msgid ""
 " data should be retained before being removed."
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:195
-#: rdiffweb/templates/admin_repos.html:70
+#: rdiffweb/controller/page_settings.py:199
+#: rdiffweb/templates/admin_repos.html:71
 msgid "Forever"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:206
+#: rdiffweb/controller/page_settings.py:210
 msgid "2 months"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:207
+#: rdiffweb/controller/page_settings.py:211
 msgid "3 months"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:208
+#: rdiffweb/controller/page_settings.py:212
 msgid "4 months"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:209
+#: rdiffweb/controller/page_settings.py:213
 msgid "5 months"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:210
+#: rdiffweb/controller/page_settings.py:214
 msgid "6 months"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:211
+#: rdiffweb/controller/page_settings.py:215
 msgid "7 months"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:212
+#: rdiffweb/controller/page_settings.py:216
 msgid "8 months"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:213
+#: rdiffweb/controller/page_settings.py:217
 msgid "9 months"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:214
+#: rdiffweb/controller/page_settings.py:218
 msgid "10 months"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:215
+#: rdiffweb/controller/page_settings.py:219
 msgid "11 months"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:216
+#: rdiffweb/controller/page_settings.py:220
 msgid "1 year"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:217
+#: rdiffweb/controller/page_settings.py:221
 msgid "2 years"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:218
+#: rdiffweb/controller/page_settings.py:222
 msgid "3 years"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:219
+#: rdiffweb/controller/page_settings.py:223
 msgid "4 years"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:220
+#: rdiffweb/controller/page_settings.py:224
 msgid "5 years"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:224
+#: rdiffweb/controller/page_settings.py:228
+#: rdiffweb/templates/include/table.html:38
 msgid "Display Encoding"
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:226
+#: rdiffweb/controller/page_settings.py:230
 msgid ""
 "This setting relates to the representation or format in which the backup "
 "repository is displayed. It may include considerations such as language "
@@ -951,11 +1020,15 @@ msgid ""
 "correctly and in a manner that is suitable for your locale."
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:244
+#: rdiffweb/controller/page_settings.py:239
+msgid "Enter notes about this repository."
+msgstr ""
+
+#: rdiffweb/controller/page_settings.py:253
 msgid "Only maintainers or administrators can update data retention settings."
 msgstr ""
 
-#: rdiffweb/controller/page_settings.py:270
+#: rdiffweb/controller/page_settings.py:290
 msgid "Settings modified successfully."
 msgstr ""
 
@@ -993,15 +1066,33 @@ msgstr ""
 msgid "Average duration (min)"
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:936
+#: rdiffweb/core/activity.py:40
+msgid "User login to web application"
+msgstr ""
+
+#: rdiffweb/core/activity.py:73
+#, python-format
+msgid "Restore file path %s"
+msgstr ""
+
+#: rdiffweb/core/activity.py:77
+#, python-format
+msgid "Delete file path: %s"
+msgstr ""
+
+#: rdiffweb/core/librdiff.py:941
 msgid "The repository cannot be found or is badly damaged."
 msgstr ""
 
-#: rdiffweb/core/librdiff.py:941 rdiffweb/core/librdiff.py:947
-#: rdiffweb/core/librdiff.py:1206
+#: rdiffweb/core/librdiff.py:946 rdiffweb/core/librdiff.py:1206
 msgid ""
 "Permissions denied. Contact administrator to check repository's "
 "permissions."
+msgstr ""
+
+#: rdiffweb/core/librdiff.py:952
+#, python-format
+msgid "%s. Contact administrator if problem persist."
 msgstr ""
 
 #: rdiffweb/core/librdiff.py:1210
@@ -1020,7 +1111,7 @@ msgstr ""
 msgid "Healthy"
 msgstr ""
 
-#: rdiffweb/core/notification.py:172
+#: rdiffweb/core/notification.py:177
 #: rdiffweb/templates/email_notification.html:6
 #: rdiffweb/templates/prefs_notification.html:26
 msgid "Notification"
@@ -1061,60 +1152,69 @@ msgstr ""
 msgid "%d seconds ago"
 msgstr ""
 
-#: rdiffweb/core/model/_sshkey.py:39 rdiffweb/core/model/_sshkey.py:53
+#: rdiffweb/core/model/_repo.py:329
+msgid "Deletion in progress..."
+msgstr ""
+
+#: rdiffweb/core/model/_sshkey.py:43 rdiffweb/core/model/_sshkey.py:109
 msgid "Duplicate key. This key already exists or is associated to another user."
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:252
-msgid "SSH key already exists"
-msgstr ""
-
-#: rdiffweb/core/model/_user.py:281
+#: rdiffweb/core/model/_user.py:327
 #, python-format
 msgid "Duplicate token name: %s"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:297
+#: rdiffweb/core/model/_user.py:344 rdiffweb/core/model/_user.py:358
 msgid "can't delete admin user"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:325
+#: rdiffweb/core/model/_user.py:371
+#, python-format
+msgid "fingerprint doesn't exists: %s"
+msgstr ""
+
+#: rdiffweb/core/model/_user.py:379
 #, python-format
 msgid "token name doesn't exists: %s"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:426
+#: rdiffweb/core/model/_user.py:469
 msgid "password can't be empty"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:431
+#: rdiffweb/core/model/_user.py:474
 msgid "can't update admin-password defined in configuration file"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:436
+#: rdiffweb/core/model/_user.py:479
 #, python-format
 msgid "Password must have between %(min)d and %(max)d characters."
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:443
+#: rdiffweb/core/model/_user.py:486
 msgid "Password too weak."
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:500
+#: rdiffweb/core/model/_user.py:520
+msgid "can't delete or disable admin user"
+msgstr ""
+
+#: rdiffweb/core/model/_user.py:551
 msgid "A user with this username address already exists."
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:508
+#: rdiffweb/core/model/_user.py:559
 msgid ""
 "Username must start with a letter and contain only letters, numbers, _, "
 "., and -"
 msgstr ""
 
-#: rdiffweb/core/model/_user.py:598
+#: rdiffweb/core/model/_user.py:674
 msgid "A user with this email address already exists."
 msgstr ""
 
-#: rdiffweb/core/tests/test_i18n.py:46 rdiffweb/templates/admin_users.html:73
+#: rdiffweb/core/tests/test_i18n.py:46 rdiffweb/templates/admin_users.html:85
 msgid "Edit"
 msgstr ""
 
@@ -1123,7 +1223,7 @@ msgstr ""
 msgid "Admin area"
 msgstr ""
 
-#: rdiffweb/templates/admin.html:11 rdiffweb/templates/admin_users.html:74
+#: rdiffweb/templates/admin.html:11 rdiffweb/templates/admin_users.html:86
 msgid "Overview"
 msgstr ""
 
@@ -1132,8 +1232,8 @@ msgid "Users"
 msgstr ""
 
 #: rdiffweb/templates/admin.html:13 rdiffweb/templates/admin_overview.html:10
-#: rdiffweb/templates/layout.html:70 rdiffweb/templates/locations.html:6
-#: rdiffweb/templates/locations.html:30
+#: rdiffweb/templates/include/table.html:49 rdiffweb/templates/layout.html:70
+#: rdiffweb/templates/locations.html:6 rdiffweb/templates/locations.html:30
 msgid "Repositories"
 msgstr ""
 
@@ -1141,55 +1241,123 @@ msgstr ""
 msgid "User Sessions"
 msgstr ""
 
-#: rdiffweb/templates/admin.html:15 rdiffweb/templates/admin_logs.html:4
+#: rdiffweb/templates/admin.html:15 rdiffweb/templates/include/messages.html:10
+msgid "Activity"
+msgstr ""
+
+#: rdiffweb/templates/admin.html:16 rdiffweb/templates/admin_activity.html:4
+#: rdiffweb/templates/admin_logs.html:5
 msgid "System Logs"
 msgstr ""
 
-#: rdiffweb/templates/admin.html:16 rdiffweb/templates/admin_sysinfo.html:3
+#: rdiffweb/templates/admin.html:17 rdiffweb/templates/admin_sysinfo.html:3
 msgid "System Info"
 msgstr ""
 
-#: rdiffweb/templates/admin_logs.html:13
-msgid "Threat"
+#: rdiffweb/templates/admin_activity.html:9
+msgid "Show User Activities"
 msgstr ""
 
-#: rdiffweb/templates/admin_logs.html:15 rdiffweb/templates/admin_logs.html:29
-msgid "User Login"
+#: rdiffweb/templates/admin_activity.html:10
+msgid "Show Repository Activities"
 msgstr ""
 
-#: rdiffweb/templates/admin_logs.html:17 rdiffweb/templates/admin_logs.html:31
-msgid "User Activity"
+#: rdiffweb/templates/admin_activity.html:11
+msgid "Reset"
 msgstr ""
 
-#: rdiffweb/templates/admin_logs.html:28 rdiffweb/templates/admin_repos.html:20
-#: rdiffweb/templates/admin_session.html:14
-#: rdiffweb/templates/admin_users.html:24 rdiffweb/templates/stats.html:32
-msgid "All"
+#: rdiffweb/templates/admin_activity.html:13
+msgid "Date"
 msgstr ""
 
-#: rdiffweb/templates/admin_logs.html:30
-msgid "Threats"
+#: rdiffweb/templates/admin_activity.html:14
+msgid "Actor"
 msgstr ""
 
-#: rdiffweb/templates/admin_logs.html:35
-msgid "When"
+#: rdiffweb/templates/admin_activity.html:16
+msgid "Model Type"
 msgstr ""
 
-#: rdiffweb/templates/admin_logs.html:36
-#: rdiffweb/templates/admin_session.html:22
-msgid "IP Address"
+#: rdiffweb/templates/admin_activity.html:16
+msgid "Repository"
 msgstr ""
 
-#: rdiffweb/templates/admin_logs.html:38
-msgid "Event Description"
+#: rdiffweb/templates/admin_activity.html:17
+msgid "Target"
 msgstr ""
 
-#: rdiffweb/templates/admin_logs.html:48
-msgid "Logs is empty"
+#: rdiffweb/templates/admin_activity.html:18
+msgid "Action"
 msgstr ""
 
-#: rdiffweb/templates/admin_logs.html:49
-msgid "Displaying _START_-_END_ of _TOTAL_ most recent log systems"
+#: rdiffweb/templates/admin_activity.html:18
+msgid "Create"
+msgstr ""
+
+#: rdiffweb/templates/admin_activity.html:18
+msgid "Modify"
+msgstr ""
+
+#: rdiffweb/templates/admin_activity.html:18 rdiffweb/templates/history.html:99
+#: rdiffweb/templates/prefs_sshkeys.html:29
+#: rdiffweb/templates/prefs_sshkeys.html:53 rdiffweb/templates/settings.html:23
+msgid "Delete"
+msgstr ""
+
+#: rdiffweb/templates/admin_activity.html:18
+msgid "Comment"
+msgstr ""
+
+#: rdiffweb/templates/admin_activity.html:18
+msgid "Event"
+msgstr ""
+
+#: rdiffweb/templates/admin_activity.html:20
+msgid "Details"
+msgstr ""
+
+#: rdiffweb/templates/admin_activity.html:28
+msgid "No Activity"
+msgstr ""
+
+#: rdiffweb/templates/admin_activity.html:29
+#: rdiffweb/templates/include/messages.html:17
+msgid "Displaying _START_-_END_ of _TOTAL_ most recent activities"
+msgstr ""
+
+#: rdiffweb/templates/admin_logs.html:24
+#, python-format
+msgid ""
+"Notice: To prevent performance issues, only the last %(limit)s lines of "
+"the log files are displayed."
+msgstr ""
+
+#: rdiffweb/templates/admin_logs.html:25 rdiffweb/templates/logs.html:38
+msgid "Show all logs"
+msgstr ""
+
+#: rdiffweb/templates/admin_logs.html:30 rdiffweb/templates/logs.html:42
+msgid "Log file empty"
+msgstr ""
+
+#: rdiffweb/templates/admin_logs.html:31 rdiffweb/templates/logs.html:43
+msgid "This log file is empty. Select another log file to show it's contents."
+msgstr ""
+
+#: rdiffweb/templates/admin_logs.html:35 rdiffweb/templates/logs.html:46
+msgid "No log file selected"
+msgstr ""
+
+#: rdiffweb/templates/admin_logs.html:36 rdiffweb/templates/logs.html:47
+msgid "Select a log file to show it's contents."
+msgstr ""
+
+#: rdiffweb/templates/admin_logs.html:43
+msgid "No log file available"
+msgstr ""
+
+#: rdiffweb/templates/admin_logs.html:44
+msgid "The server is not configured to log in any file."
 msgstr ""
 
 #: rdiffweb/templates/admin_overview.html:11
@@ -1198,6 +1366,11 @@ msgstr ""
 
 #: rdiffweb/templates/admin_repos.html:4
 msgid "Repositories management"
+msgstr ""
+
+#: rdiffweb/templates/admin_repos.html:20
+#: rdiffweb/templates/admin_session.html:14 rdiffweb/templates/stats.html:32
+msgid "All"
 msgstr ""
 
 #: rdiffweb/templates/admin_repos.html:23
@@ -1214,10 +1387,12 @@ msgid "Repository list"
 msgstr ""
 
 #: rdiffweb/templates/admin_repos.html:29
+#: rdiffweb/templates/include/table.html:50
 msgid "Display Name"
 msgstr ""
 
 #: rdiffweb/templates/admin_repos.html:30
+#: rdiffweb/templates/include/table.html:54
 msgid "Owner"
 msgstr ""
 
@@ -1230,43 +1405,42 @@ msgstr ""
 msgid "Errors were detected in the last backup"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:53
+#: rdiffweb/templates/admin_repos.html:54
 msgid "Updated "
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:61
-#: rdiffweb/templates/admin_repos.html:68
+#: rdiffweb/templates/admin_repos.html:62
+#: rdiffweb/templates/admin_repos.html:69
 #, python-format
 msgid "%(num)s days"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:74
+#: rdiffweb/templates/admin_repos.html:75
 #: rdiffweb/templates/admin_session.html:51
 msgid "No"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:74
+#: rdiffweb/templates/admin_repos.html:75
 #: rdiffweb/templates/admin_session.html:51
 msgid "Yes"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:78
-#: rdiffweb/templates/layout_repo.html:11 rdiffweb/templates/settings.html:7
+#: rdiffweb/templates/admin_repos.html:80
+#: rdiffweb/templates/layout_repo.html:10 rdiffweb/templates/settings.html:8
 msgid "Settings"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:79 rdiffweb/templates/graphs.html:6
-#: rdiffweb/templates/layout_repo.html:12
+#: rdiffweb/templates/admin_repos.html:81 rdiffweb/templates/graphs.html:6
+#: rdiffweb/templates/layout_repo.html:11
 msgid "Graphs"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:80
-#: rdiffweb/templates/layout_repo.html:13
+#: rdiffweb/templates/admin_repos.html:82
 msgid "Stats"
 msgstr ""
 
-#: rdiffweb/templates/admin_repos.html:81
-#: rdiffweb/templates/layout_repo.html:14
+#: rdiffweb/templates/admin_repos.html:83
+#: rdiffweb/templates/layout_repo.html:13
 msgid "Logs"
 msgstr ""
 
@@ -1293,6 +1467,10 @@ msgstr ""
 
 #: rdiffweb/templates/admin_session.html:21
 msgid "Device"
+msgstr ""
+
+#: rdiffweb/templates/admin_session.html:22
+msgid "IP Address"
 msgstr ""
 
 #: rdiffweb/templates/admin_session.html:25
@@ -1367,14 +1545,31 @@ msgstr ""
 msgid "Python Info"
 msgstr ""
 
-#: rdiffweb/templates/admin_user_edit.html:5
-#: rdiffweb/templates/admin_user_edit.html:9
+#: rdiffweb/templates/admin_user_edit.html:8
+#: rdiffweb/templates/admin_user_edit.html:17
 msgid "Edit user"
 msgstr ""
 
-#: rdiffweb/templates/admin_user_edit.html:14
-#: rdiffweb/templates/admin_user_new.html:12
-msgid "Cancel"
+#: rdiffweb/templates/admin_user_edit.html:13
+#: rdiffweb/templates/admin_user_edit.html:32
+msgid "Delete User"
+msgstr ""
+
+#: rdiffweb/templates/admin_user_edit.html:29
+msgid "Confirm User Deletion"
+msgstr ""
+
+#: rdiffweb/templates/admin_user_edit.html:30
+msgid ""
+"Deleting this user will remove their account and access. You can also "
+"choose to delete all backup data associated with this user. Are you sure "
+"you want to delete this User?"
+msgstr ""
+
+#: rdiffweb/templates/admin_user_edit.html:40
+msgid ""
+"Also delete this user's backup data (all associated backups will be "
+"permanently removed)"
 msgstr ""
 
 #: rdiffweb/templates/admin_user_new.html:4
@@ -1384,19 +1579,24 @@ msgstr ""
 msgid "Add user"
 msgstr ""
 
+#: rdiffweb/templates/admin_user_new.html:12
+#: rdiffweb/templates/include/panel.html:16
+msgid "Cancel"
+msgstr ""
+
 #: rdiffweb/templates/admin_users.html:4
 msgid "User management"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:25
+#: rdiffweb/templates/admin_users.html:24
 msgid "Admins"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:26
+#: rdiffweb/templates/admin_users.html:25
 msgid "LDAP"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:32
+#: rdiffweb/templates/admin_users.html:31
 msgid "User list"
 msgstr ""
 
@@ -1404,25 +1604,12 @@ msgstr ""
 msgid "It's you"
 msgstr ""
 
-#: rdiffweb/templates/admin_users.html:65
+#: rdiffweb/templates/admin_users.html:59
+msgid "Deleting"
+msgstr ""
+
+#: rdiffweb/templates/admin_users.html:76
 msgid "Root directory not accessible!"
-msgstr ""
-
-#: rdiffweb/templates/admin_users.html:77
-#: rdiffweb/templates/admin_users.html:79
-#: rdiffweb/templates/admin_users.html:93 rdiffweb/templates/history.html:99
-#: rdiffweb/templates/prefs_sshkeys.html:29
-#: rdiffweb/templates/prefs_sshkeys.html:53 rdiffweb/templates/settings.html:20
-#: rdiffweb/templates/settings.html:33
-msgid "Delete"
-msgstr ""
-
-#: rdiffweb/templates/admin_users.html:90
-msgid "Delete User"
-msgstr ""
-
-#: rdiffweb/templates/admin_users.html:91
-msgid "Are you sure you want to delete this User?"
 msgstr ""
 
 #: rdiffweb/templates/browse.html:6 rdiffweb/templates/browse.html:20
@@ -1778,7 +1965,7 @@ msgstr ""
 msgid "Average time to complete backup."
 msgstr ""
 
-#: rdiffweb/templates/history.html:6 rdiffweb/templates/layout_repo.html:10
+#: rdiffweb/templates/history.html:6
 msgid "History"
 msgstr ""
 
@@ -1796,7 +1983,7 @@ msgstr ""
 msgid "Toggle Dropdown"
 msgstr ""
 
-#: rdiffweb/templates/history.html:97 rdiffweb/templates/settings.html:30
+#: rdiffweb/templates/history.html:97 rdiffweb/templates/settings.html:20
 msgid "Confirmation required"
 msgstr ""
 
@@ -1835,7 +2022,12 @@ msgstr ""
 msgid "Powered by"
 msgstr ""
 
-#: rdiffweb/templates/layout_repo.html:26
+#: rdiffweb/templates/layout_repo.html:12 rdiffweb/templates/stats.html:7
+#: rdiffweb/templates/stats.html:26
+msgid "Snapshot Changes"
+msgstr ""
+
+#: rdiffweb/templates/layout_repo.html:25
 msgid "The displayed data may be inconsistent."
 msgstr ""
 
@@ -1851,6 +2043,10 @@ msgstr ""
 
 #: rdiffweb/templates/locations.html:77
 msgid "Initial backup not completed."
+msgstr ""
+
+#: rdiffweb/templates/login.html:4
+msgid "Login"
 msgstr ""
 
 #: rdiffweb/templates/login.html:22
@@ -1895,26 +2091,6 @@ msgid ""
 "log files are displayed."
 msgstr ""
 
-#: rdiffweb/templates/logs.html:38
-msgid "Show all logs"
-msgstr ""
-
-#: rdiffweb/templates/logs.html:42
-msgid "Log file empty"
-msgstr ""
-
-#: rdiffweb/templates/logs.html:43
-msgid "This log file is empty. Select another log file to show it's contents."
-msgstr ""
-
-#: rdiffweb/templates/logs.html:46
-msgid "No log file selected"
-msgstr ""
-
-#: rdiffweb/templates/logs.html:47
-msgid "Select a log file to show it's contents."
-msgstr ""
-
 #: rdiffweb/templates/mfa.html:7
 msgid "Login Verification"
 msgstr ""
@@ -1937,7 +2113,7 @@ msgstr ""
 msgid "General"
 msgstr ""
 
-#: rdiffweb/templates/prefs.html:16
+#: rdiffweb/templates/include/table.html:41 rdiffweb/templates/prefs.html:16
 msgid "SSH Keys"
 msgstr ""
 
@@ -1945,7 +2121,8 @@ msgstr ""
 msgid "Access Tokens"
 msgstr ""
 
-#: rdiffweb/templates/prefs.html:18 rdiffweb/templates/prefs_mfa.html:6
+#: rdiffweb/templates/include/table.html:47 rdiffweb/templates/prefs.html:18
+#: rdiffweb/templates/prefs_mfa.html:6
 msgid "Two-Factor Authentication"
 msgstr ""
 
@@ -2053,6 +2230,7 @@ msgstr ""
 msgid "Are you sure you want to delete this SSH Key?"
 msgstr ""
 
+#: rdiffweb/templates/include/table.html:53
 #: rdiffweb/templates/prefs_tokens.html:7
 msgid "Access Token"
 msgstr ""
@@ -2136,11 +2314,25 @@ msgstr ""
 msgid "Go Back"
 msgstr ""
 
-#: rdiffweb/templates/settings.html:10
-msgid "General Settings"
+#: rdiffweb/templates/settings.html:14
+msgid "Ask your administrator if you want to delete this repository."
 msgstr ""
 
-#: rdiffweb/templates/settings.html:10
+#: rdiffweb/templates/settings.html:16
+msgid "Delete repository"
+msgstr ""
+
+#: rdiffweb/templates/settings.html:21
+msgid ""
+"You are about to permanently delete this repository. Deleted repository "
+"CANNOT be restored! Are you ABSOLUTELY sure?"
+msgstr ""
+
+#: rdiffweb/templates/settings.html:28
+msgid "Repository Settings"
+msgstr ""
+
+#: rdiffweb/templates/settings.html:29
 msgid ""
 "You can modify the backup repository settings to suit your requirements. "
 "These settings allow you to adjust the notification period, retention "
@@ -2148,38 +2340,10 @@ msgid ""
 "your preferred frequency, data storage duration, and localization needs."
 msgstr ""
 
-#: rdiffweb/templates/settings.html:16
-msgid "Delete repository"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:16
-msgid ""
-"Deleting the repository will permanently delete all related resources "
-"including files, history, status etc."
-msgstr ""
-
-#: rdiffweb/templates/settings.html:18
-msgid "Deleted repository cannot be restored!"
-msgstr ""
-
-#: rdiffweb/templates/settings.html:23
-msgid "Ask your administrator if you want to delete this repository."
-msgstr ""
-
-#: rdiffweb/templates/settings.html:31
-msgid ""
-"You are about to permanently delete this repository. Deleted repository "
-"CANNOT be restored! Are you ABSOLUTELY sure?"
-msgstr ""
-
-#: rdiffweb/templates/stats.html:7 rdiffweb/templates/stats.html:26
-msgid "File Statistics"
-msgstr ""
-
 #: rdiffweb/templates/stats.html:28
 msgid ""
-"The file statistics view presents a comprehensive list of changes in the "
-"backup, including new, deleted and changed files, allowing users to "
+"The snapshot changes view presents a comprehensive list of changes in the"
+" backup, including new, deleted and changed files, allowing users to "
 "easily track and manage modifications to their data."
 msgstr ""
 
@@ -2203,21 +2367,21 @@ msgstr ""
 msgid "Increment Size"
 msgstr ""
 
-#: rdiffweb/templates/stats.html:50
-msgid "File statistics are not available"
+#: rdiffweb/templates/stats.html:49
+msgid "Changes are not available"
 msgstr ""
 
-#: rdiffweb/templates/stats.html:51
-msgid "Displaying _START_-_END_ of _TOTAL_ file statistics"
+#: rdiffweb/templates/stats.html:50
+msgid "Displaying _START_-_END_ of _TOTAL_ changes"
+msgstr ""
+
+#: rdiffweb/templates/stats.html:54
+msgid "No snapshot selected"
 msgstr ""
 
 #: rdiffweb/templates/stats.html:55
-msgid "No File Statistics Selected"
-msgstr ""
-
-#: rdiffweb/templates/stats.html:56
 msgid ""
-"Select a backup date on the left to display detailed statistics for that "
+"Select a backup date on the left to display detailed changes for that "
 "date."
 msgstr ""
 
@@ -2282,25 +2446,33 @@ msgid "No matching records found"
 msgstr ""
 
 #: rdiffweb/templates/include/datatables.html:30
-#: rdiffweb/templates/include/table.html:11
+#: rdiffweb/templates/include/table.html:59
 msgid "Filter: "
+msgstr ""
+
+#: rdiffweb/templates/include/messages.html:16
+msgid "No activity"
 msgstr ""
 
 #: rdiffweb/templates/include/modal_dialog.html:22
 msgid "Close"
 msgstr ""
 
-#: rdiffweb/templates/include/modal_dialog.html:49
+#: rdiffweb/templates/include/modal_dialog.html:50
 msgid ""
 "This action can lead to data loss. To prevent accidental actions we ask "
 "you to confirm your intention."
 msgstr ""
 
-#: rdiffweb/templates/include/modal_dialog.html:51
+#: rdiffweb/templates/include/modal_dialog.html:52
 #, python-format
 msgid ""
 "Please type <strong>%(confirm_value)s</strong> to proceed or close this "
 "modal to cancel."
+msgstr ""
+
+#: rdiffweb/templates/include/panel.html:10
+msgid "Leave an internal message"
 msgstr ""
 
 #: rdiffweb/templates/include/session.html:4
@@ -2327,6 +2499,30 @@ msgid "No records available"
 msgstr ""
 
 #: rdiffweb/templates/include/table.html:12
+msgid "undefined"
+msgstr ""
+
+#: rdiffweb/templates/include/table.html:30
+msgid "Created by"
+msgstr ""
+
+#: rdiffweb/templates/include/table.html:31
+msgid "Deleted by"
+msgstr ""
+
+#: rdiffweb/templates/include/table.html:32
+msgid "Modified by"
+msgstr ""
+
+#: rdiffweb/templates/include/table.html:33
+msgid "Comment by"
+msgstr ""
+
+#: rdiffweb/templates/include/table.html:34
+msgid "Event logged by"
+msgstr ""
+
+#: rdiffweb/templates/include/table.html:60
 msgid "List is empty"
 msgstr ""
 

@@ -2333,7 +2333,7 @@ msgstr ""
 "excluído NÃO PODE ser restaurado! Você tem ABSOLUTAMENTE certeza?"
 
 #: rdiffweb/templates/stats.html:7 rdiffweb/templates/stats.html:26
-msgid "File Statistics"
+msgid "Snapshot Changes"
 msgstr "Estatísticas de Arquivo"
 
 #: rdiffweb/templates/stats.html:28
@@ -2376,7 +2376,7 @@ msgid "Displaying _START_-_END_ of _TOTAL_ file statistics"
 msgstr "Exibindo _START_-_END_ de _TOTAL_ estatísticas do arquivo"
 
 #: rdiffweb/templates/stats.html:55
-msgid "No File Statistics Selected"
+msgid "No Snapshot Changes Selected"
 msgstr "Nenhuma Estatística de Arquivo Selecionada"
 
 #: rdiffweb/templates/stats.html:56

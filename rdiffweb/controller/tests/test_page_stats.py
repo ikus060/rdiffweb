@@ -25,14 +25,14 @@ class StatsTest(rdiffweb.test.WebCase):
     def test_stats_index(self):
         self.getPage(url_for('stats', self.USERNAME, self.REPO, ''))
         self.assertStatus('200 OK')
-        self.assertInBody('No File Statistics Selected')
+        self.assertInBody('No snapshot selected')
 
     def test_stats_date(self):
         self.getPage(url_for('stats', self.USERNAME, self.REPO, date=1454448640, limit=10))
         self.assertStatus('200 OK')
         # Then a table is displayed
         self.assertInBody('<table')
-        self.assertNotInBody('No File Statistics Selected')
+        self.assertNotInBody('No snapshot selected')
 
     def test_stats_data_json(self):
         self.getPage(url_for('stats', 'data.json', self.USERNAME, self.REPO, date=1454448640, limit=10))
@@ -54,7 +54,7 @@ class StatsTest(rdiffweb.test.WebCase):
 
         self.getPage("/stats/anotheruser/testcases/")
         self.assertStatus('200 OK')
-        self.assertInBody("No File Statistics Selected")
+        self.assertInBody("No snapshot selected")
 
         # Remove admin role
         admin = UserObject.get_user('admin')
