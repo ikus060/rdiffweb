@@ -246,6 +246,8 @@ class Scheduler(SimplePlugin):
         """
         # Search for a matching job
         return_value = False
+        if self._scheduler is None:
+            return return_value
         for j in self._scheduler.get_jobs(jobstore=jobstore):
             if j.func == job or j.name == job:
                 self._scheduler.remove_job(job_id=j.id, jobstore=jobstore)
@@ -256,12 +258,16 @@ class Scheduler(SimplePlugin):
         """
         Remove all jobs from scheduler.
         """
+        if self._scheduler is None:
+            return
         self._scheduler.remove_all_jobs(jobstore=jobstore)
 
     def wait_for_jobs(self, jobstore=None):
         """
         Used to wait for all running jobs to complete.
         """
+        if self._scheduler is None:
+            return
         # Wait until the queue is empty.
         while any(
             job for job in self._scheduler.get_jobs(jobstore=jobstore) if job.next_run_time < datetime.now(timezone.utc)

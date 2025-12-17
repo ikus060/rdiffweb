@@ -159,7 +159,7 @@ def get_parser():
     parser.add_argument(
         '--default-lang',
         help='default application locale. e.g.: `fr`',
-        default='en_US',
+        default='en',
     )
 
     parser.add_argument(

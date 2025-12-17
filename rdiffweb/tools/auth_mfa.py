@@ -23,14 +23,12 @@ import cherrypy
 
 from rdiffweb.core.passwd import check_password, hash_password
 
-logger = logging.getLogger(__name__)
-
 MFA_CODE = '_auth_mfa_code'
 MFA_CODE_TIME = '_auth_mfa_code_time'
 MFA_CODE_ATTEMPT = '_auth_mfa_code_attempt'
 MFA_REDIRECT_URL = '_auth_mfa_redirect_url'
 MFA_TRUSTED_IP_LIST = '_auth_mfa_trusted_ip_list'
-MFA_USERNAME = '_auth_mfa_username'
+MFA_USER_KEY = '_auth_mfa_user_key'
 MFA_VERIFICATION_TIME = '_auth_mfa_time'
 
 MFA_DEFAULT_CODE_TIMEOUT = 10  # minutes
@@ -86,7 +84,7 @@ class CheckAuthMfa(cherrypy.Tool):
         length = self._code_length()
         code = ''.join(secrets.choice(string.digits) for _ in range(length))
         session = cherrypy.serving.session
-        session[MFA_USERNAME] = cherrypy.request.login
+        session[MFA_USER_KEY] = cherrypy.request.login
         session[MFA_CODE] = hash_password(code)
         session[MFA_CODE_TIME] = session.now()
         session[MFA_CODE_ATTEMPT] = 0
@@ -99,7 +97,7 @@ class CheckAuthMfa(cherrypy.Tool):
 
         # Check if our username match current login user.
         session = cherrypy.serving.session
-        if session.get(MFA_USERNAME) != cherrypy.request.login:
+        if session.get(MFA_USER_KEY) != cherrypy.request.login:
             return False
 
         # Check if the current IP is trusted
@@ -128,7 +126,7 @@ class CheckAuthMfa(cherrypy.Tool):
             return True
 
         session = cherrypy.serving.session
-        if session.get(MFA_USERNAME) != cherrypy.request.login:
+        if session.get(MFA_USER_KEY) != cherrypy.request.login:
             return True
 
         # Check if code is defined.
@@ -208,11 +206,10 @@ class CheckAuthMfa(cherrypy.Tool):
         if is_expired or not code_valid:
             if not is_expired:  # Only increment if not expired
                 session[MFA_CODE_ATTEMPT] = attempts = int(session.get(MFA_CODE_ATTEMPT, 0)) + 1
-            logger.warning(
-                'MFA code verification failed for user=%s from ip=%s, attempt=%d',
-                cherrypy.request.login,
-                cherrypy.request.remote.ip,
-                attempts,
+            cherrypy.log(
+                f'verification failed user={cherrypy.request.login} ip={cherrypy.request.remote.ip} attempts={attempts}',
+                context='MFA',
+                severity=logging.WARNING,
             )
             return False
 
@@ -239,8 +236,8 @@ class CheckAuthMfa(cherrypy.Tool):
 
         # Rotate session id to prevent fixation
         session.regenerate()
-        logger.info(
-            'Successful MFA verification for user=%s from ip=%s', cherrypy.request.login, cherrypy.request.remote.ip
+        cherrypy.log(
+            f'verification successful user={cherrypy.request.login} ip={cherrypy.request.remote.ip}', context='MFA'
         )
         return True
 

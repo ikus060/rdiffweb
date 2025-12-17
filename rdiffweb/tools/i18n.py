@@ -105,6 +105,15 @@ from babel.support import LazyProxy, NullTranslations, Translations
 _current = threading.local()
 
 
+def _get_config(key, default=None):
+    """
+    Lookup configuration from request, if available. Fallback to global config.
+    """
+    if getattr(cherrypy, 'request') and getattr(cherrypy.request, 'config') and key in cherrypy.request.config:
+        return cherrypy.request.config[key]
+    return cherrypy.config.get(key, default)
+
+
 @contextmanager
 def preferred_lang(lang):
     """
@@ -153,7 +162,7 @@ def preferred_timezone(timezone):
 
 
 @lru_cache(maxsize=10)
-def _search_translation(dirname, domain, *langs):
+def _search_translation(dirname, domain, *locales):
     """
     Loads the first existing translations for known locale.
 
@@ -168,15 +177,19 @@ def _search_translation(dirname, domain, *langs):
 
     :returns: Translations, the corresponding Locale object.
     """
-    if not isinstance(langs, (list, tuple)):
-        langs = [langs]
-    t = Translations.load(dirname, langs, domain)
+    if not isinstance(locales, (list, tuple)):
+        locales = [locales]
+    t = Translations.load(dirname, locales, domain)
     # Ignore null translation
     if t.__class__ is NullTranslations:
         return None
-    # Get Locale from file name
-    lang = t.files[0].split('/')[-3]
-    t.locale = Locale.parse(lang)
+    # Assign prefered local to this translation to know the current locale.
+    trans_locale = Locale.parse(t.files[0].split('/')[-3])
+    for locale in locales:
+        locale = Locale.parse(locale)
+        if trans_locale == locale or trans_locale.language == locale.language:
+            t.locale = locale
+            break
     return t
 
 
@@ -199,7 +212,7 @@ def get_timezone():
         return tzinfo
     # Otherwise search for a valid timezone.
     tzinfo = None
-    default_timezone = cherrypy.config.get('tools.i18n.default_timezone')
+    default_timezone = _get_config('tools.i18n.default_timezone')
     preferred_timezone = getattr(_current, 'preferred_timezone', [default_timezone])
     for timezone in preferred_timezone:
         try:
@@ -226,10 +239,10 @@ def get_translation():
     # Otherwise, we need to search the translation.
     # `preferred_lang` should always has a sane value within a cherrypy request because of hooks
     # But we also need to support calls outside cherrypy.
-    default = cherrypy.config.get('tools.i18n.default')
+    default = _get_config('tools.i18n.default')
     preferred_lang = getattr(_current, 'preferred_lang', [default])
-    mo_dir = cherrypy.config.get('tools.i18n.mo_dir')
-    domain = cherrypy.config.get('tools.i18n.domain')
+    mo_dir = _get_config('tools.i18n.mo_dir')
+    domain = _get_config('tools.i18n.domain')
     trans = _search_translation(mo_dir, domain, *preferred_lang)
     if trans is None:
         trans = NullTranslations()
@@ -242,8 +255,8 @@ def list_available_locales():
     """
     Return a list of available translations.
     """
-    mo_dir = cherrypy.config.get('tools.i18n.mo_dir', False)
-    domain = cherrypy.config.get('tools.i18n.domain')
+    mo_dir = _get_config('tools.i18n.mo_dir', False)
+    domain = _get_config('tools.i18n.domain')
     if not mo_dir:
         return
     for lang in os.listdir(mo_dir):
@@ -415,7 +428,9 @@ def _set_content_language(**kwargs):
     language of `cherrypy.response.i18n.locale`.
     """
     if 'Content-Language' not in cherrypy.response.headers:
-        cherrypy.response.headers['Content-Language'] = str(get_translation().locale)
+        locale = get_translation().locale
+        language_tag = f"{locale.language}-{locale.territory}" if locale.territory else locale.language
+        cherrypy.response.headers['Content-Language'] = language_tag
 
 
 class I18nTool(cherrypy.Tool):

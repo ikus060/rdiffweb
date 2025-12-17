@@ -15,12 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import http.cookies
-import logging
 
 import cherrypy
-
-# Define the logger
-logger = logging.getLogger(__name__)
 
 DEFAULT_CSP = {
     'default-src': 'self',

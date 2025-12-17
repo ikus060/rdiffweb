@@ -29,9 +29,6 @@ AUTH_DEFAULT_SESSION_KEY = "_auth_session_key"
 AUTH_DEFAULT_REAUTH_TIMEOUT = 60  # minutes
 
 
-logger = logging.getLogger(__name__)
-
-
 class AuthManager(cherrypy.Tool):
     """
     CherryPy tool handling authentication.
@@ -102,7 +99,12 @@ class AuthManager(cherrypy.Tool):
             try:
                 currentuser = user_from_key_func(user_key)
             except Exception:
-                logger.exception('error while resolving user from key')
+                cherrypy.log(
+                    f'unexpected error searching for user_key={user_key}',
+                    context='AUTH',
+                    severity=logging.ERROR,
+                    traceback=True,
+                )
                 currentuser = None
 
             if currentuser:
@@ -122,7 +124,7 @@ class AuthManager(cherrypy.Tool):
         Validate credentials with configured checkers; on success, call login_with_result.
         """
         if not login or not password:
-            logger.warning('empty login or password provided')
+            cherrypy.log('authentication failed reason=empty_credentials', context='AUTH', severity=logging.WARNING)
             return None
         # Validate credentials using checkpassword function(s).
         conf = self._merged_args()
@@ -143,15 +145,23 @@ class AuthManager(cherrypy.Tool):
                     login, user_info = login, None
                 # If authentication is successful, initiate login process.
                 return self.login_with_result(login=login, user_info=user_info)
-            except Exception as e:
-                logger.exception(
-                    'unexpected error during authentication for [%s] with [%s]: %s', login, func.__qualname__, e
+            except Exception:
+                cherrypy.log(
+                    f'unexpected error checking password login={login} checkpassword={func.__qualname__} - continue with next function',
+                    context='AUTH',
+                    severity=logging.ERROR,
+                    traceback=True,
                 )
         # If we reach here, authentication failed
         if hasattr(cherrypy.serving, 'session'):
             cherrypy.serving.session.regenerate()  # Prevent session analysis
 
-        logger.warning('Failed login attempt for user=%s from ip=%s', login, cherrypy.serving.request.remote.ip)
+        remote_ip = cherrypy.serving.request.remote.ip
+        cherrypy.log(
+            f'authentication failed login={login} ip={remote_ip} reason=wrong_credentials',
+            context='AUTH',
+            severity=logging.WARNING,
+        )
 
         return None
 
@@ -166,11 +176,18 @@ class AuthManager(cherrypy.Tool):
         try:
             user_key, userobj = user_lookup_func(login=login, user_info=user_info or {})
         except Exception:
-            logger.exception('failed to lookup user object for login=%s', login)
+            cherrypy.log(
+                f"unexpected error searching user login={login} user_info={user_info}",
+                context='AUTH',
+                severity=logging.ERROR,
+                traceback=True,
+            )
             return None
 
         if not userobj:
-            logger.warning('failed to lookup user object for login=%s', login)
+            cherrypy.log(
+                f"authentication failed login={login} reason=not_found", context='AUTH', severity=logging.WARNING
+            )
             return None
 
         # Notify plugins about user login
@@ -204,6 +221,8 @@ class AuthManager(cherrypy.Tool):
         """
         Return the original URL browsed by the user before authentication.
         """
+        if not hasattr(cherrypy.serving, 'session'):
+            return None
         return cherrypy.serving.session.get(AUTH_ORIGINAL_URL)
 
     def get_user_key(self):
@@ -223,6 +242,9 @@ class AuthManager(cherrypy.Tool):
         """
         Save the current URL to user's session.
         """
+        # Skip this step if session is not enabled
+        if not hasattr(cherrypy.serving, 'session'):
+            return
         # Extract URL including query-string.
         request = cherrypy.serving.request
         uri_encoding = getattr(request, 'uri_encoding', 'utf-8')

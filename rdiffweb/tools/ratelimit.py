@@ -146,6 +146,8 @@ class FileRateLimit(_DataStore):
 
 
 class Ratelimit(cherrypy.Tool):
+    CONTEXT = 'TOOLS.RATELIMIT'
+
     def __init__(self, priority=60):
         super().__init__('before_handler', self.check_ratelimit, 'ratelimit', priority)
 
@@ -182,10 +184,7 @@ class Ratelimit(cherrypy.Tool):
         request = cherrypy.request
         if methods is not None and request.method not in methods:
             if debug:
-                cherrypy.log(
-                    'skip rate limit for HTTP method %s' % (request.method,),
-                    'TOOLS.RATELIMIT',
-                )
+                cherrypy.log(f'skip rate limit for HTTP method {request.method}', context=self.CONTEXT)
             return
 
         # If datastore is not pass as configuration, create it for the first time.
@@ -213,10 +212,7 @@ class Ratelimit(cherrypy.Tool):
         # Get hits count using datastore.
         hits, timeout = datastore.get_and_increment(token, delay, hit)
         if debug:
-            cherrypy.log(
-                'check and increase rate limit for scope %s, limit %s, hits %s' % (token, limit, hits),
-                'TOOLS.RATELIMIT',
-            )
+            cherrypy.log(f'check and increase limit token={token} limit={limit} hits={hits}', context=self.CONTEXT)
 
         # Verify user has not exceeded rate limit
         remaining = max(0, limit - hits)
@@ -227,7 +223,7 @@ class Ratelimit(cherrypy.Tool):
         cherrypy.response.headers['X-RateLimit-Reset'] = str(timeout)
 
         if limit < hits:  # block only after 'limit' successful requests
-            cherrypy.log('ratelimit access to `%s`' % request.path_info, 'TOOLS.RATELIMIT')
+            cherrypy.log(f'block access to path_info={request.path_info}', context=self.CONTEXT)
             if logout:
                 if hasattr(cherrypy.serving, 'session'):
                     cherrypy.serving.session.clear()
