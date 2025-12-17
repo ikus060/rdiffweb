@@ -89,11 +89,15 @@ def delete_user_with_data(userid):
     """
     # Let start by deleting all repositories from disk.
     userobj = UserObject.get_user(userid)
+    username = userobj.username
+    logger.info('deleting user [%s] with data', username)
     for repoobj in userobj.repo_objs:
+        logger.info('deleting repository [%s]', repoobj.display_name)
         repoobj.delete_repo()
     # Finish by deleting the user it self.
     userobj.delete()
     userobj.commit()
+    logger.info('user [%s] deleted', username)
 
 
 class UserObject(MessageMixin, Base):
