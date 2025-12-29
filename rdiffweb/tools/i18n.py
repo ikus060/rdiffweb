@@ -186,10 +186,13 @@ def _search_translation(dirname, domain, *locales):
     # Assign prefered local to this translation to know the current locale.
     trans_locale = Locale.parse(t.files[0].split('/')[-3])
     for locale in locales:
-        locale = Locale.parse(locale)
-        if trans_locale == locale or trans_locale.language == locale.language:
-            t.locale = locale
-            break
+        try:
+            locale = Locale.parse(locale)
+            if trans_locale == locale or trans_locale.language == locale.language:
+                t.locale = locale
+                break
+        except ValueError:
+            continue  # Invalid locale identifier
     return t
 
 
