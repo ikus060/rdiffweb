@@ -69,8 +69,6 @@ class DirCache(Monitor):
 
         # Fast path: have cache and mtime matches
         if entry is not None and entry[0] == mtime:
-            if not _update:
-                logger.debug("using cached entries for %s", path)
             # return a copy as list to avoid exposing our tuple
             return False if _update else list(entry[1])
 
