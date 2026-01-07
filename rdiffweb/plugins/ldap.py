@@ -26,7 +26,7 @@ _safe = ldap3.utils.conv.escape_filter_chars
 
 def all_attribute(attributes, keys, default=None):
     """
-    Extract the all value from LDAP attributes.
+    Extract all values from LDAP attributes.
     """
     # Skip loopkup if key is not defined.
     if not keys:
@@ -61,7 +61,9 @@ def first_attribute(attributes, keys, default=None):
     for attr in keys:
         try:
             value = attributes[attr]
-            if isinstance(value, list) and len(value) > 0:
+            if isinstance(value, list):
+                if len(value) == 0:
+                    pass
                 return value[0]
             else:
                 return value
