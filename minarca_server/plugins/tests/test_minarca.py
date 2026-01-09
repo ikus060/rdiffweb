@@ -19,7 +19,6 @@ import unittest
 from base64 import b64encode
 from importlib.resources import files
 from io import open
-from unittest.mock import ANY
 
 import cherrypy
 import responses
@@ -212,8 +211,7 @@ class MinarcaPluginTestWithQuotaAPI(minarca_server.tests.AbstractMinarcaTest):
     }
 
     @responses.activate
-    @unittest.mock.patch('minarca_server.plugins.minarca.subprocess.check_output')
-    def test_set_disk_quota(self, mock_check_output):
+    def test_set_disk_quota(self):
         # Given a valid use from database
         userobj = UserObject.add_user('bob')
         userobj.commit()
@@ -228,11 +226,6 @@ class MinarcaPluginTestWithQuotaAPI(minarca_server.tests.AbstractMinarcaTest):
         self.assertEqual([1234567], quota)
         # Then webservice was called
         self.assertEqual(1, len(responses.calls))
-        # Then wait for the task to be scheduled
-        cherrypy.scheduler.wait_for_jobs()
-        # Then subprocess get called twice
-        self.assertEqual(1, mock_check_output.call_count, "subprocess.check_output should be called")
-        mock_check_output.assert_any_call(['/usr/bin/chattr', '-R', '+P', '-p', str(userobj.id), ANY], stderr=-2)
 
     @responses.activate
     def test_update_userquota_401(self):

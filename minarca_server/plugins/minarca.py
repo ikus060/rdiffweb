@@ -5,7 +5,6 @@
 import logging
 import os
 import stat
-import subprocess
 from io import StringIO, open
 
 import cherrypy
@@ -19,17 +18,6 @@ from sqlalchemy.exc import OperationalError, ProgrammingError
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
-
-
-def update_attr_task(user_root, project_id):
-    # Update user root attribute
-    try:
-        # Add +P attribute to user's home directory
-        subprocess.check_output(
-            ["/usr/bin/chattr", "-R", "+P", "-p", str(project_id), user_root], stderr=subprocess.STDOUT
-        )
-    except Exception:
-        logger.warning("fail to update user quota", exc_info=1)
 
 
 class TimeoutHTTPAdapter(requests.adapters.HTTPAdapter):
@@ -320,15 +308,11 @@ class MinarcaPlugin(SimplePlugin):
         try:
             logger.info('set user [%s] quota [%s]', userobj.username, quota)
             url = os.path.join(self.quota_api_url, 'quota', str(userobj.id))
-            r = self.session.post(url, data={'size': quota}, timeout=1)
+            r = self.session.post(url, data={'size': quota, 'user_root': userobj.user_root}, timeout=1)
             r.raise_for_status()
         except Exception:
             logger.warning("fail to update user root quota", exc_info=1)
             return False
-
-        # Schedule update attribute task in background
-        cherrypy.engine.publish('scheduler:add_job_now', update_attr_task, userobj.user_root, userobj.id)
-
         return quota
 
 
