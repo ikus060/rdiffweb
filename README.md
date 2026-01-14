@@ -82,6 +82,52 @@ For more information, visit the [Minarca Website](https://minarca.org).
 
 # Changelog
 
+## 6.2.0 (2025-01-14)
+
+* Upgrade tzlocal
+* Remove pkg_resources dependency to avoid warnings
+* Upgrade to pyinstaller v7 to freeze application
+* Update docker documentation
+* Remove calls to chattr (moved to minarca-quota-api)
+* Upgrade rdiffweb to v2.11.0
+  * **New Features**
+    * Administrators can disable user accounts (#313).
+    * Administrators can delete users with or without data (#335).
+    * Added OAuth authentication support (sponsored by Orion Service Numérique)
+    * Added activity logs with support for comments/messages on users and repositories (#345).
+
+  * **Improvements**
+    * Updated login page.
+    * Improved loading of user repositories view with caching (#331).
+    * API now accepts role names in POST /api/users (#341).
+    * Added PT‑BR translation.
+    * Updated French translation.
+    * Updated OS/platform support:
+      * Added Ubuntu Plucky support.
+      * Add Debian Trixie support.
+      * Add Python 3.13 supports.
+
+  * **Bug Fixes**
+    * Fixed error sending email when repository is damaged (#326).
+    * Fixed document upload (#337).
+    * Fixed selenium execution on Bookworm.
+    * Fixed handling of damaged‑repo email notifications (#326).
+
+  * **Internal / Under‑the‑Hood Changes**
+    * Renamed internal identifiers (`userid` and `repoid`) to unified `id`.
+    * Upgraded SQL timestamp implementation.
+    * Verified OAuth URL at startups (#339).
+    * Cleaned deprecated codes and removed warnings.
+    * Removed python3‑future and python3‑nose dependencies.
+    * Pinned cheroot < 11 due to upstream thread issue (#769).
+    * Updated documentation (installation.md).
+    * General maintenance updates (copyright, RestAPI plugin metadata).
+    * Multiple dependency upgrades: LDAP modules, auth plugins, secure headers, flake8 bump, new python‑zxcvbn‑rs‑py dependency, RestAPI plugin updates.
+    * Dropped Python 3.8.
+    * Dropped Ubuntu Oracular
+    * Dropped Debian Bullseye due to backports/EOL.
+
+
 ## 6.1.3 (2025-10-03)
 
 * Security: fix token impersonation vulnerability.
