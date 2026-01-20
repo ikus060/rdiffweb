@@ -128,7 +128,7 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
-# 2.11.0 (2025-x-x)
+# 2.11.0 (2025-01-14)
 
 * **New Features**
   * Administrators can disable user accounts (#313).
