@@ -7,8 +7,7 @@ export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_RDIFFWEB := $(DEB_VERSION_UPSTREAM)
 # Force use of pyproject.toml
 export PYBUILD_SYSTEM=pyproject
 
-# For testing, we need a timezone
-export TZ=UTC
+PYTHON3_DEFAULT := $(shell py3versions -vd)
 
 %:
 	dh $@ --buildsystem=pybuild --test-tox
@@ -20,29 +19,38 @@ execute_before_dh_auto_build:
 		pip install "setuptools>=66,<=68"; \
 	fi
 
+# For testing, we need a timezone
+override_dh_auto_test:
+	TZ=UTC dh_auto_test
+
 execute_after_dh_auto_install:
-	# Test files are not required for runtime
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/controller/tests
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/core/tests
-	rm -rf debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/tests
-	rm -f  debian/rdiffweb/usr/lib/python*/dist-packages/rdiffweb/test.py
-	
-override_dh_installman:
+# Compile locale
+	for pofile in debian/rdiffweb/usr/lib/python$(PYTHON3_DEFAULT)/dist-packages/rdiffweb/locales/*/LC_MESSAGES/*.po ; do \
+		mofile=`echo $$pofile | sed -e "s/\.po/\.mo/g"`; \
+		msgfmt $$pofile -o $$mofile; \
+	done
+# Remove tests files
+	find debian/rdiffweb/usr/lib/python$(PYTHON3_DEFAULT)/dist-packages/rdiffweb -type d -name "tests" -exec rm -rf {} +
+
+# Generate bash-completions with shtab
+execute_after_dh_bash-completion:
+	PYTHONPATH=debian/rdiffweb/usr/lib/python$(PYTHON3_DEFAULT)/dist-packages:$(PYTHONPATH) \
+	shtab --shell=bash -u rdiffweb.core.config.get_parser --error-unimportable --prog rdiffweb \
+		> debian/rdiffweb.bash-completion
+
+# Generate man page from argparse
+execute_after_dh_installman:
 	mkdir -p debian/rdiffweb/usr/share/man/man1
-	PATH=debian/rdiffweb/usr/bin:$(PATH) \
-	PYTHONPATH=debian/rdiffweb/usr/lib/python{version}/dist-packages:$(PYTHONPATH) \
-	help2man --version-string "$(DEB_VERSION_UPSTREAM)" \
-		--no-info \
-		--name "A web interface to rdiff-backup repositories" \
-		--no-discard-stderr \
-		rdiffweb > \
-		debian/rdiffweb/usr/share/man/man1/rdiffweb.1
+	PYTHONPATH=debian/rdiffweb/usr/lib/python$(PYTHON3_DEFAULT)/dist-packages:$(PYTHONPATH) \
+	argparse-manpage --module rdiffweb.core.config --function get_parser \
+		--version "$(DEB_VERSION_UPSTREAM)" \
+		--output debian/rdiffweb/usr/share/man/man1/rdiffweb.1
 
 execute_before_dh_auto_clean:
 	rm -rf *.egg-info
+	rm -rf debian/rdiffweb.bash-completion
 
 # Generate orig.tar.gz
-gentarball: SOURCE=rdiffweb
 gentarball:
-	git archive --format=tar HEAD --prefix=$(SOURCE)-$(DEB_VERSION_UPSTREAM)/ | gzip -9 > ../$(SOURCE)_$(DEB_VERSION_UPSTREAM).orig.tar.gz
-	mk-origtargz --compression gzip ../$(SOURCE)_$(DEB_VERSION_UPSTREAM).orig.tar.gz
+	git archive --format=tar HEAD --prefix=$(DEB_SOURCE)-$(DEB_VERSION_UPSTREAM)/ | gzip -9 > ../$(DEB_SOURCE)_$(DEB_VERSION_UPSTREAM).orig.tar.gz
+	mk-origtargz --compression gzip ../$(DEB_SOURCE)_$(DEB_VERSION_UPSTREAM).orig.tar.gz

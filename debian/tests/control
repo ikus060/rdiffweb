@@ -1,4 +1,7 @@
-Tests: smoke
+Tests:
+ smoke,
 Depends:
  rdiffweb,
-Restrictions: allow-stderr, superficial
+Restrictions:
+ allow-stderr,
+ superficial,
