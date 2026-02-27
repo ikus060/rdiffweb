@@ -18,12 +18,12 @@ import datetime
 from unittest.mock import ANY, MagicMock
 
 import cherrypy
+from cherrypy_foundation.tools.auth import AUTH_LAST_PASSWORD_AT
+from cherrypy_foundation.tools.auth_mfa import MFA_DEFAULT_CODE_TIMEOUT, MFA_DEFAULT_TRUST_DURATION
+from cherrypy_foundation.tools.sessions_timeout import SESSION_PERSISTENT
 
 import rdiffweb.test
 from rdiffweb.core.model import DbSession, UserObject
-from rdiffweb.tools.auth import AUTH_LAST_PASSWORD_AT
-from rdiffweb.tools.auth_mfa import MFA_DEFAULT_CODE_TIMEOUT, MFA_DEFAULT_TRUST_DURATION
-from rdiffweb.tools.sessions_timeout import SESSION_PERSISTENT
 
 
 class MfaPageTest(rdiffweb.test.WebCase):

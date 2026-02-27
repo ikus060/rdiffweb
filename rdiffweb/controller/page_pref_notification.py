@@ -22,12 +22,12 @@ User can control the notification period.
 import logging
 
 import cherrypy
+from cherrypy_foundation.flash import flash
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from wtforms.fields import HiddenField, RadioField, SubmitField
 
-from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.controller.page_settings import MaxAgeField
-from rdiffweb.tools.i18n import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +73,10 @@ class NotificationForm(DbForm):
         for repo in userobj.repo_objs:
             extends[repo.display_name] = MaxAgeField(label=repo.display_name)
             data[repo.display_name] = repo.maxage
-        extends['submit'] = SubmitField(label=_('Save changes'))
+        extends['submit'] = SubmitField(
+            label=_('Save changes'),
+            render_kw={"class": "btn-primary"},
+        )
         # Create class
         sub_form = type('SubForm', (cls,), extends)
         return sub_form(data=data)
@@ -89,10 +92,11 @@ class NotificationForm(DbForm):
                 repo.maxage = self[repo.display_name].data
 
 
-class PagePrefNotification(Controller):
+class PagePrefNotification:
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
+    @cherrypy.tools.jinja2(template="prefs_notification.html")
     def default(self, **kwargs):
         """
         Show user notification settings
@@ -114,9 +118,8 @@ class PagePrefNotification(Controller):
             flash(report_form.error_message, level='error')
         if notification_form.error_message:
             flash(notification_form.error_message, level='error')
-        params = {
+        return {
             'email': currentuser.email,
             'report_form': report_form,
             'notification_form': notification_form,
         }
-        return self._compile_template("prefs_notification.html", **params)

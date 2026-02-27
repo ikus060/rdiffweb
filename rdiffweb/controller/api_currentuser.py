@@ -15,17 +15,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import cherrypy
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
+from cherrypy_foundation.tools.i18n import list_available_locales
 from wtforms.fields import SelectField, StringField
 from wtforms.validators import Length, Optional, Regexp
 
-from rdiffweb.controller import Controller
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.controller.page_pref_sshkeys import ApiSshKeys
 from rdiffweb.controller.page_pref_tokens import ApiTokens
 from rdiffweb.controller.page_settings import ApiRepos
 from rdiffweb.core.model import UserObject
-from rdiffweb.tools.i18n import gettext_lazy as _
-from rdiffweb.tools.i18n import list_available_locales
 
 try:
     from wtforms.fields import EmailField  # wtform >=3
@@ -80,7 +79,7 @@ class CurrentUserForm(DbForm):
 
 @cherrypy.expose
 @cherrypy.tools.required_scope(scope='all,read_user,write_user')
-class ApiCurrentUser(Controller):
+class ApiCurrentUser:
     sshkeys = ApiSshKeys()
     tokens = ApiTokens()
     repos = ApiRepos()

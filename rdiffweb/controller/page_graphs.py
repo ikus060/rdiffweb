@@ -16,11 +16,12 @@
 
 
 import cherrypy
+from cherrypy_foundation.tools.i18n import ugettext as _
 
-from rdiffweb.controller import Controller, validate_int
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
-from rdiffweb.tools.i18n import ugettext as _
+
+from . import validate_int
 
 
 def bytes_to_mb(v):
@@ -166,30 +167,34 @@ class Data:
 
 
 @cherrypy.tools.poppath()
-class GraphPage(Controller):
+class GraphPage:
+    _cp_config = {}
+
     def __init__(self, graph) -> None:
         assert graph
         super().__init__()
         self.graph = graph
+        # Define template dynamically.
+        self._cp_config = self._cp_config.copy()
+        self._cp_config["tools.jinja2.template"] = "graphs_%s.html" % self.graph
 
     @cherrypy.expose
+    @cherrypy.tools.jinja2()
     def default(self, path, limit='30', **kwargs):
         """
         Called to show every graphs
         """
+        limit = validate_int(limit, min=1)
         repo_obj = RepoObject.get_repo(path)
-        limit = validate_int(limit)
         data = Data(repo_obj, limit)
 
         # Check if any action to process.
-        params = {
+        return {
             'repo': repo_obj,
             'graph': self.graph,
             'limit': limit,
             'data': data,
         }
-        # Generate page.
-        return self._compile_template("graphs_%s.html" % self.graph, **params)
 
 
 @cherrypy.tools.errors(
@@ -198,7 +203,7 @@ class GraphPage(Controller):
         AccessDeniedError: 403,
     }
 )
-class GraphsPage(Controller):
+class GraphsPage:
     activities = GraphPage('activities')
     errors = GraphPage('errors')
     files = GraphPage('files')

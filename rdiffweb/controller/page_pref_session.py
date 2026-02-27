@@ -16,14 +16,14 @@
 
 
 import cherrypy
+from cherrypy_foundation.flash import flash
+from cherrypy_foundation.tools.i18n import ugettext as _
+from cherrypy_foundation.tools.sessions_timeout import SESSION_PERSISTENT, SESSION_START_TIME
 from wtforms import validators
 from wtforms.fields import IntegerField, StringField
 
-from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.model import SessionObject
-from rdiffweb.tools.i18n import ugettext as _
-from rdiffweb.tools.sessions_timeout import SESSION_PERSISTENT, SESSION_START_TIME
 
 
 class RevokeSessionForm(DbForm):
@@ -31,9 +31,10 @@ class RevokeSessionForm(DbForm):
     number = IntegerField(validators=[validators.data_required()])
 
 
-class PagePrefSession(Controller):
+class PagePrefSession:
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST'])
+    @cherrypy.tools.jinja2(template="prefs_session.html")
     def default(self, **kwargs):
         """
         Show user sessions
@@ -72,4 +73,4 @@ class PagePrefSession(Controller):
             }
             for obj in obj_list
         ]
-        return self._compile_template("prefs_session.html", active_sessions=active_sessions)
+        return {'active_sessions': active_sessions}

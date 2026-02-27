@@ -28,7 +28,7 @@
         title=_("Repository Settings"),
         description=_('You can modify the backup repository settings to suit your requirements. These settings allow you to adjust the notification period, retention period, and display format (encoding) of the repository to align with your preferred frequency, data storage duration, and localization needs.'),
         show_submit_area=True) %}
-        {{ form }}
+        <Fields form={{ form }} />
       {% endcall %}
     </form>
     {# Message Thread #}

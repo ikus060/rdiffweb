@@ -19,16 +19,16 @@ import logging
 from datetime import timezone
 
 import cherrypy
+from cherrypy_foundation.flash import flash
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from markupsafe import Markup, escape
 from wtforms.fields import DateTimeField, SelectMultipleField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional
 from wtforms.widgets import html_params
 
-from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.model import Token
-from rdiffweb.tools.i18n import gettext_lazy as _
 
 try:
     # wtform>=3
@@ -144,7 +144,10 @@ class TokenForm(DbForm):
         validators=[Optional()],
     )
     scope = ScopeField(_('Select scopes'), description=_('Scopes set the permissions level of this access token.'))
-    add_access_token = SubmitField(_('Create access token'))
+    add_access_token = SubmitField(
+        _('Create access token'),
+        render_kw={"class": "btn-primary"},
+    )
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
@@ -159,7 +162,10 @@ class TokenForm(DbForm):
 
 class DeleteTokenForm(DbForm):
     name = StringField(validators=[DataRequired()])
-    revoke = SubmitField(_('Revoke'))
+    revoke = SubmitField(
+        _('Revoke'),
+        render_kw={"class": "btn-primary"},
+    )
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
@@ -170,10 +176,11 @@ class DeleteTokenForm(DbForm):
         userobj.delete_access_token(self.name.data)
 
 
-class PagePrefTokens(Controller):
+class PagePrefTokens:
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
+    @cherrypy.tools.jinja2(template="prefs_tokens.html")
     def default(self, **kwargs):
         """
         Show current user access token
@@ -202,16 +209,15 @@ class PagePrefTokens(Controller):
             flash(form.error_message, level='error')
         if delete_form.error_message:
             flash(delete_form.error_message, level='error')
-        params = {
+        return {
             'form': form,
             'tokens': Token.query.filter(Token.userid == currentuser.id),
         }
-        return self._compile_template("prefs_tokens.html", **params)
 
 
 @cherrypy.expose
 @cherrypy.tools.json_out()
-class ApiTokens(Controller):
+class ApiTokens:
     def _query(self, name):
         currentuser = cherrypy.serving.request.currentuser
         token = Token.query.filter(Token.userid == currentuser.id, Token.name == name).first()

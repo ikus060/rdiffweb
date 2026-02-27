@@ -103,7 +103,6 @@ class WebCase(helper.CPWebCase):
         if hasattr(cherrypy, '_cache'):
             cherrypy._cache.clear()
         # Create a clean environment by creating a new database and restarting all plugins.
-        cherrypy.db.clear_sessions()
         cherrypy.db.drop_all()
         cherrypy.db.create_all()
         cherrypy.engine.publish('graceful')
@@ -121,6 +120,8 @@ class WebCase(helper.CPWebCase):
             self._login()
 
     def tearDown(self):
+        # Need to wait for task before deleting to avoid dead lock in postgresql.
+        cherrypy.scheduler.wait_for_jobs()
         if hasattr(self, 'testcases'):
             shutil.rmtree(self.testcases)
             delattr(self, 'testcases')

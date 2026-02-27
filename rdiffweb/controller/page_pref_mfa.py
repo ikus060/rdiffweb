@@ -16,14 +16,14 @@
 
 
 import cherrypy
+from cherrypy_foundation.flash import flash
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from wtforms.fields import SelectField, StringField, SubmitField
 from wtforms.validators import ValidationError
 from wtforms.widgets import HiddenInput
 
-from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.model import UserObject
-from rdiffweb.tools.i18n import gettext_lazy as _
 
 
 class AbstractMfaForm(DbForm):
@@ -98,10 +98,11 @@ class MfaToggleForm(AbstractMfaForm):
         return super().validate()
 
 
-class PagePrefMfa(Controller):
+class PagePrefMfa:
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
+    @cherrypy.tools.jinja2(template="prefs_mfa.html")
     def default(self, **kwargs):
         """
         Show MFA settings
@@ -126,10 +127,9 @@ class PagePrefMfa(Controller):
                 self.send_code()
         else:
             form = MfaStatusForm(obj=currentuser)
-        params = {
+        return {
             'form': form,
         }
-        return self._compile_template("prefs_mfa.html", **params)
 
     def send_code(self):
         userobj = cherrypy.serving.request.currentuser

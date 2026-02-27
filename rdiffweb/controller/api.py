@@ -18,7 +18,6 @@ import logging
 
 import cherrypy
 
-from rdiffweb.controller import Controller
 from rdiffweb.controller.api_currentuser import ApiCurrentUser
 from rdiffweb.controller.api_openapi import OpenAPI
 from rdiffweb.controller.page_admin_users import AdminApiUsers
@@ -64,9 +63,9 @@ def _checkpassword(realm, username, password):
 @cherrypy.tools.auth(on=True, redirect=False)
 @cherrypy.tools.auth_mfa(on=False)
 @cherrypy.tools.i18n(on=False)
-@cherrypy.tools.ratelimit(scope='rdiffweb-api', hit=0, priority=69)
+@cherrypy.tools.ratelimit(scope='rdiffweb-api', hit=0, debug=1, priority=69)
 @cherrypy.tools.sessions(on=False)
-class ApiPage(Controller):
+class ApiPage:
     """
     This class provide a restful API to access some of the rdiffweb resources.
     """
@@ -86,8 +85,8 @@ class ApiPage(Controller):
             "version": "1.2.8"
         }
         ```
-
         """
+        version = cherrypy.tree.apps[''].version
         return {
-            "version": self.app.version,
+            "version": version,
         }

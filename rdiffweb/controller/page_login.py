@@ -16,13 +16,12 @@
 import logging
 
 import cherrypy
+from cherrypy_foundation.flash import flash
+from cherrypy_foundation.form import CherryForm
+from cherrypy_foundation.tools.i18n import get_translation
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from wtforms.fields import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length
-
-from rdiffweb.controller import Controller, flash
-from rdiffweb.controller.form import CherryForm
-from rdiffweb.tools.i18n import get_translation
-from rdiffweb.tools.i18n import gettext_lazy as _
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -79,7 +78,7 @@ class LoginForm(CherryForm):
         self.persistent.render_kw['label-title'] = title
 
 
-class LoginPage(Controller):
+class LoginPage:
     """
     This page is used by the authentication to enter a user/pass.
     """
@@ -88,6 +87,7 @@ class LoginPage(Controller):
     @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.auth_mfa(on=False)
     @cherrypy.tools.ratelimit(methods=['POST'])
+    @cherrypy.tools.jinja2(template="login.html")
     def index(self, **kwargs):
         """
         Display form to authenticate user.
@@ -108,23 +108,23 @@ class LoginPage(Controller):
                 flash(_("Invalid username or password."))
         elif form.error_message:
             flash(form.error_message)
-        cfg = self.app.cfg
+        cfg = cherrypy.tree.apps[''].cfg
         params = {
             'form': form,
             'oauth_enabled': cfg.oauth_client_id and cfg.oauth_client_secret,
             'oauth_provider_name': cfg.oauth_provider_name,
         }
         # Add welcome message to params. Try to load translated message.
-        welcome_msg = self.app.cfg.welcome_msg
+        welcome_msg = cfg.welcome_msg
         if welcome_msg:
             default_welcome_msg = welcome_msg.get('')
             lang = get_translation().locale.language
             params["welcome_msg"] = welcome_msg.get(lang, default_welcome_msg)
 
-        return self._compile_template("login.html", **params)
+        return params
 
 
-class LogoutPage(Controller):
+class LogoutPage:
     @cherrypy.expose()
     @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.auth(on=False)

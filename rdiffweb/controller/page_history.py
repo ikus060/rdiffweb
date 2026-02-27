@@ -17,13 +17,14 @@
 
 import cherrypy
 
-from rdiffweb.controller import Controller, validate_int
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 
+from . import validate_int
+
 
 @cherrypy.tools.poppath()
-class HistoryPage(Controller):
+class HistoryPage:
     @cherrypy.expose
     @cherrypy.tools.errors(
         error_table={
@@ -31,21 +32,19 @@ class HistoryPage(Controller):
             AccessDeniedError: 403,
         }
     )
+    @cherrypy.tools.jinja2(template="history.html")
     def default(self, path, limit='10', **kwargs):
         """
         Show repository, file or folder history
         """
-        limit = validate_int(limit)
-
+        limit = validate_int(limit, min=1)
         repo, path = RepoObject.get_repo_path(path)
 
         # Set up warning about in-progress backups, if necessary
         path_obj = repo.fstat(path)
-        parms = {
+        return {
             "limit": limit,
             "repo": repo,
             "path": path,
             "path_obj": path_obj,
         }
-
-        return self._compile_template("history.html", **parms)

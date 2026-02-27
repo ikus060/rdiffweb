@@ -13,7 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 import bisect
 import calendar
 import encodings
@@ -31,10 +30,10 @@ from subprocess import CalledProcessError
 import cherrypy
 import psutil
 from cached_property import cached_property
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
 
 import rdiffweb.core.dircache  # noqa
 from rdiffweb.core.restore import pipe_restore
-from rdiffweb.tools.i18n import gettext_lazy as _
 
 # Cached os.listdir
 listdir = cherrypy.dircache.listdir
@@ -143,6 +142,8 @@ class RdiffTime(object):
 
     @classmethod
     def _from_str(cls, time_string):
+        if len(time_string) < 19:
+            raise ValueError('date too short: ' + time_string)
         if time_string[10] != 'T':
             raise ValueError('missing date time separator (T): ' + time_string)
         if time_string[19] not in ['-', '+', 'Z']:
@@ -301,6 +302,9 @@ class RdiffTime(object):
     def __repr__(self):
         """return second since epoch"""
         return "RdiffTime('" + str(self) + "')"
+
+    def __url_for__(self):
+        return self.epoch
 
 
 class RdiffDirEntry(object):

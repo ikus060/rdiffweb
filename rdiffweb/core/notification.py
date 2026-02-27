@@ -26,13 +26,13 @@ import cherrypy
 import distro
 import requests
 from cherrypy.process.plugins import SimplePlugin
+from cherrypy_foundation.tools.i18n import preferred_lang
+from cherrypy_foundation.tools.i18n import ugettext as _
 from packaging.version import InvalidVersion, Version
 from sqlalchemy import func, or_
 
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import RepoObject, UserObject
-from rdiffweb.tools.i18n import preferred_lang
-from rdiffweb.tools.i18n import ugettext as _
 
 logger = logging.getLogger(__name__)
 
@@ -170,7 +170,8 @@ class NotificationPlugin(SimplePlugin):
         }
         # Compile the email body
         with preferred_lang(userobj.lang):
-            message_body = self.env.compile_template(template, user=userobj, **dict(param, **kwargs))
+            tmpl = self.env.get_template(template)
+            message_body = tmpl.render(user=userobj, **dict(param, **kwargs))
             # Extract subject from template
             match = re.search(r'<title>(.*)</title>', message_body, re.DOTALL)
             subject = match and match.group(1).replace('\n', '').strip()

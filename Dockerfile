@@ -1,5 +1,5 @@
-# rdiff-backup is compatible with Debian bookworm python 3.12
-FROM python:3.12-bookworm AS base
+# rdiff-backup is compatible with Debian trixie python 3.13
+FROM python:3.13-trixie AS base
 
 LABEL author="Patrik Dufresne <patrik@ikus-soft.com>"
 

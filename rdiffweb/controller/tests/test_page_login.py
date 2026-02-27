@@ -16,11 +16,11 @@
 from unittest.mock import MagicMock
 
 import cherrypy
+from cherrypy_foundation.tools.sessions_timeout import SESSION_PERSISTENT, SESSION_START_TIME
 from parameterized import parameterized, parameterized_class
 
 import rdiffweb.test
 from rdiffweb.core.model import DbSession, SessionObject, UserObject
-from rdiffweb.tools.sessions_timeout import SESSION_PERSISTENT, SESSION_START_TIME
 
 
 class LoginPageTest(rdiffweb.test.WebCase):

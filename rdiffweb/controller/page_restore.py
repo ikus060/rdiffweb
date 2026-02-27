@@ -15,17 +15,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from urllib.parse import unquote_to_bytes
 
 import cherrypy
 from cherrypy.lib.static import mimetypes
+from cherrypy_foundation.url import url_for
 
 import rdiffweb.tools.errors  # noqa: cherrypy.tools.errors
-from rdiffweb.controller import Controller, validate, validate_date, validate_isinstance
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 from rdiffweb.core.rdw_helpers import quote_url
-from rdiffweb.core.rdw_templating import url_for
 from rdiffweb.core.restore import ARCHIVERS
+
+from . import validate_date
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -93,9 +95,45 @@ class _file_generator(object):
             self.input.close()
 
 
-@cherrypy.tools.poppath()
-class RestorePage(Controller):
-    _cp_config = {"response.stream": True}
+class RestorePage:
+
+    def _cp_dispatch(self, vpath):
+        """
+        Return the right handle if raw=1
+        """
+        func = self._raw if 'raw=1' in cherrypy.request.query_string else self.default
+        cherrypy.serving.request.params = {
+            'path': b"/".join([unquote_to_bytes(segment.encode('ISO-8859-1')) for segment in vpath])
+        }
+        vpath.clear()
+        return func
+
+    @cherrypy.expose
+    @cherrypy.tools.errors(
+        error_table={
+            ValueError: 400,
+            DoesNotExistError: 404,
+            AccessDeniedError: 403,
+        }
+    )
+    @cherrypy.tools.jinja2(template="restore.html")
+    def default(self, path=b"", date=None, kind=None, **kwargs):
+        """
+        Display a webpage to prepare download or trigger download of a file or folder.
+        """
+        validate_date(date)
+        if kind is not None and kind not in ARCHIVERS:
+            raise cherrypy.HTTPError(400, 'invalid kind: %s' % kind)
+        repo, path = RepoObject.get_repo_path(path, refresh=False)
+        params = {"repo": repo}
+        if repo.status[0] == 'ok':
+            # If repo is healthy, return a download url
+            params['download_url'] = url_for('restore', repo, path, date=date, kind=kind, raw=1)
+        else:
+            # Otherwise, return a HTTP error.
+            # 400 might not be the best error code.
+            cherrypy.response.status = 400
+        return params
 
     @cherrypy.expose
     @cherrypy.tools.gzip(on=False)
@@ -106,42 +144,13 @@ class RestorePage(Controller):
             AccessDeniedError: 403,
         }
     )
-    def default(self, path, date=None, kind=None, raw=0):
-        """
-        Display a webpage to prepare download or trigger download of a file or folder.
-        """
-        if raw:
-            return self.restore_raw(path=path, date=date, kind=kind)
-        return self.restore_html(path=path, date=date, kind=kind)
-
-    def restore_html(self, path=b"", date=None, kind=None):
-        """
-        Display a HTML page with `preparing download...` to let the user know the download will start.
-        """
-        validate_isinstance(path, bytes)
-        validate(kind is None or kind in ARCHIVERS)
-        date = validate_date(date)
-        repo, path = RepoObject.get_repo_path(path, refresh=False)
-        params = {"repo": repo}
-        if repo.status[0] == 'ok':
-            # If repo is healthy, return a download url
-            params['download_url'] = url_for('restore', repo, path, date=date, kind=kind, raw=1)
-        else:
-            # Otherwise, return a HTTP error.
-            # 400 might not be the best error code.
-            cherrypy.response.status = 400
-        return self._compile_template("restore.html", **params)
-
-    def restore_raw(self, path=b"", date=None, kind=None):
+    def _raw(self, path=b"", date=None, kind=None, **kwargs):
         """
         Restore a file or folder.
         """
-        validate_isinstance(path, bytes)
-        validate(kind is None or kind in ARCHIVERS)
         date = validate_date(date)
-
-        # Release session lock
-        cherrypy.session.release_lock()
+        if kind is not None and kind not in ARCHIVERS:
+            raise cherrypy.HTTPError(400, 'invalid kind: %s' % kind)
 
         # Check user access to repo / path.
         repo, path = RepoObject.get_repo_path(path, refresh=False)
@@ -166,3 +175,5 @@ class RestorePage(Controller):
 
         # Stream the data.
         return _file_generator(fileobj)
+
+    _raw._cp_config = {"response.stream": True}

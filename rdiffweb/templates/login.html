@@ -39,7 +39,7 @@
         <div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8 form-login">
           <form role="form" method="post" action="{{ url_for() }}">
             {% include 'message.html' %}
-            {{ form }}
+            <Fields form={{ form }} floating={{ True }} />
           </form>
           {% if oauth_enabled %}
             <p class="mt-4 mb-4 text-center">──────── OR ────────</p>

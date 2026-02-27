@@ -253,6 +253,12 @@ class DbUpdateSchemaTest(rdiffweb.test.WebCase):
         if os.path.exists(db_file):
             os.remove(db_file)
 
+    def tearDown(self):
+        # Replace tearDown implementation
+        cherrypy.db.drop_all()
+        cherrypy.db.create_all()
+        super().tearDown()
+
     def test_update_schema(self):
         assert self.init_sql
 

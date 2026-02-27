@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import cherrypy
+from urllib.parse import unquote_to_bytes
 
-from rdiffweb.core.rdw_helpers import unquote_url
+import cherrypy
 
 
 def convert_path():
@@ -28,7 +28,9 @@ def convert_path():
     """
     handler = cherrypy.serving.request.handler
     if hasattr(handler, 'kwargs'):
-        handler.kwargs = {'path': b"/".join([unquote_url(segment) for segment in handler.args])}
+        handler.kwargs = {
+            'path': b"/".join([unquote_to_bytes(segment.encode('ISO-8859-1')) for segment in handler.args])
+        }
         handler.args = []
 
 

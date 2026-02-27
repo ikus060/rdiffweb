@@ -16,9 +16,10 @@
 
 import os
 
+from cherrypy_foundation.url import url_for
+
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
-from rdiffweb.core.rdw_templating import url_for
 
 
 class LogsPageTest(rdiffweb.test.WebCase):

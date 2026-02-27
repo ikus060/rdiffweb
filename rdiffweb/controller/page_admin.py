@@ -18,7 +18,6 @@ import datetime
 
 import cherrypy
 
-from rdiffweb.controller import Controller
 from rdiffweb.controller.page_admin_activity import AdminActivityPage
 from rdiffweb.controller.page_admin_logs import AdminLogsPage
 from rdiffweb.controller.page_admin_repos import AdminReposPage
@@ -29,7 +28,7 @@ from rdiffweb.core.model import RepoObject, SessionObject, UserObject
 
 
 @cherrypy.tools.is_admin()
-class AdminPage(Controller):
+class AdminPage:
     """
     Administration pages. Allow to manage users database.
     """
@@ -42,14 +41,14 @@ class AdminPage(Controller):
     activity = AdminActivityPage()
 
     @cherrypy.expose
+    @cherrypy.tools.jinja2(template="admin_overview.html")
     def index(self):
         """
         Admin dashboard
         """
         last_hour = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(hours=1)
-        params = {
+        return {
             "user_count": UserObject.query.count(),
             "repo_count": RepoObject.query.count(),
             "session_count": SessionObject.query.filter(SessionObject.access_time > last_hour).count(),
         }
-        return self._compile_template("admin_overview.html", **params)

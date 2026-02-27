@@ -23,16 +23,16 @@ user home.
 import logging
 
 import cherrypy
+from cherrypy_foundation.flash import flash
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from wtforms import validators
 from wtforms.fields import HiddenField, StringField
 from wtforms.validators import ValidationError
 from wtforms.widgets.core import TextArea
 
-from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core import authorizedkeys
-from rdiffweb.tools.i18n import gettext_lazy as _
 
 _logger = logging.getLogger(__name__)
 
@@ -88,19 +88,21 @@ class DeleteSshForm(DbForm):
         userobj.delete_authorizedkey(self.fingerprint.data)
 
 
-class PagePrefSshKeys(Controller):
+class PagePrefSshKeys:
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
+    @cherrypy.tools.jinja2(template="prefs_sshkeys.html")
     def default(self, **kwargs):
         """
         Show user's SSH keys
         """
         currentuser = cherrypy.serving.request.currentuser
+        cfg = cherrypy.tree.apps[''].cfg
         # Handle action
         add_form = SshForm()
         delete_form = DeleteSshForm()
-        if not self.app.cfg.disable_ssh_keys:
+        if not cfg.disable_ssh_keys:
             if add_form.validate_on_submit():
                 if add_form.save_to_db(currentuser):
                     raise cherrypy.HTTPRedirect("")
@@ -113,7 +115,7 @@ class PagePrefSshKeys(Controller):
                 flash(delete_form.error_message, level='warning')
         # Get SSH keys if file exists.
         params = {
-            'disable_ssh_keys': self.app.cfg.disable_ssh_keys,
+            'disable_ssh_keys': cfg.disable_ssh_keys,
             'form': add_form,
         }
         try:
@@ -125,12 +127,12 @@ class PagePrefSshKeys(Controller):
             flash(_("Failed to get SSH keys"), level='error')
             _logger.warning("error reading SSH keys", exc_info=1)
 
-        return self._compile_template("prefs_sshkeys.html", **params)
+        return params
 
 
 @cherrypy.expose
 @cherrypy.tools.json_out()
-class ApiSshKeys(Controller):
+class ApiSshKeys:
     def list(self):
         """
         List current user keys

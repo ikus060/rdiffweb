@@ -15,21 +15,50 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from urllib.parse import unquote_to_bytes
 
 import cherrypy
 from cherrypy.lib.static import serve_fileobj
 
-from rdiffweb.controller import Controller, validate_date, validate_int
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
-from rdiffweb.tools.i18n import ugettext as _
+
+from . import validate_date, validate_int
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-@cherrypy.tools.poppath()
-class LogsPage(Controller):
+class LogsPage:
+
+    def _cp_dispatch(self, vpath):
+        """
+        Return the right handle if raw=1
+        """
+        func = self._raw if 'raw=1' in cherrypy.request.query_string else self._page
+        cherrypy.serving.request.params = {
+            'path': b"/".join([unquote_to_bytes(segment.encode('ISO-8859-1')) for segment in vpath])
+        }
+        vpath.clear()
+        return func
+
+    def _get_log_entry(self, repo_obj, limit, date, file):
+        if repo_obj.status[0] == 'failed':
+            return None
+
+        # Read log file data
+        if date:
+            try:
+                return repo_obj.error_log[date]
+            except KeyError:
+                raise cherrypy.HTTPError(404, 'invalid date')
+        elif file is None or file == 'backup.log':
+            return repo_obj.backup_log
+        elif file == 'restore.log':
+            return repo_obj.restore_log
+        else:
+            raise cherrypy.HTTPError(404, 'invalid file')
+
     @cherrypy.expose
     @cherrypy.tools.errors(
         error_table={
@@ -37,39 +66,18 @@ class LogsPage(Controller):
             AccessDeniedError: 403,
         }
     )
-    def default(self, path, limit='10', date=None, file=None, raw=0):
+    @cherrypy.tools.jinja2(template="logs.html")
+    def _page(self, path, limit='10', date=None, file=None):
         """
         Show repository backup and restore logs
         """
-        limit = validate_int(limit)
-        if date is not None:
-            date = validate_date(date)
-        raw = validate_int(raw)
-
         repo_obj = RepoObject.get_repo(path)
-        if repo_obj.status[0] == 'failed':
-            params = {'repo': repo_obj, 'limit': limit, 'date': date, 'file': file, 'data': '', 'error_logs': []}
-            return self._compile_template("logs.html", **params)
-
-        # Read log file data
-        if date:
-            try:
-                entry = repo_obj.error_log[date]
-            except KeyError:
-                raise cherrypy.HTTPError(404, _('Invalid date.'))
-        elif file is None or file == 'backup.log':
-            entry = repo_obj.backup_log
-        elif file == 'restore.log':
-            entry = repo_obj.restore_log
-        else:
-            raise cherrypy.HTTPError(404, _('Invalid file'))
-
+        limit = validate_int(limit, min=1)
+        date = validate_date(date, allow_none=True)
+        entry = self._get_log_entry(repo_obj, limit, date, file)
+        data = None
         try:
-            data = None
-            if raw:
-                return serve_fileobj(entry._open(), content_type="text/plain")
-            elif entry:
-                # Limit to 2000 lines in html page.
+            if entry:
                 data = entry.tail()
         except FileNotFoundError:
             # If the file doesn't exists, swallow the error.
@@ -81,5 +89,23 @@ class LogsPage(Controller):
         else:
             error_logs = repo_obj.error_log[::-1]
 
-        params = {'repo': repo_obj, 'limit': limit, 'date': date, 'file': file, 'data': data, 'error_logs': error_logs}
-        return self._compile_template("logs.html", **params)
+        return {'repo': repo_obj, 'limit': limit, 'date': date, 'file': file, 'data': data, 'error_logs': error_logs}
+
+    @cherrypy.expose
+    @cherrypy.tools.errors(
+        error_table={
+            DoesNotExistError: 404,
+            AccessDeniedError: 403,
+        }
+    )
+    def _raw(self, path, limit='10', date=None, file=None, **kwargs):
+        repo_obj = RepoObject.get_repo(path)
+        limit = validate_int(limit, min=1)
+        date = validate_date(date, allow_none=True)
+        entry = self._get_log_entry(repo_obj, limit, date, file)
+        try:
+            return serve_fileobj(entry._open(), content_type="text/plain")
+        except FileNotFoundError:
+            return cherrypy.HTTPError(404)
+
+    _raw._cp_config = {"response.stream": True}

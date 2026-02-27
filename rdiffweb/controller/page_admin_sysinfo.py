@@ -23,10 +23,9 @@ import sys
 import cherrypy
 import humanfriendly
 import psutil
+from cherrypy_foundation.tools.i18n import ugettext as _
 
-from rdiffweb.controller import Controller
 from rdiffweb.core.librdiff import rdiff_backup_version
-from rdiffweb.tools.i18n import ugettext as _
 
 
 def get_pyinfo():
@@ -120,20 +119,22 @@ def get_pkginfo():
 
 
 @cherrypy.tools.is_admin()
-class AdminSysinfoPage(Controller):
+class AdminSysinfoPage:
     @cherrypy.expose
+    @cherrypy.tools.jinja2(template="admin_sysinfo.html")
     def index(self, **kwargs):
         """
         Show system information and application config
         """
-        params = {
-            "version": self.app.version,
+        cfg = cherrypy.tree.apps[''].cfg
+        version = cherrypy.tree.apps[''].version
+        return {
+            "version": version,
             # Config
-            "cfg": {k: '********' if '_password' in k or '_secret' in k else v for k, v in vars(self.app.cfg).items()},
+            "cfg": {k: '********' if '_password' in k or '_secret' in k else v for k, v in vars(cfg).items()},
             # System Info entries
             "pyinfo": list(get_pyinfo()),
             "osinfo": list(get_osinfo()),
             "hwinfo": list(get_hwinfo()),
             "ldapinfo": list(get_pkginfo()),
         }
-        return self._compile_template("admin_sysinfo.html", **params)

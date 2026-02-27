@@ -51,9 +51,7 @@ class PagePrefNotificationTest(rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.getPage("/prefs/notification")
         self.assertInBody('Report settings updated successfully.')
-        self.assertInBody(
-            '<input checked class="form-check-input" id="report_time_range-2" name="report_time_range" type="radio" value="7">'
-        )
+        self.assertInBody('<input checked id="report_time_range-2" name="report_time_range" type="radio" value="7">')
         # Then database is updated too
         userobj.expire()
         self.assertEqual(7, userobj.report_time_range)

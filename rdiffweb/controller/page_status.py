@@ -19,12 +19,13 @@ import logging
 import time
 
 import cherrypy
+from cherrypy_foundation.tools.i18n import ugettext as _
 
-from rdiffweb.controller import Controller, validate_int
 from rdiffweb.controller.filter_authorization import is_admin
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import UserObject
-from rdiffweb.tools.i18n import ugettext as _
+
+from . import validate_int
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ COUNT_MIN = 1
 COUNT_MAX = 20
 
 
-class StatusPage(Controller):
+class StatusPage:
     def _list_repo(self, username):
         # Check permissions before get list of repos.
         currentuser = cherrypy.serving.request.currentuser
@@ -58,9 +59,6 @@ class StatusPage(Controller):
         Count number of backup per days.
         """
         days = validate_int(days, min=DAYS_MIN, max=DAYS_MAX)
-
-        # Release session lock
-        cherrypy.session.release_lock()
 
         def _key(d):
             return time.strftime(str(d).split('T')[0])
@@ -98,12 +96,9 @@ class StatusPage(Controller):
         """
         Return the oldest backup.
         """
-
-        # Release session lock
-        cherrypy.session.release_lock()
+        count = validate_int(count, min=COUNT_MIN, max=COUNT_MAX)
 
         # Get data
-        count = validate_int(count, min=COUNT_MIN, max=COUNT_MAX)
         now = RdiffTime()
         repos = sorted(self._list_repo(path), key=lambda r: (r.last_backup_date is None, r.last_backup_date))
         data = {}
@@ -126,8 +121,6 @@ class StatusPage(Controller):
         """
         Return disk usage.
         """
-        # Release session lock
-        cherrypy.session.release_lock()
 
         data = {}
         for repo in self._list_repo(path):
@@ -150,9 +143,6 @@ class StatusPage(Controller):
         days = validate_int(days, min=DAYS_MIN, max=DAYS_MAX)
         count = validate_int(count, min=COUNT_MIN, max=COUNT_MAX)
         sort = validate_int(sort)
-
-        # Release session lock
-        cherrypy.session.release_lock()
 
         from_date = RdiffTime() - datetime.timedelta(days=7)
         # Count activities per repository for the last X days
@@ -199,9 +189,6 @@ class StatusPage(Controller):
         count = validate_int(count, min=COUNT_MIN, max=COUNT_MAX)
         from_date = RdiffTime() - datetime.timedelta(days=7)
 
-        # Release session lock
-        cherrypy.session.release_lock()
-
         data = {}
         for repo in self._list_repo(path):
             try:
@@ -223,6 +210,7 @@ class StatusPage(Controller):
         ]
 
     @cherrypy.expose
+    @cherrypy.tools.jinja2(template="status.html")
     def index(self, path, days=DAYS_DEFAULT, count=COUNT_DEFAULT, **kwargs):
         """
         Show current user status
@@ -230,8 +218,7 @@ class StatusPage(Controller):
         days = validate_int(days, min=DAYS_MIN, max=DAYS_MAX)
         count = validate_int(count, min=COUNT_MIN, max=COUNT_MAX)
         repos = self._list_repo(path)
-        params = {'days': days, 'count': count, 'path': path, 'repos': repos}
-        return self._compile_template("status.html", **params)
+        return {'days': days, 'count': count, 'path': path, 'repos': repos}
 
 
 StatusPage._cp_dispatch = cherrypy.popargs('path', handler=StatusPage())

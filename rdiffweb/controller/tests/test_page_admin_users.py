@@ -626,7 +626,7 @@ class AdminTestWithoutQuota(rdiffweb.test.WebCase):
         self.getPage("/admin/users/edit/admin")
         # Then quota field is readonly
         self.assertStatus(200)
-        self.assertInBody('<input class="form-control" disabled name="disk_quota" readonly')
+        self.assertInBody('<input class="form-control" disabled id="disk_quota" name="disk_quota" readonly')
 
 
 class AdminApiUsersTest(rdiffweb.test.WebCase):

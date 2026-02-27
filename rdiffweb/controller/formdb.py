@@ -17,12 +17,10 @@
 import logging
 
 import cherrypy
+from cherrypy_foundation.form import CherryForm
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from sqlalchemy.exc import IntegrityError
 from wtforms.validators import ValidationError
-
-from rdiffweb.tools.i18n import gettext_lazy as _
-
-from .form import CherryForm
 
 logger = logging.getLogger(__name__)
 

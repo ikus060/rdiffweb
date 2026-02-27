@@ -13,16 +13,34 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-import datetime
+import functools
 import importlib.resources
 import json
 import logging
 import os
+from datetime import datetime, timezone
 
 import cherrypy
 import cherrypy.lib.sessions
+import cherrypy_foundation.plugins.db
+import cherrypy_foundation.plugins.ldap
+import cherrypy_foundation.plugins.oauth
+import cherrypy_foundation.plugins.restapi
+import cherrypy_foundation.plugins.scheduler
+import cherrypy_foundation.plugins.smtp
+import cherrypy_foundation.tools.auth
+import cherrypy_foundation.tools.auth_mfa
+import cherrypy_foundation.tools.i18n
+import cherrypy_foundation.tools.jinja2
+import cherrypy_foundation.tools.ratelimit
+import cherrypy_foundation.tools.secure_headers
+import cherrypy_foundation.tools.sessions_timeout
+import humanfriendly
 from cherrypy import Application
+from cherrypy_foundation.error_page import error_page
+from cherrypy_foundation.flash import get_flashed_messages
+from cherrypy_foundation.tools.i18n import get_translation
+from cherrypy_foundation.url import url_for
 
 import rdiffweb
 import rdiffweb.controller.filter_authorization
@@ -30,23 +48,10 @@ import rdiffweb.core.activity
 import rdiffweb.core.notification
 import rdiffweb.core.quota
 import rdiffweb.core.remove_older
-import rdiffweb.plugins.db
-import rdiffweb.plugins.ldap
-import rdiffweb.plugins.oauth
-import rdiffweb.plugins.restapi
-import rdiffweb.plugins.scheduler
-import rdiffweb.plugins.smtp
-import rdiffweb.tools.auth
-import rdiffweb.tools.auth_mfa
 import rdiffweb.tools.enrich_session
 import rdiffweb.tools.errors
-import rdiffweb.tools.i18n
 import rdiffweb.tools.poppath
-import rdiffweb.tools.ratelimit
 import rdiffweb.tools.required_scope
-import rdiffweb.tools.secure_headers
-import rdiffweb.tools.sessions_timeout
-from rdiffweb.controller import Controller
 from rdiffweb.controller.api import ApiPage
 from rdiffweb.controller.dispatch import staticdir, staticfile
 from rdiffweb.controller.page_admin import AdminPage
@@ -63,10 +68,10 @@ from rdiffweb.controller.page_restore import RestorePage
 from rdiffweb.controller.page_settings import AuditLogData, SettingsPage
 from rdiffweb.controller.page_stats import StatsPage
 from rdiffweb.controller.page_status import StatusPage
-from rdiffweb.core import rdw_templating
 from rdiffweb.core.config import parse_args
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import DbSession, SessionObject, UserObject
+from rdiffweb.core.rdw_templating import attrib, do_format_lastupdated, list_parents
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -92,13 +97,33 @@ def _json_handler(*args, **kwargs):
     def default(o):
         if isinstance(o, RdiffTime):
             return str(o)
-        elif isinstance(o, datetime.datetime):
+        elif isinstance(o, datetime):
             return str(RdiffTime(o))
         raise TypeError(repr(o) + " is not JSON serializable")
 
     encode = json.JSONEncoder(default=default, ensure_ascii=False).iterencode
     for chunk in encode(value):
         yield chunk.encode('utf-8')
+
+
+def _template_processor():
+    # TODO MOve to cherrypy-foundation
+    values = {
+        'lang': str(get_translation().locale),
+        'current_url': cherrypy.url(path=cherrypy.request.path_info),
+        'now': datetime.now(tz=timezone.utc),
+    }
+    if hasattr(cherrypy.serving.request, 'login'):
+        values['login'] = cherrypy.serving.request.login
+    if hasattr(cherrypy.serving.request, 'currentuser'):
+        currentuser = cherrypy.serving.request.currentuser
+        values['currentuser'] = currentuser
+        # TODO Should should be replace within the template.
+        values['username'] = currentuser.username
+        values['fullname'] = currentuser.fullname
+        values['is_admin'] = currentuser.is_admin
+        values['is_maintainer'] = currentuser.is_maintainer
+    return values
 
 
 @cherrypy.tools.allow(methods=['GET'])
@@ -164,17 +189,18 @@ class Root(LocationsPage):
     @cherrypy.tools.response_headers(headers=[('Content-Type', 'text/css')])
     @cherrypy.tools.sessions(on=False)
     @cherrypy.tools.secure_headers(on=False)
+    @cherrypy.tools.jinja2(template='main.css')
     def main_css(self, **kwargs):
         """
         Return CSS file based on branding configuration
         """
-        cfg = self.app.cfg
+        cfg = cherrypy.tree.apps[''].cfg
         param = {}
         # Get values from configuration.
         for key in ['link_color', 'btn_bg_color', 'btn_fg_color', 'navbar_color', 'font_family']:
             if getattr(cfg, key, None):
                 param[key] = getattr(cfg, key, None)
-        return self._compile_template("main.css", **param)
+        return param
 
 
 class RdiffwebApp(Application):
@@ -187,13 +213,30 @@ class RdiffwebApp(Application):
     def __init__(self, cfg):
         self.cfg = cfg
 
-        # Initialise the template engine.
-        self.templates = rdw_templating.TemplateManager()
+        # Configure Jinja2 environment.
+        env = cherrypy.tools.jinja2.create_env(
+            package_name='rdiffweb',
+            globals={
+                'footer_name': cfg.footer_name,
+                'footer_url': cfg.footer_url,
+                'get_flashed_messages': get_flashed_messages,
+                'header_name': cfg.header_name,
+                'url_for': url_for,
+                'version': rdiffweb.__version__,
+                'list_parents': list_parents,
+                'attrib': attrib,
+            },
+            filters={
+                'lastupdated': do_format_lastupdated,
+                'filesize': functools.partial(humanfriendly.format_size, binary=True),
+                'timespan': functools.partial(humanfriendly.format_timespan, max_units=1),
+            },
+        )
 
         # Pick the right implementation for storage
-        rate_limit_storage_class = rdiffweb.tools.ratelimit.RamRateLimit
+        rate_limit_storage_class = cherrypy_foundation.tools.ratelimit.RamRateLimit
         if cfg.rate_limit_dir:
-            rate_limit_storage_class = rdiffweb.tools.ratelimit.FileRateLimit
+            rate_limit_storage_class = cherrypy_foundation.tools.ratelimit.FileRateLimit
 
         # Configure all the plugins.
         db_uri = self.cfg.database_uri if '://' in self.cfg.database_uri else "sqlite:///" + self.cfg.database_uri
@@ -204,17 +247,19 @@ class RdiffwebApp(Application):
                 'tools.encode.encoding': 'utf-8',
                 'tools.gzip.on': True,
                 # Define error page handler.
-                'error_page.default': self.error_page,
+                'error_page.default': error_page,
                 # Configure database plugins
                 'db.uri': db_uri,
                 'db.debug': cfg.debug,
+                # Configure external_url
+                'tools.proxy.base': cfg.external_url,
                 # Configure session storage
                 'tools.sessions.debug': cfg.debug,
+                'tools.sessions.locking': 'explicit',
                 'tools.sessions.storage_class': DbSession,
                 'tools.sessions.httponly': True,
                 'tools.sessions.timeout': cfg.session_idle_timeout,  # minutes
                 'tools.sessions.persistent': False,
-                # Configure session timeouts
                 'tools.sessions_timeout.persistent_timeout': cfg.session_persistent_timeout,  # minutes
                 'tools.sessions_timeout.absolute_timeout': cfg.session_absolute_timeout,  # minutes
                 # Configure Auth & MFA timeout
@@ -228,6 +273,9 @@ class RdiffwebApp(Application):
                 'tools.ratelimit.storage_path': cfg.rate_limit_dir,
                 # Configure custom json_handler
                 'tools.json_out.handler': _json_handler,
+                # Configure jinja2 templating engine
+                'tools.jinja2.env': env,
+                'tools.jinja2.extra_processor': _template_processor,
                 # Configure LDAP plugin
                 'ldap.uri': cfg.ldap_uri,
                 'ldap.base_dn': cfg.ldap_base_dn,
@@ -274,7 +322,7 @@ class RdiffwebApp(Application):
                 'notification.execution_time': self.cfg.email_notification_time,
                 'notification.send_changed': self.cfg.email_send_changed_notification,
                 'notification.header_name': self.cfg.header_name,
-                'notification.env': self.templates,
+                'notification.env': env,
                 'notification.bcc': self.cfg.email_catch_all,
                 'notification.link_color': self.cfg.link_color,
                 'notification.navbar_color': self.cfg.navbar_color,
@@ -287,8 +335,10 @@ class RdiffwebApp(Application):
                 'quota.get_usage_cmd': self.cfg.quota_used_cmd,
                 # Configure locales
                 'tools.i18n.default': cfg.default_lang,
+                'tools.i18n.default_timezone': cfg.default_timezone,
                 'tools.i18n.mo_dir': importlib.resources.files('rdiffweb') / 'locales',
                 'tools.i18n.domain': 'messages',
+                'tools.i18n.cookie_name': 'locale',
                 # Configure scheduler with peristant storage.
                 'scheduler.jobstores': {
                     "default": {"type": "sqlalchemy", "engine": f"{self.__module__}:cherrypy.db.engine"}
@@ -303,7 +353,7 @@ class RdiffwebApp(Application):
                 # URL into UTF-8.
                 'request.uri_encoding': 'ISO-8859-1',
             },
-            '/api': {'request.dispatch': rdiffweb.plugins.restapi.Dispatcher()},
+            '/api': {'request.dispatch': cherrypy_foundation.plugins.restapi.Dispatcher()},
         }
 
         # Initialize the application
@@ -344,38 +394,6 @@ class RdiffwebApp(Application):
         # Create admin user
         user = UserObject.create_admin_user(self.cfg.admin_user, self.cfg.admin_password)
         user.commit()
-
-    def error_page(self, **kwargs):
-        """
-        Default error page shown to the user when an unexpected error occur.
-        """
-        # Log server error exception
-        if kwargs.get('status', '').startswith('500'):
-            logger.error(
-                'error page: %s %s\n%s'
-                % (kwargs.get('status', ''), kwargs.get('message', ''), kwargs.get('traceback', ''))
-            )
-
-        # Replace message by generic one for 404. Default implementation leak path info.
-        if kwargs.get('status', '') == '404 Not Found':
-            kwargs['message'] = 'Nothing matches the given URI'
-
-        # Check expected response type.
-        mtype = cherrypy.serving.response.headers.get('Content-Type') or cherrypy.tools.accept.callable(
-            ['text/html', 'text/plain', 'application/json']
-        )
-        if mtype == 'text/plain':
-            return kwargs.get('message')
-        elif mtype == 'application/json':
-            return json.dumps({'message': kwargs.get('message', ''), 'status': kwargs.get('status', '')})
-
-        # Try to build a nice error page.
-        try:
-            page = Controller()
-            return page._compile_template('error_page_default.html', **kwargs)
-        except Exception:
-            # If failing, send the raw error message.
-            return kwargs.get('message')
 
     @property
     def version(self):

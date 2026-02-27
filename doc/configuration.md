@@ -376,6 +376,12 @@ By default, the web application uses the HTTP Accept-Language headers to determi
 | --- | --- | --- |
 | --default-lang | default application locale. e.g.: `fr` | es |
 
+## Configure default timzone
+
+| Parameter | Description | Example |
+| --- | --- | --- |
+| --default-timezone | Default application timezone. Uses server timezone when undefined. | America/toronto |
+
 ## Configure Version Check
 
 Rdiffweb include a feature to check version and notify administrator if an upgrade is available.

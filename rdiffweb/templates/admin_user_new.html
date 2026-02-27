@@ -7,7 +7,7 @@
   <div class="container">
     <h3>{% trans %}Add user{% endtrans %}</h3>
     <form method="post" action="{{ url_for()}}">
-      {{ form }}
+      <Fields form={{ form }} />
       <button type="submit" class="btn btn-primary">{% trans %}Add user{% endtrans %}</button>
       <a href="{{ url_for('admin','users')}}" class="btn btn-secondary">{% trans %}Cancel{% endtrans %}</a>
     </form>

@@ -13,7 +13,7 @@
           <li class="breadcrumb-item active" aria-current="page">{{ parent.display_name }}</li>
         {% else %}
           <li class="breadcrumb-item">
-            <a href="{{ url_for('browse', repo, parent) }}">{{ parent.display_name }}</a>
+            <a href="{{ url_for('browse', repo, parent.path) }}">{{ parent.display_name }}</a>
           </li>
         {% endif %}
       {% endfor %}

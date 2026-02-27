@@ -13,25 +13,24 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 import codecs
 import encodings
 import logging
 import os
 import sys
 from datetime import timedelta
+from urllib.parse import quote
 
 import cherrypy
+from cherrypy_foundation.plugins.scheduler import clear_db_sessions
+from cherrypy_foundation.tools.i18n import ugettext as _
 from sqlalchemy import Column, ForeignKey, Integer, SmallInteger, String
 from sqlalchemy import __version__ as sqlalchemy_version
 from sqlalchemy import and_, case, event, orm
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, validates
 
-import rdiffweb.plugins.db  # noqa
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo, RdiffTime
-from rdiffweb.plugins.scheduler import clear_db_sessions
-from rdiffweb.tools.i18n import ugettext as _
 
 from ._callbacks import add_post_commit_tasks
 from ._message import AUDIT_IGNORE, MessageMixin
@@ -276,6 +275,10 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
 
     def __repr__(self):
         return f"RepoObject({self.id}, {self.repopath})"
+
+    def __url_for__(self):
+        value = quote(self.repopath, safe='/').strip('/')
+        return f"{self.owner}/{value}"
 
     def check_activity(self):
         """

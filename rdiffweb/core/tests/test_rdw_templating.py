@@ -16,11 +16,9 @@
 
 import unittest
 
-import cherrypy
-
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import RepoObject, UserObject
-from rdiffweb.core.rdw_templating import _ParentEntry, attrib, do_format_lastupdated, list_parents, url_for
+from rdiffweb.core.rdw_templating import _ParentEntry, attrib, do_format_lastupdated, list_parents
 from rdiffweb.test import WebCase
 
 
@@ -55,30 +53,6 @@ class TemplateManagerTest(unittest.TestCase):
 
         self.assertEqual('value="0"', attrib(value=0))
 
-    def test_url_for(self):
-        # Check backward compatibility
-        self.assertEqual(cherrypy.server.base() + '/', url_for('/'))
-        self.assertEqual(cherrypy.server.base() + '/browse', url_for('browse'))
-        self.assertEqual(cherrypy.server.base() + '/browse/testcases', url_for('browse', b'testcases'))
-        self.assertEqual(
-            cherrypy.server.base() + '/browse/testcases/Revisions', url_for('browse', b'testcases', b'Revisions')
-        )
-        self.assertEqual(
-            cherrypy.server.base() + '/restore/testcases/Revisions?date=1454448640',
-            url_for('restore', b'testcases', b'Revisions', date=1454448640),
-        )
-        self.assertEqual(
-            cherrypy.server.base() + '/restore/testcases/Revisions?date=1454448640&kind=tar.gz',
-            url_for('restore', b'testcases', b'Revisions', date=1454448640, kind='tar.gz'),
-        )
-        self.assertEqual(
-            cherrypy.server.base() + '/browse/testcases/R%C3%A9pertoire',
-            url_for('browse', b'testcases', b'R\xc3\xa9pertoire'),
-        )
-        # Check if multi path is supported.
-        self.assertEqual(cherrypy.server.base() + '/admin/logs', url_for('admin/logs'))
-        self.assertEqual(cherrypy.server.base() + '/admin/logs/backup.log', url_for('admin/logs', 'backup.log'))
-
     def test_do_format_lastupdated(self):
         self.assertEqual('23 seconds ago', do_format_lastupdated(1591978823, now=1591978846))
         self.assertEqual('23 seconds ago', do_format_lastupdated(RdiffTime(value=1591978823), now=1591978846))
@@ -105,82 +79,3 @@ class ListParentsTest(WebCase):
                 _ParentEntry(path=b'Revisions', display_name='Revisions'),
             ],
         )
-
-
-class UrlForTest(WebCase):
-    @property
-    def repo_obj(self):
-        user = UserObject.get_user('admin')
-        return RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
-
-    def test_url_for_index(self):
-        self.assertEqual(cherrypy.server.base() + '/admin/users/', url_for('admin', 'users', ''))
-
-    def test_url_for_absolute_path(self):
-        self.assertEqual(cherrypy.server.base() + '/static/js/jquery.min.js', url_for('/static/js/jquery.min.js'))
-
-    def test_url_for_browse(self):
-        """Check creation of url"""
-        self.assertEqual(cherrypy.server.base() + '/browse/admin/testcases', url_for('browse', self.repo_obj))
-        self.assertEqual(
-            cherrypy.server.base() + '/browse/admin/testcases/Revisions', url_for('browse', self.repo_obj, b'Revisions')
-        )
-        self.assertEqual(
-            cherrypy.server.base() + '/browse/admin/testcases/Revisions?restore=True',
-            url_for('browse', self.repo_obj, b'Revisions', restore=True),
-        )
-        self.assertEqual(
-            cherrypy.server.base()
-            + '/browse/admin/testcases/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial',
-            url_for(
-                'browse',
-                self.repo_obj,
-                b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial',
-            ),
-        )
-
-    def test_url_for_graphs(self):
-        self.assertEqual(
-            cherrypy.server.base() + '/graphs/files/admin/testcases', url_for('graphs', 'files', self.repo_obj)
-        )
-
-    def test_url_for_history(self):
-        """Check creation of url"""
-        self.assertEqual(cherrypy.server.base() + '/history/admin/testcases', url_for('history', self.repo_obj))
-
-    def test_url_for_restore(self):
-        self.assertEqual(
-            cherrypy.server.base() + '/restore/admin/testcases?date=1414967021',
-            url_for('restore', self.repo_obj, date=RdiffTime(1414967021)),
-        )
-        self.assertEqual(
-            cherrypy.server.base() + '/restore/admin/testcases/?date=1414967021',
-            url_for('restore', self.repo_obj, b'', date=RdiffTime(1414967021)),
-        )
-        self.assertEqual(
-            cherrypy.server.base() + '/restore/admin/testcases/?date=1414967021&kind=tar.gz',
-            url_for('restore', self.repo_obj, b'', date=RdiffTime(1414967021), kind='tar.gz'),
-        )
-        self.assertEqual(
-            cherrypy.server.base() + '/restore/admin/testcases/Revisions?date=1414967021',
-            url_for('restore', self.repo_obj, b'Revisions', date=RdiffTime(1414967021)),
-        )
-        self.assertEqual(
-            cherrypy.server.base()
-            + '/restore/admin/testcases/R%C3%A9pertoire%20%28%40vec%29%20%7Bc%C3%A0ra%C3%A7t%23%C3%A8r%C3%AB%7D%20%24%C3%A9p%C3%AAcial?date=1414967021',
-            url_for(
-                'restore',
-                self.repo_obj,
-                b'R\xc3\xa9pertoire (@vec) {c\xc3\xa0ra\xc3\xa7t#\xc3\xa8r\xc3\xab} $\xc3\xa9p\xc3\xaacial',
-                date=RdiffTime(1414967021),
-            ),
-        )
-
-    def test_url_for_status(self):
-        self.assertEqual(
-            cherrypy.server.base() + '/status/admin/?date=1414967021',
-            url_for('status', 'admin', '/', date=RdiffTime(1414967021)),
-        )
-
-    def test_url_for_with_none(self):
-        self.assertEqual(cherrypy.server.base() + '/logs', url_for('logs', date=None))

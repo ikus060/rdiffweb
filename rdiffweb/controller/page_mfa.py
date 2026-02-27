@@ -16,13 +16,12 @@
 import logging
 
 import cherrypy
+from cherrypy_foundation.flash import flash
+from cherrypy_foundation.form import CherryForm
+from cherrypy_foundation.tools.i18n import get_translation
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from wtforms.fields import BooleanField, StringField, SubmitField
 from wtforms.validators import ValidationError
-
-from rdiffweb.controller import Controller, flash
-from rdiffweb.controller.form import CherryForm
-from rdiffweb.tools.i18n import get_translation
-from rdiffweb.tools.i18n import gettext_lazy as _
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -69,10 +68,11 @@ class MfaForm(CherryForm):
         return super().validate()
 
 
-class MfaPage(Controller):
+class MfaPage:
     @cherrypy.expose()
     @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
+    @cherrypy.tools.jinja2(template="mfa.html")
     def index(self, **kwargs):
         """
         Show Multi Factor Authentication form
@@ -92,12 +92,13 @@ class MfaPage(Controller):
             'form': form,
         }
         # Add welcome message to params. Try to load translated message.
-        welcome_msg = self.app.cfg.welcome_msg
+        cfg = cherrypy.tree.apps[''].cfg
+        welcome_msg = cfg.welcome_msg
         if welcome_msg:
             default_welcome_msg = welcome_msg.get('')
             lang = get_translation().locale.language
             params["welcome_msg"] = welcome_msg.get(lang, default_welcome_msg)
-        return self._compile_template("mfa.html", **params)
+        return params
 
     def send_code(self):
         # Send verification code by email

@@ -15,128 +15,48 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import time
-from collections import namedtuple
 
 import cherrypy
 
-from rdiffweb.core.config import Option
 from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.tools.i18n import get_translation
-from rdiffweb.tools.i18n import ugettext as _
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
+# TODO Remove the following function.
 def validate(value, message=None):
     """Raise HTTP error if value is not true."""
     if not value:
         raise cherrypy.HTTPError(400, message)
 
 
-def validate_int(value, message=None, min=None, max=None):
-    """Raise HTTP Error if the value is not an integer"""
+def validate_int(value, min=None, max=None):
+    """Returns a converter function that validates integer ranges"""
     try:
-        value = int(value)
-        if min and value < min:
-            raise cherrypy.HTTPError(400, message)
-        if max and value > max:
-            raise cherrypy.HTTPError(400, message)
-        return value
-    except ValueError:
-        raise cherrypy.HTTPError(400, message)
+        val = int(value)
+    except (ValueError, TypeError):
+        raise cherrypy.HTTPError(400, f"Invalid integer: {value}")
+
+    if min is not None and val < min:
+        raise cherrypy.HTTPError(400, f"Must be >= {min}")
+    if max is not None and val > max:
+        raise cherrypy.HTTPError(400, f"Must be <= {max}")
+
+    return val
 
 
-def validate_isinstance(value, cls, message=None):
-    """Raise HTTP error if value is not cls."""
-    if not isinstance(value, cls):
-        raise cherrypy.HTTPError(400, message)
+def validate_date(value, allow_none=False):
+    """Returns a converter function that validates date"""
 
-
-def validate_date(value, message=None):
+    if value is None and allow_none:
+        return None
     try:
         return RdiffTime(int(value))
     except ValueError:
-        logger.warning("invalid date %s", value)
-        raise cherrypy.HTTPError(400, message or _('Invalid date.'))
-
-
-FlashMessage = namedtuple('FlashMessage', ['message', 'level'])
-
-
-def flash(message, level='info'):
-    """
-    Add a flashin message to the session.
-    """
-    assert message
-    assert level in ['info', 'error', 'warning', 'success']
-    session = cherrypy.serving.session
-    if 'flash' not in session:
-        session['flash'] = []
-    # Support Markup and string
-    if hasattr(message, '__html__'):
-        flash_message = FlashMessage(message, level)
-    else:
-        flash_message = FlashMessage(str(message), level)
-    session['flash'].append(flash_message)
-
-
-def get_flashed_messages():
-    session = cherrypy.serving.session
-    if 'flash' in session:
-        messages = session['flash']
-        del session['flash']
-        return messages
-    return []
-
-
-class Controller(object):
-    _header_name = Option("header_name")
-
-    _footername = Option("footer_name")
-
-    _footerurl = Option("footer_url")
-
-    _cache_invalid = int(time.time())
-
-    @property
-    def app(self):
-        return cherrypy.request.app
-
-    def _compile_template(self, template_name, **kwargs):
-        """
-        Used to generate a standard HTML page using the given template.
-        This method should be used by subclasses to provide default template
-        value.
-        """
-        app = self.app
-        parms = {
-            "lang": str(get_translation().locale),
-            "header_name": self._header_name,
-            "footername": self._footername,
-            "footerurl": self._footerurl,
-            "get_flashed_messages": get_flashed_messages,
-            "cache_invalid": self._cache_invalid,
-        }
-        currentuser = getattr(cherrypy.request, 'currentuser', None)
-        if currentuser:
-            parms.update(
-                {
-                    'username': currentuser.username,
-                    'fullname': currentuser.fullname,
-                    'is_admin': currentuser.is_admin,
-                    'is_maintainer': currentuser.is_maintainer,
-                }
-            )
-        elif getattr(cherrypy.serving.request, 'login', None):
-            parms.update(
-                {
-                    'username': cherrypy.serving.request.login,
-                }
-            )
-
-        # Append template parameters.
-        parms.update(kwargs)
-
-        return app.templates.compile_template(template_name, **parms)
+        pass
+    try:
+        return RdiffTime(value)
+    except ValueError:
+        pass
+    raise cherrypy.HTTPError(400, f"Invalid date: {value}")

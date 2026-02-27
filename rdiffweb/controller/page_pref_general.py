@@ -27,11 +27,12 @@ try:
 except ImportError:
     from wtforms.fields.html5 import EmailField  # wtform <3
 
-from rdiffweb.controller import Controller, flash
+from cherrypy_foundation.flash import flash
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
+from cherrypy_foundation.tools.i18n import list_available_locales
+
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.model import UserObject
-from rdiffweb.tools.i18n import gettext_lazy as _
-from rdiffweb.tools.i18n import list_available_locales
 
 
 class UserProfileForm(DbForm):
@@ -54,7 +55,10 @@ class UserProfileForm(DbForm):
         ],
     )
     lang = SelectField(_('Preferred Language'))
-    set_profile_info = SubmitField(_('Save changes'))
+    set_profile_info = SubmitField(
+        _('Save changes'),
+        render_kw={"class": "btn-primary"},
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -90,7 +94,10 @@ class UserPasswordForm(DbForm):
     confirm = PasswordField(
         _('Confirm new password'), validators=[InputRequired(_("Confirmation password is missing."))]
     )
-    set_password = SubmitField(_('Update password'))
+    set_password = SubmitField(
+        _('Update password'),
+        render_kw={"class": "btn-primary"},
+    )
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
@@ -119,6 +126,7 @@ class RefreshForm(DbForm):
         description=_(
             "Refresh the list of repositories associated to your account. If you recently add a new repository and it doesn't show, you may try to refresh the list."
         ),
+        render_kw={"class": "btn-primary"},
     )
 
     def is_submitted(self):
@@ -129,7 +137,7 @@ class RefreshForm(DbForm):
         user.refresh_repos(delete=True)
 
 
-class PagePrefsGeneral(Controller):
+class PagePrefsGeneral:
     """
     Plugin to change user profile and password.
     """
@@ -137,6 +145,7 @@ class PagePrefsGeneral(Controller):
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'], logout=True)
+    @cherrypy.tools.jinja2(template="prefs_general.html")
     def default(self, **kwargs):
         """
         Show user settings
@@ -164,9 +173,8 @@ class PagePrefsGeneral(Controller):
             flash(password_form.error_message, level='error')
         if refresh_form.error_message:
             flash(refresh_form.error_message, level='error')
-        params = {
+        return {
             'profile_form': profile_form,
             'password_form': password_form,
             'refresh_form': refresh_form,
         }
-        return self._compile_template("prefs_general.html", **params)

@@ -69,10 +69,6 @@
   "buttons": buttons
   } %}
   {# Pick the right layout #}
-  {% set dom_cfg = {
-  "default": "<'d-sm-flex align-items-center'<'mb-1 flex-grow-1'i><'mb-1'f><B>><'row'<'col-sm-12'rt>><'row'<'col-sm-12 col-md-7'p>>",
-  "audit" : "<'row'<'col-sm-12'rt>><'row'<'col-sm-12 col-md-7'p>>"}.get(layout)
-  %}
   <table class="table table-hover responsive"
          width="100%"
          data-ajax="{{ data }}"
@@ -82,7 +78,6 @@
          data-searching='{{ searching | tojson }}'
          data-buttons='{{ buttons_cfg | tojson }}'
          data-paging="{{ paging | tojson }}"
-         data-dom="{{ dom_cfg }}"
          data-responsive="true"
          {% if paging %}data-page-length="{{ page_length | tojson }}" data-length-change="false"{% endif %}
          data-state-save="{{ state_save | tojson }}"

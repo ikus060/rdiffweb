@@ -18,12 +18,12 @@ import logging
 import sys
 
 import cherrypy
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from sqlalchemy import Column, ForeignKey, Index, Integer, PrimaryKeyConstraint, Text, event, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import reconstructor, relationship, validates
 
 from rdiffweb.core.authorizedkeys import AuthorizedKey, check_publickey
-from rdiffweb.tools.i18n import gettext_lazy as _
 
 from ._callbacks import add_post_commit_tasks
 from ._update import index_exists

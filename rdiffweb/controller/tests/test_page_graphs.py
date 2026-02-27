@@ -14,11 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from cherrypy_foundation.url import url_for
 from parameterized import parameterized
 
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
-from rdiffweb.core.rdw_templating import url_for
 
 
 class GraphsTest(rdiffweb.test.WebCase):

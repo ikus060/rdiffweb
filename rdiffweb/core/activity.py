@@ -22,11 +22,11 @@ from datetime import datetime, timezone
 
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
+from cherrypy_foundation.plugins.scheduler import clear_db_sessions
+from cherrypy_foundation.tools.i18n import ugettext as _
 
 from rdiffweb.core.librdiff import unquote
 from rdiffweb.core.model import Message, UserObject
-from rdiffweb.plugins.scheduler import clear_db_sessions
-from rdiffweb.tools.i18n import ugettext as _
 
 logger = logging.getLogger(__name__)
 

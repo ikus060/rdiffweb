@@ -20,16 +20,16 @@ import logging
 from collections import namedtuple
 
 import cherrypy
+from cherrypy_foundation.flash import flash
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from markupsafe import Markup, escape
 from wtforms.fields import SelectField, SelectMultipleField, TextAreaField
 from wtforms.validators import Length, ValidationError
 from wtforms.widgets import html_params
 
-from rdiffweb.controller import Controller, flash
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import Message, RepoObject, UserObject
-from rdiffweb.tools.i18n import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
@@ -270,7 +270,7 @@ class RepoSettingsForm(DbForm):
 
 
 @cherrypy.tools.poppath()
-class SettingsPage(Controller):
+class SettingsPage:
     @cherrypy.expose
     @cherrypy.tools.errors(
         error_table={
@@ -279,6 +279,7 @@ class SettingsPage(Controller):
         }
     )
     @cherrypy.tools.allow(methods=['GET', 'POST'])
+    @cherrypy.tools.jinja2(template="settings.html")
     def default(self, path, **kwargs):
         """
         Show user general settings
@@ -291,11 +292,11 @@ class SettingsPage(Controller):
             raise cherrypy.HTTPRedirect("")
         if form.error_message:
             flash(form.error_message, level='error')
-        return self._compile_template("settings.html", form=form, repo=repo_obj)
+        return {'form': form, 'repo': repo_obj}
 
 
 @cherrypy.tools.poppath()
-class AuditLogData(Controller):
+class AuditLogData:
     @cherrypy.expose
     @cherrypy.tools.errors(
         error_table={
@@ -342,7 +343,7 @@ class AuditLogData(Controller):
 
 @cherrypy.expose
 @cherrypy.tools.required_scope(scope='all,read_user,write_user')
-class ApiRepos(Controller):
+class ApiRepos:
     def _query(self, name_or_repoid):
         u = cherrypy.serving.request.currentuser
         query = RepoObject.query.filter(RepoObject.userid == u.id)

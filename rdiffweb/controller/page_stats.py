@@ -16,11 +16,12 @@
 
 
 import cherrypy
+from cherrypy_foundation.tools.i18n import ugettext as _
 
-from rdiffweb.controller import Controller, validate_date, validate_int
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
-from rdiffweb.tools.i18n import ugettext as _
+
+from . import validate_date, validate_int
 
 
 def line_to_state(line):
@@ -49,7 +50,7 @@ def line_to_size(line):
 
 
 @cherrypy.tools.poppath()
-class StatsPage(Controller):
+class StatsPage:
     @cherrypy.expose()
     @cherrypy.tools.allow(methods=['GET'])
     @cherrypy.tools.errors(
@@ -58,19 +59,17 @@ class StatsPage(Controller):
             AccessDeniedError: 403,
         }
     )
+    @cherrypy.tools.jinja2(template="stats.html")
     def default(self, path, limit='10', date=None):
         """
         Show file statistics
         """
-        limit = validate_int(limit)
-        if date is not None:
-            date = validate_date(date)
-
+        limit = validate_int(limit, min=1)
+        date = validate_date(date, allow_none=True)
         # If Repo is broken
         repo_obj = RepoObject.get_repo(path)
         if repo_obj.status[0] == 'failed':
-            params = {'repo': repo_obj, 'limit': limit, 'date': date}
-            return self._compile_template("stats.html", **params)
+            return {'repo': repo_obj, 'limit': limit, 'date': date}
 
         # Check if date exists
         if date:
@@ -84,8 +83,7 @@ class StatsPage(Controller):
             file_statistics = repo_obj.file_statistics[: -limit - 1 : -1]
         else:
             file_statistics = repo_obj.file_statistics[::-1]
-        params = {'repo': repo_obj, 'limit': limit, 'date': date, 'file_statistics': file_statistics}
-        return self._compile_template("stats.html", **params)
+        return {'repo': repo_obj, 'limit': limit, 'date': date, 'file_statistics': file_statistics}
 
     @cherrypy.expose
     @cherrypy.tools.errors(
@@ -99,9 +97,8 @@ class StatsPage(Controller):
         """
         Return a json array with stats
         """
-        limit = validate_int(limit)
+        limit = validate_int(limit, min=1)
         date = validate_date(date)
-
         # If Repo is broken return no data
         repo_obj = RepoObject.get_repo(path)
         if repo_obj.status[0] == 'failed':

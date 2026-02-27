@@ -16,18 +16,17 @@
 
 import cherrypy
 
-from rdiffweb.controller import Controller
 from rdiffweb.core.model import RepoObject
 
 
 @cherrypy.tools.is_admin()
-class AdminReposPage(Controller):
+class AdminReposPage:
     @cherrypy.expose
+    @cherrypy.tools.jinja2(template="admin_repos.html")
     def index(self):
         """
         Show all user repositories
         """
-        params = {
+        return {
             "repos": RepoObject.query.all(),
         }
-        return self._compile_template("admin_repos.html", **params)

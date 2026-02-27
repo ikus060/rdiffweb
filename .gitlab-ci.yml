@@ -48,10 +48,6 @@ py3:
   image: $IMAGE
   parallel:
     matrix:
-      - TOXENV: py3
-        IMAGE: python:3.10
-      - TOXENV: bookworm
-        IMAGE: python:3.11
       - TOXENV: trixie
         IMAGE: python:3.13
 
@@ -64,6 +60,15 @@ selenium:
     paths:
       - coverage.xml
       - xunit.xml
+
+wrap-and-sort:
+  stage: test
+  image: buildpack-deps:stable
+  script:
+  - apt update
+  - apt -y --no-install-recommends install devscripts python3-debian
+  - CHANGES=$(wrap-and-sort -astN)
+  - if [[ ! -z "$CHANGES" ]]; then echo "$CHANGES"; exit 1; fi
 
 rdiff-backup-latest:
   <<: *tox
@@ -140,31 +145,31 @@ package:deb:
   image: buildpack-deps:$DIST
   parallel:
     matrix:
-      - DIST: [bookworm, trixie]
-      - DIST: [jammy, noble, plucky]
+      - DIST: [trixie, forky]
+      # Disable selenium test in ubuntu - because snap chronium is not working in docker
+      - DIST: [plucky, questing, resolute]
+        RDIFFWEB_SELENIUM_TEST: 0
   script:
     # Clean-up
-    - rm -f ../rdiffweb_*
+    - rm -f ../*.deb
     - rm -Rf ./dist/$DIST/*
+    # Add apt source for cherrypy-foundation
+    - wget -O /etc/apt/keyrings/minarca-keyring.asc https://www.ikus-soft.com/archive/minarca/public.key
+    - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/minarca-keyring.asc] https://nexus.ikus-soft.com/repository/apt-dev-$DIST/ $DIST-dev main" > /etc/apt/sources.list.d/minarca.list
+    - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/minarca-keyring.asc] https://nexus.ikus-soft.com/repository/apt-release-$DIST/ $DIST main" >> /etc/apt/sources.list.d/minarca.list
     # Install dependencies
     - apt update
-    - apt -y --no-install-recommends install devscripts
-    - apt build-dep -y .
+    - apt -y --no-install-recommends install devscripts lintian
+    - apt build-dep -y --no-install-recommends .
     # Generate change log
-    - export DEBEMAIL="${CI_COMMIT_AUTHOR}"
-    - export UPSTREAM_VERSION="$(python3 -m setuptools_scm)"
-    - export VENDOR="$(lsb_release -is  | tr 'A-Z' 'a-z')"
-    - export DISTVER="$(lsb_release -rs)"
-    - export CHANGELOG_VERSION="${UPSTREAM_VERSION}-1${VENDOR}${DISTVER}"
-    - dch --newversion "${CHANGELOG_VERSION}" "Automated build"
-    - sed -i 's/UNRELEASED/unstable/' debian/changelog
-    # Generate orig.tar.gz
-    - debian/rules gentarball
+    - export DEBEMAIL=$CI_COMMIT_AUTHOR
+    - dch -v "$(python3 -m setuptools_scm)" "automated build"
     # Run build in separate target
-    - debuild -us -uc
+    - dpkg-buildpackage -A
+    - lintian
     # Move files to archives
     - mkdir -p ./dist/$DIST
-    - mv ../rdiffweb_* ./dist/$DIST/
+    - mv ../*.deb ./dist/$DIST/
   artifacts:
     paths:
       - ./dist/*
@@ -176,37 +181,22 @@ test-package:deb:
   needs: ["package:deb"]
   parallel:
     matrix:
-      - DIST: [bookworm, trixie]
-      # Ubuntu tzdata is broken https://githubmate.com/repo/regebro/tzlocal/issues/101
-      # So we need to make it explicit using environment variable
-      - DIST: [jammy, noble, plucky]
-        TZ: UTC
+      - DIST: [trixie]
+      - DIST: [plucky, questing, resolute]
   script:
+    # Add apt source for cherrypy-foundation
+    - wget -O /etc/apt/keyrings/minarca-keyring.asc https://www.ikus-soft.com/archive/minarca/public.key
+    - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/minarca-keyring.asc] https://nexus.ikus-soft.com/repository/apt-dev-$DIST/ $DIST-dev main" > /etc/apt/sources.list.d/minarca.list
+    - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/minarca-keyring.asc] https://nexus.ikus-soft.com/repository/apt-release-$DIST/ $DIST main" >> /etc/apt/sources.list.d/minarca.list
+    # Install package
     - apt update
     - apt install -y ./dist/$DIST/rdiffweb*.deb
+    # Smoke test
     - rdiffweb --version
+    # Start server
     - (/usr/bin/rdiffweb &)
+    # Check if server is responding
     - timeout 60 bash -c 'until curl --silent http://localhost:8080; do sleep 1; done'
-    # Check if static files are working
-    - curl http://localhost:8080/static/css/bootstrap.min.css
-    - curl http://localhost:8080/static/css/bootstrap.min.css.map
-    - curl http://localhost:8080/static/css/font-awesome.css.map
-    - curl http://localhost:8080/static/css/font-awesome.min.css
-    - curl http://localhost:8080/static/css/jquery.dataTables.min.css
-    - curl http://localhost:8080/static/css/responsive.dataTables.min.css
-    - curl http://localhost:8080/static/fonts/fontawesome-webfont.eot
-    - curl http://localhost:8080/static/fonts/fontawesome-webfont.svg
-    - curl http://localhost:8080/static/fonts/fontawesome-webfont.woff
-    - curl http://localhost:8080/static/fonts/fontawesome-webfont.woff2
-    - curl http://localhost:8080/static/images/sort_asc.png
-    - curl http://localhost:8080/static/images/sort_both.png
-    - curl http://localhost:8080/static/images/sort_desc.png
-    - curl http://localhost:8080/static/js/bootstrap.js.map
-    - curl http://localhost:8080/static/js/bootstrap.min.js
-    - curl http://localhost:8080/static/js/dataTables.buttons.min.js
-    - curl http://localhost:8080/static/js/dataTables.responsive.min.js
-    - curl http://localhost:8080/static/js/jquery.dataTables.min.js
-    - curl http://localhost:8080/static/js/jquery.min.js
 
 publish:sonar:master:
   stage: sonar
@@ -305,8 +295,8 @@ publish:deb:
       - $NEXUS_PWD
   parallel:
     matrix:
-      - DIST: [bookworm, trixie]
-      - DIST: [jammy, noble, plucky]
+      - DIST: [trixie, forky]
+      - DIST: [plucky, questing, resolute]
   script: |
     set -e
     set -x

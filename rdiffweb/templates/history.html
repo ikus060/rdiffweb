@@ -14,7 +14,7 @@
           <li class="breadcrumb-item active">{{ parent.display_name }}</li>
         {% else %}
           <li class="breadcrumb-item">
-            <a href="{{ url_for('browse', repo, parent) }}">{{ parent.display_name }}</a>
+            <a href="{{ url_for('browse', repo, parent.path) }}">{{ parent.display_name }}</a>
           </li>
         {% endif %}
       {% endfor %}
@@ -36,7 +36,7 @@
               <div class="btn-group">
                 <a type="button"
                    class="btn btn-secondary btn-sm"
-                   href="{{ url_for('restore', repo, path, date=restore_date) }}">
+                   href="{{ url_for('restore', repo, path, date=restore_date.epoch) }}">
                   <i class="fa fa-download" aria-hidden="true"></i>
                   <span>{% trans %}Download{% endtrans %}</span>
                 </a>
@@ -52,17 +52,17 @@
                      role="menu"
                      aria-labelledby="menu1">
                   <a class="dropdown-item"
-                     href="{{ url_for('restore', repo, path, date=restore_date) }}">
+                     href="{{ url_for('restore', repo, path, date=restore_date.epoch) }}">
                     <i class="fa fa-download" aria-hidden="true"></i>
                     <span>{% trans %}Download{% endtrans %} ZIP</span>
                   </a>
                   <a class="dropdown-item"
-                     href="{{ url_for('restore', repo, path, date=restore_date, kind='tar.gz') }}">
+                     href="{{ url_for('restore', repo, path, date=restore_date.epoch, kind='tar.gz') }}">
                     <i class="fa fa-download" aria-hidden="true"></i>
                     <span>{% trans %}Download{% endtrans %} TAR.GZ</span>
                   </a>
                   <a class="dropdown-item"
-                     href="{{ url_for('restore', repo, path, date=restore_date, kind='tar.bz2') }}">
+                     href="{{ url_for('restore', repo, path, date=restore_date.epoch, kind='tar.bz2') }}">
                     <i class="fa fa-download" aria-hidden="true"></i>
                     <span>{% trans %}Download{% endtrans %} TAR.BZ2</span>
                   </a>
@@ -73,7 +73,7 @@
               <a type="button"
                  class="btn btn-secondary btn-sm"
                  rel="nofollow"
-                 href="{{ url_for('restore', repo, path, date=restore_date) }}">
+                 href="{{ url_for('restore', repo, path, date=restore_date.epoch) }}">
                 <i class="fa fa-download" aria-hidden="true"></i>
                 <span>{% trans %}Download{% endtrans %}</span>
               </a>

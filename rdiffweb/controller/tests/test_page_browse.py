@@ -16,11 +16,11 @@
 
 import os
 
+from cherrypy_foundation.url import url_for
 from parameterized import parameterized
 
 import rdiffweb.test
 from rdiffweb.core.model import RepoObject, UserObject
-from rdiffweb.core.rdw_templating import url_for
 
 _matrix = [
     (

@@ -38,6 +38,8 @@ class RemoveOlder(SimplePlugin):
         self.bus.log('Stop RemoveOlder plugin')
         self.bus.publish('scheduler:remove_job', f'{self.__module__}:cherrypy.remove_older.remove_older_job')
 
+    stop.priority = 49
+
     def graceful(self):
         """Reload of subscribers."""
         self.stop()

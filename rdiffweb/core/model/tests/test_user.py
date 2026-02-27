@@ -19,13 +19,13 @@ from io import StringIO, open
 from unittest.mock import ANY, MagicMock
 
 import cherrypy
+from cherrypy_foundation.passwd import check_password
 from parameterized import parameterized, parameterized_class
 from sqlalchemy.exc import IntegrityError
 
 import rdiffweb.test
 from rdiffweb.core import authorizedkeys
 from rdiffweb.core.model import Message, RepoObject, UserObject
-from rdiffweb.core.passwd import check_password
 
 
 class UserObjectTest(rdiffweb.test.WebCase):

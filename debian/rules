@@ -4,6 +4,9 @@ include /usr/share/dpkg/pkg-info.mk
 
 export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_RDIFFWEB := $(DEB_VERSION_UPSTREAM)
 
+# Default to running selenium tests
+export SELENIUM_TEST ?= 1
+
 # Force use of pyproject.toml
 export PYBUILD_SYSTEM=pyproject
 
@@ -19,9 +22,13 @@ execute_before_dh_auto_build:
 		pip install "setuptools>=66,<=68"; \
 	fi
 
-# For testing, we need a timezone
 override_dh_auto_test:
-	TZ=UTC dh_auto_test
+	# For testing, we need a timezone
+ifeq ($(SELENIUM_TEST),1)
+    TZ=UTC xvfb-run dh_auto_test
+else
+    TZ=UTC dh_auto_test
+endif
 
 execute_after_dh_auto_install:
 # Compile locale

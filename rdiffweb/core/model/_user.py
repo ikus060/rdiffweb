@@ -20,6 +20,9 @@ import string
 import sys
 
 import cherrypy
+from cherrypy_foundation.passwd import check_password, hash_password
+from cherrypy_foundation.plugins.scheduler import clear_db_sessions
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from sqlalchemy import (
     CheckConstraint,
     Column,
@@ -36,11 +39,6 @@ from sqlalchemy import (
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import deferred, relationship, validates
-
-import rdiffweb.plugins.db  # noqa
-from rdiffweb.core.passwd import check_password, hash_password
-from rdiffweb.plugins.scheduler import clear_db_sessions
-from rdiffweb.tools.i18n import gettext_lazy as _
 
 from ._callbacks import add_post_commit_tasks
 from ._message import AUDIT_IGNORE, MessageMixin, get_model_changes

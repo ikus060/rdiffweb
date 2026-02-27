@@ -18,14 +18,13 @@ import logging
 
 import cherrypy
 
-from rdiffweb.controller import Controller
-
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-class LocationsPage(Controller):
+class LocationsPage:
     @cherrypy.expose
+    @cherrypy.tools.jinja2(template="locations.html")
     def index(self):
         """
         Shows repositories of current user
@@ -34,10 +33,8 @@ class LocationsPage(Controller):
         currentuser = cherrypy.serving.request.currentuser
         if currentuser.refresh_repos():
             currentuser.commit()
-        params = {
+        return {
             "repos": currentuser.repo_objs,
             "disk_usage": currentuser.disk_usage,
             "disk_quota": currentuser.disk_quota,
         }
-        # Render the page.
-        return self._compile_template("locations.html", **params)

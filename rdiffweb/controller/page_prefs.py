@@ -17,21 +17,20 @@
 import logging
 
 import cherrypy
+from cherrypy_foundation.url import url_for
 
-from rdiffweb.controller import Controller
 from rdiffweb.controller.page_pref_general import PagePrefsGeneral
 from rdiffweb.controller.page_pref_mfa import PagePrefMfa
 from rdiffweb.controller.page_pref_notification import PagePrefNotification
 from rdiffweb.controller.page_pref_session import PagePrefSession
 from rdiffweb.controller.page_pref_sshkeys import PagePrefSshKeys
 from rdiffweb.controller.page_pref_tokens import PagePrefTokens
-from rdiffweb.core.rdw_templating import url_for
 
 # Define the logger
 logger = logging.getLogger(__name__)
 
 
-class PreferencesPage(Controller):
+class PreferencesPage:
     general = PagePrefsGeneral()
     mfa = PagePrefMfa()
     notification = PagePrefNotification()

@@ -54,7 +54,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
                 303,
                 404,
                 'Revisions',
-                '/browse/admin/testcases',
+                '/browse/admin/testcases/',
             ),
             ("with_dir_wrong_confirmation", 'admin', '/testcases/Revisions', 'invalid', 400, 200),
             (
@@ -65,7 +65,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
                 303,
                 404,
                 'Revisions/Data',
-                '/browse/admin/testcases/Revisions',
+                '/browse/admin/testcases/Revisions/',
             ),
             ("with_file_wrong_confirmation", 'admin', '/testcases/Revisions/Data', 'invalid', 400, 200),
             ("with_invalid", 'admin', '/testcases/invalid', 'invalid', 404, 404),
@@ -77,7 +77,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
                 303,
                 404,
                 'BrokenSymlink',
-                '/browse/admin/testcases',
+                '/browse/admin/testcases/',
             ),
             (
                 "with_utf8",
@@ -87,7 +87,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
                 303,
                 404,
                 'Répertoire Existant',
-                '/browse/admin/testcases',
+                '/browse/admin/testcases/',
             ),
             ("with_rdiff_backup_data", 'admin', '/testcases/rdiff-backup-data', 'rdiff-backup-data', 404, 404),
             (
@@ -98,7 +98,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
                 303,
                 404,
                 'Char Z to quote',
-                '/browse/admin/testcases',
+                '/browse/admin/testcases/',
             ),
         ]
     )

@@ -16,19 +16,16 @@
 
 # Define the logger
 
-import os
-
 import cherrypy
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
+from cherrypy_foundation.url import url_for
 from wtforms.fields import StringField
 from wtforms.validators import DataRequired, ValidationError
 
-from rdiffweb.controller import Controller
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
-from rdiffweb.core.rdw_templating import url_for
-from rdiffweb.tools.i18n import gettext_lazy as _
 
 
 class DeleteRepoForm(DbForm):
@@ -40,7 +37,7 @@ class DeleteRepoForm(DbForm):
 
 
 @cherrypy.tools.poppath()
-class DeletePage(Controller):
+class DeletePage:
     @cherrypy.expose
     @cherrypy.tools.errors(
         error_table={
@@ -66,12 +63,12 @@ class DeletePage(Controller):
         if form.validate_on_submit():
             if path_obj.isroot:
                 repo.schedule_delete_repo()
+                repo.commit()
                 # Redirect to main page
                 raise cherrypy.HTTPRedirect(url_for('/'))
             else:
                 repo.schedule_delete_path(path)
                 # Redirect to parent folder.
-                parent_path = repo.fstat(os.path.dirname(path_obj.path))
-                raise cherrypy.HTTPRedirect(url_for('browse', repo, parent_path))
+                raise cherrypy.HTTPRedirect(url_for('browse', repo, path, '..'))
         if form.error_message:
             raise cherrypy.HTTPError(400, form.error_message)

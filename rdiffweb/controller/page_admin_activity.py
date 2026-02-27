@@ -17,11 +17,12 @@
 from collections import namedtuple
 
 import cherrypy
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from sqlalchemy import desc, or_
 
-from rdiffweb.controller import Controller, validate_int
 from rdiffweb.core.model import Message, UserObject
-from rdiffweb.tools.i18n import gettext_lazy as _
+
+from . import validate_int
 
 ActivityRow = namedtuple(
     'ActivityRow', ['date', 'author_name', 'model_id', 'model_name', 'model_summary', 'type', 'body', 'changes']
@@ -29,17 +30,18 @@ ActivityRow = namedtuple(
 
 
 @cherrypy.tools.is_admin()
-class AdminActivityPage(Controller):
+class AdminActivityPage:
     """
     Display server activities.
     """
 
     @cherrypy.expose
+    @cherrypy.tools.jinja2(template="admin_activity.html")
     def index(self):
         """
         Show server activity.
         """
-        return self._compile_template("admin_activity.html")
+        return {}
 
     @cherrypy.expose()
     @cherrypy.tools.json_out()
@@ -49,7 +51,6 @@ class AdminActivityPage(Controller):
         """
         start = validate_int(start, min=0)
         length = validate_int(length, min=1, max=100)
-
         # Run the queries
         query = Message.query.with_entities(
             Message.date,
@@ -66,12 +67,10 @@ class AdminActivityPage(Controller):
         total = query.count()
 
         # Apply sorting - default sort by date
-        order_idx = validate_int(
-            kwargs.get('order[0][column]', '4'),  # date
-            min=0,
-            max=len(query.column_descriptions) - 1,
-            message=_('Invalid column for sorting'),
-        )
+        try:
+            order_idx = validate_int(kwargs.get('order[0][column]', '4'), min=0, max=len(query.column_descriptions) - 1)
+        except ValueError:
+            raise cherrypy.HTTPError(400, 'Invalid column for sorting')
         order_dir = kwargs.get('order[0][dir]', 'desc')
         order_col = query.column_descriptions[int(order_idx)]['expr']
         if order_dir == 'desc':

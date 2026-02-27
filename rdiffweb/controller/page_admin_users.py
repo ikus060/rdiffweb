@@ -29,12 +29,13 @@ except ImportError:
 
 from collections import namedtuple
 
-from rdiffweb.controller import Controller, flash
+from cherrypy_foundation.flash import flash
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
+from cherrypy_foundation.tools.i18n import list_available_locales
+from cherrypy_foundation.url import url_for
+
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.model import Message, UserObject
-from rdiffweb.core.rdw_templating import url_for
-from rdiffweb.tools.i18n import gettext_lazy as _
-from rdiffweb.tools.i18n import list_available_locales
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -305,23 +306,24 @@ class DeleteUserForm(DbForm):
 
 
 @cherrypy.tools.is_admin()
-class AdminUsersPage(Controller):
+class AdminUsersPage:
     @cherrypy.expose
+    @cherrypy.tools.jinja2(template="admin_users.html")
     def index(self):
         """
         Show user list
         """
         # Build users page
         form = UserForm()
-        return self._compile_template(
-            "admin_users.html",
-            form=form,
-            users=UserObject.query.all(),
-        )
+        return {
+            'form': form,
+            'users': UserObject.query.all(),
+        }
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
+    @cherrypy.tools.jinja2(template="admin_user_new.html")
     def new(self, **kwargs):
         """
         Show form to create a new user
@@ -334,11 +336,12 @@ class AdminUsersPage(Controller):
                 raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
         if form.error_message:
             flash(form.error_message, level='error')
-        return self._compile_template("admin_user_new.html", form=form)
+        return {'form': form}
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
+    @cherrypy.tools.jinja2(template="admin_user_edit.html")
     def edit(self, username_or_id, **kwargs):
         """
         Show form to edit user
@@ -353,7 +356,7 @@ class AdminUsersPage(Controller):
             raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
         if form.error_message:
             flash(form.error_message, level='error')
-        return self._compile_template("admin_user_edit.html", form=form)
+        return {'form': form}
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['POST'])
@@ -416,7 +419,7 @@ class AdminUsersPage(Controller):
 @cherrypy.expose
 @cherrypy.tools.is_admin()
 @cherrypy.tools.required_scope(scope='all,admin_read_users')
-class AdminApiUsers(Controller):
+class AdminApiUsers:
     ROLES_MAP = {v: k for k, v in UserObject.ROLES.items()}
 
     def _to_json(self, user_obj, detailed=False):

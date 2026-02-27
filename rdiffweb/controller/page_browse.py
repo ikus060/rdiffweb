@@ -19,7 +19,6 @@ import logging
 import cherrypy
 
 import rdiffweb.tools.errors  # noqa
-from rdiffweb.controller import Controller
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 
@@ -28,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 @cherrypy.tools.poppath()
-class BrowsePage(Controller):
+class BrowsePage:
     @cherrypy.expose
     @cherrypy.tools.errors(
         error_table={
@@ -36,6 +35,7 @@ class BrowsePage(Controller):
             AccessDeniedError: 403,
         }
     )
+    @cherrypy.tools.jinja2(template="browse.html")
     def default(self, path):
         """
         Browser view displaying files and folders in user's repository
@@ -48,5 +48,4 @@ class BrowsePage(Controller):
             dir_entries = []
         else:
             dir_entries = repo.listdir(path)
-        parms = {"repo": repo, "path": path, "dir_entries": dir_entries}
-        return self._compile_template("browse.html", **parms)
+        return {"repo": repo, "path": path, "dir_entries": dir_entries}

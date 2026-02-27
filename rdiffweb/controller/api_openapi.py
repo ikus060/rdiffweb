@@ -19,11 +19,9 @@ import textwrap
 
 import cherrypy
 
-from rdiffweb.controller import Controller
-
 
 @cherrypy.expose
-class OpenAPI(Controller):
+class OpenAPI:
     """
     Return a Json listing all the available routes as OpenAPI format.
     """
@@ -140,30 +138,6 @@ class OpenAPI(Controller):
                 else:
                     yield path, 'get' if method == 'list' else method, method_object
 
-    def _create_path_object(self, path, node, cp_config):
-        # Clean-up the path
-        if path.endswith('/index'):
-            # Strip `index`
-            path = path[:-5]
-        elif path.endswith('/default'):
-            # Strip `/default`
-            path = path[:-8]
-        elif path.endswith('_json'):
-            # Replace _json by '.json'
-            path = path[:-5] + '.json'
-
-        methods = cp_config.get('tools.allow.methods', [])
-        for method in methods:
-            method = method.lower()
-            method_object = self._create_method_object(node, cp_config, method=method)
-
-            # Handle required vpath.
-            if method_object['parameters'] and method_object['parameters'][0]['in'] == 'path':
-                vpath = method_object['parameters'][0]['name']
-                yield '%s/{%s}' % (path.rstrip('/'), vpath), method, method_object
-            else:
-                yield path, method, method_object
-
     def _walk_exposed_nodes(self, root_node):
         """
         Walk the object tree to find all @cherrypy.expose function
@@ -207,23 +181,22 @@ class OpenAPI(Controller):
 
         return routes
 
-    def _generate_spec(self, root_node):
+    def _generate_spec(self, root_node, title, version):
         paths = {}
         # Collect all exposed node
         sorted_nodes = sorted(list(self._walk_exposed_nodes(root_node)))
         # Assemble all the nodes
         for path, node, config in sorted_nodes:
             # Check if RESTapi
-            generator = self._create_path_object_api if path.startswith('/api') else self._create_path_object
-            for path, method, data in generator(path, node, config):
-                paths.setdefault(path, {}).setdefault(method, {}).update(data)
-
+            if path.startswith('/api'):
+                for path, method, data in self._create_path_object_api(path, node, config):
+                    paths.setdefault(path, {}).setdefault(method, {}).update(data)
         return {
             "openapi": "3.0.0",
             "info": {
-                "title": self._footername,
+                "title": title,
                 "description": "Auto-generated OpenAPI documentation",
-                "version": self.app.version,
+                "version": version,
             },
             "servers": [
                 {
@@ -235,21 +208,22 @@ class OpenAPI(Controller):
 
     def get(self):
         """Generate OpenAPI JSON for a given CherryPy root application."""
-        root = cherrypy.tree.apps[""].root
-        return self._generate_spec(root)
+        app = cherrypy.tree.apps[""]
+        return self._generate_spec(app.root, title=app.cfg.footer_name, version=app.version)
 
 
 if __name__ == "__main__":
     import json
     import sys
 
+    import rdiffweb
     from rdiffweb.core.config import parse_args
     from rdiffweb.rdw_app import RdiffwebApp
 
     cfg = parse_args(args=['--database-uri', 'sqlite://'])
     app = cherrypy.request.app = RdiffwebApp(cfg)
 
-    api_spec = OpenAPI()._generate_spec(app.root)
+    api_spec = OpenAPI()._generate_spec(app.root, title='rdiffweb', version=rdiffweb.__version__)
     if len(sys.argv) >= 2:
         fn = sys.argv[1]
         with open(fn, 'w') as fp:

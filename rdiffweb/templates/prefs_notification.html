@@ -18,7 +18,7 @@
   {% call panel(title=_("Report"), description=_("Configure how often you want to receive a backup report in your mailbox.")) %}
     <div class="panel-body">
       <form action="#" method="post" role="form" class="clearfix">
-        {{ report_form }}
+        <Fields form={{ report_form }}/>
       </form>
     </div>
   {% endcall %}
@@ -26,7 +26,7 @@
   {% call panel(title=_("Notification"), description=_("Configure when you will be notified if your backup is inactive.")) %}
     <div class="panel-body">
       <form action="#" method="post" role="form" class="clearfix">
-        {{ notification_form }}
+        <Fields form={{ notification_form }}/>
       </form>
     </div>
   {% endcall %}

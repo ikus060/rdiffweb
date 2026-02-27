@@ -23,6 +23,7 @@ from urllib.parse import urlparse
 
 import cherrypy
 import configargparse
+from babel import Locale, dates
 from cherrypy import Application
 
 from rdiffweb import __version__
@@ -83,6 +84,31 @@ def _comma_or_space_separated(value):
     # Filter out empty strings
     items = [item for item in items if item]
     return items
+
+
+def _locale(value):
+    """
+    Validate locale value. Return string.
+    """
+    if not value:
+        return value
+    try:
+        return str(Locale.parse(value.replace('-', '_')))
+    except Exception:
+        raise argparse.ArgumentError('Unknown locale: %s' % value)
+
+
+def _timezone(value):
+    """
+    Validate timezone.
+    """
+    if not value:
+        return value
+    try:
+        dates.get_timezone(value)
+    except Exception:
+        raise argparse.ArgumentError('Unknown timezone: %s' % value)
+    return value
 
 
 def _url(value):
@@ -158,8 +184,15 @@ def get_parser():
 
     parser.add_argument(
         '--default-lang',
-        help='default application locale. e.g.: `fr`',
-        default='en',
+        help='Default application locale. e.g.: `fr` or with territory `fr_CA`.',
+        default='en_US',
+        type=_locale,
+    )
+
+    parser.add_argument(
+        '--default-timezone',
+        help='Default application timezone. e.g.: `America/toronto`. Uses server timezone when undefined.',
+        type=_timezone,
     )
 
     parser.add_argument(

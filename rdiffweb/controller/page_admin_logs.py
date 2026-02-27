@@ -20,11 +20,11 @@ import subprocess
 import cherrypy
 from cherrypy.lib.static import serve_file
 
-from rdiffweb.controller import Controller, validate_int
+from . import validate_int
 
 
 @cherrypy.tools.is_admin()
-class AdminLogsPage(Controller):
+class AdminLogsPage:
     """
     Controller responsible to re-format the logs into usable Json format.
     """
@@ -47,12 +47,12 @@ class AdminLogsPage(Controller):
         )
 
     @cherrypy.expose
+    @cherrypy.tools.jinja2(template="admin_logs.html")
     def index(self, name=None, limit='2000'):
         """
         Show server logs.
         """
         limit = validate_int(limit, min=1, max=20000)
-
         # Validate filename
         log_files = self._get_log_files()
         if name is not None and name not in log_files:
@@ -67,7 +67,12 @@ class AdminLogsPage(Controller):
             except subprocess.CalledProcessError:
                 data = ''
 
-        return self._compile_template("admin_logs.html", log_files=log_files, name=name, limit=limit, data=data)
+        return {
+            'log_files': log_files,
+            'name': name,
+            'limit': limit,
+            'data': data,
+        }
 
     @cherrypy.expose
     @cherrypy.tools.response_headers(headers=[('Content-Type', 'text/plain')])
@@ -80,9 +85,6 @@ class AdminLogsPage(Controller):
         if name not in log_files:
             raise cherrypy.NotFound()
         filename = log_files[name]
-
-        # Release session lock
-        cherrypy.session.release_lock()
 
         # Return log file
         return serve_file(filename, content_type="text/plain", disposition=True)

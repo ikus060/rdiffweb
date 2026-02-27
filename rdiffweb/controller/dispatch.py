@@ -22,10 +22,6 @@ Default page handler
 
 import cherrypy
 
-import rdiffweb.tools.auth  # noqa
-import rdiffweb.tools.auth_mfa  # noqa
-import rdiffweb.tools.ratelimit  # noqa
-
 
 def staticdir(path, doc=''):
     """
