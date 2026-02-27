@@ -26,7 +26,7 @@
     <!-- Include graph -->
     <div class="col-md-9">
       <div class="graph-area">
-        <div class="pull-right">{{ timerange(ranges=[1, 7, 14, 30, 60, 90], limit=limit) }}</div>
+        <div class="float-end">{{ timerange(ranges=[1, 7, 14, 30, 60, 90], limit=limit) }}</div>
         {% block graph_body %}
         {% endblock graph_body %}
       </div>

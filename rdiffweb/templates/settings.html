@@ -13,7 +13,7 @@
     {% if not is_maintainer %}
       <span class="form-text">{% trans %}Ask your administrator if you want to delete this repository.{% endtrans %}</span>
     {% endif %}
-    {{ button_confirm(label=_('Delete repository'), target="#delete-repo-modal", class="btn-danger float-right", disabled=not is_maintainer, redirect=url_for('/'), url=url_for('delete', repo)) }}
+    {{ button_confirm(label=_('Delete repository'), target="#delete-repo-modal", class="btn-danger float-end", disabled=not is_maintainer, redirect=url_for('/'), url=url_for('delete', repo)) }}
     {# Delete Repo Modal #}
     {{ modal_confirm(
     id="delete-repo-modal",

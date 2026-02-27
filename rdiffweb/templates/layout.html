@@ -17,7 +17,8 @@
       <!-- Jquery -->
       <script src="{{ url_for('/static/js/jquery.min.js') }}"></script>
       <!-- Bootstrap v4 -->
-      <script src="{{ url_for('/static/js/bootstrap.bundle.min.js') }}"></script>
+      <script src="{{ url_for('/static/js/popper.min.js') }}"></script>
+      <script src="{{ url_for('/static/js/bootstrap.min.js') }}"></script>
       <link href="{{ url_for('/static/css/bootstrap.min.css') }}"
             rel="stylesheet"
             type="text/css"/>
@@ -51,7 +52,7 @@
         <div class="container-fluid">
           <a class="navbar-brand" href="{{ url_for('/') }}">
             <img alt="{{ header_name }}"
-                 class="mr-1"
+                 class="me-1"
                  height="36"
                  src="{{ url_for('/header_logo',v=cache_invalid) }}"/>
           </a>
@@ -59,13 +60,13 @@
                   aria-expanded="false"
                   aria-label="{% trans %}Toggle navigation{% endtrans %}"
                   class="navbar-toggler"
-                  data-target="#navbarSupportedContent"
-                  data-toggle="collapse"
+                  data-bs-target="#navbarSupportedContent"
+                  data-bs-toggle="collapse"
                   type="button">
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
+            <ul class="navbar-nav me-auto">
               <li class="nav-item{% if active_page=='repo' %} active{% endif %}">
                 <a class="nav-link" href="{{ url_for('/') }}">{% trans %}Repositories{% endtrans %}</a>
               </li>
@@ -82,7 +83,7 @@
               <li class="nav-item dropdown">
                 <a aria-expanded="false"
                    class="nav-link dropdown-toggle"
-                   data-toggle="dropdown"
+                   data-bs-toggle="dropdown"
                    href="#"
                    id="navbarDropdown"
                    role="button">
@@ -91,7 +92,7 @@
                 </a>
                 <form action="{{ url_for('logout') }}" method="post">
                   <div aria-labelledby="navbarDropdown"
-                       class="dropdown-menu dropdown-menu-right">
+                       class="dropdown-menu dropdown-menu-end">
                     <h6 class="dropdown-header">{% trans %}Signed in as{% endtrans %} {{ username }}</h6>
                     <a class="dropdown-item" href="{{ url_for('prefs', 'general') }}">{% trans %}Edit profile{% endtrans %}</a>
                     <a class="dropdown-item" href="{{ url_for('prefs', 'notification') }}">{% trans %}Notifications{% endtrans %}</a>

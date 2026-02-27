@@ -10,7 +10,7 @@
 {% block content %}
   <div class="container">
     {# Delete button #}
-    {{ button_confirm(label=_('Delete User'), class="btn-danger float-right", target="#delete-user-modal", url=url_for('admin', 'users', 'delete'), disabled=(form.username.data == username)) }}
+    {{ button_confirm(label=_('Delete User'), class="btn-danger float-end", target="#delete-user-modal", url=url_for('admin', 'users', 'delete'), disabled=(form.username.data == username)) }}
     {# User Form #}
     <form method="post" action="{{ url_for() }}">
       {% call panel(

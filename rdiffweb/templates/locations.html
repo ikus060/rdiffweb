@@ -12,9 +12,9 @@
       {% set name = repo.display_name.split('/')[-1] %}
       {{ name }}
       {% if name|length==1 %}:\{% endif %}
-      <span class="pull-right text-secondary">
+      <span class="float-end text-secondary">
         {% if repo.status[0] != 'ok' %}
-          <span data-toggle="tooltip"
+          <span data-bs-toggle="tooltip"
                 data-placement="left"
                 title="{{ repo.status[1] }}">
             <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>

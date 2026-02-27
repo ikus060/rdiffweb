@@ -102,7 +102,7 @@ class ScopeField(SelectMultipleField):
                 description = ''
             field_id = '%s_%s' % (field.id, val)
             html.append(
-                '<div><input type="checkbox" %s/> <label %s data-toggle="tooltip" data-placement="right">%s</label></div>'
+                '<div><input type="checkbox" %s/> <label %s data-bs-toggle="tooltip" data-placement="right">%s</label></div>'
                 % (
                     html_params(
                         id=field_id,

@@ -201,8 +201,8 @@ test-package:deb:
     - curl http://localhost:8080/static/images/sort_asc.png
     - curl http://localhost:8080/static/images/sort_both.png
     - curl http://localhost:8080/static/images/sort_desc.png
-    - curl http://localhost:8080/static/js/bootstrap.bundle.js.map
-    - curl http://localhost:8080/static/js/bootstrap.bundle.min.js
+    - curl http://localhost:8080/static/js/bootstrap.js.map
+    - curl http://localhost:8080/static/js/bootstrap.min.js
     - curl http://localhost:8080/static/js/dataTables.buttons.min.js
     - curl http://localhost:8080/static/js/dataTables.responsive.min.js
     - curl http://localhost:8080/static/js/jquery.dataTables.min.js

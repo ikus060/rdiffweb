@@ -13,9 +13,10 @@
         <form action="#" method="post" role="form" autocomplete="off">
           <div class="modal-header">
             <h4 class="modal-title" id="{{ id }}-title">{{ title }}</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"></button>
           </div>
           <div class="modal-body">{{ caller() }}</div>
           <div class="modal-footer">
@@ -36,7 +37,7 @@
 'key'], submit=_('Delete')) #}
 {# Button to confirm deletion. #}
 {% macro button_confirm(label, target, class="btn-danger", disabled=False) -%}
-  <button type="button" class="btn {{ class }}" data-toggle="modal" data-target="{{ target }}" {% for k,v in kwargs.items()%} data-{{ k }}="{{ v }}" {% endfor %} {% if disabled %}disabled{% endif %}>{{ label }}
+  <button type="button" class="btn {{ class }}" data-bs-toggle="modal" data-bs-target="{{ target }}" {% for k,v in kwargs.items()%} data-{{ k }}="{{ v }}" {% endfor %} {% if disabled %}disabled{% endif %}>{{ label }}
   </button>
 {%- endmacro %}
 {# modal dialog for confirmation #}

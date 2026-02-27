@@ -4,10 +4,10 @@
 /usr/share/fonts-font-awesome/fonts/fontawesome-webfont.svg    /usr/lib/python3/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.svg
 /usr/share/fonts-font-awesome/fonts/fontawesome-webfont.woff   /usr/lib/python3/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.woff
 /usr/share/fonts-font-awesome/fonts/fontawesome-webfont.woff2  /usr/lib/python3/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.woff2
-/usr/share/javascript/bootstrap4/css/bootstrap.min.css         /usr/lib/python3/dist-packages/rdiffweb/static/css/bootstrap.min.css
-/usr/share/javascript/bootstrap4/css/bootstrap.min.css.map     /usr/lib/python3/dist-packages/rdiffweb/static/css/bootstrap.min.css.map
-/usr/share/javascript/bootstrap4/js/bootstrap.bundle.js.map    /usr/lib/python3/dist-packages/rdiffweb/static/js/bootstrap.bundle.js.map
-/usr/share/javascript/bootstrap4/js/bootstrap.bundle.min.js    /usr/lib/python3/dist-packages/rdiffweb/static/js/bootstrap.bundle.min.js
+/usr/share/javascript/bootstrap5/css/bootstrap.min.css         /usr/lib/python3/dist-packages/rdiffweb/static/css/bootstrap.min.css
+/usr/share/javascript/bootstrap5/css/bootstrap.min.css.map     /usr/lib/python3/dist-packages/rdiffweb/static/css/bootstrap.min.css.map
+/usr/share/javascript/bootstrap5/js/bootstrap.js.map    /usr/lib/python3/dist-packages/rdiffweb/static/js/bootstrap.js.map
+/usr/share/javascript/bootstrap5/js/bootstrap.min.js    /usr/lib/python3/dist-packages/rdiffweb/static/js/bootstrap.min.js
 /usr/share/javascript/jquery-datatables-extensions/Buttons/js/dataTables.buttons.min.js /usr/lib/python3/dist-packages/rdiffweb/static/js/dataTables.buttons.min.js
 /usr/share/javascript/jquery-datatables-extensions/Responsive/css/responsive.dataTables.min.css /usr/lib/python3/dist-packages/rdiffweb/static/css/responsive.dataTables.min.css
 /usr/share/javascript/jquery-datatables-extensions/Responsive/js/dataTables.responsive.min.js /usr/lib/python3/dist-packages/rdiffweb/static/js/dataTables.responsive.min.js

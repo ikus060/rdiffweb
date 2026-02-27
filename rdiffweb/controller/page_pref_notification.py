@@ -44,7 +44,7 @@ class ReportForm(DbForm):
         ],
         coerce=int,
     )
-    set_report_info = SubmitField(_('Save changes'), render_kw={"class": "pull-left mr-2"})
+    set_report_info = SubmitField(_('Save changes'), render_kw={"class": "pull-left me-2"})
     send_report = SubmitField(_('Save and send report'), render_kw={"class": "btn-secondary pull-left"})
 
     def is_submitted(self):

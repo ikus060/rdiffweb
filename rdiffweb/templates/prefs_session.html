@@ -14,7 +14,7 @@
   <ul class="list-group">
     {% for session in active_sessions %}
       <li class="list-group-item">
-        <div class="pull-right">
+        <div class="float-end">
           {% if not session.current %}
             {{ button_confirm(label=_('Revoke'), target="#delete-session-modal", action="delete", number=session.number) }}
           {% endif %}

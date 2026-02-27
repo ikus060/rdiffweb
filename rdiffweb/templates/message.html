@@ -1,12 +1,13 @@
 {% for message, level in get_flashed_messages() %}
   <div class="alert alert-{{'danger' if level == 'error' else level }} alert-dismissible"
        role="alert">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
     {% for line in (message|string).split('\n') %}
       {{ line }}
       {% if not loop.last %}<br/>{% endif %}
     {% endfor %}
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close"></button>
   </div>
 {% endfor %}

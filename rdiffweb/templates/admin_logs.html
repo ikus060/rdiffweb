@@ -27,12 +27,12 @@
           {{ pre_code(data)}}
         {% elif name or date %}
           {# Log file is empty. #}
-          {% call empty('icon-file', _('Log file empty')) %}
+          {% call empty('fa fa-file', _('Log file empty')) %}
             <p>{% trans %}This log file is empty. Select another log file to show it's contents.{% endtrans %}</p>
           {% endcall %}
         {% else %}
           {# Log file not selected #}
-          {% call empty('icon-file', _('No log file selected')) %}
+          {% call empty('fa fa-file', _('No log file selected')) %}
             <p>{% trans %}Select a log file to show it's contents.{% endtrans %}</p>
           {% endcall %}
         {% endif %}
@@ -40,7 +40,7 @@
     {% else %}
       {# Log file not selected #}
       <div class="col-md-12">
-        {% call empty('icon-file', _('No log file available')) %}
+        {% call empty('fa fa-file', _('No log file available')) %}
           <p>{% trans %}The server is not configured to log in any file.{% endtrans %}</p>
         {% endcall %}
       </div>

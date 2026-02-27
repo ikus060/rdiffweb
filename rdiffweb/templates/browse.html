@@ -6,17 +6,19 @@
   {% trans %}Files{% endtrans %}
 {% endblock %}
 {% block content %}
-  <ol class="breadcrumb">
-    {% for parent in list_parents(repo, path) %}
-      {% if loop.last %}
-        <li class="breadcrumb-item active" aria-current="page">{{ parent.display_name }}</li>
-      {% else %}
-        <li class="breadcrumb-item">
-          <a href="{{ url_for('browse', repo, parent) }}">{{ parent.display_name }}</a>
-        </li>
-      {% endif %}
-    {% endfor %}
-  </ol>
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      {% for parent in list_parents(repo, path) %}
+        {% if loop.last %}
+          <li class="breadcrumb-item active" aria-current="page">{{ parent.display_name }}</li>
+        {% else %}
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('browse', repo, parent) }}">{{ parent.display_name }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ol>
+  </nav>
   {% call datatables(_('Files')) %}
     <thead>
       <tr>
@@ -33,8 +35,8 @@
             <i class="{{ 'fa fa-folder' if entry.isdir else 'fa fa-file-o' }}"
                aria-hidden="true"></i>
             <a {{ attrib(href=(entry.isdir and url_for('browse', repo, entry.path)) or (entry.last_change_date and url_for('restore', repo, entry.path, date=entry.last_change_date)) or "#", title=(entry.display_name | length > 45 and entry.display_name)) }}>
-              {% if entry.isdir %}<span class="sr-only">&lt;DIR&gt;</span>{% endif %}
-              {% if not entry.exists %}<span class="sr-only">&lt;DELETED&gt;</span>{% endif %}
+              {% if entry.isdir %}<span class="visually-hidden">&lt;DIR&gt;</span>{% endif %}
+              {% if not entry.exists %}<span class="visually-hidden">&lt;DELETED&gt;</span>{% endif %}
               {{ entry.display_name | truncate(45,True) }}
             </a>
           </td>
@@ -50,7 +52,7 @@
               data-order="{{ entry.last_change_date and entry.last_change_date.epoch }}">
             {% if entry.change_dates %}
               <div class="btn-group">
-                <a href="#" class="dropdown-toggle" id="menu1" data-toggle="dropdown">
+                <a href="#" class="dropdown-toggle" id="menu1" data-bs-toggle="dropdown">
                   <time datetime="{{ entry.last_change_date }}">
                     {{ entry.last_change_date | lastupdated }}
                   </time>

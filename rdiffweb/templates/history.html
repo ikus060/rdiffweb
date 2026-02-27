@@ -8,7 +8,7 @@
 {% block content %}
   <!-- Breadcrumb Header -->
   <div class="d-flex align-items-baseline">
-    <ol class="breadcrumb flex-grow-1 mr-2">
+    <ol class="breadcrumb flex-grow-1 me-2">
       {% for parent in list_parents(repo, path) %}
         {% if loop.last %}
           <li class="breadcrumb-item active">{{ parent.display_name }}</li>
@@ -31,7 +31,7 @@
           <i class="{{ 'fa fa-folder' if path_obj.isdir else 'fa fa-file-o' }}"
              aria-hidden="true"></i>
           <time class="js-datetime" datetime="{{ restore_date }}">{{ restore_date | lastupdated }}</time>
-          <div class="pull-right">
+          <div class="float-end">
             {% if path_obj.isdir %}
               <div class="btn-group">
                 <a type="button"
@@ -42,13 +42,13 @@
                 </a>
                 <button type="button"
                         class="btn btn-secondary btn-sm dropdown-toggle"
-                        data-toggle="dropdown"
+                        data-bs-toggle="dropdown"
                         aria-haspopup="true"
                         aria-expanded="false">
                   <span class="caret"></span>
                   <span class="sr-only">{% trans %}Toggle Dropdown{% endtrans %}</span>
                 </button>
-                <div class="dropdown-menu dropdown-menu-right-xs"
+                <div class="dropdown-menu dropdown-menu-end-xs"
                      role="menu"
                      aria-labelledby="menu1">
                   <a class="dropdown-item"

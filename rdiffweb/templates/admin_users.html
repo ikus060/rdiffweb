@@ -80,7 +80,7 @@
           <td>{{ mfa_choices.get(user.mfa) }}</td>
           <td>{{ report_time_range_choices.get(user.report_time_range) }}</td>
           <td class="notes">{{ user.notes }}</td>
-          <td class="text-right">
+          <td class="text-end">
             <div class="btn-hover text-nowrap">
               {{ btn(url_for('admin','users','edit', user.username), _('Edit'), "fa fa-pencil-square-o") }}
               {{ btn(url_for('status', user.username, '/'), _('Overview'), "fa fa-tachometer") }}

@@ -2,7 +2,7 @@
 'CheckboxInput': 'form-check-input',
 'EmailInput': 'form-control',
 'PasswordInput': 'form-control',
-'Select': 'form-control',
+'Select': 'form-select',
 'SubmitInput': 'btn',
 'TextArea': 'form-control',
 'TextInput': 'form-control',
@@ -17,21 +17,21 @@
       {% set field_class = field_class + ' ' + field.render_kw.get('class') %}
     {% endif %}
     {% if field.widget.__class__.__name__ == 'SubmitInput' %}
-      <div class="form-group">
+      <div class="mb-3">
         {{ field(id=False, class=field_class + (' btn-primary' if 'btn-' not in field_class else '')) }}
         {% if field.description %}<div class="form-text small test-secondary">{{ field.description }}</div>{% endif %}
         {% for error in field.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
       </div>
     {% elif field.widget.__class__.__name__ == 'CheckboxInput' %}
-      <div class="form-group form-check">
+      <div class="mb-3 form-check">
         {{ field(class=field_class) }}
-        {{ field.label(class="font-weight-bold" + extra_label_class) }}
+        {{ field.label(class="fw-bold" + extra_label_class) }}
         {% if field.description %}<div class="form-text small test-secondary">{{ field.description }}</div>{% endif %}
         {% for error in field.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
       </div>
     {% elif field.option_widget.__class__.__name__ == 'RadioInput' %}
-      <div class="form-group">
-        {{ field.label(class="font-weight-bold" + extra_label_class) }}
+      <div class="mb-3">
+        {{ field.label(class="fw-bold" + extra_label_class) }}
         {% for subfield in field %}
           <div class="form-check">
             {{ subfield(class="form-check-input") }}
@@ -42,8 +42,8 @@
         {% for error in field.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
       </div>
     {% else %}
-      <div class="form-group">
-        {{ field.label(class="font-weight-bold" + extra_label_class) }}
+      <div class="mb-3">
+        {{ field.label(class="fw-bold" + extra_label_class) }}
         {{ field(id=False, class=field_class) }}
         {% if field.description %}<div class="form-text small test-secondary">{{ field.description }}</div>{% endif %}
         {% for error in field.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}

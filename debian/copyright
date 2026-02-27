@@ -18,8 +18,8 @@ Files-Excluded: extras
  rdiffweb/static/images/sort_both.png
  rdiffweb/static/images/sort_desc.png
  rdiffweb/static/images/sort_desc_disabled.png
- rdiffweb/static/js/bootstrap.bundle.js.map
- rdiffweb/static/js/bootstrap.bundle.min.js
+ rdiffweb/static/js/bootstrap.js.map
+ rdiffweb/static/js/bootstrap.min.js
  rdiffweb/static/js/chartkick.min.js
  rdiffweb/static/js/chart.min.js
  rdiffweb/static/js/dataTables.buttons.min.js

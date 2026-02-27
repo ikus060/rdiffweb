@@ -50,14 +50,18 @@ function toFileSize(value) {
 $(document).ready(function () {
   
   /* Enable Bootstrap tooltip */
-  $('[data-toggle="tooltip"]').tooltip();
+  window.appTooltips = new bootstrap.Tooltip(document.body, {
+      selector: '[data-bs-toggle="tooltip"]',
+      container: 'body',
+      delay:  {'show': 500, 'hide': 500},
+  });
 
   /**
    * Handle flexible Ajax form submit.
    */
   $('form[data-async]').on('submit', function (event) {
     const $form = $(this);
-    const $target = $($form.attr('data-target'));
+    const $target = $($form.attr('data-bs-target'));
     $.ajax({
       headers: {
         Accept: "text/plain; charset=utf-8",
@@ -268,7 +272,7 @@ $.fn.dataTable.render.summary = function (render_arg) {
             }
 
             let html = '<a href="' + url + '">' +
-                '<i class="fa ' + icon_table[effective_model_name] + ' mr-1" aria-hidden="true"></i>' +
+                '<i class="fa ' + icon_table[effective_model_name] + ' me-1" aria-hidden="true"></i>' +
                 '<strong>' + safe(data) + '</strong>' +
                 '</a>';
 

@@ -50,7 +50,7 @@ Package: rdiffweb
 Architecture: all
 Depends:
  fonts-font-awesome,
- libjs-bootstrap4,
+ libjs-bootstrap5,
  libjs-chart.js,
  libjs-chartkick.js,
  libjs-jquery,

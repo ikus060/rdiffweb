@@ -24,7 +24,7 @@
     <ul class="list-group">
       {% for token in tokens %}
         <li class="list-group-item">
-          <div class="pull-right">
+          <div class="float-end">
             {{ button_confirm(label=_('Revoke'), target="#delete-token-modal", revoke=token.name, name=token.name) }}
           </div>
           <p class="list-group-item-heading">

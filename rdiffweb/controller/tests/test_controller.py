@@ -68,7 +68,7 @@ class ControllerTest(rdiffweb.test.WebCase):
             '/static/css/bootstrap.min.css',
             '/static/css/font-awesome.min.css',
             '/static/css/jquery.dataTables.min.css',
-            '/static/js/bootstrap.bundle.min.js',
+            '/static/js/bootstrap.min.js',
             '/static/js/jquery.dataTables.min.js',
             '/static/js/jquery.min.js',
             '/static/js/main.js',
