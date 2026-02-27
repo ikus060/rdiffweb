@@ -1,0 +1,148 @@
+{# Sidebar #}
+<nav id="rdw-navbar"
+     class="navbar navbar-expand-lg p-3 flex-column align-items-stretch sticky-top">
+  <div class="d-flex align-items-center justify-content-between">
+    {# Brand #}
+    <a class="navbar-brand" href="{{ url_for("/") }}">
+      <img src="{{ url_for('header_logo', v=cache_invalidate) }}"
+           class="d-inline-block align-text-top"
+           alt="{{ header_name }}"
+           title="{{ header_name }}"
+           style="max-width: 216px; max-height: 64px"/>
+    </a>
+    {# Toggle #}
+    <button class="navbar-toggler me-3"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#rdw-sidebar-menu"
+            aria-controls="rdw-sidebar-menu"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
+      <Icon value="fa-bars" class="fs-2"/>
+    </button>
+  </div>
+  <div id="rdw-sidebar-menu"
+       class="collapse navbar-collapse flex-column align-items-stretch mt-3">
+    <ul class="nav flex-column nav-pills">
+      <li class="nav-item">
+        <a class="nav-link{% if active_page=='home' %} active{% endif %}"
+           href="{{ url_for("/") }}">
+          <Icon value="home" class="fs-5 me-2" />
+          {% trans %}Home{% endtrans %}
+        </a>
+      </li>
+    </ul>
+    {# Repo list #}
+    <div class="navbar-text mt-2">
+      <strong>{% trans %}Your repositories{% endtrans %}</strong>
+    </div>
+    {% set active_repo = repo | d(False) %}
+    {% if active_repo %}
+      {# When repo selected, display a dropdown with selected repo. #}
+      <ul class="nav flex-column nav-pills">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-3 active"
+             data-bs-toggle="dropdown"
+             href="#">
+            <Icon value="repo" class="fs-4" />
+            <div class="me-auto">
+              <p class="mb-0 fw-semibold">{{ active_repo.name }}</p>
+              <small><RepoStatus repo={{ active_repo }} /></small>
+            </div>
+          </a>
+          <ul class="dropdown-menu w-100">
+            {% for repo in currentuser.repo_objs | sort(attribute='name') %}
+              <NavItemRepo class="dropdown-item" repo={{ repo }} class="dropdown-item" active={{ active_repo==repo }} />
+            {% endfor %}
+          </ul>
+        </li>
+      </ul>
+      {% set repo_nav_items = [
+      ('browse', _('Files')),
+      ('settings', _('Settings')),
+      ('graphs', _('Graphs')),
+      ('stats', _('Snapshot Changes')),
+      ('logs', _('Logs'))] %}
+      <ul class="nav flex-column nav-pills mt-2">
+        {% for id, label in repo_nav_items %}
+          <NavItem label={{ label }} href={{ url_for(id, repo) }} icon={{ id }} active={{ active_page.startswith(id) }} />
+          {# Show graphs sub-menu #}
+          {% if id == 'graphs' and active_page.startswith(id) %}
+            {% set graphs_nav_items = [
+            ('activities', _('Activities')),
+            ('files', _('File count')),
+            ('sizes', _('Size')),
+            ('times', _('Elapsed Time')),
+            ('errors', _('Errors')),
+            ] %}
+            <ul class="nav flex-column nav-pills mt-2 ms-5">
+              {% for id, label in graphs_nav_items %}
+                <NavItem label={{ label }} href={{ url_for('graphs', id, repo, limit=limit) }} active={{ active_page == 'graphs-%s' % id }} />
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% else %}
+      {# Display all repo. #}
+      <ul class="nav flex-column nav-pills">
+        {% for repo in currentuser.repo_objs | sort(attribute='name') %}
+          <NavItemRepo repo={{ repo }} />
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {# Spacer #}
+    <div class="mt-auto"></div>
+    {# Admin Area #}
+    {% if currentuser and currentuser.is_admin %}
+      <div class="navbar-text">
+        <strong>{% trans %}Administration{% endtrans %}</strong>
+      </div>
+      {% set admin_nav_items = [
+      ('users', _('Users')),
+      ('repos', _('Repositories')),
+      ('session', _('User Sessions')),
+      ('activity', _('Activity')),
+      ('logs', _('System Logs')),
+      ('sysinfo', _('System Info'))] %}
+      <ul class="nav flex-column nav-pills pb-2">
+        {% for id, label in admin_nav_items %}
+          <NavItem label={{ label }} href={{ url_for('admin', id, '') }} icon={{ id }} active={{ active_page == 'admin-%s' % id }} />
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <div class="dropdown dropup border-top pt-2">
+      <a href="#"
+         class="d-flex align-items-center text-decoration-none dropdown-toggle"
+         id="rdw-dropdown-user"
+         data-bs-toggle="dropdown"
+         aria-expanded="false">
+        <Icon value="user" class="me-3"/>
+        <span>{{ username }}</span>
+      </a>
+      <ul class="dropdown-menu" aria-labelledby="rdw-dropdown-user">
+        <h6 class="dropdown-header">{% trans %}User Profile{% endtrans %}</h6>
+        {% set prefs_nav_items = [
+        ('general', _('Account Settings')),
+        ('notification', _('Notifications & Report')),
+        ('sshkeys', _('SSH keys')),
+        ('tokens', _('Access Token')),
+        ('mfa', _('Two-Factor Authentication')),
+        ('session', _('Active Sessions'))] %}
+        {% for id, label in prefs_nav_items %}
+          <NavItem type="dropdown-item" label={{ label }} href={{ url_for("prefs", id) }} active={{ active_page == 'prefs-%s' % id }} />
+        {% endfor %}
+        <li>
+          <hr class="dropdown-divider">
+        </li>
+        <li>
+          <form action="{{ url_for("logout") }}" method="post">
+            <button type="submit" class="dropdown-item">{% trans %}Logout{% endtrans %}</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+  {# /rdw-sidebar-menu #}
+</nav>
+{# /Main Navigation #}

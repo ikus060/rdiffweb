@@ -1,13 +1,14 @@
-{% extends 'admin.html' %}
+{% extends 'layout.html' %}
 {% from 'include/panel.html' import panel %}
 {% from 'include/messages.html' import messages %}
 {% from 'include/storage_usage.html' import storage_usage %}
 {% from 'include/modal_dialog.html' import button_confirm, modal_confirm %}
-{% set admin_nav_active="users" %}
+{% set active_page="admin-users" %}
 {% block title %}
   {% trans %}Edit user{% endtrans %}
 {% endblock %}
 {% block content %}
+  {% include 'message.html' %}
   <div class="container">
     {# Delete button #}
     {{ button_confirm(label=_('Delete User'), class="btn-danger float-end", target="#delete-user-modal", url=url_for('admin', 'users', 'delete'), disabled=(form.username.data == username)) }}

@@ -1,5 +1,6 @@
 {% extends 'graphs.html' %}
 {% import 'include/chartkick.html' as chartkick with context %}
+{% set active_page='graphs-files' %}
 {% block graph_body %}
   <h2>{% trans %}File count{% endtrans %}</h2>
   <p>{% trans %}Number of files excluding history data.{% endtrans %}</p>

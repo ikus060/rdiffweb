@@ -1,9 +1,9 @@
-{% extends 'admin.html' %}
+{% extends 'layout.html' %}
 {% from 'include/table.html' import table %}
 {% block title %}
   {% trans %}System Logs{% endtrans %}
 {% endblock title %}
-{% set admin_nav_active="activity" %}
+{% set active_page="admin-activity" %}
 {% block content %}
   {# Lazy loaded Table #}
   {% set user_model = {'text': _('Show User Activities'), 'extend': 'filter', 'column': 'model_name:name', 'search':'user'} %}

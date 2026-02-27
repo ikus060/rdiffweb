@@ -1,0 +1,18 @@
+{# def value #}
+{%- set icon_table = {
+"user": "fa-user",
+"repo": "fa-desktop",
+"home": "fa-home",
+"chevron-right": "fa-chevron-right",
+"browse": "fa-files-o",
+"settings": "fa-sliders",
+"graphs": "fa-area-chart",
+"stats": "fa-list-alt",
+"logs": "fa-file-text-o",
+"users": "fa-users",
+"repos": "fa-th",
+"session": "fa-id-badge",
+"activity": "fa-list-alt",
+"sysinfo": "fa-info-circle"
+} -%}
+<i {{ attrs.render(class="fa " + icon_table.get(value, value) ) }} aria-hidden="true"></i>

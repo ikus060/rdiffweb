@@ -1,12 +1,22 @@
-{% extends 'layout_repo.html' %}
+{% extends 'layout.html' %}
 {% from 'include/empty.html' import empty %}
 {% from 'components/log.html' import pre_code %}
-{% set active_page='repo' %}
-{% set active_repo_page='logs' %}
+{% set active_page='logs' %}
 {% block title %}
   {% trans %}Repository Logs{% endtrans %}
 {% endblock %}
 {% block content %}
+  <!-- failure -->
+  {% if repo.status[0] != 'ok' %}
+    <div class="alert alert-warning alert-dismissible" role="alert">
+      {{ repo.status[1] }}
+      {% trans %}The displayed data may be inconsistent.{% endtrans %}
+      <button type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"></button>
+    </div>
+  {% endif %}
   <div class="row">
     <div class="col-md-3">
       <ul class="list-group">

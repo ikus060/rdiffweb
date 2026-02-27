@@ -1,7 +1,7 @@
-{% extends 'prefs.html' %}
+{% extends 'layout.html' %}
 {% from 'include/panel.html' import panel %}
-{% set active_panelid='mfa' %}
-{% block panel %}
+{% set active_page='prefs-mfa' %}
+{% block content %}
   <div class="d-flex  justify-content-between">
     <h3>{% trans %}Two-Factor Authentication{% endtrans %}</h3>
   </div>

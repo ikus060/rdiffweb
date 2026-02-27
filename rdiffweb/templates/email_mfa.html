@@ -6,7 +6,7 @@
     {% trans %}Two-Factor Authentication turned off{% endtrans %}
   {% endif %}
 {% endblock title %}
-{% block body %}
+{% block content %}
   <h1>
     <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
   </h1>
@@ -17,4 +17,4 @@
       {% trans %}Your {{ header_name }} account is no longer protected with Two-Factor Authentication. You don't need your second factor to sign in.{% endtrans %}
     {% endif %}
   </p>
-{% endblock body %}
+{% endblock content %}

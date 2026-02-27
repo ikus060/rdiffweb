@@ -1,10 +1,10 @@
-{% extends 'admin.html' %}
+{% extends 'layout.html' %}
 {% from 'include/empty.html' import empty %}
 {% from 'components/log.html' import pre_code %}
 {% block title %}
   {% trans %}System Logs{% endtrans %}
 {% endblock title %}
-{% set admin_nav_active="logs" %}
+{% set active_page="admin-logs" %}
 {% block content %}
   <div class="row">
     {% if log_files %}

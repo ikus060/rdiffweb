@@ -1,5 +1,6 @@
 {% extends 'graphs.html' %}
 {% import 'include/chartkick.html' as chartkick with context %}
+{% set active_page='graphs-errors' %}
 {% block graph_body %}
   <h2>{% trans %}Errors{% endtrans %}</h2>
   <p>{% trans %}Cumulative number of errors by period of time.{% endtrans %}</p>

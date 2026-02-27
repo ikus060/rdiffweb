@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class LocationsPage:
     @cherrypy.expose
-    @cherrypy.tools.jinja2(template="locations.html")
+    @cherrypy.tools.jinja2(template="home.html")
     def index(self):
         """
         Shows repositories of current user

@@ -4,6 +4,26 @@
     --btn-bg-color: {{btn_bg_color|d(link_color)}};
     --navbar-color: {{navbar_color}};
     --font-family-sans-serif: "{{font_family}}", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --rdw-sidebar-width: 20rem;
+    /* Override some bootstrap colors. */
+    --bs-link-color: {{ link_color }};
+    /* Adjust contrast for sidebar. */
+    --bs-gray-200: #eef0f1
+}
+
+/* Adjust navbar colors for branding */
+#rdw-navbar {
+    background-color: var(--bs-gray-200);
+    --btn-bg-color: var(--bs-white);
+    --btn-fg-color: var(--bs-body-color);
+}
+#rdw-navbar .nav-link, #rdw-dropdown-user {
+    color: var(--bs-body-color);
+}
+
+/* Adjust dropdown color for branding. */
+.dropdown-menu {
+    --bs-dropdown-link-active-bg: var(--link-color);
 }
 
 /* Adjust for fixed header */
@@ -11,19 +31,61 @@ body {
     font-family: var(--font-family-sans-serif);
 }
 
+/* Make navbar responsive. */
+body {
+    display: flex;
+    flex-direction: column;
+}
+main {
+    position: relative;
+    flex: 1;
+}
+
+@media (min-width: 992px) {
+    body {
+        display: flex;
+        flex-direction: row;
+    }
+    #rdw-navbar {
+        background-color: var(--bs-gray-200);
+        
+        width: var(--rdw-sidebar-width);
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    main {
+        margin-top: 0;
+        /*margin-left: var(--rdw-sidebar-width);*/
+        min-height: 100vh !important;
+    }
+}
+
+footer {
+    position: absolute;
+    bottom: 0px;
+}
+
+
 /* Adjust navbar color */
 .navbar.bg-dark {
     background-color: var(--navbar-color) !important;
 }
 
 /* Adjust primary color */
-a, .btn-link {
+a, .btn-link, .nav-link {
     color: var(--link-color);
 }
 
-a:hover, .btn-link:hover {
+a:hover, .btn-link:hover, .nav-link:hover {
     filter: brightness(.85);
     color: var(--link-color);
+}
+
+/* Add mouse hover effect on navpills */
+.nav-link:not(.active):hover {
+    background-color: var(--bs-gray-100);   /* gray-200 */
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .btn-primary {

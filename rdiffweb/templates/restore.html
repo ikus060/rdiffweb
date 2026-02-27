@@ -1,6 +1,5 @@
 {% extends 'layout.html' %}
-{% set active_page='repo' %}
-{% set active_repo_page='browse' %}
+{% set active_page= 'browse' %}
 {% block title %}
   {% trans %}Downloading{% endtrans %}
 {% endblock %}
@@ -11,7 +10,7 @@
     <meta http-equiv="refresh" content="0;url={{ download_url }}" />
   {% endif %}
 {% endblock %}
-{% block body %}
+{% block content %}
   <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="text-center">
       {% if download_url %}

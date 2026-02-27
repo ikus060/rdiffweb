@@ -1,12 +1,13 @@
-{% extends 'admin.html' %}
+{% extends 'layout.html' %}
 {% from 'include/datatables.html' import datatables %}
 {% from 'include/session.html' import browser, os %}
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
-{% set admin_nav_active="session" %}
+{% set active_page="admin-session" %}
 {% block title %}
   {% trans %}Active Sessions{% endtrans %}
 {% endblock %}
 {% block content %}
+  {% include 'message.html' %}
   <p>
     {% trans %}This is a list of devices that are logged into this application. It may include authenticated and unauthenticated users. You may revoke any sessions that you do not recognize except your current session.{% endtrans %}
   </p>

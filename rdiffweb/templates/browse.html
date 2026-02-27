@@ -1,7 +1,6 @@
-{% extends 'layout_repo.html' %}
+{% extends 'layout.html' %}
 {% from 'include/datatables.html' import datatables %}
-{% set active_page='repo' %}
-{% set active_repo_page='browse' %}
+{% set active_page='browse' %}
 {% block title %}
   {% trans %}Files{% endtrans %}
 {% endblock %}
@@ -19,6 +18,18 @@
       {% endfor %}
     </ol>
   </nav>
+  <!-- failure -->
+  {% if repo.status[0] != 'ok' %}
+    <div class="alert alert-warning alert-dismissible" role="alert">
+      {{ repo.status[1] }}
+      {% trans %}The displayed data may be inconsistent.{% endtrans %}
+      <button type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"></button>
+    </div>
+  {% endif %}
+  {% include 'message.html' %}
   {% call datatables(_('Files')) %}
     <thead>
       <tr>

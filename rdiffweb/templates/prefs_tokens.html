@@ -1,8 +1,8 @@
-{% extends 'prefs.html' %}
+{% extends 'layout.html' %}
 {% from 'include/panel.html' import panel %}
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
-{% set active_panelid='tokens' %}
-{% block panel %}
+{% set active_page='prefs-tokens' %}
+{% block content %}
   <div class="d-flex  justify-content-between">
     <h3>{% trans %}Access Token{% endtrans %}</h3>
   </div>

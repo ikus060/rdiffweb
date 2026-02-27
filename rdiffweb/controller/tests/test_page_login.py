@@ -131,7 +131,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
             ),
             ('with_query_string', '/restore/admin/testcases/Revisions?date=1477434528'),
             ('with_multiple_query_string', '/restore/admin/testcases/Revisions?date=1477434528&kind=tar.gz'),
-            ('with_admin', '/admin/'),
+            ('with_admin', '/admin/users/'),
         ]
     )
     def test_login(self, unused, original_url):

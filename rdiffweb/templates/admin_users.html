@@ -1,9 +1,9 @@
-{% extends 'admin.html' %}
+{% extends 'layout.html' %}
 {% from 'include/datatables.html' import datatables %}
 {% block title %}
   {% trans %}User management{% endtrans %}
 {% endblock %}
-{% set admin_nav_active="users" %}
+{% set active_page="admin-users" %}
 {% macro btn(url, label, icon) %}
   <a class="btn btn-secondary"
      href="{{ url }}"
@@ -16,6 +16,7 @@
   </a>
 {% endmacro %}
 {% block content %}
+  {% include 'message.html' %}
   {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
   <a class="btn btn-success mb-2"
      href="{{ url_for('admin','users', 'new')}}">{% trans %}Add user{% endtrans %}</a>

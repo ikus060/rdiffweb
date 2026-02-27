@@ -1,13 +1,24 @@
-{% extends 'layout_repo.html' %}
+{% extends 'layout.html' %}
 {% from 'include/panel.html' import panel %}
 {% from 'include/messages.html' import messages %}
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
-{% set active_page='repo' %}
-{% set active_repo_page='settings' %}
+{% set active_page='settings' %}
 {% block title %}
   {% trans %}Settings{% endtrans %}
 {% endblock %}
 {% block content %}
+  <!-- failure -->
+  {% if repo.status[0] != 'ok' %}
+    <div class="alert alert-warning alert-dismissible" role="alert">
+      {{ repo.status[1] }}
+      {% trans %}The displayed data may be inconsistent.{% endtrans %}
+      <button type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"></button>
+    </div>
+  {% endif %}
+  {% include 'message.html' %}
   <div class="container">
     {# Delete repo button #}
     {% if not is_maintainer %}

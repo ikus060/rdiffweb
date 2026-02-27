@@ -10,7 +10,7 @@
     {% trans %}Backup Report{% endtrans %}
   {% endif %}
 {% endblock title %}
-{% block body %}
+{% block content %}
   <h1>
     <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
   </h1>
@@ -127,4 +127,4 @@
     {{ mb4() }}
   {% endfor %}
   *{% trans %}A small number of errors does not indicate a problem with your backup.{% endtrans %}
-{% endblock body %}
+{% endblock content %}

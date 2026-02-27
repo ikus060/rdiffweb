@@ -6,7 +6,7 @@
     {% trans %}Notification{% endtrans %}
   {% endif %}
 {% endblock title %}
-{% block body %}
+{% block content %}
   <h1>
     <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
   </h1>
@@ -36,4 +36,4 @@
     </ul>
     <p>{% trans %}If you don't want to be notify about this. You need to review your user preferences.{% endtrans %}</p>
   {% endif %}
-{% endblock body %}
+{% endblock content %}

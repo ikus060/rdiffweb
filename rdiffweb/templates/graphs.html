@@ -1,35 +1,23 @@
-{% extends 'layout_repo.html' %}
+{% extends 'layout.html' %}
 {% from 'include/timerange.html' import timerange %}
-{% set active_page='repo' %}
-{% set active_repo_page='graphs' %}
 {% block title %}
   {% trans %}Graphs{% endtrans %}
 {% endblock title %}
 {% block content %}
-  <div class="row">
-    {% include 'message.html' %}
-    <!-- Graphs navigation -->
-    {% set graph_nav_bar = [
-    ('activities', _('Activities'), url_for('graphs', 'activities', repo, limit=limit)),
-    ('files', _('File count'), url_for('graphs', 'files', repo, limit=limit)),
-    ('sizes', _('Size'), url_for('graphs', 'sizes', repo, limit=limit)),
-    ('times', _('Elapsed Time'), url_for('graphs', 'times', repo, limit=limit)),
-    ('errors', _('Errors'), url_for('graphs', 'errors', repo, limit=limit)),
-    ] -%}
-    <div class="col-md-3">
-      <ul class="list-group">
-        {% for item in graph_nav_bar %}
-          <a {{ attrib(href=item[2], type='button', class=['list-group-item', graph==item[0] and 'active']) }}>{{ item[1] }}</a>
-        {% endfor %}
-      </ul>
+  <!-- failure -->
+  {% if repo.status[0] != 'ok' %}
+    <div class="alert alert-warning alert-dismissible" role="alert">
+      {{ repo.status[1] }}
+      {% trans %}The displayed data may be inconsistent.{% endtrans %}
+      <button type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"></button>
     </div>
-    <!-- Include graph -->
-    <div class="col-md-9">
-      <div class="graph-area">
-        <div class="float-end">{{ timerange(ranges=[1, 7, 14, 30, 60, 90], limit=limit) }}</div>
-        {% block graph_body %}
-        {% endblock graph_body %}
-      </div>
-    </div>
+  {% endif %}
+  <div class="graph-area">
+    <div class="float-end">{{ timerange(ranges=[1, 7, 14, 30, 60, 90], limit=limit) }}</div>
+    {% block graph_body %}
+    {% endblock graph_body %}
   </div>
 {% endblock content %}

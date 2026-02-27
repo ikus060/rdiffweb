@@ -17,6 +17,7 @@
 
 import cherrypy
 from cherrypy_foundation.tools.i18n import ugettext as _
+from cherrypy_foundation.url import url_for
 
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
@@ -209,3 +210,8 @@ class GraphsPage:
     files = GraphPage('files')
     sizes = GraphPage('sizes')
     times = GraphPage('times')
+
+    @cherrypy.expose()
+    def default(self, *args, **kwargs):
+        default_graph = url_for('graphs', 'activities', *args, **kwargs)
+        raise cherrypy.HTTPRedirect(default_graph)

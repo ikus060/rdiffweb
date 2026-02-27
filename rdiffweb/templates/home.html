@@ -1,11 +1,11 @@
 {% extends 'layout.html' %}
 {% from 'include/storage_usage.html' import storage_usage %}
 {% from 'include/empty.html' import empty %}
-{% set active_page='repo' %}
+{% set active_page='home' %}
 {% block title %}
   {% trans %}Repositories{% endtrans %}
 {% endblock title %}
-{% block body %}
+{% block content %}
   {% macro repo_list_item(repo)%}
     <a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }} href="{{ url_for('browse', repo) }}">
       <i class="fa fa fa-hdd-o" aria-hidden="true"></i>
@@ -67,16 +67,7 @@
                   </a>
                 </h5>
                 {# Last backup date #}
-                <h6 class="card-subtitle text-muted small">
-                  {% if repo.status[0] != 'ok' %}
-                    {{ repo.status[1] }}
-                  {% elif repo.last_backup_date %}
-                    {% trans %}Last backup {% endtrans %}
-                    <time datetime="{{ repo.last_backup_date }}">{{ repo.last_backup_date | lastupdated }}</time>
-                  {% else %}
-                    {% trans %}Initial backup not completed.{% endtrans %}
-                  {% endif %}
-                </h6>
+                <h6 class="card-subtitle small"></h6>
               </div>
             </div>
           </div>
@@ -84,4 +75,4 @@
       {% endif %}
     </div>
   </div>
-{% endblock body %}
+{% endblock content %}

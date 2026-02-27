@@ -46,73 +46,18 @@
     {% endblock script %}
   </head>
   <body>
-    <!-- .navbar -->
-    {% if username %}
-      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="{{ url_for('/') }}">
-            <img alt="{{ header_name }}"
-                 class="me-1"
-                 height="36"
-                 src="{{ url_for('/header_logo',v=cache_invalid) }}"/>
-          </a>
-          <button aria-controls="navbarSupportedContent"
-                  aria-expanded="false"
-                  aria-label="{% trans %}Toggle navigation{% endtrans %}"
-                  class="navbar-toggler"
-                  data-bs-target="#navbarSupportedContent"
-                  data-bs-toggle="collapse"
-                  type="button">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto">
-              <li class="nav-item{% if active_page=='repo' %} active{% endif %}">
-                <a class="nav-link" href="{{ url_for('/') }}">{% trans %}Repositories{% endtrans %}</a>
-              </li>
-              <li class="nav-item{% if active_page=='status' %} active{% endif %}">
-                <a class="nav-link" href="{{ url_for('status', username, '/') }}">{% trans %}Dashboard{% endtrans %}</a>
-              </li>
-              {% if is_admin %}
-                <li class="nav-item{% if active_page=='admin' %} active{% endif %}">
-                  <a class="nav-link" href="{{ url_for('admin','') }}">{% trans %}Admin area{% endtrans %}</a>
-                </li>
-              {% endif %}
-            </ul>
-            <ul class="navbar-nav">
-              <li class="nav-item dropdown">
-                <a aria-expanded="false"
-                   class="nav-link dropdown-toggle"
-                   data-bs-toggle="dropdown"
-                   href="#"
-                   id="navbarDropdown"
-                   role="button">
-                  <i aria-hidden="true" class="fa fa-user"></i>
-                  {{ username }}
-                </a>
-                <form action="{{ url_for('logout') }}" method="post">
-                  <div aria-labelledby="navbarDropdown"
-                       class="dropdown-menu dropdown-menu-end">
-                    <h6 class="dropdown-header">{% trans %}Signed in as{% endtrans %} {{ username }}</h6>
-                    <a class="dropdown-item" href="{{ url_for('prefs', 'general') }}">{% trans %}Edit profile{% endtrans %}</a>
-                    <a class="dropdown-item" href="{{ url_for('prefs', 'notification') }}">{% trans %}Notifications{% endtrans %}</a>
-                    <div class="dropdown-divider"></div>
-                    {# Logout button #}
-                    <button type="submit" class="dropdown-item">{% trans %}Logout{% endtrans %}</button>
-                  </div>
-                </form>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
-    {% endif %}
     {% block body %}
+      {% include "sidebar.html" with context %}
+      <main>
+        <div class="container-fluid p-3">
+          {% block content %}{% endblock %}
+        </div>
+        {% block footer %}
+          <footer class="mt-4 text-center small w-100">
+            {% trans %}Powered by{% endtrans %} <a href="{{ footer_url }}" title="{{ footer_name }} {{ version }}">{{ footer_name }}</a> © 2026
+          </footer>
+        {% endblock %}
+      </main>
     {% endblock body %}
-    {% block footer %}
-      <footer class="small text-center mt-auto">
-        {% trans %}Powered by{% endtrans %} <a href="{{ footer_url }}">{{ footer_name }}</a>
-      </footer>
-    {% endblock footer %}
   </body>
 </html>
