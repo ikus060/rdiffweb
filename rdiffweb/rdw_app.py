@@ -371,10 +371,10 @@ class RdiffwebApp(Application):
             doc="Return static `header-logo` image file.",
         )
 
-        # Register logo
-        self.root.logo = staticfile(
-            cfg.logo if cfg.logo else importlib.resources.files('rdiffweb') / 'static/logo1.png',
-            doc="Return static `logo` image file.",
+        # Register login-bg
+        self.root.login_bg = staticfile(
+            cfg.login_bg if cfg.login_bg else importlib.resources.files('rdiffweb') / 'static/login-bg.png',
+            doc="Return static `login-bg` image file.",
         )
 
         # Define TEMP env

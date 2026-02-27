@@ -8,8 +8,6 @@
 
 /* Adjust for fixed header */
 body {
-    padding-top: 4.5rem;
-    min-height: 100vh;
     font-family: var(--font-family-sans-serif);
 }
 
@@ -128,4 +126,20 @@ table.dataTable.dtr-inline.collapsed>tbody>tr.parent>td:first-child:before, tabl
 
 .notes {
     white-space: pre-wrap;
+}
+
+/* Adjust background on login page. */
+.rdw-login-bg {
+    background-image: url('/login-bg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+/* Diver for Oauth provider on login page. */
+.rdw-divider::after, .rdw-divider::before {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--bs-gray);
 }

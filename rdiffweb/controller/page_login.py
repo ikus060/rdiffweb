@@ -20,7 +20,7 @@ from cherrypy_foundation.flash import flash
 from cherrypy_foundation.form import CherryForm
 from cherrypy_foundation.tools.i18n import get_translation
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
-from wtforms.fields import BooleanField, PasswordField, StringField, SubmitField
+from wtforms.fields import BooleanField, PasswordField, StringField
 from wtforms.validators import DataRequired, Length
 
 # Define the logger
@@ -47,10 +47,6 @@ class LoginForm(CherryForm):
         _('Remember me'),
         default=lambda: cherrypy.tools.sessions_timeout.is_persistent(),
         render_kw={},
-    )
-    submit = SubmitField(
-        _('Sign in'),
-        render_kw={"class": "btn-primary btn-lg btn-block"},
     )
 
     def __init__(self, **kwargs):

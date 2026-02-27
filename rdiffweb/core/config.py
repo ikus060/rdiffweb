@@ -294,8 +294,14 @@ def get_parser():
     parser.add_argument(
         '--brand-logo',
         '--logo',
-        dest='logo',
-        help='location of an image (preferably a .png) to be used as a replacement for the rdiffweb logo displayed in Login page.',
+        dest='noop',
+        help='deprecated',
+    )
+
+    parser.add_argument(
+        '--brand-login-bg',
+        dest='login_bg',
+        help='location of an image (preferably a .jpg) to be used as a replacement for the rdiffweb login background displayed in Login page.',
     )
 
     parser.add_argument(

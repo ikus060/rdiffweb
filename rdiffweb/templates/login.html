@@ -4,51 +4,66 @@
   {% trans %}Login{% endtrans %}
 {% endblock %}
 {% block body %}
-  <div class="container mb-auto">
-    <div class="row">
-      <div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8 text-center">
-        <h1>
+  <section class="container-fluid g-0 vh-100">
+    <div class="row g-0 vh-100">
+      <div class="col-md-6 bg-light d-flex flex-column">
+        {# Header #}
+        <div class="px-5 mt-4 mb-4 d-flex justify-content-between align-items-center">
           <img alt="{{ header_name }}"
-               class="mt-4 mb-4"
-               height="192"
-               src="{{ url_for('/logo', v=cache_invalid) }}"/>
-        </h1>
-        <p class="text-secondary">
+               height="56"
+               src="{{ url_for('/header_logo', v=cache_invalid) }}"/>
+        </div>
+        {# Centered login form #}
+        <div class="flex-grow-1 d-flex align-items-center px-5">
+          <div class="col-xs-12 col-lg-8 offset-lg-2">
+            <h2>{% trans %}Connection{% endtrans %}</h2>
+            <div class="form-login">
+              <Flash messages={{ get_flashed_messages() }} class="mb-2"/>
+              <form role="form" method="post" action="{{ url_for() }}">
+                <Fields form={{ form }} floating={{ True }} />
+                <button type="submit" class="btn btn-primary btn-lg w-100">{% trans %}Sign in{% endtrans %}</button>
+              </form>
+              {% if oauth_enabled %}
+                <div class="rdw-divider d-flex align-items-center my-4">
+                  <p class="text-center fw-bold mx-3 mb-0 text-muted">{% trans %}OR{% endtrans %}</p>
+                </div>
+                <a href="{{ url_for('/oauth/login') }}"
+                   class="btn btn-primary btn-lg w-100"
+                   role="button">
+                  {% trans %}Sign in with {{ oauth_provider_name }}{% endtrans %}
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {# Footer #}
+        <footer class="small text-center mt-auto">
+          {% trans %}Powered by{% endtrans %} <a href="{{ footer_url }}">{{ footer_name }}</a>
+        </footer>
+      </div>
+      {# Image on the left. #}
+      <div class="col-md-6 d-none rdw-login-bg d-md-flex align-items-center">
+        <div class="col px-5 text-center text-light"
+             style="text-shadow: black 0 0 .5em;">
           {% if welcome_msg %}
             {% autoescape false %}
               {{ welcome_msg }}
             {% endautoescape %}
           {% else %}
-            {% trans %}A simplified backup management software for quick access to your archives through an
-            efficient web interface.{% endtrans %}
+            <h2>
+              {% trans %}A simplified backup management software for quick access to your archives through an
+              efficient web interface.{% endtrans %}
+            </h2>
             <br />
-            <br />
-            <a href="https://rdiffweb.org/">{% trans %}website{% endtrans %}</a> •
-            <a href="https://groups.google.com/d/forum/rdiffweb">{% trans %}community{% endtrans %}</a>
-          {% endif %}
-        </p>
-      </div>
-    </div>
-  </div>
-  {% block content %}
-    <div class="container mb-auto">
-      <div class="row">
-        <div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8">
-          <h2>{% trans %}Welcome back{% endtrans %}</h2>
-        </div>
-        <div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8 form-login">
-          <form role="form" method="post" action="{{ url_for() }}">
-            {% include 'message.html' %}
-            <Fields form={{ form }} floating={{ True }} />
-          </form>
-          {% if oauth_enabled %}
-            <p class="mt-4 mb-4 text-center">──────── OR ────────</p>
-            <p class="mt-4 text-center">
-              <a href="{{ url_for('/oauth/login') }}">{% trans %}Sign in with {{ oauth_provider_name }}{% endtrans %}</a>
-            </p>
+            <a class="text-light" href="https://rdiffweb.org/">{% trans %}website{% endtrans %}</a> •
+            <a class="text-light" href="https://groups.google.com/d/forum/rdiffweb">{% trans %}community{% endtrans %}</a> •
+            <a class="text-light" href="https://rdiffweb.org/doc">{% trans %}docs{% endtrans %}</a>
           {% endif %}
         </div>
       </div>
     </div>
-  {% endblock content %}
+  </section>
 {% endblock body %}
+{% block footer %}
+  {# No footer #}
+{% endblock footer %}

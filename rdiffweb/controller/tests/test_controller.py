@@ -56,7 +56,7 @@ class ControllerTest(rdiffweb.test.WebCase):
         [
             '/favicon.ico',
             '/main.css',
-            '/logo',
+            '/login-bg',
             '/header_logo',
             '/static/css/bootstrap.min.css',
             '/static/css/font-awesome.min.css',
