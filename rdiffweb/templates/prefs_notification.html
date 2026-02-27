@@ -2,7 +2,6 @@
 {% from 'include/panel.html' import panel %}
 {% set active_page='prefs-notification' %}
 {% block content %}
-  {% include 'message.html' %}
   {% call panel(title=_("Notification settings")) %}
     <div class="panel-body">
       <b>{% trans %}Notification sent to{% endtrans %}</b>

@@ -12,7 +12,6 @@
   <hr/>
   {# Panel to create tokens. #}
   {% call panel(title=_("Create New Access Token"), description=_("You can generate a access token for each application you use that needs access to API.")) %}
-    {% include 'message.html' %}
     <div class="panel-body">
       <form action="#" method="post" role="form" class="clearfix">
         <Fields form={{ form }} />

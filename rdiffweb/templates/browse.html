@@ -18,18 +18,6 @@
       {% endfor %}
     </ol>
   </nav>
-  <!-- failure -->
-  {% if repo.status[0] != 'ok' %}
-    <div class="alert alert-warning alert-dismissible" role="alert">
-      {{ repo.status[1] }}
-      {% trans %}The displayed data may be inconsistent.{% endtrans %}
-      <button type="button"
-              class="btn-close"
-              data-bs-dismiss="alert"
-              aria-label="Close"></button>
-    </div>
-  {% endif %}
-  {% include 'message.html' %}
   {% call datatables(_('Files')) %}
     <thead>
       <tr>

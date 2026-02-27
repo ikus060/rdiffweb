@@ -50,6 +50,8 @@
       {% include "sidebar.html" with context %}
       <main>
         <div class="container-fluid p-3">
+          <RepoWarning repo={{ repo }} />
+          <Flash messages={{ get_flashed_messages() }} class="mb-2"/>
           {% block content %}{% endblock %}
         </div>
         {% block footer %}
