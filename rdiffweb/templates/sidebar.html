@@ -40,14 +40,16 @@
     {% if active_repo %}
       {# When repo selected, display a dropdown with selected repo. #}
       <ul class="nav flex-column nav-pills">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle d-flex align-items-center gap-3 active"
+        <li class="nav-item dropdown w-100">
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-3 active text-truncate"
              data-bs-toggle="dropdown"
              href="#">
             <Icon value="repo" class="fs-4" />
-            <div class="me-auto">
-              <p class="mb-0 fw-semibold">{{ active_repo.name }}</p>
-              <small><RepoStatus repo={{ active_repo }} /></small>
+            <div class="me-auto text-truncate">
+              <div class="mb-0 fw-semibold text-truncate">{{ active_repo.name }}</div>
+              <div class="text-truncate small">
+                <RepoStatus repo={{ active_repo }} />
+              </div>
             </div>
           </a>
           <ul class="dropdown-menu w-100">

@@ -1,11 +1,13 @@
 {# def repo, active=False, type="nav-link" #}
-<li{% if type == 'nav-link' %} class="nav-item"{% endif %}>
-  <a class="{{ type }} d-flex align-items-center gap-3{% if active %} active{% endif %}"
+<li class="w-100{% if type == 'nav-link' %} nav-item{% endif %}">
+  <a class="{{ type }} d-flex align-items-center gap-3 text-truncate{% if active %} active{% endif %}"
      href="{{ url_for('browse', repo) }}">
     <Icon value="repo" class="fs-4" />
-    <div>
-      <p class="mb-0 fw-semibold">{{ repo.name }}</p>
-      <small><RepoStatus repo={{ repo }} /></small>
+    <div class="text-truncate">
+      <p class="mb-0 fw-semibold text-truncate">{{ repo.name }}</p>
+      <div class="small text-truncate">
+        <RepoStatus repo={{ repo }} />
+      </div>
     </div>
   </a>
 </li>
