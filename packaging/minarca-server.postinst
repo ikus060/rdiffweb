@@ -94,7 +94,8 @@ case "$1" in
         mkdir -p "$MINARCA_ETC" "$MINARCA_LOG" "$MINARCA_HOME" "$MINARCA_SESSION"
         chown -R minarca:minarca "$MINARCA_ETC" "$MINARCA_SESSION"
         chown -R minarca:adm "$MINARCA_LOG"
-        chmod -R 0750 "$MINARCA_ETC" "$MINARCA_LOG" "$MINARCA_SESSION"
+        find "$MINARCA_ETC" "$MINARCA_LOG" "$MINARCA_SESSION" -type d -exec chmod 0750 {} +
+        find "$MINARCA_ETC" "$MINARCA_LOG" "$MINARCA_SESSION" -type f -exec chmod 0640 {} +
         chown minarca:minarca "$MINARCA_HOME"
         chmod 0750 "$MINARCA_HOME"
         # Enable user namespace (Disable debian hardening)
