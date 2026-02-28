@@ -7,17 +7,6 @@
   {% trans %}Settings{% endtrans %}
 {% endblock %}
 {% block content %}
-  <!-- failure -->
-  {% if repo.status[0] != 'ok' %}
-    <div class="alert alert-warning alert-dismissible" role="alert">
-      {{ repo.status[1] }}
-      {% trans %}The displayed data may be inconsistent.{% endtrans %}
-      <button type="button"
-              class="btn-close"
-              data-bs-dismiss="alert"
-              aria-label="Close"></button>
-    </div>
-  {% endif %}
   <div class="container">
     {# Delete repo button #}
     {% if not is_maintainer %}

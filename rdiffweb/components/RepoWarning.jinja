@@ -1,11 +1,7 @@
 {# def repo #}
+{% set msg = get_flashed_messages() %}
+{# Add our own warning based on repo status #}
 {% if repo and repo.status[0] != 'ok' %}
-  <div class="alert alert-warning alert-dismissible" role="alert">
-    {{ repo.status[1] }}
-    {% trans %}The displayed data may be inconsistent.{% endtrans %}
-    <button type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-            aria-label="Close"></button>
-  </div>
+  {% do msg.append((repo.status[1] + ' ' + _('The displayed data may be inconsistent.'), 'warning')) %}
 {% endif %}
+{% if msg %}<Flash messages={{ msg }} class="mb-2"/>{% endif %}

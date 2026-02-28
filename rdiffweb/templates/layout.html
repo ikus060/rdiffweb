@@ -51,7 +51,6 @@
       <main>
         <div class="container-fluid p-3">
           <RepoWarning repo={{ repo }} />
-          <Flash messages={{ get_flashed_messages() }} class="mb-2"/>
           {% block content %}{% endblock %}
         </div>
         <Footer class="mt-4 text-center w-100" />
