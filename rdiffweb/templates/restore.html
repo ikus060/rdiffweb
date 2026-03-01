@@ -1,8 +1,4 @@
 {% extends 'layout.html' %}
-{% set active_page= 'browse' %}
-{% block title %}
-  {% trans %}Downloading{% endtrans %}
-{% endblock %}
 {% block head %}
   {{ super() }}
   {% if download_url %}

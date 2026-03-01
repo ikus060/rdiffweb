@@ -48,10 +48,10 @@ main {
     }
     #rdw-navbar {
         background-color: var(--bs-gray-200);
-        
         width: var(--rdw-sidebar-width);
         height: 100vh;
         overflow-y: auto;
+        flex-shrink: 0;
     }
 
     main {

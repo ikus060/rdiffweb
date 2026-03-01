@@ -1,8 +1,4 @@
 {% extends 'layout.html' %}
-{% block title %}
-  {% trans %}System Info{% endtrans %}
-{% endblock %}
-{% set active_page="admin-sysinfo" %}
 {% block content %}
   {% set section_items = [
   (_('Application Version'), [(_('Core Version'), version)] + plugins|d([]) ),

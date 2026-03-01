@@ -1,10 +1,6 @@
 {% extends 'layout.html' %}
 {% import 'include/chartkick.html' as chartkick with context %}
 {% from 'include/timerange.html' import timerange %}
-{% set active_page='status' %}
-{% block title %}
-  {% trans %}Dashboard{% endtrans %}
-{% endblock %}
 {% block content %}
   <div class="container-fluid">
     {# Title #}

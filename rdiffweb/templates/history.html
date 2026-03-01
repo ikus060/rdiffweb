@@ -1,9 +1,5 @@
 {% extends 'layout.html' %}
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
-{% set active_page='browse' %}
-{% block title %}
-  {% trans %}History{% endtrans %}
-{% endblock title %}
 {% block content %}
   {% if repo.status[0] != 'ok' %}
     <div class="alert alert-warning alert-dismissible" role="alert">

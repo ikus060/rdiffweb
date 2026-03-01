@@ -474,7 +474,6 @@ class AdminTest(rdiffweb.test.WebCase):
     def test_list(self):
         self.getPage("/admin/users/")
         self.assertInBody("Users")
-        self.assertInBody("User management")
         self.assertInBody("Add user")
 
     def test_edit_user_with_not_existing_username(self):

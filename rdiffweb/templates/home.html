@@ -1,10 +1,6 @@
 {% extends 'layout.html' %}
 {% from 'include/storage_usage.html' import storage_usage %}
 {% from 'include/empty.html' import empty %}
-{% set active_page='home' %}
-{% block title %}
-  {% trans %}Repositories{% endtrans %}
-{% endblock title %}
 {% block content %}
   {% macro repo_list_item(repo)%}
     <a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }} href="{{ url_for('browse', repo) }}">

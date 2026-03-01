@@ -1,9 +1,5 @@
 {% extends 'layout.html' %}
 {% from 'include/datatables.html' import datatables %}
-{% block title %}
-  {% trans %}User management{% endtrans %}
-{% endblock %}
-{% set active_page="admin-users" %}
 {% macro btn(url, label, icon) %}
   <a class="btn btn-secondary"
      href="{{ url }}"

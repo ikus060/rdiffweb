@@ -52,6 +52,7 @@ import rdiffweb.tools.enrich_session
 import rdiffweb.tools.errors
 import rdiffweb.tools.poppath
 import rdiffweb.tools.required_scope
+from rdiffweb.controller import page_registry
 from rdiffweb.controller.api import ApiPage
 from rdiffweb.controller.dispatch import staticdir, staticfile
 from rdiffweb.controller.page_admin import AdminPage
@@ -225,6 +226,7 @@ class RdiffwebApp(Application):
                 'version': rdiffweb.__version__,
                 'list_parents': list_parents,
                 'attrib': attrib,
+                'page_registry': page_registry,
             },
             filters={
                 'lastupdated': do_format_lastupdated,

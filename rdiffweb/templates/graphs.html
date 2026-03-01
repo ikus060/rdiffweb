@@ -1,8 +1,5 @@
 {% extends 'layout.html' %}
 {% from 'include/timerange.html' import timerange %}
-{% block title %}
-  {% trans %}Graphs{% endtrans %}
-{% endblock title %}
 {% block content %}
   <div class="graph-area">
     <div class="float-end">{{ timerange(ranges=[1, 7, 14, 30, 60, 90], limit=limit) }}</div>

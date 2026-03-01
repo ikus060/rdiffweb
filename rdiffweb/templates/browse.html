@@ -1,9 +1,10 @@
 {% extends 'layout.html' %}
 {% from 'include/datatables.html' import datatables %}
-{% set active_page='browse' %}
 {% block title %}
-  {% trans %}Files{% endtrans %}
-{% endblock %}
+  {# TODO Complete this #}
+  {{ repo.display_name }} / {{ path }}
+  {% if page and page.label %}{{ page.label }} -{% endif %}
+{% endblock title %}
 {% block content %}
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">

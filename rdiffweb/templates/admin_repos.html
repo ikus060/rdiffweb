@@ -1,9 +1,5 @@
 {% extends 'layout.html' %}
 {% from 'include/datatables.html' import datatables %}
-{% block title %}
-  {% trans %}Repositories management{% endtrans %}
-{% endblock %}
-{% set active_page="admin-repos" %}
 {% macro btn(url, label, icon) %}
   <a class="btn btn-secondary"
      href="{{ url }}"
