@@ -1,6 +1,7 @@
 {% extends 'layout.html' %}
 {% from 'include/empty.html' import empty %}
 {% from 'include/table.html' import table %}
+{% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) %}
 {% block content %}
   <div class="row">
     <div class="col-md-3">

@@ -1,24 +1,7 @@
 {% extends 'layout.html' %}
 {% from 'include/datatables.html' import datatables %}
-{% block title %}
-  {# TODO Complete this #}
-  {{ repo.display_name }} / {{ path }}
-  {% if page and page.label %}{{ page.label }} -{% endif %}
-{% endblock title %}
-{% block content %}
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      {% for parent in list_parents(repo, path) %}
-        {% if loop.last %}
-          <li class="breadcrumb-item active" aria-current="page">{{ parent.display_name }}</li>
-        {% else %}
-          <li class="breadcrumb-item">
-            <a href="{{ url_for('browse', repo, parent.path) }}">{{ parent.display_name }}</a>
-          </li>
-        {% endif %}
-      {% endfor %}
-    </ol>
-  </nav>
+{% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) + breadcrumb_repo(repo, self, path, extend=1) %}
+{% block content  %}
   {% call datatables(_('Files')) %}
     <thead>
       <tr>

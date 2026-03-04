@@ -1,5 +1,6 @@
 {% extends 'layout.html' %}
 {% from 'include/table.html' import table %}
+{% set breadcrumbs = breadcrumb_page('admin') +  breadcrumb_page(self) %}
 {% block content %}
   {# Lazy loaded Table #}
   {% set user_model = {'text': _('Show User Activities'), 'extend': 'filter', 'column': 'model_name:name', 'search':'user'} %}

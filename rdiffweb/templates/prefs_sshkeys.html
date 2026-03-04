@@ -1,4 +1,5 @@
 {% extends 'layout.html' %}
+{% set breadcrumbs = breadcrumb_page('prefs') +  breadcrumb_page(self) %}
 {% block content %}
   {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
   {% if disable_ssh_keys %}

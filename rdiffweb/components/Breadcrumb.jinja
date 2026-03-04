@@ -1,0 +1,24 @@
+{# def currentuser, breadcrumbs #}
+{% if breadcrumbs %}
+  <nav id="rdw-breadcrumb" aria-label="breadcrumb" {{ attrs.render() }}>
+    <ol class="breadcrumb mb-0">
+      {% for segment in breadcrumbs %}
+        {% if segment.__class__.__name__ == 'TemplateReference' %}
+          {# A template #}
+          {% set segment = page_registry.get(segment._TemplateReference__context.name) %}
+        {% elif segment is string and segment in page_registry.keys() %}
+          {# A page id #}
+          {% set segment = page_registry.get(segment) %}
+        {% endif %}
+        <li class="breadcrumb-item">
+          <a href="{{ segment[0] }}">
+            {% if segment.icon | d(False) %}
+              <Icon value="repo" class="me-2"/>
+            {% endif %}
+            {{ segment[1] }}
+          </a>
+        </li>
+      {% endfor %}
+    </ol>
+  </nav>
+{% endif %}

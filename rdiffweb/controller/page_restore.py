@@ -125,7 +125,7 @@ class RestorePage:
         if kind is not None and kind not in ARCHIVERS:
             raise cherrypy.HTTPError(400, 'invalid kind: %s' % kind)
         repo, path = RepoObject.get_repo_path(path, refresh=False)
-        params = {"repo": repo}
+        params = {"repo": repo, "path": path}
         if repo.status[0] == 'ok':
             # If repo is healthy, return a download url
             params['download_url'] = url_for('restore', repo, path, date=date, kind=kind, raw=1)

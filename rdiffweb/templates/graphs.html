@@ -1,5 +1,6 @@
 {% extends 'layout.html' %}
 {% from 'include/timerange.html' import timerange %}
+{% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, 'graphs') + breadcrumb_repo(repo, self) %}
 {% block content %}
   <div class="graph-area">
     <div class="float-end">{{ timerange(ranges=[1, 7, 14, 30, 60, 90], limit=limit) }}</div>

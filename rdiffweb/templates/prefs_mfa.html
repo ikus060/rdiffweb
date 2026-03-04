@@ -1,5 +1,6 @@
 {% extends 'layout.html' %}
 {% from 'include/panel.html' import panel %}
+{% set breadcrumbs = breadcrumb_page('prefs') +  breadcrumb_page(self) %}
 {% block content %}
   <div class="d-flex  justify-content-between">
     <h3>{% trans %}Two-Factor Authentication{% endtrans %}</h3>

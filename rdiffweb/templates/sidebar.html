@@ -25,7 +25,7 @@
        class="collapse navbar-collapse flex-column align-items-stretch mt-3">
     <ul class="nav flex-column nav-pills">
       {% set home_page = page_registry.get('home') %}
-      <NavItem label={{ home_page.label }} href={{ url_for(home_page) }} icon={{ home_page.icon }} active={{ home_page.id in [active_page.id, active_page.active_page] }} />
+      <NavItem label={{ home_page.label }} href={{ url_for(home_page) }} icon={{ home_page.icon }} active={{ home_page.id in [active_page.id, self.active_page] }} />
     </ul>
     {# Repo list #}
     <div class="navbar-text mt-2">
@@ -57,12 +57,12 @@
       <ul class="nav flex-column nav-pills mt-2">
         {% set graphs_pages = page_registry.get_graphs_nav_items() %}
         {% for id, page in page_registry.get_repo_nav_items().items() %}
-          <NavItem label={{ page.label }} href={{ url_for(page, repo) }} icon={{ page.icon }} active={{ page.id in [active_page.id, active_page.active_page] }} />
+          <NavItem label={{ page.label }} href={{ url_for(page, repo) }} icon={{ page.icon }} active={{ page.id == active_page.id or page.id in breadcrumbs }} />
           {# Show graphs sub-menu #}
           {% if id == 'graphs' and active_page in graphs_pages.values() %}
             <ul class="nav flex-column nav-pills mt-2 ms-5">
               {% for id, page in graphs_pages.items() %}
-                <NavItem label={{ page.label }} href={{ url_for(page, repo, limit=limit) }} active={{ page.id in [active_page.id, active_page.active_page] }} />
+                <NavItem label={{ page.label }} href={{ url_for(page, repo, limit=limit) }} active={{ page.id == active_page.id or page.id in breadcrumbs }} />
               {% endfor %}
             </ul>
           {% endif %}
@@ -85,7 +85,7 @@
       </div>
       <ul class="nav flex-column nav-pills pb-2">
         {% for id, page in page_registry.get_admin_nav_items().items() %}
-          <NavItem label={{ page.label }} href={{ url_for(page) }} icon={{ page.icon }} active={{ page.id in [active_page.id, active_page.active_page] }} />
+          <NavItem label={{ page.label }} href={{ url_for(page) }} icon={{ page.icon }} active={{ page.id == active_page.id or page.id in breadcrumbs }} />
         {% endfor %}
       </ul>
     {% endif %}
@@ -101,7 +101,7 @@
       <ul class="dropdown-menu" aria-labelledby="rdw-dropdown-user">
         <h6 class="dropdown-header">{% trans %}User Profile{% endtrans %}</h6>
         {% for id, page in page_registry.get_prefs_nav_items().items() %}
-          <NavItem type="dropdown-item" label={{ page.label }} href={{ url_for(page) }} active={{ page.id in [active_page.id, active_page.active_page] }} />
+          <NavItem type="dropdown-item" label={{ page.label }} href={{ url_for(page) }} active={{ page.id == active_page.id or page.id in breadcrumbs }} />
         {% endfor %}
         <li>
           <hr class="dropdown-divider">

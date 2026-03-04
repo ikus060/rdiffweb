@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="{{ lang[0:2] }}">
   <head>
-    {% set active_page = page_registry.get(self._TemplateReference__context.name) %}
+    {% set active_page = page_registry.get(active_page | d(self._TemplateReference__context.name)) %}
     {% block head %}
       <title>
+        {# Most important segment first — shown in browser tabs. #}
         {% block title %}
-          {% if active_page and active_page.label %}{{ active_page.label }} -{% endif %}
+          {% if repo %}
+            {% if path %}{{ repo._decode(path) }} •{% endif %}
+            {{ repo.display_name }} •
+          {% endif %}
+          {% if active_page %}{{ active_page.label }}{% endif %}
         {% endblock title %}
-        {{ header_name }}
+        • {{ header_name }}
       </title>
       <meta charset="utf-8" />
       <meta content="noindex" name="robots" />
@@ -38,10 +43,10 @@
             rel="stylesheet"
             type="text/css"/>
       <!-- Custom -->
-      <script src="{{ url_for('/static/js/main.js', v=cache_invalid) }}"></script>
       <link href="{{ url_for('/main.css', v=cache_invalid) }}"
             rel="stylesheet"
             type="text/css"/>
+      <script src="{{ url_for('/static/js/main.js', v=cache_invalid) }}"></script>
     {% endblock head %}
     {% block script %}
     {% endblock script %}
@@ -50,6 +55,8 @@
     {% block body %}
       {% include "sidebar.html" with context %}
       <main>
+        {# Let define default breadcrumb for repo path. #}
+        <Breadcrumb currentuser={{ currentuser }} breadcrumbs={{ breadcrumbs | d(None) }} class="border-bottom p-3 bg-white sticky-top" />
         <div class="container-fluid p-3">
           <RepoWarning repo={{ repo }} />
           {% block content %}{% endblock %}

@@ -3,6 +3,7 @@
 {% from 'include/messages.html' import messages %}
 {% from 'include/storage_usage.html' import storage_usage %}
 {% from 'include/modal_dialog.html' import button_confirm, modal_confirm %}
+{% set breadcrumbs = breadcrumb_page('admin') + breadcrumb_page('admin_users') + [('#', form.username.data)] %}
 {% block content %}
   <div class="container">
     {# Delete button #}

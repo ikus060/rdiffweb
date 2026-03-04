@@ -1,3 +1,11 @@
+{% macro hex_to_rgb(hex) %}
+{% set hex = hex | replace("#", "") %}
+{% set r = hex[0:2] | int(base=16) %}
+{% set g = hex[2:4] | int(base=16) %}
+{% set b = hex[4:6] | int(base=16) %}
+{{ r }},{{ g }},{{ b }}
+{% endmacro %}
+
 :root {
     --link-color: {{link_color}};
     --btn-fg-color: {{btn_fg_color|d("#fff")}};
@@ -7,6 +15,7 @@
     --rdw-sidebar-width: 20rem;
     /* Override some bootstrap colors. */
     --bs-link-color: {{ link_color }};
+    --bs-link-color-rgb: {{ hex_to_rgb(link_color) }};
     /* Adjust contrast for sidebar. */
     --bs-gray-200: #eef0f1
 }
@@ -61,17 +70,26 @@ main {
     }
 }
 
+/* Replace breadcrumb divider by chevron-right */
+.breadcrumb-item::before {
+    --bs-breadcrumb-divider: "\f054";
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    float: none !important;
+}
+
 /* Adjust navbar color */
 .navbar.bg-dark {
     background-color: var(--navbar-color) !important;
 }
 
 /* Adjust primary color */
-a, .btn-link, .nav-link {
+.btn-link, .nav-link {
     color: var(--link-color);
 }
 
-a:hover, .btn-link:hover, .nav-link:hover {
+.btn-link:hover, .nav-link:hover {
     filter: brightness(.85);
     color: var(--link-color);
 }

@@ -2,6 +2,7 @@
 {% from 'include/panel.html' import panel %}
 {% from 'include/messages.html' import messages %}
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
+{% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) %}
 {% block content %}
   <div class="container">
     {# Delete repo button #}

@@ -1,4 +1,5 @@
 {% extends 'layout.html' %}
+{% set breadcrumbs = breadcrumb_page('admin') +  breadcrumb_page(self) %}
 {% block content %}
   {% set section_items = [
   (_('Application Version'), [(_('Core Version'), version)] + plugins|d([]) ),

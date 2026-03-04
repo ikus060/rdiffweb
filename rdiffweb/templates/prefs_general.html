@@ -1,5 +1,6 @@
 {% extends 'layout.html' %}
 {% from 'include/panel.html' import panel %}
+{% set breadcrumbs = breadcrumb_page('prefs') +  breadcrumb_page(self) %}
 {% block content %}
   {# Panel to set user info. #}
   {% call panel(title=_("Account settings"), description=_("General information about your account.")) %}

@@ -1,4 +1,5 @@
 {% extends 'layout.html' %}
+{% set breadcrumbs = breadcrumb_page('admin') + breadcrumb_page('admin_users') +  breadcrumb_page(self) %}
 {% block content %}
   <div class="container">
     <h3>{% trans %}Add user{% endtrans %}</h3>

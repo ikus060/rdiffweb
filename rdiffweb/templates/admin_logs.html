@@ -1,6 +1,7 @@
 {% extends 'layout.html' %}
 {% from 'include/empty.html' import empty %}
 {% from 'components/log.html' import pre_code %}
+{% set breadcrumbs = breadcrumb_page('admin') +  breadcrumb_page(self) %}
 {% block content %}
   <div class="row">
     {% if log_files %}

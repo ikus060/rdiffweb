@@ -1,5 +1,6 @@
 {% extends 'layout.html' %}
 {% from 'include/datatables.html' import datatables %}
+{% set breadcrumbs = breadcrumb_page('admin') +  breadcrumb_page(self) %}
 {% macro btn(url, label, icon) %}
   <a class="btn btn-secondary"
      href="{{ url }}"
