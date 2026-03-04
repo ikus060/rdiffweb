@@ -61,12 +61,6 @@ main {
     }
 }
 
-footer {
-    position: absolute;
-    bottom: 0px;
-}
-
-
 /* Adjust navbar color */
 .navbar.bg-dark {
     background-color: var(--navbar-color) !important;

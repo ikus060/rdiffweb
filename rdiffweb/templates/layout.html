@@ -54,11 +54,7 @@
           <Flash messages={{ get_flashed_messages() }} class="mb-2"/>
           {% block content %}{% endblock %}
         </div>
-        {% block footer %}
-          <footer class="mt-4 text-center small w-100">
-            {% trans %}Powered by{% endtrans %} <a href="{{ footer_url }}" title="{{ footer_name }} {{ version }}">{{ footer_name }}</a> © 2026
-          </footer>
-        {% endblock %}
+        <Footer class="mt-4 text-center w-100" />
       </main>
     {% endblock body %}
   </body>
