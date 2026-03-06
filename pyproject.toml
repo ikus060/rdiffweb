@@ -43,11 +43,11 @@ include = ["rdiffweb*"]
 
 [project.optional-dependencies]
 dev = [
-    "black==25.1.0",
-    "djlint==1.19.2",
+    "black==26.3.0",
+    "djlint==1.36.4",
     "flake8-copyright",
     "flake8==7.3.0",
-    "isort>=5.0.1",
+    "isort==8.0.1",
 ]
 test = [
     "html5lib",
