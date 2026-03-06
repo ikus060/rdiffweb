@@ -43,7 +43,7 @@ class CheckLinkTest(rdiffweb.test.WebCase):
         """
         Crawl all the pages to find broken links or relative links.
         """
-        done = set(['#'])
+        done = set()
         todo = OrderedDict()
         for url in self.start_url:
             todo[url] = 'start'
@@ -71,6 +71,9 @@ class CheckLinkTest(rdiffweb.test.WebCase):
             # Collect all link in the page.
             for unused, newpage in re.findall("(href|src|data-ajax)=\"([^\"]+)\"", self.body.decode('utf8', 'replace')):
                 newpage = newpage.replace("&amp;", "&")
+                # Skip anchor links as they refer to sections within the current page
+                if newpage.startswith("#"):
+                    continue
                 if newpage.startswith("?"):
                     newpage = re.sub("\\?.*", "", page) + newpage
                 if newpage not in done and not any(re.match(i, newpage) for i in self.ignore_url):
