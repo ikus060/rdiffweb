@@ -134,6 +134,10 @@
         <span>{{ username }}</span>
       </a>
       <ul class="dropdown-menu" aria-label="rdw-dropdown-user">
+        <ColorModes header={{ _("Theme") }} light_label={{ _("Light") }} dark_label={{ _("Dark") }} auto_label={{ _("Auto") }} />
+        <li>
+          <hr class="dropdown-divider">
+        </li>
         {% if not user_expended %}
           {# User profile - collapsed #}
           <h6 class="dropdown-header">{% trans %}User Profile{% endtrans %}</h6>
