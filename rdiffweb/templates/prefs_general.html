@@ -2,28 +2,30 @@
 {% from 'include/panel.html' import panel %}
 {% set breadcrumbs = breadcrumb_page('prefs') +  breadcrumb_page(self) %}
 {% block content %}
-  {# Panel to set user info. #}
-  {% call panel(title=_("Account settings"), description=_("General information about your account.")) %}
-    <div class="panel-body">
-      <form action="#" method="post" role="form">
-        <Fields form={{ profile_form }} />
-      </form>
-    </div>
-  {% endcall %}
-  {# Panel to change password. #}
-  {% call panel(title=_("Password"), description=_("Change your current password")) %}
-    <div class="panel-body">
-      <form action="#" method="post" role="form" class="clearfix">
-        <Fields form={{ password_form }} />
-      </form>
-    </div>
-  {% endcall %}
-  {# Panel to refresh repository list. #}
-  {% call panel(title=_("Refresh")) %}
-    <div class="panel-body">
-      <form action="#" method="post" role="form">
-        <Fields form={{ refresh_form }} />
-      </form>
-    </div>
-  {% endcall %}
+  <div class="container">
+    {# Panel to set user info. #}
+    {% call panel(title=_("Account settings"), description=_("General information about your account.")) %}
+      <div class="panel-body">
+        <form action="#" method="post" role="form">
+          <Fields form={{ profile_form }} />
+        </form>
+      </div>
+    {% endcall %}
+    {# Panel to change password. #}
+    {% call panel(title=_("Password"), description=_("Change your current password")) %}
+      <div class="panel-body">
+        <form action="#" method="post" role="form" class="clearfix">
+          <Fields form={{ password_form }} />
+        </form>
+      </div>
+    {% endcall %}
+    {# Panel to refresh repository list. #}
+    {% call panel(title=_("Refresh")) %}
+      <div class="panel-body">
+        <form action="#" method="post" role="form">
+          <Fields form={{ refresh_form }} />
+        </form>
+      </div>
+    {% endcall %}
+  </div>
 {% endblock %}

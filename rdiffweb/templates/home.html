@@ -21,56 +21,54 @@
       </span>
     </a>
   {% endmacro %}
-  <div class="container-fluid" id="locations">
-    {# disk usage/quota #}
-    {{ storage_usage(disk_usage, disk_quota) }}
-    {# Repositories #}
-    <h2 class="mb-2">{% trans %}Repositories{% endtrans %}</h2>
-    <div class="row">
-      {% if repos|length == 0 %}
-        <div class="col-md-12">
-          {% call empty('fa fa-archive', _('No repositories')) %}
-            <p>
-              {% trans %}You don't have any repositories in your user directory. You may need to refresh the page if you just made a new backup.{% endtrans %}
-            </p>
-          {% endcall %}
-        </div>
-      {% else %}
-        {% for repo in repos|sort(attribute='display_name') %}
-          <div class="col-md-6 col-lg-4 col-xl-3 mt-2 mb-4">
-            <div class="card {% if repo.status[0] != 'ok' %}border-warning{% endif %} h-100">
-              <div class="card-header text-center display-1">
+  {# disk usage/quota #}
+  {{ storage_usage(disk_usage, disk_quota) }}
+  {# Repositories #}
+  <h2 class="mb-2">{% trans %}Repositories{% endtrans %}</h2>
+  <div class="row">
+    {% if repos|length == 0 %}
+      <div class="col-md-12">
+        {% call empty('fa fa-archive', _('No repositories')) %}
+          <p>
+            {% trans %}You don't have any repositories in your user directory. You may need to refresh the page if you just made a new backup.{% endtrans %}
+          </p>
+        {% endcall %}
+      </div>
+    {% else %}
+      {% for repo in repos|sort(attribute='display_name') %}
+        <div class="col-md-6 col-lg-4 col-xl-3 mt-2 mb-4">
+          <div class="card {% if repo.status[0] != 'ok' %}border-warning{% endif %} h-100">
+            <div class="card-header text-center display-1">
+              <a href="{{ url_for('browse', repo) }}"
+                 class="{% if repo.status[0] != 'ok' %}text-warning{% endif %}">
+                <i class="fa fa-desktop" aria-hidden="true"></i>
+              </a>
+            </div>
+            <div class="card-body">
+              {# Format the name to highligth the significant repository name #}
+              {% set name = repo.display_name.split('/')[-1] %}
+              {% if name|length == 1 %}
+                {% set name = repo.display_name.split('/')[-2] %}
+                {% set prefix = '/'.join(repo.display_name.split('/')[0:-2]) %}
+                {% set suffix = repo.display_name.split('/')[-1] %}
+              {% else %}
+                {% set prefix = '/'.join(repo.display_name.split('/')[0:-1]) %}
+                {% set suffix = "" %}
+              {% endif %}
+              <h5 class="card-title">
                 <a href="{{ url_for('browse', repo) }}"
                    class="{% if repo.status[0] != 'ok' %}text-warning{% endif %}">
-                  <i class="fa fa-desktop" aria-hidden="true"></i>
+                  {% if prefix %}<small><small>{{ prefix }}/</small></small>{% endif %}
+                  {{ name }}
+                  {% if suffix %}<small><small>/{{ suffix }}</small></small>{% endif %}
                 </a>
-              </div>
-              <div class="card-body">
-                {# Format the name to highligth the significant repository name #}
-                {% set name = repo.display_name.split('/')[-1] %}
-                {% if name|length == 1 %}
-                  {% set name = repo.display_name.split('/')[-2] %}
-                  {% set prefix = '/'.join(repo.display_name.split('/')[0:-2]) %}
-                  {% set suffix = repo.display_name.split('/')[-1] %}
-                {% else %}
-                  {% set prefix = '/'.join(repo.display_name.split('/')[0:-1]) %}
-                  {% set suffix = "" %}
-                {% endif %}
-                <h5 class="card-title">
-                  <a href="{{ url_for('browse', repo) }}"
-                     class="{% if repo.status[0] != 'ok' %}text-warning{% endif %}">
-                    {% if prefix %}<small><small>{{ prefix }}/</small></small>{% endif %}
-                    {{ name }}
-                    {% if suffix %}<small><small>/{{ suffix }}</small></small>{% endif %}
-                  </a>
-                </h5>
-                {# Last backup date #}
-                <h6 class="card-subtitle small"></h6>
-              </div>
+              </h5>
+              {# Last backup date #}
+              <h6 class="card-subtitle small"></h6>
             </div>
           </div>
-        {% endfor %}
-      {% endif %}
-    </div>
+        </div>
+      {% endfor %}
+    {% endif %}
   </div>
 {% endblock content %}
