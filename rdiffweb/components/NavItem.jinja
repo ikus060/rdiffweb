@@ -1,7 +1,6 @@
 {# def label, href, icon=None, active=False, type="nav-link" #}
-<li{% if type == 'nav-link' %} class="nav-item"{% endif %}>
-  <a class="{{ type }} {% if active %} active{% endif %}"
-     href="{{ href }}">
+<li {% if type == 'nav-link' %}class="nav-item"{% endif %}>
+  <a class="{{ type }} {% if active %}active{% endif %}" href="{{ href }}">
     {% if icon %}<Icon value={{ icon }} class="me-2" />{% endif %}
     {{ label }}
   </a>

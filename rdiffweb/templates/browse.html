@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% from 'include/datatables.html' import datatables %}
 {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) + breadcrumb_repo(repo, self, path, extend=1) %}
-{% block content  %}
+{% block content %}
   {% call datatables(_('Files')) %}
     <thead>
       <tr>
@@ -17,10 +17,10 @@
               data-order="{{ 'dir' if entry.isdir else 'file' }}-{{ entry.display_name }}">
             <i class="{{ 'fa fa-folder' if entry.isdir else 'fa fa-file-o' }}"
                aria-hidden="true"></i>
-            <a {{ attrib(href=(entry.isdir and url_for('browse', repo, entry.path)) or (entry.last_change_date and url_for('restore', repo, entry.path, date=entry.last_change_date)) or "#", title=(entry.display_name | length > 45 and entry.display_name)) }}>
+            <a {{ attrib(href=(entry.isdir and url_for('browse', repo, entry.path) ) or (entry.last_change_date and url_for('restore', repo, entry.path, date=entry.last_change_date)) or "#", title=(entry.display_name | length > 45 and entry.display_name)) }}>
               {% if entry.isdir %}<span class="visually-hidden">&lt;DIR&gt;</span>{% endif %}
               {% if not entry.exists %}<span class="visually-hidden">&lt;DELETED&gt;</span>{% endif %}
-              {{ entry.display_name | truncate(45,True) }}
+              {{ entry.display_name | truncate(45, True) }}
             </a>
           </td>
           <td class="nowrap" data-search="" data-order="{{ entry.file_size }}">

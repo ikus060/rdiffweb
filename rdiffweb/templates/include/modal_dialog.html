@@ -1,5 +1,5 @@
 {% macro regex_escape(value) -%}
-  {{ value|replace('\\','\\\\')|replace('$','\\$')|replace('^','\\^')|replace('|','\\|')|replace('[','\\[')|replace(']','\\]')|replace('(','\\(')|replace(')','\\)')|replace('{','\\{')|replace('}','\\}')|replace('*','\\*')|replace('?','\\?')|replace('+','\\+')|replace('.','\\.') }}
+  {{ value|replace('\\', '\\\\') |replace('$','\\$')|replace('^','\\^')|replace('|','\\|')|replace('[','\\[')|replace(']','\\]')|replace('(','\\(')|replace(')','\\)')|replace('{','\\{')|replace('}','\\}')|replace('*','\\*')|replace('?','\\?')|replace('+','\\+')|replace('.','\\.') }}
 {%- endmacro -%}
 {% macro modal_dialog(id, title, submit='Submit', class="primary") -%}
   <div class="modal"
@@ -37,7 +37,12 @@
 'key'], submit=_('Delete')) #}
 {# Button to confirm deletion. #}
 {% macro button_confirm(label, target, class="btn-danger", disabled=False) -%}
-  <button type="button" class="btn {{ class }}" data-bs-toggle="modal" data-bs-target="{{ target }}" {% for k,v in kwargs.items()%} data-{{ k }}="{{ v }}" {% endfor %} {% if disabled %}disabled{% endif %}>{{ label }}
+  <button type="button"
+          class="btn {{ class }}"
+          data-bs-toggle="modal"
+          data-bs-target="{{ target }}"
+          {% for k,v in kwargs.items() %}data-{{ k }}="{{ v }}"{{ ' ' }}{% endfor %}
+          {% if disabled %}disabled{% endif %}>{{ label }}
   </button>
 {%- endmacro %}
 {# modal dialog for confirmation #}
@@ -57,7 +62,7 @@
              type="text"
              value=""
              pattern="{{ regex_escape(confirm_value) }}"
-             required/>
+             required />
     {% endif %}
     {# Extra content #}
     {% if parent_caller %}{{ parent_caller() }}{% endif %}

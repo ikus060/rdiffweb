@@ -15,17 +15,17 @@
 {% block content %}
   {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
   <a class="btn btn-success mb-2"
-     href="{{ url_for('admin','users', 'new')}}">{% trans %}Add user{% endtrans %}</a>
+     href="{{ url_for('admin', 'users', 'new') }}">{% trans %}Add user{% endtrans %}</a>
   <!-- Users View -->
   {% set buttons = [
-  {'text': _('Admins'), 'extend': 'filter', 'column': 2, 'search': 'admin'},
-  {'text': _('LDAP'), 'extend': 'filter', 'column': 0, 'search': 'LDAP'},
-  ] %}
-  {% set role_class = {0:'danger', 5:'warning', 10:'info'} %}
+      {'text': _('Admins'), 'extend': 'filter', 'column': 2, 'search': 'admin'},
+      {'text': _('LDAP'), 'extend': 'filter', 'column': 0, 'search': 'LDAP'},
+    ] %}
+  {% set role_class = {0: 'danger', 5: 'warning', 10: 'info'} %}
   {% set role_choices = dict(form.role.choices) %}
   {% set mfa_choices = dict(form.mfa.choices) %}
   {% set report_time_range_choices = dict(form.report_time_range.choices) %}
-  {% call datatables(_('User list'), buttons)%}
+  {% call datatables(_('User list'), buttons) %}
     <thead>
       <tr>
         <th scope="col">{{ form.username.label.text }}</th>
@@ -43,7 +43,7 @@
       {% for user in users %}
         <tr>
           <td>
-            <a href="{{ url_for('admin','users','edit', user.username)}}">{{ user.username }}</a>
+            <a href="{{ url_for('admin','users','edit', user.username) }}">{{ user.username }}</a>
             <span class="badge badge-secondary">#{{ user.id }}</span>
             {% if user.username == username %}
               <span class="badge badge-success">{% trans %}It's you{% endtrans %}</span>
@@ -63,7 +63,7 @@
           <td>{{ user.fullname }}</td>
           <td>{{ user.email }}</td>
           <td>
-            <span class="badge badge-{{ role_class.get(user.role)}}">{{ role_choices.get(user.role) }}</span>
+            <span class="badge badge-{{ role_class.get(user.role) }}">{{ role_choices.get(user.role) }}</span>
           </td>
           <td>
             {{ user.user_root }}
@@ -79,8 +79,8 @@
           <td class="notes">{{ user.notes }}</td>
           <td class="text-end">
             <div class="btn-hover text-nowrap">
-              {{ btn(url_for('admin','users','edit', user.username), _('Edit'), "fa fa-pencil-square-o") }}
-              {{ btn(url_for('status', user.username, '/'), _('Overview'), "fa fa-tachometer") }}
+              {{ btn(url_for('admin','users','edit', user.username) , _('Edit'), "fa fa-pencil-square-o") }}
+              {{ btn(url_for('status', user.username, '/') , _('Overview'), "fa fa-tachometer") }}
             </div>
           </td>
         </tr>

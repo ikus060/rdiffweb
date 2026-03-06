@@ -6,7 +6,12 @@
   {% endif %}
   {% set ns.chart_id = ns.chart_id + 1 %}
   <div id="chart-{{ ns.chart_id }}"
-       style="height: {{ height }}; text-align: center; color: #999; line-height: {{ height }}; font-size: 14px; font-family: Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif">
+       style="height: {{ height }};
+              text-align: center;
+              color: #999;
+              line-height: {{ height }};
+              font-size: 14px;
+              font-family: Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif">
     {% trans %}Loading...{% endtrans %}
   </div>
   <script>
@@ -20,14 +25,14 @@
   </script>
 {% endmacro %}
 {% macro line_chart(data, height="300px") %}
-  {{ chartkick('LineChart', data, height, kwargs)}}
+  {{ chartkick('LineChart', data, height, kwargs) }}
 {% endmacro %}
 {% macro bar_chart(data, height="300px") %}
-  {{ chartkick('BarChart', data, height, kwargs)}}
+  {{ chartkick('BarChart', data, height, kwargs) }}
 {% endmacro %}
 {% macro column_chart(data, height="300px") %}
-  {{ chartkick('ColumnChart', data, height, kwargs)}}
+  {{ chartkick('ColumnChart', data, height, kwargs) }}
 {% endmacro %}
 {% macro pie_chart(data, height="300px") %}
-  {{ chartkick('PieChart', data, height, kwargs)}}
+  {{ chartkick('PieChart', data, height, kwargs) }}
 {% endmacro %}

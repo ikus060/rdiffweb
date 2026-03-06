@@ -9,7 +9,7 @@
   <p>
     {% trans %}You can use access tokens to authenticate to this application. They are the only accepted password when you have Two-Factor Authentication (2FA) enabled.{% endtrans %}
   </p>
-  <hr/>
+  <hr />
   {# Panel to create tokens. #}
   {% call panel(title=_("Create New Access Token"), description=_("You can generate a access token for each application you use that needs access to API.")) %}
     <div class="panel-body">
@@ -24,7 +24,7 @@
       {% for token in tokens %}
         <li class="list-group-item">
           <div class="float-end">
-            {{ button_confirm(label=_('Revoke'), target="#delete-token-modal", revoke=token.name, name=token.name) }}
+            {{ button_confirm(label=_('Revoke') , target="#delete-token-modal", revoke=token.name, name=token.name) }}
           </div>
           <p class="list-group-item-heading">
             <strong>{{ token.name }}</strong>
@@ -34,7 +34,7 @@
             <strong>
               <time class="js-datetime" datetime="{{ token.creation_time }}">{{ token.creation_time }}</time>
             </strong>
-            <br/>
+            <br />
             {% trans %}Last accessed{% endtrans %}
             <strong>
               {% if  token.access_time %}
@@ -43,7 +43,7 @@
                 {% trans %}Never{% endtrans %}
               {% endif %}
             </strong>
-            <br/>
+            <br />
             {% trans %}Expired on{% endtrans %}
             <strong>
               {% if  token.expiration_time %}
@@ -74,9 +74,8 @@
     </ul>
   {% endcall %}
   <!-- Delete SSH Key Modal -->
-  {{ modal_confirm(
-  id='delete-token-modal',
-  title=_('Delete access token'),
+  {{ modal_confirm(id='delete-token-modal',
+    title=_('Delete access token') ,
   message=_("Are you sure you want to revoke this access token? Any application that uses this access token to authenticate will stop working."),
   fields=['revoke', 'name'],
   submit=_('Revoke')) }}

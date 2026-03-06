@@ -12,8 +12,7 @@
                aria-valuenow="{{ used_pct }}"
                aria-valuemin="0"
                aria-valuemax="100"
-               style="width: {{ used_pct }}%">
-          </div>
+               style="width: {{ used_pct }}%"></div>
         </div>
         <div class="row {% if used_pct >= 100 %}text-danger{% elif used_pct > 90 %}text-warning{% endif %}">
           <div class="col">

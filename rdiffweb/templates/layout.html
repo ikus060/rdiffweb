@@ -19,33 +19,33 @@
       <meta content="IE=edge" http-equiv="X-UA-Compatible" />
       <meta content="width=device-width, initial-scale=1" name="viewport" />
       <link href="{{ url_for('favicon.ico', v=cache_invalid) }}"
-            rel="shortcut icon"/>
+            rel="shortcut icon" />
       <!-- Jquery -->
       <script src="{{ url_for('/static/js/jquery.min.js') }}"></script>
       <!-- Bootstrap v4 -->
       <script src="{{ url_for('/static/js/popper.min.js') }}"></script>
       <script src="{{ url_for('/static/js/bootstrap.min.js') }}"></script>
-      <link href="{{ url_for('/static/css/bootstrap.min.css') }}"
+      <link href="{{ url_for("/static/css/bootstrap.min.css") }}"
             rel="stylesheet"
-            type="text/css"/>
+            type="text/css" />
       <!-- Fontawesome -->
-      <link href="{{ url_for('/static/css/font-awesome.min.css') }}"
+      <link href="{{ url_for("/static/css/font-awesome.min.css") }}"
             rel="stylesheet"
-            type="text/css"/>
+            type="text/css" />
       <!-- JQuery Datatables -->
       <script src="{{ url_for('/static/js/jquery.dataTables.min.js') }}"></script>
       <script src="{{ url_for('/static/js/dataTables.buttons.min.js') }}"></script>
       <script src="{{ url_for('/static/js/dataTables.responsive.min.js') }}"></script>
-      <link href="{{ url_for('/static/css/jquery.dataTables.min.css') }}"
+      <link href="{{ url_for("/static/css/jquery.dataTables.min.css") }}"
             rel="stylesheet"
-            type="text/css"/>
-      <link href="{{ url_for('/static/css/responsive.dataTables.min.css') }}"
+            type="text/css" />
+      <link href="{{ url_for("/static/css/responsive.dataTables.min.css") }}"
             rel="stylesheet"
-            type="text/css"/>
+            type="text/css" />
       <!-- Custom -->
       <link href="{{ url_for('/main.css', v=cache_invalid) }}"
             rel="stylesheet"
-            type="text/css"/>
+            type="text/css" />
       <script src="{{ url_for('/static/js/main.js', v=cache_invalid) }}"></script>
     {% endblock head %}
     {% block script %}
@@ -61,7 +61,7 @@
           <RepoWarning repo={{ repo }} />
           {% block content %}{% endblock %}
         </div>
-        <Footer class="mt-4 text-center w-100" />
+        <RdwFooter class="mt-4 text-center w-100" />
       </main>
     {% endblock body %}
   </body>

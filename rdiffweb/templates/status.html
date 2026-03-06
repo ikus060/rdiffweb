@@ -19,7 +19,7 @@
         <div class="card">
           <div class="card-header">{% trans %}Backup per days{% endtrans %}</div>
           <div class="card-body">
-            {{ chartkick.column_chart(url_for('status', path, 'per-days.json', days=days), legend='bottom', stacked=True, colors=['#109618', '#ff9900', '#dc3912']) }}
+            {{ chartkick.column_chart(url_for('status', path, 'per-days.json', days=days) , legend='bottom', stacked=True, colors=['#109618', '#ff9900', '#dc3912']) }}
           </div>
         </div>
       </div>
@@ -28,7 +28,7 @@
         <div class="card">
           <div class="card-header">{% trans %}Oldest backup{% endtrans %}</div>
           <div class="card-body">
-            {{ chartkick.bar_chart(url_for('status', path, 'age.json', count=count), legend='bottom', colors=['#3b3eac']) }}
+            {{ chartkick.bar_chart(url_for('status', path, 'age.json', count=count) , legend='bottom', colors=['#3b3eac']) }}
           </div>
         </div>
       </div>
@@ -37,7 +37,7 @@
         <div class="card">
           <div class="card-header">{% trans %}Storage usage{% endtrans %}</div>
           <div class="card-body">
-            {{ chartkick.pie_chart(url_for('status', path, 'disk-usage.json'), donut=True, preffix="~", suffix=" MiB", legend=False) }}
+            {{ chartkick.pie_chart(url_for('status', path, 'disk-usage.json') , donut=True, preffix="~", suffix=" MiB", legend=False) }}
           </div>
         </div>
       </div>
@@ -46,7 +46,7 @@
         <div class="card">
           <div class="card-header">{% trans %}Highest average duration{% endtrans %}</div>
           <div class="card-body">
-            {{ chartkick.bar_chart(url_for('status', path, 'elapsetime.json', count=count), legend='bottom', colors=['#0099c6']) }}
+            {{ chartkick.bar_chart(url_for('status', path, 'elapsetime.json', count=count) , legend='bottom', colors=['#0099c6']) }}
           </div>
         </div>
       </div>
@@ -55,7 +55,7 @@
         <div class="card">
           <div class="card-header">{% trans %}Least active{% endtrans %}</div>
           <div class="card-body">
-            {{ chartkick.bar_chart(url_for('status', path, 'activities.json', count=count, days=days, sort=1), legend='bottom', stacked=True) }}
+            {{ chartkick.bar_chart(url_for('status', path, 'activities.json', count=count, days=days, sort=1) , legend='bottom', stacked=True) }}
           </div>
         </div>
       </div>
@@ -64,7 +64,7 @@
         <div class="card">
           <div class="card-header">{% trans %}Most active{% endtrans %}</div>
           <div class="card-body">
-            {{ chartkick.bar_chart(url_for('status', path, 'activities.json', count=count, days=days, sort=-1), legend='bottom', stacked=True) }}
+            {{ chartkick.bar_chart(url_for('status', path, 'activities.json', count=count, days=days, sort=-1) , legend='bottom', stacked=True) }}
           </div>
         </div>
       </div>

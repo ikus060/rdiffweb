@@ -15,8 +15,8 @@
     <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
   </h1>
   <p>
-    {% set start =  start_time.epoch|format_date("medium") %}
-    {% set end =  end_time.epoch|format_date("medium") %}
+    {% set start = start_time.epoch|format_date("medium") %}
+    {% set end = end_time.epoch|format_date("medium") %}
     {% if time_range == 30 %}
       {% trans %}Here is your monthly backup report for last month presenting an overview of the activities within your backup from {{ start }} to {{ end }}.{% endtrans %}
     {% elif time_range == 7 %}

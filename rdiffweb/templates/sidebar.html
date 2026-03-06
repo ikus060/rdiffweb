@@ -8,7 +8,8 @@
            class="d-inline-block align-text-top"
            alt="{{ header_name }}"
            title="{{ header_name }}"
-           style="max-width: 216px; max-height: 64px"/>
+           style="max-width: 216px;
+                  max-height: 64px" />
     </a>
     {# Toggle #}
     <button class="navbar-toggler me-3"
@@ -18,7 +19,7 @@
             aria-controls="rdw-sidebar-menu"
             aria-expanded="false"
             aria-label="Toggle navigation">
-      <Icon value="fa-bars" class="fs-2"/>
+      <Icon value="fa-bars" class="fs-2" />
     </button>
   </div>
   <div id="rdw-sidebar-menu"
@@ -71,9 +72,7 @@
     {% else %}
       {# Display all repo. #}
       <ul class="nav flex-column nav-pills">
-        {% for repo in currentuser.repo_objs | sort(attribute='name') %}
-          <NavItemRepo repo={{ repo }} />
-        {% endfor %}
+        {% for repo in currentuser.repo_objs | sort(attribute='name') %}<NavItemRepo repo={{ repo }} />{% endfor %}
       </ul>
     {% endif %}
     {# Spacer #}
@@ -95,7 +94,7 @@
          id="rdw-dropdown-user"
          data-bs-toggle="dropdown"
          aria-expanded="false">
-        <Icon value="user" class="me-3"/>
+        <Icon value="user" class="me-3" />
         <span>{{ username }}</span>
       </a>
       <ul class="dropdown-menu" aria-labelledby="rdw-dropdown-user">

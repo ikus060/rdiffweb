@@ -18,7 +18,6 @@ Plugin used to send email to users when their repository is getting too old.
 User can control the notification period.
 """
 
-
 import logging
 
 import cherrypy

@@ -22,7 +22,7 @@
       {% for repo in repos %}
         <li>
           <a>{{ repo.display_name }}</a>
-          <br/>
+          <br />
           <strong style="color: {{ fgcolor(cls) }}">
             {% if repo.last_backup_date %}
               {% trans %}Last backup {% endtrans %}

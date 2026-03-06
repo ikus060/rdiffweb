@@ -665,7 +665,7 @@ class SessionStatisticsEntry(MetadataEntry):
                 line = line.rstrip(b'\r\n')
                 data_line = line.split(b" ", 2)
                 # Read line into tuple
-                (key, value) = tuple(data_line)[0:2]
+                key, value = tuple(data_line)[0:2]
                 if b'.' in value:
                     value = float(value)
                 else:

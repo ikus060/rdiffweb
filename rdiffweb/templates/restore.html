@@ -1,12 +1,10 @@
 {% extends 'layout.html' %}
-{% set active_page = 'browse' %}
-{% set breadcrumbs =
-breadcrumb_repo(repo) +
-breadcrumb_repo(repo, 'browse') +
-breadcrumb_repo(repo, 'browse', path, extend=1)[:-1] +
-breadcrumb_repo(repo, 'history', path, extend=1)[-1:] +
-[('#', _('Restore'))]
-%}
+{% set active_page = "browse" %}
+{% set breadcrumbs = breadcrumb_repo(repo) +
+  breadcrumb_repo(repo, 'browse') +
+  breadcrumb_repo(repo, 'browse', path, extend=1)[:-1] +
+  breadcrumb_repo(repo, 'history', path, extend=1)[-1:] +
+[('#', _('Restore'))] %}
 {% block head %}
   {{ super() }}
   {% if download_url %}
@@ -44,8 +42,8 @@ breadcrumb_repo(repo, 'history', path, extend=1)[-1:] +
         <p class="h2 mt-3">
           <i class="text-warning fa fa-exclamation-triangle" aria-hidden="true"></i>
           <b>{% trans %}Download is not possible in the current state of your repository:{% endtrans %}</b>
-          <br/>
-          <br/>
+          <br />
+          <br />
           {{ repo.status[1] }}
         </p>
         <a href="javascript:history.back()" class="btn btn-secondary mt-3">{% trans %}Go Back{% endtrans %}</a>

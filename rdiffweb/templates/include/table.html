@@ -1,73 +1,73 @@
 {% macro table(data, columns=[], order=[], empty_message=None, info_message=None, searching=True, buttons=[], paging=False, page_length=5, layout="default", state_save=True, server_side=False) %}
   {% set language = {
-  "aria": {
-  "sortAscending": _('activate to sort column ascending'),
-  "sortDescending": _('activate to sort column descending')
-  },
-  "info": info_message or (_('Showing from _START_ to _END_ of _TOTAL_ total records') if paging else _('Showing total of _TOTAL_ records')),
-  "infoFiltered": _('(filtered from _MAX_ total records)'),
-  "infoEmpty": _('No records available'),
-  "processing": _('Loading...'),
-  "rdiffweb": {
-  "null": _('undefined'),
-  "value": {
-  "mfa": {
-  "0": _('Disabled'),
-  "1": _('Enabled'),
-  },
-  "report_time_range": {
-  "0": _('Never'),
-  "1": _('Daily'),
-  "7": _('Weekly'),
-  "30": _('Monthly'),
-  },
-  "role": {
-  "0": _("Admin"),
-  "5": _("Maintainer"),
-  "10": _("User"),
-  },
-  "type": {
-  "new": _('Created by'),
-  "deleted": _('Deleted by'),
-  "dirty": _('Modified by'),
-  "comment": _('Comment by'),
-  "event": _('Event logged by'),
-  },
-  },
-  "field": {
-  "_encoding_name": _('Display Encoding'),
-  "_ignore_weekday": _('Excluded Days of the Week'),
-  "_keepdays": _('Data Retention Duration'),
-  "authorizedkeys": _('SSH Keys'),
-  "email": _('Email'),
-  "fullname": _('Fullname'),
-  "hash_password": _('Password'),
-  "lang": _('Preferred Language'),
-  "maxage": _('Inactivity Notification Period'),
-  "mfa": _('Two-Factor Authentication'),
-  "notes": _('Notes'),
-  "repo_objs": _('Repositories'),
-  "repopath": _('Display Name'),
-  "report_time_range": _('Send Backup report'),
-  "role": _('User Role'),
-  "tokens": _('Access Token'),
-  "user": _('Owner'),
-  "user_root": _('Root directory'),
-  "username": _('Username'),
-  }
-  },
-  "search": _('Filter: '),
-  "zeroRecords": empty_message or _('List is empty'),
-  } %}
+      "aria": {
+        "sortAscending": _('activate to sort column ascending'),
+        "sortDescending": _('activate to sort column descending')
+      },
+      "info": info_message or (_('Showing from _START_ to _END_ of _TOTAL_ total records') if paging else _('Showing total of _TOTAL_ records')),
+      "infoFiltered": _('(filtered from _MAX_ total records)'),
+      "infoEmpty": _('No records available'),
+      "processing": _('Loading...'),
+      "rdiffweb": {
+        "null": _('undefined'),
+        "value": {
+          "mfa": {
+            "0": _('Disabled'),
+            "1": _('Enabled'),
+          },
+          "report_time_range": {
+            "0": _('Never'),
+            "1": _('Daily'),
+            "7": _('Weekly'),
+            "30": _('Monthly'),
+          },
+          "role": {
+            "0": _("Admin"),
+            "5": _("Maintainer"),
+            "10": _("User"),
+          },
+          "type": {
+            "new": _('Created by'),
+            "deleted": _('Deleted by'),
+            "dirty": _('Modified by'),
+            "comment": _('Comment by'),
+            "event": _('Event logged by'),
+          },
+        },
+        "field": {
+          "_encoding_name": _('Display Encoding'),
+          "_ignore_weekday": _('Excluded Days of the Week'),
+          "_keepdays": _('Data Retention Duration'),
+          "authorizedkeys": _('SSH Keys'),
+          "email": _('Email'),
+          "fullname": _('Fullname'),
+          "hash_password": _('Password'),
+          "lang": _('Preferred Language'),
+          "maxage": _('Inactivity Notification Period'),
+          "mfa": _('Two-Factor Authentication'),
+          "notes": _('Notes'),
+          "repo_objs": _('Repositories'),
+          "repopath": _('Display Name'),
+          "report_time_range": _('Send Backup report'),
+          "role": _('User Role'),
+          "tokens": _('Access Token'),
+          "user": _('Owner'),
+          "user_root": _('Root directory'),
+          "username": _('Username'),
+        }
+      },
+      "search": _('Filter: '),
+      "zeroRecords": empty_message or _('List is empty'),
+    } %}
   {% set buttons_cfg = {
-  "dom": {
-  "button": {
-  "className": 'btn btn-sm btn-primary ms-1 mb-1',
-  "active": 'active',
-  }
-  },
-  "buttons": buttons
-  } %}
+      "dom": {
+        "button": {
+          "className": 'btn btn-sm btn-primary ms-1 mb-1',
+          "active": 'active',
+        }
+      },
+      "buttons": buttons
+    } %}
   {# Pick the right layout #}
   <table class="table table-hover responsive"
          width="100%"

@@ -19,7 +19,23 @@
 {% endmacro %}
 {% macro body(cls) %}
   <body class="{{ cls }}"
-        style="outline: 0; width: 100%; min-width: 100%; height: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; font-family: {{ font_family }},Helvetica, Arial, sans-serif; line-height: 24px; font-weight: normal; font-size: 16px; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; color: #000000; margin: 0; padding: 0; border-width: 0"
+        style="outline: 0;
+               width: 100%;
+               min-width: 100%;
+               height: 100%;
+               -webkit-text-size-adjust: 100%;
+               -ms-text-size-adjust: 100%;
+               font-family: {{ font_family }},Helvetica, Arial, sans-serif;
+               line-height: 24px;
+               font-weight: normal;
+               font-size: 16px;
+               -moz-box-sizing: border-box;
+               -webkit-box-sizing: border-box;
+               box-sizing: border-box;
+               color: #000000;
+               margin: 0;
+               padding: 0;
+               border-width: 0"
         bgcolor="{{ bgcolor(cls) }}">
     <table class="{{ cls }} body"
            valign="top"
@@ -27,16 +43,32 @@
            border="0"
            cellpadding="0"
            cellspacing="0"
-           style="outline: 0; width: 100%; min-width: 100%; height: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; font-family: {{ font_family }},Helvetica, Arial, sans-serif; line-height: 24px; font-weight: normal; font-size: 16px; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; color: #000000; margin: 0; padding: 0; border-width: 0"
+           style="outline: 0;
+                  width: 100%;
+                  min-width: 100%;
+                  height: 100%;
+                  -webkit-text-size-adjust: 100%;
+                  -ms-text-size-adjust: 100%;
+                  font-family: {{ font_family }},Helvetica, Arial, sans-serif;
+                  line-height: 24px;
+                  font-weight: normal;
+                  font-size: 16px;
+                  -moz-box-sizing: border-box;
+                  -webkit-box-sizing: border-box;
+                  box-sizing: border-box;
+                  color: #000000;
+                  margin: 0;
+                  padding: 0;
+                  border-width: 0"
            bgcolor="{{ bgcolor(cls) }}">
       <tbody>
         <tr>
           <td valign="top"
-              style="line-height: 24px; font-size: 16px; margin: 0"
+              style="line-height: 24px;
+                     font-size: 16px;
+                     margin: 0"
               align="left"
-              bgcolor="{{ bgcolor(cls) }}">
-            {{ caller() }}
-          </td>
+              bgcolor="{{ bgcolor(cls) }}">{{ caller() }}</td>
         </tr>
       </tbody>
     </table>
@@ -52,7 +84,10 @@
     <tbody>
       <tr>
         <td align="center"
-            style="line-height: 24px; font-size: 16px; margin: 0; padding: 0 16px">
+            style="line-height: 24px;
+                   font-size: 16px;
+                   margin: 0;
+                   padding: 0 16px">
           <!--[if (gte mso 9)|(IE)]>
           <table align="center" role="presentation">
             <tbody>
@@ -64,7 +99,9 @@
                  border="0"
                  cellpadding="0"
                  cellspacing="0"
-                 style="width: 100%; max-width: 600px; margin: 0 auto">
+                 style="width: 100%;
+                        max-width: 600px;
+                        margin: 0 auto">
             <tbody>
               <tr>
                 <td style="line-height: 24px; font-size: 16px; margin: 0;" align="left">{{ caller() }}</td>
@@ -88,15 +125,20 @@
          border="0"
          cellpadding="0"
          cellspacing="0"
-         style="border-radius: 6px; border-collapse: separate !important; width: 100%; overflow: hidden; border: 1px solid #e2e8f0"
+         style="border-radius: 6px;
+                border-collapse: separate !important;
+                width: 100%;
+                overflow: hidden;
+                border: 1px solid #e2e8f0"
          bgcolor="{{ bgcolor(cls) }}">
     <tbody>
       <tr>
-        <td style="line-height: 24px; font-size: 16px; width: 100%; margin: 0"
+        <td style="line-height: 24px;
+                   font-size: 16px;
+                   width: 100%;
+                   margin: 0"
             align="left"
-            bgcolor="{{ bgcolor(cls) }}">
-          {{ caller() }}
-        </td>
+            bgcolor="{{ bgcolor(cls) }}">{{ caller() }}</td>
       </tr>
     </tbody>
   </table>
@@ -107,19 +149,25 @@
          border="0"
          cellpadding="0"
          cellspacing="0"
-         style="color: #ffffff; width: 100%; height: 64px"
+         style="color: #ffffff;
+                width: 100%;
+                height: 64px"
          bgcolor="{{ bgcolor(cls) }}"
          width="100%"
          height="64">
     <tbody>
       <tr>
-        <td style="line-height: 24px; font-size: 16px; color: #ffffff; width: 100%; height: 64px; margin: 0; padding: 8px 20px"
+        <td style="line-height: 24px;
+                   font-size: 16px;
+                   color: #ffffff;
+                   width: 100%;
+                   height: 64px;
+                   margin: 0;
+                   padding: 8px 20px"
             align="left"
             bgcolor="{{ bgcolor(cls) }}"
             width="100%"
-            height="64">
-          {{ caller() }}
-        </td>
+            height="64">{{ caller() }}</td>
       </tr>
     </tbody>
   </table>
@@ -133,7 +181,11 @@
          style="width: 100%">
     <tbody>
       <tr>
-        <td style="line-height: 24px; font-size: 16px; width: 100%; margin: 0; padding: 20px"
+        <td style="line-height: 24px;
+                   font-size: 16px;
+                   width: 100%;
+                   margin: 0;
+                   padding: 20px"
             align="left">{{ caller() }}</td>
       </tr>
     </tbody>
@@ -145,23 +197,26 @@
            border="0"
            cellpadding="0"
            cellspacing="0"
-           style="table-layout: fixed; width: 100%"
+           style="table-layout: fixed;
+                  width: 100%"
            width="100%">
       <tbody>
-        <tr>
-          {{ caller() }}
-        </tr>
+        <tr>{{ caller() }}</tr>
       </tbody>
     </table>
   </div>
 {% endmacro %}
 {% macro col(cls) %}
   <td class="col {{ cls }}"
-      style="line-height: 24px; font-size: 16px; min-height: 1px; font-weight: normal; padding-right: 24px; margin: 0; color: {{ fgcolor(cls) }}"
+      style="line-height: 24px;
+             font-size: 16px;
+             min-height: 1px;
+             font-weight: normal;
+             padding-right: 24px;
+             margin: 0;
+             color: {{ fgcolor(cls) }}"
       align="left"
-      valign="top">
-    {{ caller() }}
-  </td>
+      valign="top">{{ caller() }}</td>
 {% endmacro %}
 {% macro mb4() %}
   <!-- mb-4 -->
@@ -174,21 +229,27 @@
          width="100%">
     <tbody>
       <tr>
-        <td style="line-height: 16px; font-size: 16px; width: 100%; height: 16px; margin: 0"
+        <td style="line-height: 16px;
+                   font-size: 16px;
+                   width: 100%;
+                   height: 16px;
+                   margin: 0"
             align="left"
             width="100%"
-            height="16">
-          &#160;
-        </td>
+            height="16">&#160;</td>
       </tr>
     </tbody>
   </table>
 {% endmacro %}
 {% macro emphasis() %}
-  <h3 style="padding-top: 0; padding-bottom: 0; font-weight: 500; vertical-align: baseline; font-size: 28px; line-height: 33.6px; margin: 0"
-      align="left">
-    {{ caller()}}
-  </h3>
+  <h3 style="padding-top: 0;
+             padding-bottom: 0;
+             font-weight: 500;
+             vertical-align: baseline;
+             font-size: 28px;
+             line-height: 33.6px;
+             margin: 0"
+      align="left">{{ caller() }}</h3>
 {% endmacro %}
 {% macro storage_usage(disk_usage, disk_quota) %}
   {% if disk_usage and disk_quota %}
@@ -199,21 +260,21 @@
         {% call row() %}
           {% call col('text-warning' if used_pct>90 else '') %}
             {% trans %}Used{% endtrans %}
-            {% call emphasis()%}
+            {% call emphasis() %}
               {{ used_pct|int }}%
             {% endcall %}
             <small>{{ disk_usage | filesize }}</small>
           {% endcall %}
           {% call col('text-warning' if used_pct>90 else '') %}
             {% trans %}Free{% endtrans %}
-            {% call emphasis()%}
+            {% call emphasis() %}
               {{ (100 - used_pct)|int }}%
             {% endcall %}
             {{ (disk_quota - disk_usage) | filesize }}
           {% endcall %}
           {% call col('text-warning' if used_pct>90 else '') %}
             {% trans %}Total{% endtrans %}
-            {% call emphasis()%}
+            {% call emphasis() %}
               {{ disk_quota | filesize }}
             {% endcall %}
           {% endcall %}
@@ -312,19 +373,19 @@
       }
     </style>
   </head>
-  {% call body('bg-light')%}
+  {% call body('bg-light') %}
     {% call container() %}
       {% call card() %}
         {% call card_header('bg-dark') %}
-          <img src="{{ url_for('/header_logo') }}"
+          <img src="{{ url_for("/header_logo") }}"
                class="h-9"
                alt="{{ header_name }}"
-               height="36"/>
+               height="36" />
         {% endcall %}
         {% call card_body() %}
           {% block content %}
           {% endblock content %}
-          <hr/>
+          <hr />
           <p class="text-xs" style="font-size: 12px; line-height: 14.4px;">
             {% trans %}You received this email to let you know about important changes to your {{ header_name }} Account.{% endtrans %}
           </p>

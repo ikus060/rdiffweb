@@ -31,9 +31,9 @@
       {% if data %}
         <div class="alert alert-info">
           {% trans %}Notice: To prevent performance issues, only the last 2000 lines of each log files are displayed.{% endtrans %}
-          <a href="{{ url_for('logs', repo, file=file, date=date, raw=1)}}"><b><i class="icon icon-download"></i>{% trans %}Show all logs{% endtrans %}</b></a>
+          <a href="{{ url_for('logs', repo, file=file, date=date, raw=1) }}"><b><i class="icon icon-download"></i>{% trans %}Show all logs{% endtrans %}</b></a>
         </div>
-        {{ pre_code(data)}}
+        {{ pre_code(data) }}
       {% elif file or date %}
         {% call empty('fa fa-file', _('Log file empty')) %}
           <p>{% trans %}This log file is empty. Select another log file to show it's contents.{% endtrans %}</p>

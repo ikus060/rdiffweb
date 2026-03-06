@@ -22,6 +22,7 @@ It also handle all the encoding and decoding of filenames to generate an
 appropriate archive usable by the target system. In few circumstances it's
 impossible to properly generate a valid filename depending of the archive types.
 """
+
 import logging
 import os
 import shutil

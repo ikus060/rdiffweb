@@ -2,12 +2,12 @@
 {% set breadcrumbs = breadcrumb_page('admin') +  breadcrumb_page(self) %}
 {% block content %}
   {% set section_items = [
-  (_('Application Version'), [(_('Core Version'), version)] + plugins|d([]) ),
-  (_('Application Config'), cfg.items()),
-  (_('System usage'), hwinfo),
-  (_('Operating System Info'), osinfo),
-  (_('Dependencies Version'), ldapinfo),
-  (_('Python Info'), pyinfo),]%}
+      (_('Application Version'), [(_('Core Version'), version)] + plugins|d([]) ),
+      (_('Application Config'), cfg.items()),
+      (_('System usage'), hwinfo),
+      (_('Operating System Info'), osinfo),
+      (_('Dependencies Version'), ldapinfo),
+    (_('Python Info'), pyinfo),] %}
   {% for section_name, items in section_items %}
     <h3>{{ section_name }}</h3>
     <div class="table-responsive">
@@ -21,8 +21,8 @@
         <tbody>
           {% for k, v in items %}
             <tr>
-              <td width="25%">{{k}}</td>
-              <td>{{v}}</td>
+              <td width="25%">{{ k }}</td>
+              <td>{{ v }}</td>
             </tr>
           {% endfor %}
         </tbody>

@@ -10,7 +10,7 @@
           {% set active_name = name %}
           {% for name, filename in log_files.items() %}
             <a href="{{ url_for('admin', 'logs', name=name, limit=limit) }}"
-               class="list-group-item{% if name==active_name %} active{% endif %}">{{ filename.split('/') | last }}</a>
+               class="list-group-item{% if name==active_name %} active{% endif %}">{{ filename.split("/") | last }}</a>
           {% endfor %}
         </ul>
       </div>
@@ -19,9 +19,9 @@
           {# Show log file data #}
           <div class="alert alert-info">
             {% trans %}Notice: To prevent performance issues, only the last {{ limit }} lines of the log files are displayed.{% endtrans %}
-            <a href="{{ url_for('admin', 'logs', 'raw', name=name)}}"><b><i class="icon icon-download"></i>{% trans %}Show all logs{% endtrans %}</b></a>
+            <a href="{{ url_for('admin', 'logs', 'raw', name=name) }}"><b><i class="icon icon-download"></i>{% trans %}Show all logs{% endtrans %}</b></a>
           </div>
-          {{ pre_code(data)}}
+          {{ pre_code(data) }}
         {% elif name or date %}
           {# Log file is empty. #}
           {% call empty('fa fa-file', _('Log file empty')) %}
