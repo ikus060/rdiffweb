@@ -18,7 +18,12 @@
     {% call panel(title=_("Report"), description=_("Configure how often you want to receive a backup report in your mailbox.")) %}
       <div class="panel-body">
         <form action="#" method="post" role="form" class="clearfix">
-          <Fields form={{ report_form }} />
+          <Field field={{ report_form.action }} />
+          <Field field={{ report_form.report_time_range }} />
+          <div class="d-flex">
+            <Field field={{ report_form.set_report_info }} class="btn-primary me-2" />
+            <Field field={{ report_form.send_report }} class="btn-secondary" />
+          </div>
         </form>
       </div>
     {% endcall %}
