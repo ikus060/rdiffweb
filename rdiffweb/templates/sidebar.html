@@ -69,7 +69,7 @@
           {% endif %}
         {% endfor %}
       </ul>
-    {% else %}
+    {% elif currentuser %}
       {# Display all repo. #}
       <ul class="nav flex-column nav-pills">
         {% for repo in currentuser.repo_objs | sort(attribute='name') %}<NavItemRepo repo={{ repo }} />{% endfor %}
