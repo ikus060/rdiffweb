@@ -29,11 +29,11 @@
       <NavItem label={{ home_page.label }} href={{ url_for(home_page) }} icon={{ home_page.icon }} active={{ home_page.id in [active_page.id, self.active_page] }} />
     </ul>
     {# Repo list #}
-    <div class="navbar-text mt-2">
-      <strong>{% trans %}Your repositories{% endtrans %}</strong>
-    </div>
     {% set active_repo = repo | d(False) %}
     {% if active_repo %}
+      <div class="navbar-text mt-2">
+        <strong>{% trans %}Your repositories{% endtrans %}</strong>
+      </div>
       {# When repo selected, display a dropdown with selected repo. #}
       <ul class="nav flex-column nav-pills">
         <li class="nav-item dropdown w-100">
@@ -69,8 +69,11 @@
           {% endif %}
         {% endfor %}
       </ul>
-    {% elif currentuser %}
+    {% elif currentuser and currentuser.repo_objs %}
       {# Display all repo. #}
+      <div class="navbar-text mt-2">
+        <strong>{% trans %}Your repositories{% endtrans %}</strong>
+      </div>
       <ul class="nav flex-column nav-pills">
         {% for repo in currentuser.repo_objs | sort(attribute='name') %}<NavItemRepo repo={{ repo }} />{% endfor %}
       </ul>
