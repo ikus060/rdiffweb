@@ -806,7 +806,7 @@ class ThemeAction(argparse.Action):
             setattr(namespace, k, v)
 
 
-class ConfigFileParser(object):
+class ConfigFileParser(configargparse.ConfigFileParser):
     """
     Custom config file parser to support rdiffweb config file format.
     """
