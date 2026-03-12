@@ -85,8 +85,12 @@ class ControllerTest(rdiffweb.test.WebCase):
         self.getPage("/static/invalid.css")
         self.assertStatus(400)
 
-    def test_path_traversal(self):
-        self.getPage('/static//../../test.txt')
+    def test_path_traversal_text(self):
+        self.getPage('/static//../../test.text')
+        self.assertStatus(400)
+
+    def test_path_traversal_js(self):
+        self.getPage('/static//../../test.js')
         self.assertStatus(403)
 
 

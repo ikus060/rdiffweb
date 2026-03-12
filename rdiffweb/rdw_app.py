@@ -54,7 +54,7 @@ import rdiffweb.tools.poppath
 import rdiffweb.tools.required_scope
 from rdiffweb.controller import breadcrumb_page, breadcrumb_repo, page_registry
 from rdiffweb.controller.api import ApiPage
-from rdiffweb.controller.dispatch import staticdir, staticfile
+from rdiffweb.controller.dispatch import staticfile
 from rdiffweb.controller.page_admin import AdminPage
 from rdiffweb.controller.page_browse import BrowsePage
 from rdiffweb.controller.page_delete import DeletePage
@@ -69,6 +69,7 @@ from rdiffweb.controller.page_restore import RestorePage
 from rdiffweb.controller.page_settings import AuditLogData, SettingsPage
 from rdiffweb.controller.page_stats import StatsPage
 from rdiffweb.controller.page_status import StatusPage
+from rdiffweb.controller.static import Static
 from rdiffweb.core.config import parse_args
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import DbSession, SessionObject, UserObject
@@ -172,10 +173,7 @@ class Root(LocationsPage):
         self.graphs = GraphsPage()
         self.logs = LogsPage()
         self.audit = AuditLogData()
-
-        # Register static dir.
-        static_dir = importlib.resources.files('rdiffweb') / 'static'
-        self.static = staticdir(static_dir, doc="Serve static files")
+        self.static = Static()
 
         # Register robots.txt
         robots_txt = importlib.resources.files('rdiffweb') / 'static/robots.txt'

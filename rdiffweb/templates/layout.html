@@ -18,35 +18,18 @@
       <meta content="noindex" name="robots" />
       <meta content="IE=edge" http-equiv="X-UA-Compatible" />
       <meta content="width=device-width, initial-scale=1" name="viewport" />
-      <link href="{{ url_for('favicon.ico', v=cache_invalid) }}"
+      <link href="{{ url_for('favicon.ico', v=cache_invalidate) }}"
             rel="shortcut icon" />
-      <!-- Jquery -->
-      <script src="{{ url_for('/static/js/jquery.min.js') }}"></script>
-      <!-- Bootstrap v4 -->
-      <script src="{{ url_for('/static/js/popper.min.js') }}"></script>
-      <script src="{{ url_for('/static/js/bootstrap.min.js') }}"></script>
-      <link href="{{ url_for("/static/css/bootstrap.min.css") }}"
-            rel="stylesheet"
-            type="text/css" />
       <!-- Fontawesome -->
       <link href="{{ url_for("/static/css/font-awesome.min.css") }}"
             rel="stylesheet"
             type="text/css" />
-      <!-- JQuery Datatables -->
-      <script src="{{ url_for('/static/js/jquery.dataTables.min.js') }}"></script>
-      <script src="{{ url_for('/static/js/dataTables.buttons.min.js') }}"></script>
-      <script src="{{ url_for('/static/js/dataTables.responsive.min.js') }}"></script>
-      <link href="{{ url_for("/static/css/jquery.dataTables.min.css") }}"
-            rel="stylesheet"
-            type="text/css" />
-      <link href="{{ url_for("/static/css/responsive.dataTables.min.css") }}"
-            rel="stylesheet"
-            type="text/css" />
+      {{ catalog.render_assets() }}
       <!-- Custom -->
-      <link href="{{ url_for('/main.css', v=cache_invalid) }}"
+      <link href="{{ url_for('/main.css', v=cache_invalidate) }}"
             rel="stylesheet"
             type="text/css" />
-      <script src="{{ url_for('/static/js/main.js', v=cache_invalid) }}"></script>
+      <script src="{{ url_for('/static/js/main.js', v=cache_invalidate) }}"></script>
     {% endblock head %}
     {% block script %}
     {% endblock script %}
