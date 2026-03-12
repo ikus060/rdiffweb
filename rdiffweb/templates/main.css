@@ -68,6 +68,10 @@ main {
     flex: 1;
 }
 
+#rdw-navbar {
+    background-color: var(--bs-gray-200);
+}
+
 @media (min-width: 992px) {
     body {
         display: flex;
@@ -77,8 +81,25 @@ main {
         background-color: var(--bs-gray-200);
         width: var(--rdw-sidebar-width);
         height: 100vh;
-        overflow-y: auto;
-        flex-shrink: 0;
+    }
+
+    /* Make the content of this menu scrollable. */
+    #rdw-overflow-menu {
+        flex-grow: 1;
+        height: 1px;
+        overflow: auto;
+
+        /* This is used to display overflow. */
+        --rdw-bg: var(--bs-gray-200);
+        --rdw-bg-rgb0: color-mix(in srgb, var(--rdw-bg) 0%, transparent);
+        background:
+            linear-gradient(var(--rdw-bg) 30%, var(--rdw-bg-rgb0)) top center,
+            linear-gradient(var(--rdw-bg-rgb0), var(--rdw-bg) 70%) bottom center,
+            radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)) top center,
+            radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)) bottom center;
+        background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+        background-repeat: no-repeat;
+        background-attachment: local, local, scroll, scroll;
     }
 
     main {

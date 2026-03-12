@@ -55,7 +55,7 @@
           </ul>
         </li>
       </ul>
-      <ul class="nav flex-column nav-pills mt-2">
+      <ul id="rdw-overflow-menu" class="nav flex-column nav-pills mt-2 flex-nowrap">
         {% set graphs_pages = page_registry.get_graphs_nav_items() %}
         {% for id, page in page_registry.get_repo_nav_items().items() %}
           <NavItem label={{ page.label }} href={{ url_for(page, repo) }} icon={{ page.icon }} active={{ page.id == active_page.id or page.id in breadcrumbs }} />
@@ -74,26 +74,31 @@
       <div class="navbar-text mt-2">
         <strong>{% trans %}Your repositories{% endtrans %}</strong>
       </div>
-      <ul class="nav flex-column nav-pills">
+      <ul id="rdw-overflow-menu" class="nav flex-column nav-pills flex-nowrap">
         {% for repo in currentuser.repo_objs | sort(attribute='name') %}<NavItemRepo repo={{ repo }} />{% endfor %}
       </ul>
     {% endif %}
-    {# Spacer #}
-    <div class="mt-auto"></div>
     {# Admin Area #}
     {% if currentuser and currentuser.is_admin %}
-      <div class="navbar-text">
-        <strong>{% trans %}Administration{% endtrans %}</strong>
-      </div>
-      <ul class="nav flex-column nav-pills pb-2">
+    <div class="dropdown dropup pt-2">
+      <a href="#"
+         class="p-2 d-flex align-items-center text-decoration-none dropdown-toggle"
+         id="rdw-dropdown-user"
+         data-bs-toggle="dropdown"
+         aria-expanded="false">
+        <Icon value="fa-cogs" class="me-3" />
+        <span>{% trans %}Administration{% endtrans %}</span>
+      </a>
+      <ul class="dropdown-menu" aria-labelledby="rdw-dropdown-user">
         {% for id, page in page_registry.get_admin_nav_items().items() %}
-          <NavItem label={{ page.label }} href={{ url_for(page) }} icon={{ page.icon }} active={{ page.id == active_page.id or page.id in breadcrumbs }} />
+          <NavItem type="dropdown-item" label={{ page.label }} href={{ url_for(page) }} active={{ page.id == active_page.id or page.id in breadcrumbs }} />
         {% endfor %}
       </ul>
+    </div>
     {% endif %}
-    <div class="dropdown dropup border-top pt-2">
+    <div class="dropdown dropup pt-2">
       <a href="#"
-         class="d-flex align-items-center text-decoration-none dropdown-toggle"
+         class="p-2 d-flex align-items-center text-decoration-none dropdown-toggle"
          id="rdw-dropdown-user"
          data-bs-toggle="dropdown"
          aria-expanded="false">
