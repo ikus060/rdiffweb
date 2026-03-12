@@ -127,7 +127,7 @@ def breadcrumb_page(page):
     page = page_registry.get(page if isinstance(page, str) else page._TemplateReference__context.name)
     if page.url_for:
         return [(url_for(page), page.label)]
-    return [('#', page.label)]
+    return [(None, page.label)]
 
 
 def breadcrumb_repo(repo, page=None, path=None, extend=False):
@@ -153,16 +153,20 @@ def breadcrumb_repo(repo, page=None, path=None, extend=False):
     elif page is not None:
         # Page
         return [(url_for(page, repo), page.label)]
-    else:
-        # Repo
-        currentuser = cherrypy.serving.request.currentuser
+
+    # Repo
+    currentuser = cherrypy.serving.request.currentuser
+    if currentuser != repo.user:
         return [
+            # TODO pre-filter on user's repo
             (
-                url_for('/'),
-                _('Your repositories') if currentuser == repo.user else _("%s's Repositories") % repo.user.username,
+                url_for('admin', 'repos'),
+                _("@%s") % repo.user.username,
             ),
             (url_for('browse', repo), repo.display_name),
         ]
+
+    return [(url_for('/'), _("Home")), (url_for('browse', repo), repo.display_name)]
 
 
 # TODO Remove the following function.

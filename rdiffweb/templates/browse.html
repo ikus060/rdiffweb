@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 {% from 'include/datatables.html' import datatables %}
-{% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) + breadcrumb_repo(repo, self, path, extend=1) %}
+{% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self, path, extend=1) %}
 {% block content %}
   {% call datatables(_('Files')) %}
     <thead>

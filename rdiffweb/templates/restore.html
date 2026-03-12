@@ -1,10 +1,10 @@
 {% extends 'layout.html' %}
-{% set active_page = "browse" %}
-{% set breadcrumbs = breadcrumb_repo(repo) +
-  breadcrumb_repo(repo, 'browse') +
-  breadcrumb_repo(repo, 'browse', path, extend=1)[:-1] +
-  breadcrumb_repo(repo, 'history', path, extend=1)[-1:] +
-[('#', _('Restore'))] %}
+{% set _path_breadcrumbs = breadcrumb_repo(repo, 'browse', path, extend=1) %}
+{% if _path_breadcrumbs %}
+  {% set breadcrumbs = breadcrumb_repo(repo) + _path_breadcrumbs[:-1]  + [('#', _('Restore: {}').format(_path_breadcrumbs[-1][1]))] %}
+{% else %}
+  {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, 'restore') %}
+{% endif %}
 {% block head %}
   {{ super() }}
   {% if download_url %}

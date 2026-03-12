@@ -1,12 +1,12 @@
 {% extends 'layout.html' %}
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
 {# breadcrumbs is special because we cannot display 'browse' link for files. #}
-{% set active_page = "browse" %}
-{% set breadcrumbs = breadcrumb_repo(repo) +
-  breadcrumb_repo(repo, 'browse') +
-  breadcrumb_repo(repo, 'browse', path, extend=1)[:-1] +
-  breadcrumb_repo(repo, 'history', path) +
-breadcrumb_repo(repo, 'history', path, extend=1)[-1:] %}
+{% set _path_breadcrumbs = breadcrumb_repo(repo, 'browse', path, extend=1) %}
+{% if _path_breadcrumbs %}
+  {% set breadcrumbs = breadcrumb_repo(repo) + _path_breadcrumbs[:-1]  + [('#', _('History: {}').format(_path_breadcrumbs[-1][1]))] %}
+{% else %}
+  {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, 'history') %}
+{% endif %}
 {% block content %}
   {% if repo.status[0] != 'ok' %}
     <div class="alert alert-warning alert-dismissible" role="alert">
