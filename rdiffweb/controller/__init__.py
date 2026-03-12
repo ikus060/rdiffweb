@@ -27,7 +27,9 @@ from rdiffweb.core.librdiff import RdiffTime
 logger = logging.getLogger(__name__)
 
 
-class Page(namedtuple('Page', ['id', 'label', 'url_for', 'icon', 'in_menu'], defaults=[None, True])):
+class Page(
+    namedtuple('Page', ['id', 'label', 'url_for', 'icon', 'in_menu', 'active_page'], defaults=[None, True, None])
+):
 
     def __hash__(self):
         return self.id.__hash__()
@@ -54,18 +56,30 @@ class PageRegistry(dict):
             return self[page_id].label
         return page_id
 
-    def get_repo_nav_items(self):
+    def get_repo_nav_pages(self, in_menu=True):
         repo_pages = ['browse', 'settings', 'graphs', 'stats', 'logs']
-        return {id: page for id, page in self.items() if id in repo_pages}
+        return [page for page in self.values() if page.id in repo_pages]
 
-    def get_graphs_nav_items(self):
-        return {id: page for id, page in self.items() if id.startswith('graphs_') and page.in_menu}
+    def get_graphs_nav_pages(self, in_menu=True):
+        return [
+            page
+            for page in self.values()
+            if page.id.startswith('graphs_') and (in_menu is None or page.in_menu == in_menu)
+        ]
 
-    def get_admin_nav_items(self):
-        return {id: page for id, page in self.items() if id.startswith('admin_') and page.in_menu}
+    def get_admin_nav_pages(self, in_menu=True):
+        return [
+            page
+            for page in self.values()
+            if page.id.startswith('admin_') and (in_menu is None or page.in_menu == in_menu)
+        ]
 
-    def get_prefs_nav_items(self):
-        return {id: page for id, page in self.items() if id.startswith('prefs_') and page.in_menu}
+    def get_prefs_nav_pages(self, in_menu=True):
+        return [
+            page
+            for page in self.values()
+            if page.id.startswith('prefs_') and (in_menu is None or page.in_menu == in_menu)
+        ]
 
 
 # TODO Consider using function decorator to build the registry
@@ -73,30 +87,30 @@ _pages = [
     Page('home', _('Home'), '/', 'fa-home'),
     # Repo
     Page('browse', _('Files'), 'browse', 'fa-files-o'),
-    Page('history', _('History'), 'history', None, False),
-    Page('restore', _('Restore'), 'restore', None, False),
+    Page('history', _('History'), 'history', None, False, 'browse'),
+    Page('restore', _('Restore'), 'restore', None, False, 'browse'),
     Page('settings', _('Settings'), 'settings', 'fa-sliders'),
     Page('graphs', _('Graphs'), 'graphs', 'fa-area-chart'),
     Page('stats', _('Snapshot Changes'), 'stats', 'fa-list-alt'),
     Page('logs', _('Logs'), 'logs', 'fa-file-text-o'),
     # Graphs
-    Page('graphs_activities', _('Activities'), 'graphs/activities'),
-    Page('graphs_files', _('File count'), 'graphs/files'),
-    Page('graphs_sizes', _('Size'), 'graphs/sizes'),
-    Page('graphs_times', _('Elapsed Time'), 'graphs/times'),
-    Page('graphs_errors', _('Errors'), 'graphs/errors'),
+    Page('graphs_activities', _('Activities'), 'graphs/activities', None, True, 'graphs'),
+    Page('graphs_files', _('File count'), 'graphs/files', None, True, 'graphs'),
+    Page('graphs_sizes', _('Size'), 'graphs/sizes', None, True, 'graphs'),
+    Page('graphs_times', _('Elapsed Time'), 'graphs/times', None, True, 'graphs'),
+    Page('graphs_errors', _('Errors'), 'graphs/errors', None, True, 'graphs'),
     # Admin
-    Page('admin', _('Administration'), None),
+    Page('admin', _('Administration'), None, None, False),
     Page('admin_users', _('Users'), 'admin/users', 'fa-users'),
-    Page('admin_user_edit', _('Edit User'), 'admin/users/edit', None, False),
-    Page('admin_user_new', _('Add User'), 'admin/users/new', None, False),
+    Page('admin_user_edit', _('Edit User'), 'admin/users/edit', None, False, 'admin_users'),
+    Page('admin_user_new', _('Add User'), 'admin/users/new', None, False, 'admin_users'),
     Page('admin_repos', _('Repositories'), 'admin/repos', 'fa-th'),
     Page('admin_session', _('User Sessions'), 'admin/session', 'fa-id-badge'),
     Page('admin_activity', _('Activity'), 'admin/activity', 'fa-list-alt'),
     Page('admin_logs', _('System Logs'), 'admin/logs', 'fa-file-text-o'),
     Page('admin_sysinfo', _('System Info'), 'admin/sysinfo', 'fa-info-circle'),
     # User Preferences
-    Page('prefs', _('User Profile'), None),
+    Page('prefs', _('User Profile'), None, None, False),
     Page('prefs_general', _('Account Settings'), 'prefs/general'),
     Page('prefs_notification', _('Notifications & Report'), 'prefs/notification'),
     Page('prefs_sshkeys', _('SSH keys'), 'prefs/sshkeys'),

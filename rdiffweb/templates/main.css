@@ -26,7 +26,7 @@
     --btn-bg-color: var(--bs-white);
     --btn-fg-color: var(--bs-body-color);
 }
-#rdw-navbar .nav-link, #rdw-dropdown-user {
+#rdw-navbar .nav-link, #rdw-navbar .dropdown-toggle {
     color: var(--bs-body-color);
 }
 
@@ -107,6 +107,11 @@ main {
         /*margin-left: var(--rdw-sidebar-width);*/
         min-height: 100vh !important;
     }
+}
+
+#rdw-header-logo {
+    max-width: 216px;
+    max-height: 64px;
 }
 
 /* Replace breadcrumb divider by chevron-right */
