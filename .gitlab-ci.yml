@@ -371,7 +371,7 @@ deploy:demo:
     url: https://rdiffweb-demo.ikus-soft.com/
   needs:
     - package:deb
-  image: registry.gitlab.com/finestructure/pipeline-trigger
+  image: heitormotta/pipeline-trigger:2.9.0
   script:
     - export DEB_VERSION=$(ls -1 ./dist/trixie/rdiffweb_*_all.deb | cut -d '_' -f 2)
     - echo DEB_VERSION=$DEB_VERSION
