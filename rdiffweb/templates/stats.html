@@ -1,6 +1,5 @@
 {% extends 'layout.html' %}
 {% from 'include/empty.html' import empty %}
-{% from 'include/table.html' import table %}
 {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) %}
 {% block content %}
   <div class="row">
@@ -25,11 +24,11 @@
       </p>
       {% if date %}
         {% set buttons = [
-                  {'text': _('All'), 'extend': 'clear'},
-                  {'text': _('New'), 'extend': 'filter', 'column': 'state:name', 'search': 'new'},
-                  {'text': _('Deleted'), 'extend': 'filter', 'column': 'state:name', 'search': 'deleted'},
-                  {'text': _('Changed'), 'extend': 'filter', 'column': 'state:name', 'search': '^changed', 'regex':True},
-                  {'text': _('Unchanged'), 'extend': 'filter', 'column': 'state:name', 'search': '^unchanged'},
+                  {'text': _('New'), 'extend': 'filter', 'column': 'state:name', 'search': 'new', 'className':'btn-outline-secondary rdw-btn-filter'},
+                  {'text': _('Deleted'), 'extend': 'filter', 'column': 'state:name', 'search': 'deleted', 'className':'btn-outline-secondary rdw-btn-filter'},
+                  {'text': _('Changed'), 'extend': 'filter', 'column': 'state:name', 'search': '^changed', 'regex':True, 'className':'btn-outline-secondary rdw-btn-filter'},
+                  {'text': _('Unchanged'), 'extend': 'filter', 'column': 'state:name', 'search': '^unchanged', 'className':'btn-outline-secondary rdw-btn-filter'},
+                  {'text': _('All'), 'extend': 'reset', 'className': 'btn-secondary'},
                 ] %}
         {% set columns = [
                   {'name':'path', 'title': _('Path'), 'orderable': True, 'render':'text' },
@@ -37,15 +36,12 @@
                   {'name':'size', 'title':_('Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
                   {'name':'increment_size', 'title':_('Increment Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
                 ] %}
-        {{ table(url_for('stats', 'data.json', repo, date=date) ,
-        columns=columns,
-        buttons=buttons,
-        order=[[ 0, 'desc' ]],
-        searching=True,
-        empty_message=_('Changes are not available'),
-        info_message=_('Displaying _START_-_END_ of _TOTAL_ changes'),
-        paging=True,
-        page_length=20) }}
+        <RdwTable :data="{{ url_for('stats', 'data.json', repo, date=date) }}"
+                  :columns="{{ columns }}"
+                  :buttons="{{ buttons }}"
+                  :search_placeholder="{{ _("Filter files...") }}"
+                  :empty_message="{{ _("Changes are not available") }}"
+                  :info_message="{{ _("Displaying _START_-_END_ of _TOTAL_ changes") }}" />
       {% else %}
         {% call empty('fa fa-list-alt', _('No snapshot selected')) %}
           <p>{% trans %}Select a backup date on the left to display detailed changes for that date.{% endtrans %}</p>

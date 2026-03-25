@@ -1,5 +1,4 @@
 {% extends 'layout.html' %}
-{% from 'include/datatables.html' import datatables %}
 {% set breadcrumbs = breadcrumb_page('admin') +  breadcrumb_page(self) %}
 {% macro btn(url, label, icon) %}
   <a class="btn btn-secondary"
@@ -14,13 +13,13 @@
 {% endmacro %}
 {% block content %}
   {% set buttons = [
-      {'text': _('All'), 'extend': 'clear'},
+      {'text': _('All'), 'extend': 'reset'},
       {'text': _('Healthy'), 'extend': 'filter', 'column': 2, 'search': 'ok'},
       {'text': _('Failed'), 'extend': 'filter', 'column': 2, 'search': 'failed'},
       {'text': _('Interrupted'), 'extend': 'filter', 'column': 2, 'search': 'interrupted'},
       {'text': _('In progress'), 'extend': 'filter', 'column': 2, 'search': 'in_progress'},
     ] %}
-  {% call() datatables(_('Repository list'), buttons) %}
+  <RdwTable :buttons="{{ buttons }}">
     <thead>
       <tr>
         <th scope="col">{% trans %}Display Name{% endtrans %}</th>
@@ -73,7 +72,7 @@
           </td>
           <td class="notes">{{ repo.notes }}</td>
           <td data-search="">
-            <div class="btn-hover text-nowrap">
+            <div class="rdw-btn-hover text-nowrap">
               {{ btn(url_for('settings', repo) , _('Settings'), 'fa fa-sliders') }}
               {{ btn(url_for('graphs', 'activities', repo) , _('Graphs'), 'fa fa-area-chart') }}
               {{ btn(url_for('stats', repo) , _('Stats'), 'fa fa-list-alt') }}
@@ -83,5 +82,5 @@
         </tr>
       {% endfor %}
     </tbody>
-  {% endcall %}
+  </RdwTable>
 {% endblock %}

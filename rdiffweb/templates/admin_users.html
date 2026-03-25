@@ -1,5 +1,4 @@
 {% extends 'layout.html' %}
-{% from 'include/datatables.html' import datatables %}
 {% set breadcrumbs = breadcrumb_page('admin') +  breadcrumb_page(self) %}
 {% macro btn(url, label, icon) %}
   <a class="btn btn-secondary"
@@ -25,7 +24,7 @@
   {% set role_choices = dict(form.role.choices) %}
   {% set mfa_choices = dict(form.mfa.choices) %}
   {% set report_time_range_choices = dict(form.report_time_range.choices) %}
-  {% call datatables(_('User list'), buttons) %}
+  <RdwTable :buttons="{{ buttons }}">
     <thead>
       <tr>
         <th scope="col">{{ form.username.label.text }}</th>
@@ -78,7 +77,7 @@
           <td>{{ report_time_range_choices.get(user.report_time_range) }}</td>
           <td class="notes">{{ user.notes }}</td>
           <td class="text-end">
-            <div class="btn-hover text-nowrap">
+            <div class="rdw-btn-hover text-nowrap">
               {{ btn(url_for('admin','users','edit', user.username) , _('Edit'), "fa fa-pencil-square-o") }}
               {{ btn(url_for('status', user.username, '/') , _('Overview'), "fa fa-tachometer") }}
             </div>
@@ -86,5 +85,5 @@
         </tr>
       {% endfor %}
     </tbody>
-  {% endcall %}
+  </RdwTable>
 {% endblock content %}

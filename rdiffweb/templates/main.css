@@ -194,45 +194,6 @@ main {
 }
 {% endif %}
 
-/* Show hide Action button */
-tr .btn-hover {
-    opacity: 0;
-}
-tr:hover .btn-hover, tr.child .btn-hover {
-    opacity: 1;
-}
-
-/* DataTable adjustments */
-.dataTables_wrapper .dataTables_info{
-    padding-top: 0;
-}
-table.dataTable thead>tr>th.sorting {
-    padding-top: 5px 30px 5px 5px;
-}
-.dataTables_filter {
-    white-space: nowrap;
-}
-.dataTables_filter label {
-    margin-bottom: 0;
-}
-.dataTables_filter input {
-    display: inline-block; 
-    width: auto;
-}
-/* DataTable Buttons adjustments to align them on mobile */
-@media screen and (max-width: 640px){
-    .dataTables_wrapper .dt-buttons {
-        text-align: center;
-    }
-}
-/* Fix responsive buttons colors */ 
-table.dataTable.dtr-inline.collapsed>tbody>tr>td:first-child:before, table.dataTable.dtr-inline.collapsed>tbody>tr>th:first-child:before {
-    background-color: var(--btn-bg-color);
-}
-table.dataTable.dtr-inline.collapsed>tbody>tr.parent>td:first-child:before, table.dataTable.dtr-inline.collapsed>tbody>tr.parent>th:first-child:before {
-    background-color: var(--navbar-color);
-}
-
 /* Fix header of activity in edit view */
 #activity.card thead {
     background-color: rgba(0, 0, 0, .03);

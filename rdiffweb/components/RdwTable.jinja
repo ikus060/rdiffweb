@@ -1,0 +1,37 @@
+{# def data=None, columns=None, order=[], empty_message=None, info_message=None, searching=True, search_placeholder=None, buttons=[], paging=True, page_length=10, layout=None, state_save=True, server_side=False #}
+{# js vendor/jquery/jquery.min.js, vendor/datatables/js/dataTables.min.js #}
+{% set default_layout = {
+  'topStart': {
+    'rowClass': 'dt-layout-row p-2 bg-light',
+    'features': {'search': {
+      'placeholder': search_placeholder or _('Filter...')
+    }
+  }
+},
+'topEnd': ['info', 'buttons'],
+'bottomStart': False,
+'bottomEnd': False,
+'bottom' : ['paging'],
+} %}
+{% set language = {
+  "url": url_for('static', 'dt-language', get_translation().locale | string),
+  "info": info_message or (_('Showing from _START_ to _END_ of _TOTAL_ total records') if paging else _('Showing total of _TOTAL_ records')),
+  "emptyTable": empty_message or _('List is empty'),
+} %}
+<div class="rdw-table">
+  <Datatable :data="{{ data }}"
+             :columns="{{ columns }}"
+             :buttons="{{ buttons }}"
+             :order="{{ order or [[ 0, 'desc' ]] }}"
+             :state_save="{{ state_save }}"
+             :searching="{{ searching }}"
+             :paging="{{ paging }}"
+             :page_length="{{ page_length }}"
+             :server_side="{{ server_side }}"
+             :layout="{{ layout or default_layout }}"
+             :language="{{ language }}"
+             :responsive="{{ True }}"
+             class="table-hover">
+    {% if content is defined %}{{ content }}{% endif %}
+  </Datatable>
+</div>

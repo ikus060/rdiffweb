@@ -152,7 +152,7 @@ class BrowsePageTest(rdiffweb.test.WebCase):
             # Then page load without error
             self.assertFalse(driver.get_log('browser'))
             # Then page contains expected strings.
-            text = driver.find_element('css selector', "#table1").text
+            text = driver.find_element('css selector', ".rdw-table").text
             for value in expected_in_body:
                 self.assertIn(value, text)
 

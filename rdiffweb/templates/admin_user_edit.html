@@ -1,6 +1,5 @@
 {% extends 'layout.html' %}
 {% from 'include/panel.html' import panel %}
-{% from 'include/messages.html' import messages %}
 {% from 'include/storage_usage.html' import storage_usage %}
 {% from 'include/modal_dialog.html' import button_confirm, modal_confirm %}
 {% set breadcrumbs = breadcrumb_page('admin') + breadcrumb_page('admin_users') + [('#', form.username.data)] %}
@@ -18,7 +17,7 @@
       {% endcall %}
     </form>
     {# Message thread #}
-    {{ messages(data_url=url_for('admin','users', 'messages', form.id.data|string) ) }}
+    <RdwMessages :data="{{ url_for('admin','users', 'messages', form.id.data|string) }}" />
   </div>
   {#  Delete User Modal #}
   {% call modal_confirm(

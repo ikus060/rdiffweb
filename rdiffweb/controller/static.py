@@ -18,6 +18,8 @@ from importlib.resources import files
 
 import cherrypy
 from cherrypy_foundation.components import StaticMiddleware
+from cherrypy_foundation.tools.i18n import gettext as _
+from cherrypy_foundation.tools.i18n import preferred_lang
 
 
 @cherrypy.tools.auth(on=False)
@@ -36,3 +38,70 @@ class Static:
     def default(self, *args, **kwargs):
         """This entry point is used to serve content of /static/ folder."""
         raise cherrypy.HTTPError(400)
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['GET'])
+    @cherrypy.tools.json_out()
+    def dt_language(self, lang, **kwargs):
+        """Return datatable language file."""
+        with preferred_lang(lang):
+            return {
+                "aria": {
+                    "sortAscending": _('activate to sort column ascending'),
+                    "sortDescending": _('activate to sort column descending'),
+                },
+                "info": _('Showing from _START_ to _END_ of _TOTAL_ total records'),
+                "infoFiltered": _('(filtered from _MAX_ total records)'),
+                "infoEmpty": _('No records available'),
+                "processing": _('Loading...'),
+                "rdiffweb": {
+                    "null": _('undefined'),
+                    "value": {
+                        "mfa": {
+                            "0": _('Disabled'),
+                            "1": _('Enabled'),
+                        },
+                        "report_time_range": {
+                            "0": _('Never'),
+                            "1": _('Daily'),
+                            "7": _('Weekly'),
+                            "30": _('Monthly'),
+                        },
+                        "role": {
+                            "0": _("Admin"),
+                            "5": _("Maintainer"),
+                            "10": _("User"),
+                        },
+                        "type": {
+                            "new": _('Created by'),
+                            "deleted": _('Deleted by'),
+                            "dirty": _('Modified by'),
+                            "comment": _('Comment by'),
+                            "event": _('Event logged by'),
+                        },
+                    },
+                    "field": {
+                        "_encoding_name": _('Display Encoding'),
+                        "_ignore_weekday": _('Excluded Days of the Week'),
+                        "_keepdays": _('Data Retention Duration'),
+                        "authorizedkeys": _('SSH Keys'),
+                        "email": _('Email'),
+                        "fullname": _('Fullname'),
+                        "hash_password": _('Password'),
+                        "lang": _('Preferred Language'),
+                        "maxage": _('Inactivity Notification Period'),
+                        "mfa": _('Two-Factor Authentication'),
+                        "notes": _('Notes'),
+                        "repo_objs": _('Repositories'),
+                        "repopath": _('Display Name'),
+                        "report_time_range": _('Send Backup report'),
+                        "role": _('User Role'),
+                        "tokens": _('Access Token'),
+                        "user": _('Owner'),
+                        "user_root": _('Root directory'),
+                        "username": _('Username'),
+                    },
+                },
+                "search": _('Filter: '),
+                "zeroRecords": _('List is empty'),
+            }

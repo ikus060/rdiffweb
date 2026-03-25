@@ -1,8 +1,8 @@
 {% extends 'layout.html' %}
-{% from 'include/datatables.html' import datatables %}
 {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self, path, extend=1) %}
 {% block content %}
-  {% call datatables(_('Files')) %}
+  <RdwTable :paging="{{ False }}"
+            :search_placeholder="{{ _("Filter files...") }}">
     <thead>
       <tr>
         <th id="name" class="sortable">{% trans %}Name{% endtrans %}</th>
@@ -60,5 +60,5 @@
         </tr>
       {% endfor %}
     </tbody>
-  {% endcall %}
+  </RdwTable>
 {% endblock %}
