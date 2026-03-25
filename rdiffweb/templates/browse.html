@@ -2,30 +2,32 @@
 {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self, path, extend=1) %}
 {% block content %}
   <RdwTable :paging="{{ False }}"
-            :search_placeholder="{{ _("Filter files...") }}">
+            :search_placeholder="{{ _("Filter files...") }}"
+            :responsive="{{ False }}">
     <thead>
       <tr>
         <th id="name" class="sortable">{% trans %}Name{% endtrans %}</th>
         <th id="size" class="sortable" data-type="num">{% trans %}Size{% endtrans %}</th>
-        <th id="last-revision" class="sortable" data-type="num">{% trans %}Version(s){% endtrans %}</th>
+        <th id="last-revision" class="sortable" data-type="num">{% trans %}Versions{% endtrans %}</th>
       </tr>
     </thead>
     <tbody>
       {% for entry in dir_entries %}
-        <tr class="{% if not entry.exists %}bg-light{% endif %}">
+        <tr {% if not entry.exists %}class="table-light"{% endif %}>
           <td data-search="{{ entry.display_name }}"
               data-order="{{ 'dir' if entry.isdir else 'file' }}-{{ entry.display_name }}">
             <RdwIcon :value="{{ 'bi-folder-fill' if entry.isdir else 'bi-file-earmark' }}" />
             <a {{ attrib(href=(entry.isdir and url_for('browse', repo, entry.path) ) or (entry.last_change_date and url_for('restore', repo, entry.path, date=entry.last_change_date)) or "#", title=(entry.display_name | length > 45 and entry.display_name)) }}>
-              {% if entry.isdir %}<span class="visually-hidden">&lt;DIR&gt;</span>{% endif %}
-              {% if not entry.exists %}<span class="visually-hidden">&lt;DELETED&gt;</span>{% endif %}
-              {{ entry.display_name | truncate(45, True) }}
+              <span class="visually-hidden">{{ _("DIR") if entry.isdir else _('FILE') }}</span>
+              {{ entry.display_name -}}
             </a>
+            {% if not entry.exists %}<span class="ms-2 badge bg-secondary">{{ _("Deleted") }}</span>{% endif %}
           </td>
           <td class="nowrap" data-search="" data-order="{{ entry.file_size }}">
             {% if entry.isdir %}
+              &mdash;
             {% elif not entry.exists %}
-              <span title="{% trans %}The size of deleted files is available in the file history using the `Show more...` function.{% endtrans %}">-</span>
+              &mdash;
             {% else %}
               {{ entry.file_size | filesize }}
             {% endif %}
@@ -34,13 +36,12 @@
               data-order="{{ entry.last_change_date and entry.last_change_date.epoch }}">
             {% if entry.change_dates %}
               <div class="btn-group">
-                <a href="#" class="dropdown-toggle" id="menu1" data-bs-toggle="dropdown">
+                <div role="button" id="menu1" data-bs-toggle="dropdown">
                   <time datetime="{{ entry.last_change_date }}">
                     {{ entry.last_change_date | lastupdated }}
                   </time>
-                  <span class="badge badge-secondary">{{ entry.change_dates | length }}</span>
-                  <span class="caret"></span>
-                </a>
+                  <RdwIcon value="ms-2 bi-chevron-down" />
+                </div>
                 <div class="dropdown-menu" role="menu" aria-labelledby="menu1">
                   {% for change_date in entry.change_dates[:-6:-1] %}
                     <a class="dropdown-item"
@@ -50,7 +51,7 @@
                       <time class="js-datetime" datetime="{{ change_date }}">{{ change_date | lastupdated }}</time>
                     </a>
                   {% endfor %}
-                  <a class="dropdown-item"
+                  <a class="dropdown-item text-center"
                      href="{{ url_for('history', repo, entry.path) }}">{% trans %}Show more...{% endtrans %}</a>
                 </div>
               </div>

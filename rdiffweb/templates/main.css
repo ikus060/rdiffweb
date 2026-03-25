@@ -17,12 +17,13 @@
     --bs-link-color: {{ link_color }};
     --bs-link-color-rgb: {{ hex_to_rgb(link_color) }};
     /* Adjust contrast for sidebar. */
-    --bs-gray-200: #eef0f1
+    --bs-light: #eef0f1;
+    --bs-light-rgb: 238, 240, 241;
 }
 
 /* Adjust navbar colors for branding */
 #rdw-navbar {
-    background-color: var(--bs-gray-200);
+    background-color: var(--bs-light);
     --btn-bg-color: var(--bs-white);
     --btn-fg-color: var(--bs-body-color);
 }
@@ -68,17 +69,12 @@ main {
     flex: 1;
 }
 
-#rdw-navbar {
-    background-color: var(--bs-gray-200);
-}
-
 @media (min-width: 992px) {
     body {
         display: flex;
         flex-direction: row;
     }
     #rdw-navbar {
-        background-color: var(--bs-gray-200);
         width: var(--rdw-sidebar-width);
         height: 100vh;
     }

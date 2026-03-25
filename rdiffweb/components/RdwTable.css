@@ -60,3 +60,13 @@ tr .rdw-btn-hover {
 tr:hover .rdw-btn-hover, tr.child .rdw-btn-hover {
     opacity: 1;
 }
+
+/* Re-use variable --bg-light for .table-light */
+.rdw-table .table-light {
+    --bs-table-bg: var(--bs-light);
+}
+
+/* Display of dropdown menu in browse page. */
+.rdw-table .dt-scroll-body {
+  overflow: visible !important;
+}
