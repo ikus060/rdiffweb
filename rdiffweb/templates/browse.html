@@ -15,8 +15,7 @@
         <tr class="{% if not entry.exists %}bg-light{% endif %}">
           <td data-search="{{ entry.display_name }}"
               data-order="{{ 'dir' if entry.isdir else 'file' }}-{{ entry.display_name }}">
-            <i class="{{ 'fa fa-folder' if entry.isdir else 'fa fa-file-o' }}"
-               aria-hidden="true"></i>
+            <RdwIcon :value="{{ 'bi-folder-fill' if entry.isdir else 'bi-file-earmark' }}" />
             <a {{ attrib(href=(entry.isdir and url_for('browse', repo, entry.path) ) or (entry.last_change_date and url_for('restore', repo, entry.path, date=entry.last_change_date)) or "#", title=(entry.display_name | length > 45 and entry.display_name)) }}>
               {% if entry.isdir %}<span class="visually-hidden">&lt;DIR&gt;</span>{% endif %}
               {% if not entry.exists %}<span class="visually-hidden">&lt;DELETED&gt;</span>{% endif %}
@@ -47,7 +46,7 @@
                     <a class="dropdown-item"
                        href="{{ url_for('restore', repo, entry.path, date=change_date) }}">
                       <!-- File date -->
-                      <i class="fa fa-download" aria-hidden="true"></i>
+                      <RdwIcon value="bi-download" />
                       <time class="js-datetime" datetime="{{ change_date }}">{{ change_date | lastupdated }}</time>
                     </a>
                   {% endfor %}

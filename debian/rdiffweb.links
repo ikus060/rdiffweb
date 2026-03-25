@@ -1,9 +1,3 @@
-/usr/share/fonts-font-awesome/css/font-awesome.css.map         /usr/lib/python3/dist-packages/rdiffweb/static/css/font-awesome.css.map
-/usr/share/fonts-font-awesome/css/font-awesome.min.css         /usr/lib/python3/dist-packages/rdiffweb/static/css/font-awesome.min.css
-/usr/share/fonts-font-awesome/fonts/fontawesome-webfont.eot    /usr/lib/python3/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.eot
-/usr/share/fonts-font-awesome/fonts/fontawesome-webfont.svg    /usr/lib/python3/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.svg
-/usr/share/fonts-font-awesome/fonts/fontawesome-webfont.woff   /usr/lib/python3/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.woff
-/usr/share/fonts-font-awesome/fonts/fontawesome-webfont.woff2  /usr/lib/python3/dist-packages/rdiffweb/static/fonts/fontawesome-webfont.woff2
 /usr/share/javascript/bootstrap5/css/bootstrap.min.css         /usr/lib/python3/dist-packages/rdiffweb/static/css/bootstrap.min.css
 /usr/share/javascript/bootstrap5/css/bootstrap.min.css.map     /usr/lib/python3/dist-packages/rdiffweb/static/css/bootstrap.min.css.map
 /usr/share/javascript/bootstrap5/js/bootstrap.js.map    /usr/lib/python3/dist-packages/rdiffweb/static/js/bootstrap.js.map

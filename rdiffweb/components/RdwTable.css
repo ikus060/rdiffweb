@@ -1,7 +1,7 @@
 /* Toggle filter checkbox */
 .rdw-btn-filter::before {
-  font: normal normal normal 14px/1 FontAwesome;
-  content: "\f096"; /* fa-square-o */
+  font: normal normal normal 14px/1 bootstrap-icons;
+  content: "\F584"; /* bi-square */
   display: inline-block;
   margin-inline-end: 0.25em;
   width: 1.28571429em;
@@ -9,7 +9,7 @@
   vertical-align: -.125em;
 }
 .rdw-btn-filter.active::before {
-  content: "\f046"; /* fa-check-square-o */
+  content: "\F26D"; /* bi-check-square */
 }
 
 /* Relayout the search */
@@ -40,8 +40,8 @@
 
 /* Add search icon */
 .rdw-table .dt-search::after {
-  font: normal normal normal 14px/1 FontAwesome;
-  content: "\f002"; /* fa-search */
+  font: normal normal normal 14px/1 bootstrap-icons;
+  content: "\F52A"; /* bi-search */
   display: inline-block;
   margin-inline-end: 0.25em;
   width: 1.28571429em;

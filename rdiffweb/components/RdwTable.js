@@ -80,8 +80,8 @@ $(document).ready(function () {
 
     $.fn.dataTable.render.summary = function (render_arg) {
         let icon_table = {
-            'user': 'fa-user',
-            'repo': 'fa-archive',
+            'user': 'bi-person-fill',
+            'repo': 'bi-archive'
         };
 
         const model_name = typeof render_arg === 'string' ? render_arg : null;
@@ -109,7 +109,7 @@ $(document).ready(function () {
                 }
 
                 let html = '<a href="' + url + '">' +
-                    '<i class="fa ' + icon_table[effective_model_name] + ' me-1" aria-hidden="true"></i>' +
+                    '<i class="bi ' + icon_table[effective_model_name] + ' me-1" aria-hidden="true"></i>' +
                     '<strong>' + safe(data) + '</strong>' +
                     '</a>';
 

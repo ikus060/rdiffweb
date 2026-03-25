@@ -18,7 +18,7 @@
             aria-controls="rdw-sidebar-menu"
             aria-expanded="false"
             aria-label="Toggle navigation">
-      <Icon value="fa-bars" class="fs-2" />
+      <RdwIcon value="bi-list" class="fs-2" />
     </button>
   </div>
   <div id="rdw-sidebar-menu"
@@ -38,7 +38,7 @@
       </div>
       <ul id="rdw-overflow-menu" class="nav flex-column nav-pills flex-nowrap">
         {% for page in page_registry.get_admin_nav_pages() %}
-          <NavItem label={{ page.label }} href={{ url_for(page) }} active={{ page.id == active_page.id or page.id == active_page.active_page }} />
+          <NavItem label={{ page.label }} icon={{ page.icon }} href={{ url_for(page) }} active={{ page.id == active_page.id or page.id == active_page.active_page }} />
         {% endfor %}
       </ul>
     {% elif user_expended %}
@@ -60,16 +60,17 @@
         {# When repo selected, display a dropdown with selected repo. #}
         <ul class="nav flex-column nav-pills">
           <li class="nav-item dropdown w-100">
-            <a class="nav-link dropdown-toggle d-flex align-items-center gap-3 active text-truncate"
+            <a class="nav-link d-flex align-items-center gap-3 active text-truncate"
                data-bs-toggle="dropdown"
                href="#">
-              <Icon value="repo" class="fs-4" />
+              <RdwIcon value="repo" class="fs-4" />
               <div class="me-auto text-truncate">
                 <div class="mb-0 fw-semibold text-truncate">{{ active_repo.name }}</div>
                 <div class="text-truncate small">
                   <RepoStatus repo={{ active_repo }} />
                 </div>
               </div>
+              <RdwIcon value="bi-chevron-down" class="fs-4" />
             </a>
             <ul class="dropdown-menu w-100">
               {% for repo in currentuser.repo_objs | sort(attribute='name') %}
@@ -113,12 +114,12 @@
              id="rdw-dropdown-admin"
              data-bs-toggle="dropdown"
              aria-expanded="false">
-            <Icon value="fa-cogs" class="fa-fw me-3" />
+            <RdwIcon value="bi-gear" class="bi-fw me-3" />
             <span>{% trans %}Administration{% endtrans %}</span>
           </a>
           <ul class="dropdown-menu" aria-label="rdw-dropdown-admin">
             {% for page in page_registry.get_admin_nav_pages() %}
-              <NavItem type="dropdown-item" label={{ page.label }} href={{ url_for(page) }} active={{ page.id == active_page.id or page.id == active_page.active_page }} />
+              <NavItem type="dropdown-item" label={{ page.label }} icon={{ page.icon }} href={{ url_for(page) }} active={{ page.id == active_page.id or page.id == active_page.active_page }} />
             {% endfor %}
           </ul>
         </div>
@@ -130,7 +131,7 @@
          id="rdw-dropdown-user"
          data-bs-toggle="dropdown"
          aria-expanded="false">
-        <Icon value="user" class="fa-fw me-3" />
+        <RdwIcon value="user" class="bi-fw me-3" />
         <span>{{ username }}</span>
       </a>
       <ul class="dropdown-menu" aria-label="rdw-dropdown-user">

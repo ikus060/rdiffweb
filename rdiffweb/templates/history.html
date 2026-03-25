@@ -23,8 +23,7 @@
       {% set restore_dates = path_obj.change_dates[: -limit - 1 : -1] %}
       {% for restore_date in restore_dates %}
         <li class="list-group-item">
-          <i class="{{ 'fa fa-folder' if path_obj.isdir else 'fa fa-file-o' }}"
-             aria-hidden="true"></i>
+          <RdwIcon :value="{{ 'bi-folder' if path_obj.isdir else 'bi-file-earmark' }}" />
           <time class="js-datetime" datetime="{{ restore_date }}">{{ restore_date | lastupdated }}</time>
           <div class="float-end">
             {% if path_obj.isdir %}
@@ -32,7 +31,7 @@
                 <a type="button"
                    class="btn btn-secondary btn-sm"
                    href="{{ url_for('restore', repo, path, date=restore_date.epoch) }}">
-                  <i class="fa fa-download" aria-hidden="true"></i>
+                  <i class="bi bi-download" aria-hidden="true"></i>
                   <span>{% trans %}Download{% endtrans %}</span>
                 </a>
                 <button type="button"
@@ -41,24 +40,24 @@
                         aria-haspopup="true"
                         aria-expanded="false">
                   <span class="caret"></span>
-                  <span class="sr-only">{% trans %}Toggle Dropdown{% endtrans %}</span>
+                  <span class="visually-hidden">{% trans %}Toggle Dropdown{% endtrans %}</span>
                 </button>
                 <div class="dropdown-menu dropdown-menu-end-xs"
                      role="menu"
                      aria-labelledby="menu1">
                   <a class="dropdown-item"
                      href="{{ url_for('restore', repo, path, date=restore_date.epoch) }}">
-                    <i class="fa fa-download" aria-hidden="true"></i>
+                    <i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i>
                     <span>{% trans %}Download{% endtrans %} ZIP</span>
                   </a>
                   <a class="dropdown-item"
                      href="{{ url_for('restore', repo, path, date=restore_date.epoch, kind='tar.gz') }}">
-                    <i class="fa fa-download" aria-hidden="true"></i>
+                    <i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i>
                     <span>{% trans %}Download{% endtrans %} TAR.GZ</span>
                   </a>
                   <a class="dropdown-item"
                      href="{{ url_for('restore', repo, path, date=restore_date.epoch, kind='tar.bz2') }}">
-                    <i class="fa fa-download" aria-hidden="true"></i>
+                    <i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i>
                     <span>{% trans %}Download{% endtrans %} TAR.BZ2</span>
                   </a>
                 </div>
@@ -69,7 +68,7 @@
                  class="btn btn-secondary btn-sm"
                  rel="nofollow"
                  href="{{ url_for('restore', repo, path, date=restore_date.epoch) }}">
-                <i class="fa fa-download" aria-hidden="true"></i>
+                <i class="bi bi-download" aria-hidden="true"></i>
                 <span>{% trans %}Download{% endtrans %}</span>
               </a>
             {% endif %}
@@ -79,7 +78,7 @@
       {% if limit == restore_dates|count %}
         <li class="list-group-item text-center">
           <a href="?limit={{ limit * 2 }}">
-            <i class="fa fa-chevron-down" aria-hidden="true"></i>
+            <i class="bi bi-chevron-down" aria-hidden="true"></i>
             {% trans %}Show more...{% endtrans %}
           </a>
         </li>

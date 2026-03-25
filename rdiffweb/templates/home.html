@@ -6,7 +6,7 @@
   {% macro repo_list_item(repo) %}
     <a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }}
        href="{{ url_for('browse', repo) }}">
-      <i class="fa fa fa-hdd-o" aria-hidden="true"></i>
+      <i class="bi bi-hdd" aria-hidden="true"></i>
       {% set name = repo.display_name.split('/')[-1] %}
       {{ name }}
       {% if name|length==1 %}:\{% endif %}
@@ -15,7 +15,7 @@
           <span data-bs-toggle="tooltip"
                 data-placement="left"
                 title="{{ repo.status[1] }}">
-            <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
           </span>
         {% endif %}
       </span>
@@ -28,7 +28,7 @@
   <div class="row">
     {% if repos|length == 0 %}
       <div class="col-md-12">
-        {% call empty('fa fa-archive', _('No repositories')) %}
+        {% call empty('repo', _('No repositories')) %}
           <p>
             {% trans %}You don't have any repositories in your user directory. You may need to refresh the page if you just made a new backup.{% endtrans %}
           </p>
@@ -41,7 +41,7 @@
             <div class="card-header text-center display-1">
               <a href="{{ url_for('browse', repo) }}"
                  class="{% if repo.status[0] != 'ok' %}text-warning{% endif %}">
-                <i class="fa fa-desktop" aria-hidden="true"></i>
+                <RdwIcon value="repo" />
               </a>
             </div>
             <div class="card-body">

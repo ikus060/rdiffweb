@@ -2,8 +2,6 @@
 extend-diff-ignore = "extras"
 extend-diff-ignore = "rdiffweb/static/css/bootstrap.min.css"
 extend-diff-ignore = "rdiffweb/static/css/bootstrap.min.css.map"
-extend-diff-ignore = "rdiffweb/static/css/font-awesome.css.map"
-extend-diff-ignore = "rdiffweb/static/css/font-awesome.min.css"
 extend-diff-ignore = "rdiffweb/static/css/jquery.dataTables.min.css"
 extend-diff-ignore = "rdiffweb/static/css/responsive.dataTables.min.css"
 extend-diff-ignore = "rdiffweb/static/fonts/fontawesome-webfont.eot"

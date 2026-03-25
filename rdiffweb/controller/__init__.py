@@ -84,15 +84,15 @@ class PageRegistry(dict):
 
 # TODO Consider using function decorator to build the registry
 _pages = [
-    Page('home', _('Home'), '/', 'fa-home'),
+    Page('home', _('Home'), '/', 'bi-house-fill'),
     # Repo
-    Page('browse', _('Files'), 'browse', 'fa-files-o'),
+    Page('browse', _('Files'), 'browse', 'bi-folder'),
     Page('history', _('History'), 'history', None, False, 'browse'),
     Page('restore', _('Restore'), 'restore', None, False, 'browse'),
-    Page('settings', _('Settings'), 'settings', 'fa-sliders'),
-    Page('graphs', _('Graphs'), 'graphs', 'fa-area-chart'),
-    Page('stats', _('Snapshot Changes'), 'stats', 'fa-list-alt'),
-    Page('logs', _('Logs'), 'logs', 'fa-file-text-o'),
+    Page('settings', _('Settings'), 'settings', 'bi-sliders'),
+    Page('graphs', _('Graphs'), 'graphs', 'bi-lightbulb'),
+    Page('stats', _('Snapshot Changes'), 'stats', 'bi-clock-history'),
+    Page('logs', _('Logs'), 'logs', 'bi-journal-text'),
     # Graphs
     Page('graphs_activities', _('Activities'), 'graphs/activities', None, True, 'graphs'),
     Page('graphs_files', _('File count'), 'graphs/files', None, True, 'graphs'),
@@ -101,14 +101,14 @@ _pages = [
     Page('graphs_errors', _('Errors'), 'graphs/errors', None, True, 'graphs'),
     # Admin
     Page('admin', _('Administration'), None, None, False),
-    Page('admin_users', _('Users'), 'admin/users', 'fa-users'),
+    Page('admin_users', _('Users'), 'admin/users', 'bi-people-fill'),
     Page('admin_user_edit', _('Edit User'), 'admin/users/edit', None, False, 'admin_users'),
     Page('admin_user_new', _('Add User'), 'admin/users/new', None, False, 'admin_users'),
-    Page('admin_repos', _('Repositories'), 'admin/repos', 'fa-th'),
-    Page('admin_session', _('User Sessions'), 'admin/session', 'fa-id-badge'),
-    Page('admin_activity', _('Activity'), 'admin/activity', 'fa-list-alt'),
-    Page('admin_logs', _('System Logs'), 'admin/logs', 'fa-file-text-o'),
-    Page('admin_sysinfo', _('System Info'), 'admin/sysinfo', 'fa-info-circle'),
+    Page('admin_repos', _('Repositories'), 'admin/repos', 'bi-archive-fill'),
+    Page('admin_session', _('User Sessions'), 'admin/session', 'bi-person-badge'),
+    Page('admin_activity', _('Activity'), 'admin/activity', 'bi-activity'),
+    Page('admin_logs', _('System Logs'), 'admin/logs', 'bi-journal-text'),
+    Page('admin_sysinfo', _('System Info'), 'admin/sysinfo', ' bi-info-circle'),
     # User Preferences
     Page('prefs', _('User Profile'), None, None, False),
     Page('prefs_general', _('Account Settings'), 'prefs/general'),
@@ -116,7 +116,7 @@ _pages = [
     Page('prefs_sshkeys', _('SSH keys'), 'prefs/sshkeys'),
     Page('prefs_tokens', _('Access Token'), 'prefs/tokens'),
     Page('prefs_mfa', _('Two-Factor Authentication'), 'prefs/mfa'),
-    Page('prefs_session', _('Active Sessions'), 'prefs/session', 'fa-id-badge'),
+    Page('prefs_session', _('Active Sessions'), 'prefs/session'),
 ]
 
 page_registry = PageRegistry({page.id: page for page in _pages})

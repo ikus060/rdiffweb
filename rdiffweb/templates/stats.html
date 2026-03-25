@@ -43,7 +43,7 @@
                   :empty_message="{{ _("Changes are not available") }}"
                   :info_message="{{ _("Displaying _START_-_END_ of _TOTAL_ changes") }}" />
       {% else %}
-        {% call empty('fa fa-list-alt', _('No snapshot selected')) %}
+        {% call empty('bi-stopwatch', _('No snapshot selected')) %}
           <p>{% trans %}Select a backup date on the left to display detailed changes for that date.{% endtrans %}</p>
         {% endcall %}
       {% endif %}

@@ -20,10 +20,6 @@
       <meta content="width=device-width, initial-scale=1" name="viewport" />
       <link href="{{ url_for('favicon.ico', v=cache_invalidate) }}"
             rel="shortcut icon" />
-      <!-- Fontawesome -->
-      <link href="{{ url_for("/static/css/font-awesome.min.css") }}"
-            rel="stylesheet"
-            type="text/css" />
       {{ catalog.render_assets() }}
       <!-- Custom -->
       <link href="{{ url_for('/main.css', v=cache_invalidate) }}"

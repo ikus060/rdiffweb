@@ -51,7 +51,7 @@ Vcs-Browser: https://gitlab.com/ikus-soft/rdiffweb
 Package: rdiffweb
 Architecture: all
 Depends:
- fonts-font-awesome,
+ bootstrap-icons,
  libjs-bootstrap5,
  libjs-chart.js,
  libjs-chartkick.js,

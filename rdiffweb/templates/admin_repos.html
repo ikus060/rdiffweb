@@ -8,7 +8,7 @@
      data-bs-placement="top"
      title="{{ label }}"
      role="button">
-    <i class="{{ icon }}" aria-hidden="true"></i>
+    <RdwIcon :value="{{ icon }}" />
   </a>
 {% endmacro %}
 {% block content %}
@@ -36,11 +36,6 @@
       {% for repo in repos %}
         <tr class="{{ 'table-warning' if repo.status[0] != 'ok' else '' }}">
           <td data-search="{{ repo.display_name }}">
-            {% if repo.status[0] != 'ok' %}
-              <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-            {% else %}
-              <i class="fa fa-archive" aria-hidden="true"></i>
-            {% endif %}
             <a href="{{ url_for('browse', repo) }}">{{ repo.display_name }}</a>
           </td>
           <td data-search="{{ repo.owner }}">{{ repo.owner }}</td>
@@ -51,7 +46,10 @@
               <time datetime="{{ repo.last_backup_date }}"
                     title="{{ repo.last_backup_date }}">{{ repo.last_backup_date | lastupdated }}</time>
             {% endif %}
-            {% if repo.status[0] != 'ok' %}{{ repo.status[1] }}{% endif %}
+            {% if repo.status[0] != 'ok' %}
+              <RdwIcon value="bi-exclamation-triangle" />
+              {{ repo.status[1] }}
+            {% endif %}
           </td>
           <td data-search="{{ repo.maxage }}" data-order="{{ repo.maxage }}">
             {% if repo.maxage %}
@@ -73,10 +71,7 @@
           <td class="notes">{{ repo.notes }}</td>
           <td data-search="">
             <div class="rdw-btn-hover text-nowrap">
-              {{ btn(url_for('settings', repo) , _('Settings'), 'fa fa-sliders') }}
-              {{ btn(url_for('graphs', 'activities', repo) , _('Graphs'), 'fa fa-area-chart') }}
-              {{ btn(url_for('stats', repo) , _('Stats'), 'fa fa-list-alt') }}
-              {{ btn(url_for('logs', repo) , _('Logs'), 'fa fa-file-text-o') }}
+              {% for page in page_registry.get_repo_nav_pages() %}{{ btn(url_for(page, repo) , page.label, page.icon) }}{% endfor %}
             </div>
           </td>
         </tr>
