@@ -33,10 +33,10 @@
               {% trans %}running on{% endtrans %}
               <strong>{{ os(session.user_agent) }}</strong>
               {% if session.current %}
-                <span class="badge badge-success">{% trans %}current session{% endtrans %}</span>
+                <span class="badge bg-success">{% trans %}current session{% endtrans %}</span>
               {% endif %}
               {% if session.login_persistent %}
-                <span class="badge badge-info">{% trans %}persistent{% endtrans %}</span>
+                <span class="badge bg-info">{% trans %}persistent{% endtrans %}</span>
               {% endif %}
             </span>
           </td>

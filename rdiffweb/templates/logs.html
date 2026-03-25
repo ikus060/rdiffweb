@@ -15,9 +15,9 @@
              class="list-group-item{% if e.date==date %} active{% endif %}">
             Error log <time class="js-datetime" datetime="{{ e.date }}">{{ e.date | lastupdated }}</time>
             {% if not e.is_empty %}
-              <span class="badge badge-warning">not empty</span>
+              <span class="badge bg-warning">not empty</span>
             {% else %}
-              <span class="badge badge-info">empty</span>
+              <span class="badge bg-info">empty</span>
             {% endif %}
           </a>
         {% endfor %}
