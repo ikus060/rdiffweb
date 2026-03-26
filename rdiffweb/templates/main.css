@@ -218,3 +218,13 @@ main {
   height: 1px;
   background: var(--bs-gray);
 }
+
+/*
+ * Adjust display of forms.
+ */
+.form-label:not(.form-floating .form-label) {
+    font-weight: bold;
+}
+.form-field {
+    margin-bottom: 1.5rem !important;
+}

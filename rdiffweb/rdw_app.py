@@ -65,8 +65,9 @@ from rdiffweb.controller.page_login import LoginPage, LogoutPage
 from rdiffweb.controller.page_logs import LogsPage
 from rdiffweb.controller.page_mfa import MfaPage
 from rdiffweb.controller.page_prefs import PreferencesPage
+from rdiffweb.controller.page_repo_activity import RepoActivityPage
 from rdiffweb.controller.page_restore import RestorePage
-from rdiffweb.controller.page_settings import AuditLogData, SettingsPage
+from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_stats import StatsPage
 from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.controller.static import Static
@@ -172,7 +173,7 @@ class Root(LocationsPage):
         self.api = ApiPage()
         self.graphs = GraphsPage()
         self.logs = LogsPage()
-        self.audit = AuditLogData()
+        self.activity = RepoActivityPage()
         self.static = Static()
 
         # Register robots.txt

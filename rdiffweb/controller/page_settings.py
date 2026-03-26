@@ -17,7 +17,6 @@
 
 import encodings
 import logging
-from collections import namedtuple
 
 import cherrypy
 from cherrypy_foundation.flash import flash
@@ -29,7 +28,7 @@ from wtforms.widgets import html_params
 
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
-from rdiffweb.core.model import Message, RepoObject, UserObject
+from rdiffweb.core.model import Message, RepoObject
 
 logger = logging.getLogger(__name__)
 
@@ -108,9 +107,6 @@ _codecs = [
 _codecs = [(normalize_encoding(name), label) for name, label in _codecs]
 
 
-RepoActivityRow = namedtuple('RepoActivityRow', ['id', 'author', 'date', 'type', 'body', 'changes'])
-
-
 class MaxAgeField(SelectField):
     def __init__(self, *args, **kwargs):
         super().__init__(
@@ -185,7 +181,7 @@ class RepoSettingsForm(DbForm):
     ignore_weekday = WeekdayField(
         _('Excluded Days of the Week'),
         description=_(
-            'This field allows to select specific days of the week to exclude from considering as part of the inactivity period. By selecting the days to ignore, such as Saturday and Sunday, the system will not count the selected days when calculating the inactivity period for generating notifications.'
+            "Lets you exclude specific days (e.g., weekends) from the inactivity period calculation, so those days won't be counted when determining when to send notifications."
         ),
     )
 
@@ -293,52 +289,6 @@ class SettingsPage:
         if form.error_message:
             flash(form.error_message, level='error')
         return {'form': form, 'repo': repo_obj}
-
-
-@cherrypy.tools.poppath()
-class AuditLogData:
-    @cherrypy.expose
-    @cherrypy.tools.errors(
-        error_table={
-            DoesNotExistError: 404,
-            AccessDeniedError: 403,
-        }
-    )
-    @cherrypy.tools.json_out()
-    @cherrypy.tools.allow(methods=['GET'])
-    def default(self, path, **kwargs):
-        # Return Not found if user doesn't exists
-        repo_obj = RepoObject.get_repo(path)
-        if repo_obj is None:
-            raise cherrypy.HTTPError(400)
-        # Query Object Messages
-        query = (
-            Message.query.with_entities(
-                Message.id,
-                UserObject.username.label('author_name'),
-                Message.date,
-                Message.type,
-                Message.body,
-                Message._changes.label('changes'),
-            )
-            .outerjoin(Message.author)
-            .order_by(Message.date.desc())
-            .filter(Message.model_id == repo_obj.id, Message.model_name == repo_obj._get_message_model_name())
-        )
-        data = query.all()
-        return {
-            'data': [
-                RepoActivityRow(
-                    id=obj.id,
-                    author=obj.author_name or str(_('System')),
-                    date=obj.date.isoformat(),
-                    type=obj.type,
-                    body=obj.body,
-                    changes=Message.json_changes(obj.changes),
-                )
-                for obj in data
-            ]
-        }
 
 
 @cherrypy.expose

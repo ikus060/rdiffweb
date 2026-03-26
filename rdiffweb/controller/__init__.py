@@ -57,14 +57,14 @@ class PageRegistry(dict):
         return page_id
 
     def get_repo_nav_pages(self, in_menu=True):
-        repo_pages = ['browse', 'settings', 'graphs', 'stats', 'logs']
+        repo_pages = ['browse', 'insights', 'settings']
         return [page for page in self.values() if page.id in repo_pages]
 
-    def get_graphs_nav_pages(self, in_menu=True):
+    def get_insight_nav_pages(self, in_menu=True):
         return [
             page
             for page in self.values()
-            if page.id.startswith('graphs_') and (in_menu is None or page.in_menu == in_menu)
+            if page.active_page == 'insights' and (in_menu is None or page.in_menu == in_menu)
         ]
 
     def get_admin_nav_pages(self, in_menu=True):
@@ -89,16 +89,17 @@ _pages = [
     Page('browse', _('Files'), 'browse', 'bi-folder'),
     Page('history', _('History'), 'history', None, False, 'browse'),
     Page('restore', _('Restore'), 'restore', None, False, 'browse'),
+    Page('insights', _('Insights'), 'stats', 'bi-lightbulb'),
     Page('settings', _('Settings'), 'settings', 'bi-sliders'),
-    Page('graphs', _('Graphs'), 'graphs', 'bi-lightbulb'),
-    Page('stats', _('Snapshot Changes'), 'stats', 'bi-clock-history'),
-    Page('logs', _('Logs'), 'logs', 'bi-journal-text'),
-    # Graphs
-    Page('graphs_activities', _('Activities'), 'graphs/activities', None, True, 'graphs'),
-    Page('graphs_files', _('File count'), 'graphs/files', None, True, 'graphs'),
-    Page('graphs_sizes', _('Size'), 'graphs/sizes', None, True, 'graphs'),
-    Page('graphs_times', _('Elapsed Time'), 'graphs/times', None, True, 'graphs'),
-    Page('graphs_errors', _('Errors'), 'graphs/errors', None, True, 'graphs'),
+    # Insights
+    Page('stats', _('Snapshot Changes'), 'stats', 'bi-clock-history', True, 'insights'),
+    Page('graphs_activities', _('Activities'), 'graphs/activities', None, True, 'insights'),
+    Page('graphs_files', _('File count'), 'graphs/files', None, True, 'insights'),
+    Page('graphs_sizes', _('Size'), 'graphs/sizes', None, True, 'insights'),
+    Page('graphs_times', _('Elapsed Time'), 'graphs/times', None, True, 'insights'),
+    Page('graphs_errors', _('Errors'), 'graphs/errors', None, True, 'insights'),
+    Page('logs', _('Backup logs'), 'logs', 'bi-journal-text', True, 'insights'),
+    Page('repo_activity', _('Audit logs'), 'activity', None, True, 'insights'),
     # Admin
     Page('admin', _('Administration'), None, None, False),
     Page('admin_users', _('Users'), 'admin/users', 'bi-people-fill'),

@@ -81,14 +81,14 @@
         </ul>
         <ul id="rdw-overflow-menu"
             class="nav flex-column nav-pills mt-2 flex-nowrap">
-          {% set graphs_pages = page_registry.get_graphs_nav_pages() %}
+          {% set insights_pages = page_registry.get_insight_nav_pages() %}
           {% for page in page_registry.get_repo_nav_pages() %}
             <NavItem label={{ page.label }} href={{ url_for(page, repo) }} icon={{ page.icon }} active={{ page.id == active_page.id or page.id == active_page.active_page }} />
             {# Show graphs sub-menu #}
-            {% if page.id == 'graphs' and active_page in graphs_pages %}
+            {% if page.id == 'insights' and active_page in insights_pages %}
               <ul class="nav flex-column nav-pills mt-2 ms-5">
-                {% for page in graphs_pages %}
-                  <NavItem label={{ page.label }} href={{ url_for(page, repo, limit=limit) }} active={{ page.id == active_page.id or page.id == active_page.active_page }} />
+                {% for page in insights_pages %}
+                  <NavItem label={{ page.label }} href={{ url_for(page, repo) }} active={{ page.id == active_page.id or page.id == active_page.active_page }} />
                 {% endfor %}
               </ul>
             {% endif %}

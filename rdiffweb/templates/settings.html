@@ -4,11 +4,22 @@
 {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) %}
 {% block content %}
   <div class="container">
-    {# Delete repo button #}
-    {% if not is_maintainer %}
-      <span class="form-text">{% trans %}Ask your administrator if you want to delete this repository.{% endtrans %}</span>
-    {% endif %}
-    {{ button_confirm(label=_('Delete repository') , target="#delete-repo-modal", class="btn-danger float-end", disabled=not is_maintainer, redirect=url_for('/'), url=url_for('delete', repo)) }}
+    <form method="post" action="{{ url_for() }}">
+      {# Repo settings #}
+      <Fields form={{ form }} />
+      <div class="d-flex justify-content-between">
+        <div>
+          {# Delete repo button #}
+          {{ button_confirm(label=_('Delete repository') , target="#delete-repo-modal", class="btn-danger", disabled=not is_maintainer, redirect=url_for('/'), url=url_for('delete', repo)) }}
+        </div>
+        <div>
+          <button type="button"
+                  class="btn btn-secondary"
+                  onclick="window.history.back();">{% trans %}Cancel{% endtrans %}</button>
+          <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
+        </div>
+      </div>
+    </form>
     {# Delete Repo Modal #}
     {{ modal_confirm(id="delete-repo-modal",
         title=_('Confirmation required') ,
@@ -16,16 +27,5 @@
     fields=['action'],
     submit=_('Delete'),
     confirm_value=repo.display_name) }}
-    {# Repo settings #}
-    <form method="post" action="{{ url_for() }}">
-      {% call panel(
-        title=_("Repository Settings"),
-        description=_('You can modify the backup repository settings to suit your requirements. These settings allow you to adjust the notification period, retention period, and display format (encoding) of the repository to align with your preferred frequency, data storage duration, and localization needs.'),
-        show_submit_area=True) %}
-        <Fields form={{ form }} />
-      {% endcall %}
-    </form>
-    {# Message Thread #}
-    <RdwMessages :data="{{ url_for('audit', repo) }}" />
   </div>
 {% endblock %}
