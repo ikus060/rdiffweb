@@ -2,52 +2,38 @@
 {% from 'include/empty.html' import empty %}
 {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) %}
 {% block content %}
-  <div class="row">
-    <div class="col-md-3">
-      <ul class="list-group">
-        {% for item in file_statistics %}
-          <a href="{{ url_for('stats', repo, date=item.date, limit=limit) }}"
-             class="list-group-item{% if item.date==date %} active{% endif %}">
-            <time class="js-datetime" datetime="{{ item.date }}">{{ item.date | lastupdated }}</time>
-          </a>
-        {% endfor %}
-        {% if limit == file_statistics|count %}
-          <a href="{{ url_for('stats', repo, limit=limit * 2) }}"
-             class="list-group-item">{% trans %}Show more...{% endtrans %}</a>
-        {% endif %}
-      </ul>
-    </div>
-    <div class="col-md-9">
-      <h2>{% trans %}Snapshot Changes{% endtrans %}</h2>
-      <p>
-        {% trans %}The snapshot changes view presents a comprehensive list of changes in the backup, including new, deleted and changed files, allowing users to easily track and manage modifications to their data.{% endtrans %}
-      </p>
-      {% if date %}
-        {% set buttons = [
-                  {'text': _('New'), 'extend': 'filter', 'column': 'state:name', 'search': 'new', 'className':'btn-outline-secondary rdw-btn-filter'},
-                  {'text': _('Deleted'), 'extend': 'filter', 'column': 'state:name', 'search': 'deleted', 'className':'btn-outline-secondary rdw-btn-filter'},
-                  {'text': _('Changed'), 'extend': 'filter', 'column': 'state:name', 'search': '^changed', 'regex':True, 'className':'btn-outline-secondary rdw-btn-filter'},
-                  {'text': _('Unchanged'), 'extend': 'filter', 'column': 'state:name', 'search': '^unchanged', 'className':'btn-outline-secondary rdw-btn-filter'},
-                  {'text': _('All'), 'extend': 'reset', 'className': 'btn-secondary'},
-                ] %}
-        {% set columns = [
-                  {'name':'path', 'title': _('Path'), 'orderable': True, 'render':'text' },
-                  {'name':'state', 'title':_('State'), 'orderable': True, 'render':'choices', 'render_arg': [ ['new',_('New')], ['deleted',_('Deleted')], ['changed',_('Changed')], ['unchanged',_('Unchanged')]] },
-                  {'name':'size', 'title':_('Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
-                  {'name':'increment_size', 'title':_('Increment Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
-                ] %}
-        <RdwTable :data="{{ url_for('stats', 'data.json', repo, date=date) }}"
-                  :columns="{{ columns }}"
-                  :buttons="{{ buttons }}"
-                  :search_placeholder="{{ _("Filter files...") }}"
-                  :empty_message="{{ _("Changes are not available") }}"
-                  :info_message="{{ _("Displaying _START_-_END_ of _TOTAL_ changes") }}" />
-      {% else %}
-        {% call empty('bi-stopwatch', _('No snapshot selected')) %}
-          <p>{% trans %}Select a backup date on the left to display detailed changes for that date.{% endtrans %}</p>
-        {% endcall %}
-      {% endif %}
-    </div>
+  <div class="container-fluid">
+    <h2>{% trans %}File Changes{% endtrans %}</h2>
+    <!-- Date selector -->
+    <RdwDateSelector class="mb-2"
+                     :url_args="{{ ['stats', repo] }}"
+                     :dates="{{ repo.file_statistics | map(attribute='date') | list }}"
+                     :selected_date="{{ date }}" />
+    {% if date %}
+      {% set buttons = [
+              {'text': _('New'), 'extend': 'filter', 'column': 'state:name', 'search': 'new', 'className':'btn-outline-secondary rdw-btn-filter'},
+              {'text': _('Deleted'), 'extend': 'filter', 'column': 'state:name', 'search': 'deleted', 'className':'btn-outline-secondary rdw-btn-filter'},
+              {'text': _('Changed'), 'extend': 'filter', 'column': 'state:name', 'search': '^changed', 'regex':True, 'className':'btn-outline-secondary rdw-btn-filter'},
+              {'text': _('Unchanged'), 'extend': 'filter', 'column': 'state:name', 'search': '^unchanged', 'className':'btn-outline-secondary rdw-btn-filter'},
+              {'text': _('All'), 'extend': 'reset', 'className': 'btn-secondary'},
+            ] %}
+      {% set columns = [
+              {'name':'path', 'title': _('Path'), 'orderable': True, 'render':'text' },
+              {'name':'state', 'title':_('State'), 'orderable': True, 'render':'choices', 'render_arg': [ ['new',_('New')], ['deleted',_('Deleted')], ['changed',_('Changed')], ['unchanged',_('Unchanged')]] },
+              {'name':'size', 'title':_('Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
+              {'name':'increment_size', 'title':_('Increment Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
+            ] %}
+      <RdwTable :data="{{ url_for('stats', 'data.json', repo, date=date) }}"
+                :columns="{{ columns }}"
+                :buttons="{{ buttons }}"
+                :search_placeholder="{{ _("Filter file changes...") }}"
+                :empty_message="{{ _("Changes are not available") }}"
+                :info_message="{{ _("Displaying _START_-_END_ of _TOTAL_ changes") }}" />
+    {% else %}
+      {% call empty('bi-stopwatch', _('No backup date selected')) %}
+        <p>{% trans %}Select a backup date on the left to display detailed changes for that date.{% endtrans %}</p>
+      {% endcall %}
+    {% endif %}
   </div>
   <!-- /.row -->
 {% endblock %}

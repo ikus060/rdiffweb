@@ -21,7 +21,7 @@ from cherrypy_foundation.tools.i18n import ugettext as _
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 
-from . import validate_date, validate_int
+from . import validate_date
 
 
 def line_to_state(line):
@@ -60,16 +60,15 @@ class StatsPage:
         }
     )
     @cherrypy.tools.jinja2(template="stats.html")
-    def default(self, path, limit='10', date=None):
+    def default(self, path, date=None, **kwargs):
         """
         Show file statistics
         """
-        limit = validate_int(limit, min=1)
         date = validate_date(date, allow_none=True)
         # If Repo is broken
         repo_obj = RepoObject.get_repo(path)
         if repo_obj.status[0] == 'failed':
-            return {'repo': repo_obj, 'limit': limit, 'date': date}
+            return {'repo': repo_obj, 'date': date}
 
         # Check if date exists
         if date:
@@ -78,12 +77,10 @@ class StatsPage:
             except KeyError:
                 raise cherrypy.HTTPError(404, _('Invalid date.'))
 
-        # Get file_statistics list
-        if limit < len(repo_obj.file_statistics):
-            file_statistics = repo_obj.file_statistics[: -limit - 1 : -1]
-        else:
-            file_statistics = repo_obj.file_statistics[::-1]
-        return {'repo': repo_obj, 'limit': limit, 'date': date, 'file_statistics': file_statistics}
+        # Provide list of available dates.
+        source_dates = [{'value': str(f.date), 'display': str(f.date)} for f in repo_obj.file_statistics]
+
+        return {'repo': repo_obj, 'date': date, 'source_dates': source_dates}
 
     @cherrypy.expose
     @cherrypy.tools.errors(
@@ -93,11 +90,10 @@ class StatsPage:
         }
     )
     @cherrypy.tools.json_out()
-    def data_json(self, path, limit='10', date=None, **kwargs):
+    def data_json(self, path, date=None, **kwargs):
         """
         Return a json array with stats
         """
-        limit = validate_int(limit, min=1)
         date = validate_date(date)
         # If Repo is broken return no data
         repo_obj = RepoObject.get_repo(path)

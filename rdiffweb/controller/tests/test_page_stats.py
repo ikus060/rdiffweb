@@ -26,23 +26,23 @@ class StatsTest(rdiffweb.test.WebCase):
     def test_stats_index(self):
         self.getPage(url_for('stats', self.USERNAME, self.REPO, ''))
         self.assertStatus('200 OK')
-        self.assertInBody('No snapshot selected')
+        self.assertInBody('No backup date selected')
 
     def test_stats_date(self):
-        self.getPage(url_for('stats', self.USERNAME, self.REPO, date=1454448640, limit=10))
+        self.getPage(url_for('stats', self.USERNAME, self.REPO, date=1454448640))
         self.assertStatus('200 OK')
         # Then a table is displayed
         self.assertInBody('<table')
-        self.assertNotInBody('No snapshot selected')
+        self.assertNotInBody('No backup date selected')
 
     def test_stats_data_json(self):
-        self.getPage(url_for('stats', 'data.json', self.USERNAME, self.REPO, date=1454448640, limit=10))
+        self.getPage(url_for('stats', 'data.json', self.USERNAME, self.REPO, date=1454448640))
         self.assertStatus('200 OK')
 
     def test_stats_date_selenium(self):
         with self.selenium() as driver:
             # When browsing graph
-            driver.get(url_for('stats', self.USERNAME, self.REPO, date=1454448640, limit=10))
+            driver.get(url_for('stats', self.USERNAME, self.REPO, date=1454448640))
             # Then page load without error
             self.assertFalse(driver.get_log('browser'))
 
@@ -55,7 +55,7 @@ class StatsTest(rdiffweb.test.WebCase):
 
         self.getPage("/stats/anotheruser/testcases/")
         self.assertStatus('200 OK')
-        self.assertInBody("No snapshot selected")
+        self.assertInBody("No backup date selected")
 
         # Remove admin role
         admin = UserObject.get_user('admin')

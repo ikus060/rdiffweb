@@ -1,0 +1,5 @@
+/* Make sure the modal dialog doesn't expand indefinitely. */
+.rdw-date-selector .modal-body .list-group {
+    overflow: auto;
+    max-height: 50vh;
+}

@@ -92,7 +92,7 @@ _pages = [
     Page('insights', _('Insights'), 'stats', 'bi-lightbulb'),
     Page('settings', _('Settings'), 'settings', 'bi-sliders'),
     # Insights
-    Page('stats', _('Snapshot Changes'), 'stats', 'bi-clock-history', True, 'insights'),
+    Page('stats', _('File Changes'), 'stats', 'bi-clock-history', True, 'insights'),
     Page('graphs_activities', _('Activities'), 'graphs/activities', None, True, 'insights'),
     Page('graphs_files', _('File count'), 'graphs/files', None, True, 'insights'),
     Page('graphs_sizes', _('Size'), 'graphs/sizes', None, True, 'insights'),
