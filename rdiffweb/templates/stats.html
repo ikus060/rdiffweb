@@ -2,39 +2,42 @@
 {% from 'include/empty.html' import empty %}
 {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) %}
 {% block content %}
-  <div class="container-fluid">
-    <h2>{% trans %}File Changes{% endtrans %}</h2>
+  <div class="d-flex flex-wrap align-items-center mb-2">
+    <h2 class="me-2">{% trans %}File Changes{% endtrans %}</h2>
     <!-- Date selector -->
-    <RdwDateSelector class="mb-2"
+    <RdwDateSelector class="btn-outline-secondary"
                      :title="{{ _("Select a backup date...") }}"
                      :url_args="{{ ['stats', repo] }}"
                      :dates="{{ repo.file_statistics | map(attribute='date') | list }}"
                      :selected_date="{{ date }}" />
-    {% if date %}
-      {% set buttons = [
-              {'text': _('New'), 'extend': 'filter', 'column': 'state:name', 'search': 'new', 'className':'btn-outline-secondary rdw-btn-filter'},
-              {'text': _('Deleted'), 'extend': 'filter', 'column': 'state:name', 'search': 'deleted', 'className':'btn-outline-secondary rdw-btn-filter'},
-              {'text': _('Changed'), 'extend': 'filter', 'column': 'state:name', 'search': '^changed', 'regex':True, 'className':'btn-outline-secondary rdw-btn-filter'},
-              {'text': _('Unchanged'), 'extend': 'filter', 'column': 'state:name', 'search': '^unchanged', 'className':'btn-outline-secondary rdw-btn-filter'},
-              {'text': _('All'), 'extend': 'reset', 'className': 'btn-secondary'},
-            ] %}
-      {% set columns = [
-              {'name':'path', 'title': _('Path'), 'orderable': True, 'render':'text' },
-              {'name':'state', 'title':_('State'), 'orderable': True, 'render':'choices', 'render_arg': [ ['new',_('New')], ['deleted',_('Deleted')], ['changed',_('Changed')], ['unchanged',_('Unchanged')]] },
-              {'name':'size', 'title':_('Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
-              {'name':'increment_size', 'title':_('Increment Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
-            ] %}
-      <RdwTable :data="{{ url_for('stats', 'data.json', repo, date=date) }}"
-                :columns="{{ columns }}"
-                :buttons="{{ buttons }}"
-                :search_placeholder="{{ _("Filter file changes...") }}"
-                :empty_message="{{ _("Changes are not available") }}"
-                :info_message="{{ _("Displaying _START_-_END_ of _TOTAL_ changes") }}" />
-    {% else %}
-      {% call empty('bi-stopwatch', _('No backup date selected')) %}
-        <p>{% trans %}Select a backup date on the left to display detailed changes for that date.{% endtrans %}</p>
-      {% endcall %}
-    {% endif %}
   </div>
-  <!-- /.row -->
+  {% if date %}
+    {% set buttons = [
+          {'text': _('New'), 'extend': 'filter', 'column': 'state:name', 'search': 'new', 'className':'btn-outline-secondary rdw-btn-filter'},
+          {'text': _('Deleted'), 'extend': 'filter', 'column': 'state:name', 'search': 'deleted', 'className':'btn-outline-secondary rdw-btn-filter'},
+          {'text': _('Changed'), 'extend': 'filter', 'column': 'state:name', 'search': '^changed', 'regex':True, 'className':'btn-outline-secondary rdw-btn-filter'},
+          {'text': _('Unchanged'), 'extend': 'filter', 'column': 'state:name', 'search': '^unchanged', 'className':'btn-outline-secondary rdw-btn-filter'},
+          {'text': _('All'), 'extend': 'reset', 'className': 'btn-secondary'},
+        ] %}
+    {% set columns = [
+          {'name':'path', 'title': _('Path'), 'orderable': True, 'render':'text' },
+          {'name':'state', 'title':_('State'), 'orderable': True, 'render':'choices', 'render_arg': [ ['new',_('New')], ['deleted',_('Deleted')], ['changed',_('Changed')], ['unchanged',_('Unchanged')]] },
+          {'name':'size', 'title':_('Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
+          {'name':'increment_size', 'title':_('Increment Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
+        ] %}
+    <RdwTable :data="{{ url_for('stats', 'data.json', repo, date=date) }}"
+              :columns="{{ columns }}"
+              :buttons="{{ buttons }}"
+              :search_placeholder="{{ _("Filter file changes...") }}"
+              :empty_message="{{ _("Changes are not available") }}"
+              :info_message="{{ _("Displaying _START_-_END_ of _TOTAL_ changes") }}" />
+  {% else %}
+    <RdwEmpty icon="bi-stopwatch"
+              :title="{{ _("No backup date selected") }}"
+              class="p-5">
+      <p>
+        {% trans %}Pick a backup date using the dropdown in the top-left corner to see the associated change details.{% endtrans %}
+      </p>
+    </RdwEmpty>
+  {% endif %}
 {% endblock %}
