@@ -1,0 +1,7 @@
+pre.rdw-log {
+    white-space: pre;
+    overflow-x: auto;
+    min-width: 0;        /* Key! */
+    width: 0;            /* Force shrink */
+    min-width: 100%;     /* But fill container */
+}

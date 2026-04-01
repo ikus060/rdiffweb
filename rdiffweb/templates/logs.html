@@ -3,47 +3,65 @@
 {% from 'components/log.html' import pre_code %}
 {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) %}
 {% block content %}
-  <div class="row">
-    <div class="col-md-3">
-      <ul class="list-group">
-        <a href="{{ url_for('logs', repo, file='backup.log', limit=limit) }}"
-           class="list-group-item{% if file=='backup.log' %} active{% endif %}">{% trans %}Last backup log{% endtrans %}</a>
-        <a href="{{ url_for('logs', repo, file='restore.log', limit=limit) }}"
-           class="list-group-item{% if file=='restore.log' %} active{% endif %}">{% trans %}Last restore log{% endtrans %}</a>
-        {% for e in error_logs %}
-          <a href="{{ url_for('logs', repo, date=e.date, limit=limit) }}"
-             class="list-group-item{% if e.date==date %} active{% endif %}">
-            Error log <time class="js-datetime" datetime="{{ e.date }}">{{ e.date | lastupdated }}</time>
-            {% if not e.is_empty %}
-              <span class="badge bg-warning">not empty</span>
-            {% else %}
-              <span class="badge bg-info">empty</span>
-            {% endif %}
-          </a>
-        {% endfor %}
-        {% if limit == error_logs|count %}
-          <a href="{{ url_for('logs', repo, limit=limit * 2) }}"
-             class="list-group-item">{% trans %}Show more...{% endtrans %}</a>
+  <h2>{% trans %}Engine Logs{% endtrans %}</h2>
+  <div class="mb-2 d-flex flex-wrap justify-content-between">
+    <div class="d-flex">
+      <a class="btn {% if file=='backup.log' %}btn-secondary{% endif %}"
+         aria-current="page"
+         href="{{ url_for('logs', repo, file='backup.log') }}">{% trans %}Backup log{% endtrans %}</a>
+      <a class="btn {% if file=='restore.log' %}btn-secondary{% endif %}"
+         aria-current="page"
+         href="{{ url_for('logs', repo, file='restore.log') }}">{% trans %}Restore log{% endtrans %}</a>
+      <RdwDateSelector :class="{{ 'btn-secondary' if date else '' }}"
+                       :title="{{ _("Error logs") }}"
+                       :url_args="{{ ['logs', repo] }}"
+                       :dates="{{ repo.error_log | map(attribute='date') | list }}"
+                       :selected_date="{{ date }}">
+        {% set date = _slot %}
+        {% if date %}
+          {% set log = repo.error_log[date] %}
+          {% if not log.is_empty %}
+            <span class="badge bg-warning">not empty</span>
+          {% else %}
+            <span class="badge bg-info">empty</span>
+          {% endif %}
         {% endif %}
-      </ul>
+      </RdwDateSelector>
     </div>
-    <div class="col-md-9">
+    <div class="d-flex flex-row flex-grow-1 align-items-start justify-content-end"
+         role="group">
       {% if data %}
-        <div class="alert alert-info">
-          {% trans %}Notice: To prevent performance issues, only the last 2000 lines of each log files are displayed.{% endtrans %}
-          <a href="{{ url_for('logs', repo, file=file, date=date, raw=1) }}"><b><i class="icon icon-download"></i>{% trans %}Show all logs{% endtrans %}</b></a>
+        <div class="btn-group">
+          {# Scroll down #}
+          <a class="btn btn-outline-secondary"
+             href="#bottom"
+             title="{% trans %}Scroll to bottom{% endtrans %}"><RdwIcon value="bi-arrow-down" /></a>
+          {# Download link #}
+          <a class="btn btn-outline-secondary"
+             href="{{ url_for('logs', repo, file=file, date=date, raw=1) }}"
+             title="{% trans %}Show complete raw{% endtrans %}"><RdwIcon value="bi-file-earmark-code" /></a>
         </div>
-        {{ pre_code(data) }}
-      {% elif file or date %}
-        {% call empty('log', _('Log file empty')) %}
-          <p>{% trans %}This log file is empty. Select another log file to show it's contents.{% endtrans %}</p>
-        {% endcall %}
-      {% else %}
-        {% call empty('log', _('No log file selected')) %}
-          <p>{% trans %}Select a log file to show it's contents.{% endtrans %}</p>
-        {% endcall %}
       {% endif %}
     </div>
   </div>
-  <!-- /.row -->
+  {% if data %}
+    {% if data.count('\n') >= 1999 %}
+      <div class="alert alert-info">
+        {% trans %}Notice: To prevent performance issues, only the last 2000 lines of the log are displayed.{% endtrans %}
+      </div>
+    {% endif %}
+    <RdwLog :data="{{ data }}" />
+    {# Scroll up #}
+    <div class="sticky-bottom float-end p-2">
+      <a href="#top"
+         class="btn btn-outline-secondary bg-white"
+         title="{% trans %}Scroll to top{% endtrans %}"><RdwIcon value="bi-arrow-up" /></a>
+    </div>
+  {% else %}
+    <div class="border-top">
+      <RdwEmpty icon="log" :title="{{ _("Log file empty") }}" class="p-5">
+        <p>{% trans %}This log file is empty. Select another log file to show it's contents.{% endtrans %}</p>
+      </RdwEmpty>
+    </div>
+  {% endif %}
 {% endblock %}

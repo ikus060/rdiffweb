@@ -1,0 +1,8 @@
+{# def icon, title #}
+<div {{ attrs.render(class="text-center") }}>
+  <p>
+    <RdwIcon :value="{{ icon }}" class="display-1" />
+  </p>
+  <p class="h1">{{ title }}</p>
+  {% if content is defined %}{{ content() }}{% endif %}
+</div>

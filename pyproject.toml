@@ -72,6 +72,6 @@ skip-string-normalization = "True"
 
 [tool.djlint]
 indent=2
-custom_html = "RdwTable,RdwMessages,Datatable,RdwModal,RdwDateSelector"
+custom_html = "RdwTable,RdwMessages,Datatable,RdwModal,RdwDateSelector,RdwEmpty,RdwLog"
 
 [tool.setuptools_scm]

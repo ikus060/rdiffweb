@@ -98,7 +98,7 @@ _pages = [
     Page('graphs_sizes', _('Size'), 'graphs/sizes', None, True, 'insights'),
     Page('graphs_times', _('Elapsed Time'), 'graphs/times', None, True, 'insights'),
     Page('graphs_errors', _('Errors'), 'graphs/errors', None, True, 'insights'),
-    Page('logs', _('Backup logs'), 'logs', 'bi-journal-text', True, 'insights'),
+    Page('logs', _('Engine Logs'), 'logs', 'bi-journal-text', True, 'insights'),
     Page('repo_activity', _('Audit logs'), 'activity', None, True, 'insights'),
     # Admin
     Page('admin', _('Administration'), None, None, False),

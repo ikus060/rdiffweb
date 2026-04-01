@@ -1,15 +1,21 @@
-{# def url_args=[], dates=[], selected_date=None #}
+{# def title, url_args=[], dates=[], selected_date=None #}
+{# Assign btn-* classes to the right div element #}
+{% set ns = namespace(btn_classes=[]) %}
+{% for c in attrs.classes.split(' ') %}
+  {% do ns.btn_classes.append(c) if c.startswith('btn-') else none %}
+{% endfor %}
+{% do attrs.remove_class(*ns.btn_classes) %}
 <!-- Date selector -->
 <div {{ attrs.render(class="rdw-date-selector") }}>
   <div class="dropdown">
-    <button class="btn btn-outline-secondary"
+    <button class="btn {{ ns.btn_classes | join(" ") }}"
             type="button"
             data-bs-toggle="dropdown"
             aria-expanded="false">
       {% if selected_date %}
         <time class="js-datetime" datetime="{{ selected_date }}">{{ selected_date | int | format_datetime(format='medium') }}</time>
       {% else %}
-        {% trans %}Select a backup date...{% endtrans %}
+        {{ title }}
       {% endif %}
       <RdwIcon value="ms-2 bi-chevron-down" />
     </button>
@@ -19,25 +25,26 @@
           <a href="{{ url_for(*url_args, date=item) }}"
              class="dropdown-item{% if item == selected_date %} active{% endif %}">
             <time class="js-datetime" datetime="{{ item }}">{{ item | int | format_datetime(format='medium') }}</time>
+            {% if content is defined %}{{ content(item) }}{% endif %}
           </a>
         </li>
       {% endfor %}
       {% if dates|count > 10 %}
-        <a href="1"
+        <a href="#"
            class="dropdown-item"
            data-bs-toggle="modal"
-           data-bs-target="#rdw-date-selector-modal">{% trans %}Show all backups...{% endtrans %}</a>
+           data-bs-target="#rdw-date-selector-modal">{% trans %}Show all...{% endtrans %}</a>
       {% endif %}
     </ul>
   </div>
   <form method="GET" action="#">
-    <RdwModal id="rdw-date-selector-modal"
-              :title="{{ _("Select a backup date...") }}">
+    <RdwModal id="rdw-date-selector-modal" :title="{{ title }}">
       <div class="list-group list-group-flush">
         {% for item in dates[::-1] %}
           <a class="list-group-item list-group-item-action{% if item == selected_date %} active{% endif %}"
              href="{{ url_for(*url_args, date=item) }}">
             <time class="js-datetime" datetime="{{ item }}">{{ item | int | format_datetime(format='medium') }}</time>
+            {% if content is defined %}{{ content(item) }}{% endif %}
           </a>
         {% endfor %}
       </div>

@@ -33,10 +33,8 @@ class LogsPageTest(rdiffweb.test.WebCase):
         self._log(self.USERNAME, self.REPO)
         self.assertStatus(200)
         # Check revisions
-        self.assertInBody("Last backup log")
-        self.assertInBody("Last restore log")
-        # Check show more button get displayed
-        self.assertInBody("Show more")
+        self.assertInBody("Backup log")
+        self.assertInBody("Restore log")
 
     def test_logs_with_date_notfound(self):
         self._log(self.USERNAME, self.REPO, date=1)
@@ -74,11 +72,6 @@ class LogsPageTest(rdiffweb.test.WebCase):
     def test_logs_with_date_valid(self):
         self._log(self.USERNAME, self.REPO, date='1454448640')
         self.assertStatus(200)
-
-    def test_logs_with_limit(self):
-        self._log(self.USERNAME, self.REPO, limit=50)
-        self.assertStatus(200)
-        self.assertNotInBody("Show more")
 
     def test_logs_with_raw(self):
         self._log(self.USERNAME, self.REPO, file='restore.log', raw=1)
