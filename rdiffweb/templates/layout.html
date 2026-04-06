@@ -38,7 +38,9 @@
         <Breadcrumb currentuser={{ currentuser }} breadcrumbs={{ breadcrumbs | d(None) }} class="border-bottom p-3 bg-white sticky-top" />
         <div id="top"></div>
         <div class="container-fluid p-3">
-          <RepoWarning repo={{ repo | d(None) }} />
+          {% if self._TemplateReference__context.name != 'error_page.html' %}
+            <RepoWarning repo={{ repo | d(None) }} />
+          {% endif %}
           {% block content %}{% endblock %}
         </div>
         <RdwFooter class="mt-4 text-center w-100" />
