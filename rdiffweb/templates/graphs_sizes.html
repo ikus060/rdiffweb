@@ -1,9 +1,0 @@
-{% extends 'graphs.html' %}
-{% import 'include/chartkick.html' as chartkick with context %}
-{% block graph_body %}
-  <h2>{% trans %}Source file size{% endtrans %}</h2>
-  <p>{% trans %}Repository size excluding history data.{% endtrans %}</p>
-  {{ chartkick.line_chart(data.sourcefilesize) }}
-  <h2>{% trans %}Increment file size{% endtrans %}</h2>
-  {{ chartkick.line_chart(data.filesize) }}
-{% endblock %}

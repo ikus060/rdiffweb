@@ -89,15 +89,11 @@ _pages = [
     Page('browse', _('Files'), 'browse', 'bi-folder'),
     Page('history', _('History'), 'history', None, False, 'browse'),
     Page('restore', _('Restore'), 'restore', None, False, 'browse'),
-    Page('insights', _('Insights'), 'stats', 'bi-lightbulb'),
+    Page('insights', _('Insights'), 'graphs', 'bi-lightbulb'),
     Page('settings', _('Settings'), 'settings', 'bi-sliders'),
     # Insights
+    Page('graphs', _('Statistics'), 'graphs', 'bi-bar-chart-line', True, 'insights'),
     Page('stats', _('File Changes'), 'stats', 'bi-clock-history', True, 'insights'),
-    Page('graphs_activities', _('Activities'), 'graphs/activities', None, True, 'insights'),
-    Page('graphs_files', _('File count'), 'graphs/files', None, True, 'insights'),
-    Page('graphs_sizes', _('Size'), 'graphs/sizes', None, True, 'insights'),
-    Page('graphs_times', _('Elapsed Time'), 'graphs/times', None, True, 'insights'),
-    Page('graphs_errors', _('Errors'), 'graphs/errors', None, True, 'insights'),
     Page('logs', _('Engine Logs'), 'logs', 'bi-journal-text', True, 'insights'),
     Page('repo_activity', _('Audit logs'), 'activity', None, True, 'insights'),
     # Admin

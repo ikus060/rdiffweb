@@ -16,42 +16,11 @@
 
 
 import cherrypy
-from cherrypy_foundation.tools.i18n import ugettext as _
-from cherrypy_foundation.url import url_for
 
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
 
 from . import validate_int
-
-
-def bytes_to_mb(v):
-    return round(v / 1024 / 1024, 2)
-
-
-def line_to_state(line):
-    """
-    For a file statistics entry, determine if the file was changed.
-    """
-    if line.changed == '0':
-        return 'unchanged'
-    elif line.source_size == 'NA':
-        return 'deleted'
-    elif line.mirror_size == 'NA':
-        return 'new'
-    else:
-        return 'changed'
-
-
-def line_to_size(line):
-    """
-    Return either the source or mirror file size.
-    """
-    if line.source_size != 'NA':
-        return line.source_size
-    elif line.mirror_size != 'NA':
-        return line.mirror_size
-    return 0
 
 
 class Data:
@@ -60,131 +29,25 @@ class Data:
         self.limit = limit
 
     @property
-    def activities(self):
-        return [
-            {
-                'name': _('New files'),
-                'data': [
-                    [str(s.date).replace('T', ' '), s.newfiles]
-                    for s in self.repo_obj.session_statistics[: -self.limit - 1 : -1]
-                ],
-            },
-            {
-                'name': _('Deleted files'),
-                'data': [
-                    [str(s.date).replace('T', ' '), s.deletedfiles]
-                    for s in self.repo_obj.session_statistics[: -self.limit - 1 : -1]
-                ],
-            },
-            {
-                'name': _('Changed files'),
-                'data': [
-                    [str(s.date).replace('T', ' '), s.changedfiles]
-                    for s in self.repo_obj.session_statistics[: -self.limit - 1 : -1]
-                ],
-            },
-        ]
+    def labels(self):
+        return [s.starttime for s in self.repo_obj.session_statistics[-self.limit :]]
 
-    @property
-    def filecount(self):
-        return [
-            {
-                'name': _('Number of files'),
-                'data': [[s.starttime, s.sourcefiles] for s in self.repo_obj.session_statistics[-self.limit :]],
-            }
-        ]
-
-    @property
-    def filesize(self):
-        return [
-            {
-                'name': _('New file size (MiB)'),
-                'data': [
-                    [s.starttime, bytes_to_mb(s.newfilesize)] for s in self.repo_obj.session_statistics[-self.limit :]
-                ],
-            },
-            {
-                'name': _('Deleted file size (MiB)'),
-                'data': [
-                    [s.starttime, bytes_to_mb(s.deletedfilesize)]
-                    for s in self.repo_obj.session_statistics[-self.limit :]
-                ],
-            },
-            {
-                'name': _('Changed file size (MiB)'),
-                'data': [
-                    [s.starttime, bytes_to_mb(s.changedmirrorsize)]
-                    for s in self.repo_obj.session_statistics[-self.limit :]
-                ],
-            },
-            {
-                'name': _('Increment file size (MiB)'),
-                'data': [
-                    [s.starttime, bytes_to_mb(s.incrementfilesize)]
-                    for s in self.repo_obj.session_statistics[-self.limit :]
-                ],
-            },
-            {
-                'name': _('Destination size change (MiB)'),
-                'data': [
-                    [s.starttime, bytes_to_mb(s.totaldestinationsizechange)]
-                    for s in self.repo_obj.session_statistics[-self.limit :]
-                ],
-            },
-        ]
-
-    @property
-    def sourcefilesize(self):
-        return [
-            {
-                'name': _('Source file size (MiB)'),
-                'data': [
-                    [s.starttime, bytes_to_mb(s.sourcefilesize)]
-                    for s in self.repo_obj.session_statistics[-self.limit :]
-                ],
-            }
-        ]
-
-    @property
-    def elapsedtime(self):
-        return [
-            {
-                'name': _('Elapsed Time (minutes)'),
-                'data': [
-                    [s.starttime, round(max(0, s.elapsedtime) / 60, 2)]
-                    for s in self.repo_obj.session_statistics[-self.limit :]
-                ],
-            }
-        ]
-
-    @property
-    def errors(self):
-        return [
-            {
-                'name': _('Error count'),
-                'data': [[s.starttime, s.errors] for s in self.repo_obj.session_statistics[-self.limit :]],
-            }
-        ]
+    def __getattr__(self, name):
+        return [getattr(s, name) for s in self.repo_obj.session_statistics[-self.limit :]]
 
 
 @cherrypy.tools.poppath()
-class GraphPage:
-    _cp_config = {}
+class GraphsPage:
 
-    def __init__(self, graph) -> None:
-        assert graph
-        super().__init__()
-        self.graph = graph
-        # Define template dynamically.
-        self._cp_config = self._cp_config.copy()
-        self._cp_config["tools.jinja2.template"] = "graphs_%s.html" % self.graph
-
-    @cherrypy.expose
-    @cherrypy.tools.jinja2()
-    def default(self, path, limit='30', **kwargs):
-        """
-        Called to show every graphs
-        """
+    @cherrypy.tools.errors(
+        error_table={
+            DoesNotExistError: 404,
+            AccessDeniedError: 403,
+        }
+    )
+    @cherrypy.tools.jinja2(template="graphs.html")
+    @cherrypy.expose()
+    def default(self, path, limit='7', **kwargs):
         limit = validate_int(limit, min=1)
         repo_obj = RepoObject.get_repo(path)
         data = Data(repo_obj, limit)
@@ -192,26 +55,6 @@ class GraphPage:
         # Check if any action to process.
         return {
             'repo': repo_obj,
-            'graph': self.graph,
             'limit': limit,
             'data': data,
         }
-
-
-@cherrypy.tools.errors(
-    error_table={
-        DoesNotExistError: 404,
-        AccessDeniedError: 403,
-    }
-)
-class GraphsPage:
-    activities = GraphPage('activities')
-    errors = GraphPage('errors')
-    files = GraphPage('files')
-    sizes = GraphPage('sizes')
-    times = GraphPage('times')
-
-    @cherrypy.expose()
-    def default(self, *args, **kwargs):
-        default_graph = url_for('graphs', 'activities', *args, **kwargs)
-        raise cherrypy.HTTPRedirect(default_graph)

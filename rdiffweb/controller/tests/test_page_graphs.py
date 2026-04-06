@@ -24,16 +24,14 @@ from rdiffweb.core.model import UserObject
 class GraphsTest(rdiffweb.test.WebCase):
     login = True
 
-    @parameterized.expand(['activities', 'errors', 'files', 'sizes', 'times'])
-    def test_graph(self, graph):
-        self.getPage(url_for('graphs', graph, self.USERNAME, self.REPO, ''))
+    def test_graph(self):
+        self.getPage(url_for('graphs', self.USERNAME, self.REPO, ''))
         self.assertStatus('200 OK')
 
-    @parameterized.expand(['activities', 'errors', 'files', 'sizes', 'times'])
-    def test_graph_selenium(self, graph):
+    def test_graph_selenium(self):
         with self.selenium() as driver:
             # When browsing graph
-            driver.get(url_for('graphs', graph, self.USERNAME, self.REPO, ''))
+            driver.get(url_for('graphs', self.USERNAME, self.REPO, ''))
             # Then page load without error
             self.assertFalse(driver.get_log('browser'))
 
@@ -44,9 +42,9 @@ class GraphsTest(rdiffweb.test.WebCase):
         user_obj.refresh_repos()
         user_obj.commit()
 
-        self.getPage("/graphs/activities/anotheruser/testcases/")
+        self.getPage("/graphs/anotheruser/testcases/")
         self.assertStatus('200 OK')
-        self.assertInBody("Activities")
+        self.assertInBody("Repository Statistics")
 
         # Remove admin role
         admin = UserObject.get_user('admin')
@@ -54,24 +52,26 @@ class GraphsTest(rdiffweb.test.WebCase):
         admin.commit()
 
         # Browse admin's repos
-        self.getPage("/graphs/activities/anotheruser/testcases/")
+        self.getPage("/graphs/anotheruser/testcases/")
         self.assertStatus('403 Forbidden')
 
-    def test_chartkick_js(self):
-        self.getPage("/static/js/chart.min.js")
+    @parameterized.expand(
+        [
+            "/static/components/vendor/chart/chart.min.js",
+            "/static/components/vendor/chart/chart.js",
+            "/static/components/Chart.js",
+            "/static/components/RdwChart.js",
+        ]
+    )
+    def test_static_file(self, fn):
+        self.getPage(fn)
         self.assertStatus('200 OK')
-        self.assertInBody("Chart")
-
-    def test_chart_js(self):
-        self.getPage("/static/js/chartkick.min.js")
-        self.assertStatus('200 OK')
-        self.assertInBody("Chartkick")
 
     def test_does_not_exists(self):
         # Given an invalid repo
         repo = 'invalid'
         # When trying to get graphs of it
-        self.getPage("/graphs/activities/" + self.USERNAME + "/" + repo + "/")
+        self.getPage("/graphs/" + self.USERNAME + "/" + repo + "/")
         # Then a 404 error is return
         self.assertStatus(404)
 
@@ -81,7 +81,7 @@ class GraphsTest(rdiffweb.test.WebCase):
         admin.user_root = 'invalid'
         admin.commit()
         # When querying the logs
-        self.getPage("/graphs/activities/" + self.USERNAME + "/" + self.REPO + "/")
+        self.getPage("/graphs/" + self.USERNAME + "/" + self.REPO + "/")
         # Then the page is return with an error message
         self.assertStatus(200)
         self.assertInBody('The repository cannot be found or is badly damaged.')

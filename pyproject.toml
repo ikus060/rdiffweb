@@ -21,7 +21,7 @@ classifiers = [
     "Framework :: CherryPy"
 ]
 dependencies = [
-    "cherrypy-foundation>=1.4.0",
+    "cherrypy-foundation>=1.4.2",
     "cherrypy-foundation[ldap]",
     "cherrypy-foundation[oauth]",
     "cherrypy-foundation[passwd]",
@@ -74,11 +74,13 @@ skip-string-normalization = "True"
 indent=2
 custom_html = """
   cf:ColorModes,\
+  cf:Chart,\
   cf:Datatable,\
   cf:Field,\
   cf:Fields,\
   cf:Flash,\
   NavItem,\
+  RdwChart,\
   RdwDateSelector,\
   RdwEmpty,\
   RdwIcon,\

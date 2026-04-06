@@ -228,3 +228,18 @@ main {
 .form-field {
     margin-bottom: 1.5rem !important;
 }
+
+/* Show info icon for tooltip */
+.rdw-tooltip[data-bs-toggle="tooltip"]::after {
+  content: "\F431"; /* bi-info-circle */
+  display: inline-block;
+  font-family: "bootstrap-icons";
+  font-size: 1em;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal !important;
+  line-height: 1;
+  margin-inline-start: 0.25em;
+  text-transform: none;
+  vertical-align: -.125em;
+}

@@ -1,10 +1,381 @@
 {% extends 'layout.html' %}
+{% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) %}
 {% from 'include/timerange.html' import timerange %}
-{% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, 'graphs') + breadcrumb_repo(repo, self) %}
 {% block content %}
-  <div class="graph-area">
-    <div class="float-end">{{ timerange(ranges=[1, 7, 14, 30, 60, 90], limit=limit) }}</div>
-    {% block graph_body %}
-    {% endblock graph_body %}
+  <div class="d-flex flex-wrap justify-content-between">
+    <h2 class="me-2 mb-3">{% trans %}Repository Statistics{% endtrans %}</h2>
+    <!-- Date selector -->
+    <div>{{ timerange(ranges=[1, 7, 14, 30, 60, 90], limit=limit) }}</div>
   </div>
-{% endblock content %}
+  <div class="row g-4 mb-4">
+    {% set labels = data.labels %}
+    {% set base_options = {
+          'responsive': True,
+          'maintainAspectRatio': True,
+          'aspectRatio': 3,
+          'plugins': {
+            'legend': {'display': True},
+            'tooltip': {'mode': 'index'}
+          },
+          'onHover': 'onHoverCallback',
+          'onClick': 'onClickCallback',
+          'onClick_arg': url_for('stats', repo) + '?date=[[label]]',
+        } %}
+    {% set x_scale = {
+          'type': 'backupdate',
+          'title': {'display': True, 'text': _('Backup Date')}
+        } %}
+    {% set y_filesize = {
+          'type': 'filesize',
+          'position': 'right',
+          'title': {'display': True, 'text': _('File Size')}
+        } %}
+    {% set y_filecount = {
+          'type': 'linear',
+          'position': 'left',
+          'beginAtZero': True,
+          'title': {'display': True, 'text': _('File Count')},
+        } %}
+    {# 1. Errors per Backup #}
+    <div class="col-12 col-xl-6">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="rdw-tooltip"
+                data-bs-toggle="tooltip"
+                title="{% trans %}Any error means files were skipped or could not be read during backup.{% endtrans %}">
+            {% trans %}Errors per Backup{% endtrans %}
+          </span>
+          <span class="badge bg-danger">{% trans %}Health{% endtrans %}</span>
+        </div>
+        <div class="card-body">
+          {# djlint:off #}
+          {% set chart_data = {
+            'labels': labels,
+            'datasets': [
+              {
+                'label': _('Errors'),
+                'data': data.errors,
+                'backgroundColor': 'rgba(220, 53, 69, 0.7)',
+                'borderColor': 'rgba(220, 53, 69, 1)',
+                'borderWidth': 1
+              }
+            ]
+          } %}
+          {% set chart_options = {
+            'onClick_arg': url_for('logs', repo) + '?date=[[label]]',
+            'scales': {
+              'x': x_scale,
+              'y': {
+                'beginAtZero': True,
+                'title': {'display': True, 'text': _('Error Count')}
+              }
+            }
+          } %}
+          {# djlint:on #}
+          <RdwChart type="bar"
+                    :data="{{ chart_data }}"
+                    :options="{{ dict(base_options, **chart_options) }}" />
+        </div>
+      </div>
+    </div>
+    {# 2. Elapsed Time #}
+    <div class="col-12 col-xl-6">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="rdw-tooltip"
+                data-bs-toggle="tooltip"
+                title="{% trans %}Spikes may indicate network issues, large file transfers, or system load problems.{% endtrans %}">
+            {% trans %}Backup Elapsed Time{% endtrans %}
+          </span>
+          <span class="badge bg-warning ">{% trans %}Performance{% endtrans %}</span>
+        </div>
+        <div class="card-body">
+          {# djlint:off #}
+          {% set elapsedtime_avg = (data.elapsedtime | sum) / (data.elapsedtime | length) if data.elapsedtime | length > 0 else 0 %}
+          {% set chart_data = {
+            'labels': labels,
+            'datasets': [
+              {
+                'label': _('Elapsed Time (seconds)'),
+                'data': data.elapsedtime,
+                'backgroundColor': 'rgba(253, 126, 20, 0.1)',
+                'borderColor': 'rgba(253, 126, 20, 1)',
+                'borderWidth': 2,
+                'fill': True,
+                'tension': 0.3,
+                'pointRadius': 3
+              },
+              {
+                'label': _('Average'),
+                'data': [elapsedtime_avg] * (labels | length),
+                'borderColor': 'rgba(136, 136, 136, 0.8)',
+                'borderWidth': 2,
+                'borderDash': [6, 4],
+                'pointRadius': 0,
+                'fill': False,
+                'tension': 0
+              }
+            ]
+          } %}
+
+          {% set chart_options = {
+            'onHover': False,
+            'onClick': False,
+            'scales': {
+              'x': x_scale,
+              'y': {
+                'beginAtZero': True,
+                'title': {'display': True, 'text': 'Seconds'}
+              }
+            }
+          } %}
+          {# djlint:on #}
+          <RdwChart type="line"
+                    :data="{{ chart_data }}"
+                    :options="{{ dict(base_options, **chart_options) }}" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row g-4 mb-4">
+    {# 3. New vs Deleted Files #}
+    <div class="col-12 col-xl-6">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="rdw-tooltip"
+                data-bs-toggle="tooltip"
+                title="{% trans %}A sudden spike in deleted files may indicate accidental deletion, ransomware, or a missing mount point.{% endtrans %}">
+            {% trans %}New vs Deleted Files{% endtrans %}
+          </span>
+          <span class="badge bg-danger">{% trans %}Health{% endtrans %}</span>
+        </div>
+        <div class="card-body">
+          {# djlint:off #}
+          {% set chart_data = {
+            'labels': labels,
+            'datasets': [
+              {
+                'label': _('New Files'),
+                'data': data.newfiles,
+                'backgroundColor': 'rgba(25, 135, 84, 0.7)',
+                'borderColor': 'rgba(25, 135, 84, 1)',
+                'borderWidth': 1,
+              },
+              {
+                'label': _('Deleted Files'),
+                'data': data.deletedfiles,
+                'backgroundColor': 'rgba(220, 53, 69, 0.7)',
+                'borderColor': 'rgba(220, 53, 69, 1)',
+                'borderWidth': 1,
+              },
+              {
+                'label': _('Changed Files'),
+                'data': data.changedfiles,
+                'backgroundColor': 'rgba(255, 193, 7, 0.7)',
+                'borderColor': 'rgba(255, 193, 7, 1)',
+                'borderWidth': 1,
+              }
+            ]
+          } %}
+          {% set chart_options = {
+            'onHover': 'onHoverCallback',
+            'onClick': 'onClickCallback',
+            'onClick_arg': url_for('stats', repo) + '?date=[[label]]',
+            'scales': {
+              'x': x_scale,
+              'y': {
+                'beginAtZero': True,
+                'title': {'display': True, 'text': _('File Count')}
+              },
+            }
+          } %}
+          {# djlint:on #}
+          <RdwChart type="bar"
+                    :data="{{ chart_data }}"
+                    :options="{{ dict(base_options, **chart_options) }}" />
+        </div>
+      </div>
+    </div>
+    {# 4. New vs Deleted size #}
+    <div class="col-12 col-xl-6">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="rdw-tooltip"
+                data-bs-toggle="tooltip"
+                title="{% trans %}Overall composition of each backup session. Helps visualize the balance between growth, changes and deletions over time.{% endtrans %}">
+            {% trans %}Backup Activity Composition{% endtrans %}
+          </span>
+          <span class="badge bg-info ">{% trans %}Storage{% endtrans %}</span>
+        </div>
+        <div class="card-body">
+          {# djlint:off #}
+          {% set chart_data = {
+            'labels': labels,
+            'datasets': [
+              {
+                'label': _('New File Size'),
+                'data': data.newfilesize,
+                'backgroundColor': 'rgba(25, 135, 84, 0.7)',
+                'borderColor': 'rgba(25, 135, 84, 1)',
+                'borderWidth': 1
+              },
+              {
+                'label': _('Changed File Size'),
+                'data': data.changedsourcesize,
+                'backgroundColor': 'rgba(255, 193, 7, 0.7)',
+                'borderColor': 'rgba(255, 193, 7, 1)',
+                'borderWidth': 1
+              },
+              {
+                'label': _('Deleted File Size'),
+                'data': data.deletedfilesize,
+                'backgroundColor': 'rgba(220, 53, 69, 0.7)',
+                'borderColor': 'rgba(220, 53, 69, 1)',
+                'borderWidth': 1
+              }
+            ]
+          } %}
+          {% set chart_options = {
+            'onHover': 'onHoverCallback',
+            'onClick': 'onClickCallback',
+            'onClick_arg': url_for('stats', repo) + '?date=[[label]]',
+            'scales': {
+              'x': dict(x_scale, stacked=True),
+              'y': dict(y_filesize, stacked=True),
+            }
+          } %}
+          {# djlint:on #}
+          <RdwChart type="bar"
+                    :data="{{ chart_data }}"
+                    :options="{{ dict(base_options, **chart_options) }}" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row g-4 mb-4">
+    {# 5. Source File Count #}
+    <div class="col-12 col-xl-6">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="rdw-tooltip"
+                data-bs-toggle="tooltip"
+                title="{% trans %}A sudden drop may indicate a folder or volume is no longer accessible from the source.{% endtrans %}">
+            {% trans %}Source File variation{% endtrans %}
+          </span>
+          <span class="badge bg-warning ">{% trans %}Integrity{% endtrans %}</span>
+        </div>
+        <div class="card-body">
+          {# djlint:off #}
+          {% set chart_data = {
+            'labels': labels,
+            'datasets': [
+              {
+                'label': _('Source File Count'),
+                'data': data.sourcefiles,
+                'backgroundColor': 'rgba(111, 66, 193, 0.1)',
+                'borderColor': 'rgba(111, 66, 193, 1)',
+                'borderWidth': 2,
+                'fill': True,
+                'tension': 0.3,
+                'yAxisID': 'yFiles'
+              },
+              {
+                'type': 'bar',
+                'label': _('Source File Size'),
+                'data': data.sourcefilesize,
+                'backgroundColor': 'rgba(13, 110, 253, 0.5)',
+                'borderColor': 'rgba(13, 110, 253, 1)',
+                'borderWidth': 1,
+                'yAxisID': 'ySize'
+              },
+            ]
+          } %}
+
+          {% set chart_options = {
+            'scales': {
+              'x': x_scale,
+              'yFiles': dict(y_filecount, beginAtZero=False),
+              'ySize': dict(y_filesize, beginAtZero=False, grid={'drawOnChartArea': False}),
+            }
+          } %}
+          {# djlint:on #}
+          <RdwChart type="line"
+                    :data="{{ chart_data }}"
+                    :options="{{ dict(base_options, **chart_options) }}" />
+        </div>
+      </div>
+    </div>
+    {# 6. Changed Files per Backup #}
+    <div class="col-12 col-xl-6">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="rdw-tooltip"
+                data-bs-toggle="tooltip"
+                title="{% trans %}A sudden spike in changed files may indicate a bulk modification, software update, or filesystem corruption.{% endtrans %}">
+            {% trans %}Changed Files per Backup{% endtrans %}
+          </span>
+          <span class="badge bg-warning ">{% trans %}Integrity{% endtrans %}</span>
+        </div>
+        <div class="card-body">
+          {# djlint:off #}
+          {% set chart_data = {
+            'labels': labels,
+            'datasets': [
+              {
+                'label': _('Changed File Count'),
+                'data': data.changedfiles,
+                'backgroundColor': 'rgba(111, 66, 193, 0.1)',  
+                'borderColor': 'rgba(111, 66, 193, 1)',
+                'borderWidth': 2,
+                'fill': True,
+                'tension': 0.3,
+                'yAxisID': 'yFiles'
+              },
+              {
+                'type': 'bar',
+                'label': _('Changed File Size'),
+                'data': data.changedsourcesize,
+                'backgroundColor': 'rgba(255, 193, 7, 0.7)',
+                'borderColor': 'rgba(255, 193, 7, 1)',
+                'borderWidth': 1,
+                'yAxisID': 'ySize'
+              },
+              {
+                'type': 'line',
+                'label': _('Increment File Count'),
+                'data': data.incrementfiles,
+                'backgroundColor': 'rgba(255, 193, 7, 0.1)',
+                'borderColor': 'rgba(255, 193, 7, 1)',
+                'borderWidth': 2,
+                'fill': False,
+                'tension': 0.3,
+                'pointRadius': 4,
+                'yAxisID': 'yFiles'
+              },
+              {
+                'type': 'bar',
+                'label': _('Increment File Size'),
+                'data': data.incrementfilesize,
+                'backgroundColor': 'rgba(13, 202, 240, 0.5)',
+                'borderColor': 'rgba(13, 202, 240, 1)',
+                'borderWidth': 1,
+                'yAxisID': 'ySize'
+              },
+            ]
+          } %}
+          {% set chart_options = {
+            'scales': {
+              'x': x_scale,
+              'yFiles': y_filecount,
+              'ySize': dict(y_filesize, grid={'drawOnChartArea': False}),
+            }
+          } %}
+          {# djlint:on #}
+          <RdwChart type="line"
+                    :data="{{ chart_data }}"
+                    :options="{{ dict(base_options, **chart_options) }}" />
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
