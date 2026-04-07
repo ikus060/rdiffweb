@@ -88,16 +88,37 @@ def _html2plaintext(html, encoding='utf-8'):
 def _formataddr(value):
     """
     Format the given value into a valid email address. Support raw string, tuple or a list of string.
+    Handles non-ASCII characters and special characters (quotes) in display names.
     """
     if not value:
         return None
+
     if isinstance(value, str):
+        # Parse the raw string to extract name and email address
+        name, email_addr = email.utils.parseaddr(value)
+        if name:
+            # Re-use tuple formatting to benefit from encoding logic
+            return _formataddr((name, email_addr))
+        # No display name, return as-is (plain email address)
         return value
+
     if isinstance(value, (tuple, list)) and len(value) == 2 and isinstance(value[0], str) and isinstance(value[1], str):
-        return email.utils.formataddr(value)
-    if not isinstance(value, (tuple, list)):
-        raise TypeError('expect a string, a tuple or a list of email address')
-    return ', '.join(map(_formataddr, value))
+        name, email_addr = value
+        try:
+            # Check for non-ASCII characters
+            name.encode('ascii')
+            # ASCII name — escape double quotes
+            escaped_name = name.replace('\\', '\\\\').replace('"', '\\"')
+            return email.utils.formataddr((escaped_name, email_addr))
+        except UnicodeEncodeError:
+            # Non-ASCII name — UTF-8 encoding handles all special characters
+            encoded_name = email.header.Header(name, 'utf-8').encode()
+            return email.utils.formataddr((encoded_name, email_addr))
+
+    if isinstance(value, (tuple, list)):
+        return ', '.join(map(_formataddr, value))
+
+    raise TypeError('expect a string, a tuple or a list of email address')
 
 
 def _send_message(server, encryption, username, password, msg):

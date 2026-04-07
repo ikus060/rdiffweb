@@ -30,7 +30,7 @@ class SmtpPluginTest(helper.CPWebCase):
                 'smtp.server': '__default__',
                 'smtp.username': 'username',
                 'smtp.password': 'password',
-                'smtp.email_from': 'Test <email_from@test.com>',
+                'smtp.email_from': ('Test', 'email_from@test.com'),
             }
         )
 

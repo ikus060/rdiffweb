@@ -266,12 +266,7 @@ class RdiffwebApp(Application):
                 'smtp.server': cfg.email_host,
                 'smtp.username': cfg.email_username,
                 'smtp.password': cfg.email_password,
-                'smtp.email_from': cfg.email_sender
-                and '%s <%s>'
-                % (
-                    cfg.header_name,
-                    cfg.email_sender,
-                ),
+                'smtp.email_from': (cfg.header_name, cfg.email_sender),
                 'smtp.encryption': cfg.email_encryption,
                 # Configure remove_older plugin
                 'remove_older.execution_time': self.cfg.remove_older_time,
