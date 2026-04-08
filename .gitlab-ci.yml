@@ -138,7 +138,7 @@ package:deb:
     matrix:
       - DIST: [trixie, forky]
       # Disable selenium test in ubuntu - because snap chronium is not working in docker
-      - DIST: [plucky, questing, resolute]
+      - DIST: [questing, resolute]
         RDIFFWEB_SELENIUM_TEST: 0
   script:
     # Clean-up
@@ -173,7 +173,7 @@ test-package:deb:
   parallel:
     matrix:
       - DIST: [trixie]
-      - DIST: [plucky, questing, resolute]
+      - DIST: [questing, resolute]
   script:
     # Add apt source for cherrypy-foundation
     - wget -O /etc/apt/keyrings/minarca-keyring.asc https://www.ikus-soft.com/archive/minarca/public.key
@@ -287,7 +287,7 @@ publish:deb:
   parallel:
     matrix:
       - DIST: [trixie, forky]
-      - DIST: [plucky, questing, resolute]
+      - DIST: [questing, resolute]
   script: |
     set -e
     set -x
