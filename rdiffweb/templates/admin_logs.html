@@ -19,7 +19,13 @@
           {# Show log file data #}
           <div class="alert alert-info">
             {% trans %}Notice: To prevent performance issues, only the last {{ limit }} lines of the log files are displayed.{% endtrans %}
-            <a href="{{ url_for('admin', 'logs', 'raw', name=name) }}"><b><i class="icon icon-download"></i>{% trans %}Show all logs{% endtrans %}</b></a>
+            <a href="{{ url_for('admin', 'logs', 'raw', name=name) }}">
+              <b>
+                <i class="icon icon-download">
+                </i>
+                {% trans %}Show all logs{% endtrans %}
+              </b>
+            </a>
           </div>
           {{ pre_code(data) }}
         {% elif name or date %}

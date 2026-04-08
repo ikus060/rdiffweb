@@ -32,15 +32,27 @@
           </p>
           <p>
             {% trans %}Last accessed{% endtrans %}
-            <strong><time datetime="{{ session.access_time }}">{{ session.access_time | lastupdated }}</time></strong>
+            <strong>
+              <time datetime="{{ session.access_time }}">
+                {{ session.access_time | lastupdated }}
+              </time>
+            </strong>
             {% trans %}from{% endtrans %}
             <strong>{{ session.ip_address }}</strong>
             <br />
             {% trans %}Signed in{% endtrans %}
-            <strong><time datetime="{{ session.start_time }}">{{ session.start_time | lastupdated }}</time></strong>
+            <strong>
+              <time datetime="{{ session.start_time }}">
+                {{ session.start_time | lastupdated }}
+              </time>
+            </strong>
             <br />
             {% trans %}Expired on{% endtrans %}
-            <strong><time class="js-datetime" datetime="{{ session.expiration_time }}">{{ session.expiration_time }}</time></strong>
+            <strong>
+              <time class="js-datetime" datetime="{{ session.expiration_time }}">
+                {{ session.expiration_time }}
+              </time>
+            </strong>
           </p>
         </li>
       {% endfor %}

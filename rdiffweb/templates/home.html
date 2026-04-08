@@ -6,7 +6,7 @@
   {% macro repo_list_item(repo) %}
     <a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }}
        href="{{ url_for('browse', repo) }}">
-      <i class="bi bi-hdd" aria-hidden="true"></i>
+      <RdwIcon value="bi-hdd" />
       {% set name = repo.display_name.split('/')[-1] %}
       {{ name }}
       {% if name|length==1 %}:\{% endif %}
@@ -15,7 +15,7 @@
           <span data-bs-toggle="tooltip"
                 data-placement="left"
                 title="{{ repo.status[1] }}">
-            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+            <RdwIcon value="bi-exclamation-triangle" />
           </span>
         {% endif %}
       </span>
@@ -58,9 +58,17 @@
               <h5 class="card-title">
                 <a href="{{ url_for('browse', repo) }}"
                    class="{% if repo.status[0] != 'ok' %}text-warning{% endif %}">
-                  {% if prefix %}<small><small>{{ prefix }}/</small></small>{% endif %}
+                  {% if prefix %}
+                    <small>
+                      <small>{{ prefix }}/</small>
+                    </small>
+                  {% endif %}
                   {{ name }}
-                  {% if suffix %}<small><small>/{{ suffix }}</small></small>{% endif %}
+                  {% if suffix %}
+                    <small>
+                      <small>/{{ suffix }}</small>
+                    </small>
+                  {% endif %}
                 </a>
               </h5>
               {# Last backup date #}

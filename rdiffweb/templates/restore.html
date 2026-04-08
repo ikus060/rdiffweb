@@ -41,7 +41,9 @@
       {% else %}
         <p class="h2 mt-3">
           <RdwIcon value="bi-exclamation-triangle" class="text-warning" />
-          <b>{% trans %}Download is not possible in the current state of your repository:{% endtrans %}</b>
+          <b>
+            {% trans %}Download is not possible in the current state of your repository:{% endtrans %}
+          </b>
           <br />
           <br />
           {{ repo.status[1] }}

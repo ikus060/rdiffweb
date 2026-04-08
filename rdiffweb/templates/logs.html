@@ -35,11 +35,15 @@
           {# Scroll down #}
           <a class="btn btn-outline-secondary"
              href="#bottom"
-             title="{% trans %}Scroll to bottom{% endtrans %}"><RdwIcon value="bi-arrow-down" /></a>
+             title="{% trans %}Scroll to bottom{% endtrans %}">
+            <RdwIcon value="bi-arrow-down" />
+          </a>
           {# Download link #}
           <a class="btn btn-outline-secondary"
              href="{{ url_for('logs', repo, file=file, date=date, raw=1) }}"
-             title="{% trans %}Show complete raw{% endtrans %}"><RdwIcon value="bi-file-earmark-code" /></a>
+             title="{% trans %}Show complete raw{% endtrans %}">
+            <RdwIcon value="bi-file-earmark-code" />
+          </a>
         </div>
       {% endif %}
     </div>
@@ -55,7 +59,9 @@
     <div class="sticky-bottom float-end p-2">
       <a href="#top"
          class="btn btn-outline-secondary bg-white"
-         title="{% trans %}Scroll to top{% endtrans %}"><RdwIcon value="bi-arrow-up" /></a>
+         title="{% trans %}Scroll to top{% endtrans %}">
+        <RdwIcon value="bi-arrow-up" />
+      </a>
     </div>
   {% else %}
     <div class="border-top">

@@ -19,19 +19,19 @@
   "emptyTable": empty_message or _('List is empty'),
 } %}
 <div class="rdw-table">
-  <Datatable :data="{{ data }}"
-             :columns="{{ columns }}"
-             :buttons="{{ buttons }}"
-             :order="{{ order or [[ 0, 'desc' ]] }}"
-             :state_save="{{ state_save }}"
-             :searching="{{ searching }}"
-             :paging="{{ paging }}"
-             :page_length="{{ page_length }}"
-             :server_side="{{ server_side }}"
-             :layout="{{ layout or default_layout }}"
-             :language="{{ language }}"
-             :responsive="{{ True }}"
-             class="table-hover">
+  <cf:Datatable :data="data"
+                :columns="columns"
+                :buttons="buttons"
+                :order="order or [[ 0, 'desc' ]]"
+                :state_save="state_save"
+                :searching="searching"
+                :paging="paging"
+                :page_length="page_length"
+                :server_side="server_side"
+                :layout="layout or default_layout"
+                :language="language"
+                :responsive="True"
+                class="table-hover">
     {% if content is defined %}{{ content }}{% endif %}
-  </Datatable>
+  </cf:Datatable>
 </div>

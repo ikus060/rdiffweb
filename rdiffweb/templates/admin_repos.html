@@ -44,7 +44,9 @@
             {% if repo.last_backup_date %}
               {% trans %}Updated {% endtrans %}
               <time datetime="{{ repo.last_backup_date }}"
-                    title="{{ repo.last_backup_date }}">{{ repo.last_backup_date | lastupdated }}</time>
+                    title="{{ repo.last_backup_date }}">
+                {{ repo.last_backup_date | lastupdated }}
+              </time>
             {% endif %}
             {% if repo.status[0] != 'ok' %}
               <RdwIcon value="bi-exclamation-triangle" />

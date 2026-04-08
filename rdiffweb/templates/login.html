@@ -17,9 +17,9 @@
           <div class="col-xs-12 col-lg-8 offset-lg-2">
             <h2>{% trans %}Connection{% endtrans %}</h2>
             <div class="form-login">
-              <Flash messages={{ get_flashed_messages() }} class="mb-2" />
+              <cf:Flash messages={{ get_flashed_messages() }} class="mb-2" />
               <form role="form" method="post" action="{{ url_for() }}">
-                <Fields form={{ form }} floating={{ True }} />
+                <cf:Fields form={{ form }} floating={{ True }} />
                 <button type="submit" class="btn btn-primary btn-lg w-100">{% trans %}Sign in{% endtrans %}</button>
               </form>
               {% if oauth_enabled %}
@@ -49,8 +49,10 @@
               efficient web interface.{% endtrans %}
             </h2>
             <br />
-            <a class="text-light" href="https://rdiffweb.org/">{% trans %}website{% endtrans %}</a> •
-            <a class="text-light" href="https://groups.google.com/d/forum/rdiffweb">{% trans %}community{% endtrans %}</a> •
+            <a class="text-light" href="https://rdiffweb.org/">{% trans %}website{% endtrans %}</a>
+            •
+            <a class="text-light" href="https://groups.google.com/d/forum/rdiffweb">{% trans %}community{% endtrans %}</a>
+            •
             <a class="text-light" href="https://rdiffweb.org/doc">{% trans %}docs{% endtrans %}</a>
           {% endif %}
         </div>

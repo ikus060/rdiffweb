@@ -48,7 +48,9 @@
                        href="{{ url_for('restore', repo, entry.path, date=change_date) }}">
                       <!-- File date -->
                       <RdwIcon value="bi-download" />
-                      <time class="js-datetime" datetime="{{ change_date }}">{{ change_date | lastupdated }}</time>
+                      <time class="js-datetime" datetime="{{ change_date }}">
+                        {{ change_date | lastupdated }}
+                      </time>
                     </a>
                   {% endfor %}
                   <a class="dropdown-item text-center"

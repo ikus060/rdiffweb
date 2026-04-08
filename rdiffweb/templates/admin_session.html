@@ -46,13 +46,19 @@
           </td>
           <td data-search="{{ 1 if session.username else 0 }}">{{ _("Yes") if session.username else _('No') }}</td>
           <td data-order="{{ session.access_time }}">
-            <time datetime="{{ session.access_time }}">{{ session.access_time | lastupdated }}</time>
+            <time datetime="{{ session.access_time }}">
+              {{ session.access_time | lastupdated }}
+            </time>
           </td>
           <td data-order="{{ session.start_time }}">
-            <time datetime="{{ session.start_time }}">{{ session.start_time | lastupdated }}</time>
+            <time datetime="{{ session.start_time }}">
+              {{ session.start_time | lastupdated }}
+            </time>
           </td>
           <td data-order="{{ session.expiration_time }}">
-            <time class="js-datetime" datetime="{{ session.expiration_time }}">{{ session.expiration_time }}</time>
+            <time class="js-datetime" datetime="{{ session.expiration_time }}">
+              {{ session.expiration_time }}
+            </time>
           </td>
           <td>
             {% if not session.current %}

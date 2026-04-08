@@ -13,7 +13,9 @@
             data-bs-toggle="dropdown"
             aria-expanded="false">
       {% if selected_date %}
-        <time class="js-datetime" datetime="{{ selected_date }}">{{ selected_date | int | format_datetime(format='medium') }}</time>
+        <time class="js-datetime" datetime="{{ selected_date }}">
+          {{ selected_date | int | format_datetime(format='medium') }}
+        </time>
       {% else %}
         {{ title }}
       {% endif %}
@@ -24,7 +26,9 @@
         <li>
           <a href="{{ url_for(*url_args, date=item) }}"
              class="dropdown-item{% if item == selected_date %} active{% endif %}">
-            <time class="js-datetime" datetime="{{ item }}">{{ item | int | format_datetime(format='medium') }}</time>
+            <time class="js-datetime" datetime="{{ item }}">
+              {{ item | int | format_datetime(format='medium') }}
+            </time>
             {% if content is defined %}{{ content(item) }}{% endif %}
           </a>
         </li>
@@ -43,7 +47,9 @@
         {% for item in dates[::-1] %}
           <a class="list-group-item list-group-item-action{% if item == selected_date %} active{% endif %}"
              href="{{ url_for(*url_args, date=item) }}">
-            <time class="js-datetime" datetime="{{ item }}">{{ item | int | format_datetime(format='medium') }}</time>
+            <time class="js-datetime" datetime="{{ item }}">
+              {{ item | int | format_datetime(format='medium') }}
+            </time>
             {% if content is defined %}{{ content(item) }}{% endif %}
           </a>
         {% endfor %}

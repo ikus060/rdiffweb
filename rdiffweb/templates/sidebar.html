@@ -26,7 +26,10 @@
     {# Home #}
     <ul class="nav flex-column nav-pills">
       {% set home_page = page_registry.get('home') %}
-      <NavItem label={{ home_page.label }} href={{ url_for(home_page) }} icon={{ home_page.icon }} active={{ home_page.id in [active_page.id, self.active_page] }} />
+      <NavItem :label="home_page.label"
+               :href="url_for(home_page)"
+               :icon="home_page.icon"
+               :active="home_page.id in [active_page.id, self.active_page]" />
     </ul>
     {# Repo list #}
     {% set admin_expended = active_page in page_registry.get_admin_nav_pages(in_menu=None) %}
@@ -38,7 +41,10 @@
       </div>
       <ul id="rdw-overflow-menu" class="nav flex-column nav-pills flex-nowrap">
         {% for page in page_registry.get_admin_nav_pages() %}
-          <NavItem label={{ page.label }} icon={{ page.icon }} href={{ url_for(page) }} active={{ page.id == active_page.id or page.id == active_page.active_page }} />
+          <NavItem :label="page.label"
+                   :icon="page.icon"
+                   :href="url_for(page)"
+                   :active="page.id == active_page.id or page.id == active_page.active_page" />
         {% endfor %}
       </ul>
     {% elif user_expended %}
@@ -48,7 +54,9 @@
       </div>
       <ul id="rdw-overflow-menu" class="nav flex-column nav-pills flex-nowrap">
         {% for page in page_registry.get_prefs_nav_pages() %}
-          <NavItem label={{ page.label }} href={{ url_for(page) }} active={{ page.id == active_page.id or page.id == active_page.active_page }} />
+          <NavItem :label="page.label"
+                   :href="url_for(page)"
+                   :active="page.id == active_page.id or page.id == active_page.active_page" />
         {% endfor %}
       </ul>
     {% else %}
@@ -83,12 +91,17 @@
             class="nav flex-column nav-pills mt-2 flex-nowrap">
           {% set insights_pages = page_registry.get_insight_nav_pages() %}
           {% for page in page_registry.get_repo_nav_pages() %}
-            <NavItem label={{ page.label }} href={{ url_for(page, repo) }} icon={{ page.icon }} active={{ page.id == active_page.id or page.id == active_page.active_page }} />
+            <NavItem :label="page.label"
+                     :href="url_for(page, repo)"
+                     :icon="page.icon"
+                     :active="page.id == active_page.id or page.id == active_page.active_page" />
             {# Show graphs sub-menu #}
             {% if page.id == 'insights' and active_page in insights_pages %}
               <ul class="nav flex-column nav-pills mt-2 ms-5">
                 {% for page in insights_pages %}
-                  <NavItem label={{ page.label }} href={{ url_for(page, repo) }} active={{ page.id == active_page.id or page.id == active_page.active_page }} />
+                  <NavItem :label="page.label"
+                           :href="url_for(page, repo)"
+                           :active="page.id == active_page.id or page.id == active_page.active_page" />
                 {% endfor %}
               </ul>
             {% endif %}
@@ -119,7 +132,11 @@
           </a>
           <ul class="dropdown-menu" aria-label="rdw-dropdown-admin">
             {% for page in page_registry.get_admin_nav_pages() %}
-              <NavItem type="dropdown-item" label={{ page.label }} icon={{ page.icon }} href={{ url_for(page) }} active={{ page.id == active_page.id or page.id == active_page.active_page }} />
+              <NavItem type="dropdown-item"
+                       :label="page.label"
+                       :icon="page.icon"
+                       :href="url_for(page)"
+                       :active="page.id == active_page.id or page.id == active_page.active_page" />
             {% endfor %}
           </ul>
         </div>
@@ -135,7 +152,10 @@
         <span>{{ username }}</span>
       </a>
       <ul class="dropdown-menu" aria-label="rdw-dropdown-user">
-        <ColorModes header={{ _("Theme") }} light_label={{ _("Light") }} dark_label={{ _("Dark") }} auto_label={{ _("Auto") }} />
+        <cf:ColorModes :header="_('Theme')"
+                       :light_label="_('Light')"
+                       :dark_label="_('Dark')"
+                       :auto_label="_('Auto')" />
         <li>
           <hr class="dropdown-divider">
         </li>
@@ -143,7 +163,10 @@
           {# User profile - collapsed #}
           <h6 class="dropdown-header">{% trans %}User Profile{% endtrans %}</h6>
           {% for page in page_registry.get_prefs_nav_pages() %}
-            <NavItem type="dropdown-item" label={{ page.label }} href={{ url_for(page) }} active={{ page.id == active_page.id or page.id in breadcrumbs }} />
+            <NavItem type="dropdown-item"
+                     :label="page.label"
+                     :href="url_for(page)"
+                     :active="page.id == active_page.id or page.id in breadcrumbs" />
           {% endfor %}
           <li>
             <hr class="dropdown-divider">

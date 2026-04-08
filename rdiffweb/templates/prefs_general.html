@@ -7,7 +7,7 @@
     {% call panel(title=_("Account settings"), description=_("General information about your account.")) %}
       <div class="panel-body">
         <form action="#" method="post" role="form">
-          <Fields form={{ profile_form }} />
+          <cf:Fields form={{ profile_form }} />
         </form>
       </div>
     {% endcall %}
@@ -15,7 +15,7 @@
     {% call panel(title=_("Password"), description=_("Change your current password")) %}
       <div class="panel-body">
         <form action="#" method="post" role="form" class="clearfix">
-          <Fields form={{ password_form }} />
+          <cf:Fields form={{ password_form }} />
         </form>
       </div>
     {% endcall %}
@@ -23,7 +23,7 @@
     {% call panel(title=_("Refresh")) %}
       <div class="panel-body">
         <form action="#" method="post" role="form">
-          <Fields form={{ refresh_form }} />
+          <cf:Fields form={{ refresh_form }} />
         </form>
       </div>
     {% endcall %}

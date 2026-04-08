@@ -3,7 +3,9 @@
   {{ repo.status[1] }}
 {% elif repo.last_backup_date %}
   {% trans %}Last backup {% endtrans %}
-  <time datetime="{{ repo.last_backup_date }}">{{ repo.last_backup_date | lastupdated }}</time>
+  <time datetime="{{ repo.last_backup_date }}">
+    {{ repo.last_backup_date | lastupdated }}
+  </time>
 {% else %}
   {% trans %}Initial backup not completed.{% endtrans %}
 {% endif %}

@@ -15,7 +15,7 @@
     {% call panel(title=_("Create New Access Token"), description=_("You can generate a access token for each application you use that needs access to API.")) %}
       <div class="panel-body">
         <form action="#" method="post" role="form" class="clearfix">
-          <Fields form={{ form }} />
+          <cf:Fields form={{ form }} />
         </form>
       </div>
     {% endcall %}
@@ -33,13 +33,17 @@
             <p>
               {% trans %}Created on{% endtrans %}
               <strong>
-                <time class="js-datetime" datetime="{{ token.creation_time }}">{{ token.creation_time }}</time>
+                <time class="js-datetime" datetime="{{ token.creation_time }}">
+                  {{ token.creation_time }}
+                </time>
               </strong>
               <br />
               {% trans %}Last accessed{% endtrans %}
               <strong>
                 {% if  token.access_time %}
-                  <time class="js-datetime" datetime="{{ token.access_time }}">{{ token.access_time }}</time>
+                  <time class="js-datetime" datetime="{{ token.access_time }}">
+                    {{ token.access_time }}
+                  </time>
                 {% else %}
                   {% trans %}Never{% endtrans %}
                 {% endif %}
@@ -48,7 +52,9 @@
               {% trans %}Expired on{% endtrans %}
               <strong>
                 {% if  token.expiration_time %}
-                  <time class="js-datetime" datetime="{{ token.expiration_time }}">{{ token.expiration_time }}</time>
+                  <time class="js-datetime" datetime="{{ token.expiration_time }}">
+                    {{ token.expiration_time }}
+                  </time>
                 {% else %}
                   {% trans %}Never{% endtrans %}
                 {% endif %}

@@ -2,5 +2,7 @@
 {#js vendor/jquery/jquery.min.js, vendor/popper/popper.min.js, vendor/bootstrap5/js/bootstrap.min.js, vendor/datatables-extensions/JSZip/jszip.min.js, vendor/datatables-extensions/pdfmake/build/pdfmake.min.js, vendor/datatables-extensions/pdfmake/build/vfs_fonts.js, vendor/datatables/js/dataTables.min.js, vendor/datatables-extensions/Responsive/js/dataTables.responsive.min.js, vendor/datatables-extensions/Buttons/js/dataTables.buttons.min.js, vendor/datatables-extensions/Buttons/js/buttons.html5.min.js, vendor/datatables-extensions/FixedHeader/js/dataTables.fixedHeader.min.js, vendor/datatables-extensions/rowgroup/js/dataTables.rowGroup.js #}
 {# FIXME keep ass dependencies here temporarily. #}
 <footer {{ attrs.render(class="small") }}>
-  {% trans %}Powered by{% endtrans %} <a href="{{ footer_url }}">{{ footer_name }}</a> © 2026
+  {% trans %}Powered by{% endtrans %}
+  <a href="{{ footer_url }}">{{ footer_name }}</a>
+  © 2026
 </footer>

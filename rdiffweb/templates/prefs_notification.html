@@ -5,7 +5,9 @@
   <div class="container">
     {% call panel(title=_("Notification settings")) %}
       <div class="panel-body">
-        <b>{% trans %}Notification sent to{% endtrans %}</b>
+        <b>
+          {% trans %}Notification sent to{% endtrans %}
+        </b>
         <input class="form-control"
                type="text"
                id="email"
@@ -18,11 +20,11 @@
     {% call panel(title=_("Report"), description=_("Configure how often you want to receive a backup report in your mailbox.")) %}
       <div class="panel-body">
         <form action="#" method="post" role="form" class="clearfix">
-          <Field field={{ report_form.action }} />
-          <Field field={{ report_form.report_time_range }} />
+          <cf:Field field={{ report_form.action }} />
+          <cf:Field field={{ report_form.report_time_range }} />
           <div class="d-flex">
-            <Field field={{ report_form.set_report_info }} class="btn-primary me-2" />
-            <Field field={{ report_form.send_report }} class="btn-secondary" />
+            <cf:Field field={{ report_form.set_report_info }} class="btn-primary me-2" />
+            <cf:Field field={{ report_form.send_report }} class="btn-secondary" />
           </div>
         </form>
       </div>
@@ -31,7 +33,7 @@
     {% call panel(title=_("Notification"), description=_("Configure when you will be notified if your backup is inactive.")) %}
       <div class="panel-body">
         <form action="#" method="post" role="form" class="clearfix">
-          <Fields form={{ notification_form }} />
+          <cf:Fields form={{ notification_form }} />
         </form>
       </div>
     {% endcall %}

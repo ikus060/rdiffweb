@@ -39,7 +39,7 @@
     {# Dialog to create SSH key. #}
     {% call modal_dialog('add-sshkey-modal',_('Add SSH key'), _('Add SSH key')) %}
       <input type="hidden" name="action" value="add" />
-      <Fields form={{ form }} />
+      <cf:Fields form={{ form }} />
     {% endcall %}
       {# djlint:on #}
       <!-- Delete SSH Key Modal -->

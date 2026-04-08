@@ -254,7 +254,9 @@
 {% macro storage_usage(disk_usage, disk_quota) %}
   {% if disk_usage and disk_quota %}
     {% set used_pct = disk_usage / disk_quota * 100 %}
-    <b>{% trans %}Storage Usage{% endtrans %}</b>
+    <b>
+      {% trans %}Storage Usage{% endtrans %}
+    </b>
     {% call card('bg-light') %}
       {% call card_body() %}
         {% call row() %}

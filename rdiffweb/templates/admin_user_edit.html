@@ -12,7 +12,7 @@
       {% call panel(
         title=_("Edit user"),
         show_submit_area=True) %}
-        <Fields form={{ form }} />
+        <cf:Fields form={{ form }} />
         {{ storage_usage(form.disk_usage.data, form.disk_quota.data) }}
       {% endcall %}
     </form>

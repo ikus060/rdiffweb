@@ -31,16 +31,22 @@
   {{ storage_usage(disk_usage, disk_quota) }}
   {# Repo statistics #}
   {% for repo in data %}
-    <b>{{ repo.display_name }}</b>
+    <b>
+      {{ repo.display_name }}
+    </b>
     {% call card('bg-light') %}
       {% call card_body() %}
         {# Status #}
         {% call row() %}
           {% call col('text-success' if repo.status[0] == 'ok' else 'text-warning') %}
-            <b>{% trans %}Status{% endtrans %}</b>
+            <b>
+              {% trans %}Status{% endtrans %}
+            </b>
           {% endcall %}
           {% call col('text-success' if repo.status[0] == 'ok' else 'text-warning') %}
-            <b>{{ repo.status[1] }}</b>
+            <b>
+              {{ repo.status[1] }}
+            </b>
           {% endcall %}
         {% endcall %}
         {# Last backup Date #}
