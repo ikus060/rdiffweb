@@ -128,6 +128,22 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
+# 2.11.3 (2026-04-09)
+
+* **Security Fixes:**
+  * api: restrict `/api/users` endpoint to administrators only
+
+# 2.11.2 (2026-04-07)
+
+* **Bug Fixes:**
+  * smtp: fix encoding for email_from
+
+# 2.11.1 (2026-03-11)
+
+* **Bug Fixes:**
+  * fix: add support for configargparse >= 1.7.5
+  * fix: bookwork test by pinning setuptools version
+
 # 2.11.0 (2025-01-14)
 
 * **New Features**
