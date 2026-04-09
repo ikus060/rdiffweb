@@ -39,4 +39,4 @@ class AdminPagesAsUser(rdiffweb.test.WebCase):
     )
     def test_forbidden_access(self, value):
         self.getPage(value)
-        self.assertStatus(404)
+        self.assertStatus(403)

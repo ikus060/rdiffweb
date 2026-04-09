@@ -633,6 +633,19 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
 
     auth = [("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))]
 
+    def test_not_admin(self):
+        # Given a user (not-admin)
+        user_obj = UserObject(username='newuser').add()
+        user_obj.set_password('gV3NJqqGr5wc8vh')
+        user_obj.commit()
+        auth = [("Authorization", "Basic " + b64encode(b"newuser:gV3NJqqGr5wc8vh").decode('ascii'))]
+
+        # When trying to access /api/users
+        self.getPage('/api/users', headers=auth)
+
+        # Then access is denied
+        self.assertStatus(403)
+
     @parameterized.expand(
         [
             ('with_userid', 0),

@@ -414,6 +414,7 @@ class AdminUsersPage(Controller):
 
 
 @cherrypy.expose
+@cherrypy.tools.is_admin()
 @cherrypy.tools.required_scope(scope='all,admin_read_users')
 class AdminApiUsers(Controller):
     ROLES_MAP = {v: k for k, v in UserObject.ROLES.items()}

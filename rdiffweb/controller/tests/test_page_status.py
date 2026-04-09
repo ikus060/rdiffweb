@@ -117,7 +117,7 @@ class StatusTest(rdiffweb.test.WebCase):
 
         # Browse admin's repos
         self.getPage(url)
-        self.assertStatus(404)
+        self.assertStatus(403)
 
     def test_with_invalid_username(self):
         # Given an invalid repo

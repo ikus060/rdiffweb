@@ -19,13 +19,13 @@ import cherrypy
 def is_admin():
     # Validate the permissions.
     if not cherrypy.serving.request.currentuser or not cherrypy.serving.request.currentuser.is_admin:
-        raise cherrypy.HTTPError(404)
+        raise cherrypy.HTTPError(403)
 
 
 def is_maintainer():
     # Validate the permissions.
     if not cherrypy.serving.request.currentuser or not cherrypy.serving.request.currentuser.is_maintainer:
-        raise cherrypy.HTTPError(404)
+        raise cherrypy.HTTPError(403)
 
 
 # Make sure it's running after authentication (priority = 72)
