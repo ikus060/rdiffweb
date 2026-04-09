@@ -82,6 +82,18 @@ For more information, visit the [Minarca Website](https://minarca.org).
 
 # Changelog
 
+## 6.2.3 (2026-04-09)
+
+* rdiffweb: bump to v2.11.2 to fix security issue
+
+## 6.2.2 (2026-03-18)
+
+* rdiffweb: bump to v2.11.1 to fix argparse issue
+
+## 6.2.1 (2026-02-27)
+
+* Fix permissions set on /etc/minarca, /var/log & /var/lib/minarca during installation
+
 ## 6.2.0 (2025-01-14)
 
 * Upgrade tzlocal
