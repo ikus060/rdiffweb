@@ -78,15 +78,17 @@ def attrib(**kwargs):
     return do_mark_safe(data)
 
 
-def do_format_lastupdated(value, now=None):
+def do_format_lastupdated(value, _now=None):
     """
     Used to format date as "Updated 10 minutes ago".
 
     Value could be a RdiffTime or an epoch as int.
+
+    _now only used for testing.
     """
     if not value:
         return ""
-    now = librdiff.RdiffTime(now)
+    now = librdiff.RdiffTime() if _now is None else librdiff.RdiffTime(_now)
     if isinstance(value, librdiff.RdiffTime):
         delta = now.epoch - value.epoch
     elif isinstance(value, datetime.datetime):

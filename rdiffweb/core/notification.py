@@ -341,7 +341,8 @@ class NotificationPlugin(SimplePlugin):
         # Compute the start & end time for the repport using server timezone
         assert userobj.report_time_range, 'invalid time_range'
         time_range = userobj.report_time_range
-        now = RdiffTime(_now).astimezone().replace(hour=0, minute=0, second=0)
+        now = RdiffTime(_now) if _now else RdiffTime()
+        now = now.astimezone().replace(hour=0, minute=0, second=0)
         if time_range == 30:
             # Monthly
             end_time = now - timedelta(days=now.day - 1)

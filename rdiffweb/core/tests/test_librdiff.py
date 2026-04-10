@@ -25,6 +25,7 @@ import unittest
 from inspect import isclass
 from unittest.case import skipIf
 
+import pytz
 from parameterized import parameterized
 
 from rdiffweb.core.librdiff import (
@@ -772,12 +773,10 @@ class RdiffTimeTest(unittest.TestCase):
     def test_int(self):
         """Check if int(RdiffTime) return expected value."""
         self.assertEqual(1415221470, int(RdiffTime(1415221470)))
-        self.assertEqual(1415217870, int(RdiffTime(1415221470, 3600)))
 
     def test_str(self):
         """Check if __str__ is working."""
         self.assertEqual('2014-11-05T21:04:30Z', str(RdiffTime(1415221470)))
-        self.assertEqual('2014-11-05T21:04:30+01:00', str(RdiffTime(1415221470, 3600)))
 
     def test_sub(self):
         """Check if addition with timedelta is working as expected."""
@@ -807,11 +806,11 @@ class RdiffTimeTest(unittest.TestCase):
     def test_astimezone(self):
         self.assertEqual(
             RdiffTime('2014-11-03T01:04:30Z'),
-            RdiffTime('2014-11-02T21:04:30-04:00').astimezone(0),
+            RdiffTime('2014-11-02T21:04:30-04:00').astimezone(pytz.utc),
         )
         self.assertEqual(
             RdiffTime('2014-11-02T21:04:30-04:00'),
-            RdiffTime('2014-11-03T01:04:30Z').astimezone(-14400),
+            RdiffTime('2014-11-03T01:04:30Z').astimezone(pytz.timezone("America/Montreal")),
         )
         self.assertEqual(
             RdiffTime('2014-11-03T01:04:30Z'),

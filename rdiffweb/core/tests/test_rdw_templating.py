@@ -54,15 +54,15 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual('value="0"', attrib(value=0))
 
     def test_do_format_lastupdated(self):
-        self.assertEqual('23 seconds ago', do_format_lastupdated(1591978823, now=1591978846))
-        self.assertEqual('23 seconds ago', do_format_lastupdated(RdiffTime(value=1591978823), now=1591978846))
-        self.assertEqual('8 minutes ago', do_format_lastupdated(RdiffTime(value=1591978324), now=1591978846))
-        self.assertEqual('2 hours ago', do_format_lastupdated(RdiffTime(value=1591971646), now=1591978846))
-        self.assertEqual('2 days ago', do_format_lastupdated(RdiffTime(value=1591805524), now=1591978846))
-        self.assertEqual('4 weeks ago', do_format_lastupdated(RdiffTime(value=1589127124), now=1591978846))
-        self.assertEqual('5 months ago', do_format_lastupdated(RdiffTime(value=1578672724), now=1591978846))
-        self.assertEqual('4 years ago', do_format_lastupdated(RdiffTime(value=1452442324), now=1591978846))
-        self.assertEqual('1 days ago', do_format_lastupdated(RdiffTime(value=1676906974), now=1676997934))
+        self.assertEqual('23 seconds ago', do_format_lastupdated(1591978823, _now=1591978846))
+        self.assertEqual('23 seconds ago', do_format_lastupdated(RdiffTime(1591978823), _now=1591978846))
+        self.assertEqual('8 minutes ago', do_format_lastupdated(RdiffTime(1591978324), _now=1591978846))
+        self.assertEqual('2 hours ago', do_format_lastupdated(RdiffTime(1591971646), _now=1591978846))
+        self.assertEqual('2 days ago', do_format_lastupdated(RdiffTime(1591805524), _now=1591978846))
+        self.assertEqual('4 weeks ago', do_format_lastupdated(RdiffTime(1589127124), _now=1591978846))
+        self.assertEqual('5 months ago', do_format_lastupdated(RdiffTime(1578672724), _now=1591978846))
+        self.assertEqual('4 years ago', do_format_lastupdated(RdiffTime(1452442324), _now=1591978846))
+        self.assertEqual('1 days ago', do_format_lastupdated(RdiffTime(1676906974), _now=1676997934))
 
 
 class ListParentsTest(WebCase):

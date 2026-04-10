@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import bisect
-import calendar
 import encodings
 import logging
 import os
@@ -24,7 +23,7 @@ import subprocess
 import sys
 import time
 from collections import namedtuple
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from subprocess import CalledProcessError
 
 import cherrypy
@@ -121,183 +120,139 @@ class DoesNotExistError(Exception):
     pass
 
 
-class RdiffTime(object):
-    """Faster implementation of datetime optimized for parsing date from string."""
+class RdiffTime(datetime):
+    """
+    Faster implementation of datetime optimized for parsing date from string.
+    """
 
-    def __init__(self, value=None, tz_offset=None):
-        assert value is None or isinstance(value, int) or isinstance(value, str) or hasattr(value, 'timestamp')
-        if value is None:
-            # Get GMT time.
-            self._time_seconds = int(time.time())
-            self._tz_offset = 0
-        elif isinstance(value, int):
-            self._time_seconds = value
-            self._tz_offset = tz_offset or 0
-        elif hasattr(value, 'timestamp'):
-            # Datetime
-            self._time_seconds = int(value.timestamp())
-            self._tz_offset = 0
-        else:
-            self._time_seconds, self._tz_offset = self._from_str(value)
+    def __new__(cls, *args, **kwargs):
+        """
+        Construct a new RdiffTime instance. Accepts multiple input types:
+        - No args: defaults to current time (UTC)
+        - int: Unix epoch timestamp
+        - str: ISO 8601 formatted string e.g. "2024-01-15T10:30:00Z"
+        - datetime: wraps an existing datetime object
+        - Multiple args: passed directly to the datetime constructor
+        Always returns a timezone-aware instance (defaults to UTC).
+        """
+        dt = None
+        epoch = None
+
+        if len(args) == 1 and isinstance(args[0], str):
+            # Parse from ISO 8601 string e.g. "2024-01-15T10:30:00Z"
+            return cls._from_str(args[0])
+
+        elif len(args) == 0:
+            # No argument: default to current time as epoch
+            epoch = int(time.time())
+
+        elif len(args) == 1 and isinstance(args[0], int):
+            # Single integer argument treated as Unix epoch timestamp
+            epoch = args[0]
+
+        elif len(args) == 1 and isinstance(args[0], datetime):
+            # Wrap an existing datetime object
+            dt = args[0]
+
+        if epoch is not None:
+            # Convert epoch to UTC datetime
+            dt = datetime.fromtimestamp(epoch, tz=timezone.utc)
+
+        if dt is not None:
+            # Build RdiffTime from resolved datetime, always forcing UTC
+            return super().__new__(
+                cls,
+                dt.year,
+                dt.month,
+                dt.day,
+                dt.hour,
+                dt.minute,
+                dt.second,
+                tzinfo=timezone.utc,
+            )
+
+        # Fallback: pass all arguments as-is to datetime constructor
+        # e.g. RdiffTime(2024, 1, 15, 10, 30, 0, tzinfo=...)
+        return super().__new__(
+            cls,
+            *args,
+            **kwargs,
+        )
 
     @classmethod
-    def _from_str(cls, time_string):
-        if len(time_string) < 19:
-            raise ValueError('date too short: ' + time_string)
-        if time_string[10] != 'T':
-            raise ValueError('missing date time separator (T): ' + time_string)
-        if time_string[19] not in ['-', '+', 'Z']:
-            raise ValueError('missing timezone info (-, + or Z): ' + time_string)
-        if time_string[4] != '-' or time_string[7] != '-':
-            raise ValueError('missing date separator (-): ' + time_string)
-        if not (time_string[13] in [':', '-'] and time_string[16] in [':', '-']):
-            raise ValueError('missing date separator (-): ' + time_string)
+    def _from_str(cls, value):
+        if len(value) < 19:
+            raise ValueError('date too short: ' + value)
+        if value[10] != 'T':
+            raise ValueError('missing date time separator (T): ' + value)
+        if value[19] not in ['-', '+', 'Z']:
+            raise ValueError('missing timezone info (-, + or Z): ' + value)
+        if value[4] != '-' or value[7] != '-':
+            raise ValueError('missing date separator (-): ' + value)
+        if not (value[13] in [':', '-'] and value[16] in [':', '-']):
+            raise ValueError('missing date separator (-): ' + value)
         try:
-            year = int(time_string[0:4])
+            year = int(value[0:4])
             if not (1900 < year < 2200):
                 raise ValueError('unexpected year value between 1900 and 2200: ' + str(year))
-            month = int(time_string[5:7])
+            month = int(value[5:7])
             if not (1 <= month <= 12):
                 raise ValueError('unexpected month value between 1 and 12: ' + str(month))
-            day = int(time_string[8:10])
+            day = int(value[8:10])
             if not (1 <= day <= 31):
                 raise ValueError('unexpected day value between 1 and 31: ' + str(day))
-            hour = int(time_string[11:13])
+            hour = int(value[11:13])
             if not (0 <= hour <= 23):
                 raise ValueError('unexpected hour value between 1 and 23: ' + str(hour))
-            minute = int(time_string[14:16])
+            minute = int(value[14:16])
             if not (0 <= minute <= 60):
                 raise ValueError('unexpected minute value between 1 and 60: ' + str(minute))
-            second = int(time_string[17:19])
+            second = int(value[17:19])
             if not (0 <= second <= 61):  # leap seconds
                 raise ValueError('unexpected second value between 1 and 61: ' + str(second))
-            timetuple = (year, month, day, hour, minute, second, -1, -1, 0)
-            return calendar.timegm(timetuple), cls._tzdtoseconds(time_string[19:])
+            tzd = value[19:]
+            if tzd == "Z":
+                offset = 0
+            else:
+                assert len(tzd) == 6  # only accept forms like +08:00 or +08-00 for now
+                assert (tzd[0] == "-" or tzd[0] == "+") and tzd[3] in [":", '-']
+                if tzd[0] == "+":
+                    plus_minus = 1
+                else:
+                    plus_minus = -1
+                offset = plus_minus * 60 * (60 * int(tzd[1:3]) + int(tzd[4:]))
+            return super().__new__(
+                cls,
+                year,
+                month,
+                day,
+                hour,
+                minute,
+                second,
+                tzinfo=timezone(offset=timedelta(seconds=offset)),
+            )
         except (TypeError, ValueError, AssertionError):
-            raise ValueError(time_string)
-
-    @classmethod
-    def _tzdtoseconds(cls, tzd):
-        """Given w3 compliant TZD, converts it to number of seconds from UTC"""
-        if tzd == "Z":
-            return 0
-        assert len(tzd) == 6  # only accept forms like +08:00 or +08-00 for now
-        assert (tzd[0] == "-" or tzd[0] == "+") and tzd[3] in [":", '-']
-        if tzd[0] == "+":
-            plus_minus = 1
-        else:
-            plus_minus = -1
-        return plus_minus * 60 * (60 * int(tzd[1:3]) + int(tzd[4:]))
+            raise ValueError(value)
 
     @property
     def epoch(self):
-        return self._time_seconds - self._tz_offset
-
-    def _tz_str(self):
-        if self._tz_offset:
-            hours, minutes = divmod(abs(self._tz_offset) // 60, 60)
-            assert 0 <= hours <= 23
-            assert 0 <= minutes <= 59
-            if self._tz_offset > 0:
-                plus_minus = "+"
-            else:
-                plus_minus = "-"
-            return "%s%s:%s" % (plus_minus, "%02d" % hours, "%02d" % minutes)
+        if self.tzinfo is None:
+            return int(self.replace(tzinfo=timezone.utc).timestamp())
         else:
-            return "Z"
-
-    def astimezone(self, tz=None):
-        """
-        Return a datetime object with new tzinfo attribute tz, adjusting the date and time data so the result is the same UTC time as self, but in tz’s local time.
-        """
-        if tz is None:
-            # Use local timezone
-            localtm = time.localtime(self._time_seconds)
-            offset = localtm.tm_gmtoff
-        elif hasattr(tz, 'utcoffset'):
-            offset = tz.utcoffset(None)
-        elif isinstance(tz, int):
-            offset = tz
-        else:
-            raise TypeError('astimezone() argument must be a timezone, int or None')
-        return RdiffTime(self._time_seconds - self._tz_offset + offset, offset)
-
-    @property
-    def day(self):
-        """day (1-31)"""
-        return time.gmtime(self._time_seconds).tm_mday
-
-    @property
-    def month(self):
-        """day (1-31)"""
-        return time.gmtime(self._time_seconds).tm_mon
-
-    def replace(self, year=None, month=None, day=None, hour=None, minute=None, second=None, microsecond=None):
-        """
-        Return a datetime with the same attributes, except for those attributes given new values by whichever keyword arguments are specified.
-        """
-        t = time.gmtime(self._time_seconds)
-        year = t.tm_year if year is None else year
-        month = t.tm_mon if month is None else month
-        day = t.tm_mday if day is None else day
-        hour = t.tm_hour if hour is None else hour
-        minute = t.tm_min if minute is None else minute
-        second = t.tm_sec if second is None else second
-        _time_seconds = calendar.timegm((year, month, day, hour, minute, second, -1, -1, 0))
-        return RdiffTime(_time_seconds, self._tz_offset)
-
-    def weekday(self):
-        """
-        Return the day of the week as an integer, where Monday is 0 and Sunday is 6.
-        """
-        return time.gmtime(self._time_seconds).tm_wday
-
-    def __add__(self, other):
-        """Support plus (+) timedelta"""
-        assert isinstance(other, timedelta)
-        return RdiffTime(self._time_seconds + int(other.total_seconds()), self._tz_offset)
-
-    def __sub__(self, other):
-        """Support minus (-) timedelta"""
-        assert isinstance(other, timedelta) or isinstance(other, RdiffTime)
-        # Sub with timedelta, return RdiffTime
-        if isinstance(other, timedelta):
-            return RdiffTime(self._time_seconds - int(other.total_seconds()), self._tz_offset)
-
-        # Sub with RdiffTime, return timedelta
-        if isinstance(other, RdiffTime):
-            return timedelta(seconds=self._time_seconds - other._time_seconds)
+            return int(self.timestamp())
 
     def __int__(self):
         """Return this date as seconds since epoch."""
         return self.epoch
 
-    def __lt__(self, other):
-        assert isinstance(other, RdiffTime)
-        return self.epoch < other.epoch
-
-    def __le__(self, other):
-        assert isinstance(other, RdiffTime)
-        return self.epoch <= other.epoch
-
-    def __gt__(self, other):
-        assert isinstance(other, RdiffTime)
-        return self.epoch > other.epoch
-
-    def __ge__(self, other):
-        assert isinstance(other, RdiffTime)
-        return self.epoch >= other.epoch
-
-    def __eq__(self, other):
-        return isinstance(other, RdiffTime) and self.epoch == other.epoch
-
-    def __hash__(self):
-        return hash(self.epoch)
-
     def __str__(self):
         """return utf-8 string"""
-        value = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(self._time_seconds))
-        return value + self._tz_str()
+        tz_str = self.strftime("%z")  # '+0000' for UTC
+        if tz_str == "+0000":
+            tz_formatted = "Z"
+        else:
+            tz_formatted = f"{tz_str[:3]}:{tz_str[3:]}"  # '+04:00'
+        return self.strftime("%Y-%m-%dT%H:%M:%S") + tz_formatted
 
     def __repr__(self):
         """return second since epoch"""
