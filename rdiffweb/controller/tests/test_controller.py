@@ -58,12 +58,7 @@ class ControllerTest(rdiffweb.test.WebCase):
             '/main.css',
             '/login-bg',
             '/header_logo',
-            '/static/css/bootstrap.min.css',
-            '/static/css/jquery.dataTables.min.css',
-            '/static/js/bootstrap.min.js',
-            '/static/js/jquery.dataTables.min.js',
-            '/static/js/jquery.min.js',
-            '/static/js/main.js',
+            '/static/main.js',
         ]
     )
     def test_static_files(self, path):

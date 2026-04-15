@@ -1,4 +1,5 @@
 {# def value, max=100, color='primary', height=12 #}
+{# css cf/vendor/bootstrap5/css/bootstrap.min.css #}
 {% set pct = ((value / max) * 100) | round(1) if max else 0 %}
 <div {{ attrs.render(class="progress mb-3", style="height:" + height|string + "px;") }}>
   <div class="progress-bar bg-{{ color }}"

@@ -132,7 +132,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
         self.assertHeaderItemValue('Expires', '0')
 
     def test_no_cache_with_static(self):
-        self.getPage('/static/js/main.js')
+        self.getPage('/static/main.js')
         # Then the request is accepted with 200 OK
         self.assertStatus(200)
         self.assertNoHeader('Cache-control')
