@@ -230,7 +230,7 @@ class OAuthLoginWithUsernameTest(AbstractOAuthLoginTest, rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', 'http://%s:%s/' % (self.HOST, self.PORT))
         # Then user is authenticated
-        self.getPage('/', headers=self.cookies)
+        self.getPage(f'/home/{userobj.username}', headers=self.cookies)
         self.assertStatus(200)
         # Then user is create in database
         userobj.expire()
@@ -270,7 +270,7 @@ class OAuthLoginWithEmailTest(AbstractOAuthLoginTest, rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', 'http://%s:%s/' % (self.HOST, self.PORT))
         # Then user is authenticated
-        self.getPage('/', headers=self.cookies)
+        self.getPage(f'/home/{userobj.username}', headers=self.cookies)
         self.assertStatus(200)
         # Then user is create in database
         userobj.expire()
@@ -312,7 +312,7 @@ class OAuthLoginAddMissingTest(AbstractOAuthLoginTest, rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', 'http://%s:%s/' % (self.HOST, self.PORT))
         # Then user is authenticated
-        self.getPage('/', headers=self.cookies)
+        self.getPage('/home/tony', headers=self.cookies)
         self.assertStatus(200)
         # Then user is create in database
         userobj = UserObject.get_user('tony')
@@ -360,7 +360,7 @@ class OAuthLoginAddMissingWithEmailTest(AbstractOAuthLoginTest, rdiffweb.test.We
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', 'http://%s:%s/' % (self.HOST, self.PORT))
         # Then user is authenticated
-        self.getPage('/', headers=self.cookies)
+        self.getPage('/home/tony_example.com', headers=self.cookies)
         self.assertStatus(200)
         # Then user is create in database
         userobj = UserObject.get_user('tony_example.com')

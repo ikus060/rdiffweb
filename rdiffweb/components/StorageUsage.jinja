@@ -1,0 +1,44 @@
+{# def disk_usage, disk_quota, repos_usage={} #}
+{% set used_pct = ((disk_usage / disk_quota) * 100) | round(1) if disk_quota else 0 %}
+{% set free_pct = (100 - used_pct) | round(1) %}
+{# Space used by individual repos #}
+{% set total_repos_usage = repos_usage.values() | sum %}
+{# Remaining space used by backup history (snapshots, deduplication, etc.) #}
+{% set history_usage = disk_usage - total_repos_usage %}
+{% set history_pct = ((history_usage / disk_quota) * 100) | round(1) if disk_quota else 0 %}
+{% set free_bytes = disk_quota - disk_usage %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h6 class="fw-bold mb-0">
+      <i class="bi bi-hdd me-2 text-primary">
+      </i>
+      {{ _("Storage") }}
+    </h6>
+    <p class="text-muted small mb-0">{{ _("Total quota across all repositories") }}</p>
+  </div>
+  <span class="fw-bold fs-5">
+    {{ disk_usage | filesize }}
+    <span class="text-muted fw-normal fs-6">/ {{ disk_quota | filesize }}</span>
+  </span>
+</div>
+<ProgressBar :value="disk_usage" :max="disk_quota" class="mb-3" />
+<div class="row g-2">
+  {% for repo_name, repo_usage in repos_usage.items() %}
+    <div class="col-6 col-md-3 col-lg-2">
+      <div class="d-flex flex-column gap-1">
+        <div class="small fw-semibold text-nowrap text-truncate">{{ repo_name }}</div>
+        <ProgressBar :value="repo_usage" :max="disk_quota" class="mb-3" height="6" />
+        <div class="text-muted small">{{ repo_usage | filesize }}</div>
+      </div>
+    </div>
+  {% endfor %}
+  <!-- Free space entry -->
+  {% set free_bytes = disk_quota - disk_usage %}
+  <div class="col-6 col-md-3 col-lg-2">
+    <div class="d-flex flex-column gap-1">
+      <div class="small fw-semibold text-nowrap text-truncate">{{ _("Free") }}</div>
+      <ProgressBar :value="free_bytes" :max="disk_quota" class="mb-3" height="6" color="info" />
+      <div class="text-muted small">{{ free_bytes | filesize }}</div>
+    </div>
+  </div>
+</div>

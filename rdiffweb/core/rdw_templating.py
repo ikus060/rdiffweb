@@ -17,7 +17,6 @@
 import logging
 from io import StringIO
 
-from cherrypy_foundation.tools.i18n import ugettext as _
 from jinja2.filters import do_mark_safe
 
 # Define the logger

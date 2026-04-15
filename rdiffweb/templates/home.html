@@ -1,82 +1,142 @@
 {% extends 'layout.html' %}
-{% from 'include/storage_usage.html' import storage_usage %}
-{% from 'include/empty.html' import empty %}
 {% set breadcrumbs = breadcrumb_page(self) %}
 {% block content %}
-  {% macro repo_list_item(repo) %}
-    <a {{ attrib(class=['list-group-item', repo.failed and 'disabled', repo.status[0] != 'ok' and 'list-group-item-warning']) }}
-       href="{{ url_for('browse', repo) }}">
-      <RdwIcon value="bi-hdd" />
-      {% set name = repo.display_name.split('/')[-1] %}
-      {{ name }}
-      {% if name|length==1 %}:\{% endif %}
-      <span class="float-end text-secondary">
-        {% if repo.status[0] != 'ok' %}
-          <span data-bs-toggle="tooltip"
-                data-placement="left"
-                title="{{ repo.status[1] }}">
-            <RdwIcon value="bi-exclamation-triangle" />
-          </span>
-        {% endif %}
-      </span>
-    </a>
-  {% endmacro %}
-  {# disk usage/quota #}
-  {{ storage_usage(disk_usage, disk_quota) }}
-  {# Repositories #}
-  <h2 class="mb-2">{% trans %}Repositories{% endtrans %}</h2>
-  <div class="row">
-    {% if repos|length == 0 %}
-      <div class="col-md-12">
-        {% call empty('repo', _('No repositories')) %}
-          <p>
-            {% trans %}You don't have any repositories in your user directory. You may need to refresh the page if you just made a new backup.{% endtrans %}
-          </p>
-        {% endcall %}
-      </div>
-    {% else %}
-      {% for repo in repos|sort(attribute='display_name') %}
-        <div class="col-md-6 col-lg-4 col-xl-3 mt-2 mb-4">
-          <div class="card {% if repo.status[0] != 'ok' %}border-warning{% endif %} h-100">
-            <div class="card-header text-center display-1">
-              <a href="{{ url_for('browse', repo) }}"
-                 class="{% if repo.status[0] != 'ok' %}text-warning{% endif %}">
-                <RdwIcon value="repo" />
-              </a>
-            </div>
-            <div class="card-body">
-              {# Format the name to highligth the significant repository name #}
-              {% set name = repo.display_name.split('/')[-1] %}
-              {% if name|length == 1 %}
-                {% set name = repo.display_name.split('/')[-2] %}
-                {% set prefix = '/'.join(repo.display_name.split('/')[0:-2]) %}
-                {% set suffix = repo.display_name.split('/')[-1] %}
-              {% else %}
-                {% set prefix = '/'.join(repo.display_name.split('/')[0:-1]) %}
-                {% set suffix = "" %}
-              {% endif %}
-              <h5 class="card-title">
-                <a href="{{ url_for('browse', repo) }}"
-                   class="{% if repo.status[0] != 'ok' %}text-warning{% endif %}">
-                  {% if prefix %}
-                    <small>
-                      <small>{{ prefix }}/</small>
-                    </small>
-                  {% endif %}
-                  {{ name }}
-                  {% if suffix %}
-                    <small>
-                      <small>/{{ suffix }}</small>
-                    </small>
-                  {% endif %}
-                </a>
-              </h5>
-              {# Last backup date #}
-              <h6 class="card-subtitle small"></h6>
-            </div>
-          </div>
-        </div>
-      {% endfor %}
-    {% endif %}
+  {# Page header #}
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      {% if currentuser == userobj %}
+        <h2 class="fw-bold mb-0">{% trans %}My Backups{% endtrans %}</h2>
+        <p class="text-muted small mb-0">{% trans %}Overview of all your protected repositories{% endtrans %}</p>
+      {% else %}
+        <h2 class="fw-bold mb-0">
+          {{ _("%(fullname)s's Backups", fullname=(userobj.fullname or userobj.username).capitalize()) }}
+        </h2>
+        <p class="text-muted small mb-0">{% trans %}Overview of all the protected repositories{% endtrans %}</p>
+      {% endif %}
+    </div>
   </div>
+  {# KPI Cards #}
+  {# Determine overall status #}
+  {% if total_failed > 0 %}
+    {% set overall_label = _('Degraded') %}
+    {% set overall_color = "danger" %}
+    {% set overall_icon = "bi-exclamation-triangle" %}
+    {% set overall_subtitle = _('%(count)s failed', count=total_failed) %}
+  {% elif total_interrupted > 0 %}
+    {% set overall_label = _('Interrupted') %}
+    {% set overall_color = "warning" %}
+    {% set overall_icon = "bi-slash-circle" %}
+    {% set overall_subtitle = _('%(count)s interrupted', count=total_interrupted) %}
+  {% elif total_overdue > 0 %}
+    {% set overall_label = _('Overdue') %}
+    {% set overall_color = "warning" %}
+    {% set overall_icon = "bi-slash-circle" %}
+    {% set overall_subtitle = _('%(count)s overdue', count=total_overdue) %}
+  {% elif total_in_progress > 0 %}
+    {% set overall_label = _('In Progress') %}
+    {% set overall_color = "info" %}
+    {% set overall_icon = "bi-arrow-repeat" %}
+    {% set overall_subtitle = _('%(count)s in progress', count=total_in_progress) %}
+  {% else %}
+    {% set overall_label = _('Healthy') %}
+    {% set overall_color = "success" %}
+    {% set overall_icon = "bi-shield-check" %}
+    {% set overall_subtitle = _('%(count)s healthy', count=total_repo) %}
+  {% endif %}
+  <div class="row g-3 mb-4">
+    <!-- Overall Status -->
+    <div class="col-6 col-md-3">
+      <KpiCard :title="_('Overall Status')"
+               :value="overall_label"
+               :subtitle="overall_subtitle"
+               :color="overall_color"
+               :icon="overall_icon" />
+    </div>
+    <!-- Repositories -->
+    <div class="col-6 col-md-3">
+      <KpiCard :title="_('Repositories')"
+               :value="total_repo"
+               :subtitle="_('%(ok)s healthy · %(other)s needs attentions', ok=total_ok + total_in_progress, other=total_failed + total_interrupted + total_overdue)"
+               color="secondary"
+               icon="bi-hdd-stack" />
+    </div>
+    <!-- Last Backup / In Progress -->
+    <div class="col-6 col-md-3">
+      {% if total_in_progress > 0 %}
+        <KpiCard :title="_('Backup(s) currently running')"
+                 :value="total_in_progress"
+                 :subtitle="_('In Progress')"
+                 color="info"
+                 icon="bi-arrow-repeat" />
+      {% else %}
+        <KpiCard :title="_('Last Backup')"
+                 :value="last_backup_date | lastupdated if last_backup_date else _('Never')"
+                 :subtitle="last_backup_repo if last_backup_repo else ''"
+                 :color="'success' if last_backup_date else 'secondary'"
+                 icon="bi-clock-history" />
+      {% endif %}
+    </div>
+    <!-- Errors -->
+    <div class="col-6 col-md-3">
+      <KpiCard :title="_('Errors')"
+               :value="error_count"
+               :subtitle="_('Across all repositories')"
+               :color="'danger' if error_count else 'success'"
+               icon="bi-bug" />
+    </div>
+  </div>
+  {# Storage #}
+  <div class="card rounded-3 shadow-sm mb-4 p-4">
+    <StorageUsage :disk_usage="disk_usage" :disk_quota="disk_quota" :repos_usage="repos_usage" />
+  </div>
+  {# Heatmap #}
+  {% if repo_objs | length > 0 %}
+    {% set palette = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"] %}
+    <div class="card rounded-3 shadow-sm mb-4 p-4">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h6 class="fw-bold mb-0">
+            <RdwIcon value="bi-calendar3" />
+            {% trans %}Backup Activity{% endtrans %}
+          </h6>
+          <p class="text-muted small mb-0">
+            {{ _('Last %(days)s days — all repositories combined', days=(activity_end - activity_start).days) }}
+          </p>
+        </div>
+        <div class="d-flex gap-3 text-muted small align-items-center">
+          <span>
+            <RdwIcon value="bi-archive" />
+            {{ _('%(count)s backups', count=activity_dates | length) }}
+          </span>
+        </div>
+      </div>
+      <div class="d-flex">
+        <Heatmap :start="activity_start" :end="activity_end" :events="activity_dates" :palette="palette" />
+      </div>
+      <div class="d-flex align-items-center gap-1 mt-3 justify-content-end">
+        <HeatmapLegend :palette="palette" />
+      </div>
+    </div>
+  {% endif %}
+  {# Repositories card #}
+  <h6 class="fw-bold mb-3">
+    <RdwIcon value="bi-archive" />
+    {% trans %}Repositories{% endtrans %}
+  </h6>
+  <div class="row g-3 mb-4">
+    {% for repo in repo_objs %}<RepoCard :repo="repo" class="col-12 col-xl-6 col-xxl-4" />{% endfor %}
+  </div>
+  {% if repo_objs | length ==0 %}
+    <div class="card rounded-3 shadow-sm mb-4">
+      <RdwEmpty icon="bi-cloud-arrow-up"
+                :title="{{ _("No backups yet") }}"
+                class="p-5">
+        <p>
+          {% trans %}You don't have any repositories configured.{% endtrans %}
+          <br>
+          {% trans %}Start by setting up your first backup.{% endtrans %}
+        </p>
+      </RdwEmpty>
+    </div>
+  {% endif %}
 {% endblock content %}

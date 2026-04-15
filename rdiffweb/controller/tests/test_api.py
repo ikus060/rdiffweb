@@ -190,8 +190,6 @@ class APITest(rdiffweb.test.WebCase):
         b = {'login': self.USERNAME, 'password': self.PASSWORD}
         self.getPage('/login/', method='POST', body=b)
         self.assertStatus('303 See Other')
-        self.getPage('/')
-        self.assertStatus('200 OK')
         # When querying the API
         self.getPage('/api/')
         # Then access is refused

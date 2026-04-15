@@ -84,7 +84,7 @@ class PageRegistry(dict):
 
 # TODO Consider using function decorator to build the registry
 _pages = [
-    Page('home', _('Home'), '/', 'bi-house-fill'),
+    Page('home', _('Home'), 'home', 'bi-house-fill'),
     # Repo
     Page('browse', _('Files'), 'browse', 'bi-folder'),
     Page('history', _('History'), 'history', None, False, 'browse'),

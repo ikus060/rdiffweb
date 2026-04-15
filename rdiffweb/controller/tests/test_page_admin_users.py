@@ -165,7 +165,12 @@ class AdminTest(rdiffweb.test.WebCase):
         #  Add user to be listed
         self.listener.user_password_changed.reset_mock()
         self._add_user(
-            "test2", "test2@test.com", "pr3j5Dwi", "/home/", UserObject.USER_ROLE, mfa=UserObject.DISABLED_MFA
+            "test2",
+            "test2@test.com",
+            "pr3j5Dwi",
+            "/initial/user/root/",
+            UserObject.USER_ROLE,
+            mfa=UserObject.DISABLED_MFA,
         )
         self.assertStatus(303)
         self.getPage('/admin/users/')
@@ -176,7 +181,12 @@ class AdminTest(rdiffweb.test.WebCase):
         self.listener.user_password_changed.reset_mock()
         #  Update user
         self._edit_user(
-            "test2", "chaned@test.com", "new-password", "/tmp/", UserObject.ADMIN_ROLE, mfa=UserObject.ENABLED_MFA
+            "test2",
+            "chaned@test.com",
+            "new-password",
+            "/new/user-root/",
+            UserObject.ADMIN_ROLE,
+            mfa=UserObject.ENABLED_MFA,
         )
         self.assertStatus(303)
         self.getPage('/admin/users/')
@@ -185,8 +195,8 @@ class AdminTest(rdiffweb.test.WebCase):
         self.assertInBody("User information modified successfully.")
         self.assertInBody("test2")
         self.assertInBody("chaned@test.com")
-        self.assertNotInBody("/home/")
-        self.assertInBody("/tmp/")
+        self.assertNotInBody("/initial/user/root/")
+        self.assertInBody("/new/user-root/")
 
         self._delete_user("test2", confirm="test2")
         cherrypy.scheduler.wait_for_jobs()

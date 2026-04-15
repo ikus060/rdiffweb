@@ -1,0 +1,13 @@
+{# def title, value, subtitle, icon, color #}
+<div {{ attrs.render(class="card kpi-card h-100 p-3 shadow-sm") }}>
+  <div class="d-flex align-items-start gap-4">
+    <div class="kpi-icon bg-{{ color }} bg-opacity-10 text-{{ color }}">
+      <RdwIcon :value="icon" />
+    </div>
+    <div class="d-flex flex-column gap-1">
+      <p class="text-muted small mb-0">{{ title }}</p>
+      <h5 class="fw-bold text-{{ color }} mb-0">{{ value }}</h5>
+      {% if subtitle %}<p class="text-muted small mb-0">{{ subtitle }}</p>{% endif %}
+    </div>
+  </div>
+</div>

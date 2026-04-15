@@ -1,0 +1,91 @@
+{#def start, end, events, color="#0d6efd" #}
+{# timedelta type + one_day constant #}
+{% set timedelta = (end - start).__class__ %}
+{# Count events per day and identified max value. #}
+{% set ns = namespace(ev_counts={}, max=1) %}
+{% for event in events %}
+  {% set dk = event.strftime('%Y-%m-%d') %}
+  {% set _ = ns.ev_counts.setdefault(dk, 0) %}
+  {% set _ = ns.ev_counts.update({dk: ns.ev_counts[dk] + 1}) %}
+  {% if ns.ev_counts[dk] > ns.max %}
+    {% set ns.max = ns.ev_counts[dk] %}
+  {% endif %}
+{% endfor %}
+{# Grid geometry #}
+{% set total_days = (end - start).days + 1 %}
+{% set start_offset = start.weekday() %}
+{% set total_cells = start_offset + total_days %}
+{% set total_weeks = (total_cells // 7) + (1 if total_cells % 7 != 0 else 0) %}
+{# Palette #}
+{% set timedelta = (end - start).__class__ %}
+{# Parse base color components from hex #}
+{% set r = color[1:3] | int(base=16) %}
+{% set g = color[3:5] | int(base=16) %}
+{% set b = color[5:7] | int(base=16) %}
+{# Generate palette: index 0 = near white, index 9 = full color #}
+{# Each step blends from (240,240,240) to (r,g,b) #}
+{% set palette = namespace(colors=[]) %}
+{% for i in range(10) %}
+  {% set t = i / 9 %}
+  {% set pr = ((240 * (1 - t)) + (r * t)) | round | int %}
+  {% set pg = ((240 * (1 - t)) + (g * t)) | round | int %}
+  {% set pb = ((240 * (1 - t)) + (b * t)) | round | int %}
+  {% set hex_color = "#%02x%02x%02x" % (pr, pg, pb) %}
+  {% set _ = palette.colors.append(hex_color) %}
+{% endfor %}
+{% set ns_mt = namespace(last_month=-1) %}
+<table class="hm-table"
+       role="presentation"
+       cellpadding="0"
+       cellspacing="0"
+       border="0"
+       width="100%">
+  <colgroup>
+    <col style="width:20px;">
+    {% for _ in range(total_weeks) %}<col>{% endfor %}
+  </colgroup>
+  {# Row 0: month labels #}
+  <tr>
+    <td width="20" style="width:20px;"></td>
+    {% for week in range(total_weeks) %}
+      {% set monday_idx = week * 7 - start_offset %}
+      <td class="hm-label hm-month">
+        {% if monday_idx >= 0 and monday_idx < total_days %}
+          {% set d = start + timedelta(days=monday_idx) %}
+          {% if d.month != ns_mt.last_month %}
+            {% set ns_mt.last_month = d.month %}
+            {{ d.strftime("%b") }}
+          {% endif %}
+        {% endif %}
+      </td>
+    {% endfor %}
+  </tr>
+  {# Rows 1–7: one row per day of week #}
+  {% for dow in range(7) %}
+    {% set label_d = start + timedelta(days=(dow - start.weekday())) %}
+    <tr>
+      <td class="hm-label hm-dow" width="20" style="width:20px;">{{ label_d.strftime("%a")[0] }}</td>
+      {% for week in range(total_weeks) %}
+        {% set day_index = week * 7 + dow - start_offset %}
+        {% if day_index < 0 or day_index >= total_days %}
+          <td class="hm-cell"></td>
+        {% else %}
+          {% set d = start + timedelta(days=day_index) %}
+          {% set dk = d.strftime('%Y-%m-%d') %}
+          {% set count = ns.ev_counts.get(dk, 0) %}
+          {% if count == 0 %}
+            {% set si = 0 %}
+          {% else %}
+            {% set si = ((count / ns.max) * 8) | round | int %}
+            {% set si = [si, 1] | max %}
+            {% set si = [si, 9] | min %}
+          {% endif %}
+          <td class="hm-cell"
+              title="{{ _('%(date)s  — %(count)s backup(s)', date=d|format_date, count=count) }}">
+            <div class="hm-square" style="background-color:{{ palette.colors[si] }};"></div>
+          </td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+  {% endfor %}
+</table>

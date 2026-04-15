@@ -71,7 +71,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         userobj.mfa = UserObject.DISABLED_MFA
         userobj.commit()
-        self.getPage("/")
+        self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus(200)
         # When requesting /mfa/ page
         self.getPage("/mfa/")
@@ -167,7 +167,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         # Then user has access
-        self.getPage("/")
+        self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus(200)
 
     def test_verify_code_valid_include_spaces(self):
@@ -182,7 +182,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         # Then user has access
-        self.getPage("/")
+        self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus(200)
 
     def test_verify_code_invalid(self):
@@ -254,7 +254,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         code = self._get_code()
         self.getPage("/mfa/", method='POST', body={'code': code, 'submit': '1', 'persistent': '1'})
         self.assertStatus(303)
-        self.getPage("/")
+        self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus(200)
         self.assertNotEqual(prev_session_id, self.session_id)
         session = DbSession(id=self.session_id)
@@ -277,7 +277,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         # Then user is redirected to original url without need to pass MFA again.
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/prefs/general')
-        self.getPage("/")
+        self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus(200)
         self.assertInBody('Repositories')
 
@@ -287,7 +287,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         code = self._get_code()
         self.getPage("/mfa/", method='POST', body={'code': code, 'submit': '1', 'persistent': '1'})
         self.assertStatus(303)
-        self.getPage("/")
+        self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus(200)
         self.assertNotEqual(prev_session_id, self.session_id)
         session = DbSession(id=self.session_id)
@@ -306,7 +306,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         # Then user is redirected to original page.
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/prefs/general')
-        self.getPage("/")
+        self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus(200)
         self.assertInBody('Repositories')
 

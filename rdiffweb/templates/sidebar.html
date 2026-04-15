@@ -27,7 +27,7 @@
     <ul class="nav flex-column nav-pills">
       {% set home_page = page_registry.get('home') %}
       <NavItem :label="home_page.label"
-               :href="url_for(home_page)"
+               :href="url_for(home_page, currentuser.username)"
                :icon="home_page.icon"
                :active="home_page.id in [active_page.id, self.active_page]" />
     </ul>
@@ -149,9 +149,10 @@
          data-bs-toggle="dropdown"
          aria-expanded="false">
         <RdwIcon value="user" class="bi-fw me-3" />
-        <span>{{ username }}</span>
+        <span>{{ currentuser.username }}</span>
       </a>
       <ul class="dropdown-menu" aria-label="rdw-dropdown-user">
+        {# TODO remove color modes #}
         <cf:ColorModes :header="_('Theme')"
                        :light_label="_('Light')"
                        :dark_label="_('Dark')"

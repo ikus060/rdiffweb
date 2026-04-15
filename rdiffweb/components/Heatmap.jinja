@@ -1,0 +1,54 @@
+{# def start, end, events, palette #}
+{% set timedelta = (end - start).__class__ %}
+{# Count events per day and identify max value #}
+{% set ns = namespace(ev_counts={}, max=1) %}
+{% for event in events %}
+  {% if start < event and event < end %}
+    {% set dk = event.strftime('%Y-%m-%d') %}
+    {% set _ = ns.ev_counts.setdefault(dk, 0) %}
+    {% set _ = ns.ev_counts.update({dk: ns.ev_counts[dk] + 1}) %}
+    {% if ns.ev_counts[dk] > ns.max %}
+      {% set ns.max = ns.ev_counts[dk] %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+{% set total_days = (end - start).days + 1 %}
+{% set palette_max = (palette | length) -1 %}
+{% set ns_mt = namespace(last_month=-1) %}
+<table class="hm-table"
+       role="presentation"
+       cellpadding="0"
+       cellspacing="0"
+       border="0">
+  {# Row 1: month labels — shown only on month change #}
+  <tr>
+    {% for i in range(total_days) %}
+      {% set d = start + timedelta(days=i) %}
+      <td class="hm-label hm-month">
+        {% if d.month != ns_mt.last_month %}
+          {% set ns_mt.last_month = d.month %}
+          {{ d | format_date() }}
+        {% endif %}
+      </td>
+    {% endfor %}
+  </tr>
+  {# Row 2: one cell per day #}
+  <tr>
+    {% for i in range(total_days) %}
+      {% set d = start + timedelta(days=i) %}
+      {% set dk = d.strftime('%Y-%m-%d') %}
+      {% set count = ns.ev_counts.get(dk, 0) %}
+      {% if count == 0 %}
+        {% set si = 0 %}
+      {% else %}
+        {% set si = ((count / ns.max) * palette_max) | round | int %}
+        {% set si = [si, 1] | max %}
+        {% set si = [si, palette_max] | min %}
+      {% endif %}
+      <td class="hm-cell"
+          title="{{ _('%(date)s  — %(count)s backup(s)', date=d|format_date, count=count) }}">
+        <div class="hm-square" style="background-color:{{ palette[si] }};"></div>
+      </td>
+    {% endfor %}
+  </tr>
+</table>

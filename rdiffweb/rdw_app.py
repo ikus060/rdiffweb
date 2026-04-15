@@ -60,7 +60,7 @@ from rdiffweb.controller.page_browse import BrowsePage
 from rdiffweb.controller.page_delete import DeletePage
 from rdiffweb.controller.page_graphs import GraphsPage
 from rdiffweb.controller.page_history import HistoryPage
-from rdiffweb.controller.page_locations import LocationsPage
+from rdiffweb.controller.page_home import HomePage
 from rdiffweb.controller.page_login import LoginPage, LogoutPage
 from rdiffweb.controller.page_logs import LogsPage
 from rdiffweb.controller.page_mfa import MfaPage
@@ -69,7 +69,6 @@ from rdiffweb.controller.page_repo_activity import RepoActivityPage
 from rdiffweb.controller.page_restore import RestorePage
 from rdiffweb.controller.page_settings import SettingsPage
 from rdiffweb.controller.page_stats import StatsPage
-from rdiffweb.controller.page_status import StatusPage
 from rdiffweb.controller.static import Static
 from rdiffweb.core.config import parse_args
 from rdiffweb.core.librdiff import RdiffTime
@@ -121,7 +120,6 @@ def _template_processor():
         currentuser = cherrypy.serving.request.currentuser
         values['currentuser'] = currentuser
         # TODO Should should be replace within the template.
-        values['username'] = currentuser.username
         values['fullname'] = currentuser.fullname
         values['is_admin'] = currentuser.is_admin
         values['is_maintainer'] = currentuser.is_maintainer
@@ -155,8 +153,9 @@ def _template_processor():
 )
 @cherrypy.tools.sessions()
 @cherrypy.tools.sessions_timeout()
-class Root(LocationsPage):
+class Root:
     def __init__(self):
+        self.home = HomePage()
         self.login = LoginPage()
         self.logout = LogoutPage()
         self.mfa = MfaPage()
@@ -164,7 +163,6 @@ class Root(LocationsPage):
         self.delete = DeletePage()
         self.restore = RestorePage()
         self.history = HistoryPage()
-        self.status = StatusPage()
         self.stats = StatsPage()
         self.admin = AdminPage()
         self.prefs = PreferencesPage()
@@ -178,6 +176,12 @@ class Root(LocationsPage):
         # Register robots.txt
         robots_txt = importlib.resources.files('rdiffweb') / 'static/robots.txt'
         self.robots_txt = staticfile(robots_txt, doc="robots.txt to disable search crawler")
+
+    @cherrypy.expose
+    def index(self):
+        # Redirect user to home page.
+        currentuser = cherrypy.serving.request.currentuser
+        raise cherrypy.HTTPRedirect(url_for('home', currentuser.username))
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET'])

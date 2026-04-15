@@ -1,0 +1,117 @@
+{# def repo #}
+<div {{ attrs.render() }}>
+  {% set mdash = '&mdash;' | safe %}
+  {% set status_color = {'ok': 'success', 'in_progress':'info', 'failed': 'danger'}.get(repo.status[0], 'warning') %}
+  {% set status_icon = {'overdue':'bi-clock-history', 'in_progress':'bi-arrow-repeat bi-spin'}.get(repo.status[0], 'bi-exclamation-triangle-fill') %}
+  <div class="card repo-card shadow-sm p-4 h-100">
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <div>
+          {# Display name #}
+          <h6 class="fw-bold mb-0">{{ repo.display_name }}</h6>
+          {# Description / Notes #}
+          <span class="text-muted small">{{ repo.notes or mdash }}</span>
+        </div>
+      </div>
+      <span class="badge bg-{{ status_color }}-subtle text-{{ status_color }} border border-{{ status_color }}-subtle">
+        {{ repo.status[2] }}
+      </span>
+    </div>
+    {# Alert message #}
+    {% if repo.status[0] != 'ok' %}
+      <div class="alert alert-{{ status_color }} py-2 px-3 small mb-3">
+        <RdwIcon :value="status_icon" />
+        {{ repo.status[1] }}
+      </div>
+    {% endif %}
+    <div class="row g-2 mb-3 text-center">
+      {# Last backup date #}
+      <div class="col-4">
+        <div class="bg-light rounded-3 p-2">
+          <div class="fw-bold text-truncate {% if status_color != 'success' %}text-{{ status_color }}{% endif %}">
+            {% if repo.last_backup_date %}
+              <time datetime="{{ repo.last_backup_date }}"
+                    title="{{ repo.last_backup_date | format_datetime }}">
+                {{ repo.last_backup_date | lastupdated }}
+              </time>
+            {% else %}
+              {{ mdash }}
+            {% endif %}
+          </div>
+          <div class="text-muted" style="font-size:.72rem">{% trans %}Last backup{% endtrans %}</div>
+        </div>
+      </div>
+      {# Backup count #}
+      <div class="col-4">
+        <div class="bg-light rounded-3 p-2">
+          <div class="fw-bold text-truncate">{{ repo.session_statistics | length if repo.session_statistics else mdash }}</div>
+          <div class="text-muted" style="font-size:.72rem">{% trans %}Restore points{% endtrans %}</div>
+        </div>
+      </div>
+      {# Total size #}
+      <div class="col-4">
+        <div class="bg-light rounded-3 p-2"
+             title="{% trans %}Exclude history data{% endtrans %}"
+             data-bs-toggle="tooltip"
+             data-bs-placement="bottom">
+          <div class="fw-bold text-truncate">
+            {{ repo.session_statistics[-1].sourcefilesize | filesize if repo.session_statistics else mdash }}
+          </div>
+          <div class="text-muted" style="font-size:.72rem">{% trans %}Size{% endtrans %}</div>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      {# Oldest backup date #}
+      <span class="text-muted small">
+        <RdwIcon value="bi-calendar-range" />
+        {% trans %}Oldest:{% endtrans %}
+        <strong>
+          {% if repo.session_statistics %}
+            <time datetime="{{ repo.session_statistics[0].date }}"
+                  title="{{ repo.session_statistics[0].date | format_datetime }}">
+              {{ repo.session_statistics[0].date | format_date }}
+            </time>
+          {% else %}
+            {{ mdash }}
+          {% endif %}
+        </strong>
+      </span>
+      {# Error count #}
+      <span class="text-muted small">
+        {% if repo.session_statistics %}
+          {% set error_count = repo.session_statistics[-1].errors %}
+          {% if error_count > 0 %}
+            <a class="text-warning fw-semibold"
+               href="{{ url_for('logs', repo, date=repo.session_statistics[-1].date) }}">
+              <RdwIcon value="bi-exclamation-circle" />
+              {{ _('%(count)s errors', count=error_count) }}
+            </a>
+          {% else %}
+            <RdwIcon value="bi-check-circle" class="text-success" />
+            {{ _('%(count)s errors', count=error_count) }}
+          {% endif %}
+        {% else %}
+          {{ mdash }}
+        {% endif %}
+      </span>
+    </div>
+    <div class="d-flex gap-2 mt-auto">
+      <a href="{{ url_for('browse', repo) }}"
+         class="btn btn-sm btn-outline-primary flex-grow-1">
+        <RdwIcon value="bi-folder2" />
+        {% trans %}Browse Files{% endtrans %}
+      </a>
+      <a href="{{ url_for('graphs', repo) }}"
+         class="btn btn-sm btn-outline-secondary">
+        <RdwIcon value="bi-lightbulb" />
+        {% trans %}Insights{% endtrans %}
+      </a>
+      <a href="{{ url_for('settings', repo) }}"
+         class="btn btn-sm btn-outline-secondary">
+        <RdwIcon value="bi-sliders" />
+        {% trans %}Settings{% endtrans %}
+      </a>
+    </div>
+  </div>
+</div>

@@ -613,7 +613,6 @@ class SessionStatisticsEntry(MetadataEntry):
         Snapshot Changes contains different information related to each file of
         the backup. This class provide a simple and easy way to access this
         data."""
-        # FIXME Don't load if already loaded
         with self._open() as f:
             for line in f.readlines():
                 # Read the line into array
@@ -897,19 +896,17 @@ class RdiffRepo(object):
             return listdir(self._data_path)
         except FileNotFoundError:
             logger.warning(f'folder not found {self._data_path}', exc_info=1)
-            self._entries_status = ('failed', _('The repository cannot be found or is badly damaged.'))
+            self._entries_status = ('failed', _('The repository cannot be found or is badly damaged.'), _('Broken'))
         except PermissionError:
             logger.warning(f'permissions error listing {self._data_path}', exc_info=1)
             self._entries_status = (
                 'failed',
                 _("Permissions denied. Contact administrator to check repository's permissions."),
+                _('Broken'),
             )
         except OSError as e:
             logger.warning(f'error listing folder {self._data_path}', exc_info=1)
-            self._entries_status = (
-                'failed',
-                _("%s. Contact administrator if problem persist.") % e,
-            )
+            self._entries_status = ('failed', _("%s. Contact administrator if problem persist.") % e, _('Broken'))
         return []
 
     def clear_cache(self):
@@ -1162,11 +1159,15 @@ class RdiffRepo(object):
                 pid = current_mirror.extract_pid()
             except PermissionError:
                 logger.warning('permissions error trying to read current_mirror', exc_info=1)
-                return ('failed', _("Permissions denied. Contact administrator to check repository's permissions."))
+                return (
+                    'failed',
+                    _("Permissions denied. Contact administrator to check repository's permissions."),
+                    _("Permissions denied"),
+                )
             try:
                 p = psutil.Process(pid)
                 if any('rdiff-backup' in c for c in p.cmdline()):
-                    return ('in_progress', _('A backup is currently in progress to this repository.'))
+                    return ('in_progress', _('A backup is currently in progress to this repository.'), _("In Progress"))
             except psutil.NoSuchProcess:
                 logger.debug('pid [%s] does not exists', pid)
 
@@ -1178,7 +1179,7 @@ class RdiffRepo(object):
         # Also, if the last backup date is undefined, this mean the first
         # initial backup was interrupted.
         if len(self.current_mirror) == 0:
-            return ('in_progress', _('Initial backup in progress.'))
+            return ('in_progress', _('Initial backup in progress.'), _("In Progress"))
         elif len(self.current_mirror) > 1:
-            return ('interrupted', _('The last backup has been interrupted.'))
-        return ('ok', _('Healthy'))
+            return ('interrupted', _('The last backup has been interrupted.'), _("Interrupted"))
+        return ('ok', _('Healthy'), _('Healthy'))

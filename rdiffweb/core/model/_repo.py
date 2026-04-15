@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import codecs
 import encodings
-import logging
 import os
 import sys
 from datetime import timedelta
@@ -38,8 +37,6 @@ from ._update import column_add, column_exists
 
 Base = cherrypy.db.get_base()
 Session = cherrypy.db.get_session()
-
-logger = logging.getLogger(__name__)
 
 
 def case_wrapper(*whens, else_=None):
@@ -327,12 +324,14 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
         """
         This implementation merge the database status with the on-disk status.
         """
+        # TODO Complete this to return "overdue"
         try:
             if self._status == RepoObject.STATUS_DELETING:
-                return (RepoObject.STATUS_DELETING, _("Deletion in progress..."))
+                return (RepoObject.STATUS_DELETING, _("Deletion in progress..."), _('Deleting'))
             return RdiffRepo.status.__get__(self, self)
         except Exception:
-            pass
+            cherrypy.log('unexpected error trying to get repo status', traceback=True)
+            return ('failed', _("Unable to retrieve the backup status. Please try again later."), _("Broken"))
 
 
 @event.listens_for(Base.metadata, 'after_create')

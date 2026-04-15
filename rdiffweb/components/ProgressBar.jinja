@@ -1,0 +1,10 @@
+{# def value, max=100, color='primary', height=12 #}
+{% set pct = ((value / max) * 100) | round(1) if max else 0 %}
+<div {{ attrs.render(class="progress mb-3", style="height:" + height|string + "px;") }}>
+  <div class="progress-bar bg-{{ color }}"
+       role="progressbar"
+       style="width:{{ pct }}%"
+       aria-valuenow="{{ pct }}"
+       aria-valuemin="0"
+       aria-valuemax="100"></div>
+</div>

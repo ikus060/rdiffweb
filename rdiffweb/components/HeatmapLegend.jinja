@@ -1,0 +1,10 @@
+{# def palette #}
+<span class="hm-label">{% trans %}Less{% endtrans %}</span>
+{% for i in range(palette|length) %}
+  <div class="hm-square"
+       style="background-color:{{ palette[i] }};
+              width:12px;
+              height:12px;
+              border-radius:2px"></div>
+{% endfor %}
+<span class="hm-label">{% trans %}More{% endtrans %}</span>

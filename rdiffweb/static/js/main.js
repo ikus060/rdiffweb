@@ -22,5 +22,5 @@ document.addEventListener('DOMContentLoaded', function () {
       container: 'body',
       delay:  {'show': 500, 'hide': 500},
   });
-  
+
 });

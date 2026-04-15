@@ -96,10 +96,10 @@ class LoginPageTest(rdiffweb.test.WebCase):
     def test_login_case_insensitive(self):
         # When authenticating with valid credentials with all uppercase username
         self.getPage('/login/', method='POST', body={'login': self.USERNAME.upper(), 'password': self.PASSWORD})
-        # Then a new session_id is generated
+        # Then login is successful
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/')
-        self.getPage('/')
+        self.getPage(f'/home/{self.USERNAME}')
         self.assertStatus(200)
 
     def test_cookie_http_only(self):
@@ -122,7 +122,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
 
     @parameterized.expand(
         [
-            ('with_root', '/'),
+            ('with_root', '/home/admin'),
             ('with_browse_url', '/browse/admin/testcases/Revisions/'),
             ('with_encoded_url', '/browse/admin/testcases/DIR%EF%BF%BD/'),
             (
@@ -210,7 +210,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.getPage('/login/', method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD})
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + "/")
-        self.getPage('/')
+        self.getPage(f'/home/{self.USERNAME}')
         self.assertStatus(200)
         self.assertInBody(self.USERNAME)
         # Given another user
@@ -221,7 +221,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         # Then user is still authenticated with previous user
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + "/")
-        self.getPage('/')
+        self.getPage(f'/home/{self.USERNAME}')
         self.assertStatus(200)
         self.assertInBody(self.USERNAME)
 

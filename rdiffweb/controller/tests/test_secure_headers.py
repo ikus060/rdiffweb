@@ -25,7 +25,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
     def test_cookie_samesite_lax(self):
         # Given a request made to rdiffweb
         # When receiving the response
-        self.getPage('/')
+        self.getPage(f"/home/{self.USERNAME}")
         # Then the header contains Set-Cookie with SameSite=Lax
         cookie = self.assertHeader('Set-Cookie')
         self.assertIn('SameSite=Lax', cookie)
@@ -40,7 +40,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
 
     def test_cookie_with_https(self):
         # Given an https request made to rdiffweb
-        self.getPage('/', headers=[('X-Forwarded-Proto', 'https')])
+        self.getPage(f"/home/{self.USERNAME}", headers=[('X-Forwarded-Proto', 'https')])
         # When receiving the response
         self.assertStatus(200)
         # Then the header contains Set-Cookie with Secure
@@ -65,7 +65,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
 
     def test_cookie_with_http(self):
         # Given an https request made to rdiffweb
-        self.getPage('/')
+        self.getPage(f"/home/{self.USERNAME}")
         # When receiving the response
         # Then the header contains Set-Cookie with Secure
         cookie = self.assertHeader('Set-Cookie')
@@ -74,7 +74,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
     def test_get_with_wrong_origin(self):
         # Given a GET request made to rdiffweb
         # When the request is made using a different origin
-        self.getPage('/', headers=[('Origin', 'http://www.examples.com')])
+        self.getPage(f"/home/{self.USERNAME}", headers=[('Origin', 'http://www.examples.com')])
         # Then the response status it 200 OK.
         self.assertStatus(200)
 
@@ -113,7 +113,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
     def test_clickjacking_defense(self):
         # Given a POST request made to rdiffweb
         # When the request is made without an origin
-        self.getPage('/')
+        self.getPage(f"/home/{self.USERNAME}")
         # Then the request is accepted with 200 OK
         self.assertStatus(200)
         self.assertHeaderItemValue('X-Frame-Options', 'DENY')
@@ -121,7 +121,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
     def test_no_cache(self):
         # Given a POST request made to rdiffweb
         # When the request is made without an origin
-        self.getPage('/')
+        self.getPage(f"/home/{self.USERNAME}")
         # Then the request is accepted with 200 OK
         self.assertStatus(200)
         self.assertHeaderItemValue('Cache-control', 'no-cache')
@@ -142,7 +142,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
     def test_referrer_policy(self):
         # Given a POST request made to rdiffweb
         # When the request is made without an origin
-        self.getPage('/')
+        self.getPage(f"/home/{self.USERNAME}")
         # Then the request is accepted with 200 OK
         self.assertStatus(200)
         self.assertHeaderItemValue('Referrer-Policy', 'same-origin')
@@ -150,7 +150,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
     def test_nosniff(self):
         # Given a POST request made to rdiffweb
         # When the request is made without an origin
-        self.getPage('/')
+        self.getPage(f"/home/{self.USERNAME}")
         # Then the request is accepted with 200 OK
         self.assertStatus(200)
         self.assertHeaderItemValue('X-Content-Type-Options', 'nosniff')
@@ -158,7 +158,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
     def test_xss_protection(self):
         # Given a POST request made to rdiffweb
         # When the request is made without an origin
-        self.getPage('/')
+        self.getPage(f"/home/{self.USERNAME}")
         # Then the request is accepted with 200 OK
         self.assertStatus(200)
         self.assertHeaderItemValue('X-XSS-Protection', '1; mode=block')
@@ -166,7 +166,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
     def test_content_security_policy(self):
         # Given a POST request made to rdiffweb
         # When the request is made without an origin
-        self.getPage('/')
+        self.getPage(f"/home/{self.USERNAME}")
         # Then the request is accepted with 200 OK
         self.assertStatus(200)
         self.assertHeaderItemValue(
@@ -177,7 +177,7 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
     def test_strict_transport_security(self):
         # Given a POST request made to rdiffweb
         # When the request is made without an origin
-        self.getPage('/', headers=[('X-Forwarded-Proto', 'https')])
+        self.getPage(f"/home/{self.USERNAME}", headers=[('X-Forwarded-Proto', 'https')])
         # Then the request is accepted with 200 OK
         self.assertStatus(200)
         self.assertHeaderItemValue('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')

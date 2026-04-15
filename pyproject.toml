@@ -79,6 +79,7 @@ custom_html = """
   cf:Field,\
   cf:Fields,\
   cf:Flash,\
+  KpiCard,\
   NavItem,\
   RdwChart,\
   RdwDateSelector,\

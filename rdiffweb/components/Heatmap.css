@@ -1,0 +1,30 @@
+.hm-table  {
+    border-collapse:collapse;
+    width:100%;
+    table-layout:fixed;
+    font-family:Arial,sans-serif; 
+}
+.hm-label  {
+    font-size:.875em; 
+    color:#6c757d; 
+    white-space:nowrap;
+}
+.hm-dow {
+    text-align: center;
+    padding-right: 3px;
+    vertical-align: middle; 
+}
+.hm-month {
+    vertical-align:bottom;
+    padding:0 1px 2px;
+    height:14px; overflow:visible;
+}
+.hm-cell {
+    padding:1px;
+}
+.hm-square {
+    border-radius:2px;
+    aspect-ratio:1/1;
+    width:100%;
+    display:block;
+}

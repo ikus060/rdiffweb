@@ -110,7 +110,7 @@ class PagePrefMfaTest(rdiffweb.test.WebCase):
         # Then an email confirmation get send
         self.listener.queue_email.assert_called_once_with(to=userobj.email, subject=expected_subject, message=ANY)
         # Then next page request is still working.
-        self.getPage('/')
+        self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus(200)
 
     def test_with_valid_code_including_spaces(self):
@@ -144,7 +144,7 @@ class PagePrefMfaTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user(self.USERNAME)
         self.assertEqual(userobj.mfa, expected_mfa)
         # Then next page request is still working.
-        self.getPage('/')
+        self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus(200)
 
     @parameterized.expand(

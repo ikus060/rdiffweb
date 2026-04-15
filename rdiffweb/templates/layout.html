@@ -32,7 +32,9 @@
   </head>
   <body>
     {% block body %}
-      {% include "sidebar.html" with context %}
+      {% if currentuser %}
+        {% include "sidebar.html" with context %}
+      {% endif %}
       <main>
         {# Let define default breadcrumb for repo path. #}
         <Breadcrumb currentuser={{ currentuser }} breadcrumbs={{ breadcrumbs | d(None) }} class="border-bottom p-3 bg-white sticky-top" />

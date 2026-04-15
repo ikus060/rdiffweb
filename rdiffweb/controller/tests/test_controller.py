@@ -32,7 +32,7 @@ class ControllerTest(rdiffweb.test.WebCase):
         """
         Check if the headername is used in the page.
         """
-        self.getPage("/")
+        self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus('200 OK')
         self.assertInBody('MyTest')
 
@@ -40,7 +40,7 @@ class ControllerTest(rdiffweb.test.WebCase):
         """
         Check if the headername is used in the page.
         """
-        self.getPage("/", headers=[('Host', 'this.is.a.test.com')])
+        self.getPage(f"/home/{self.USERNAME}", headers=[('Host', 'this.is.a.test.com')])
         self.assertStatus('200 OK')
         self.assertInBody('http://this.is.a.test.com/favicon.ico')
 
@@ -48,7 +48,7 @@ class ControllerTest(rdiffweb.test.WebCase):
         """
         Check if the headername is used in the page.
         """
-        self.getPage("/", headers=[('Host', 'this.is.a.test.com'), ('X-Forwarded-Proto', 'https')])
+        self.getPage(f"/home/{self.USERNAME}", headers=[('Host', 'this.is.a.test.com'), ('X-Forwarded-Proto', 'https')])
         self.assertStatus('200 OK')
         self.assertInBody('https://this.is.a.test.com/favicon.ico')
 

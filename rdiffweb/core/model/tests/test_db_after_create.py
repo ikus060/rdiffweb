@@ -278,12 +278,12 @@ class DbUpdateSchemaTest(rdiffweb.test.WebCase):
         if self.success:
             cherrypy.db.create_all()
             # Then index page is working
-            self.getPage('/')
+            self.getPage(f"/home/{self.USERNAME}")
             self.assertStatus(303)
             # Then login is working
             self._login()
             # Then location is working
-            self.getPage('/')
+            self.getPage(f"/home/{self.USERNAME}")
             self.assertStatus(200)
             # Then admin user is working
             admin = UserObject.get_user('admin')

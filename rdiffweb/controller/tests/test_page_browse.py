@@ -20,7 +20,7 @@ from cherrypy_foundation.url import url_for
 from parameterized import parameterized
 
 import rdiffweb.test
-from rdiffweb.core.model import RepoObject, UserObject
+from rdiffweb.core.model import UserObject
 
 _matrix = [
     (
@@ -99,20 +99,6 @@ class BrowsePageTest(rdiffweb.test.WebCase):
     def _browse(self, user, repo, path):
         url = "/browse/" + user + "/" + repo + "/" + path
         self.getPage(url)
-
-    def test_locations(self):
-        """
-        Check page_locations
-        """
-        self.getPage("/")
-        self.assertInBody(self.REPO)
-        self.assertInBody('testcases')
-
-    def test_locations_with_broken_tree(self):
-        userobj = UserObject.get_user(self.USERNAME)
-        RepoObject(user=userobj, repopath='testcases/broker-repo').add().commit()
-        RepoObject(user=userobj, repopath='testcases/testcases').add().commit()
-        self.getPage("/")
 
     def test_WithRelativePath(self):
         """
@@ -193,10 +179,6 @@ class BrowsePageTest(rdiffweb.test.WebCase):
         user.refresh_repos()
         user.commit()
         self.assertEqual(['', 'broker-repo', 'testcases'], [r.name for r in user.repo_objs])
-        # Check if listing locations is working
-        self.getPage('/')
-        self.assertStatus('200 OK')
-        self.assertInBody('testcases')
         # Check if browsing is working.
         self.getPage('/browse/admin')
         self.assertStatus('200 OK')
