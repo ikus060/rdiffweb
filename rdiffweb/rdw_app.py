@@ -39,7 +39,7 @@ import humanfriendly
 from cherrypy import Application
 from cherrypy_foundation.error_page import error_page
 from cherrypy_foundation.flash import get_flashed_messages
-from cherrypy_foundation.tools.i18n import get_translation
+from cherrypy_foundation.tools.i18n import format_timedelta, get_translation
 from cherrypy_foundation.url import url_for
 
 import rdiffweb
@@ -74,7 +74,7 @@ from rdiffweb.controller.static import Static
 from rdiffweb.core.config import parse_args
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import DbSession, SessionObject, UserObject
-from rdiffweb.core.rdw_templating import attrib, do_format_lastupdated, list_parents
+from rdiffweb.core.rdw_templating import attrib
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -110,11 +110,10 @@ def _json_handler(*args, **kwargs):
 
 
 def _template_processor():
-    # TODO MOve to cherrypy-foundation
+    # TODO Move to cherrypy-foundation
     values = {
         'lang': str(get_translation().locale),
         'current_url': cherrypy.url(path=cherrypy.request.path_info),
-        'now': datetime.now(tz=timezone.utc),
     }
     if hasattr(cherrypy.serving.request, 'login'):
         values['login'] = cherrypy.serving.request.login
@@ -223,16 +222,14 @@ class RdiffwebApp(Application):
                 'header_name': cfg.header_name,
                 'url_for': url_for,
                 'version': rdiffweb.__version__,
-                'list_parents': list_parents,
                 'attrib': attrib,
                 'page_registry': page_registry,
                 'breadcrumb_repo': breadcrumb_repo,
                 'breadcrumb_page': breadcrumb_page,
             },
             filters={
-                'lastupdated': do_format_lastupdated,
+                'lastupdated': lambda dt: format_timedelta(dt - datetime.now(timezone.utc), add_direction=True),
                 'filesize': functools.partial(humanfriendly.format_size, binary=True),
-                'timespan': functools.partial(humanfriendly.format_timespan, max_units=1),
             },
         )
 

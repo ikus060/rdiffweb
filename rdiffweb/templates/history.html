@@ -24,8 +24,9 @@
       {% for restore_date in restore_dates %}
         <li class="list-group-item">
           <RdwIcon :value="{{ 'bi-folder' if path_obj.isdir else 'bi-file-earmark' }}" />
-          <time class="js-datetime" datetime="{{ restore_date }}">
-            {{ restore_date | lastupdated }}
+          <time datetime="{{ restore_date }}"
+                title="{{ restore_date | lastupdated }}">
+            {{ restore_date | format_datetime }}
           </time>
           <div class="float-end">
             {% if path_obj.isdir %}

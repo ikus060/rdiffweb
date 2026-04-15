@@ -44,7 +44,7 @@
             {% if repo.last_backup_date %}
               {% trans %}Updated {% endtrans %}
               <time datetime="{{ repo.last_backup_date }}"
-                    title="{{ repo.last_backup_date }}">
+                    title="{{ repo.last_backup_date | format_datetime }}">
                 {{ repo.last_backup_date | lastupdated }}
               </time>
             {% endif %}

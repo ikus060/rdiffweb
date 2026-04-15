@@ -16,10 +16,7 @@
 
 import unittest
 
-from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.core.model import RepoObject, UserObject
-from rdiffweb.core.rdw_templating import _ParentEntry, attrib, do_format_lastupdated, list_parents
-from rdiffweb.test import WebCase
+from rdiffweb.core.rdw_templating import attrib
 
 
 class TemplateManagerTest(unittest.TestCase):
@@ -52,30 +49,3 @@ class TemplateManagerTest(unittest.TestCase):
         self.assertEqual('selected="text"', attrib(selected=str('text')))
 
         self.assertEqual('value="0"', attrib(value=0))
-
-    def test_do_format_lastupdated(self):
-        self.assertEqual('23 seconds ago', do_format_lastupdated(1591978823, _now=1591978846))
-        self.assertEqual('23 seconds ago', do_format_lastupdated(RdiffTime(1591978823), _now=1591978846))
-        self.assertEqual('8 minutes ago', do_format_lastupdated(RdiffTime(1591978324), _now=1591978846))
-        self.assertEqual('2 hours ago', do_format_lastupdated(RdiffTime(1591971646), _now=1591978846))
-        self.assertEqual('2 days ago', do_format_lastupdated(RdiffTime(1591805524), _now=1591978846))
-        self.assertEqual('4 weeks ago', do_format_lastupdated(RdiffTime(1589127124), _now=1591978846))
-        self.assertEqual('5 months ago', do_format_lastupdated(RdiffTime(1578672724), _now=1591978846))
-        self.assertEqual('4 years ago', do_format_lastupdated(RdiffTime(1452442324), _now=1591978846))
-        self.assertEqual('1 days ago', do_format_lastupdated(RdiffTime(1676906974), _now=1676997934))
-
-
-class ListParentsTest(WebCase):
-    def test_list_parents_with_root_dir(self):
-        repo, path = RepoObject.get_repo_path(b'admin/testcases', as_user=UserObject.get_user('admin'))
-        self.assertEqual(list_parents(repo, path), [_ParentEntry(path=b'', display_name='testcases')])
-
-    def test_list_parents_with_root_subdir(self):
-        repo, path = RepoObject.get_repo_path(b'admin/testcases/Revisions', as_user=UserObject.get_user('admin'))
-        self.assertEqual(
-            list_parents(repo, path),
-            [
-                _ParentEntry(path=b'', display_name='testcases'),
-                _ParentEntry(path=b'Revisions', display_name='Revisions'),
-            ],
-        )

@@ -33,7 +33,8 @@
             <p>
               {% trans %}Created on{% endtrans %}
               <strong>
-                <time class="js-datetime" datetime="{{ token.creation_time }}">
+                <time datetime="{{ token.creation_time }}"
+                      title="{{ token.creation_time | format_datetime }}">
                   {{ token.creation_time }}
                 </time>
               </strong>
@@ -41,7 +42,8 @@
               {% trans %}Last accessed{% endtrans %}
               <strong>
                 {% if  token.access_time %}
-                  <time class="js-datetime" datetime="{{ token.access_time }}">
+                  <time datetime="{{ token.access_time }}"
+                        title="{{ token.access_time | format_datetime }}">
                     {{ token.access_time }}
                   </time>
                 {% else %}
@@ -52,7 +54,8 @@
               {% trans %}Expired on{% endtrans %}
               <strong>
                 {% if  token.expiration_time %}
-                  <time class="js-datetime" datetime="{{ token.expiration_time }}">
+                  <time datetime="{{ token.expiration_time }}"
+                        title="{{ token.expiration_time | format_datetime }}">
                     {{ token.expiration_time }}
                   </time>
                 {% else %}
