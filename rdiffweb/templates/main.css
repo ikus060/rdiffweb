@@ -216,7 +216,8 @@ main {
  * Adjust display of forms.
  */
 .form-label:not(.form-floating .form-label) {
-    font-weight: bold;
+    font-weight: 500 !important;
+    font-size: .875em;
 }
 .form-field {
     margin-bottom: 1.5rem !important;

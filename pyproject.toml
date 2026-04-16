@@ -79,8 +79,11 @@ custom_html = """
   cf:Field,\
   cf:Fields,\
   cf:Flash,\
+  ButtonConfirm,\
   KpiCard,\
   NavItem,\
+  ModalDialog,\
+  ModalConfirm,\
   RdwChart,\
   RdwDateSelector,\
   RdwEmpty,\

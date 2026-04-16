@@ -172,24 +172,30 @@ class WeekdayField(SelectMultipleField):
 
 class RepoSettingsForm(DbForm):
     maxage = MaxAgeField(
-        _('Inactivity Notification Period'),
-        description=_(
-            "The period refers to the duration of inactivity after which a notification is triggered and sent to the user. It determines the number of days of inactivity that must pass before the system generates a notification to inform the user about the lack of activity in the backup repository."
-        ),
+        _('Inactivity Period'),
+        description=_("A notification is triggered after this many consecutive days with no backup activity."),
+        render_kw={
+            # Add tooltip to labels.
+            "label-class": "rdw-tooltip",
+            "label-data-bs-toggle": "tooltip",
+            "label-title": _("Number of days without any backup before a notification is sent."),
+        },
     )
 
     ignore_weekday = WeekdayField(
         _('Excluded Days of the Week'),
-        description=_(
-            "Lets you exclude specific days (e.g., weekends) from the inactivity period calculation, so those days won't be counted when determining when to send notifications."
-        ),
+        description=_("Selected days are skipped when counting inactivity — useful for excluding non-working days."),
+        render_kw={
+            # Add tooltip to labels.
+            "label-class": "rdw-tooltip",
+            "label-data-bs-toggle": "tooltip",
+            "label-title": _("Days excluded from the inactivity count (e.g. weekends)."),
+        },
     )
 
     keepdays = SelectField(
-        _('Data Retention Duration'),
-        description=_(
-            'The retention period determines how long the backup data will be stored in the repository before it is automatically deleted or purged. By adjusting this setting, you can specify the duration for which the backup data should be retained before being removed.'
-        ),
+        _('Retention Duration'),
+        description=_('Backup snapshots older than this duration will be automatically deleted from the repository.'),
         coerce=int,
         choices=[
             (-1, _("Forever")),
@@ -219,20 +225,35 @@ class RepoSettingsForm(DbForm):
             (1460, _("4 years")),
             (1825, _("5 years")),
         ],
+        render_kw={
+            # Add tooltip to labels.
+            "label-class": "rdw-tooltip",
+            "label-data-bs-toggle": "tooltip",
+            "label-title": _("Backups older than this will be automatically purged."),
+        },
     )
+
     encoding = SelectField(
-        _('Display Encoding'),
-        description=_(
-            "This setting relates to the representation or format in which the backup repository is displayed. It may include considerations such as language or character encoding to match your specific locale. By adjusting this setting, you can ensure that the repository's content is displayed correctly and in a manner that is suitable for your locale."
-        ),
+        _('File Encoding'),
+        description=_("Choose the encoding that matches the locale of the machine that created this backup."),
         coerce=normalize_encoding,
         choices=_codecs,
+        render_kw={
+            # Add tooltip to labels.
+            "label-class": "rdw-tooltip",
+            "label-data-bs-toggle": "tooltip",
+            "label-title": _("Character encoding used to display filenames in this repository."),
+        },
     )
+
     notes = TextAreaField(
-        _('Notes'),
+        _('Friendly name or description'),
+        description=_("A short description to help identify this repository. Visible to you and administrators."),
         default='',
         validators=[Length(max=256, message=_('Notes too long.'))],
-        render_kw={"placeholder": _("Enter notes about this repository.")},
+        render_kw={
+            "placeholder": _("e.g. Patrick's laptop at front desk. Includes accounting data."),
+        },
     )
 
     def __init__(self, **kwargs):

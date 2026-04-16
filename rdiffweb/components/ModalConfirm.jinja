@@ -1,0 +1,28 @@
+{# def id, title, message, fields=[], submit=None, confirm_value=None #}
+{# js cf/vendor/jquery/jquery.min.js #}
+<ModalDialog :id="id"
+             :title="title"
+             :submit="submit"
+             color="danger"
+             class="rdw-modal-confirm">
+  {% for f in fields %}<input type="hidden" name="{{ f }}" value="" />{% endfor %}
+  <p {% if confirm_value %}class="lead text-danger"{% endif %}>{{ message }}</p>
+  {% if confirm_value %}
+    <p>
+      {% trans %}This action can lead to data loss. To prevent accidental actions we ask you to confirm your intention.{% endtrans %}
+      <br />
+      {% trans %}Please type
+      <strong>{{ confirm_value }}</strong>
+      to proceed or close this modal to cancel.{% endtrans %}
+    </p>
+    {% set confirm_pattern = confirm_value | replace('\\', '\\\\') | replace('$','\\$') | replace('^','\\^') | replace('|','\\|') | replace('[','\\[') | replace(']','\\]') | replace('(','\\(') | replace(')','\\)') | replace('{','\\{') | replace('}','\\}') | replace('*','\\*') | replace('?','\\?') | replace('+','\\+') | replace('.','\\.') %}
+    <input class="form-control"
+           name="confirm"
+           type="text"
+           value=""
+           pattern="{{ confirm_pattern }}"
+           required />
+  {% endif %}
+  {# Extra content #}
+  {{ content }}
+</ModalDialog>

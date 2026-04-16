@@ -19,6 +19,9 @@ from base64 import b64encode
 from unittest.mock import ANY
 
 from parameterized import parameterized
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 import rdiffweb.test
 from rdiffweb.core.model import RepoObject, UserObject
@@ -29,7 +32,7 @@ class SettingsTest(rdiffweb.test.WebCase):
 
     def test_page(self):
         self.getPage("/settings/" + self.USERNAME + "/" + self.REPO)
-        self.assertInBody("Inactivity Notification Period")
+        self.assertInBody("Inactivity Period")
         self.assertStatus(200)
 
     @parameterized.expand(
@@ -70,7 +73,7 @@ class SettingsTest(rdiffweb.test.WebCase):
         user_obj.refresh_repos()
         user_obj.commit()
         self.getPage("/settings/anotheruser/testcases")
-        self.assertInBody("Inactivity Notification Period")
+        self.assertInBody("Inactivity Period")
         self.assertStatus('200 OK')
 
         # Remove admin right
@@ -192,7 +195,7 @@ class SettingsTest(rdiffweb.test.WebCase):
     def test_check_default_encoding(self):
         # Default encoding for broker-repo is the default system encoding.
         self.getPage("/settings/admin/broker-repo")
-        self.assertInBody("Display Encoding")
+        self.assertInBody("File Encoding")
         self.assertInBody('selected value="%s"' % RepoObject.DEFAULT_REPO_ENCODING)
 
     def test_set_encoding(self):
@@ -277,6 +280,32 @@ class SettingsTest(rdiffweb.test.WebCase):
         user_obj = UserObject.get_user(self.USERNAME)
         repo = RepoObject.query.filter(RepoObject.user == user_obj, RepoObject.repopath == self.REPO).first()
         self.assertEqual('utf-8', repo.encoding)
+
+    def test_delete_selenium(self):
+        user_obj = UserObject.get_user('admin')
+        self.assertEqual(2, len(user_obj.repo_objs))
+        with self.selenium() as driver:
+            # When getting the settings pages
+            driver.get(self.baseurl + '/settings/admin/testcases')
+            # Then page load without error
+            self.assertFalse(driver.get_log('browser'))
+            # When user click on delete button
+            btn = driver.find_element('css selector', '#rdw-btn-delete-repo')
+            ActionChains(driver).scroll_to_element(btn).perform()
+            btn.click()
+            # Then a Modal get shown.
+            modal = driver.find_element('css selector', '#rdw-delete-repo-modal')
+            # When user enter the confirm value & confirm
+            current_url = driver.current_url
+            txt_confirm = modal.find_element('css selector', 'input[name="confirm"]')
+            txt_confirm.send_keys('testcases')
+            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            self.assertFalse(driver.get_log('browser'))
+            # Then user get redirected to home page.
+            WebDriverWait(driver, 10).until(EC.url_changes(current_url))
+            user_obj.expire()
+            self.assertEqual(1, len(user_obj.repo_objs))
 
 
 class ApiReposTest(rdiffweb.test.WebCase):

@@ -5,13 +5,10 @@
 {% block content %}
   <div class="container">
     <form method="post" action="{{ url_for() }}">
-      {# Repo settings #}
-      <cf:Fields form={{ form }} />
-      <div class="d-flex justify-content-between">
-        <div>
-          {# Delete repo button #}
-          {{ button_confirm(label=_('Delete repository') , target="#delete-repo-modal", class="btn-danger", disabled=not is_maintainer, redirect=url_for('/'), url=url_for('delete', repo)) }}
-        </div>
+      {# Header #}
+      <div class="d-flex flex-wrap justify-content-between mb-2 sticky-top py-2 bg-white border-bottom"
+           style="top: 56px">
+        <h2>{% trans %}Repository Settings{% endtrans %}</h2>
         <div>
           <button type="button"
                   class="btn btn-secondary"
@@ -19,13 +16,81 @@
           <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
         </div>
       </div>
+      <p class="text-secondary small mb-4 col-xxl-5 col-xl-6 col-lg-7">
+        {% trans %}
+        Adjust the notification period, retention policy, display encoding, and
+        other options for this repository to match your backup frequency and
+        storage requirements.{% endtrans %}
+      </p>
+      {# Notes #}
+      <div class="card mb-3">
+        <div class="card-header d-flex align-items-center gap-2">
+          <RdwIcon value="bi-card-text text-primary" />
+          {% trans %}Description{% endtrans %}
+        </div>
+        <div class="card-body">
+          <cf:Field :field="form.notes" />
+        </div>
+      </div>
+      {# Notifications #}
+      <div class="card mb-3">
+        <div class="card-header bg-light d-flex align-items-center gap-2">
+          <RdwIcon value="bi-bell text-primary" />
+          {% trans %}Notification Rules{% endtrans %}
+        </div>
+        <div class="card-body">
+          <cf:Field :field="form.maxage" />
+          <hr class="border-top border-dashed my-3">
+          <cf:Field :field="form.ignore_weekday" />
+        </div>
+      </div>
+      {# Retention period #}
+      <div class="card mb-3">
+        <div class="card-header bg-light d-flex align-items-center gap-2">
+          <RdwIcon value="bi-database text-primary" />
+          {% trans %}Data Retention{% endtrans %}
+        </div>
+        <div class="card-body">
+          <cf:Field :field="form.keepdays" />
+        </div>
+      </div>
+      {# Encoding #}
+      <div class="card mb-3">
+        <div class="card-header bg-light d-flex align-items-center gap-2">
+          <RdwIcon value="bi-translate text-primary" />
+          {% trans %}Display{% endtrans %}
+        </div>
+        <div class="card-body">
+          <cf:Field :field="form.encoding" />
+        </div>
+      </div>
     </form>
-    {# Delete Repo Modal #}
-    {{ modal_confirm(id="delete-repo-modal",
-        title=_('Confirmation required') ,
-    message=_("You are about to permanently delete this repository. Deleted repository CANNOT be restored! Are you ABSOLUTELY sure?"),
-    fields=['action'],
-    submit=_('Delete'),
-    confirm_value=repo.display_name) }}
+    {# Delete repo #}
+    <div class="card mb-3 danger-zone">
+      <div class="card-header d-flex align-items-center gap-2 text-danger">
+        <RdwIcon value="bi-exclamation-triangle-fill" />
+        {% trans %}Danger Zone{% endtrans %}
+      </div>
+      <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <div class="fw-semibold small">{% trans %}Delete this repository{% endtrans %}</div>
+          <div class="form-text mt-0">
+            {% trans %}Permanently removes all backup data. This action cannot be undone.{% endtrans %}
+          </div>
+        </div>
+        <ButtonConfirm id="rdw-btn-delete-repo"
+                       :label="_('Delete repository')"
+                       target="#rdw-delete-repo-modal"
+                       :disabled="not is_maintainer" />
+      </div>
+    </div>
   </div>
+  {# Delete Repo Modal #}
+  <form method="post" action="{{ url_for('delete', repo) }}">
+    <ModalConfirm id="rdw-delete-repo-modal"
+                  :title="_('Confirmation required')"
+                  :message="_('You are about to permanently delete this repository. Deleted repository CANNOT be restored! Are you ABSOLUTELY sure?')"
+                  :submit="_('Delete')"
+                  :confirm_value="repo.display_name" />
+  </form>
 {% endblock %}
