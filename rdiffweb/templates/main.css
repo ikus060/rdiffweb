@@ -183,13 +183,6 @@ main {
     border-color: var(--btn-bg-color);
 }
 
-{% if not btn_rounded %}
-/* Keep border radius */
-.btn, .btn-lg{
-    border-radius: 0;
-}
-{% endif %}
-
 /* Fix header of activity in edit view */
 #activity.card thead {
     background-color: rgba(0, 0, 0, .03);

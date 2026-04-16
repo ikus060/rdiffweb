@@ -70,3 +70,11 @@ tr:hover .rdw-btn-hover, tr.child .rdw-btn-hover {
 .rdw-table .dt-scroll-body {
   overflow: visible !important;
 }
+
+/* Adjust alignment of chevron by cheating the padding. */
+.rdw-pagination .previous, .rdw-pagination .next {
+  padding-top: .2rem;
+}
+.rdw-pagination .btn.disabled {
+  background-color: var(--bs-secondary-bg) !important;
+}
