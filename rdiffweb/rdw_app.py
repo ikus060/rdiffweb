@@ -139,7 +139,8 @@ def _template_processor():
 )
 @cherrypy.tools.enrich_session()
 @cherrypy.tools.i18n(
-    func=lambda: getattr(cherrypy.serving.request, 'currentuser', False) and cherrypy.request.currentuser.lang
+    lang=lambda: getattr(cherrypy.serving.request, 'currentuser', False) and cherrypy.request.currentuser.lang,
+    tzinfo=lambda: getattr(cherrypy.serving.request, 'currentuser', False) and cherrypy.request.currentuser.timezone,
 )
 @cherrypy.tools.proxy(local=None, remote='X-Real-IP')
 @cherrypy.tools.ratelimit(on=False)

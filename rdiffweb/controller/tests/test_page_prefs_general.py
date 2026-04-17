@@ -14,13 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import cherrypy
 from parameterized import parameterized
 
 import rdiffweb.test
-from rdiffweb.core.model import RepoObject, SessionObject, UserObject
+from rdiffweb.core.model import SessionObject, UserObject
 
 
 class PagePrefGeneralTest(rdiffweb.test.WebCase):
@@ -30,10 +30,12 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
 
     def setUp(self):
         self.listener = MagicMock()
+        cherrypy.engine.subscribe('queue_mail', self.listener.queue_email, priority=50)
         cherrypy.engine.subscribe('user_password_changed', self.listener.user_password_changed, priority=50)
         return super().setUp()
 
     def tearDown(self):
+        cherrypy.engine.unsubscribe('queue_mail', self.listener.queue_email)
         cherrypy.engine.unsubscribe('user_password_changed', self.listener.user_password_changed)
         return super().tearDown()
 
@@ -51,14 +53,18 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         }
         return self.getPage(self.PREFS, method='POST', body=b)
 
-    def _set_profile_info(self, email, fullname=None):
-        b = {
+    def _set_profile_info(self, email, fullname=None, lang=None, timezone=None):
+        body = {
             'action': 'set_profile_info',
             'email': email,
         }
         if fullname:
-            b['fullname'] = fullname
-        return self.getPage(self.PREFS, method='POST', body=b)
+            body['fullname'] = fullname
+        if lang:
+            body['lang'] = lang
+        if timezone:
+            body['timezone'] = timezone
+        return self.getPage(self.PREFS, method='POST', body=body)
 
     def test_get_page(self):
         # When querying the page
@@ -199,6 +205,32 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         userobj = UserObject.query.filter(UserObject.username == self.USERNAME).one()
         self.assertEqual('', userobj.lang)
 
+    def test_change_timezone(self):
+        # Given a user
+        # When updating the timezone
+        self.getPage(
+            self.PREFS,
+            method='POST',
+            body={'action': 'set_profile_info', 'timezone': 'America/Toronto'},
+        )
+        self.assertStatus(303)
+        # Then user's timezone is updated
+        userobj = UserObject.query.filter(UserObject.username == self.USERNAME).one()
+        self.assertEqual('America/Toronto', userobj.timezone)
+
+    def test_change_timezone_invalid(self):
+        # Given a user
+        # When updating the timezone with an invalid value
+        self.getPage(
+            self.PREFS,
+            method='POST',
+            body={'action': 'set_profile_info', 'timezone': 'invalid'},
+        )
+        self.assertStatus(200)
+        # Then the language is not updated
+        userobj = UserObject.query.filter(UserObject.username == self.USERNAME).one()
+        self.assertEqual('', userobj.timezone)
+
     def test_change_password(self):
         # Given a user with 3 active sessions
         self.cookies = None
@@ -262,21 +294,77 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.getPage("/prefs/invalid/")
         self.assertStatus(404)
 
-    def test_update_repos(self):
-        # Given a user with invalid repositories
+    def test_update_report_time_range(self):
+        # Given a user withotu report time range
         userobj = UserObject.get_user(self.USERNAME)
-        RepoObject(user=userobj, repopath='invalid').add().commit()
-        self.assertEqual(['broker-repo', 'invalid', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
-        # When updating the repository list
-        self.getPage(self.PREFS, method='POST', body={'action': 'update_repos'})
+        self.assertEqual(0, userobj.report_time_range)
+        # When updating the report time range settings
+        self.getPage("/prefs/general", method='POST', body={'report_time_range': '7'})
+        # Then the page return successfully with the modification
         self.assertStatus(303)
-        # Then a success message is displayed
-        self.getPage(self.PREFS)
-        self.assertStatus(200)
-        self.assertInBody('Repositories successfully updated')
-        # Then the list is free of inexisting repos.
+        self.getPage("/prefs/general")
+        self.assertInBody('Profile updated successfully.')
+        self.assertInBody('<input checked id="report_time_range-2" name="report_time_range" type="radio" value="7">')
+        # Then database is updated too
         userobj.expire()
-        self.assertEqual(['broker-repo', 'testcases'], sorted([r.name for r in userobj.repo_objs]))
+        self.assertEqual(7, userobj.report_time_range)
+
+    def test_update_report_time_range_with_invalid(self):
+        # Given a user without report time range
+        userobj = UserObject.get_user(self.USERNAME)
+        self.assertEqual(0, userobj.report_time_range)
+        # When updating the report time range settings
+        self.getPage("/prefs/general", method='POST', body={'report_time_range': '300'})
+        # Then the page return successfully with the modification
+        self.assertStatus(200)
+        self.assertInBody('Send me a backup status report: Not a valid choice')
+        # Then value is un-changed
+        userobj.expire()
+        self.assertEqual(0, userobj.report_time_range)
+
+    def test_send_report(self):
+        # Given a user without email
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.email = 'test@test.com'
+        userobj.report_time_range = 7
+        userobj.add().commit()
+        # When sending a report
+        self.getPage("/prefs/general", method='POST', body={'send_report': '1'})
+        self.assertStatus(303)
+        # Then page display a sucess
+        self.getPage("/prefs/general")
+        self.assertStatus(200)
+        self.assertInBody('Report sent successfully.')
+        # Then report is sent by email.
+        self.listener.queue_email.assert_called_once_with(
+            to='test@test.com',
+            subject='Weekly Backup Report',
+            message=ANY,
+        )
+
+    def test_send_report_without_report_time_range(self):
+        # Given a user without report time range
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.email = 'test@test.com'
+        userobj.report_time_range = 0
+        userobj.add().commit()
+        # When sending a report
+        self.getPage("/prefs/general", method='POST', body={'action': 'set_report_info', 'send_report': '1'})
+        # Then the page return error
+        self.assertStatus(200)
+        self.assertInBody('You must select a time range and save changes before sending a report.')
+
+    def test_send_report_without_email(self):
+        # Given a user without email
+        userobj = UserObject.get_user(self.USERNAME)
+        userobj.email = ''
+        userobj.report_time_range = 7
+        userobj.add().commit()
+        # When sending a report
+        self.getPage("/prefs/general", method='POST', body={'action': 'set_report_info', 'send_report': '1'})
+        # Then the page return error
+        self.assertStatus(200)
+        self.assertInBody('Could not send report to user without configured email.')
 
 
 class PagePrefGeneralRateLimitTest(rdiffweb.test.WebCase):

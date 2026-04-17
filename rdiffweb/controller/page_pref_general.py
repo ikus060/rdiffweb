@@ -19,8 +19,9 @@ to change password ans refresh it's repository view.
 """
 
 import cherrypy
-from wtforms.fields import HiddenField, PasswordField, SelectField, StringField, SubmitField
-from wtforms.validators import DataRequired, EqualTo, InputRequired, Length, Optional, Regexp, ValidationError
+from cherrypy_foundation.tools.i18n import get_timezone_name, list_available_timezones
+from wtforms.fields import HiddenField, PasswordField, RadioField, SelectField, StringField, SubmitField
+from wtforms.validators import EqualTo, InputRequired, Length, Optional, Regexp, ValidationError
 
 try:
     from wtforms.fields import EmailField  # wtform >=3
@@ -36,8 +37,9 @@ from rdiffweb.core.model import UserObject
 
 
 class UserProfileForm(DbForm):
-    action = HiddenField(default='set_profile_info')
-    username = StringField(_('Username'), render_kw={'readonly': True})
+    username = StringField(
+        _('Username'), description=_('Your username cannot be changed.'), render_kw={'readonly': True}
+    )
     fullname = StringField(
         _('Fullname'),
         validators=[
@@ -47,34 +49,60 @@ class UserProfileForm(DbForm):
         ],
     )
     email = EmailField(
-        _('Email'),
+        _('Email address'),
+        description=_('Used for backup reports and notifications.'),
         validators=[
-            DataRequired(),
+            Optional(),
             Length(max=256, message=_("Email too long.")),
             Regexp(UserObject.PATTERN_EMAIL, message=_("Must be a valid email address.")),
         ],
     )
     lang = SelectField(_('Preferred Language'))
-    set_profile_info = SubmitField(
-        _('Save changes'),
-        render_kw={"class": "btn-primary"},
+    timezone = SelectField(
+        _('Preferred timezone'),
+        description=_('Used to display backup times in your local time.'),
     )
+    report_time_range = RadioField(
+        _('Send me a backup status report'),
+        choices=[
+            (0, _('Never')),
+            (1, _('Daily')),
+            (7, _('Weekly')),
+            (30, _('Monthly')),
+        ],
+        coerce=int,
+    )
+
+    send_report = SubmitField(_('Save and send report'))
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # Load available languages
         languages = [(locale.language, locale.display_name.capitalize()) for locale in list_available_locales()]
         languages = sorted(languages, key=lambda x: x[1])
         languages.insert(0, ('', _('(default)')))
         self.lang.choices = languages
-
-    def is_submitted(self):
-        # Validate only if action is set_profile_info
-        return super().is_submitted() and self.action.default in self.action.raw_data
+        # Load available timezone
+        timezones = [
+            (timezone, '%s (%s)' % (timezone, get_timezone_name(timezone))) for timezone in list_available_timezones()
+        ]
+        timezones.insert(0, ('', _('(default)')))
+        self.timezone.choices = timezones
 
     def populate_obj(self, user):
         user.fullname = self.fullname.data
         user.email = self.email.data
         user.lang = self.lang.data
+        user.timezone = self.timezone.data
+        user.report_time_range = self.report_time_range.data
+        if self.send_report.data:
+            if not user.report_time_range:
+                raise ValueError(_('You must select a time range and save changes before sending a report.'))
+            if not user.email:
+                raise ValueError(_('Could not send report to user without configured email.'))
+            cherrypy.notification.send_report(user, force=True)
+            if hasattr(cherrypy.serving, 'session'):
+                flash(_("Report sent successfully."), level='success')
 
 
 class UserPasswordForm(DbForm):
@@ -93,10 +121,6 @@ class UserPasswordForm(DbForm):
     )
     confirm = PasswordField(
         _('Confirm new password'), validators=[InputRequired(_("Confirmation password is missing."))]
-    )
-    set_password = SubmitField(
-        _('Update password'),
-        render_kw={"class": "btn-primary"},
     )
 
     def is_submitted(self):
@@ -119,24 +143,6 @@ class UserPasswordForm(DbForm):
             raise ValidationError(e)
 
 
-class RefreshForm(DbForm):
-    action = HiddenField(default='update_repos')
-    update_repos = SubmitField(
-        _('Refresh repositories'),
-        description=_(
-            "Refresh the list of repositories associated to your account. If you recently add a new repository and it doesn't show, you may try to refresh the list."
-        ),
-        render_kw={"class": "btn-primary"},
-    )
-
-    def is_submitted(self):
-        # Validate only if action is set_profile_info
-        return super().is_submitted() and self.action.default in self.action.raw_data
-
-    def populate_obj(self, user):
-        user.refresh_repos(delete=True)
-
-
 class PagePrefsGeneral:
     """
     Plugin to change user profile and password.
@@ -152,29 +158,25 @@ class PagePrefsGeneral:
         """
         currentuser = cherrypy.serving.request.currentuser
         # Process the parameters.
-        profile_form = UserProfileForm(obj=currentuser)
+        form = UserProfileForm(obj=currentuser)
         password_form = UserPasswordForm()
-        refresh_form = RefreshForm()
-        if profile_form.validate_on_submit():
-            if profile_form.save_to_db(currentuser):
-                flash(_("Profile updated successfully."), level='success')
-                raise cherrypy.HTTPRedirect("")
-        elif password_form.validate_on_submit():
-            if password_form.save_to_db(currentuser):
-                flash(_("Password updated successfully."), level='success')
-                raise cherrypy.HTTPRedirect("")
-        elif refresh_form.validate_on_submit():
-            if refresh_form.save_to_db(currentuser):
-                flash(_("Repositories successfully updated"), level='success')
-                raise cherrypy.HTTPRedirect("")
-        if profile_form.error_message:
-            flash(profile_form.error_message, level='error')
-        if password_form.error_message:
-            flash(password_form.error_message, level='error')
-        if refresh_form.error_message:
-            flash(refresh_form.error_message, level='error')
+        if password_form.is_submitted():
+            # Check password first.
+            if password_form.validate():
+                if password_form.save_to_db(currentuser):
+                    flash(_("Password updated successfully."), level='success')
+                    raise cherrypy.HTTPRedirect("")
+            if password_form.error_message:
+                flash(password_form.error_message, level='error')
+        elif form.is_submitted():
+            if form.validate():
+                # Fallback to profile form.
+                if form.save_to_db(currentuser):
+                    flash(_("Profile updated successfully."), level='success')
+                    raise cherrypy.HTTPRedirect("")
+            if form.error_message:
+                flash(form.error_message, level='error')
         return {
-            'profile_form': profile_form,
+            'form': form,
             'password_form': password_form,
-            'refresh_form': refresh_form,
         }

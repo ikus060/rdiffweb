@@ -1,4 +1,7 @@
-{# def id, title, submit=None, color="primary" #}
+{# def id, title, submit=None, color="primary", show=False #}
+{% if show %}
+  {% do attrs.setdefault(classes="rdw-modal-onload") %}
+{% endif %}
 <div {{ attrs.render(id=id, classes="modal", tabindex="-1", role="dialog", aria_hidden="true", aria_labelledby="%s-title".format(id) ) }}>
   <div class="modal-dialog">
     <div class="modal-content">
@@ -7,11 +10,15 @@
         <button type="button"
                 class="btn-close"
                 data-bs-dismiss="modal"
-                aria-label="Close"></button>
+                aria-label="Close"
+                data-bs-target="#{{ id }}"></button>
       </div>
       <div class="modal-body">{{ content }}</div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans %}Close{% endtrans %}</button>
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                data-bs-target="#{{ id }}">{% trans %}Close{% endtrans %}</button>
         <button type="submit" class="btn btn-{{ color }}">{{ submit or _("Submit") }}</button>
       </div>
     </div>

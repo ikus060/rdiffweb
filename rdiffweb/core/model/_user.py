@@ -159,6 +159,7 @@ class UserObject(MessageMixin, Base):
         order_by="RepoObject.repopath",
     )
     lang = Column('lang', String, nullable=False, default='', server_default='')
+    timezone = Column('timezone', String, nullable=False, default='', server_default='')
     report_time_range = Column('report_time_range', SmallInteger, nullable=False, default=0, server_default=str(0))
     report_last_sent = Column('report_last_sent', Timestamp, nullable=True, default=None, info={AUDIT_IGNORE: True})
     notes = Column('notes', String, nullable=False, default='', server_default='')
@@ -592,6 +593,12 @@ def update_user_schema(target, conn, **kw):
         column_add(conn, UserObject.lang)
     else:
         UserObject.query.filter(UserObject.lang.is_(None)).update({UserObject.lang: ""})
+
+    # Add user's timezone column
+    if not column_exists(conn, UserObject.timezone):
+        column_add(conn, UserObject.timezone)
+    else:
+        UserObject.query.filter(UserObject.timezone.is_(None)).update({UserObject.timezone: ""})
 
     # Add user's report column
     if not column_exists(conn, UserObject.report_time_range):
