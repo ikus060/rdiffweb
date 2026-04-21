@@ -16,6 +16,7 @@
     /* Override some bootstrap colors. */
     --bs-link-color: {{ link_color }};
     --bs-link-color-rgb: {{ hex_to_rgb(link_color) }};
+    --bs-primary-rgb: {{ hex_to_rgb(link_color) }};
     /* Adjust contrast for sidebar. */
     --bs-light: #eef0f1;
     --bs-light-rgb: 238, 240, 241;
