@@ -17,11 +17,16 @@
 from base64 import b64encode
 
 from parameterized import parameterized
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
 
 PREFS_SSHKEYS = "/prefs/sshkeys"
+
+SSHKEY_TEST = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530"
 
 
 class PagePrefSshKeysTest(rdiffweb.test.WebCase):
@@ -47,10 +52,7 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
         self.assertEqual(0, len(list(user.authorizedkeys)))
 
         # Add a new key
-        self._add_ssh_key(
-            "test@mysshkey",
-            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-        )
+        self._add_ssh_key("test@mysshkey", SSHKEY_TEST)
         user.expire()
         self.assertStatus(303)
         self.assertEqual(1, len(list(user.authorizedkeys)))
@@ -75,19 +77,13 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
         self.assertEqual(0, len(list(user.authorizedkeys)))
 
         # Add a new key
-        self._add_ssh_key(
-            "test@mysshkey",
-            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-        )
+        self._add_ssh_key("test@mysshkey", SSHKEY_TEST)
         user.expire()
         self.assertStatus(303)
         self.assertEqual(1, len(list(user.authorizedkeys)))
 
         # Add a duplicate key
-        self._add_ssh_key(
-            "test@mysshkey",
-            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-        )
+        self._add_ssh_key("test@mysshkey", SSHKEY_TEST)
         user.expire()
         self.assertStatus('200 OK')
         self.assertInBody("Duplicate key.")
@@ -125,10 +121,7 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
             user.delete_authorizedkey(key.fingerprint)
         self.assertEqual(0, len(list(user.authorizedkeys)))
         # When adding a key with title too long.
-        self._add_ssh_key(
-            "title" * 52,
-            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-        )
+        self._add_ssh_key("title" * 52, SSHKEY_TEST)
         user.expire()
         # Then page return with error
         self.assertStatus('200 OK')
@@ -144,10 +137,7 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
         self.assertEqual(0, len(list(user.authorizedkeys)))
 
         # Add a new key
-        self._add_ssh_key(
-            "test@mysshkey",
-            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-        )
+        self._add_ssh_key("test@mysshkey", SSHKEY_TEST)
         user.expire()
         self.assertStatus(303)
         self.assertEqual(1, len(list(user.authorizedkeys)))
@@ -166,10 +156,7 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
         self.assertEqual(0, len(list(user.authorizedkeys)))
 
         # Add a new key
-        self._add_ssh_key(
-            "test@mysshkey",
-            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-        )
+        self._add_ssh_key("test@mysshkey", SSHKEY_TEST)
         user.expire()
         self.assertStatus(303)
         self.assertEqual(1, len(list(user.authorizedkeys)))
@@ -180,6 +167,60 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
         self.assertStatus(200)
         self.assertInBody("fingerprint doesn&#39;t exists: invalid")
         self.assertEqual(1, len(list(user.authorizedkeys)))
+
+    def test_add_sshkey_selenium(self):
+        # Given a user without ssh key
+        user_obj = UserObject.get_user('admin')
+        self.assertEqual(0, len(list(user_obj.authorizedkeys)))
+        with self.selenium() as driver:
+            # When getting the sshkey pages
+            driver.get(self.baseurl + PREFS_SSHKEYS)
+            # Then page load without error
+            self.assertFalse(driver.get_log('browser'))
+            # When user click on delete button
+            btn = driver.find_element('css selector', '#rdw-btn-add-sshkey')
+            ActionChains(driver).scroll_to_element(btn).perform()
+            btn.click()
+            # Then a Modal get shown.
+            modal = driver.find_element('css selector', '#rdw-add-sshkey-modal')
+            # When user enter the ssh key.
+            txt_title = modal.find_element('css selector', 'input[name="title"]')
+            txt_title.send_keys('My New Key')
+            txt_key = modal.find_element('css selector', 'textarea[name="key"]')
+            txt_key.send_keys(SSHKEY_TEST)
+            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            self.assertFalse(driver.get_log('browser'))
+            # Then user get redirected to home page.
+            WebDriverWait(driver, 10).until(EC.staleness_of(submit_btn))
+            user_obj.expire()
+            self.assertEqual(1, len(list(user_obj.authorizedkeys)))
+
+    def test_delete_sshkey_selenium(self):
+        # Given a user with a ssh key.
+        user_obj = UserObject.get_user('admin')
+        user_obj.add_authorizedkey(SSHKEY_TEST, "test@mysshkey")
+        user_obj.commit()
+        self.assertEqual(1, len(list(user_obj.authorizedkeys)))
+        with self.selenium() as driver:
+            # When getting the sshkey pages
+            driver.get(self.baseurl + PREFS_SSHKEYS)
+            # Then page load without error
+            self.assertFalse(driver.get_log('browser'))
+            # When user click on delete button
+            btn = driver.find_element('css selector', '.rdw-btn-delete-sshkey')
+            ActionChains(driver).scroll_to_element(btn).perform()
+            btn.click()
+            # Then a Modal get shown.
+            modal = driver.find_element('css selector', '#rdw-delete-sshkey-modal')
+            # When user confirm
+            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            self.assertFalse(driver.get_log('browser'))
+            # Then user get redirected to home page.
+            WebDriverWait(driver, 10).until(EC.staleness_of(submit_btn))
+            user_obj.expire()
+            self.assertEqual(0, len(list(user_obj.authorizedkeys)))
 
 
 class ApiSshKeysTest(rdiffweb.test.WebCase):
@@ -197,10 +238,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
             '/api/currentuser/sshkeys',
             headers=self.headers,
             method='POST',
-            body={
-                'title': "test@mysshkey",
-                'key': "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-            },
+            body={'title': "test@mysshkey", 'key': SSHKEY_TEST},
         )
         user.expire()
         # Then page return success
@@ -220,10 +258,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
             '/api/currentuser/sshkeys',
             headers=self.headers + [('Content-Type', 'application/json')],
             method='POST',
-            body={
-                'title': "test@mysshkey",
-                'key': "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-            },
+            body={'title': "test@mysshkey", 'key': SSHKEY_TEST},
         )
         user.expire()
         # Then page return success
@@ -237,10 +272,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
         for key in user.authorizedkeys:
             user.delete_authorizedkey(key.fingerprint)
         self.assertEqual(0, len(list(user.authorizedkeys)))
-        user.add_authorizedkey(
-            key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-            comment="test@mysshkey",
-        )
+        user.add_authorizedkey(key=SSHKEY_TEST, comment="test@mysshkey")
         user.commit()
 
         # When POST a duplicate ssh key
@@ -248,10 +280,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
             '/api/currentuser/sshkeys',
             headers=self.headers,
             method='POST',
-            body={
-                'title': "test@mysshkey",
-                'key': "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-            },
+            body={'title': "test@mysshkey", 'key': SSHKEY_TEST},
         )
         # Then page return success
         self.assertStatus(400)
@@ -277,10 +306,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
             '/api/currentuser/sshkeys',
             headers=headers,
             method='POST',
-            body={
-                'title': "test@mysshkey",
-                'key': "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-            },
+            body={'title': "test@mysshkey", 'key': SSHKEY_TEST},
         )
         user.expire()
         # Then ssh key get added or permissions is refused
@@ -296,10 +322,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
         user = UserObject.get_user('admin')
         for key in user.authorizedkeys:
             user.delete_authorizedkey(key.fingerprint)
-        user.add_authorizedkey(
-            key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-            comment="test@mysshkey",
-        )
+        user.add_authorizedkey(key=SSHKEY_TEST, comment="test@mysshkey")
         user.commit()
         self.assertEqual(1, len(list(user.authorizedkeys)))
         # When deleting the ssh key
@@ -327,17 +350,12 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
         # Given a user with an access token
         user = UserObject.get_user('admin')
         token = user.add_access_token(name='test', scope=scope)
-        user.add_authorizedkey(
-            key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-            comment="test@mysshkey",
-        )
+        user.add_authorizedkey(key=SSHKEY_TEST, comment="test@mysshkey")
         user.commit()
         headers = [("Authorization", "Basic " + b64encode(f"admin:{token}".encode('ascii')).decode('ascii'))]
         # When deleting the ssh key
         self.getPage(
-            '/api/currentuser/sshkeys/4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91',
-            headers=headers,
-            method='DELETE',
+            '/api/currentuser/sshkeys/4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91', headers=headers, method='DELETE'
         )
         user.expire()
         # Then ssh key get added or permissions is refused
@@ -353,10 +371,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
         user = UserObject.get_user('admin')
         for key in user.authorizedkeys:
             user.delete_authorizedkey(key.fingerprint)
-        user.add_authorizedkey(
-            key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-            comment="test@mysshkey",
-        )
+        user.add_authorizedkey(key=SSHKEY_TEST, comment="test@mysshkey")
         user.commit()
         self.assertEqual(1, len(list(user.authorizedkeys)))
         # When querying the ssh key
@@ -376,10 +391,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
         user = UserObject.get_user('admin')
         for key in user.authorizedkeys:
             user.delete_authorizedkey(key.fingerprint)
-        user.add_authorizedkey(
-            key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-            comment="test@mysshkey",
-        )
+        user.add_authorizedkey(key=SSHKEY_TEST, comment="test@mysshkey")
         user.commit()
         self.assertEqual(1, len(list(user.authorizedkeys)))
         # When querying the ssh key
@@ -396,10 +408,7 @@ class ApiSshKeysTest(rdiffweb.test.WebCase):
         user = UserObject.get_user('admin')
         for key in user.authorizedkeys:
             user.delete_authorizedkey(key.fingerprint)
-        user.add_authorizedkey(
-            key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSEN5VTn9MLituZvdYTZMbZEaMxe0UuU7BelxHkvxzSpVWtazrIBEc3KZjtVoK9F3+0kd26P4DzSQuPUl3yZDgyZZeXrF6p2GlEA7A3tPuOEsAQ9c0oTiDYktq5/Go8vD+XAZKLd//qmCWW1Jg4datkWchMKJzbHUgBrBH015FDbGvGDWYTfVyb8I9H+LQ0GmbTHsuTu63DhPODncMtWPuS9be/flb4EEojMIx5Vce0SNO9Eih38W7jTvNWxZb75k5yfPJxBULRnS5v/fPnDVVtD3JSGybSwKoMdsMX5iImAeNhqnvd8gBu1f0IycUQexTbJXk1rPiRcF13SjKrfXz ikus060@ikus060-t530",
-            comment="test@mysshkey",
-        )
+        user.add_authorizedkey(key=SSHKEY_TEST, comment="test@mysshkey")
         user.commit()
         self.assertEqual(1, len(list(user.authorizedkeys)))
         # When listing the ssh key
@@ -450,7 +459,7 @@ class PagePrefSshKeysWithSSHKeyDisabled(rdiffweb.test.WebCase):
 
     def test_get_page(self):
         # When making a query to preferences
-        self.getPage("/prefs/sshkeys", method='GET')
+        self.getPage(PREFS_SSHKEYS, method='GET')
         # Then the page should return with success but without SSH
         self.assertStatus(200)
         self.assertInBody("SSH Keys management is disabled by your administrator.")

@@ -109,7 +109,7 @@ _pages = [
     # User Preferences
     Page('prefs', _('User Profile'), None, None, False),
     Page('prefs_general', _('Account Settings'), 'prefs/general'),
-    Page('prefs_sshkeys', _('SSH keys'), 'prefs/sshkeys'),
+    Page('prefs_sshkeys', _('SSH Keys'), 'prefs/sshkeys'),
     Page('prefs_tokens', _('Access Token'), 'prefs/tokens'),
     Page('prefs_mfa', _('Two-Factor Authentication'), 'prefs/mfa'),
     Page('prefs_session', _('Active Sessions'), 'prefs/session'),

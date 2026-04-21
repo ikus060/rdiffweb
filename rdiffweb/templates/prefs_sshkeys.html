@@ -1,53 +1,121 @@
 {% extends 'layout.html' %}
 {% set breadcrumbs = breadcrumb_page('prefs') +  breadcrumb_page(self) %}
 {% block content %}
-  <div class="container">
-    {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
-    {% if disable_ssh_keys %}
-      {% trans %}SSH Keys management is disabled by your administrator.{% endtrans %}
-    {% else %}
-      <div class="d-flex  justify-content-between">
-        <h3>{% trans %}SSH keys{% endtrans %}</h3>
-        <button type="button"
-                class="btn btn-success btn-sm"
+  <div class="col-xxl-6 offset-xxl-3 col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
+    {# Header #}
+    <div class="d-flex flex-wrap justify-content-between mb-2 sticky-top py-2 bg-white border-bottom"
+         style="top: 56px">
+      <h2>{% trans %}SSH Keys{% endtrans %}</h2>
+      <div>
+        <button id="rdw-btn-add-sshkey"
+                type="button"
+                class="btn btn-primary"
                 data-bs-toggle="modal"
-                data-bs-target="#add-sshkey-modal">{% trans %}Add SSH key{% endtrans %}</button>
+                data-bs-target="#rdw-add-sshkey-modal">
+          <RdwIcon value="bi-plus-lg" />
+          {% trans %}Add SSH key{% endtrans %}
+        </button>
       </div>
-      <p>
-        {% trans %}SSH keys allow you to establish a secure connection between your computer and this backup system. This is a list of SSH keys associated with your account. Remove any keys that you do not recognize.{% endtrans %}
-      </p>
-      {% if not is_maintainer %}
-        <p class="text-secondary">{% trans %}Ask your administrator to delete SSH Keys.{% endtrans %}</p>
+    </div>
+    {# Help text #}
+    <p class="text-secondary small mb-4">
+      {% trans %}
+      SSH keys allow your backup client to securely connect to this server.{% endtrans %}
+      {% if disable_ssh_keys %}
+        <br />
+        <span class="text-warning fw-semibold">
+          <RdwIcon value="bi-exclamation-triangle-fill" />
+          {% trans %}SSH Keys management is disabled by your administrator.{% endtrans %}
+        </span>
       {% endif %}
-      <!-- List of keys-->
-      <ul class="list-group">
-        {% for key in sshkeys %}
-          <li class="list-group-item">
-            <div class="float-end">
-              {{ button_confirm(label=_('Delete') , target="#delete-sshkey-modal", action="delete", fingerprint=key.fingerprint, disabled=not is_maintainer) }}
+    </p>
+    {# Key count summary #}
+    <p class="text-muted small mb-2">
+      <RdwIcon value="bi-info-circle" />
+      {{ _('%(count)s SSH keys associated with your account.', count=sshkeys|length) }}
+    </p>
+    {# Key list #}
+    <div class="d-flex flex-column gap-3">
+      {% for key in sshkeys %}
+        <!-- Key Item -->
+        <div class="card border shadow-sm">
+          <div class="card-body d-flex align-items-center gap-3">
+            <!-- Icon -->
+            <div class="text-secondary fs-2 flex-shrink-0">
+              <RdwIcon value="bi-key" />
             </div>
-            <strong class="list-group-item-heading">{{ key.title }}</strong>
-            <p class="list-group-item-text">{{ key.fingerprint }}</p>
-          </li>
-        {% else %}
-          <li class="list-group-item text-center">
-            {% trans %}There are no SSH keys associated with your account.{% endtrans %}
-          </li>
-        {% endfor %}
-      </ul>
-      {# djlint:off #}
-    {# Dialog to create SSH key. #}
-    {% call modal_dialog('add-sshkey-modal',_('Add SSH key'), _('Add SSH key')) %}
-      <input type="hidden" name="action" value="add" />
-      <cf:Fields form={{ form }} />
-    {% endcall %}
-      {# djlint:on #}
-      <!-- Delete SSH Key Modal -->
-      {{ modal_confirm(id='delete-sshkey-modal',
-            title=_('Delete SSH key') ,
-      message=_("Are you sure you want to delete this SSH Key?"),
-      fields=['action', 'fingerprint'],
-      submit=_('Delete')) }}
-    {% endif %}
+            <!-- Key Info -->
+            <div class="flex-grow-1 overflow-hidden">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-semibold">{{ key.comment }}</span>
+                <span class="badge bg-secondary-subtle text-secondary border">{{ key.keytype }}</span>
+              </div>
+              <div class="text-muted small font-monospace text-truncate">{{ key.fingerprint }}</div>
+              <div class="text-muted" style="font-size: 0.78rem;">
+                <RdwIcon value="bi-clock" />
+                {% trans %}Added on {% endtrans %}
+                {% if key.creation_time %}
+                  {{ key.creation_time | format_datetime }}
+                {% else %}
+                  &mdash;
+                {% endif %}
+              </div>
+            </div>
+            <!-- Actions -->
+            <div class="flex-shrink-0">
+              <ButtonConfirm class="btn btn-outline-danger btn-sm rdw-btn-delete-sshkey"
+                             icon="bi-trash"
+                             :label="_('Delete')"
+                             target="#rdw-delete-sshkey-modal"
+                             :disabled="disable_ssh_keys"
+                             :data-fingerprint="key.fingerprint" />
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <RdwEmpty icon="bi-key" :title="{{ _("No SSH keys added yet") }}" class="p-5">
+          <p>
+            <button class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#rdw-add-sshkey-modal">
+              <RdwIcon value="bi-plus-lg" />
+              Add your first SSH Key
+            </button>
+          </p>
+        </RdwEmpty>
+      {% endfor %}
+    </div>
+    {# Add SSH Key Modal #}
+    <form action="#" method="post">
+      <ModalDialog id="rdw-add-sshkey-modal"
+                   class="modal-lg"
+                   :title="_('Add SSH key')"
+                   :submit="_('Add SSH key')"
+                   :show="form.error_message">
+        <div class="alert alert-info d-flex gap-2 align-items-start" role="alert">
+          <RdwIcon value="bi-info-circle-fill" />
+          <div>
+            {% trans %}
+            Paste your public key below (e.g. content of ~/.ssh/id_rsa.pub or ~/.ssh/id_ed25519.pub). Never share your private key.{% endtrans %}
+          </div>
+        </div>
+        {% if form.error_message %}<p class="text-danger">{{ form.error_message }}</p>{% endif %}
+        <cf:Fields form={{ form }} />
+      </ModalDialog>
+    </form>
   </div>
+  {# Delete Modal #}
+  <form method="post" action="#">
+    <ModalConfirm id="rdw-delete-sshkey-modal"
+                  :title="_('Delete SSH Key')"
+                  :message="_('Are you sure you want to delete this SSH Key?')"
+                  :submit="_('Delete Key')"
+                  :fields="['fingerprint']">
+      <input type="hidden" name="action" value="delete" />
+      <p class="text-muted small mb-0">
+        <RdwIcon value="bi-exclamation-triangle-fill" class="text-warning me-1" />
+        {% trans %}Any backup client using this key will lose access immediately.{% endtrans %}
+      </p>
+    </ModalConfirm>
+  </form>
 {% endblock %}

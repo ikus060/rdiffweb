@@ -26,7 +26,8 @@ from sqlalchemy.orm import reconstructor, relationship, validates
 from rdiffweb.core.authorizedkeys import AuthorizedKey, check_publickey
 
 from ._callbacks import add_post_commit_tasks
-from ._update import index_exists
+from ._timestamp import Timestamp
+from ._update import column_add, column_exists, index_exists
 
 Base = cherrypy.db.get_base()
 Session = cherrypy.db.get_session()
@@ -48,6 +49,8 @@ class SshKey(Base):
     _key = Column('Key', Text, unique=True, primary_key=True)
     userid = Column('UserID', Integer, ForeignKey("users.UserID"), nullable=False)
     user = relationship('UserObject', back_populates="authorizedkeys", lazy="joined")
+    access_time = Column('AccessTime', Timestamp, nullable=True, server_default=None)
+    creation_time = Column('CreationTime', Timestamp, nullable=True, server_default=None, default=func.now())
     # Transient value.
     _authorizedkey = None
 
@@ -131,6 +134,11 @@ def update_sshkeys_schema(target, conn, **kw):
             logger.error(msg)
             print(msg, file=sys.stderr)
             raise SystemExit(12)
+
+    if not column_exists(conn, SshKey.access_time):
+        column_add(conn, SshKey.access_time)
+    if not column_exists(conn, SshKey.creation_time):
+        column_add(conn, SshKey.creation_time)
 
 
 @event.listens_for(Session, 'after_flush')

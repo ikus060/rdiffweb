@@ -20,8 +20,6 @@ plugin to work properly, the users home directory need to match a real
 user home.
 """
 
-import logging
-
 import cherrypy
 from cherrypy_foundation.flash import flash
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
@@ -33,8 +31,6 @@ from wtforms.widgets.core import TextArea
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core import authorizedkeys
-
-_logger = logging.getLogger(__name__)
 
 
 def validate_key(unused_form, field):
@@ -48,8 +44,8 @@ def validate_key(unused_form, field):
 class SshForm(DbForm):
     action = HiddenField(default="add")
     title = StringField(
-        _('Title'),
-        description=_('The title is an optional description to identify the key. e.g.: bob@thinkpad-t530'),
+        _('Key Name'),
+        description=_('Give this key a recognizable name so you can identify it later.'),
         validators=[
             validators.data_required(),
             validators.length(
@@ -57,14 +53,14 @@ class SshForm(DbForm):
                 message=_('Title too long.'),
             ),
         ],
+        render_kw={"placeholder": _("e.g. My laptop, Work desktop…")},
     )
     key = StringField(
-        _('Key'),
+        _('Public Key'),
         widget=TextArea(),
-        description=_(
-            "Enter a SSH public key. It should start with 'ssh-dss', 'ssh-ed25519', 'ssh-rsa', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384' or 'ecdsa-sha2-nistp521'."
-        ),
+        description=_("Begins with ssh-rsa, ssh-ed25519, ecdsa-sha2-nistp256, etc."),
         validators=[validators.data_required(), validate_key],
+        render_kw={"placeholder": _("ssh-ed25519 AAAA... or ssh-rsa AAAA...")},
     )
 
     def is_submitted(self):
@@ -100,33 +96,25 @@ class PagePrefSshKeys:
         currentuser = cherrypy.serving.request.currentuser
         cfg = cherrypy.tree.apps[''].cfg
         # Handle action
-        add_form = SshForm()
+        form = SshForm()
         delete_form = DeleteSshForm()
         if not cfg.disable_ssh_keys:
-            if add_form.validate_on_submit():
-                if add_form.save_to_db(currentuser):
+            if form.validate_on_submit():
+                if form.save_to_db(currentuser):
                     raise cherrypy.HTTPRedirect("")
             elif delete_form.validate_on_submit():
                 if delete_form.save_to_db(currentuser):
                     raise cherrypy.HTTPRedirect("")
-            if add_form.error_message:
-                flash(add_form.error_message, level='warning')
+            if form.error_message:
+                flash(form.error_message, level='warning')
             if delete_form.error_message:
                 flash(delete_form.error_message, level='warning')
         # Get SSH keys if file exists.
         params = {
             'disable_ssh_keys': cfg.disable_ssh_keys,
-            'form': add_form,
+            'form': form,
+            'sshkeys': currentuser.authorizedkeys,
         }
-        try:
-            params["sshkeys"] = [
-                {'title': key.comment, 'fingerprint': key.fingerprint} for key in currentuser.authorizedkeys
-            ]
-        except IOError:
-            params["sshkeys"] = []
-            flash(_("Failed to get SSH keys"), level='error')
-            _logger.warning("error reading SSH keys", exc_info=1)
-
         return params
 
 
