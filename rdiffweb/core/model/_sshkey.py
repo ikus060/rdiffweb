@@ -21,7 +21,7 @@ import cherrypy
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from sqlalchemy import Column, ForeignKey, Index, Integer, PrimaryKeyConstraint, Text, event, func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import reconstructor, relationship, validates
+from sqlalchemy.orm import Session, reconstructor, relationship, validates
 
 from rdiffweb.core.authorizedkeys import AuthorizedKey, check_publickey
 
@@ -29,8 +29,7 @@ from ._callbacks import add_post_commit_tasks
 from ._timestamp import Timestamp
 from ._update import column_add, column_exists, index_exists
 
-Base = cherrypy.db.get_base()
-Session = cherrypy.db.get_session()
+Base = cherrypy.db.base
 
 logger = logging.getLogger(__name__)
 

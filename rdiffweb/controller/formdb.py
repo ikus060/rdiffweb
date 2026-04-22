@@ -24,8 +24,6 @@ from wtforms.validators import ValidationError
 
 logger = logging.getLogger(__name__)
 
-Session = cherrypy.db.get_session()
-
 
 class DbForm(CherryForm):
     """
@@ -37,14 +35,14 @@ class DbForm(CherryForm):
         form_errors = self.form_errors if hasattr(self, 'form_errors') else self.errors.setdefault(None, [])
         try:
             self.populate_obj(obj)
-            Session.commit()
+            cherrypy.db.session.commit()
             return True
         except (ValueError, ValidationError) as e:
-            Session.rollback()
+            cherrypy.db.session.rollback()
             form_errors.append(str(e))
             return False
         except IntegrityError as e:
-            Session.rollback()
+            cherrypy.db.session.rollback()
             if e.constraint and e.constraint.info and 'error_message' in e.constraint.info:
                 error_message = e.constraint.info['error_message']
                 form_errors.append(error_message)
@@ -53,7 +51,7 @@ class DbForm(CherryForm):
                 logger.error("database error occurred", exc_info=1)
             return False
         except Exception:
-            Session.rollback()
+            cherrypy.db.session.rollback()
             logger.exception("unexpected error occurred while saving data", exc_info=1)
             form_errors.append(_("An unexpected error occurred while saving your data."))
             return False

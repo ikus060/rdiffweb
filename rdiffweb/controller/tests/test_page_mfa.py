@@ -23,7 +23,7 @@ from cherrypy_foundation.tools.auth_mfa import MFA_DEFAULT_CODE_TIMEOUT, MFA_DEF
 from cherrypy_foundation.tools.sessions_timeout import SESSION_PERSISTENT
 
 import rdiffweb.test
-from rdiffweb.core.model import DbSession, UserObject
+from rdiffweb.core.model import SessionObject, UserObject
 
 
 class MfaPageTest(rdiffweb.test.WebCase):
@@ -94,12 +94,14 @@ class MfaPageTest(rdiffweb.test.WebCase):
 
     def test_get_with_trusted(self):
         # Given an authenticated user with MFA enabled and already verified
-        session = DbSession(id=self.session_id)
-        session.load()
-        session['_auth_mfa_user_key'] = self.USERNAME
-        session['_auth_mfa_time'] = session.now()
-        session['_auth_mfa_trusted_ip_list'] = ['127.0.0.1']
-        session.save()
+        self._login(self.USERNAME, self.PASSWORD)
+        session = SessionObject.query.filter(SessionObject.session_id == self.session_id).one()
+        new_data = dict(session.data)
+        new_data['_auth_mfa_user_key'] = self.USERNAME
+        new_data['_auth_mfa_time'] = datetime.datetime.now(tz=datetime.timezone.utc)
+        new_data['_auth_mfa_trusted_ip_list'] = ['127.0.0.1']
+        session.data = new_data
+        session.add().commit()
         # When requesting /mfa/ page when we are already trusted
         self.getPage("/mfa/")
         # Then user is redirected to root page
@@ -108,11 +110,13 @@ class MfaPageTest(rdiffweb.test.WebCase):
 
     def test_get_with_trusted_expired(self):
         # Given an authenticated user with MFA enabled and already verified
-        session = DbSession(id=self.session_id)
-        session.load()
-        session['_auth_mfa_user_key'] = self.USERNAME
-        session['_auth_mfa_time'] = session.now() - datetime.timedelta(minutes=session.timeout)
-        session.save()
+        self._login(self.USERNAME, self.PASSWORD)
+        session = SessionObject.query.filter(SessionObject.session_id == self.session_id).one()
+        new_data = dict(session.data)
+        new_data['_auth_mfa_user_key'] = self.USERNAME
+        new_data['_auth_mfa_time'] = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(minutes=60)
+        session.data = new_data
+        session.add().commit()
         # When requesting /mfa/ page
         self.getPage("/mfa/")
         self.assertStatus(200)
@@ -126,11 +130,13 @@ class MfaPageTest(rdiffweb.test.WebCase):
 
     def test_get_with_trusted_different_ip(self):
         # Given an authenticated user with MFA enabled and already verified
-        session = DbSession(id=self.session_id)
-        session.load()
-        session['_auth_mfa_user_key'] = self.USERNAME
-        session['_auth_mfa_time'] = session.now()
-        session.save()
+        self._login(self.USERNAME, self.PASSWORD)
+        session = SessionObject.query.filter(SessionObject.session_id == self.session_id).one()
+        new_data = dict(session.data)
+        new_data['_auth_mfa_user_key'] = self.USERNAME
+        new_data['_auth_mfa_time'] = datetime.datetime.now(tz=datetime.timezone.utc)
+        session.data = new_data
+        session.add().commit()
         # When requesting /mfa/ page from a different ip
         self.getPage("/mfa/", headers=[('X-Forwarded-For', '10.255.14.23')])
         self.assertStatus(200)
@@ -197,10 +203,13 @@ class MfaPageTest(rdiffweb.test.WebCase):
         # Given an authenticated user With MFA enabled
         code = self._get_code()
         # When sending a valid verification code that expired
-        session = DbSession(id=self.session_id)
-        session.load()
-        session['_auth_mfa_code_time'] = session.now() - datetime.timedelta(minutes=MFA_DEFAULT_CODE_TIMEOUT + 1)
-        session.save()
+        session = SessionObject.query.filter(SessionObject.session_id == self.session_id).one()
+        new_data = dict(session.data)
+        new_data['_auth_mfa_code_time'] = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(
+            minutes=MFA_DEFAULT_CODE_TIMEOUT + 1
+        )
+        session.data = new_data
+        session.add().commit()
         self.getPage("/mfa/", method='POST', body={'code': code, 'submit': '1'})
         # Then a new code get generated.
         self.assertStatus(200)
@@ -257,12 +266,15 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus(200)
         self.assertNotEqual(prev_session_id, self.session_id)
-        session = DbSession(id=self.session_id)
-        session.load()
-        self.assertTrue(session[SESSION_PERSISTENT])
+        session = SessionObject.query.filter(SessionObject.session_id == self.session_id).one()
+        self.assertTrue(session.data[SESSION_PERSISTENT])
         # When the re-auth time expired (after 15 min)
-        session[AUTH_LAST_PASSWORD_AT] = session.now() - datetime.timedelta(minutes=15, seconds=1)
-        session.save()
+        new_data = dict(session.data)
+        new_data[AUTH_LAST_PASSWORD_AT] = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(
+            minutes=15, seconds=1
+        )
+        session.data = new_data
+        session.add().commit()
         # Then next query redirect user to /login/ page (by mfa)
         self.getPage("/prefs/general")
         self.assertStatus(303)
@@ -290,12 +302,15 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus(200)
         self.assertNotEqual(prev_session_id, self.session_id)
-        session = DbSession(id=self.session_id)
-        session.load()
-        self.assertTrue(session[SESSION_PERSISTENT])
+        session = SessionObject.query.filter(SessionObject.session_id == self.session_id).one()
+        self.assertTrue(session.data[SESSION_PERSISTENT])
         # When the mfa verification timeout (after 15 min)
-        session['_auth_mfa_time'] = session.now() - datetime.timedelta(minutes=MFA_DEFAULT_TRUST_DURATION, seconds=1)
-        session.save()
+        new_data = dict(session.data)
+        new_data['_auth_mfa_time'] = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(
+            minutes=MFA_DEFAULT_TRUST_DURATION, seconds=1
+        )
+        session.data = new_data
+        session.add().commit()
         # Then next query redirect user to mfa page
         self.getPage("/prefs/general")
         self.assertStatus(303)

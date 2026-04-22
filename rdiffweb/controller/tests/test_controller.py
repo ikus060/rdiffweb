@@ -14,13 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import datetime
 
 from cherrypy_foundation.url import url_for
 from parameterized import parameterized, parameterized_class
 
 import rdiffweb.test
-from rdiffweb.core.model import DbSession, SessionObject
+from rdiffweb.core.model import SessionObject
 
 
 class ControllerTest(rdiffweb.test.WebCase):
@@ -125,13 +124,11 @@ class ControllerSession(rdiffweb.test.WebCase):
         # When making a query to a page while unauthenticated
         self.getPage('/', headers=[('User-Agent', 'test')])
         # Then a session object is enriched
-        self.assertEqual(1, SessionObject.query.filter(SessionObject.id == self.session_id).count())
-        SessionObject.query.filter(SessionObject.id == self.session_id).first()
-        session = DbSession(id=self.session_id)
-        session.load()
-        self.assertIsNotNone(session.get('ip_address'))
-        self.assertIsNotNone(session.get('user_agent'))
-        self.assertIsNotNone(session.get('access_time'))
+        self.assertEqual(1, SessionObject.query.filter(SessionObject.session_id == self.session_id).count())
+        session = SessionObject.query.filter(SessionObject.session_id == self.session_id).one()
+        self.assertIsNotNone(session.data['ip_address'])
+        self.assertIsNotNone(session.data['user_agent'])
+        self.assertIsNotNone(session.data['access_time'])
 
     def test_enrich_session_authenticated(self):
         # When making a query to a page while unauthenticated
@@ -142,13 +139,11 @@ class ControllerSession(rdiffweb.test.WebCase):
             body={'login': self.USERNAME, 'password': self.PASSWORD},
         )
         # Then a session object is enriched
-        self.assertEqual(1, SessionObject.query.filter(SessionObject.id == self.session_id).count())
-        SessionObject.query.filter(SessionObject.id == self.session_id).first()
-        session = DbSession(id=self.session_id)
-        session.load()
-        self.assertIsNotNone(session.get('ip_address'))
-        self.assertIsNotNone(session.get('user_agent'))
-        self.assertIsNotNone(session.get('access_time'))
+        self.assertEqual(1, SessionObject.query.filter(SessionObject.session_id == self.session_id).count())
+        session = SessionObject.query.filter(SessionObject.session_id == self.session_id).one()
+        self.assertIsNotNone(session.data['ip_address'])
+        self.assertIsNotNone(session.data['user_agent'])
+        self.assertIsNotNone(session.data['access_time'])
 
     def test_create_session(self):
         # Given a server with no session.
@@ -158,21 +153,5 @@ class ControllerSession(rdiffweb.test.WebCase):
         self.assertStatus(303)
         # Then a new session get created
         self.assertEqual(1, len(SessionObject.query.all()))
-        session = SessionObject.query.filter(SessionObject.id == self.session_id).first()
+        session = SessionObject.query.filter(SessionObject.session_id == self.session_id).first()
         self.assertIsNotNone(session)
-
-    def test_clean_up_session(self):
-        # Given a server with a session
-        self.getPage('/')
-        self.assertStatus(303)
-        self.assertEqual(1, len(SessionObject.query.all()))
-        # When this session get old
-        data = SessionObject.query.filter(SessionObject.id == self.session_id).first()
-        data.expiration_time = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(seconds=1)
-        data.commit()
-        session = DbSession(id=self.session_id)
-        # Then the session get deleted by clean_up process
-        session.clean_up()
-        # Then session is deleted
-        data = SessionObject.query.filter(SessionObject.id == self.session_id).first()
-        self.assertIsNone(data)

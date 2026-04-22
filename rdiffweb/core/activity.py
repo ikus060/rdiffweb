@@ -23,7 +23,6 @@ from datetime import datetime, timezone
 
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
-from cherrypy_foundation.plugins.scheduler import clear_db_sessions
 from cherrypy_foundation.tools.i18n import ugettext as _
 
 from rdiffweb.core.librdiff import unquote
@@ -32,20 +31,19 @@ from rdiffweb.core.model import Message, UserObject
 logger = logging.getLogger(__name__)
 
 
-@clear_db_sessions
 def _log_user_login(user_id, date, ip_address, user_agent):
     """Used to log user loging asynchronously."""
-    user = UserObject.get_user(user_id)
-    user.add_message(
-        Message(
-            body=_("User login to web application"),
-            type=Message.TYPE_EVENT,
-            date=date,
-            ip_address=ip_address,
-            user_agent=user_agent,
+    with cherrypy.db.session.begin():
+        user = UserObject.get_user(user_id)
+        user.add_message(
+            Message(
+                body=_("User login to web application"),
+                type=Message.TYPE_EVENT,
+                date=date,
+                ip_address=ip_address,
+                user_agent=user_agent,
+            )
         )
-    )
-    user.commit()
 
 
 class ActivityPlugin(SimplePlugin):

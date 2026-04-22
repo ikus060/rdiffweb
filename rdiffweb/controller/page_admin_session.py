@@ -48,7 +48,7 @@ class AdminSessionPage:
             session = SessionObject.query.filter(SessionObject.number == form.number.data).first()
             if not session:
                 flash(_('The given session cannot be removed because it cannot be found.'), level='warning')
-            elif session.id == current_session_id:
+            elif session.session_id == current_session_id:
                 flash(_('You cannot revoke your current session.'), level='warning')
             else:
                 session.delete()
@@ -62,7 +62,7 @@ class AdminSessionPage:
             {
                 'number': obj.number,
                 'access_time': obj.data.get('access_time', None),
-                'current': current_session_id == obj.id,
+                'current': current_session_id == obj.session_id,
                 'expiration_time': obj.expiration_time,
                 'ip_address': obj.data.get('ip_address', None),
                 'start_time': obj.data.get(SESSION_START_TIME, None),

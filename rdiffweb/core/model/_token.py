@@ -18,15 +18,14 @@ import datetime
 import cherrypy
 from cherrypy.process.plugins import SimplePlugin
 from sqlalchemy import Column, ForeignKey, Integer, String, event
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 
 from ._callbacks import add_post_commit_tasks
 from ._timestamp import Timestamp
 from ._update import column_add, column_exists
 
-Base = cherrypy.db.get_base()
-Session = cherrypy.db.get_session()
+Base = cherrypy.db.base
 
 
 class Token(Base):

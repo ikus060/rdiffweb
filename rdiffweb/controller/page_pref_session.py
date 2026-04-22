@@ -48,7 +48,7 @@ class PagePrefSession:
             ).first()
             if not session:
                 flash(_('The given session cannot be removed because it cannot be found.'), level='warning')
-            elif session.id == cherrypy.serving.session.id:
+            elif session.session_id == cherrypy.serving.session.id:
                 flash(_('You cannot revoke your current session.'), level='warning')
             else:
                 session.delete()
@@ -63,7 +63,7 @@ class PagePrefSession:
             {
                 'number': obj.number,
                 'access_time': obj.data.get('access_time', None),
-                'current': current_session_id == obj.id,
+                'current': current_session_id == obj.session_id,
                 'expiration_time': obj.expiration_time,
                 'ip_address': obj.data.get('ip_address', None),
                 'start_time': obj.data.get(SESSION_START_TIME, None),

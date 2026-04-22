@@ -257,6 +257,7 @@ class DbUpdateSchemaTest(rdiffweb.test.WebCase):
         # Replace tearDown implementation
         cherrypy.db.drop_all()
         cherrypy.db.create_all()
+        cherrypy.db.session.commit()
         super().tearDown()
 
     def test_update_schema(self):
@@ -264,8 +265,9 @@ class DbUpdateSchemaTest(rdiffweb.test.WebCase):
 
         # Given a older database Schema.
         cherrypy.db.drop_all()
+        cherrypy.db.session.commit()
         # Make sure the tables are deleted
-        dbapi = cherrypy.db.get_session().bind.raw_connection()
+        dbapi = cherrypy.db.session.bind.raw_connection()
         cursor = dbapi.execute("SELECT name FROM sqlite_master WHERE type='table';")
         tables = cursor.fetchall()
         self.assertEqual(['sqlite_sequence'], [table[0] for table in tables])
@@ -277,6 +279,7 @@ class DbUpdateSchemaTest(rdiffweb.test.WebCase):
         # When updating existing schema
         if self.success:
             cherrypy.db.create_all()
+            cherrypy.db.session.commit()
             # Then index page is working
             self.getPage(f"/home/{self.USERNAME}")
             self.assertStatus(303)

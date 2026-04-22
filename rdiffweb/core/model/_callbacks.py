@@ -15,8 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import cherrypy
 from sqlalchemy import event
-
-Session = cherrypy.db.get_session()
+from sqlalchemy.orm import Session
 
 
 def add_post_commit_tasks(session, *args):

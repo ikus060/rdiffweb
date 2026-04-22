@@ -16,7 +16,7 @@
 
 
 import rdiffweb.test
-from rdiffweb.core.model import DbSession, SessionObject
+from rdiffweb.core.model import SessionObject, UserObject
 
 
 class PagePrefSessionTest(rdiffweb.test.WebCase):
@@ -57,7 +57,7 @@ class PagePrefSessionTest(rdiffweb.test.WebCase):
     def test_revoke_current_session(self):
         # Given a user authenticated
         self.assertEqual(1, len(SessionObject.query.all()))
-        session_number = SessionObject.query.filter(SessionObject.id == self.session_id).first().number
+        session_number = SessionObject.query.filter(SessionObject.session_id == self.session_id).first().number
         # When trying to revoke current session
         self.getPage(self.PREFS, method='POST', body={'action': 'delete', 'number': str(session_number)})
         self.assertStatus(200)
@@ -77,13 +77,15 @@ class PagePrefSessionTest(rdiffweb.test.WebCase):
 
     def test_revoke_another_user_session(self):
         # Given another user session
-        session = DbSession()
-        session.load()
-        session[SessionObject.SESSION_USER_KEY] = 'test'
-        session.save()
+        new_user = UserObject.add_user('test', 'test123')
+        new_user.commit()
+        prev_cookies = self.cookies
+        del self.cookies
+        self.getPage("/login/", method='POST', body={'login': 'test', 'password': 'test123'})
+        second_session_id = self.session_id
+        self.cookies = prev_cookies
         self.assertEqual(2, len(SessionObject.query.all()))
-        session_number = SessionObject.query.filter(SessionObject.id == session.id).first().number
-        self.session.commit()
+        session_number = SessionObject.query.filter(SessionObject.session_id == second_session_id).first().number
         # When trying to revoke another user session
         self.getPage(self.PREFS, method='POST', body={'action': 'delete', 'number': str(session_number)})
         self.assertStatus(200)
@@ -93,13 +95,13 @@ class PagePrefSessionTest(rdiffweb.test.WebCase):
 
     def test_revoke_session(self):
         # Given a user with multiple sessionid
-        session = DbSession()
-        session.load()
-        session[SessionObject.SESSION_USER_KEY] = self.USERNAME
-        session.save()
+        prev_cookies = self.cookies
+        del self.cookies
+        self.getPage("/login/", method='POST', body={'login': self.USERNAME, 'password': self.PASSWORD})
+        second_session_id = self.session_id
+        self.cookies = prev_cookies
         self.assertEqual(2, len(SessionObject.query.all()))
-        session_number = SessionObject.query.filter(SessionObject.id == session.id).first().number
-        self.session.commit()
+        session_number = SessionObject.query.filter(SessionObject.session_id == second_session_id).first().number
         # When trying to revoke current session
         self.getPage(self.PREFS, method='POST', body={'action': 'delete', 'number': str(session_number)})
         self.assertStatus(200)

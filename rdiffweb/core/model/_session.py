@@ -14,110 +14,49 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import datetime
 import logging
-import threading
 
 import cherrypy
-from cherrypy.lib.sessions import Session
-from sqlalchemy import Column, Integer, PickleType, String, event
-from sqlalchemy.orm import validates
+from cherrypy_foundation.db_sessions import SessionModel  # noqa
+from sqlalchemy import Column, Integer, String, event
 
 from ._timestamp import Timestamp
 from ._update import column_exists
 
-Base = cherrypy.db.get_base()
+Base = cherrypy.db.base
 
 logger = logging.getLogger(__name__)
 
 
-class SessionObject(Base):
+class SessionObject(SessionModel, Base):
     SESSION_USER_KEY = '_cp_username'
-
     __tablename__ = 'sessions'
-    __table_args__ = {'sqlite_autoincrement': True}
-    number = Column('Number', Integer, unique=True, primary_key=True)
-    id = Column('SessionID', String, unique=True, nullable=False)
+    __table_args__ = {"extend_existing": True, 'sqlite_autoincrement': True}
+
+    # Define number field for display
+    number = Column('Number', Integer, unique=True, primary_key=True, autoincrement=True)
+    # Red-define the column to remove primary_key
+    session_id = Column('SessionID', String(255), unique=True, nullable=False, index=True)
+    # Extend session table by definning additional columns
     username = Column('Username', String)
-    data = Column('Data', PickleType)
-    expiration_time = Column('ExpirationTime', Timestamp, nullable=False)
     access_time = Column('AccessTime', Timestamp)
 
-    @validates('data')
-    def validate_data(self, key, value):
-        # Extract specific fields from data into column to speed up SQL query.
-        if value:
-            self.access_time = value.get('access_time')
-            self.username = value.get(SessionObject.SESSION_USER_KEY)
-        return value
+    def __repr__(self):
+        return f'SessionObject(number={self.number}, session_id={self.session_id}, username={self.username})'
 
 
-class DbSession(Session):
-    def _exists(self):
-        return SessionObject.query.filter(SessionObject.id == self.id).first() is not None
-
-    def _load(self):
-        session = SessionObject.query.filter(SessionObject.id == self.id).first()
-        if not session:
-            return None
-        try:
-            self.timeout = session.data.pop('_timeout', self.timeout)
-            return (session.data, session.expiration_time)
-        except TypeError:
-            logger.error('fail to read session data', exc_info=1)
-        return None
-
-    def _save(self, expiration_time):
-        session = SessionObject.query.filter(SessionObject.id == self.id).first()
-        if not session:
-            session = SessionObject(id=self.id)
-        session.data = self._data
-        session.data['_timeout'] = self.timeout
-        session.expiration_time = expiration_time
-        session.add().commit()
-
-    def _delete(self):
-        SessionObject.query.filter(SessionObject.id == self.id).delete()
-        SessionObject.session.commit()
-
-    def clean_up(self):
-        """Clean up expired sessions."""
-        try:
-            now = self.now()
-            SessionObject.query.filter(SessionObject.expiration_time < now).delete()
-            SessionObject.session.commit()
-        except Exception:
-            logger.error('fail to clean-up sessions', exc_info=1)
-        finally:
-            cherrypy.db.clear_sessions()
-
-    def __len__(self):
-        """Return the number of active sessions."""
-        return SessionObject.query.count()
-
-    # http://docs.cherrypy.org/dev/refman/lib/sessions.html?highlight=session#locking-sessions
-    # session id locks as done in RamSession
-
-    locks = {}
-
-    def acquire_lock(self):
-        """Acquire an exclusive lock on the currently-loaded session data."""
-        self.locked = True
-        self.locks.setdefault(self.id, threading.RLock()).acquire()
-
-    def release_lock(self):
-        """Release the lock on the currently-loaded session data."""
-        self.locks[self.id].release()
-        self.locked = False
-
-    def now(self):
-        """Generate a timezone aware, versions of 'now'."""
-        return datetime.datetime.now(tz=datetime.timezone.utc)
+@event.listens_for(SessionObject.data, 'set')
+def validate_data(target, value, oldvalue, initiator):
+    # Extract specific fields from data into column to speed up SQL query.
+    if value:
+        target.access_time = value.get('access_time')
+        target.username = value.get(SessionObject.SESSION_USER_KEY)
+    return value
 
 
 @event.listens_for(Base.metadata, 'after_create')
 def update_session_schema(target, conn, **kw):
-    # Re-create session table if Number column is missing
-    if not column_exists(conn, SessionObject.number):
+    # Re-create session table if `login` column is missing
+    if not column_exists(conn, SessionObject.username):
         SessionObject.__table__.drop(bind=conn)
         SessionObject.__table__.create(bind=conn)

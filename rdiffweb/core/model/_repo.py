@@ -21,13 +21,12 @@ from datetime import timedelta
 from urllib.parse import quote
 
 import cherrypy
-from cherrypy_foundation.plugins.scheduler import clear_db_sessions
 from cherrypy_foundation.tools.i18n import ugettext as _
 from sqlalchemy import Column, ForeignKey, Integer, SmallInteger, String
 from sqlalchemy import __version__ as sqlalchemy_version
 from sqlalchemy import and_, case, event, or_, orm
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, validates
+from sqlalchemy.orm import Session, relationship, validates
 
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo, RdiffTime
 
@@ -35,8 +34,7 @@ from ._callbacks import add_post_commit_tasks
 from ._message import AUDIT_IGNORE, MessageMixin
 from ._update import column_add, column_exists
 
-Base = cherrypy.db.get_base()
-Session = cherrypy.db.get_session()
+Base = cherrypy.db.base
 
 
 def case_wrapper(*whens, else_=None):
@@ -48,25 +46,23 @@ def case_wrapper(*whens, else_=None):
     return case(*whens, else_=else_)
 
 
-@clear_db_sessions
 def delete_repo_path(repoid, path):
     """Job used to delete a repository path."""
-    repoobj = RepoObject.query.filter(RepoObject.id == repoid).one()
-    # Make sure to log this even when deleting a specific path.
-    # Deletion of repository will be log by database.
-    cherrypy.engine.publish('delete_path', repoobj, path)
-    # Delete data on disk.
-    repoobj.delete_path(path)
-    repoobj.commit()
+    with cherrypy.db.session.begin():
+        repoobj = RepoObject.query.filter(RepoObject.id == repoid).one()
+        # Make sure to log this even when deleting a specific path.
+        # Deletion of repository will be log by database.
+        cherrypy.engine.publish('delete_path', repoobj, path)
+        # Delete data on disk.
+        repoobj.delete_path(path)
 
 
-@clear_db_sessions
 def delete_repo(repoid):
     """Job used to delete a repository."""
-    repoobj = RepoObject.query.filter(RepoObject.id == repoid).one()
-    # Delete data on disk.
-    repoobj.delete_repo()
-    repoobj.commit()
+    with cherrypy.db.session.begin():
+        repoobj = RepoObject.query.filter(RepoObject.id == repoid).one()
+        # Delete data on disk.
+        repoobj.delete_repo()
 
 
 def _split_path(path):
@@ -247,7 +243,7 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
         Mark this repo for deletion.
         """
         self._status = RepoObject.STATUS_DELETING
-        add_post_commit_tasks(Session, 'scheduler:add_job_now', delete_repo, self.id)
+        add_post_commit_tasks(self.session, 'scheduler:add_job_now', delete_repo, self.id)
 
     def delete_repo(self):
         # Delete repo on disk

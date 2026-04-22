@@ -105,6 +105,7 @@ class WebCase(helper.CPWebCase):
         # Create a clean environment by creating a new database and restarting all plugins.
         cherrypy.db.drop_all()
         cherrypy.db.create_all()
+        cherrypy.db.session.commit()
         cherrypy.engine.publish('graceful')
         # Create default admin
         admin_user = UserObject.create_admin_user(self.USERNAME, self.PASSWORD)
@@ -149,10 +150,6 @@ class WebCase(helper.CPWebCase):
         Return reference to Rdiffweb application.
         """
         return cherrypy.tree.apps['']
-
-    @property
-    def session(self):
-        return cherrypy.db.get_session()
 
     @property
     def session_id(self):

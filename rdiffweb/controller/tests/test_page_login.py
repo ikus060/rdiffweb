@@ -13,6 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
 
 import cherrypy
@@ -20,7 +21,7 @@ from cherrypy_foundation.tools.sessions_timeout import SESSION_PERSISTENT, SESSI
 from parameterized import parameterized, parameterized_class
 
 import rdiffweb.test
-from rdiffweb.core.model import DbSession, SessionObject, UserObject
+from rdiffweb.core.model import SessionObject, UserObject
 
 
 class LoginPageTest(rdiffweb.test.WebCase):
@@ -48,11 +49,9 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/login/')
         # Then a session object is created without a username
-        self.assertEqual(1, SessionObject.query.filter(SessionObject.id == self.session_id).count())
-        SessionObject.query.filter(SessionObject.id == self.session_id).first()
-        session = DbSession(id=self.session_id)
-        session.load()
-        self.assertIsNone(session.get(SessionObject.SESSION_USER_KEY))
+        self.assertEqual(1, SessionObject.query.filter(SessionObject.session_id == self.session_id).count())
+        session = SessionObject.query.filter(SessionObject.session_id == self.session_id).first()
+        self.assertIsNone(session.data.get(SessionObject.SESSION_USER_KEY))
 
     def test_getpage_selenium(self):
         # Given a user browsing the login page without authentication.
@@ -79,12 +78,11 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.assertStatus('303 See Other')
         self.assertHeaderItemValue('Location', self.baseurl + '/')
         # Then a session object is created with a username
-        self.assertEqual(1, SessionObject.query.filter(SessionObject.id == self.session_id).count())
-        SessionObject.query.filter(SessionObject.id == self.session_id).first()
-        session = DbSession(id=self.session_id)
-        session.load()
-        self.assertEqual('admin', session.get(SessionObject.SESSION_USER_KEY))
-        self.assertIsNotNone(session.get(SESSION_START_TIME))
+        self.assertEqual(1, SessionObject.query.filter(SessionObject.session_id == self.session_id).count())
+        SessionObject.query.filter(SessionObject.session_id == self.session_id).first()
+        session = SessionObject.query.filter(SessionObject.session_id == self.session_id).one()
+        self.assertEqual('admin', session.data[SessionObject.SESSION_USER_KEY])
+        self.assertIsNotNone(session.data[SESSION_START_TIME])
         # Check if listener called
         userobj = UserObject.get_user(self.USERNAME)
         self.listener.user_login.assert_called_once_with(userobj)
@@ -237,11 +235,11 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.assertIn('expires', self.cookies[0][1])
         self.assertIn('Max-Age', self.cookies[0][1])
         # Then a session is created with persistent flag
-        session = DbSession(id=self.session_id)
-        session.load()
-        self.assertTrue(session[SESSION_PERSISTENT])
+        session = SessionObject.query.filter(SessionObject.session_id == self.session_id).one()
+        self.assertTrue(session.data[SESSION_PERSISTENT])
         # Then session timeout is 30 days in future
-        self.assertAlmostEqual(session.timeout, 10080, delta=2)
+        now = datetime.now(tz=timezone.utc)
+        self.assertAlmostEqual(session.expiration_time - now, timedelta(days=7), delta=timedelta(seconds=5))
 
     def test_disabled_user(self):
         # Given a disabled user

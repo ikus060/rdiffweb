@@ -37,6 +37,7 @@ import cherrypy_foundation.tools.secure_headers
 import cherrypy_foundation.tools.sessions_timeout
 import humanfriendly
 from cherrypy import Application
+from cherrypy_foundation.db_sessions import DbSession
 from cherrypy_foundation.error_page import error_page
 from cherrypy_foundation.flash import get_flashed_messages
 from cherrypy_foundation.tools.i18n import format_timedelta, get_translation
@@ -72,7 +73,7 @@ from rdiffweb.controller.page_stats import StatsPage
 from rdiffweb.controller.static import Static
 from rdiffweb.core.config import parse_args
 from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.core.model import DbSession, SessionObject, UserObject
+from rdiffweb.core.model import SessionObject, UserObject
 from rdiffweb.core.rdw_templating import attrib
 
 # Define the logger
@@ -262,6 +263,7 @@ class RdiffwebApp(Application):
                 'tools.sessions.debug': cfg.debug,
                 'tools.sessions.locking': 'explicit',
                 'tools.sessions.storage_class': DbSession,
+                'tools.sessions.model_class': SessionObject,
                 'tools.sessions.httponly': True,
                 'tools.sessions.timeout': cfg.session_idle_timeout,  # minutes
                 'tools.sessions.persistent': False,
@@ -344,10 +346,6 @@ class RdiffwebApp(Application):
                 'tools.i18n.mo_dir': importlib.resources.files('rdiffweb') / 'locales',
                 'tools.i18n.domain': 'messages',
                 'tools.i18n.cookie_name': 'locale',
-                # Configure scheduler with peristant storage.
-                'scheduler.jobstores': {
-                    "default": {"type": "sqlalchemy", "engine": f"{self.__module__}:cherrypy.db.engine"}
-                },
             }
         )
 

@@ -21,7 +21,6 @@ import sys
 
 import cherrypy
 from cherrypy_foundation.passwd import check_password, hash_password
-from cherrypy_foundation.plugins.scheduler import clear_db_sessions
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from sqlalchemy import (
     CheckConstraint,
@@ -38,7 +37,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import deferred, relationship, validates
+from sqlalchemy.orm import Session, relationship, validates
 
 from ._callbacks import add_post_commit_tasks
 from ._message import AUDIT_IGNORE, MessageMixin, get_model_changes
@@ -74,28 +73,27 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-Base = cherrypy.db.get_base()
-Session = cherrypy.db.get_session()
+Base = cherrypy.db.base
+
 
 SEP = b'/'
 
 
-@clear_db_sessions
 def delete_user_with_data(userid):
     """
     Job to delete user with all data.
     """
-    # Let start by deleting all repositories from disk.
-    userobj = UserObject.get_user(userid)
-    username = userobj.username
-    logger.info('deleting user [%s] with data', username)
-    for repoobj in userobj.repo_objs:
-        logger.info('deleting repository [%s]', repoobj.display_name)
-        repoobj.delete_repo()
-    # Finish by deleting the user it self.
-    userobj.delete()
-    userobj.commit()
-    logger.info('user [%s] deleted', username)
+    with cherrypy.db.session.begin():
+        # Let start by deleting all repositories from disk.
+        userobj = UserObject.get_user(userid)
+        username = userobj.username
+        logger.info('deleting user [%s] with data', username)
+        for repoobj in userobj.repo_objs:
+            logger.info('deleting repository [%s]', repoobj.display_name)
+            repoobj.delete_repo()
+        # Finish by deleting the user it self.
+        userobj.delete()
+        logger.info('user [%s] deleted', username)
 
 
 class UserObject(MessageMixin, Base):
@@ -128,25 +126,22 @@ class UserObject(MessageMixin, Base):
     username = Column('Username', String, nullable=False)
     hash_password = Column('Password', String, nullable=False, default="")
     user_root = Column('UserRoot', String, nullable=False, default="")
-    _is_admin = deferred(
-        Column(
-            'IsAdmin',
-            SmallInteger,
-            nullable=False,
-            server_default="0",
-            doc="DEPRECATED This column is replaced by 'role'",
-            info={AUDIT_IGNORE: True},
-        )
+    _is_admin = Column(
+        'IsAdmin',
+        SmallInteger,
+        nullable=False,
+        server_default="0",
+        doc="DEPRECATED This column is replaced by 'role'",
+        info={AUDIT_IGNORE: True},
     )
+
     email = Column('UserEmail', String, nullable=False, default='', server_default='')
-    restore_format = deferred(
-        Column(
-            'RestoreFormat',
-            SmallInteger,
-            nullable=False,
-            server_default="1",
-            doc="DEPRECATED This column is not used anymore",
-        )
+    restore_format = Column(
+        'RestoreFormat',
+        SmallInteger,
+        nullable=False,
+        server_default="1",
+        doc="DEPRECATED This column is not used anymore",
     )
     role = Column('role', SmallInteger, nullable=False, server_default=str(USER_ROLE), default=USER_ROLE)
     fullname = Column('fullname', String, nullable=False, default='', server_default='')
@@ -349,7 +344,7 @@ class UserObject(MessageMixin, Base):
             self.status = UserObject.STATUS_DELETING
             for repoobj in self.repo_objs:
                 repoobj._status = RepoObject.STATUS_DELETING
-            add_post_commit_tasks(Session, 'scheduler:add_job_now', delete_user_with_data, self.id)
+            add_post_commit_tasks(self.session, 'scheduler:add_job_now', delete_user_with_data, self.id)
         else:
             # Otherwise, let delete use directly.
             return Base.delete(self)
@@ -503,7 +498,7 @@ class UserObject(MessageMixin, Base):
         session_id = cherrypy.serving.session.id if hasattr(cherrypy.serving, 'session') else None
         SessionObject.query.filter(
             SessionObject.username == self.username,
-            SessionObject.id != session_id,
+            SessionObject.session_id != session_id,
         ).delete()
 
     def __eq__(self, other):

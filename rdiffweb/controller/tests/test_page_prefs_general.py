@@ -250,7 +250,7 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.listener.user_password_changed.assert_called_once()
         # Then all users session get deleted except our own session.
         self.assertEqual(1, SessionObject.query.count())
-        self.assertEqual(self.session_id, SessionObject.query.first().id)
+        self.assertEqual(self.session_id, SessionObject.query.first().session_id)
 
     def test_change_password_with_wrong_confirmation(self):
         self._set_password(self.PASSWORD, "t", "a")

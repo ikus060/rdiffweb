@@ -20,7 +20,7 @@ import json
 import cherrypy
 import cherrypy_foundation.plugins.db  # noqa
 from sqlalchemy import Column, String, and_, event, inspect, text
-from sqlalchemy.orm import backref, declared_attr, foreign, relationship, remote
+from sqlalchemy.orm import Session, backref, declared_attr, foreign, relationship, remote
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import Integer
@@ -28,8 +28,8 @@ from sqlalchemy.sql.sqltypes import Integer
 from ._timestamp import Timestamp
 from ._update import column_add, column_exists, constraint_add, constraint_exists, is_sqlite
 
-Base = cherrypy.db.get_base()
-Session = cherrypy.db.get_session()
+Base = cherrypy.db.base
+
 
 AUDIT_IGNORE = 'audit_ignore'
 
