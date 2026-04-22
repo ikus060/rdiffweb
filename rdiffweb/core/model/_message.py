@@ -18,7 +18,7 @@ import itertools
 import json
 
 import cherrypy
-from sqlalchemy import Column, String, and_, event, inspect
+from sqlalchemy import Column, String, and_, event, inspect, text
 from sqlalchemy.orm import backref, declared_attr, foreign, relationship, remote
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import ForeignKey
@@ -27,7 +27,7 @@ from sqlalchemy.sql.sqltypes import Integer
 import rdiffweb.plugins.db  # noqa
 
 from ._timestamp import Timestamp
-from ._update import column_add, column_exists
+from ._update import column_add, column_exists, constraint_add, constraint_exists, is_sqlite
 
 Base = cherrypy.db.get_base()
 Session = cherrypy.db.get_session()
@@ -113,7 +113,9 @@ class Message(Base):
     model_name = Column(String, nullable=False)
     model_id = Column(Integer, nullable=False)
     model_summary = Column(String, nullable=False, default='', server_default='')
-    author_id = Column(Integer, ForeignKey('users.UserID'), nullable=True)
+    author_id = Column(
+        Integer, ForeignKey('users.UserID', name='fk_messages_author_id', ondelete="SET NULL"), nullable=True
+    )
     author = relationship("UserObject", lazy=False)
     ip_address = Column(String, nullable=False, default='', server_default='')
     user_agent = Column(String, nullable=False, default='', server_default='')
@@ -265,3 +267,14 @@ def update_message_schema(target, conn, **kw):
         column_add(conn, Message.ip_address)
     if not column_exists(conn, Message.user_agent):
         column_add(conn, Message.user_agent)
+
+    # Since 2.11.4 - author_id  ondelete="SET NULL"
+    fk_constraint = next(c for c in Message.__table__.foreign_key_constraints if c.name == 'fk_messages_author_id')
+    if not constraint_exists(conn, fk_constraint):
+        if not is_sqlite(conn):
+            # With postgresql drop previous constraint.
+            conn.execute(
+                text("ALTER TABLE %s DROP CONSTRAINT IF EXISTS %s" % (Message.__tablename__, fk_constraint.name))
+            )
+        # Then add the constraint.
+        constraint_add(conn, fk_constraint)

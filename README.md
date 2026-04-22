@@ -128,23 +128,28 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
-# 2.11.3 (2026-04-09)
+## 2.11.4 (2026-04-23)
+
+* **Bug Fixes:**
+  * db: fix user deletion raising foreign key errors
+
+## 2.11.3 (2026-04-09)
 
 * **Security Fixes:**
   * api: restrict `/api/users` endpoint to administrators only
 
-# 2.11.2 (2026-04-07)
+## 2.11.2 (2026-04-07)
 
 * **Bug Fixes:**
   * smtp: fix encoding for email_from
 
-# 2.11.1 (2026-03-11)
+## 2.11.1 (2026-03-11)
 
 * **Bug Fixes:**
   * fix: add support for configargparse >= 1.7.5
   * fix: bookwork test by pinning setuptools version
 
-# 2.11.0 (2025-01-14)
+## 2.11.0 (2025-01-14)
 
 * **New Features**
   * Administrators can disable user accounts (#313).
@@ -183,15 +188,15 @@ We are passionate about developing and maintaining this open-source project to m
   * Dropped Ubuntu Oracular
   * Dropped Debian Bullseye due to backports/EOL.
 
-# 2.10.6 (2025-10-02)
+## 2.10.6 (2025-10-02)
 
 * Security: fix token impersonation vulnerability (CVE-2025-67796).
 
-# 2.10.5 (2025-06-20)
+## 2.10.5 (2025-06-20)
 
 * Send deprecation warning into the logs
 
-# 2.10.4 (2025-06-13)
+## 2.10.4 (2025-06-13)
 
 * **New Features:**
     * Added Swagger documentation for the Rdiffweb API (#325).

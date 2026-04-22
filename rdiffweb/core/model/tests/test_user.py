@@ -24,7 +24,7 @@ from sqlalchemy.exc import IntegrityError
 
 import rdiffweb.test
 from rdiffweb.core import authorizedkeys
-from rdiffweb.core.model import RepoObject, UserObject
+from rdiffweb.core.model import Message, RepoObject, UserObject
 from rdiffweb.core.passwd import check_password
 
 
@@ -282,10 +282,19 @@ class UserObjectTest(rdiffweb.test.WebCase):
         self.listener.user_password_changed.assert_called_once_with(userobj)
 
     def test_delete_user(self):
-        # Given an existing user in database
-        userobj = UserObject.add_user('vicky')
+        # Given an existing user in database with some data
+        userobj = UserObject.add_user('vicky', password='test123', user_root=os.path.join(self.testcases, 'testcases'))
+        userobj.add_authorizedkey(self._read_ssh_key())
+        userobj.add_access_token('test')
+        userobj.refresh_repos()
         userobj.commit()
-        self.assertIsNotNone(UserObject.get_user('vicky'))
+        self.assertTrue(userobj.authorizedkeys)
+        self.assertTrue(userobj.tokens)
+        self.assertTrue(userobj.repo_objs)
+        userobj.repo_objs[0].add_message(Message(body='foo bar', author=userobj))
+        userobj.commit()
+        # Wait for login message to be logged
+        cherrypy.scheduler.wait_for_jobs()
         # When deleting that user
         userobj.delete()
         userobj.commit()

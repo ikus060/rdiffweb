@@ -179,6 +179,48 @@ INSERT INTO sqlite_sequence VALUES('repos',3);
 COMMIT;
 """
 
+# Test messages FOREIGN KEY ondelete="SET NULL".
+SQL_2_11_3 = """
+BEGIN TRANSACTION;
+CREATE TABLE IF NOT EXISTS "messages" (
+    "id" INTEGER NOT NULL,
+    "model_name" VARCHAR NOT NULL,
+    "model_id" INTEGER NOT NULL,
+    "model_summary" VARCHAR NOT NULL DEFAULT '',
+    "author_id" INTEGER,
+    "ip_address" VARCHAR NOT NULL DEFAULT '',
+    "user_agent" VARCHAR NOT NULL DEFAULT '',
+    "type" VARCHAR NOT NULL DEFAULT 'comment',
+    "body" VARCHAR NOT NULL DEFAULT '',
+    "changes" VARCHAR,
+    "date" DATETIME,
+    PRIMARY KEY("id"),
+    FOREIGN KEY("author_id") REFERENCES "users"("UserID")
+);
+CREATE TABLE IF NOT EXISTS "users" (
+    "UserID" INTEGER NOT NULL,
+    "Username" VARCHAR NOT NULL,
+    "Password" VARCHAR NOT NULL,
+    "UserRoot" VARCHAR NOT NULL,
+    "IsAdmin" SMALLINT NOT NULL DEFAULT '0',
+    "UserEmail" VARCHAR NOT NULL DEFAULT '',
+    "RestoreFormat" SMALLINT NOT NULL DEFAULT '1',
+    "role" SMALLINT NOT NULL DEFAULT '10',
+    "fullname" VARCHAR NOT NULL DEFAULT '',
+    "mfa" SMALLINT NOT NULL DEFAULT '0',
+    "lang" VARCHAR NOT NULL DEFAULT '',
+    "timezone" VARCHAR NOT NULL DEFAULT '',
+    "report_time_range" SMALLINT NOT NULL DEFAULT '0',
+    "report_last_sent" DATETIME,
+    "notes" VARCHAR NOT NULL DEFAULT '',
+    "status" VARCHAR NOT NULL DEFAULT '',
+    PRIMARY KEY("UserID" AUTOINCREMENT),
+    CONSTRAINT "users_username_nan_ck" CHECK("Username" REGEXP '^[a-zA-Z][a-zA-Z0-9_.\\-]+$')
+);
+INSERT INTO "users" VALUES (1, 'admin', '$argon2id$v=19$m=65536,t=3,p=4$KrHpfwZ7l50byo6q59sdlA$l+yJKeZ8OxcGKtM8zcGVe5kXokRzKYvYBJSXjIXditc', '/backups/admin', 0, '', 1, 0, '', 0, '', '', 0, NULL, '', '');
+COMMIT;
+"""
+
 
 @parameterized_class(
     [
@@ -187,6 +229,7 @@ COMMIT;
         {"name": "with_duplicate_users", "init_sql": SQL_WITH_DUPLICATE_USERS, "success": False},
         {"name": "with_invalid_usernames", "init_sql": SQL_WITH_INVALID_USERNAMES, "success": False},
         {"name": "with_null_fields", "init_sql": SQL_WITH_NULL_FIELDS, "success": True},
+        {"name": "with_fk_ondelete_set_null", "init_sql": SQL_2_11_3, "success": True},
     ]
 )
 @skipIf(os.environ.get('RDIFFWEB_TEST_DATABASE_URI'), 'custom database')
