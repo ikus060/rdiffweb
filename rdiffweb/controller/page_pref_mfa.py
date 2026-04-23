@@ -18,6 +18,7 @@
 import cherrypy
 from cherrypy_foundation.flash import flash
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
+from cherrypy_foundation.widgets import JinjaWidget
 from wtforms.fields import SelectField, StringField, SubmitField
 from wtforms.validators import ValidationError
 from wtforms.widgets import HiddenInput
@@ -39,17 +40,27 @@ class AbstractMfaForm(DbForm):
             self.disable_mfa.data = ''
 
 
+class MfaCurrentBadgeWidget(JinjaWidget):
+    filename = 'MfaCurrentBadgeWidget.jinja'
+
+
 class MfaStatusForm(AbstractMfaForm):
     mfa = SelectField(
-        _('Two-Factor Authentication (2FA) Status'),
+        _('Current status'),
         coerce=int,
         choices=[
             (UserObject.DISABLED_MFA, _("Disabled")),
             (UserObject.ENABLED_MFA, _("Enabled")),
         ],
-        render_kw={'readonly': True, 'disabled': True},
+        widget=MfaCurrentBadgeWidget(),
     )
-    enable_mfa = SubmitField(_('Enable Two-Factor Authentication'), render_kw={"class": "btn-success"})
+    enable_mfa = SubmitField(
+        _('Enable Two-Factor Authentication'),
+        description=_(
+            'A one-time code will be sent to your registered email address whenever you sign in from an unrecognised device or location.'
+        ),
+        render_kw={"class": "btn-success"},
+    )
     disable_mfa = SubmitField(_('Disable Two-Factor Authentication'), render_kw={"class": "btn-warning"})
 
 
@@ -59,17 +70,23 @@ class MfaToggleForm(AbstractMfaForm):
         # Trim spaces
         filters=[lambda v: v.strip() if v else v],
         render_kw={
-            "placeholder": _('Enter verification code here'),
+            "placeholder": 'XXXXXX',
             "autocomplete": "off",
             "autocorrect": "off",
             "autofocus": "autofocus",
+            "class": "text-center font-monospace",
+            "style": "letter-spacing: 0.2em;",
         },
     )
-    enable_mfa = SubmitField(_('Enable Two-Factor Authentication'), render_kw={"class": "btn-success"})
-    disable_mfa = SubmitField(_('Disable Two-Factor Authentication'), render_kw={"class": "btn-warning"})
+    enable_mfa = SubmitField(
+        _('Enable Two-Factor Authentication'), render_kw={"class": "btn-success", "container_class": "col-6"}
+    )
+    disable_mfa = SubmitField(
+        _('Disable Two-Factor Authentication'), render_kw={"class": "btn-warning", "container_class": "col-6"}
+    )
     resend_code = SubmitField(
         _('Resend code to my email'),
-        render_kw={"class": "btn-link"},
+        render_kw={"class": "btn-link", "container_class": "col-6 text-end"},
     )
 
     @property

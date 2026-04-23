@@ -1,19 +1,22 @@
 {% extends 'layout.html' %}
-{% from 'include/panel.html' import panel %}
 {% set breadcrumbs = breadcrumb_page('prefs') +  breadcrumb_page(self) %}
 {% block content %}
-  <div class="container">
+  <div class="col-xxl-6 offset-xxl-3 col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
     <div class="d-flex  justify-content-between">
       <h3>{% trans %}Two-Factor Authentication{% endtrans %}</h3>
     </div>
     <p>
-      {% trans %}You can enhance the security of your account by enabling two-factor authentication (2FA).{% endtrans %}
+      {% trans %}Two-factor authentication adds an extra layer of security to your account. When enabled, a verification code is sent to your email address each time you sign in from a new location.{% endtrans %}
+    </p>
+    <p>
       {% trans %}When enabled, a verification code is sent to your email address each time you log in from a new location to verify that it is you.{% endtrans %}
     </p>
-    <div class="panel-body">
-      <form action="#" method="post" role="form" class="clearfix">
-        <cf:Fields form={{ form }} />
-      </form>
-    </div>
+    <form action="#" method="post" role="form" class="clearfix">
+      <div class="card border shadow-sm mb-3 ">
+        <div class="card-body p-4">
+          <cf:Fields form={{ form }} />
+        </div>
+      </div>
+    </form>
   </div>
 {% endblock %}

@@ -1,0 +1,16 @@
+{# def field #}
+<div class="form-list-widget">
+  {% for choice in field.iter_choices() %}
+    {% set val, label, selected = choice[0:3] %}
+    {% if selected %}
+      <span class="badge rounded-pill px-3 py-2 {% if val %}bg-success{% else %}bg-secondary{% endif %}">
+        {% if val %}
+          <RdwIcon value="bi-check-circle-fill" />
+        {% else %}
+          <RdwIcon value="bi-x-circle-fill" />
+        {% endif %}
+        {{ label }}
+      </span>
+    {% endif %}
+  {% endfor %}
+</div>
