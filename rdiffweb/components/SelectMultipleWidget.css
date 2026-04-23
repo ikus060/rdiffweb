@@ -1,0 +1,4 @@
+.rdw-select-multiple-widget label:has(input:checked) {
+  background-color: var(--bs-primary-bg-subtle);
+  border-color: var(--bs-primary);
+}

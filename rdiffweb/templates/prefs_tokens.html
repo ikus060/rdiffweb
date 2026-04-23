@@ -3,91 +3,135 @@
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
 {% set breadcrumbs = breadcrumb_page('prefs') +  breadcrumb_page(self) %}
 {% block content %}
-  <div class="container">
-    <div class="d-flex  justify-content-between">
-      <h3>{% trans %}Access Token{% endtrans %}</h3>
+  <div class="col-xxl-6 offset-xxl-3 col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
+    {# Header #}
+    <div class="d-flex flex-wrap justify-content-between mb-2 sticky-top py-2 bg-white border-bottom"
+         style="top: 56px">
+      <h2>{% trans %}Access Tokens{% endtrans %}</h2>
+      <div>
+        <button id="rdw-btn-add-token"
+                type="button"
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#rdw-add-token-modal">
+          <RdwIcon value="bi-plus-lg" />
+          {% trans %}New access token{% endtrans %}
+        </button>
+      </div>
     </div>
-    <p>
+    {# Help text #}
+    <p class="text-secondary small mb-4">
       {% trans %}You can use access tokens to authenticate to this application. They are the only accepted password when you have Two-Factor Authentication (2FA) enabled.{% endtrans %}
     </p>
-    <hr />
-    {# Panel to create tokens. #}
-    {% call panel(title=_("Create New Access Token"), description=_("You can generate a access token for each application you use that needs access to API.")) %}
-      <div class="panel-body">
-        <form action="#" method="post" role="form" class="clearfix">
-          <cf:Fields form={{ form }} />
-        </form>
-      </div>
-    {% endcall %}
-    {# Panel to manage tokens. #}
-    {% call panel(title=_("Active access tokens"), description=_("Manage your existing access token.")) %}
-      <ul class="list-group">
-        {% for token in tokens %}
-          <li class="list-group-item">
-            <div class="float-end">
-              {{ button_confirm(label=_('Revoke') , target="#delete-token-modal", revoke=token.name, name=token.name) }}
-            </div>
-            <p class="list-group-item-heading">
-              <strong>{{ token.name }}</strong>
-            </p>
-            <p>
-              {% trans %}Created on{% endtrans %}
-              <strong>
-                <time datetime="{{ token.creation_time }}"
-                      title="{{ token.creation_time | format_datetime }}">
-                  {{ token.creation_time }}
-                </time>
-              </strong>
-              <br />
-              {% trans %}Last accessed{% endtrans %}
-              <strong>
-                {% if  token.access_time %}
-                  <time datetime="{{ token.access_time }}"
-                        title="{{ token.access_time | format_datetime }}">
-                    {{ token.access_time }}
+    {# Token count summary #}
+    <p class="text-muted small mb-2">
+      <RdwIcon value="bi-info-circle" />
+      {{ _('%(count)s access tokens associated with your account.', count=tokens|length) }}
+    </p>
+    {# Token list #}
+    <div class="d-flex flex-column gap-3">
+      {% for token in tokens %}
+        <!-- Token Item -->
+        <div class="card border shadow-sm">
+          <div class="card-body d-flex align-items-start justify-content-between gap-3">
+            <div class="flex-grow-1">
+              <div class="fw-semibold mb-1">{{ token.name }}</div>
+              <div class="d-flex flex-wrap gap-3 small text-muted">
+                <span>
+                  <RdwIcon value="bi-calendar-plus" class="me-1" />
+                  {% trans %}Created{% endtrans %}
+                  <time class="fw-semibold"
+                        datetime="{{ token.creation_time }}"
+                        title="{{ token.creation_time | lastupdated }}">
+                    {{ token.creation_time | format_datetime }}
                   </time>
-                {% else %}
-                  {% trans %}Never{% endtrans %}
-                {% endif %}
-              </strong>
-              <br />
-              {% trans %}Expired on{% endtrans %}
-              <strong>
-                {% if  token.expiration_time %}
-                  <time datetime="{{ token.expiration_time }}"
-                        title="{{ token.expiration_time | format_datetime }}">
-                    {{ token.expiration_time }}
-                  </time>
-                {% else %}
-                  {% trans %}Never{% endtrans %}
-                {% endif %}
-              </strong>
-              <br />
-              {% trans %}Scopes{% endtrans %}
-              <strong>
+                </span>
+                <span>
+                  <RdwIcon value="bi-clock-history" class="me-1" />
+                  {% trans %}Last used{% endtrans %}
+                  {% if token.access_time %}
+                    <time class="fw-semibold"
+                          datetime="{{ token.access_time }}"
+                          title="{{ token.access_time | format_datetime }}">
+                      {{ token.access_time | lastupdated }}
+                    </time>
+                  {% else %}
+                    <span class="fw-semibold">{% trans %}Never{% endtrans %}</span>
+                  {% endif %}
+                </span>
+                <span>
+                  <RdwIcon value="bi-calendar-x" class="me-1" />
+                  {% trans %}Expires{% endtrans %}
+                  {% if token.expiration_time %}
+                    <time class="fw-semibold"
+                          datetime="{{ token.expiration_time }}"
+                          title="{{ token.expiration_time | format_datetime }}">
+                      {{ token.expiration_time | lastupdated }}
+                    </time>
+                  {% else %}
+                    <span class="fw-semibold">{% trans %}Never{% endtrans %}</span>
+                  {% endif %}
+                </span>
+              </div>
+              <div class="mt-2 d-flex flex-wrap gap-1">
                 {% set scope_table = dict(form.scope.choices) %}
                 {%- for s in token.scope -%}
-                  {%- if loop.index > 1 %},
-                  {% endif -%}
-                  {{ scope_table.get(s, s).split(' - ')[0] }}
+                  {% set scope_label = scope_table.get(s, s).split(' - ')[0] %}
+                  {% set scope_help = scope_table.get(s, s).split(' - ')[1] %}
+                  <span class="badge text-bg-primary fw-normal" title="{{ scope_help }}">{{ scope_label }}</span>
                 {%- else -%}
-                  {% trans %}Default access{% endtrans %}
+                  <span class="badge text-bg-primary fw-normal">{% trans %}Default access{% endtrans %}</span>
                 {%- endfor -%}
-              </strong>
-            </p>
-          </li>
-        {% else %}
-          <li class="list-group-item text-center">
-            {% trans %}There are no access token associated with your account.{% endtrans %}
-          </li>
-        {% endfor %}
-      </ul>
-    {% endcall %}
-    <!-- Delete SSH Key Modal -->
-    {{ modal_confirm(id='delete-token-modal',
-        title=_('Delete access token') ,
-    message=_("Are you sure you want to revoke this access token? Any application that uses this access token to authenticate will stop working."),
-    fields=['revoke', 'name'],
-    submit=_('Revoke')) }}
+              </div>
+            </div>
+            <button class="btn btn-sm btn-outline-danger flex-shrink-0 rdw-btn-delete-token"
+                    data-bs-toggle="modal"
+                    data-bs-target="#rdw-delete-token-modal"
+                    data-name="{{ token.name }}">
+              <i class="bi bi-trash3 me-1">
+              </i>
+              {% trans %}Revoke{% endtrans %}
+            </button>
+          </div>
+        </div>
+      {% else %}
+        <RdwEmpty icon="bi-key" :title="{{ _("No access token yet") }}" class="p-5">
+          <p>
+            <button class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#rdw-add-token-modal">
+              <RdwIcon value="bi-plus-lg" />
+              {% trans %}
+              Add your first access token
+            {% endtrans %}
+          </button>
+        </p>
+      </RdwEmpty>
+    {% endfor %}
   </div>
+  {# Add Access Token #}
+  <form action="#" method="post">
+    <ModalDialog id="rdw-add-token-modal"
+                 :title="_('Create access token')"
+                 :submit="_('Create access token')"
+                 :show="form.error_message">
+      {% if form.error_message %}<p class="text-danger">{{ form.error_message }}</p>{% endif %}
+      <cf:Fields form={{ form }} />
+    </ModalDialog>
+  </form>
+  {# Delete Modal #}
+  <form method="post" action="#">
+    <ModalConfirm id="rdw-delete-token-modal"
+                  :title="_('Revoke token')"
+                  :message="_('Are you sure you want to revoke this access token ?')"
+                  :submit="_('Revoke')"
+                  :fields="['name']">
+      <input type="hidden" name="action" value="delete" />
+      <p class="text-muted small mb-0">
+        <RdwIcon value="bi-exclamation-triangle-fill" class="text-warning me-1" />
+        {% trans %}Any application using this token will immediately lose access.{% endtrans %}
+      </p>
+    </ModalConfirm>
+  </form>
+</div>
 {% endblock %}

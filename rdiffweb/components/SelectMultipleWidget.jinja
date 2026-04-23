@@ -1,0 +1,19 @@
+{# def field #}
+<div class="d-flex flex-column gap-2 rdw-select-multiple-widget">
+  {% for choice in field.iter_choices() %}
+    {% set val, orig_label, selected = choice[0:3] %}
+    {% set label = orig_label.split(' - ', 2)[0] if ' - ' in orig_label else orig_label %}
+    {% set description = orig_label.split(' - ', 2)[1] if ' - ' in orig_label else '' %}
+    <label class="d-flex align-items-start gap-3 border rounded p-2 cursor-pointer">
+      <input class="form-check-input flex-shrink-0 mt-1"
+             type="checkbox"
+             name="scope"
+             value="{{ val }}"
+             {% if selected %}selected{% endif %}>
+      <div>
+        <div class="fw-semibold small">{{ label }}</div>
+        <div class="text-muted" style="font-size:0.78rem;">{{ description }}</div>
+      </div>
+    </label>
+  {% endfor %}
+</div>

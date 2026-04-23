@@ -19,6 +19,9 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import ANY
 
 from parameterized import parameterized
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 import rdiffweb.test
 from rdiffweb.core.model import Token, UserObject
@@ -40,7 +43,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration': ''},
+            body={'action': 'add', 'name': 'test-token-name', 'expiration': ''},
         )
         # Then page return without error
         self.assertStatus(303)
@@ -61,7 +64,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration': '1999-01-01'},
+            body={'action': 'add', 'name': 'test-token-name', 'expiration': '1999-01-01'},
         )
         # Then page return without error
         self.assertStatus(303)
@@ -84,7 +87,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'add_access_token': '1', 'name': '', 'expiration': ''},
+            body={'action': 'add', 'name': '', 'expiration': ''},
         )
         # Then page return without error
         self.assertStatus(200)
@@ -99,7 +102,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'add_access_token': '1', 'name': 'token' * 52, 'expiration': ''},
+            body={'action': 'add', 'name': 'token' * 52, 'expiration': ''},
         )
         # Then page return with error message
         self.assertStatus(200)
@@ -115,7 +118,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration': ''},
+            body={'action': 'add', 'name': 'test-token-name', 'expiration': ''},
         )
         userobj.expire()
         # Then page return without error
@@ -139,7 +142,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration': '', 'scope': scope},
+            body={'action': 'add', 'name': 'test-token-name', 'expiration': '', 'scope': scope},
         )
         # Then page return with error message
         self.assertStatus(303)
@@ -158,7 +161,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'add_access_token': '1', 'name': 'test-token-name', 'expiration': '', 'scope': 'invalid'},
+            body={'action': 'add', 'name': 'test-token-name', 'expiration': '', 'scope': 'invalid'},
         )
         # Then page return with error message
         self.assertStatus(200)
@@ -174,7 +177,7 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'revoke': '1', 'name': 'test-token-name'},
+            body={'action': 'delete', 'name': 'test-token-name'},
         )
         # Then page return without error
         self.assertStatus(303)
@@ -186,6 +189,58 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         self.assertEqual(0, Token.query.filter(Token.userid == userobj.id, Token.name == 'test-token-name').count())
         # Then and audit log is added
         self.assertEqual({'tokens': [['test-token-name'], []]}, userobj.changes[-1].changes)
+
+    def test_add_token_selenium(self):
+        # Given a user without ssh key
+        user_obj = UserObject.get_user('admin')
+        self.assertEqual(0, len(list(user_obj.authorizedkeys)))
+        with self.selenium() as driver:
+            # When getting the sshkey pages
+            driver.get(self.baseurl + "/prefs/tokens")
+            # Then page load without error
+            self.assertFalse(driver.get_log('browser'))
+            # When user click on delete button
+            btn = driver.find_element('css selector', '#rdw-btn-add-token')
+            ActionChains(driver).scroll_to_element(btn).perform()
+            btn.click()
+            # Then a Modal get shown.
+            modal = driver.find_element('css selector', '#rdw-add-token-modal')
+            # When user enter the ssh key.
+            txt_title = modal.find_element('css selector', 'input[name="name"]')
+            txt_title.send_keys('My Token')
+            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            self.assertFalse(driver.get_log('browser'))
+            # Then user get redirected to home page.
+            WebDriverWait(driver, 10).until(EC.staleness_of(submit_btn))
+            user_obj.expire()
+            self.assertEqual(1, len(list(user_obj.tokens)))
+
+    def test_delete_token_selenium(self):
+        # Given a user with a ssh key.
+        user_obj = UserObject.get_user('admin')
+        user_obj.add_access_token('foo')
+        user_obj.commit()
+        self.assertEqual(1, len(list(user_obj.tokens)))
+        with self.selenium() as driver:
+            # When getting the token pages
+            driver.get(self.baseurl + "/prefs/tokens")
+            # Then page load without error
+            self.assertFalse(driver.get_log('browser'))
+            # When user click on delete button
+            btn = driver.find_element('css selector', '.rdw-btn-delete-token')
+            ActionChains(driver).scroll_to_element(btn).perform()
+            btn.click()
+            # Then a Modal get shown.
+            modal = driver.find_element('css selector', '#rdw-delete-token-modal')
+            # When user confirm
+            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            self.assertFalse(driver.get_log('browser'))
+            # Then user get redirected to home page.
+            WebDriverWait(driver, 10).until(EC.staleness_of(submit_btn))
+            user_obj.expire()
+            self.assertEqual(0, len(list(user_obj.tokens)))
 
 
 class ApiTokensTest(rdiffweb.test.WebCase):

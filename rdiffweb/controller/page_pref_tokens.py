@@ -21,13 +21,12 @@ from datetime import timezone
 import cherrypy
 from cherrypy_foundation.flash import flash
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
-from markupsafe import Markup, escape
-from wtforms.fields import DateTimeField, SelectMultipleField, StringField, SubmitField
+from wtforms.fields import DateTimeField, HiddenField, SelectMultipleField, StringField
 from wtforms.validators import DataRequired, Length, Optional
-from wtforms.widgets import html_params
 
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.formdb import DbForm
+from rdiffweb.controller.widgets import SelectMultipleWidget
 from rdiffweb.core.model import Token
 
 try:
@@ -41,6 +40,8 @@ logger = logging.getLogger(__name__)
 
 
 class ScopeField(SelectMultipleField):
+    widget = SelectMultipleWidget()
+
     def __init__(self, label=None, **kwargs):
         choices = [
             ('all', _('Everything - Allow read write access to everything.')),
@@ -90,42 +91,12 @@ class ScopeField(SelectMultipleField):
         """
         setattr(obj, name, self.data)
 
-    def widget(self, field, **kwargs):
-        kwargs.setdefault('id', field.id)
-        html = []
-        for entry in field.iter_choices():
-            val = entry[0]
-            label = entry[1]
-            if ' - ' in label:
-                label, description = label.split(' - ', 2)
-            else:
-                description = ''
-            field_id = '%s_%s' % (field.id, val)
-            html.append(
-                '<div><input type="checkbox" %s/> <label %s data-bs-toggle="tooltip" data-placement="right">%s</label></div>'
-                % (
-                    html_params(
-                        id=field_id,
-                        name=field.name,
-                        value=val,
-                        checked=entry[2],
-                    ),
-                    html_params(
-                        for_=field_id,
-                        title=description,
-                    ),
-                    escape(label),
-                )
-            )
-        return Markup(''.join(html))
-
 
 class TokenForm(DbForm):
+    action = HiddenField(default="add")
     name = StringField(
         _('Token name'),
-        description=_(
-            'Used only to identify the purpose of the token. For example, the application that uses the token.'
-        ),
+        description=_('Used to identify the purpose of this token.'),
         validators=[
             DataRequired(),
             Length(max=256, message=_('Token name too long')),
@@ -133,9 +104,7 @@ class TokenForm(DbForm):
     )
     expiration = DateTimeField(
         _('Expiration date'),
-        description=_(
-            'Allows the creation of a temporary token by defining an expiration date. Leave empty to keep the token forever.'
-        ),
+        description=_('Leave empty to keep the token valid indefinitely.'),
         render_kw={
             "placeholder": _('YYYY-MM-DD'),
         },
@@ -143,15 +112,11 @@ class TokenForm(DbForm):
         widget=DateInput(),
         validators=[Optional()],
     )
-    scope = ScopeField(_('Select scopes'), description=_('Scopes set the permissions level of this access token.'))
-    add_access_token = SubmitField(
-        _('Create access token'),
-        render_kw={"class": "btn-primary"},
-    )
+    scope = ScopeField(_('Select scopes'), description=_('Scopes define the permissions granted to this token.'))
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
-        return super().is_submitted() and self.add_access_token.data
+        return super().is_submitted() and self.action.default in self.action.raw_data
 
     def populate_obj(self, userobj):
         expiration_time = self.expiration.data.replace(tzinfo=timezone.utc) if self.expiration.data else None
@@ -161,15 +126,12 @@ class TokenForm(DbForm):
 
 
 class DeleteTokenForm(DbForm):
+    action = HiddenField(default="delete")
     name = StringField(validators=[DataRequired()])
-    revoke = SubmitField(
-        _('Revoke'),
-        render_kw={"class": "btn-primary"},
-    )
 
     def is_submitted(self):
         # Validate only if action is set_profile_info
-        return super().is_submitted() and self.revoke.data
+        return super().is_submitted() and self.action.default in self.action.raw_data
 
     def populate_obj(self, userobj):
         is_maintainer()
@@ -200,7 +162,6 @@ class PagePrefTokens:
                     level='info',
                 )
                 raise cherrypy.HTTPRedirect("")
-
         elif delete_form.validate_on_submit():
             if delete_form.save_to_db(currentuser):
                 flash(_('The access token has been successfully deleted.'), level='success')
@@ -211,7 +172,7 @@ class PagePrefTokens:
             flash(delete_form.error_message, level='error')
         return {
             'form': form,
-            'tokens': Token.query.filter(Token.userid == currentuser.id),
+            'tokens': Token.query.filter(Token.userid == currentuser.id).all(),
         }
 
 
