@@ -29,7 +29,7 @@ class PagePrefSessionTest(rdiffweb.test.WebCase):
         self.getPage(self.PREFS)
         # Then the page is returned with sessions
         self.assertStatus(200)
-        self.assertInBody('Active Sessions')
+        self.assertInBody('Browser Sessions')
         self.assertInBody('current session')
         # Then sessionid are not exposed
         self.assertNotInBody(self.session_id)

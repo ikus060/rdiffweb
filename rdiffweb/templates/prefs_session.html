@@ -3,67 +3,114 @@
 {% from 'include/session.html' import browser, os %}
 {% set breadcrumbs = breadcrumb_page('prefs') +  breadcrumb_page(self) %}
 {% block content %}
-  <div class="container">
+  <div class="col-xxl-6 offset-xxl-3 col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
     <div class="d-flex  justify-content-between">
-      <h3>{% trans %}Active Sessions{% endtrans %}</h3>
+      <h3>{% trans %}Browser Sessions{% endtrans %}</h3>
     </div>
     <p>
-      {% trans %}This is a list of devices that are logged into your account. You may revoke any sessions that you do not recognize except your current session.{% endtrans %}
+      {% trans %}This is a list of devices currently logged into your account. You may revoke any session you do not recognise — except your current one. {% endtrans %}
     </p>
-    <!-- List of keys-->
-    <ul class="list-group">
+    {% set browser_icon_table = {
+      "Firefox": "bi-browser-firefox",
+      "Chrome": "bi-browser-chrome",
+      "Chromium": "bi-browser-chrome",
+      "Edge": "bi-browser-edge",
+      "Safari": "bi-browser-safari"
+    } %}
+    <!-- List of sessions-->
+    <div class="d-flex flex-column gap-3">
       {% for session in active_sessions %}
-        <li class="list-group-item">
-          <div class="float-end">
-            {% if not session.current %}
-              {{ button_confirm(label=_('Revoke') , target="#delete-session-modal", action="delete", number=session.number) }}
-            {% endif %}
+        {% set browser_name = browser(session.user_agent).strip() %}
+        <div class="card border shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+              <!-- Left: icon + details -->
+              <div class="d-flex gap-3 align-items-start">
+                <div class="rounded-3 bg-primary bg-opacity-10 p-3 flex-shrink-0">
+                  <RdwIcon :value="browser_icon_table.get(browser_name, 'bi-globe')"
+                           class="text-primary fs-3" />
+                </div>
+                <div>
+                  <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                    <p class="mb-0" title="{{ session.user_agent }}">
+                      <span class="fw-semibold">{{ browser_name }}</span>
+                      <span class="text-muted small">{% trans %}on{% endtrans %}</span>
+                      <span class="fw-semibold">{{ os(session.user_agent) }}</span>
+                    </p>
+                    {% if session.current %}
+                      <span class="badge bg-success rounded-pill px-2 py-1">{% trans %}current session{% endtrans %}</span>
+                    {% endif %}
+                    {% if session.login_persistent %}
+                      <span class="badge bg-info rounded-pill px-2 py-1">{% trans %}persistent{% endtrans %}</span>
+                    {% endif %}
+                  </div>
+                  <ul class="list-unstyled text-muted small mb-0">
+                    <li class="mb-1">
+                      <RdwIcon value=" bi-clock" class="bi-fw" />
+                      {% trans %}Last accessed{% endtrans %}
+                      <strong class="text-body">
+                        <time datetime="{{ session.access_time }}"
+                              title="{{ session.access_time | format_datetime }}">
+                          {{ session.access_time | lastupdated }}
+                        </time>
+                      </strong>
+                      {% trans %}from{% endtrans %}
+                      <strong class="text-body">{{ session.ip_address }}</strong>
+                    </li>
+                    <li class="mb-1">
+                      <RdwIcon value="bi-box-arrow-in-right" class="bi-fw" />
+                      {% trans %}Signed in{% endtrans %}
+                      <strong class="text-body">
+                        <time datetime="{{ session.start_time }}"
+                              title="{{ session.start_time | format_datetime }}">
+                          {{ session.start_time | lastupdated }}
+                        </time>
+                      </strong>
+                    </li>
+                    <li>
+                      <RdwIcon value="bi-hourglass-split" class="bi-fw" />
+                      {% trans %}Expired{% endtrans %}
+                      <strong class="text-body">
+                        <time datetime="{{ session.expiration_time }}"
+                              title="{{ session.expiration_time | format_datetime }}">
+                          {{ session.expiration_time | lastupdated }}
+                        </time>
+                      </strong>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <!-- Right: action (disabled for current) -->
+              {% if session.current %}
+                <button class="btn btn-outline-secondary btn-sm flex-shrink-0"
+                        disabled=""
+                        title="{% trans %}You cannot revoke your current session{% endtrans %}">
+                  <RdwIcon value="bi-shield-check" />
+                  {% trans %}Current{% endtrans %}
+                </button>
+              {% else %}
+                <button class="btn btn-outline-danger btn-sm flex-shrink-0 rdw-btn-delete-session"
+                        data-bs-toggle="modal"
+                        data-bs-target="#rdw-delete-session-modal"
+                        data-number="{{ session.number }}">
+                  <RdwIcon value="bi-x-lg" />
+                  {% trans %}Revoke{% endtrans %}
+                </button>
+              {% endif %}
+            </div>
           </div>
-          <p class="list-group-item-heading" title="{{ session.user_agent }}">
-            <strong>{{ browser(session.user_agent) }}</strong>
-            {% trans %}running on{% endtrans %}
-            <strong>{{ os(session.user_agent) }}</strong>
-            {% if session.current %}
-              <span class="badge bg-success">{% trans %}current session{% endtrans %}</span>
-            {% endif %}
-            {% if session.login_persistent %}
-              <span class="badge bg-info">{% trans %}persistent{% endtrans %}</span>
-            {% endif %}
-          </p>
-          <p>
-            {% trans %}Last accessed{% endtrans %}
-            <strong>
-              <time datetime="{{ session.access_time }}"
-                    title="{{ session.access_time | format_datetime }}">
-                {{ session.access_time | lastupdated }}
-              </time>
-            </strong>
-            {% trans %}from{% endtrans %}
-            <strong>{{ session.ip_address }}</strong>
-            <br />
-            {% trans %}Signed in{% endtrans %}
-            <strong>
-              <time datetime="{{ session.start_time }}"
-                    title="{{ session.start_time | format_datetime }}">
-                {{ session.start_time | lastupdated }}
-              </time>
-            </strong>
-            <br />
-            {% trans %}Expired{% endtrans %}
-            <strong>
-              <time datetime="{{ session.expiration_time }}"
-                    title="{{ session.expiration_time | format_datetime }}">
-                {{ session.expiration_time | lastupdated }}
-              </time>
-            </strong>
-          </p>
-        </li>
+        </div>
       {% endfor %}
-    </ul>
-    {{ modal_confirm(id='delete-session-modal',
-        title=_('Revoke Session') ,
-    message=_("Are you sure? The device will be signed out from the application."),
-    fields=['action', 'number'],
-    submit=_('Revoke')) }}
+    </div>
   </div>
+  {# Delete Modal #}
+  <form method="post" action="#">
+    <ModalConfirm id="rdw-delete-session-modal"
+                  :title="_('Revoke Session')"
+                  :message="_('Are you sure? The device will be signed out from the application.')"
+                  :submit="_('Revoke')"
+                  :fields="['number']">
+      <input type="hidden" name="action" value="delete" />
+    </ModalConfirm>
+  </form>
 {% endblock %}
