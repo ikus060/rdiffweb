@@ -82,9 +82,13 @@ For more information, visit the [Minarca Website](https://minarca.org).
 
 # Changelog
 
+## 6.2.4 (2026-04-24)
+
+* rdiffweb: bump to v2.11.4 to fix foreign key error
+
 ## 6.2.3 (2026-04-09)
 
-* rdiffweb: bump to v2.11.2 to fix security issue
+* rdiffweb: bump to v2.11.3 to fix security issue and smtp error
 
 ## 6.2.2 (2026-03-18)
 
