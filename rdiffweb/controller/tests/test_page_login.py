@@ -165,6 +165,14 @@ class LoginPageTest(rdiffweb.test.WebCase):
         self.getPage('/login/')
         self.assertInBody('value="admin"')
 
+    def test_getpage_with_qs_fill_login_default(self):
+        # Given an unauthenticated user
+        # Query the login page with /?login=foo
+        self.getPage('/login/?login=foo')
+        # Then the loging get displayed and the login field is pre-fill with "foo"
+        self.assertStatus(200)
+        self.assertInBody('value="foo"')
+
     def test_getpage_without_username(self):
         """
         Check if error is raised when requesting /login without a username.

@@ -98,7 +98,7 @@ class LoginPage(Controller):
             raise cherrypy.HTTPRedirect('/')
 
         # Validate user's credentials
-        form = LoginForm()
+        form = LoginForm(**{key: value for key, value in kwargs.items() if key == 'login'})
         if form.validate_on_submit():
             userobj = cherrypy.tools.auth.login_with_credentials(form.login.data, form.password.data)
             if userobj:

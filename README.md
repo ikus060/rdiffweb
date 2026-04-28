@@ -128,6 +128,11 @@ We are passionate about developing and maintaining this open-source project to m
 
 # Changelog
 
+## 2.11.5 (2026-04-30)
+
+* **Bug Fixes:**
+  * login: add support for pre-filling login field via query string parameter
+
 ## 2.11.4 (2026-04-23)
 
 * **Bug Fixes:**
