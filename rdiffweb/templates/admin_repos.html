@@ -12,68 +12,109 @@
   </a>
 {% endmacro %}
 {% block content %}
+  {# Header #}
+  <div class="d-flex flex-wrap justify-content-between mb-2">
+    <h2>
+      <RdwIcon value="repo" class="me-1" />
+      {%- trans %}Repositories{% endtrans %}
+    </h2>
+    <div></div>
+  </div>
+  {% set ns = namespace(owner_buttons=[]) %}
+  {% set ns.owner_buttons = ns.owner_buttons + [{'text': _('All owners'), 'extend':'filter', 'column':1, 'search': '' }] %}
+  {% for user in repos | map(attribute='owner') | unique | sort %}
+    {% set ns.owner_buttons = ns.owner_buttons + [{'text': user, 'extend':'filter', 'column':1, 'search': user }] %}
+  {% endfor %}
   {% set buttons = [
-      {'text': _('All'), 'extend': 'reset'},
-      {'text': _('Healthy'), 'extend': 'filter', 'column': 2, 'search': 'ok'},
-      {'text': _('Failed'), 'extend': 'filter', 'column': 2, 'search': 'failed'},
-      {'text': _('Interrupted'), 'extend': 'filter', 'column': 2, 'search': 'interrupted'},
-      {'text': _('In progress'), 'extend': 'filter', 'column': 2, 'search': 'in_progress'},
+      {'text': _('Owner'), 'extend': 'collectionfilter', 'popoverTitle': _('Select owner'), 'buttons': ns.owner_buttons, 'className':'btn-outline-secondary' },
+      {'text': _('All'), 'extend': 'filter', 'column': 5, 'search': '', 'className':'btn-outline-secondary rdw-btn-filter'},
+      {'text': _('Healthy'), 'extend': 'filter', 'column': 5, 'search': 'ok', 'className':'btn-outline-success rdw-btn-filter'},
+      {'text': _('Failed'), 'extend': 'filter', 'column': 5, 'search': 'failed', 'className':'btn-outline-danger rdw-btn-filter'},
+      {'text': _('Interrupted'), 'extend': 'filter', 'column': 5, 'search': 'interrupted', 'className':'btn-outline-warning rdw-btn-filter'},
+      {'text': _('In progress'), 'extend': 'filter', 'column': 5, 'search': 'in_progress', 'className':'btn-outline-info rdw-btn-filter'},
     ] %}
   <RdwTable :buttons="{{ buttons }}">
     <thead>
       <tr>
-        <th scope="col">{% trans %}Display Name{% endtrans %}</th>
+        <th scope="col">{% trans %}Repository{% endtrans %}</th>
         <th scope="col">{% trans %}Owner{% endtrans %}</th>
-        <th scope="col" data-type="num">{% trans %}Status{% endtrans %}</th>
+        <th scope="col" data-type="num">{% trans %}Last backup{% endtrans %}</th>
         <th scope="col" data-type="num">{% trans %}Inactivity Period{% endtrans %}</th>
         <th scope="col" data-type="num">{% trans %}Retention Duration{% endtrans %}</th>
-        <th scope="col">{% trans %}Errors were detected in the last backup{% endtrans %}</th>
-        <th scope="col">{% trans %}Description{% endtrans %}</th>
-        <th scope="col" data-sortable="false"></th>
+        <th scope="col">{% trans %}Status{% endtrans %}</th>
+        <th scope="col">{% trans %}Errors{% endtrans %}</th>
+        <th scope="col" data-sortable="false" class="text-end">{% trans %}Action{% endtrans %}</th>
       </tr>
     </thead>
     <tbody>
       {% for repo in repos %}
-        <tr class="{{ 'table-warning' if repo.status[0] != 'ok' else '' }}">
-          <td data-search="{{ repo.display_name }}">
-            <a href="{{ url_for('browse', repo) }}">{{ repo.display_name }}</a>
+        <tr>
+          {# Name #}
+          <td class="ps-3">
+            <a href="{{ url_for('browse', repo) }}"
+               class="small fw-bold {% if repo.notes %}rdw-tooltip{% endif %}"
+               data-bs-toggle="tooltip"
+               title="{{ repo.notes }}">{{ repo.display_name -}}</a>
+            <div class="small text-muted font-monospace">{{ repo.full_path.decode(errors='replace') }}</div>
           </td>
-          <td data-search="{{ repo.owner }}">{{ repo.owner }}</td>
-          <td data-search="{{ repo.status[0] }}"
-              data-order="{{ repo.last_backup_date.epoch }}">
+          {# Owner #}
+          <td>
+            <a href="{{ url_for('home', repo.owner) }}"
+               class="badge text-bg-secondary text-decoration-none">{{ repo.owner }}</a>
+          </td>
+          {# Last backup date #}
+          <td data-order="{{ repo.last_backup_date.epoch }}"
+              class="text-muted small">
             {% if repo.last_backup_date %}
-              {% trans %}Updated {% endtrans %}
               <time datetime="{{ repo.last_backup_date }}"
                     title="{{ repo.last_backup_date | format_datetime }}">
                 {{ repo.last_backup_date | lastupdated }}
               </time>
-            {% endif %}
-            {% if repo.status[0] != 'ok' %}
-              <RdwIcon value="bi-exclamation-triangle" />
-              {{ repo.status[1] }}
+            {% else %}
+              &mdash;
             {% endif %}
           </td>
+          {# Inactivity Period #}
           <td data-search="{{ repo.maxage }}" data-order="{{ repo.maxage }}">
             {% if repo.maxage %}
-              {% trans num=repo.maxage %}{{ num }} days{% endtrans %}
+              <span class="badge text-bg-light border">{{ ( repo.maxage * 86400 )| format_timedelta(threshold=0.99) }}</span>
             {% else %}
-              {% trans %}Disabled{% endtrans %}
+              <span class="text-muted small">&mdash;</span>
             {% endif %}
           </td>
+          {# Retention Duration #}
           <td data-search="" data-order="{{ repo.keepdays }}">
             {% if repo.keepdays>=1 %}
-              {% trans num=repo.keepdays %}{{ num }} days{% endtrans %}
+              <span class="badge text-bg-light border">{{ ( repo.keepdays * 86400 )| format_timedelta(threshold=0.99) }}</span>
             {% else %}
-              {% trans %}Forever{% endtrans %}
+              <span class="badge text-bg-light border text-muted">{% trans %}Forever{% endtrans %}</span>
             {% endif %}
           </td>
-          <td data-search="">
-            {% if repo.error_log %}{{ _("No") if repo.error_log[-1].is_empty else _('Yes') }}{% endif %}
+          {# Status #}
+          <td data-order="{{ repo.status[0] }}" data-search="{{ repo.status[0] }}">
+            <RepoStatus :repo="repo" class="badge" />
           </td>
-          <td class="rdw-notes">{{ repo.notes }}</td>
-          <td data-search="">
-            <div class="rdw-btn-hover text-nowrap">
-              {% for page in page_registry.get_repo_nav_pages() %}{{ btn(url_for(page, repo) , page.label, page.icon) }}{% endfor %}
+          <td>
+            {% if repo.session_statistics %}
+              {% set error_count = repo.session_statistics[-1].errors %}
+              {% if error_count > 0 %}
+                {{ error_count }}
+              {% else %}
+                <span class="text-muted small">&mdash;</span>
+              {% endif %}
+            {% else %}
+              <span class="text-muted small">&mdash;</span>
+            {% endif %}
+          </td>
+          <td data-search="" class="text-end">
+            <div class="btn-group btn-group-sm">
+              {% for page in page_registry.get_repo_nav_pages() %}
+                <a href="{{ url_for(page, repo) }}"
+                   class="btn btn-sm btn-outline-secondary"
+                   title="{{ page.label }}">
+                  <RdwIcon :value="page.icon" />
+                </a>
+              {% endfor %}
             </div>
           </td>
         </tr>
