@@ -48,7 +48,7 @@
                     <a class="dropdown-item"
                        href="{{ url_for('restore', repo, entry.path, date=change_date) }}">
                       <!-- File date -->
-                      <RdwIcon value="bi-download" />
+                      <RdwIcon value="bi-download" class="me-1" />
                       <time datetime="{{ change_date }}" title="{{ change_date | lastupdated }}">
                         {{ change_date | format_datetime }}
                       </time>

@@ -21,8 +21,8 @@
       {# General info #}
       <div class="card mb-3">
         <div class="card-header d-flex align-items-center gap-2">
-          <RdwIcon value="bi-person-vcard text-primary" />
-          {% trans %}General Information{% endtrans %}
+          <RdwIcon value="bi-person-vcard text-primary" class="me-1" />
+          {%- trans %}General Information{% endtrans %}
         </div>
         <div class="card-body">
           <cf:Field field={{ form.username }} />
@@ -37,8 +37,8 @@
       {# Password #}
       <div class="card mb-3">
         <div class="card-header d-flex align-items-center gap-2">
-          <RdwIcon value="bi-shield-lock text-primary" />
-          {% trans %}Password{% endtrans %}
+          <RdwIcon value="bi-shield-lock text-primary" class="me-1" />
+          {%- trans %}Password{% endtrans %}
         </div>
         <div class="card-body d-flex align-items-center justify-content-between gap-3 flex-wrap">
           <div>
@@ -52,16 +52,16 @@
                   type="button"
                   data-bs-toggle="modal"
                   data-bs-target="#rdw-password-modal">
-            <RdwIcon value="bi-key" />
-            {% trans %}Change password{% endtrans %}
+            <RdwIcon value="bi-key" class="me-1" />
+            {%- trans %}Change password{% endtrans %}
           </button>
         </div>
       </div>
       {# Report #}
       <div class="card mb-3">
         <div class="card-header d-flex align-items-center gap-2">
-          <RdwIcon value="bi-envelope-paper text-primary" />
-          {% trans %}Backup Report{% endtrans %}
+          <RdwIcon value="bi-envelope-paper text-primary" class="me-1" />
+          {%- trans %}Backup Report{% endtrans %}
         </div>
         <div class="card-body">
           <p class="mb-0 text-muted small">

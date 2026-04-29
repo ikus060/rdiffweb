@@ -95,8 +95,8 @@
               <span class="small text-muted font-monospace text-truncate">{{ user.user_root }}</span>
               {% if not user.valid_user_root() %}
                 <span class="text-danger">
-                  <RdwIcon value="bi-exclamation-triangle" />
-                  {% trans %}Root directory not accessible!{% endtrans %}
+                  <RdwIcon value="bi-exclamation-triangle" class="me-1" />
+                  {%- trans %}Root directory not accessible!{% endtrans %}
                 </span>
               {% endif %}
             {% else %}

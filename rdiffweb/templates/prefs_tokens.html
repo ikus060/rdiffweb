@@ -14,8 +14,8 @@
                 class="btn btn-primary"
                 data-bs-toggle="modal"
                 data-bs-target="#rdw-add-token-modal">
-          <RdwIcon value="bi-plus-lg" />
-          {% trans %}New access token{% endtrans %}
+          <RdwIcon value="bi-plus-lg" class="me-1" />
+          {%- trans %}New access token{% endtrans %}
         </button>
       </div>
     </div>
@@ -25,8 +25,8 @@
     </p>
     {# Token count summary #}
     <p class="text-muted small mb-2">
-      <RdwIcon value="bi-info-circle" />
-      {{ _('%(count)s access tokens associated with your account.', count=tokens|length) }}
+      <RdwIcon value="bi-info-circle" class="me-1" />
+      {{- _('%(count)s access tokens associated with your account.', count=tokens|length) }}
     </p>
     {# Token list #}
     <div class="d-flex flex-column gap-3">
@@ -39,7 +39,7 @@
               <div class="d-flex flex-wrap gap-3 small text-muted">
                 <span>
                   <RdwIcon value="bi-calendar-plus" class="me-1" />
-                  {% trans %}Created{% endtrans %}
+                  {%- trans %}Created{% endtrans %}
                   <time class="fw-semibold"
                         datetime="{{ token.creation_time }}"
                         title="{{ token.creation_time | lastupdated }}">
@@ -48,7 +48,7 @@
                 </span>
                 <span>
                   <RdwIcon value="bi-clock-history" class="me-1" />
-                  {% trans %}Last used{% endtrans %}
+                  {%- trans %}Last used{% endtrans %}
                   {% if token.access_time %}
                     <time class="fw-semibold"
                           datetime="{{ token.access_time }}"
@@ -61,7 +61,7 @@
                 </span>
                 <span>
                   <RdwIcon value="bi-calendar-x" class="me-1" />
-                  {% trans %}Expires{% endtrans %}
+                  {%- trans %}Expires{% endtrans %}
                   {% if token.expiration_time %}
                     <time class="fw-semibold"
                           datetime="{{ token.expiration_time }}"
@@ -88,9 +88,8 @@
                     data-bs-toggle="modal"
                     data-bs-target="#rdw-delete-token-modal"
                     data-name="{{ token.name }}">
-              <i class="bi bi-trash3 me-1">
-              </i>
-              {% trans %}Revoke{% endtrans %}
+              <RdwIcon value="bi-trash3" class="me-1" />
+              {%- trans %}Revoke{% endtrans %}
             </button>
           </div>
         </div>
@@ -100,38 +99,36 @@
             <button class="btn btn-primary"
                     data-bs-toggle="modal"
                     data-bs-target="#rdw-add-token-modal">
-              <RdwIcon value="bi-plus-lg" />
-              {% trans %}
-              Add your first access token
-            {% endtrans %}
-          </button>
+              <RdwIcon value="bi-plus-lg" class="me-1" />
+              {%- trans %}Add your first access token{% endtrans %}
+            </button>
+          </p>
+        </RdwEmpty>
+      {% endfor %}
+    </div>
+    {# Add Access Token #}
+    <form action="#" method="post">
+      <ModalDialog id="rdw-add-token-modal"
+                   :title="_('Create access token')"
+                   :submit="_('Create access token')"
+                   :show="form.error_message">
+        {% if form.error_message %}<p class="text-danger">{{ form.error_message }}</p>{% endif %}
+        <cf:Fields form={{ form }} />
+      </ModalDialog>
+    </form>
+    {# Delete Modal #}
+    <form method="post" action="#">
+      <ModalConfirm id="rdw-delete-token-modal"
+                    :title="_('Revoke token')"
+                    :message="_('Are you sure you want to revoke this access token ?')"
+                    :submit="_('Revoke')"
+                    :fields="['name']">
+        <input type="hidden" name="action" value="delete" />
+        <p class="text-muted small mb-0">
+          <RdwIcon value="bi-exclamation-triangle-fill" class="text-warning me-1" />
+          {%- trans %}Any application using this token will immediately lose access.{% endtrans %}
         </p>
-      </RdwEmpty>
-    {% endfor %}
+      </ModalConfirm>
+    </form>
   </div>
-  {# Add Access Token #}
-  <form action="#" method="post">
-    <ModalDialog id="rdw-add-token-modal"
-                 :title="_('Create access token')"
-                 :submit="_('Create access token')"
-                 :show="form.error_message">
-      {% if form.error_message %}<p class="text-danger">{{ form.error_message }}</p>{% endif %}
-      <cf:Fields form={{ form }} />
-    </ModalDialog>
-  </form>
-  {# Delete Modal #}
-  <form method="post" action="#">
-    <ModalConfirm id="rdw-delete-token-modal"
-                  :title="_('Revoke token')"
-                  :message="_('Are you sure you want to revoke this access token ?')"
-                  :submit="_('Revoke')"
-                  :fields="['name']">
-      <input type="hidden" name="action" value="delete" />
-      <p class="text-muted small mb-0">
-        <RdwIcon value="bi-exclamation-triangle-fill" class="text-warning me-1" />
-        {% trans %}Any application using this token will immediately lose access.{% endtrans %}
-      </p>
-    </ModalConfirm>
-  </form>
-</div>
 {% endblock %}

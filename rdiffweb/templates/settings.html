@@ -25,8 +25,8 @@
       {# Notes #}
       <div class="card mb-3">
         <div class="card-header d-flex align-items-center gap-2">
-          <RdwIcon value="bi-card-text text-primary" />
-          {% trans %}Description{% endtrans %}
+          <RdwIcon value="bi-card-text text-primary" class="me-1" />
+          {%- trans %}Description{% endtrans %}
         </div>
         <div class="card-body">
           <cf:Field :field="form.notes" />
@@ -35,8 +35,8 @@
       {# Notifications #}
       <div class="card mb-3">
         <div class="card-header bg-light d-flex align-items-center gap-2">
-          <RdwIcon value="bi-bell text-primary" />
-          {% trans %}Notification Rules{% endtrans %}
+          <RdwIcon value="bi-bell text-primary" class="me-1" />
+          {%- trans %}Notification Rules{% endtrans %}
         </div>
         <div class="card-body">
           <cf:Field :field="form.maxage" />
@@ -47,8 +47,8 @@
       {# Retention period #}
       <div class="card mb-3">
         <div class="card-header bg-light d-flex align-items-center gap-2">
-          <RdwIcon value="bi-database text-primary" />
-          {% trans %}Data Retention{% endtrans %}
+          <RdwIcon value="bi-database text-primary" class="me-1" />
+          {%- trans %}Data Retention{% endtrans %}
         </div>
         <div class="card-body">
           <cf:Field :field="form.keepdays" />
@@ -57,8 +57,8 @@
       {# Encoding #}
       <div class="card mb-3">
         <div class="card-header bg-light d-flex align-items-center gap-2">
-          <RdwIcon value="bi-translate text-primary" />
-          {% trans %}Display{% endtrans %}
+          <RdwIcon value="bi-translate text-primary" class="me-1" />
+          {%- trans %}Display{% endtrans %}
         </div>
         <div class="card-body">
           <cf:Field :field="form.encoding" />
@@ -68,8 +68,8 @@
     {# Delete repo #}
     <div class="card mb-3 danger-zone">
       <div class="card-header d-flex align-items-center gap-2 text-danger">
-        <RdwIcon value="bi-exclamation-triangle-fill" />
-        {% trans %}Danger Zone{% endtrans %}
+        <RdwIcon value="bi-exclamation-triangle-fill" class="me-1" />
+        {%- trans %}Danger Zone{% endtrans %}
       </div>
       <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
         <div>

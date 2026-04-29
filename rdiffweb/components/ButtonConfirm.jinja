@@ -4,6 +4,8 @@
    data_bs_toggle="modal",
    data_bs_target=target,
    disabled=disabled) }}>
-  {% if icon %}<RdwIcon :value="icon" />{% endif %}
-  {% if label %}{{ label }}{% endif %}
+  {% if icon %}
+    <RdwIcon :value="icon" {% if label %}class="me-1"{% endif %} />
+  {% endif %}
+  {%- if label %}{{ label }}{% endif %}
 </button>

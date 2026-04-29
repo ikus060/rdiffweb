@@ -12,8 +12,8 @@
                 class="btn btn-primary"
                 data-bs-toggle="modal"
                 data-bs-target="#rdw-add-sshkey-modal">
-          <RdwIcon value="bi-plus-lg" />
-          {% trans %}Add SSH key{% endtrans %}
+          <RdwIcon value="bi-plus-lg" class="me-1" />
+          {%- trans %}Add SSH key{% endtrans %}
         </button>
       </div>
     </div>
@@ -24,15 +24,15 @@
       {% if disable_ssh_keys %}
         <br />
         <span class="text-warning fw-semibold">
-          <RdwIcon value="bi-exclamation-triangle-fill" />
-          {% trans %}SSH Keys management is disabled by your administrator.{% endtrans %}
+          <RdwIcon value="bi-exclamation-triangle-fill" class="me-1" />
+          {%- trans %}SSH Keys management is disabled by your administrator.{% endtrans %}
         </span>
       {% endif %}
     </p>
     {# Key count summary #}
     <p class="text-muted small mb-2">
-      <RdwIcon value="bi-info-circle" />
-      {{ _('%(count)s SSH keys associated with your account.', count=sshkeys|length) }}
+      <RdwIcon value="bi-info-circle" class="me-1" />
+      {{- _('%(count)s SSH keys associated with your account.', count=sshkeys|length) }}
     </p>
     {# Key list #}
     <div class="d-flex flex-column gap-3">
@@ -52,8 +52,8 @@
               </div>
               <div class="text-muted small font-monospace text-truncate">{{ key.fingerprint }}</div>
               <div class="text-muted" style="font-size: 0.78rem;">
-                <RdwIcon value="bi-clock" />
-                {% trans %}Added on {% endtrans %}
+                <RdwIcon value="bi-clock" class="me-1" />
+                {%- trans %}Added on {% endtrans %}
                 {% if key.creation_time %}
                   {{ key.creation_time | format_datetime }}
                 {% else %}
@@ -78,8 +78,8 @@
             <button class="btn btn-primary"
                     data-bs-toggle="modal"
                     data-bs-target="#rdw-add-sshkey-modal">
-              <RdwIcon value="bi-plus-lg" />
-              Add your first SSH Key
+              <RdwIcon value="bi-plus-lg" class="me-1" />
+              {%- trans %}Add your first SSH Key{% endtrans %}
             </button>
           </p>
         </RdwEmpty>
@@ -93,7 +93,7 @@
                    :submit="_('Add SSH key')"
                    :show="form.error_message">
         <div class="alert alert-info d-flex gap-2 align-items-start" role="alert">
-          <RdwIcon value="bi-info-circle-fill" />
+          <RdwIcon value="bi-info-circle-fill" class="me-1" />
           <div>
             {% trans %}
             Paste your public key below (e.g. content of ~/.ssh/id_rsa.pub or ~/.ssh/id_ed25519.pub). Never share your private key.{% endtrans %}
@@ -113,7 +113,7 @@
                   :fields="['fingerprint']">
       <p class="text-muted small mb-0">
         <RdwIcon value="bi-exclamation-triangle-fill" class="text-warning me-1" />
-        {% trans %}Any backup client using this key will lose access immediately.{% endtrans %}
+        {%- trans %}Any backup client using this key will lose access immediately.{% endtrans %}
       </p>
     </ModalConfirm>
   </form>

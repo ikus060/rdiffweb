@@ -46,8 +46,8 @@
                   </div>
                   <ul class="list-unstyled text-muted small mb-0">
                     <li class="mb-1">
-                      <RdwIcon value=" bi-clock" class="bi-fw" />
-                      {% trans %}Last accessed{% endtrans %}
+                      <RdwIcon value=" bi-clock" class="bi-fw me-1" />
+                      {%- trans %}Last accessed{% endtrans %}
                       <strong class="text-body">
                         <time datetime="{{ session.access_time }}"
                               title="{{ session.access_time | format_datetime }}">
@@ -58,8 +58,8 @@
                       <strong class="text-body">{{ session.ip_address }}</strong>
                     </li>
                     <li class="mb-1">
-                      <RdwIcon value="bi-box-arrow-in-right" class="bi-fw" />
-                      {% trans %}Signed in{% endtrans %}
+                      <RdwIcon value="bi-box-arrow-in-right" class="bi-fw me-1" />
+                      {%- trans %}Signed in{% endtrans %}
                       <strong class="text-body">
                         <time datetime="{{ session.start_time }}"
                               title="{{ session.start_time | format_datetime }}">
@@ -68,8 +68,8 @@
                       </strong>
                     </li>
                     <li>
-                      <RdwIcon value="bi-hourglass-split" class="bi-fw" />
-                      {% trans %}Expired{% endtrans %}
+                      <RdwIcon value="bi-hourglass-split" class="bi-fw me-1" />
+                      {%- trans %}Expired{% endtrans %}
                       <strong class="text-body">
                         <time datetime="{{ session.expiration_time }}"
                               title="{{ session.expiration_time | format_datetime }}">
@@ -85,16 +85,16 @@
                 <button class="btn btn-outline-secondary btn-sm flex-shrink-0"
                         disabled=""
                         title="{% trans %}You cannot revoke your current session{% endtrans %}">
-                  <RdwIcon value="bi-shield-check" />
-                  {% trans %}Current{% endtrans %}
+                  <RdwIcon value="bi-shield-check" class="me-1" />
+                  {%- trans %}Current{% endtrans %}
                 </button>
               {% else %}
                 <button class="btn btn-outline-danger btn-sm flex-shrink-0 rdw-btn-delete-session"
                         data-bs-toggle="modal"
                         data-bs-target="#rdw-delete-session-modal"
                         data-number="{{ session.number }}">
-                  <RdwIcon value="bi-x-lg" />
-                  {% trans %}Revoke{% endtrans %}
+                  <RdwIcon value="bi-x-lg" class="me-1" />
+                  {%- trans %}Revoke{% endtrans %}
                 </button>
               {% endif %}
             </div>

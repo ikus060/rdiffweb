@@ -96,8 +96,8 @@
       <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
           <h6 class="fw-bold mb-0">
-            <RdwIcon value="bi-calendar3" />
-            {% trans %}Backup Activity{% endtrans %}
+            <RdwIcon value="bi-calendar3" class="me-1" />
+            {%- trans %}Backup Activity{% endtrans %}
           </h6>
           <p class="text-muted small mb-0">
             {{ _('Last %(days)s days — all repositories combined', days=(activity_end - activity_start).days) }}
@@ -105,8 +105,8 @@
         </div>
         <div class="d-flex gap-3 text-muted small align-items-center">
           <span>
-            <RdwIcon value="bi-archive" />
-            {{ _('%(count)s backups', count=activity_dates | length) }}
+            <RdwIcon value="bi-archive" class="me-1" />
+            {{- _('%(count)s backups', count=activity_dates | length) }}
           </span>
         </div>
       </div>
@@ -120,8 +120,8 @@
   {% endif %}
   {# Repositories card #}
   <h6 class="fw-bold mb-3">
-    <RdwIcon value="bi-archive" />
-    {% trans %}Repositories{% endtrans %}
+    <RdwIcon value="bi-archive" class="me-1" />
+    {%- trans %}Repositories{% endtrans %}
   </h6>
   <div class="row g-3 mb-4">
     {% for repo in repo_objs %}<RepoCard :repo="repo" class="col-12 col-xl-6 col-xxl-4" />{% endfor %}

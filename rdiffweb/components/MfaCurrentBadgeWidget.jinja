@@ -5,11 +5,11 @@
     {% if selected %}
       <span class="badge rounded-pill px-3 py-2 {% if val %}bg-success{% else %}bg-secondary{% endif %}">
         {% if val %}
-          <RdwIcon value="bi-check-circle-fill" />
+          <RdwIcon value="bi-check-circle-fill" class="me-1" />
         {% else %}
-          <RdwIcon value="bi-x-circle-fill" />
+          <RdwIcon value="bi-x-circle-fill" class="me-1" />
         {% endif %}
-        {{ label }}
+        {{- label }}
       </span>
     {% endif %}
   {% endfor %}

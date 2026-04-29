@@ -14,12 +14,12 @@
             aria-expanded="false">
       {% if selected_date %}
         <time datetime="{{ selected_date }}">
-          {{ selected_date | format_datetime(format='medium') }}
+          {{ selected_date | format_datetime(format='medium') -}}
         </time>
       {% else %}
-        {{ title }}
+        {{ title -}}
       {% endif %}
-      <RdwIcon value="ms-2 bi-chevron-down" />
+      <RdwIcon value="bi-chevron-down" class="ms-1" />
     </button>
     <ul class="dropdown-menu">
       {% for item in dates[-10:][::-1] %}

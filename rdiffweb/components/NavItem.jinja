@@ -1,7 +1,7 @@
 {# def label, href, icon=None, active=False, type="nav-link" #}
 <li {% if type == 'nav-link' %}class="nav-item"{% endif %}>
   <a class="{{ type }} {% if active %}active{% endif %}" href="{{ href }}">
-    {% if icon %}<RdwIcon value={{ icon }} class="bi-fw me-2" />{% endif %}
-    {{ label }}
+    {% if icon %}<RdwIcon value={{ icon }} class="bi-fw me-1" />{% endif %}
+    {{- label }}
   </a>
 </li>

@@ -19,8 +19,8 @@
       {# General Information #}
       <div class="card mb-3">
         <div class="card-header d-flex align-items-center gap-2">
-          <RdwIcon value="bi-person text-primary" />
-          {% trans %}General Information{% endtrans %}
+          <RdwIcon value="bi-person text-primary" class="me-1" />
+          {%- trans %}General Information{% endtrans %}
         </div>
         <div class="card-body">
           <div class="row">
@@ -37,8 +37,8 @@
       {# Access & Security #}
       <div class="card mb-3">
         <div class="card-header d-flex align-items-center gap-2">
-          <RdwIcon value="bi-shield-lock text-primary" />
-          {% trans %}Access & Security{% endtrans %}
+          <RdwIcon value="bi-shield-lock text-primary" class="me-1" />
+          {%- trans %}Access & Security{% endtrans %}
         </div>
         <div class="card-body">
           <div class="row">
@@ -52,8 +52,8 @@
       {# Storage #}
       <div class="card mb-3">
         <div class="card-header d-flex align-items-center gap-2">
-          <RdwIcon value="bi-hdd text-primary" />
-          {% trans %}Storage{% endtrans %}
+          <RdwIcon value="bi-hdd text-primary" class="me-1" />
+          {%- trans %}Storage{% endtrans %}
         </div>
         <div class="card-body">
           <div class="row">
@@ -69,8 +69,8 @@
     {# Repos #}
     <div class="card mb-3">
       <div class="card-header d-flex align-items-center gap-2">
-        <RdwIcon value="bi-archive text-primary" />
-        {% trans %}Repositories{% endtrans %}
+        <RdwIcon value="bi-archive text-primary" class="me-1" />
+        {%- trans %}Repositories{% endtrans %}
       </div>
       <div class="card-body p-0">
         <table class="table table-sm mb-0 align-middle">
@@ -109,7 +109,7 @@
                   <span class="badge {{ status_class.get(repo.status[0], 'bg-warning') }}">
                     <RdwIcon :value="status_icon.get(repo.status[0], 'bi-exclamation-triangle-fill')"
                              class="me-1" />
-                    {{ repo.status[2] }}
+                    {{- repo.status[2] }}
                   </span>
                 </td>
                 {# Action #}
@@ -138,14 +138,14 @@
     <div class="card mb-3">
       <div class="card-header d-flex align-items-center justify-content-between">
         <span>
-          <RdwIcon value="bi-key text-primary" />
-          {% trans %}SSH Keys{% endtrans %}
+          <RdwIcon value="bi-key text-primary" class="me-1" />
+          {%- trans %}SSH Keys{% endtrans %}
         </span>
         <button id="rdw-btn-add-sshkey"
                 class="btn btn-sm btn-outline-secondary"
                 data-bs-toggle="modal"
                 data-bs-target="#rdw-add-sshkey-modal">
-          <RdwIcon value="bi-plus me-1" />
+          <RdwIcon value="bi-plus" class="me-1" />
           {%- trans %}Add SSH key{% endtrans %}
         </button>
       </div>
@@ -205,14 +205,14 @@
     <div class="card mb-3">
       <div class="card-header d-flex align-items-center justify-content-between">
         <span>
-          <RdwIcon value="bi-key text-primary" />
-          {% trans %}Access Tokens{% endtrans %}
+          <RdwIcon value="bi-key text-primary" class="me-1" />
+          {%- trans %}Access Tokens{% endtrans %}
         </span>
         <button id="rdw-btn-add-token"
                 class="btn btn-sm btn-outline-secondary"
                 data-bs-toggle="modal"
                 data-bs-target="#rdw-add-token-modal">
-          <RdwIcon value="bi-plus me-1" />
+          <RdwIcon value="bi-plus" class="me-1" />
           {%- trans %}New access token{% endtrans %}
         </button>
       </div>
@@ -296,8 +296,8 @@
     {# Delete User #}
     <div class="card mb-3 danger-zone">
       <div class="card-header d-flex align-items-center gap-2 text-danger">
-        <RdwIcon value="bi-exclamation-triangle-fill" />
-        {% trans %}Danger Zone{% endtrans %}
+        <RdwIcon value="bi-exclamation-triangle-fill" class="me-1" />
+        {%- trans %}Danger Zone{% endtrans %}
       </div>
       <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
         <div>
@@ -323,8 +323,8 @@
                   data-bs-target="#auditBody"
                   aria-expanded="false">
             <span class="me-2 text-primary">
-              <RdwIcon value="bi-clock-history" />
-              {% trans %}Audit Log{% endtrans %}
+              <RdwIcon value="bi-clock-history" class="me-1" />
+              {%- trans %}Audit Log{% endtrans %}
             </span>
             <span class="text-muted small fw-normal">{% trans %}Recent activity for this user{% endtrans %}</span>
           </button>
@@ -363,7 +363,7 @@
       <cf:Field :field="delete_form.username" :value="form.username.data" />
       <p class="text-muted small mb-0">
         <RdwIcon value="bi-exclamation-triangle-fill" class="text-warning me-1" />
-        {% trans %}Any backup client using this key will lose access immediately.{% endtrans %}
+        {%- trans %}Any backup client using this key will lose access immediately.{% endtrans %}
       </p>
     </ModalConfirm>
   </form>
@@ -389,7 +389,7 @@
       <cf:Field :field="delete_form.username" :value="form.username.data" />
       <p class="text-muted small mb-0">
         <RdwIcon value="bi-exclamation-triangle-fill" class="text-warning me-1" />
-        {% trans %}Any application using this token will immediately lose access.{% endtrans %}
+        {%- trans %}Any application using this token will immediately lose access.{% endtrans %}
       </p>
     </ModalConfirm>
   </form>

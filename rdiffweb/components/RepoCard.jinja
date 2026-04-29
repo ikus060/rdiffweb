@@ -20,8 +20,8 @@
     {# Alert message #}
     {% if repo.status[0] != 'ok' %}
       <div class="alert alert-{{ status_color }} py-2 px-3 small mb-3">
-        <RdwIcon :value="status_icon" />
-        {{ repo.status[1] }}
+        <RdwIcon :value="status_icon" class="me-1" />
+        {{- repo.status[1] }}
       </div>
     {% endif %}
     <div class="row g-2 mb-3 text-center">
@@ -64,8 +64,8 @@
     <div class="d-flex align-items-center justify-content-between mb-3">
       {# Oldest backup date #}
       <span class="text-muted small">
-        <RdwIcon value="bi-calendar-range" />
-        {% trans %}Oldest:{% endtrans %}
+        <RdwIcon value="bi-calendar-range" class="me-1" />
+        {%- trans %}Oldest:{% endtrans %}
         <strong>
           {% if repo.session_statistics %}
             <time datetime="{{ repo.session_statistics[0].date }}"
@@ -84,12 +84,12 @@
           {% if error_count > 0 %}
             <a class="text-warning fw-semibold"
                href="{{ url_for('logs', repo, date=repo.session_statistics[-1].date) }}">
-              <RdwIcon value="bi-exclamation-circle" />
-              {{ _('%(count)s errors', count=error_count) }}
+              <RdwIcon value="bi-exclamation-circle" class="me-1" />
+              {{- _('%(count)s errors', count=error_count) }}
             </a>
           {% else %}
-            <RdwIcon value="bi-check-circle" class="text-success" />
-            {{ _('%(count)s errors', count=error_count) }}
+            <RdwIcon value="bi-check-circle" class="text-success" class="me-1" />
+            {{- _('%(count)s errors', count=error_count) }}
           {% endif %}
         {% else %}
           {{ mdash }}
@@ -99,18 +99,18 @@
     <div class="d-flex gap-2 mt-auto">
       <a href="{{ url_for('browse', repo) }}"
          class="btn btn-sm btn-outline-primary flex-grow-1">
-        <RdwIcon value="bi-folder2" />
-        {% trans %}Browse Files{% endtrans %}
+        <RdwIcon value="bi-folder2" class="me-1" />
+        {%- trans %}Browse Files{% endtrans %}
       </a>
       <a href="{{ url_for('graphs', repo) }}"
          class="btn btn-sm btn-outline-secondary">
-        <RdwIcon value="bi-lightbulb" />
-        {% trans %}Insights{% endtrans %}
+        <RdwIcon value="bi-lightbulb" class="me-1" />
+        {%- trans %}Insights{% endtrans %}
       </a>
       <a href="{{ url_for('settings', repo) }}"
          class="btn btn-sm btn-outline-secondary">
-        <RdwIcon value="bi-sliders" />
-        {% trans %}Settings{% endtrans %}
+        <RdwIcon value="bi-sliders" class="me-1" />
+        {%- trans %}Settings{% endtrans %}
       </a>
     </div>
   </div>
