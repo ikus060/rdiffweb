@@ -4,4 +4,4 @@
 {% if repo and repo.status[0] != 'ok' %}
   {% do msg.append((repo.status[1] + ' ' + _('The displayed data may be inconsistent.'), 'warning')) %}
 {% endif %}
-{% if msg %}<cf:Flash messages={{ msg }} class="mb-2" />{% endif %}
+{% if msg %}<cf:Flash messages={{ msg }} class="rdw-flash-messages" />{% endif %}

@@ -1,0 +1,4 @@
+.rdw-flash-messages .alert {
+  --bs-alert-border-radius: 0;
+  --bs-alert-margin-bottom: 0;
+}
