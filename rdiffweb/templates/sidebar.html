@@ -75,7 +75,7 @@
               <div class="me-auto text-truncate">
                 <div class="mb-0 fw-semibold text-truncate">{{ active_repo.name }}</div>
                 <div class="text-truncate small">
-                  <RepoStatus repo={{ active_repo }} />
+                  <RepoStatus :repo="active_repo" />
                 </div>
               </div>
               <RdwIcon value="bi-chevron-down" class="fs-4" />

@@ -1,12 +1,34 @@
 {# def repo #}
-{% if repo.status[0] != 'ok' %}
-  {{ repo.status[1] }}
-{% elif repo.last_backup_date %}
-  {% trans %}Last backup {% endtrans %}
-  <time datetime="{{ repo.last_backup_date }}"
-        title="{{ repo.last_backup_date | format_datetime }}">
-    {{ repo.last_backup_date | lastupdated }}
-  </time>
+{% set status = repo.status %}
+{% set status_color = {'ok': 'success', 'in_progress':'info', 'failed': 'danger'}.get(status[0], 'warning') %}
+{% set status_icon = {'ok':'bi-check-circle', 'overdue':'bi-clock-history', 'in_progress':'bi-arrow-repeat bi-spin'}.get(status[0], 'bi-exclamation-triangle-fill') %}
+{% if 'badge' in attrs.classes %}
+  {# Badge #}
+  <span class="badge bg-{{ status_color }}-subtle text-{{ status_color }} border-{{ status_color }}-subtle"
+        title="{{ status[1] }}">
+    <RdwIcon :value="status_icon" class="me-1" />
+    {{- status[2] }}
+  </span>
+{% elif 'alert' in attrs.classes %}
+  {# Alert #}
+  <div class="alert alert-{{ status_color }}">
+    <RdwIcon :value="status_icon" class="me-1" />
+    {{- status[1] }}
+  </div>
 {% else %}
-  {% trans %}Initial backup not completed.{% endtrans %}
+  {# Text #}
+  {% if status[0] != 'ok' %}
+    <span class="text-{{ status_color }}">
+      <RdwIcon :value="status_icon" class="me-1" />
+      {{ status[1] }}
+    </span>
+  {% else %}
+    <span>
+      {% trans %}Last backup {% endtrans %}
+      <time datetime="{{ repo.last_backup_date }}"
+            title="{{ repo.last_backup_date | format_datetime }}">
+        {{ repo.last_backup_date | lastupdated }}
+      </time>
+    </span>
+  {% endif %}
 {% endif %}

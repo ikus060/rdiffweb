@@ -82,8 +82,6 @@
             </tr>
           </thead>
           <tbody>
-            {% set status_class = {"ok": "bg-success", "in_progress": "bg-info", "failed": "bg-danger"} %}
-            {% set status_icon = {"ok": "bi-check-circle", "overdue": "bi-clock-history", "in_progress": "bi-arrow-repeat bi-spin"} %}
             {% for repo in user.repo_objs %}
               <tr>
                 {# Name #}
@@ -105,11 +103,7 @@
                 </td>
                 {# Status #}
                 <td>
-                  <span class="badge {{ status_class.get(repo.status[0], 'bg-warning') }}">
-                    <RdwIcon :value="status_icon.get(repo.status[0], 'bi-exclamation-triangle-fill')"
-                             class="me-1" />
-                    {{- repo.status[2] }}
-                  </span>
+                  <RepoStatus :repo="repo" class="badge" />
                 </td>
                 {# Action #}
                 <td class="text-end pe-3">

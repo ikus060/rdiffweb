@@ -1,8 +1,6 @@
 {# def repo #}
 <div {{ attrs.render() }}>
   {% set mdash = '&mdash;' | safe %}
-  {% set status_color = {'ok': 'success', 'in_progress':'info', 'failed': 'danger'}.get(repo.status[0], 'warning') %}
-  {% set status_icon = {'overdue':'bi-clock-history', 'in_progress':'bi-arrow-repeat bi-spin'}.get(repo.status[0], 'bi-exclamation-triangle-fill') %}
   <div class="card repo-card shadow-sm p-4 h-100">
     <div class="d-flex align-items-start justify-content-between mb-3">
       <div class="d-flex align-items-center gap-2">
@@ -13,22 +11,15 @@
           <span class="text-muted small">{{ repo.notes or mdash }}</span>
         </div>
       </div>
-      <span class="badge bg-{{ status_color }}-subtle text-{{ status_color }} border border-{{ status_color }}-subtle">
-        {{ repo.status[2] }}
-      </span>
+      <RepoStatus :repo="repo" class="badge" />
     </div>
     {# Alert message #}
-    {% if repo.status[0] != 'ok' %}
-      <div class="alert alert-{{ status_color }} py-2 px-3 small mb-3">
-        <RdwIcon :value="status_icon" class="me-1" />
-        {{- repo.status[1] }}
-      </div>
-    {% endif %}
+    {% if repo.status[0] != 'ok' %}<RepoStatus :repo="repo" class="alert py-2 px-3 small mb-3" />{% endif %}
     <div class="row g-2 mb-3 text-center">
       {# Last backup date #}
       <div class="col-4">
         <div class="bg-light rounded-3 p-2">
-          <div class="fw-bold text-truncate {% if status_color != 'success' %}text-{{ status_color }}{% endif %}">
+          <div class="fw-bold text-truncate">
             {% if repo.last_backup_date %}
               <time datetime="{{ repo.last_backup_date }}"
                     title="{{ repo.last_backup_date | format_datetime }}">
