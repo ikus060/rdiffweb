@@ -14,6 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+const DATE_PATTERN = /^(\d\d\d\d)(\-)?(\d\d)(\-)?(\d\d)$/i;
+function rdwToDate(n) {
+    let matches, year, month, day;
+    if (typeof n === "number") {
+        n = new Date(n * 1000); // epoch
+    } else if ((matches = n.match(DATE_PATTERN))) {
+        year = parseInt(matches[1], 10);
+        month = parseInt(matches[3], 10) - 1;
+        day = parseInt(matches[5], 10);
+        return new Date(year, month, day);
+    } else { // str
+        n = isNaN(n) ? new Date(n) : new Date(parseInt(n) * 1000);
+    }
+    return n;
+}
+
 $(document).ready(function () {
     /** Render string as safe value for html. */
     function safe(value) {
@@ -22,29 +38,12 @@ $(document).ready(function () {
 
     /** Date time value */
     $.fn.dataTable.render.datetime = function () {
-
-        const DATE_PATTERN = /^(\d\d\d\d)(\-)?(\d\d)(\-)?(\d\d)$/i;
-        function toDate(n) {
-            let matches, year, month, day;
-            if (typeof n === "number") {
-                n = new Date(n * 1000); // epoch
-            } else if ((matches = n.match(DATE_PATTERN))) {
-                year = parseInt(matches[1], 10);
-                month = parseInt(matches[3], 10) - 1;
-                day = parseInt(matches[5], 10);
-                return new Date(year, month, day);
-            } else { // str
-                n = isNaN(n) ? new Date(n) : new Date(parseInt(n) * 1000);
-            }
-            return n;
-        }
-
         return {
             display: function (data, type, row, meta) {
-                return toDate(data).toLocaleString();
+                return rdwToDate(data).toLocaleString();
             },
             sort: function (data, type, row, meta) {
-                return toDate(data).getTime();
+                return rdwToDate(data).getTime();
             }
         };
     }
@@ -205,7 +204,7 @@ $(document).ready(function () {
             sort: function (data, type, row, meta) {
                 const api = new $.fn.dataTable.Api(meta.settings);
                 const date_idx = api.column('date:name').index();
-                const value = toDate(row[date_idx]);
+                const value = rdwToDate(row[date_idx]);
                 return value ? value.getTime() : 0;
             },
         };

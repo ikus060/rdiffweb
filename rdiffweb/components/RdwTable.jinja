@@ -2,7 +2,7 @@
 {# js cf/vendor/jquery/jquery.min.js, cf/vendor/datatables/js/dataTables.min.js #}
 {% set default_layout = {
   'topStart': {
-    'rowClass': 'dt-layout-row p-2 bg-light',
+    'rowClass': 'dt-layout-row p-2 bg-light border-bottom',
     'features': {'search': {
       'placeholder': search_placeholder or _('Filter...')
     }
@@ -11,6 +11,7 @@
 'topEnd': ['buttons'],
 'bottomStart': ['info'],
 'bottomEnd': {
+  'rowClass': 'dt-layout-row p-2',
   'features': {
     'paging': {
       'firstLast': False,

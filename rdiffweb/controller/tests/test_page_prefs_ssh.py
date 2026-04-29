@@ -34,11 +34,11 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
 
     def _delete_ssh_key(self, fingerprint):
         b = {'action': 'delete', 'fingerprint': fingerprint}
-        self.getPage(PREFS_SSHKEYS, method='POST', body=b)
+        self.getPage(f'{PREFS_SSHKEYS}/delete', method='POST', body=b)
 
     def _add_ssh_key(self, title, key):
         b = {'action': 'add', 'title': title, 'key': key}
-        self.getPage(PREFS_SSHKEYS, method='POST', body=b)
+        self.getPage(f'{PREFS_SSHKEYS}/add', method='POST', body=b)
 
     def test_page(self):
         self.getPage(PREFS_SSHKEYS)
@@ -85,7 +85,9 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
         # Add a duplicate key
         self._add_ssh_key("test@mysshkey", SSHKEY_TEST)
         user.expire()
-        self.assertStatus('200 OK')
+        self.assertStatus(303)
+        self.getPage(PREFS_SSHKEYS)
+        self.assertStatus(200)
         self.assertInBody("Duplicate key.")
         self.assertEqual(1, len(list(user.authorizedkeys)))
 
@@ -98,7 +100,8 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
         # Add key
         self._add_ssh_key("test@mysshkey", "lkjasdfoiuwerlk")
         user.expire()
-        self.assertStatus(200)
+        self.assertStatus(303)
+        self.getPage(PREFS_SSHKEYS)
         self.assertInBody("Invalid SSH key.")
         self.assertEqual(0, len(list(user.authorizedkeys)))
 
@@ -124,7 +127,8 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
         self._add_ssh_key("title" * 52, SSHKEY_TEST)
         user.expire()
         # Then page return with error
-        self.assertStatus('200 OK')
+        self.assertStatus(303)
+        self.getPage(PREFS_SSHKEYS)
         self.assertInBody('Title too long.')
         # Then key is not added
         self.assertEqual(0, len(list(user.authorizedkeys)))
@@ -163,7 +167,8 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
 
         # Delete Key
         self._delete_ssh_key("invalid")
-        user.expire()
+        self.assertStatus(303)
+        self.getPage(PREFS_SSHKEYS)
         self.assertStatus(200)
         self.assertInBody("fingerprint doesn&#39;t exists: invalid")
         self.assertEqual(1, len(list(user.authorizedkeys)))

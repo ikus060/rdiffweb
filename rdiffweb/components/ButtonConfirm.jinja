@@ -1,9 +1,9 @@
-{# def label, target, icon=None, disabled=False #}
+{# def target, label=None, icon=None, disabled=False #}
 <button {{ attrs.render(type="button",
    class="btn",
    data_bs_toggle="modal",
    data_bs_target=target,
    disabled=disabled) }}>
   {% if icon %}<RdwIcon :value="icon" />{% endif %}
-  {{ label }}
+  {% if label %}{{ label }}{% endif %}
 </button>

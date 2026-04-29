@@ -86,7 +86,7 @@
       {% endfor %}
     </div>
     {# Add SSH Key Modal #}
-    <form action="#" method="post">
+    <form method="post" action="{{ url_for('prefs', 'sshkeys', 'add') }}">
       <ModalDialog id="rdw-add-sshkey-modal"
                    class="modal-lg"
                    :title="_('Add SSH key')"
@@ -105,13 +105,12 @@
     </form>
   </div>
   {# Delete Modal #}
-  <form method="post" action="#">
+  <form method="post" action="{{ url_for('prefs', 'sshkeys', 'delete') }}">
     <ModalConfirm id="rdw-delete-sshkey-modal"
                   :title="_('Delete SSH Key')"
                   :message="_('Are you sure you want to delete this SSH Key?')"
                   :submit="_('Delete Key')"
                   :fields="['fingerprint']">
-      <input type="hidden" name="action" value="delete" />
       <p class="text-muted small mb-0">
         <RdwIcon value="bi-exclamation-triangle-fill" class="text-warning me-1" />
         {% trans %}Any backup client using this key will lose access immediately.{% endtrans %}

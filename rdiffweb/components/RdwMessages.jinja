@@ -6,13 +6,13 @@
   {'name':'type', 'visible':False },
   {'name':'body', 'visible':False},
 {'name':'changes', 'title':_('Activity'), 'render':'message_body' }] %}
-{% set layout = {'topStart': False, 'top': False, 'topEnd': False, 'bottomStart': False, 'bottomEnd': False, 'bottom': ['info', 'paging', 'pageLength']} %}
-<RdwTable :data="{{ data }}"
-          :columns="{{ columns }}"
-          :order="{{ [[ 5, 'desc' ]] }}"
-          :state_save="{{ False }}"
-          :searching="{{ False }}"
-          :empty_message="{{ _("No Activity") }}"
-          :info_message="{{ _("Displaying _START_-_END_ of _TOTAL_ most recent activities") }}"
-          :page_length="{{ 10 }}"
-          :layout="{{ layout }}" />
+{% set layout = {'topStart': False, 'top': False, 'topEnd': False, 'bottomStart': ['info'], 'bottomEnd': {'rowClass': 'dt-layout-row p-2', 'features': {'paging': {'firstLast': False}}}} %}
+<RdwTable :data="data"
+          :columns="columns"
+          :order="[[ 5, 'desc' ]]"
+          :state_save="False"
+          :searching="False"
+          :empty_message="_('No Activity') "
+          :info_message="_('Displaying _START_-_END_ of _TOTAL_ most recent activities')"
+          :page_length="10"
+          :layout="layout" />

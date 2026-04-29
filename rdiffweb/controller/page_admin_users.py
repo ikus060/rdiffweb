@@ -15,27 +15,30 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from collections import namedtuple
 
 import cherrypy
 import humanfriendly
+from cherrypy_foundation.flash import flash
+from cherrypy_foundation.tools.i18n import get_timezone_name
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
+from cherrypy_foundation.tools.i18n import list_available_locales, list_available_timezones
+from cherrypy_foundation.url import url_for
+from markupsafe import Markup
 from wtforms import validators, widgets
 from wtforms.fields import BooleanField, Field, HiddenField, PasswordField, SelectField, StringField, TextAreaField
 from wtforms.validators import ValidationError
+
+from rdiffweb.controller.formdb import DbForm
+from rdiffweb.controller.page_pref_sshkeys import DeleteSshForm, SshForm
+from rdiffweb.controller.page_pref_tokens import DeleteTokenForm, TokenForm
+from rdiffweb.core.model import Message, UserObject
 
 try:
     from wtforms.fields import EmailField  # wtform >=3
 except ImportError:
     from wtforms.fields.html5 import EmailField  # wtform <3
 
-from collections import namedtuple
-
-from cherrypy_foundation.flash import flash
-from cherrypy_foundation.tools.i18n import gettext_lazy as _
-from cherrypy_foundation.tools.i18n import list_available_locales
-from cherrypy_foundation.url import url_for
-
-from rdiffweb.controller.formdb import DbForm
-from rdiffweb.core.model import Message, UserObject
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -78,10 +81,18 @@ class SizeField(Field):
                 raise ValidationError(self.gettext('Not a valid file size value'))
 
 
-class UserForm(DbForm):
-    id = HiddenField()
+class NewUserForm(DbForm):
+    fullname = StringField(
+        _('Fullname'),
+        validators=[
+            validators.optional(),
+            validators.length(max=256, message=_('Fullname too long.')),
+            validators.regexp(UserObject.PATTERN_FULLNAME, message=_('Must not contain any special characters.')),
+        ],
+    )
     username = StringField(
         _('Username'),
+        description=_('Username cannot be changed after creation.'),
         validators=[
             validators.data_required(),
             validators.length(max=256, message=_('Username too long.')),
@@ -93,6 +104,31 @@ class UserForm(DbForm):
                 ),
             ),
         ],
+    )
+    password = PasswordField(_('Password'), validators=[validators.data_required(), validators.optional()])
+
+    def populate_obj(self, userobj):
+        # Update fullname
+        userobj.fullname = self.fullname.data or ''
+
+
+class EditUserForm(DbForm):
+    id = HiddenField()
+    username = StringField(
+        _('Username'),
+        description=_('Username cannot be changed.'),
+        validators=[
+            validators.data_required(),
+            validators.length(max=256, message=_('Username too long.')),
+            validators.length(min=3, message=_('Username too short.')),
+            validators.regexp(
+                UserObject.PATTERN_USERNAME,
+                message=_(
+                    'Must start with a letter and contain only letters, numbers, underscores (_), hyphens (-), or periods (.).'
+                ),
+            ),
+        ],
+        render_kw={'readonly': True, 'disabled': True},
     )
     fullname = StringField(
         _('Fullname'),
@@ -111,21 +147,9 @@ class UserForm(DbForm):
         ],
     )
     password = PasswordField(
-        _('Password'),
-        validators=[validators.optional()],
+        _('Password'), validators=[validators.optional()], render_kw={'placeholder': _('Leave blank to keep current')}
     )
-    mfa = SelectField(
-        _('Two-Factor Authentication (2FA)'),
-        coerce=int,
-        choices=[
-            (UserObject.DISABLED_MFA, _("Disabled")),
-            (UserObject.ENABLED_MFA, _("Enabled")),
-        ],
-        default=UserObject.DISABLED_MFA,
-        description=_(
-            "When Two-Factor Authentication (2FA) is enabled for a user, a verification code get sent by email when user login from a new location."
-        ),
-    )
+
     user_root = StringField(
         _('Root directory'),
         description=_("Absolute path defining the location of the repositories for this user."),
@@ -134,7 +158,7 @@ class UserForm(DbForm):
         ],
     )
     role = SelectField(
-        _('User Role'),
+        _('Role'),
         # Support string and integer value.
         coerce=lambda v: UserObject.ROLES[v] if v in UserObject.ROLES else int(v),
         choices=[
@@ -144,10 +168,21 @@ class UserForm(DbForm):
         ],
         default=UserObject.USER_ROLE,
         description=_(
-            "Admin: may browse and delete everything. Maintainer: may browse and delete their own repo. User: may only browser their own repo."
+            Markup(_("<b>Admin:</b> full access. <b>Maintainer:</b> own repos only. <b>User:</b> browse own repos."))
         ),
     )
+    mfa = SelectField(
+        _('Two-Factor Authentication (2FA)'),
+        coerce=int,
+        choices=[
+            (UserObject.DISABLED_MFA, _("Disabled")),
+            (UserObject.ENABLED_MFA, _("Enabled")),
+        ],
+        default=UserObject.DISABLED_MFA,
+        description=_("When enabled, a verification code is sent by email on login from a new location."),
+    )
     lang = SelectField(_('Preferred Language'), default='')
+    timezone = SelectField(_('Preferred timezone'), default='')
     report_time_range = SelectField(
         _('Send Backup report'),
         choices=[
@@ -162,7 +197,7 @@ class UserForm(DbForm):
     disk_quota = SizeField(
         _('Disk space'),
         validators=[validators.optional()],
-        description=_("Users disk spaces (in bytes). Set to 0 to remove quota (unlimited)."),
+        description=Markup(_("Disk space limit in bytes. Set to <code>0</code> for unlimited.")),
     )
     disk_usage = SizeField(
         _('Quota Used'),
@@ -172,17 +207,25 @@ class UserForm(DbForm):
     )
     notes = TextAreaField(
         _('Notes'),
+        description=_('Internal notes visible to administrators only.'),
         default='',
         validators=[validators.length(max=256, message=_('Notes too long.'))],
         render_kw={"placeholder": _("Enter notes about this user.")},
     )
     disabled = BooleanField(
         _('Disabled'),
-        description=_("Disables the account and blocks the user from logging in."),
+        description=_("Blocks the user from logging in without deleting their data."),
     )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # When editing ourself.
+        currentuser = cherrypy.request.currentuser
+        if self.username.object_data == currentuser.username:
+            # Disable MFA
+            self.mfa.render_kw = {'readonly': True, 'disabled': True}
+            # Disable Role
+            self.role.render_kw = {'readonly': True, 'disabled': True}
         # Make quota field readonly if quota is not enabled.
         self.quota_enabled = len(cherrypy.engine.listeners.get('set_disk_quota', [])) > 0
         if not self.quota_enabled:
@@ -193,10 +236,21 @@ class UserForm(DbForm):
         languages = sorted(languages, key=lambda x: x[1])
         languages.insert(0, ('', _('(default)')))
         self.lang.choices = languages
+        # Load available timezone
+        timezones = [
+            (timezone, '%s (%s)' % (timezone, get_timezone_name(timezone))) for timezone in list_available_timezones()
+        ]
+        timezones.insert(0, ('', _('(default)')))
+        self.timezone.choices = timezones
         # Add help text for LDAP user
         cfg = cherrypy.request.app.cfg
         if cfg.ldap_uri:
             self.password.description = _('To create an LDAP user, you must leave the password empty.')
+
+    def validate_username(self, field):
+        # Raise an error if username doesn't matches our user object
+        if field.object_data is not None and field.data != field.object_data:
+            raise ValidationError(_('Cannot change username of and existing user.'))
 
     def validate_role(self, field):
         # Don't allow the user to changes it's "role" state.
@@ -264,30 +318,14 @@ class UserForm(DbForm):
         return return_value
 
 
-class EditUserForm(UserForm):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Make username field read-only
-        self.username.render_kw = {'readonly': True, 'disabled': True}
-
-        # When editing ourself.
-        currentuser = cherrypy.request.currentuser
-        if self.username.object_data == currentuser.username:
-            # Disable MFA
-            self.mfa.render_kw = {'readonly': True, 'disabled': True}
-            # Disable Role
-            self.role.render_kw = {'readonly': True, 'disabled': True}
-
-    def validate_username(self, field):
-        # Raise an error if username doesn't matches our user object
-        if field.data != field.object_data:
-            raise ValidationError(_('Cannot change username of and existing user.'))
-
-
 class DeleteUserForm(DbForm):
     confirm = StringField(_('Confirmation'), validators=[validators.data_required()])
-    username = StringField(_('Username'), validators=[validators.data_required()])
-    delete_data = BooleanField(_("Delete user's data"), default=False)
+    username = HiddenField(_('Username'), validators=[validators.data_required()])
+    delete_data = BooleanField(
+        _("Delete user's data"),
+        default=False,
+        description=_("Also delete this user's backup data (all associated backups will be permanently removed)"),
+    )
 
     def validate_confirm(self, field):
         if self.confirm.data != self.username.data:
@@ -308,35 +346,29 @@ class DeleteUserForm(DbForm):
 @cherrypy.tools.is_admin()
 class AdminUsersPage:
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['GET', 'POST'])
+    @cherrypy.tools.ratelimit(methods=['POST'])
     @cherrypy.tools.jinja2(template="admin_users.html")
-    def index(self):
+    def index(self, **kwargs):
         """
         Show user list
         """
         # Build users page
-        form = UserForm()
-        return {
-            'form': form,
-            'users': UserObject.query.all(),
-        }
-
-    @cherrypy.expose
-    @cherrypy.tools.allow(methods=['GET', 'POST'])
-    @cherrypy.tools.ratelimit(methods=['POST'])
-    @cherrypy.tools.jinja2(template="admin_user_new.html")
-    def new(self, **kwargs):
-        """
-        Show form to create a new user
-        """
-        form = UserForm()
-        if form.validate_on_submit():
-            user = UserObject.add_user(form.username.data)
-            if form.save_to_db(user):
-                flash(_("User added successfully."))
-                raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
+        form = NewUserForm()
+        if form.is_submitted():
+            if form.validate():
+                user = UserObject.add_user(form.username.data, password=form.password.data)
+                if form.save_to_db(user):
+                    flash(_("User added successfully."))
+                    raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', user.id))
+        # Form is invalid -> redirect to the form
         if form.error_message:
             flash(form.error_message, level='error')
-        return {'form': form}
+        return {
+            'form': form,
+            'edit_form': EditUserForm(),
+            'users': UserObject.query.all(),
+        }
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST'])
@@ -356,23 +388,117 @@ class AdminUsersPage:
             raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
         if form.error_message:
             flash(form.error_message, level='error')
-        return {'form': form}
+        return {
+            'form': form,
+            'delete_form': DeleteUserForm(),
+            'ssh_form': SshForm(),
+            'token_form': TokenForm(),
+            'user': user,
+        }
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
-    def delete(self, **kwargs):
+    def add_sshkey(self, username=None, **kwargs):
+        """
+        Add user ssh key.
+        """
+        cfg = cherrypy.tree.apps[''].cfg
+        if cfg.disable_ssh_keys:
+            raise cherrypy.HTTPError(400)
+        userobj = UserObject.get_user(username)
+        if not userobj:
+            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
+        # Validate form method.
+        form = SshForm()
+        if form.validate():
+            if form.save_to_db(userobj):
+                flash(_('SSH Key added.'))
+        if form.error_message:
+            flash(form.error_message, level='error')
+        raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', username))
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
+    @cherrypy.tools.ratelimit(methods=['POST'])
+    def delete_sshkey(self, username=None, **kwargs):
+        """
+        Delete user ssh key.
+        """
+        cfg = cherrypy.tree.apps[''].cfg
+        if cfg.disable_ssh_keys:
+            raise cherrypy.HTTPError(400)
+        userobj = UserObject.get_user(username)
+        if not userobj:
+            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
+        # Validate form method.
+        form = DeleteSshForm()
+        if form.validate():
+            # Get user
+            if form.save_to_db(userobj):
+                flash(_('SSH Key removed.'))
+        if form.error_message:
+            flash(form.error_message, level='error')
+        raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', username))
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
+    @cherrypy.tools.ratelimit(methods=['POST'])
+    def add_token(self, username=None, **kwargs):
+        """
+        Add user token.
+        """
+        cfg = cherrypy.tree.apps[''].cfg
+        if cfg.disable_ssh_keys:
+            raise cherrypy.HTTPError(400)
+        userobj = UserObject.get_user(username)
+        if not userobj:
+            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
+        # Validate form method.
+        form = TokenForm()
+        if form.validate():
+            if form.save_to_db(userobj):
+                flash(_('Access token added.'))
+        if form.error_message:
+            flash(form.error_message, level='error')
+        raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', username))
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
+    @cherrypy.tools.ratelimit(methods=['POST'])
+    def delete_token(self, username=None, **kwargs):
+        """
+        Delete user token.
+        """
+        cfg = cherrypy.tree.apps[''].cfg
+        if cfg.disable_ssh_keys:
+            raise cherrypy.HTTPError(400)
+        userobj = UserObject.get_user(username)
+        if not userobj:
+            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
+        # Validate form method.
+        form = DeleteTokenForm()
+        if form.validate():
+            # Get user
+            if form.save_to_db(userobj):
+                flash(_('Access token revoked.'))
+        if form.error_message:
+            flash(form.error_message, level='error')
+        raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', username))
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
+    @cherrypy.tools.ratelimit(methods=['POST'])
+    def delete(self, username=None, **kwargs):
         """
         Delete a user
         """
+        userobj = UserObject.get_user(username)
+        if not userobj:
+            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
         # Validate form method.
         form = DeleteUserForm()
         if form.validate():
-            # Get user
-            username = form.username.data
-            userobj = UserObject.get_user(username)
-            if not userobj:
-                raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
             if form.save_to_db(userobj):
                 flash(_("User account removed."))
         if form.error_message:
@@ -584,7 +710,7 @@ class AdminApiUsers:
             if user_obj is None:
                 raise cherrypy.NotFound()
         # Validate input data.
-        form = UserForm(obj=user_obj, json=1)
+        form = EditUserForm(obj=user_obj, json=1)
         if form.strict_validate():
             # Create user if required.
             if user_obj is None:

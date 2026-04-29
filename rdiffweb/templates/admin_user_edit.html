@@ -1,41 +1,407 @@
 {% extends 'layout.html' %}
-{% from 'include/panel.html' import panel %}
 {% from 'include/storage_usage.html' import storage_usage %}
 {% from 'include/modal_dialog.html' import button_confirm, modal_confirm %}
 {% set breadcrumbs = breadcrumb_page('admin') + breadcrumb_page('admin_users') + [('#', form.username.data)] %}
 {% block content %}
   <div class="container">
-    {# Delete button #}
-    {{ button_confirm(label=_('Delete User') , class="btn-danger float-end", target="#delete-user-modal", url=url_for('admin', 'users', 'delete'), disabled=(form.username.data == username)) }}
-    {# User Form #}
-    <form method="post" action="{{ url_for() }}">
-      {% call panel(
-        title=_("Edit user"),
-        show_submit_area=True) %}
-        <cf:Fields form={{ form }} />
-        {{ storage_usage(form.disk_usage.data, form.disk_quota.data) }}
-      {% endcall %}
+    <form id="rdw-user-form" method="post" action="#">
+      {# Header #}
+      <div class="d-flex flex-wrap justify-content-between mb-2 sticky-top py-2 bg-white border-bottom"
+           style="top: 56px">
+        <h2>{% trans %}Edit User{% endtrans %}</h2>
+        <div>
+          <button type="button"
+                  class="btn btn-secondary"
+                  onclick="window.history.back();">{% trans %}Cancel{% endtrans %}</button>
+          <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
+        </div>
+      </div>
+      {# General Information #}
+      <div class="card mb-3">
+        <div class="card-header d-flex align-items-center gap-2">
+          <RdwIcon value="bi-person text-primary" />
+          {% trans %}General Information{% endtrans %}
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <cf:Field field={{ form.username }} />
+            <cf:Field field={{ form.fullname }} container-class="col-md-6" />
+            <cf:Field field={{ form.email }} container-class="col-md-6" />
+            <cf:Field field={{ form.lang }} container-class="col-sm-6" />
+            <cf:Field field={{ form.timezone }} container-class="col-sm-6" />
+            <cf:Field field={{ form.report_time_range }} container-class="col-sm-6" />
+            <cf:Field field={{ form.notes }} />
+          </div>
+        </div>
+      </div>
+      {# Access & Security #}
+      <div class="card mb-3">
+        <div class="card-header d-flex align-items-center gap-2">
+          <RdwIcon value="bi-shield-lock text-primary" />
+          {% trans %}Access & Security{% endtrans %}
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <cf:Field field={{ form.password }} />
+            <cf:Field field={{ form.role }} container-class="col-md-6" />
+            <cf:Field field={{ form.mfa }} container-class="col-md-6" />
+            <cf:Field field={{ form.disabled }} container-class="col-md-6" />
+          </div>
+        </div>
+      </div>
+      {# Storage #}
+      <div class="card mb-3">
+        <div class="card-header d-flex align-items-center gap-2">
+          <RdwIcon value="bi-hdd text-primary" />
+          {% trans %}Storage{% endtrans %}
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <cf:Field field={{ form.user_root }} />
+            <cf:Field field={{ form.disk_quota }} container-class="col-md-6" />
+          </div>
+          <div class="border rounded p-4">
+            <StorageUsage :disk_usage="form.disk_usage.data" :disk_quota="form.disk_quota.data" />
+          </div>
+        </div>
+      </div>
     </form>
-    {# Message thread #}
-    <RdwMessages :data="{{ url_for('admin','users', 'messages', form.id.data|string) }}" />
-  </div>
-  {#  Delete User Modal #}
-  {% call modal_confirm(
-    id="delete-user-modal",
-    title=_('Confirm User Deletion'),
-    message=_("Deleting this user will remove their account and access. You can also choose to delete all backup data associated with this user. Are you sure you want to delete this User?"),
-    fields=[],
-    submit=_('Delete User'),
-    confirm_value=form.username.data) %}
-    <div class="form-check mt-3">
-      <input class="form-check-input"
-             type="checkbox"
-             value="checked"
-             name="delete_data">
-      <label class="form-check-label" for="delete_data">
-        {% trans %}Also delete this user's backup data (all associated backups will be permanently removed){% endtrans %}
-      </label>
+    {# Repos #}
+    <div class="card mb-3">
+      <div class="card-header d-flex align-items-center gap-2">
+        <RdwIcon value="bi-archive text-primary" />
+        {% trans %}Repositories{% endtrans %}
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="small ps-3">{% trans %}Repository{% endtrans %}</th>
+              <th class="small">{% trans %}Last backup{% endtrans %}</th>
+              <th class="small">{% trans %}Status{% endtrans %}</th>
+              <th class="small text-end pe-3">{% trans %}Actions{% endtrans %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set status_class = {"ok": "bg-success", "in_progress": "bg-info", "failed": "bg-danger"} %}
+            {% set status_icon = {"ok": "bi-check-circle", "overdue": "bi-clock-history", "in_progress": "bi-arrow-repeat bi-spin"} %}
+            {% for repo in user.repo_objs %}
+              <tr>
+                {# Name #}
+                <td class="ps-3">
+                  <div class="small fw-semibold">{{ repo.display_name }}</div>
+                  <div class="small text-muted font-monospace">{{ repo.full_path.decode(errors='replace') }}</div>
+                </td>
+                {# Last backup date #}
+                <td>
+                  {% if repo.last_backup_date %}
+                    <time datetime="{{ repo.last_backup_date }}"
+                          class="text-muted small"
+                          title="{{ repo.last_backup_date | format_datetime }}">
+                      {{ repo.last_backup_date | lastupdated }}
+                    </time>
+                  {% else %}
+                    &mdash;
+                  {% endif %}
+                </td>
+                {# Status #}
+                <td>
+                  <span class="badge {{ status_class.get(repo.status[0], 'bg-warning') }}">
+                    <RdwIcon :value="status_icon.get(repo.status[0], 'bi-exclamation-triangle-fill')"
+                             class="me-1" />
+                    {{ repo.status[2] }}
+                  </span>
+                </td>
+                {# Action #}
+                <td class="text-end pe-3">
+                  <div class="btn-group btn-group-sm">
+                    {% for page in page_registry.get_repo_nav_pages() %}
+                      <a href="{{ url_for(page, repo) }}"
+                         class="btn btn-sm btn-outline-secondary"
+                         title="{{ page.label }}">
+                        <RdwIcon :value="page.icon" />
+                      </a>
+                    {% endfor %}
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="4" class="text-center p-3">{% trans %}No repositories yet{% endtrans %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
-    <input type="hidden" name="username" value="{{ form.username.data }}" />
-  {% endcall %}
+    {# SSH Keys #}
+    <div class="card mb-3">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span>
+          <RdwIcon value="bi-key text-primary" />
+          {% trans %}SSH Keys{% endtrans %}
+        </span>
+        <button id="rdw-btn-add-sshkey"
+                class="btn btn-sm btn-outline-secondary"
+                data-bs-toggle="modal"
+                data-bs-target="#rdw-add-sshkey-modal">
+          <RdwIcon value="bi-plus me-1" />
+          {%- trans %}Add SSH key{% endtrans %}
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="small ps-3">{% trans %}Title{% endtrans %}</th>
+              <th class="small">{% trans %}Type{% endtrans %}</th>
+              <th class="small">{% trans %}Fingerprint{% endtrans %}</th>
+              <th class="small">{% trans %}Added{% endtrans %}</th>
+              <th class="small text-end pe-3">{% trans %}Actions{% endtrans %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for key in user.authorizedkeys %}
+              <tr>
+                {# Title #}
+                <td class="ps-3">
+                  <span class="small fw-semibold">{{ key.comment }}</span>
+                </td>
+                {# Type #}
+                <td class="small text-nowrap">{{ key.keytype }}</td>
+                {# Fingerprint #}
+                <td class="text-truncate small">
+                  <code>
+                    {{ key.fingerprint }}
+                  </code>
+                </td>
+                {# Added #}
+                <td>
+                  <time datetime="{{ key.creation_time }}"
+                        class="text-muted small"
+                        title="{{ key.creation_time | format_datetime }}">
+                    {{ key.creation_time | lastupdated }}
+                  </time>
+                </td>
+                {# Action #}
+                <td class="text-end pe-3">
+                  <ButtonConfirm class="btn btn-outline-danger btn-sm rdw-btn-delete-sshkey"
+                                 icon="bi-trash"
+                                 :title="_('Delete')"
+                                 target="#rdw-delete-sshkey-modal"
+                                 :data-fingerprint="key.fingerprint" />
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="5" class="text-center p-3">{% trans %}No SSH keys added yet{% endtrans %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {# Tokens #}
+    <div class="card mb-3">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span>
+          <RdwIcon value="bi-key text-primary" />
+          {% trans %}Access Tokens{% endtrans %}
+        </span>
+        <button id="rdw-btn-add-token"
+                class="btn btn-sm btn-outline-secondary"
+                data-bs-toggle="modal"
+                data-bs-target="#rdw-add-token-modal">
+          <RdwIcon value="bi-plus me-1" />
+          {%- trans %}New access token{% endtrans %}
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="small ps-3">{% trans %}Name{% endtrans %}</th>
+              <th class="small">{% trans %}Created{% endtrans %}</th>
+              <th class="small">{% trans %}Last used{% endtrans %}</th>
+              <th class="small">{% trans %}Expires{% endtrans %}</th>
+              <th class="small">{% trans %}Scopes{% endtrans %}</th>
+              <th class="small text-end pe-3">{% trans %}Actions{% endtrans %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for token in user.tokens %}
+              <tr>
+                {# Name #}
+                <td class="ps-3">
+                  <span class="small fw-semibold">{{ token.name }}</span>
+                </td>
+                {# Created #}
+                <td class="small">
+                  <time datetime="{{ token.creation_time }}"
+                        title="{{ token.creation_time | lastupdated }}">
+                    {{ token.creation_time | format_datetime }}
+                  </time>
+                </td>
+                {# Last used #}
+                <td class="text-truncate small">
+                  {% if token.access_time %}
+                    <time datetime="{{ token.access_time }}"
+                          title="{{ token.access_time | format_datetime }}">
+                      {{ token.access_time | lastupdated }}
+                    </time>
+                  {% else %}
+                    <span>{% trans %}Never{% endtrans %}</span>
+                  {% endif %}
+                </td>
+                {# Expires #}
+                <td>
+                  {% if token.expiration_time %}
+                    <time datetime="{{ token.expiration_time }}"
+                          title="{{ token.expiration_time | format_datetime }}">
+                      {{ token.expiration_time | lastupdated }}
+                    </time>
+                  {% else %}
+                    <span>{% trans %}Never{% endtrans %}</span>
+                  {% endif %}
+                </td>
+                {# Scopes #}
+                <td>
+                  {% set scope_table = dict(token_form.scope.choices) %}
+                  {%- for s in token.scope -%}
+                    {% set scope_label = scope_table.get(s, s).split(' - ')[0] %}
+                    {% set scope_help = scope_table.get(s, s).split(' - ')[1] %}
+                    <span class="badge text-bg-primary fw-normal" title="{{ scope_help }}">{{ scope_label }}</span>
+                  {%- else -%}
+                    <span class="badge text-bg-primary fw-normal">{% trans %}Default access{% endtrans %}</span>
+                  {%- endfor -%}
+                </td>
+                {# Action #}
+                <td class="text-end pe-3">
+                  <ButtonConfirm class="btn btn-outline-danger btn-sm rdw-btn-delete-token"
+                                 icon="bi-trash"
+                                 :title="_('Revoke')"
+                                 target="#rdw-delete-token-modal"
+                                 :data-name="token.name" />
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="5" class="text-center p-3">{% trans %}No access token yet{% endtrans %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {# Delete User #}
+    <div class="card mb-3 danger-zone">
+      <div class="card-header d-flex align-items-center gap-2 text-danger">
+        <RdwIcon value="bi-exclamation-triangle-fill" />
+        {% trans %}Danger Zone{% endtrans %}
+      </div>
+      <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <div class="fw-semibold small">{% trans %}Delete this user{% endtrans %}</div>
+          <div class="form-text mt-0">
+            {% trans %}Permanently remove this user account and all associated data. This cannot be undone.{% endtrans %}
+          </div>
+        </div>
+        <ButtonConfirm id="rdw-btn-delete-user"
+                       class="btn-danger"
+                       :label="_('Delete user')"
+                       target="#rdw-delete-user-modal"
+                       :disabled="form.username.data == currentuser.username" />
+      </div>
+    </div>
+    {# Audit log #}
+    <div class="accordion" id="audit-accordion">
+      <div class="accordion-item border shadow-sm">
+        <h2 class="accordion-header">
+          <button class="accordion-button py-3 fw-normal collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#auditBody"
+                  aria-expanded="false">
+            <span class="me-2 text-primary">
+              <RdwIcon value="bi-clock-history" />
+              {% trans %}Audit Log{% endtrans %}
+            </span>
+            <span class="text-muted small fw-normal">{% trans %}Recent activity for this user{% endtrans %}</span>
+          </button>
+        </h2>
+        <div id="auditBody"
+             class="accordion-collapse collapse"
+             data-bs-parent="#auditAccordion"
+             style="">
+          <div class="accordion-body p-0">
+            <RdwMessages :data="{{ url_for('admin','users', 'messages', form.id.data|string) }}" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {# Add SSH Key Modal #}
+  <form method="post" action="{{ url_for('admin', 'users', 'add-sshkey') }}">
+    <ModalDialog id="rdw-add-sshkey-modal"
+                 class="modal-lg"
+                 :title="_('Add SSH key')"
+                 :submit="_('Add SSH key')"
+                 :show="ssh_form.error_message">
+      {% if ssh_form.error_message %}<p class="text-danger">{{ ssh_form.error_message }}</p>{% endif %}
+      <cf:Field :field="delete_form.username" :value="form.username.data" />
+      <cf:Fields form={{ ssh_form }} />
+    </ModalDialog>
+  </form>
+  {# Delete SSH Key #}
+  <form method="post"
+        action="{{ url_for('admin', 'users', 'delete-sshkey') }}">
+    <ModalConfirm id="rdw-delete-sshkey-modal"
+                  :title="_('Delete SSH Key')"
+                  :message="_('Are you sure you want to delete this SSH Key?')"
+                  :submit="_('Delete Key')"
+                  :fields="['fingerprint']">
+      <cf:Field :field="delete_form.username" :value="form.username.data" />
+      <p class="text-muted small mb-0">
+        <RdwIcon value="bi-exclamation-triangle-fill" class="text-warning me-1" />
+        {% trans %}Any backup client using this key will lose access immediately.{% endtrans %}
+      </p>
+    </ModalConfirm>
+  </form>
+  {# Add Token Modal #}
+  <form method="post" action="{{ url_for('admin', 'users', 'add-token') }}">
+    <ModalDialog id="rdw-add-token-modal"
+                 :title="_('Create access token')"
+                 :submit="_('Create access token')"
+                 :show="token_form.error_message">
+      {% if token_form.error_message %}<p class="text-danger">{{ token_form.error_message }}</p>{% endif %}
+      <cf:Field :field="delete_form.username" :value="form.username.data" />
+      <cf:Fields form={{ token_form }} />
+    </ModalDialog>
+  </form>
+  {# Delete Token #}
+  <form method="post"
+        action="{{ url_for('admin', 'users', 'delete-token') }}">
+    <ModalConfirm id="rdw-delete-token-modal"
+                  :title="_('Revoke token')"
+                  :message="_('Are you sure you want to revoke this access token ?')"
+                  :submit="_('Revoke')"
+                  :fields="['name']">
+      <cf:Field :field="delete_form.username" :value="form.username.data" />
+      <p class="text-muted small mb-0">
+        <RdwIcon value="bi-exclamation-triangle-fill" class="text-warning me-1" />
+        {% trans %}Any application using this token will immediately lose access.{% endtrans %}
+      </p>
+    </ModalConfirm>
+  </form>
+  {# Delete User Modal #}
+  <form method="post" action="{{ url_for('admin', 'users', 'delete') }}">
+    <ModalConfirm id="rdw-delete-user-modal"
+                  :title="_('Delete user')"
+                  :message="_('Deleting this user will remove their account and access. You can also choose to delete all backup data associated with this user. Are you sure you want to delete this User?')"
+                  :submit="_('Yes, delete user')"
+                  :confirm-value="form.username.data">
+      <cf:Field :field="delete_form.delete_data" container-class="mt-3" />
+      <cf:Field :field="delete_form.username" :value="form.username.data" />
+    </ModalConfirm>
+  </form>
 {% endblock content %}

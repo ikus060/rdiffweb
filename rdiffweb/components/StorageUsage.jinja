@@ -22,23 +22,25 @@
   </span>
 </div>
 <ProgressBar :value="disk_usage" :max="disk_quota" class="mb-3" />
-<div class="row g-2">
-  {% for repo_name, repo_usage in repos_usage.items() %}
+{% if repos_usage %}
+  <div class="row g-2">
+    {% for repo_name, repo_usage in repos_usage.items() %}
+      <div class="col-6 col-md-3 col-lg-2">
+        <div class="d-flex flex-column gap-1">
+          <div class="small fw-semibold text-nowrap text-truncate">{{ repo_name }}</div>
+          <ProgressBar :value="repo_usage" :max="disk_quota" class="mb-3" height="6" />
+          <div class="text-muted small">{{ repo_usage | filesize }}</div>
+        </div>
+      </div>
+    {% endfor %}
+    <!-- Free space entry -->
+    {% set free_bytes = disk_quota - disk_usage %}
     <div class="col-6 col-md-3 col-lg-2">
       <div class="d-flex flex-column gap-1">
-        <div class="small fw-semibold text-nowrap text-truncate">{{ repo_name }}</div>
-        <ProgressBar :value="repo_usage" :max="disk_quota" class="mb-3" height="6" />
-        <div class="text-muted small">{{ repo_usage | filesize }}</div>
+        <div class="small fw-semibold text-nowrap text-truncate">{{ _("Free") }}</div>
+        <ProgressBar :value="free_bytes" :max="disk_quota" class="mb-3" height="6" color="info" />
+        <div class="text-muted small">{{ free_bytes | filesize }}</div>
       </div>
     </div>
-  {% endfor %}
-  <!-- Free space entry -->
-  {% set free_bytes = disk_quota - disk_usage %}
-  <div class="col-6 col-md-3 col-lg-2">
-    <div class="d-flex flex-column gap-1">
-      <div class="small fw-semibold text-nowrap text-truncate">{{ _("Free") }}</div>
-      <ProgressBar :value="free_bytes" :max="disk_quota" class="mb-3" height="6" color="info" />
-      <div class="text-muted small">{{ free_bytes | filesize }}</div>
-    </div>
   </div>
-</div>
+{% endif %}

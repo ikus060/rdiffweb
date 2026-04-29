@@ -193,8 +193,10 @@ main {
     border-bottom: 1px solid rgba(0, 0, 0, .125)
 }
 
-.notes {
+.rdw-notes {
     white-space: pre-wrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Adjust background on login page. */

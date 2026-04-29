@@ -20,8 +20,12 @@ from unittest.mock import ANY, MagicMock
 
 import cherrypy
 from parameterized import parameterized
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 import rdiffweb.test
+from rdiffweb.controller.tests.test_page_prefs_ssh import SSHKEY_TEST
 from rdiffweb.core.model import UserObject
 
 
@@ -59,24 +63,14 @@ class AdminTest(rdiffweb.test.WebCase):
     def _load_quota(self, userobj):
         return self._quota.get(userobj.username, 0)
 
-    def _add_user(self, username=None, email=None, password=None, user_root=None, role=None, mfa=None, fullname=None):
+    def _add_user(self, username, password, fullname=None):
         b = {}
         b['action'] = 'add'
-        if username is not None:
-            b['username'] = username
-        if email is not None:
-            b['email'] = email
-        if password is not None:
-            b['password'] = password
-        if user_root is not None:
-            b['user_root'] = user_root
-        if role is not None:
-            b['role'] = str(role)
-        if mfa is not None:
-            b['mfa'] = str(mfa)
+        b['username'] = username
+        b['password'] = password
         if fullname is not None:
-            b['fullname'] = str(fullname)
-        self.getPage("/admin/users/new", method='POST', body=b)
+            b['fullname'] = fullname
+        self.getPage("/admin/users/", method='POST', body=b)
 
     def _edit_user(
         self,
@@ -90,6 +84,7 @@ class AdminTest(rdiffweb.test.WebCase):
         lang=None,
         report_time_range=None,
         disabled=None,
+        fullname=None,
     ):
         b = {}
         b['action'] = 'edit'
@@ -113,6 +108,8 @@ class AdminTest(rdiffweb.test.WebCase):
             b['report_time_range'] = str(report_time_range)
         if disabled is not None:
             b['disabled'] = str(disabled)
+        if fullname is not None:
+            b['fullname'] = str(fullname)
         self.getPage("/admin/users/edit/" + username, method='POST', body=b)
 
     def _delete_user(self, username, confirm=None, delete_data=None):
@@ -123,9 +120,14 @@ class AdminTest(rdiffweb.test.WebCase):
             body['delete_data'] = str(delete_data)
         self.getPage("/admin/users/delete", method='POST', body=body)
 
-    def test_add_user_with_role_admin(self):
+    def test_edit_user_with_role_admin(self):
         # When trying to create a new user with role admin
-        self._add_user("admin_role", "admin_role@test.com", "pr3j5Dwi", "/home/", UserObject.ADMIN_ROLE)
+        self._add_user(
+            "admin_role",
+            "pr3j5Dwi",
+        )
+        self.assertStatus(303)
+        self._edit_user("admin_role", "admin_role@test.com", "pr3j5Dwi", "/home/", UserObject.ADMIN_ROLE)
         # Then page return success
         self.assertStatus(303)
         # Then database is updated
@@ -134,49 +136,59 @@ class AdminTest(rdiffweb.test.WebCase):
         # Then notification was raised
         self.listener.user_added.assert_called_once_with(userobj)
 
-    def test_add_user_with_role_maintainer(self):
-        self._add_user("maintainer_role", "maintainer_role@test.com", "pr3j5Dwi", "/home/", UserObject.MAINTAINER_ROLE)
+    def test_edit_user_with_role_maintainer(self):
+        self._add_user(
+            "maintainer_role",
+            "pr3j5Dwi",
+        )
+        self.assertStatus(303)
+        self._edit_user("maintainer_role", "maintainer_role@test.com", "pr3j5Dwi", "/home/", UserObject.MAINTAINER_ROLE)
         self.assertStatus(303)
         self.assertEqual(UserObject.MAINTAINER_ROLE, UserObject.get_user('maintainer_role').role)
 
-    def test_add_user_with_role_user(self):
-        self._add_user("user_role", "user_role@test.com", "pr3j5Dwi", "/home/", UserObject.USER_ROLE)
+    def test_edit_user_with_role_user(self):
+        self._add_user(
+            "user_role",
+            "pr3j5Dwi",
+        )
+        self.assertStatus(303)
+        self._edit_user("user_role", "user_role@test.com", "pr3j5Dwi", "/home/", UserObject.USER_ROLE)
         self.assertStatus(303)
         self.assertEqual(UserObject.USER_ROLE, UserObject.get_user('user_role').role)
 
-    def test_add_user_with_invalid_role(self):
+    def test_edit_user_with_invalid_role(self):
         # When trying to create a new user with an invalid role
-        self._add_user("invalid", "invalid@test.com", "pr3j5Dwi", "/home/", 'invalid')
+        self._add_user(
+            "invalid",
+            "pr3j5Dwi",
+        )
+        self.assertStatus(303)
+        self._edit_user("invalid", "invalid@test.com", "pr3j5Dwi", "/home/", 'invalid')
         # Then an error message is displayed to the user
         self.assertStatus(200)
         self.assertInBody('Role: Invalid Choice: could not coerce')
         # Then listener are not called
-        self.listener.user_added.assert_not_called()
+        self.listener.user_updated.assert_not_called()
 
         # When trying to create a new user with an invalid role (-1)
-        self._add_user("invalid", "invalid@test.com", "pr3j5Dwi", "/home/", -1)
+        self._edit_user("invalid", "invalid@test.com", "pr3j5Dwi", "/home/", -1)
         # Then an error message is displayed to the user
         self.assertStatus(200)
-        self.assertInBody('User Role: Not a valid choice')
+        self.assertInBody('Role: Not a valid choice')
         # Then listener are not called
-        self.listener.user_added.assert_not_called()
+        self.listener.user_updated.assert_not_called()
 
     def test_add_edit_delete(self):
         #  Add user to be listed
         self.listener.user_password_changed.reset_mock()
         self._add_user(
             "test2",
-            "test2@test.com",
             "pr3j5Dwi",
-            "/initial/user/root/",
-            UserObject.USER_ROLE,
-            mfa=UserObject.DISABLED_MFA,
         )
         self.assertStatus(303)
         self.getPage('/admin/users/')
         self.assertInBody("User added successfully.")
         self.assertInBody("test2")
-        self.assertInBody("test2@test.com")
         self.listener.user_added.assert_called_once()
         self.listener.user_password_changed.reset_mock()
         #  Update user
@@ -287,7 +299,7 @@ class AdminTest(rdiffweb.test.WebCase):
         ]
     )
     def test_add_user_with_special_character(self, new_username, expected_valid):
-        self._add_user(new_username, "eric@test.com", "pr3j5Dwi", "/home/", UserObject.USER_ROLE)
+        self._add_user(new_username, "pr3j5Dwi")
         if expected_valid:
             self.assertStatus(303)
             self.getPage('/admin/users/')
@@ -304,7 +316,7 @@ class AdminTest(rdiffweb.test.WebCase):
         """
         Verify failure trying to create user without username.
         """
-        self._add_user("", "test1@test.com", "pr3j5Dwi", "/tmp/", UserObject.USER_ROLE)
+        self._add_user("", "pr3j5Dwi")
         self.assertStatus(200)
         self.assertInBody("Username: This field is required.")
 
@@ -313,68 +325,52 @@ class AdminTest(rdiffweb.test.WebCase):
         Verify failure trying to add the same user.
         """
         # Given a user named `test1`
-        self._add_user("test1", "test1@test.com", "pr3j5Dwi", "/tmp/", UserObject.USER_ROLE)
+        self._add_user("test1", "pr3j5Dwi")
         # When trying to create a new user with the same name
-        self._add_user("test1", "test1@test.com", "pr3j5Dwi", "/tmp/", UserObject.USER_ROLE)
+        self._add_user("test1", "pr3j5Dwi")
         # Then the user list is displayed with an error message.
         self.assertStatus(200)
         self.assertInBody("A user with this username address already exists.")
 
-    def test_add_user_with_invalid_root_directory(self):
+    def test_edit_user_with_invalid_root_directory(self):
         """
         Verify failure to add a user with invalid root directory.
         """
-        try:
-            self._delete_user("test5", confirm="test5")
-        except Exception:
-            pass
-        self._add_user("test5", "test1@test.com", "pr3j5Dwi", "/var/invalid/", UserObject.USER_ROLE)
+        self._add_user("test5", "pr3j5Dwi")
+        self.assertStatus(303)
+        self._edit_user("test5", "test1@test.com", "pr3j5Dwi", "/var/invalid/", UserObject.USER_ROLE)
         self.assertStatus(303)
         self.getPage("/admin/users/")
         self.assertInBody("User added successfully.")
         self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
 
-    def test_add_without_email(self):
-        # When adding a user without email address
-        self._add_user("test2", None, "pr3j5Dwi", "/tmp/", UserObject.USER_ROLE)
-        self.assertStatus(303)
-        # Then user get added.
-        self.getPage("/admin/users/")
-        self.assertInBody("User added successfully.")
-
-    def test_add_without_user_root(self):
-        # When adding user without user_root
-        self._add_user("test6", None, "pr3j5Dwi", None, UserObject.USER_ROLE)
-        self.assertStatus(303)
-        # Then user get added
-        self.getPage("/admin/users/")
-        self.assertInBody("User added successfully.")
-        user = UserObject.get_user('test6')
-        self.assertEqual('', user.user_root)
-
     def test_add_with_username_too_long(self):
         # Given a too long username
         username = "test2" * 52
         # When trying to create the user
-        self._add_user(username, None, "pr3j5Dwi", "/tmp/", UserObject.USER_ROLE)
+        self._add_user(username, "pr3j5Dwi")
         # Then an error is raised
         self.assertStatus(200)
         self.assertInBody("Username too long.")
 
-    def test_add_with_email_too_long(self):
+    def test_edit_with_email_too_long(self):
+        self._add_user("test2", "pr3j5Dwi")
+        self.assertStatus(303)
         # Given a too long username
         email = ("test2" * 50) + "@test.com"
         # When trying to create the user
-        self._add_user("test2", email, "pr3j5Dwi", "/tmp/", UserObject.USER_ROLE)
+        self._edit_user("test2", email, "pr3j5Dwi", "/tmp/", UserObject.USER_ROLE)
         # Then an error is raised
         self.assertStatus(200)
         self.assertInBody("Email too long.")
 
-    def test_add_with_user_root_too_long(self):
+    def test_edit_with_user_root_too_long(self):
+        self._add_user("test2", "pr3j5Dwi")
+        self.assertStatus(303)
         # Given a too long user root
         user_root = "/temp/" * 50
         # When trying to create the user
-        self._add_user("test2", "test@test,com", "pr3j5Dwi", user_root, UserObject.USER_ROLE)
+        self._edit_user("test2", "test@test,com", "pr3j5Dwi", user_root, UserObject.USER_ROLE)
         # Then an error is raised
         self.assertStatus(200)
         self.assertInBody("Root directory too long.")
@@ -383,7 +379,18 @@ class AdminTest(rdiffweb.test.WebCase):
         # Given a too long user root
         fullname = "fullname" * 50
         # When trying to create the user
-        self._add_user("test2", "test@test,com", "pr3j5Dwi", "/tmp/", UserObject.USER_ROLE, fullname=fullname)
+        self._add_user("test2", "test@test,com", fullname=fullname)
+        # Then an error is raised
+        self.assertStatus(200)
+        self.assertInBody("Fullname too long.")
+
+    def test_edit_with_fullname_too_long(self):
+        self._add_user("test2", "test@test,com")
+        self.assertStatus(303)
+        # Given a too long user root
+        fullname = "fullname" * 50
+        # When trying to create the user
+        self._edit_user("test2", "test@test,com", "pr3j5Dwi", "/tmp/", UserObject.USER_ROLE, fullname=fullname)
         # Then an error is raised
         self.assertStatus(200)
         self.assertInBody("Fullname too long.")
@@ -391,8 +398,9 @@ class AdminTest(rdiffweb.test.WebCase):
     def test_delete_user_with_delete_data(self):
         # Given a user with data
         admin = UserObject.get_user(self.USERNAME)
-        self._add_user('my-user', user_root=admin.user_root)
-        myuser = UserObject.get_user('my-user')
+        myuser = UserObject.add_user('my-user', user_root=admin.user_root).add()
+        myuser.refresh_repos()
+        myuser.commit()
         self.assertTrue(myuser.repo_objs)
         self.assertTrue(os.listdir(admin.user_root))
         # When deleting the user with data
@@ -423,7 +431,7 @@ class AdminTest(rdiffweb.test.WebCase):
 
     def test_delete_user_admin(self):
         # Create another admin user
-        self._add_user('admin2', '', 'pr3j5Dwi', '', UserObject.ADMIN_ROLE)
+        UserObject.add_user('admin2', 'pr3j5Dwi', role=UserObject.ADMIN_ROLE).add().commit()
         self.getPage("/logout", method="POST")
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
@@ -626,6 +634,163 @@ class AdminTest(rdiffweb.test.WebCase):
         self.assertFalse(user.disabled)
         self.assertEqual(user.status, '')
 
+    def test_add_user_selenium(self):
+        # Given admin user is authenticated
+        with self.selenium() as driver:
+            # When adding a new user
+            driver.get(self.baseurl + '/admin/users/')
+            self.assertFalse(driver.get_log('browser'))
+            add_btn = driver.find_element('css selector', '#rdw-btn-add-user')
+            add_btn.click()
+            modal = driver.find_element('css selector', '#rdw-add-user-modal')
+            fullname = modal.find_element('css selector', 'input[name="fullname"]')
+            fullname.send_keys('Olivia Benett')
+            username = modal.find_element('css selector', 'input[name="username"]')
+            username.send_keys('olivia')
+            password = modal.find_element('css selector', 'input[name="password"]')
+            password.send_keys('test123')
+            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            # Then page get reloaded
+            WebDriverWait(driver, 10).until(EC.staleness_of(submit_btn))
+            # Then user get created
+            user = UserObject.get_user('olivia')
+            self.assertEqual('Olivia Benett', user.fullname)
+            self.assertTrue(user.validate_password('test123'))
+
+    def test_edit_user_selenium(self):
+        user = UserObject.add_user('olivia', 'test123').add().commit()
+        # Given admin user is authenticated
+        with self.selenium() as driver:
+            # When adding editing a user
+            driver.get(self.baseurl + '/admin/users/edit/olivia')
+            self.assertFalse(driver.get_log('browser'))
+            form = driver.find_element('css selector', '#rdw-user-form')
+            fullname = form.find_element('css selector', 'input[name="fullname"]')
+            fullname.send_keys('Olivia Benett')
+            email = form.find_element('css selector', 'input[name="email"]')
+            email.send_keys('olivia@example.com')
+            submit_btn = form.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            # Then page get reloaded
+            WebDriverWait(driver, 10).until(EC.staleness_of(submit_btn))
+            # Then user get created
+            user.expire()
+            self.assertEqual('Olivia Benett', user.fullname)
+            self.assertEqual('olivia@example.com', user.email)
+
+    def test_delete_user_selenium(self):
+        user = UserObject.add_user('olivia', 'test123').add().commit()
+        # Given admin user is authenticated
+        with self.selenium() as driver:
+            # When deleting a user
+            driver.get(self.baseurl + '/admin/users/edit/olivia')
+            self.assertFalse(driver.get_log('browser'))
+            delete_btn = driver.find_element('css selector', '#rdw-btn-delete-user')
+            ActionChains(driver).scroll_to_element(delete_btn).perform()
+            delete_btn.click()
+            modal = driver.find_element('css selector', '#rdw-delete-user-modal')
+            confirm = modal.find_element('css selector', 'input[name="confirm"]')
+            confirm.send_keys('olivia')
+            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            # Then page get reloaded
+            WebDriverWait(driver, 10).until(EC.staleness_of(submit_btn))
+            # Then user get deleted
+            user = UserObject.get_user('olivia')
+            self.assertIsNone(user)
+
+    def test_add_sshkey_selenium(self):
+        user = UserObject.add_user('olivia', 'test123').add().commit()
+        self.assertEqual(0, len(user.authorizedkeys))
+        # Given admin user is authenticated
+        with self.selenium() as driver:
+            # When adding ssh key to a user
+            driver.get(self.baseurl + '/admin/users/edit/olivia')
+            self.assertFalse(driver.get_log('browser'))
+            add_btn = driver.find_element('css selector', '#rdw-btn-add-sshkey')
+            ActionChains(driver).scroll_to_element(add_btn).perform()
+            add_btn.click()
+            modal = driver.find_element('css selector', '#rdw-add-sshkey-modal')
+            title = modal.find_element('css selector', 'input[name="title"]')
+            title.send_keys('foo')
+            key = modal.find_element('css selector', 'textarea[name="key"]')
+            key.send_keys(SSHKEY_TEST)
+            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            # Then page get reloaded
+            WebDriverWait(driver, 10).until(EC.staleness_of(submit_btn))
+            # Then SSH Key got added to the user.
+            user.expire()
+            self.assertEqual(1, len(user.authorizedkeys))
+            self.assertEqual('foo', user.authorizedkeys[0].comment)
+
+    def test_delete_sshkey_selenium(self):
+        user = UserObject.add_user('olivia', 'test123').add()
+        user.add_authorizedkey(key=SSHKEY_TEST, comment="foo")
+        user.commit()
+        # Given admin user is authenticated
+        with self.selenium() as driver:
+            # When adding ssh key to a user
+            driver.get(self.baseurl + '/admin/users/edit/olivia')
+            self.assertFalse(driver.get_log('browser'))
+            delete_btn = driver.find_element('css selector', '.rdw-btn-delete-sshkey')
+            ActionChains(driver).scroll_to_element(delete_btn).perform()
+            delete_btn.click()
+            modal = driver.find_element('css selector', '#rdw-delete-sshkey-modal')
+            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            # Then page get reloaded
+            WebDriverWait(driver, 10).until(EC.staleness_of(submit_btn))
+            # Then SSH Key got added to the user.
+            user.expire()
+            self.assertEqual(0, len(user.authorizedkeys))
+
+    def test_add_token_selenium(self):
+        user = UserObject.add_user('olivia', 'test123').add().commit()
+        self.assertEqual(0, len(user.tokens))
+        # Given admin user is authenticated
+        with self.selenium() as driver:
+            # When adding ssh key to a user
+            driver.get(self.baseurl + '/admin/users/edit/olivia')
+            self.assertFalse(driver.get_log('browser'))
+            add_btn = driver.find_element('css selector', '#rdw-btn-add-token')
+            ActionChains(driver).scroll_to_element(add_btn).perform()
+            add_btn.click()
+            modal = driver.find_element('css selector', '#rdw-add-token-modal')
+            name = modal.find_element('css selector', 'input[name="name"]')
+            name.send_keys('foo')
+            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            # Then page get reloaded
+            WebDriverWait(driver, 10).until(EC.staleness_of(submit_btn))
+            # Then SSH Key got added to the user.
+            user.expire()
+            self.assertEqual(1, len(user.tokens))
+            self.assertEqual('foo', user.tokens[0].name)
+
+    def test_delete_token_selenium(self):
+        user = UserObject.add_user('olivia', 'test123').add()
+        user.add_access_token(name='foo')
+        user.commit()
+        self.assertEqual(1, len(user.tokens))
+        # Given admin user is authenticated
+        with self.selenium() as driver:
+            # When adding ssh key to a user
+            driver.get(self.baseurl + '/admin/users/edit/olivia')
+            self.assertFalse(driver.get_log('browser'))
+            delete_btn = driver.find_element('css selector', '.rdw-btn-delete-token')
+            ActionChains(driver).scroll_to_element(delete_btn).perform()
+            delete_btn.click()
+            modal = driver.find_element('css selector', '#rdw-delete-token-modal')
+            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            # Then page get reloaded
+            WebDriverWait(driver, 10).until(EC.staleness_of(submit_btn))
+            # Then SSH Key got added to the user.
+            user.expire()
+            self.assertEqual(0, len(user.tokens))
+
 
 class AdminTestWithoutQuota(rdiffweb.test.WebCase):
     login = True
@@ -635,7 +800,7 @@ class AdminTestWithoutQuota(rdiffweb.test.WebCase):
         self.getPage("/admin/users/edit/admin")
         # Then quota field is readonly
         self.assertStatus(200)
-        self.assertInBody('<input class="form-control" disabled id="disk_quota" name="disk_quota" readonly')
+        self.assertInBody('disabled id="disk_quota" name="disk_quota" readonly')
 
 
 class AdminApiUsersTest(rdiffweb.test.WebCase):

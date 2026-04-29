@@ -23,8 +23,9 @@ user home.
 import cherrypy
 from cherrypy_foundation.flash import flash
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
+from cherrypy_foundation.url import url_for
 from wtforms import validators
-from wtforms.fields import HiddenField, StringField
+from wtforms.fields import StringField
 from wtforms.validators import ValidationError
 from wtforms.widgets.core import TextArea
 
@@ -42,7 +43,6 @@ def validate_key(unused_form, field):
 
 
 class SshForm(DbForm):
-    action = HiddenField(default="add")
     title = StringField(
         _('Key Name'),
         description=_('Give this key a recognizable name so you can identify it later.'),
@@ -72,7 +72,6 @@ class SshForm(DbForm):
 
 
 class DeleteSshForm(DbForm):
-    action = HiddenField(default="delete")
     fingerprint = StringField('Fingerprint', validators=[validators.data_required()])
 
     def is_submitted(self):
@@ -95,27 +94,54 @@ class PagePrefSshKeys:
         """
         currentuser = cherrypy.serving.request.currentuser
         cfg = cherrypy.tree.apps[''].cfg
-        # Handle action
-        form = SshForm()
-        delete_form = DeleteSshForm()
-        if not cfg.disable_ssh_keys:
-            if form.validate_on_submit():
-                if form.save_to_db(currentuser):
-                    raise cherrypy.HTTPRedirect("")
-            elif delete_form.validate_on_submit():
-                if delete_form.save_to_db(currentuser):
-                    raise cherrypy.HTTPRedirect("")
-            if form.error_message:
-                flash(form.error_message, level='warning')
-            if delete_form.error_message:
-                flash(delete_form.error_message, level='warning')
         # Get SSH keys if file exists.
         params = {
             'disable_ssh_keys': cfg.disable_ssh_keys,
-            'form': form,
+            'form': SshForm(),
             'sshkeys': currentuser.authorizedkeys,
         }
         return params
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
+    @cherrypy.tools.ratelimit(methods=['POST'])
+    def add(self, **kwargs):
+        """
+        Add user ssh key.
+        """
+        cfg = cherrypy.tree.apps[''].cfg
+        if cfg.disable_ssh_keys:
+            raise cherrypy.HTTPError(400)
+        currentuser = cherrypy.serving.request.currentuser
+        # Validate form method.
+        form = SshForm()
+        if form.validate():
+            if form.save_to_db(currentuser):
+                flash(_('SSH Key added.'))
+        if form.error_message:
+            flash(form.error_message, level='error')
+        raise cherrypy.HTTPRedirect(url_for('prefs', 'sshkeys'))
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
+    @cherrypy.tools.ratelimit(methods=['POST'])
+    def delete(self, **kwargs):
+        """
+        Delete user ssh key.
+        """
+        cfg = cherrypy.tree.apps[''].cfg
+        if cfg.disable_ssh_keys:
+            raise cherrypy.HTTPError(400)
+        currentuser = cherrypy.serving.request.currentuser
+        # Validate form method.
+        form = DeleteSshForm()
+        if form.validate():
+            # Get user
+            if form.save_to_db(currentuser):
+                flash(_('SSH Key removed.'))
+        if form.error_message:
+            flash(form.error_message, level='error')
+        raise cherrypy.HTTPRedirect(url_for('prefs', 'sshkeys'))
 
 
 @cherrypy.expose

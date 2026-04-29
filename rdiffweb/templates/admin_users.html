@@ -1,89 +1,158 @@
 {% extends 'layout.html' %}
 {% set breadcrumbs = breadcrumb_page('admin') +  breadcrumb_page(self) %}
-{% macro btn(url, label, icon) %}
-  <a class="btn btn-secondary"
-     href="{{ url }}"
-     aria-label="{{ label }}"
-     data-bs-toggle="tooltip"
-     data-bs-placement="top"
-     title="{{ label }}"
-     role="button">
-    <RdwIcon :value="{{ icon }}" />
-  </a>
+{% macro count_badge(value) %}
+  <span class="badge rounded-pill bg-opacity-10 {{ 'bg-primary text-primary' if value > 0 else 'bg-secondary text-secondary' }}">
+    {{ value }}
+  </span>
 {% endmacro %}
 {% block content %}
-  {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
-  <a class="btn btn-success mb-2"
-     href="{{ url_for('admin', 'users', 'new') }}">{% trans %}Add user{% endtrans %}</a>
+  {# Header #}
+  <div class="d-flex flex-wrap justify-content-between mb-2">
+    <h2>
+      <RdwIcon value="bi-people" class="me-1" />
+      {%- trans %}Users{% endtrans %}
+    </h2>
+    <div>
+      <button id="rdw-btn-add-user"
+              type="button"
+              class="btn btn-primary mb-2"
+              data-bs-toggle="modal"
+              data-bs-target="#rdw-add-user-modal">
+        <RdwIcon value="bi-person-plus" class="me-1" />
+        {%- trans %}Add user{% endtrans %}
+      </button>
+    </div>
+  </div>
   <!-- Users View -->
   {% set buttons = [
-      {'text': _('Admins'), 'extend': 'filter', 'column': 2, 'search': 'admin'},
-      {'text': _('LDAP'), 'extend': 'filter', 'column': 0, 'search': 'LDAP'},
+      {'text': _('Admins'), 'extend': 'filter', 'column': 2, 'search': '^0', 'regex':True, 'className':'btn-outline-secondary rdw-btn-filter'},
+      {'text': _('Maintainer'), 'extend': 'filter', 'column': 2, 'search': '5', 'className':'btn-outline-secondary rdw-btn-filter'},
+      {'text': _('Users'), 'extend': 'filter', 'column': 2, 'search': '10', 'className':'btn-outline-secondary rdw-btn-filter'},
     ] %}
-  {% set role_class = {0: 'danger', 5: 'warning', 10: 'info'} %}
-  {% set role_choices = dict(form.role.choices) %}
-  {% set mfa_choices = dict(form.mfa.choices) %}
-  {% set report_time_range_choices = dict(form.report_time_range.choices) %}
+  {% set role_class = {0: 'bg-danger text-danger', 5: 'bg-success text-success', 10: 'bg-info text-info'} %}
+  {% set role_choices = dict(edit_form.role.choices) %}
+  {% set mfa_class = {0: 'text-bg-light border', 1: 'bg-success border'} %}
+  {% set mfa_choices = dict(edit_form.mfa.choices) %}
+  {% set status_class = {'':'bg-success bg-opacity-10 text-success', currentuser.STATUS_DISABLED:'bg-secondary bg-opacity-10 text-secondary', currentuser.STATUS_DELETING:'bg-danger'} %}
+  {% set status_label = {'':_('Active'), currentuser.STATUS_DISABLED: _('Disabled'), currentuser.STATUS_DELETING: _('Deleting')} %}
+  {% set report_time_range_choices = dict(edit_form.report_time_range.choices) %}
   <RdwTable :buttons="{{ buttons }}">
     <thead>
       <tr>
-        <th scope="col">{{ form.username.label.text }}</th>
-        <th scope="col">{{ form.fullname.label.text }}</th>
-        <th scope="col">{{ form.email.label.text }}</th>
-        <th scope="col">{{ form.role.label.text }}</th>
-        <th scope="col">{{ form.user_root.label.text }}</th>
-        <th scope="col">{{ form.mfa.label.text }}</th>
-        <th scope="col">{{ form.report_time_range.label.text }}</th>
-        <th scope="col">{{ form.notes.label.text }}</th>
-        <th scope="col" data-sortable="false"></th>
+        <th scope="col">{% trans %}User{% endtrans %}</th>
+        <th scope="col">{{ edit_form.notes.label.text }}</th>
+        <th scope="col">{{ edit_form.role.label.text }}</th>
+        <th scope="col">{{ edit_form.user_root.label.text }}</th>
+        <th scope="col">{% trans %}2FA{% endtrans %}</th>
+        <th scope="col">{% trans %}Repos{% endtrans %}</th>
+        <th scope="col" class="text-nowrap">{% trans %}SSH Keys{% endtrans %}</th>
+        <th scope="col">{% trans %}Tokens{% endtrans %}</th>
+        <th scope="col">{% trans %}Backup report{% endtrans %}</th>
+        <th scope="col">{% trans %}Status{% endtrans %}</th>
+        <th scope="col" data-sortable="false" class="text-end">{% trans %}Action{% endtrans %}</th>
       </tr>
     </thead>
     <tbody>
       {% for user in users %}
-        <tr>
+        <tr {% if user.status == user.STATUS_DISABLED %}class="opacity-50"{% endif %}>
+          {# User - username, fullname, email #}
           <td>
-            <a href="{{ url_for('admin','users','edit', user.username) }}">{{ user.username }}</a>
-            <span class="badge bg-secondary">#{{ user.id }}</span>
-            {% if user.username == username %}
-              <span class="badge bg-success">{% trans %}It's you{% endtrans %}</span>
-            {% endif %}
-            {% if user.status != '' %}
-              <span class="badge bg-danger">
-                {% if user.status == user.STATUS_DISABLED %}
-                  {% trans %}Disabled{% endtrans %}
-                {% elif user.status == user.STATUS_DELETING %}
-                  {% trans %}Deleting{% endtrans %}
-                {% else %}
-                  {{ user.status }}
-                {% endif %}
-              </span>
-            {% endif %}
+            <div>
+              <a class="fw-semibold"
+                 href="{{ url_for('admin','users','edit', user.username) }}">{{ user.username }}</a>
+              <span class="small text-muted">#{{ user.id }}</span>
+            </div>
+            <div class="text-muted small">
+              {% if user.fullname %}
+                {{ user.fullname }}
+              {% else %}
+                &mdash;
+              {% endif %}
+            </div>
+            <div class="text-muted small">
+              {% if user.email %}
+                {{ user.email }}
+              {% else %}
+                &mdash;
+              {% endif %}
+            </div>
           </td>
-          <td>{{ user.fullname }}</td>
-          <td>{{ user.email }}</td>
+          {# Notes #}
           <td>
-            <span class="badge bg-{{ role_class.get(user.role) }}">{{ role_choices.get(user.role) }}</span>
-          </td>
-          <td>
-            {{ user.user_root }}
-            {% if not user.valid_user_root() %}
-              <span class="text-danger">
-                <RdwIcon value="bi-exclamation-triangle" />
-                {% trans %}Root directory not accessible!{% endtrans %}
-              </span>
+            {% if user.notes -%}
+              <span class="rdw-notes small text-muted">{{- user.notes -}}</span>
+            {%- else %}
+              &mdash;
             {% endif %}
           </td>
-          <td>{{ mfa_choices.get(user.mfa) }}</td>
+          {# Role #}
+          <td data-filter="{{ user.role }}">
+            <span class="badge bg-opacity-10 {{ role_class.get(user.role) }}">{{ role_choices.get(user.role) }}</span>
+          </td>
+          {# Root directory #}
+          <td>
+            {% if user.user_root %}
+              <span class="small text-muted font-monospace text-truncate">{{ user.user_root }}</span>
+              {% if not user.valid_user_root() %}
+                <span class="text-danger">
+                  <RdwIcon value="bi-exclamation-triangle" />
+                  {% trans %}Root directory not accessible!{% endtrans %}
+                </span>
+              {% endif %}
+            {% else %}
+              &mdash;
+            {% endif %}
+          </td>
+          {# MFA #}
+          <td class="text-center" data-filter="{{ user.mfa }}">
+            {% if user.mfa %}
+              <RdwIcon value="bi-shield-fill-check"
+                       class="text-success"
+                       title="{{ mfa_choices.get(user.mfa) }}" />
+            {% else %}
+              <RdwIcon value="bi-shield-fill-x"
+                       class="text-danger"
+                       title="{{ mfa_choices.get(user.mfa) }}" />
+            {% endif %}
+          </td>
+          {# Repos Count #}
+          <td class="text-center">{{ count_badge(user.repo_objs | length) }}</td>
+          {# SSH Keys Count #}
+          <td class="text-center">{{ count_badge(user.authorizedkeys | length) }}</td>
+          {# Token Count #}
+          <td class="text-center">{{ count_badge(user.tokens | length) }}</td>
           <td>{{ report_time_range_choices.get(user.report_time_range) }}</td>
-          <td class="notes">{{ user.notes }}</td>
+          {# Status #}
+          <td>
+            <span class="badge {{ status_class.get(user.status) }}">{{ status_label.get(user.status, user.status) }}</span>
+          </td>
+          {# Action #}
           <td class="text-end">
-            <div class="rdw-btn-hover text-nowrap">
-              {{ btn(url_for('admin','users','edit', user.username) , _('Edit'), "bi bi-pencil-square") }}
-              {{ btn(url_for('home', user.username, '/') , _('Overview'), "bi bi-bar-chart-line") }}
+            <div class="btn-group btn-group-sm">
+              <a href="{{ url_for('admin','users','edit', user.username) }}"
+                 class="btn btn-sm btn-outline-secondary"
+                 title="{{ _("Edit") }}">
+                <RdwIcon value="bi-pencil-square" />
+              </a>
+              <a href="{{ url_for('home', user.username, '/') }}"
+                 class="btn btn-sm btn-outline-secondary"
+                 title="{{ _("Overview") }}">
+                <RdwIcon value="bi-bar-chart-line" />
+              </a>
             </div>
           </td>
         </tr>
       {% endfor %}
     </tbody>
   </RdwTable>
+  {# Create User #}
+  <form method="post" action="#">
+    <ModalDialog id="rdw-add-user-modal"
+                 :title="_('Add user')"
+                 :submit="_('Create user')"
+                 :show="form.error_message">
+      {% if form.error_message %}<p class="text-danger">{{ form.error_message }}</p>{% endif %}
+      <cf:Fields form={{ form }} />
+    </ModalDialog>
+  </form>
 {% endblock content %}

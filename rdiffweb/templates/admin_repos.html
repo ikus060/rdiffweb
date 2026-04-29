@@ -70,7 +70,7 @@
           <td data-search="">
             {% if repo.error_log %}{{ _("No") if repo.error_log[-1].is_empty else _('Yes') }}{% endif %}
           </td>
-          <td class="notes">{{ repo.notes }}</td>
+          <td class="rdw-notes">{{ repo.notes }}</td>
           <td data-search="">
             <div class="rdw-btn-hover text-nowrap">
               {% for page in page_registry.get_repo_nav_pages() %}{{ btn(url_for(page, repo) , page.label, page.icon) }}{% endfor %}
