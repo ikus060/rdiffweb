@@ -82,6 +82,10 @@ For more information, visit the [Minarca Website](https://minarca.org).
 
 # Changelog
 
+## 6.2.5 (2026-04-30)
+
+* ridffweb: bump to 2.11.5 to pre-fill login
+
 ## 6.2.4 (2026-04-24)
 
 * rdiffweb: bump to v2.11.4 to fix foreign key error

@@ -28,7 +28,7 @@ classifiers = [
 dependencies = [
     "cryptography",
     "cherrypy>=18.0.0",
-    "rdiffweb==2.11.4",
+    "rdiffweb==2.11.5",
     "requests",
     "snakeoil",
     "tzlocal",
