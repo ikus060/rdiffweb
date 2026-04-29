@@ -53,14 +53,6 @@
     margin-inline-end: .25rem;
 }
 
-/* Show/hide action buttons */
-tr .rdw-btn-hover {
-    opacity: 0;
-}
-tr:hover .rdw-btn-hover, tr.child .rdw-btn-hover {
-    opacity: 1;
-}
-
 /* Re-use variable --bg-light for .table-light */
 .rdw-table .table-light {
     --bs-table-bg: var(--bs-light);
