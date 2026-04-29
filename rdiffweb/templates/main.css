@@ -240,3 +240,13 @@ main {
   text-transform: none;
   vertical-align: -.125em;
 }
+
+/* Special container with max-width */
+.rdw-container {
+    width: 100%;
+    max-width: 860px;
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: calc(var(--bs-gutter-x) * .5);
+    padding-left: calc(var(--bs-gutter-x) * .5);
+}

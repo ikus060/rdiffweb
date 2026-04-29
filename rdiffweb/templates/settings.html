@@ -3,7 +3,7 @@
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
 {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) %}
 {% block content %}
-  <div class="container">
+  <div class="rdw-container">
     <form method="post" action="{{ url_for() }}">
       {# Header #}
       <div class="d-flex flex-wrap justify-content-between mb-2 sticky-top py-2 bg-white border-bottom"
