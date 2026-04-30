@@ -641,6 +641,7 @@ class AdminTest(rdiffweb.test.WebCase):
             driver.get(self.baseurl + '/admin/users/')
             self.assertFalse(driver.get_log('browser'))
             add_btn = driver.find_element('css selector', '#rdw-btn-add-user')
+            ActionChains(driver).scroll_to_element(add_btn).perform()
             add_btn.click()
             modal = driver.find_element('css selector', '#rdw-add-user-modal')
             fullname = modal.find_element('css selector', 'input[name="fullname"]')
