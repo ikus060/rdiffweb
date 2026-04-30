@@ -107,7 +107,7 @@ _codecs = [
 _codecs = [(normalize_encoding(name), label) for name, label in _codecs]
 
 
-class MaxAgeField(SelectField):
+class TimedeltaField(SelectField):
     def __init__(self, *args, **kwargs):
         super().__init__(
             *args,
@@ -171,25 +171,42 @@ class WeekdayField(SelectMultipleField):
 
 
 class RepoSettingsForm(DbForm):
-    maxage = MaxAgeField(
-        _('Inactivity Period'),
-        description=_("A notification is triggered after this many consecutive days with no backup activity."),
+    maxage = TimedeltaField(
+        _('Overdue Period'),
+        description=_("A notification is triggered after this many consecutive days without a backup session."),
         render_kw={
             # Add tooltip to labels.
             "label-class": "rdw-tooltip",
             "label-data-bs-toggle": "tooltip",
-            "label-title": _("Number of days without any backup before a notification is sent."),
+            "label-title": _("Number of days since the last backup session before the backup is considered overdue."),
+        },
+    )
+
+    inactivity = TimedeltaField(
+        _('Inactivity Period'),
+        description=_(
+            "A notification is triggered after this many consecutive days with no file activity during backup sessions."
+        ),
+        render_kw={
+            # Add tooltip to labels.
+            "label-class": "rdw-tooltip",
+            "label-data-bs-toggle": "tooltip",
+            "label-title": _(
+                "Number of days without any new, changed, or deleted files before the backup is considered inactive. Must be greater than or equal to the Overdue Period."
+            ),
         },
     )
 
     ignore_weekday = WeekdayField(
         _('Excluded Days of the Week'),
-        description=_("Selected days are skipped when counting inactivity — useful for excluding non-working days."),
+        description=_(
+            "Selected days are skipped when counting overdue and inactivity — useful for excluding non-working days."
+        ),
         render_kw={
             # Add tooltip to labels.
             "label-class": "rdw-tooltip",
             "label-data-bs-toggle": "tooltip",
-            "label-title": _("Days excluded from the inactivity count (e.g. weekends)."),
+            "label-title": _("Days excluded from the overdue and inactivity count (e.g. weekends)."),
         },
     )
 
@@ -269,8 +286,14 @@ class RepoSettingsForm(DbForm):
         if field.object_data != field.data and not cherrypy.serving.request.currentuser.is_maintainer:
             raise ValidationError(_('Only maintainers or administrators can update data retention settings.'))
 
+    def validate_inactivity(self, field):
+        if self.maxage.data > 0 and field.data > 0:
+            if field.data < self.maxage.data:
+                raise ValidationError(_('Inactivity Period must be greater than or equal to Overdue Period.'))
+
     def populate_obj(self, repo_obj):
         repo_obj.maxage = self.maxage.data
+        repo_obj.inactivity = self.inactivity.data
         repo_obj.ignore_weekday = self.ignore_weekday.data
         repo_obj.keepdays = self.keepdays.data
         repo_obj.encoding = self.encoding.data

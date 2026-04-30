@@ -38,7 +38,10 @@
           {%- trans %}Notification Rules{% endtrans %}
         </div>
         <div class="card-body">
-          <cf:Field :field="form.maxage" />
+          <div class="row">
+            <cf:Field :field="form.maxage" container-class="col-md-6" />
+            <cf:Field :field="form.inactivity" container-class="col-md-6" />
+          </div>
           <hr class="border-top border-dashed my-3">
           <cf:Field :field="form.ignore_weekday" />
         </div>

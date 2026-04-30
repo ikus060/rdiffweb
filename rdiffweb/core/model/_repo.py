@@ -17,7 +17,7 @@ import codecs
 import encodings
 import os
 import sys
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 
 import cherrypy
@@ -28,7 +28,7 @@ from sqlalchemy import and_, case, event, or_, orm
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Session, relationship, validates
 
-from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo, RdiffTime
+from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo
 
 from ._callbacks import add_post_commit_tasks
 from ._message import AUDIT_IGNORE, MessageMixin
@@ -93,7 +93,8 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
     userid = Column('UserID', Integer, ForeignKey("users.UserID"), nullable=False)
     user = relationship('UserObject', back_populates="repo_objs", lazy="joined")
     repopath = Column('RepoPath', String, nullable=False, default='')
-    maxage = Column('MaxAge', SmallInteger, nullable=False, server_default="0")
+    maxage = Column('MaxAge', SmallInteger, nullable=False, server_default="0")  # threshold for overdue
+    inactivity = Column('Inactivity', SmallInteger, nullable=False, server_default="0")  # threshold for inactive
     _encoding_name = Column('Encoding', String, default='')
     _keepdays = Column('keepdays', String, nullable=False, default="-1", info={'foo': 'bar'})
     _ignore_weekday = Column('IgnoreWeekday', Integer, nullable=False, server_default="0")
@@ -273,30 +274,6 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
         value = quote(self.repopath, safe='/').strip('/')
         return f"{self.owner}/{value}"
 
-    def check_activity(self):
-        """
-        Check if the repository is inactive according to maxage.
-        Return None if maxage is undefied.
-        Return True if repository is active.
-        """
-        if self.maxage <= 0:
-            return None
-        # Loop on session statistics to check backup activity.
-        age = 0
-        start = RdiffTime()
-        ignore_weekday = self.ignore_weekday
-        while age < self.maxage:
-            end = start
-            start = end - timedelta(days=1)
-            for stats in self.session_statistics[start:end]:
-                if stats.newfiles > 0 or stats.deletedfiles > 0 or stats.changedfiles > 0:
-                    # Activity found !
-                    return True
-            # Only increase age if weekday is not ignored.
-            if start.weekday() not in ignore_weekday:
-                age += 1
-        return False
-
     @property
     def ignore_weekday(self):
         """
@@ -315,19 +292,98 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
         else:
             self._ignore_weekday = sum([1 << idx for idx in range(0, 7) if idx in value])
 
+    def _count_active_days(self, start: datetime, end: datetime) -> int:
+        """Count non-ignored days between start and end."""
+        total_days = (end - start).days
+        active_weekdays = 7 - len(self.ignore_weekday)
+        full_weeks, remaining_days = divmod(total_days, 7)
+
+        active_days = full_weeks * active_weekdays
+        for i in range(remaining_days):
+            day = (start + timedelta(days=i)).weekday()
+            if day not in self.ignore_weekday:
+                active_days += 1
+        return active_days
+
+    def _is_overdue(self):
+        """
+        Return True if no backup session found within `maxage` days, skipping ignored weekdays.
+        Return None if maxage is not configured.
+        """
+        if self.maxage <= 0:
+            return None
+
+        last_backup_date = self.last_backup_date
+        if last_backup_date is None:
+            return True
+
+        now = datetime.now(tz=timezone.utc)
+
+        # Quick check: if raw elapsed days < maxage, cannot be overdue
+        if (now - last_backup_date).days < self.maxage:
+            return False
+
+        return self._count_active_days(last_backup_date, now) >= self.maxage
+
+    def _is_inactive(self):
+        """
+        Return True if lastest backup session doesn't contains any activity.
+        """
+        if self.maxage <= 0 or self.inactivity < self.maxage:
+            return None
+
+        now = datetime.now(tz=timezone.utc)
+        cutoff = now - timedelta(days=self.inactivity)
+
+        if not self.session_statistics:
+            return None
+
+        # Use slice to get sessions within the inactivity window
+        recent_sessions = self.session_statistics[cutoff:now]
+
+        if not recent_sessions:
+            return None  # No sessions in window, let _is_overdue handle it
+
+        # Filter out ignored weekdays
+        active_sessions = [s for s in recent_sessions if s.date.weekday() not in self.ignore_weekday]
+
+        if not active_sessions:
+            return None
+
+        # Check if any session has file activity
+        for stats in active_sessions:
+            if stats.newfiles > 0 or stats.deletedfiles > 0 or stats.changedfiles > 0:
+                return False  # Found activity
+
+        return True  # Sessions exist but no activity
+
     @property
     def status(self):
         """
         This implementation merge the database status with the on-disk status.
         """
-        # TODO Complete this to return "overdue"
+        # Deleting takes priority
+        if self._status == RepoObject.STATUS_DELETING:
+            return (RepoObject.STATUS_DELETING, _("Deletion in progress..."), _('Deleting'))
+
         try:
-            if self._status == RepoObject.STATUS_DELETING:
-                return (RepoObject.STATUS_DELETING, _("Deletion in progress..."), _('Deleting'))
-            return RdiffRepo.status.__get__(self, self)
+            # Get base filesystem status
+            repo_status = RdiffRepo.status.__get__(self, self)
+            if repo_status[0] != 'ok':
+                return repo_status
         except Exception:
             cherrypy.log('unexpected error trying to get repo status', traceback=True)
             return ('failed', _("Unable to retrieve the backup status. Please try again later."), _("Broken"))
+
+        # Check overdue
+        if self._is_overdue():
+            return ('overdue', _('Last backup is older than %s days.') % self.maxage, _('Overdue'))
+
+        # Check inactive
+        if self._is_inactive():
+            return ('inactive', _('No file activity detected in the last %s days.') % self.inactivity, _('Inactive'))
+
+        return repo_status
 
 
 @event.listens_for(Base.metadata, 'after_create')
@@ -346,6 +402,9 @@ def update_repo_schema(target, conn, **kw):
     # Add status column
     if not column_exists(conn, RepoObject._status):
         column_add(conn, RepoObject._status)
+    # Add inactivity column
+    if not column_exists(conn, RepoObject.inactivity):
+        column_add(conn, RepoObject.inactivity)
     # Remove preceding and leading slash (/) generated by previous
     # versions. Also rename '.' to ''
     result = (

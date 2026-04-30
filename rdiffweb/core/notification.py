@@ -275,8 +275,10 @@ class NotificationPlugin(SimplePlugin):
                 # Identify the repository without activities using the backup statistics.
                 old_repos = [
                     repo
-                    for repo in RepoObject.query.filter(RepoObject.user == userobj, RepoObject.maxage > 0)
-                    if not repo.check_activity()
+                    for repo in RepoObject.query.filter(
+                        RepoObject.user == userobj, or_(RepoObject.maxage > 0, RepoObject.inactivity > 0)
+                    )
+                    if repo.status[0] != 'ok'
                     if now.weekday not in repo.ignore_weekday
                 ]
                 # Check user's disk usage
