@@ -1,6 +1,4 @@
 {# def disk_usage, disk_quota, repos_usage={} #}
-{% set used_pct = ((disk_usage / disk_quota) * 100) | round(1) if disk_quota else 0 %}
-{% set free_pct = (100 - used_pct) | round(1) %}
 {# Space used by individual repos #}
 {% set total_repos_usage = repos_usage.values() | sum %}
 {# Remaining space used by backup history (snapshots, deduplication, etc.) #}
