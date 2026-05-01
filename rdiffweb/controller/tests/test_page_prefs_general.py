@@ -71,7 +71,7 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.getPage(self.PREFS)
         # Then the page is returned
         self.assertStatus(200)
-        self.assertInBody('Account settings')
+        self.assertInBody('Account Settings')
 
     def test_change_username_noop(self):
         # Given an authenticated user

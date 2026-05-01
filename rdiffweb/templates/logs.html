@@ -3,7 +3,7 @@
 {% from 'components/log.html' import pre_code %}
 {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) %}
 {% block content %}
-  <h2>{% trans %}Engine Logs{% endtrans %}</h2>
+  <h2>{{ active_page.label }}</h2>
   <div class="mb-2 d-flex flex-wrap justify-content-between">
     <div class="d-flex">
       <a class="btn {% if file=='backup.log' %}btn-secondary{% endif %}"

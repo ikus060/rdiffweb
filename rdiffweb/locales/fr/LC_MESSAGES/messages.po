@@ -2287,7 +2287,7 @@ msgid "Two-Factor Authentication"
 msgstr "Authentification à deux facteurs"
 
 #: rdiffweb/templates/prefs_general.html:7
-msgid "Account settings"
+msgid "Account Settings"
 msgstr "Paramètres du compte"
 
 #: rdiffweb/templates/prefs_general.html:7

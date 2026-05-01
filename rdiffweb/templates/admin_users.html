@@ -9,8 +9,8 @@
   {# Header #}
   <div class="d-flex flex-wrap justify-content-between mb-2">
     <h2>
-      <RdwIcon value="bi-people" class="me-1" />
-      {%- trans %}Users{% endtrans %}
+      <RdwIcon :value="active_page.icon" class="me-1" />
+      {{ active_page.label }}
     </h2>
     <div>
       <button id="rdw-btn-add-user"

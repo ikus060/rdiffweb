@@ -15,8 +15,8 @@
   {# Header #}
   <div class="d-flex flex-wrap justify-content-between mb-2">
     <h2>
-      <RdwIcon value="repo" class="me-1" />
-      {%- trans %}Repositories{% endtrans %}
+      <RdwIcon :value="active_page.icon" class="me-1" />
+      {{ active_page.label }}
     </h2>
     <div></div>
   </div>
