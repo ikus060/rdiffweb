@@ -2,7 +2,7 @@
 {# js cf/vendor/jquery/jquery.min.js, cf/vendor/datatables/js/dataTables.min.js #}
 {% set default_layout = {
   'topStart': {
-    'rowClass': 'dt-layout-row p-2 bg-light border-bottom',
+    'rowClass': 'dt-layout-row p-2 border-bottom',
     'features': {'search': {
       'placeholder': search_placeholder or _('Filter...')
     }
@@ -35,7 +35,7 @@
     "nav": "btn-group mt-1"
   }
 } %}
-<div class="rdw-table">
+<div {{ attrs.render(class="rdw-table") }}>
   <cf:Datatable :data="data"
                 :columns="columns"
                 :buttons="buttons"
@@ -49,7 +49,7 @@
                 :language="language"
                 :responsive="True"
                 :data-classes="classes | tojson"
-                class="table-hover">
+                class="table-hover align-middle">
     {% if content is defined %}{{ content }}{% endif %}
   </cf:Datatable>
 </div>

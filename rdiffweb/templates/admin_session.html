@@ -19,8 +19,8 @@
       {'text': _('Authenticated'), 'extend': 'filter', 'column': 1, 'search': '^1', 'regex': True},
       {'text': _('Anonymous'), 'extend': 'filter', 'column': 1, 'search': '^0', 'regex': True},
     ] %}
-  <RdwTable :buttons="{{ buttons }}">
-    <thead>
+  <RdwTable :buttons="{{ buttons }}" class="border rounded-2">
+    <thead class="table-light small">
       <tr>
         <th scope="col">{% trans %}Device{% endtrans %}</th>
         <th scope="col">{% trans %}User{% endtrans %}</th>

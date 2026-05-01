@@ -33,8 +33,8 @@
       {'text': _('Interrupted'), 'extend': 'filter', 'column': 5, 'search': 'interrupted', 'className':'btn-outline-warning rdw-btn-filter'},
       {'text': _('In progress'), 'extend': 'filter', 'column': 5, 'search': 'in_progress', 'className':'btn-outline-info rdw-btn-filter'},
     ] %}
-  <RdwTable :buttons="{{ buttons }}">
-    <thead>
+  <RdwTable :buttons="{{ buttons }}" :paging="False" class="border rounded-2">
+    <thead class="table-light small">
       <tr>
         <th scope="col">{% trans %}Repository{% endtrans %}</th>
         <th scope="col">{% trans %}Owner{% endtrans %}</th>

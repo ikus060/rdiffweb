@@ -36,8 +36,8 @@
   {% set status_class = {'':'bg-success bg-opacity-10 text-success', currentuser.STATUS_DISABLED:'bg-secondary bg-opacity-10 text-secondary', currentuser.STATUS_DELETING:'bg-danger'} %}
   {% set status_label = {'':_('Active'), currentuser.STATUS_DISABLED: _('Disabled'), currentuser.STATUS_DELETING: _('Deleting')} %}
   {% set report_time_range_choices = dict(edit_form.report_time_range.choices) %}
-  <RdwTable :buttons="{{ buttons }}">
-    <thead>
+  <RdwTable :buttons="{{ buttons }}" :paging="False" class="border rounded-2">
+    <thead class="table-light small">
       <tr>
         <th scope="col">{% trans %}User{% endtrans %}</th>
         <th scope="col">{{ edit_form.notes.label.text }}</th>

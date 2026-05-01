@@ -24,16 +24,18 @@
           {'name':'size', 'title':_('Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
           {'name':'increment_size', 'title':_('Increment Size'), 'orderable': True, 'render':'filesize', 'type':'num' },
         ] %}
-    <RdwTable :data="{{ url_for('stats', 'data.json', repo, date=date) }}"
-              :columns="{{ columns }}"
-              :buttons="{{ buttons }}"
-              :search_placeholder="{{ _("Filter file changes...") }}"
-              :empty_message="{{ _("Changes are not available") }}"
-              :info_message="{{ _("Displaying _START_-_END_ of _TOTAL_ changes") }}" />
+    <RdwTable :data="url_for('stats', 'data.json', repo, date=date)"
+              :columns="columns"
+              :buttons="buttons"
+              :search-placeholder="_('Filter file changes...')"
+              :empty-message="_('Changes are not available')"
+              :info-message="_('Displaying _START_-_END_ of _TOTAL_ changes')"
+              class="border rounded-2">
+      <thead class="table-light small">
+      </thead>
+    </RdwTable>
   {% else %}
-    <RdwEmpty icon="bi-stopwatch"
-              :title="{{ _("No backup date selected") }}"
-              class="p-5">
+    <RdwEmpty icon="bi-stopwatch" :title="_('No backup date selected')" class="p-5">
       <p>
         {% trans %}Pick a backup date using the dropdown in the top-left corner to see the associated change details.{% endtrans %}
       </p>
