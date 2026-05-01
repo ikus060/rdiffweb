@@ -45,7 +45,7 @@
   {% endif %}
   <div class="row g-3 mb-4">
     <!-- Overall Status -->
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-xxl-3">
       <KpiCard :title="_('Overall Status')"
                :value="overall_label"
                :subtitle="overall_subtitle"
@@ -53,7 +53,7 @@
                :icon="overall_icon" />
     </div>
     <!-- Repositories -->
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-xxl-3">
       <KpiCard :title="_('Repositories')"
                :value="total_repo"
                :subtitle="_('%(ok)s healthy · %(other)s needs attentions', ok=total_ok + total_in_progress, other=total_failed + total_interrupted + total_overdue)"
@@ -61,7 +61,7 @@
                icon="bi-hdd-stack" />
     </div>
     <!-- Last Backup / In Progress -->
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-xxl-3">
       {% if total_in_progress > 0 %}
         <KpiCard :title="_('Backup(s) currently running')"
                  :value="total_in_progress"
@@ -77,7 +77,7 @@
       {% endif %}
     </div>
     <!-- Errors -->
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-xxl-3">
       <KpiCard :title="_('Errors')"
                :value="error_count"
                :subtitle="_('Across all repositories')"
@@ -124,7 +124,9 @@
     {%- trans %}Repositories{% endtrans %}
   </h6>
   <div class="row g-3 mb-4">
-    {% for repo in repo_objs %}<RepoCard :repo="repo" class="col-12 col-xl-6 col-xxl-4" />{% endfor %}
+    {% for repo in repo_objs | sort(attribute='name') %}
+      <RepoCard :repo="repo" class="col-12 col-xl-6 col-xxl-4" />
+    {% endfor %}
   </div>
   {% if repo_objs | length ==0 %}
     <div class="card rounded-3 shadow-sm mb-4">
