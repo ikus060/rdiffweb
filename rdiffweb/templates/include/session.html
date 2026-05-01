@@ -39,3 +39,13 @@
     {% trans %}Unknown{% endtrans %}
   {% endif %}
 {% endmacro %}
+{% macro icon(user_agent) %}
+  {%- set browser_icon_table = {
+    "Firefox": "bi-browser-firefox",
+    "Chrome": "bi-browser-chrome",
+    "Chromium": "bi-browser-chrome",
+    "Edge": "bi-browser-edge",
+    "Safari": "bi-browser-safari"
+  } -%}
+  {{- browser_icon_table.get(browser(user_agent).strip() , 'bi-globe') -}}
+{% endmacro %}

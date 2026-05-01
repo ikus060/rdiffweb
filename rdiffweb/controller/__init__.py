@@ -102,7 +102,7 @@ _pages = [
     Page('admin_user_edit', _('Edit User'), 'admin/users/edit', None, False, 'admin_users'),
     Page('admin_user_new', _('Add User'), 'admin/users/new', None, False, 'admin_users'),
     Page('admin_repos', _('Repositories'), 'admin/repos', 'bi-archive-fill'),
-    Page('admin_session', _('User Sessions'), 'admin/session', 'bi-person-badge'),
+    Page('admin_session', _('User Sessions'), 'admin/session', 'bi-display'),
     Page('admin_activity', _('Activity'), 'admin/activity', 'bi-activity'),
     Page('admin_logs', _('System Logs'), 'admin/logs', 'bi-journal-text'),
     Page('admin_sysinfo', _('System Info'), 'admin/sysinfo', ' bi-info-circle'),

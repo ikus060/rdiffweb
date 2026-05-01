@@ -21,6 +21,7 @@ from cherrypy_foundation.tools.i18n import ugettext as _
 from cherrypy_foundation.tools.sessions_timeout import SESSION_PERSISTENT, SESSION_START_TIME
 from wtforms import validators
 from wtforms.fields import IntegerField, StringField
+from wtforms.validators import ValidationError
 
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.model import SessionObject
@@ -29,6 +30,13 @@ from rdiffweb.core.model import SessionObject
 class RevokeSessionForm(DbForm):
     action = StringField(validators=[validators.regexp('delete')])
     number = IntegerField(validators=[validators.data_required()])
+
+    def populate_obj(self, obj):
+        if not obj:
+            raise ValidationError(_('The given session cannot be removed because it cannot be found.'))
+        if obj.session_id == cherrypy.session.id:
+            raise ValidationError(_('You cannot revoke your current session.'))
+        obj.delete()
 
 
 class PagePrefSession:
@@ -42,20 +50,16 @@ class PagePrefSession:
         currentuser = cherrypy.serving.request.currentuser
         # Delete session on form submit
         form = RevokeSessionForm()
-        if form.validate_on_submit():
-            session = SessionObject.query.filter(
-                SessionObject.username == currentuser.username, SessionObject.number == form.number.data
-            ).first()
-            if not session:
-                flash(_('The given session cannot be removed because it cannot be found.'), level='warning')
-            elif session.session_id == cherrypy.serving.session.id:
-                flash(_('You cannot revoke your current session.'), level='warning')
-            else:
-                session.delete()
-                session.commit()
-                flash(_('The session was successfully revoked.'), level='success')
-        if form.error_message:
-            flash(form.error_message, level='error')
+        if form.is_submitted():
+            if form.validate():
+                session = SessionObject.query.filter(
+                    SessionObject.username == currentuser.username, SessionObject.number == form.number.data
+                ).first()
+                if form.save_to_db(session):
+                    flash(_('The session was successfully revoked.'), level='success')
+            if form.error_message:
+                flash(form.error_message, level='error')
+            raise cherrypy.HTTPRedirect("")
         # Get list of current user's session
         obj_list = SessionObject.query.filter(SessionObject.username == currentuser.username).all()
         current_session_id = cherrypy.serving.session.id

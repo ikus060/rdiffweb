@@ -40,8 +40,9 @@ class AdminSessionTest(rdiffweb.test.WebCase):
         session_number = SessionObject.query.filter(SessionObject.session_id == self.session_id).first().number
         # When trying to revoke current session
         self.getPage(self.PAGE, method='POST', body={'action': 'delete', 'number': str(session_number)})
-        self.assertStatus(200)
+        self.assertStatus(303)
         # Then an error is returned
+        self.getPage(self.PAGE)
         self.assertInBody('You cannot revoke your current session.')
         self.assertEqual(1, len(SessionObject.query.all()))
 
@@ -50,8 +51,9 @@ class AdminSessionTest(rdiffweb.test.WebCase):
         self.assertEqual(1, len(SessionObject.query.all()))
         # When trying to revoke current session
         self.getPage(self.PAGE, method='POST', body={'action': 'delete', 'number': str(34)})
-        self.assertStatus(200)
+        self.assertStatus(303)
         # Then an error is returned
+        self.getPage(self.PAGE)
         self.assertInBody("The given session cannot be removed because it cannot be found.")
         self.assertEqual(1, len(SessionObject.query.all()))
 
@@ -68,8 +70,9 @@ class AdminSessionTest(rdiffweb.test.WebCase):
         session_number = SessionObject.query.filter(SessionObject.session_id == second_session_id).first().number
         # When trying to revoke another user session
         self.getPage(self.PAGE, method='POST', body={'action': 'delete', 'number': str(session_number)})
-        self.assertStatus(200)
+        self.assertStatus(303)
         # Then the session is revoke.
+        self.getPage(self.PAGE)
         self.assertInBody("The session was successfully revoked.")
         self.assertEqual(1, len(SessionObject.query.all()))
 
@@ -84,7 +87,8 @@ class AdminSessionTest(rdiffweb.test.WebCase):
         session_number = SessionObject.query.filter(SessionObject.session_id == second_session_id).first().number
         # When trying to revoke current session
         self.getPage(self.PAGE, method='POST', body={'action': 'delete', 'number': str(session_number)})
-        self.assertStatus(200)
+        self.assertStatus(303)
         # Then the session is removed
+        self.getPage(self.PAGE)
         self.assertInBody("The session was successfully revoked.")
         self.assertEqual(1, len(SessionObject.query.all()))

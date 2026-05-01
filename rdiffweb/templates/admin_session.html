@@ -1,80 +1,125 @@
 {% extends 'layout.html' %}
-{% from 'include/session.html' import browser, os %}
+{% from 'include/session.html' import browser, os, icon %}
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
 {% set breadcrumbs = breadcrumb_page('admin') +  breadcrumb_page(self) %}
 {% block content %}
+  {# Header #}
+  <div class="d-flex flex-wrap justify-content-between mb-2">
+    <h2>
+      <RdwIcon :value="active_page.icon" class="me-1" />
+      {{ active_page.label }}
+    </h2>
+    <div></div>
+  </div>
   <p>
     {% trans %}This is a list of devices that are logged into this application. It may include authenticated and unauthenticated users. You may revoke any sessions that you do not recognize except your current session.{% endtrans %}
   </p>
   {% set buttons = [
-      {'text': _('All'), 'extend': 'reset'},
-      {'text': _('Authenticated'), 'extend': 'filter', 'column': 3, 'search': 1},
-      {'text': _('Anonymous'), 'extend': 'filter', 'column': 3, 'search': 0},
+      {'text': _('All'), 'extend': 'filter', 'column': 1, 'search': ''},
+      {'text': _('Authenticated'), 'extend': 'filter', 'column': 1, 'search': '^1', 'regex': True},
+      {'text': _('Anonymous'), 'extend': 'filter', 'column': 1, 'search': '^0', 'regex': True},
     ] %}
   <RdwTable :buttons="{{ buttons }}">
     <thead>
       <tr>
         <th scope="col">{% trans %}Device{% endtrans %}</th>
-        <th scope="col">{% trans %}IP Address{% endtrans %}</th>
         <th scope="col">{% trans %}User{% endtrans %}</th>
-        <th scope="col" data-visible="false">{% trans %}Authenticated{% endtrans %}</th>
-        <th scope="col">{% trans %}Last accessed{% endtrans %}</th>
-        <th scope="col">{% trans %}Signed in{% endtrans %}</th>
-        <th scope="col">{% trans %}Expiration Time{% endtrans %}</th>
+        <th scope="col">{% trans %}IP Address{% endtrans %}</th>
+        <th scope="col">{% trans %}Last Accessed{% endtrans %}</th>
+        <th scope="col">{% trans %}Signed In{% endtrans %}</th>
+        <th scope="col">{% trans %}Expires{% endtrans %}</th>
         <th scope="col" data-sortable="false">{% trans %}Actions{% endtrans %}</th>
       </tr>
     </thead>
     <tbody>
       {% for session in active_sessions %}
+        {# Device #}
         <tr>
           <td>
-            <span class="list-group-item-heading" title="{{ session.user_agent }}">
-              <strong>{{ browser(session.user_agent) }}</strong>
-              {% trans %}running on{% endtrans %}
-              <strong>{{ os(session.user_agent) }}</strong>
-              {% if session.current %}
-                <span class="badge bg-success">{% trans %}current session{% endtrans %}</span>
-              {% endif %}
-              {% if session.login_persistent %}
-                <span class="badge bg-info">{% trans %}persistent{% endtrans %}</span>
-              {% endif %}
-            </span>
+            <div class="d-flex align-items-center gap-3"
+                 data-bs-toggle="tooltip"
+                 title="{{ session.user_agent }}">
+              <div class="d-flex align-items-center justify-content-center rounded-3 bg-primary bg-opacity-10 text-primary p-2">
+                <RdwIcon :value="icon(session.user_agent)" class="fs-5 bi-fw" />
+              </div>
+              <div>
+                <div>
+                  <span class="fw-semibold me-1">{{ browser(session.user_agent) }}</span>
+                  {% if session.current %}
+                    <span class="badge bg-success rounded-pill px-2 py-1 me-1">{% trans %}current session{% endtrans %}</span>
+                  {% endif %}
+                  {% if session.login_persistent %}
+                    <span class="badge bg-info rounded-pill px-2 py-1 me-1">{% trans %}persistent{% endtrans %}</span>
+                  {% endif %}
+                </div>
+                <div class="text-muted small">{% trans %}on{% endtrans %} {{ os(session.user_agent) }}</div>
+              </div>
+            </div>
           </td>
-          <td>{{ session.ip_address }}</td>
-          <td>
-            {% if session.username %}{{ session.username }}{% endif %}
+          {# User #}
+          <td data-search="{{ 1 if session.username else 0 }}-{{ session.username }}">
+            {% if session.username %}
+              <a href="{{ url_for('home', session.username) }}"
+                 class="badge text-bg-secondary text-decoration-none">{{ session.username }}</a>
+            {% else %}
+              <span class="text-muted">&mdash;</span>
+            {% endif %}
           </td>
-          <td data-search="{{ 1 if session.username else 0 }}">{{ _("Yes") if session.username else _('No') }}</td>
-          <td data-order="{{ session.access_time }}">
+          {# IP Address #}
+          <td class="text-muted small">{{ session.ip_address }}</td>
+          {# Last Accessed #}
+          <td class="text-muted small text-nowrap"
+              data-order="{{ session.access_time }}">
+            <RdwIcon value="bi-clock" class="me-1" />
             <time datetime="{{ session.access_time }}"
                   title="{{ session.access_time | format_datetime }}">
               {{ session.access_time | lastupdated }}
             </time>
           </td>
-          <td data-order="{{ session.start_time }}">
+          <td class="text-muted small text-nowrap"
+              data-order="{{ session.start_time }}">
+            <RdwIcon value="bi-box-arrow-in-right" class="me-1" />
             <time datetime="{{ session.start_time }}"
                   title="{{ session.start_time | format_datetime }}">
               {{ session.start_time | lastupdated }}
             </time>
           </td>
-          <td data-order="{{ session.expiration_time }}">
+          <td class="text-muted small text-nowrap"
+              data-order="{{ session.expiration_time }}">
+            <RdwIcon value="bi-hourglass-split" class="me-1" />
             <time datetime="{{ session.expiration_time }}"
                   title="{{ session.expiration_time | format_datetime }}">
               {{ session.expiration_time | lastupdated }}
             </time>
           </td>
-          <td>
-            {% if not session.current %}
-              {{ button_confirm(label=_('Revoke') , target="#delete-session-modal", action="delete", number=session.number) }}
+          <td class="text-end">
+            {% if session.current %}
+              <button class="btn btn-outline-secondary btn-sm text-nowrap" disabled="">
+                <RdwIcon value="bi-check-circle" class="me-1" />
+                {%- trans %}Current{% endtrans %}
+              </button>
+            {% else %}
+              <button class="btn btn-outline-danger btn-sm rdw-btn-delete-session"
+                      data-bs-toggle="modal"
+                      data-bs-target="#rdw-delete-session-modal"
+                      data-number="{{ session.number }}">
+                <RdwIcon value="bi-x-circle" class="me-1" />
+                {%- trans %}Revoke{% endtrans %}
+              </button>
             {% endif %}
           </td>
         </tr>
       {% endfor %}
     </tbody>
   </RdwTable>
-  {{ modal_confirm(id='delete-session-modal',
-    title=_('Revoke Session') ,
-  message=_("Are you sure? The device will be signed out from the application."),
-  fields=['action', 'number'],
-  submit=_('Revoke')) }}
+  {# Delete Modal #}
+  <form method="post" action="#">
+    <ModalConfirm id="rdw-delete-session-modal"
+                  :title="_('Revoke Session')"
+                  :message="_('Are you sure? The device will be signed out from the application.')"
+                  :submit="_('Revoke')"
+                  :fields="['number']">
+      <input type="hidden" name="action" value="delete" />
+    </ModalConfirm>
+  </form>
 {% endblock %}

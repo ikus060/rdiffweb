@@ -1,22 +1,15 @@
 {% extends 'layout.html' %}
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
-{% from 'include/session.html' import browser, os %}
+{% from 'include/session.html' import browser, os, icon %}
 {% set breadcrumbs = breadcrumb_page('prefs') +  breadcrumb_page(self) %}
 {% block content %}
   <div class="rdw-container">
-    <div class="d-flex  justify-content-between">
-      <h3>{% trans %}Browser Sessions{% endtrans %}</h3>
+    <div class="mb-2 py-2 border-bottom">
+      <h2>{{ active_page.label }}</h2>
     </div>
     <p>
       {% trans %}This is a list of devices currently logged into your account. You may revoke any session you do not recognise — except your current one. {% endtrans %}
     </p>
-    {% set browser_icon_table = {
-      "Firefox": "bi-browser-firefox",
-      "Chrome": "bi-browser-chrome",
-      "Chromium": "bi-browser-chrome",
-      "Edge": "bi-browser-edge",
-      "Safari": "bi-browser-safari"
-    } %}
     <!-- List of sessions-->
     <div class="d-flex flex-column gap-3">
       {% for session in active_sessions %}
@@ -27,8 +20,7 @@
               <!-- Left: icon + details -->
               <div class="d-flex gap-3 align-items-start">
                 <div class="rounded-3 bg-primary bg-opacity-10 p-3 flex-shrink-0">
-                  <RdwIcon :value="browser_icon_table.get(browser_name, 'bi-globe')"
-                           class="text-primary fs-3" />
+                  <RdwIcon :value="icon(session.user_agent)" class="text-primary fs-3" />
                 </div>
                 <div>
                   <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
