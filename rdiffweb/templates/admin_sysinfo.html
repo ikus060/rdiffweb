@@ -1,32 +1,71 @@
 {% extends 'layout.html' %}
 {% set breadcrumbs = breadcrumb_page('admin') +  breadcrumb_page(self) %}
 {% block content %}
-  {% set section_items = [
-      (_('Application Version'), [(_('Core Version'), version)] + plugins|d([]) ),
-      (_('Application Config'), cfg.items()),
-      (_('System usage'), hwinfo),
-      (_('Operating System Info'), osinfo),
-      (_('Dependencies Version'), ldapinfo),
-    (_('Python Info'), pyinfo),] %}
-  {% for section_name, items in section_items %}
-    <h3>{{ section_name }}</h3>
-    <div class="table-responsive">
-      <table class="table table-striped">
-        <thead class="visually-hidden">
-          <tr>
-            <th scope="col" width="25%">Description</th>
-            <th scope="col">Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for k, v in items %}
-            <tr>
-              <td width="25%">{{ k }}</td>
-              <td>{{ v }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  <div class="container">
+    <div class="d-flex flex-wrap justify-content-between mb-2">
+      <h2>
+        <RdwIcon :value="active_page.icon" class="me-1" />
+        {{ active_page.label }}
+      </h2>
     </div>
-  {% endfor %}
+    <div class="row g-4">
+      {# Right Column #}
+      <div class="col-lg-6 d-flex flex-column gap-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-white fw-semibold d-flex align-items-center gap-2 border-bottom">
+            <RdwIcon value="bi-gear" />
+            {% trans %}Application Config{% endtrans %}
+          </div>
+          <div class="card-body p-0">
+            <table class="table table-sm table-striped mb-0" style="table-layout:fixed">
+              <tbody>
+                {% for key, value in cfg.items() %}
+                  <tr>
+                    <td>{{ key }}</td>
+                    <td class="mw-0">
+                      <span class="small d-block text-truncate font-monospace"
+                            title="{{ value }}">{{ value }}</span>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {# Left Column #}
+      <div class="col-lg-6 d-flex flex-column gap-4">
+        {% set section_items = [
+                  (_('Application Version'), [(_('Core Version'), version)] + plugins|d([]), 'bi-box-seam'),
+                  (_('System usage'), hwinfo, 'bi-speedometer2'),
+                  (_('Operating System Info'), osinfo, 'bi-pc-display'),
+                  (_('Dependencies'), ldapinfo, 'bi-puzzle'),
+                  (_('Python Info'), pyinfo,  'bi-braces'),
+                ] %}
+        {% for section_name, items, icon in section_items %}
+          <div class="card shadow-sm">
+            <div class="card-header bg-white fw-semibold d-flex align-items-center gap-2 border-bottom">
+              <RdwIcon :value="icon" />
+              {{ section_name }}
+            </div>
+            <div class="card-body p-0">
+              <table class="table table-sm table-striped mb-0" style="table-layout:fixed">
+                <tbody>
+                  {% for key, value in items %}
+                    <tr>
+                      <td>{{ key }}</td>
+                      <td class="mw-0">
+                        <span class="small d-block text-truncate font-monospace"
+                              title="{{ value }}">{{ value }}</span>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 {% endblock %}
