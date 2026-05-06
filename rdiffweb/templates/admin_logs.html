@@ -3,51 +3,68 @@
 {% from 'components/log.html' import pre_code %}
 {% set breadcrumbs = breadcrumb_page('admin') + breadcrumb_page(self) %}
 {% block content %}
-  <div class="row">
-    {% if log_files %}
-      <div class="col-md-3">
-        <ul class="list-group">
-          {% set active_name = name %}
-          {% for name, filename in log_files.items() %}
-            <a href="{{ url_for('admin', 'logs', name=name, limit=limit) }}"
-               class="list-group-item{% if name==active_name %} active{% endif %}">{{ filename.split("/") | last }}</a>
-          {% endfor %}
-        </ul>
-      </div>
-      <div class="col-md-9">
-        {% if data %}
-          {# Show log file data #}
-          <div class="alert alert-info">
-            {% trans %}Notice: To prevent performance issues, only the last {{ limit }} lines of the log files are displayed.{% endtrans %}
-            <a href="{{ url_for('admin', 'logs', 'raw', name=name) }}">
-              <b>
-                <i class="icon icon-download">
-                </i>
-                {% trans %}Show all logs{% endtrans %}
-              </b>
-            </a>
-          </div>
-          {{ pre_code(data) }}
-        {% elif name or date %}
-          {# Log file is empty. #}
-          {% call empty('log', _('Log file empty')) %}
-            <p>{% trans %}This log file is empty. Select another log file to show it's contents.{% endtrans %}</p>
-          {% endcall %}
-        {% else %}
-          {# Log file not selected #}
-          {% call empty('log', _('No log file selected')) %}
-            <p>{% trans %}Select a log file to show it's contents.{% endtrans %}</p>
-          {% endcall %}
-        {% endif %}
-      </div>
-    {% else %}
-      {# Log file not selected #}
-      <div class="col-md-12">
-        {% call empty('log', _('No log file available')) %}
-          <p>{% trans %}The server is not configured to log in any file.{% endtrans %}</p>
-        {% endcall %}
+  <h2>{{ active_page.label }}</h2>
+  {# Log file selector #}
+  <div class="mb-2 d-flex flex-wrap justify-content-between">
+    <div class="d-flex">
+      {% set active_name = name %}
+      {% for name, filename in log_files.items() %}
+        <a href="{{ url_for('admin', 'logs', name=name, limit=limit) }}"
+           class="btn {% if name==active_name %}btn-secondary{% endif %}">{{ filename.split("/") | last }}</a>
+      {% endfor %}
+    </div>
+    <div class="d-flex flex-row flex-grow-1 align-items-start justify-content-end"
+         role="group">
+      {% if data %}
+        <div class="btn-group">
+          {# Scroll down #}
+          <a class="btn btn-outline-secondary"
+             href="#bottom"
+             title="{% trans %}Scroll to bottom{% endtrans %}">
+            <RdwIcon value="bi-arrow-down" />
+          </a>
+          {# Download link #}
+          <a class="btn btn-outline-secondary"
+             href="{{ url_for('admin', 'logs', 'raw', name=name) }}"
+             title="{% trans %}Show complete raw{% endtrans %}">
+            <RdwIcon value="bi-file-earmark-code" />
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  {% if not log_files %}
+    <RdwEmpty icon="log" :title="{{ _("No log file available") }}" class="p-5">
+      <p>{% trans %}The server is not configured to log in any file.{% endtrans %}</p>
+    </RdwEmpty>
+  {% elif data %}
+    {% if data.count('\n') >= 1999 %}
+      <div class="alert alert-info">
+        {% trans %}Notice: To prevent performance issues, only the last 2000 lines of the log are displayed.{% endtrans %}
       </div>
     {% endif %}
-  </div>
-  <!-- /.row -->
+    <RdwLog :data="{{ data }}" />
+    {# Scroll up #}
+    <div class="sticky-bottom float-end p-2">
+      <a href="#top"
+         class="btn btn-outline-secondary bg-white"
+         title="{% trans %}Scroll to top{% endtrans %}">
+        <RdwIcon value="bi-arrow-up" />
+      </a>
+    </div>
+  {% elif name or date %}
+    {# Log file is empty. #}
+    <div class="border-top">
+      <RdwEmpty icon="log" :title="{{ _("Log file empty") }}" class="p-5">
+        <p>{% trans %}This log file is empty. Select another log file to show it's contents.{% endtrans %}</p>
+      </RdwEmpty>
+    </div>
+  {% else %}
+    {# Log file not selected #}
+    <div class="border-top">
+      <RdwEmpty icon="log" :title="{{ _("No log file selected") }}" class="p-5">
+        <p>{% trans %}Select a log file to show it's contents.{% endtrans %}</p>
+      </RdwEmpty>
+    </div>
+  {% endif %}
 {% endblock %}
