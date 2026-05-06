@@ -35,12 +35,11 @@ class AdminActivityTest(rdiffweb.test.WebCase):
             # When getting web page.
             driver.get(self.baseurl + '/admin/activity/')
             # Then the web page contain a datatable
-            driver.find_element('css selector', 'table[data-ajax]')
+            table = driver.find_element('css selector', 'table[data-ajax]')
             # Then the web page is loaded without error.
             self.assertFalse(driver.get_log('browser'))
             # Then page contains system activity
-            driver.implicitly_wait(10)
-            driver.find_element('xpath', "//*[contains(text(), 'Created')]")
+            table.find_element('xpath', "//*[contains(text(), 'New repository')]")
 
     def test_data_json(self):
         # Given a database with system activity

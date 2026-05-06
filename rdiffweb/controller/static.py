@@ -72,13 +72,6 @@ class Static:
                             "5": _("Maintainer"),
                             "10": _("User"),
                         },
-                        "type": {
-                            "new": _('Created by'),
-                            "deleted": _('Deleted by'),
-                            "dirty": _('Modified by'),
-                            "comment": _('Comment by'),
-                            "event": _('Event logged by'),
-                        },
                     },
                     "field": {
                         "_encoding_name": _('File Encoding'),
@@ -100,6 +93,18 @@ class Static:
                         "user": _('Owner'),
                         "user_root": _('Root directory'),
                         "username": _('Username'),
+                    },
+                    "message_details": {
+                        "user": {
+                            "new": _('New user {model_summary} created by {author_username}'),
+                            "deleted": _('User deleted by {author_username}'),
+                            "dirty": _('Modified by {author_username}'),
+                        },
+                        "repo": {
+                            "new": _('New repository {model_summary} created by {author_username}'),
+                            "deleted": _('Repository deleted by {author_username}'),
+                            "dirty": _('Modified by {author_username}'),
+                        },
                     },
                 },
                 "search": _('Filter: '),

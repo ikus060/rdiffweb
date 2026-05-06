@@ -327,7 +327,8 @@
              data-bs-parent="#auditAccordion"
              style="">
           <div class="accordion-body p-0">
-            <RdwMessages :data="{{ url_for('admin','users', 'messages', form.id.data|string) }}" />
+            <RdwMessages :data="{{ url_for('admin','users', 'messages', form.id.data|string) }}"
+                         show="user" />
           </div>
         </div>
       </div>

@@ -56,7 +56,7 @@
       {% for user in users %}
         <tr {% if user.status == user.STATUS_DISABLED %}class="opacity-50"{% endif %}>
           {# User - username, fullname, email #}
-          <td>
+          <td data-order="{{ user.username }}">
             <div>
               <a class="fw-semibold"
                  href="{{ url_for('admin','users','edit', user.username) }}">{{ user.username }}</a>
@@ -78,7 +78,7 @@
             </div>
           </td>
           {# Notes #}
-          <td>
+          <td data-order="{{ user.notes or '' }}">
             {% if user.notes -%}
               <span class="rdw-notes small text-muted">{{- user.notes -}}</span>
             {%- else %}
@@ -90,7 +90,7 @@
             <span class="badge bg-opacity-10 {{ role_class.get(user.role) }}">{{ role_choices.get(user.role) }}</span>
           </td>
           {# Root directory #}
-          <td>
+          <td data-order="{{ user.user_root }}">
             {% if user.user_root %}
               <span class="small text-muted font-monospace text-truncate">{{ user.user_root }}</span>
               {% if not user.valid_user_root() %}
@@ -116,18 +116,20 @@
             {% endif %}
           </td>
           {# Repos Count #}
-          <td class="text-center">{{ count_badge(user.repo_objs | length) }}</td>
+          <td data-order="{{ user.repo_objs | length }}" class="text-center">{{ count_badge(user.repo_objs | length) }}</td>
           {# SSH Keys Count #}
-          <td class="text-center">{{ count_badge(user.authorizedkeys | length) }}</td>
+          <td data-order="{{ user.authorizedkeys | length }}" class="text-center">
+            {{ count_badge(user.authorizedkeys | length) }}
+          </td>
           {# Token Count #}
-          <td class="text-center">{{ count_badge(user.tokens | length) }}</td>
+          <td data-order="{{ user.tokens | length }}" class="text-center">{{ count_badge(user.tokens | length) }}</td>
           <td>{{ report_time_range_choices.get(user.report_time_range) }}</td>
           {# Status #}
-          <td>
+          <td data-order="{{ user.status }}">
             <span class="badge {{ status_class.get(user.status) }}">{{ status_label.get(user.status, user.status) }}</span>
           </td>
           {# Action #}
-          <td class="text-end">
+          <td class="text-end" data-order="">
             <div class="btn-group btn-group-sm">
               <a href="{{ url_for('admin','users','edit', user.username) }}"
                  class="btn btn-sm btn-outline-secondary"

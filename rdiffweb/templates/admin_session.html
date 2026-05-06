@@ -35,7 +35,7 @@
       {% for session in active_sessions %}
         {# Device #}
         <tr>
-          <td>
+          <td data-order="{{ browser(session.user_agent) }}">
             <div class="d-flex align-items-center gap-3"
                  data-bs-toggle="tooltip"
                  title="{{ session.user_agent }}">
@@ -60,7 +60,10 @@
           <td data-search="{{ 1 if session.username else 0 }}-{{ session.username }}">
             {% if session.username %}
               <a href="{{ url_for('home', session.username) }}"
-                 class="badge text-bg-secondary text-decoration-none">{{ session.username }}</a>
+                 class="badge text-bg-secondary text-decoration-none">
+                <RdwIcon value="bi-person-fill" class="me-1" />
+                {{- session.username }}
+              </a>
             {% else %}
               <span class="text-muted">&mdash;</span>
             {% endif %}
@@ -92,7 +95,7 @@
               {{ session.expiration_time | lastupdated }}
             </time>
           </td>
-          <td class="text-end">
+          <td class="text-end" data-order="">
             {% if session.current %}
               <button class="btn btn-outline-secondary btn-sm text-nowrap" disabled="">
                 <RdwIcon value="bi-check-circle" class="me-1" />

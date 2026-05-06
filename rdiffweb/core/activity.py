@@ -69,7 +69,8 @@ class ActivityPlugin(SimplePlugin):
         self.start()
 
     def restore_path(self, repo, path):
-        repo.add_message(Message(body=_("Restore file path %s") % path, type=Message.TYPE_EVENT))
+        display_name = repo._decode(unquote(path))
+        repo.add_message(Message(body=_("Restore file path %s") % display_name, type=Message.TYPE_EVENT))
 
     def delete_path(self, repo, path):
         display_name = repo._decode(unquote(path))

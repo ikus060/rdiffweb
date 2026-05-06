@@ -1,18 +1,88 @@
-{# def data #}
-{% set columns = [
-  {'name':'id', 'visible':False},
-  {'name':'author', 'visible':False},
-  {'name':'date', 'visible':False},
-  {'name':'type', 'visible':False },
-  {'name':'body', 'visible':False},
-{'name':'changes', 'title':_('Activity'), 'render':'message_body' }] %}
+{# def data, show #}
+{# HTML badge for table #}
+{% set user_badge %}
+  <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-normal">
+    <RdwIcon value="bi-person" class="me-1" />
+    {% trans %}User{% endtrans %}
+  </span>
+{% endset %}
+{% set repo_badge %}
+  <span class="badge bg-success-subtle text-success border border-success-subtle fw-normal">
+    <RdwIcon value="bi-archive" class="me-1" />
+    {% trans %}Repository{% endtrans %}
+  </span>
+{% endset %}
+{% set new_badge %}
+  <span class="badge bg-success-subtle text-success border border-success-subtle fw-normal">
+    <RdwIcon value="bi-plus-circle" class="me-1" />
+    {% trans %}Create{% endtrans %}
+  </span>
+{% endset %}
+{% set dirty_badge %}
+  <span class="badge bg-warning-subtle text-warning border border-warning-subtle fw-normal">
+    <RdwIcon value="bi-pencil" class="me-1" />
+    {% trans %}Modify{% endtrans %}
+  </span>
+{% endset %}
+{% set delete_badge %}
+  <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-normal">
+    <RdwIcon value="bi-trash" class="me-1" />
+    {% trans %}Delete{% endtrans %}
+  </span>
+{% endset %}
+{% set comment_badge %}
+  <span class="badge bg-warning-subtle text-warning border border-warning-subtle fw-normal">
+    <RdwIcon value="bi-chat-dots" class="me-1" />
+    {% trans %}Comment{% endtrans %}
+  </span>
+{% endset %}
+{% set event_badge %}
+  <span class="badge bg-info-subtle text-info border border-info-subtle fw-normal">
+    <RdwIcon value="bi-calendar" class="me-1" />
+    {% trans %}Event{% endtrans %}
+  </span>
+{% endset %}
+{% set reset_btn = {'text': _('All'), 'extend': 'reset', 'className':'btn-primary me-2'} %}
+{% set new_type = {'text': _('Creations'), 'extend': 'filter', 'column': 'type:name', 'search':'new', 'regex': False, 'className':'btn-outline-success'} %}
+{% set dirty_type = {'text': _('Modifications'), 'extend': 'filter', 'column': 'type:name', 'search':'dirty', 'className':'btn-outline-warning'} %}
+{% set comment_type = {'text': _('Comments'), 'extend': 'filter', 'column': 'type:name', 'search':'comment', 'className':'btn-outline-warning'} %}
+{% set event_type = {'text': _('Events'), 'extend': 'filter', 'column': 'type:name', 'search':'event', 'className':'btn-outline-info'} %}
+{% set delete_type = {'text': _('Deletions'), 'extend': 'filter', 'column': 'type:name', 'search':'deleted', 'className':'btn-outline-danger'} %}
+{% set buttons_cfg = {"dom": {"button": {"className": "btn btn-sm"}}} %}
+{% if show in ['repo', 'user'] %}
+  {% set buttons = [reset_btn, new_type, dirty_type, comment_type, event_type, delete_type] %}
+  {% set columns = [
+      {'name':'date', 'data':'date', 'title':_('Date'), 'render':'datetime'},
+      {'name':'author', 'data':'author_username', 'title':_('Actor'), 'orderable':True, 'render':'actor'},
+      {'name':'type', 'data':'type', 'title':_('Action'), 'render':'choices', 'render_arg': [ ['new', new_badge], ['dirty', dirty_badge], ['deleted', delete_badge], ['comment', comment_badge], ['event',event_badge] ] },
+      {'name':'changes', 'data':'changes','title':_('Details'), 'render':'message_details' }
+    ] %}
+{% else %}
+  {% set buttons = [reset_btn, new_type, dirty_type, comment_type, event_type, delete_type,
+      {'text': _('Users'), 'extend': 'filter', 'column': 'model_name:name', 'search':'user', 'className':'ms-2 btn-outline-secondary'},
+      {'text': _('Repositories'), 'extend': 'filter', 'column': 'model_name:name', 'search':'repo', 'className':'btn-outline-secondary'},
+    ] %}
+  {% set columns = [
+      {'name':'date', 'data':'date', 'title':_('Date'), 'render':'datetime'},
+      {'name':'author', 'data':'author_username', 'title':_('Actor'), 'orderable':True, 'render':'actor'},
+      {'name':'model_name', 'data':'model_name', 'title':_('Model Type'), 'orderable':True, 'render':'choices', 'render_arg': [('user', user_badge), ('repo', repo_badge)] },
+      {'name':'model_summary', 'data':'model_summary', 'title':_('Target'), 'orderable':True, 'className':'small fw-semibold'},
+      {'name':'type', 'data':'type', 'title':_('Action'), 'render':'choices', 'render_arg': [ ['new', new_badge], ['dirty', dirty_badge], ['deleted', delete_badge], ['comment', comment_badge], ['event',event_badge] ] },
+      {'name':'changes', 'data':'changes', 'title':_('Details'), 'render':'message_details' }
+    ] %}
+{% endif %}
 {% set layout = {'topStart': False, 'top': False, 'topEnd': False, 'bottomStart': ['info'], 'bottomEnd': {'rowClass': 'dt-layout-row p-2', 'features': {'paging': {'firstLast': False}}}} %}
 <RdwTable :data="data"
           :columns="columns"
-          :order="[[ 5, 'desc' ]]"
-          :state_save="False"
-          :searching="False"
-          :empty_message="_('No Activity') "
-          :info_message="_('Displaying _START_-_END_ of _TOTAL_ most recent activities')"
-          :page_length="10"
-          :layout="layout" />
+          :buttons="buttons"
+          :buttons-cfg="buttons_cfg"
+          :state-save="True"
+          :searching="True"
+          :search-placeholder="_('Filter activities...')"
+          :empty-message="_('No Activity')"
+          :info-message="_('Displaying _START_-_END_ of _TOTAL_ most recent activities')"
+          :server-side="True"
+          class="border rounded-2">
+  <thead class="table-light small">
+  </thead>
+</RdwTable>

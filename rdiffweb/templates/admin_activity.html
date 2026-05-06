@@ -1,29 +1,15 @@
 {% extends 'layout.html' %}
 {% set breadcrumbs = breadcrumb_page('admin') +  breadcrumb_page(self) %}
 {% block content %}
-  {# Lazy loaded Table #}
-  {% set data = url_for("/admin/activity/data.json") %}
-  {% set user_model = {'text': _('Show User Activities'), 'extend': 'filter', 'column': 'model_name:name', 'search':'user', 'className':'btn-outline-secondary rdw-btn-filter'} %}
-  {% set repo_model = {'text': _('Show Repository Activities'), 'extend': 'filter', 'column': 'model_name:name', 'search':'repo', 'className':'btn-outline-secondary rdw-btn-filter'} %}
-  {% set reset_btn = {'text': _('All'), 'extend': 'reset', 'className':'btn-primary'} %}
-  {% set buttons = [user_model, repo_model, reset_btn] %}
-  {% set columns = [
-      {'name':'date', 'title':_('Date'), 'render':'datetime'},
-      {'name':'author', 'title':_('Actor'), 'orderable':True},
-      {'name':'model_id', 'visible':False},
-      {'name':'model_name', 'title':_('Model Type'), 'orderable':True, 'render':'choices', 'render_arg': [('user',_('User')), ('repo', _('Repository'))] },
-      {'name':'model_summary', 'title':_('Target'), 'orderable':True},
-      {'name':'type', 'title':_('Action'), 'render':'choices', 'render_arg': [ ['new',_('Create')], ['dirty',_('Modify')], ['deleted', _('Delete')], ['comment', _('Comment')], ['event', _('Event')] ] },
-      {'name':'body', 'visible':False},
-      {'name':'changes', 'title':_('Details'), 'render':'message_body' }
-    ] %}
-  <RdwTable :data="{{ data }}"
-            :columns="{{ columns }}"
-            :buttons="{{ buttons }}"
-            :state_save="{{ True }}"
-            :searching="{{ True }}"
-            :search_placeholder="{{ _("Filter activities...") }}"
-            :empty_message="{{ _("No Activity") }}"
-            :info_message="{{ _("Displaying _START_-_END_ of _TOTAL_ most recent activities") }}"
-            :server_side="{{ True }}" />
+  {# Header #}
+  <div class="d-flex flex-wrap justify-content-between mb-2">
+    <h2>
+      <RdwIcon :value="active_page.icon" class="me-1" />
+      {{ active_page.label }}
+    </h2>
+  </div>
+  <p>{% trans %}Audit log of all user and system actions.{% endtrans %}</p>
+  <RdwMessages :data="url_for('/admin/activity/data.json')"
+               show="all"
+               class="border rounded-2" />
 {% endblock %}

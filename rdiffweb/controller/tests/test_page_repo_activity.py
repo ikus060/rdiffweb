@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 import rdiffweb.test
 
 
@@ -39,8 +43,13 @@ class RepoActivityTest(rdiffweb.test.WebCase):
             # Then the web page is loaded without error.
             self.assertFalse(driver.get_log('browser'))
             # Then page contains system activity
-            driver.implicitly_wait(10)
-            driver.find_element('xpath', "//*[contains(text(), 'Created')]")
+            wait = WebDriverWait(driver, timeout=10)
+            element = wait.until(
+                EC.text_to_be_present_in_element(
+                    (By.XPATH, "//*[contains(text(), 'admin/testcases')]"), 'admin/testcases'
+                )
+            )
+            self.assertIsNotNone(element)
 
     def test_data_json(self):
         # Given a database with system activity

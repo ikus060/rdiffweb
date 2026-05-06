@@ -13,20 +13,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from collections import namedtuple
-
 import cherrypy
-from cherrypy_foundation.tools.i18n import gettext_lazy as _
-from sqlalchemy import desc, or_
 
 from rdiffweb.core.model import Message, UserObject
-
-from . import validate_int
-
-ActivityRow = namedtuple(
-    'ActivityRow', ['date', 'author_name', 'model_id', 'model_name', 'model_summary', 'type', 'body', 'changes']
-)
 
 
 @cherrypy.tools.is_admin()
@@ -38,84 +27,23 @@ class AdminActivityPage:
     @cherrypy.expose
     @cherrypy.tools.jinja2(template="admin_activity.html")
     def index(self):
-        """
-        Show server activity.
-        """
         return {}
 
     @cherrypy.expose()
+    @cherrypy.tools.allow(methods=['GET'])
     @cherrypy.tools.json_out()
-    def data_json(self, draw=None, start='0', length='10', **kwargs):
+    @cherrypy.tools.datatables_out(search_columns=[Message.model_summary, Message.body, Message.changes])
+    def data_json(self, **kwargs):
         """
-        Return list of messages.
+        Return list of all messages.
         """
-        start = validate_int(start, min=0)
-        length = validate_int(length, min=1, max=100)
-        # Run the queries
-        query = Message.query.with_entities(
+        return Message.query.with_entities(
             Message.date,
-            UserObject.username.label('author_name'),
+            UserObject.username.label('author_username'),
             Message.model_id,
             Message.model_name,
             Message.model_summary,
             Message.type,
             Message.body,
-            Message._changes.label('changes'),
+            Message.changes,
         ).outerjoin(Message.author)
-
-        # Get total count before filtering
-        total = query.count()
-
-        # Apply sorting - default sort by date
-        try:
-            order_idx = validate_int(kwargs.get('order[0][column]', '4'), min=0, max=len(query.column_descriptions) - 1)
-        except ValueError:
-            raise cherrypy.HTTPError(400, 'Invalid column for sorting')
-        order_dir = kwargs.get('order[0][dir]', 'desc')
-        order_col = query.column_descriptions[int(order_idx)]['expr']
-        if order_dir == 'desc':
-            query = query.order_by(desc(order_col))
-        else:
-            query = query.order_by(order_col)
-
-        # Apply filtering
-        search = kwargs.get('search[value]', '')
-        if search:
-            query = query.filter(
-                or_(
-                    Message.model_summary.like(f"%{search}%"),
-                    Message.body.like(f"%{search}%"),
-                    Message._changes.like(f"%{search}%"),
-                )
-            )
-
-        # Apply model_name filtering
-        # With multiple selection, this is a regex pattern similar to (model1|model2|model3)
-        search_model = kwargs.get('columns[3][search][value]', '')
-        if search_model:
-            model_names = search_model.strip('()').split('|')
-            query = query.filter(Message.model_name.in_(model_names))
-
-        # Count result.
-        filtered = query.count()
-        data = query.offset(start).limit(length).all()
-
-        # Return data as Json
-        return {
-            'draw': draw,
-            'recordsTotal': total,
-            'recordsFiltered': filtered,
-            'data': [
-                ActivityRow(
-                    date=row.date.isoformat(),
-                    author_name=row.author_name or str(_('System')),
-                    model_id=row.model_id,
-                    model_name=row.model_name,
-                    model_summary=row.model_summary,
-                    type=row.type,
-                    body=row.body,
-                    changes=Message.json_changes(row.changes),
-                )
-                for row in data
-            ],
-        }

@@ -16,14 +16,16 @@
 
 import itertools
 import json
+import logging
 
 import cherrypy
 import cherrypy_foundation.plugins.db  # noqa
-from sqlalchemy import Column, String, and_, event, inspect, text
+from sqlalchemy import Column, String, Text, and_, event, inspect, text
 from sqlalchemy.orm import Session, backref, declared_attr, foreign, relationship, remote
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import Integer
+from sqlalchemy.types import TypeDecorator
 
 from ._timestamp import Timestamp
 from ._update import column_add, column_exists, constraint_add, constraint_exists, is_sqlite
@@ -32,6 +34,34 @@ Base = cherrypy.db.base
 
 
 AUDIT_IGNORE = 'audit_ignore'
+
+logger = logging.getLogger(__name__)
+
+
+class JSONString(TypeDecorator):
+    """Stores JSON data as a string in the database."""
+
+    impl = Text  # Use TEXT column type (or String if you prefer)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        """Convert Python object -> JSON string (when saving to DB)."""
+        if value is None:
+            return None
+        # If already a string, keep-it as-is it's probably a LIKe pattern.
+        if isinstance(value, str):
+            return value
+        return json.dumps(value, default=str)
+
+    def process_result_value(self, value, dialect):
+        """Convert JSON string -> Python object (when loading from DB)."""
+        if value is None:
+            return None
+        try:
+            return json.loads(value)
+        except (TypeError, json.JSONDecodeError) as e:
+            logger.warning("Failed to deserialize JSON string: %s. Error: %s", value, e)
+            return None
 
 
 def get_model_changes(model):
@@ -120,22 +150,8 @@ class Message(Base):
     user_agent = Column(String, nullable=False, default='', server_default='')
     type = Column(String, nullable=False, default=TYPE_COMMENT, server_default=TYPE_COMMENT)
     body = Column(String, nullable=False, default='', server_default='')
-    _changes = Column('changes', String, nullable=True)
+    changes = Column('changes', JSONString, nullable=True)
     date = Column(Timestamp(timezone=True), default=func.now())
-
-    @property
-    def changes(self):
-        """
-        Return Json changes stored in message.
-        """
-        return Message.json_changes(self._changes)
-
-    @changes.setter
-    def changes(self, value):
-        try:
-            self._changes = json.dumps(value, default=str)
-        except Exception:
-            self._changes = str(value)
 
     @property
     def model_object(self):
@@ -145,18 +161,6 @@ class Message(Base):
         if self.model_name is None:
             return None
         return getattr(self, "%s_object" % self.model_name)
-
-    @classmethod
-    def json_changes(cls, value):
-        """
-        Safely convert a string to Json data.
-        """
-        if not value or value[0] != '{':
-            return None
-        try:
-            return json.loads(value)
-        except Exception:
-            return None
 
 
 class MessageMixin:

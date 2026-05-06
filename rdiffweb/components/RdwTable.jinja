@@ -1,4 +1,4 @@
-{# def data=None, columns=None, order=[], empty_message=None, info_message=None, searching=True, search_placeholder=None, buttons=[], paging=True, page_length=10, layout=None, state_save=True, server_side=False #}
+{# def data=None, columns=None, order=[], empty_message=None, info_message=None, searching=True, search_placeholder=None, buttons=[], paging=True, page_length=10, layout=None, state_save=True, server_side=False, buttons_cfg={} #}
 {# js cf/vendor/jquery/jquery.min.js, cf/vendor/datatables/js/dataTables.min.js #}
 {% set default_layout = {
   'topStart': {
@@ -39,6 +39,7 @@
   <cf:Datatable :data="data"
                 :columns="columns"
                 :buttons="buttons"
+                :buttons_cfg="buttons_cfg"
                 :order="order or [[ 0, 'desc' ]]"
                 :state_save="state_save"
                 :searching="searching"

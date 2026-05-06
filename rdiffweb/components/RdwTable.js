@@ -30,23 +30,35 @@ function rdwToDate(n) {
     return n;
 }
 
+// reuse DataTables' built-in text escaper
+const escapeHtml = DataTable.render.text().display; 
+
+// Used to format i18n string
+function rdwFormat(str, params) {
+    return str.replace(/\{(\w+)\}/g, (match, key) => 
+        params[key] !== undefined 
+            ? `<strong>${escapeHtml(String(params[key]))}</strong>` 
+            : match
+    );
+}
+
 $(document).ready(function () {
-    /** Render string as safe value for html. */
-    function safe(value) {
-        return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
 
     /** Date time value */
     $.fn.dataTable.render.datetime = function () {
         return {
-            display: function (data, type, row, meta) {
-                return rdwToDate(data).toLocaleString();
+            display(data) {
+                const d = rdwToDate(data);
+                const date = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                const time = d.toLocaleTimeString();
+                return `<span class="fw-semibold small">${date}</span><br>
+                        <span class="text-muted small">${time}</span>`;
             },
-            sort: function (data, type, row, meta) {
+            sort(data) {
                 return rdwToDate(data).getTime();
-            }
+            },
         };
-    }
+    };
 
     $.fn.dataTable.render.filesize = function () {
         const UNITS = [' bytes', ' KiB', ' MiB', ' GiB', ' TiB'];
@@ -77,98 +89,56 @@ $(document).ready(function () {
         };
     }
 
-    $.fn.dataTable.render.summary = function (render_arg) {
-        let icon_table = {
-            'user': 'bi-person-fill',
-            'repo': 'bi-archive'
-        };
-
-        const model_name = typeof render_arg === 'string' ? render_arg : null;
-        const model_name_column = render_arg?.model_name_column || 'model_name:name';
-        const url_column = render_arg?.url_column || 'url:name';
-
-        return {
-            display: function (data, type, row, meta) {
-                if (!data) return '-';
-                const api = new $.fn.dataTable.Api(meta.settings);
-                /* Get model_name from arguments or from row data */
-                let effective_model_name = model_name;
-                if (effective_model_name == null) {
-                    const model_idx = api.column(model_name_column).index();
-                    if (model_idx) {
-                        effective_model_name = row[model_idx];
-                    }
-                }
-
-                /* Define the URL */
-                let url = "#";
-                const url_idx = api.column(url_column).index();
-                if (url_idx) {
-                    url = encodeURI(row[url_idx])
-                }
-
-                let html = '<a href="' + url + '">' +
-                    '<i class="bi ' + icon_table[effective_model_name] + ' me-1" aria-hidden="true"></i>' +
-                    '<strong>' + safe(data) + '</strong>' +
-                    '</a>';
-
-                return html;
-            },
-            sort: function (data, type, row, meta) {
-                return data;
-            }
-        };
-    }
-
     $.fn.dataTable.render.changes = function () {
+
         return {
             display: function (data, type, row, meta) {
                 const api = new $.fn.dataTable.Api(meta.settings);
+                const i18n = (key, fallback) => api.settings().i18n(key, fallback);
                 let html = '';
+
                 const body_idx = api.column('body:name').index();
                 if (body_idx && row[body_idx]) {
-                    html += safe(row[body_idx]);
+                    html += escapeHtml(row[body_idx]);
                 }
-                const type_idx = api.column('type:name').index();
+
                 if (data) {
-                    const null_value = api.settings().i18n(`rdiffweb.null`, 'undefined')
+                    const type_idx = api.column('type:name').index();
                     html += '<ul class="mb-0">';
-                    if (row[type_idx] === 'new') {
-                        /* For new record display only the new value. */
-                        for (const [key, values] of Object.entries(data)) {
-                            const field_name = safe(api.settings().i18n(`rdiffweb.field.${key}`, key));
+
+                    for (const [key, values] of Object.entries(data)) {
+                        const field_name = escapeHtml(i18n(`rdiffweb.field.${key}`, key));
+
+                        if (row[type_idx] === 'new') {
                             if (values[1] !== null) {
-                                const new_value = safe(api.settings().i18n(`rdiffweb.value.${key}.${values[1]}`, `${values[1]}`));
-                                html += '<li><strong>' + field_name + '</strong>: ' + new_value + ' </li>';
+                                const new_value = escapeHtml(i18n(`rdiffweb.value.${key}.${values[1]}`, `${values[1]}`));
+                                html += `<li><strong>${field_name}</strong>: ${new_value}</li>`;
                             }
-                        }
-                    } else {
-                        /* For updates, display old and new value */
-                        for (const [key, values] of Object.entries(data)) {
-                            const field_name = safe(api.settings().i18n(`rdiffweb.field.${key}`, key));
-                            html += '<li><strong>' + field_name + '</strong>: '
-                            if (Array.isArray(values[0])) {
-                                for (const deleted of values[0]) {
-                                    html += '<br/> - ' + safe(deleted);
-                                }
-                                for (const added of values[1]) {
-                                    html += '<br/> + ' + safe(added);
-                                }
-                            } else {
-                                const old_value = safe(api.settings().i18n(`rdiffweb.value.${key}.${values[0]}`, `${values[0] !== null ? values[0] : undefined}`));
-                                const new_value = safe(api.settings().i18n(`rdiffweb.value.${key}.${values[1]}`, `${values[1] !== null ? values[1] : undefined}`));
-                                html += old_value + ' → ' + new_value + '</li>';
+                        } else if (Array.isArray(values[0])) {
+                            html += `<li><strong>${field_name}</strong>:`;
+                            for (const deleted of values[0]) {
+                                html += `<br/> - ${escapeHtml(deleted)}`;
                             }
+                            for (const added of values[1]) {
+                                html += `<br/> + ${escapeHtml(added)}`;
+                            }
+                            html += `</li>`;
+                        } else {
+                            const old_value = escapeHtml(i18n(`rdiffweb.value.${key}.${values[0]}`, `${values[0] ?? undefined}`));
+                            const new_value = escapeHtml(i18n(`rdiffweb.value.${key}.${values[1]}`, `${values[1] ?? undefined}`));
+                            html += `<li><strong>${field_name}</strong>: ${old_value} → ${new_value}</li>`;
                         }
                     }
+
                     html += '</ul>';
                 }
+
                 return html;
             }
         };
-    }
+    };
 
-    $.fn.dataTable.render.message_body = function () {
+    $.fn.dataTable.render.message_details = function () {
 
         const changes = $.fn.dataTable.render.changes().display;
 
@@ -179,34 +149,41 @@ $(document).ready(function () {
                 const api = new $.fn.dataTable.Api(meta.settings);
                 let html = '';
 
-                const type_idx = api.column('type:name').index();
-                if (type_idx !== undefined) {
-                    const type = row[type_idx];
-                    html += api.settings().i18n(`rdiffweb.value.type.${type}`, type);
+                // Provide detault string for modification, creation, etc.
+                if(row.type) {
+                    const message_subject = api.settings().i18n(`rdiffweb.message_details.${row.model_name}.${row.type}`);
+                    if(message_subject) {
+                        html += rdwFormat(message_subject, {model_name: escapeHtml(row.model_name), model_summary: escapeHtml(row.model_summary), author_username: escapeHtml(row.author_username)})
+                    }
+                }
+                
+                if(row.body) {
+                    html += escapeHtml(row.body)
                 }
 
-                const author_idx = api.column('author:name').index();
-                if (author_idx !== undefined) {
-                    html += ' <em>' + row[author_idx] + '</em>';
+                const changes_html = changes(data, type, row, meta)
+                if(changes_html) {
+                    html += '<br />'
+                    html += changes_html;
                 }
-
-                const date_idx = api.column('date:name').index();
-                if (date_idx !== undefined) {
-                    html += ' • ' + datetime(row[date_idx], type, row, meta);
-                }
-
-                html += '<br />'
-
-                html += changes(data, type, row, meta);
-
                 return html;
-            },
-            sort: function (data, type, row, meta) {
-                const api = new $.fn.dataTable.Api(meta.settings);
-                const date_idx = api.column('date:name').index();
-                const value = rdwToDate(row[date_idx]);
-                return value ? value.getTime() : 0;
             },
         };
     }
+
+    $.fn.dataTable.render.actor = function () {
+
+        return {
+            display(data) {
+                if (!data) {
+                    return `<span class="text-muted">&mdash;</span>`;
+                }
+                const safe = escapeHtml(data);
+                return `<span class="badge text-bg-secondary">
+                            <i class="bi bi-person-fill me-1"></i>${safe}
+                        </span>`;
+            },
+        };
+    };
+
 });

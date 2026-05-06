@@ -30,6 +30,7 @@ import cherrypy_foundation.plugins.scheduler
 import cherrypy_foundation.plugins.smtp
 import cherrypy_foundation.tools.auth
 import cherrypy_foundation.tools.auth_mfa
+import cherrypy_foundation.tools.datatables
 import cherrypy_foundation.tools.i18n
 import cherrypy_foundation.tools.jinja2
 import cherrypy_foundation.tools.ratelimit

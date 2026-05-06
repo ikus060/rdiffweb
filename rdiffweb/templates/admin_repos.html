@@ -50,7 +50,7 @@
       {% for repo in repos %}
         <tr>
           {# Name #}
-          <td class="ps-3">
+          <td data-order="{{ repo.display_name }}">
             <a href="{{ url_for('browse', repo) }}"
                class="small fw-bold {% if repo.notes %}rdw-tooltip{% endif %}"
                data-bs-toggle="tooltip"
@@ -58,9 +58,12 @@
             <div class="small text-muted font-monospace">{{ repo.full_path.decode(errors='replace') }}</div>
           </td>
           {# Owner #}
-          <td>
+          <td data-order="{{ repo.owner }}">
             <a href="{{ url_for('home', repo.owner) }}"
-               class="badge text-bg-secondary text-decoration-none">{{ repo.owner }}</a>
+               class="badge text-bg-secondary text-decoration-none">
+              <RdwIcon value="bi-person-fill" class="me-1" />
+              {{- repo.owner }}
+            </a>
           </td>
           {# Last backup date #}
           <td data-order="{{ repo.last_backup_date.epoch }}"
@@ -94,14 +97,11 @@
           <td data-order="{{ repo.status[0] }}" data-search="{{ repo.status[0] }}">
             <RepoStatus :repo="repo" class="badge" />
           </td>
-          <td>
-            {% if repo.session_statistics %}
-              {% set error_count = repo.session_statistics[-1].errors %}
-              {% if error_count > 0 %}
-                {{ error_count }}
-              {% else %}
-                <span class="text-muted small">&mdash;</span>
-              {% endif %}
+          {# Errors #}
+          {% set error_count = (repo.session_statistics and repo.session_statistics[-1].errors) or 0 %}
+          <td data-order="{{ error_count }}">
+            {% if error_count > 0 %}
+              {{ error_count }}
             {% else %}
               <span class="text-muted small">&mdash;</span>
             {% endif %}

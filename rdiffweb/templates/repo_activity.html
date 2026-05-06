@@ -4,29 +4,7 @@
 {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) %}
 {% block content %}
   {# Lazy loaded Table #}
-  {% set data = url_for('activity', 'data.json', repo) %}
-  {% set user_model = {'text': _('Show Events'), 'extend': 'filter', 'column': 'type:name', 'search':'event', 'className':'btn-outline-secondary rdw-btn-filter'} %}
-  {% set repo_model = {'text': _('Show Modification'), 'extend': 'filter', 'column': 'type:name', 'search':'dirty', 'className':'btn-outline-secondary rdw-btn-filter'} %}
-  {% set reset_btn = {'text': _('All'), 'extend': 'reset', 'className':'btn-primary'} %}
-  {% set buttons = [user_model, repo_model, reset_btn] %}
-  {% set columns = [
-      {'name':'date', 'title':_('Date'), 'render':'datetime'},
-      {'name':'author', 'title':_('Actor'), 'orderable':True},
-      {'name':'type', 'title':_('Action'), 'render':'choices', 'render_arg': [ ['new',_('Create')], ['dirty',_('Modify')], ['deleted', _('Delete')], ['comment', _('Comment')], ['event', _('Event')] ] },
-      {'name':'body', 'visible':False},
-      {'name':'changes', 'title':_('Details'), 'render':'message_body' }
-    ] %}
-  <RdwTable :data="data"
-            :columns="columns"
-            :buttons="buttons"
-            :state-save="True"
-            :searching="True"
-            :search-placeholder="_('Filter activities...')"
-            :empty-message="_('No Activity')"
-            :info-message="_('Displaying _START_-_END_ of _TOTAL_ most recent activities')"
-            :server-side="True"
-            class="border rounded-2">
-    <thead class="table-light small">
-    </thead>
-  </RdwTable>
+  <RdwMessages :data="url_for('activity', 'data.json', repo)"
+               show="repo"
+               class="border rounded-2" />
 {% endblock %}

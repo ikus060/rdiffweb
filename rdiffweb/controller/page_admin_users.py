@@ -506,7 +506,9 @@ class AdminUsersPage:
         raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['GET'])
     @cherrypy.tools.json_out()
+    @cherrypy.tools.datatables_out(search_columns=[Message.model_summary, Message.body, Message.changes])
     def messages(self, username_or_id, **kwargs):
         # Return Not found if user doesn't exists
         user = UserObject.get_user(username_or_id)
@@ -515,31 +517,20 @@ class AdminUsersPage:
         # Query Object Messages
         query = (
             Message.query.with_entities(
-                Message.id,
-                UserObject.username.label('author_name'),
                 Message.date,
+                UserObject.username.label('author_username'),
+                Message.model_id,
+                Message.model_name,
+                Message.model_summary,
                 Message.type,
                 Message.body,
-                Message._changes.label('changes'),
+                Message.changes,
             )
             .outerjoin(Message.author)
             .order_by(Message.date.desc())
             .filter(Message.model_id == user.id, Message.model_name == user._get_message_model_name())
         )
-        data = query.all()
-        return {
-            'data': [
-                UserActivityRow(
-                    id=obj.id,
-                    author=obj.author_name or str(_('System')),
-                    date=obj.date.isoformat(),
-                    type=obj.type,
-                    body=obj.body,
-                    changes=Message.json_changes(obj.changes),
-                )
-                for obj in data
-            ]
-        }
+        return query
 
 
 @cherrypy.expose
