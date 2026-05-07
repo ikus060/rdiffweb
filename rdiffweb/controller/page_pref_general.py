@@ -23,10 +23,14 @@ from cherrypy_foundation.tools.i18n import get_timezone_name, list_available_tim
 from wtforms.fields import HiddenField, PasswordField, RadioField, SelectField, StringField, SubmitField
 from wtforms.validators import EqualTo, InputRequired, Length, Optional, Regexp, ValidationError
 
+from rdiffweb.controller.widgets import SelectMultipleWidget
+
 try:
     from wtforms.fields import EmailField  # wtform >=3
 except ImportError:
     from wtforms.fields.html5 import EmailField  # wtform <3
+
+import logging
 
 from cherrypy_foundation.flash import flash
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
@@ -34,6 +38,8 @@ from cherrypy_foundation.tools.i18n import list_available_locales
 
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.model import UserObject
+
+logger = logging.getLogger(__name__)
 
 
 class UserProfileForm(DbForm):
@@ -64,11 +70,12 @@ class UserProfileForm(DbForm):
     )
     report_time_range = RadioField(
         _('Send me a backup status report'),
+        widget=SelectMultipleWidget(),
         choices=[
-            (0, _('Never')),
-            (1, _('Daily')),
-            (7, _('Weekly')),
-            (30, _('Monthly')),
+            (0, _('Never - No report emails will be sent.')),
+            (1, _('Daily - Receive a report every day.')),
+            (7, _('Weekly - Receive a report every Monday morning.')),
+            (30, _('Monthly - Receive a report on the first day of each month.')),
         ],
         coerce=int,
     )
@@ -100,9 +107,13 @@ class UserProfileForm(DbForm):
                 raise ValueError(_('You must select a time range and save changes before sending a report.'))
             if not user.email:
                 raise ValueError(_('Could not send report to user without configured email.'))
-            cherrypy.notification.send_report(user, force=True)
-            if hasattr(cherrypy.serving, 'session'):
-                flash(_("Report sent successfully."), level='success')
+            try:
+                cherrypy.notification.send_report(user, force=True)
+                if hasattr(cherrypy.serving, 'session'):
+                    flash(_("Report sent successfully."), level='success')
+            except Exception:
+                logger.exception("fail to send report", exc_info=1)
+                flash(_("The report could not be sent. Check the server logs."), level='error')
 
 
 class UserPasswordForm(DbForm):

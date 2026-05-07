@@ -304,7 +304,7 @@ class PagePrefGeneralTest(rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.getPage("/prefs/general")
         self.assertInBody('Profile updated successfully.')
-        self.assertInBody('<input checked id="report_time_range-2" name="report_time_range" type="radio" value="7">')
+        self.assertMatchesBody('name="report_time_range"\\s+value="7"\\s+checked>')
         # Then database is updated too
         userobj.expire()
         self.assertEqual(7, userobj.report_time_range)

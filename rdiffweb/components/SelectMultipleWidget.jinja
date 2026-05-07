@@ -1,15 +1,16 @@
 {# def field #}
 <div class="d-flex flex-column gap-2 rdw-select-multiple-widget">
+  {% set intput_type = 'radio' if 'RadioField' in field.__class__ | string else 'checkbox' %}
   {% for choice in field.iter_choices() %}
     {% set val, orig_label, selected = choice[0:3] %}
     {% set label = orig_label.split(' - ', 2)[0] if ' - ' in orig_label else orig_label %}
     {% set description = orig_label.split(' - ', 2)[1] if ' - ' in orig_label else '' %}
     <label class="d-flex align-items-start gap-3 border rounded p-2 cursor-pointer">
       <input class="form-check-input flex-shrink-0 mt-1"
-             type="checkbox"
-             name="scope"
+             type="{{ intput_type }}"
+             name="{{ field.name }}"
              value="{{ val }}"
-             {% if selected %}selected{% endif %}>
+             {% if selected %}{{ 'checked' if intput_type == 'radio' else 'selected' }}{% endif %}>
       <div>
         <div class="fw-semibold small">{{ label }}</div>
         <div class="text-muted" style="font-size:0.78rem;">{{ description }}</div>
