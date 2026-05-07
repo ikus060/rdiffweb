@@ -17,14 +17,11 @@
     --bs-link-color: {{ link_color }};
     --bs-link-color-rgb: {{ hex_to_rgb(link_color) }};
     --bs-primary-rgb: {{ hex_to_rgb(link_color) }};
-    /* Adjust contrast for sidebar. */
-    --bs-light: #eef0f1;
-    --bs-light-rgb: 238, 240, 241;
 }
 
 /* Adjust navbar colors for branding */
 #rdw-navbar {
-    background-color: var(--bs-light);
+    background-color: var(--navbar-color);
     --btn-bg-color: var(--bs-white);
     --btn-fg-color: var(--bs-body-color);
 }
@@ -118,11 +115,6 @@ main {
     font-size: inherit;
     text-rendering: auto;
     float: none !important;
-}
-
-/* Adjust navbar color */
-.navbar.bg-dark {
-    background-color: var(--navbar-color) !important;
 }
 
 /* Adjust primary color */

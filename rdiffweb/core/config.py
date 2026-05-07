@@ -360,7 +360,7 @@ def get_parser():
         type=_css_color,
         dest='navbar_color',
         help='define a CSS color to be used for navigation bar background e.g.: 00ff00',
-        default='#383e45',
+        default='#eef0f1',
     )
 
     parser.add_argument(
