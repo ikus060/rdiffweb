@@ -1,0 +1,46 @@
+{% macro storage_usage(disk_usage, disk_quota) %}
+  {# Quota Usage - Storage header #}
+  <table width="100%"
+         cellpadding="0"
+         cellspacing="0"
+         style="margin-bottom:12px">
+    <tr>
+      <td>
+        <div style="font-size:15px;font-weight:700;">{% trans %}Storage{% endtrans %}</div>
+        <div style="font-size:12px;color:#6c757d;margin-top:2px;">
+          {% trans %}Total quota across all repositories{% endtrans %}
+        </div>
+      </td>
+      <td align="right"
+          valign="top"
+          style="font-size:13px;
+                 font-weight:700;
+                 white-space:nowrap">
+        {{ disk_usage | filesize }}
+        <span style="color:#6c757d;font-weight:400;">/ {{ disk_quota | filesize }}</span>
+      </td>
+    </tr>
+  </table>
+  {# Quota Usage - Storage bar #}
+  {% set dict_usage_pct = ((disk_usage / disk_quota) * 100) | round(1) if disk_quota else 0 %}
+  <table width="100%"
+         cellpadding="0"
+         cellspacing="0"
+         style="margin-bottom:24px">
+    <tr>
+      <td style="background:#e9ecef;
+                 border-radius:4px;
+                 height:10px"
+          width="100%">
+        <table width="{{ dict_usage_pct }}%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="background:{{ link_color }};
+                       border-radius:4px;
+                       height:10px;
+                       font-size:0">&nbsp;</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+{% endmacro %}

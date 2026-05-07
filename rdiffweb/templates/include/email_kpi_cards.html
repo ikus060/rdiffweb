@@ -1,0 +1,82 @@
+{% macro kpi_cards() %}
+  {# Determine overall status #}
+  {% if total_failed > 0 %}
+    {% set overall_label = _('Degraded') %}
+    {% set overall_color = danger_color %}
+    {% set overall_subtitle = _('%(count)s failed', count=total_failed) %}
+  {% elif total_interrupted > 0 %}
+    {% set overall_label = _('Interrupted') %}
+    {% set overall_color = warning_color %}
+    {% set overall_subtitle = _('%(count)s interrupted', count=total_interrupted) %}
+  {% elif total_overdue > 0 %}
+    {% set overall_label = _('Overdue') %}
+    {% set overall_color = warning_color %}
+    {% set overall_subtitle = _('%(count)s overdue', count=total_overdue) %}
+  {% elif total_in_progress > 0 %}
+    {% set overall_label = _('In Progress') %}
+    {% set overall_color = info_color %}
+    {% set overall_subtitle = _('%(count)s in progress', count=total_in_progress) %}
+  {% else %}
+    {% set overall_label = _('Healthy') %}
+    {% set overall_color = success_color %}
+    {% set overall_subtitle = _('%(count)s healthy', count=total_repo) %}
+  {% endif %}
+  <table width="100%"
+         cellpadding="0"
+         cellspacing="0"
+         style="margin-bottom:24px">
+    <tbody>
+      <tr>
+        <!-- Overall Status -->
+        <td width="32%"
+            style="border:1px solid #e9ecef;
+                   border-radius:8px;
+                   padding:14px 16px"
+            valign="top">
+          <div style="font-size:11px;
+                      color: #6c757d;
+                      text-transform:uppercase;
+                      letter-spacing:0.4px">{% trans %}Overall Status{% endtrans %}</div>
+          <div style="font-size:22px;
+                      font-weight:700;
+                      color:{{ overall_color }};
+                      margin:4px 0">{{ overall_label }}</div>
+          <div style="font-size:11px;color: #6c757d;">{{ overall_subtitle }}</div>
+        </td>
+        <td width="2%"></td>
+        <!-- Repositories -->
+        <td width="32%"
+            style="border:1px solid #e9ecef;
+                   border-radius:8px;
+                   padding:14px 16px"
+            valign="top">
+          <div style="font-size:11px;
+                      color:#6c757d;
+                      text-transform:uppercase;
+                      letter-spacing:0.4px">{% trans %}Repositories{% endtrans %}</div>
+          <div style="font-size:22px;font-weight:700;color:#6c757d;margin:4px 0;">{{ total_repo }}</div>
+          <div style="font-size:11px;color:#6c757d;">
+            {{ _('%(ok)s healthy · %(other)s needs attentions', ok=total_ok + total_in_progress, other=total_failed + total_interrupted + total_overdue) }}
+          </div>
+        </td>
+        <td width="2%"></td>
+        <!-- Errors -->
+        <td width="32%"
+            style="border:1px solid #e9ecef;
+                   border-radius:8px;
+                   padding:14px 16px"
+            valign="top">
+          <div style="font-size:11px;
+                      color:#6c757d;
+                      text-transform:uppercase;
+                      letter-spacing:0.4px">{% trans %}Errors{% endtrans %}</div>
+          <div style="font-size:22px;
+                      font-weight:700;
+                      color:{{ danger_color if error_count else success_color }};
+                      margin:4px 0">{{ error_count }}</div>
+          <div style="font-size:11px;color:#6c757d;">{% trans %}Across all repositories{% endtrans %}</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+{% endmacro %}

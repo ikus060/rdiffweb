@@ -1,398 +1,69 @@
-{# Most macro are based on bootstrap email #}
-{% macro bgcolor(cls) %}
-  {%- if 'bg-dark' in cls -%}
-    {{ navbar_color }}
-  {%- elif 'bg-light' in cls -%}
-    #f7fafc
-  {%- else -%}
-    #ffffff
-  {%- endif -%}
-{% endmacro %}
-{% macro fgcolor(cls) %}
-  {%- if 'text-success' in cls -%}
-    #198754
-  {%- elif 'text-warning' in cls -%}
-    #ffc107
-  {%- else -%}
-    #000000
-  {%- endif -%}
-{% endmacro %}
-{% macro body(cls) %}
-  <body class="{{ cls }}"
-        style="outline: 0;
-               width: 100%;
-               min-width: 100%;
-               height: 100%;
-               -webkit-text-size-adjust: 100%;
-               -ms-text-size-adjust: 100%;
-               font-family: {{ font_family }},Helvetica, Arial, sans-serif;
-               line-height: 24px;
-               font-weight: normal;
-               font-size: 16px;
-               -moz-box-sizing: border-box;
-               -webkit-box-sizing: border-box;
-               box-sizing: border-box;
-               color: #000000;
-               margin: 0;
-               padding: 0;
-               border-width: 0"
-        bgcolor="{{ bgcolor(cls) }}">
-    <table class="{{ cls }} body"
-           valign="top"
-           role="presentation"
-           border="0"
-           cellpadding="0"
-           cellspacing="0"
-           style="outline: 0;
-                  width: 100%;
-                  min-width: 100%;
-                  height: 100%;
-                  -webkit-text-size-adjust: 100%;
-                  -ms-text-size-adjust: 100%;
-                  font-family: {{ font_family }},Helvetica, Arial, sans-serif;
-                  line-height: 24px;
-                  font-weight: normal;
-                  font-size: 16px;
-                  -moz-box-sizing: border-box;
-                  -webkit-box-sizing: border-box;
-                  box-sizing: border-box;
-                  color: #000000;
-                  margin: 0;
-                  padding: 0;
-                  border-width: 0"
-           bgcolor="{{ bgcolor(cls) }}">
-      <tbody>
-        <tr>
-          <td valign="top"
-              style="line-height: 24px;
-                     font-size: 16px;
-                     margin: 0"
-              align="left"
-              bgcolor="{{ bgcolor(cls) }}">{{ caller() }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </body>
-{% endmacro %}
-{% macro container() %}
-  <table class="container"
-         role="presentation"
-         border="0"
-         cellpadding="0"
-         cellspacing="0"
-         style="width: 100%">
-    <tbody>
-      <tr>
-        <td align="center"
-            style="line-height: 24px;
-                   font-size: 16px;
-                   margin: 0;
-                   padding: 0 16px">
-          <!--[if (gte mso 9)|(IE)]>
-          <table align="center" role="presentation">
-            <tbody>
-              <tr>
-                <td width="600">
-        <![endif]-->
-          <table align="center"
-                 role="presentation"
-                 border="0"
-                 cellpadding="0"
-                 cellspacing="0"
-                 style="width: 100%;
-                        max-width: 600px;
-                        margin: 0 auto">
-            <tbody>
-              <tr>
-                <td style="line-height: 24px; font-size: 16px; margin: 0;" align="left">{{ caller() }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <!--[if (gte mso 9)|(IE)]>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        <![endif]-->
-        </td>
-      </tr>
-    </tbody>
-  </table>
-{% endmacro %}
-{% macro card(cls='') %}
-  <table class="card {{ cls }}"
-         role="presentation"
-         border="0"
-         cellpadding="0"
-         cellspacing="0"
-         style="border-radius: 6px;
-                border-collapse: separate !important;
-                width: 100%;
-                overflow: hidden;
-                border: 1px solid #e2e8f0"
-         bgcolor="{{ bgcolor(cls) }}">
-    <tbody>
-      <tr>
-        <td style="line-height: 24px;
-                   font-size: 16px;
-                   width: 100%;
-                   margin: 0"
-            align="left"
-            bgcolor="{{ bgcolor(cls) }}">{{ caller() }}</td>
-      </tr>
-    </tbody>
-  </table>
-{% endmacro %}
-{% macro card_header(cls='') %}
-  <table class="bg-dark text-white h-16 p-2 w-full"
-         role="presentation"
-         border="0"
-         cellpadding="0"
-         cellspacing="0"
-         style="color: #ffffff;
-                width: 100%;
-                height: 64px"
-         bgcolor="{{ bgcolor(cls) }}"
-         width="100%"
-         height="64">
-    <tbody>
-      <tr>
-        <td style="line-height: 24px;
-                   font-size: 16px;
-                   color: #ffffff;
-                   width: 100%;
-                   height: 64px;
-                   margin: 0;
-                   padding: 8px 20px"
-            align="left"
-            bgcolor="{{ bgcolor(cls) }}"
-            width="100%"
-            height="64">{{ caller() }}</td>
-      </tr>
-    </tbody>
-  </table>
-{% endmacro %}
-{% macro card_body() %}
-  <table class="card-body"
-         role="presentation"
-         border="0"
-         cellpadding="0"
-         cellspacing="0"
-         style="width: 100%">
-    <tbody>
-      <tr>
-        <td style="line-height: 24px;
-                   font-size: 16px;
-                   width: 100%;
-                   margin: 0;
-                   padding: 20px"
-            align="left">{{ caller() }}</td>
-      </tr>
-    </tbody>
-  </table>
-{% endmacro %}
-{% macro row() %}
-  <div class="row" style="margin-right: -24px;">
-    <table role="presentation"
-           border="0"
-           cellpadding="0"
-           cellspacing="0"
-           style="table-layout: fixed;
-                  width: 100%"
-           width="100%">
-      <tbody>
-        <tr>{{ caller() }}</tr>
-      </tbody>
-    </table>
-  </div>
-{% endmacro %}
-{% macro col(cls) %}
-  <td class="col {{ cls }}"
-      style="line-height: 24px;
-             font-size: 16px;
-             min-height: 1px;
-             font-weight: normal;
-             padding-right: 24px;
-             margin: 0;
-             color: {{ fgcolor(cls) }}"
-      align="left"
-      valign="top">{{ caller() }}</td>
-{% endmacro %}
-{% macro mb4() %}
-  <!-- mb-4 -->
-  <table class="s-4 w-full"
-         role="presentation"
-         border="0"
-         cellpadding="0"
-         cellspacing="0"
-         style="width: 100%"
-         width="100%">
-    <tbody>
-      <tr>
-        <td style="line-height: 16px;
-                   font-size: 16px;
-                   width: 100%;
-                   height: 16px;
-                   margin: 0"
-            align="left"
-            width="100%"
-            height="16">&#160;</td>
-      </tr>
-    </tbody>
-  </table>
-{% endmacro %}
-{% macro emphasis() %}
-  <h3 style="padding-top: 0;
-             padding-bottom: 0;
-             font-weight: 500;
-             vertical-align: baseline;
-             font-size: 28px;
-             line-height: 33.6px;
-             margin: 0"
-      align="left">{{ caller() }}</h3>
-{% endmacro %}
-{% macro storage_usage(disk_usage, disk_quota) %}
-  {% if disk_usage and disk_quota %}
-    {% set used_pct = disk_usage / disk_quota * 100 %}
-    <b>
-      {% trans %}Storage Usage{% endtrans %}
-    </b>
-    {% call card('bg-light') %}
-      {% call card_body() %}
-        {% call row() %}
-          {% call col('text-warning' if used_pct>90 else '') %}
-            {% trans %}Used{% endtrans %}
-            {% call emphasis() %}
-              {{ used_pct|int }}%
-            {% endcall %}
-            <small>{{ disk_usage | filesize }}</small>
-          {% endcall %}
-          {% call col('text-warning' if used_pct>90 else '') %}
-            {% trans %}Free{% endtrans %}
-            {% call emphasis() %}
-              {{ (100 - used_pct)|int }}%
-            {% endcall %}
-            {{ (disk_quota - disk_usage) | filesize }}
-          {% endcall %}
-          {% call col('text-warning' if used_pct>90 else '') %}
-            {% trans %}Total{% endtrans %}
-            {% call emphasis() %}
-              {{ disk_quota | filesize }}
-            {% endcall %}
-          {% endcall %}
-        {% endcall %}
-      {% endcall %}
-    {% endcall %}
-    {{ mb4() }}
-  {% endif %}
-{% endmacro %}
-<html>
+<!DOCTYPE html>
+<html lang="{{ get_translation().locale }}">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
       {% block title %}
       {% endblock title %}
     </title>
-    <style>
-      body,table,td{
-        font-family: "{{ font_family }}",Helvetica,Arial,sans-serif !important
-      }
-      .ExternalClass{
-          width:100%
-      }
-      .ExternalClass,.ExternalClass p,.ExternalClass span,.ExternalClass font,.ExternalClass td,.ExternalClass div{
-          line-height:150%
-      }
-      a{
-          text-decoration:none
-      }
-      *{
-          color:inherit
-      }
-      a[x-apple-data-detectors],u+#body a,#MessageViewBody a{
-          color:inherit;
-          text-decoration:none;
-          font-size:inherit;
-          font-family:inherit;
-          font-weight:inherit;
-          line-height:inherit
-      }
-      img{
-          -ms-interpolation-mode:bicubic
-      }
-      table:not([class^=s-]){
-          font-family:Helvetica,Arial,sans-serif;
-          mso-table-lspace:0pt;
-          mso-table-rspace:0pt;
-          border-spacing:0px;
-          border-collapse:collapse
-      }
-      table:not([class^=s-]) td{
-          border-spacing:0px;
-          border-collapse:collapse
-      }
-      .bg-dark { background-color: "{{ navbar_color }}"; }
-      a, .btn-link { color: "{{ link_color }}"; }
-      a:hover, .btn-link:hover { filter: brightness(.85); color: "{{ link_color }}"; }
-      @media screen and (max-width: 600px){
-          .w-full,.w-full>tbody>tr>td{
-              width:100% !important
-          }
-          .h-9,.h-9>tbody>tr>td{
-              height:36px !important
-          }
-          .h-16,.h-16>tbody>tr>td{
-              height:64px !important
-          }
-          .p-2:not(table),.p-2:not(.btn)>tbody>tr>td,.p-2.btn td a{
-              padding:8px !important
-          }
-          *[class*=s-lg-]>tbody>tr>td{
-              font-size:0 !important;
-              line-height:0 !important;
-              height:0 !important
-          }
-          .s-2>tbody>tr>td{
-              font-size:8px !important;
-              line-height:8px !important;
-              height:8px !important
-          }
-          .s-3>tbody>tr>td{
-              font-size:12px !important;
-              line-height:12px !important;
-              height:12px !important
-          }
-          .s-5>tbody>tr>td{
-              font-size:20px !important;
-              line-height:20px !important;
-              height:20px !important
-          }
-          .s-10>tbody>tr>td{
-              font-size:40px !important;
-              line-height:40px !important;
-              height:40px !important
-          }
-      }
-    </style>
   </head>
-  {% call body('bg-light') %}
-    {% call container() %}
-      {% call card() %}
-        {% call card_header('bg-dark') %}
-          <img src="{{ url_for("/header_logo") }}"
-               class="h-9"
-               alt="{{ header_name }}"
-               height="36" />
-        {% endcall %}
-        {% call card_body() %}
-          {% block content %}
-          {% endblock content %}
-          <hr />
-          <p class="text-xs" style="font-size: 12px; line-height: 14.4px;">
-            {% trans %}You received this email to let you know about important changes to your {{ header_name }} Account.{% endtrans %}
-          </p>
-        {% endcall %}
-      {% endcall %}
-    {% endcall %}
-  {% endcall %}
+  <body style="margin:0;
+               padding:0;
+               background-color:#f4f6f9;
+               font-family:-apple-system,'{{ font_family }}','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+               font-size:14px;
+               color:#212529">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table width="680"
+                 cellpadding="0"
+                 cellspacing="0"
+                 style="background:#ffffff;
+                        border-radius:8px;
+                        border:1px solid #dee2e6;
+                        overflow:hidden">
+            <!-- HEADER -->
+            <tr>
+              <td style="background:{{ navbar_color }};padding:20px 28px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td>
+                      <div style="font-size:20px;font-weight:700;">
+                        <img src="{{ url_for("/header_logo") }}"
+                             alt="{{ header_name }}"
+                             height="36" />
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- BODY -->
+            <tr>
+              <td style="padding:20px 28px;">
+                {% block content %}
+                {% endblock content %}
+              </td>
+            </tr>
+            <!-- FOOTER -->
+            <tr>
+              <td style="background:#f8f9fa;
+                         padding:16px 28px;
+                         text-align:center;
+                         font-size:11px;
+                         color:#adb5bd;
+                         border-top:1px solid #e9ecef">
+                <p style="margin:0 0 6px;">
+                  {% trans %}You received this email to let you know about important changes to your {{ header_name }} account.{% endtrans %}
+                </p>
+                <p style="margin:0;color:#ced4da;">{% trans %}Powered by{% endtrans %} {{ footer_name }} © 2026</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>

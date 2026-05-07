@@ -1,41 +1,31 @@
 {% extends 'email_layout.html' %}
+{% from 'include/email_repo_card.html' import repo_card with context %}
 {% block title %}
-  {% if repos %}
-    {% trans %}Backup inactive{% endtrans %}
-  {% else %}
-    {% trans %}Notification{% endtrans %}
-  {% endif %}
+  {% trans %}Backup Alert{% endtrans %}
 {% endblock title %}
 {% block content %}
   <h1>
     <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
   </h1>
-  <p>{% trans %}You are receiving this email to notify you about your backups.{% endtrans %}</p>
-  {# Quota Usage #}
-  {{ storage_usage(disk_usage, disk_quota) }}
-  {# Inactive repo #}
-  {% if repos %}
-    <p>
-      {% trans %}The following repositories are inactive for some time. We invite you to have a look at your last backup schedule.{% endtrans %}
-    </p>
-    <ul>
-      {% for repo in repos %}
-        <li>
-          <a>{{ repo.display_name }}</a>
-          <br />
-          <strong style="color: {{ fgcolor(cls) }}">
-            {% if repo.last_backup_date %}
-              {% trans %}Last backup {% endtrans %}
-              <time datetime="{{ repo.last_backup_date }}"
-                    title="{{ repo.last_backup_date }}">
-                {{ repo.last_backup_date | lastupdated }}
-              </time>
-            {% endif %}
-            {% if repo.status[0] != 'ok' %}{{ repo.status[1] }}{% endif %}
-          </strong>
-        </li>
-      {% endfor %}
-    </ul>
-    <p>{% trans %}If you don't want to be notify about this. You need to review your user preferences.{% endtrans %}</p>
-  {% endif %}
+  <p>
+    {% trans %}One or more of your backup repositories require your attention. Here is a summary of the issues detected.{% endtrans %}
+  </p>
+  {# Affected Repositories — Header #}
+  <table width="100%"
+         cellpadding="0"
+         cellspacing="0"
+         style="margin-bottom:12px">
+    <tbody>
+      <tr>
+        <td>
+          <div style="font-size:15px;font-weight:700;">{% trans %}Affected Repositories{% endtrans %}</div>
+          <div style="font-size:12px;color:#6c757d;margin-top:2px;">
+            {% trans %}Only repositories that need your attention are listed below.{% endtrans %}
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  {# Affected Repositories — Cards #}
+  {% for repo in repo_objs %}{{ repo_card(repo) }}{% endfor %}
 {% endblock content %}

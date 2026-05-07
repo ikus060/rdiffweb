@@ -1,4 +1,8 @@
 {% extends 'email_layout.html' %}
+{% from 'include/email_repo_card.html' import repo_card with context %}
+{% from 'include/email_storage_usage_card.html' import storage_usage with context %}
+{% from 'include/email_kpi_cards.html' import kpi_cards with context %}
+{% set mdash = '&mdash;' | safe %}
 {% block title %}
   {% if time_range == 30 %}
     {% trans %}Monthly Backup Report{% endtrans %}
@@ -27,110 +31,82 @@
       {% trans %}Here is your backup report presenting an overview of the activities within your backup from {{ start }} to {{ end }}.{% endtrans %}
     {% endif %}
   </p>
-  {# Quota Usage #}
+  {# KPI Card #}
+  {{ kpi_cards() }}
+  {# Storage #}
   {{ storage_usage(disk_usage, disk_quota) }}
-  {# Repo statistics #}
-  {% for repo in data %}
-    <b>
-      {{ repo.display_name }}
-    </b>
-    {% call card('bg-light') %}
-      {% call card_body() %}
-        {# Status #}
-        {% call row() %}
-          {% call col('text-success' if repo.status[0] == 'ok' else 'text-warning') %}
-            <b>
-              {% trans %}Status{% endtrans %}
-            </b>
-          {% endcall %}
-          {% call col('text-success' if repo.status[0] == 'ok' else 'text-warning') %}
-            <b>
-              {{ repo.status[1] }}
-            </b>
-          {% endcall %}
-        {% endcall %}
-        {# Last backup Date #}
-        {% call row() %}
-          {% call col() %}
-            {% trans %}Last backup Date{% endtrans %}
-          {% endcall %}
-          {% call col() %}
-            {{ repo.last_backup_date.epoch|format_datetime("long") if repo.last_backup_date else '-' }}
-          {% endcall %}
-        {% endcall %}
-        {# Current size #}
-        {% call row() %}
-          {% call col() %}
-            {% trans %}Current size{% endtrans %}
-          {% endcall %}
-          {% call col() %}
-            {{ repo.sourcefilesize|filesize if repo.sourcefilesize is not none else '-' }}
-          {% endcall %}
-        {% endcall %}
-        {# Avg. Time #}
-        {% call row() %}
-          {% call col() %}
-            {% trans %}Avg. Time{% endtrans %}
-          {% endcall %}
-          {% call col() %}
-            {% if repo.elapsedtime %}
-              {{ repo.elapsedtime | format_timedelta }}
-            {% else %}
-              -
-            {% endif %}
-          {% endcall %}
-        {% endcall %}
-        {# New files #}
-        {% call row() %}
-          {% call col() %}
-            {% trans %}New files{% endtrans %}
-          {% endcall %}
-          {% call col() %}
-            {% if repo.newfiles %}
-              {{ repo.newfiles }} ({{ repo.newfilesize|filesize if repo.newfilesize is not none else '-' }})
-            {% else %}
-              -
-            {% endif %}
-          {% endcall %}
-        {% endcall %}
-        {# Deleted files #}
-        {% call row() %}
-          {% call col() %}
-            {% trans %}Deleted files{% endtrans %}
-          {% endcall %}
-          {% call col() %}
-            {% if repo.deletedfiles %}
-              {{ repo.deletedfiles }}  ({{ repo.deletedfilesize|filesize if repo.deletedfilesize is not none else '-' }})
-            {% else %}
-              -
-            {% endif %}
-          {% endcall %}
-        {% endcall %}
-        {# Changed files #}
-        {% call row() %}
-          {% call col() %}
-            {% trans %}Changed files{% endtrans %}
-          {% endcall %}
-          {% call col() %}
-            {% if repo.changedfiles %}
-              {{ repo.changedfiles }} ({{ repo.changedsourcesize|filesize if repo.changedsourcesize is not none else '-' }})
-            {% else %}
-              -
-            {% endif %}
-          {% endcall %}
-        {% endcall %}
-        {# Error Count #}
-        {% call row() %}
-          {% call col() %}
-            {% trans %}Error Count{% endtrans %}*
-          {% endcall %}
-          {% call col() %}
-            {{ repo.errors if repo.errors is not none else '-' }}
-          {% endcall %}
-        {% endcall %}
-      {% endcall %}
-    {% endcall %}
-    {{ mb4() }}
-  {% endfor %}
-  *{% trans %}A small number of errors does not indicate a problem with your backup.{% endtrans %}
+  {# Heatmap - Header #}
+  <table width="100%"
+         cellpadding="0"
+         cellspacing="0"
+         style="margin-bottom:12px">
+    <tbody>
+      <tr>
+        <td>
+          <div style="font-size:15px;font-weight:700;">{% trans %}Backup Activity{% endtrans %}</div>
+          <div style="font-size:12px;color:#6c757d;margin-top:2px;">
+            {{ _('Last %(days)s days — all repositories combined', days=(activity_end - activity_start).days) }}
+          </div>
+        </td>
+        <td align="right"
+            valign="top"
+            style="font-size:12px;
+                   color:#6c757d;
+                   white-space:nowrap">{{- _('%(count)s backups', count=activity_dates | length) }}</td>
+      </tr>
+    </tbody>
+  </table>
+  {# Heatmap - bar #}
+  {% set palette = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"] %}
+  <style>
+    .hm-table  {
+        border-collapse:collapse;
+        width:100%;
+        table-layout:fixed;
+        font-family:Arial,sans-serif; 
+    }
+    .hm-label  {
+        font-size:.875em; 
+        color:#6c757d; 
+        white-space:nowrap;
+    }
+    .hm-dow {
+        text-align: center;
+        padding-right: 3px;
+        vertical-align: middle; 
+    }
+    .hm-month {
+        vertical-align:bottom;
+        padding:0 1px 2px;
+        height:14px; overflow:visible;
+    }
+    .hm-cell {
+        padding:1px;
+    }
+    .hm-square {
+        border-radius:2px;
+        aspect-ratio:1/1;
+        width:100%;
+        display:block;
+    }
+  </style>
+  <Heatmap :start="activity_start" :end="activity_end" :events="activity_dates" :palette="palette" style="margin-bottom:24px" />
+  {# Repositories - Header #}
+  <table width="100%"
+         cellpadding="0"
+         cellspacing="0"
+         style="margin-bottom:12px">
+    <tbody>
+      <tr>
+        <td>
+          <div style="font-size:15px;font-weight:700;">{% trans %}Repositories{% endtrans %}</div>
+          <div style="font-size:12px;color:#6c757d;margin-top:2px;">
+            {% trans %}Status of each backup repository{% endtrans %}
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  {# Repositories — Cards #}
+  {% for repo in repo_objs %}{{ repo_card(repo) }}{% endfor %}
 {% endblock content %}

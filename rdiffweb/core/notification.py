@@ -21,6 +21,7 @@ User can control the notification period.
 import logging
 import platform
 import re
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 import cherrypy
@@ -33,21 +34,9 @@ from packaging.version import InvalidVersion, Version
 from sqlalchemy import func, or_
 
 from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.core.model import RepoObject, UserObject
+from rdiffweb.core.model import UserObject
 
 logger = logging.getLogger(__name__)
-
-
-def _sum(iterable):
-    if len(iterable) == 0:
-        return None
-    return sum(iterable)
-
-
-def _avg(iterable):
-    if len(iterable) == 0:
-        return None
-    return sum(iterable) / len(iterable)
 
 
 class NotificationPlugin(SimplePlugin):
@@ -64,10 +53,6 @@ class NotificationPlugin(SimplePlugin):
     bcc = None
 
     header_name = 'rdiffweb'
-
-    link_color = '#35979c'
-
-    navbar_color = '#383e45'
 
     current_version = None
 
@@ -164,10 +149,11 @@ class NotificationPlugin(SimplePlugin):
 
         # Add branding variable to template creation.
         param = {
-            'header_name': self.header_name,
-            'font_family': 'Open Sans',
-            'link_color': self.link_color,
-            'navbar_color': self.navbar_color,
+            # Hardcode bootstrap colors.
+            'success_color': "rgb(25, 135, 84)",
+            'warning_color': "rgb(255, 193, 7)",
+            'info_color': "rgb(13, 202, 240)",
+            'danger_color': "rgb(220, 53, 69)",
         }
         # Compile the email body
         with preferred_lang(userobj.lang):
@@ -269,28 +255,26 @@ class NotificationPlugin(SimplePlugin):
         Loop trough all the user repository and send notifications.
         """
         # For Each user with an email.
-        now = RdiffTime()
         for userobj in UserObject.query.filter(UserObject.email != ''):
             try:
-                # Identify the repository without activities using the backup statistics.
-                old_repos = [
-                    repo
-                    for repo in RepoObject.query.filter(
-                        RepoObject.user == userobj, or_(RepoObject.maxage > 0, RepoObject.inactivity > 0)
+                # Identify repo with issues.
+                repo_objs = [r for r in userobj.repo_objs if r.status[0] != 'ok']
+                # Send email if required
+                if repo_objs:
+                    self._queue_mail(
+                        userobj,
+                        template="email_notification.html",
+                        repo_objs=repo_objs,
                     )
-                    if repo.status[0] != 'ok'
-                    if now.weekday not in repo.ignore_weekday
-                ]
                 # Check user's disk usage
                 disk_usage = userobj.disk_usage
                 disk_quota = userobj.disk_quota
                 used_pct = disk_usage / disk_quota * 100 if disk_quota else 0
                 # Send email if required
-                if old_repos or used_pct > 90:
+                if used_pct > 90:
                     self._queue_mail(
                         userobj,
-                        template="email_notification.html",
-                        repos=old_repos,
+                        template="email_storage_usage.html",
                         disk_usage=disk_usage,
                         disk_quota=disk_quota,
                     )
@@ -347,64 +331,56 @@ class NotificationPlugin(SimplePlugin):
         now = now.astimezone().replace(hour=0, minute=0, second=0)
         if time_range == 30:
             # Monthly
-            end_time = now - timedelta(days=now.day - 1)
-            start_time = (end_time - timedelta(days=27)).replace(day=1)
+            end_time = activity_end = now - timedelta(days=now.day - 1)
+            start_time = activity_start = (end_time - timedelta(days=27)).replace(day=1)
         elif time_range == 7:
             # Weekly
-            end_time = now - timedelta(days=now.weekday())
-            start_time = end_time - timedelta(days=time_range)
+            end_time = activity_end = now - timedelta(days=now.weekday())
+            start_time = activity_start = end_time - timedelta(days=time_range)
         else:
             # Other
-            end_time = now
+            end_time = activity_end = now
             start_time = end_time - timedelta(days=time_range)
+            activity_start = RdiffTime() - timedelta(days=30)
 
         # Check if we need to sent a new report
         if not force and userobj.report_last_sent is not None and RdiffTime(userobj.report_last_sent) > start_time:
             return False
 
-        # Compute the data for each repository
-        data = []
-        for repo in sorted(userobj.repo_objs, key=lambda r: r.display_name):
-            data.append(
-                {
-                    'display_name': repo.display_name,
-                    'last_backup_date': repo.last_backup_date,
-                    'maxage': repo.maxage,
-                    'status': repo.status,
-                }
-            )
-            try:
-                stats = repo.session_statistics[start_time:end_time]
-                data[-1].update(
-                    {
-                        'elapsedtime': _avg([s.elapsedtime for s in stats]),
-                        'newfiles': _sum([s.newfiles for s in stats]),
-                        'deletedfiles': _sum([s.deletedfiles for s in stats]),
-                        'changedfiles': _sum([s.changedfiles for s in stats]),
-                        'newfilesize': _sum([s.newfilesize for s in stats]),
-                        'deletedfilesize': _sum([s.deletedfilesize for s in stats]),
-                        'changedsourcesize': _sum([s.changedsourcesize for s in stats]),
-                        'totaldestinationsizechange': _sum([s.totaldestinationsizechange for s in stats]),
-                        'sourcefilesize': (
-                            repo.session_statistics[-1].sourcefilesize if len(repo.session_statistics) else None
-                        ),
-                        'errors': _sum([s.errors for s in stats]),
-                    }
-                )
-            except Exception:
-                logger.warning('fail to collect data for %s %s', userobj, repo, exc_info=1)
+        repo_objs = list(userobj.repo_objs)
+        status_counts = Counter(r.status[0] for r in repo_objs)
+
+        data = {
+            "start_time": start_time,
+            "end_time": end_time,
+            "time_range": time_range,
+            # User repo
+            "repo_objs": repo_objs,
+            "total_repo": len(repo_objs),
+            "total_ok": status_counts["ok"],
+            "total_failed": status_counts["failed"],
+            "total_overdue": status_counts["overdue"],
+            "total_interrupted": status_counts["interrupted"],
+            "total_in_progress": status_counts["in_progress"],
+            # Errors
+            "error_count": sum(r.session_statistics[-1].errors for r in repo_objs if r.last_backup_date),
+            # Storage
+            "disk_usage": userobj.disk_usage,
+            "disk_quota": userobj.disk_quota,
+            "repos_usage": {
+                repo.display_name: repo.session_statistics[-1].sourcefilesize if repo.session_statistics else 0
+                for repo in repo_objs
+            },
+            # Heatmap
+            "activity_start": activity_start,
+            "activity_end": activity_end,
+            "activity_dates": [
+                d.date for repo in repo_objs for d in repo.session_statistics[activity_start:activity_end]
+            ],
+        }
 
         # Generate email.
-        self._queue_mail(
-            userobj,
-            template="email_report.html",
-            data=data,
-            disk_usage=userobj.disk_usage,
-            disk_quota=userobj.disk_quota,
-            time_range=time_range,
-            start_time=start_time,
-            end_time=end_time,
-        )
+        self._queue_mail(userobj, template="email_report.html", **data)
         return True
 
 

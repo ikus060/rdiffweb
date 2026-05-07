@@ -87,5 +87,7 @@ class HomePage:
             # Heatmap
             "activity_start": activity_start,
             "activity_end": activity_end,
-            "activity_dates": [d for repo in repo_objs for d in repo.session_statistics.keys()],
+            "activity_dates": [
+                d.date for repo in repo_objs for d in repo.session_statistics[activity_start:activity_end]
+            ],
         }

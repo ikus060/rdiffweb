@@ -1,0 +1,15 @@
+{% extends 'email_layout.html' %}
+{% from 'include/email_storage_usage_card.html' import storage_usage with context %}
+{% block title %}
+  {% trans %}Storage Alert{% endtrans %}
+{% endblock title %}
+{% block content %}
+  <h1>
+    <a>{% trans username=(user.fullname or user.username) %}Hey {{ username }},{% endtrans %}</a>
+  </h1>
+  <p>
+    {% trans %}Your backup storage is critically full. Immediate action is required to avoid backup failures.{% endtrans %}
+  </p>
+  {# Storage Usage Card #}
+  {{ storage_usage(disk_usage, disk_quota) }}
+{% endblock content %}

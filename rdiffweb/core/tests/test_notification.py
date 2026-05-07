@@ -78,7 +78,7 @@ class NotificationJobTest(AbstractNotificationTest):
         # Then an email is queue for this user
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
-            subject='Backup inactive',
+            subject='Backup Alert',
             message=ANY,
         )
 
@@ -99,7 +99,7 @@ class NotificationJobTest(AbstractNotificationTest):
         # Then a notification is sent to the user.
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
-            subject='Backup inactive',
+            subject='Backup Alert',
             message=ANY,
         )
 
@@ -110,9 +110,9 @@ class NotificationJobTest(AbstractNotificationTest):
         user.email = 'test@test.com'
         user.commit()
         self.listener.get_disk_quota.return_value = user.disk_usage
-        # Given a user with a repo without max age.
-        repo = RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
-        repo.commit()
+        # Given a user with a healty repo.
+        RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == 'broker-repo').delete()
+        user.commit()
         self.listener.queue_email.reset_mock()
         # When running notification_job
         cherrypy.notification.notification_job()
@@ -120,15 +120,18 @@ class NotificationJobTest(AbstractNotificationTest):
         # Then an email is queue for this user
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
-            subject='Notification',
+            subject='Storage Alert',
             message=ANY,
         )
 
     def test_notification_job_without_notification(self):
-        # Given a valid user with a repository configured without notification (-1)
+        # Given a valid user.
         user = UserObject.get_user(self.USERNAME)
         user.email = 'test@test.com'
         user.add().commit()
+        # Given a user with a healty repo.
+        RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == 'broker-repo').delete()
+        # Given repository configured without notification (-1)
         repo = RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == self.REPO).first()
         repo.maxage = -1
         repo.add().commit()
@@ -156,7 +159,7 @@ class NotificationJobTest(AbstractNotificationTest):
         # Then an email is queue for this user
         self.listener.queue_email.assert_called_once_with(
             to='test@test.com',
-            subject='Backup inactive',
+            subject='Backup Alert',
             message=ANY,
         )
 
@@ -443,12 +446,11 @@ class NotificationConfigTest(AbstractNotificationTest):
         user.add().commit()
         self.listener.queue_email.reset_mock()
         user.email = 'email_changed@test.com'
-        user.add().commit()
         # Then an email is sent to the user
+        user.add().commit()
         self.listener.queue_email.assert_called_once()
         # Then the email is customized with the branding
         message = self.listener.queue_email.call_args[1]['message']
-        self.assertIn('#123456', message)
         self.assertIn('#7890ab', message)
         self.assertIn('MyHeaderName', message)
 

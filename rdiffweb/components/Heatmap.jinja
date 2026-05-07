@@ -17,11 +17,7 @@
 {% set ns_mt = namespace(last_month=-1) %}
 {# Minimum days from edge required to show a label #}
 {% set edge_guard = 5 %}
-<table class="hm-table"
-       role="presentation"
-       cellpadding="0"
-       cellspacing="0"
-       border="0">
+<table {{ attrs.render(class="hm-table", role="presentation", cellpadding="0", cellspacing="0", border="0") }}>
   {# Row 1: month labels — shown only on month change, not too close to edges #}
   <tr>
     {% for i in range(total_days) %}

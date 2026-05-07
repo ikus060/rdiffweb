@@ -200,13 +200,7 @@ class Root:
         """
         Return CSS file based on branding configuration
         """
-        cfg = cherrypy.tree.apps[''].cfg
-        param = {}
-        # Get values from configuration.
-        for key in ['link_color', 'btn_bg_color', 'btn_fg_color', 'navbar_color', 'font_family']:
-            if getattr(cfg, key, None):
-                param[key] = getattr(cfg, key, None)
-        return param
+        return {}
 
 
 class RdiffwebApp(Application):
@@ -233,6 +227,12 @@ class RdiffwebApp(Application):
                 'page_registry': page_registry,
                 'breadcrumb_repo': breadcrumb_repo,
                 'breadcrumb_page': breadcrumb_page,
+                # Color branding
+                'link_color': cfg.link_color,
+                'btn_bg_color': cfg.btn_bg_color,
+                'btn_fg_color': cfg.btn_fg_color,
+                'navbar_color': cfg.navbar_color,
+                'font_family': cfg.font_family,
             },
             filters={
                 'lastupdated': lambda dt: format_timedelta(dt - datetime.now(timezone.utc), add_direction=True),
@@ -322,7 +322,7 @@ class RdiffwebApp(Application):
                 'smtp.server': cfg.email_host,
                 'smtp.username': cfg.email_username,
                 'smtp.password': cfg.email_password,
-                'smtp.email_from': (cfg.header_name, cfg.email_sender),
+                'smtp.email_from': (cfg.header_name, cfg.email_sender) if cfg.email_sender else None,
                 'smtp.encryption': cfg.email_encryption,
                 # Configure remove_older plugin
                 'remove_older.execution_time': self.cfg.remove_older_time,
@@ -332,8 +332,6 @@ class RdiffwebApp(Application):
                 'notification.header_name': self.cfg.header_name,
                 'notification.env': env,
                 'notification.bcc': self.cfg.email_catch_all,
-                'notification.link_color': self.cfg.link_color,
-                'notification.navbar_color': self.cfg.navbar_color,
                 # Configure latest lookup notification.
                 'notification.current_version': self.version,
                 'notification.latest_version_url': self.cfg.latest_version_url,
