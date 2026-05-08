@@ -27,8 +27,7 @@ classifiers = [
 ]
 dependencies = [
     "cryptography",
-    "cherrypy>=18.0.0",
-    "rdiffweb==2.11.5",
+    "rdiffweb",
     "requests",
     "snakeoil",
     "tzlocal",
@@ -65,3 +64,4 @@ line-length = 120
 skip-string-normalization = "True"
 
 [tool.setuptools_scm]
+root = ".."
