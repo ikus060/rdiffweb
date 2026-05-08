@@ -24,7 +24,7 @@
   <div id="rdw-sidebar-menu"
        class="collapse navbar-collapse flex-column align-items-stretch mt-3">
     {# Home #}
-    <ul class="nav flex-column nav-pills">
+    <ul class="nav navbar-nav flex-column">
       {% set home_page = page_registry.get('home') %}
       <NavItem :label="home_page.label"
                :href="url_for(home_page, currentuser.username)"
@@ -39,7 +39,7 @@
       <div class="navbar-text mt-2">
         <strong>{% trans %}Administration{% endtrans %}</strong>
       </div>
-      <ul id="rdw-overflow-menu" class="nav flex-column nav-pills flex-nowrap">
+      <ul id="rdw-overflow-menu" class="nav navbar-nav flex-column flex-nowrap">
         {% for page in page_registry.get_admin_nav_pages() %}
           <NavItem :label="page.label"
                    :icon="page.icon"
@@ -52,7 +52,7 @@
       <div class="navbar-text mt-2">
         <strong>{% trans %}User profile{% endtrans %}</strong>
       </div>
-      <ul id="rdw-overflow-menu" class="nav flex-column nav-pills flex-nowrap">
+      <ul id="rdw-overflow-menu" class="nav navbar-nav flex-column flex-nowrap">
         {% for page in page_registry.get_prefs_nav_pages() %}
           <NavItem :label="page.label"
                    :href="url_for(page)"
@@ -66,7 +66,7 @@
           <strong>{% trans %}Your repositories{% endtrans %}</strong>
         </div>
         {# When repo selected, display a dropdown with selected repo. #}
-        <ul class="nav flex-column nav-pills">
+        <ul class="nav navbar-nav flex-column">
           <li class="nav-item dropdown w-100">
             <a class="nav-link d-flex align-items-center gap-3 active text-truncate"
                data-bs-toggle="dropdown"
@@ -82,13 +82,13 @@
             </a>
             <ul class="dropdown-menu w-100">
               {% for repo in currentuser.repo_objs | sort(attribute='name') %}
-                <NavItemRepo class="dropdown-item" repo={{ repo }} active={{ active_repo==repo }} />
+                <NavItemRepo type="dropdown-item" repo={{ repo }} active={{ active_repo==repo }} />
               {% endfor %}
             </ul>
           </li>
         </ul>
         <ul id="rdw-overflow-menu"
-            class="nav flex-column nav-pills mt-2 flex-nowrap">
+            class="nav navbar-nav flex-column mt-2 flex-nowrap">
           {% set insights_pages = page_registry.get_insight_nav_pages() %}
           {% for page in page_registry.get_repo_nav_pages() %}
             <NavItem :label="page.label"
@@ -97,7 +97,7 @@
                      :active="page.id == active_page.id or page.id == active_page.active_page" />
             {# Show graphs sub-menu #}
             {% if page.id == 'insights' and active_page in insights_pages %}
-              <ul class="nav flex-column nav-pills mt-2 ms-5">
+              <ul class="nav navbar-nav flex-column mt-2 ms-5">
                 {% for page in insights_pages %}
                   <NavItem :label="page.label"
                            :href="url_for(page, repo)"
@@ -112,66 +112,70 @@
         <div class="navbar-text mt-2">
           <strong>{% trans %}Your repositories{% endtrans %}</strong>
         </div>
-        <ul id="rdw-overflow-menu" class="nav flex-column nav-pills flex-nowrap">
-          {% for repo in currentuser.repo_objs | sort(attribute='name') %}<NavItemRepo repo={{ repo }} />{% endfor %}
+        <ul id="rdw-overflow-menu" class="nav navbar-nav flex-column flex-nowrap">
+          {% for repo in currentuser.repo_objs | sort(attribute='name') %}
+            <NavItemRepo class="nav-link" repo={{ repo }} />
+          {% endfor %}
         </ul>
       {% endif %}
     {% endif %}
     {# Administration #}
-    {% if currentuser and currentuser.is_admin %}
-      {% if not admin_expended %}
-        {# Administration - collapsed #}
-        <div class="dropdown dropup pt-2">
-          <a href="#"
-             class="p-2 d-flex align-items-center text-decoration-none dropdown-toggle"
-             id="rdw-dropdown-admin"
-             data-bs-toggle="dropdown"
-             aria-expanded="false">
-            <RdwIcon value="bi-gear" class="bi-fw me-3" />
-            <span>{% trans %}Administration{% endtrans %}</span>
-          </a>
-          <ul class="dropdown-menu" aria-label="rdw-dropdown-admin">
-            {% for page in page_registry.get_admin_nav_pages() %}
-              <NavItem type="dropdown-item"
-                       :label="page.label"
-                       :icon="page.icon"
-                       :href="url_for(page)"
-                       :active="page.id == active_page.id or page.id == active_page.active_page" />
-            {% endfor %}
-          </ul>
-        </div>
-      {% endif %}
-    {% endif %}
-    <div class="dropdown dropup pt-2">
-      <a href="#"
-         class="p-2 d-flex align-items-center text-decoration-none dropdown-toggle"
-         id="rdw-dropdown-user"
-         data-bs-toggle="dropdown"
-         aria-expanded="false">
-        <RdwIcon value="user" class="bi-fw me-3" />
-        <span>{{ currentuser.username }}</span>
-      </a>
-      <ul class="dropdown-menu" aria-label="rdw-dropdown-user">
-        {% if not user_expended %}
-          {# User profile - collapsed #}
-          <h6 class="dropdown-header">{% trans %}User Profile{% endtrans %}</h6>
-          {% for page in page_registry.get_prefs_nav_pages() %}
-            <NavItem type="dropdown-item"
-                     :label="page.label"
-                     :href="url_for(page)"
-                     :active="page.id == active_page.id or page.id in breadcrumbs" />
-          {% endfor %}
-          <li>
-            <hr class="dropdown-divider">
+    <ul class="navbar-nav flex-column">
+      {% if currentuser and currentuser.is_admin %}
+        {% if not admin_expended %}
+          {# Administration - collapsed #}
+          <li class="nav-item dropdown dropup pt-2">
+            <a href="#"
+               class="nav-link p-2 d-flex align-items-center text-decoration-none dropdown-toggle"
+               id="rdw-dropdown-admin"
+               data-bs-toggle="dropdown"
+               aria-expanded="false">
+              <RdwIcon value="bi-gear" class="bi-fw me-3" />
+              <span>{% trans %}Administration{% endtrans %}</span>
+            </a>
+            <ul class="dropdown-menu" aria-label="rdw-dropdown-admin">
+              {% for page in page_registry.get_admin_nav_pages() %}
+                <NavItem type="dropdown-item"
+                         :label="page.label"
+                         :icon="page.icon"
+                         :href="url_for(page)"
+                         :active="page.id == active_page.id or page.id == active_page.active_page" />
+              {% endfor %}
+            </ul>
           </li>
         {% endif %}
-        <li>
-          <form action="{{ url_for("logout") }}" method="post">
-            <button type="submit" class="dropdown-item">{% trans %}Logout{% endtrans %}</button>
-          </form>
-        </li>
-      </ul>
-    </div>
+      {% endif %}
+      <li class="nav-item dropdown dropup pt-2">
+        <a href="#"
+           class="nav-link p-2 d-flex align-items-center text-decoration-none dropdown-toggle"
+           id="rdw-dropdown-user"
+           data-bs-toggle="dropdown"
+           aria-expanded="false">
+          <RdwIcon value="user" class="bi-fw me-3" />
+          <span>{{ currentuser.username }}</span>
+        </a>
+        <ul class="dropdown-menu" aria-label="rdw-dropdown-user">
+          {% if not user_expended %}
+            {# User profile - collapsed #}
+            <h6 class="dropdown-header">{% trans %}User Profile{% endtrans %}</h6>
+            {% for page in page_registry.get_prefs_nav_pages() %}
+              <NavItem type="dropdown-item"
+                       :label="page.label"
+                       :href="url_for(page)"
+                       :active="page.id == active_page.id or page.id in breadcrumbs" />
+            {% endfor %}
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+          {% endif %}
+          <li>
+            <form action="{{ url_for("logout") }}" method="post">
+              <button type="submit" class="dropdown-item">{% trans %}Logout{% endtrans %}</button>
+            </form>
+          </li>
+        </ul>
+      </li>
+    </ul>
   </div>
   {# /rdw-sidebar-menu #}
 </nav>
