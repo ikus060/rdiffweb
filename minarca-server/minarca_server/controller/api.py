@@ -1,0 +1,109 @@
+# Copyright (C) 2026 IKUS Software. All rights reserved.
+# IKUS Software inc. PROPRIETARY/CONFIDENTIAL.
+# Use is subject to license terms.
+import os
+from urllib.parse import urlparse
+
+import cherrypy
+from cherrypy.lib.auth_basic import basic_auth
+from rdiffweb.controller import Controller
+from rdiffweb.controller.api import ApiPage, _checkpassword
+from rdiffweb.core.model import SshKey, UserObject
+from sqlalchemy.exc import NoResultFound
+
+from minarca_server import __version__
+from minarca_server.core.minarcaid import verify_minarcaid
+
+
+def _public_key_lockup(fingerprint):
+    """
+    Search database for matching key and username.
+    """
+    try:
+        row = (
+            SshKey.query.with_entities(SshKey._key, UserObject.username)
+            .join(SshKey.user)
+            .filter(SshKey.fingerprint == fingerprint)
+            .filter(UserObject.status != UserObject.STATUS_DISABLED)
+            .filter(UserObject.status != UserObject.STATUS_DELETING)
+            .one()
+        )
+        return (row._key, row.username)
+    except NoResultFound:
+        return None
+
+
+def minarca_auth(realm):
+    """
+    Minarca specific implementation to authenticate against minarcaid or basic username password.
+    """
+    auth_header = cherrypy.request.headers.get('authorization')
+    if auth_header is not None and auth_header.lower().startswith('minarcaid '):
+        # split() error
+        minarcaid = auth_header.split(' ', 1)[1]
+        # Get all valid public keys.
+        try:
+            # If valid, define scope as write_user to allow editing user's settings only.
+            _key, username = verify_minarcaid(minarcaid, _public_key_lockup)
+            cherrypy.request.login = username
+            cherrypy.serving.request.scope = ['write_user']
+            return  # successful authentication
+        except ValueError as e:
+            cherrypy.log('Minarcaid auth fail: %s' % str(e), 'TOOLS.MINARCA_AUTH')
+            # Respond with 401 status and a WWW-Authenticate header
+            cherrypy.serving.response.headers['www-authenticate'] = 'Basic realm="%s"' % realm
+            raise cherrypy.HTTPError(401, str(e))
+
+    # Fallback to basic_auth
+    basic_auth(realm, _checkpassword)
+
+
+cherrypy.tools.minarca_auth = cherrypy.Tool('before_handler', minarca_auth, priority=70)
+
+
+@cherrypy.expose
+class MinarcaServerInfo(Controller):
+    def get(self):
+        """
+        Return Minarca server information.
+
+        The server information include the current server version, the remote SSH
+        server URL and SSH server identity to be used by agents to establish connection.
+        """
+        # RemoteHost
+        cfg = self.app.cfg
+        remotehost = cfg.minarca_remote_host
+        if not remotehost:
+            remotehost = urlparse(cherrypy.request.base).hostname
+
+        # Identity known_hosts
+        identity = ""
+        files = [
+            f for f in os.listdir(cfg.minarca_remote_host_identity) if f.startswith('ssh_host') if f.endswith('.pub')
+        ]
+        for fn in files:
+            with open(os.path.join(cfg.minarca_remote_host_identity, fn)) as fh:
+                if ':' in remotehost:
+                    hostname, port = remotehost.split(':', 1)
+                    identity += "[" + hostname + "]:" + port + " " + fh.read()
+                else:
+                    identity += remotehost + " " + fh.read()
+
+        # Get remote host value from config or from URL
+        return {
+            "version": __version__,
+            "remotehost": remotehost,
+            "identity": identity,
+        }
+
+
+@cherrypy.tools.auth_basic(on=False)
+@cherrypy.tools.minarca_auth(realm='minarca')
+class MinarcaApiPage(ApiPage):
+    """
+    Replacement of /api for Minarca server.
+
+    This class replace basic_auth by minarca_auth plugin.
+    """
+
+    minarca = MinarcaServerInfo()

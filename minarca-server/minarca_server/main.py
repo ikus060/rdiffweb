@@ -1,0 +1,15 @@
+# Copyright (C) 2026 IKUS Software. All rights reserved.
+# IKUS Software inc. PROPRIETARY/CONFIDENTIAL.
+# Use is subject to license terms.
+
+import rdiffweb.main
+
+from minarca_server.app import MinarcaApplication
+
+
+def main(args=None):
+    rdiffweb.main.main(args, app_class=MinarcaApplication)
+
+
+if __name__ == "__main__":
+    main()

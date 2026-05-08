@@ -1,0 +1,297 @@
+variables:
+  MINARCA_DEV_REMOTE_URL: https://minarca-dev.ikus-soft.com
+  MINARCA_DEV_USERNAME: admin
+  MINARCA_DEV_PASSWORD: admin123
+
+stages:
+- test
+- bdist
+- doc
+- upload
+- deploy
+- e2e-test
+
+.tox: &tox
+  image: python:3.12-bullseye
+  variables:
+    TOXENV: $CI_JOB_NAME
+    PIP_EXTRA_INDEX_URL: https://nexus.ikus-soft.com/repository/pypi-group/simple/
+    TZ: UTC
+  before_script:
+    - pip3 install tox
+  script:
+    - tox
+  stage: test
+
+flake8:
+  <<: *tox
+
+black:
+  <<: *tox
+
+isort:
+  <<: *tox
+
+py3:
+  <<: *tox
+  artifacts:
+    paths:
+      - "./coverage.xml"
+      - "./xunit.xml"
+    expire_in: 1 day
+
+pyinstaller:
+  <<: *tox
+  stage: bdist
+  artifacts:
+    paths:
+    - "./dist/*_amd64.deb"
+    expire_in: 1 day
+
+test-bdist-server:deb:
+  stage: bdist
+  image: buildpack-deps:$DIST
+  needs: ["pyinstaller"]
+  parallel:
+    matrix:
+    - DIST: [bullseye, bookworm, trixie, jammy, noble, plucky]
+      TZ: UTC
+  script:
+  - apt update
+  - apt install -y apt-transport-https ca-certificates lsb-release gpg
+  - curl -L https://www.ikus-soft.com/archive/minarca/public.key | gpg --dearmor > /usr/share/keyrings/minarca-keyring.gpg
+  - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/minarca-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-release-$(lsb_release -sc)/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/minarca.list
+  - apt update
+  - apt install -y ./dist/minarca-server_*_amd64.deb
+  - /opt/minarca-server/minarca-server --version
+  - if [[ -n "$CI_COMMIT_TAG" && "$(/opt/minarca-server/minarca-server --version)" != "minarca-server $CI_COMMIT_TAG" ]]; then echo "Version mismatches"; exit 1; fi
+  - (/opt/minarca-server/minarca-server --logfile= &)
+  - timeout 60 bash -c 'until curl --silent http://localhost:8080; do sleep 1; done'
+
+upload:deb:
+  image: python:3.12-bullseye
+  needs:
+  - pyinstaller
+  parallel:
+    matrix:
+    - DIST: [bullseye, bookworm, trixie, jammy, noble, plucky]
+  script: |
+    set -e
+    set -x
+    if [[ "$CI_COMMIT_TAG" == *.*.? ]]; then
+      APT_URL="https://nexus.ikus-soft.com/repository/apt-release-${DIST}/"
+      APT_COMPONENT=${DIST}
+    else
+      APT_URL="https://nexus.ikus-soft.com/repository/apt-dev-${DIST}/"
+      APT_COMPONENT=${DIST}-dev
+    fi
+    export FILE=$(ls -1 ./dist/minarca-server_*_amd64.deb)
+    curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$FILE" "$APT_URL"
+    sleep 2
+    curl --fail ${APT_URL}dists/$APT_COMPONENT/main/binary-amd64/Packages | grep "$(basename $FILE)"
+  stage: upload
+
+upload:sonar:
+  allow_failure: true
+  stage: upload
+  needs:
+  - py3
+  image: sonarsource/sonar-scanner-cli
+  only:
+    variables:
+      - $SONAR_URL
+      - $SONAR_TOKEN
+  variables:
+    SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
+  script:
+  - sonar-scanner -X -Dsonar.qualitygate.wait=True -Dsonar.python.coverage.reportPaths=coverage*.xml -Dsonar.python.xunit.reportPath=xunit*.xml -Dsonar.host.url=$SONAR_URL -Dsonar.token=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.projectVersion=$(git describe)
+
+upload:docker:
+  needs:
+    - pyinstaller
+    - upload:deb
+  stage: upload
+  image: docker:20
+  services:
+    - name: docker:20-dind
+  only:
+    variables:
+      - $DOCKER_USR
+      - $DOCKER_PWD
+  variables:
+      IMAGE_NAME: "ikus060/minarca-server"
+  script: 
+    # Login to docker registry
+    - docker login $DOCKER_REGISTRY -u $DOCKER_USR -p $DOCKER_PWD
+    # Use PACKAGE_VERSION as docker tag
+    - export PACKAGE_VERSION=$(ls -1 dist/minarca-server_*_amd64.deb | cut -d '_' -f 2)
+    - export IMAGE_TAG=${PACKAGE_VERSION//+/-}
+    - echo PACKAGE_VERSION=$PACKAGE_VERSION
+    - echo IMAGE_TAG=$IMAGE_TAG
+    # Build docker image
+    - cd docker
+    - docker build --build-arg PACKAGE_VERSION=$PACKAGE_VERSION -t $IMAGE_NAME:$IMAGE_TAG  .
+    # Push image to registry
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+    # Push more tags for releases
+    - if ! echo "$PACKAGE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then exit 0; fi
+    - MAJOR=$(echo "$PACKAGE_VERSION" | cut -d. -f1)
+    - MINOR=$(echo "$PACKAGE_VERSION" | cut -d. -f1,2)
+    - docker tag "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$MAJOR"
+    - docker tag "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$MINOR"
+    - docker push "$IMAGE_NAME:$MINOR"
+    - docker push "$IMAGE_NAME:$MAJOR"
+
+upload:docker-readme:
+  needs:
+    - upload:docker
+  only:
+    variables:
+      - $DOCKER_USR
+      - $DOCKER_PWD
+      #- $CI_COMMIT_TAG
+  image:
+    name: chko/docker-pushrm
+    entrypoint: ["/bin/sh", "-c"]
+  variables:
+    DOCKER_USER: $DOCKER_USR
+    DOCKER_PASS: $DOCKER_PWD
+    PUSHRM_SHORT: Your open-source, user-friendly data backup solution
+    PUSHRM_TARGET: ikus060/minarca-server
+    PUSHRM_DEBUG: 1
+    PUSHRM_FILE: $CI_PROJECT_DIR/docker/README.md
+  script:
+    - /docker-pushrm
+  stage: upload
+
+deploy:dev:
+  allow_failure: True
+  environment:
+    name: dev
+    url: https://minarca-dev.ikus-soft.com
+  needs: 
+  - pyinstaller
+  - upload:deb
+  image: heitormotta/pipeline-trigger:2.9.0
+  script:
+    - export DEB_VERSION=$(ls -1 dist/minarca-server_*_amd64.deb | cut -d '_' -f 2)
+    - echo DEB_VERSION=$DEB_VERSION
+    # Trigger ansible-config pipeline
+    - trigger -a "$ANSIBLE_PIPELINE_GITLAB_API_TOKEN" -t master -e "MINARCA_VERSION=$DEB_VERSION" -p 36bae86778d901fc6b2d6453a41844 18716492
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+
+e2e-test:deb:
+  allow_failure: True
+  needs:
+  - deploy:dev
+  image: buildpack-deps:$DIST
+  parallel:
+    matrix:
+    - DIST: [bullseye, bookworm, trixie, jammy, noble, plucky]
+  script:
+    # Install latest minarca-client release
+    - apt update
+    - apt install -y apt-transport-https ca-certificates lsb-release gpg
+    - curl -L https://www.ikus-soft.com/archive/minarca/public.key | gpg --dearmor > /usr/share/keyrings/minarca-keyring.gpg
+    - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/minarca-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-dev-$(lsb_release -sc)/ $(lsb_release -sc)-dev main" > /etc/apt/sources.list.d/minarca.list
+    - apt update
+    - apt install -y minarca-client
+    # Smoke test
+    - minarca --version
+    - /opt/minarca/minarcaw --version
+    # Check backup
+    - minarca -d link --remoteurl "$MINARCA_DEV_REMOTE_URL" --username "$MINARCA_DEV_USERNAME" --password "$MINARCA_DEV_PASSWORD" --name "e2e-test-${DIST}-${CI_JOB_ID}"
+    - minarca -d status
+    - minarca -d include /etc /var /home
+    - minarca -d backup --force
+  stage: e2e-test
+
+e2e-test:linux:
+  allow_failure: True
+  needs:
+  - deploy:dev
+  image: buildpack-deps:jammy
+  script:
+    # Install latest minarca-client release
+    - apt update
+    - apt install -y cron openssh-client locales locales-all
+    - wget https://www.ikus-soft.com/archive/minarca/minarca-client-latest.tar.gz
+    - tar -zxvf ./minarca-client-latest.tar.gz --strip 1
+    # Smoke test
+    - ./minarca --version
+    - ./minarcaw --version
+    # Check backup
+    - ./minarca -d link --remoteurl "$MINARCA_DEV_REMOTE_URL" --username "$MINARCA_DEV_USERNAME" --password "$MINARCA_DEV_PASSWORD" --name "e2e-test-linux-${CI_JOB_ID}"
+    - ./minarca -d include /etc /var /home
+    - ./minarca -d status
+    - ./minarca -d backup --force
+  stage: e2e-test
+
+e2e-test:macos:
+  allow_failure: True
+  needs:
+  - deploy:dev
+  before_script:
+  - rm -Rf /Applications/Minarca.app
+  - rm -Rf $HOME/Library/Preferences/Minarca
+  script:
+  # Install latest minarca-client release
+  - "[ ! -e /Volumes/Minarca ] || hdiutil detach /Volumes/Minarca"
+  - curl -L -O https://www.ikus-soft.com/archive/minarca/minarca-client-latest.dmg
+  - hdiutil attach ./minarca-client-latest.dmg
+  - cp -r /Volumes/Minarca/Minarca.app /Applications/
+  # Smoke test
+  - /Applications/Minarca.app/Contents/MacOS/minarca --version
+  - /Applications/Minarca.app/Contents/MacOS/minarcaw --version
+  # Check backup
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d forget --force
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d link --remoteurl "$MINARCA_DEV_REMOTE_URL" --username "$MINARCA_DEV_USERNAME" --password "$MINARCA_DEV_PASSWORD" --name "e2e-test-macos-${CI_JOB_ID}"
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d include "$HOME/Documents"
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d status
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d backup --force
+  stage: e2e-test
+  tags:
+  - macos
+  variables:
+    LC_ALL: "en_US.UTF-8"
+
+e2e-test:win32:
+  allow_failure: True
+  needs:
+  - deploy:dev
+  script:
+  # Install minarca
+  - Invoke-WebRequest -Uri https://www.ikus-soft.com/archive/minarca/minarca-client-latest.exe -OutFile minarca-client-latest.exe
+  - Start-Process -wait "minarca-client-latest.exe" /S
+  - dir "C:\Program Files\Minarca"
+  - $Env:path = "C:\Program Files\Minarca;$Env:path"
+  - $Env:path
+  # Smoke test
+  - minarca.exe --version
+  - minarcaw.exe --version
+  # Check backup
+  - minarca.exe -d forget --force
+  - minarca.exe -d link --force --remoteurl "$MINARCA_DEV_REMOTE_URL" --username "$MINARCA_DEV_USERNAME" --password "$MINARCA_DEV_PASSWORD" --name "e2e-test-win32-${CI_JOB_ID}"
+  - minarca.exe -d include /etc /var /home
+  - minarca.exe -d status
+  - minarca.exe -d backup --force
+  stage: e2e-test
+  tags:
+  - windows
+
+e2e-test:docker:
+  stage: e2e-test
+  needs:
+    - pyinstaller
+    - upload:docker
+  services:
+    - docker:dind
+  script:
+    - export PACKAGE_VERSION=$(ls -1 dist/minarca-server_*_amd64.deb | cut -d '_' -f 2)
+    - export IMAGE_TAG=${PACKAGE_VERSION//+/-}
+    - docker run --privileged -d --name minarca -p 8080:8080 ikus060/minarca-server:$IMAGE_TAG
+    - sleep 5
+    - docker ps
+    - timeout 60 sh -c 'until wget --spider http://docker:8080; do sleep 1; done'
