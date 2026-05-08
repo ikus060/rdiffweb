@@ -13,9 +13,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 import argparse
+import grp
 import logging
+import pwd
 import re
 import sys
 from collections import OrderedDict
@@ -86,6 +87,34 @@ def _comma_or_space_separated(value):
     return items
 
 
+def _userid(value):
+    """
+    Parse the user value attribute that could be either a username or a userid.
+    """
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    try:
+        return pwd.getpwnam(value).pw_uid
+    except KeyError:
+        raise argparse.ArgumentError('Unknown user: %s' % value)
+
+
+def _groupid(value):
+    """
+    Parse the group value that could be either a group name or groupid.
+    """
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    try:
+        return grp.getgrnam(value).gr_gid
+    except KeyError:
+        raise argparse.ArgumentError('Unknown group: %s' % value)
+
+
 def _locale(value):
     """
     Validate locale value. Return string.
@@ -96,6 +125,16 @@ def _locale(value):
         return str(Locale.parse(value.replace('-', '_')))
     except Exception:
         raise argparse.ArgumentError('Unknown locale: %s' % value)
+
+
+def _umask(value):
+    """
+    Validate the umask value. Read it as octal and return integer.
+    """
+    try:
+        return int(value, base=8)
+    except ValueError:
+        raise argparse.ArgumentTypeError('Invalid umask: %s' % value)
 
 
 def _timezone(value):
@@ -680,7 +719,24 @@ def get_parser():
         default='8080',
         type=int,
     )
-
+    parser.add_argument(
+        '--umask',
+        help="Force a specific umask value. Usually expressed in octal format, for example, ``0022``. Default value is inherited from parent process.",
+        metavar='UMASK',
+        type=_umask,
+    )
+    parser.add_argument(
+        '--user',
+        help="User under which the server will handle requests. In order to use this directive, the process must be run initially as root. If you start the server as a non-root user, it will fail to change to the lesser privileged user, and will instead continue to run as that original user.",
+        metavar='USER',
+        type=_userid,
+    )
+    parser.add_argument(
+        '--group',
+        help="Group under which the server will handle requests. In order to use this directive, the process must be run initially as root.",
+        metavar='GROUP',
+        type=_groupid,
+    )
     parser.add(
         '--external-url',
         metavar='URL',

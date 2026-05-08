@@ -17,6 +17,7 @@
 import logging
 
 import cherrypy
+from cherrypy.process.plugins import DropPrivileges
 from cherrypy_foundation.logging import setup_logging
 
 from rdiffweb.core.librdiff import find_rdiff_backup
@@ -50,6 +51,11 @@ def main(args=None, app_class=RdiffwebApp):
                 'server.max_request_body_size': 2097152,
             }
         )
+
+        # DropPriviledge
+        cherrypy.drop_privileges = DropPrivileges(cherrypy.engine, umask=cfg.umask, uid=cfg.user, gid=cfg.group)
+        cherrypy.drop_privileges.subscribe()
+
         # Start web server
         cherrypy.quickstart(app_class(cfg))
     except Exception:
