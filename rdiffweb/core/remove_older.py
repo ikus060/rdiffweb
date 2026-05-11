@@ -30,13 +30,11 @@ class RemoveOlder(SimplePlugin):
 
     def start(self):
         self.bus.log('Start RemoveOlder plugin')
-        self.bus.publish(
-            'scheduler:add_job_daily', self.execution_time, f'{self.__module__}:cherrypy.remove_older.remove_older_job'
-        )
+        self.bus.publish('scheduler:add_job_daily', self.execution_time, self.remove_older_job)
 
     def stop(self):
         self.bus.log('Stop RemoveOlder plugin')
-        self.bus.publish('scheduler:remove_job', f'{self.__module__}:cherrypy.remove_older.remove_older_job')
+        self.bus.publish('scheduler:remove_job', self.remove_older_job)
 
     stop.priority = 49
 

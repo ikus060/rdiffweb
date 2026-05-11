@@ -60,15 +60,9 @@ class NotificationPlugin(SimplePlugin):
 
     def start(self):
         self.bus.log('Start Notification plugin')
-        self.bus.publish(
-            'scheduler:add_job_daily', self.execution_time, f'{self.__module__}:cherrypy.notification.check_latest_job'
-        )
-        self.bus.publish(
-            'scheduler:add_job_daily', self.execution_time, f'{self.__module__}:cherrypy.notification.notification_job'
-        )
-        self.bus.publish(
-            'scheduler:add_job_daily', self.execution_time, f'{self.__module__}:cherrypy.notification.report_job'
-        )
+        self.bus.publish('scheduler:add_job_daily', self.execution_time, self.check_latest_job)
+        self.bus.publish('scheduler:add_job_daily', self.execution_time, self.notification_job)
+        self.bus.publish('scheduler:add_job_daily', self.execution_time, self.report_job)
         self.bus.subscribe('access_token_added', self.access_token_added)
         self.bus.subscribe('authorizedkey_added', self.authorizedkey_added)
         self.bus.subscribe('user_updated', self.user_updated)
@@ -81,9 +75,9 @@ class NotificationPlugin(SimplePlugin):
 
     def stop(self):
         self.bus.log('Stop Notification plugin')
-        self.bus.publish('scheduler:remove_job', f'{self.__module__}:cherrypy.notification.check_latest_job')
-        self.bus.publish('scheduler:remove_job', f'{self.__module__}:cherrypy.notification.notification_job')
-        self.bus.publish('scheduler:remove_job', f'{self.__module__}:cherrypy.notification.report_job')
+        self.bus.publish('scheduler:remove_job', self.check_latest_job)
+        self.bus.publish('scheduler:remove_job', self.notification_job)
+        self.bus.publish('scheduler:remove_job', self.report_job)
         self.bus.unsubscribe('access_token_added', self.access_token_added)
         self.bus.unsubscribe('authorizedkey_added', self.authorizedkey_added)
         self.bus.unsubscribe('user_updated', self.user_updated)

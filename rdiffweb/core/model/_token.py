@@ -70,13 +70,11 @@ class TokenCleanup(SimplePlugin):
 
     def start(self):
         self.bus.log('Start Token Clean Up plugin')
-        self.bus.publish(
-            'scheduler:add_job_daily', self.execution_time, f'{self.__module__}:cherrypy.token_cleanup.clean_up'
-        )
+        self.bus.publish('scheduler:add_job_daily', self.execution_time, self.clean_up)
 
     def stop(self):
         self.bus.log('Stop Token Clean Up plugin')
-        self.bus.publish('scheduler:remove_job', f'{self.__module__}:cherrypy.token_cleanup.clean_up')
+        self.bus.publish('scheduler:remove_job', self.clean_up)
 
     def graceful(self):
         """Reload of subscribers."""
