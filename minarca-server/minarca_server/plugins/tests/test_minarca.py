@@ -21,11 +21,11 @@ from importlib.resources import files
 from io import open
 
 import cherrypy
-import responses
-from rdiffweb.core.model import SshKey, UserObject
-
 import minarca_server
 import minarca_server.tests
+import responses
+
+from rdiffweb.core.model import SshKey, UserObject
 
 
 class MinarcaApplicationTestPageAdminUsers(minarca_server.tests.AbstractMinarcaTest):
@@ -35,14 +35,12 @@ class MinarcaApplicationTestPageAdminUsers(minarca_server.tests.AbstractMinarcaT
         # Given an administrator authenticated
         # When creating a new user in Minarca
         self.getPage(
-            "/admin/users/new",
+            "/admin/users/",
             method="POST",
             body={
-                'action': 'add',
                 'username': 'patrik',
                 'fullname': 'Patrik Dufresne',
                 'password': 'this is my long password',
-                'user_root': '',
             },
         )
         self.assertStatus(303)
@@ -61,29 +59,12 @@ class MinarcaPluginTest(minarca_server.tests.AbstractMinarcaTest):
 
     login = True
 
-    def _add_user(self, username=None, email=None, password=None, user_root=None, is_admin=None):
-        b = {}
-        b['action'] = 'add'
-        if username is not None:
-            b['username'] = username
-        if email is not None:
-            b['email'] = email
-        if password is not None:
-            b['password'] = password
-        if user_root is not None:
-            b['user_root'] = user_root
-        if is_admin is not None:
-            b['role'] = str(UserObject.ADMIN_ROLE)
-        self.getPage("/admin/users/new", method='POST', body=b)
-
     def test_add_user_without_user_root(self):
         # Given a minarca base dir
         self.assertIsNotNone(self.app.cfg.minarca_user_base_dir)
         # When adding a new user without specific user_root
-        self._add_user("mtest1", None, "pr3j5Dwi", None, False)
-        self.assertStatus(303)
-        self.getPage("/admin/users/")
-        self.assertInBody("User added successfully.")
+        user = UserObject.add_user("mtest1", "pr3j5Dwi").add()
+        user.commit()
         # Then user root directory is defined within the base dir
         user = UserObject.get_user('mtest1')
         self.assertEqual(os.path.join(self.base_dir, 'mtest1'), user.user_root)
@@ -92,10 +73,9 @@ class MinarcaPluginTest(minarca_server.tests.AbstractMinarcaTest):
         # Given a minarca base dir
         self.assertIsNotNone(self.app.cfg.minarca_user_base_dir)
         # When adding a new user with a specific user_root
-        self._add_user("mtest2", None, "pr3j5Dwi", "/home/mtest2", False)
-        self.assertStatus(303)
-        self.getPage("/admin/users/")
-        self.assertInBody("User added successfully.")
+        user = UserObject.add_user("mtest2", "pr3j5Dwi").add()
+        user.user_root = "/home/mtest2"
+        user.commit()
         # Then user root is updated to be within the base dir
         user = UserObject.get_user('mtest2')
         self.assertEqual(os.path.join(self.base_dir, 'mtest2'), user.user_root)
@@ -137,16 +117,16 @@ class MinarcaPluginTest(minarca_server.tests.AbstractMinarcaTest):
         self.assertInBody('remotehost')
         self.assertInBody('sestican.patrikdufresne.com')
 
-    def test_get_location(self):
+    def test_get_home(self):
         """
         Given an empty minarca_quota_api_url
         When location page get request
         Then the disk usage is repported using the default behaviour.
         """
         # Make sure disk usage fall back to default behaviour.
-        self.getPage('/')
+        self.getPage('/home/admin/')
         self.assertStatus(200)
-        self.assertInBody('Usage')
+        self.assertInBody('Storage')
 
     def test_get_disk_usage(self):
         # Given an empty minarca_quota_api_url

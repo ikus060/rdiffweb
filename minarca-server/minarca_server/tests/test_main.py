@@ -5,10 +5,17 @@ import contextlib
 import io
 import unittest
 
+import cherrypy
 from minarca_server.main import main
 
 
 class Test(unittest.TestCase):
+
+    @classmethod
+    def tearDownClass(cls):
+        cherrypy.minarca.unsubscribe()
+        return super().tearDownClass()
+
     def test_main_help(self, *args):
         f = io.StringIO()
         with contextlib.redirect_stdout(f):

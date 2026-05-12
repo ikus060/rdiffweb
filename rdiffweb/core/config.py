@@ -945,27 +945,3 @@ class ConfigFileParser(configargparse.ConfigFileParser):
 
         # This dictionary is read by cherrypy. So create appropriate structure.
         return result
-
-
-class Option(object):
-    def __init__(self, key):
-        assert key
-        self.key = key
-
-    def __get__(self, instance, owner):
-        """
-        Return a property to wrap the given option.
-        """
-        return self.get(instance)
-
-    def get(self, instance=None):
-        """
-        Return the value of this options.
-        """
-        if isinstance(instance, Application):
-            app = instance
-        else:
-            app = cherrypy.request.app or getattr(instance, 'app', None)
-        assert app, "Option() can't get reference to app"
-        assert app.cfg, "Option() can't get reference to app.cfg"
-        return getattr(app.cfg, self.key)

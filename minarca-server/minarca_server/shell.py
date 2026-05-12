@@ -9,6 +9,7 @@ Created on Sep. 25, 2020
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 '''
+
 import argparse
 import logging
 import logging.handlers
@@ -18,11 +19,10 @@ import subprocess
 import sys
 
 import configargparse
-from tzlocal import get_localzone_name
-
 from minarca_server import __version__
 from minarca_server.config import get_parser
 from minarca_server.core.jail import Jail
+from tzlocal import get_localzone_name
 
 # Enforce a specific timezone when running rdiff-backup
 try:

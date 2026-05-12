@@ -6,13 +6,12 @@ from urllib.parse import urlparse
 
 import cherrypy
 from cherrypy.lib.auth_basic import basic_auth
-from rdiffweb.controller import Controller
-from rdiffweb.controller.api import ApiPage, _checkpassword
-from rdiffweb.core.model import SshKey, UserObject
-from sqlalchemy.exc import NoResultFound
-
 from minarca_server import __version__
 from minarca_server.core.minarcaid import verify_minarcaid
+from sqlalchemy.exc import NoResultFound
+
+from rdiffweb.controller.api import ApiPage, _checkpassword
+from rdiffweb.core.model import SshKey, UserObject
 
 
 def _public_key_lockup(fingerprint):
@@ -62,7 +61,7 @@ cherrypy.tools.minarca_auth = cherrypy.Tool('before_handler', minarca_auth, prio
 
 
 @cherrypy.expose
-class MinarcaServerInfo(Controller):
+class MinarcaServerInfo:
     def get(self):
         """
         Return Minarca server information.
@@ -71,7 +70,7 @@ class MinarcaServerInfo(Controller):
         server URL and SSH server identity to be used by agents to establish connection.
         """
         # RemoteHost
-        cfg = self.app.cfg
+        cfg = cherrypy.tree.apps[''].cfg
         remotehost = cfg.minarca_remote_host
         if not remotehost:
             remotehost = urlparse(cherrypy.request.base).hostname

@@ -6,6 +6,7 @@ Created on Mar 12, 2025
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 """
+
 from base64 import b64encode
 from unittest.mock import ANY
 

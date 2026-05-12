@@ -6,6 +6,7 @@ Created on Sep. 25, 2020
 
 @author: Patrik Dufresne <patrik@ikus-soft.com>
 '''
+
 import contextlib
 import io
 import os
@@ -15,11 +16,10 @@ import tempfile
 import unittest
 from unittest import mock
 
-from parameterized import parameterized
-from tzlocal import get_localzone_name
-
 from minarca_server import shell
 from minarca_server.shell import Jail
+from parameterized import parameterized
+from tzlocal import get_localzone_name
 
 USERNAME = 'joe'
 USERROOT = tempfile.gettempdir() + '/backups/joe'

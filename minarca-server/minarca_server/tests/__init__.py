@@ -3,21 +3,16 @@
 # Use is subject to license terms.
 
 import os
-import unittest
-
-if os.name == "nt":
-    raise unittest.SkipTest("only working on Linux")
-
-
 import pwd
 import shutil
 import tempfile
 import unittest
 
+import cherrypy
+from minarca_server.app import MinarcaApplication
+
 import rdiffweb
 import rdiffweb.test
-
-from minarca_server.app import MinarcaApplication
 
 
 class AbstractMinarcaTest(rdiffweb.test.WebCase):
@@ -35,15 +30,19 @@ class AbstractMinarcaTest(rdiffweb.test.WebCase):
         if not os.path.isdir(cls.base_dir):
             os.mkdir(cls.base_dir)
         # Use temporary folder for base dir
+        cls.default_config = dict(cls.default_config)
         cls.default_config['MinarcaUserBaseDir'] = cls.base_dir
         cls.default_config['minarca-home-dir'] = cls.base_dir
         cls.default_config['logfile'] = os.path.join(cls.base_dir, 'server.log')
         # Use current user for owner and group
         cls.default_config['MinarcaUserDirOwner'] = pwd.getpwuid(os.getuid())[0]
         cls.default_config['MinarcaUserDirGroup'] = pwd.getpwuid(os.getuid())[0]
+        # Register minarca plugin
+        cherrypy.minarca.subscribe()
         super(AbstractMinarcaTest, cls).setup_class()
 
     @classmethod
     def teardown_class(cls):
         super(AbstractMinarcaTest, cls).teardown_class()
+        cherrypy.minarca.unsubscribe()
         shutil.rmtree(cls.base_dir, ignore_errors=True)

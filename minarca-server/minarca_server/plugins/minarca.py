@@ -10,11 +10,11 @@ from io import StringIO, open
 import cherrypy
 import requests
 from cherrypy.process.plugins import SimplePlugin
+from sqlalchemy.exc import OperationalError, ProgrammingError
+
 from rdiffweb.core import authorizedkeys
 from rdiffweb.core.authorizedkeys import AuthorizedKey
-from rdiffweb.core.config import Option
 from rdiffweb.core.model import UserObject
-from sqlalchemy.exc import OperationalError, ProgrammingError
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -32,9 +32,6 @@ class MinarcaPlugin(SimplePlugin):
     This plugin provide feedback information to the users about the disk usage.
     Since we define quota, this plugin display the user's quota.
     """
-
-    _log_file = Option('log_file')
-    _log_access_file = Option('log_access_file')
 
     user_dir_mode = 0o0770
     user_dir_owner_id = 65534  # nobody
@@ -61,6 +58,14 @@ class MinarcaPlugin(SimplePlugin):
             self._session.mount('http://', TimeoutHTTPAdapter(pool_connections=2, pool_maxsize=5))
         return self._session
 
+    def subscribe(self):
+        cherrypy.quota.unsubscribe()
+        return super().subscribe()
+
+    def unsubscribe(self):
+        cherrypy.quota.subscribe()
+        return super().unsubscribe()
+
     def start(self):
         self.bus.log('Start Minarca plugin')
         self.bus.subscribe('user_adding', self.user_adding)
@@ -69,9 +74,10 @@ class MinarcaPlugin(SimplePlugin):
         self.bus.subscribe('user_updated', self.user_updated)
         self.bus.subscribe('user_deleted', self.user_deleted)
         if self.quota_api_url:
-            self.bus.subscribe("set_disk_quota", self.set_disk_quota)
-            self.bus.subscribe("get_disk_quota", self.get_disk_quota)
-            self.bus.subscribe("get_disk_usage", self.get_disk_usage)
+            self.bus.subscribe("set_disk_quota", self._set_disk_quota)
+            self.bus.subscribe("get_disk_quota", self._get_disk_quota)
+            self.bus.subscribe("get_disk_usage", self._get_disk_usage)
+            cherrypy.quota.stop()
         else:
             cherrypy.quota.start()
 
@@ -100,11 +106,10 @@ class MinarcaPlugin(SimplePlugin):
         self.bus.unsubscribe('user_updating', self.user_updating)
         self.bus.unsubscribe('user_updated', self.user_updated)
         self.bus.unsubscribe('user_deleted', self.user_deleted)
-        if self.quota_api_url:
-            self.bus.unsubscribe("set_disk_quota", self.set_disk_quota)
-            self.bus.unsubscribe("get_disk_quota", self.get_disk_quota)
-            self.bus.unsubscribe("get_disk_usage", self.get_disk_usage)
-        else:
+        self.bus.unsubscribe("set_disk_quota", self._set_disk_quota)
+        self.bus.unsubscribe("get_disk_quota", self._get_disk_quota)
+        self.bus.unsubscribe("get_disk_usage", self._get_disk_usage)
+        if not self.quota_api_url:
             cherrypy.quota.stop()
 
         # Remove get_log_file
@@ -114,9 +119,10 @@ class MinarcaPlugin(SimplePlugin):
         """
         Patched version of _get_log_files
         """
+        cfg = cherrypy.tree.apps[''].cfg
         # Add minarca-shell to logfile view.
         minarca_shell_logfile = os.path.join(
-            os.path.dirname(self._log_file or '/var/log/minarca/server.log'), 'shell.log'
+            os.path.dirname(cfg.log_file or '/var/log/minarca/server.log'), 'shell.log'
         )
         logfiles = self._orig_get_log_files()
         logfiles['minarca_shell'] = minarca_shell_logfile
@@ -269,7 +275,7 @@ class MinarcaPlugin(SimplePlugin):
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(new_data.getvalue())
 
-    def get_disk_usage(self, userobj):
+    def _get_disk_usage(self, userobj):
         """
         Return the user disk space.
         """
@@ -285,7 +291,7 @@ class MinarcaPlugin(SimplePlugin):
             logger.warning('fail to get user quota [%s]', userobj.username, exc_info=1)
             return 0
 
-    def get_disk_quota(self, userobj):
+    def _get_disk_quota(self, userobj):
         """
         Get's user's disk quota.
         """
@@ -300,7 +306,7 @@ class MinarcaPlugin(SimplePlugin):
             logger.warning('fail to get user quota [%s]', userobj.username, exc_info=1)
             return 0
 
-    def set_disk_quota(self, userobj, quota):
+    def _set_disk_quota(self, userobj, quota):
         """
         Sets the user's quota.
         """
@@ -317,7 +323,5 @@ class MinarcaPlugin(SimplePlugin):
 
 
 cherrypy.minarca = MinarcaPlugin(cherrypy.engine)
-cherrypy.minarca.subscribe()
-cherrypy.quota.unsubscribe()
 
 cherrypy.config.namespaces['minarca'] = lambda key, value: setattr(cherrypy.minarca, key, value)

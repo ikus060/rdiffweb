@@ -11,11 +11,11 @@ import time
 from base64 import b64encode
 from importlib.resources import files
 
-from rdiffweb.core.model import UserObject
-
 import minarca_server
 import minarca_server.tests
 from minarca_server.core.minarcaid import gen_minarcaid_v1
+
+from rdiffweb.core.model import UserObject
 
 private_key = b"""-----BEGIN RSA PRIVATE KEY-----
 MIIEogIBAAKCAQEAtC7N4D1f7d+XVDgI+hSVz908CYQGo0DLMd4KD0aeBiBJjseh

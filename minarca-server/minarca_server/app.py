@@ -7,18 +7,19 @@ import pwd
 from importlib.resources import files
 
 import cherrypy
-from rdiffweb.controller.dispatch import staticfile
-from rdiffweb.rdw_app import RdiffwebApp
-
 import minarca_server.plugins.minarca  # noqa
 from minarca_server.config import parse_args
 from minarca_server.controller.api import MinarcaApiPage
+
+from rdiffweb.controller.dispatch import staticfile
+from rdiffweb.rdw_app import RdiffwebApp
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
 
 
 class MinarcaApplication(RdiffwebApp):
+
     @classmethod
     def parse_args(cls, args=None, config_file_contents=None):
         return parse_args(args, config_file_contents)
