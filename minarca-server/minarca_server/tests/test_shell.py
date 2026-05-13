@@ -77,8 +77,6 @@ class Test(unittest.TestCase):
     @parameterized.expand(
         [
             ("rdiff-backup --server", None),
-            ("my-computer-legacy", "1.2"),
-            ("minarca/3.8.0 rdiff-backup/1.2.8 (Linux 5.11.8-051108-generic amd64)", "1.2"),
             ("minarca/4.4.0 rdiff-backup/2.0.5 (Linux 5.11.8-051108-generic amd64)", "2.0"),
             ("minarca/5.0.0 rdiff-backup/2.2.4 (Linux 5.11.8-051108-generic amd64)", "2.2"),
         ]

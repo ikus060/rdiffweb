@@ -160,9 +160,7 @@ def main(args=None):
                 rdiff_backup = _find_rdiff_backup()
             elif 'minarca/' in ssh_original_command:
                 # When called by Minarca, we receive a user agent string.
-                if 'rdiff-backup/1.2.8' in ssh_original_command:
-                    rdiff_backup = _find_rdiff_backup(version='1.2')
-                elif 'rdiff-backup/2.0' in ssh_original_command:
+                if 'rdiff-backup/2.0' in ssh_original_command:
                     rdiff_backup = _find_rdiff_backup(version='2.0')
                 elif 'rdiff-backup/2.2' in ssh_original_command:
                     rdiff_backup = _find_rdiff_backup(version='2.2')
@@ -173,7 +171,7 @@ def main(args=None):
             else:
                 # When called by legacy minarca client with rdiff-backup v1.2.8.
                 # the command should be the name of the repository.
-                rdiff_backup = _find_rdiff_backup(version='1.2')
+                sys.exit(_EXIT_UNSUPPORTED_VERSION)
 
             # Run the server in chroot jail.
             cmd = [rdiff_backup, '--server'] + _extra_args

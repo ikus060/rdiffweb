@@ -115,7 +115,6 @@ debbuild(
     ],
     depends=[
         'adduser',
-        'rdiff-backup-1.2',
         'rdiff-backup-2.0',
         'rdiff-backup-2.2',
         'openssh-client',
