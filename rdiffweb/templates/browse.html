@@ -9,12 +9,14 @@
       <tr>
         <th id="name" class="sortable">{% trans %}Name{% endtrans %}</th>
         <th id="size" class="sortable" data-type="num">{% trans %}Size{% endtrans %}</th>
+        <th id="status" class="sortable">{% trans %}Status{% endtrans %}</th>
         <th id="last-revision" class="sortable" data-type="num">{% trans %}Versions{% endtrans %}</th>
       </tr>
     </thead>
     <tbody>
       {% for entry in dir_entries %}
         <tr {% if not entry.exists %}class="table-light"{% endif %}>
+          {# Name #}
           <td data-search="{{ entry.display_name }}"
               data-order="{{ 'dir' if entry.isdir else 'file' }}-{{ entry.display_name }}">
             <RdwIcon :value="{{ 'bi-folder-fill' if entry.isdir else 'bi-file-earmark' }}" />
@@ -22,8 +24,8 @@
               <span class="visually-hidden">{{ _("DIR") if entry.isdir else _('FILE') }}</span>
               {{ entry.display_name -}}
             </a>
-            {% if not entry.exists %}<span class="ms-2 badge bg-secondary">{{ _("Deleted") }}</span>{% endif %}
           </td>
+          {# Size #}
           <td class="nowrap" data-search="" data-order="{{ entry.file_size }}">
             {% if entry.isdir %}
               &mdash;
@@ -33,6 +35,13 @@
               {{ entry.file_size | filesize }}
             {% endif %}
           </td>
+          {# Status #}
+          <td class="nowrap" data-order="{{ entry.exists }}">
+            {% if not entry.exists %}
+              <span class="badge bg-secondary bg-opacity-10 text-secondary-emphasis">{{ _("Deleted from source") }}</span>
+            {% endif %}
+          </td>
+          {# History #}
           <td data-search=""
               data-order="{{ entry.last_change_date and entry.last_change_date.epoch }}">
             {% if entry.change_dates %}
@@ -56,7 +65,7 @@
                     </a>
                   {% endfor %}
                   <a class="dropdown-item text-center"
-                     href="{{ url_for('history', repo, entry.path) }}">{% trans %}Show more...{% endtrans %}</a>
+                     href="{{ url_for('history', repo, entry.path) }}">{% trans %}Show history...{% endtrans %}</a>
                 </div>
               </div>
             {% endif %}
