@@ -3,7 +3,8 @@
 {% block content %}
   <RdwTable :paging="{{ False }}"
             :search_placeholder="{{ _("Filter files...") }}"
-            :responsive="{{ False }}">
+            :responsive="{{ False }}"
+            class="border rounded-2">
     <thead class="table-light small">
       <tr>
         <th id="name" class="sortable">{% trans %}Name{% endtrans %}</th>
