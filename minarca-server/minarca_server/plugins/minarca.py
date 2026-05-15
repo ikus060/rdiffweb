@@ -60,10 +60,12 @@ class MinarcaPlugin(SimplePlugin):
 
     def subscribe(self):
         cherrypy.quota.unsubscribe()
+        self.bus.subscribe('start', self.late_start)
         return super().subscribe()
 
     def unsubscribe(self):
         cherrypy.quota.subscribe()
+        self.bus.unsubscribe('start', self.late_start)
         return super().unsubscribe()
 
     def start(self):
@@ -85,19 +87,12 @@ class MinarcaPlugin(SimplePlugin):
         self._orig_get_log_files = self.app.root.admin.logs._get_log_files
         self.app.root.admin.logs._get_log_files = self._get_log_files
 
+    def late_start(self):
         # On startup Upgrade the authorized_keys in case the configuration
         # changed.
-        try:
-            UserObject.query.count()
-        except (ProgrammingError, OperationalError):
-            # Raised, when UserObject table doesn't exists on first start.
-            # It's not an issue as it will get called indirectly when admin user get created.
-            UserObject.session.rollback()
-        else:
-            self._update_authorized_keys()
+        self._update_authorized_keys()
 
-    # Subscribe right before rdiffweb create database and admin user.
-    start.priority = 249
+    late_start.priority = 251
 
     def stop(self):
         self.bus.log('Stop Minarca plugin')

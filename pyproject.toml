@@ -21,7 +21,7 @@ classifiers = [
     "Framework :: CherryPy"
 ]
 dependencies = [
-    "cherrypy-foundation>=1.8.1,<2",
+    "cherrypy-foundation>=1.12.0,<2",
     "cherrypy-foundation[ldap]",
     "cherrypy-foundation[oauth]",
     "cherrypy-foundation[passwd]",

@@ -257,7 +257,6 @@ class DbUpdateSchemaTest(rdiffweb.test.WebCase):
         # Replace tearDown implementation
         cherrypy.db.drop_all()
         cherrypy.db.create_all()
-        cherrypy.db.session.commit()
         super().tearDown()
 
     def test_update_schema(self):
@@ -278,8 +277,8 @@ class DbUpdateSchemaTest(rdiffweb.test.WebCase):
 
         # When updating existing schema
         if self.success:
+            cherrypy.db.clear_sessions()
             cherrypy.db.create_all()
-            cherrypy.db.session.commit()
             # Then index page is working
             self.getPage(f"/home/{self.USERNAME}")
             self.assertStatus(303)

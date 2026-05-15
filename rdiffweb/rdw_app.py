@@ -258,6 +258,7 @@ class RdiffwebApp(Application):
                 # Configure database plugins
                 'db.uri': db_uri,
                 'db.debug': cfg.debug,
+                'db.autocreate': True,
                 # Configure external_url
                 'tools.proxy.base': cfg.external_url,
                 # Configure session storage
@@ -389,9 +390,6 @@ class RdiffwebApp(Application):
     def on_start(self):
         # Since we are not a real plugin, let unsubscribe to avoid interference if server get restarted.
         cherrypy.engine.unsubscribe('start', self.on_start)
-
-        # Create database if required
-        cherrypy.db.create_all()
 
         # Create admin user
         user = UserObject.create_admin_user(self.cfg.admin_user, self.cfg.admin_password)
