@@ -1,4 +1,4 @@
-{# def data=None, columns=None, order=[], empty_message=None, info_message=None, searching=True, search_placeholder=None, buttons=[], paging=True, page_length=10, layout=None, state_save=True, server_side=False, buttons_cfg={} #}
+{# def data=None, columns=None, order=[], empty_message=None, info_message=None, searching=True, search_placeholder=None, buttons=[], paging=True, page_length=10, layout=None, state_save=True, server_side=False #}
 {# js cf/vendor/jquery/jquery.min.js, cf/vendor/datatables/js/dataTables.min.js #}
 {% set default_layout = {
   'topStart': {
@@ -35,6 +35,7 @@
     "nav": "btn-group mt-1"
   }
 } %}
+{% set buttons_cfg = {"dom": {"button": {"className": "btn btn-sm"}}} %}
 <div {{ attrs.render(class="rdw-table") }}>
   <cf:Datatable :data="data"
                 :columns="columns"

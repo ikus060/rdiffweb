@@ -42,15 +42,14 @@
     {% trans %}Event{% endtrans %}
   </span>
 {% endset %}
-{% set reset_btn = {'text': _('All'), 'extend': 'reset', 'className':'btn-primary me-2'} %}
-{% set new_type = {'text': _('Creations'), 'extend': 'filter', 'column': 'type:name', 'search':'new', 'regex': False, 'className':'btn-outline-success'} %}
-{% set dirty_type = {'text': _('Modifications'), 'extend': 'filter', 'column': 'type:name', 'search':'dirty', 'className':'btn-outline-warning'} %}
-{% set comment_type = {'text': _('Comments'), 'extend': 'filter', 'column': 'type:name', 'search':'comment', 'className':'btn-outline-warning'} %}
-{% set event_type = {'text': _('Events'), 'extend': 'filter', 'column': 'type:name', 'search':'event', 'className':'btn-outline-info'} %}
-{% set delete_type = {'text': _('Deletions'), 'extend': 'filter', 'column': 'type:name', 'search':'deleted', 'className':'btn-outline-danger'} %}
-{% set buttons_cfg = {"dom": {"button": {"className": "btn btn-sm"}}} %}
+{% set reset_btn = {'text': _('Reset Filters'), 'extend': 'reset', 'className':'btn-secondary ms-3'} %}
+{% set new_type = {'text': _('Creations'), 'extend': 'filter', 'column': 'type:name', 'search':'new', 'regex': False, 'className':'btn-outline-secondary'} %}
+{% set dirty_type = {'text': _('Modifications'), 'extend': 'filter', 'column': 'type:name', 'search':'dirty', 'className':'btn-outline-secondary'} %}
+{% set comment_type = {'text': _('Comments'), 'extend': 'filter', 'column': 'type:name', 'search':'comment', 'className':'btn-outline-secondary'} %}
+{% set event_type = {'text': _('Events'), 'extend': 'filter', 'column': 'type:name', 'search':'event', 'className':'btn-outline-secondary'} %}
+{% set delete_type = {'text': _('Deletions'), 'extend': 'filter', 'column': 'type:name', 'search':'deleted', 'className':'btn-outline-secondary'} %}
 {% if show in ['repo', 'user'] %}
-  {% set buttons = [reset_btn, new_type, dirty_type, comment_type, event_type, delete_type] %}
+  {% set buttons = [new_type, dirty_type, comment_type, event_type, delete_type, reset_btn] %}
   {% set columns = [
       {'name':'date', 'data':'date', 'title':_('Date'), 'render':'datetime'},
       {'name':'author', 'data':'author_username', 'title':_('Actor'), 'orderable':True, 'render':'actor'},
@@ -58,9 +57,10 @@
       {'name':'changes', 'data':'changes','title':_('Details'), 'render':'message_details' }
     ] %}
 {% else %}
-  {% set buttons = [reset_btn, new_type, dirty_type, comment_type, event_type, delete_type,
-      {'text': _('Users'), 'extend': 'filter', 'column': 'model_name:name', 'search':'user', 'className':'ms-2 btn-outline-secondary'},
-      {'text': _('Repositories'), 'extend': 'filter', 'column': 'model_name:name', 'search':'repo', 'className':'btn-outline-secondary'},
+  {% set buttons = [new_type, dirty_type, comment_type, event_type, delete_type,
+      {'text': _('Users'), 'extend': 'filter', 'column': 'model_name:name', 'search':'user', 'className':'ms-3 btn-outline-primary'},
+      {'text': _('Repositories'), 'extend': 'filter', 'column': 'model_name:name', 'search':'repo', 'className':'btn-outline-primary'},
+      reset_btn
     ] %}
   {% set columns = [
       {'name':'date', 'data':'date', 'title':_('Date'), 'render':'datetime'},
@@ -75,7 +75,6 @@
 <RdwTable :data="data"
           :columns="columns"
           :buttons="buttons"
-          :buttons-cfg="buttons_cfg"
           :state-save="True"
           :searching="True"
           :search-placeholder="_('Filter activities...')"

@@ -16,7 +16,7 @@
           {'text': _('Deleted'), 'extend': 'filter', 'column': 'state:name', 'search': 'deleted', 'className':'btn-outline-secondary'},
           {'text': _('Changed'), 'extend': 'filter', 'column': 'state:name', 'search': '^changed', 'regex':True, 'className':'btn-outline-secondary'},
           {'text': _('Unchanged'), 'extend': 'filter', 'column': 'state:name', 'search': '^unchanged', 'className':'btn-outline-secondary'},
-          {'text': _('All'), 'extend': 'reset', 'className': 'btn-secondary'},
+          {'text': _('Reset Filters'), 'extend': 'reset', 'className': 'btn-secondary ms-3'},
         ] %}
     {% set columns = [
           {'name':'path', 'title': _('Path'), 'orderable': True, 'render':'text' },

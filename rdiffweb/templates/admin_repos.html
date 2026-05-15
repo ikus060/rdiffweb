@@ -21,17 +21,17 @@
     <div></div>
   </div>
   {% set ns = namespace(owner_buttons=[]) %}
-  {% set ns.owner_buttons = ns.owner_buttons + [{'text': _('All owners'), 'extend':'filter', 'column':1, 'search': '' }] %}
+  {% set ns.owner_buttons = ns.owner_buttons + [{'text': _('All Owners'), 'extend':'filter', 'column':1, 'search': '' }] %}
   {% for user in repos | map(attribute='owner') | unique | sort %}
     {% set ns.owner_buttons = ns.owner_buttons + [{'text': user, 'extend':'filter', 'column':1, 'search': user }] %}
   {% endfor %}
   {% set buttons = [
-      {'text': _('Owner'), 'extend': 'collectionfilter', 'popoverTitle': _('Select owner'), 'buttons': ns.owner_buttons, 'className':'btn-outline-secondary' },
-      {'text': _('All'), 'extend': 'filter', 'column': 5, 'search': '', 'className':'btn-outline-secondary'},
-      {'text': _('Healthy'), 'extend': 'filter', 'column': 5, 'search': 'ok', 'className':'btn-outline-success'},
-      {'text': _('Failed'), 'extend': 'filter', 'column': 5, 'search': 'failed', 'className':'btn-outline-danger'},
-      {'text': _('Interrupted'), 'extend': 'filter', 'column': 5, 'search': 'interrupted', 'className':'btn-outline-warning'},
-      {'text': _('In progress'), 'extend': 'filter', 'column': 5, 'search': 'in_progress', 'className':'btn-outline-info'},
+      {'text': _('Owner'), 'extend': 'collectionfilter', 'popoverTitle': _('Select Owner'), 'buttons': ns.owner_buttons, 'className':'btn-outline-secondary' },
+      {'text': _('Healthy'), 'extend': 'filter', 'column': 5, 'search': 'ok', 'className':'btn-outline-primary ms-3'},
+      {'text': _('Failed'), 'extend': 'filter', 'column': 5, 'search': 'failed', 'className':'btn-outline-primary'},
+      {'text': _('Interrupted'), 'extend': 'filter', 'column': 5, 'search': 'interrupted', 'className':'btn-outline-primary'},
+      {'text': _('In progress'), 'extend': 'filter', 'column': 5, 'search': 'in_progress', 'className':'btn-outline-primary'},
+      {'text': _('Reset Filters'), 'extend': 'filter', 'column': 5, 'search': '', 'className':'btn-secondary ms-3'},
     ] %}
   <RdwTable :buttons="{{ buttons }}" :paging="False" class="border rounded-2">
     <thead class="table-light small">
