@@ -1,17 +1,3 @@
-/* Toggle filter checkbox */
-.rdw-btn-filter::before {
-  font: normal normal normal 14px/1 bootstrap-icons;
-  content: "\F584"; /* bi-square */
-  display: inline-block;
-  margin-inline-end: 0.25em;
-  width: 1.28571429em;
-  text-align: center;
-  vertical-align: -.125em;
-}
-.rdw-btn-filter.active::before {
-  content: "\F26D"; /* bi-check-square */
-}
-
 /* Relayout the search */
 .rdw-table .dt-search {
     display: flex;

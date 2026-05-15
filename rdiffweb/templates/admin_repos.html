@@ -27,11 +27,11 @@
   {% endfor %}
   {% set buttons = [
       {'text': _('Owner'), 'extend': 'collectionfilter', 'popoverTitle': _('Select owner'), 'buttons': ns.owner_buttons, 'className':'btn-outline-secondary' },
-      {'text': _('All'), 'extend': 'filter', 'column': 5, 'search': '', 'className':'btn-outline-secondary rdw-btn-filter'},
-      {'text': _('Healthy'), 'extend': 'filter', 'column': 5, 'search': 'ok', 'className':'btn-outline-success rdw-btn-filter'},
-      {'text': _('Failed'), 'extend': 'filter', 'column': 5, 'search': 'failed', 'className':'btn-outline-danger rdw-btn-filter'},
-      {'text': _('Interrupted'), 'extend': 'filter', 'column': 5, 'search': 'interrupted', 'className':'btn-outline-warning rdw-btn-filter'},
-      {'text': _('In progress'), 'extend': 'filter', 'column': 5, 'search': 'in_progress', 'className':'btn-outline-info rdw-btn-filter'},
+      {'text': _('All'), 'extend': 'filter', 'column': 5, 'search': '', 'className':'btn-outline-secondary'},
+      {'text': _('Healthy'), 'extend': 'filter', 'column': 5, 'search': 'ok', 'className':'btn-outline-success'},
+      {'text': _('Failed'), 'extend': 'filter', 'column': 5, 'search': 'failed', 'className':'btn-outline-danger'},
+      {'text': _('Interrupted'), 'extend': 'filter', 'column': 5, 'search': 'interrupted', 'className':'btn-outline-warning'},
+      {'text': _('In progress'), 'extend': 'filter', 'column': 5, 'search': 'in_progress', 'className':'btn-outline-info'},
     ] %}
   <RdwTable :buttons="{{ buttons }}" :paging="False" class="border rounded-2">
     <thead class="table-light small">

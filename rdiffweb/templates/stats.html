@@ -12,10 +12,10 @@
   </div>
   {% if date %}
     {% set buttons = [
-          {'text': _('New'), 'extend': 'filter', 'column': 'state:name', 'search': 'new', 'className':'btn-outline-secondary rdw-btn-filter'},
-          {'text': _('Deleted'), 'extend': 'filter', 'column': 'state:name', 'search': 'deleted', 'className':'btn-outline-secondary rdw-btn-filter'},
-          {'text': _('Changed'), 'extend': 'filter', 'column': 'state:name', 'search': '^changed', 'regex':True, 'className':'btn-outline-secondary rdw-btn-filter'},
-          {'text': _('Unchanged'), 'extend': 'filter', 'column': 'state:name', 'search': '^unchanged', 'className':'btn-outline-secondary rdw-btn-filter'},
+          {'text': _('New'), 'extend': 'filter', 'column': 'state:name', 'search': 'new', 'className':'btn-outline-secondary'},
+          {'text': _('Deleted'), 'extend': 'filter', 'column': 'state:name', 'search': 'deleted', 'className':'btn-outline-secondary'},
+          {'text': _('Changed'), 'extend': 'filter', 'column': 'state:name', 'search': '^changed', 'regex':True, 'className':'btn-outline-secondary'},
+          {'text': _('Unchanged'), 'extend': 'filter', 'column': 'state:name', 'search': '^unchanged', 'className':'btn-outline-secondary'},
           {'text': _('All'), 'extend': 'reset', 'className': 'btn-secondary'},
         ] %}
     {% set columns = [
