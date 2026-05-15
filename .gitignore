@@ -51,3 +51,4 @@ xunit*.xml
 /.coverage*
 /.vscode
 .DS_Store
+.debbuild

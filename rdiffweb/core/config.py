@@ -22,10 +22,8 @@ import sys
 from collections import OrderedDict
 from urllib.parse import urlparse
 
-import cherrypy
 import configargparse
 from babel import Locale, dates
-from cherrypy import Application
 
 from rdiffweb import __version__
 

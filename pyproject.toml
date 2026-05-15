@@ -49,6 +49,9 @@ dev = [
     "flake8==7.3.0",
     "isort==8.0.1",
 ]
+postgresql = [
+    "psycopg2-binary",
+]
 test = [
     "html5lib",
     "pytest",

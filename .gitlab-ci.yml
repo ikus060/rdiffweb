@@ -1,5 +1,10 @@
 image: python:3.13-trixie
 
+variables:
+  MINARCA_DEV_REMOTE_URL: https://minarca-dev.ikus-soft.com
+  MINARCA_DEV_USERNAME: admin
+  MINARCA_DEV_PASSWORD: admin123
+
 stages:
   - test
   - package
@@ -7,7 +12,15 @@ stages:
   - test-package
   - sonar
   - publish
+  - upload
   - deploy
+  - e2e-test
+
+.apt-minarca-source: &apt-minarca-source
+  - wget -O /etc/apt/keyrings/minarca-keyring.asc https://www.ikus-soft.com/archive/minarca/public.key
+  - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/minarca-keyring.asc] https://nexus.ikus-soft.com/repository/apt-dev-$DIST/ $DIST-dev main" > /etc/apt/sources.list.d/minarca.list
+  - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/minarca-keyring.asc] https://nexus.ikus-soft.com/repository/apt-release-$DIST/ $DIST main" >> /etc/apt/sources.list.d/minarca.list
+  - apt update
 
 #
 # Test Stage
@@ -36,14 +49,22 @@ lint:
 
 py3:
   <<: *tox
-  image: $IMAGE
-  parallel:
-    matrix:
-      - TOXENV: trixie
-        IMAGE: python:3.13
+  parallel: 3
+  variables:
+    TOXENV: "py3"
+    PYTEST_SPLITS: $CI_NODE_TOTAL
+    PYTEST_GROUP: $CI_NODE_INDEX
+
+minarca:
+  <<: *tox
 
 selenium:
   <<: *tox
+  parallel: 3
+  variables:
+    TOXENV: "selenium"
+    PYTEST_SPLITS: $CI_NODE_TOTAL
+    PYTEST_GROUP: $CI_NODE_INDEX
   before_script:
     - apt update
     - apt -y --no-install-recommends install xvfb xauth chromium-driver rdiff-backup
@@ -61,26 +82,16 @@ wrap-and-sort:
   - CHANGES=$(wrap-and-sort -astN)
   - if [[ ! -z "$CHANGES" ]]; then echo "$CHANGES"; exit 1; fi
 
-rdiff-backup-latest:
-  <<: *tox
-  image: python:3.13-trixie
-  variables:
-    TOXENV: trixie
-  allow_failure: true
-  before_script:
-    - apt-get update
-    - apt -y install librsync-dev
-    - pip install tox
-    - pip install -U rdiff-backup
-
 postgresql-12:
   <<: *tox
-  image: $IMAGE
+  image: python:3.13-trixie
   services:
     - postgres:16
+  parallel: 3
   variables:
     TOXENV: trixie
-    IMAGE: python:3.13-trixie
+    PYTEST_SPLITS: $CI_NODE_TOTAL
+    PYTEST_GROUP: $CI_NODE_INDEX
     RDIFFWEB_TEST_DATABASE_URI: "postgresql://admin@postgres/test"
     POSTGRES_DB: test
     POSTGRES_USER: admin
@@ -117,20 +128,25 @@ package:docker:
   image: docker:20
   services:
     - name: docker:20-dind
+  parallel:
+    matrix:
+      - PKGAPP: rdiffweb
+      - PKGAPP: minarca-server
+        CWD: minarca-server/docker
   script:
-    # Get docker layes
-    - docker pull ikus060/rdiffweb:latest || true
-    - docker pull ikus060/rdiffweb:$CI_COMMIT_REF_SLUG || true
-    - docker build --cache-from ikus060/rdiffweb:latest --cache-from ikus060/rdiffweb:$CI_COMMIT_REF_SLUG -t rdiffweb .
-    - docker build --target test .
+    - cd "$CWD"
+    - docker pull ikus060/$PKGAPP:latest || true
+    - docker pull ikus060/$PKGAPP:$CI_COMMIT_REF_SLUG || true
+    - docker build --cache-from ikus060/$PKGAPP:latest --cache-from ikus060/$PKGAPP:$CI_COMMIT_REF_SLUG -t $PKGAPP .
     - mkdir dist
-    - docker save rdiffweb --output dist/rdiffweb-docker.tar
+    - mkdir -p $CI_PROJECT_DIR/dist
+    - docker save $PKGAPP --output $CI_PROJECT_DIR/dist/$PKGAPP-docker.tar
   artifacts:
     paths:
       - dist/*-docker.tar
     expire_in: 1 day
 
-package:deb:
+package:rdiffweb:deb:
   stage: package
   needs: []
   image: buildpack-deps:$DIST
@@ -140,16 +156,13 @@ package:deb:
       # Disable selenium test in ubuntu - because snap chronium is not working in docker
       - DIST: [questing, resolute]
         RDIFFWEB_SELENIUM_TEST: 0
+  before_script:
+    - *apt-minarca-source
   script:
     # Clean-up
     - rm -f ../*.deb
     - rm -Rf ./dist/$DIST/*
-    # Add apt source for cherrypy-foundation
-    - wget -O /etc/apt/keyrings/minarca-keyring.asc https://www.ikus-soft.com/archive/minarca/public.key
-    - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/minarca-keyring.asc] https://nexus.ikus-soft.com/repository/apt-dev-$DIST/ $DIST-dev main" > /etc/apt/sources.list.d/minarca.list
-    - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/minarca-keyring.asc] https://nexus.ikus-soft.com/repository/apt-release-$DIST/ $DIST main" >> /etc/apt/sources.list.d/minarca.list
     # Install dependencies
-    - apt update
     - apt -y --no-install-recommends install devscripts lintian
     - apt build-dep -y --no-install-recommends .
     # Generate change log
@@ -166,47 +179,51 @@ package:deb:
       - ./dist/*
     expire_in: 1 day
 
-test-package:deb:
+package:minarca-server:deb:
+  <<: *tox
+  # Older image for pyinstaller
+  image: python:3.12-bullseye
+  stage: package
+  needs: []
+  variables:
+    TOXENV: "pyinstaller"
+  artifacts:
+    paths:
+    - "./dist/*_amd64.deb"
+    expire_in: 1 day
+
+.test-package: &test-package
   stage: test-package
-  image: buildpack-deps:$DIST
-  needs: ["package:deb"]
+  before_script:
+    - *apt-minarca-source
   parallel:
     matrix:
-      - DIST: [trixie]
-      - DIST: [questing, resolute]
+      - DIST: [trixie, forky, questing, resolute]
+
+test-package:rdiffweb:
+  <<: *test-package
+  needs:
+    - package:rdiffweb:deb
   script:
-    # Add apt source for cherrypy-foundation
-    - wget -O /etc/apt/keyrings/minarca-keyring.asc https://www.ikus-soft.com/archive/minarca/public.key
-    - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/minarca-keyring.asc] https://nexus.ikus-soft.com/repository/apt-dev-$DIST/ $DIST-dev main" > /etc/apt/sources.list.d/minarca.list
-    - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/minarca-keyring.asc] https://nexus.ikus-soft.com/repository/apt-release-$DIST/ $DIST main" >> /etc/apt/sources.list.d/minarca.list
-    # Install package
-    - apt update
     - apt install -y ./dist/$DIST/rdiffweb*.deb
-    # Smoke test
     - rdiffweb --version
-    # Start server
     - (/usr/bin/rdiffweb &)
-    # Check if server is responding
     - timeout 60 bash -c 'until curl --silent http://localhost:8080; do sleep 1; done'
 
-publish:sonar:master:
-  stage: sonar
-  allow_failure: True
+test-package:minarca-server:
+  <<: *test-package
   needs:
-    - py3
-  image: sonarsource/sonar-scanner-cli
-  only:
-    - master
-  variables:
-    SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
+    - package:minarca-server:deb
   script:
-    - sonar-scanner -X -Dsonar.python.coverage.reportPaths=coverage-*.xml -Dsonar.python.xunit.reportPaths=xunit-py3.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.projectVersion=$(git describe) -Dsonar.qualitygate.wait=True
+    - apt install -y ./dist/minarca-server_*_amd64.deb
+    - /opt/minarca-server/minarca-server --version
+    - (/opt/minarca-server/minarca-server --logfile= &)
+    - timeout 60 bash -c 'until curl --silent http://localhost:8080; do sleep 1; done'
 
-publish:sonar:dev:
+publish:sonar:
   stage: sonar
-  allow_failure: True
-  needs:
-    - py3
+  allow_failure: true
+  needs: [py3, minarca]
   image: sonarsource/sonar-scanner-cli
   only:
     variables:
@@ -214,8 +231,16 @@ publish:sonar:dev:
       - $SONAR_TOKEN
   variables:
     SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
+    SONAR_KEY: "$CI_PROJECT_NAME${CI_COMMIT_TAG:+-dev}"
   script:
-    - sonar-scanner -X -Dsonar.python.coverage.reportPaths=coverage-*.xml -Dsonar.python.xunit.reportPaths=xunit-*.xml -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=$CI_PROJECT_NAME-dev -Dsonar.projectVersion=$(git describe) -Dsonar.qualitygate.wait=True
+    - sonar-scanner -X
+      -Dsonar.python.coverage.reportPaths=coverage-*.xml
+      -Dsonar.python.xunit.reportPaths=xunit-*.xml
+      -Dsonar.host.url=$SONAR_URL
+      -Dsonar.login=$SONAR_TOKEN
+      -Dsonar.projectKey=$SONAR_KEY
+      -Dsonar.projectVersion=$(git describe)
+      -Dsonar.qualitygate.wait=True
 
 publish:docker:
   needs:
@@ -227,26 +252,30 @@ publish:docker:
     variables:
       - $DOCKER_USR
       - $DOCKER_PWD
+  parallel:
+    matrix:
+      - PKGAPP: rdiffweb
+      - PKGAPP: minarca-server
   script: |
     set -x
     docker login $DOCKER_REGISTRY -u $DOCKER_USR -p $DOCKER_PWD
-    docker load --input dist/*.tar
+    docker load --input dist/$PKGAPP*.tar
     # Push commit hash
-    docker tag rdiffweb ikus060/rdiffweb:$CI_COMMIT_SHORT_SHA
-    docker push ikus060/rdiffweb:$CI_COMMIT_SHORT_SHA
+    docker tag $PKGAPP ikus060/$PKGAPP:$CI_COMMIT_SHORT_SHA
+    docker push ikus060/$PKGAPP:$CI_COMMIT_SHORT_SHA
     # Push branch name
-    docker tag rdiffweb ikus060/rdiffweb:$CI_COMMIT_REF_SLUG
-    docker push ikus060/rdiffweb:$CI_COMMIT_REF_SLUG
+    docker tag $PKGAPP ikus060/$PKGAPP:$CI_COMMIT_REF_SLUG
+    docker push ikus060/$PKGAPP:$CI_COMMIT_REF_SLUG
     # Push tags
     if [ -n "$CI_COMMIT_TAG" ]; then
-      docker tag rdiffweb ikus060/rdiffweb:$CI_COMMIT_TAG
-      docker push ikus060/rdiffweb:$CI_COMMIT_TAG
+      docker tag $PKGAPP ikus060/$PKGAPP:$CI_COMMIT_TAG
+      docker push ikus060/$PKGAPP:$CI_COMMIT_TAG
     fi
     # Push tag as latest
     case ${CI_COMMIT_TAG##*.} in
       [0-9]*)
-        docker tag rdiffweb ikus060/rdiffweb:latest
-        docker push ikus060/rdiffweb:latest      
+        docker tag $PKGAPP ikus060/$PKGAPP:latest
+        docker push ikus060/$PKGAPP:latest
         ;;
     esac
   stage: publish
@@ -259,16 +288,23 @@ publish:docker-readme:
       - $DOCKER_USR
       - $DOCKER_PWD
       - $CI_COMMIT_TAG
+  parallel:
+    matrix:
+      # Rdiffweb
+      - PUSHRM_SHORT: A web interface to rdiff-backup repositories.
+        PUSHRM_TARGET: docker.io/ikus060/rdiffweb
+        PUSHRM_FILE: $CI_PROJECT_DIR/README.md
+      # Minarca-Server
+      - PUSHRM_SHORT: Your open-source, user-friendly data backup solution.
+        PUSHRM_TARGET: docker.io/ikus060/minarca-server
+        PUSHRM_FILE: $CI_PROJECT_DIR/minarca-server/docker/README.md
   image:
     name: chko/docker-pushrm
     entrypoint: ["/bin/sh", "-c"]
   variables:
     DOCKER_USER: $DOCKER_USR
     DOCKER_PASS: $DOCKER_PWD
-    PUSHRM_SHORT: A web interface to rdiff-backup repositories.
-    PUSHRM_TARGET: docker.io/ikus060/rdiffweb
     PUSHRM_DEBUG: 1
-    PUSHRM_FILE: $CI_PROJECT_DIR/README.md
   script:
     # Keep top 400 lines to workarround Dockerhub limitation.
     - cp README.md README.md.orig
@@ -279,15 +315,18 @@ publish:docker-readme:
 
 publish:deb:
   needs:
-    - package:deb
+    - package:rdiffweb:deb
+    - package:minarca-server:deb
   only:
     variables:
       - $NEXUS_USR
       - $NEXUS_PWD
   parallel:
     matrix:
-      - DIST: [trixie, forky]
-      - DIST: [questing, resolute]
+      - PKGAPP: rdiffweb
+        DIST: [questing, resolute, trixie, forky]
+      - PKGAPP: minarca-server
+        DIST: [questing, resolute, trixie, forky]
   script: |
     set -e
     set -x
@@ -296,7 +335,12 @@ publish:deb:
     else
       APT_URL="$NEXUS_URL/repository/apt-dev-${DIST}/"
     fi
-    export FILE=$(ls -1 ./dist/$DIST/rdiffweb*.deb)
+    # Look in DIST-specific folder first, fallback to dist root
+    if ls ./dist/$DIST/$PKGAPP*.deb 2>/dev/null; then
+      export FILE=$(ls -1 ./dist/$DIST/$PKGAPP*.deb)
+    else
+      export FILE=$(ls -1 ./dist/$PKGAPP*.deb)
+    fi
     curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$FILE" "$APT_URL"
   stage: publish
 
@@ -342,22 +386,149 @@ publish:doc:
       curl --fail "$NEXUS_URL/service/rest/repository/browse/archive/rdiffweb/$VERSION/doc/$(dirname $FILE)/" | grep "$(basename $FILE)"
     done
 
-deploy:demo:
+deploy:dev:
   only:
     variables:
       - $GITLAB_ANSIBLE_TOKEN
   allow_failure: True
-  environment:
-    name: demo
-    url: https://rdiffweb-demo.ikus-soft.com/
   needs:
-    - package:deb
+    - package:rdiffweb:deb
+    - package:minarca-server:deb
+  parallel:
+    matrix:
+      - PKGAPP: rdiffweb
+        TRIGGER: RDIFFWEB_VERSION
+        DIST: trixie
+      - PKGAPP: minarca-server
+        TRIGGER: MINARCA_VERSION
   image: heitormotta/pipeline-trigger:2.9.0
-  script:
-    - export DEB_VERSION=$(ls -1 ./dist/trixie/rdiffweb_*_all.deb | cut -d '_' -f 2)
-    - echo DEB_VERSION=$DEB_VERSION
+  script: |
+    set -e
+    set -x
+    if ls ./dist/$DIST/$PKGAPP*.deb 2>/dev/null; then
+      export FILE=$(ls -1 ./dist/$DIST/$PKGAPP*.deb)
+    else
+      export FILE=$(ls -1 ./dist/$PKGAPP*.deb)
+    fi
+    export DEB_VERSION=$(echo "$FILE" | cut -d '_' -f 2)
+    echo DEB_VERSION=$DEB_VERSION
     # Trigger ansible-config pipeline
-    - trigger -a "$ANSIBLE_PIPELINE_GITLAB_API_TOKEN" -t master -e "RDIFFWEB_VERSION=$DEB_VERSION" -p 36bae86778d901fc6b2d6453a41844 18716492
+    trigger -a "$ANSIBLE_PIPELINE_GITLAB_API_TOKEN" -t master -e "$TRIGGER=$DEB_VERSION" -p 36bae86778d901fc6b2d6453a41844 18716492
   stage: deploy
   variables:
     GIT_STRATEGY: none
+
+e2e-test:minarca:deb:
+  allow_failure: True
+  needs:
+  - deploy:dev
+  image: buildpack-deps:$DIST
+  parallel:
+    matrix:
+    - DIST: [bullseye, bookworm, trixie, jammy, noble, plucky]
+  script:
+    # Install latest minarca-client release
+    - apt update
+    - apt install -y apt-transport-https ca-certificates lsb-release gpg
+    - curl -L https://www.ikus-soft.com/archive/minarca/public.key | gpg --dearmor > /usr/share/keyrings/minarca-keyring.gpg
+    - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/minarca-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-dev-$(lsb_release -sc)/ $(lsb_release -sc)-dev main" > /etc/apt/sources.list.d/minarca.list
+    - apt update
+    - apt install -y minarca-client
+    # Smoke test
+    - minarca --version
+    - /opt/minarca/minarcaw --version
+    # Check backup
+    - minarca -d link --remoteurl "$MINARCA_DEV_REMOTE_URL" --username "$MINARCA_DEV_USERNAME" --password "$MINARCA_DEV_PASSWORD" --name "e2e-test-${DIST}-${CI_JOB_ID}"
+    - minarca -d status
+    - minarca -d include /etc /var /home
+    - minarca -d backup --force
+  stage: e2e-test
+
+e2e-test:minarca:linux:
+  allow_failure: True
+  needs:
+  - deploy:dev
+  image: buildpack-deps:jammy
+  script:
+    # Install latest minarca-client release
+    - apt update
+    - apt install -y cron openssh-client locales locales-all
+    - wget https://www.ikus-soft.com/archive/minarca/minarca-client-latest.tar.gz
+    - tar -zxvf ./minarca-client-latest.tar.gz --strip 1
+    # Smoke test
+    - ./minarca --version
+    - ./minarcaw --version
+    # Check backup
+    - ./minarca -d link --remoteurl "$MINARCA_DEV_REMOTE_URL" --username "$MINARCA_DEV_USERNAME" --password "$MINARCA_DEV_PASSWORD" --name "e2e-test-linux-${CI_JOB_ID}"
+    - ./minarca -d include /etc /var /home
+    - ./minarca -d status
+    - ./minarca -d backup --force
+  stage: e2e-test
+
+e2e-test:minarca:macos:
+  allow_failure: True
+  needs:
+  - deploy:dev
+  before_script:
+  - rm -Rf /Applications/Minarca.app
+  - rm -Rf $HOME/Library/Preferences/Minarca
+  script:
+  # Install latest minarca-client release
+  - "[ ! -e /Volumes/Minarca ] || hdiutil detach /Volumes/Minarca"
+  - curl -L -O https://www.ikus-soft.com/archive/minarca/minarca-client-latest.dmg
+  - hdiutil attach ./minarca-client-latest.dmg
+  - cp -r /Volumes/Minarca/Minarca.app /Applications/
+  # Smoke test
+  - /Applications/Minarca.app/Contents/MacOS/minarca --version
+  - /Applications/Minarca.app/Contents/MacOS/minarcaw --version
+  # Check backup
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d forget --force
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d link --remoteurl "$MINARCA_DEV_REMOTE_URL" --username "$MINARCA_DEV_USERNAME" --password "$MINARCA_DEV_PASSWORD" --name "e2e-test-macos-${CI_JOB_ID}"
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d include "$HOME/Documents"
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d status
+  - /Applications/Minarca.app/Contents/MacOS/minarca -d backup --force
+  stage: e2e-test
+  tags:
+  - macos
+  variables:
+    LC_ALL: "en_US.UTF-8"
+
+e2e-test:minarca:win32:
+  allow_failure: True
+  needs:
+  - deploy:dev
+  script:
+  # Install minarca
+  - Invoke-WebRequest -Uri https://www.ikus-soft.com/archive/minarca/minarca-client-latest.exe -OutFile minarca-client-latest.exe
+  - Start-Process -wait "minarca-client-latest.exe" /S
+  - dir "C:\Program Files\Minarca"
+  - $Env:path = "C:\Program Files\Minarca;$Env:path"
+  - $Env:path
+  # Smoke test
+  - minarca.exe --version
+  - minarcaw.exe --version
+  # Check backup
+  - minarca.exe -d forget --force
+  - minarca.exe -d link --force --remoteurl "$MINARCA_DEV_REMOTE_URL" --username "$MINARCA_DEV_USERNAME" --password "$MINARCA_DEV_PASSWORD" --name "e2e-test-win32-${CI_JOB_ID}"
+  - minarca.exe -d include /etc /var /home
+  - minarca.exe -d status
+  - minarca.exe -d backup --force
+  stage: e2e-test
+  tags:
+  - windows
+
+e2e-test:minarca:docker:
+  image: docker:20
+  stage: e2e-test
+  needs:
+    - publish:docker
+    - package:minarca-server:deb
+  services:
+    - docker:dind
+  script:
+    - export PACKAGE_VERSION=$(ls -1 dist/minarca-server_*_amd64.deb | cut -d '_' -f 2)
+    - export IMAGE_TAG=${PACKAGE_VERSION//+/-}
+    - docker run --privileged -d --name minarca -p 8080:8080 ikus060/minarca-server:$IMAGE_TAG
+    - sleep 5
+    - docker ps
+    - timeout 60 sh -c 'until wget --spider http://docker:8080; do sleep 1; done'
