@@ -105,25 +105,23 @@
             {% endif %}
           </td>
           {# MFA #}
-          <td class="text-center" data-filter="{{ user.mfa }}">
+          <td data-filter="{{ user.mfa }}" data-order="{{ user.mfa }}">
             {% if user.mfa %}
               <RdwIcon value="bi-shield-fill-check"
                        class="text-success"
-                       title="{{ mfa_choices.get(user.mfa) }}" />
+                       :title="mfa_choices.get(user.mfa)" />
             {% else %}
               <RdwIcon value="bi-shield-fill-x"
                        class="text-danger"
-                       title="{{ mfa_choices.get(user.mfa) }}" />
+                       :title="mfa_choices.get(user.mfa)" />
             {% endif %}
           </td>
           {# Repos Count #}
-          <td data-order="{{ user.repo_objs | length }}" class="text-center">{{ count_badge(user.repo_objs | length) }}</td>
+          <td data-order="{{ user.repo_objs | length }}">{{ count_badge(user.repo_objs | length) }}</td>
           {# SSH Keys Count #}
-          <td data-order="{{ user.authorizedkeys | length }}" class="text-center">
-            {{ count_badge(user.authorizedkeys | length) }}
-          </td>
+          <td data-order="{{ user.authorizedkeys | length }}">{{ count_badge(user.authorizedkeys | length) }}</td>
           {# Token Count #}
-          <td data-order="{{ user.tokens | length }}" class="text-center">{{ count_badge(user.tokens | length) }}</td>
+          <td data-order="{{ user.tokens | length }}">{{ count_badge(user.tokens | length) }}</td>
           <td>{{ report_time_range_choices.get(user.report_time_range) }}</td>
           {# Status #}
           <td data-order="{{ user.status }}">
