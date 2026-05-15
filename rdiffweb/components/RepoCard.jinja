@@ -6,12 +6,12 @@
       <div class="d-flex align-items-center gap-2">
         <div>
           {# Display name #}
-          <h6 class="fw-bold mb-0">{{ repo.display_name }}</h6>
+          <h5 class="fw-bold mb-0">{{ repo.display_name }}</h5>
           {# Description / Notes #}
           <span class="text-muted small">{{ repo.notes or mdash }}</span>
         </div>
       </div>
-      <RepoStatus :repo="repo" class="badge" />
+      <RepoStatus :repo="repo" class="badge fs-6" />
     </div>
     {# Alert message #}
     {% if repo.status[0] != 'ok' %}<RepoStatus :repo="repo" class="alert py-2 px-3 small mb-3" />{% endif %}

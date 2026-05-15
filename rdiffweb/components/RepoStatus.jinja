@@ -4,21 +4,20 @@
 {% set status_icon = {'ok':'bi-check-circle', 'overdue':'bi-clock-history', 'in_progress':'bi-arrow-repeat bi-spin'}.get(status[0], 'bi-exclamation-triangle-fill') %}
 {% if 'badge' in attrs.classes %}
   {# Badge #}
-  <span class="badge bg-{{ status_color }}-subtle text-{{ status_color }}-emphasis border-{{ status_color }}-subtle"
-        title="{{ status[1] }}">
+  <span {{ attrs.render(title=status[1], class="badge bg-" ~ status_color ~ "-subtle text-" ~ status_color ~ "-emphasis border-" ~ status_color ~ "-subtle") }}>
     <RdwIcon :value="status_icon" class="me-1" />
     {{- status[2] }}
   </span>
 {% elif 'alert' in attrs.classes %}
   {# Alert #}
-  <div class="alert alert-{{ status_color }}">
+  <div {{ attrs.render(class="alert alert-" ~  status_color) }}>
     <RdwIcon :value="status_icon" class="me-1" />
     {{- status[1] }}
   </div>
 {% else %}
   {# Text #}
   {% if status[0] != 'ok' %}
-    <span class="text-{{ status_color }}">
+    <span {{ attrs.render(class="text-" ~  status_color) }}>
       <RdwIcon :value="status_icon" class="me-1" />
       {{ status[1] }}
     </span>
