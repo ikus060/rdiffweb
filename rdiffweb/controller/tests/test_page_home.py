@@ -45,7 +45,7 @@ class TestPagehome(rdiffweb.test.WebCase):
         self.getPage(f"/home/{self.USERNAME}")
         # Then home page is return without error.
         self.assertStatus(200)
-        self.assertInBody('My Backups')
+        self.assertInBody('My Repositories')
 
     def test_with_broken_tree(self):
         # Given a user with invalid repo
@@ -56,7 +56,7 @@ class TestPagehome(rdiffweb.test.WebCase):
         self.getPage(f"/home/{self.USERNAME}")
         # Then home page is return without error.
         self.assertStatus(200)
-        self.assertInBody('My Backups')
+        self.assertInBody('My Repositories')
         # Then page include the broken repo
         self.assertInBody('testcases/broker-repo')
 

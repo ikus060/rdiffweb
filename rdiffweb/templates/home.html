@@ -5,11 +5,11 @@
   <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
       {% if currentuser == userobj %}
-        <h2 class="fw-bold mb-0">{% trans %}My Backups{% endtrans %}</h2>
+        <h2 class="fw-bold mb-0">{% trans %}My Repositories{% endtrans %}</h2>
         <p class="text-muted small mb-0">{% trans %}Overview of all your protected repositories{% endtrans %}</p>
       {% else %}
         <h2 class="fw-bold mb-0">
-          {{ _("%(fullname)s's Backups", fullname=(userobj.fullname or userobj.username).capitalize()) }}
+          {{ _("%(fullname)s's Repositories", fullname=(userobj.fullname or userobj.username).capitalize()) }}
         </h2>
         <p class="text-muted small mb-0">{% trans %}Overview of all the protected repositories{% endtrans %}</p>
       {% endif %}
@@ -119,10 +119,10 @@
     </div>
   {% endif %}
   {# Repositories card #}
-  <h6 class="fw-bold mb-3">
+  <h3 class="fw-bold mb-3">
     <RdwIcon value="bi-archive" class="me-1" />
     {%- trans %}Repositories{% endtrans %}
-  </h6>
+  </h3>
   <div class="row g-3 mb-4">
     {% for repo in repo_objs | sort(attribute='name') %}
       <RepoCard :repo="repo" class="col-12 col-xl-6 col-xxl-4" />

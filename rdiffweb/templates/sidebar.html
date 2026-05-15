@@ -63,7 +63,7 @@
       {% set active_repo = repo | d(False) %}
       {% if active_repo %}
         <div class="navbar-text mt-2">
-          <strong>{% trans %}Your repositories{% endtrans %}</strong>
+          <strong>{% trans %}My Repositories{% endtrans %}</strong>
         </div>
         {# When repo selected, display a dropdown with selected repo. #}
         <ul class="nav navbar-nav flex-column">
@@ -110,7 +110,7 @@
       {% elif currentuser and currentuser.repo_objs %}
         {# Display all repo. #}
         <div class="navbar-text mt-2">
-          <strong>{% trans %}Your repositories{% endtrans %}</strong>
+          <strong>{% trans %}My Repositories{% endtrans %}</strong>
         </div>
         <ul id="rdw-overflow-menu" class="nav navbar-nav flex-column flex-nowrap">
           {% for repo in currentuser.repo_objs | sort(attribute='name') %}
