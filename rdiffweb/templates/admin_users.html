@@ -29,7 +29,7 @@
       {'text': _('Maintainer'), 'extend': 'filter', 'column': 2, 'search': '5', 'className':'btn-outline-secondary rdw-btn-filter'},
       {'text': _('Users'), 'extend': 'filter', 'column': 2, 'search': '10', 'className':'btn-outline-secondary rdw-btn-filter'},
     ] %}
-  {% set role_class = {0: 'bg-danger text-danger', 5: 'bg-success text-success', 10: 'bg-info text-info'} %}
+  {% set role_class = {0: 'bg-danger text-danger', 5: 'bg-success text-success', 10: 'bg-info text-info-emphasis'} %}
   {% set role_choices = dict(edit_form.role.choices) %}
   {% set mfa_class = {0: 'text-bg-light border', 1: 'bg-success border'} %}
   {% set mfa_choices = dict(edit_form.mfa.choices) %}

@@ -4,7 +4,7 @@
 {% set status_icon = {'ok':'bi-check-circle', 'overdue':'bi-clock-history', 'in_progress':'bi-arrow-repeat bi-spin'}.get(status[0], 'bi-exclamation-triangle-fill') %}
 {% if 'badge' in attrs.classes %}
   {# Badge #}
-  <span class="badge bg-{{ status_color }}-subtle text-{{ status_color }} border-{{ status_color }}-subtle"
+  <span class="badge bg-{{ status_color }}-subtle text-{{ status_color }}-emphasis border-{{ status_color }}-subtle"
         title="{{ status[1] }}">
     <RdwIcon :value="status_icon" class="me-1" />
     {{- status[2] }}

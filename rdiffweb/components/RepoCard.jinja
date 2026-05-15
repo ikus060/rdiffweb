@@ -73,7 +73,7 @@
         {% if repo.session_statistics %}
           {% set error_count = repo.session_statistics[-1].errors %}
           {% if error_count > 0 %}
-            <a class="text-warning fw-semibold"
+            <a class="text-danger-emphasis fw-semibold"
                href="{{ url_for('logs', repo, date=repo.session_statistics[-1].date) }}">
               <RdwIcon value="bi-exclamation-circle" class="me-1" />
               {{- _('%(count)s errors', count=error_count) }}
