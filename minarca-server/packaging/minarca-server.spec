@@ -37,6 +37,12 @@ datas = []
 datas.extend(collect_data_files('rdiffweb'))
 datas.extend(collect_data_files('minarca_server'))
 
+# Include wtforms locale
+datas.extend(collect_data_files('wtforms'))
+
+# Include cherrypy-foundation templates
+datas.extend(collect_data_files('cherrypy_foundation'))
+
 # Exclude Tests folders
 datas = [(src, dest) for src, dest in datas if '/tests/' not in src]
 
