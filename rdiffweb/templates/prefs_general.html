@@ -1,11 +1,11 @@
 {% extends 'layout.html' %}
 {% set breadcrumbs = breadcrumb_page('prefs') +  breadcrumb_page(self) %}
 {% block content %}
-  <div class="rdw-container">
-    <form method="post" action="#">
-      {# Header #}
-      <div class="d-flex flex-wrap justify-content-between mb-2 sticky-top py-2 bg-white border-bottom">
-        <h2>{{ active_page.label }}</h2>
+  <form method="post" action="#">
+    {# Header #}
+    <div class="sticky-top mb-2 bg-white border-bottom p-3">
+      <div class="d-flex flex-wrap justify-content-between rdw-container">
+        <h2 class="mb-0">{{ active_page.label }}</h2>
         <div>
           <button type="button"
                   class="btn btn-secondary"
@@ -13,6 +13,8 @@
           <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
         </div>
       </div>
+    </div>
+    <div class="rdw-container">
       <p class="text-secondary small mb-4">
         {% trans %}
         Manage your personal information, notification preferences and account security. {% endtrans %}
@@ -70,8 +72,8 @@
           <cf:Field field={{ form.send_report }} class="btn-secondary" />
         </div>
       </div>
-    </form>
-  </div>
+    </div>
+  </form>
   {# Change password Modal #}
   <form action="#" method="post">
     <ModalDialog id="rdw-password-modal"

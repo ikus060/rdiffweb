@@ -1,10 +1,10 @@
 {% extends 'layout.html' %}
 {% set breadcrumbs = breadcrumb_page('prefs') +  breadcrumb_page(self) %}
 {% block content %}
-  <div class="rdw-container">
-    {# Header #}
-    <div class="d-flex flex-wrap justify-content-between mb-2 sticky-top py-2 bg-white border-bottom">
-      <h2>{{ active_page.label }}</h2>
+  {# Header #}
+  <div class="sticky-top mb-2 bg-white border-bottom p-3">
+    <div class="d-flex flex-wrap justify-content-between rdw-container">
+      <h2 class="mb-0">{{ active_page.label }}</h2>
       <div>
         <button id="rdw-btn-add-sshkey"
                 type="button"
@@ -16,6 +16,8 @@
         </button>
       </div>
     </div>
+  </div>
+  <div class="rdw-container">
     {# Help text #}
     <p class="text-secondary small mb-4">
       {% trans %}

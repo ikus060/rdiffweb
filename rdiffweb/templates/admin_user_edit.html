@@ -3,11 +3,11 @@
 {% from 'include/modal_dialog.html' import button_confirm, modal_confirm %}
 {% set breadcrumbs = breadcrumb_page('admin') + breadcrumb_page('admin_users') + [('#', form.username.data)] %}
 {% block content %}
-  <div class="rdw-container">
-    <form id="rdw-user-form" method="post" action="#">
-      {# Header #}
-      <div class="d-flex flex-wrap justify-content-between mb-2 sticky-top py-2 bg-white border-bottom">
-        <h2>{% trans %}Edit User{% endtrans %}</h2>
+  <form id="rdw-user-form" method="post" action="#">
+    {# Header #}
+    <div class="sticky-top mb-2 bg-white border-bottom p-3">
+      <div class="d-flex flex-wrap justify-content-between rdw-container">
+        <h2 class="mb-0">{% trans %}Edit User{% endtrans %}</h2>
         <div>
           <button type="button"
                   class="btn btn-secondary"
@@ -15,6 +15,8 @@
           <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
         </div>
       </div>
+    </div>
+    <div class="rdw-container">
       {# General Information #}
       <div class="card mb-3">
         <div class="card-header d-flex align-items-center gap-2">
@@ -64,8 +66,10 @@
           </div>
         </div>
       </div>
-    </form>
-    {# Repos #}
+    </div>
+  </form>
+  {# Repos #}
+  <div class="rdw-container">
     <div class="card mb-3">
       <div class="card-header d-flex align-items-center gap-2">
         <RdwIcon value="bi-archive text-primary" class="me-1" />

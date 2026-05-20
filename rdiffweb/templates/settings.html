@@ -3,11 +3,11 @@
 {% from 'include/modal_dialog.html' import modal_dialog, button_confirm, modal_confirm %}
 {% set breadcrumbs = breadcrumb_repo(repo) + breadcrumb_repo(repo, self) %}
 {% block content %}
-  <div class="rdw-container">
-    <form method="post" action="{{ url_for() }}">
-      {# Header #}
-      <div class="d-flex flex-wrap justify-content-between mb-2 sticky-top py-2 bg-white border-bottom">
-        <h2>{% trans %}Repository Settings{% endtrans %}</h2>
+  <form method="post" action="{{ url_for() }}">
+    {# Header #}
+    <div class="sticky-top mb-2 bg-white border-bottom p-3">
+      <div class="d-flex flex-wrap justify-content-between rdw-container">
+        <h2 class="mb-0">{% trans %}Repository Settings{% endtrans %}</h2>
         <div>
           <button type="button"
                   class="btn btn-secondary"
@@ -15,6 +15,8 @@
           <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
         </div>
       </div>
+    </div>
+    <div class="rdw-container">
       <p class="text-secondary small mb-4 col-xxl-5 col-xl-6 col-lg-7">
         {% trans %}
         Adjust the notification period, retention policy, display encoding, and
@@ -66,8 +68,10 @@
           <cf:Field :field="form.encoding" />
         </div>
       </div>
-    </form>
-    {# Delete repo #}
+    </div>
+  </form>
+  {# Delete repo #}
+  <div class="rdw-container">
     <div class="card mb-3 danger-zone">
       <div class="card-header d-flex align-items-center gap-2 text-danger">
         <RdwIcon value="bi-exclamation-triangle-fill" class="me-1" />

@@ -271,12 +271,11 @@ main {
     max-width: 860px;
     margin-right: auto;
     margin-left: auto;
-    padding-right: calc(var(--bs-gutter-x) * .5);
-    padding-left: calc(var(--bs-gutter-x) * .5);
 }
 
 /* Adjust position of second sticky top */
-.rdw-container .sticky-top {
-    /* Adjust top position to clear breadcrumb. */
-    top: calc(1px + 2rem + (1rem * var(--bs-body-line-height)));
+.container-fluid .sticky-top {
+    margin-top: -1rem;
+    margin-right: -1rem;
+    margin-left: -1rem;
 }
