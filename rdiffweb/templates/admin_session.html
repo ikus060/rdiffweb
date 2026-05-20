@@ -17,7 +17,7 @@
   {% set buttons = [
       {'text': _('Authenticated'), 'extend': 'filter', 'column': 1, 'search': '^1', 'regex': True, 'className':'btn-outline-primary'},
       {'text': _('Anonymous'), 'extend': 'filter', 'column': 1, 'search': '^0', 'regex': True, 'className':'btn-outline-primary'},
-      {'text': _('Reset Filters'), 'extend': 'filter', 'column': 1, 'search': '', 'className':'btn-secondary ms-3'},
+      {'text': _('Reset Filters'), 'extend': 'reset', 'className':'btn-secondary ms-3'},
     ] %}
   <RdwTable :buttons="{{ buttons }}" class="border rounded-2">
     <thead class="table-light small">

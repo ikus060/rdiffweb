@@ -28,7 +28,7 @@
       {'text': _('Admins'), 'extend': 'filter', 'column': 2, 'search': '^0', 'regex':True, 'className':'btn-outline-primary'},
       {'text': _('Maintainer'), 'extend': 'filter', 'column': 2, 'search': '5', 'className':'btn-outline-primary'},
       {'text': _('Users'), 'extend': 'filter', 'column': 2, 'search': '10', 'className':'btn-outline-primary'},
-      {'text': _('Reset Filters'), 'extend': 'filter', 'column': 5, 'search': '', 'className':'btn-secondary ms-3'},
+      {'text': _('Reset Filters'), 'extend': 'reset', 'className':'btn-secondary ms-3'},
     ] %}
   {% set role_class = {0: 'bg-danger text-danger', 5: 'bg-success text-success', 10: 'bg-info text-info-emphasis'} %}
   {% set role_choices = dict(edit_form.role.choices) %}
