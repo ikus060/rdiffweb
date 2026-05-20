@@ -13,12 +13,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 import logging
 from collections import Counter
 from datetime import timedelta
 
 import cherrypy
+from cherrypy_foundation.flash import flash
+from cherrypy_foundation.tools.i18n import gettext_lazy as _
+from cherrypy_foundation.url import url_for
 
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import UserObject
@@ -27,7 +29,18 @@ from rdiffweb.core.model import UserObject
 logger = logging.getLogger(__name__)
 
 
+@cherrypy.popargs('username')
 class HomePage:
+
+    def _get_user(self, username):
+        # Check permissions before returning list of repos.
+        currentuser = cherrypy.serving.request.currentuser
+        if currentuser.username == username:
+            return currentuser
+        elif currentuser.is_admin:
+            return UserObject.get_user(username)
+        else:
+            raise cherrypy.HTTPError(403)
 
     @cherrypy.expose
     @cherrypy.tools.jinja2(template="home.html")
@@ -40,14 +53,7 @@ class HomePage:
             currentuser = cherrypy.serving.request.currentuser
             raise cherrypy.HTTPRedirect(currentuser.username)
 
-        # Check permissions before returning list of repos.
-        currentuser = cherrypy.serving.request.currentuser
-        if currentuser.username == username:
-            userobj = currentuser
-        elif currentuser.is_admin:
-            userobj = UserObject.get_user(username)
-        else:
-            raise cherrypy.HTTPError(403)
+        userobj = self._get_user(username)
 
         # Refresh user repo
         if userobj.refresh_repos():
@@ -91,3 +97,12 @@ class HomePage:
                 d.date for repo in repo_objs for d in repo.session_statistics[activity_start:activity_end]
             ],
         }
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
+    def refresh(self, username=None):
+        userobj = self._get_user(username)
+        if userobj.refresh_repos(delete=True):
+            userobj.commit()
+        flash(_("Repositories successfully updated"))
+        raise cherrypy.HTTPRedirect(url_for('home', username))

@@ -88,3 +88,18 @@ class TestPagehome(rdiffweb.test.WebCase):
         self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus('200 OK')
         self.assertInBody('testcases')
+
+    def test_refresh(self):
+        # Given a user without repo
+        user = UserObject.get_user(self.USERNAME)
+        RepoObject.query.filter(RepoObject.user == user).delete()
+        user.commit()
+        # When refreshing the repos.
+        self.getPage(f"/home/{self.USERNAME}/refresh", method='POST')
+        # Then user is redirected to home page.
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', f'{self.baseurl}/home/{self.USERNAME}')
+        # Then page include refresh info
+        self.getPage(f"/home/{self.USERNAME}")
+        self.assertStatus(200)
+        self.assertInBody('Repositories successfully updated')

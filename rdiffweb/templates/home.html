@@ -14,6 +14,21 @@
         <p class="text-muted small mb-0">{% trans %}Overview of all the protected repositories{% endtrans %}</p>
       {% endif %}
     </div>
+    <div class="text-end">
+      <form method="post"
+            action="{{ url_for('home', userobj.username, 'refresh') }}">
+        <button class="btn btn-outline-secondary btn-sm btn-refresh"
+                id="rdw-btn-refresh"
+                type="submit">
+          <RdwIcon value="bi-arrow-clockwise me-1" />
+          {% trans %}Refresh repositories{% endtrans %}
+        </button>
+      </form>
+      <div class="text-muted mt-1" style="font-size:.72rem;">
+        <RdwIcon value="bi-info-circle me-1" />
+        {% trans %}Sync repository list from disk{% endtrans %}
+      </div>
+    </div>
   </div>
   {# KPI Cards #}
   {# Determine overall status #}
