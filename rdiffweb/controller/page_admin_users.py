@@ -273,7 +273,6 @@ class EditUserForm(DbForm):
         userobj.role = self.role.data
         userobj.fullname = self.fullname.data or ''
         userobj.email = self.email.data or ''
-        userobj.user_root = self.user_root.data
         userobj.mfa = self.mfa.data
         userobj.lang = self.lang.data or ''
         userobj.report_time_range = self.report_time_range.data
@@ -284,7 +283,8 @@ class EditUserForm(DbForm):
         elif userobj.status == UserObject.STATUS_DISABLED:
             userobj.status = ""
         # Verify user's root directory and update repos.
-        if userobj.user_root:
+        if self.user_root.data != userobj.user_root:
+            userobj.user_root = self.user_root.data
             if not userobj.valid_user_root():
                 if hasattr(cherrypy.serving, 'session'):
                     flash(_("User's root directory %s is not accessible!") % userobj.user_root, level='error')
@@ -531,6 +531,16 @@ class AdminUsersPage:
             .filter(Message.model_id == user.id, Message.model_name == user._get_message_model_name())
         )
         return query
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
+    def refresh_repos(self, username_or_id, **kwargs):
+        user = UserObject.get_user(username_or_id)
+        if user is None:
+            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username_or_id)
+        user.refresh_repos(delete=True)
+        flash(_("Repositories successfully updated"))
+        raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', username_or_id))
 
 
 @cherrypy.expose

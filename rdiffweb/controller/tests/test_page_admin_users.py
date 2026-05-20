@@ -634,6 +634,18 @@ class AdminTest(rdiffweb.test.WebCase):
         self.assertFalse(user.disabled)
         self.assertEqual(user.status, '')
 
+    def test_refresh_repos(self):
+        # Given a user
+        # When refreshing the repos.
+        self.getPage(f"/admin/users/refresh-repos/{self.USERNAME}", method='POST')
+        # Then user is redirected to home page.
+        self.assertStatus(303)
+        self.assertHeaderItemValue('Location', f'{self.baseurl}/admin/users/edit/{self.USERNAME}')
+        # Then page include refresh info
+        self.getPage(f"/admin/users/edit/{self.USERNAME}")
+        self.assertStatus(200)
+        self.assertInBody('Repositories successfully updated')
+
     def test_add_user_selenium(self):
         # Given admin user is authenticated
         with self.selenium() as driver:

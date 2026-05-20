@@ -71,9 +71,18 @@
   {# Repos #}
   <div class="rdw-container">
     <div class="card mb-3">
-      <div class="card-header d-flex align-items-center gap-2">
-        <RdwIcon value="bi-archive text-primary" class="me-1" />
-        {%- trans %}Repositories{% endtrans %}
+      <div class="card-header d-flex align-items-center justify-content-between gap-2">
+        <span>
+          <RdwIcon value="bi-archive text-primary" class="me-1" />
+          {%- trans %}Repositories{% endtrans %}
+        </span>
+        <form action="{{ url_for('admin','users','refresh-repos', form.id.data|string) }}"
+              method="post">
+          <button type="submit" class="btn btn-outline-secondary btn-sm">
+            <RdwIcon value="bi-arrow-clockwise" class="me-1" />
+            {% trans %}Refresh{% endtrans %}
+          </button>
+        </form>
       </div>
       <div class="card-body p-0">
         <table class="table table-sm mb-0 align-middle">
