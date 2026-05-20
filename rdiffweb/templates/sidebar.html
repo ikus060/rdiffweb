@@ -62,8 +62,12 @@
     {% else %}
       {% set active_repo = repo | d(False) %}
       {% if active_repo %}
-        <div class="navbar-text mt-2">
-          <strong>{% trans %}My Repositories{% endtrans %}</strong>
+        <div class="navbar-text mt-2 fw-bold">
+          {% if currentuser == active_repo.user %}
+            {% trans %}My Repositories{% endtrans %}
+          {% else %}
+            {{ _("%(fullname)s's Repositories", fullname=(active_repo.user.fullname or active_repo.user.username).capitalize()) }}
+          {% endif %}
         </div>
         {# When repo selected, display a dropdown with selected repo. #}
         <ul class="nav navbar-nav flex-column">
@@ -72,7 +76,7 @@
               <RdwIcon value="bi-chevron-down" class="fs-4" />
             </NavItemRepo>
             <ul class="dropdown-menu w-100">
-              {% for repo in currentuser.repo_objs | sort(attribute='name') %}
+              {% for repo in active_repo.user.repo_objs | sort(attribute='name') %}
                 <li class="w-100">
                   <NavItemRepo class="dropdown-item" repo={{ repo }} active={{ active_repo==repo }} />
                 </li>
