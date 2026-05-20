@@ -14,20 +14,4 @@
     <RdwIcon :value="status_icon" class="me-1" />
     {{- status[1] }}
   </div>
-{% else %}
-  {# Text #}
-  {% if status[0] != 'ok' %}
-    <span {{ attrs.render(class="text-" ~  status_color) }}>
-      <RdwIcon :value="status_icon" class="me-1" />
-      {{ status[1] }}
-    </span>
-  {% else %}
-    <span>
-      {% trans %}Last backup {% endtrans %}
-      <time datetime="{{ repo.last_backup_date }}"
-            title="{{ repo.last_backup_date | format_datetime }}">
-        {{ repo.last_backup_date | lastupdated }}
-      </time>
-    </span>
-  {% endif %}
 {% endif %}

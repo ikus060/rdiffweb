@@ -68,21 +68,14 @@
         {# When repo selected, display a dropdown with selected repo. #}
         <ul class="nav navbar-nav flex-column">
           <li class="nav-item dropdown w-100">
-            <a class="nav-link d-flex align-items-center gap-3 active text-truncate"
-               data-bs-toggle="dropdown"
-               href="#">
-              <RdwIcon value="repo" class="fs-4" />
-              <div class="me-auto text-truncate">
-                <div class="mb-0 fw-semibold text-truncate">{{ active_repo.name }}</div>
-                <div class="text-truncate small">
-                  <RepoStatus :repo="active_repo" />
-                </div>
-              </div>
+            <NavItemRepo class="nav-link" repo={{ repo }} active={{ active_repo==repo }} data-bs-toggle="dropdown" href="#">
               <RdwIcon value="bi-chevron-down" class="fs-4" />
-            </a>
+            </NavItemRepo>
             <ul class="dropdown-menu w-100">
               {% for repo in currentuser.repo_objs | sort(attribute='name') %}
-                <NavItemRepo type="dropdown-item" repo={{ repo }} active={{ active_repo==repo }} />
+                <li class="w-100">
+                  <NavItemRepo class="dropdown-item" repo={{ repo }} active={{ active_repo==repo }} />
+                </li>
               {% endfor %}
             </ul>
           </li>
@@ -114,7 +107,9 @@
         </div>
         <ul id="rdw-overflow-menu" class="nav navbar-nav flex-column flex-nowrap">
           {% for repo in currentuser.repo_objs | sort(attribute='name') %}
-            <NavItemRepo class="nav-link" repo={{ repo }} />
+            <li class="w-100 nav-item">
+              <NavItemRepo class="nav-link" repo={{ repo }} />
+            </li>
           {% endfor %}
         </ul>
       {% endif %}

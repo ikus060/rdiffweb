@@ -1,13 +1,26 @@
-{# def repo, active=False, type="nav-link" #}
-<li class="w-100{% if type == 'nav-link' %} nav-item{% endif %}">
-  <a class="{{ type }} d-flex align-items-center gap-3 text-truncate{% if active %} active{% endif %}"
-     href="{{ url_for('browse', repo) }}">
-    <RdwIcon value="repo" class="fs-4" />
-    <div class="text-truncate">
-      <p class="mb-0 fw-semibold text-truncate">{{ repo.name }}</p>
-      <div class="small text-truncate">
-        <RepoStatus :repo="repo" />
-      </div>
+{# def repo, active=False #}
+{% do attrs.setdefault(href=url_for('browse', repo), class="d-flex align-items-center gap-3 text-truncate") %}
+{% if active %}
+  {% do attrs.add_class("active") %}
+{% endif %}
+<a {{ attrs.render() }}>
+  <RdwIcon value="repo" class="fs-4" />
+  <div class="w-100">
+    <div class="d-flex justify-content-between">
+      <span class="mb-0 me-1 fw-semibold text-truncate">{{ repo.name }}</span>
+      <RepoStatus :repo="repo" class="badge" />
     </div>
-  </a>
-</li>
+    <div class="small text-truncate">
+      {% if repo.last_backup_date %}
+        {% trans %}Last backup {% endtrans %}
+        <time datetime="{{ repo.last_backup_date }}"
+              title="{{ repo.last_backup_date | format_datetime }}">
+          {{ repo.last_backup_date | lastupdated }}
+        </time>
+      {% else %}
+        &mdash;
+      {% endif %}
+    </div>
+  </div>
+  {% if content %}{{ content }}{% endif %}
+</a>
