@@ -385,6 +385,41 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
 
         return repo_status
 
+    def listdir(self, path):
+        """
+        Override this implementation to include disk usage data.
+        """
+        # Get on disk values
+        entries = super().listdir(path)
+        if not entries:
+            return entries
+
+        # Query disk usage for the given path
+        from ._diskusage import DiskUsage
+
+        # Normalize path for database lookup.
+        path = os.path.normpath(path).strip(b'/')
+        if path == b'.':
+            path = b''
+        du_by_path = {
+            du.logical_path: du
+            for du in DiskUsage.query.filter(
+                DiskUsage.repoid == self.id,
+                DiskUsage.parent_path == path,
+            ).all()
+        }
+
+        for entry in entries:
+            du = du_by_path.get(entry.path)
+            if du:
+                entry.mirror_size = du.mirror_size
+                entry.increments_size = du.increments_size
+            else:
+                entry.mirror_size = None
+                entry.increments_size = None
+
+        return entries
+
 
 @event.listens_for(Base.metadata, 'after_create')
 def update_repo_schema(target, conn, **kw):

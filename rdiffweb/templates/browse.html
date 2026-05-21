@@ -8,8 +8,20 @@
     <thead class="table-light small">
       <tr>
         <th id="name" class="sortable">{% trans %}Name{% endtrans %}</th>
-        <th id="size" class="sortable" data-type="num">{% trans %}Size{% endtrans %}</th>
         <th id="status" class="sortable">{% trans %}Status{% endtrans %}</th>
+        <th id="size" class="sortable" data-type="num">
+          {% set size_tooltip %}
+            <strong>{% trans %}Source size:{% endtrans %}</strong>
+            {% trans %}current size of data in the backup mirror.{% endtrans %}
+            <br>
+            <strong>{% trans %}History size{% endtrans %}</strong>
+            {% trans %}(folders only): extra storage from previous versions and deleted files.{% endtrans %}
+          {% endset %}
+          <span class="rdw-tooltip"
+                data-bs-toggle="tooltip"
+                data-bs-html="true"
+                title="{{ size_tooltip | e }}">{% trans %}Size{% endtrans %}</span>
+        </th>
         <th id="last-revision" class="sortable" data-type="num">{% trans %}Versions{% endtrans %}</th>
       </tr>
     </thead>
@@ -25,20 +37,59 @@
               {{ entry.display_name -}}
             </a>
           </td>
-          {# Size #}
-          <td class="nowrap" data-search="" data-order="{{ entry.file_size }}">
-            {% if entry.isdir %}
-              &mdash;
-            {% elif not entry.exists %}
-              &mdash;
-            {% else %}
-              {{ entry.file_size | filesize }}
-            {% endif %}
-          </td>
           {# Status #}
           <td class="nowrap" data-order="{{ entry.exists }}">
-            {% if not entry.exists %}
-              <span class="badge bg-secondary bg-opacity-10 text-secondary-emphasis">{{ _("Deleted from source") }}</span>
+            {% if entry.exists %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">{{ _("Active") }}</span>
+            {% else %}
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">
+                {{ _("Deleted") }}
+              </span>
+            {% endif %}
+          </td>
+          {# Size #}
+          {% set total_size = ((entry.mirror_size or 0) + (entry.increments_size or 0)) if entry.isdir else entry.file_size %}
+          <td class="nowrap" data-search="" data-order="{{ total_size }}">
+            {% if entry.isdir %}
+              {% if entry.mirror_size or entry.increments_size %}
+                {# Folder with diskusage #}
+                {% set size_tooltip %}
+                  {% if entry.exists %}
+                    <strong>{% trans %}Source:{% endtrans %}</strong>
+                    {{ (entry.mirror_size or 0) | filesize }}
+                    <br>
+                    <strong>{% trans %}History:{% endtrans %}</strong>
+                    +{{ (entry.increments_size or 0) | filesize }}
+                    <br>
+                    <strong>{% trans %}Total:{% endtrans %}</strong>
+                    {{ total_size | filesize }}
+                  {% else %}
+                    {% trans %}Folder deleted from source.{% endtrans %}
+                    <br>
+                    <strong>{% trans %}History retained:{% endtrans %}</strong>
+                    +{{ (entry.increments_size or 0) | filesize }}
+                  {% endif %}
+                {% endset %}
+                <span data-bs-toggle="tooltip"
+                      data-bs-html="true"
+                      data-bs-original-title="{{ size_tooltip | e }}">
+                  {{ (entry.mirror_size or 0) | filesize }}
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle ms-1 history-hint">
+                    +{{ (entry.increments_size or 0) | filesize }}
+                  </span>
+                </span>
+              {% else %}
+                {# Folder without diskusage #}
+                <span data-bs-toggle="tooltip"
+                      data-bs-html="true"
+                      data-bs-original-title="{{ _("Size not yet computed.") }}">&mdash;</span>
+              {% endif %}
+            {% elif not entry.exists %}
+              {# Deleted file #}
+              &mdash;
+            {% else %}
+              {# File exists #}
+              {{ entry.file_size | filesize }}
             {% endif %}
           </td>
           {# History #}
