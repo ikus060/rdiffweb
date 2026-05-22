@@ -72,10 +72,6 @@ class MinarcaApplicationTestWithRemoteIdentity(minarca_server.tests.AbstractMina
         data = self.getJson("/api/minarca/", headers=self.basic_headers)
         self.assertIn("[test.examples]:2222", data['identity'])
 
-    def test_get_bg_jpg(self):
-        self.getPage("/static/bg.jpg")
-        self.assertStatus(200)
-
 
 class MinarcaApplicationTestMinarcaId(minarca_server.tests.AbstractMinarcaTest):
     def test_api_currentuser_with_valid_minarcaid(self):

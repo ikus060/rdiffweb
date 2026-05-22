@@ -59,8 +59,6 @@ class MinarcaApplication(rdiffweb.rdw_app.RdiffwebApp):
         self.root.api = MinarcaApiPage()
         # Provide /help
         self.root.help = self.get_help
-        # Add background
-        self.root.static.bg_jpg = staticfile(str(files(__package__) / 'bg.jpg'))
 
     @cherrypy.expose
     @cherrypy.tools.auth(on=False)
