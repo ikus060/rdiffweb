@@ -76,7 +76,6 @@ from rdiffweb.controller.static import Static
 from rdiffweb.core.config import parse_args
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import SessionObject, UserObject
-from rdiffweb.core.rdw_templating import attrib
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -224,7 +223,6 @@ class RdiffwebApp(Application):
                 'header_name': cfg.header_name,
                 'url_for': url_for,
                 'version': rdiffweb.__version__,
-                'attrib': attrib,
                 'page_registry': page_registry,
                 'breadcrumb_repo': breadcrumb_repo,
                 'breadcrumb_page': breadcrumb_page,

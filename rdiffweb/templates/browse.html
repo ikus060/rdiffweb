@@ -32,7 +32,8 @@
           <td data-search="{{ entry.display_name }}"
               data-order="{{ 'dir' if entry.isdir else 'file' }}-{{ entry.display_name }}">
             <RdwIcon :value="{{ 'bi-folder-fill' if entry.isdir else 'bi-file-earmark' }}" />
-            <a {{ attrib(href=(entry.isdir and url_for('browse', repo, entry.path) ) or (entry.last_change_date and url_for('restore', repo, entry.path, date=entry.last_change_date)) or "#", title=(entry.display_name | length > 45 and entry.display_name)) }}>
+            {% set href = (entry.isdir and url_for('browse', repo, entry.path) ) or (entry.last_change_date and url_for('restore', repo, entry.path, date=entry.last_change_date)) or "#" %}
+            <a href="{{ href }}" title="{{ entry.display_name }}">
               <span class="visually-hidden">{{ _("DIR") if entry.isdir else _('FILE') }}</span>
               {{ entry.display_name -}}
             </a>
