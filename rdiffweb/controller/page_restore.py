@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from urllib.parse import unquote_to_bytes
+from urllib.parse import quote, unquote_to_bytes
 
 import cherrypy
 from cherrypy.lib.static import mimetypes
@@ -24,7 +24,6 @@ from cherrypy_foundation.url import url_for
 import rdiffweb.tools.errors  # noqa: cherrypy.tools.errors
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
-from rdiffweb.core.rdw_helpers import quote_url
 from rdiffweb.core.restore import ARCHIVERS
 
 from . import validate_date
@@ -53,7 +52,7 @@ def _content_disposition(filename):
         pass
     # 3. Define filename* as encoded UTF8 (replace invalid char)
     filename_utf8 = filename.encode('utf-8', 'replace')
-    return 'attachment; filename*=UTF-8\'\'%s' % quote_url(filename_utf8, safe='?')
+    return 'attachment; filename*=UTF-8\'\'%s' % quote(filename_utf8, safe='?')
 
 
 def _content_type(filename):
