@@ -324,6 +324,8 @@ class RdiffwebApp(Application):
                 'smtp.password': cfg.email_password,
                 'smtp.email_from': (cfg.header_name, cfg.email_sender) if cfg.email_sender else None,
                 'smtp.encryption': cfg.email_encryption,
+                # Configre diskusage
+                'diskusage.execution_time': self.cfg.disk_usage_time,
                 # Configure remove_older plugin
                 'remove_older.execution_time': self.cfg.remove_older_time,
                 # Configure notification plugin

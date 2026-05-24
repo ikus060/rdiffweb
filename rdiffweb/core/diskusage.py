@@ -47,6 +47,8 @@ class DiskUsagePlugin(SimplePlugin):
     _lock = threading.Lock()
 
     def start(self):
+        if not self.execution_time:
+            return
         self.bus.log('Start DiskUsage plugin')
         self.bus.publish('scheduler:add_job_daily', self.execution_time, self._disk_usage_job)
         # Start the background process if disk usage is empty.

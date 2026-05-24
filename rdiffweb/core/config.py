@@ -707,6 +707,13 @@ def get_parser():
         default='23:00',
     )
 
+    parser.add(
+        '--disk-usage-time',
+        metavar='TIME',
+        help="Time when to execute disk usage analysis.",
+        default='02:00',
+    )
+
     parser.add('--server-host', '--serverhost', metavar='IP', default='127.0.0.1', help='IP address to listen to')
 
     parser.add(
