@@ -392,7 +392,7 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
         # Get on disk values
         entries = super().listdir(path)
         if not entries:
-            return entries
+            return []
 
         # Query disk usage for the given path
         from ._diskusage import DiskUsage
