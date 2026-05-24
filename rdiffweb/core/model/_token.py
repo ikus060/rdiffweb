@@ -33,7 +33,7 @@ class Token(Base):
     name = Column('Name', String, nullable=False, default="", primary_key=True)
     userid = Column('UserID', Integer, nullable=False, primary_key=True)
     userid = Column('UserID', Integer, ForeignKey("users.UserID"), nullable=False)
-    user = relationship('UserObject', back_populates="tokens", lazy="joined")
+    user = relationship('UserObject', back_populates="tokens", lazy=True)
     hash_token = Column('Token', String, nullable=False, default="")
     access_time = Column('AccessTime', Timestamp, nullable=True)
     creation_time = Column('CreationTime', Timestamp, nullable=False, server_default=func.now())

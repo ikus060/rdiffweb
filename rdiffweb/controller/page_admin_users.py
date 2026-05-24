@@ -25,6 +25,7 @@ from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from cherrypy_foundation.tools.i18n import list_available_locales, list_available_timezones
 from cherrypy_foundation.url import url_for
 from markupsafe import Markup
+from sqlalchemy.orm import joinedload
 from wtforms import validators, widgets
 from wtforms.fields import BooleanField, Field, HiddenField, PasswordField, SelectField, StringField, TextAreaField
 from wtforms.validators import ValidationError
@@ -367,7 +368,9 @@ class AdminUsersPage:
         return {
             'form': form,
             'edit_form': EditUserForm(),
-            'users': UserObject.query.all(),
+            'users': UserObject.query.options(
+                joinedload(UserObject.repo_objs), joinedload(UserObject.authorizedkeys), joinedload(UserObject.tokens)
+            ).all(),
         }
 
     @cherrypy.expose
