@@ -47,7 +47,7 @@ class SshKey(Base):
     fingerprint = Column('Fingerprint', Text)
     _key = Column('Key', Text, unique=True, primary_key=True)
     userid = Column('UserID', Integer, ForeignKey("users.UserID"), nullable=False)
-    user = relationship('UserObject', back_populates="authorizedkeys", lazy="joined")
+    user = relationship('UserObject', back_populates="authorizedkeys", lazy=True)
     access_time = Column('AccessTime', Timestamp, nullable=True, server_default=None)
     creation_time = Column('CreationTime', Timestamp, nullable=True, server_default=None, default=func.now())
     # Transient value.

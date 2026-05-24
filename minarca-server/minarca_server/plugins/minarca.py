@@ -14,7 +14,7 @@ from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from rdiffweb.core import authorizedkeys
 from rdiffweb.core.authorizedkeys import AuthorizedKey
-from rdiffweb.core.model import UserObject
+from rdiffweb.core.model import SshKey, UserObject
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
@@ -243,27 +243,21 @@ class MinarcaPlugin(SimplePlugin):
                 os.chown(filename, val.st_uid, val.st_gid)
 
         # Get list of keys
-        seen = set()
         new_data = StringIO()
-        active_users = (
-            UserObject.query.filter(UserObject.status != UserObject.STATUS_DISABLED)
+        keys = (
+            SshKey.query.with_entities(SshKey, UserObject.username, UserObject.user_root)
+            .join(SshKey.user)
+            .filter(UserObject.status != UserObject.STATUS_DISABLED)
             .filter(UserObject.status != UserObject.STATUS_DELETING)
             .all()
         )
-        for userobj in active_users:
-            for key in userobj.authorizedkeys:
-                if key.fingerprint in seen:
-                    logger.warning("duplicates key %s, sshd will ignore it")
-                    continue
-                else:
-                    seen.add(key.fingerprint)
+        for key, username, user_root in keys:
+            # Add option to the key
+            options = f"""command="export MINARCA_USERNAME='{username}' MINARCA_USER_ROOT='{user_root}';{self.shell}",{self.auth_options}"""
+            authorizedkey = AuthorizedKey(options=options, keytype=key.keytype, key=key.key, comment=key.comment)
 
-                # Add option to the key
-                options = f"""command="export MINARCA_USERNAME='{userobj.username}' MINARCA_USER_ROOT='{userobj.user_root}';{self.shell}",{self.auth_options}"""
-                authorizedkey = AuthorizedKey(options=options, keytype=key.keytype, key=key.key, comment=key.comment)
-
-                # Write the new key
-                authorizedkeys.add(new_data, authorizedkey)
+            # Write the new key
+            authorizedkeys.add(new_data, authorizedkey)
 
         # Write the new file
         logger.info("updating authorized_keys file [%s]", filename)

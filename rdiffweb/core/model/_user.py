@@ -150,7 +150,7 @@ class UserObject(MessageMixin, Base):
         'RepoObject',
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        lazy=True,
         order_by="RepoObject.repopath",
     )
     lang = Column('lang', String, nullable=False, default='', server_default='')
@@ -163,13 +163,13 @@ class UserObject(MessageMixin, Base):
         'SshKey',
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        lazy=True,
     )
     tokens = relationship(
         'Token',
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        lazy=True,
     )
 
     @classmethod
