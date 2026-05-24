@@ -346,6 +346,13 @@ class DeleteUserForm(DbForm):
 
 @cherrypy.tools.is_admin()
 class AdminUsersPage:
+
+    def _get_user(self, username_or_id):
+        user = UserObject.get_user(username_or_id)
+        if user is None:
+            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username_or_id)
+        return user
+
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST'])
     @cherrypy.tools.ratelimit(methods=['POST'])
@@ -381,9 +388,7 @@ class AdminUsersPage:
         """
         Show form to edit user
         """
-        user = UserObject.get_user(username_or_id)
-        if user is None:
-            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username_or_id)
+        user = self._get_user(username_or_id)
         form = EditUserForm(obj=user)
         message_body = kwargs.get('body', False)
         if form.validate_on_submit() and form.save_to_db(user, message_body=message_body):
@@ -409,9 +414,7 @@ class AdminUsersPage:
         cfg = cherrypy.tree.apps[''].cfg
         if cfg.disable_ssh_keys:
             raise cherrypy.HTTPError(400)
-        userobj = UserObject.get_user(username)
-        if not userobj:
-            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
+        userobj = self._get_user(username)
         # Validate form method.
         form = SshForm()
         if form.validate():
@@ -431,9 +434,7 @@ class AdminUsersPage:
         cfg = cherrypy.tree.apps[''].cfg
         if cfg.disable_ssh_keys:
             raise cherrypy.HTTPError(400)
-        userobj = UserObject.get_user(username)
-        if not userobj:
-            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
+        userobj = self._get_user(username)
         # Validate form method.
         form = DeleteSshForm()
         if form.validate():
@@ -454,9 +455,7 @@ class AdminUsersPage:
         cfg = cherrypy.tree.apps[''].cfg
         if cfg.disable_ssh_keys:
             raise cherrypy.HTTPError(400)
-        userobj = UserObject.get_user(username)
-        if not userobj:
-            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
+        userobj = self._get_user(username)
         # Validate form method.
         form = TokenForm()
         if form.validate():
@@ -476,9 +475,7 @@ class AdminUsersPage:
         cfg = cherrypy.tree.apps[''].cfg
         if cfg.disable_ssh_keys:
             raise cherrypy.HTTPError(400)
-        userobj = UserObject.get_user(username)
-        if not userobj:
-            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
+        userobj = self._get_user(username)
         # Validate form method.
         form = DeleteTokenForm()
         if form.validate():
@@ -496,9 +493,7 @@ class AdminUsersPage:
         """
         Delete a user
         """
-        userobj = UserObject.get_user(username)
-        if not userobj:
-            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username)
+        userobj = self._get_user(username)
         # Validate form method.
         form = DeleteUserForm()
         if form.validate():
@@ -514,9 +509,7 @@ class AdminUsersPage:
     @cherrypy.tools.datatables_out(search_columns=[Message.model_summary, Message.body, Message.changes])
     def messages(self, username_or_id, **kwargs):
         # Return Not found if user doesn't exists
-        user = UserObject.get_user(username_or_id)
-        if user is None:
-            raise cherrypy.HTTPError(400, _("User %s doesn't exists") % username_or_id)
+        user = self._get_user(username_or_id)
         # Query Object Messages
         query = (
             Message.query.with_entities(
