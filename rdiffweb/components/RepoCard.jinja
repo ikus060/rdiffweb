@@ -17,7 +17,7 @@
     {% if repo.status[0] != 'ok' %}<RepoStatus :repo="repo" class="alert py-2 px-3 small mb-3" />{% endif %}
     <div class="row g-2 mb-3 text-center">
       {# Last backup date #}
-      <div class="col-4">
+      <div class="col-6">
         <div class="bg-light rounded-3 p-2">
           <div class="fw-bold text-truncate">
             {% if repo.last_backup_date %}
@@ -33,22 +33,10 @@
         </div>
       </div>
       {# Backup count #}
-      <div class="col-4">
+      <div class="col-6">
         <div class="bg-light rounded-3 p-2">
           <div class="fw-bold text-truncate">{{ repo.session_statistics | length if repo.session_statistics else mdash }}</div>
           <div class="text-muted" style="font-size:.72rem">{% trans %}Restore points{% endtrans %}</div>
-        </div>
-      </div>
-      {# Total size #}
-      <div class="col-4">
-        <div class="bg-light rounded-3 p-2"
-             title="{% trans %}Exclude history data{% endtrans %}"
-             data-bs-toggle="tooltip"
-             data-bs-placement="bottom">
-          <div class="fw-bold text-truncate">
-            {{ repo.session_statistics[-1].sourcefilesize | filesize if repo.session_statistics else mdash }}
-          </div>
-          <div class="text-muted" style="font-size:.72rem">{% trans %}Size{% endtrans %}</div>
         </div>
       </div>
     </div>

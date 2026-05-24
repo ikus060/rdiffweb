@@ -361,10 +361,6 @@ class NotificationPlugin(SimplePlugin):
             # Storage
             "disk_usage": userobj.disk_usage,
             "disk_quota": userobj.disk_quota,
-            "repos_usage": {
-                repo.display_name: repo.session_statistics[-1].sourcefilesize if repo.session_statistics else 0
-                for repo in repo_objs
-            },
             # Heatmap
             "activity_start": activity_start,
             "activity_end": activity_end,

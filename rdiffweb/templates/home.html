@@ -102,7 +102,7 @@
   </div>
   {# Storage #}
   <div class="card rounded-3 shadow-sm mb-4 p-4">
-    <StorageUsage :disk_usage="disk_usage" :disk_quota="disk_quota" :repos_usage="repos_usage" />
+    <StorageUsage :disk_usage="disk_usage" :disk_quota="disk_quota" :repo_objs="repo_objs" />
   </div>
   {# Heatmap #}
   {% if repo_objs | length > 0 %}

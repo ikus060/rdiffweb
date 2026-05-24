@@ -1,10 +1,6 @@
-{# def disk_usage, disk_quota, repos_usage={} #}
+{# def disk_usage, disk_quota, repo_objs=[] #}
 {# Space used by individual repos #}
-{% set total_repos_usage = repos_usage.values() | sum %}
 {# Remaining space used by backup history (snapshots, deduplication, etc.) #}
-{% set history_usage = disk_usage - total_repos_usage %}
-{% set history_pct = ((history_usage / disk_quota) * 100) | round(1) if disk_quota else 0 %}
-{% set free_bytes = disk_quota - disk_usage %}
 <div class="d-flex align-items-center justify-content-between mb-3">
   <div>
     <h6 class="fw-bold mb-0">
@@ -18,26 +14,109 @@
     <span class="text-muted fw-normal fs-6">/ {{ disk_quota | filesize }}</span>
   </span>
 </div>
-<ProgressBar :value="disk_usage" :max="disk_quota" class="mb-3" />
-{% if repos_usage %}
+{% set bg_colors = [
+  "primary",
+  "primary-subtle",
+  "success",
+  "success-subtle",
+  "danger-subtle",
+  "warning",
+  "warning-subtle",
+  "info",
+  "info-subtle"
+] %}
+<div class="progress mb-3" style="height: 12px;">
+  {% if repo_objs %}
+    {% for repo in repo_objs | sort(attribute='total_size', reverse=True) %}
+      {% set pct = ((repo.total_size / disk_quota) * 100) | round(1) if disk_quota else 0 %}
+      {% set size_tooltip %}
+        <strong>{{ repo.display_name }}</strong>
+        <br>
+        {% if repo.mirror_size or repo.increments_size %}
+          {% trans %}Source:{% endtrans %} {{ repo.mirror_size | filesize }}
+          <br>
+          {% trans %}History:{% endtrans %} +{{ repo.increments_size | filesize }}
+          <br>
+        {% endif %}
+        <strong>{% trans %}Total:{% endtrans %}</strong>
+        {{ repo.total_size | filesize }}
+      {% endset %}
+      <div class="progress-bar bg-{{ loop.cycle(*bg_colors) }}"
+           role="progressbar"
+           style="width: {{ pct }}%"
+           data-bs-toggle="tooltip"
+           data-bs-html="true"
+           title="{{ size_tooltip | e }}"></div>
+    {% endfor %}
+    {# Other used space #}
+    {% set total_repo_size = repo_objs | map(attribute='total_size') | sum %}
+    {% set other_size = disk_usage - total_repo_size %}
+    {% set pct = ((other_size / disk_quota) * 100) | round(1) if disk_quota else 0 %}
+    {% if other_size > 0 %}
+      <div class="progress-bar bg-secondary"
+           role="progressbar"
+           style="width: {{ pct }}%"
+           data-bs-toggle="tooltip"
+           title="{{ _("Other: ") }}{{ other_size | filesize }}"></div>
+    {% endif %}
+  {% else %}
+    {# Simple progress bar value#}
+    {% set pct = ((disk_usage / disk_quota) * 100) | round(1) if disk_quota else 0 %}
+    <div class="progress-bar bg-primary"
+         role="progressbar"
+         style="width: {{ pct }}%"></div>
+  {% endif %}
+</div>
+{% if repo_objs %}
   <div class="row g-2">
-    {% for repo_name, repo_usage in repos_usage.items() %}
+    {% for repo in repo_objs | sort(attribute='total_size', reverse=True) %}
       <div class="col-6 col-md-3 col-lg-2">
-        <div class="d-flex flex-column gap-1">
-          <div class="small fw-semibold text-nowrap text-truncate">{{ repo_name }}</div>
-          <ProgressBar :value="repo_usage" :max="disk_quota" class="mb-3" height="6" />
-          <div class="text-muted small">{{ repo_usage | filesize }}</div>
-        </div>
+        <span class="d-inline-block rounded-circle p-2 bg-{{ loop.cycle(*bg_colors) }}"></span>
+        <span class="text-nowrap text-truncate" title="{{ repo.display_name }}">{{ repo.display_name }}</span>
+        {% if repo.mirror_size or repo.increments_size %}
+          {% set size_tooltip %}
+            <strong>{% trans %}Source:{% endtrans %}</strong>
+            {{ repo.mirror_size | filesize }}
+            <br>
+            <strong>{% trans %}History:{% endtrans %}</strong>
+            +{{ repo.increments_size | filesize }}
+            <br>
+            <strong>{% trans %}Total:{% endtrans %}</strong>
+            {{ repo.total_size | filesize }}
+          {% endset %}
+          <span data-bs-toggle="tooltip"
+                data-bs-html="true"
+                data-bs-original-title="{{ size_tooltip | e }}">
+            <span class="fw-bold">{{ repo.mirror_size | filesize }}</span>
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle ms-1 history-hint">
+              +{{ repo.increments_size | filesize }}
+            </span>
+          </span>
+        {% elif repo.total_size %}
+          <span data-bs-toggle="tooltip"
+                data-bs-html="true"
+                data-bs-original-title="{{ _("Source size without History") }}">
+            {{ repo.total_size |  filesize }}
+          </span>
+        {% else %}
+          <span data-bs-toggle="tooltip"
+                data-bs-html="true"
+                data-bs-original-title="{{ _("Size not yet computed.") }}">&mdash;</span>
+        {% endif %}
       </div>
     {% endfor %}
-    <!-- Free space entry -->
-    {% set free_bytes = disk_quota - disk_usage %}
-    <div class="col-6 col-md-3 col-lg-2">
-      <div class="d-flex flex-column gap-1">
-        <div class="small fw-semibold text-nowrap text-truncate">{{ _("Free") }}</div>
-        <ProgressBar :value="free_bytes" :max="disk_quota" class="mb-3" height="6" color="info" />
-        <div class="text-muted small">{{ free_bytes | filesize }}</div>
+    {# Other used space #}
+    {% set total_repo_size = repo_objs | map(attribute='total_size') | sum %}
+    {% set other_size = disk_usage - total_repo_size %}
+    {% if other_size > 0 %}
+      <div class="col-6 col-md-3 col-lg-2">
+        <span class="d-inline-block rounded-circle p-2 bg-secondary"></span>
+        <span class="text-nowrap text-truncate" title="{{ _("Other") }}">{{ _("Other") }}</span>
+        <span class="text-muted"
+              data-bs-toggle="tooltip"
+              data-bs-html="true"
+              data-bs-original-title="{{ _("Space used by other data") }}">{{ other_size |  filesize }}</span>
       </div>
-    </div>
+    {% endif %}
   </div>
 {% endif %}
