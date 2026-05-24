@@ -30,7 +30,7 @@ class DiskUsage(Base):
     __table_args__ = (Index('diskusage_parentpath_index', 'RepoID', 'ParentPath'),)
 
     repoid = Column('RepoID', Integer, ForeignKey("repos.RepoID", ondelete="CASCADE"), nullable=False, primary_key=True)
-    repo = relationship('RepoObject')
+    repo = relationship('RepoObject', lazy=True)
     logical_path = Column(
         'LogicalPath', LargeBinary(length=4096), nullable=False, server_default=None, primary_key=True
     )
