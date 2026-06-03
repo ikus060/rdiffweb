@@ -19,7 +19,7 @@
         {% trans %}
         Manage your personal information, notification preferences and account security. {% endtrans %}
       </p>
-      {# Report #}
+      {# Backup Report #}
       <div class="card mb-3">
         <div class="card-header d-flex align-items-center gap-2">
           <RdwIcon value="bi-envelope-paper text-primary" class="me-1" />
@@ -33,6 +33,34 @@
           <cf:Field field={{ form.send_report }} class="btn-secondary" />
         </div>
       </div>
+      {# Storage Notification #}
+      <div class="card mb-3">
+        <div class="card-header d-flex align-items-center gap-2">
+          <RdwIcon value="bi-hdd text-primary" class="me-1" />
+          {%- trans %}Storage Alert{% endtrans %}
+        </div>
+        <div class="card-body">
+          <p class="mb-0 text-muted small">
+            {% trans %}Get notified by email when your storage usage reaches a certain threshold. Select "Never" to disable storage alerts.{% endtrans %}
+          </p>
+          <cf:Field field={{ form.disk_usage_threshold }} />
+        </div>
+      </div>
+      {# Latest Version - Admin only #}
+      {% if currentuser.is_admin %}
+        <div class="card mb-3">
+          <div class="card-header d-flex align-items-center gap-2">
+            <RdwIcon value="bi-bell text-primary" class="me-1" />
+            {%- trans %}New Version{% endtrans %}
+          </div>
+          <div class="card-body">
+            <p class="mb-0 text-muted small">
+              {% trans %}Stay informed when a new version of the application is available. This notification is only visible to administrators.{% endtrans %}
+            </p>
+            <cf:Field field={{ form.check_latest }} />
+          </div>
+        </div>
+      {% endif %}
     </div>
   </form>
 {% endblock %}

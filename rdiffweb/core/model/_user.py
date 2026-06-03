@@ -23,6 +23,7 @@ import cherrypy
 from cherrypy_foundation.passwd import check_password, hash_password
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     Column,
     Index,
@@ -34,6 +35,7 @@ from sqlalchemy import (
     func,
     inspect,
     not_,
+    true,
 )
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -159,6 +161,22 @@ class UserObject(MessageMixin, Base):
     report_last_sent = Column('report_last_sent', Timestamp, nullable=True, default=None, info={AUDIT_IGNORE: True})
     notes = Column('notes', String, nullable=False, default='', server_default='')
     status = Column('status', String, nullable=False, default='', server_default='')
+    check_latest = Column(
+        'check_latest',
+        Boolean,
+        nullable=False,
+        default=True,
+        server_default=true(),
+        doc="Admin only - Notify when a new version is released",
+    )
+    disk_usage_threshold = Column(
+        'disk_usage_threshold',
+        SmallInteger,
+        nullable=False,
+        default=90,
+        server_default="90",
+        doc="Notify user when storage usage exceeds this percentage threshold (0 = disabled)",
+    )
     authorizedkeys = relationship(
         'SshKey',
         back_populates="user",
@@ -524,6 +542,18 @@ class UserObject(MessageMixin, Base):
             raise ValueError('Username cannot be modified.')
         return value
 
+    @validates('check_latest')
+    def validate_check_latest(self, key, value):
+        if value not in (0, 1):
+            raise ValueError("check_latest must be 0 or 1")
+        return value
+
+    @validates('disk_usage_threshold')
+    def validate_disk_usage_threshold(self, key, value):
+        if not (0 <= int(value) <= 100):
+            raise ValueError("disk_usage_threshold must be between 0 and 100")
+        return int(value)
+
     def validate_access_token(self, token):
         """
         Check if the given token matches.
@@ -601,16 +631,16 @@ def update_user_schema(target, conn, **kw):
     else:
         UserObject.query.filter(UserObject.report_time_range.is_(None)).update({UserObject.report_time_range: 0})
 
-    if not column_exists(conn, UserObject.report_last_sent):
-        column_add(conn, UserObject.report_last_sent)
-
-    # Add notes column
-    if not column_exists(conn, UserObject.notes):
-        column_add(conn, UserObject.notes)
-
-    # Add status column
-    if not column_exists(conn, UserObject.status):
-        column_add(conn, UserObject.status)
+    # Add missing columns added over the years.
+    for col in [
+        UserObject.report_last_sent,
+        UserObject.notes,
+        UserObject.status,
+        UserObject.disk_usage_threshold,
+        UserObject.check_latest,
+    ]:
+        if not column_exists(conn, col):
+            column_add(conn, col)
 
     # Fix username case insensitive unique
     if not index_exists(conn, 'user_username_index'):

@@ -85,6 +85,7 @@ class AdminTest(rdiffweb.test.WebCase):
         report_time_range=None,
         disabled=None,
         fullname=None,
+        disk_usage_threshold=None,
     ):
         b = {}
         b['action'] = 'edit'
@@ -110,6 +111,8 @@ class AdminTest(rdiffweb.test.WebCase):
             b['disabled'] = str(disabled)
         if fullname is not None:
             b['fullname'] = str(fullname)
+        if disk_usage_threshold is not None:
+            b['disk_usage_threshold'] = str(disk_usage_threshold)
         self.getPage("/admin/users/edit/" + username, method='POST', body=b)
 
     def _delete_user(self, username, confirm=None, delete_data=None):
@@ -550,6 +553,17 @@ class AdminTest(rdiffweb.test.WebCase):
         self.getPage("/admin/users/")
         self.assertInBody("User information modified successfully.")
 
+    def test_set_disk_usage_threshold(self):
+        # When updating user quota.
+        self._edit_user("admin", disk_usage_threshold=75)
+        self.assertStatus(303)
+        # Then a success message is displayed
+        self.getPage("/admin/users/")
+        self.assertInBody("User information modified successfully.")
+        # Then user object is updated
+        userobj = UserObject.get_user("admin")
+        self.assertEqual(75, userobj.disk_usage_threshold)
+
     def test_set_quota_empty(self):
         # When quota is not defined
         self._edit_user("admin", disk_quota='')
@@ -913,6 +927,7 @@ class AdminApiUsersTest(rdiffweb.test.WebCase):
                 'repos': [],
                 'disk_quota': 0,
                 'disk_usage': 0,
+                'disk_usage_threshold': 90,
             },
         )
 

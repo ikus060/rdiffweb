@@ -36,7 +36,7 @@ from sqlalchemy import func, or_
 from rdiffweb.core.librdiff import RdiffTime
 from rdiffweb.core.model import UserObject
 
-logger = logging.getLogger(__name__)
+CONTEXT = 'NOTIFICATION'
 
 
 class NotificationPlugin(SimplePlugin):
@@ -109,19 +109,34 @@ class NotificationPlugin(SimplePlugin):
         try:
             current_version = Version(self.current_version)
         except InvalidVersion:
-            logger.warning('invalid current_version: ' + self.current_version, exc_info=1)
+            cherrypy.log(
+                f'invalid current_version: {self.current_version}',
+                context=CONTEXT,
+                traceback=True,
+                severity=logging.WARNING,
+            )
             return None
 
         # Get latest version
         try:
             headers = {
-                'User-Agent': f'{self.header_name}-server/{current_version} python/{platform.python_version()} {platform.system()}/{platform.release()} ({distro.name(True)} {platform.machine()})'
+                'User-Agent': (
+                    f'{self.header_name}-server/{current_version}'
+                    f' python/{platform.python_version()}'
+                    f' {platform.system()}/{platform.release()}'
+                    f' ({distro.name(True)} {platform.machine()})'
+                )
             }
             response = requests.get(self.latest_version_url, headers=headers, timeout=0.5)
             response.raise_for_status()
             latest_version = Version(response.text)
         except requests.exceptions.RequestException:
-            logger.warning('fail to get latest version', exc_info=1)
+            cherrypy.log(
+                'fail to get latest version',
+                context=CONTEXT,
+                traceback=True,
+                severity=logging.WARNING,
+            )
             return None
 
         # Compare them
@@ -133,7 +148,11 @@ class NotificationPlugin(SimplePlugin):
         """
         to = userobj.email if to is None else to
         if not to and not self.bcc:
-            logger.info("can't sent mail to user [%s] without an email", userobj.username)
+            cherrypy.log(
+                f"can't sent mail to user [{userobj.username}] without an email",
+                context=CONTEXT,
+                severity=logging.INFO,
+            )
             return
 
         # Also send email to catch-all email.
@@ -156,13 +175,16 @@ class NotificationPlugin(SimplePlugin):
             # Extract subject from template
             match = re.search(r'<title>(.*)</title>', message_body, re.DOTALL)
             subject = match and match.group(1).replace('\n', '').strip()
-        subject = subject or _('Notification')
+        subject = subject or _(CONTEXT)
         # Queue the email.
         self.bus.publish('queue_mail', to=to, subject=subject, message=message_body, **queue_mail_kwargs)
 
     def access_token_added(self, userobj, name):
-        username = userobj.username
-        logger.info(f"A new access token {name} for the user {username} has been added")
+        cherrypy.log(
+            f"A new access token {name} for the user {userobj.username} has been added",
+            context=CONTEXT,
+            severity=logging.INFO,
+        )
         if self.send_changed:
             self._queue_mail(
                 userobj,
@@ -171,8 +193,11 @@ class NotificationPlugin(SimplePlugin):
             )
 
     def authorizedkey_added(self, userobj, fingerprint, comment, **kwargs):
-        username = userobj.username
-        logger.info(f"A new SSH key {fingerprint} has been added for the user {username}")
+        cherrypy.log(
+            f"A new SSH key {fingerprint} has been added for the user {userobj.username}",
+            context=CONTEXT,
+            severity=logging.INFO,
+        )
         if self.send_changed:
             self._queue_mail(
                 userobj,
@@ -183,9 +208,12 @@ class NotificationPlugin(SimplePlugin):
 
     def user_updated(self, userobj, attrs={}):
         username = userobj.username
-        # Leave if the mail was not changed.
         if 'email' in attrs:
-            logger.info(f"Email address of the user {username} has been changed")
+            cherrypy.log(
+                f"Email address of the user {username} has been changed",
+                context=CONTEXT,
+                severity=logging.INFO,
+            )
             # If the email attributes was changed, send a mail notification.
             if self.send_changed:
                 old_email = attrs['email'][0]
@@ -197,7 +225,11 @@ class NotificationPlugin(SimplePlugin):
 
         if 'mfa' in attrs:
             state = 'activated' if userobj.mfa == UserObject.DISABLED_MFA else 'disabled'
-            logger.info(f"Two-factor authentication has been {state} for the user {username}")
+            cherrypy.log(
+                f"Two-factor authentication has been {state} for the user {username}",
+                context=CONTEXT,
+                severity=logging.INFO,
+            )
             if self.send_changed:
                 self._queue_mail(
                     userobj,
@@ -205,8 +237,11 @@ class NotificationPlugin(SimplePlugin):
                 )
 
     def user_password_changed(self, userobj):
-        username = userobj.username
-        logger.info(f"User's password {username} changed")
+        cherrypy.log(
+            f"User's password {userobj.username} changed",
+            context=CONTEXT,
+            severity=logging.INFO,
+        )
         if self.send_changed:
             self._queue_mail(
                 userobj,
@@ -214,8 +249,11 @@ class NotificationPlugin(SimplePlugin):
             )
 
     def repo_added(self, userobj, repo_path):
-        username = userobj.username
-        logger.info(f"New repository named {repo_path} has been added for the user {username}")
+        cherrypy.log(
+            f"New repository named {repo_path} has been added for the user {userobj.username}",
+            context=CONTEXT,
+            severity=logging.INFO,
+        )
         if self.send_changed:
             self._queue_mail(
                 userobj,
@@ -224,8 +262,11 @@ class NotificationPlugin(SimplePlugin):
             )
 
     def repo_deleted(self, userobj, repo_path):
-        username = userobj.username
-        logger.info(f"Repository {repo_path} of the user {username} has been deleted")
+        cherrypy.log(
+            f"Repository {repo_path} of the user {userobj.username} has been deleted",
+            context=CONTEXT,
+            severity=logging.INFO,
+        )
         if self.send_changed:
             self._queue_mail(
                 userobj,
@@ -234,20 +275,31 @@ class NotificationPlugin(SimplePlugin):
             )
 
     def user_added(self, userobj):
-        username = userobj.username
-        logger.info(f"New user {username} has been added")
+        cherrypy.log(
+            f"New user {userobj.username} has been added",
+            context=CONTEXT,
+            severity=logging.INFO,
+        )
 
     def user_deleted(self, username):
-        logger.info(f"User {username} has been deleted")
+        cherrypy.log(
+            f"User {username} has been deleted",
+            context=CONTEXT,
+            severity=logging.INFO,
+        )
 
     def user_login(self, userobj):
-        username = userobj.username
-        logger.info(f"User {username} login to web application")
+        cherrypy.log(
+            f"User {userobj.username} login to web application",
+            context=CONTEXT,
+            severity=logging.INFO,
+        )
 
     def notification_job(self):
         """
         Loop trough all the user repository and send notifications.
         """
+        cherrypy.log('Running notification job', context=CONTEXT, severity=logging.INFO)
         # For Each user with an email.
         for userobj in UserObject.query.filter(UserObject.email != ''):
             try:
@@ -260,20 +312,32 @@ class NotificationPlugin(SimplePlugin):
                         template="email_notification.html",
                         repo_objs=repo_objs,
                     )
-                # Check user's disk usage
-                disk_usage = userobj.disk_usage
-                disk_quota = userobj.disk_quota
-                used_pct = disk_usage / disk_quota * 100 if disk_quota else 0
                 # Send email if required
-                if used_pct > 90:
-                    self._queue_mail(
-                        userobj,
-                        template="email_storage_usage.html",
-                        disk_usage=disk_usage,
-                        disk_quota=disk_quota,
+                if userobj.disk_usage_threshold:
+                    # Check user's disk usage
+                    disk_usage = userobj.disk_usage
+                    disk_quota = userobj.disk_quota
+                    used_pct = disk_usage / disk_quota * 100 if disk_quota else 0
+                    cherrypy.log(
+                        f"user {userobj} disk usage {used_pct}% (threshold: {userobj.disk_usage_threshold}%)",
+                        context=CONTEXT,
+                        severity=logging.INFO,
                     )
+                    if used_pct >= float(userobj.disk_usage_threshold):
+                        cherrypy.log("FOO - sending email")
+                        self._queue_mail(
+                            userobj,
+                            template="email_storage_usage.html",
+                            disk_usage=disk_usage,
+                            disk_quota=disk_quota,
+                        )
             except Exception:
-                logger.exception('fail to send notification to user %s', userobj)
+                cherrypy.log(
+                    f'fail to send notification to user {userobj}',
+                    context=CONTEXT,
+                    traceback=True,
+                    severity=logging.ERROR,
+                )
 
     def check_latest_job(self):
         """
@@ -281,7 +345,9 @@ class NotificationPlugin(SimplePlugin):
         """
         # Check if current version and send email to administrator if required
         if self._is_latest() is False:
-            for userobj in UserObject.query.filter(UserObject.email != '', UserObject.role == UserObject.ADMIN_ROLE):
+            for userobj in UserObject.query.filter(
+                UserObject.email != '', UserObject.role == UserObject.ADMIN_ROLE, UserObject.check_latest.is_(True)
+            ):
                 self._queue_mail(
                     userobj,
                     template="email_latest.html",
@@ -312,7 +378,12 @@ class NotificationPlugin(SimplePlugin):
             except Exception:
                 # In case of error, continue with next user.
                 userobj.rollback()
-                logger.exception('fail to send report to user %s', userobj)
+                cherrypy.log(
+                    f'fail to send report to user {userobj}',
+                    context=CONTEXT,
+                    traceback=True,
+                    severity=logging.ERROR,
+                )
 
     def send_report(self, userobj, force=False, _now=None):
         """

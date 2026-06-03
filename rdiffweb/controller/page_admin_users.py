@@ -206,6 +206,19 @@ class EditUserForm(DbForm):
         description=_("Disk spaces (in bytes) used by this user."),
         widget=widgets.HiddenInput(),
     )
+    disk_usage_threshold = SelectField(
+        _('Disk Usage Threshold'),
+        choices=[
+            (0, _('Never - No storage alerts will be sent.')),
+            (50, _('50% - Notify when storage is half full.')),
+            (75, _('75% - Notify when storage is three-quarters full.')),
+            (90, _('90% - Notify when storage is almost full.')),
+            (95, _('95% - Notify when storage is critically full.')),
+            (99, _('99% - Notify when storage is nearly exhausted.')),
+        ],
+        coerce=int,
+        default='0',
+    )
     notes = TextAreaField(
         _('Notes'),
         description=_('Internal notes visible to administrators only.'),
@@ -278,6 +291,7 @@ class EditUserForm(DbForm):
         userobj.lang = self.lang.data or ''
         userobj.report_time_range = self.report_time_range.data
         userobj.notes = self.notes.data
+        userobj.disk_usage_threshold = self.disk_usage_threshold.data
         # Update user's status
         if self.disabled.data is True:
             userobj.status = UserObject.STATUS_DISABLED
@@ -562,6 +576,7 @@ class AdminApiUsers:
                 {
                     "disk_usage": user_obj.disk_usage,
                     "disk_quota": user_obj.disk_quota,
+                    "disk_usage_threshold": user_obj.disk_usage_threshold,
                     "repos": [
                         {
                             # database fields.

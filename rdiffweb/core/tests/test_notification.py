@@ -108,8 +108,9 @@ class NotificationJobTest(AbstractNotificationTest):
         # Set user config
         user = UserObject.get_user(self.USERNAME)
         user.email = 'test@test.com'
+        user.disk_usage_threshold = 50
         user.commit()
-        self.listener.get_disk_quota.return_value = user.disk_usage
+        self.listener.get_disk_quota.return_value = user.disk_usage * 0.51
         # Given a user with a healty repo.
         RepoObject.query.filter(RepoObject.user == user, RepoObject.repopath == 'broker-repo').delete()
         user.commit()
@@ -511,6 +512,19 @@ class NotificationLatest(AbstractNotificationTest):
         adminobj.add().commit()
         # Given the application may be upgraded
         responses.add(responses.GET, self.url, body='0.0.1')
+        # When running the check_latest_job
+        cherrypy.notification.check_latest_job()
+        # Then an email is send to the adminstrator
+        self.listener.queue_email.assert_not_called()
+
+    def test_check_latest_job_disabled(self):
+        # Given an administrator
+        adminobj = UserObject.get_user(self.USERNAME)
+        adminobj.check_latest = 0
+        adminobj.email = 'admin@example.com'
+        adminobj.add().commit()
+        # Given the application may be upgraded
+        responses.add(responses.GET, self.url, body='9.9.9')
         # When running the check_latest_job
         cherrypy.notification.check_latest_job()
         # Then an email is send to the adminstrator

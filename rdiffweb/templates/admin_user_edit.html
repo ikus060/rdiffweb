@@ -60,6 +60,7 @@
           <div class="row">
             <cf:Field field={{ form.user_root }} />
             <cf:Field field={{ form.disk_quota }} container-class="col-md-6" />
+            <cf:Field field={{ form.disk_usage_threshold }} container-class="col-md-6" />
           </div>
           <div class="border rounded p-4">
             <StorageUsage :disk_usage="form.disk_usage.data" :disk_quota="form.disk_quota.data" />

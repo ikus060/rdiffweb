@@ -19,7 +19,7 @@ import logging
 import cherrypy
 from cherrypy_foundation.flash import flash
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
-from wtforms.fields import RadioField, SubmitField
+from wtforms.fields import BooleanField, RadioField, SelectField, SubmitField
 
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.controller.widgets import SelectMultipleWidget
@@ -40,10 +40,29 @@ class NotificationForm(DbForm):
         coerce=int,
     )
 
+    check_latest = BooleanField(
+        _('Notify me when a new version is released'),
+    )
+
+    disk_usage_threshold = SelectField(
+        _('Notify me when storage usage exceeds'),
+        choices=[
+            (0, _('Never - No storage alerts will be sent.')),
+            (50, _('50% - Notify when storage is half full.')),
+            (75, _('75% - Notify when storage is three-quarters full.')),
+            (90, _('90% - Notify when storage is almost full.')),
+            (95, _('95% - Notify when storage is critically full.')),
+            (99, _('99% - Notify when storage is nearly exhausted.')),
+        ],
+        coerce=int,
+    )
+
     send_report = SubmitField(_('Save and send report'))
 
     def populate_obj(self, user):
         user.report_time_range = self.report_time_range.data
+        user.check_latest = self.check_latest.data
+        user.disk_usage_threshold = self.disk_usage_threshold.data
         if self.send_report.data:
             if not user.report_time_range:
                 raise ValueError(_('You must select a time range and save changes before sending a report.'))
