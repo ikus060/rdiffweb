@@ -20,10 +20,8 @@ to change password ans refresh it's repository view.
 
 import cherrypy
 from cherrypy_foundation.tools.i18n import get_timezone_name, list_available_timezones
-from wtforms.fields import HiddenField, PasswordField, RadioField, SelectField, StringField, SubmitField
+from wtforms.fields import HiddenField, PasswordField, SelectField, StringField
 from wtforms.validators import EqualTo, InputRequired, Length, Optional, Regexp, ValidationError
-
-from rdiffweb.controller.widgets import SelectMultipleWidget
 
 try:
     from wtforms.fields import EmailField  # wtform >=3
@@ -68,19 +66,6 @@ class UserProfileForm(DbForm):
         _('Preferred timezone'),
         description=_('Used to display backup times in your local time.'),
     )
-    report_time_range = RadioField(
-        _('Send me a backup status report'),
-        widget=SelectMultipleWidget(),
-        choices=[
-            (0, _('Never - No report emails will be sent.')),
-            (1, _('Daily - Receive a report every day.')),
-            (7, _('Weekly - Receive a report every Monday morning.')),
-            (30, _('Monthly - Receive a report on the first day of each month.')),
-        ],
-        coerce=int,
-    )
-
-    send_report = SubmitField(_('Save and send report'))
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -101,19 +86,6 @@ class UserProfileForm(DbForm):
         user.email = self.email.data
         user.lang = self.lang.data
         user.timezone = self.timezone.data
-        user.report_time_range = self.report_time_range.data
-        if self.send_report.data:
-            if not user.report_time_range:
-                raise ValueError(_('You must select a time range and save changes before sending a report.'))
-            if not user.email:
-                raise ValueError(_('Could not send report to user without configured email.'))
-            try:
-                cherrypy.notification.send_report(user, force=True)
-                if hasattr(cherrypy.serving, 'session'):
-                    flash(_("Report sent successfully."), level='success')
-            except Exception:
-                logger.exception("fail to send report", exc_info=1)
-                flash(_("The report could not be sent. Check the server logs."), level='error')
 
 
 class UserPasswordForm(DbForm):

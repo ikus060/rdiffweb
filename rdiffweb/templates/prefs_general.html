@@ -58,20 +58,6 @@
           </button>
         </div>
       </div>
-      {# Report #}
-      <div class="card mb-3">
-        <div class="card-header d-flex align-items-center gap-2">
-          <RdwIcon value="bi-envelope-paper text-primary" class="me-1" />
-          {%- trans %}Backup Report{% endtrans %}
-        </div>
-        <div class="card-body">
-          <p class="mb-0 text-muted small">
-            {% trans %}Choose how often you want to receive a backup status report by email.{% endtrans %}
-          </p>
-          <cf:Field field={{ form.report_time_range }} />
-          <cf:Field field={{ form.send_report }} class="btn-secondary" />
-        </div>
-      </div>
     </div>
   </form>
   {# Change password Modal #}

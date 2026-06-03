@@ -1,0 +1,38 @@
+{% extends 'layout.html' %}
+{% set breadcrumbs = breadcrumb_page('prefs') +  breadcrumb_page(self) %}
+{% block content %}
+  <form method="post" action="#">
+    {# Header #}
+    <div class="sticky-top mb-2 bg-white border-bottom p-3">
+      <div class="d-flex flex-wrap justify-content-between rdw-container">
+        <h2 class="mb-0">{{ active_page.label }}</h2>
+        <div>
+          <button type="button"
+                  class="btn btn-secondary"
+                  onclick="window.history.back();">{% trans %}Cancel{% endtrans %}</button>
+          <button type="submit" class="btn btn-primary">{% trans %}Save changes{% endtrans %}</button>
+        </div>
+      </div>
+    </div>
+    <div class="rdw-container">
+      <p class="text-secondary small mb-4">
+        {% trans %}
+        Manage your personal information, notification preferences and account security. {% endtrans %}
+      </p>
+      {# Report #}
+      <div class="card mb-3">
+        <div class="card-header d-flex align-items-center gap-2">
+          <RdwIcon value="bi-envelope-paper text-primary" class="me-1" />
+          {%- trans %}Backup Report{% endtrans %}
+        </div>
+        <div class="card-body">
+          <p class="mb-0 text-muted small">
+            {% trans %}Choose how often you want to receive a backup status report by email.{% endtrans %}
+          </p>
+          <cf:Field field={{ form.report_time_range }} />
+          <cf:Field field={{ form.send_report }} class="btn-secondary" />
+        </div>
+      </div>
+    </div>
+  </form>
+{% endblock %}

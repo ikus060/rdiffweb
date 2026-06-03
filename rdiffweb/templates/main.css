@@ -34,7 +34,9 @@ dark
     /* Override some bootstrap colors. */
     --bs-link-color: {{ link_color }};
     --bs-link-color-rgb: {{ hex_to_rgb(link_color) }};
+    --bs-primary: {{ link_color }};
     --bs-primary-rgb: {{ hex_to_rgb(link_color) }};
+    --bs-primary-bg-subtle: color-mix(in srgb, var(--bs-primary) 20%, white 80%);
 }
 
 /* Adjust navbar colors for branding */
