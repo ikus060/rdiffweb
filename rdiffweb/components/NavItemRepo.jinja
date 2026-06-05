@@ -5,9 +5,9 @@
 {% endif %}
 <a {{ attrs.render() }}>
   <RdwIcon value="repo" class="fs-4" />
-  <div class="w-100">
+  <div class="w-100 text-truncate">
     <div class="d-flex justify-content-between">
-      <span class="mb-0 me-1 fw-semibold text-truncate">{{ repo.name }}</span>
+      <span class="mb-0 me-1 fw-semibold text-truncate" title="{{ repo.name }}">{{ repo.name }}</span>
       <RepoStatus :repo="repo" class="badge" />
     </div>
     <div class="small text-truncate">
