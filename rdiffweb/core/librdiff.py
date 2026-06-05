@@ -758,7 +758,7 @@ class MetadataDict(object):
         self._prefix = cls.PREFIX
         self._cls = cls
 
-    @property
+    @cached_property
     def _entries(self):
         return [e for e in self._repo._entries if e.startswith(self._prefix)]
 
@@ -887,7 +887,7 @@ class RdiffRepo(object):
         assert isinstance(value, bytes)
         return self._encoding.decode(value, errors)[0]
 
-    @property
+    @cached_property
     def _entries(self):
         """
         List content of rdiff-backup-data.
@@ -916,6 +916,11 @@ class RdiffRepo(object):
         cached_properties = [
             (self, '_entries'),
             (self, 'status'),
+            (self.current_mirror, '_entries'),
+            (self.error_log, '_entries'),
+            (self.mirror_metadata, '_entries'),
+            (self.file_statistics, '_entries'),
+            (self.session_statistics, '_entries'),
         ]
         for obj, attr in cached_properties:
             if attr in obj.__dict__:
