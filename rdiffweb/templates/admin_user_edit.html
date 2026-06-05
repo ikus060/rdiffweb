@@ -338,8 +338,7 @@
         </h2>
         <div id="auditBody"
              class="accordion-collapse collapse"
-             data-bs-parent="#auditAccordion"
-             style="">
+             data-bs-parent="#auditAccordion">
           <div class="accordion-body p-0">
             <RdwMessages :data="{{ url_for('admin','users', 'messages', form.id.data|string) }}"
                          show="user" />
