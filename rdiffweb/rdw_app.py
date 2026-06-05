@@ -215,6 +215,8 @@ class RdiffwebApp(Application):
                 'lastupdated': lambda dt: format_timedelta(dt - datetime.now(timezone.utc), add_direction=True),
                 'filesize': functools.partial(humanfriendly.format_size, binary=True),
             },
+            # Enable jinja autoreload in debug or development mode only.
+            auto_reload=cfg.debug or cfg.environment == 'development',
         )
 
         # Pick the right implementation for storage
