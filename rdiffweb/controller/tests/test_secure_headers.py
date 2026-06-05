@@ -135,7 +135,9 @@ class SecureHeadersTest(rdiffweb.test.WebCase):
         self.getPage('/static/main.js')
         # Then the request is accepted with 200 OK
         self.assertStatus(200)
-        self.assertNoHeader('Cache-control')
+        self.assertHeaderItemValue('Cache-control', 'public')
+        self.assertHeaderItemValue('Cache-control', 'max-age=31536000')
+        self.assertHeaderItemValue('Cache-control', 'immutable')
         self.assertNoHeader('Pragma')
         self.assertNoHeader('Expires')
 

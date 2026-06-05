@@ -54,7 +54,7 @@ class ControllerTest(rdiffweb.test.WebCase):
     @parameterized.expand(
         [
             '/favicon.ico',
-            '/main.css',
+            '/static/main.css',
             '/login-bg',
             '/header_logo',
             '/static/main.js',
@@ -114,7 +114,7 @@ class ControllerThemeTest(rdiffweb.test.WebCase):
 
     def test_static(self):
         # Query css with uniq value to avoid caching.
-        self.getPage("/main.css")
+        self.getPage("/static/main.css")
         self.assertStatus('200 OK')
         self.assertInBody(self.expect_color)
 

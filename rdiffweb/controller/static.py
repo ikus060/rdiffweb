@@ -27,6 +27,7 @@ from cherrypy_foundation.tools.i18n import preferred_lang
 @cherrypy.tools.ratelimit(on=False)
 @cherrypy.tools.secure_headers(on=False)
 @cherrypy.tools.sessions(on=False)
+@cherrypy.tools.response_headers(headers=[('Cache-control', 'public, max-age=31536000, immutable')])
 class Static:
 
     components = StaticMiddleware()
@@ -38,6 +39,18 @@ class Static:
     def default(self, *args, **kwargs):
         """This entry point is used to serve content of /static/ folder."""
         raise cherrypy.HTTPError(400)
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['GET'])
+    @cherrypy.tools.response_headers(
+        headers=[('Content-Type', 'text/css'), ('Cache-control', 'public, max-age=31536000, immutable')]
+    )
+    @cherrypy.tools.jinja2(template='main.css')
+    def main_css(self, **kwargs):
+        """
+        Return CSS file based on branding configuration
+        """
+        return {}
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET'])

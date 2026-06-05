@@ -180,22 +180,6 @@ class Root:
         currentuser = cherrypy.serving.request.currentuser
         raise cherrypy.HTTPRedirect(url_for('home', currentuser.username))
 
-    @cherrypy.expose
-    @cherrypy.tools.allow(methods=['GET'])
-    @cherrypy.tools.auth(on=False)
-    @cherrypy.tools.auth_mfa(on=False)
-    @cherrypy.tools.caching(on=True)
-    @cherrypy.tools.ratelimit(on=False)
-    @cherrypy.tools.response_headers(headers=[('Content-Type', 'text/css')])
-    @cherrypy.tools.sessions(on=False)
-    @cherrypy.tools.secure_headers(on=False)
-    @cherrypy.tools.jinja2(template='main.css')
-    def main_css(self, **kwargs):
-        """
-        Return CSS file based on branding configuration
-        """
-        return {}
-
 
 class RdiffwebApp(Application):
     """This class represent the application context."""

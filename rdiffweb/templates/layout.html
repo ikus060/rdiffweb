@@ -22,7 +22,7 @@
             rel="shortcut icon" />
       {{ catalog.render_assets() }}
       <!-- Custom -->
-      <link href="{{ url_for('/main.css', v=cache_invalidate) }}"
+      <link href="{{ url_for('/static/main.css', v=cache_invalidate) }}"
             rel="stylesheet"
             type="text/css" />
       <script src="{{ url_for('/static/main.js', v=cache_invalidate) }}"></script>
