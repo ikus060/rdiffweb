@@ -57,8 +57,10 @@ class PageRegistry(dict):
         return page_id
 
     def get_repo_nav_pages(self, in_menu=True):
-        repo_pages = ['browse', 'insights', 'settings']
-        return [page for page in self.values() if page.id in repo_pages]
+        repo_pages = ['browse', 'history', 'restore', 'insights', 'settings']
+        return [
+            page for page in self.values() if page.id in repo_pages and (in_menu is None or page.in_menu == in_menu)
+        ]
 
     def get_insight_nav_pages(self, in_menu=True):
         return [
