@@ -232,12 +232,15 @@ publish:sonar:
   variables:
     SONAR_PROJECT_BASE_DIR: "${CI_PROJECT_DIR}"
     SONAR_KEY: "$CI_PROJECT_NAME${CI_COMMIT_TAG:+-dev}"
+    # Disable git shallow clone
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 0
   script:
     - sonar-scanner -X
       -Dsonar.python.coverage.reportPaths=coverage-*.xml
       -Dsonar.python.xunit.reportPaths=xunit-*.xml
       -Dsonar.host.url=$SONAR_URL
-      -Dsonar.login=$SONAR_TOKEN
+      -Dsonar.token=$SONAR_TOKEN
       -Dsonar.projectKey=$SONAR_KEY
       -Dsonar.projectVersion=$(git describe)
       -Dsonar.qualitygate.wait=True
