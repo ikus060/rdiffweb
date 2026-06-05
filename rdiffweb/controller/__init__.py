@@ -43,13 +43,13 @@ class PageRegistry(dict):
     Page registry built manually.
     """
 
-    def __getitem__(self, id):
-        return super().__getitem__(id)
+    def __getitem__(self, page_id):
+        return super().__getitem__(page_id)
 
-    def get(self, id, default=None):
-        if id.endswith('.html'):
-            id = id[:-5]
-        return super().get(id, default)
+    def get(self, page_id, default=None):
+        if page_id.endswith('.html'):
+            page_id = page_id[:-5]
+        return super().get(page_id, default)
 
     def get_label(self, page_id):
         if page_id in self:
