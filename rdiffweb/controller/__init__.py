@@ -168,13 +168,6 @@ def breadcrumb_repo(repo, page=None, path=None, extend=False):
     return [(url_for('/'), _("Home")), (url_for('browse', repo), repo.display_name)]
 
 
-# TODO Remove the following function.
-def validate(value, message=None):
-    """Raise HTTP error if value is not true."""
-    if not value:
-        raise cherrypy.HTTPError(400, message)
-
-
 def validate_int(value, min=None, max=None):
     """Returns a converter function that validates integer ranges"""
     try:
