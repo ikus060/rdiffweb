@@ -107,7 +107,7 @@ class DiskUsagePlugin(SimplePlugin):
                 f'du failed for path {path!r} (exit {process.returncode})', severity=logging.ERROR, context=CONTEXT
             )
 
-    def _update_disk_usage(sefl, repo_obj, logical_path, **kwargs):
+    def _update_disk_usage(self, repo_obj, logical_path, **kwargs):
         with cherrypy.db.session.begin():
             # Try to update first (most common case)
             rows_updated = DiskUsage.query.filter_by(repoid=repo_obj.id, logical_path=logical_path).update(kwargs)
