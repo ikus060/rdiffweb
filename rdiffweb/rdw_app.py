@@ -111,20 +111,14 @@ def _json_handler(*args, **kwargs):
 
 
 def _template_processor():
-    # TODO Move to cherrypy-foundation
     values = {
         'lang': str(get_translation().locale),
-        'current_url': cherrypy.url(path=cherrypy.request.path_info),
     }
     if hasattr(cherrypy.serving.request, 'login'):
         values['login'] = cherrypy.serving.request.login
     if hasattr(cherrypy.serving.request, 'currentuser'):
         currentuser = cherrypy.serving.request.currentuser
         values['currentuser'] = currentuser
-        # TODO Should should be replace within the template.
-        values['fullname'] = currentuser.fullname
-        values['is_admin'] = currentuser.is_admin
-        values['is_maintainer'] = currentuser.is_maintainer
     return values
 
 

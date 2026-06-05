@@ -88,7 +88,7 @@
                        class="btn-danger"
                        :label="_('Delete repository')"
                        target="#rdw-delete-repo-modal"
-                       :disabled="not is_maintainer" />
+                       :disabled="not currentuser.is_maintainer" />
       </div>
     </div>
   </div>
