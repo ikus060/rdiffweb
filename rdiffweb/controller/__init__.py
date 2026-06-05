@@ -84,7 +84,6 @@ class PageRegistry(dict):
         ]
 
 
-# TODO Consider using function decorator to build the registry
 _pages = [
     Page('home', _('Home'), 'home', 'bi-house-fill'),
     # Repo
@@ -157,11 +156,7 @@ def breadcrumb_repo(repo, page=None, path=None, extend=False):
     currentuser = cherrypy.serving.request.currentuser
     if currentuser != repo.user:
         return [
-            # TODO pre-filter on user's repo
-            (
-                url_for('admin', 'repos'),
-                _("@%s") % repo.user.username,
-            ),
+            (url_for('admin', 'repos'), _("@%s") % repo.user.username),
             (url_for('browse', repo), repo.display_name),
         ]
 
