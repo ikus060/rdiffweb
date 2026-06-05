@@ -4,8 +4,6 @@ Documentation=https://minarca.org/
 
 [Service]
 ExecStart=/opt/minarca-server/minarca-server
-User=minarca
-Group=minarca
 
 [Install]
 WantedBy=multi-user.target
