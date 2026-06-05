@@ -136,6 +136,9 @@ class DiskUsagePlugin(SimplePlugin):
     def _run_disk_usage_scan(self):
         cherrypy.log('starting disk usage scan', context=CONTEXT)
 
+        # Make sure to start from a clean session.
+        cherrypy.db.clear_sessions()
+
         with cherrypy.db.session.begin():
             repos = RepoObject.query.all()
             cherrypy.db.session.expunge_all()
