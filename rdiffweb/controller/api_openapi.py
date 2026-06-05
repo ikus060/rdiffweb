@@ -184,7 +184,7 @@ class OpenAPI:
     def _generate_spec(self, root_node, title, version):
         paths = {}
         # Collect all exposed node
-        sorted_nodes = sorted(list(self._walk_exposed_nodes(root_node)))
+        sorted_nodes = sorted(self._walk_exposed_nodes(root_node))
         # Assemble all the nodes
         for path, node, config in sorted_nodes:
             # Check if RESTapi
