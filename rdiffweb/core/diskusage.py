@@ -146,6 +146,9 @@ class DiskUsagePlugin(SimplePlugin):
         # Loop on each repo
         for repo_obj in repos:
             repo_path = repo_obj.full_path
+            if not os.path.isdir(repo_path):
+                cherrypy.log(f"skip disk usage for repository {repo_path!r} folder doesn't exists", context=CONTEXT)
+                continue
             increments_prefix = os.path.join(repo_path, b'rdiff-backup-data', b'increments')
             cherrypy.log(f'scanning disk usage for repository {repo_path!r}', context=CONTEXT)
             scan_start = datetime.now(tz=timezone.utc) - timedelta(seconds=1)
