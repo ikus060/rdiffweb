@@ -32,7 +32,7 @@ def line_to_state(line):
         return 'unchanged'
     elif line.source_size == 'NA':
         return 'deleted'
-    elif line.mirror_size == 'NA':
+    elif line.mirror_size == 'NA' and line.increment_size == '0':
         return 'new'
     else:
         return 'changed'
