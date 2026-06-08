@@ -48,6 +48,8 @@ def case_wrapper(*whens, else_=None):
 
 def delete_repo_path(repoid, path):
     """Job used to delete a repository path."""
+    # Make sure to start from a clean session.
+    cherrypy.db.clear_sessions()
     with cherrypy.db.session.begin():
         repoobj = RepoObject.query.filter(RepoObject.id == repoid).one()
         # Make sure to log this even when deleting a specific path.
@@ -59,6 +61,8 @@ def delete_repo_path(repoid, path):
 
 def delete_repo(repoid):
     """Job used to delete a repository."""
+    # Make sure to start from a clean session.
+    cherrypy.db.clear_sessions()
     with cherrypy.db.session.begin():
         repoobj = RepoObject.query.filter(RepoObject.id == repoid).one()
         # Delete data on disk.

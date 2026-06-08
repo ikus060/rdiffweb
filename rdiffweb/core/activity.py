@@ -33,6 +33,9 @@ logger = logging.getLogger(__name__)
 
 def _log_user_login(user_id, date, ip_address, user_agent):
     """Used to log user loging asynchronously."""
+    # Make sure to start from a clean session.
+    cherrypy.db.clear_sessions()
+    # Log event
     with cherrypy.db.session.begin():
         user = UserObject.get_user(user_id)
         user.add_message(
