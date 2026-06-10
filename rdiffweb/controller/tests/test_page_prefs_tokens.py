@@ -96,18 +96,46 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         # Then access token is not created
         self.assertEqual(0, Token.query.filter(Token.userid == userobj.id, Token.name == 'test-token-name').count())
 
-    def test_add_access_token_with_name_too_long(self):
+    @parameterized.expand(
+        [
+            # Success
+            ('MyToken', False),
+            ('My Laptop Backup', False),
+            ('backup-token_v1.0', False),
+            ('backup@token_v1.0-3', False),
+            # Error
+            ('A', 'Token name too short'),
+            ('token' * 52, 'Token name too long'),
+            ('', 'Token name: This field is required.'),
+            (
+                ' MyToken',
+                'Token name: Must start with a letter and contain only letters',
+            ),
+            (
+                '<script>',
+                'Token name: Must start with a letter and contain only letters',
+            ),
+            (
+                'say "hello"',
+                'Token name: Must start with a letter and contain only letters',
+            ),
+        ]
+    )
+    def test_add_access_token_with_name(self, name, expected_body):
         # Given an existing user
         # When adding a new access token with name too long.
         self.getPage(
             "/prefs/tokens",
             method='POST',
-            body={'action': 'add', 'name': 'token' * 52, 'expiration': ''},
+            body={'action': 'add', 'name': name, 'expiration': ''},
         )
-        # Then page return with error message
-        self.assertStatus(200)
-        # Then token name get displayed in the view
-        self.assertInBody('Token name too long')
+        if expected_body:
+            # Then page return with error message
+            self.assertStatus(200)
+            # Then token name get displayed in the view
+            self.assertInBody(expected_body)
+        else:
+            self.assertStatus(303)
 
     def test_add_access_token_duplicate(self):
         # Given an existing user with access_token

@@ -22,7 +22,7 @@ import cherrypy
 from cherrypy_foundation.flash import flash
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from wtforms.fields import DateTimeField, HiddenField, SelectMultipleField, StringField
-from wtforms.validators import DataRequired, Length, Optional
+from wtforms.validators import DataRequired, Length, Optional, Regexp
 
 from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.formdb import DbForm
@@ -100,6 +100,13 @@ class TokenForm(DbForm):
         validators=[
             DataRequired(),
             Length(max=256, message=_('Token name too long')),
+            Length(min=3, message=_('Token name too short')),
+            Regexp(
+                Token.TOKEN_NAME_REGEX,
+                message=_(
+                    'Must start with a letter and contain only letters, numbers, underscores (_), hyphens (-), periods (.) and at sign (@).'
+                ),
+            ),
         ],
     )
     expiration = DateTimeField(

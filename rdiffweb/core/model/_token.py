@@ -29,6 +29,8 @@ Base = cherrypy.db.base
 
 
 class Token(Base):
+    TOKEN_NAME_REGEX = r'^[a-zA-Z0-9][a-zA-Z0-9\s\-_.@]*$'
+
     __tablename__ = 'tokens'
     name = Column('Name', String, nullable=False, default="", primary_key=True)
     userid = Column('UserID', Integer, nullable=False, primary_key=True)
