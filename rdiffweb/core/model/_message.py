@@ -20,8 +20,8 @@ import logging
 
 import cherrypy
 import cherrypy_foundation.plugins.db  # noqa
-from sqlalchemy import Column, String, Text, and_, event, inspect, text
-from sqlalchemy.orm import Session, backref, declared_attr, foreign, relationship, remote
+from sqlalchemy import Column, String, Text, and_, event, inspect, select, text
+from sqlalchemy.orm import Session, backref, declared_attr, foreign, relationship, remote, validates
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import Integer
@@ -145,6 +145,7 @@ class Message(Base):
     author_id = Column(
         Integer, ForeignKey('users.UserID', name='fk_messages_author_id', ondelete="SET NULL"), nullable=True
     )
+    author_username = Column(String, nullable=False, default='', server_default='')
     author = relationship("UserObject", lazy=False)
     ip_address = Column(String, nullable=False, default='', server_default='')
     user_agent = Column(String, nullable=False, default='', server_default='')
@@ -161,6 +162,12 @@ class Message(Base):
         if self.model_name is None:
             return None
         return getattr(self, "%s_object" % self.model_name)
+
+    @validates('author')
+    def _sync_author_username(self, key, value):
+        if value is not None:
+            self.author_username = value.username
+        return value
 
 
 class MessageMixin:
@@ -270,6 +277,21 @@ def update_message_schema(target, conn, **kw):
         column_add(conn, Message.ip_address)
     if not column_exists(conn, Message.user_agent):
         column_add(conn, Message.user_agent)
+
+    # Create missing author_username column
+    if not column_exists(conn, Message.author_username):
+        from . import UserObject
+
+        column_add(conn, Message.author_username)
+        # Populate the column
+        Message.query.filter(Message.author_username == '', Message.author_id.isnot(None)).update(
+            {
+                Message.author_username: func.coalesce(
+                    select(UserObject.username).where(UserObject.id == Message.author_id).scalar_subquery(), ''
+                )
+            },
+            synchronize_session=False,
+        )
 
     # Since 2.11.4 - author_id  ondelete="SET NULL"
     fk_constraint = next(c for c in Message.__table__.foreign_key_constraints if c.name == 'fk_messages_author_id')

@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import cherrypy
 
-from rdiffweb.core.model import Message, UserObject
+from rdiffweb.core.model import Message
 
 
 @cherrypy.tools.is_admin()
@@ -39,7 +39,7 @@ class AdminActivityPage:
         """
         return Message.query.with_entities(
             Message.date,
-            UserObject.username.label('author_username'),
+            Message.author_username,
             Message.model_id,
             Message.model_name,
             Message.model_summary,

@@ -528,7 +528,7 @@ class AdminUsersPage:
         query = (
             Message.query.with_entities(
                 Message.date,
-                UserObject.username.label('author_username'),
+                Message.author_username,
                 Message.model_id,
                 Message.model_name,
                 Message.model_summary,
@@ -536,7 +536,6 @@ class AdminUsersPage:
                 Message.body,
                 Message.changes,
             )
-            .outerjoin(Message.author)
             .order_by(Message.date.desc())
             .filter(Message.model_id == user.id, Message.model_name == user._get_message_model_name())
         )

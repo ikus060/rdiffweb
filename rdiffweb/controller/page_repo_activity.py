@@ -18,7 +18,7 @@ import logging
 import cherrypy
 
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
-from rdiffweb.core.model import Message, RepoObject, UserObject
+from rdiffweb.core.model import Message, RepoObject
 
 logger = logging.getLogger(__name__)
 
@@ -62,17 +62,13 @@ class RepoActivityPage:
             raise cherrypy.HTTPError(400)
 
         # Build queries
-        return (
-            Message.query.with_entities(
-                Message.date,
-                UserObject.username.label('author_username'),
-                Message.model_id,
-                Message.model_name,
-                Message.model_summary,
-                Message.type,
-                Message.body,
-                Message.changes,
-            )
-            .outerjoin(Message.author)
-            .filter(Message.model_id == repo_obj.id, Message.model_name == repo_obj._get_message_model_name())
-        )
+        return Message.query.with_entities(
+            Message.date,
+            Message.author_username,
+            Message.model_id,
+            Message.model_name,
+            Message.model_summary,
+            Message.type,
+            Message.body,
+            Message.changes,
+        ).filter(Message.model_id == repo_obj.id, Message.model_name == repo_obj._get_message_model_name())
