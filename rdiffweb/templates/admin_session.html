@@ -73,17 +73,17 @@
           {# Last Accessed #}
           <td class="text-muted small text-nowrap"
               data-order="{{ session.access_time }}">
-            <RdwIcon value="bi-clock" class="me-1" />
+            {% if session.access_time %}<RdwIcon value="bi-clock" class="me-1" />{% endif %}
             <RdwTime :value="session.access_time" />
           </td>
           <td class="text-muted small text-nowrap"
               data-order="{{ session.start_time }}">
-            <RdwIcon value="bi-box-arrow-in-right" class="me-1" />
+            {% if session.start_time %}<RdwIcon value="bi-box-arrow-in-right" class="me-1" />{% endif %}
             <RdwTime :value="session.start_time" />
           </td>
           <td class="text-muted small text-nowrap"
               data-order="{{ session.expiration_time }}">
-            <RdwIcon value="bi-hourglass-split" class="me-1" />
+            {% if session.expiration_time %}<RdwIcon value="bi-hourglass-split" class="me-1" />{% endif %}
             <RdwTime :value="session.expiration_time" />
           </td>
           <td class="text-end" data-order="">
