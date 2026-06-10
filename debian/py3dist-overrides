@@ -1,2 +1,2 @@
-cherrypy-foundation python3-cherrypy-foundation
+cherrypy-foundation python3-cherrypy-foundation; PEP440
 zxcvbn python3-zxcvbn | python3-python-zxcvbn-rs-py
