@@ -320,6 +320,7 @@ class UserObject(MessageMixin, Base):
         logger.info("add key [%s] to [%s] database", key, self.username)
         sshkey = SshKey.from_authorizedkey(data=key, comment=comment)
         self.authorizedkeys.append(sshkey)
+        return sshkey
 
     def add_access_token(self, name, expiration_time=None, length=16, scope=[]):
         """

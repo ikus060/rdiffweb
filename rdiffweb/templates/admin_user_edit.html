@@ -105,15 +105,7 @@
                 </td>
                 {# Last backup date #}
                 <td>
-                  {% if repo.last_backup_date %}
-                    <time datetime="{{ repo.last_backup_date }}"
-                          class="text-muted small"
-                          title="{{ repo.last_backup_date | format_datetime }}">
-                      {{ repo.last_backup_date | lastupdated }}
-                    </time>
-                  {% else %}
-                    &mdash;
-                  {% endif %}
+                  <RdwTime :value="repo.last_backup_date" />
                 </td>
                 {# Status #}
                 <td>
@@ -184,11 +176,7 @@
                 </td>
                 {# Added #}
                 <td>
-                  <time datetime="{{ key.creation_time }}"
-                        class="text-muted small"
-                        title="{{ key.creation_time | format_datetime }}">
-                    {{ key.creation_time | lastupdated }}
-                  </time>
+                  <RdwTime :value="key.creation_time" />
                 </td>
                 {# Action #}
                 <td class="text-end pe-3">
@@ -244,32 +232,15 @@
                 </td>
                 {# Created #}
                 <td class="small">
-                  <time datetime="{{ token.creation_time }}"
-                        title="{{ token.creation_time | lastupdated }}">
-                    {{ token.creation_time | format_datetime }}
-                  </time>
+                  <RdwTime :value="token.creation_time" />
                 </td>
                 {# Last used #}
                 <td class="text-truncate small">
-                  {% if token.access_time %}
-                    <time datetime="{{ token.access_time }}"
-                          title="{{ token.access_time | format_datetime }}">
-                      {{ token.access_time | lastupdated }}
-                    </time>
-                  {% else %}
-                    <span>{% trans %}Never{% endtrans %}</span>
-                  {% endif %}
+                  <RdwTime :value="token.access_time" :default="_('Never')" />
                 </td>
                 {# Expires #}
                 <td>
-                  {% if token.expiration_time %}
-                    <time datetime="{{ token.expiration_time }}"
-                          title="{{ token.expiration_time | format_datetime }}">
-                      {{ token.expiration_time | lastupdated }}
-                    </time>
-                  {% else %}
-                    <span>{% trans %}Never{% endtrans %}</span>
-                  {% endif %}
+                  <RdwTime :value="token.expiration_time" :default="_('Never')" />
                 </td>
                 {# Scopes #}
                 <td>

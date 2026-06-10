@@ -221,6 +221,17 @@ class AdminTest(rdiffweb.test.WebCase):
         self.assertInBody("User account removed.")
         self.assertNotInBody("test2")
 
+    def test_edit(self):
+        # Given a user
+        userobj = UserObject.add_user('myuser')
+        userobj.add_authorizedkey(SSHKEY_TEST)
+        userobj.add_access_token('foo')
+        userobj.commit()
+        # When trying to edit the user
+        self.getPage("/admin/users/edit/myuser")
+        # Then page load without error.
+        self.assertStatus(200)
+
     @parameterized.expand(
         [
             # Invalid

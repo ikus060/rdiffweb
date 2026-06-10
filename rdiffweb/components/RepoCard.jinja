@@ -20,14 +20,7 @@
       <div class="col-6">
         <div class="bg-light rounded-3 p-2">
           <div class="fw-bold text-truncate">
-            {% if repo.last_backup_date %}
-              <time datetime="{{ repo.last_backup_date }}"
-                    title="{{ repo.last_backup_date | format_datetime }}">
-                {{ repo.last_backup_date | lastupdated }}
-              </time>
-            {% else %}
-              {{ mdash }}
-            {% endif %}
+            <RdwTime :value="repo.last_backup_date" />
           </div>
           <div class="text-muted" style="font-size:.72rem">{% trans %}Last backup{% endtrans %}</div>
         </div>
@@ -46,14 +39,7 @@
         <RdwIcon value="bi-calendar-range" class="me-1" />
         {%- trans %}Oldest:{% endtrans %}
         <strong>
-          {% if repo.session_statistics %}
-            <time datetime="{{ repo.session_statistics[0].date }}"
-                  title="{{ repo.session_statistics[0].date | format_datetime }}">
-              {{ repo.session_statistics[0].date | format_date }}
-            </time>
-          {% else %}
-            {{ mdash }}
-          {% endif %}
+          <RdwTime :value="repo.session_statistics and repo.session_statistics[0].date" format="short" />
         </strong>
       </span>
       {# Error count #}

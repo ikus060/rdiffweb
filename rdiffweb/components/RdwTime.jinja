@@ -1,0 +1,18 @@
+{# def value, default=None, relative=True, format='medium' #}
+{% if value %}
+  <time {{ attrs.render(datetime=value, title=value | format_datetime) }}>
+    {% if relative %}
+      {{ value | lastupdated(format=format) }}
+    {% else %}
+      {{ value | format_datetime(format=format) }}
+    {% endif %}
+  </time>
+{% else %}
+  <span {{ attrs.render() }}>
+    {% if default %}
+      {{ default }}
+    {% else %}
+      &mdash;
+    {% endif %}
+  </span>
+{% endif %}

@@ -74,26 +74,17 @@
           <td class="text-muted small text-nowrap"
               data-order="{{ session.access_time }}">
             <RdwIcon value="bi-clock" class="me-1" />
-            <time datetime="{{ session.access_time }}"
-                  title="{{ session.access_time | format_datetime }}">
-              {{ session.access_time | lastupdated }}
-            </time>
+            <RdwTime :value="session.access_time" />
           </td>
           <td class="text-muted small text-nowrap"
               data-order="{{ session.start_time }}">
             <RdwIcon value="bi-box-arrow-in-right" class="me-1" />
-            <time datetime="{{ session.start_time }}"
-                  title="{{ session.start_time | format_datetime }}">
-              {{ session.start_time | lastupdated }}
-            </time>
+            <RdwTime :value="session.start_time" />
           </td>
           <td class="text-muted small text-nowrap"
               data-order="{{ session.expiration_time }}">
             <RdwIcon value="bi-hourglass-split" class="me-1" />
-            <time datetime="{{ session.expiration_time }}"
-                  title="{{ session.expiration_time | format_datetime }}">
-              {{ session.expiration_time | lastupdated }}
-            </time>
+            <RdwTime :value="session.expiration_time" />
           </td>
           <td class="text-end" data-order="">
             {% if session.current %}

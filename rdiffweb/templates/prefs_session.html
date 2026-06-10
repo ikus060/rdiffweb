@@ -41,10 +41,7 @@
                       <RdwIcon value=" bi-clock" class="bi-fw me-1" />
                       {%- trans %}Last accessed{% endtrans %}
                       <strong class="text-body">
-                        <time datetime="{{ session.access_time }}"
-                              title="{{ session.access_time | format_datetime }}">
-                          {{ session.access_time | lastupdated }}
-                        </time>
+                        <RdwTime :value="session.access_time" />
                       </strong>
                       {% trans %}from{% endtrans %}
                       <strong class="text-body">{{ session.ip_address }}</strong>
@@ -53,20 +50,14 @@
                       <RdwIcon value="bi-box-arrow-in-right" class="bi-fw me-1" />
                       {%- trans %}Signed in{% endtrans %}
                       <strong class="text-body">
-                        <time datetime="{{ session.start_time }}"
-                              title="{{ session.start_time | format_datetime }}">
-                          {{ session.start_time | lastupdated }}
-                        </time>
+                        <RdwTime :value="session.start_time" />
                       </strong>
                     </li>
                     <li>
                       <RdwIcon value="bi-hourglass-split" class="bi-fw me-1" />
                       {%- trans %}Expired{% endtrans %}
                       <strong class="text-body">
-                        <time datetime="{{ session.expiration_time }}"
-                              title="{{ session.expiration_time | format_datetime }}">
-                          {{ session.expiration_time | lastupdated }}
-                        </time>
+                        <RdwTime :value="session.expiration_time" />
                       </strong>
                     </li>
                   </ul>

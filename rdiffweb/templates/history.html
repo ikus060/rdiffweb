@@ -25,10 +25,7 @@
         <li class="list-group-item">
           <RdwIcon :value="{{ 'bi-folder' if path_obj.isdir else 'bi-file-earmark' }}"
                    class="me-1" />
-          <time datetime="{{ restore_date }}"
-                title="{{ restore_date | lastupdated }}">
-            {{ restore_date | format_datetime }}
-          </time>
+          <RdwTime :value="restore_date" :relative="False" format="medium" />
           <div class="float-end">
             {% if path_obj.isdir %}
               <div class="btn-group">

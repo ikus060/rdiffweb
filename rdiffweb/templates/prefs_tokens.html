@@ -41,37 +41,17 @@
                 <span>
                   <RdwIcon value="bi-calendar-plus" class="me-1" />
                   {%- trans %}Created{% endtrans %}
-                  <time class="fw-semibold"
-                        datetime="{{ token.creation_time }}"
-                        title="{{ token.creation_time | lastupdated }}">
-                    {{ token.creation_time | format_datetime }}
-                  </time>
+                  <RdwTime :value="token.creation_time" class="fw-semibold" :default="_('Never')" />
                 </span>
                 <span>
                   <RdwIcon value="bi-clock-history" class="me-1" />
                   {%- trans %}Last used{% endtrans %}
-                  {% if token.access_time %}
-                    <time class="fw-semibold"
-                          datetime="{{ token.access_time }}"
-                          title="{{ token.access_time | format_datetime }}">
-                      {{ token.access_time | lastupdated }}
-                    </time>
-                  {% else %}
-                    <span class="fw-semibold">{% trans %}Never{% endtrans %}</span>
-                  {% endif %}
+                  <RdwTime :value="token.access_time" class="fw-semibold" :default="_('Never')" />
                 </span>
                 <span>
                   <RdwIcon value="bi-calendar-x" class="me-1" />
                   {%- trans %}Expires{% endtrans %}
-                  {% if token.expiration_time %}
-                    <time class="fw-semibold"
-                          datetime="{{ token.expiration_time }}"
-                          title="{{ token.expiration_time | format_datetime }}">
-                      {{ token.expiration_time | lastupdated }}
-                    </time>
-                  {% else %}
-                    <span class="fw-semibold">{% trans %}Never{% endtrans %}</span>
-                  {% endif %}
+                  <RdwTime :value="token.expiration_time" class="fw-semibold" :default="_('Never')" />
                 </span>
               </div>
               <div class="mt-2 d-flex flex-wrap gap-1">

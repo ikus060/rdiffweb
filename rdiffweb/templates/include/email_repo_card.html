@@ -58,7 +58,7 @@
                               font-weight:700;
                               color:#212529;
                               margin-bottom:2px">
-                    {{ repo.last_backup_date | lastupdated if repo.last_backup_date else mdash }}
+                    <RdwTime :value="repo.last_backup_date" />
                   </div>
                   {% trans %}Last backup{% endtrans %}
                 </td>

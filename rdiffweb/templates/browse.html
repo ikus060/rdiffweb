@@ -99,10 +99,7 @@
             {% if entry.change_dates %}
               <div class="btn-group">
                 <div role="button" id="menu1" data-bs-toggle="dropdown">
-                  <time datetime="{{ entry.last_change_date }}"
-                        title="{{ entry.last_change_date | lastupdated }}">
-                    {{ entry.last_change_date | format_datetime }}
-                  </time>
+                  <RdwTime :value="entry.last_change_date" :relative="False" format="short" />
                   <RdwIcon value="ms-2 bi-chevron-down" />
                 </div>
                 <div class="dropdown-menu" role="menu" aria-labelledby="menu1">
@@ -111,9 +108,7 @@
                        href="{{ url_for('restore', repo, entry.path, date=change_date) }}">
                       <!-- File date -->
                       <RdwIcon value="bi-download" class="me-1" />
-                      <time datetime="{{ change_date }}" title="{{ change_date | lastupdated }}">
-                        {{ change_date | format_datetime }}
-                      </time>
+                      <RdwTime :value="change_date" :relative="False" format="short" />
                     </a>
                   {% endfor %}
                   <a class="dropdown-item text-center"

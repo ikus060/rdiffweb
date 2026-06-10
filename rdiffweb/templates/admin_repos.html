@@ -68,14 +68,7 @@
           {# Last backup date #}
           <td data-order="{{ repo.last_backup_date.epoch }}"
               class="text-muted small">
-            {% if repo.last_backup_date %}
-              <time datetime="{{ repo.last_backup_date }}"
-                    title="{{ repo.last_backup_date | format_datetime }}">
-                {{ repo.last_backup_date | lastupdated }}
-              </time>
-            {% else %}
-              &mdash;
-            {% endif %}
+            <RdwTime :value="repo.last_backup_date" />
           </td>
           {# Inactivity Period #}
           <td data-search="{{ repo.maxage }}" data-order="{{ repo.maxage }}">

@@ -41,7 +41,7 @@ from cherrypy import Application
 from cherrypy_foundation.db_sessions import DbSession
 from cherrypy_foundation.error_page import error_page
 from cherrypy_foundation.flash import get_flashed_messages
-from cherrypy_foundation.tools.i18n import format_timedelta, get_translation
+from cherrypy_foundation.tools.i18n import format_datetime, format_timedelta, get_translation
 from cherrypy_foundation.url import url_for
 
 import rdiffweb
@@ -120,6 +120,13 @@ def _template_processor():
         currentuser = cherrypy.serving.request.currentuser
         values['currentuser'] = currentuser
     return values
+
+
+def _lastupdated(dt, format='medium'):
+    diff = dt - datetime.now(timezone.utc)
+    if abs(diff.days) > 90:
+        return format_datetime(dt, format=format)
+    return format_timedelta(diff, add_direction=True)
 
 
 @cherrypy.tools.allow(methods=['GET'])
@@ -212,7 +219,7 @@ class RdiffwebApp(Application):
                 'font_family': cfg.font_family,
             },
             filters={
-                'lastupdated': lambda dt: format_timedelta(dt - datetime.now(timezone.utc), add_direction=True),
+                'lastupdated': _lastupdated,
                 'filesize': functools.partial(humanfriendly.format_size, binary=True),
             },
             # Enable jinja autoreload in debug or development mode only.

@@ -11,15 +11,8 @@
       <RepoStatus :repo="repo" class="badge" />
     </div>
     <div class="small text-truncate">
-      {% if repo.last_backup_date %}
-        {% trans %}Last backup {% endtrans %}
-        <time datetime="{{ repo.last_backup_date }}"
-              title="{{ repo.last_backup_date | format_datetime }}">
-          {{ repo.last_backup_date | lastupdated }}
-        </time>
-      {% else %}
-        &mdash;
-      {% endif %}
+      {% trans %}Last backup {% endtrans %}
+      <RdwTime :value="repo.last_backup_date" format="short" />
     </div>
   </div>
   {% if content %}{{ content }}{% endif %}
