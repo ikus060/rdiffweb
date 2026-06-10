@@ -37,6 +37,7 @@ dark
     --bs-primary: {{ link_color }};
     --bs-primary-rgb: {{ hex_to_rgb(link_color) }};
     --bs-primary-bg-subtle: color-mix(in srgb, var(--bs-primary) 20%, white 80%);
+    --bs-primary-border-subtle: color-mix(in srgb, var(--bs-primary) 40%, white);
 }
 
 /* Adjust navbar colors for branding */
