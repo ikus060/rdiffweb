@@ -161,8 +161,8 @@ class PagePrefTokens:
             if form.save_to_db(currentuser):
                 flash(
                     _(
-                        "Your new personal access token has been created.\n"
-                        "Make sure to save it - you won't be able to access it again.\n"
+                        "Your new personal access token has been created. "
+                        "Make sure to save it - you won't be able to access it again. "
                         "%s"
                     )
                     % form.secret,
