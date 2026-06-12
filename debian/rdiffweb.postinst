@@ -9,6 +9,9 @@ case "${1}" in
 
 		# Create default session directory
 		mkdir -p /var/lib/rdiffweb/session
+		
+		# Create default log directory
+		mkdir -p /var/log/rdiffweb
 
 		# Create symbolic link to Chart.js
 		if [ -f /usr/share/javascript/chart.js/Chart.bundle.min.js ]
