@@ -63,7 +63,7 @@ def get_osinfo():
 
     def pw_name(uid):
         try:
-            return pwd.getpwuid(os.getuid()).pw_name
+            return pwd.getpwuid(uid).pw_name
         except Exception:
             return
 

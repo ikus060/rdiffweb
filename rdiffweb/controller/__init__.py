@@ -51,11 +51,6 @@ class PageRegistry(dict):
             page_id = page_id[:-5]
         return super().get(page_id, default)
 
-    def get_label(self, page_id):
-        if page_id in self:
-            return self[page_id].label
-        return page_id
-
     def get_repo_nav_pages(self, in_menu=True):
         repo_pages = ['browse', 'history', 'restore', 'insights', 'settings']
         return [

@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from collections import namedtuple
 
 import cherrypy
 import humanfriendly
@@ -46,8 +45,6 @@ logger = logging.getLogger(__name__)
 
 # Max root directory path length
 MAX_PATH = 260
-
-UserActivityRow = namedtuple('UserActivityRow', ['id', 'author', 'date', 'type', 'body', 'changes'])
 
 
 class SizeField(Field):
