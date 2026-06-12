@@ -57,9 +57,9 @@ class GraphsTest(rdiffweb.test.WebCase):
 
     @parameterized.expand(
         [
-            "/static/components/vendor/chart/chart.min.js",
-            "/static/components/vendor/chart/chart.js",
-            "/static/components/Chart.js",
+            "/static/components/cf/vendor/chart/chart.min.js",
+            "/static/components/cf/vendor/chart/chart.js",
+            "/static/components/cf/Chart.js",
             "/static/components/RdwChart.js",
         ]
     )
