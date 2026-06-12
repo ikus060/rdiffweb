@@ -16,6 +16,11 @@
 
 import os
 
+import cherrypy
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 import rdiffweb.test
 from rdiffweb.core.model import UserObject
 
@@ -142,3 +147,32 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         # Then the confirmation value is the repository display_name
         self.assertStatus(200)
         self.assertInBody('pattern="MyComputer/C"')
+
+    def test_delete_path_selenium(self):
+        user_obj = UserObject.get_user('admin')
+        self.assertEqual(2, len(user_obj.repo_objs))
+        with self.selenium() as driver:
+            # When getting the settings pages
+            driver.get(self.baseurl + '/history/admin/testcases/Subdirectory')
+            # Then page load without error
+            self.assertFalse(driver.get_log('browser'))
+            # When user click on delete button
+            btn = driver.find_element('css selector', '#rdw-btn-delete-history')
+            ActionChains(driver).scroll_to_element(btn).perform()
+            btn.click()
+            # Then a Modal get shown.
+            modal = driver.find_element('css selector', '#rdw-delete-history-modal')
+            # When user enter the confirm value & confirm
+            current_url = driver.current_url
+            txt_confirm = modal.find_element('css selector', 'input[name="confirm"]')
+            txt_confirm.send_keys('Subdirectory')
+            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn.click()
+            self.assertFalse(driver.get_log('browser'))
+            # Then user get redirected
+            WebDriverWait(driver, 10).until(EC.url_changes(current_url))
+            user_obj.expire()
+        # Then path is deleted.
+        cherrypy.scheduler.wait_for_jobs()
+        self.getPage('/browse/admin/testcases/Subdirectory')
+        self.assertStatus(404)

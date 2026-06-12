@@ -1,6 +1,4 @@
 {% extends 'layout.html' %}
-{% from 'include/storage_usage.html' import storage_usage %}
-{% from 'include/modal_dialog.html' import button_confirm, modal_confirm %}
 {% set breadcrumbs = breadcrumb_page('admin') + breadcrumb_page('admin_users') + [('#', form.username.data)] %}
 {% block content %}
   <form id="rdw-user-form" method="post" action="#">
