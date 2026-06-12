@@ -2,28 +2,8 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: rdiffweb
 Upstream-Contact: https://gitlab.com/ikus-soft/rdiffweb/-/issues
 Source: https://gitlab.com/ikus-soft/rdiffweb/-/tags
-Files-Excluded: extras
- rdiffweb/static/css/bootstrap.min.css
- rdiffweb/static/css/bootstrap.min.css.map
- rdiffweb/static/css/jquery.dataTables.min.css
- rdiffweb/static/css/responsive.dataTables.min.css
- rdiffweb/static/fonts/fontawesome-webfont.eot
- rdiffweb/static/fonts/fontawesome-webfont.svg
- rdiffweb/static/fonts/fontawesome-webfont.woff
- rdiffweb/static/fonts/fontawesome-webfont.woff2
- rdiffweb/static/images/sort_asc.png
- rdiffweb/static/images/sort_asc_disabled.png
- rdiffweb/static/images/sort_both.png
- rdiffweb/static/images/sort_desc.png
- rdiffweb/static/images/sort_desc_disabled.png
- rdiffweb/static/js/bootstrap.js.map
- rdiffweb/static/js/bootstrap.min.js
- rdiffweb/static/js/chartkick.min.js
- rdiffweb/static/js/chart.min.js
- rdiffweb/static/js/dataTables.buttons.min.js
- rdiffweb/static/js/dataTables.responsive.min.js
- rdiffweb/static/js/jquery.dataTables.min.js
- rdiffweb/static/js/jquery.min.js
+Files-Excluded:
+ extras
 
 Files: *
 Copyright: 2019-2025 Patrik Dufresne <patrik@ikus-soft.com>
