@@ -16,7 +16,6 @@
 
 import os
 from unittest.case import skipIf
-from unittest.mock import MagicMock
 
 import cherrypy
 from parameterized import parameterized
@@ -28,15 +27,6 @@ from rdiffweb.core.model import Message, UserObject
 
 class DeleteRepoTest(rdiffweb.test.WebCase):
     login = True
-
-    def setUp(self):
-        super().setUp()
-        self.listener = MagicMock()
-        cherrypy.engine.subscribe('delete_path', self.listener.delete_path, priority=50)
-
-    def tearDown(self):
-        cherrypy.engine.unsubscribe('delete_path', self.listener.delete_path)
-        return super().tearDown()
 
     def _delete(self, user, repo, confirm):
         body = {}
@@ -114,7 +104,6 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         expected_audit_log=False,
         expected_redirect=None,
     ):
-        self.listener.delete_path.reset_mock()
         # When trying to delete a file or a folder with a confirmation
         self._delete(username, path, confirmation)
         # Then a status is returned
@@ -126,11 +115,15 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.getPage("/history/" + username + "/" + path)
         self.assertStatus(expected_history_status)
         # Then an event was raised
-        if expected_status == 303:
-            self.listener.delete_path.assert_called_once()
         if expected_audit_log:
             # Then an audit log is created
-            self.assertEqual(f'Delete file path: {expected_audit_log}', Message.query.all()[-1].body)
+            msg = Message.query.filter(Message.body.ilike("Deletion of file path '%' has been scheduled.")).one()
+            self.assertEqual(f"Deletion of file path '{expected_audit_log}' has been scheduled.", msg.body)
+            self.assertEqual('admin', msg.author_username)
+            # Then an audit log is created
+            msg = Message.query.filter(Message.body.ilike("Deletion of file path '%' completed successfully.")).one()
+            self.assertEqual(f"Deletion of file path '{expected_audit_log}' completed successfully.", msg.body)
+            self.assertEqual('', msg.author_username)
 
     def test_delete_repo(self):
         """
@@ -140,7 +133,6 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         userobj = UserObject.get_user('admin')
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in userobj.repo_objs])
         # When trying to delete a repository
-        self.listener.delete_path.reset_mock()
         self._delete(self.USERNAME, self.REPO, 'testcases')
         self.assertStatus(303)
         self.assertHeaderItemValue('Location', self.baseurl + '/')
@@ -149,8 +141,6 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         # Then the repository is deleted.
         self.assertEqual(['broker-repo'], [r.name for r in userobj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
-        # Then an event was raised
-        self.listener.delete_path.assert_not_called()
         # Then an audit log is created
         last_message = Message.query.all()[-1]
         self.assertEqual('deleted', last_message.type)

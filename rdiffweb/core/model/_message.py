@@ -105,8 +105,6 @@ def create_messages(session, flush_context, instances):
     """
     When object get updated, add an audit message.
     """
-    # Get current user
-    author_id = None
     # Create message if object is created or modified
     # Call "add_change" to let the object decide what should be updated.
     for obj in itertools.chain(session.new, session.dirty, session.deleted):
@@ -115,18 +113,8 @@ def create_messages(session, flush_context, instances):
             change_type, changes = get_model_changes(obj)
             if change_type == 'dirty' and not changes:
                 continue
-
-            # Enrich event using current user, IP address and User-Agent
-            request = cherrypy.serving.request
-            currentuser = getattr(cherrypy.serving.request, 'currentuser', None)
-            if currentuser:
-                author_id = currentuser.id
-            ip_address = request.remote.ip
-            user_agent = request.headers.get('User-Agent', '')
             # Append the changes to a new message or a message in the current session flush.
-            message = Message(
-                author_id=author_id, changes=changes, type=change_type, ip_address=ip_address, user_agent=user_agent
-            )
+            message = Message(changes=changes, type=change_type)
             obj.add_change(message)
 
 
@@ -154,6 +142,13 @@ class Message(Base):
     changes = Column('changes', JSONString, nullable=True)
     date = Column(Timestamp(timezone=True), default=func.now())
 
+    def __init__(self, **kwargs):
+        """
+        Called only when creating a NEW instance, not when loading from DB.
+        """
+        super().__init__(**kwargs)
+        self._initialize_from_session()
+
     @property
     def model_object(self):
         """
@@ -168,6 +163,27 @@ class Message(Base):
         if value is not None:
             self.author_username = value.username
         return value
+
+    def _initialize_from_session(self):
+        """Populate fields from the current CherryPy session/request."""
+        request = cherrypy.request
+        try:
+            if not self.author:
+                self.author = request.currentuser
+        except AttributeError:
+            pass  # No active request/user
+
+        try:
+            if not self.ip_address:
+                self.ip_address = request.remote.ip or ''
+        except AttributeError:
+            pass
+
+        try:
+            if not self.user_agent:
+                self.user_agent = request.headers.get('User-Agent', '')
+        except AttributeError:
+            pass
 
 
 class MessageMixin:

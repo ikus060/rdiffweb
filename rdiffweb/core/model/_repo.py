@@ -28,10 +28,10 @@ from sqlalchemy import and_, case, event, or_, orm
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Session, relationship, validates
 
-from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo
+from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError, RdiffRepo, unquote
 
 from ._callbacks import add_post_commit_tasks
-from ._message import AUDIT_IGNORE, MessageMixin
+from ._message import AUDIT_IGNORE, Message, MessageMixin
 from ._update import column_add, column_exists
 
 Base = cherrypy.db.base
@@ -50,23 +50,46 @@ def delete_repo_path(repoid, path):
     """Job used to delete a repository path."""
     # Make sure to start from a clean session.
     cherrypy.db.clear_sessions()
-    with cherrypy.db.session.begin():
+    repoobj = None
+    try:
         repoobj = RepoObject.query.filter(RepoObject.id == repoid).one()
-        # Make sure to log this even when deleting a specific path.
-        # Deletion of repository will be log by database.
-        cherrypy.engine.publish('delete_path', repoobj, path)
         # Delete data on disk.
         repoobj.delete_path(path)
+        # Log success
+        display_name = repoobj._decode(unquote(path))
+        repoobj.add_message(
+            Message(
+                body=_("Deletion of file path '%s' completed successfully.") % display_name, type=Message.TYPE_EVENT
+            )
+        )
+        repoobj.commit()
+    except Exception as e:
+        cherrypy.db.clear_sessions()
+        # Log failure
+        if repoobj is not None:
+            display_name = repoobj._decode(unquote(path))
+            repoobj.add_message(
+                Message(body=_("Deletion of file path '%s' failed: %s") % (display_name, e), type=Message.TYPE_EVENT)
+            )
+            repoobj.commit()
+        raise
 
 
 def delete_repo(repoid):
     """Job used to delete a repository."""
     # Make sure to start from a clean session.
     cherrypy.db.clear_sessions()
-    with cherrypy.db.session.begin():
+    try:
         repoobj = RepoObject.query.filter(RepoObject.id == repoid).one()
         # Delete data on disk.
         repoobj.delete_repo()
+        repoobj.commit()
+    except Exception as e:
+        cherrypy.db.clear_sessions()
+        if repoobj is not None:
+            repoobj.add_message(Message(body=_("Deletion of repository failed: %s") % (e,), type=Message.TYPE_EVENT))
+            repoobj.commit()
+        raise
 
 
 def _split_path(path):
@@ -241,12 +264,20 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
 
     def schedule_delete_path(self, path):
         """Schedule deletion of the repository"""
-        cherrypy.engine.publish('scheduler:add_job_now', delete_repo_path, self.id, path)
+        # Log event in database before scheduling.
+        display_name = self._decode(unquote(path))
+        self.add_message(
+            Message(body=_("Deletion of file path '%s' has been scheduled.") % display_name, type=Message.TYPE_EVENT)
+        )
+        # Then schedule delete in background.
+        add_post_commit_tasks(self.session, 'scheduler:add_job_now', delete_repo_path, self.id, path)
 
     def schedule_delete_repo(self):
         """
         Mark this repo for deletion.
         """
+        # Log event in database before scheduling.
+        self.add_message(Message(body=_("Deletion of repository has been scheduled."), type=Message.TYPE_EVENT))
         self._status = RepoObject.STATUS_DELETING
         add_post_commit_tasks(self.session, 'scheduler:add_job_now', delete_repo, self.id)
 
@@ -255,6 +286,14 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
         RdiffRepo.delete_repo(self)
         # Delete repo from database
         return super().delete()
+
+    def restore(self, path, *args, **kwargs):
+        # Log activity
+        display_name = self._decode(unquote(path))
+        self.add_message(Message(body=_("Restore file path %s") % display_name, type=Message.TYPE_EVENT))
+        self.commit()
+        #
+        return super().restore(path, *args, **kwargs)
 
     @validates('maxage')
     def validate_maxage(self, key, value):

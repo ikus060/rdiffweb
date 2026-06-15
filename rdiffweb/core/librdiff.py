@@ -369,13 +369,6 @@ class RdiffDirEntry(object):
         # Return the list of dates.
         return sorted(change_dates)
 
-    def _get_previous_backup_date(self, date):
-        """Return the previous backup date."""
-        index = bisect.bisect_left(self._repo.backup_dates, date)
-        if index == 0:
-            return None
-        return self._repo.backup_dates[index - 1]
-
     @cached_property
     def last_change_date(self):
         """Return last change date or False."""
@@ -480,11 +473,6 @@ class IncrementEntry(AbstractEntry):
     def is_missing(self):
         """Check if the curent entry is a missing increment."""
         return self.suffix == b".missing"
-
-    @property
-    def is_snapshot(self):
-        """Check if the current entry is a snapshot increment."""
-        return self.suffix in [b".snapshot.gz", b".snapshot"]
 
     @classmethod
     def _split(cls, filename):

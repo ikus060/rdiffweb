@@ -306,8 +306,7 @@ class EditUserForm(DbForm):
     def save_to_db(self, obj, message_body=None):
         # Add Message to explain changes.
         if message_body:
-            currentuser = cherrypy.request.currentuser
-            message_obj = Message(body=message_body, author=currentuser)
+            message_obj = Message(body=message_body)
             obj.add_message(message_obj)
 
         return_value = super().save_to_db(obj)

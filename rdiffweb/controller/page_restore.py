@@ -168,10 +168,6 @@ class RestorePage:
         # To detect download in restore page.
         cherrypy.response.cookie['downloadStarted'] = 1
 
-        # Log activity
-        cherrypy.engine.publish('restore_path', repo=repo, path=path)
-        repo.commit()
-
         # Stream the data.
         return _file_generator(fileobj)
 

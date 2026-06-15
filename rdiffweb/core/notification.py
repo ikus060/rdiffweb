@@ -34,9 +34,28 @@ from packaging.version import InvalidVersion, Version
 from sqlalchemy import func, or_
 
 from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.core.model import UserObject
+from rdiffweb.core.model import Message, UserObject
 
 CONTEXT = 'NOTIFICATION'
+
+
+def _log_user_login(user_id, date, ip_address, user_agent):
+    """Used to log user loging asynchronously."""
+    # Make sure to start from a clean session.
+    cherrypy.db.clear_sessions()
+    # Log event
+    with cherrypy.db.session.begin():
+        user = UserObject.get_user(user_id)
+        user.add_message(
+            Message(
+                body=_("User login to web application"),
+                type=Message.TYPE_EVENT,
+                date=date,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                author=user,
+            )
+        )
 
 
 class NotificationPlugin(SimplePlugin):
@@ -294,6 +313,18 @@ class NotificationPlugin(SimplePlugin):
             context=CONTEXT,
             severity=logging.INFO,
         )
+        # Log user_login in a different thread.
+        if hasattr(userobj, 'add_message'):
+            request = cherrypy.serving.request
+            now = datetime.now(timezone.utc)
+            self.bus.publish(
+                'scheduler:add_job_now',
+                _log_user_login,
+                user_id=userobj.id,
+                date=now,
+                ip_address=request.remote.ip,
+                user_agent=request.headers.get('User-Agent', ''),
+            )
 
     def notification_job(self):
         """

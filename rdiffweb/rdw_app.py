@@ -46,7 +46,6 @@ from cherrypy_foundation.url import url_for
 
 import rdiffweb
 import rdiffweb.controller.filter_authorization
-import rdiffweb.core.activity
 import rdiffweb.core.diskusage
 import rdiffweb.core.notification
 import rdiffweb.core.quota

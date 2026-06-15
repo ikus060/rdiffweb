@@ -136,6 +136,10 @@ class DiskUsagePlugin(SimplePlugin):
     def _run_disk_usage_scan(self):
         cherrypy.log('starting disk usage scan', context=CONTEXT)
 
+        # A race condition may occur.
+        if cherrypy.db.session is None:
+            return
+
         # Make sure to start from a clean session.
         cherrypy.db.clear_sessions()
 

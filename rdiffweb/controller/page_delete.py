@@ -68,6 +68,7 @@ class DeletePage:
                 raise cherrypy.HTTPRedirect(url_for('/'))
             else:
                 repo.schedule_delete_path(path)
+                repo.commit()
                 # Redirect to parent folder.
                 raise cherrypy.HTTPRedirect(url_for('browse', repo, path, '..'))
         if form.error_message:

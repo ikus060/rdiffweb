@@ -302,8 +302,7 @@ class RepoSettingsForm(DbForm):
     def save_to_db(self, repo_obj, message_body=None):
         # Add Message to explain changes.
         if message_body:
-            currentuser = cherrypy.request.currentuser
-            message_obj = Message(body=message_body, author=currentuser)
+            message_obj = Message(body=message_body)
             repo_obj.add_message(message_obj)
 
         return super().save_to_db(repo_obj)

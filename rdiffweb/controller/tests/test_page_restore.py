@@ -18,13 +18,10 @@ import io
 import tarfile
 import unittest
 import zipfile
-from unittest.mock import ANY, MagicMock
-
-import cherrypy
 
 import rdiffweb.test
 from rdiffweb.controller.page_restore import _content_disposition
-from rdiffweb.core.model import UserObject
+from rdiffweb.core.model import Message, UserObject
 
 
 class RestorePageTest(unittest.TestCase):
@@ -48,15 +45,6 @@ class RestoreTest(rdiffweb.test.WebCase):
     login = True
 
     maxDiff = None
-
-    def setUp(self):
-        super().setUp()
-        self.listener = MagicMock()
-        cherrypy.engine.subscribe('restore_path', self.listener.restore_path, priority=50)
-
-    def tearDown(self):
-        cherrypy.engine.unsubscribe('restore_path', self.listener.restore_path)
-        return super().tearDown()
 
     def _restore(self, user, repo, path, date, kind=None):
         url = f"/restore/{user}/{repo}/{path}?date={date}"
@@ -109,8 +97,12 @@ class RestoreTest(rdiffweb.test.WebCase):
         # Then the file get downloaded
         self.assertInBody("Ajout d'info")
         self.assertHeader('Content-Type', 'application/octet-stream')
-        # Then an event is emit
-        self.listener.restore_path.assert_called_with(repo=ANY, path=b'Fichier @ <root>')
+        # Then this event is store in database
+        msg = Message.query.filter(Message.body.like('Restore file path %')).first()
+        self.assertEqual(Message.TYPE_EVENT, msg.type)
+        self.assertEqual('admin', msg.author_username)
+        self.assertTrue(msg.author_id)
+        self.assertTrue(msg.ip_address)
 
     def test_broken_link(self):
         # Given a a broken symlink
