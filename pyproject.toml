@@ -31,6 +31,7 @@ dependencies = [
     "configargparse",
     "distro",
     "humanfriendly",
+    "jinjax!=0.64", # This version is broken https://github.com/jpsca/jinjax/issues/140
     "packaging",
     "psutil>=2.1.1",
     "zxcvbn>=4.4.27"
