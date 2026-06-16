@@ -10,7 +10,6 @@ from io import StringIO, open
 import cherrypy
 import requests
 from cherrypy.process.plugins import SimplePlugin
-from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from rdiffweb.core import authorizedkeys
 from rdiffweb.core.authorizedkeys import AuthorizedKey

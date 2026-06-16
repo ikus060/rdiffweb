@@ -4,14 +4,12 @@
 
 import logging
 import pwd
-from importlib.resources import files
 
 import cherrypy
 import minarca_server.plugins.minarca  # noqa
 from minarca_server.config import parse_args
 
 import rdiffweb.rdw_app
-from rdiffweb.controller.dispatch import staticfile
 
 # Define logger for this module
 logger = logging.getLogger(__name__)
