@@ -35,6 +35,9 @@ def main(args=None, app_class=RdiffwebApp):
     # Configure logging
     log_level = "DEBUG" if cfg.debug else cfg.log_level
     setup_logging(log_file=cfg.log_file, log_access_file=cfg.log_access_file, level=log_level)
+    # Adjust verbosity for jinjax unless debug mode is explicitly enabled.
+    if not cfg.debug:
+        logging.getLogger('jinjax').setLevel(logging.INFO)
 
     try:
         # Prevent application from starting if rdiff-backup cannot be found.
