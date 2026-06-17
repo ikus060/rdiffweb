@@ -73,6 +73,8 @@ def delete_repo_path(repoid, path):
             )
             repoobj.commit()
         raise
+    finally:
+        cherrypy.db.clear_sessions()
 
 
 def delete_repo(repoid):
@@ -90,6 +92,8 @@ def delete_repo(repoid):
             repoobj.add_message(Message(body=_("Deletion of repository failed: %s") % (e,), type=Message.TYPE_EVENT))
             repoobj.commit()
         raise
+    finally:
+        cherrypy.db.clear_sessions()
 
 
 def _split_path(path):
