@@ -33,7 +33,7 @@ class HistoryPage:
         }
     )
     @cherrypy.tools.jinja2(template="history.html")
-    def default(self, path, limit='10', **kwargs):
+    def default(self, path, limit='100', **kwargs):
         """
         Show repository, file or folder history
         """

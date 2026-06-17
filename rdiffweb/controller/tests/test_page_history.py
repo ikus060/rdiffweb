@@ -36,7 +36,7 @@ class HistoryPageTest(rdiffweb.test.WebCase):
         self.assertStatus('200 OK')
 
     def test_history_with_root(self):
-        self._history(self.USERNAME, self.REPO)
+        self._history(self.USERNAME, self.REPO, limit=10)
         # Check revisions
         self.assertInBody("2016-02-02T16:30:40-05:00")
         self.assertInBody("2014-11-02T09:50:53-05:00")
