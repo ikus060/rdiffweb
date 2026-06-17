@@ -142,8 +142,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         self.assertEqual(['broker-repo'], [r.name for r in userobj.repo_objs])
         self.assertFalse(os.path.isdir(os.path.join(self.testcases, 'testcases')))
         # Then an audit log is created
-        last_message = Message.query.all()[-1]
-        self.assertEqual('deleted', last_message.type)
+        last_message = Message.query.filter(Message.type == 'deleted').one()
         self.assertEqual('admin/testcases', last_message.model_summary)
 
     def test_delete_repo_with_slash(self):
