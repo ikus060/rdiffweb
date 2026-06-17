@@ -1,5 +1,2835 @@
+rdiffweb (6.2.5+20260617-1) UNRELEASED; urgency=medium
+
+  * Update Debian packaging
+  * Updating upstream contact in debian/copyright
+  * Updating date in debian/changelog
+  * Update navigation layout
+  * Update login page layout
+  * Upgrade to use cherrypy-foundation
+  * Upgrade to bootstrap v5
+  * Update layout to use `<Flash>` component
+  * Fix text overflow in sidebar
+  * Relocate flash messages
+  * Define a new page registry to centralize page label & page icon
+  * Use a component for the footer
+  * Add breadcrumb to the layout
+  * ci: define two tox target for `format` and `lint`
+  * ci: reformating
+  * ci: update black, djlint, isort
+  * ui: make use if `class="container"` in User Profile views
+  * ui, notification: fix layout of report form
+  * test: fix check links to handle anchor tags
+  * ui: add color modes
+  * ui: handle undefine variables for error page
+  * ui: use outlined button for OAuth provider(s)
+  * ui: update login background image
+  * ui: show nothing in navbar when no repositories
+  * ui: adjust overflow in sidebar menu
+  * ui: collapse and expand repo, admin and user profile menu based on active page
+  * ui: update breadcrumb for all pages
+  * ui: add support for jinjax render_assets
+  * ui: update to new Datatable implementation
+  * ui: replace font-awsome by bootstrap-icons
+  * ui: fix badge background
+  * browse page: adjust display
+  * ui: extract repo activity into it own page
+  * stats page: adjust display
+  * logs page: adjust display
+  * stats page: update layout using new components
+  * layout: fix layout for error page without session
+  * graphs: complete review of repo graphs
+  * deps: bump cherrypy-foundation to v1.4.0 with namespace
+  * ci: remove ubuntu plucky support
+  * librdiff: change RdiffTime implementation to be a subclass of datetime
+  * ui: complete redesign of home page
+  * templating: replace js-datetime with server-side format_datetime filter
+  * ui: remove color modes
+  * ui: adjust login page layout
+  * templating: review css and js sources
+  * graphs: adjust layout for smaller screen
+  * templating: adjust RdwTable layout
+  * ui: update layout of settings pages
+  * ui: update account settings layout
+  * repo: avoid using RepoObject orm when updating schema
+  * ui: adjust css to use primary color branding
+  * ui: adjust sshkeys layout
+  * deps: upgrade cherrpy-foundation and make use of db & db_dession
+  * ui: update access token layout
+  * ui: update mfa page layout
+  * ui: update browser session layout
+  * ui: update admin users page layout
+  * templates: review usage of all RdwIcon
+  * templates: adjust container width
+  * templates: use css for second sticky top
+  * templates: relayout position of repo warnings
+  * templates: unified RepoStatus to support alter and badge
+  * ui: update admin repos page layout
+  * css: remove obsolete rdw-btn-hover css
+  * settings: add inactivity period field and overdue/inactive status checks
+  * wip: admin users
+  * templates: use page registry to render page title
+  * home: sort repositories by name and adjust kpi size
+  * heatmap: add minimum days from edge
+  * storage-usage: remove obsolete code
+  * ui: update admin user sessions page layout
+  * templates: change table styling and layout improvements
+  * activity: review implementation and layout of all activity view in repo, user and admin
+  * ui, update sysinfo page layout
+  * ui: update admin logs page layout
+  * template: use new widget for report_time_range selection
+  * templates: use configure navbar color for sidebar
+  * templates: update email layout
+  * templates: adjust sidebar colors to support light and dark color
+  * config: add umask, user, and group configuration options
+  * Import minarca-server as subfolder
+  * doc: update SECURITY.md
+  * git: remove duplicate gitignore from minarca-server
+  * ci: remove duplicate sonar-project.properties
+  * minarca-server: fix pyproject.toml deps
+  * scheduler: change job identifiers from strings to callable references
+  * minarca-server: fix unit test execution
+  * minarca-server: remove `.vscode` folder
+  * minarca-server: Drop support for rdiff-backup 1.2.8
+  * ci: make the pipeline execute for rdiffweb and minarca-server
+  * minarca: refactor startup sequence to use late_start and db autocreate
+  * ui: improve contrast for badges and status indicators
+  * ui: change RepoCard and RepoStatus component styling
+  * packaging: add wtforms and cherrypy-foundation data files to spec
+  * ui: change KpiCard background to bg-light
+  * home: change "Backups" to "Repositories" in home and sidebar templates
+  * ui: add border and rounded style to table in browse view
+  * ui: remove checkbox from datatable filter button
+  * ui: change datatable filter buttons styling and layout consistency
+  * browse: add status column and improve deleted file display
+  * admin_users: fix table cell alignment and mfa title rendering
+  * ci: add GIT_STRATEGY none and improve e2e-test jobs
+  * templates: change sticky header to span full width
+  * sidebar: review color contrast for repo status
+  * table: Show/hide "Reset" button depending of filter selection
+  * sidebar: show active user's repo
+  * home: Add back a "Refresh repositories" in home view
+  * admin: Add a "Refresh repositories" when editing the user
+  * browse: add disk usage size display with source and history breakdown
+  * minarca: update branding
+  * templating: remove unused attrib helper and related files
+  * code: remove unused rdw_helpers and related files
+  * home: change storage usage display to use repo objects with detailed size breakdown
+  * minarca-server: optimize authorized_keys generation using direct query
+  * admin/users: fix N+1 query by using joinedload for user relations
+  * home: fix N+1 query by using lazy loading
+  * config: add disk-usage-time option to schedule disk usage analysis
+  * repo: fix sonarqube issues
+  * page_admin_users: refactor user lookup into _get_user helper method
+  * ui: recover notification page
+  * notification: add disk usage threshold and check latest options
+  * ci: fix coverage report
+  * diskusage: handle unclean session
+  * packaging: change privilege drop from systemd to config file
+  * ci: fix sonar scanner configuration
+  * rdwlog: remove duplicate property
+  * controller: fix shadowing of built-in id in PageRegistry methods
+  * controller: fix get_repo_nav_pages to filter by in_menu
+  * controller: remove unused validate function
+  * controller: remove TODO comment
+  * api_openapi: remove redundant list() call
+  * diskusage: fix typo in `_update_disk_usage` self parameter name
+  * rdw_app: remove unused current_url template variable
+  * admin_sysinfo: change <td> to <th> for row header cells
+  * admin_user_edit: remove redundant empty style attribute
+  * sonar: add issue ignore rules for HTML templates
+  * sidebar: fix text truncation and add tooltip for repository name
+  * static: move main.css endpoint under /static/ and add cache headers
+  * jinja2: add auto_reload support in debug and development mode
+  * librdiff: cache _entries property and invalidate on refresh
+  * stats: add condition for 'new' state
+  * diskusage: fix skip disk usage scan for non-existent repository folder
+  * db: add clear_sessions() call before async database operations
+  * debian: add PEP440 version matching for cherrypy-foundation dependency
+  * templates: replace inline time elements with RdwTime component
+  * css: add primary border subtle color variable using color-mix
+  * tokens: add validation for token name format and length
+  * admin_session: fix icons shown when session time values are missing
+  * audit: add author_username column to Message model and remove author join
+  * i18n: update french translations and clean up formatting across templates and controllers
+  * debian: add dedicated log directory for rdiffweb
+  * debian: remove bundled static asset exclusions and symlinks
+  * debian: remove chart.js and chartkick.js symlink handling
+  * templates: remove unused & legacy include macros
+  * code: remove dead code
+  * rdiffweb: remove ActivityPlugin and inline activity logging into model layer
+  * deps: add jinjax dependency with broken version exclusion
+  * sqlite: add PRAGMA synchronous=NORMAL on connect
+  * minarca: remove unused imports and extend flake8 coverage
+  * main: fix jinjax logger verbosity in debug mode
+  * history: change limit to 100
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 17 Jun 2026 13:31:14 -0400
+
+rdiffweb (6.2.5-1) unstable; urgency=medium
+
+  * ridffweb: bump to 2.11.5 to pre-fill login
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 29 Apr 2026 07:14:37 -0400
+
+rdiffweb (2.11.5-1) unstable; urgency=medium
+
+  * login: add support for pre-filling login field via query string parameter
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Tue, 28 Apr 2026 12:55:53 -0400
+
+rdiffweb (6.2.4-1) unstable; urgency=medium
+
+  *  rdiffweb: bump to v2.11.4 to fix foreign key error
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 24 Apr 2026 08:29:59 -0400
+
+rdiffweb (2.11.4-1) unstable; urgency=medium
+
+  * ci: pin image pipeline-trigger:2.9.0
+  * db: fix user deletion raising foreign key errors
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Thu, 23 Apr 2026 13:27:04 -0400
+
+rdiffweb (2.11.3-1) unstable; urgency=medium
+
+  * api: restrict /api/users endpoint to administrators only
+  * Update changelog
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Thu, 09 Apr 2026 10:25:28 -0400
+
+rdiffweb (6.2.3-1) unstable; urgency=medium
+
+  * ci: replace pipeline-trigger image
+  * rdiffweb: bump to v2.11.2
+  * deps: bump rdiffweb to v2.11.3
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Thu, 09 Apr 2026 10:24:04 -0400
+
+rdiffweb (2.11.2-1) unstable; urgency=medium
+
+  * smtp: fix encoding for email_from
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Tue, 07 Apr 2026 14:14:51 -0400
+
+rdiffweb (6.2.2-1) unstable; urgency=medium
+
+  * rdiffweb: bump to v2.11.1 to fix argparse issue
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 18 Mar 2026 13:07:18 -0400
+
+rdiffweb (2.11.1-1) unstable; urgency=medium
+
+  * Add release date to changelog
+  * fix: add support for configargparse >= 1.7.5
+  * fix: bookwork test by pinning setuptools version
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 11 Mar 2026 15:00:03 -0400
+
+rdiffweb (6.2.1-1) unstable; urgency=medium
+
+  * Fix permissions set on /etc/minarca, /var/log & /var/lib/minarca during installation
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 27 Feb 2026 06:21:16 -0500
+
+rdiffweb (6.2.0-1) unstable; urgency=medium
+
+  * Update gitignore
+  * Update tzlocal
+  * Remove `pkg_resources` dependency
+  * Upgrade pyinstaller to v7
+  * Upgrade rdiffweb to 2.11.0b1
+  * Stop capturing last log lines
+  * Update docker documentation
+  * Upgrade rdiffweb to 2.11.0b2
+  * Upgrade rdiffweb to 2.11.0b3
+  * Upgrade rdiffweb to 2.11.0b4
+  * Upgrade rdiffweb to 2.11.0b5
+  * Remove `chattr` call on quota update
+  * Update Copyright
+  * Upgrade rdiffweb to 2.11.0
+  * Add changelog entry for 6.2.0
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 14 Jan 2026 14:50:47 -0500
+
 rdiffweb (2.11.0-1) unstable; urgency=medium
 
-  * Initial upload to debian (Closes: #969974).
+  * Update installation.md
+  * Fix doc upload #337
+  * Remove Debian bullseye as it required backwork which is EOL
+  * Fix selenium execution with bookworm
+  * Clean-up deprecated code
+  * Handle error sending email notification when repo is damage #326
+  * Upgrade secure headers modules
+  * Adding OAuth autentication support
+  * Cache listdir entries #331
+  * Drop python 3.8
+  * Add python 3.13 support (for trixie)
+  * Remove all deprecation warnings
+  * Add PT-BR translation
+  * Update ldap modules
+  * Allow uses of role name in POST /api/users #341
+  * Drop Ubuntu Oracular & Add Ubuntu Plucky & Debian Trixie support
+  * Upgrade smtp plugins
+  * Upgrade auth & ldap plugins
+  * Pin cheroot<11
+  * Update copyright signatures
+  * Update RestAPI plugins copyright
+  * Fix token impersonation vulnerability
+  * Upgrade implementation of SQL timestamp
+  * Rename `userid` and `repoid` into `id`
+  * Add foundation for audit log #345
+  * Add activity log #345
+  * Verify Oauth URL #339
+  * Allow deleting user with or without data #335
+  * Update login page
+  * Allow administrator to disable a user account #313
+  * Update french translation
+  * Add release note
+  * Deploy trixie package in dev
+  * Add logging to `delete_user_with_data` job
+  * Update tools and plugins from cherrypy-foundation
+  * Fix exception raised for invalid locale identifier
+  * Update Ldap plugin
+  * Update french translation #350
+  * Remove superfluous logging: using cache entries.
 
- -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 27 Feb 2025 15:41:18 +0400
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 07 Jan 2026 18:53:30 -0500
+
+rdiffweb (6.1.3-1) unstable; urgency=medium
+
+  * Drop Ubuntu Oracular
+  * Upgrade rdiffweb
+  * Change deployment to dev repos
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 03 Oct 2025 08:24:28 -0400
+
+rdiffweb (6.1.2-1) unstable; urgency=medium
+
+  * Bump rdiffweb to 2.10.5 to fix warnings
+  * Adjust warnings handling
+  * Rename sysctl config file
+  * Prepare release 6.1.2
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Sat, 21 Jun 2025 07:00:45 -0400
+
+rdiffweb (2.10.5-1) unstable; urgency=medium
+
+  * Capture warnings
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 20 Jun 2025 17:54:26 +0000
+
+rdiffweb (6.1.1-1) unstable; urgency=medium
+
+  * Upgrade debbuild to define conffiles
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 18 Jun 2025 15:27:34 -0400
+
+rdiffweb (6.1.0-1) unstable; urgency=medium
+
+  * Migrate to pyproject.toml and pyinstaller
+  * Bump rdiffweb version to 2.10.0b1
+  * Merge branch 'patrik-pyproject-toml' into 'master'
+  * Fix license badge in README
+  * Merge branch 'patrik-fix-readme' into 'master'
+  * Bump rdiffweb version to 2.10.1b2
+  * Merge branch 'patrik-bump-rdiffweb' into 'master'
+  * Merge commit '7c86a1be95c4458cc71400699dcdf257ca323ec7'
+  * Remove dependencies on `libxcb1`
+  * Merge branch 'patrik-remove-libxcb1' into 'master'
+  * Merge branch 'patrik-docker' into 'master'
+  * Provide Docker Image #7
+  * Fix version check in CICD pipeline
+  * Add `--no-install-recommends` in Dockerfile
+  * Explicitly return error when jail fail
+  * Merge branch 'patrik-return-jail-error' into 'master'
+  * Bump rdiffweb to 2.10.0rc2
+  * Fix `/api/minarca` entrypoint
+  * Add Debian Trixie support
+  * Bump Python version to 3.12 minarca#297
+  * Remove apt install from CICD build
+  * Merge branch 'patrik-python-3.12' into 'master'
+  * Update Copyright
+  * Merge branch 'patrik-copyright' into 'master'
+  * Disable Ubuntu hardening apparmor_restrict_unprivileged_userns
+  * Add support for Ubuntu Plucky 25.04
+  * Merge branch 'patrik-fix-ubuntu' into 'master'
+  * Bump rdiffweb to v2.10.3b1
+  * Optimize pyinstaller packaging
+  * Removing `# -*- coding: utf-8 -*-` header
+  * Bump rdiffweb to v2.10.4b1
+  * Disable python warning in runtime
+  * Fix Docker image minarca#312
+  * Make postgresql support working minarca#311
+  * Update Docker documentation for PostgreSQL
+  * Bump rdiffweb version to 2.104b2
+  * Include SSL dependencies for HTTPS
+  * Bump rdiffweb to version 2.10.4
+  * Prepare release 6.1.0
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 13 Jun 2025 14:51:30 -0400
+
+rdiffweb (2.10.4-1) unstable; urgency=medium
+
+  * Removing pre-bullseye versioned build-depends.
+  * Updating standards version to 4.7.0.
+  * Removing trailing slash in url field.
+  * Updating source URL in copyright.
+  * Updating year in copyright file for 2025.
+  * Updating indenting and grouping in maintainer scripts.
+  * Removing trailing slash when creating manpage directory in rules.
+  * Indenting comment for dh_auto_install override.
+  * Simplifying dh_auto_clean override.
+  * Update french translation
+  * Fix email notification to include more information #312
+  * Update Backup Log & Restore Log labels #316
+  * Add caching for translation
+  * Show keepdays, maxage in admin repos view #310
+  * Fix sorting of dates in stats and logs view #321
+  * Adjust labels of buttons used to filter file statistics
+  * Fork process to restore files
+  * Fix display of filename with < > in stats view
+  * Fix `changes_dates` to ignore `*.missing` entry
+  * Explicitly add "pytz" as dependencies
+  * Drop Ubuntu Lunar
+  * Migrate to pyproject.toml #281
+  * Add `data-order` to Admin View User Repos #324
+  * Add swagger to document Rdiffweb API #325
+  * Remove obsolete option `brand-default-theme` from the doc
+  * Merge commit 'c226f6453048cbe8188ea94cc2562596e2dbee0b'
+  * Fix title of Admin Repos view
+  * Add "Preparing your download" page #322
+  * Fix selenium test stability
+  * Adjust quota settings to align with the nearest block size, preventing the 'Setting user's quota is not supported' error.
+  * Generate openapi.json for not without doc string
+  * Raise HTTP 405 when restapi method not defined
+  * Update README changes
+  * Remove wsgi entrypoint
+  * Update copyright
+  * Fix "Show more..." link in stats view #328
+  * Update Openapi generator
+  * Return API error as Json
+  * Externalize "required_scope" tools
+  * Fix some unit test comments
+  * Reffactor current user tokens API
+  * Reffactor current user repos API
+  * Reffactor upgrade of DB schema
+  * Use Debian Bookworm as base for Docker
+  * Convert db into a plugin
+  * Add new API to manage users
+  * Provide regexp implementation for sqlalchemy v1.3
+  * Sort admin system logs by date
+  * Return invalid fields has form errors
+  * Reorganize few api endpoint
+  * Lookup `rdiff-backup` and `rdiff-backup-delete` in current executable path
+  * Remove `# -*- coding: utf-8 -*-` header
+  * File header and license cleanups
+  * Fix database schema upgrade with null mfa, lang or report_time_range
+  * Show/Hide animation in restore page #332
+  * Prepare release 2.10.4
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 13 Jun 2025 14:06:44 -0400
+
+rdiffweb (6.0.5-1) unstable; urgency=medium
+
+  * Bump rdiffweb version to 2.9.7 to fix admin user creation minarca#293
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Thu, 20 Feb 2025 13:54:03 -0500
+
+rdiffweb (2.9.7-1) unstable; urgency=medium
+
+  * Trigger creation of default user `admin` after plugin startup minarca#295
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 19 Feb 2025 09:52:51 -0500
+
+rdiffweb (6.0.4-1) unstable; urgency=medium
+
+  * Split repo
+  * Remove zenity dependency introduced by mistake
+  * Fix reported version and add test in CICD pipeline
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 08 Jan 2025 07:51:49 -0500
+
+rdiffweb (2.9.6-1) unstable; urgency=medium
+
+  * Drop Ubuntu Mantic support
+  * Explicitly add "pytz" as dependencies
+  * Drop Ubuntu Lunar
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 06 Jan 2025 09:19:23 -0500
+
+rdiffweb (6.0.3-1) unstable; urgency=medium
+
+  * Add support for Ubuntu Noble 24.04 LTS & Oracular 24.10
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Tue, 12 Nov 2024 16:33:27 -0500
+
+rdiffweb (2.9.5-1) unstable; urgency=medium
+
+  * Add support for Ubuntu Noble #317
+  * Add support for Ubuntu Oracular 24.10
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Mon, 11 Nov 2024 14:05:44 -0500
+
+rdiffweb (6.0.0-1) unstable; urgency=medium
+
+  * Support multi-backup destination
+  * WIP: Add minarcaid authentication
+  * Merge branch 'patrik-multi-backup-kivy' into 'master'
+  * Update colors on minarca server
+  * Set rdiffweb version to 2.9.1
+  * Merge branch 'patrik-fix-keepdays' into 'master'
+  * Upgrade Rdiffweb to v2.9.2
+  * Bump rdiffweb to v2.9.3
+  * Adjust colors in login screen
+  * Increase minarcaid epoch validation to 5 minutes
+  * Return the reason when minarcaid is invalid
+  * Fix postinst to get minarca's home #256
+  * Update environment variable prefix to MINARCA_
+  * Fix permissions error trying to regenerate identity
+  * Define distinct settings for minarca-home-dir and minarca-base-dir
+  * Improve logging in minarca-shell
+  * Update french translation
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Fri, 25 Oct 2024 15:11:48 -0400
+
+rdiffweb (2.9.4-1) unstable; urgency=medium
+
+  * Complete french translation #315
+  * Enforce use of python:3.10-bullseye
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Thu, 24 Oct 2024 15:17:53 -0400
+
+rdiffweb (2.9.3-1) unstable; urgency=medium
+
+  * Provide default encoding value
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Fri, 02 Aug 2024 13:49:46 -0400
+
+rdiffweb (2.9.2-1) unstable; urgency=medium
+
+  * Use default language to send notification if user doesn't have a "Preferred Language" #306
+  * Merge branch 'patrik-fix-translation' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 03 Jul 2024 16:06:51 +0000
+
+rdiffweb (2.9.1-1) unstable; urgency=medium
+
+  * Merge branch 'patrik-restapi-scope' into 'master'
+  * Improve REST api
+  * little fix for columns
+  * Drop Debian Buster support
+  * Merge branch 'fix-buster' into 'master'
+  * Fix backward compatibility for database with empty repo's encoding
+  * Merge branch 'patrik-fix-repo-settings' into 'master'
+  * Add prefered language to admin View
+  * Improve DockerImage
+  * Merge branch 'patrik-admin-view-lang' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Tue, 11 Jun 2024 17:12:41 +0000
+
+rdiffweb (5.0.5-1) unstable; urgency=medium
+
+  * Fix compatibility issue with backupninja #237
+  * Merge branch 'patrik-fix-backup-ninja' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Sun, 07 Apr 2024 18:59:03 +0000
+
+rdiffweb (5.0.3-1) unstable; urgency=medium
+
+  * Upgrade rdiffweb to version 2.8.9
+  * Merge branch 'patrik-fix-page-settings' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 19 Feb 2024 14:36:12 +0000
+
+rdiffweb (2.8.9-1) unstable; urgency=medium
+
+  * Merge branch 'patrik-deb-src' into 'master'
+  * Build Debian source package
+  * Fix display of page settings minarca#235
+  * Merge branch 'patrik-fix-page-settings' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 19 Feb 2024 13:30:07 +0000
+
+rdiffweb (5.0.2-1) unstable; urgency=medium
+
+  * Upgrade rdiffweb to version 2.8.8
+  * Merge branch 'patrik-hot-fix' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 08 Jan 2024 20:55:55 +0000
+
+rdiffweb (2.8.8-1) unstable; urgency=medium
+
+  * Update auth-mfa to support URI encoding
+  * Fix usage of `session-idle-timeout` in config file #296
+  * Merge branch 'patrik-update-auth-mfa' into 'master'
+  * Avoid uploading duplicate ".deb" files
+  * Merge branch 'patrik-fix-session-idle-timeout' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 08 Jan 2024 18:18:16 +0000
+
+rdiffweb (2.8.7-1) unstable; urgency=medium
+
+  * Adjust the session idle and absolute timeouts to 10 and 30 minutes, respectively.
+  * Merge branch 'patrik-adjust-session-timeout' into 'master'
+  * Fix date calculation when generating report #295
+  * Merge branch 'patrik-fix-reporting' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Thu, 04 Jan 2024 18:32:44 +0000
+
+rdiffweb (5.0.1-1) unstable; urgency=medium
+
+  * Fix brokken link to https://www.ikus-soft.com
+  * Add German translation & update documentation
+  * Merge branch 'patrik-update-locales' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 24 Nov 2023 20:05:17 +0000
+
+rdiffweb (2.8.6-1) unstable; urgency=medium
+
+  * Configure sponsor
+  * Merge branch 'patrik-sponsor' into 'master'
+  * Fix broken links
+  * Allow click on checkbox buttons #293
+  * Fix translation of report #291
+  * Merge branch 'patrik-bug-fixes' into 'master'
+  * Adding German translation
+  * Merge branch 'patrik-update-locales' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 24 Nov 2023 18:46:07 +0000
+
+rdiffweb (5.0.0-1) unstable; urgency=medium
+
+  * Update Copyright year
+  * Merge branch 'patrik-readme-contribution' into 'master'
+  * Upgrade rdiffweb to v2.8.0a1
+  * Merge branch 'patrik-upgrade-rdiffweb' into 'master'
+  * Log original ssh command or user agent on server side
+  * Add support for rdiff-backup 2.2.x and Ubuntu Lunar #194 #203
+  * Merge branch 'patrik-2.2-and-lunar' into 'master'
+  * Upgrade rdiffweb to version 2.8.0a2
+  * Merge branch 'patrik-upgrade' into 'master'
+  * Upgrade rdiffweb to 2.8.0.a3
+  * Upgrade rdiffweb to 2.8.0a4
+  * Adding restore support on command line
+  * Merge branch 'patrik-restore' into 'master'
+  * Upgrade rdiffweb to 2.8.0a5 - ignore weekend
+  * Deploy file stats - update rdiffweb 2.8.0a7
+  * Merge branch 'patrik-file-stats' into 'master'
+  * Upgrade rdiffweb to v2.8.0a9
+  * Merge branch 'patrik-restore-ui' into 'master'
+  * Upgrade rdiffweb to v2.8.1
+  * Add debian version to Debian package
+  * Merge branch 'patrik-release' into 'master'
+  * Upgrade rdiffweb v2.8.2a1
+  * Upgrade rdiffweb to v2.8.2
+  * patrik-fix-test-version
+  * Update rdiffweb to v2.8.4
+  * Upgrade rdiffweb to v2.8.5
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Tue, 10 Oct 2023 15:21:06 -0400
+
+rdiffweb (2.8.5-1) unstable; urgency=medium
+
+  * Update README release note
+  * Fix Debian version #289
+  * Add support for WTForm v3.1.0
+  * Add last backup date to email notification #290
+  * Merge branch 'patrik-fix-deb-version' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Tue, 10 Oct 2023 18:30:39 +0000
+
+rdiffweb (2.8.4-1) unstable; urgency=medium
+
+  * Add ratelimit to AccessToken, SSH Keys, User creation
+  * Merge branch 'patrik-rate-limit' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 29 Sep 2023 13:22:14 +0000
+
+rdiffweb (2.8.3-1) unstable; urgency=medium
+
+  * Remove Ubuntu Kinetic
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Fri, 22 Sep 2023 16:26:56 -0400
+
+rdiffweb (2.8.2-1) unstable; urgency=medium
+
+  * Unpin selenium version to support >= 4.11
+  * Add Ubuntu Mantic support
+  * Merge branch 'patrik-selenium' into 'master'
+  * Change layout of file statistics to display a single day #286
+  * Merge branch 'patrik-split-stats' into 'master'
+  * Handle exit code 2 for rdiff-backup>=2.2.x #285
+  * Do not send notification during ignored days #284
+  * Fix Error 500 on Setting page #287
+  * Use multi-stage to run test in docker image
+  * Merge branch 'patrik-encoding-none' into 'master'
+  * Merge branch 'patrik-remove-older-exit-code' into 'master'
+  * Merge branch 'patrik-disable-days' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Tue, 22 Aug 2023 19:24:18 +0000
+
+rdiffweb (2.8.1-1) unstable; urgency=medium
+
+  * Pin selenium to 4.10
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Tue, 01 Aug 2023 12:06:26 -0400
+
+rdiffweb (2.8.0-1) unstable; urgency=medium
+
+  * Add error logging for restore failure
+  * Improve user management interface #237
+  * Allow admin to select report time range
+  * Add support for Ubuntu Lunar
+  * Update Banner
+  * Update networking documentation to include certbot configuration
+  * Merge branch 'patrik-admin-users' into 'master'
+  * Merge branch 'patrik-lunar' into 'master'
+  * Merge branch 'patrik-sqlalchemy-2.0' into 'master'
+  * Add support for SQLAlchmey v2.0 #256
+  * Update display of disk quota
+  * Send notification when user's quota reach 90% #46
+  * Update french translation
+  * Freeze version of tzlocal in tox.ini
+  * Update installation steps to include `arch=amd64` #254
+  * Merge branch 'patrik-quota-visibility' into 'master'
+  * Add ratelimit to "send me a status report" to avoid email flooding #272
+  * Merge branch 'patrik-ratelimit-send-report' into 'master'
+  * Fix presentation of quota in email notification
+  * Merge branch 'patrik-fix-quota-report' into 'master'
+  * Merge branch 'patrik-fix-token-expiration' into 'master'
+  * Fix creation of access token with expiration time #277
+  * Add fail2ban documentation
+  * Merge branch 'patrik-doc-fail2ban' into 'master'
+  * Fix presentation of quota in email report
+  * Upgrade readme_renderer
+  * Merge branch 'patrik-email-report' into 'master'
+  * Add option to ignore some days of week #278
+  * Merge branch 'patrik-ignore-weekend' into 'master'
+  * Merge branch 'patrik-view-file-statistics' into 'master'
+  * Add file statistics view #103
+  * Add increment size to file statistics #103
+  * Trim extra space from verification code #279
+  * Merge branch 'patrik-trim-verification-code' into 'master'
+  * Merge branch 'patrik-graphs' into 'master'
+  * Remove "min" prefix from graphs #252
+  * Merge branch 'patrik-default-login' into 'master'
+  * Use username from redirect URL by default in login page #283
+  * Sort repositories by last backup date #282
+  * Merge branch 'patrik-admin-repos-sorting' into 'master'
+  * Update Release note
+  * Fix file statistics menu
+  * Fix flake8 version
+  * Merge branch 'patrik-release' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 31 Jul 2023 18:59:24 +0000
+
+rdiffweb (2.7.1-1) unstable; urgency=medium
+
+  * Update copyright year
+  * Merge branch 'patrik-update-copyright-year' into 'master'
+  * Fix encoding problem with older Outlook 2007 client #273
+  * Merge branch 'patrik-outlook-encoding' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Sat, 29 Apr 2023 12:15:15 +0000
+
+rdiffweb (4.5.3-1) unstable; urgency=medium
+
+  * Update Rdiffweb
+  * Merge branch 'patrik-update-rdiffweb' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 24 Apr 2023 15:10:40 +0000
+
+rdiffweb (2.7.0-1) unstable; urgency=medium
+
+  * Review testing matrix in CICD pipeline
+  * Add test with invalid `default-lang`
+  * Fix translation of email_layout
+  * Merge branch 'patrik-test-invalid-default-lang' into 'master'
+  * Merge branch 'patrik-test-2.2' into 'master'
+  * Merge branch 'patrik-fix-notification-error' into 'master'
+  * Define subject for MFA Verification Code email #270
+  * Provide a Monthly, Weekly or Daily report #71
+  * Re-visit Post-redirect-get pattern
+  * Check new version availability #266
+  * Merge branch 'patrik-monthly-report' into 'master'
+  * Fix time calculation and timerange for reporting #71
+  * Merge branch 'patrik-check-latest' into 'master'
+  * Merge branch 'patrik-selenium-test' into 'master'
+  * Improve testing of browse page using Selenium
+  * Little adjustment for reporting
+  * Merge branch 'patrik-fix-report' into 'master'
+  * Update help mage to recommand png instead of SVG
+  * Do not validate user_root if empty
+  * Merge branch 'patrik-minor-changes' into 'master'
+  * Prepare 2.7.0 release
+  * Merge branch 'patrik-prepare-release' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Thu, 20 Apr 2023 15:03:17 +0000
+
+rdiffweb (4.4.1-1) unstable; urgency=medium
+
+  * Fix `rdiff-backup` executable lookup
+  * Merge branch 'patrik-bookworm' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 22 Mar 2023 21:57:43 +0000
+
+rdiffweb (2.6.1-1) unstable; urgency=medium
+
+  * Update README file
+  * Fail to start if rdiff-backup is not found #267
+  * Merge branch 'patrik-search-rdiff-backup' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 22 Mar 2023 19:19:58 +0000
+
+rdiffweb (4.4.0-1) unstable; urgency=medium
+
+  * Merge branch 'patrik-create-deb' into 'master'
+  * Use debbuild to create DEB package for minarca-client
+  * Redistribute logos in PNG format for better compatibility
+  * Upgrade rdiffweb to include reporting
+  * Merge branch 'patrik-reporting' into 'master'
+  * Upgrade rdiffweb to 2.6.0 to include default-lang
+  * Merge branch 'patrik-default-lang' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 15 Mar 2023 17:43:57 +0000
+
+rdiffweb (2.6.0-1) unstable; urgency=medium
+
+  * Fix deletion of repositories in subdirectory #250
+  * Send notification for inactive backup based on statistics
+  * Merge branch 'patrik-deletion' into 'master'
+  * Merge branch 'patrik-notification-no-activity' into 'master'
+  * Use bootstrapemail to generate email template
+  * Improve html2text implementation
+  * Redistribute logos in PNG format for better compatibility
+  * Provide a better overview in Status view
+  * Change layout of repositories
+  * Make deletion test more stable
+  * Merge branch 'patrik-email-template' into 'master'
+  * Update EXT4 quota documentation
+  * Merge branch 'master' into 'patrik-hotfix-sqlalchemy'
+  * Merge branch 'patrik-hotfix-sqlalchemy' into 'master'
+  * Merge branch 'patrik-quota-documentation' into 'master'
+  * Add external_url configuration #257
+  * Merge branch 'patrik-external-url' into 'master'
+  * Merge branch 'patrik-layout-repositories' into 'master'
+  * Merge branch 'patrik-status-view' into 'master'
+  * Fix delete repository vs path deletion #250
+  * Only log server error
+  * Adjust server log to include IP address and username for real request
+  * Support Setuptools v66
+  * Make use of timezone aware datetime
+  * Merge branch 'patrik-fixes' into 'master'
+  * Improve System Logs view #62
+  * Sort disk usage & Release session lock early for Ajax request
+  * Update README
+  * Redesign timerange selection widget
+  * Update ldap.py
+  * Merge branch 'rdiffweb-ldapfix-master' into 'master'
+  * Add catch-all email for notification #258
+  * Merge branch 'patrik-event' into 'master'
+  * Merge branch 'patrik-admin-notification' into 'master'
+  * Improve "remove-older" logging #262
+  * Raise 404 error on invalid log file #259
+  * Merge branch 'master' into 'patrik-fix-remove-older'
+  * Merge branch 'patrik-initial-backup' into 'master'
+  * Distinct between initial backup and interrupted
+  * Merge branch 'patrik-fix-remove-older' into 'master'
+  * Merge branch 'patrik-404-invalid-log' into 'master'
+  * Rename System Logs columns #265
+  * Fix display of "* minutes ago" #264
+  * Merge branch 'patrik-systemlog-rename-columns' into 'master'
+  * Merge branch 'patrik-minute-ago' into 'master'
+  * Make sure to use json instead of simplejson
+  * Improve language control #263
+  * Merge branch 'patrik-default-lang' into 'master'
+  * Update french translation
+  * Merge branch 'patrik-update-translation' into 'master'
+  * Make sure email has a subject
+  * Merge branch 'patrik-fix-send-mail-subject' into 'master'
+  * Merge branch 'patrik-selenium' into 'master'
+  * Add test with selenium & validate HTML
+  * Upgrade ldap module to support multiple required group
+  * Update Quick Start documentation
+  * Update README for release
+  * Merge branch 'patrik-upgrade-ldap' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 15 Mar 2023 15:20:09 +0000
+
+rdiffweb (2.5.8-1) unstable; urgency=medium
+
+  * Support Setuptools v66
+  * Fix execution of rdiffweb remove-older job to clean-up repository history #262
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Sun, 19 Feb 2023 12:14:34 -0500
+
+rdiffweb (2.5.7-1) unstable; urgency=medium
+
+  * Enforce SQLAlchemy version between 1.2 or 1.4
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Fri, 27 Jan 2023 09:21:49 -0500
+
+rdiffweb (4.3.0-1) unstable; urgency=medium
+
+  * Upgrade to 2.5.0a9
+  * Upgrade rdiffweb v2.5.0a6
+  * Replace deprecated references of `disutils.spawn.find_executable()` by `shutil.which()`
+  * Upgrade rdiffweb v2.5.0a1 include SQL Alchemy ORM
+  * Update website url to minarca.org
+  * Merge branch 'patrik-upgrade-rdiffweb' into 'master'
+  * Fix Rdiffweb version to 2.5.0
+  * Merge branch 'patrik-upgrade-french-translation' into 'master'
+  * Run user's quota update in background task #186
+  * Upgrade rdiffweb to 2.5.1
+  * Merge branch 'patrik-background-task-update-attr-quota' into 'master'
+  * Upgrade Rdiffweb to 2.5.2
+  * Fix flake8 config
+  * Update documentation
+  * Merge branch 'patrik-upgrade-rdiffweb-2.5.2' into 'master'
+  * Upgrade rdiffweb to 2.5.3
+  * Merge branch 'patrik-final-changes' into 'master'
+  * Update server default theme
+  * Add test for SSH Key comments
+  * Merge branch 'patrik-update-theme' into 'master'
+  * Cosmetic changes
+  * Merge branch 'patrik-import-error-message' into 'master'
+  * Add man page to minarca-server
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 16 Jan 2023 18:02:46 +0000
+
+rdiffweb (2.5.6-1) unstable; urgency=medium
+
+  * Fix Hamburger menu and change working minarca#192
+  * Merge branch 'patrik-little-changes' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Thu, 12 Jan 2023 21:02:26 +0000
+
+rdiffweb (2.5.5-1) unstable; urgency=medium
+
+  * Fix loading of status graph
+  * Merge branch 'patrik-fix-status-graph' into 'master'
+  * Disable automatic hyperlink in email template
+  * Send notification on new SSH Key
+  * Ratelimit "Resend code to my email" in Two-Factor Authentication view
+  * Make username case-insensitive
+  * Make sure that all ssh keys are unique, regardless of the user
+  * Disable translation caching
+  * Merge branch 'patrik-huntr' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 23 Dec 2022 19:42:38 +0000
+
+rdiffweb (2.5.4-1) unstable; urgency=medium
+
+  * Discard `X-Forwarded-Host` headers
+  * Merge branch 'patrik-discard-X-Forwarded-Host' into 'master'
+  * Create symbolic link for chartkick on Ubuntu Jammy
+  * Merge branch 'patrik-fix-chartkick' into 'master'
+  * Merge branch 'patrik-release-note' into 'master'
+  * Update Release notes
+  * Improve custom branding configuration
+  * Add CSRF verification on `/logout`
+  * Merge branch 'patrik-csrf-logout' into 'master'
+  * Fix graphs loading
+  * Merge branch 'patrik-branding' into 'master'
+  * Merge branch 'patrik-graph' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 19 Dec 2022 15:25:00 +0000
+
+rdiffweb (2.5.3-1) unstable; urgency=medium
+
+  * Update configuration page
+  * Update dependencies for Debian Bookworm
+  * Merge branch 'patrik-bookworm' into 'master'
+  * Fix strange behavior in access token management #247
+  * Improve handling of duplicate ssh keys added via api #248
+  * Merge branch 'patrik-fix-revoke-access-token' into 'master'
+  * Merge branch 'patrik-duplicate-ssh-key' into 'master'
+  * Merge branch 'patrik-update-config' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 05 Dec 2022 22:39:59 +0000
+
+rdiffweb (2.5.2-1) unstable; urgency=medium
+
+  * Block repository access when user_root directory is empty or a relative path
+  * Replace admin password only when `--admin-password` option is provided
+  * Merge branch 'patrik-fix-empty-user-root' into 'master'
+  * Invalidate browser cache for logo, headerlogo and favicon on restart #245
+  * Merge branch 'patrik-admin-password-reset' into 'master'
+  * Improve test involving scheduled tasks
+  * Define repo display_name to fix repository tree
+  * Merge branch 'patrik-invalidate-cache' into 'master'
+  * Update release note 2.5.2
+  * Merge branch 'patrik-release' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 28 Nov 2022 17:01:46 +0000
+
+rdiffweb (2.5.1-1) unstable; urgency=medium
+
+  * Add support for Ubuntu Kinetic #240
+  * Merge branch 'patrik-ubuntu-kinetic' into 'master'
+  * Disable filesize for deleted files to improve page loading #241
+  * Release session lock on restore
+  * Update Russian translation file
+  * Merge branch 'patrik-ru-translation' into 'master'
+  * Merge branch 'patrik-filesize-for-deleted-files' into 'master'
+  * Merge branch 'patrik-release-lock-on-restore' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 16 Nov 2022 17:44:27 +0000
+
+rdiffweb (2.5.0-1) unstable; urgency=medium
+
+  * Merge branch 'patrik-edit-release-date' into 'master'
+  * Store user's session in database #202
+  * Reffactor to use SQLAlchemy ORM
+  * Fix status page error handling
+  * Update LDAP plugins
+  * Merge branch 'patrik-refactor-sqlalchemy' into 'master'
+  * Add unit test for remove-older
+  * Merge branch 'patrik-remove-older-test' into 'master'
+  * Fix fullname column creation
+  * Adjust default SQL value to match previous version
+  * Improve error handle when repo has failed status
+  * Add Ubuntu Jammy support
+  * Merge branch 'patrik-ubuntu-jammy' into 'master'
+  * Merge branch 'patrik-fix-database-upgrade' into 'master'
+  * Merge branch 'patrik-bootstrap-v4' into 'master'
+  * Migrate to bootstrap v4.6 #204
+  * Drop Ubuntu hirsute & Impish
+  * Merge branch 'patrik-drop-eof-ubuntu' into 'master'
+  * Improve user's events for minarca integration
+  * Fix migration of old database #185
+  * Merge branch 'patrik-adjust-events' into 'master'
+  * Merge branch 'patrik-datatables' into 'master'
+  * Replace custom timsort by jquery DataTables #205
+  * Fix sessions clean-up
+  * Adjust scheduler job name
+  * Merge branch 'patrik-session-clean-up' into 'master'
+  * Update user profile layout
+  * Add Active Sessions management #203
+  * Merge branch 'patrik-fix-proxy' into 'master'
+  * Support Reverse proxy with older CherryPy
+  * Merge branch 'patrik-active-session' into 'master'
+  * Merge branch 'patrik-fix-db-migration' into 'master'
+  * Remove reference to deprecated distutils #208
+  * Fix djlint formating
+  * Update release notes
+  * Merge branch 'patrik-remove-distutils' into 'master'
+  * Add Minarca User-Agent detection
+  * Merge branch 'patrik-add-minarca-user-agent' into 'master'
+  * Test with beta version of rdiff-backup
+  * Add Clickjacking Defense
+  * Merge branch 'patrik-clickjacking-defence' into 'master'
+  * Merge commit '73a369a3f7ec7958106d395eb65dd511fca0d9c7'
+  * Merge commit '9125f5a2d918fed0f3fc1c86fa94cd1779ed9f73'
+  * Implement Multi-Factor Authentication #201
+  * Defer loading of DEPRECATED users columns
+  * Add artifacts expiration
+  * Update Security.md
+  * Add REST API to manage sshkeys
+  * Replace last warning message by flash
+  * Exclude dock/conf.py from sonar analysis
+  * Implement Access Token Authentication for /api
+  * Merge branch 'patrik-mfa' into 'master'
+  * Merge commit '28258e5dd85e7c417918ed3bf481e19ed5eff91f'
+  * Update X-Real-IP documentation
+  * Merge commit '422791ea45713aaaa865bdca74addb9fffd93a71'
+  * Mitigate CSRF on notification #216
+  * Fix race condition for deletion
+  * Support MarkupSafe<3 for Debian bookworm
+  * Mitigate CSRF on repository settings #217
+  * Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session on HTTP Error #218
+  * Generate a new session on login and 2FA #220
+  * Add test to verify CSRF in user's settings #221
+  * Clean-up invalid path on error page
+  * Define field limit for username, email and root directory #223
+  * Define field limit for SSH Key title
+  * Timeout 15 min by default and 30 days for persistent session
+  * Limit user's fullname and Token name field length
+  * Update french translation
+  * Add more secure headers: Cache-control, Referrer-Policy, X-Content-Type-Options, X-XSS-Protection
+  * Add password score validation
+  * Configure proxy tools with `X-Real-IP`
+  * Merge branch 'patrik-csrf-notification' into 'master'
+  * Enforce permissions on /etc/rdiffweb
+  * Merge branch 'patrik-remove-older-session' into 'master'
+  * Merge branch 'patrik-fix-permissions' into 'master'
+  * Merge branch 'patrik-rdiff-backup-beta' into 'master'
+  * Merge branch 'patrik-validate-fullname' into 'master'
+  * Enforce validation on fullname, username and email for increase security #224
+  * Limit incorrect attempts to change the user's password to prevent brute force attacks #225
+  * Merge branch 'patrik-rate-limit-password-change' into 'master'
+  * Make test-package more robust in CICD
+  * Merge branch 'patrik-stable-test-packages' into 'master'
+  * Enforce password policy new password cannot be set as new password
+  * Mitigate path traversal vulnerability #227
+  * Merge branch 'patrik-fix-path-traversal' into 'master'
+  * Support case insensitive column name #228
+  * Merge branch 'patrik-support-case-insensitive-column-name' into 'master'
+  * Merge branch 'patrik-new-old-password' into 'master'
+  * Improve ratelimit implementation
+  * Merge branch 'patrik-improve-ratelimit' into 'master'
+  * Enforce 'Origin' validation
+  * Merge branch 'patrik-validate-origin' into 'master'
+  * Add OpenSSF Best Practices Badge
+  * Merge branch 'patrik-badge' into 'master'
+  * Define idle and absolute session timeout with agressive default to protect usage on public computer
+  * Merge branch 'patrik-limit-session' into 'master'
+  * Send email notification when enabling or disabling MFA
+  * Merge branch 'patrik-mfa-notification' into 'master'
+  * Improve testing of database upgrade
+  * Use argon2id to store password hash #231
+  * Merge branch 'patrik-password-hash' into 'master'
+  * Merge branch 'patrik-test-sql-upgrade' into 'master'
+  * Force plugins ordering on startup #232
+  * Merge branch 'patrik-plugin-ordering' into 'master'
+  * Use python 3.10 to fix CICD pipeline
+  * Merge branch 'patrik-pipeline' into 'master'
+  * Delete user's session on password change
+  * Identify persistent sessions with a badge
+  * Merge branch 'patrik-password-reset' into 'master'
+  * Raise `user_added` event before_insert
+  * Handle duplicate token name
+  * Add rollback call where applicable
+  * Improve CSS branding configuration #239
+  * Merge branch 'patrik-adjust' into 'master'
+  * Merge branch 'patrik-update-french-translation' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 09 Nov 2022 21:19:32 +0000
+
+rdiffweb (4.2.5-1) unstable; urgency=medium
+
+  * Upgrade rdiffweb to 2.4.10
+  * Merge branch 'patrik-upgrade-2.4.10' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 03 Oct 2022 13:03:26 +0000
+
+rdiffweb (4.2.4-1) unstable; urgency=medium
+
+  * Upgrade rdiffweb to 2.4.9
+  * Merge branch 'patrik-upgrade-2.4.9' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Thu, 29 Sep 2022 16:09:56 +0000
+
+rdiffweb (4.2.3-1) unstable; urgency=medium
+
+  * Upgrade rdiffweb to 2.4.8 to fix vulnerabilities
+  * Merge branch 'patrik-upgrade-2.4.8' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 26 Sep 2022 15:58:21 +0000
+
+rdiffweb (4.2.2-1) unstable; urgency=medium
+
+  * Test minarca-server Debian package
+  * Update Minarca Logo
+  * Upgrade rdiffweb to 2.4.5 to vix vulnerabilities
+  * Merge branch 'patrik-tidy-up' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Sun, 18 Sep 2022 20:57:23 +0000
+
+rdiffweb (2.4.5-1) unstable; urgency=medium
+
+  * Mitigate CSRF on repository deletion and user deletion #214 #215
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Fri, 16 Sep 2022 15:56:28 -0400
+
+rdiffweb (2.4.4-1) unstable; urgency=medium
+
+  * Use X-Real-IP to identify clients #213
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Thu, 15 Sep 2022 15:40:52 -0400
+
+rdiffweb (2.4.3-1) unstable; urgency=medium
+
+  * Mitigate CSRF in profile's SSH Keys #212
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Wed, 14 Sep 2022 11:11:30 -0400
+
+rdiffweb (2.4.2-1) unstable; urgency=medium
+
+  * Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session #209
+  * Avoid leakage of the stack trace in the default error page #210
+  * Enforce minimum and maximum password length #211
+  * Update release version 2.4.2
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Mon, 12 Sep 2022 13:11:24 -0400
+
+rdiffweb (2.4.1-1) unstable; urgency=medium
+
+  * Update 2.4.0 release date
+  * Drop Ubuntu hirsute & Impish
+  * Support Reverse proxy with older CherryPy
+  * Add Clickjacking Defense
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Thu, 08 Sep 2022 10:30:00 -0400
+
+rdiffweb (4.2.1-1) unstable; urgency=medium
+
+  * Adjust `librsync` dependencies for release upgrade
+  * Merge branch 'patrik-fix-librsync-upgrade' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 15 Jul 2022 13:04:57 +0000
+
+rdiffweb (4.2.0-1) unstable; urgency=medium
+
+  * Bump rdiffweb to v2.4.0a1
+  * Upgrade rdiffweb version to 2.4.0
+  * Bump rdiffweb to v2.4.0a2
+  * Merge branch 'patrik-upgrade-rdiffweb' into 'master'
+  * Add black and isort
+  * Merge branch 'patrik-black-isort' into 'master'
+  * Bump rdiffweb to 2.4.0a5
+  * Bump rdiffweb to v2.4.0a6
+  * Bump rdiff-backup to 2.4.0a7
+  * Bump rdiffweb to 2.4.0.a8
+  * Merge branch 'patrik-doc-theme' into 'master'
+  * Bump rdiffweb to 2.4.0
+  * Fix to support various version of setuptools-scm
+  * Merge branch 'patrik-bump-rdiffweb' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Thu, 23 Jun 2022 20:21:06 +0000
+
+rdiffweb (2.4.0-1) unstable; urgency=medium
+
+  * Merge branch 'patrik-validate-email-sender' into 'master'
+  * Validate email-sender before sending emails #176
+  * Properly close rdiffweb-restore pipe #174
+  * Drop centos support
+  * Merge branch 'patrik-drop-centos-8' into 'master'
+  * Add rdiff-backup version to Admin Page #152
+  * Merge branch 'patrik-rdiff-backup-version' into 'master'
+  * Merge branch 'patrik-close-pipe' into 'master'
+  * Add RateLimit to login page and API to mitigate robots attacks #167
+  * Merge branch 'patrik-rate-limit' into 'master'
+  * Restrict MarkupSafe to <2.1
+  * Merge branch 'patrik-fix-markupsafe' into 'master'
+  * Fix ratelimit #167
+  * Make ldap module a cherrypy plugin
+  * Move i18n under tools package
+  * Update currentuser implementation
+  * Merge branch 'patrik-ratelimit' into 'master'
+  * Make scheduler a cherrypy plugin
+  * Extract smtp into a cherrypy plugin
+  * Complete changes to remove_older and notification plugins
+  * Improve SMTP plugin to support addresses as tuple
+  * Merge branch 'patrik-reffactoring' into 'master'
+  * Merge branch 'patrik-replace-user-quota-pub-sub' into 'master'
+  * Reffactor quota plugin #183
+  * Upload rdiffweb package for Ubuntu impish #175
+  * Merge branch 'patrik-ubuntu-impish' into 'master'
+  * Merge branch 'patrik-update-ldap-plugins' into 'master'
+  * Upgrade ldap authentication to use ldap3 #186
+  * Merge branch 'patrik-chartkick-jinja3' into 'master'
+  * Add support for Debian Bookworm #180
+  * Add black, isort and upgrade to pyproject.yml #184 #187 #181
+  * Merge branch 'patrik-add-tooling' into 'master'
+  * Minor refactoring to allow extending via plugins
+  * Merge branch 'patrik-update-minarca' into 'master'
+  * Do not bump minarca version from pipeline
+  * Merge branch 'patrik-run-test-debian' into 'master'
+  * Run pytest within Debian build
+  * Refresh repo list when required and allow manual refresh #188 #189
+  * Merge branch 'patrik-refresh-repo' into 'master'
+  * Merge branch 'patrik-fix-status' into 'master'
+  * Fix status page #191
+  * Update smtp plugin
+  * Merge branch 'patrik-update-smtp-plugin' into 'master'
+  * Merge branch 'patrik-rdiff-index' into 'master'
+  * Improve repository browsing speed #192
+  * Merge branch 'patrik-final-fix' into 'master'
+  * Add unittest for out of repo browsing
+  * Merge branch 'patrik-docker-hub' into 'master'
+  * Push docker image to DockerHub #144
+  * Add `cc` to smtp module
+  * Wait for sonar analysis
+  * Add 2.4.0 release notes
+  * Allow sonar analisys failure
+  * Allow browsing empty folder
+  * Support rdiff-backup with use-compatible-timestamps rdiffweb#197
+  * Merge branch 'patrik-browse-empty-folder' into 'master'
+  * Merge branch 'patrik-use-compatible-timestamps' into 'master'
+  * Install new google tag code
+  * Merge branch 'patrik-update-google-tag' into 'master'
+  * Merge branch 'patrik-http-only-cookie' into 'master'
+  * Add HttpOnly flag to Set-Cookie #200
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Thu, 16 Jun 2022 19:22:49 +0000
+
+rdiffweb (4.1.1-1) unstable; urgency=medium
+
+  * Improve creation of apt configuration during installation
+  * Merge branch 'patrik-fix-apt-repo-creation' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Tue, 18 Jan 2022 21:37:43 +0000
+
+rdiffweb (4.1.0-1) unstable; urgency=medium
+
+  * Merge branch 'patrik-sonar' into 'master'
+  * Publish sonar repport #166
+  * Merge branch 'patrik-add-apt-repo' into 'master'
+  * Adding APT Repo when installing deb packages #159
+  * Add [arch=amd64] to apt repo #169
+  * Merge branch 'patrik-add-arch-to-deb-repo' into 'master'
+  * Bump rdiffweb to v2.3.8
+  * Merge branch 'patrik-rdiffweb-238' into 'master'
+  * Fix to support Rdiffweb v2.3.8
+  * Bump rdiffweb to v2.3.9a1
+  * Bump rdiffweb to v2.3.9a2
+  * Bump rdiffweb to v2.3.9rc1
+  * Bump rdiffweb to v2.3.9
+
+ -- IKUS Soft robot <robot@ikus-soft.com>  Wed, 05 Jan 2022 17:16:59 +0000
+
+rdiffweb (2.3.9-1) unstable; urgency=medium
+
+  * Merge branch 'patrik-fix-date-parsing-error' into 'master'
+  * Fix date parsing for backup.log #170
+  * Return 403 error for invalid symlink #168
+  * Merge branch 'patrik-fix-symlink-return-code' into 'master'
+  * Return an error message for duplicate username #169
+  * Handle repo w/o last-backup-date in email #171
+  * Merge branch 'patrik-handle-duplicate-user' into 'master'
+  * Merge branch 'patrik-handle-null-last-backup-date' into 'master'
+  * Replace storage_type by storage_class
+  * Merge branch 'patrik-replace-storage-type' into 'master'
+  * Clear a couple of deprecation warnings
+  * Fix all flake8 issues
+  * Add flake8 to CICD pipeline
+  * Merge branch 'patrik-clear-warnings' into 'master'
+  * Remove End-of-life Ubuntu Groovy
+  * Merge branch 'patrik-ubuntu-end-of-life' into 'master'
+  * Merge branch 'fix_decode' into 'master'
+  * ldap_auth _try_decode was not decodng
+  * Update release note for v2.3.9
+  * Merge branch 'patrik-release-2.3.9' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 05 Jan 2022 16:45:21 +0000
+
+rdiffweb (2.3.8-1) unstable; urgency=medium
+
+  * Publish doc to archive.ikus-soft.com
+  * Fix encoding of LDAP attribute for `ldap-add-user-default-userroot`
+  * Merge branch 'patrik-archive' into 'master'
+  * Use Chart.bundle on Debian #164
+  * Adjust formating of installation steps
+  * Merge branch 'patrik-fix-chartjs' into 'master'
+  * Publish doc to nexus server share#509
+  * Merge branch 'patrik-nexus' into 'master'
+  * Merge branch 'master' into 'master'
+  * Allow for a base DN of the entire directory.
+  * Merge commit '0864c9ea16027da2766d5856a6af04cc411c0641' into fix_default_userroot_for_ad
+  * Merge branch 'patrik-fix-login-tools' into 'master'
+  * Improve authentication mechanics
+  * Merge branch 'patrik-release-note' into 'master'
+  * Update release note v2.3.8
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 01 Dec 2021 15:48:28 +0000
+
+rdiffweb (4.0.6-1) unstable; urgency=medium
+
+  * Make call to minarca-server
+  * Merge branch 'patrick-doc' into 'master'
+  * Bump rdiffweb to v2.3.6
+  * Bump rdiffweb to v2.3.7rc1
+  * Bump rdiffweb to v2.3.7
+
+ -- IKUS Soft robot <robot@ikus-soft.com>  Thu, 21 Oct 2021 17:45:15 +0000
+
+rdiffweb (2.3.7-1) unstable; urgency=medium
+
+  * Use the right version in Debian package creation
+  * Skip SameSite=Lax is cookie is not defined
+  * Merge branch 'patrik-fix-deb-version' into 'master'
+  * Update README with release note for 2.3.7
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Thu, 21 Oct 2021 12:55:28 -0400
+
+rdiffweb (2.3.6-1) unstable; urgency=medium
+
+  * Update nginx configuration
+  * Merge pull request #74 from Fly7113/patch-1
+  * Fix issues with twine installation
+  * Merge branch 'patrik-fix-twine' into 'master'
+  * Add users role documentation #101
+  * Merge branch 'patrik-doc' into 'master'
+  * Minor fixes to dvelopement doc
+  * Improve unit test
+  * Remove obsolete import from i18n
+  * Improve wtforms usage and validation
+  * Add CSRF protection
+  * Merge branch 'patrik-csrf-validate-origin' into 'master'
+  * Build and publish Ubuntu debian packages
+  * Update installation step #162
+  * Merge branch 'patrik-fix-ubuntu-installation' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 20 Oct 2021 23:35:20 +0000
+
+rdiffweb (4.0.0-1) unstable; urgency=medium
+
+  * Bump Rdiffweb to include chartkick
+  * Re-Implement Minarca Client in Python #87
+  * minarca-shell: Create /dev/null in chroot jail
+  * Bump rdiffweb to v2.3.0
+  * Replace `/var/run/minarca` by `/var/lib/minarca` rdiffweb#148
+  * Bump rdiffweb to v2.3.1
+  * Add symlink to rdiff-backup v2.0
+  * Bump rdiffweb to v2.3.2
+  * Disable test in minarca server build
+  * Bump rdiffweb to v2.3.3
+  * Define blue as default theme rdiffweb#158
+  * Remove mockldap from testing #155 #156
+  * Replace nose test by pytest #155
+  * Update minarca-server icon
+  * Properly fallback to default quota #156
+  * Bump rdiffweb to v2.3.4
+  * Merge branch 'patrik-update-minarca-server-icon' into 'master'
+  * Update minarca favicon
+  * Merge branch 'patrik-favicon' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 20 Sep 2021 15:50:36 +0000
+
+rdiffweb (2.3.4-1) unstable; urgency=medium
+
+  * Update Copyright notice
+  * Send email only if email-host is configured #157
+  * Merge branch 'patrik-fix-email-notification' into 'master'
+  * Migrate to pytest and fix mockldap dependencies #155 #160
+  * Define user's email from LDAP mail attr #156
+  * Merge branch 'patrik-pytest' into 'master'
+  * WIP: Print error when entrypoint fail to load
+  * Create SECURITY.md (#73)
+  * Merge branch 'patrik-config-print-error' into 'master'
+  * Avoid sending email when nothing changed #159
+  * Merge branch 'patrik-fix-notification' into 'master'
+  * Update README change log
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Mon, 20 Sep 2021 10:35:04 -0400
+
+rdiffweb (2.3.3-1) unstable; urgency=medium
+
+  * Add blue theme and automate theme validation #158
+  * Merge branch 'patrik-add-theme' into 'master'
+  * Add banner to README file
+  * Merge branch 'patrik-add-banner' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 10 Sep 2021 16:04:02 +0000
+
+rdiffweb (2.3.2-1) unstable; urgency=medium
+
+  * Automatically update users repository on location view
+  * Merge branch 'patrik-update-repos' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Tue, 07 Sep 2021 17:50:28 +0000
+
+rdiffweb (2.3.1-1) unstable; urgency=medium
+
+  * Update documentation for session-dir to avoid `/var/run` #148
+  * Merge branch 'patrik-fix-var-run' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 14 Jul 2021 15:24:14 +0000
+
+rdiffweb (2.3.0-1) unstable; urgency=medium
+
+  * Display date with appropriate user's timezone #143
+  * Merge branch 'patrik-timezone' into 'master'
+  * Implement status view using chartjs #122
+  * Replace d3js by chartkick #122
+  * Merge branch 'patrik-chartjs' into 'master'
+  * Dockerize Rdiffweb #55
+  * Merge branch 'patrik-status' into 'master'
+  * Merge branch 'patrik-docker' into 'master'
+  * Fix file and folder sorting in browser view #143
+  * Merge branch 'patrik-fix-sorting' into 'master'
+  * Merge branch 'patrik-release-note-2.3.0' into 'master'
+  * Add release note v2.3.0
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 07 Jul 2021 00:50:42 +0000
+
+rdiffweb (3.9.0-1) unstable; urgency=medium
+
+  * Upgrade rdiffweb to 2.1.1
+  * Run minarca unit test in virtualenv
+  * Replace call to warn() by warning() to avoid deprecation message
+  * Replace call to assertEquals by assertEqual to avoid deprecation msg
+  * Merge branch 'patrik-bump-rdiffweb' into 'master'
+  * Bump rdiffweb to 2.1.1.dev78+g34f1634 with background job scheduler
+  * Drop Debian stretch support
+  * Merge branch 'patrik-drop-debian-stretch' into 'master'
+  * Add rdiff-backup2 and rdiff-backup1 #134
+  * Merge branch 'patrik-apt-repo' into 'master'
+  * Merge branch 'patrik-rdiff-backup2' into 'master'
+  * Bump rdiffweb to v2.2.0a3
+  * Update authorization_keys files on startup
+  * Merge branch 'patrik-update-authorized-keys-on-startup' into 'master'
+  * Install rdiff-backup 2.0.5 from Debian package
+  * Add support for bullseye
+  * Fix rdiff-backup-delete missing from PATH
+  * Merge branch 'patrik-rdiff-backup-2.0-from-deb' into 'master'
+  * Bump rdiffweb to v2.2.0a4
+  * Create debian pacakge with debhelper-compat (= 11)
+  * Restore debian package systemd
+  * Provide default `session-dir` folder
+  * Merge branch 'patrik-fix-pid-file' into 'master'
+  * Merge branch 'patrik-compat-11' into 'master'
+  * Bump rdiffweb to v2.2.0a5
+  * minarca-shell: add timezone information in chroot jail
+  * Bump rdiffweb to v2.2.0.dev1
+  * Bump rdiffweb to v2.2.1
+
+ -- IKUS Soft robot <robot@ikus-soft.com>  Tue, 11 May 2021 20:32:15 +0000
+
+rdiffweb (2.2.1-1) unstable; urgency=medium
+
+  * Use ConfigArgParse for configuration #114
+  * Updating version number in changelog.
+  * Updating date in changelog.
+  * Running wrap-and-sort over debian directory.
+  * Updating year in copyright file.
+  * Removing trailing slash in debhelper install file.
+  * Adding lintian override for intentionally broken gz file for the test suite.
+  * Updating to standards version 4.5.1.
+  * Dropping venv for now as it seems broken, needs fixing later on.
+  * Merge branch 'daniel.baumann-debian' into 'master'
+  * Generate the man page for debian package #121
+  * Merge branch 'patrik-debian-manpages' into 'master'
+  * Add rdiff-backup as dependencies
+  * Ignore files and rdiffweb.postrm.debhelper
+  * Adding bootstrap vendor source code
+  * Add license header to jquery.sortchildren.js
+  * Add license header to jquery.validate.fr.js
+  * Add license header to jquery.validate.ru.js
+  * Add license header to timsort.js
+  * Add jquery-validation source code
+  * Remove d3js files from debian source package
+  * Allow building packages for bullseye with debhelper-compat (= 12)
+  * Add pipeline to build packages for Debian Buster
+  * Merge branch 'patrik-debian-systemd' into 'master'
+  * Use debhelper-compat (= 13) for buster build
+  * Fix copyright syntax error
+  * Remove rdiff-backup-1.2 and rdiff-backup-2.0 dependencies
+  * Fix nexus push
+  * Merge branch 'patrik-fix-nexus-push' into 'master'
+  * Merge branch 'patrik-config-argparse' into 'master'
+  * Add default role and default userroot for LDAP user creation #125
+  * Complete implementation of configArgParse for localized options
+  * Enhance i18n module to keep track of locales in cache
+  * Merge branch 'patrik-default-role-and-root-directory-ldap' into 'master'
+  * Support PostgreSQL by using Use SQLAlchemy in our persistence layer #126
+  * Updating python debhelper sequence.
+  * Merge branch 'patrik-sqlalchemy' into 'master'
+  * Load more arguments from entry_points
+  * Replace setUpClass and tearDownClass by setup_class, teardown_class
+  * Merge branch 'patrik-add-arguments' into 'master'
+  * Get user quota only for valid user_root #135
+  * Fix to support SQLAlchemy 1.4.0 #136
+  * Run tests in debian packages #137
+  * Merge branch 'patrik-sqlalchemy-1.4.0' into 'master'
+  * Add rdiff-backup to build depends
+  * Merge branch 'patrik-get-disk-quota-for-dir' into 'master'
+  * Allow disabling SSH Key management #127
+  * Fix setuptools_scm dependencies
+  * Fix config file parsing
+  * Merge branch 'patrik-fix-setuptools-scm' into 'master'
+  * Merge branch 'patrik-disable-sshkeys' into 'master'
+  * Schedule job in background using apscheduler #82
+  * Split apache configuration into a separate section
+  * Use cherrypy.url() for url_for() template function
+  * Do not query quota if user_root is empty
+  * Provide version to sonar analysis
+  * Merge branch 'patrik-quota' into 'master'
+  * Ignore test_*.py in sonar analysis
+  * Remove dead code
+  * Merge branch 'patrik-sonar-version' into 'master'
+  * Send email notification in background using apscheduler #47
+  * Run repository deletion in background using apscheduler #48
+  * Upgrade docker image used for sonar
+  * Fix flaky tests with postgresql #139
+  * Merge branch 'patrik-sonar' into 'master'
+  * Use `needs` in gitlab CICD pipeline where applicable
+  * Merge branch 'patrik-fix-test' into 'master'
+  * Merge branch 'patrik-support-absolute-url' into 'master'
+  * Allow deletion of files from history #128
+  * Split browser and history page
+  * Merge branch 'patrik-split-browse-and-history' into 'master'
+  * Drop Debian Stretch support
+  * Merge branch 'patrik-drop-debian-stretch' into 'master'
+  * Fix unit test flakiness with postgresql
+  * Merge branch 'patrik-fix-postgresql-testcases-flakiness' into 'master'
+  * Merge branch 'patrik-debian-run-tests' into 'master'
+  * Merge branch 'patrik-background-job' into 'master'
+  * Initial version of sphinx documentation #142
+  * Define `app.store` before creating plugins
+  * Fix `APT_RELEASE_BUSTER` to publish release
+  * Update configuration file example and fix comments parsing
+  * Create default `/var/run/rdiffweb/sessions` folder on Debian #131
+  * Add test for storage-dir
+  * Fix PostgreSQL test flakiness
+  * Add logging to rdiff-backup-delete job #128
+  * Merge branch 'patrik-session-dir' into 'master'
+  * Allow to reset admin password #130
+  * Merge branch 'patrik-admin-password' into 'master'
+  * Merge branch 'patrik-add-logging-to-rdiff-backup-delete' into 'master'
+  * Improve librdiff implementation
+  * Add logs view #129
+  * Merge branch 'patrik-status' into 'master'
+  * Complete logs view to allow downloading the full logs
+  * Merge branch 'patrik-download-logs' into 'master'
+  * Enforce role of Admin user when setting admin-password #130
+  * Add default limit to graph stats
+  * Completing postinst structure.
+  * Making postinst executable for cosmetical reasons within source tree.
+  * Adding postrm to remove session directory on purge.
+  * Adjust logging in error page
+  * Add google analytics to sphinx documentation
+  * Merge branch 'patrik-sphinx' into 'master'
+  * Merge branch 'debian' into 'master'
+  * Fix missing return value in rdiffweb/core/quota.py
+  * Make a couple of job conditional to make pipeline run outside group
+  * Merge branch 'patrik-job-conditional' into 'master'
+  * Merge branch 'bugfix/get-disk-quota' into 'master'
+  * Update release note
+  * Fix publish:doc pipeline
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Tue, 11 May 2021 16:02:33 -0400
+
+rdiffweb (3.8.0-1) unstable; urgency=medium
+
+  * Bump rdiffweb to v1.5.1b1
+  * Bump rdiffweb to v1.5.1b2
+  * Merge branch 'patrik-reuse-docker-images' into 'master'
+  * Update CICD
+  * Split Makefile into subdirectories
+  * Improve Makefile - `clean` target to delete files owned by root to delete files - run docker with interactive mode to allow interupt - make use of `--no-install-recommends` to reduce compile time
+  * Replace `test-bdist` target by integration-tests using docker-compose
+  * Bump rdiffweb to v1.6.0b1
+  * Drops support for python2.7
+  * Implement minarca-shell in python #118
+  * Merge branch 'patrik-tidy-up' into 'master'
+  * Improve ZFS quota management
+  * Merge branch 'patrik-zfs-project-quota' into 'master'
+  * Bump rdiffweb to v2.0.3a5
+  * Support new location of minarca-shell #127
+  * Bump rdiffweb to 2.0.3a6.dev2+g2431245
+  * Merge branch 'patrik-fix-minarca-shell-migration' into 'master'
+  * Adjust logging format for minarca-shell minarca#124
+  * Bump rdiffweb to 2.0.3a6.dev11+g16addfa
+  * Merge branch 'patrik-fix-log-format' into 'master'
+  * Add minarca-shell and minarca quota logs #126
+  * Bump rdiffweb to v2.0.3a6
+  * Bump rdiffweb to v2.0.3a7
+  * Bump rdiffweb to v2.1.0
+  * Verify if log file as accessible
+  * Implement chroot jail using user namespace #121
+  * Remove obsolete sudoers.d file
+  * Merge branch 'patrik-chroot' into 'master'
+  * Declare $HOME in user namespace Fix #132
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 17 Feb 2021 12:38:55 +0000
+
+rdiffweb (2.1.0-1) unstable; urgency=medium
+
+  * Improve quota management
+  * Replace cherrypy 8 by 9 for debian bullsyeye to mitigate a bug
+  * Allow failure for debian packages
+  * Remove dh-systemd from Debian build dependencies
+  * Combine tox testing and package creation
+  * Merge branch 'patrik-allow-failure-debian-package' into 'master'
+  * Merge branch 'patrik-quota' into 'master'
+  * Print exception in log if service fail to start
+  * Improve logging of quota error
+  * Merge branch 'patrik-improve-startup-error-handling' into 'master'
+  * Change API used for UserQuota
+  * Improve web interface to report user's quota and usage in Admin view
+  * Add userid in Admin view
+  * Improve repo status detection #117
+  * Merge branch 'patrik-fix-status' into 'master'
+  * Allow setting user's quota with human readable value
+  * Adjust the users quota progress bar
+  * Fix access_log username formatting #116
+  * Merge branch 'patrik-quota-human-readable' into 'master'
+  * Merge branch 'patrik-fix-access-log' into 'master'
+  * Adjust rdiffweb log format minarca#124
+  * Fix human size parsing in admin view to be more permissive
+  * Use humanfriendly in templates
+  * Merge branch 'patrik-human-size' into 'master'
+  * Merge branch 'patrik-logging' into 'master'
+  * Simplify the logic to allow monkey patching of the log files list.
+  * Merge branch 'patrik-logfile-view' into 'master'
+  * Fix logic to support absolute path for logfiles
+  * Report disk usage from user's root directory instead of '/' #120
+  * Merge branch 'patrik-fix-disk-usage' into 'master'
+  * Prepare documentation and release note for 2.1.0
+  * Merge branch 'patrik-release' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 15 Jan 2021 13:51:01 +0000
+
+rdiffweb (2.0.2-1) unstable; urgency=medium
+
+  * Try to fix pypi upload
+  * Add `readme_render` to check README.md formatting
+  * Merge branch 'patrik-publish-deb-nexus' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 04 Dec 2020 18:33:47 +0000
+
+rdiffweb (2.0.1-1) unstable; urgency=medium
+
+  * Fix test version
+  * Remove allow failure on centos7-py3
+  * Merge branch 'patrik-publish-deb-nexus' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 04 Dec 2020 15:32:59 +0000
+
+rdiffweb (2.0.0-1) unstable; urgency=medium
+
+  * Handle elapsed time of days in the graph.
+  * Fix Update repos #107
+  * Merge branch 'patrik-fix-update-repos' into 'master'
+  * Replace patrikdufresne.com reference and github references
+  * Merge branch 'Eeems-patch-1' into 'master'
+  * Merge branch 'patrik-replace-git-references' into 'master'
+  * Merge branch 'patrik-docker-images' into 'master'
+  * Reuse ikus060/python docker images
+  * Fix curl command line to follow redirection (-L) #109
+  * Merge branch 'patrik-fix-curl' into 'master'
+  * Update rdiffweb installation doc
+  * Add debian folder #87
+  * Fix rdiffweb get version
+  * Merge branch 'patrik-fix-version' into 'master'
+  * Remove minify dependencies
+  * Remove python shebang
+  * Remove executable bit from files
+  * Provide --help and --version
+  * Drop Support of Python 2
+  * Merge branch 'patrik-tidy-up-code' into 'master'
+  * Improve cherrypy version detection
+  * Merge branch 'patrik-drop-python2' into 'master'
+  * Remove python2 from tox.ini
+  * Do not update *.mo files during build
+  * Provide null translation if the catalogues are not found
+  * Merge branch 'patrik-fix-mo' into 'master'
+  * Build deb packages
+  * Pass a LANG environment variable to rdiff-backup restore process #112
+  * Merge branch 'patrik-fix-centos-encoding' into 'master'
+  * Updating source format to 3.0 (quilt).
+  * Improving changelog message about initial upload.
+  * Updating to debhelper 13.
+  * Using debhelper-compat instead of debian/compat.
+  * Updating to standards-version 4.5.0.
+  * Updating source section to web.
+  * Adding todo file.
+  * Correcting upstream name in copyright file.
+  * Correcting upstream contact in copyright file.
+  * Removing deduplication of license stanzas in copyright file.
+  * Correcting license stanza in copyright file.
+  * Prefixing manpages debhelper file explicitly with package name.
+  * Moving mktemp handling for dh_installman to the top of the rules file.
+  * Extending dh_auto_clean to also remove generated manpages.
+  * Replacing dh_installman override with a execute-before statement.
+  * Including upstream documentation.
+  * Correcting years in copyright file.
+  * Including rdw.conf as example.
+  * Updating copyright file for GPL-3+ to match license terms used for upstream source, rathern than GPL-3 only.
+  * Removing tests from the final package.
+  * Switching package to architecture all.
+  * Removing pre-buster version from python3 depends.
+  * Improving package short description.
+  * Running wrap-and-sort.
+  * Adding r3 field in control.
+  * Use Debian bullseye for debian packages and only build binary package
+  * Import bootstrap.min.js and jquery.min.js independently
+  * Install dependencies using `apt build-dep -y .`
+  * Updating copyright information for Bootstrap .less
+  * Remove .less files from final binary package
+  * Fix CICD artifact location for debian package
+  * Remove deprecated logrotate configuration
+  * Add service unit for rdiffweb
+  * Provide default configuration file /etc/rdiffweb/rdw.conf
+  * Remove TODO related to python-ldap
+  * Add debian package test in CICD pipeline
+  * Remove python3-setuptools from Recommends
+  * Symlink to libjs-bootstrap, libjs-jquery, libjs-d3, libjs-d3-tip
+  * Update copyright info for jquery, bootstrap, d3
+  * Test debian package with debian:buster
+  * Add dependencies on python3-distutils for distutil.spawn
+  * Remove reference to fonts.googleapis.com
+  * Merge branch 'patrik-debian' into 'master'
+  * Push deb to nexus server
+  * Update Documentation to install using APT for bullseye
+  * Fix WTForms dependency version <3.0.0
+  * Merge branch 'patrik-publish-deb-nexus' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 04 Dec 2020 14:27:41 +0000
+
+rdiffweb (3.7.0-1) unstable; urgency=medium
+
+  * Remove "+stretch" from the debian version
+  * Merge branch 'patrik-get-minarca-script' into 'master'
+  * Replace PDSL inc reference by IKUS Software inc.
+  * Bump rdiffweb to v1.4.1b2
+  * Bump rdiffweb to v1.4.1b3
+  * Bump rdiffweb to v1.5.0
+
+ -- IKUS Soft robot <robot@ikus-soft.com>  Wed, 01 Jul 2020 13:18:19 +0000
+
+rdiffweb (1.5.0-1) unstable; urgency=medium
+
+  * Validate DefaultTheme value. Fix #90
+  * Release note v1.4.0
+  * Merge branch 'patrik-release-note-1.4.0' into 'master'
+  * Upgrade downstream version #102
+  * Merge branch 'patrik-automate-minarca-bump' into 'master'
+  * Replace demo url by https://rdiffweb-demo.ikus-soft.com/ share#160
+  * Merge branch 'patrik-replace-demo-url' into 'master'
+  * Reformat date to be displayed as "Updated ... ago" #83
+  * Merge branch 'patrik-date-last-updated' into 'master'
+  * Add build test for Debian Bullseye and python3.8 #104
+  * Replace platform.dist() by distro package #104
+  * Merge branch 'patrik-add-debian-bullseye' into 'master'
+  * Add option to control spider depthness #1
+  * Fix Last Update format for minutes and adding unit test #83
+  * Add warning is user's root directory is not valid #30
+  * Merge branch 'patrik-display-warning' into 'master'
+  * Merge branch 'patrik-max-depth-option' into 'master'
+  * Merge branch 'patrik-validate-default-theme' into 'master'
+  * Add release note v1.5.0
+  * Merge branch 'patrik-release' into 'master'
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 01 Jul 2020 12:37:34 +0000
+
+rdiffweb (3.6.0-1) unstable; urgency=medium
+
+  * Fix recursiveness during installation
+  * Bump to v1.3.2
+  * Merge branch 'patrik-publish-to-apt' into 'master'
+  * Change the help URL to allow redirection #105
+  * Bump rdiffweb to 1.4.0b3
+  * Powered by Minarca footer #99
+  * Merge branch 'patrik-bump-release' into 'master'
+  * Bump to 1.4.0b4
+  * Bump to 1.4.0b5
+  * Bump to v1.4.0
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 20 May 2020 13:52:05 +0000
+
+rdiffweb (1.4.0-1) unstable; urgency=medium
+
+  * Update change log with v1.3.2
+  * Merge branch 'patrik-release-notes' into 'master'
+  * Fix single repo discovery
+  * Merge branch 'patrik-fix-single-repo' into 'master'
+  * [SPONSORED] Add new user roles to fine tune permissions #104
+  * Merge branch 'patrik-user-roles' into 'master'
+  * Add "Powered by" footer #91
+  * Merge branch 'patrik-footer' into 'master'
+  * Fix users roles #94
+  * Properly handle deletion of admin user #93
+  * Merge branch 'patrik-delete-admin' into 'master'
+  * Add wtforms and flash for admin/users #96 #97
+  * Fix pipeline for gitlab.com
+  * Call trigger to deploy rdiffweb
+  * Merge branch 'patrik-fix-pipeline' into 'master'
+  * Merge branch 'patrik-wtforms-flash' into 'master'
+  * Block "Users" from deleting SSH Keys. #100
+  * Merge branch 'patrik-users-ssh-keys' into 'master'
+  * Update french translation
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 20 May 2020 11:45:27 +0000
+
+rdiffweb (1.3.2-1) unstable; urgency=medium
+
+  * Update Changelog for v1.3.0 and v1.3.1
+  * Lookup executable in virtualenv #92
+  * Merge branch 'patrik-fix-virtualenv' into 'master'
+  * Fix repo tree when path are conflicting
+  * Handle special case when the repo doesn't has rdiff-backup-data
+  * Decode stderr from rdiffweb-restore subprocess
+  * Merge branch 'patrik-fix-repo-tree' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Thu, 23 Apr 2020 14:07:46 +0000
+
+rdiffweb (3.5.2-1) unstable; urgency=medium
+
+  * Bump to rdiffweb 1.3.1
+  * Merge branch 'develop/patrik/release' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Sun, 12 Apr 2020 01:41:13 +0000
+
+rdiffweb (1.3.1-1) unstable; urgency=medium
+
+  * Add change log entries for release v1.3.0
+  * Merge branch 'develop/patrik/prepare-release' into 'master'
+  * Enforce password encryption by using SSHA scheme #88
+  * Merge branch 'patrik-ssha-password' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Fri, 10 Apr 2020 16:20:32 +0000
+
+rdiffweb (3.5.0-1) unstable; urgency=medium
+
+  * Test deb pacakge on buster
+  * Create a Makefile for test & build
+  * Merge branch 'develop/patrik/deb-build' into 'master'
+  * Add #DEBHELPER# to postinitscript
+  * Change permissions recursively
+  * Merge branch 'develop/patrik/makefile' into 'master'
+  * Bump rdiffweb to v1.3.0
+  * Merge branch 'develop/patrik/release' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Wed, 08 Apr 2020 13:00:19 +0000
+
+rdiffweb (1.3.0-1) unstable; urgency=medium
+
+  * Restore files and folder using a subprocess #72 #39
+  * Merge branch 'develop/patrik/restore-stream' into 'master'
+  * Remove obsolete dependencies to pysqlite2
+  * Pre-build docker images for each target
+  * Merge branch 'develop/patrik/cicd' into 'master'
+  * Fix to prevent duplicate repository in database #85
+  * Merge branch 'develop/patrik/fix-duplicate-repos' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Fri, 27 Mar 2020 17:11:42 +0000
+
+rdiffweb (3.4.3-1) unstable; urgency=medium
+
+  * Bump rdiffweb to v1.2.2
+  * Merge branch 'develop/patrik/release-3.4.3' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Sun, 08 Mar 2020 15:55:09 +0000
+
+rdiffweb (1.2.2-1) unstable; urgency=medium
+
+  * Add rdiff-backup2 from pypi
+  * Reduce the number of build
+  * Use full path to call rdiff-backup executable #68
+  * Add reference to refresh when repo view is empty rdiffweb/#77
+  * Merge branch 'develop/patrik/improve-ui-refresh' into 'master'
+  * Merge branch 'develop/patrik/fix-path' into 'master'
+  * Merge branch 'develop/patrik/reduce-build' into 'master'
+  * Cache the repository status
+  * Cache entries
+  * Merge branch 'develop/patrik/cache-repo-status' into 'master'
+  * Merge branch 'develop/patrik/add-rdiff-backup2' into 'master'
+  * Release v1.2.2
+  * Add installation step for CentOS and RedHat
+  * Remove use of LIMIT to stay compatible with CentOS7
+  * Use tar to extract archive (to avoid encoding issue)
+  * Merge branch 'develop/patrik/centos7' into 'master'
+  * Remove some target from gitlab pipeline.
+  * Test with rdiff-backup pre-release
+  * Add CentOS 7 & 8 target
+  * Merge branch 'develop/patrik/release-1.2.2' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Thu, 05 Mar 2020 16:38:15 +0000
+
+rdiffweb (3.4.2-1) unstable; urgency=medium
+
+  * Fix default permissions on folders #51
+  * Merge branch 'develop/patrik/fix-permissions' into 'master'
+  * Prepare release v3.4.1
+  * Merge branch 'develop/patrik/release-3.4.1' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Sun, 09 Feb 2020 17:39:11 +0000
+
+rdiffweb (1.2.1-1) unstable; urgency=medium
+
+  * Fix minarca plugins exception when creating admin user minarca/#47
+  * Fix access to other user repo #76
+  * Add file rotation #75
+  * Merge branch 'develop/patrik/fix-repo-access-for-admin' into 'master'
+  * Merge branch 'develop/patrik/fix-admin-user-creation' into 'master'
+  * Add cache for apt, pip and tox
+  * Merge branch 'develop/patrik/cicd-cache' into 'master'
+  * Merge branch 'develop/patrik/log-rotating' into 'master'
+  * Update README for v1.2.1
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Sat, 08 Feb 2020 16:53:16 +0000
+
+rdiffweb (3.4.0-1) unstable; urgency=medium
+
+  * Add port to EmailHost
+  * Merge branch 'develop/patrik/fix-EmailHost' into 'master'
+  * Bump rdiffweb to 1.2.0
+  * Move all test script to /tests and add scripts to test Windows
+  * Merge branch 'develop/patrik/fix-cicd-wine' into 'master'
+  * Merge branch 'develop/patrik/bump-rdiffweb' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Thu, 30 Jan 2020 19:32:08 +0000
+
+rdiffweb (1.2.0-1) unstable; urgency=medium
+
+  * Define alternative pip index url to reduce network issues
+  * Update Documentation
+  * Merge branch 'develop/patrik/update-doc' into 'master'
+  * Merge branch 'develop/patrik/pypi-proxy' into 'master'
+  * Huge modification to the persistence layer pdsl/rdiffweb#70
+  * Move `set_password` into UserObject pdsl/rdiffweb#70
+  * Mose delete_user() into UserObject pdsl/rdiffweb#70
+  * Reduce duplicate code in sqlite backend
+  * Fix persistence for SQLite 3.16
+  * Add explicit pipeline for buster and stretch
+  * Merge branch 'develop/patrik/add-pipeline-buster' into 'master'
+  * Merge branch 'develop/patrik/reffactor-db' into 'master'
+  * Update README for release 1.2.0
+  * Merge branch 'develop/patrik/release-1.2.0' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Thu, 30 Jan 2020 18:23:26 +0000
+
+rdiffweb (3.3.0-1) unstable; urgency=medium
+
+  * Download only if file doesn't exists
+  * Provide default minarca headline pdsl/share#25
+  * Merge branch 'develo/patrik/headline' into 'master'
+  * Add dependencies for `tail` command line pdsl/rdiffweb#5
+  * Bump to 1.0.4.dev45+ga56c816
+  * Merge branch 'develop/patrik/bump-rdiffweb-version' into 'master'
+  * Update setup.py 1.0.4.dev47+g0770b7f
+  * Bump to 1.0.4.dev48+g774d120
+  * Merge branch 'develop/patrik/tes' into 'master'
+  * Bump to 1.0.4.dev50+g162651f
+  * Bump to rdiffweb to 1.0.4.dev50+gd85dd88
+  * Support backup over non default SSH port
+  * Merge branch 'develop/patrik/bump' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Wed, 06 Nov 2019 21:22:35 +0000
+
+rdiffweb (1.1.0-1) unstable; urgency=medium
+
+  * Update doc from pdsl website
+  * Update change log with release date
+  * Merge branch 'develop/patrik/update-doc' into 'master'
+  * Improve menu structure pdsl/rdiffweb#52
+  * Improve the login page headline pdsl/share#25
+  * Merge branch 'develop/patrik/improve-admin-tool' into 'master'
+  * Bump jinja2 version pdsl/rdiffweb#61
+  * Define pip cache
+  * Merge branch 'develop/patrik/cache' into 'master'
+  * Merge branch 'develop/patrik/upgrade-jinja2' into 'master'
+  * Show logs in Admin View pdsl/rdiffweb#5
+  * Merge branch 'develop/patrik/show-logs' into 'master'
+  * Fix code smells
+  * Merge branch 'develop/patrik/reffactoring' into 'master'
+  * Add System Info view in Admin Area pdsl/rdiffweb#6 pdsl/rdiffweb#59
+  * Fix for admin logs
+  * Reorganising macros
+  * Reorganize the confirm modals
+  * Check local database login before LDAP
+  * Merge branch 'develop/patrik/admin-sysinfo' into 'master'
+  * Merge branch 'develop/patrik/confirm' into 'master'
+  * Add jinja2 version into tox matrix
+  * Enhance admin user view search bar
+  * Merge branch 'develop/patrik/admin-users' into 'master'
+  * Use cherrypy tools to check permissions
+  * Define repository URL as <username>/repopath
+  * Merge branch 'develop/patrik/repo-url' into 'master'
+  * Add repository view in Admin Area pdsl/rdiffweb#40
+  * Add rdiffweb & plugins version to sysinfo pdsl/rdiffweb#51
+  * Merge branch 'develop/patrik/more-sysinfo' into 'master'
+  * Merge branch 'develop/patrik/admin-repos' into 'master'
+  * Check access to invalid log file
+  * Remove obsolete `admin_repo_edit` entry point
+  * Remove useless condition from `split_path`
+  * Add more test to validate access to invalid repository
+  * Rename some test modules
+  * Remove unused RepoObject.__repr__() function
+  * Add test to set repository max age
+  * Remove obsolete try catch from page_settings._remove_older()
+  * Add test to query users with invalid criteria
+  * Remove unused rdw_templating.add_templatesdir & get_template functions
+  * Check if /admin/ is redirect to login page
+  * Add test to update notifications
+  * Fix compilation of .less files
+  * Fix issue with capital case encoding name
+  * Merge branch 'develop/patrik/improve-coverage' into 'master'
+  * Fix database persistence with repository name starting with a /
+  * Fix google font import css
+  * Fix issue with status page errors
+  * Merge branch 'develop/patrik/bug-fixes' into 'master'
+  * Fix deletion of repo when repo_path starts with "/" pdsl/rdiffweb#66
+  * Update changelog
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Thu, 31 Oct 2019 15:01:27 +0000
+
+rdiffweb (3.0.1-1) unstable; urgency=medium
+
+  * Bump rdiffweb version to v1.0.2
+  * Fix repository validation
+  * Add integration test to link client to server
+  * Update the authorized_keys when user's home directory get updated
+  * Change user's home permissions
+  * Fix user exists verification for sudo
+  * Merge branch 'develop/patrik/extra-fix' into 'master'
+  * Fix minarca-shell to support quota management
+  * Merge branch 'develop/patrik/fix-quota-management' into 'master'
+  * Bump rdiffweb to v1.0.3
+  * Merge branch 'develop/patrik/bump-version' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Fri, 04 Oct 2019 15:22:55 +0000
+
+rdiffweb (1.0.3-1) unstable; urgency=medium
+
+  * Removing the auto update repos
+  * Merge branch 'develop/patrik/remove-auto-update' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Fri, 04 Oct 2019 11:39:56 +0000
+
+rdiffweb (1.0.2-1) unstable; urgency=medium
+
+  * Update README
+  * Create admin user if missing
+  * Update translation documentation
+  * Update french translation
+  * Update change logs
+  * Merge branch 'develop/patrik/fix-admin-user-creation' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Tue, 01 Oct 2019 15:50:52 +0000
+
+rdiffweb (1.0.1-1) unstable; urgency=medium
+
+  * Update README link to canonical link
+  * Add python-dev and build-essential to installation step
+  * Keep only installation step from pypi
+  * Fix removal of SSH Key pdsl/rdiffweb#58
+  * Fix ssh duplicate key pdsl/rdiffweb#57
+  * Merge branch 'develop/patrik/fix-ssh-key' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Sun, 22 Sep 2019 14:53:38 +0000
+
+rdiffweb (3.0.0-1) unstable; urgency=medium
+
+  * TASK-1079 Create deb packages
+  * Manage SSH keys
+  * Provide minarca-shell script
+  * Bump rdiffweb version
+  * Enforce restart after upgrade
+  * Add /api/minarca to return remotehost & identity
+  * Update minarca icon
+  * Allow minarca-shell to be configured
+  * Bump rdiffweb to 1.0.0a5.dev8+gdd5ed94
+  * Fix user creation - bump to 1.0.0a5.dev10+gf359d1b
+  * Add AGPL license
+  * Rename webserver.log to server.log
+  * Bump to 1.0.0a5.dev14+g1903616
+  * Update disk usage testcases
+  * Support bytes or unicode for mail attributes pdsl/minarca-server#11
+  * Improve error handling when adding a new user
+  * Support reverse proxy pdsl/minarca-server#12
+  * Remove user's ssh key when user get deleted pdsl/minarca-server#13
+  * Add log when updating the authorized_keys file
+  * Fix quota api bytes vs str
+  * Move default storages to /backups/
+  * Fix Typo in minarca-shell
+  * Add sudo rules for minarca-shell
+  * Move all files under /data
+  * Add notice about SUDO_OWNERSHIP
+  * Merge branch 'develop/patrik/fix-sudo' into 'master'
+  * Add support for backupninja
+  * Merge branch 'develop/patrik/fix-backupninja' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Sat, 14 Sep 2019 14:46:13 +0000
+
+rdiffweb (1.0.0-1) unstable; urgency=medium
+
+  * Remove set_encoding plugin
+  * Remove remove_older plugin
+  * Remove update_repos plugin
+  * Remove delete_repo plugins
+  * Remove graphs plugins
+  * Remove db_sqlite
+  * Remove ldap_auth plugin
+  * Remove remaining plugins
+  * Reorganize the packages
+  * Rename Component to Controller
+  * Move validation to controller module
+  * Move validate_user_path() to Controller class
+  * Fix warning for MANIFEST.in
+  * Replace PageMain by Controller class
+  * Create Controller for LoginPage
+  * Reffactor config
+  * Add wsgi entry point
+  * Drop support of cherrypy v3.2.2 add support of cherrypy v18
+  * Remove obsolete plugins code
+  * Simplify get_version method
+  * Remove reference to `extra_head_templates`
+  * Remove reference to `rssLink`
+  * Fix notification plugin
+  * Migrate minarca disk usage to rdiffweb core
+  * Add sonar runner
+  * Fixes around user & ldap auth
+  * Remove profiling
+  * Rename variable to follow Python convention in user_sqlite
+  * Add test for set_password() with empty value
+  * user_sqlite: Make use of boolean mapping
+  * Replace `validate_user_path()` by UserObject.get_repo_path()
+  * Add support for custom theme
+  * Upload wheel package for py2 & py3
+  * Add missing "python-ldap" dependencies
+  * Update config file to remove plugins related options
+  * Fix handling of serverhost option encoding
+  * Register Notification as a deamon
+  * Merge remote-tracking branch 'origin/master' into develop/patrik/remove-plugins
+  * Fix IUserQuota execution
+  * Migrate ssh key management to UserObj
+  * Add branche name for sonar analysis
+  * Try to use Nexus proxy
+  * Fix bug introduce by upgrade to Jinja2 + python3
+  * Fix HTTP 401 vs 403
+  * Fix build dependencies for py27
+  * Add new api to return list of repos.
+  * Improve performance of librdiff
+  * Move the documentation back to here
+  * Fix a performance issue with huge repositories
+  * Add Build status badges
+  * Merge branch 'develop/patrik/fix-performance-issue' into 'master'
+  * Change SSH Keys persistence and uniqueness
+  * Update default css
+  * Update README
+  * Fix pipeline publish step
+  * Remove prod deployment from pipeline
+  * Merge branch 'develop/patrik/remove-plugins'
+  * Replace CHANGES by README
+  * Fix publish & package pipeline
+  * Add test for default theme
+  * Add error handler on repository delete
+  * Automate deployment to demo server
+  * Reorganize the documentation
+  * Fix page status
+  * Add mailing list to README
+  * Allow users creation without email, password and user_home
+  * Call user_attr_changed with userobj
+  * Pick only the first entry point for IUserQuota
+  * Do not send mail to user without email address rdiffweb/#53
+  * Handle exception when plugins fail to load
+  * Replace InvalidUserError by assertion
+  * Enable tools.proxy at application level pdsl/minarca-server#12
+  * Merge branch 'develop/patrik/remove-plugins' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Wed, 11 Sep 2019 18:41:18 +0000
+
+rdiffweb (0.10.9-1) unstable; urgency=medium
+
+  * Change log level around authentication
+  * Remove travis-ci / Replace by gitlab CICD
+  * CICD prebuild image
+  * Merge branch 'develop/patrik/cicd-docker-image' into 'master'
+  * CICD rdiffweb deployment
+  * Change config loading
+  * Merge branch 'develop/patrik/change-log-level' into 'master'
+  * Improve error handling around error.log
+  * Merge branch 'develop/patrik/fix-error-log' into 'master'
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Wed, 22 May 2019 15:48:09 +0000
+
+rdiffweb (0.10.8-1) unstable; urgency=medium
+
+  * Only push branches to github
+  * Fix background thread execution. TASK-1001
+  * TASK-1027 Fix bug in deamon plugin scheduler
+  * Add support for cherrypy 16
+  * Remove pages and coverage step from CICD
+  * Merge branch 'develop/demon-task-1027' into 'master'
+  * Merge branch 'develop/cherrypy16' into 'master'
+
+ -- Patrik Dufresne <patrik@patrikdufresne.com>  Sat, 14 Jul 2018 15:38:47 +0000
+
+rdiffweb (0.10.7-1) unstable; urgency=medium
+
+  * Adjust logging level in filter_authentication.
+  * Update copyright year to 2018
+  * Compile each tox environment in parallel.
+  * Make the DeamonPlugin more robust
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Thu, 12 Apr 2018 14:43:13 -0400
+
+rdiffweb (0.10.6-1) unstable; urgency=medium
+
+  * Prepare next development version
+  * Create a Jenkinsfile
+  * Define the tar.gz encoding.
+  * Fix related to missing _read_gzip_header in python 3.5.
+  * Remove `filltmpl` from setup.py
+  * Remove tox command line from setup.py
+  * Remove CHANGELOG. Was never maintained
+  * Change translation layer
+  * Constraint Jinja2 version to avoid a bug
+  * Remove .pydevproject from git
+  * Migrate rdwTime to librdiff.RdiffTime.
+  * Fix timezone issue.
+  * Add gitlab-ci.yml config
+  * Fix the Content-Type when restoring file. TASK-972
+  * Add .mo file to git.
+  * Publish to pypi only for tags
+
+ -- Patrik Dufresne <info@patrikdufresne.com>  Wed, 04 Apr 2018 13:34:00 -0400
+
+rdiffweb (0.10.5-1) unstable; urgency=medium
+
+  * Start implementation of a RESTful API for Rdiffweb.
+  * Provide travis config file
+  * Add travis badge to README.md file
+  * Install python-pysqlite2 and rdiff-backup in Travis
+  * Prepare next development version
+  * Declare TMPDIR as /var/tmp.
+  * Change assertTrue(isinstance()) into assertIsInstance()
+  * Force timezone in travis.
+  * Make sure to compile the catalogs before running the test.
+  * Reconfigure travis matrix to use tox. Add cherrypy 11. TASK-902
+  * Rework basic and form authentication to collaborate.
+  * Do not disable file restore when status is not ok.
+  * Update french translation.
+  * Add Catalan and spanish translation.
+  * Release 0.10.5
+
+ -- Jenkins <jenkins@icefyre>  Wed, 31 Jan 2018 08:56:03 -0500
+
+rdiffweb (0.10.4-1) unstable; urgency=medium
+
+  * Prepare next development version
+  * Add a new function to limit the login based on ldap group.
+  * Move away documentation to www.patrikdufresne.com
+  * Convert keepdays into int() in _remove_older plugins.
+  * Release 0.10.4
+
+ -- Jenkins <jenkins@icefyre>  Mon, 16 Oct 2017 15:20:34 -0400
+
+rdiffweb (0.10.2-1) unstable; urgency=medium
+
+  * Prepare next development version
+  * Fix imports _
+  * Change config to generate multiple junit report file.
+  * Add sub_filter rule to nginx config to support d3js graphs.
+  * Add pytest as dependencies for cherrypy10
+  * Fix to properly support cherrypy>=10
+  * Fix locations to properly display a single repository.
+  * Release 0.10.2
+
+ -- Jenkins <jenkins@icefyre>  Thu, 25 May 2017 18:11:07 -0400
+
+rdiffweb (0.10.0-1) unstable; urgency=medium
+
+  * Prepare next development version
+  * Change the logging level in filter_authentication
+  * Reorganize static file. pdsl/rdiffweb#31
+  * Fix HistoryEntry#errors to return something.
+  * Relayout the browser and restore GUI. pdsl/minarca#125
+  * Update install/config doc
+  * Update nginx config
+  * Use change_dates instead of restore_dates.
+  * Fix logging in filter_authentication
+  * Fix ajax path in set_encoding plugin.
+  * Remove obsolete import from page_settings
+  * Merge RdiffPath and DirEntry.
+  * Fix validation for simlink. pdsl/minarca#190
+  * Fix problem with unprintable FileError exception.
+  * Replace usage of logging by logger.
+  * Fix validation of RdiffRepo. Fix pdsl/minarca#191
+  * Fix bug for py3.
+  * Allow restore() with DirEntry.
+  * Review usage of repo_name vs repo_path.
+  * Make the repo_name bold. See pdsl/minarca#199
+  * Fix the layout to properly display on smaller screen. pdsl/minarca#197
+  * Avoid updating email fields if it didn't changed. pdsl/minarca#187
+  * Notify user by mail when password changes. pdsl/minarca#151
+  * Add FAQ page
+  * Add systemd configuration file
+  * Fix date parsing with quoted chars. #36
+  * Fix display when repo is interrupt during progress. #34
+  * Export TMPDIR environment variable when executing rdiff-backup.
+  * Rdiffweb should not be index by robot.
+  * Remove babel from installation requirements
+  * Touch implementation of find_repos
+  * Change repositories layout for multi-disk windows server #33
+  * Add more cherrypy version to tox config file
+  * Update french translation pdsl/minarca#222 pdsl/minarca#223
+  * Register a default error handler to convert exception into HTTP error
+  * Check if process is running using psutil
+  * Change title of history page. pdsl/minarca#224
+  * Fix creation of email template to support non ascii. pdsl/minarca#225
+  * Remove old and obsolete email_notification file.
+  * Add a robots.txt #37
+  * Change status validation to detect previous backup failure.
+  * Include the full path in browse and history view.
+  * Release 0.10.0
+
+ -- Jenkins <jenkins@icefyre>  Wed, 17 May 2017 21:24:24 -0400
+
+rdiffweb (0.9.5-1) unstable; urgency=medium
+
+  * Prepare next development version
+  * Include d3.js as static ressources
+  * Release 0.9.5
+
+ -- Jenkins <jenkins@icefyre>  Tue, 11 Oct 2016 09:15:15 -0400
+
+rdiffweb (0.9.3-1) unstable; urgency=medium
+
+  * Prepare next development version
+  * Release 0.9.3
+
+ -- Jenkins <jenkins@icefyre>  Sat, 08 Oct 2016 09:12:39 -0400
+
+rdiffweb (0.9.2-1) unstable; urgency=medium
+
+  * Prepare next development version
+  * Swallow exception in status page.
+  * Remove filltmpl from default build.
+  * Don't include *.plugin in source package.
+  * Add missing 'rdw.conf' and 'babel.cfg' to source package.
+  * Fix loading of jquery validation locales.
+  * Fix source package to include extras folder.
+  * Downgrade Babel requirement for 0.9.6.
+  * Update installation steps.
+  * Release 0.9.2
+
+ -- Jenkins <jenkins@icefyre>  Fri, 07 Oct 2016 18:46:51 -0400
+
+rdiffweb (0.9.1-1) unstable; urgency=medium
+
+  * Review some loglevel.
+  * Update french translation
+  * Update russian translation.
+  * Prepare next development version
+  * Enhance repository header.
+  * Start fixing spider repo auto refresh
+  * Convert update repos into core plugin.
+  * Refactor plugin ILocationsPagePlugin into ITemplateFilterPlugin.
+  * First step to support py3
+  * Add new command filltmpl for sonar properties.
+  * Second step to support py3
+  * Fix setup.py
+  * Fix setup.py to make it work using native string.
+  * Third step to support python3.
+  * Complete review or str() and bytes()
+  * Add integration test and make it work in py2 and py3
+  * Remove any encode_s and decode_s.
+  * Add tox configuration file to automate test running on py2 and py3
+  * workaround babel requirement (for Tox)
+  * Remove tox.ini since it doesn't work with Jenkins.
+  * Add log to page_admin (for debugging)
+  * Review all logger modulo (%) formatting. See #9
+  * IN PROGRESS - add {% attrib %}
+  * Add new {% attrib %} See pdsl/rdiffweb#12
+  * Exclude "static" folder from sonar analysis.
+  * Add file recursively to tar.gz.
+  * Update testcases.tar.gz to include a sub directory with encoding.
+  * Fix attrib testcases (for py3)
+  * Ignore encoding problem in spider repos
+  * Add directory in Zip archive.
+  * Add logging to know how long it take to restore a file.
+  * Fix notify logging
+  * Repalce deprecated warn() by warning()
+  * Remove obsolete line from MANIFEST to avoid warning when installing.
+  * Always show templates in locations
+  * Search plugin recursively.
+  * Increase log level for "active/deactive" plugin.
+  * Add profiling option `--profile`
+  * Re-organize i18n
+  * Fix str vs bytes for spider repo.
+  * Fix regression - support single repository browsing
+  * Convert Yapsy plugin into entry_point plugins.
+  * Reorganize jinja2 template to use extends
+  * Disable test_gc (because it randomly fail).
+  * Fix FavIcon and HeaderLogo support.
+  * Add debug signal to dump thread.
+  * Pipe archive creation. see #8
+  * Fix archiver to support python < 2.7.3
+  * Recover plugin description. Lost when migrating plugin.
+  * Fix plugin filter
+  * Fix Admin plugin title
+  * Quick implementation of UserObject.
+  * Improve rdwTime()
+  * Set useful thread name for deamon thread
+  * Fix small encoding issue with authform redirection.
+  * Reorganize import in filter_authentication
+  * Fix content-disposition for file and archive. See pdsl/minarca#120
+  * Continue to enhance content-disposition. see pdsl/minarca#120
+  * Fix archive encoding. See pdsl/minarca#121
+  * Support repo without backup date.
+  * Replace non-breaking space (\xC2\xA0) by space.
+  * Use UserObject as current user. Add RepoObject.
+  * Fix attrib to support True
+  * Add mail notification. see #3
+  * Add mock as requirements.
+  * Remove debug flag when restoring files.
+  * Add .pydevproject to gitignore
+  * Enhance the logging configuration. see #24
+  * Replace default error page by a nice one. see #17
+  * Alway show header name in title
+  * Replace any call to _compile_error_template by an HTTPError
+  * Continue updating error handling to avoid using ValueError.
+  * Change error handling in locations page. see #17
+  * Add test coverage for settings page.
+  * Add Test coverage for page_prefs.
+  * Add test coverage to page_restore.
+  * Remove obsolete `from builtins import object` from rdw_app
+  * Make sure to log the exception shown using default error page.
+  * Update layouts to support configurable nav bar.
+  * Add some icon to fontello
+  * Improve librdiff file statistics
+  * Add Graphs plugin. See #11
+  * Remove obsolete import from librdiff.
+  * Compute next execution time once notifications are sent. see #3
+  * Create a markdown file to hold all documentation. See pdsl-www/#63
+  * Minor modification to doc.md
+  * Fix pages title in layout_repo.html
+  * Enable Graphs plugin by default.
+  * Replace _cp_dispatch by class decorators.
+  * Move delete repo into a plugins.
+  * Replace configuration by decorator for login page.
+  * Serve favicon.ico using a page handler.
+  * Remove testcases from test_page_setings.
+  * Replace static by page handler.
+  * Force content-type for static file.
+  * Replace header_logo by a static page handler.
+  * Replace Grunt by lessc. Relocated main.css.
+  * Fix poppath to read args using unquote.
+  * Fix Graphs plugin to receive poppath are bytes.
+  * Upgrade to basic Bootstrap 3.3.6 (default theme).
+  * Add text to static() assertion.
+  * Remove useless border-bottom-right-* from login widget.
+  * Add id attrib to container.
+  * Minor cosmetic changes.
+  * Relayout the download button in restore folder page.
+  * Add documentation about authentication.
+  * Fix typo in default configuration comments.
+  * Fix graphs browsing to `data` for python 3.
+  * Include all static files.
+  * Return false if resource_filename doesn't exists.
+  * Make 'build_less' optional.
+  * Use navbar-inverse instead of default.
+  * Update templates to set the right activate page.
+  * Refactor user library again to remove get_* and set_*.
+  * Fix locations templates to show all `templates_before_content`
+  * Add `attention` icons to fontello.less
+  * Add `set_attr` and `get_attr` for repos.
+  * Change location of javascripts. Add ajax form submit.
+  * Make sure to add all `templates_content` to settings page.
+  * Add RemoveOlder plugin.
+  * Fix admin page testcases.
+  * Add `ok` icon to fontello.
+  * Add icons & colors to ajax form submit.
+  * Change style of remove_older template.
+  * Create a new JobPlugin to centralize code for fixed time execution.
+  * Reverse ordering of activate and add templates.
+  * Change location of execute() function to RdiffRepo.
+  * Add nginx config file to extras
+  * Raise Exception is execute() fail.
+  * Add subtract to rdwTime.
+  * Support remove_older by executing rdiff-backup command line.
+  * Add right margin to d3js layout. Fix #26
+  * Replace repo_dict by get_repo().
+  * Fix remove_older execution to avoid concat bytes for py3.
+  * Refactor delete_repo to be more accurate.
+  * Fix notifications plugins to set max age. Fix #28
+  * Use get_repo() instead of repo_list in notifications testcases.
+  * Enhance user testcases to make use of get_repo() function.
+  * Sort attribute generated by attrib().
+  * Make alerts messages dismissible.
+  * Fix repo.get_attr() default value.
+  * Make a plugin from encoding settings.
+  * Move jquery form submit under /ajax/ path.
+  * Add error handling to Ajax form submit
+  * Change a bit the restore url to allow multiple kind
+  * Convert some assert statement into function call.
+  * Allow plugin to add extra head.
+  * Replace login/logout page with a cherrypy tool.
+  * Enable profiling when any --profile-* arguments is used.
+  * Remove trailing slash (/) from restore URLs
+  * Update docs with nginx config.
+  * Fix package name python2 > python
+  * Upgrade cherrypy version to 3.5.0 to run around a bug.
+  * Add path to librdiff exception.
+  * Fix bug github/#65 in status.xml reported by bahamut45.
+  * Change requirement to babel >= 1.3
+  * Provide a tox configuration.
+  * Force URL encoding ISO-8859-1 in py3 and cherrypy >= 5.5.0
+  * Change nosetests verbosity
+  * Remove funcsigs from dependencies
+  * Implement notification for user attribute change.
+  * Add email notification when mail is changed. pdsl/minarca#98
+  * Add a limit parameter to history. #7
+  * Add CHANGE log file.
+  * Add show more button to restore page. See #7
+  * Rename the "Download ZIP" button to "Download". See pdsl/minarca#134
+  * Use minify to compile all javascript files.
+  * Fix english wording and update French translation.
+  * Remove JobPlugin from SetEncoding plugin
+  * Skip loading of JobPLugin.
+  * Refactor usage of Exceptions. pdsl/minarca#136
+  * Handle exception when SSH key is invalid. pdsl/minarca#137
+  * Update french translation.
+  * Add JQueryValidation with translation
+  * Add form validation to password change form.
+  * Add delete repo form validation. pdsl/minarca#135
+  * Allow to update user attribute without notification.
+  * Adding new Option class to access config.
+  * Make use of Option in Ldap Auth plugin.
+  * Add option in LdapAuth Plugin to verify the ShadownExpire. See #23
+  * Enhance browsing Folder/Files. pdsl/minarca#125
+  * Try to build a nice error page with branding. pdsl/minarca#147
+  * Update french translation. See pdsl/minarca#152
+  * Fix display when repo is broken. pdsl/minarca#159
+  * Change Folder icon. pdsl/minarca#171
+  * Change help message for remove_older #171
+  * Release 0.9.1
+
+ -- Jenkins <jenkins@icefyre>  Fri, 07 Oct 2016 10:50:08 -0400
+
+rdiffweb (0.8.1-1) unstable; urgency=medium
+
+  * Cache configuration setting. Use unicode string in every module.
+  * Remove ref url from readme file.
+  * Update README.md - add rdiff-backup to apt-get
+  * Update README.md - add update-rc command line
+  * Correct basic auth (for RSS feed).
+  * Correct i18n to fallback when translation is not available to current resquest/response.
+  * Correct librdiff to avoid encoding problem during logging.
+  * Add comments to encode_s()
+  * Fix assert statement.
+  * Move forward a plugin architecture. First implementation include UserDB plugins: LDAP and SQLite. MySQL is on the way.
+  * Bump version to 0.8.0
+  * Correct english word in .conf
+  * Remove hardcoded version. Get it from package info.
+  * Add microdata to plugin page.
+  * Set plugin version to 0.8.0 (not 8.0)
+  * Add requirements.txt
+  * Add babel to requirements.txt
+  * Reformat the setup.py
+  * For plugin architecture, change the translation loading to load plugins translation too.
+  * Remove obsolete https filter.
+  * Fix some "major" issues repported by Sonarqube.
+  * Add english mo file for default translation.
+  * Handle plugin loading when one plugin is invalid.
+  * Add 'START' and 'STOP' log line to clearly identify startup.
+  * Make sure to send bytes to yapsy.
+  * Remove obsolete rdw_config import.
+  * Dump memory when receiving SIGUSR2.
+  * Enhance the error message when UserDB is miss configured.
+  * Remove unused import from db_ldap plugin.
+  * Fix get_config_bool to support true and True.
+  * Update rdw_plugins to add more logging. Also avoid to activate the plugins twice.
+  * Again, try to handle the case when no UserDB plugin is available.
+  * Change import to "from rdiffweb import ..."
+  * Create a CurrentUser object to lazy load data about current user. Refactor the preferences page to use plugins architecture.
+  * Rename `model_dialog` to `model_dialog`.
+  * Generalize the delete button with confirmation.
+  * Set cherrypy max_request_body_size to 2MiB to increase security.
+  * Minor modifications to modal dialog.
+  * Rename macro form_confirm to delete_confirm()
+  * Add SSH Keys plugin to manage authorized_keys
+  * Add email validation
+  * Don't check SSH key length in autorizedkeys. Use Crypto to get key length. Correct field name in template: comment -> title.
+  * Correct multiple PEP8 warning.
+  * Remove obsolete TODO related to password validation.
+  * Localize some string related to password validation.
+  * Replace usage of package_data by MANIFEST.in
+  * Fix _ import in db_sqlite
+  * Update MANIFEST.in
+  * Change default filesize format to use GiB and not GB
+  * Add itemprop=id for sshkeys.
+  * Prefix temp directory with rdiffweb.
+  * Correct som PEP8 warnings in librdiff.
+  * Use weakref in librdiff in attempt to fix memoryleak. refs #52
+  * Correction to the temp file name generate to use a prefix.
+  * Add threadname to logging line.
+  * Correct typo in log message.
+  * Set a error page to workarround encoding in error in cherrypy.
+  * Minor reffactoring in librdiff: pre-sort the increments in reverse order. Simplify some if .. then .. else
+  * Reffactoring replace remove_dir() by shutil.rmtree()
+  * Remove file_statistics cache replace by pure python implementation.
+  * Fix ZIP operation to use ISO-8859-1 encoding for filenames. Fix #55
+  * Minor reffactoring arround _recursive_tar() and _recursive_zip()
+  * Fix path validation.
+  * Use SQLite UserDB by default. Fix default configuration file.
+  * Provide a default info message if userprefs are not availables.
+  * Add default config for UserPrefs plugins.
+  * Remove setup page and auto configure rdiffweb when required.
+  * Add options to customize the welcome message.
+  * Add RLock to SQLite user db.
+  * Add ru translation received by Евгений Максимов <me@vragam.net>
+  * Update translations
+  * Update translations.
+  * Add item prop to repositories.
+  * Fix issue related to SSH Prefs page not being available.
+  * Reffactor browsing view a bit (to introduce Settings) Ref #52 #57
+  * Add new "settings" tabs to change encoding. Ref #52
+  * Enhance loglevel for some low level logs.
+  * Add '+' to create authorized_keys if missing.
+  * Fix ssh keys plugin to create file and directory.
+  * Minor apperance modification.
+  * Allow user to delete repository.
+  * Minor appearance fixes.
+  * Allow HTML in "WelcomeMsg". Ref #76
+  * Try to fix encoding normalization.
+  * Change log level for "user not logged in"
+  * Add ip and username in log.
+  * Add log line when login failed.
+  * Update french translation.
+  * Try to support 'X-Forwarded-For' header.
+  * Corrigé orthographe ligne 597
+  * Refactor user & password system
+  * Refactor rdw_spider_repos.
+  * Add nosetests config to setup.cfg
+  * Fix tests_require
+  * Fix test_ldap
+  * Reffactor RdiffApp to implement Application directly.
+  * Add assertion in user.py
+  * Update default configuration. Remove obsolete UserDB option.
+  * Fix ldap unicode vs str.
+  * Fix allow add user if missing.
+  * Fix change email.
+  * Reffactor getter / setter related to database.
+  * Fix duplicate get_user_root method
+  * Fix Ldap get user attribute
+  * Fix set_info() call in admin page.
+  * Make sure to return a single home directory value if multipel value are return by LDAP.
+  * Remove olbolete import from librdiff.
+  * Minor formating fix in page_main.
+  * Fix password check unicode.
+  * Add a bit of logging into page_settings.
+  * Add some testcases for user.py.
+  * Support translated Welcome message.
+  * Ignore nosetests.xml and coverage.xml
+  * Add msapplication meta tag (for Win8 pinning) see #57
+  * Improve in_progress detection -- verify if PID is running
+  * Remove initscript, default config and logrotate from setup.py.
+  * Move test.py to make it accessible to plugins tests.
+  * Fix creation of admin user when creating database.
+  * Fix exists() vs has_password() / db vs store.
+  * Fix ldap testcases.
+  * Fix support for 'LdapAllowPasswordChange' option.
+  * Add logined notification.
+  * Send logined notification at the right time.
+  * Fix password change validation.
+  * Fix change_dates ordering. see pdsl/minarca#97
+  * Reffactore abit arround restore_dates.
+  * refactor some code to use list comprehension syntax in librdiff
+  * Set owner for authorized_keys. pdsl/minarca#100
+  * Add setup.py.bak and .eggs/ to git ignore.
+  * Release 0.8.1
+
+ -- Jenkins <jenkins@icefyre>  Mon, 21 Dec 2015 14:18:06 -0500
+
+rdiffweb (0.7.0-1) unstable; urgency=medium
+
+  * Update PKG-INFO
+  * Update setup.py
+  * Update login.html
+  * Update page_end.html
+  * Merge pull request #20 from sechanbask/patch-4
+  * Merge pull request #19 from sechanbask/patch-3
+  * Merge pull request #18 from sechanbask/patch-2
+  * Merge pull request #17 from sechanbask/patch-1
+  * Fix encoding issue when creating archive
+  * Show error message instead of "Invalid date parameter."
+  * Fix encoding support for file and folder restore.
+  * Add logging error to page restore.
+  * IN PROGRESS - Add LDAP authentication support.
+  * Change GUI to bootstrap. Update templating engine to jinja2
+  * Update author information.
+  * Fix indentation to 4 space. Run autopep8 to fix most formatting.
+  * Rename all variation of rdiff-web, rdiffWeb into rdiffweb. Fix #24
+  * Try to fix encoding issue
+  * Fix minor presentation issue.
+  * Fix filesize for quoted path.
+  * Fix other encoding issue.
+  * Fix sorting to display directory first.
+  * Add new fontello icons.
+  * Remove zip vs tar preference. Allow user to select when restoring. Fix #23
+  * Use permalink
+  * Fix restore to delete temporary directory when download is complete.
+  * Fix warning reported by pep8
+  * Enhance initial setup.
+  * Provide hint when no backup locations is available.
+  * Fix setup to include javascripts.
+  * Enhance administration view.
+  * Minor UI enhancement following review.
+  * Translate rdiffweb to french. Provide translation based on browser accepted language.
+  * Restrict access to /admin/
+  * Change authentication filter to redirect to /login/.
+  * Correct usage of "title" to be in templates.
+  * Remove obsolete page error.
+  * Correct encoding error in db_sqlite and db_ldap to support username and password with non-ascii characther.
+  * Enhance ldap search logs.
+  * Add "id" attribute to login form. Will be used as a token for testing.
+  * Handle situation where UserRoot is None.
+  * Fix login redirect for edge cases when url need quote. Redirect doesn't work for non-utf-8 chars.
+  * Before validating LDAP credentials, check if user exists in local database.
+  * Change the setup to create a default admin users.
+  * Minor improvement for mobile
+  * Add copyright statement where missing. Update satement to 2014.
+  * Add "tempdir" configuration parameter to relocate where to restore data.
+  * Remove reference to "rdiffweb-config".
+  * Update install instruction in README.md
+  * Update init script to fix some issue related to starting rdiffweb.
+  * Fix tempdir encoding.
+  * Bump version to 0.7.0
+  * Support symbolic link by showing the target directory content. Fix #30
+  * Fix to support "null" dates.
+  * Update login page format
+  * Set rdiffweb branding
+  * FIX installation instructions in README
+  * Merge pull request #32 from peyremorgan/beta-readmetypo
+  * Merge remote-tracking branch 'github/develop' into develop
+  * setup.py: Add french translation file to package data
+  * Merge pull request #34 from peyremorgan/beta-mofiles-nomanifest
+  * Update setup.py to compile the translation when running `python setup.py build` ref #33 #34
+  * Update i18n tools to properly load the translation according to users accept-language.
+  * Remove COUCOU logs ;-)
+  * Add annotations to avoid error in eclipse.
+  * Add python-babel to list of dependencies to compile the translation.
+  * Remove userdb cache. Ref #38
+  * Minor modifications. Review the entire code base.
+  * Rename any occurent of backup location to repositories.
+  * Fix init script. Fix problem related to logs, background process.
+  * Declare license information in setup.py
+  * Include a logrotate configuration to setup.py
+  * Avoid replacing configuration file rdw.conf.
+  * Add new string to translation.
+  * Change filter setup to redirect users to setup page if no user in database.
+  * Fix LDAP TLS.
+  * Change the navigation layout to avoid showing bootstrap menu button in loging page. Fix #40
+  * Hide "Signed in as..." for xs and sm. Fix #41
+  * Align the "delete" buttons. Fix #42
+  * Upgrade Bootstrap to 3.3.4. Align dropdown menu in xs. Fix #43
+  * Correction to init script. Use >> instead of > to write log file.
+  * Change logrotate configuration to copytruncate the file.
+  * Enhance repository view. Reduce item size. Include number of repos in title.
+  * Merge pull request #47 from ikus060/develop
+  * Change wget download URL
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Tue, 31 Mar 2015 19:55:50 -0400
+
+rdiffweb (0.6.5-1) unstable; urgency=medium
+
+  * Change the creation of the status entry url to make it relative instead of absolute.
+  * Minor realignment of the login screen using css.
+  * Refactor librdiff.py to fix handling of different timezone for the same increment. Fix #2
+  * Add column sorting using JavaScript. Use css :nth-child(even) to replace altRow implementation.
+  * Validate pages using w3c validator againts HTML5.
+  * Add license informations to source file and package info.
+  * Save sorting preference in local storage. Restore the user preference on page load. Fix #1
+  * Add arrow to indicate the sorting direction.
+  * Modification to CSS and templates for better support on mobile devices. Fix #4
+  * Minor change to color palette.
+  * Minor modification to CSS to add more focus to warnings and errors.
+  * Update README.md with reference to 0.6.4
+  * Change sorting implementation to use TimSort.
+  * Fix RDIFF_BACKUP_DATA constant usage in rdw_spider_repos.py
+  * Merge remote-tracking branch 'origin/master'
+  * Update the installation instruction to use v0.6.5
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Wed, 21 Aug 2013 18:56:13 -0400
+
+rdiffweb (0.6.4-1) unstable; urgency=medium
+
+  * Initial commit
+  * Commit version 0.6.3
+  * Fix minor issue with deployment script. Redesign the pages with modification to templates and CSS. Add JQuery.
+  * Remove deprecated emailsEnabled section.
+  * Use overlay to select revision to be restored.
+  * Add rdiffWeb branding and bump version to 0.6.4
+  * Use overlay to add user in admin panel.
+  * Change the location of the rss feed icon. Change the icon.
+  * Change the repository icon and the favicon.
+  * Make the web server listen on all network interface by default.
+  * Update readme file with installation instruction.
+
+ -- Patrik Dufresne <ikus060@gmail.com>  Sun, 28 Oct 2012 20:29:20 -0400
