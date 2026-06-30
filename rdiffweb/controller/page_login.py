@@ -39,7 +39,6 @@ class LoginForm(CherryForm):
             "autocorrect": "off",
             "autocapitalize": "none",
             "autocomplete": "off",
-            "autofocus": "autofocus",
         },
     )
     password = PasswordField(_('Password'), validators=[DataRequired()], render_kw={"placeholder": _('Password')})
@@ -61,6 +60,11 @@ class LoginForm(CherryForm):
             and not self.login.data
         ):
             self.login.data = original_url.strip('/').split('/', 2)[1]
+        # When username is already define, focus on password:
+        if self.login.data:
+            self.password.render_kw["autofocus"] = "autofocus"
+        else:
+            self.login.render_kw["autofocus"] = "autofocus"
         # Update place holder based on application config
         cfg = cherrypy.tree.apps[''].cfg
         self.login.render_kw['placeholder'] = _('Username or Email') if cfg.login_with_email else _('Username')
