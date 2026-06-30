@@ -11,15 +11,12 @@ import contextlib
 import io
 import os
 import shutil
-import subprocess
 import tempfile
 import unittest
 from unittest import mock
 
 from minarca_server import shell
-from minarca_server.shell import Jail
 from parameterized import parameterized
-from tzlocal import get_localzone_name
 
 USERNAME = 'joe'
 USERROOT = tempfile.gettempdir() + '/backups/joe'
@@ -82,7 +79,7 @@ class Test(unittest.TestCase):
         ]
     )
     @mock.patch('minarca_server.shell._find_rdiff_backup', return_value='/usr/bin/rdiff-backup-test')
-    @mock.patch('minarca_server.shell._jail')
+    @mock.patch('minarca_server.shell.run_jailed')
     def test_main_with_user_agent(
         self,
         ssh_original_cmd,
@@ -103,46 +100,13 @@ class Test(unittest.TestCase):
             del os.environ["MINARCA_USERNAME"]
             del os.environ["MINARCA_USER_ROOT"]
             del os.environ["SSH_ORIGINAL_COMMAND"]
-        rdiff_backup_jail_mock.assert_called_once_with('/tmp/backups/joe', ['/usr/bin/rdiff-backup-test', '--server'])
+        rdiff_backup_jail_mock.assert_called_once_with(
+            ['/usr/bin/rdiff-backup-test', '--server'],
+            path='/tmp/backups/joe',
+            cwd='/tmp/backups/joe',
+            env={'LANG': 'en_US.utf-8', 'TZ': mock.ANY, 'HOME': '/tmp/backups/joe'},
+        )
         if expect_version is None:
             find_rdiff_backup_mock.assert_called_once_with()
         else:
             find_rdiff_backup_mock.assert_called_once_with(version=expect_version)
-
-    def test_jail(self):
-        # Write a file in jail folder
-        with open(os.path.join(USERROOT, 'test.txt'), 'w') as f:
-            f.write('coucou\n')
-            f.write('foo\n')
-            f.write('bar\n')
-        # Run jail and print content of the file.
-        shell._jail(USERROOT, ['cat', 'test.txt'])
-
-    def test_jail_readonly_bin(self):
-        # Skip this test if running as root. Because root can write everywhere
-        if os.getuid() == 0:
-            return
-        # Try to write in /bin directory should fail.
-        with Jail(USERROOT):
-            with self.assertRaises(OSError):
-                with open("/bin/test.yxy", 'w') as f:
-                    f.write('foo')
-
-    def test_jail_proc(self):
-        # Given a Jail, it's possible to get access to /proc.
-        shell._jail(USERROOT, ['ps'])
-
-    def test_jail_non_zero_return_code(self):
-        # Given a Jail that return a non-zero return code
-        with self.assertRaises(subprocess.CalledProcessError) as e:
-            shell._jail(USERROOT, ['/bin/bash', '-c', 'echo FOO 1>&2; echo Éric 1>&2; exit 22'])
-        # Then an exception is raised
-        self.assertIsInstance(e.exception, subprocess.CalledProcessError)
-        # The exit code is matching
-        self.assertEqual(e.exception.returncode, 22)
-
-    def test_jail_tz(self):
-        tz = get_localzone_name()
-        shell._jail(USERROOT, ['/bin/bash', '-c', 'echo $TZ > tz.txt'])
-        with open(os.path.join(USERROOT, 'tz.txt'), 'r') as f:
-            self.assertEqual(tz + '\n', f.read(), "timezone should be define in jail")

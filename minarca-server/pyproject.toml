@@ -29,7 +29,6 @@ dependencies = [
     "cryptography",
     "rdiffweb",
     "requests",
-    "snakeoil",
     "tzlocal",
 ]
 dynamic = ["version"]

@@ -21,7 +21,7 @@ import sys
 import configargparse
 from minarca_server import __version__
 from minarca_server.config import get_parser
-from minarca_server.core.jail import Jail
+from minarca_server.core.jail import run_jailed
 from tzlocal import get_localzone_name
 
 # Enforce a specific timezone when running rdiff-backup
@@ -70,15 +70,6 @@ def _setup_logging(cfg, user, ip):
             logging.Formatter("[%(asctime)s][%(levelname)-7s][%(ip)s][%(user)s][PID:%(process)d][%(name)s] %(message)s")
         )
         root.addHandler(default_handler)
-
-
-def _jail(userroot, args):
-    """
-    Create a chroot jail using namespaces to isolate completely
-    rdiff-backup execution.
-    """
-    with Jail(userroot):
-        subprocess.check_call(args, cwd=userroot, env={'LANG': 'en_US.utf-8', 'TZ': TZ, 'HOME': userroot})
 
 
 def _find_rdiff_backup(version=DEFAULT_RDIFF_BACKUP_VERSION):
@@ -177,7 +168,7 @@ def main(args=None):
             cmd = [rdiff_backup, '--server'] + _extra_args
             logger.info("running command [%s] in jail [%s] for: %s", ' '.join(cmd), userroot, ssh_original_command)
             try:
-                _jail(userroot, cmd)
+                run_jailed(cmd, path=userroot, cwd=userroot, env={'LANG': 'en_US.utf-8', 'TZ': TZ, 'HOME': userroot})
                 logger.info("rdiff-backup terminated successfully")
             except PermissionError:
                 logger.error("fail to create rdiff-backup jail", exc_info=1)
