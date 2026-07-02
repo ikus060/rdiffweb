@@ -751,7 +751,7 @@ class MetadataDict(object):
         return [e for e in self._repo._entries if e.startswith(self._prefix)]
 
     def __getitem__(self, key):
-        if isinstance(key, RdiffTime):
+        if isinstance(key, (RdiffTime, datetime)):
             idx = bisect.bisect_left(self.keys(), key)
             if idx < len(self._entries):
                 item = self._cls(self._repo, self._entries[idx])
@@ -759,10 +759,10 @@ class MetadataDict(object):
                     return item
             raise KeyError(key)
         elif isinstance(key, slice):
-            if isinstance(key.start, RdiffTime):
+            if isinstance(key.start, (RdiffTime, datetime)):
                 idx = bisect.bisect_left(self.keys(), key.start)
                 key = slice(idx, key.stop, key.step)
-            if isinstance(key.stop, RdiffTime):
+            if isinstance(key.stop, (RdiffTime, datetime)):
                 idx = bisect.bisect_right(self.keys(), key.stop)
                 key = slice(key.start, idx, key.step)
             return [self._cls(self._repo, e) for e in self._entries[key]]

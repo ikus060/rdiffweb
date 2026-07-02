@@ -339,22 +339,38 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
         else:
             self._ignore_weekday = sum([1 << idx for idx in range(0, 7) if idx in value])
 
-    def _count_active_days(self, start: datetime, end: datetime) -> int:
-        """Count non-ignored days between start and end."""
-        total_days = (end - start).days
+    def _count_active_days_backward(self, now: datetime, count: int) -> int:
+        """
+        Return the number of calendar days to go back from `now` such that
+        exactly `maxage` non-ignored (active) days are included, skipping
+        ignored weekdays.
+        """
         active_weekdays = 7 - len(self.ignore_weekday)
-        full_weeks, remaining_days = divmod(total_days, 7)
+        if active_weekdays <= 0:
+            return 0  # no possible active days, avoid infinite/invalid computation
 
-        active_days = full_weeks * active_weekdays
-        for i in range(remaining_days):
-            day = (start + timedelta(days=i)).weekday()
-            if day not in self.ignore_weekday:
-                active_days += 1
-        return active_days
+        # Full weeks contribute a fixed number of active days each
+        full_weeks, remaining_active = divmod(count, active_weekdays)
+        calendar_days = full_weeks * 7
+
+        if remaining_active == 0:
+            return calendar_days
+
+        # Walk backward day by day only for the remainder (< 7 iterations)
+        current_weekday = now.weekday()
+        day_offset = 0
+        while remaining_active > 0:
+            day_offset += 1
+            weekday = (current_weekday - day_offset) % 7
+            if weekday not in self.ignore_weekday:
+                remaining_active -= 1
+
+        return calendar_days + day_offset
 
     def _is_overdue(self):
         """
-        Return True if no backup session found within `maxage` days, skipping ignored weekdays.
+        Return True if no backup session found within `maxage` active days,
+        skipping ignored weekdays.
         Return None if maxage is not configured.
         """
         if self.maxage <= 0:
@@ -365,22 +381,28 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
             return True
 
         now = datetime.now(tz=timezone.utc)
+        elapsed_days = (now - last_backup_date).days
 
         # Quick check: if raw elapsed days < maxage, cannot be overdue
-        if (now - last_backup_date).days < self.maxage:
+        if elapsed_days < self.maxage:
             return False
 
-        return self._count_active_days(last_backup_date, now) >= self.maxage
+        # Determine how many calendar days back we need to accumulate `maxage` active days
+        required_calendar_days = self._count_active_days_backward(now, self.maxage)
+
+        # If last backup is older than that many calendar days, it's overdue
+        return elapsed_days >= required_calendar_days
 
     def _is_inactive(self):
         """
         Return True if lastest backup session doesn't contains any activity.
         """
-        if self.maxage <= 0 or self.inactivity < self.maxage:
+        if self.inactivity <= 0 or self.inactivity < self.maxage:
             return None
 
         now = datetime.now(tz=timezone.utc)
-        cutoff = now - timedelta(days=self.inactivity)
+        required_calendar_days = self._count_active_days_backward(now, self.inactivity)
+        cutoff = now - timedelta(days=required_calendar_days)
 
         if not self.session_statistics:
             return None
@@ -388,21 +410,12 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
         # Use slice to get sessions within the inactivity window
         recent_sessions = self.session_statistics[cutoff:now]
 
-        if not recent_sessions:
-            return None  # No sessions in window, let _is_overdue handle it
-
-        # Filter out ignored weekdays
-        active_sessions = [s for s in recent_sessions if s.date.weekday() not in self.ignore_weekday]
-
-        if not active_sessions:
-            return None
-
         # Check if any session has file activity
-        for stats in active_sessions:
+        for stats in recent_sessions:
             if stats.newfiles > 0 or stats.deletedfiles > 0 or stats.changedfiles > 0:
                 return False  # Found activity
 
-        return True  # Sessions exist but no activity
+        return True
 
     @property
     def status(self):

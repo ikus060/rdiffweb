@@ -13,7 +13,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from datetime import datetime, timezone
+
 import cherrypy
+from parameterized import parameterized
 
 import rdiffweb.test
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
@@ -218,3 +221,47 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         repo_obj = RepoObject(user=userobj, repopath='repopath').add().commit()
         # New repo get created with utf-8
         self.assertEqual('utf-8', repo_obj.encoding)
+
+    @parameterized.expand(
+        [
+            (datetime(2026, 7, 1, tzinfo=timezone.utc), {5, 6}, 5, 7),
+            (datetime(2026, 6, 29, tzinfo=timezone.utc), {5, 6}, 3, 5),
+            (datetime(2026, 6, 28, tzinfo=timezone.utc), {5, 6}, 12, 17),
+        ]
+    )
+    def test_count_active_days_backward(self, now, ignore_weekday, maxage, expected_value):
+        # Given a repo object
+        userobj = UserObject.get_user(self.USERNAME)
+        repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
+        # Given the repo is configure with ignore weekday
+        repo_obj.ignore_weekday = ignore_weekday
+        repo_obj.commit()
+        # When computing dates
+        # Then value matches
+        self.assertEqual(expected_value, repo_obj._count_active_days_backward(now, maxage))
+
+    def test_is_overdue(self):
+        # Given a repo object
+        userobj = UserObject.get_user(self.USERNAME)
+        repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
+        # Given the repo is configure with ignore weekday
+        repo_obj.maxage = 7
+        repo_obj.ignore_weekday = {5, 6}
+        repo_obj.commit()
+        # When computing dates
+        # Then value matches
+        self.assertTrue(repo_obj._is_overdue())
+        self.assertEqual(repo_obj.status[0], 'overdue')
+
+    def test_is_inactive(self):
+        # Given a repo object
+        userobj = UserObject.get_user(self.USERNAME)
+        repo_obj = RepoObject.query.filter(RepoObject.user == userobj, RepoObject.repopath == self.REPO).first()
+        # Given the repo is configure with ignore weekday
+        repo_obj.inactivity = 7
+        repo_obj.ignore_weekday = {5, 6}
+        repo_obj.commit()
+        # When computing dates
+        # Then value matches
+        self.assertTrue(repo_obj._is_inactive())
+        self.assertEqual(repo_obj.status[0], 'inactive')
