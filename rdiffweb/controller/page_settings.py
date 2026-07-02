@@ -352,6 +352,7 @@ class ApiRepos:
             # Database fields.
             "name": repo_obj.name,
             "maxage": repo_obj.maxage,
+            "inactivity": repo_obj.inactivity,
             "keepdays": repo_obj.keepdays,
             "ignore_weekday": repo_obj.ignore_weekday,
             # Repository fields.
@@ -389,7 +390,7 @@ class ApiRepos:
         Used to update repository settings.
 
         Updates repository settings for the repository identified by `<id>` or `<name>`.
-        Fields such as `maxage`, `ignore_weekday`, `keepdays`, and `encoding` can be updated.
+        Fields such as `maxage`, `ignore_weekday`, `keepdays`, `inactivity` and `encoding` can be updated.
 
         Returns status 200 OK on success.
 

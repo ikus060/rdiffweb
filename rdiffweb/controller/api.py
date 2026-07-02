@@ -78,15 +78,16 @@ class ApiPage:
         """
         Returns the current application version in JSON format.
 
+        Starting with v7.0.0, also return a list of `capabilities`.
+
         **Example Response**
 
         ```json
         {
-            "version": "1.2.8"
+            "version": "1.2.8",
+            "capabilities": ["repo.inactivity"]
         }
         ```
         """
         version = cherrypy.tree.apps[''].version
-        return {
-            "version": version,
-        }
+        return {"version": version, "capabilities": ["repo.inactivity"]}

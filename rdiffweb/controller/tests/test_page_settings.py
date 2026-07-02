@@ -327,6 +327,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
                     'id': user.repo_objs[0].id,
                     'name': 'broker-repo',
                     'maxage': 0,
+                    'inactivity': 0,
                     'keepdays': -1,
                     'ignore_weekday': [],
                     'display_name': 'broker-repo',
@@ -338,6 +339,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
                     'id': user.repo_objs[1].id,
                     'name': 'testcases',
                     'maxage': 0,
+                    'inactivity': 0,
                     'keepdays': -1,
                     'ignore_weekday': [],
                     'display_name': 'testcases',
@@ -388,6 +390,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
                 'id': repo.id,
                 'name': repo.name,
                 'maxage': repo.maxage,
+                'inactivity': 0,
                 'keepdays': repo.keepdays,
                 'ignore_weekday': [],
                 'display_name': repo.display_name,
@@ -412,6 +415,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
                 'id': repo.id,
                 'name': 'testcases',
                 'maxage': 0,
+                'inactivity': 0,
                 'keepdays': -1,
                 'ignore_weekday': [],
                 'display_name': 'testcases',
@@ -455,6 +459,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
             ('status', '2024-02-02T16:30:40-05:00', False),
             # Working
             ('maxage', '7', True),
+            ('inactivity', '6', True),
             ('keepdays', '30', True),
             ('ignore_weekday', '6', True, '[6]'),
             ('encoding', 'latin_1', True, 'iso8859-1'),
@@ -485,6 +490,48 @@ class ApiReposTest(rdiffweb.test.WebCase):
             self.assertStatus(400)
             self.assertNotEqual(str(getattr(repo, field)), new_value if expected_value is None else expected_value)
 
+    @parameterized.expand(
+        [
+            # Not working
+            ('id', '4', False),
+            ('name', 'newrepo', False),
+            ('display_name', 'newrepo', False),
+            ('last_backup_date', '2024-02-02T16:30:40-05:00', False),
+            ('status', '2024-02-02T16:30:40-05:00', False),
+            # Working
+            ('maxage', 7, True),
+            ('inactivity', 6, True),
+            ('keepdays', 30, True),
+            ('ignore_weekday', [6], True),
+            ('ignore_weekday', [5, 6], True),
+            ('encoding', 'latin_1', True, 'iso8859-1'),
+        ]
+    )
+    def test_post_repo_json(self, field, new_value, success, expected_value=None):
+        # Given a user with repos
+        user = UserObject.get_user('admin')
+        repo = RepoObject.get_repo('admin/testcases', as_user=user)
+        self.assertEqual(repo.name, 'testcases')
+
+        # When updating repo settings
+        self.getPage(
+            '/api/currentuser/repos/testcases',
+            headers=self.auth + [('Content-Type', 'application/json')],
+            method='POST',
+            body={
+                field: new_value,
+            },
+        )
+
+        # Then it's working or not
+        repo.expire()
+        if success:
+            self.assertStatus(200, 'BODY: %s' % self.body)
+            self.assertEqual(getattr(repo, field), new_value if expected_value is None else expected_value)
+        else:
+            self.assertStatus(400)
+            self.assertNotEqual(getattr(repo, field), new_value if expected_value is None else expected_value)
+
     def test_post_repo_with_encoding_empty(self):
         # Given a user repo where the encoding is define as NULL in database
         user = UserObject.get_user('admin')
@@ -507,46 +554,6 @@ class ApiReposTest(rdiffweb.test.WebCase):
         repo.expire()
         self.assertStatus(200)
         self.assertEqual(repo.maxage, 7)
-
-    def test_post_repo_maxage_json(self):
-        # Given a user with repos
-        user = UserObject.get_user('admin')
-        repo = RepoObject.get_repo('admin/testcases', as_user=user)
-        self.assertEqual(repo.name, 'testcases')
-
-        # When updating repo settings
-        self.getPage(
-            '/api/currentuser/repos/testcases',
-            headers=self.auth + [('Content-Type', 'application/json')],
-            method='POST',
-            body={
-                'maxage': '7',
-            },
-        )
-
-        # Then it's working
-        repo.expire()
-        self.assertStatus(200)
-        self.assertEqual(repo.maxage, 7)
-
-    def test_post_repo_ignore_weekday_json(self):
-        # Given a user with repos
-        user = UserObject.get_user('admin')
-        repo = RepoObject.get_repo('admin/testcases', as_user=user)
-        self.assertEqual(repo.name, 'testcases')
-
-        # When updating repo settings
-        self.getPage(
-            '/api/currentuser/repos/testcases',
-            headers=self.auth + [('Content-Type', 'application/json')],
-            method='POST',
-            body={'ignore_weekday': [5, 6]},
-        )
-
-        # Then it's working or not
-        repo.expire()
-        self.assertStatus(200)
-        self.assertEqual(repo.ignore_weekday, [5, 6])
 
     @parameterized.expand(
         [
@@ -603,6 +610,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
                     'id': ANY,
                     'name': 'admin/broker-repo',
                     'maxage': 0,
+                    'inactivity': 0,
                     'keepdays': -1,
                     'ignore_weekday': [],
                     'display_name': 'admin/broker-repo',
@@ -614,6 +622,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
                     'id': ANY,
                     'name': 'admin/testcases',
                     'maxage': 0,
+                    'inactivity': 0,
                     'keepdays': -1,
                     'ignore_weekday': [],
                     'display_name': 'admin/testcases',
@@ -632,6 +641,7 @@ class ApiReposTest(rdiffweb.test.WebCase):
                 'id': ANY,
                 'name': 'admin/testcases',
                 'maxage': 0,
+                'inactivity': 0,
                 'keepdays': -1,
                 'ignore_weekday': [],
                 'display_name': 'admin/testcases',

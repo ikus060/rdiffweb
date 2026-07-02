@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 from base64 import b64encode
+from unittest import mock
 
 from parameterized import parameterized
 
@@ -27,7 +28,13 @@ class APITest(rdiffweb.test.WebCase):
 
     def test_get_index(self):
         data = self.getJson('/api/', headers=self.headers)
-        self.assertIsNotNone(data.get('version'))
+        self.assertEqual(
+            data,
+            {
+                'version': mock.ANY,
+                'capabilities': ['repo.inactivity'],
+            },
+        )
 
     @parameterized.expand(
         [
