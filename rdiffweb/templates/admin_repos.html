@@ -28,9 +28,11 @@
   {% set buttons = [
       {'text': _('Owner'), 'extend': 'collectionfilter', 'popoverTitle': _('Select Owner'), 'buttons': ns.owner_buttons, 'className':'btn-outline-secondary' },
       {'text': _('Healthy'), 'extend': 'filter', 'column': 5, 'search': 'ok', 'className':'btn-outline-primary ms-3'},
-      {'text': _('Failed'), 'extend': 'filter', 'column': 5, 'search': 'failed', 'className':'btn-outline-primary'},
+      {'text': _('Overdue'), 'extend': 'filter', 'column': 5, 'search': 'overdue', 'className':'btn-outline-primary'},
+      {'text': _('Inactive'), 'extend': 'filter', 'column': 5, 'search': 'inactive', 'className':'btn-outline-primary'},
       {'text': _('Interrupted'), 'extend': 'filter', 'column': 5, 'search': 'interrupted', 'className':'btn-outline-primary'},
       {'text': _('In progress'), 'extend': 'filter', 'column': 5, 'search': 'in_progress', 'className':'btn-outline-primary'},
+      {'text': _('Broken'), 'extend': 'filter', 'column': 5, 'search': 'broken', 'className':'btn-outline-primary'},
       {'text': _('Reset Filters'), 'extend': 'reset', 'className':'btn-secondary ms-3'},
     ] %}
   <RdwTable :buttons="{{ buttons }}" :paging="False" class="border rounded-2">

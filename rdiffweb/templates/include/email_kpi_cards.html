@@ -1,9 +1,9 @@
 {% macro kpi_cards() %}
   {# Determine overall status #}
-  {% if total_failed > 0 %}
+  {% if total_broken > 0 %}
     {% set overall_label = _('Degraded') %}
     {% set overall_color = danger_color %}
-    {% set overall_subtitle = _('%(count)s failed', count=total_failed) %}
+    {% set overall_subtitle = _('%(count)s broken', count=total_broken) %}
   {% elif total_interrupted > 0 %}
     {% set overall_label = _('Interrupted') %}
     {% set overall_color = warning_color %}
@@ -56,7 +56,7 @@
                       letter-spacing:0.4px">{% trans %}Repositories{% endtrans %}</div>
           <div style="font-size:22px;font-weight:700;color:#6c757d;margin:4px 0;">{{ total_repo }}</div>
           <div style="font-size:11px;color:#6c757d;">
-            {{ _('%(ok)s healthy · %(other)s needs attentions', ok=total_ok + total_in_progress, other=total_failed + total_interrupted + total_overdue) }}
+            {{ _('%(ok)s healthy · %(other)s needs attentions', ok=total_ok + total_in_progress, other=total_broken + total_interrupted + total_overdue) }}
           </div>
         </td>
         <td width="2%"></td>

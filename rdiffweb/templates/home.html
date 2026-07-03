@@ -32,11 +32,11 @@
   </div>
   {# KPI Cards #}
   {# Determine overall status #}
-  {% if total_failed > 0 %}
+  {% if total_broken > 0 %}
     {% set overall_label = _('Degraded') %}
     {% set overall_color = "danger" %}
     {% set overall_icon = "bi-exclamation-triangle" %}
-    {% set overall_subtitle = _('%(count)s failed', count=total_failed) %}
+    {% set overall_subtitle = _('%(count)s broken', count=total_broken) %}
   {% elif total_interrupted > 0 %}
     {% set overall_label = _('Interrupted') %}
     {% set overall_color = "warning" %}
@@ -71,7 +71,7 @@
     <div class="col-6 col-xxl-3">
       <KpiCard :title="_('Repositories')"
                :value="total_repo"
-               :subtitle="_('%(ok)s healthy · %(other)s needs attentions', ok=total_ok + total_in_progress, other=total_failed + total_interrupted + total_overdue)"
+               :subtitle="_('%(ok)s healthy · %(other)s needs attentions', ok=total_ok + total_in_progress, other=total_broken + total_interrupted + total_overdue)"
                color="secondary"
                icon="bi-hdd-stack" />
     </div>

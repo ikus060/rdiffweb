@@ -67,7 +67,7 @@ class StatsPage:
         date = validate_date(date, allow_none=True)
         # If Repo is broken
         repo_obj = RepoObject.get_repo(path)
-        if repo_obj.status[0] == 'failed':
+        if repo_obj.status[0] == 'broken':
             return {'repo': repo_obj, 'date': date}
 
         # Check if date exists
@@ -97,7 +97,7 @@ class StatsPage:
         date = validate_date(date)
         # If Repo is broken return no data
         repo_obj = RepoObject.get_repo(path)
-        if repo_obj.status[0] == 'failed':
+        if repo_obj.status[0] == 'broken':
             return {}
 
         # Check if date exists

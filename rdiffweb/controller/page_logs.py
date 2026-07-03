@@ -43,7 +43,7 @@ class LogsPage:
         return func
 
     def _get_log_entry(self, repo_obj, date, file):
-        if repo_obj.status[0] == 'failed':
+        if repo_obj.status[0] == 'broken':
             return None
 
         # Read log file data
