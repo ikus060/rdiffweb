@@ -8,7 +8,7 @@
       {{ active_page.label }}
     </h2>
   </div>
-  <p>{% trans %}Audit log of all user and system actions.{% endtrans %}</p>
+  <p class="text-secondary small">{% trans %}Audit log of all user and system actions.{% endtrans %}</p>
   <RdwMessages :data="url_for('/admin/activity/data.json')"
                show="all"
                class="border rounded-2" />
