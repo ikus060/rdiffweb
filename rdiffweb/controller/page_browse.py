@@ -44,7 +44,7 @@ class BrowsePage:
         repo, path = RepoObject.get_repo_path(path, refresh=True)
 
         # Get list of actual directory entries
-        if repo.status[0] == 'failed':
+        if repo.status[0] == 'broken':
             dir_entries = []
         else:
             dir_entries = repo.listdir(path)

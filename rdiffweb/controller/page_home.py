@@ -95,7 +95,7 @@ class HomePage:
             "repo_objs": repo_objs,
             "total_repo": len(repo_objs),
             "total_ok": status_counts["ok"],
-            "total_failed": status_counts["failed"],
+            "total_broken": status_counts["broken"],
             "total_overdue": status_counts["overdue"],
             "total_interrupted": status_counts["interrupted"],
             "total_in_progress": status_counts["in_progress"],

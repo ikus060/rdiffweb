@@ -884,17 +884,17 @@ class RdiffRepo(object):
             return listdir(self._data_path)
         except FileNotFoundError:
             logger.warning(f'folder not found {self._data_path}', exc_info=1)
-            self._entries_status = ('failed', _('The repository cannot be found or is badly damaged.'), _('Broken'))
+            self._entries_status = ('broken', _('The repository cannot be found or is badly damaged.'), _('Broken'))
         except PermissionError:
             logger.warning(f'permissions error listing {self._data_path}', exc_info=1)
             self._entries_status = (
-                'failed',
+                'broken',
                 _("Permissions denied. Contact administrator to check repository's permissions."),
                 _('Broken'),
             )
         except OSError as e:
             logger.warning(f'error listing folder {self._data_path}', exc_info=1)
-            self._entries_status = ('failed', _("%s. Contact administrator if problem persist.") % e, _('Broken'))
+            self._entries_status = ('broken', _("%s. Contact administrator if problem persist.") % e, _('Broken'))
         return []
 
     def clear_cache(self):
@@ -1153,7 +1153,7 @@ class RdiffRepo(object):
             except PermissionError:
                 logger.warning('permissions error trying to read current_mirror', exc_info=1)
                 return (
-                    'failed',
+                    'broken',
                     _("Permissions denied. Contact administrator to check repository's permissions."),
                     _("Permissions denied"),
                 )

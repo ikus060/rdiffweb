@@ -433,7 +433,7 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
                 return repo_status
         except Exception:
             cherrypy.log('unexpected error trying to get repo status', traceback=True)
-            return ('failed', _("Unable to retrieve the backup status. Please try again later."), _("Broken"))
+            return ('broken', _("Unable to retrieve the backup status. Please try again later."), _("Broken"))
 
         # Check overdue
         if self._is_overdue():

@@ -228,7 +228,7 @@ class RdiffRepoTest(unittest.TestCase):
 
     def test_init_with_invalid(self):
         self.repo = RdiffRepo(os.path.join(self.temp_dir, 'invalid'), encoding='utf-8')
-        self.assertEqual('failed', self.repo.status[0])
+        self.assertEqual('broken', self.repo.status[0])
         self.assertEqual(None, self.repo.last_backup_date)
         self.assertEqual('invalid', self.repo.display_name)
 
@@ -524,7 +524,7 @@ class RdiffRepoTest(unittest.TestCase):
         # Create repo again to query status
         self.repo = RdiffRepo(os.path.join(self.temp_dir, 'testcases'), encoding='utf-8')
         status = self.repo.status
-        self.assertEqual('failed', status[0])
+        self.assertEqual('broken', status[0])
 
     def test_status_access_denied_rdiff_backup_data(self):
         # Skip test if running as root. Because root as access to everything.
@@ -535,7 +535,7 @@ class RdiffRepoTest(unittest.TestCase):
         # Query status.
         self.repo = RdiffRepo(os.path.join(self.temp_dir, 'testcases'), encoding='utf-8')
         status = self.repo.status
-        self.assertEqual('failed', status[0])
+        self.assertEqual('broken', status[0])
         # Make sure history entry doesn't raise error
         list(self.repo.mirror_metadata)
 

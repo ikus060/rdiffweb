@@ -500,7 +500,7 @@ class UserObjectTest(rdiffweb.test.WebCase):
         # Then repo status is "broken"
         userobj = UserObject.get_user(self.USERNAME)
         self.assertFalse(userobj.valid_user_root())
-        self.assertEqual(['failed', 'failed'], [r.status[0] for r in userobj.repo_objs])
+        self.assertEqual(['broken', 'broken'], [r.status[0] for r in userobj.repo_objs])
 
     @parameterized.expand(
         [
