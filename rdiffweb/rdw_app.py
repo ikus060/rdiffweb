@@ -224,6 +224,8 @@ class RdiffwebApp(Application):
             # Enable jinja autoreload in debug or development mode only.
             auto_reload=cfg.debug or cfg.environment == 'development',
         )
+        # Force trans blocks to be trimmed.
+        env.policies['ext.i18n.trimmed'] = True
 
         # Pick the right implementation for storage
         rate_limit_storage_class = cherrypy_foundation.tools.ratelimit.RamRateLimit
