@@ -504,9 +504,26 @@ class AdminTest(rdiffweb.test.WebCase):
         self.assertInBody("User&#39;s root directory /var/invalid/ is not accessible!")
 
     def test_list(self):
+        # Given a User with 2 repo, 1 ssh key, 3 tokens
+        user = UserObject.get_user(self.USERNAME)
+        user.add_authorizedkey(key=SSHKEY_TEST, comment="foo")
+        user.add_access_token(name='foo1')
+        user.add_access_token(name='foo2')
+        user.add_access_token(name='foo3')
+        user.commit()
+        self.assertEqual(2, len(user.repo_objs))
+        self.assertEqual(1, len(user.authorizedkeys))
+        self.assertEqual(3, len(user.tokens))
+        # When querying the list of users.
         self.getPage("/admin/users/")
         self.assertInBody("Users")
         self.assertInBody("Add user")
+        # Then page contains our repo count
+        self.assertInBody('data-order="2"')
+        # Then page contains our ssh key count
+        self.assertInBody('data-order="1"')
+        # Then page contains out token count
+        self.assertInBody('data-order="3"')
 
     def test_edit_user_with_not_existing_username(self):
         # Given an invalid username

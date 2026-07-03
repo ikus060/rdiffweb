@@ -54,7 +54,8 @@
       </tr>
     </thead>
     <tbody>
-      {% for user in users %}
+      {% for row in users %}
+        {% set user = row[0] %}
         <tr {% if user.status == user.STATUS_DISABLED %}class="table-light"{% endif %}>
           {# User - username, fullname, email #}
           <td data-order="{{ user.username }}">
@@ -117,11 +118,11 @@
             {% endif %}
           </td>
           {# Repos Count #}
-          <td data-order="{{ user.repo_objs | length }}">{{ count_badge(user.repo_objs | length) }}</td>
+          <td data-order="{{ row.repo_count }}">{{ count_badge(row.repo_count) }}</td>
           {# SSH Keys Count #}
-          <td data-order="{{ user.authorizedkeys | length }}">{{ count_badge(user.authorizedkeys | length) }}</td>
+          <td data-order="{{ row.authorizedkeys_count }}">{{ count_badge(row.authorizedkeys_count) }}</td>
           {# Token Count #}
-          <td data-order="{{ user.tokens | length }}">{{ count_badge(user.tokens | length) }}</td>
+          <td data-order="{{ row.tokens_count }}">{{ count_badge(row.tokens_count) }}</td>
           <td>{{ report_time_range_choices.get(user.report_time_range) }}</td>
           {# Status #}
           <td data-order="{{ user.status }}">

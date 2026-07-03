@@ -24,7 +24,7 @@ from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from cherrypy_foundation.tools.i18n import list_available_locales, list_available_timezones
 from cherrypy_foundation.url import url_for
 from markupsafe import Markup
-from sqlalchemy.orm import joinedload
+from sqlalchemy import func
 from wtforms import validators, widgets
 from wtforms.fields import BooleanField, Field, HiddenField, PasswordField, SelectField, StringField, TextAreaField
 from wtforms.validators import ValidationError
@@ -32,7 +32,7 @@ from wtforms.validators import ValidationError
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.controller.page_pref_sshkeys import DeleteSshForm, SshForm
 from rdiffweb.controller.page_pref_tokens import DeleteTokenForm, TokenForm
-from rdiffweb.core.model import Message, UserObject
+from rdiffweb.core.model import Message, RepoObject, SshKey, Token, UserObject
 
 try:
     from wtforms.fields import EmailField  # wtform >=3
@@ -382,12 +382,23 @@ class AdminUsersPage:
         # Form is invalid -> redirect to the form
         if form.error_message:
             flash(form.error_message, level='error')
+        rows = (
+            UserObject.query.with_entities(
+                UserObject,
+                func.count(func.distinct(RepoObject.id)).label('repo_count'),
+                func.count(func.distinct(SshKey._key)).label('authorizedkeys_count'),
+                func.count(func.distinct(Token.name)).label('tokens_count'),
+            )
+            .outerjoin(UserObject.repo_objs)
+            .outerjoin(UserObject.authorizedkeys)
+            .outerjoin(UserObject.tokens)
+            .group_by(UserObject.id)
+            .all()
+        )
         return {
             'form': form,
             'edit_form': EditUserForm(),
-            'users': UserObject.query.options(
-                joinedload(UserObject.repo_objs), joinedload(UserObject.authorizedkeys), joinedload(UserObject.tokens)
-            ).all(),
+            'users': rows,
         }
 
     @cherrypy.expose
