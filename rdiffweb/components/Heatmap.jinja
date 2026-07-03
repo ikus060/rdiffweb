@@ -48,7 +48,7 @@
         {% set si = [si, palette_max] | min %}
       {% endif %}
       <td class="hm-cell"
-          title="{{ _('%(date)s  — %(count)s backup(s)', date=d|format_date, count=count) }}">
+          title="{{ _('%(date)s — %(count)s backup(s)', date=d|format_date, count=count) }}">
         <div class="hm-square" style="background-color:{{ palette[si] }};"></div>
       </td>
     {% endfor %}

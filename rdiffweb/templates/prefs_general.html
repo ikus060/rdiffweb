@@ -61,7 +61,7 @@
   {# Change password Modal #}
   <form action="#" method="post">
     <ModalDialog id="rdw-password-modal"
-                 :title="_('Change Password')"
+                 :title="_('Change password')"
                  :submit="_('Update password')"
                  :show="password_form.error_message">
       {% if password_form.error_message %}<p class="text-danger">{{ password_form.error_message }}</p>{% endif %}
