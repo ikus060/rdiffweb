@@ -43,29 +43,22 @@ class MfaForm(CherryForm):
     persistent = BooleanField(
         _('Remember me'),
         default=lambda: cherrypy.tools.sessions_timeout.is_persistent(),
-    )
-    submit = SubmitField(
-        _('Sign in'),
-        render_kw={"class": "btn-primary btn-lg btn-block"},
+        render_kw={"container_class": "col-6"},
     )
     resend_code = SubmitField(
         _('Resend code to my email'),
-        render_kw={"class": "btn-link btn-sm btn-block"},
+        render_kw={"class": "col btn-link btn-sm btn-block", "container_class": "col-6"},
     )
 
     def validate_code(self, field):
+        if self.resend_code.data:
+            return
         # Code is required when submit.
-        if self.submit.data:
-            if not self.code.data:
-                raise ValidationError(_('Invalid verification code.'))
-            # Validate verification code.
-            if not cherrypy.tools.auth_mfa.verify_code(code=self.code.data, persistent=self.persistent.data):
-                raise ValidationError(_('Invalid verification code.'))
-
-    def validate(self, extra_validators=None):
-        if not (self.submit.data or self.resend_code.data):
-            raise ValidationError(_('Invalid operation'))
-        return super().validate()
+        if not self.code.data:
+            raise ValidationError(_('Invalid verification code.'))
+        # Validate verification code.
+        if not cherrypy.tools.auth_mfa.verify_code(code=self.code.data, persistent=self.persistent.data):
+            raise ValidationError(_('Invalid verification code.'))
 
 
 class MfaPage:
@@ -81,10 +74,10 @@ class MfaPage:
 
         # Validate MFA
         if form.validate_on_submit():
-            if form.submit.data:
-                raise cherrypy.tools.auth.redirect_to_original_url()
-            elif form.resend_code.data:
+            if form.resend_code.data:
                 self.send_code()
+            else:
+                raise cherrypy.tools.auth.redirect_to_original_url()
         if cherrypy.tools.auth_mfa.is_code_expired():
             # Send verification code if previous code expired.
             self.send_code()
