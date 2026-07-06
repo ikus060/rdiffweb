@@ -47,7 +47,7 @@ class AdminSessionPage:
             raise cherrypy.HTTPRedirect("")
 
         # Get list of current user's session
-        obj_list = SessionObject.query.filter().all()
+        obj_list = SessionObject.query.filter().order_by(SessionObject.access_time.desc()).all()
         active_sessions = [
             {
                 'number': obj.number,
