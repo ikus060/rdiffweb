@@ -1,5 +1,5 @@
 {% extends 'layout.html' %}
-{% set title = status %}
+{% block title %}{{ status }}{% endblock %}
 {% block content %}
   <div class="spacer"></div>
   <div class="rdw-container">
