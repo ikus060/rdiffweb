@@ -334,8 +334,12 @@ class NotificationPlugin(SimplePlugin):
         # For Each user with an email.
         for userobj in UserObject.query.filter(UserObject.email != ''):
             try:
-                # Identify repo with issues.
-                repo_objs = [r for r in userobj.repo_objs if r.status[0] != 'ok']
+                # Identify failed, overdue or inactive repo.
+                repo_objs = [
+                    r
+                    for r in userobj.repo_objs
+                    if r.status[0] in ['failed', 'overdue', 'inactive'] or r.is_overdue() or r.is_inactive()
+                ]
                 # Send email if required
                 if repo_objs:
                     self._queue_mail(

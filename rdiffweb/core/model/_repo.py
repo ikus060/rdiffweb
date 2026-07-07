@@ -367,7 +367,7 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
 
         return calendar_days + day_offset
 
-    def _is_overdue(self):
+    def is_overdue(self):
         """
         Return True if no backup session found within `maxage` active days,
         skipping ignored weekdays.
@@ -393,7 +393,7 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
         # If last backup is older than that many calendar days, it's overdue
         return elapsed_days >= required_calendar_days
 
-    def _is_inactive(self):
+    def is_inactive(self):
         """
         Return True if lastest backup session doesn't contains any activity.
         """
@@ -436,11 +436,11 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
             return ('broken', _("Unable to retrieve the backup status. Please try again later."), _("Broken"))
 
         # Check overdue
-        if self._is_overdue():
+        if self.is_overdue():
             return ('overdue', _('Last backup is older than %s days.') % self.maxage, _('Overdue'))
 
         # Check inactive
-        if self._is_inactive():
+        if self.is_inactive():
             return ('inactive', _('No file activity detected in the last %s days.') % self.inactivity, _('Inactive'))
 
         return repo_status

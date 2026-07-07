@@ -250,7 +250,7 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         repo_obj.commit()
         # When computing dates
         # Then value matches
-        self.assertTrue(repo_obj._is_overdue())
+        self.assertTrue(repo_obj.is_overdue())
         self.assertEqual(repo_obj.status[0], 'overdue')
 
     def test_is_inactive(self):
@@ -263,5 +263,5 @@ class RepoObjectTest(rdiffweb.test.WebCase):
         repo_obj.commit()
         # When computing dates
         # Then value matches
-        self.assertTrue(repo_obj._is_inactive())
+        self.assertTrue(repo_obj.is_inactive())
         self.assertEqual(repo_obj.status[0], 'inactive')
