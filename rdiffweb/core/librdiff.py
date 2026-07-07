@@ -714,21 +714,20 @@ class MetadataKeys:
     Provide a view on metadata dict keys. See MetadataDict#keys()
     """
 
-    def __init__(self, function, sequence):
-        self._f = function
-        self._sequence = sequence
+    def __init__(self, pairs):
+        self._pairs = pairs
 
     def __iter__(self):
-        return map(self._f, self._sequence)
+        return map(lambda pair: pair[0], self._pairs)
 
     def __getitem__(self, i):
         if isinstance(i, slice):
-            return list(map(self._f, self._sequence[i]))
+            return [pair[0] for pair in self._pairs[i]]
         else:
-            return self._f(self._sequence[i])
+            return self._pairs[i][0]
 
     def __len__(self):
-        return len(self._sequence)
+        return len(self._pairs)
 
 
 class MetadataDict(object):
@@ -747,14 +746,30 @@ class MetadataDict(object):
         self._cls = cls
 
     @cached_property
-    def _entries(self):
-        return [e for e in self._repo._entries if e.startswith(self._prefix)]
+    def _pairs(self):
+        """
+        List of (date, filename) tuples, sorted by *date* (not by name),
+        computed once and cached. This avoids the assumption that
+        filename lexicographic order == chronological order, which
+        breaks across timezone-offset changes.
+        """
+        pairs = []
+        for e in self._repo._entries:
+            if not e.startswith(self._prefix):
+                continue
+            date = self._cls._extract_date(e, onerror=lambda ex: None)
+            if date is None:
+                # Skip entries whose date cannot be parsed
+                continue
+            pairs.append((date, e))
+        pairs.sort(key=lambda t: t[0])
+        return pairs
 
     def __getitem__(self, key):
         if isinstance(key, (RdiffTime, datetime)):
             idx = bisect.bisect_left(self.keys(), key)
-            if idx < len(self._entries):
-                item = self._cls(self._repo, self._entries[idx])
+            if idx < len(self._pairs):
+                item = self._cls(self._repo, self._pairs[idx][1])
                 if item.date == key:
                     return item
             raise KeyError(key)
@@ -765,24 +780,24 @@ class MetadataDict(object):
             if isinstance(key.stop, (RdiffTime, datetime)):
                 idx = bisect.bisect_right(self.keys(), key.stop)
                 key = slice(key.start, idx, key.step)
-            return [self._cls(self._repo, e) for e in self._entries[key]]
+            return [self._cls(self._repo, pair[1]) for pair in self._pairs[key]]
         elif isinstance(key, int):
             try:
-                return self._cls(self._repo, self._entries[key])
+                return self._cls(self._repo, self._pairs[key][1])
             except IndexError:
                 raise KeyError(key)
         else:
             raise KeyError(key)
 
     def __iter__(self):
-        for e in self._entries:
+        for _key, e in self._pairs:
             yield self._cls(self._repo, e)
 
     def __len__(self):
-        return len(self._entries)
+        return len(self._pairs)
 
     def keys(self):
-        return MetadataKeys(lambda e: self._cls._extract_date(e), self._entries)
+        return MetadataKeys(self._pairs)
 
 
 class RdiffRepo(object):
@@ -881,7 +896,9 @@ class RdiffRepo(object):
         List content of rdiff-backup-data.
         """
         try:
+            # FIXME here we need to list the files, but because of the timezone shifting, we also need to sorted them using dates.
             return listdir(self._data_path)
+
         except FileNotFoundError:
             logger.warning(f'folder not found {self._data_path}', exc_info=1)
             self._entries_status = ('broken', _('The repository cannot be found or is badly damaged.'), _('Broken'))
@@ -904,11 +921,12 @@ class RdiffRepo(object):
         cached_properties = [
             (self, '_entries'),
             (self, 'status'),
-            (self.current_mirror, '_entries'),
-            (self.error_log, '_entries'),
-            (self.mirror_metadata, '_entries'),
-            (self.file_statistics, '_entries'),
-            (self.session_statistics, '_entries'),
+            (self.current_mirror, '_pairs'),
+            (self.error_log, '_pairs'),
+            (self.mirror_metadata, '_pairs'),
+            (self.file_statistics, '_pairs'),
+            (self.session_statistics, '_pairs'),
+            (self.session_statistics, '_pairs'),
         ]
         for obj, attr in cached_properties:
             if attr in obj.__dict__:

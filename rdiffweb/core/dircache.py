@@ -75,7 +75,7 @@ class DirCache(Monitor):
         # Miss or stale: refresh on caller’s thread (avoid holding the lock during I/O)
         if not _update:
             logger.debug("cache miss for %s", path)
-        names = sorted(e.name for e in os.scandir(path))
+        names = [e.name for e in os.scandir(path)]
         try:
             mtime2 = os.lstat(path).st_mtime_ns
         except OSError:
