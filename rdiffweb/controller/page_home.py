@@ -88,7 +88,7 @@ class HomePage:
                 repo.total_size = 0
 
         activity_end = RdiffTime()
-        activity_start = RdiffTime() - timedelta(days=90)
+        activity_start = RdiffTime() - timedelta(days=30)
 
         return {
             "userobj": userobj,
