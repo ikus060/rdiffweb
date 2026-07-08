@@ -1,5 +1,5 @@
 {% macro repo_card(repo) -%}
-  {% set status_color = {'ok': success_color, 'in_progress': info_color, 'broken': danger_color}.get(repo.status[0], warning_color) %}
+  {% set status_color = {'ok': bs_colors.success, 'in_progress': bs_colors.info, 'broken': bs_colors.danger}.get(repo.status[0], bs_colors.warning) %}
   <table width="100%"
          cellpadding="0"
          cellspacing="0"
@@ -18,9 +18,9 @@
                   <div style="font-size:12px;color:#6c757d;margin-top:2px;">{{ repo.notes or mdash }}</div>
                 </td>
                 <td align="right" valign="top">
-                  <span style="background: rgba({{ status_color }}, 0.5);
-                               color: {{ status_color }};
-                               border:1px solid {{ status_color }};
+                  {# Status Badge #}
+                  <span style="background: {{ status_color.bg_subtle }};
+                               color: {{ status_color.text_emphasis }};
                                border-radius:20px;
                                padding:3px 10px;
                                font-size:11px;
@@ -34,11 +34,11 @@
       {% if repo.status[0] != 'ok' %}
         <tr>
           <td style="padding:0 16px 10px;">
-            <div style="border:1px solid {{ status_color }};
-                        border-radius:6px;
+            <div style="border-radius:6px;
                         padding:8px 12px;
                         font-size:12px;
-                        color:{{ status_color }}">{{ repo.status[1] }}</div>
+                        background: {{ status_color.bg_subtle }};
+                        color: {{ status_color.text_emphasis }}">{{ repo.status[1] }}</div>
           </td>
         </tr>
       {% endif %}
@@ -108,7 +108,7 @@
                 {% set error_count = repo.session_statistics[-1].errors if repo.session_statistics else 0 %}
                 <td align="right"
                     style="font-size:11px;
-                           color:{{ danger_color if error_count else '#6c757d' }};
+                           color:{{ bs_colors.danger.color if error_count else '#6c757d' }};
                            font-weight:600">{{ _('%(count)s errors', count=error_count) }}</td>
               </tr>
             </tbody>

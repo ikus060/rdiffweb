@@ -182,10 +182,28 @@ class NotificationPlugin(SimplePlugin):
         # Add branding variable to template creation.
         param = {
             # Hardcode bootstrap colors.
-            'success_color': "rgb(25, 135, 84)",
-            'warning_color': "rgb(255, 193, 7)",
-            'info_color': "rgb(13, 202, 240)",
-            'danger_color': "rgb(220, 53, 69)",
+            'bs_colors': {
+                'success': {
+                    'color': "rgb(25, 135, 84)",
+                    'bg_subtle': "rgb(209, 231, 221)",
+                    'text_emphasis': "rgb(10, 54, 34)",
+                },
+                'warning': {
+                    'color': "rgb(255, 193, 7)",
+                    'bg_subtle': "rgb(255, 243, 205)",
+                    'text_emphasis': "rgb(102, 77, 3)",
+                },
+                'info': {
+                    'color': "rgb(13, 202, 240)",
+                    'bg_subtle': "rgb(207, 244, 252)",
+                    'text_emphasis': "rgb(5, 81, 96)",
+                },
+                'danger': {
+                    'color': "rgb(220, 53, 69)",
+                    'bg_subtle': "rgb(248, 214, 218)",
+                    'text_emphasis': "rgb(88, 21, 28)",
+                },
+            }
         }
         # Compile the email body
         with preferred_lang(userobj.lang):
