@@ -41,6 +41,7 @@
         <th scope="col">{% trans %}Repository{% endtrans %}</th>
         <th scope="col">{% trans %}Owner{% endtrans %}</th>
         <th scope="col" data-type="num">{% trans %}Last backup{% endtrans %}</th>
+        <th scope="col" data-type="num">{% trans %}Overdue Period{% endtrans %}</th>
         <th scope="col" data-type="num">{% trans %}Inactivity Period{% endtrans %}</th>
         <th scope="col" data-type="num">{% trans %}Retention Duration{% endtrans %}</th>
         <th scope="col">{% trans %}Status{% endtrans %}</th>
@@ -72,10 +73,19 @@
               class="text-muted small">
             <RdwTime :value="repo.last_backup_date" />
           </td>
-          {# Inactivity Period #}
+          {# Overdue Period #}
           <td data-search="{{ repo.maxage }}" data-order="{{ repo.maxage }}">
             {% if repo.maxage %}
               <span class="badge text-bg-light border">{{ ( repo.maxage * 86400 )| format_timedelta(threshold=0.99) }}</span>
+            {% else %}
+              <span class="text-muted small">&mdash;</span>
+            {% endif %}
+          </td>
+          {# Inactivity Period #}
+          <td data-search="{{ repo.inactivity }}"
+              data-order="{{ repo.inactivity }}">
+            {% if repo.inactivity %}
+              <span class="badge text-bg-light border">{{ ( repo.inactivity * 86400 )| format_timedelta(threshold=0.99) }}</span>
             {% else %}
               <span class="text-muted small">&mdash;</span>
             {% endif %}
