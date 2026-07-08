@@ -1,6 +1,6 @@
 {# def value #}
 {# css cf/vendor/bootstrap-icons/bootstrap-icons.css #}
 {%- set icon_table = {"user": "bi-person-fill", "repo": "bi-archive", "log": "bi-journal-text"} -%}
-<i {{ attrs.render(class="bi " + icon_table.get(value, value) ) }}
-   aria-hidden="true">
-</i>
+{# djlint:off #}
+<i {{ attrs.render(class="bi " + icon_table.get(value, value) ) }} aria-hidden="true"></i>
+{# djlint:on #}
