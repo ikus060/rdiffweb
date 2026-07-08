@@ -107,13 +107,22 @@ class DiskUsagePlugin(SimplePlugin):
                 f'du failed for path {path!r} (exit {process.returncode})', severity=logging.ERROR, context=CONTEXT
             )
 
-    def _update_disk_usage(self, repo_obj, logical_path, **kwargs):
+    def _update_disk_usage(self, repo_obj, logical_path, mirror_size=None, increments_size=None):
+        """
+        Update disk usage value for the given path.
+        """
+        # The new values.
+        values = {}
+        if mirror_size is not None:
+            values['mirror_size'] = mirror_size
+        if increments_size is not None:
+            values['increments_size'] = increments_size
         with cherrypy.db.session.begin():
             # Try to update first (most common case)
-            rows_updated = DiskUsage.query.filter_by(repoid=repo_obj.id, logical_path=logical_path).update(kwargs)
+            rows_updated = DiskUsage.query.filter_by(repoid=repo_obj.id, logical_path=logical_path).update(values)
             # If no row was updated, insert a new one
             if not rows_updated:
-                DiskUsage(repoid=repo_obj.id, logical_path=logical_path, **kwargs).add()
+                DiskUsage(repoid=repo_obj.id, logical_path=logical_path, **values).add()
 
     def _delete_disk_usage_older_than(self, repo_obj, cutoff: datetime):
         with cherrypy.db.session.begin():
@@ -157,6 +166,7 @@ class DiskUsagePlugin(SimplePlugin):
             cherrypy.log(f'scanning disk usage for repository {repo_path!r}', context=CONTEXT)
             scan_start = datetime.now(tz=timezone.utc) - timedelta(seconds=1)
             try:
+                rdiff_backup_data_size = 0
                 # Scan files to get disk usage with "du"
                 for size, subpath in self._scan_disk_usage(repo_path):
                     try:
@@ -166,7 +176,11 @@ class DiskUsagePlugin(SimplePlugin):
                         else:
                             logical_path = os.path.relpath(subpath, repo_path)
                             if logical_path.startswith(b'rdiff-backup-data'):
+                                rdiff_backup_data_size = size
                                 continue
+                            elif logical_path == b'.':
+                                # For the repository root, we need to substract the rdiff-backup-data folder size
+                                size = size - rdiff_backup_data_size
                             self._update_disk_usage(repo_obj, logical_path, mirror_size=size)
                     except Exception as e:
                         cherrypy.log(
