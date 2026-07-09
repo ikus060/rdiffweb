@@ -66,14 +66,6 @@ selenium:
     PYTEST_SPLITS: $CI_NODE_TOTAL
     PYTEST_GROUP: $CI_NODE_INDEX
   before_script:
-    # Black list broken version 150.0.7871.46
-    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1141488
-    - |
-      cat <<EOF > /etc/apt/preferences.d/chromium-driver-pin
-      Package: chromium*
-      Pin: version 150.0.7871.46*
-      Pin-Priority: -1
-      EOF
     - apt update
     - apt -y --no-install-recommends install xvfb xauth chromium-driver rdiff-backup
   artifacts:
