@@ -22,12 +22,5 @@ def is_admin():
         raise cherrypy.HTTPError(403)
 
 
-def is_maintainer():
-    # Validate the permissions.
-    if not cherrypy.serving.request.currentuser or not cherrypy.serving.request.currentuser.is_maintainer:
-        raise cherrypy.HTTPError(403)
-
-
 # Make sure it's running after authentication (priority = 72)
 cherrypy.tools.is_admin = cherrypy.Tool('before_handler', is_admin, priority=80)
-cherrypy.tools.is_maintainer = cherrypy.Tool('before_handler', is_maintainer, priority=80)
