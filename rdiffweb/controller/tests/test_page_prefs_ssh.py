@@ -152,6 +152,23 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
         self.assertStatus(303)
         self.assertEqual(0, len(list(user.authorizedkeys)))
 
+    def test_delete_as_user(self):
+        # Given a new user with a key
+        user = UserObject.add_user('myuser', password='test123')
+        user.add_authorizedkey(key=SSHKEY_TEST, comment="test@mysshkey")
+        user.commit()
+        # When user browse ssh key page.
+        self._login(username='myuser', password='test123')
+        self.getPage(PREFS_SSHKEYS)
+        # Then delete button is disabled
+        self.assertInBody('disabled')
+        # When user try to delete ssh key,
+        self._delete_ssh_key("4d:42:8b:35:e5:55:71:f7:b3:0d:58:f9:b1:2c:9e:91")
+        self.assertStatus(303)
+        self.getPage(PREFS_SSHKEYS)
+        self.assertStatus(200)
+        self.assertInBody("You don't have the permissions to delete ssh key.")
+
     def test_delete_invalid(self):
         # Delete existing keys
         user = UserObject.get_user('admin')

@@ -63,12 +63,17 @@
             </div>
             <!-- Actions -->
             <div class="flex-shrink-0">
-              <ButtonConfirm class="btn btn-outline-danger btn-sm rdw-btn-delete-sshkey"
-                             icon="bi-trash"
-                             :label="_('Delete')"
-                             target="#rdw-delete-sshkey-modal"
-                             :disabled="disable_ssh_keys"
-                             :data-fingerprint="key.fingerprint" />
+              <span class="d-inline-block"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="{{ _("You don't have the permissions to delete ssh key.") if not currentuser.is_maintainer else '' }}">
+                <ButtonConfirm class="btn btn-outline-danger btn-sm rdw-btn-delete-sshkey"
+                               icon="bi-trash"
+                               :label="_('Delete')"
+                               target="#rdw-delete-sshkey-modal"
+                               :disabled="disable_ssh_keys or not currentuser.is_maintainer"
+                               :data-fingerprint="key.fingerprint" />
+              </span>
             </div>
           </div>
         </div>

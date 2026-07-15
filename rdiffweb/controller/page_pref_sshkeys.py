@@ -29,7 +29,6 @@ from wtforms.fields import StringField
 from wtforms.validators import ValidationError
 from wtforms.widgets.core import TextArea
 
-from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core import authorizedkeys
 
@@ -79,7 +78,8 @@ class DeleteSshForm(DbForm):
         return super().is_submitted() and self.action.default in self.action.raw_data
 
     def populate_obj(self, userobj):
-        is_maintainer()
+        if not cherrypy.serving.request.currentuser.is_maintainer:
+            raise ValueError(_("You don't have the permissions to delete ssh key."))
         userobj.delete_authorizedkey(self.fingerprint.data)
 
 
