@@ -63,13 +63,19 @@
                 {%- endfor -%}
               </div>
             </div>
-            <button class="btn btn-sm btn-outline-danger flex-shrink-0 rdw-btn-delete-token"
-                    data-bs-toggle="modal"
-                    data-bs-target="#rdw-delete-token-modal"
-                    data-name="{{ token.name }}">
-              <RdwIcon value="bi-trash3" class="me-1" />
-              {%- trans %}Revoke{% endtrans %}
-            </button>
+            <span class="d-inline-block"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="{{ _("You don't have the permissions to delete access token.") if not currentuser.is_maintainer else '' }}">
+              <button class="btn btn-sm btn-outline-danger flex-shrink-0 rdw-btn-delete-token"
+                      data-bs-toggle="modal"
+                      data-bs-target="#rdw-delete-token-modal"
+                      data-name="{{ token.name }}"
+                      {% if not currentuser.is_maintainer %}disabled{% endif %}>
+                <RdwIcon value="bi-trash3" class="me-1" />
+                {%- trans %}Revoke{% endtrans %}
+              </button>
+            </span>
           </div>
         </div>
       {% else %}

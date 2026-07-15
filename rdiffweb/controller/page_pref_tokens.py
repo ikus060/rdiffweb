@@ -24,7 +24,6 @@ from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from wtforms.fields import DateTimeField, HiddenField, SelectMultipleField, StringField
 from wtforms.validators import DataRequired, Length, Optional, Regexp
 
-from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.controller.widgets import SelectMultipleWidget
 from rdiffweb.core.model import Token
@@ -141,7 +140,8 @@ class DeleteTokenForm(DbForm):
         return super().is_submitted() and self.action.default in self.action.raw_data
 
     def populate_obj(self, userobj):
-        is_maintainer()
+        if not cherrypy.serving.request.currentuser.is_maintainer:
+            raise ValueError(_("You don't have the permissions to delete access token."))
         userobj.delete_access_token(self.name.data)
 
 
@@ -162,12 +162,11 @@ class PagePrefTokens:
                 flash(
                     _(
                         "Your new personal access token has been created. "
-                        "Make sure to save it - you won't be able to access it again. "
-                        "%s"
-                    )
-                    % form.secret,
-                    level='info',
+                        "Make sure to save it - you won't be able to access it again."
+                    ),
+                    level='success',
                 )
+                flash(form.secret, level='success')
                 raise cherrypy.HTTPRedirect("")
         elif delete_form.validate_on_submit():
             if delete_form.save_to_db(currentuser):

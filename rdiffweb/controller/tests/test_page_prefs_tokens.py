@@ -218,6 +218,26 @@ class PagePrefTokensTest(rdiffweb.test.WebCase):
         # Then and audit log is added
         self.assertEqual({'tokens': [['test-token-name'], []]}, userobj.changes[-1].changes)
 
+    def test_delete_access_token_as_user(self):
+        # Given an existing user with access_token
+        userobj = UserObject.add_user('myuser', password='test123')
+        userobj.add_access_token('test-token-name')
+        userobj.commit()
+        self._login(username='myuser', password='test123')
+        # When displaying token page.
+        self.getPage("/prefs/tokens")
+        # Then the revoke buttont is disabled.
+        self.assertInBody("disabled")
+        # When user try to delete access token
+        self.getPage(
+            "/prefs/tokens",
+            method='POST',
+            body={'action': 'delete', 'name': 'test-token-name'},
+        )
+        # Then page return error
+        self.assertStatus(200)
+        self.assertInBody("You don't have the permissions to delete access token.")
+
     def test_add_token_selenium(self):
         # Given a user without ssh key
         user_obj = UserObject.get_user('admin')
