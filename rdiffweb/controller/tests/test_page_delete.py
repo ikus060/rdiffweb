@@ -246,6 +246,7 @@ class DeleteRepoTest(rdiffweb.test.WebCase):
         # Try to delete own own repo
         self._delete('user', 'testcases', 'testcases')
         self.assertStatus(403)
+        self.assertInBody("You don&#39;t have the permissions to delete repository.")
 
         # Check database don't change
         self.assertEqual(['broker-repo', 'testcases'], [r.name for r in user_obj.repo_objs])

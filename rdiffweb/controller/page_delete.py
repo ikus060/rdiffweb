@@ -22,7 +22,6 @@ from cherrypy_foundation.url import url_for
 from wtforms.fields import StringField
 from wtforms.validators import DataRequired, ValidationError
 
-from rdiffweb.controller.filter_authorization import is_maintainer
 from rdiffweb.controller.formdb import DbForm
 from rdiffweb.core.librdiff import AccessDeniedError, DoesNotExistError
 from rdiffweb.core.model import RepoObject
@@ -55,7 +54,8 @@ class DeletePage:
         # Check if path exists with fstats
         path_obj = repo.fstat(path)
         # Check user's permissions
-        is_maintainer()
+        if not cherrypy.serving.request.currentuser.is_maintainer:
+            raise cherrypy.HTTPError(403, _("You don't have the permissions to delete repository."))
 
         # validate form
         form = DeleteRepoForm()
