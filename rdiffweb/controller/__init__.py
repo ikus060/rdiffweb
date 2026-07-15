@@ -151,7 +151,7 @@ def breadcrumb_repo(repo, page=None, path=None, extend=False):
     currentuser = cherrypy.serving.request.currentuser
     if currentuser != repo.user:
         return [
-            (url_for('admin', 'repos'), _("@%s") % repo.user.username),
+            (url_for('home', repo.user.username), _("@%s") % repo.user.username),
             (url_for('browse', repo), repo.display_name),
         ]
 
