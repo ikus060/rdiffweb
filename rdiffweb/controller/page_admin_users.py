@@ -481,7 +481,13 @@ class AdminUsersPage:
         form = TokenForm()
         if form.validate():
             if form.save_to_db(userobj):
-                flash(_('Access token added.'))
+                flash(
+                    Markup(
+                        _("Copy this token now — for security reasons, it <strong>will not be shown again</strong>.")
+                    ),
+                    level='success',
+                )
+                flash(form.secret, level='success')
         if form.error_message:
             flash(form.error_message, level='error')
         raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', username))

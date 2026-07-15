@@ -819,10 +819,13 @@ class AdminTest(rdiffweb.test.WebCase):
             submit_btn.click()
             # Then page get reloaded
             WebDriverWait(driver, 10).until(EC.staleness_of(submit_btn))
-            # Then SSH Key got added to the user.
+            # Then Token got added to the user.
             user.expire()
             self.assertEqual(1, len(user.tokens))
             self.assertEqual('foo', user.tokens[0].name)
+            # Then Token is displayed.
+            alerts = driver.find_elements('css selector', '.alert-success')
+            self.assertRegex(alerts[1].text, "[a-z]{16}")
 
     def test_delete_token_selenium(self):
         user = UserObject.add_user('olivia', 'test123').add()
