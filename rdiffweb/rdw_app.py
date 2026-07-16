@@ -128,6 +128,20 @@ def _lastupdated(dt, format='medium'):
     return format_timedelta(diff, add_direction=True)
 
 
+def user_from_key_func(username_or_id):
+    """
+    Return the UserObject for the given username.
+    """
+    # Here we need to execute the query within it's own transaction.
+    # Otherwise session_timeouts update will detect the transaction
+    # keep the database locked.
+    with cherrypy.db.session.begin() as sess:
+        user = UserObject.get_user(username_or_id)
+        # Here we expunge the object to keep the attribute loaded.
+        sess.expunge(user)
+    return user
+
+
 @cherrypy.tools.allow(methods=['GET'])
 @cherrypy.tools.auth(
     session_user_key=SessionObject.SESSION_USER_KEY,
