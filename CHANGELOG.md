@@ -6,12 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
-## Unreleased
+## [7.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/7.0.0) - 2026-07-17
 
-<small>[Compare with latest](https://gitlab.com/ikus-soft/rdiffweb/compare/6.2.5...HEAD)</small>
+<small>[Compare with 6.2.5](https://gitlab.com/ikus-soft/rdiffweb/compare/6.2.5...7.0.0)</small>
 
 ### Added
 
+- admin-repos: add link to error count ([7661e6b](https://gitlab.com/ikus-soft/rdiffweb/commit/7661e6bbf3534ceae342788d2a67659b371dd814) by Patrik Dufresne).
+- app: add user_from_key_func for session-scoped user lookup ([089403c](https://gitlab.com/ikus-soft/rdiffweb/commit/089403cb8524a7a95e6ea99a03410af890635dd8) by Patrik Dufresne).
+- heatmap: add max height to square cell ([c734e3d](https://gitlab.com/ikus-soft/rdiffweb/commit/c734e3d62a43cc27386fdeea68b5459d5cc5228f) by Patrik Dufresne).
+- admin: add inactivity period column to repos table ([47caa04](https://gitlab.com/ikus-soft/rdiffweb/commit/47caa04a52aa0a73c0f262c3949dbc2a255b5f2b) by Patrik Dufresne).
+- api: add inactivity field and capabilities to repo settings ([a5c8104](https://gitlab.com/ikus-soft/rdiffweb/commit/a5c8104a35116c643f36c0a095b14a20fa8884a6) by Patrik Dufresne).
+- login: add dynamic autofocus based on prefilled username field ([f306671](https://gitlab.com/ikus-soft/rdiffweb/commit/f3066719c2b2862f7c6fa326a82a48819116a52c) by Patrik Dufresne).
+- sidebar: add placeholder when no repos ([8deb9ba](https://gitlab.com/ikus-soft/rdiffweb/commit/8deb9ba5c855bac90a29be7a527ea08c25370544) by Patrik Dufresne).
+- ci: add automation to generate changelog ([ea74886](https://gitlab.com/ikus-soft/rdiffweb/commit/ea74886a0f6ecb6aafe16d8a9365d256ec86565d) by Patrik Dufresne).
 - sqlite: add PRAGMA synchronous=NORMAL on connect ([335e50f](https://gitlab.com/ikus-soft/rdiffweb/commit/335e50f5fd4ef71be9f412d41781d14a5542c0c0) by Patrik Dufresne).
 - deps: add jinjax dependency with broken version exclusion ([933413b](https://gitlab.com/ikus-soft/rdiffweb/commit/933413b6c486ae8db1c8cba39c15fcf78105415c) by Patrik Dufresne).
 - debian: add dedicated log directory for rdiffweb ([b620a7a](https://gitlab.com/ikus-soft/rdiffweb/commit/b620a7a76c1b9c1c08118d540d28f8dba02b10ea) by Patrik Dufresne).
@@ -41,6 +49,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- tox: fix git-changelog configuration ([baadb62](https://gitlab.com/ikus-soft/rdiffweb/commit/baadb62b93405967e34e87a2ca7a8c09a1c82eea) by Patrik Dufresne).
+- minarca: fix missing text-light class on French docs link ([8bc563b](https://gitlab.com/ikus-soft/rdiffweb/commit/8bc563b3b7b7fecf5f360e9de1d3b0b4f21bacaf) by Patrik Dufresne).
+- mfa: fix MFA form layout using shared block ([2124497](https://gitlab.com/ikus-soft/rdiffweb/commit/21244972ac0be8961d9339268864626c0d666593) by Patrik Dufresne).
+- diskusage: fix repository root size calculation excluding rdiff-backup-data ([19f884c](https://gitlab.com/ikus-soft/rdiffweb/commit/19f884c792ac58420137114d8cdab317a5513fbb) by Patrik Dufresne).
+- template: fix format RdwIcon icon markup for djlint ([7df14eb](https://gitlab.com/ikus-soft/rdiffweb/commit/7df14eb38f0098f73f981deb535c91bea0202360) by Patrik Dufresne).
+- librdiff: fix metadata entries sorting by date instead of filename ([8ef1aca](https://gitlab.com/ikus-soft/rdiffweb/commit/8ef1aca60280b75fb552d0d08e0bee8d8ac6d9e6) by Patrik Dufresne).
+- templates: fix error page title block rendering ([4b4d189](https://gitlab.com/ikus-soft/rdiffweb/commit/4b4d18954fc7fd751c94a61f691d8540d4a27623) by Patrik Dufresne).
+- repo: fix active-day calculation for overdue and inactive backup checks ([a76d4c5](https://gitlab.com/ikus-soft/rdiffweb/commit/a76d4c5e57dd6356f748557444114730b339a670) by Patrik Dufresne).
+- test: fix race condition in test_delete_repo ([ad7fa01](https://gitlab.com/ikus-soft/rdiffweb/commit/ad7fa015114c0f32995e31ce876d014405810845) by Patrik Dufresne).
+- model: fix database session cleanup in async deletion jobs ([70eee60](https://gitlab.com/ikus-soft/rdiffweb/commit/70eee60e176c0473588d30789f4a9bdd883870da) by Patrik Dufresne).
 - main: fix jinjax logger verbosity in debug mode ([2bdaa46](https://gitlab.com/ikus-soft/rdiffweb/commit/2bdaa46bc9bba4d25b38f646ca5cee3579ecc7ae) by Patrik Dufresne).
 - admin_session: fix icons shown when session time values are missing ([cbe171a](https://gitlab.com/ikus-soft/rdiffweb/commit/cbe171a4450eecf876b143837a0befb03e36a435) by Patrik Dufresne).
 - diskusage: fix skip disk usage scan for non-existent repository folder ([7e2979c](https://gitlab.com/ikus-soft/rdiffweb/commit/7e2979c68a8ad753d55331df56e7ac7332e808d0) by Patrik Dufresne).
@@ -64,6 +82,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- model: change logical_path into parent_path and child_name columns ([9e844a8](https://gitlab.com/ikus-soft/rdiffweb/commit/9e844a86d98a9452f66f9591fc2b59e63268b18d) by Patrik Dufresne).
+- breadcrumb: change username to link to home dashboard ([983c0ed](https://gitlab.com/ikus-soft/rdiffweb/commit/983c0ed22fa1502d0d62ff10f2eaa43e11c2abdf) by Patrik Dufresne).
+- notification: change email templates to use nested bootstrap color palette ([61f9029](https://gitlab.com/ikus-soft/rdiffweb/commit/61f90297622aac0db82d6a426d54bf4682e8d8f9) by Patrik Dufresne).
+- home: change backup activity time range from 90 to 30 days ([caf4a78](https://gitlab.com/ikus-soft/rdiffweb/commit/caf4a7833a7e4f9531eeaf24d0e2a58c1ab89f84) by Patrik Dufresne).
 - history: change limit to 100 ([01f5d2d](https://gitlab.com/ikus-soft/rdiffweb/commit/01f5d2de671a69f4ca51f1339de238e7503e96b7) by Patrik Dufresne).
 - admin_sysinfo: change <td> to <th> for row header cells ([8012969](https://gitlab.com/ikus-soft/rdiffweb/commit/8012969405d2e00620248b05ec718cb29c10a3cc) by Patrik Dufresne).
 - packaging: change privilege drop from systemd to config file ([9ac0358](https://gitlab.com/ikus-soft/rdiffweb/commit/9ac0358df9cf3f46cdf3533902bf0ba65c0b2d75) by Patrik Dufresne).
@@ -79,6 +101,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Removed
 
+- auth: remove is_maintainer checks ([5f5c046](https://gitlab.com/ikus-soft/rdiffweb/commit/5f5c046752ad13efd70d0a73e0e868d855dd47c7) by Patrik Dufresne).
+- notification: remove in_progress and interupted from notifications ([a3960ea](https://gitlab.com/ikus-soft/rdiffweb/commit/a3960eaa4fa6c684bd058019e725d7345668b1e1) by Patrik Dufresne).
 - minarca: remove unused imports and extend flake8 coverage ([baac400](https://gitlab.com/ikus-soft/rdiffweb/commit/baac4006b1fb41bc0b653719f1d29c18cd91bb85) by Patrik Dufresne).
 - rdiffweb: remove ActivityPlugin and inline activity logging into model layer ([bd0e8df](https://gitlab.com/ikus-soft/rdiffweb/commit/bd0e8df445c048549c7b43396502fb476bb54bd1) by Patrik Dufresne).
 - code: remove dead code ([ec4e867](https://gitlab.com/ikus-soft/rdiffweb/commit/ec4e867e248e5420320fb38417c326e806a77794) by Patrik Dufresne).
@@ -104,6 +128,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Misc
 
+- sidebar: refactor repo list branches and drop fullname capitalize ([fbe5823](https://gitlab.com/ikus-soft/rdiffweb/commit/fbe582399fc8b2cfbb392ed0c9dfb7877d6c41c7) by Patrik Dufresne).
+- sshkeys: inline maintainer permission checks ([6ecc16e](https://gitlab.com/ikus-soft/rdiffweb/commit/6ecc16e27f9a50bc152e554fcd7739c93d5107fc) by Patrik Dufresne).
+- tokens: inline maintainer permission checks and improve token secret display ([cde87df](https://gitlab.com/ikus-soft/rdiffweb/commit/cde87df2d9d97ab0ad2e8724b1ff756297d72679) by Patrik Dufresne).
+- delete: inline maintainer permission checks ([d103302](https://gitlab.com/ikus-soft/rdiffweb/commit/d10330253d0e9c39592b41326d3040301a1a1a9c) by Patrik Dufresne).
+- admin-users: improve token secret display ([13261bc](https://gitlab.com/ikus-soft/rdiffweb/commit/13261bc5e7d58d33a20fb2b5d925f48bbaab997d) by Patrik Dufresne).
+- Revert "ci: black list broken chromium-driver version" ([d80afae](https://gitlab.com/ikus-soft/rdiffweb/commit/d80afaef48dfd4939d82d5f9bf8c0e654b12ae18) by Patrik Dufresne).
+- ci: black list broken chromium-driver version ([85eb8fe](https://gitlab.com/ikus-soft/rdiffweb/commit/85eb8fe4262b9cfdf04f8b8b4a508c1f275ef9bb) by Patrik Dufresne).
+- mfa: simplify form validation by removing duplicate submit field ([31ce3fd](https://gitlab.com/ikus-soft/rdiffweb/commit/31ce3fd5ced4660d741f7bf1aed8b1e8108a45f0) by Patrik Dufresne).
+- admin: sort session list by access time ([933b8d3](https://gitlab.com/ikus-soft/rdiffweb/commit/933b8d344d9f8471f2798ca7dd4c240e73ad413d) by Patrik Dufresne).
+- repo: rename status 'failed' to 'broken' across codebase ([761352a](https://gitlab.com/ikus-soft/rdiffweb/commit/761352a1514dbf0c28d2a36af3e3db11d0d7394c) by Patrik Dufresne).
+- templates: apply consistent styling to description paragraphs ([37df627](https://gitlab.com/ikus-soft/rdiffweb/commit/37df627c1ce39327d9d7edb78d2594c5d76904f5) by Patrik Dufresne).
+- admin: replace joinedload with aggregated count query for user list ([df31f87](https://gitlab.com/ikus-soft/rdiffweb/commit/df31f87462b76730ca1ab6694b28f47a6ce1323b) by Patrik Dufresne).
+- templates: move footer from layout to sidebar ([13f9c82](https://gitlab.com/ikus-soft/rdiffweb/commit/13f9c82594408e2b0bfb04d0a620f05f815cc6a2) by Patrik Dufresne).
+- i18n: update french translation catalog ([88dbf70](https://gitlab.com/ikus-soft/rdiffweb/commit/88dbf70248b8981c0d9f24f5594639a04b1e0413) by Patrik Dufresne).
+- i18n: enable trimmed trans blocks and jinjax in babel ([abd4263](https://gitlab.com/ikus-soft/rdiffweb/commit/abd4263469f5278777efcf322caf4495122ae5af) by Patrik Dufresne).
+- minarca-server: replace snakeoil-based SplitExec with native fork/ctypes jail ([dd254f1](https://gitlab.com/ikus-soft/rdiffweb/commit/dd254f1f9a9dd598c79536d065a586c4b8c5a52d) by Patrik Dufresne).
 - i18n: update french translations and clean up formatting across templates and controllers ([1ddae4e](https://gitlab.com/ikus-soft/rdiffweb/commit/1ddae4eab622e099583c2e3f875bb286842cdc5a) by Patrik Dufresne).
 - templates: replace inline time elements with RdwTime component ([2766ddc](https://gitlab.com/ikus-soft/rdiffweb/commit/2766ddcd8c53b36ae8186f4a6185bf9113fcdbf2) by Patrik Dufresne).
 - librdiff: cache _entries property and invalidate on refresh ([ced0d69](https://gitlab.com/ikus-soft/rdiffweb/commit/ced0d69b2b6562ea6028bbdd1e005888b588f89a) by Patrik Dufresne).
@@ -187,7 +227,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Updating upstream contact in debian/copyright ([3433aef](https://gitlab.com/ikus-soft/rdiffweb/commit/3433aefd117509ad8c76a6fdc4936265a8f58f39) by Patrik Dufresne).
 - Update Debian packaging ([40d80fd](https://gitlab.com/ikus-soft/rdiffweb/commit/40d80fdcfb844aa98c151a645698c498551fd837) by Patrik Dufresne).
 
-<!-- insertion marker -->
 
 ## [6.2.5](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.5) - 2026-04-29
 

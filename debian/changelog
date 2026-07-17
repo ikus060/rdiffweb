@@ -1,4 +1,4 @@
-rdiffweb (6.2.5+20260617-1) UNRELEASED; urgency=medium
+rdiffweb (7.0.0-1) unstable; urgency=medium
 
   * Update Debian packaging
   * Updating upstream contact in debian/copyright
@@ -25,7 +25,8 @@ rdiffweb (6.2.5+20260617-1) UNRELEASED; urgency=medium
   * ui: update login background image
   * ui: show nothing in navbar when no repositories
   * ui: adjust overflow in sidebar menu
-  * ui: collapse and expand repo, admin and user profile menu based on active page
+  * ui: collapse and expand repo, admin and user profile menu based on active
+    page
   * ui: update breadcrumb for all pages
   * ui: add support for jinjax render_assets
   * ui: update to new Datatable implementation
@@ -73,7 +74,8 @@ rdiffweb (6.2.5+20260617-1) UNRELEASED; urgency=medium
   * storage-usage: remove obsolete code
   * ui: update admin user sessions page layout
   * templates: change table styling and layout improvements
-  * activity: review implementation and layout of all activity view in repo, user and admin
+  * activity: review implementation and layout of all activity view in repo,
+    user and admin
   * ui, update sysinfo page layout
   * ui: update admin logs page layout
   * template: use new widget for report_time_range selection
@@ -113,7 +115,8 @@ rdiffweb (6.2.5+20260617-1) UNRELEASED; urgency=medium
   * minarca: update branding
   * templating: remove unused attrib helper and related files
   * code: remove unused rdw_helpers and related files
-  * home: change storage usage display to use repo objects with detailed size breakdown
+  * home: change storage usage display to use repo objects with detailed size
+    breakdown
   * minarca-server: optimize authorized_keys generation using direct query
   * admin/users: fix N+1 query by using joinedload for user relations
   * home: fix N+1 query by using lazy loading
@@ -150,7 +153,8 @@ rdiffweb (6.2.5+20260617-1) UNRELEASED; urgency=medium
   * tokens: add validation for token name format and length
   * admin_session: fix icons shown when session time values are missing
   * audit: add author_username column to Message model and remove author join
-  * i18n: update french translations and clean up formatting across templates and controllers
+  * i18n: update french translations and clean up formatting across templates
+    and controllers
   * debian: add dedicated log directory for rdiffweb
   * debian: remove bundled static asset exclusions and symlinks
   * debian: remove chart.js and chartkick.js symlink handling
@@ -162,8 +166,49 @@ rdiffweb (6.2.5+20260617-1) UNRELEASED; urgency=medium
   * minarca: remove unused imports and extend flake8 coverage
   * main: fix jinjax logger verbosity in debug mode
   * history: change limit to 100
+  * ci: add automation to generate changelog
+  * model: fix database session cleanup in async deletion jobs
+  * test: fix race condition in test_delete_repo
+  * sidebar: add placeholder when no repos
+  * login: add dynamic autofocus based on prefilled username field
+  * minarca-server: replace snakeoil-based SplitExec with native fork/ctypes
+    jail
+  * api: add inactivity field and capabilities to repo settings
+  * repo: fix active-day calculation for overdue and inactive backup checks
+  * i18n: enable trimmed trans blocks and jinjax in babel
+  * i18n: update french translation catalog
+  * templates: move footer from layout to sidebar
+  * admin: replace joinedload with aggregated count query for user list
+  * templates: apply consistent styling to description paragraphs
+  * repo: rename status 'failed' to 'broken' across codebase
+  * admin: sort session list by access time
+  * mfa: simplify form validation by removing duplicate submit field
+  * templates: fix error page title block rendering
+  * librdiff: fix metadata entries sorting by date instead of filename
+  * notification: remove in_progress and interupted from notifications
+  * ci: black list broken chromium-driver version
+  * admin: add inactivity period column to repos table
+  * template: fix format RdwIcon icon markup for djlint
+  * home: change backup activity time range from 90 to 30 days
+  * diskusage: fix repository root size calculation excluding rdiff-backup-data
+  * notification: change email templates to use nested bootstrap color palette
+  * heatmap: add max height to square cell
+  * Revert "ci: black list broken chromium-driver version"
+  * admin-users: improve token secret display
+  * delete: inline maintainer permission checks
+  * tokens: inline maintainer permission checks and improve token secret display
+  * sshkeys: inline maintainer permission checks
+  * auth: remove is_maintainer checks
+  * breadcrumb: change username to link to home dashboard
+  * app: add user_from_key_func for session-scoped user lookup
+  * model: change logical_path into parent_path and child_name columns
+  * admin-repos: add link to error count
+  * mfa: fix MFA form layout using shared block
+  * minarca: fix missing text-light class on French docs link
+  * sidebar: refactor repo list branches and drop fullname capitalize
+  * tox: fix git-changelog configuration
 
- -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 17 Jun 2026 13:31:14 -0400
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 17 Jul 2026 11:30:17 -0400
 
 rdiffweb (6.2.5-1) unstable; urgency=medium
 
