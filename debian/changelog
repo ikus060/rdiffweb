@@ -1,3 +1,9 @@
+rdiffweb (7.0.1-1) unstable; urgency=medium
+
+  * ci: fix changelog update for debian release
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 17 Jul 2026 13:10:43 -0400
+
 rdiffweb (7.0.0-1) unstable; urgency=medium
 
   * Update Debian packaging
