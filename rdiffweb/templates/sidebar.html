@@ -31,9 +31,10 @@
                :icon="home_page.icon"
                :active="home_page.id in [active_page.id, self.active_page]" />
     </ul>
-    {# Repo list #}
     {% set admin_expended = active_page in page_registry.get_admin_nav_pages(in_menu=None) %}
     {% set user_expended = active_page in page_registry.get_prefs_nav_pages(in_menu=None) %}
+    {% set active_repo = repo | d(False) %}
+    {% set active_user = userobj | d(currentuser) %}
     {% if admin_expended %}
       {# Administration - expanded #}
       <div class="navbar-text mt-2">
@@ -59,67 +60,69 @@
                    :active="page.id == active_page.id or page.id == active_page.active_page" />
         {% endfor %}
       </ul>
-    {% else %}
-      {% set active_repo = repo | d(False) %}
-      {% if active_repo %}
-        <div class="navbar-text mt-2 fw-bold">
-          {% if currentuser == active_repo.user %}
-            {% trans %}My Repositories{% endtrans %}
-          {% else %}
-            {{ _("%(fullname)s's Repositories", fullname=(active_repo.user.fullname or active_repo.user.username).capitalize()) }}
-          {% endif %}
-        </div>
-        {# When repo selected, display a dropdown with selected repo. #}
-        <ul class="nav navbar-nav flex-column">
-          <li class="nav-item dropdown w-100">
-            <NavItemRepo class="nav-link" repo={{ repo }} active={{ active_repo==repo }} data-bs-toggle="dropdown" href="#">
-              <RdwIcon value="bi-chevron-down" class="fs-4" />
-            </NavItemRepo>
-            <ul class="dropdown-menu w-100">
-              {% for repo in active_repo.user.repo_objs | sort(attribute='name') %}
-                <li class="w-100">
-                  <NavItemRepo class="dropdown-item" repo={{ repo }} active={{ active_repo==repo }} />
-                </li>
+    {% elif active_repo %}
+      {# Show dropdown list of repositories. #}
+      <div class="navbar-text mt-2 fw-bold">
+        {% if currentuser == active_repo.user %}
+          {% trans %}My Repositories{% endtrans %}
+        {% else %}
+          {{ _("%(fullname)s's Repositories", fullname=(active_repo.user.fullname or active_repo.user.username) ) }}
+        {% endif %}
+      </div>
+      {# When repo selected, display a dropdown with selected repo. #}
+      <ul class="nav navbar-nav flex-column">
+        <li class="nav-item dropdown w-100">
+          <NavItemRepo class="nav-link" repo={{ repo }} active={{ active_repo==repo }} data-bs-toggle="dropdown" href="#">
+            <RdwIcon value="bi-chevron-down" class="fs-4" />
+          </NavItemRepo>
+          <ul class="dropdown-menu w-100">
+            {% for repo in active_repo.user.repo_objs | sort(attribute='name') %}
+              <li class="w-100">
+                <NavItemRepo class="dropdown-item" repo={{ repo }} active={{ active_repo==repo }} />
+              </li>
+            {% endfor %}
+          </ul>
+        </li>
+      </ul>
+      <ul id="rdw-overflow-menu"
+          class="nav navbar-nav flex-column mt-2 flex-nowrap">
+        {% set insights_pages = page_registry.get_insight_nav_pages() %}
+        {% for page in page_registry.get_repo_nav_pages() %}
+          <NavItem :label="page.label"
+                   :href="url_for(page, repo)"
+                   :icon="page.icon"
+                   :active="page.id == active_page.id or page.id == active_page.active_page" />
+          {# Show graphs sub-menu #}
+          {% if page.id == 'insights' and active_page in insights_pages %}
+            <ul class="nav navbar-nav flex-column mt-2 ms-5">
+              {% for page in insights_pages %}
+                <NavItem :label="page.label"
+                         :href="url_for(page, repo)"
+                         :active="page.id == active_page.id or page.id == active_page.active_page" />
               {% endfor %}
             </ul>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% elif active_user and active_user.repo_objs %}
+      {# Display expended repository list. #}
+      <div class="navbar-text mt-2 fw-bold">
+        {% if currentuser == active_user %}
+          {% trans %}My Repositories{% endtrans %}
+        {% else %}
+          {{ _("%(fullname)s's Repositories", fullname=active_user.fullname or active_user.username) }}
+        {% endif %}
+      </div>
+      <ul id="rdw-overflow-menu" class="nav navbar-nav flex-column flex-nowrap">
+        {% for repo in currentuser.repo_objs | sort(attribute='name') %}
+          <li class="w-100 nav-item">
+            <NavItemRepo class="nav-link" repo={{ repo }} />
           </li>
-        </ul>
-        <ul id="rdw-overflow-menu"
-            class="nav navbar-nav flex-column mt-2 flex-nowrap">
-          {% set insights_pages = page_registry.get_insight_nav_pages() %}
-          {% for page in page_registry.get_repo_nav_pages() %}
-            <NavItem :label="page.label"
-                     :href="url_for(page, repo)"
-                     :icon="page.icon"
-                     :active="page.id == active_page.id or page.id == active_page.active_page" />
-            {# Show graphs sub-menu #}
-            {% if page.id == 'insights' and active_page in insights_pages %}
-              <ul class="nav navbar-nav flex-column mt-2 ms-5">
-                {% for page in insights_pages %}
-                  <NavItem :label="page.label"
-                           :href="url_for(page, repo)"
-                           :active="page.id == active_page.id or page.id == active_page.active_page" />
-                {% endfor %}
-              </ul>
-            {% endif %}
-          {% endfor %}
-        </ul>
-      {% elif currentuser and currentuser.repo_objs %}
-        {# Display all repo. #}
-        <div class="navbar-text mt-2">
-          <strong>{% trans %}My Repositories{% endtrans %}</strong>
-        </div>
-        <ul id="rdw-overflow-menu" class="nav navbar-nav flex-column flex-nowrap">
-          {% for repo in currentuser.repo_objs | sort(attribute='name') %}
-            <li class="w-100 nav-item">
-              <NavItemRepo class="nav-link" repo={{ repo }} />
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        {# Placeholder #}
-        <div class="d-flex flex-grow-1"></div>
-      {% endif %}
+        {% endfor %}
+      </ul>
+    {% else %}
+      {# Placeholder #}
+      <div class="d-flex flex-grow-1"></div>
     {% endif %}
     {# Administration #}
     <ul class="navbar-nav flex-column">

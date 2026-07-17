@@ -8,9 +8,7 @@
         <h2 class="fw-bold mb-0">{% trans %}My Repositories{% endtrans %}</h2>
         <p class="text-muted small mb-0">{% trans %}Overview of all your protected repositories{% endtrans %}</p>
       {% else %}
-        <h2 class="fw-bold mb-0">
-          {{ _("%(fullname)s's Repositories", fullname=(userobj.fullname or userobj.username).capitalize()) }}
-        </h2>
+        <h2 class="fw-bold mb-0">{{ _("%(fullname)s's Repositories", fullname=userobj.fullname or userobj.username) }}</h2>
         <p class="text-muted small mb-0">{% trans %}Overview of all the protected repositories{% endtrans %}</p>
       {% endif %}
     </div>
