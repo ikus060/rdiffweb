@@ -15,22 +15,24 @@
         {# Centered login form #}
         <div class="flex-grow-1 d-flex align-items-center px-5">
           <div class="col-xs-12 col-lg-8 offset-lg-2 col-xl-6 offset-xl-3">
-            <h2>{% trans %}Connection{% endtrans %}</h2>
-            <div class="form-login">
-              <cf:Flash messages={{ get_flashed_messages() }} class="mb-2" />
-              <form role="form" method="post" action="{{ url_for() }}">
-                <cf:Fields form={{ form }} floating={{ True }} />
-                <button type="submit" class="btn btn-primary btn-lg w-100">{% trans %}Sign in{% endtrans %}</button>
-              </form>
-              {% if oauth_enabled %}
-                <div class="rdw-divider d-flex align-items-center my-4">
-                  <p class="text-center fw-bold mx-3 mb-0 text-muted">{% trans %}OR{% endtrans %}</p>
-                </div>
-                <a href="{{ url_for("/oauth/login") }}"
-                   class="btn btn-outline-primary btn-lg w-100"
-                   role="button">{% trans %}Sign in with {{ oauth_provider_name }}{% endtrans %}</a>
-              {% endif %}
-            </div>
+            {% block form_login %}
+              <h2>{% trans %}Connection{% endtrans %}</h2>
+              <div class="form-login">
+                <cf:Flash messages={{ get_flashed_messages() }} class="mb-2" />
+                <form role="form" method="post" action="{{ url_for() }}">
+                  <cf:Fields form={{ form }} floating={{ True }} />
+                  <button type="submit" class="btn btn-primary btn-lg w-100">{% trans %}Sign in{% endtrans %}</button>
+                </form>
+                {% if oauth_enabled %}
+                  <div class="rdw-divider d-flex align-items-center my-4">
+                    <p class="text-center fw-bold mx-3 mb-0 text-muted">{% trans %}OR{% endtrans %}</p>
+                  </div>
+                  <a href="{{ url_for("/oauth/login") }}"
+                     class="btn btn-outline-primary btn-lg w-100"
+                     role="button">{% trans %}Sign in with {{ oauth_provider_name }}{% endtrans %}</a>
+                {% endif %}
+              </div>
+            {% endblock %}
           </div>
         </div>
         <RdwFooter class="small text-center mt-auto" />

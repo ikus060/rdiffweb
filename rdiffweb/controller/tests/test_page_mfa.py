@@ -91,6 +91,7 @@ class MfaPageTest(rdiffweb.test.WebCase):
         self.assertInBody(
             "Multi-factor authentication is enabled for your account, but your account does not have a valid email address to send the verification code to. Check your account settings with your administrator."
         )
+        self.assertInBody("Login with a different account")
 
     def test_get_with_trusted(self):
         # Given an authenticated user with MFA enabled and already verified

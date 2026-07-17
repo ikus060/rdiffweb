@@ -1,23 +1,21 @@
 {% extends 'login.html' %}
-{% block content %}
-  <div class="container mb-auto">
-    <div class="row">
-      <div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8 form-login">
-        <form id="form-login" role="form" method="post" action="{{ url_for() }}">
-          <h2>{% trans %}Login Verification{% endtrans %}</h2>
-          {% include 'message.html' %}
-          <p>
-            {% trans %}Two-Factor Authentication is enabled for your account. To verify your account, you must enter the code that was sent to your email address.{% endtrans %}
-          </p>
-          <cf:Fields form={{ form }} floating={{ True }} />
-        </form>
-        {# Logout button #}
-        <form action="{{ url_for("logout") }}" method="post">
-          <button type="submit" class="btn btn-link btn-sm d-block w-100 text-center">
-            {% trans %}Login with a different account{% endtrans %}
-          </button>
-        </form>
-      </div>
-    </div>
+{% block form_login %}
+  <h2>{% trans %}Login Verification{% endtrans %}</h2>
+  <p>
+    {% trans %}Two-Factor Authentication is enabled for your account. To verify your account, you must enter the code that was sent to your email address.{% endtrans %}
+  </p>
+  <div class="form-login">
+    <cf:Flash messages={{ get_flashed_messages() }} class="mb-2" />
+    <form role="form" method="post" action="{{ url_for() }}">
+      <cf:Fields form={{ form }} floating={{ True }} />
+      <button type="submit" class="btn btn-primary btn-lg w-100">{% trans %}Sign in{% endtrans %}</button>
+    </form>
+    {# Logout button #}
+    <form action="{{ url_for("logout") }}" method="post">
+      <button type="submit"
+              class="btn btn-link btn-sm d-block w-100 text-center my-2">
+        {% trans %}Login with a different account{% endtrans %}
+      </button>
+    </form>
   </div>
 {% endblock %}

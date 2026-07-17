@@ -47,7 +47,7 @@ class MfaForm(CherryForm):
     )
     resend_code = SubmitField(
         _('Resend code to my email'),
-        render_kw={"class": "col btn-link btn-sm btn-block", "container_class": "col-6"},
+        render_kw={"class": "col btn-link btn-sm btn-block", "container_class": "col-6 text-end"},
     )
 
     def validate_code(self, field):
