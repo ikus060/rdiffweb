@@ -191,7 +191,7 @@ def get_parser():
             '': welcome_style
             + '<div class="h2 col-xs-12 col-lg-8 offset-lg-2 col-xl-6 offset-xl-3">A free and open-source backup software providing end-to-end integration to put you in control of your backup strategy.</div><a class="text-light" href="https://minarca.org/">website</a> • <a class="text-light" href="https://minarca.org/doc">docs</a> • <a class="text-light" href="https://groups.google.com/d/forum/minarca">community</a>',
             'fr': welcome_style
-            + '<div class="h2 col-xs-12 col-lg-8 offset-lg-2 col-xl-6 offset-xl-3">Un logiciel de sauvegarde gratuit et à code source ouvert fournissant une intégration bout en bout pour vous permettre de contrôler votre stratégie de sauvegarde.</div><a class="text-light" href="https://minarca.org/">site web</a> • <a href="https://minarca.org/doc">documentations</a> • <a class="text-light" href="https://groups.google.com/d/forum/minarca">communauté</a>',
+            + '<div class="h2 col-xs-12 col-lg-8 offset-lg-2 col-xl-6 offset-xl-3">Un logiciel de sauvegarde gratuit et à code source ouvert fournissant une intégration bout en bout pour vous permettre de contrôler votre stratégie de sauvegarde.</div><a class="text-light" href="https://minarca.org/">site web</a> • <a class="text-light" href="https://minarca.org/doc">documentations</a> • <a class="text-light" href="https://groups.google.com/d/forum/minarca">communauté</a>',
         },
         latest_version_url='https://latest.ikus-soft.com/minarca/latest_version',
     )
