@@ -106,7 +106,7 @@
           {% set error_count = (repo.session_statistics and repo.session_statistics[-1].errors) or 0 %}
           <td data-order="{{ error_count }}">
             {% if error_count > 0 %}
-              {{ error_count }}
+              <a href="{{ url_for('logs', repo, date=repo.session_statistics[-1].date) }}">{{ error_count }}</a>
             {% else %}
               <span class="text-muted small">&mdash;</span>
             {% endif %}
