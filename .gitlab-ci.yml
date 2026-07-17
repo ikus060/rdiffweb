@@ -165,12 +165,13 @@ package:rdiffweb:deb:
     # Install dependencies
     - apt -y --no-install-recommends install devscripts lintian
     - apt build-dep -y --no-install-recommends .
-    # Generate change log
-    - export DEBEMAIL=$CI_COMMIT_AUTHOR
-    - dch -v "$(python3 -m setuptools_scm)" "automated build"
+    # Update changelog for automatic build
+    - git config user.email "$GITLAB_USER_EMAIL"
+    - git config user.name "$GITLAB_USER_NAME"
+    - (tox -e changelog && git commit -m "automatic build" CHANGELOG.md debian/changelog) || true
     # Run build in separate target
     - dpkg-buildpackage -A
-    - lintian
+    - lintian --suppress-tags bad-distribution-in-changes-file --info
     # Move files to archives
     - mkdir -p ./dist/$DIST
     - mv ../*.deb ./dist/$DIST/
