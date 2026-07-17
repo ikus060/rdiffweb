@@ -27,25 +27,31 @@ Base = cherrypy.db.base
 
 class DiskUsage(Base):
     __tablename__ = 'diskusages'
-    __table_args__ = (Index('diskusage_parentpath_index', 'RepoID', 'ParentPath'),)
 
     repoid = Column('RepoID', Integer, ForeignKey("repos.RepoID", ondelete="CASCADE"), nullable=False, primary_key=True)
     repo = relationship('RepoObject', lazy=True)
-    logical_path = Column(
-        'LogicalPath', LargeBinary(length=4096), nullable=False, server_default=None, primary_key=True
-    )
-    parent_path = Column('ParentPath', LargeBinary(length=4096), nullable=False, server_default=None)
+    parent_path = Column('ParentPath', LargeBinary, nullable=False, server_default=None, primary_key=True)
+    child_name = Column('ChildName', LargeBinary, nullable=False, server_default=None, primary_key=True)
     mirror_size = Column('MirrorSize', Integer, nullable=True, server_default=None)
     increments_size = Column('IncrementsSize', Integer, nullable=True, server_default=None)
     last_updated = Column('LastUpdated', Timestamp, nullable=False, default=func.now(), onupdate=func.now())
 
-    @validates('logical_path')
-    def _validate_logical_path(self, key, value):
-        if not value or b'/' not in value:
-            self.parent_path = b''
-        else:
-            self.parent_path = value[: value.rfind(b'/')]
+    @validates('child_name')
+    def _validate_child_name(self, key, value):
+        if value and b'/' in value:
+            raise ValueError("child_name must not contain '/'")
         return value
+
+    @property
+    def logical_path(self):
+        if not self.parent_path:
+            return self.child_name
+        return self.parent_path + b'/' + self.child_name
 
     def __repr__(self):
         return f"DiskUsage({self.repoid!r}, {self.logical_path!r}, mirror_size={self.mirror_size!r}, increments_size={self.increments_size!r})"
+
+
+diskusage_parentpath_index = Index(
+    'diskusage_parentpath_index', DiskUsage.parent_path, DiskUsage.child_name, DiskUsage.repoid
+)

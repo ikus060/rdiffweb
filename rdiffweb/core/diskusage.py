@@ -117,12 +117,24 @@ class DiskUsagePlugin(SimplePlugin):
             values['mirror_size'] = mirror_size
         if increments_size is not None:
             values['increments_size'] = increments_size
+        # Split logical path
+        idx = logical_path.rfind(b'/')
+        if idx >= 0:
+            parent_path = logical_path[:idx]
+            child_name = logical_path[idx + 1 :]
+        else:
+            parent_path = b''
+            child_name = logical_path
         with cherrypy.db.session.begin():
             # Try to update first (most common case)
-            rows_updated = DiskUsage.query.filter_by(repoid=repo_obj.id, logical_path=logical_path).update(values)
+            rows_updated = DiskUsage.query.filter(
+                DiskUsage.repoid == repo_obj.id,
+                DiskUsage.parent_path == parent_path,
+                DiskUsage.child_name == child_name,
+            ).update(values)
             # If no row was updated, insert a new one
             if not rows_updated:
-                DiskUsage(repoid=repo_obj.id, logical_path=logical_path, **values).add()
+                DiskUsage(repoid=repo_obj.id, parent_path=parent_path, child_name=child_name, **values).add()
 
     def _delete_disk_usage_older_than(self, repo_obj, cutoff: datetime):
         with cherrypy.db.session.begin():
