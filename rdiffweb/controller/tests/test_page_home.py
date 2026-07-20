@@ -16,6 +16,8 @@
 
 import os
 
+import cherrypy
+
 import rdiffweb.test
 from rdiffweb.core.model import RepoObject, UserObject
 
@@ -103,3 +105,16 @@ class TestPagehome(rdiffweb.test.WebCase):
         self.getPage(f"/home/{self.USERNAME}")
         self.assertStatus(200)
         self.assertInBody('Repositories successfully updated')
+
+    def test_with_diskusage(self):
+        # Given a user with repos
+        # When querying the home page
+        # Then the page does not include disk usages analysis.
+        self.assertNotInBody('History: +0 bytes')
+        # When the diskusage job ran.
+        cherrypy.disk_usage._disk_usage_job()
+        # When querying the home page
+        self.getPage(f"/home/{self.USERNAME}")
+        self.assertStatus(200)
+        # Then the page include disk usages analysis.
+        self.assertInBody('History: +0 bytes')

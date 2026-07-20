@@ -23,7 +23,7 @@ from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from cherrypy_foundation.url import url_for
 
 from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.core.model import DiskUsage, RepoObject, UserObject
+from rdiffweb.core.model import DiskUsage, UserObject
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -66,26 +66,8 @@ class HomePage:
         eligible_repos = [r for r in repo_objs if r.last_backup_date and r.status[0] in ['ok', 'in_progress']]
         last_backup = min(eligible_repos, key=lambda r: r.last_backup_date) if eligible_repos else None
 
-        # Get disk usage
-        disk_usage = (
-            DiskUsage.query.with_entities(DiskUsage.repoid, DiskUsage.mirror_size, DiskUsage.increments_size)
-            .join(DiskUsage.repo)
-            .filter(DiskUsage.logical_path == b'.', RepoObject.userid == userobj.id)
-            .all()
-        )
-        for repo in repo_objs:
-            repo.mirror_size = None
-            repo.increments_size = None
-            for repoid, mirror_size, increments_size in disk_usage:
-                if repo.id == repoid:
-                    repo.mirror_size = mirror_size or 0
-                    repo.increments_size = increments_size or 0
-            if repo.mirror_size or repo.increments_size:
-                repo.total_size = (repo.mirror_size or 0) + (repo.increments_size or 0)
-            elif repo.session_statistics:
-                repo.total_size = repo.session_statistics[-1].sourcefilesize
-            else:
-                repo.total_size = 0
+        # Add disk usage to repos.
+        repo_objs = DiskUsage.attach_disk_usage(repo_objs)
 
         activity_end = RdiffTime()
         activity_start = RdiffTime() - timedelta(days=30)
