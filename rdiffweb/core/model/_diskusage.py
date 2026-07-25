@@ -51,6 +51,41 @@ class DiskUsage(Base):
     def __repr__(self):
         return f"DiskUsage({self.repoid!r}, {self.logical_path!r}, mirror_size={self.mirror_size!r}, increments_size={self.increments_size!r})"
 
+    @classmethod
+    def attach_disk_usage(cls, repo_objs):
+        """
+        Enrich a list of RepoObject with mirror_size/increments_size/total_size.
+        """
+        ids = [r.id for r in repo_objs]
+        if not ids:
+            return repo_objs
+
+        usage_by_repoid = {
+            repoid: (mirror_size or 0, increments_size or 0)
+            for repoid, mirror_size, increments_size in (
+                DiskUsage.query.with_entities(DiskUsage.repoid, DiskUsage.mirror_size, DiskUsage.increments_size)
+                .filter(
+                    DiskUsage.repoid.in_(ids),
+                    DiskUsage.parent_path == b'',
+                    DiskUsage.child_name == b'.',
+                )
+                .all()
+            )
+        }
+
+        for repo in repo_objs:
+            mirror_size, increments_size = usage_by_repoid.get(repo.id, (0, 0))
+            repo.mirror_size = mirror_size
+            repo.increments_size = increments_size
+            if mirror_size or increments_size:
+                repo.total_size = mirror_size + increments_size
+            elif repo.session_statistics:
+                repo.total_size = repo.session_statistics[-1].sourcefilesize
+            else:
+                repo.total_size = 0
+
+        return repo_objs
+
 
 diskusage_parentpath_index = Index(
     'diskusage_parentpath_index', DiskUsage.parent_path, DiskUsage.child_name, DiskUsage.repoid
