@@ -154,7 +154,7 @@ package:rdiffweb:deb:
     matrix:
       - DIST: [trixie, forky]
       # Disable selenium test in ubuntu - because snap chronium is not working in docker
-      - DIST: [questing, resolute]
+      - DIST: [questing, resolute, stonking]
         RDIFFWEB_SELENIUM_TEST: 0
   before_script:
     - *apt-minarca-source
@@ -328,9 +328,9 @@ publish:deb:
   parallel:
     matrix:
       - PKGAPP: rdiffweb
-        DIST: [questing, resolute, trixie, forky]
+        DIST: [questing, resolute, stonking, trixie, forky]
       - PKGAPP: minarca-server
-        DIST: [questing, resolute, trixie, forky]
+        DIST: [questing, resolute, stonking, trixie, forky]
   script: |
     set -e
     set -x
