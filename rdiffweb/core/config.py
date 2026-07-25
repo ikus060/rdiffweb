@@ -176,6 +176,8 @@ def get_parser():
         '-f', '--config', is_config_file=True, metavar='FILE', help='location of Rdiffweb configuration file'
     )
 
+    parser.add_argument('-t', '--test-config', help='Test configuration file syntax and exit', action=TestConfigAction)
+
     parser.add(
         '--database-uri',
         '--sqlitedb-file',
@@ -859,6 +861,21 @@ def get_parser():
 def parse_args(args=None, config_file_contents=None):
     args = sys.argv[1:] if args is None else args
     return get_parser().parse_args(args, config_file_contents=config_file_contents)
+
+
+class TestConfigAction(argparse.Action):
+    """
+    Argparse action that validates config file(s) and exits.
+    """
+
+    def __init__(self, option_strings, dest, nargs=0, **kwargs):
+        super().__init__(option_strings, dest, nargs=nargs, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        # At this point, configargparse has already loaded config file(s)
+        # and populated `namespace` — if we got here without an exception,
+        # basic syntax parsing succeeded.
+        parser.exit(0)
 
 
 class LocaleAction(argparse.Action):

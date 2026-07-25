@@ -111,6 +111,30 @@ class TestParseArg(unittest.TestCase):
             )
         self.assertIn('invalid URL value', str(ctx.exception.__context__))
 
+    def test_test_config_valid(self):
+        # Given a configuration file
+        config_file_contents = """#This=is a comment
+welcome-msg=This is a message
+"""
+        # when calling parser with "-t" for text mode.
+        # Then application exit.
+        with self.assertRaises(SystemExit) as ctx:
+            parse_args(args=["-t"], config_file_contents=config_file_contents)
+        # Then application exit 0 - success
+        self.assertEqual(0, ctx.exception.code)
+
+    def test_test_config_invalid(self):
+        # Given a configuration file
+        config_file_contents = """#This=is a comment
+foo=bar
+"""
+        # when calling parser with "-t" for text mode.
+        # Then application exit.
+        with self.assertRaises(SystemExit) as ctx:
+            parse_args(args=["-t"], config_file_contents=config_file_contents)
+        # Then application exit 2 - invalid
+        self.assertEqual(2, ctx.exception.code)
+
 
 class TestConfigFileParser(unittest.TestCase):
     """
