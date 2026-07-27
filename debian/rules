@@ -59,5 +59,4 @@ execute_before_dh_auto_clean:
 
 # Generate orig.tar.gz
 gentarball:
-	git archive --format=tar HEAD --prefix=$(DEB_SOURCE)-$(DEB_VERSION_UPSTREAM)/ | gzip -9 > ../$(DEB_SOURCE)_$(DEB_VERSION_UPSTREAM).orig.tar.gz
-	mk-origtargz --compression gzip ../$(DEB_SOURCE)_$(DEB_VERSION_UPSTREAM).orig.tar.gz
+	git archive --format=tar HEAD --prefix=$(DEB_SOURCE)-$(DEB_VERSION_UPSTREAM)/ ":!debian" $(VENDOR_EXCLUDE) | xz > ../$(DEB_SOURCE)_$(DEB_VERSION_UPSTREAM).orig.tar.xz
