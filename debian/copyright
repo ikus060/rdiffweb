@@ -2,8 +2,6 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: rdiffweb
 Upstream-Contact: https://gitlab.com/ikus-soft/rdiffweb/-/issues
 Source: https://gitlab.com/ikus-soft/rdiffweb/-/tags
-Files-Excluded:
- extras
 
 Files: *
 Copyright: 2019-2025 Patrik Dufresne <patrik@ikus-soft.com>
