@@ -2,21 +2,25 @@ FROM python:3.13-trixie
 
 LABEL author="Patrik Dufresne <patrik@ikus-soft.com>"
 
+ARG PACKAGE_VERSION
+
 EXPOSE 8080
 
 VOLUME ["/etc/rdiffweb", "/backups"]
 
 ENV RDIFFWEB_SERVER_HOST=0.0.0.0
 
-COPY . /src/
+ENV PACKAGE="rdiffweb${PACKAGE_VERSION:+=$PACKAGE_VERSION}"
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      librsync-dev \
-      python3-pylibacl \
-      python3-pyxattr && \
-    rm -rf /var/lib/apt/lists/* && \
-    pip3 install --no-cache-dir /src/ rdiff-backup==2.2.6 && \
-    rm -rf /tmp/* /src/
+RUN set -x && \
+    apt update  && \
+    apt install -y --no-install-recommends ca-certificates curl gpg && \
+    curl -L https://www.ikus-soft.com/archive/rdiffweb/public.key | gpg --dearmor > /usr/share/keyrings/rdiffweb-keyring.gpg  && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/rdiffweb-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-release-trixie/ trixie main" > /etc/apt/sources.list.d/rdiffweb.list && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/rdiffweb-keyring.gpg] https://nexus.ikus-soft.com/repository/apt-dev-trixie/ trixie-dev main" >> /etc/apt/sources.list.d/rdiffweb.list && \
+    printf 'Package: *\nPin: origin "nexus.ikus-soft.com"\nPin: release a=/dev/\nPin-Priority: 100\n' > /etc/apt/preferences.d/rdiffweb && \
+    apt update && \
+    apt install -y --no-install-recommends ${PACKAGE} rdiff-backup && \
+    rm -rf /var/lib/apt/lists/*
 
-CMD ["/usr/local/bin/rdiffweb"]
+CMD ["/usr/bin/rdiffweb"]
