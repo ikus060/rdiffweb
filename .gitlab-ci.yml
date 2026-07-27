@@ -121,35 +121,38 @@ package:py3:
       - dist/*.tar.gz
     expire_in: 1 day
 
-package:docker:
+package:rdiffweb:dsc:
   stage: package
   needs: []
-  dependencies: []
-  image: docker:20
-  services:
-    - name: docker:20-dind
-  parallel:
-    matrix:
-      - PKGAPP: rdiffweb
-      - PKGAPP: minarca-server
-        CWD: minarca-server/docker
-  script:
-    - cd "$CWD"
-    - docker pull ikus060/$PKGAPP:latest || true
-    - docker pull ikus060/$PKGAPP:$CI_COMMIT_REF_SLUG || true
-    - docker build --cache-from ikus060/$PKGAPP:latest --cache-from ikus060/$PKGAPP:$CI_COMMIT_REF_SLUG -t $PKGAPP .
-    - mkdir dist
-    - mkdir -p $CI_PROJECT_DIR/dist
-    - docker save $PKGAPP --output $CI_PROJECT_DIR/dist/$PKGAPP-docker.tar
+  image: buildpack-deps:unstable
+  variables:
+    GIT_DEPTH: 50  # GitLab runner will fetch last 50 commits
+  script: 
+    - rm -f ../*.debian.tar.xz ../*.orig.tar.xz ../*.dsc
+    # Install build dependencies
+    - apt -U -y --no-install-recommends install tox
+    - apt build-dep -y --no-install-recommends -P nocheck,nodoc .
+    # Update changelog for automatic build
+    - git config user.email "$GITLAB_USER_EMAIL"
+    - git config user.name "$GITLAB_USER_NAME"
+    - (tox -e changelog && git commit -m "automatic build" CHANGELOG.md debian/changelog) || true
+    # Create original tarball ".orig.tar.xz"
+    - debian/rules gentarball
+    # Build debian source package ".dsc"
+    - dpkg-buildpackage -S --no-check-builddeps
+    - mkdir -p ./dist/
+    - mv ../*.debian.tar.xz ../*.orig.tar.xz ../*.dsc ./dist/
   artifacts:
     paths:
-      - dist/*-docker.tar
-    expire_in: 1 day
+      - ./dist/*
 
 package:rdiffweb:deb:
   stage: package
-  needs: []
+  needs: 
+    - package:rdiffweb:dsc
   image: buildpack-deps:$DIST
+  variables:
+     GIT_STRATEGY: none  # GitLab runner will NOT clone/fetch repo
   parallel:
     matrix:
       - DIST: [trixie, forky]
@@ -158,27 +161,23 @@ package:rdiffweb:deb:
         RDIFFWEB_SELENIUM_TEST: 0
   before_script:
     - *apt-minarca-source
-  script:
-    # Clean-up
-    - rm -f ../*.deb
-    - rm -Rf ./dist/$DIST/*
-    # Install dependencies
-    - apt -y --no-install-recommends install devscripts lintian
+  script: 
+    - rm -f *.deb
+    # Install build dependencies
+    - apt update
+    - apt -y --no-install-recommends install lintian
+    - dpkg-source -x ./dist/*.dsc builddir/
+    - pushd builddir/
     - apt build-dep -y --no-install-recommends .
-    # Update changelog for automatic build
-    - git config user.email "$GITLAB_USER_EMAIL"
-    - git config user.name "$GITLAB_USER_NAME"
-    - (tox -e changelog && git commit -m "automatic build" CHANGELOG.md debian/changelog) || true
-    # Run build in separate target
-    - dpkg-buildpackage -A
-    - lintian --suppress-tags bad-distribution-in-changes-file --info
-    # Move files to archives
+    # Build debian binary package ".deb"
+    - dpkg-buildpackage -b
+    - popd
+    - lintian --info --display-info --pedantic *.deb ./dist/*.dsc
     - mkdir -p ./dist/$DIST
-    - mv ../*.deb ./dist/$DIST/
+    - mv *.deb ./dist/$DIST/
   artifacts:
     paths:
       - ./dist/*
-    expire_in: 1 day
 
 package:minarca-server:deb:
   <<: *tox
@@ -247,8 +246,11 @@ publish:sonar:
       -Dsonar.qualitygate.wait=True
 
 publish:docker:
+  stage: publish
   needs:
-    - package:docker
+    - package:rdiffweb:deb
+    - package:minarca-server:deb
+    - publish:deb
   image: docker:20
   services:
     - name: docker:20-dind
@@ -259,34 +261,48 @@ publish:docker:
   parallel:
     matrix:
       - PKGAPP: rdiffweb
+        CWD: .
       - PKGAPP: minarca-server
-  script: |
-    set -x
-    docker login $DOCKER_REGISTRY -u $DOCKER_USR -p $DOCKER_PWD
-    docker load --input dist/$PKGAPP*.tar
-    # Push commit hash
-    docker tag $PKGAPP ikus060/$PKGAPP:$CI_COMMIT_SHORT_SHA
-    docker push ikus060/$PKGAPP:$CI_COMMIT_SHORT_SHA
-    # Push branch name
-    docker tag $PKGAPP ikus060/$PKGAPP:$CI_COMMIT_REF_SLUG
-    docker push ikus060/$PKGAPP:$CI_COMMIT_REF_SLUG
-    # Push tags
-    if [ -n "$CI_COMMIT_TAG" ]; then
-      docker tag $PKGAPP ikus060/$PKGAPP:$CI_COMMIT_TAG
-      docker push ikus060/$PKGAPP:$CI_COMMIT_TAG
-    fi
-    # Push tag as latest
-    case ${CI_COMMIT_TAG##*.} in
-      [0-9]*)
-        docker tag $PKGAPP ikus060/$PKGAPP:latest
-        docker push ikus060/$PKGAPP:latest
-        ;;
-    esac
+        CWD: minarca-server/docker
+  before_script:
+    - echo "$DOCKER_PWD" | docker login -u "$DOCKER_USR" --password-stdin
+  script:
+    # Use package version as tag
+    - |
+      if ls ./dist/*/$PKGAPP*.deb 2>/dev/null; then
+        export FILE=$(ls -1 ./dist/*/$PKGAPP*.deb | tail -n 1)
+      else
+        export FILE=$(ls -1 ./dist/$PKGAPP*.deb | tail -n 1)
+      fi
+    - export PACKAGE_VERSION=$(echo "$FILE" | cut -d '_' -f 2)
+    - export IMAGE_NAME=ikus060/$PKGAPP
+    - export IMAGE_TAG=${PACKAGE_VERSION//+/-}
+    - cd "$CWD"
+    - echo "$IMAGE_NAME:$IMAGE_TAG"
+    - docker build --build-arg PACKAGE_VERSION="$PACKAGE_VERSION" -t $IMAGE_NAME:$IMAGE_TAG .
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+    # Push commit-based tag
+    - docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+    - docker push $IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+    # Push branch name tag
+    - docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$CI_COMMIT_REF_SLUG
+    - docker push $IMAGE_NAME:$CI_COMMIT_REF_SLUG
+    # Push additional tags only for proper release versions (x.y.z)
+    - |
+      if echo "$PACKAGE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+        MAJOR=$(echo "$PACKAGE_VERSION" | cut -d. -f1)
+        MINOR=$(echo "$PACKAGE_VERSION" | cut -d. -f1,2)
+        docker tag "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$MAJOR"
+        docker tag "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$MINOR"
+        docker push "$IMAGE_NAME:$MAJOR"
+        docker push "$IMAGE_NAME:$MINOR"
+      fi
+
   stage: publish
 
 publish:docker-readme:
   needs:
-    - package:docker
+    - publish:deb
   only:
     variables:
       - $DOCKER_USR
@@ -431,7 +447,7 @@ e2e-test:minarca:deb:
   image: buildpack-deps:$DIST
   parallel:
     matrix:
-    - DIST: [bullseye, bookworm, trixie, jammy, noble, plucky]
+    - DIST: [bullseye, bookworm, trixie, jammy, noble, plucky, questing, resolute, stonking]
   script:
     # Install latest minarca-client release
     - apt update
@@ -540,10 +556,10 @@ e2e-test:docker:
       - PKGAPP: minarca-server
   needs:
     - publish:docker
-    - package:minarca-server:deb
   services:
     - docker:dind
   script:
-    - docker run --privileged -d --name $PKGAPP -p 8080:8080 ikus060/$PKGAPP:$CI_COMMIT_SHORT_SHA
+    - docker run ikus060/$PKGAPP:$CI_COMMIT_SHORT_SHA "$PKGAPP" --version
+    - docker run --privileged --name $PKGAPP -p 8080:8080 ikus060/$PKGAPP:$CI_COMMIT_SHORT_SHA &
     - timeout 60 sh -c 'until docker inspect --format="{{.State.Running}}" $PKGAPP 2>/dev/null | grep -q "true" && wget --spider http://docker:8080 2>/dev/null; do sleep 1; done'
     - docker ps

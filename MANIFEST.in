@@ -22,6 +22,7 @@ include babel.cfg
 
 # Include templates
 recursive-include rdiffweb/templates *
+recursive-include rdiffweb/components *
 
 # Include static Web files
 recursive-include extras *
