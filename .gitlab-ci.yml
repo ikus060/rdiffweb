@@ -16,6 +16,28 @@ stages:
   - deploy
   - e2e-test
 
+.dist_matrix: &dist_matrix
+  - DIST: [trixie, forky]
+  # Disable selenium test in ubuntu - because snap chronium is not working in docker
+  - DIST: [resolute, stonking]
+    RDIFFWEB_SELENIUM_TEST: 0
+
+.stable_debian: &stable_debian trixie
+
+check-new-series:
+  stage: .pre
+  allow_failure: true
+  image: buildpack-deps:stable
+  script:
+    # Check if the latest version is configure in this CICD pipeline
+    - apt -yU install distro-info
+    - LATEST_UBUNTU=$(ubuntu-distro-info --supported | tail -n 1)
+    - LATEST_DEBIAN=$(debian-distro-info --supported | grep -vE '(sid|experimental)' | tail -n 1)
+    - echo "Latest Ubuntu supported:$LATEST_UBUNTU"
+    - grep -qE "DIST:.*$LATEST_UBUNTU" .gitlab-ci.yml
+    - echo "Latest Debian supported:$LATEST_DEBIAN"
+    - grep -qE "DIST:.*$LATEST_DEBIAN" .gitlab-ci.yml
+
 .apt-minarca-source: &apt-minarca-source
   - wget -O /etc/apt/keyrings/minarca-keyring.asc https://www.ikus-soft.com/archive/minarca/public.key
   - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/minarca-keyring.asc] https://nexus.ikus-soft.com/repository/apt-dev-$DIST/ $DIST-dev main" > /etc/apt/sources.list.d/minarca.list
@@ -84,12 +106,11 @@ wrap-and-sort:
 
 postgresql-12:
   <<: *tox
-  image: python:3.13-trixie
   services:
     - postgres:16
   parallel: 3
   variables:
-    TOXENV: trixie
+    TOXENV: *stable_debian
     PYTEST_SPLITS: $CI_NODE_TOTAL
     PYTEST_GROUP: $CI_NODE_INDEX
     RDIFFWEB_TEST_DATABASE_URI: "postgresql://admin@postgres/test"
@@ -154,11 +175,7 @@ package:rdiffweb:deb:
   variables:
      GIT_STRATEGY: none  # GitLab runner will NOT clone/fetch repo
   parallel:
-    matrix:
-      - DIST: [trixie, forky]
-      # Disable selenium test in ubuntu - because snap chronium is not working in docker
-      - DIST: [questing, resolute, stonking]
-        RDIFFWEB_SELENIUM_TEST: 0
+    matrix: *dist_matrix
   before_script:
     - *apt-minarca-source
   script: 
@@ -197,8 +214,7 @@ package:minarca-server:deb:
   before_script:
     - *apt-minarca-source
   parallel:
-    matrix:
-      - DIST: [trixie, forky, questing, resolute]
+    matrix: *dist_matrix
 
 test-package:rdiffweb:
   <<: *test-package
@@ -245,12 +261,8 @@ publish:sonar:
       -Dsonar.projectVersion=$(git describe)
       -Dsonar.qualitygate.wait=True
 
-publish:docker:
+.publish-docker: &publish-docker
   stage: publish
-  needs:
-    - package:rdiffweb:deb
-    - package:minarca-server:deb
-    - publish:deb
   image: docker:20
   services:
     - name: docker:20-dind
@@ -258,22 +270,9 @@ publish:docker:
     variables:
       - $DOCKER_USR
       - $DOCKER_PWD
-  parallel:
-    matrix:
-      - PKGAPP: rdiffweb
-        CWD: .
-      - PKGAPP: minarca-server
-        CWD: minarca-server/docker
-  before_script:
-    - echo "$DOCKER_PWD" | docker login -u "$DOCKER_USR" --password-stdin
   script:
     # Use package version as tag
-    - |
-      if ls ./dist/*/$PKGAPP*.deb 2>/dev/null; then
-        export FILE=$(ls -1 ./dist/*/$PKGAPP*.deb | tail -n 1)
-      else
-        export FILE=$(ls -1 ./dist/$PKGAPP*.deb | tail -n 1)
-      fi
+    - echo "$DOCKER_PWD" | docker login -u "$DOCKER_USR" --password-stdin
     - export PACKAGE_VERSION=$(echo "$FILE" | cut -d '_' -f 2)
     - export IMAGE_NAME=ikus060/$PKGAPP
     - export IMAGE_TAG=${PACKAGE_VERSION//+/-}
@@ -298,71 +297,108 @@ publish:docker:
         docker push "$IMAGE_NAME:$MINOR"
       fi
 
-  stage: publish
-
-publish:docker-readme:
+publish:rdiffweb:docker:
+  <<: *publish-docker
   needs:
-    - publish:deb
+    - package:rdiffweb:deb
+    - publish:rdiffweb:deb
+  variables:
+    PKGAPP: rdiffweb
+    CWD: .
+  before_script:
+    - export FILE=$(ls -1 ./dist/*/$PKGAPP*.deb | tail -n 1)
+
+publish:minarca-server:docker:
+  <<: *publish-docker
+  needs:
+    - package:minarca-server:deb
+    - publish:minarca-server:deb
+  variables:
+    PKGAPP: minarca-server
+    CWD: minarca-server/docker
+  before_script:
+    - export FILE=$(ls -1 ./dist/$PKGAPP*.deb | tail -n 1)
+
+.publish-docker-readme: &publish-docker-readme
+  stage: publish
   only:
     variables:
       - $DOCKER_USR
       - $DOCKER_PWD
       - $CI_COMMIT_TAG
-  parallel:
-    matrix:
-      # Rdiffweb
-      - PUSHRM_SHORT: A web interface to rdiff-backup repositories.
-        PUSHRM_TARGET: docker.io/ikus060/rdiffweb
-        PUSHRM_FILE: $CI_PROJECT_DIR/README.md
-      # Minarca-Server
-      - PUSHRM_SHORT: Your open-source, user-friendly data backup solution.
-        PUSHRM_TARGET: docker.io/ikus060/minarca-server
-        PUSHRM_FILE: $CI_PROJECT_DIR/minarca-server/docker/README.md
   image:
     name: chko/docker-pushrm
     entrypoint: ["/bin/sh", "-c"]
-  variables:
-    DOCKER_USER: $DOCKER_USR
-    DOCKER_PASS: $DOCKER_PWD
-    PUSHRM_DEBUG: 1
   script:
     # Keep top 400 lines to workarround Dockerhub limitation.
     - cp README.md README.md.orig
     - head -n 400 README.md.orig > README.md
     # Push file
     - /docker-pushrm
-  stage: publish
 
-publish:deb:
+publish:rdiffweb:docker-readme:
+  <<: *publish-docker-readme
   needs:
-    - package:rdiffweb:deb
-    - package:minarca-server:deb
+    - publish:rdiffweb:docker
+  variables:
+    DOCKER_USER: $DOCKER_USR
+    DOCKER_PASS: $DOCKER_PWD
+    PUSHRM_DEBUG: 1
+    PUSHRM_SHORT: A web interface to rdiff-backup repositories.
+    PUSHRM_TARGET: docker.io/ikus060/rdiffweb
+    PUSHRM_FILE: $CI_PROJECT_DIR/README.md
+
+publish:minarca-server:docker-readme:
+  <<: *publish-docker-readme
+  needs:
+    - publish:minarca-server:docker
+  variables:
+    DOCKER_USER: $DOCKER_USR
+    DOCKER_PASS: $DOCKER_PWD
+    PUSHRM_DEBUG: 1
+    PUSHRM_SHORT: Your open-source, user-friendly data backup solution.
+    PUSHRM_TARGET: docker.io/ikus060/minarca-server
+    PUSHRM_FILE: $CI_PROJECT_DIR/minarca-server/docker/README.md
+
+.publish-deb: &publish-deb
+  stage: publish
   only:
     variables:
       - $NEXUS_USR
       - $NEXUS_PWD
   parallel:
-    matrix:
-      - PKGAPP: rdiffweb
-        DIST: [questing, resolute, stonking, trixie, forky]
-      - PKGAPP: minarca-server
-        DIST: [questing, resolute, stonking, trixie, forky]
+    matrix: *dist_matrix
+  before_script:
+    - |
+      if [[ "$CI_COMMIT_TAG" == *.+([0-9]) ]]; then
+        export APT_URL="$NEXUS_URL/repository/apt-release-${DIST}/"
+        export APT_DISTRO="${DIST}"
+      else
+        export APT_URL="$NEXUS_URL/repository/apt-dev-${DIST}/"
+        export APT_DISTRO="${DIST}-dev"
+      fi
+
+publish:rdiffweb:deb:
+  <<: *publish-deb
+  needs:
+    - package:rdiffweb:deb
   script: |
-    set -e
     set -x
-    if [[ "$CI_COMMIT_TAG" == *.+([0-9]) ]]; then
-      APT_URL="$NEXUS_URL/repository/apt-release-${DIST}/"
-    else
-      APT_URL="$NEXUS_URL/repository/apt-dev-${DIST}/"
-    fi
-    # Look in DIST-specific folder first, fallback to dist root
-    if ls ./dist/$DIST/$PKGAPP*.deb 2>/dev/null; then
-      export FILE=$(ls -1 ./dist/$DIST/$PKGAPP*.deb)
-    else
-      export FILE=$(ls -1 ./dist/$PKGAPP*.deb)
-    fi
+    export FILE=$(ls -1 ./dist/$DIST/$PKGAPP*.deb)
     curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$FILE" "$APT_URL"
-  stage: publish
+    # Because Nexus index get rebuild asynchronously.
+    timeout 60 sh -c 'until curl --fail -s "${APT_URL}/dists/${APT_DISTRO}/main/binary-all/Packages" | grep -q "$(basename "$FILE")"; do sleep 1; done'
+
+publish:minarca-server:deb:
+  <<: *publish-deb
+  needs:
+    - package:minarca-server:deb
+  script: |
+    set -x
+    export FILE=$(ls -1 ./dist/$PKGAPP*.deb)
+    curl --fail -u "$NEXUS_USR:$NEXUS_PWD" -H "Content-Type: multipart/form-data" --data-binary "@$FILE" "$APT_URL"
+    # Because Nexus index get rebuild asynchronously.
+    timeout 60 sh -c 'until curl --fail -s "${APT_URL}/dists/${APT_DISTRO}/main/binary-amd64/Packages" | grep -q "$(basename "$FILE")"; do sleep 1; done'
 
 publish:wheel:
   stage: publish
@@ -393,17 +429,14 @@ publish:doc:
   needs:
     - doc
   script: |
+    set -x
     # publish to nexus
     pip install setuptools_scm
     export VERSION=$(python3 -m setuptools_scm)
     cd .tox/doc/tmp/html
     find * -type f | while read -r FILE
     do
-      # Publish to nexus
       curl --fail -u "$NEXUS_USR:$NEXUS_PWD" --upload-file "$FILE" "$NEXUS_URL/repository/archive/rdiffweb/$VERSION/doc/$FILE"
-      sleep 2
-      # Because Nexus server fail, make sure the file is accessible.
-      curl --fail "$NEXUS_URL/service/rest/repository/browse/archive/rdiffweb/$VERSION/doc/$(dirname $FILE)/" | grep "$(basename $FILE)"
     done
 
 deploy:dev:
@@ -418,7 +451,7 @@ deploy:dev:
     matrix:
       - PKGAPP: rdiffweb
         TRIGGER: RDIFFWEB_VERSION
-        DIST: trixie
+        DIST: *stable_debian
       - PKGAPP: minarca-server
         TRIGGER: MINARCA_VERSION
   image: heitormotta/pipeline-trigger:2.9.0
@@ -442,12 +475,10 @@ e2e-test:minarca:deb:
   allow_failure: True
   variables:
     GIT_STRATEGY: none
+    DIST: *stable_debian
   needs:
   - deploy:dev
   image: buildpack-deps:$DIST
-  parallel:
-    matrix:
-    - DIST: [bullseye, bookworm, trixie, jammy, noble, plucky, questing, resolute, stonking]
   script:
     # Install latest minarca-client release
     - apt update
@@ -545,17 +576,11 @@ e2e-test:minarca:win32:
   tags:
   - windows
 
-e2e-test:docker:
+.e2e-test-docker: &e2e-test-docker
   image: docker:20
   stage: e2e-test
   variables:
     GIT_STRATEGY: none
-  parallel:
-    matrix:
-      - PKGAPP: rdiffweb
-      - PKGAPP: minarca-server
-  needs:
-    - publish:docker
   services:
     - docker:dind
   script:
@@ -563,3 +588,17 @@ e2e-test:docker:
     - docker run --privileged --name $PKGAPP -p 8080:8080 ikus060/$PKGAPP:$CI_COMMIT_SHORT_SHA &
     - timeout 60 sh -c 'until docker inspect --format="{{.State.Running}}" $PKGAPP 2>/dev/null | grep -q "true" && wget --spider http://docker:8080 2>/dev/null; do sleep 1; done'
     - docker ps
+
+e2e-test:rdiffweb:docker:
+  <<: *e2e-test-docker
+  variables:
+    PKGAPP: rdiffweb
+  needs:
+    - publish:rdiffweb:docker
+
+e2e-test:minarca-server:docker:
+  <<: *e2e-test-docker
+  variables:
+    PKGAPP: minarca-server
+  needs:
+    - publish:minarca-server:docker
