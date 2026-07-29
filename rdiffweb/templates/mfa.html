@@ -6,7 +6,7 @@
   </p>
   <div class="form-login">
     <cf:Flash messages={{ get_flashed_messages() }} class="mb-2" />
-    <form role="form" method="post" action="{{ url_for() }}">
+    <form method="post" action="{{ url_for() }}">
       <cf:Fields form={{ form }} floating={{ True }} />
       <button type="submit" class="btn btn-primary btn-lg w-100">{% trans %}Sign in{% endtrans %}</button>
     </form>
