@@ -64,3 +64,4 @@ skip-string-normalization = "True"
 
 [tool.setuptools_scm]
 root = ".."
+version_scheme = "no-guess-dev"
