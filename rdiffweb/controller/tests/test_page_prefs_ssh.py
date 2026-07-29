@@ -200,17 +200,25 @@ class PagePrefSshKeysTest(rdiffweb.test.WebCase):
             # Then page load without error
             self.assertFalse(driver.get_log('browser'))
             # When user click on delete button
-            btn = driver.find_element('css selector', '#rdw-btn-add-sshkey')
+            btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable(('css selector', '#rdw-btn-add-sshkey')))
             ActionChains(driver).scroll_to_element(btn).perform()
+            # Re-check clickability after scroll in case of re-layout/animation
+            btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable(('css selector', '#rdw-btn-add-sshkey')))
             btn.click()
             # Then a Modal get shown.
-            modal = driver.find_element('css selector', '#rdw-add-sshkey-modal')
+            modal = WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located(('css selector', '#rdw-add-sshkey-modal'))
+            )
             # When user enter the ssh key.
-            txt_title = modal.find_element('css selector', 'input[name="title"]')
+            txt_title = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable(('css selector', '#rdw-add-sshkey-modal input[name="title"]'))
+            )
             txt_title.send_keys('My New Key')
             txt_key = modal.find_element('css selector', 'textarea[name="key"]')
             txt_key.send_keys(SSHKEY_TEST)
-            submit_btn = modal.find_element('css selector', 'button[type="submit"]')
+            submit_btn = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable(('css selector', '#rdw-add-sshkey-modal button[type="submit"]'))
+            )
             submit_btn.click()
             self.assertFalse(driver.get_log('browser'))
             # Then user get redirected to home page.
