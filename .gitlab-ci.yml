@@ -153,10 +153,10 @@ package:rdiffweb:dsc:
     # Install build dependencies
     - apt -U -y --no-install-recommends install tox
     - apt build-dep -y --no-install-recommends -P nocheck,nodoc .
-    # Update changelog for automatic build
+    # Update changelog with unrelease changes (if required)
     - git config user.email "$GITLAB_USER_EMAIL"
     - git config user.name "$GITLAB_USER_NAME"
-    - (tox -e changelog && git commit -m "automatic build" CHANGELOG.md debian/changelog) || true
+    - (tox -e changelog -- --bump "$(setuptools-scm)" && git commit -m "automatic build" CHANGELOG.md debian/changelog) || true
     # Create original tarball ".orig.tar.xz"
     - debian/rules gentarball
     # Build debian source package ".dsc"
@@ -271,11 +271,11 @@ publish:sonar:
       - $DOCKER_USR
       - $DOCKER_PWD
   script:
-    # Use package version as tag
+    # Use debian package version as basis for tag
     - echo "$DOCKER_PWD" | docker login -u "$DOCKER_USR" --password-stdin
     - export PACKAGE_VERSION=$(echo "$FILE" | cut -d '_' -f 2)
     - export IMAGE_NAME=ikus060/$PKGAPP
-    - export IMAGE_TAG=${PACKAGE_VERSION//+/-}
+    - export IMAGE_TAG=$(echo "${PACKAGE_VERSION%%-*}" | tr '+' '-')
     - cd "$CWD"
     - echo "$IMAGE_NAME:$IMAGE_TAG"
     - docker build --build-arg PACKAGE_VERSION="$PACKAGE_VERSION" -t $IMAGE_NAME:$IMAGE_TAG .
@@ -304,9 +304,10 @@ publish:rdiffweb:docker:
     - publish:rdiffweb:deb
   variables:
     PKGAPP: rdiffweb
+    DIST: *stable_debian
     CWD: .
   before_script:
-    - export FILE=$(ls -1 ./dist/*/$PKGAPP*.deb | tail -n 1)
+    - export FILE=$(ls -1 ./dist/$DIST/$PKGAPP*.deb | tail -n 1)
 
 publish:minarca-server:docker:
   <<: *publish-docker
