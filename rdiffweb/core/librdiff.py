@@ -718,7 +718,7 @@ class MetadataKeys:
         self._pairs = pairs
 
     def __iter__(self):
-        return map(lambda pair: pair[0], self._pairs)
+        return (pair[0] for pair in self._pairs)
 
     def __getitem__(self, i):
         if isinstance(i, slice):
