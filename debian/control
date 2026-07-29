@@ -38,7 +38,7 @@ Build-Depends:
  python3-sqlalchemy <!nocheck>,
  python3-tz <!nocheck>,
  python3-wtforms <!nocheck>,
- python3-zxcvbn | python3-python-zxcvbn-rs-py <!nocheck>,
+ python3-zxcvbn <!nocheck> | python3-python-zxcvbn-rs-py <!nocheck>,
  rdiff-backup <!nocheck>,
  xauth <!nocheck>,
  xvfb <!nocheck>,
