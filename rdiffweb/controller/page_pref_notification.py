@@ -90,10 +90,9 @@ class PagePrefNotification:
         currentuser = cherrypy.serving.request.currentuser
         # Process the parameters.
         form = NotificationForm(obj=currentuser)
-        if form.validate_on_submit():
-            if form.save_to_db(currentuser):
-                flash(_("Report settings updated successfully."), level='success')
-                raise cherrypy.HTTPRedirect("")
+        if form.validate_on_submit() and form.save_to_db(currentuser):
+            flash(_("Report settings updated successfully."), level='success')
+            raise cherrypy.HTTPRedirect("")
         if form.error_message:
             flash(form.error_message, level='error')
         return {

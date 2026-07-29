@@ -135,10 +135,8 @@ class PagePrefSshKeys:
         currentuser = cherrypy.serving.request.currentuser
         # Validate form method.
         form = DeleteSshForm()
-        if form.validate():
-            # Get user
-            if form.save_to_db(currentuser):
-                flash(_('SSH Key removed.'))
+        if form.validate() and form.save_to_db(currentuser):
+            flash(_('SSH Key removed.'))
         if form.error_message:
             flash(form.error_message, level='error')
         raise cherrypy.HTTPRedirect(url_for('prefs', 'sshkeys'))

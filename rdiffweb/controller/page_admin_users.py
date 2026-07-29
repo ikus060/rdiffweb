@@ -373,12 +373,11 @@ class AdminUsersPage:
         """
         # Build users page
         form = NewUserForm()
-        if form.is_submitted():
-            if form.validate():
-                user = UserObject.add_user(form.username.data, password=form.password.data)
-                if form.save_to_db(user):
-                    flash(_("User added successfully."))
-                    raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', user.id))
+        if form.is_submitted() and form.validate():
+            user = UserObject.add_user(form.username.data, password=form.password.data)
+            if form.save_to_db(user):
+                flash(_("User added successfully."))
+                raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', user.id))
         # Form is invalid -> redirect to the form
         if form.error_message:
             flash(form.error_message, level='error')
@@ -438,9 +437,8 @@ class AdminUsersPage:
         userobj = self._get_user(username)
         # Validate form method.
         form = SshForm()
-        if form.validate():
-            if form.save_to_db(userobj):
-                flash(_('SSH Key added.'))
+        if form.validate() and form.save_to_db(userobj):
+            flash(_('SSH Key added.'))
         if form.error_message:
             flash(form.error_message, level='error')
         raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', username))
@@ -458,10 +456,8 @@ class AdminUsersPage:
         userobj = self._get_user(username)
         # Validate form method.
         form = DeleteSshForm()
-        if form.validate():
-            # Get user
-            if form.save_to_db(userobj):
-                flash(_('SSH Key removed.'))
+        if form.validate() and form.save_to_db(userobj):
+            flash(_('SSH Key removed.'))
         if form.error_message:
             flash(form.error_message, level='error')
         raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', username))
@@ -479,15 +475,12 @@ class AdminUsersPage:
         userobj = self._get_user(username)
         # Validate form method.
         form = TokenForm()
-        if form.validate():
-            if form.save_to_db(userobj):
-                flash(
-                    Markup(
-                        _("Copy this token now — for security reasons, it <strong>will not be shown again</strong>.")
-                    ),
-                    level='success',
-                )
-                flash(form.secret, level='success')
+        if form.validate() and form.save_to_db(userobj):
+            flash(
+                Markup(_("Copy this token now — for security reasons, it <strong>will not be shown again</strong>.")),
+                level='success',
+            )
+            flash(form.secret, level='success')
         if form.error_message:
             flash(form.error_message, level='error')
         raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', username))
