@@ -896,9 +896,7 @@ class RdiffRepo(object):
         List content of rdiff-backup-data.
         """
         try:
-            # FIXME here we need to list the files, but because of the timezone shifting, we also need to sorted them using dates.
             return listdir(self._data_path)
-
         except FileNotFoundError:
             logger.warning(f'folder not found {self._data_path}', exc_info=1)
             self._entries_status = ('broken', _('The repository cannot be found or is badly damaged.'), _('Broken'))
