@@ -68,7 +68,7 @@ def _umount_all(root):
             mountpoint = line.split()[1]
             if mountpoint.startswith(root):
                 mounts.append(mountpoint)
-    for mountpoint in reversed(sorted(mounts)):
+    for mountpoint in sorted(mounts, reverse=True):
         _umount(mountpoint)
 
 
