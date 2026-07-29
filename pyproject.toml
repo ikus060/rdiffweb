@@ -109,3 +109,4 @@ sections = [":all:"]  # Include all sections
 include-all = true  # Include all random msg
 in-place = 1
 jinja_context = { debian_package_name = "rdiffweb", debian_version_suffix = "-1" }
+versioning = "pep440"
