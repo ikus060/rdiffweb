@@ -98,7 +98,11 @@
               <tr>
                 {# Name #}
                 <td class="ps-3">
-                  <div class="small fw-semibold">{{ repo.display_name }}</div>
+                  <div class="small fw-semibold">
+                    <span {% if repo.notes %}class="rdw-tooltip"{% endif %}
+                          data-bs-toggle="tooltip"
+                          title="{{ repo.notes }}">{{- repo.display_name -}}</span>
+                  </div>
                   <div class="small text-muted font-monospace">{{ repo.full_path.decode(errors='replace') }}</div>
                 </td>
                 {# Last backup date #}
