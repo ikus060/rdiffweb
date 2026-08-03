@@ -41,9 +41,9 @@
           {# Status #}
           <td class="nowrap" data-order="{{ entry.exists }}">
             {% if entry.exists %}
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">{{ _("Active") }}</span>
+              <span class="text-muted small">{{ _("Active") }}</span>
             {% else %}
-              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">
+              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">
                 {{ _("Deleted") }}
               </span>
             {% endif %}
