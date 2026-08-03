@@ -8,26 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 <!-- insertion marker -->
 ## [7.1.0](https://gitlab.com/ikus-soft/rdiffweb/tags/7.1.0) - 2026-08-03
 
-<small>[Compare with 7.1.0b3](https://gitlab.com/ikus-soft/rdiffweb/compare/7.1.0b3...7.1.0)</small>
+<small>[Compare with 7.0.1](https://gitlab.com/ikus-soft/rdiffweb/compare/7.0.1...7.1.0)</small>
 
 ### Added
 
 - admin: add tooltip for repo notes on user edit page #378 ([9a80409](https://gitlab.com/ikus-soft/rdiffweb/commit/9a80409471b661a7b86516f55764ddcda21c389f) by Patrik Dufresne).
-
-### Changed
-
-- templates: change status badge styling for active and deleted entries ([a4a6dc0](https://gitlab.com/ikus-soft/rdiffweb/commit/a4a6dc060785d2764519b868388dc295a5db084c) by Patrik Dufresne).
-
-### Misc
-
-- locales: update French translations ([ce526ee](https://gitlab.com/ikus-soft/rdiffweb/commit/ce526ee77953b102d63911e237ae57a69f003864) by Patrik Dufresne).
-
-## [7.1.0b3](https://gitlab.com/ikus-soft/rdiffweb/tags/7.1.0b3) - 2026-07-29
-
-<small>[Compare with 7.0.1](https://gitlab.com/ikus-soft/rdiffweb/compare/7.0.1...7.1.0b3)</small>
-
-### Added
-
 - config: add --test-config option to validate config file syntax ([866976e](https://gitlab.com/ikus-soft/rdiffweb/commit/866976edb787a0afd212bfc05bfe9d8e9730f2ae) by Patrik Dufresne).
 - ci: add stonking distribution to build matrix ([50f393f](https://gitlab.com/ikus-soft/rdiffweb/commit/50f393fd368ac4aedab4c351248908eb63bdfa5b) by Patrik Dufresne).
 
@@ -40,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- templates: change status badge styling for active and deleted entries ([a4a6dc0](https://gitlab.com/ikus-soft/rdiffweb/commit/a4a6dc060785d2764519b868388dc295a5db084c) by Patrik Dufresne).
 - librdiff: change MetadataKeys.iter to use generator expression ([4fdfe9f](https://gitlab.com/ikus-soft/rdiffweb/commit/4fdfe9f8bef274462cfdeae941b1cff1112feaee) by Patrik Dufresne).
 - debian: change gentarball target to avoid using mk-origtargz ([a458348](https://gitlab.com/ikus-soft/rdiffweb/commit/a458348c0ed0e498cfd4ea1486d471ded620c981) by Patrik Dufresne).
 - diskusage: change refactor disk usage aggregation into DiskUsage.attach_disk_usage ([9653574](https://gitlab.com/ikus-soft/rdiffweb/commit/965357436eb369e1591d52d9b6eb439c7585df95) by Patrik Dufresne).
@@ -52,10 +38,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Misc
 
+- Release version 7.1.0 ([a94abe6](https://gitlab.com/ikus-soft/rdiffweb/commit/a94abe65471f857d124b28af2458ee56a4da7da5) by Patrik Dufresne).
+- locales: update French translations ([ce526ee](https://gitlab.com/ikus-soft/rdiffweb/commit/ce526ee77953b102d63911e237ae57a69f003864) by Patrik Dufresne).
 - sonar: broaden email template resource key patterns ([9e90827](https://gitlab.com/ikus-soft/rdiffweb/commit/9e90827c45a9683fee6c9f48b4a67da5ead10624) by Patrik Dufresne).
 - controller: simplify nested form validation conditionals ([60cd0ad](https://gitlab.com/ikus-soft/rdiffweb/commit/60cd0ad6345b711511a4f6cb99355e2a09ddcb58) by Patrik Dufresne).
 - test: wait for element clickability in SSH key selenium test ([7bc6a7e](https://gitlab.com/ikus-soft/rdiffweb/commit/7bc6a7e5c21842c7f9c7db8c971e3edfabe69ffe) by Patrik Dufresne).
 - ci: split docker and deb publish jobs per package with shared dist matrix ([2753eb5](https://gitlab.com/ikus-soft/rdiffweb/commit/2753eb577bca04e8ec376d7904482d2019ff011f) by Patrik Dufresne).
+
 
 ## [7.0.1](https://gitlab.com/ikus-soft/rdiffweb/tags/7.0.1) - 2026-07-17
 

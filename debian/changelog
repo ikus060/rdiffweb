@@ -1,13 +1,5 @@
 rdiffweb (7.1.0-1) unstable; urgency=medium
 
-  * locales: update French translations
-  * admin: add tooltip for repo notes on user edit page #378
-  * templates: change status badge styling for active and deleted entries
-
- -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 03 Aug 2026 15:28:07 -0400
-
-rdiffweb (7.1.0b3-1) unstable; urgency=medium
-
   * ci: add stonking distribution to build matrix
   * config: add --test-config option to validate config file syntax
   * diskusage: change refactor disk usage aggregation into
@@ -25,8 +17,12 @@ rdiffweb (7.1.0b3-1) unstable; urgency=medium
   * librdiff: remove stale FIXME comment
   * sonar: broaden email template resource key patterns
   * templates: remove redundant role="form" attribute from forms
+  * locales: update French translations
+  * admin: add tooltip for repo notes on user edit page #378
+  * templates: change status badge styling for active and deleted entries
+  * Release version 7.1.0
 
- -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 29 Jul 2026 15:53:31 -0400
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 03 Aug 2026 15:28:07 -0400
 
 rdiffweb (7.0.1-1) unstable; urgency=medium
 
