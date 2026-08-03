@@ -1,3 +1,33 @@
+rdiffweb (7.1.0-1) unstable; urgency=medium
+
+  * locales: update French translations
+  * admin: add tooltip for repo notes on user edit page #378
+  * templates: change status badge styling for active and deleted entries
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Mon, 03 Aug 2026 15:28:07 -0400
+
+rdiffweb (7.1.0b3-1) unstable; urgency=medium
+
+  * ci: add stonking distribution to build matrix
+  * config: add --test-config option to validate config file syntax
+  * diskusage: change refactor disk usage aggregation into
+    DiskUsage.attach_disk_usage
+  * debian: remove obsolete `extras` folder from source
+  * debian: change gentarball target to avoid using mk-origtargz
+  * ci: fix creation of docker images
+  * ci: split docker and deb publish jobs per package with shared dist matrix
+  * debian: fix nocheck restriction on python3-zxcvbn alternative
+  * ci: fix docker tag and changelog versioning for release builds
+  * test: wait for element clickability in SSH key selenium test
+  * jail: fix mount unmount ordering using sorted reverse
+  * controller: simplify nested form validation conditionals
+  * librdiff: change MetadataKeys.iter to use generator expression
+  * librdiff: remove stale FIXME comment
+  * sonar: broaden email template resource key patterns
+  * templates: remove redundant role="form" attribute from forms
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Wed, 29 Jul 2026 15:53:31 -0400
+
 rdiffweb (7.0.1-1) unstable; urgency=medium
 
   * ci: fix changelog update for debian release

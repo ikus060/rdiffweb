@@ -6,6 +6,57 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [7.1.0](https://gitlab.com/ikus-soft/rdiffweb/tags/7.1.0) - 2026-08-03
+
+<small>[Compare with 7.1.0b3](https://gitlab.com/ikus-soft/rdiffweb/compare/7.1.0b3...7.1.0)</small>
+
+### Added
+
+- admin: add tooltip for repo notes on user edit page #378 ([9a80409](https://gitlab.com/ikus-soft/rdiffweb/commit/9a80409471b661a7b86516f55764ddcda21c389f) by Patrik Dufresne).
+
+### Changed
+
+- templates: change status badge styling for active and deleted entries ([a4a6dc0](https://gitlab.com/ikus-soft/rdiffweb/commit/a4a6dc060785d2764519b868388dc295a5db084c) by Patrik Dufresne).
+
+### Misc
+
+- locales: update French translations ([ce526ee](https://gitlab.com/ikus-soft/rdiffweb/commit/ce526ee77953b102d63911e237ae57a69f003864) by Patrik Dufresne).
+
+## [7.1.0b3](https://gitlab.com/ikus-soft/rdiffweb/tags/7.1.0b3) - 2026-07-29
+
+<small>[Compare with 7.0.1](https://gitlab.com/ikus-soft/rdiffweb/compare/7.0.1...7.1.0b3)</small>
+
+### Added
+
+- config: add --test-config option to validate config file syntax ([866976e](https://gitlab.com/ikus-soft/rdiffweb/commit/866976edb787a0afd212bfc05bfe9d8e9730f2ae) by Patrik Dufresne).
+- ci: add stonking distribution to build matrix ([50f393f](https://gitlab.com/ikus-soft/rdiffweb/commit/50f393fd368ac4aedab4c351248908eb63bdfa5b) by Patrik Dufresne).
+
+### Fixed
+
+- jail: fix mount unmount ordering using sorted reverse ([6618511](https://gitlab.com/ikus-soft/rdiffweb/commit/661851175610cc8b11194d4acd8bb45f42f5da5b) by Patrik Dufresne).
+- ci: fix docker tag and changelog versioning for release builds ([9d42e26](https://gitlab.com/ikus-soft/rdiffweb/commit/9d42e2607926ffa71591715f3741e2ce19876dc9) by Patrik Dufresne).
+- debian: fix nocheck restriction on python3-zxcvbn alternative ([4021b81](https://gitlab.com/ikus-soft/rdiffweb/commit/4021b8186c5fc7f8c157575fbb4788db25e39669) by Patrik Dufresne).
+- ci: fix creation of docker images ([653f613](https://gitlab.com/ikus-soft/rdiffweb/commit/653f613969feead1014a3b902ac542e0c0bf5a16) by Patrik Dufresne).
+
+### Changed
+
+- librdiff: change MetadataKeys.iter to use generator expression ([4fdfe9f](https://gitlab.com/ikus-soft/rdiffweb/commit/4fdfe9f8bef274462cfdeae941b1cff1112feaee) by Patrik Dufresne).
+- debian: change gentarball target to avoid using mk-origtargz ([a458348](https://gitlab.com/ikus-soft/rdiffweb/commit/a458348c0ed0e498cfd4ea1486d471ded620c981) by Patrik Dufresne).
+- diskusage: change refactor disk usage aggregation into DiskUsage.attach_disk_usage ([9653574](https://gitlab.com/ikus-soft/rdiffweb/commit/965357436eb369e1591d52d9b6eb439c7585df95) by Patrik Dufresne).
+
+### Removed
+
+- templates: remove redundant role="form" attribute from forms ([ab8a694](https://gitlab.com/ikus-soft/rdiffweb/commit/ab8a69446feb3499d1edeba3a16402fbf9352f14) by Patrik Dufresne).
+- librdiff: remove stale FIXME comment ([608f4d9](https://gitlab.com/ikus-soft/rdiffweb/commit/608f4d91aa14bf742da7e3dc31f0ee6f103b2c48) by Patrik Dufresne).
+- debian: remove obsolete `extras` folder from source ([dc60505](https://gitlab.com/ikus-soft/rdiffweb/commit/dc6050536cf8749f308c9e1a0759ba45292f75ef) by Patrik Dufresne).
+
+### Misc
+
+- sonar: broaden email template resource key patterns ([9e90827](https://gitlab.com/ikus-soft/rdiffweb/commit/9e90827c45a9683fee6c9f48b4a67da5ead10624) by Patrik Dufresne).
+- controller: simplify nested form validation conditionals ([60cd0ad](https://gitlab.com/ikus-soft/rdiffweb/commit/60cd0ad6345b711511a4f6cb99355e2a09ddcb58) by Patrik Dufresne).
+- test: wait for element clickability in SSH key selenium test ([7bc6a7e](https://gitlab.com/ikus-soft/rdiffweb/commit/7bc6a7e5c21842c7f9c7db8c971e3edfabe69ffe) by Patrik Dufresne).
+- ci: split docker and deb publish jobs per package with shared dist matrix ([2753eb5](https://gitlab.com/ikus-soft/rdiffweb/commit/2753eb577bca04e8ec376d7904482d2019ff011f) by Patrik Dufresne).
+
 ## [7.0.1](https://gitlab.com/ikus-soft/rdiffweb/tags/7.0.1) - 2026-07-17
 
 <small>[Compare with 7.0.0](https://gitlab.com/ikus-soft/rdiffweb/compare/7.0.0...7.0.1)</small>
