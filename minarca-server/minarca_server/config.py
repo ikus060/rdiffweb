@@ -148,13 +148,6 @@ def get_parser():
         default="https://minarca.org/contactus",
     )
 
-    parser.add(
-        '--minarca-rdiff-backup-extra-args',
-        '--rdiffbackup-args',
-        metavar='ARGS',
-        help="""list of extra argumenst to be pass to rdiff-backup server. e.g.: --no-compression""",
-    )
-
     parser.add('--minarca-quota-api-url', '--minarcaquotaapiurl', metavar='URL', help="url to minarca-quota-api server")
 
     # Replace --version

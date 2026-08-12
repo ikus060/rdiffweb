@@ -72,7 +72,7 @@ def _setup_logging(cfg, user, ip):
         root.addHandler(default_handler)
 
 
-def _find_rdiff_backup(version=DEFAULT_RDIFF_BACKUP_VERSION):
+def _find_rdiff_backup(version):
     return shutil.which('rdiff-backup-%s' % (version,))
 
 
@@ -86,7 +86,6 @@ def _parse_config():
         default_config_files=server_parser._default_config_files, auto_env_var_prefix=server_parser._auto_env_var_prefix
     )
     parser.add_argument('--log-file', '--logfile', default=server_parser._defaults['log_file'])
-    parser.add_argument('--minarca-rdiff-backup-extra-args', '--rdiffbackup-args')
     return parser.parse_known_args(args=[])[0]
 
 
@@ -118,62 +117,54 @@ def main(args=None):
         print("ERROR no command provided.", file=sys.stderr)
         sys.exit(_EXIT_NO_COMMAND)
 
-    # Get extra arguments for rdiff-backup.
-    _extra_args = cfg.minarca_rdiff_backup_extra_args
-    if _extra_args:
-        _extra_args = _extra_args.split(' ')
-    else:
-        _extra_args = []
-
-    # Either we get called by rdiff-backup directly
-    # or we get called by minarca client which replace the command by the name of the repository.
     try:
+        # Used by backup-ninja to verify connectivity, or to check rdiff-backup version.
+        # These are run directly, without the jail.
         if ssh_original_command in ["echo -n 1", "echo -n host is alive"]:
-            # Used by backup-ninja to verify connectivity
             subprocess.check_call(
                 ssh_original_command.split(' '),
                 env={'LANG': LANG},
                 stdout=sys.stdout.fileno(),
                 stderr=sys.stderr.fileno(),
             )
-        elif ssh_original_command in ["/usr/bin/rdiff-backup -V"]:
-            rdiff_backup = _find_rdiff_backup()
+            return
+
+        if ssh_original_command == "/usr/bin/rdiff-backup -V":
+            rdiff_backup = _find_rdiff_backup(DEFAULT_RDIFF_BACKUP_VERSION)
             subprocess.check_call(
                 [rdiff_backup, '-V'],
                 env={'LANG': LANG},
                 stdout=sys.stdout.fileno(),
                 stderr=sys.stderr.fileno(),
             )
-        else:
-            if ssh_original_command.startswith("rdiff-backup ") and "--server" in ssh_original_command:
-                # When called directly by rdiff-backup.
-                # So let use default rdiff-backup version.
-                rdiff_backup = _find_rdiff_backup()
-            elif 'minarca/' in ssh_original_command:
-                # When called by Minarca, we receive a user agent string.
-                if 'rdiff-backup/2.0' in ssh_original_command:
-                    rdiff_backup = _find_rdiff_backup(version='2.0')
-                elif 'rdiff-backup/2.2' in ssh_original_command:
-                    rdiff_backup = _find_rdiff_backup(version='2.2')
-                else:
-                    logger.info("unsupported version: %s", ssh_original_command)
-                    print("ERROR: unsupported version: %s" % ssh_original_command, file=sys.stderr)
-                    sys.exit(_EXIT_UNSUPPORTED_VERSION)
-            else:
-                # When called by legacy minarca client with rdiff-backup v1.2.8.
-                # the command should be the name of the repository.
-                sys.exit(_EXIT_UNSUPPORTED_VERSION)
+            return
 
-            # Run the server in chroot jail.
-            cmd = [rdiff_backup, '--server'] + _extra_args
-            logger.info("running command [%s] in jail [%s] for: %s", ' '.join(cmd), userroot, ssh_original_command)
-            try:
-                run_jailed(cmd, path=userroot, cwd=userroot, env={'LANG': 'en_US.utf-8', 'TZ': TZ, 'HOME': userroot})
-                logger.info("rdiff-backup terminated successfully")
-            except PermissionError:
-                logger.error("fail to create rdiff-backup jail", exc_info=1)
-                print("ERROR: fail to create rdiff-backup jail", file=sys.stderr)
-                sys.exit(_EXIT_PERM_ERROR)
+        # Everything below runs jailed. Determine which rdiff-backup command to use.
+        if ssh_original_command.startswith("rdiff-backup ") and " --server" in ssh_original_command:
+            # When called directly by rdiff-backup. Use default rdiff-backup version.
+            rdiff_backup = _find_rdiff_backup(DEFAULT_RDIFF_BACKUP_VERSION)
+            cmd = [rdiff_backup, '--server']
+        elif 'minarca/' in ssh_original_command and 'rdiff-backup/2.0' in ssh_original_command:
+            rdiff_backup = _find_rdiff_backup('2.0')
+            cmd = [rdiff_backup, '--server']
+        elif 'minarca/' in ssh_original_command and 'rdiff-backup/2.2' in ssh_original_command:
+            rdiff_backup = _find_rdiff_backup('2.2')
+            cmd = [rdiff_backup, 'server']
+        else:
+            # When called by Minarca with an unsupported rdiff-backup version.
+            logger.info("unsupported version: %s", ssh_original_command)
+            print("ERROR: unsupported version: %s" % ssh_original_command, file=sys.stderr)
+            sys.exit(_EXIT_UNSUPPORTED_VERSION)
+
+        # Run the server in chroot jail.
+        logger.info("running command [%s] in jail [%s] for: %s", ' '.join(cmd), userroot, ssh_original_command)
+        try:
+            run_jailed(cmd, path=userroot, cwd=userroot, env={'LANG': 'en_US.utf-8', 'TZ': TZ, 'HOME': userroot})
+            logger.info("rdiff-backup terminated successfully")
+        except PermissionError:
+            logger.error("fail to create rdiff-backup jail", exc_info=1)
+            print("ERROR: fail to create rdiff-backup jail", file=sys.stderr)
+            sys.exit(_EXIT_PERM_ERROR)
     except subprocess.CalledProcessError as e:
         logger.warning("%s Last output: \n%s" % (e, e.stderr))
         sys.exit(e.returncode)
