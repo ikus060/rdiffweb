@@ -331,10 +331,6 @@ publish:minarca-server:docker:
     name: chko/docker-pushrm
     entrypoint: ["/bin/sh", "-c"]
   script:
-    # Keep top 400 lines to workarround Dockerhub limitation.
-    - cp README.md README.md.orig
-    - head -n 400 README.md.orig > README.md
-    # Push file
     - /docker-pushrm
 
 publish:rdiffweb:docker-readme:

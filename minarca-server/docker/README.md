@@ -15,11 +15,15 @@ For more information and resources on Minarca, check out the following links:
 
 The Minarca Server Docker image is available in multiple tags to suit different needs:
 
-- `6`: The latest release of major version 6.
-- `6.1`: The latest release of minor version 6.0.
-- `6.1.3`: A specific version release.
-- `6.1.3b1`: A beta release.
-- `6.1.4.dev30+g4502de8`: A development version.
+| Tag | Description |
+|---|---|
+| `7` | The latest release of major version 7. |
+| `7.1` | The latest release of minor version 7.1. |
+| `7.1.0` | A specific version release. |
+| `7.1.0b1` |  A beta release. |
+| `7.1.0.dev30+g4502de8` |  A development version. |
+
+Check the **Tags** tab on Docker Hub for the full list of available versions.
 
 ## Using the Docker Image
 
@@ -37,7 +41,7 @@ docker run -d \
   --privileged \
   --restart always \
   --name minarca-server \
-  ikus060/minarca-server:6
+  ikus060/minarca-server:7.1.0
 ```
 
 ### Docker Command Breakdown
@@ -50,6 +54,16 @@ docker run -d \
 - `--privileged`: Ensures the container has enough privilege to create user namespace.
 - `--restart always`: Ensures the container restarts automatically if it stops.
 
+### ⚠️ Important: Enabling Nested Containers and Unprivileged User Namespaces
+
+Minarca Server relies on **unprivileged user namespaces** to isolate backup sessions and improve security. If you are running Minarca Server inside a container (e.g., LXC, Proxmox, or another virtualized/containerized environment), you must ensure that **nesting** and **unprivileged user namespace creation** are explicitly enabled on the host and/or the outer container. Without this, backups may not function as expected.
+
+#### Why This Matters
+
+Without these settings, Docker containers running inside another container (such as an LXC container on Proxmox) may still be blocked from creating user namespaces by the outer container or host kernel policies. This can result in Minarca Server failing to properly sandbox backup operations.
+
+For more details, refer to the official Minarca documentation: [Enable Unprivileged User Namespace for Containers](https://nexus.ikus-soft.com/repository/archive/minarca/7.1.0/doc/installation.html#enable-unprivileged-user-namespace-for-containers)
+
 ### Running Minarca Server with Docker Compose
 
 If you prefer using Docker Compose, here's a sample `docker-compose.yml` file:
@@ -57,7 +71,7 @@ If you prefer using Docker Compose, here's a sample `docker-compose.yml` file:
 ```yaml
 services:
   minarca-server:
-    image: ikus060/minarca-server:6
+    image: ikus060/minarca-server:7.1.0
     ports:
       - "8080:8080"
       - "2222:22"
@@ -85,7 +99,9 @@ services:
 
 By following these instructions, you can have Minarca Server up and running with minimal configuration, ready to manage your backup needs effectively.
 
-**Accessing the Minarca Server**  
+> **Reminder:** If this Docker host itself is running inside a virtualized container (Proxmox LXC, LXD, etc.), make sure to review the **Enabling Nested Containers and Unprivileged User Namespaces** section above before deploying.
+
+**Accessing the Minarca Server**
 
 Once the container is running, you can access the Minarca web interface by navigating to the external URL you defined in the `MINARCA_EXTERNAL_URL` environment variable (e.g., https://minarca.mycompany.com). From there, you can monitor backups and more.
 
@@ -96,7 +112,7 @@ If you prefer using PostgreSQL instead of SQLite database, here's a sample `dock
 ```yaml
 services:
   minarca-server:
-    image: ikus060/minarca-server:6
+    image: ikus060/minarca-server:7.1.0
     ports:
       - "8080:8080"
       - "2222:22"
