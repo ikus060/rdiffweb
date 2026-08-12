@@ -73,9 +73,9 @@ class Test(unittest.TestCase):
 
     @parameterized.expand(
         [
-            ("rdiff-backup --server", None),
-            ("minarca/4.4.0 rdiff-backup/2.0.5 (Linux 5.11.8-051108-generic amd64)", "2.0"),
-            ("minarca/5.0.0 rdiff-backup/2.2.4 (Linux 5.11.8-051108-generic amd64)", "2.2"),
+            ("rdiff-backup --server", "2.0", "--server"),
+            ("minarca/4.4.0 rdiff-backup/2.0.5 (Linux 5.11.8-051108-generic amd64)", "2.0", "--server"),
+            ("minarca/5.0.0 rdiff-backup/2.2.4 (Linux 5.11.8-051108-generic amd64)", "2.2", "server"),
         ]
     )
     @mock.patch('minarca_server.shell._find_rdiff_backup', return_value='/usr/bin/rdiff-backup-test')
@@ -84,6 +84,7 @@ class Test(unittest.TestCase):
         self,
         ssh_original_cmd,
         expect_version,
+        expect_arg,
         rdiff_backup_jail_mock,
         find_rdiff_backup_mock,
     ):
@@ -101,12 +102,9 @@ class Test(unittest.TestCase):
             del os.environ["MINARCA_USER_ROOT"]
             del os.environ["SSH_ORIGINAL_COMMAND"]
         rdiff_backup_jail_mock.assert_called_once_with(
-            ['/usr/bin/rdiff-backup-test', '--server'],
+            ['/usr/bin/rdiff-backup-test', expect_arg],
             path='/tmp/backups/joe',
             cwd='/tmp/backups/joe',
             env={'LANG': 'en_US.utf-8', 'TZ': mock.ANY, 'HOME': '/tmp/backups/joe'},
         )
-        if expect_version is None:
-            find_rdiff_backup_mock.assert_called_once_with()
-        else:
-            find_rdiff_backup_mock.assert_called_once_with(version=expect_version)
+        find_rdiff_backup_mock.assert_called_once_with(expect_version)
