@@ -44,3 +44,9 @@ exclude Dockerfile .dockerignore
 
 # Exclude sonarqube CICD config
 exclude sonar-project.properties
+
+# Exclude minarca-server from rdiffweb source
+prune minarca-server
+
+# Exclude doc from source
+prune doc
