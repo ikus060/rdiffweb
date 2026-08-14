@@ -71,4 +71,6 @@ class RepoActivityPage:
             Message.type,
             Message.body,
             Message.changes,
+            Message.ip_address,
+            Message.user_agent,
         ).filter(Message.model_id == repo_obj.id, Message.model_name == repo_obj._get_message_model_name())

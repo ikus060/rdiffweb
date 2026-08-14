@@ -46,4 +46,6 @@ class AdminActivityPage:
             Message.type,
             Message.body,
             Message.changes,
+            Message.ip_address,
+            Message.user_agent,
         ).outerjoin(Message.author)

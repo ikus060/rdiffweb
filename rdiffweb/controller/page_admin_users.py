@@ -538,6 +538,8 @@ class AdminUsersPage:
                 Message.type,
                 Message.body,
                 Message.changes,
+                Message.ip_address,
+                Message.user_agent,
             )
             .order_by(Message.date.desc())
             .filter(Message.model_id == user.id, Message.model_name == user._get_message_model_name())
