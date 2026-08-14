@@ -498,10 +498,8 @@ class AdminUsersPage:
         userobj = self._get_user(username)
         # Validate form method.
         form = DeleteTokenForm()
-        if form.validate():
-            # Get user
-            if form.save_to_db(userobj):
-                flash(_('Access token revoked.'))
+        if form.validate() and form.save_to_db(userobj):
+            flash(_('Access token revoked.'))
         if form.error_message:
             flash(form.error_message, level='error')
         raise cherrypy.HTTPRedirect(url_for('admin', 'users', 'edit', username))
@@ -516,9 +514,8 @@ class AdminUsersPage:
         userobj = self._get_user(username)
         # Validate form method.
         form = DeleteUserForm()
-        if form.validate():
-            if form.save_to_db(userobj):
-                flash(_("User account removed."))
+        if form.validate() and form.save_to_db(userobj):
+            flash(_("User account removed."))
         if form.error_message:
             flash(form.error_message, level='error')
         raise cherrypy.HTTPRedirect(url_for('admin', 'users'))
