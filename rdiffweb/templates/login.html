@@ -21,7 +21,10 @@
                 <cf:Flash messages={{ get_flashed_messages() }} class="mb-2" />
                 <form method="post" action="{{ url_for() }}">
                   <cf:Fields form={{ form }} floating={{ True }} />
-                  <button type="submit" class="btn btn-primary btn-lg w-100">{% trans %}Sign in{% endtrans %}</button>
+                  <button type="submit" class="btn btn-primary btn-lg w-100">
+                    {% trans %}Sign in{% endtrans %}
+                    <RdwIcon value="bi-box-arrow-in-right" class="ms-1" />
+                  </button>
                 </form>
                 {% if oauth_enabled %}
                   <div class="rdw-divider d-flex align-items-center my-4">

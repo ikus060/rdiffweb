@@ -14,11 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import logging
+from datetime import timedelta
 
 import cherrypy
 from cherrypy_foundation.flash import flash
 from cherrypy_foundation.form import CherryForm
-from cherrypy_foundation.tools.i18n import get_translation
+from cherrypy_foundation.tools.i18n import format_timedelta, get_translation
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from wtforms.fields import BooleanField, PasswordField, StringField
 from wtforms.validators import DataRequired, Length
@@ -69,13 +70,21 @@ class LoginForm(CherryForm):
         cfg = cherrypy.tree.apps[''].cfg
         self.login.label.text = _('Username or Email') if cfg.login_with_email else _('Username')
         # Add a tooltip on remember me to include session timeout.
-        persistent_timeout = cherrypy.config.get('tools.sessions_timeout.persistent_timeout')
-        idle_timeout = cherrypy.config.get('tools.sessions.timeout')
-        title = _(
-            "Check this to stay signed in for %d day(s). If you leave it unchecked, your session will last for %d hour(s)."
-        ) % (persistent_timeout // 1440, idle_timeout // 60)
-        self.persistent.render_kw['title'] = title
-        self.persistent.render_kw['label-title'] = title
+        persistent_timeout = cherrypy.config.get('tools.sessions_timeout.persistent_timeout', 0)
+        idle_timeout = cherrypy.config.get('tools.sessions.timeout', 0)
+        title = _("Check this to stay signed in for %s. If you leave it unchecked, your session will last for %s.") % (
+            format_timedelta(timedelta(minutes=persistent_timeout)),
+            format_timedelta(timedelta(minutes=idle_timeout)),
+        )
+        self.persistent.render_kw.update(
+            {
+                "data-bs-toggle": "tooltip",
+                "title": title,
+                "label-class": "rdw-tooltip",
+                "label-data-bs-toggle": "tooltip",
+                "label-title": title,
+            }
+        )
 
 
 class LoginPage:
