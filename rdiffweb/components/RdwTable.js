@@ -174,12 +174,27 @@ $(document).ready(function () {
     $.fn.dataTable.render.actor = function () {
 
         return {
-            display(data) {
+            display: function (data, type, row, meta) {
                 if (!data) {
                     return `<span class="text-muted">&mdash;</span>`;
                 }
+
                 const safe = escapeHtml(data);
-                return `<span class="badge text-bg-secondary">
+                const ip = row.ip_address ? escapeHtml(row.ip_address) : null;
+                const userAgent = row.user_agent ? escapeHtml(row.user_agent) : null;
+
+                if (!ip && !userAgent) {
+                    return `<span class="badge text-bg-secondary">
+                                <i class="bi bi-person-fill me-1"></i>${safe}
+                            </span>`;
+                }
+
+                const tooltipContent = [ip, userAgent].filter(Boolean).join(' • ');
+
+                return `<span class="badge text-bg-secondary"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="${tooltipContent}">
                             <i class="bi bi-person-fill me-1"></i>${safe}
                         </span>`;
             },
