@@ -267,13 +267,11 @@ class ApiTokens:
         """
         # Validate input data.
         form = TokenForm(json=1)
-        if form.strict_validate():
-            # Create the Access Token
-            userobj = cherrypy.serving.request.currentuser
-            if form.save_to_db(userobj):
-                token = self._query(form.name.data)
-                # Return token info as Json
-                data = self._to_json(token)
-                data['token'] = form.secret
-                return data
+        userobj = cherrypy.serving.request.currentuser
+        if form.strict_validate() and form.save_to_db(userobj):
+            token = self._query(form.name.data)
+            # Return token info as Json
+            data = self._to_json(token)
+            data['token'] = form.secret
+            return data
         raise cherrypy.HTTPError(400, form.error_message)
