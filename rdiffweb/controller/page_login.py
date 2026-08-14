@@ -29,13 +29,13 @@ logger = logging.getLogger(__name__)
 
 class LoginForm(CherryForm):
     # Sanitize the redirect URL to avoid Open Redirect
-    # redirect = HiddenField(default='/', filters=[lambda v: v if v.startswith('/') else '/'])
     login = StringField(
-        _('Username'),
+        _('Login'),
         # Default to last MFA username (if any).
         default=lambda: cherrypy.tools.auth.get_user_key() or "",
-        validators=[DataRequired(), Length(max=256, message=_('Username too long.'))],
+        validators=[DataRequired(), Length(max=256, message=_('Login too long.'))],
         render_kw={
+            "placeholder": _('Login'),
             "autocorrect": "off",
             "autocapitalize": "none",
             "autocomplete": "off",
@@ -67,7 +67,7 @@ class LoginForm(CherryForm):
             self.login.render_kw["autofocus"] = "autofocus"
         # Update place holder based on application config
         cfg = cherrypy.tree.apps[''].cfg
-        self.login.render_kw['placeholder'] = _('Username or Email') if cfg.login_with_email else _('Username')
+        self.login.label.text = _('Username or Email') if cfg.login_with_email else _('Username')
         # Add a tooltip on remember me to include session timeout.
         persistent_timeout = cherrypy.config.get('tools.sessions_timeout.persistent_timeout')
         idle_timeout = cherrypy.config.get('tools.sessions.timeout')
