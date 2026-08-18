@@ -377,7 +377,6 @@ class NotificationPlugin(SimplePlugin):
                         severity=logging.INFO,
                     )
                     if used_pct >= float(userobj.disk_usage_threshold):
-                        cherrypy.log("FOO - sending email")
                         self._queue_mail(
                             userobj,
                             template="email_storage_usage.html",
