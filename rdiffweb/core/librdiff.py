@@ -1076,14 +1076,16 @@ class RdiffRepo(object):
         """
         assert type(remove_older_than) is int, 'invalid remove_older_than, expect an integer: ' + remove_older_than
         logger.info(
-            "execute rdiff-backup --force --remove-older-than=%sD %r",
+            "execute rdiff-backup remove increments --older-than=%sD %r",
             remove_older_than,
             self.full_path.decode(sys.getfilesystemencoding(), 'replace'),
         )
         cmdline = [
             find_rdiff_backup(),
             b'--force',
-            b'--remove-older-than=' + str(remove_older_than).encode(encoding='latin1') + b'D',
+            b'remove',
+            b'increments',
+            b'--older-than=' + str(remove_older_than).encode(encoding='latin1') + b'D',
             self.full_path,
         ]
         process = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env={'LANG': LANG})
