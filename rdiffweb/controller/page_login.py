@@ -63,9 +63,9 @@ class LoginForm(CherryForm):
             self.login.data = original_url.strip('/').split('/', 2)[1]
         # When username is already define, focus on password:
         if self.login.data:
-            self.password.render_kw["autofocus"] = "autofocus"
+            self.password.render_kw = {**self.password.render_kw, "autofocus": True}
         else:
-            self.login.render_kw["autofocus"] = "autofocus"
+            self.login.render_kw = {**self.login.render_kw, "autofocus": True}
         # Update place holder based on application config
         cfg = cherrypy.tree.apps[''].cfg
         self.login.label.text = _('Username or Email') if cfg.login_with_email else _('Username')
