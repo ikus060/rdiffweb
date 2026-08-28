@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [7.1.1](https://gitlab.com/ikus-soft/rdiffweb/tags/7.1.1) - 2026-08-28
+
+<small>[Compare with 7.1.0](https://gitlab.com/ikus-soft/rdiffweb/compare/7.1.0...7.1.1)</small>
+
+### Added
+
+- admin: add ip_address and user_agent to activity log tooltip ([ad14b9e](https://gitlab.com/ikus-soft/rdiffweb/commit/ad14b9ec685ab41e57d7a187d66ff34d968571e6) by Patrik Dufresne).
+
+### Fixed
+
+- login: fix autofocus attribute mutation on shared render_kw ([bc38f65](https://gitlab.com/ikus-soft/rdiffweb/commit/bc38f654e44f1e809e9977cd10afa59d6e2abf5e) by Patrik Dufresne).
+
+### Changed
+
+- login: change session timeout tooltip to human-readable format ([dd9758f](https://gitlab.com/ikus-soft/rdiffweb/commit/dd9758f1d2859ca01c8d5b8cdf9159c66d940cfb) by Patrik Dufresne).
+- login: change login label base on login_with_email ([fe08ed4](https://gitlab.com/ikus-soft/rdiffweb/commit/fe08ed4a5d7b72e0f11a03acb6e79cfcc586cdfe) by Patrik Dufresne).
+
+### Removed
+
+- notification: remove leftover debug log statement ([1ad4c7f](https://gitlab.com/ikus-soft/rdiffweb/commit/1ad4c7f22c2e4afe45ab49e3397db93d87ed1c43) by Patrik Dufresne).
+
+### Merged
+
+- changelog: merge 7.1.0 with 7.1.0b3-1 changelog ([2d9bb30](https://gitlab.com/ikus-soft/rdiffweb/commit/2d9bb302e771a12487253be944523fef518a712c) by Patrik Dufresne).
+
+### Misc
+
+- librdiff: update rdiff-backup remove increments command syntax ([548ec99](https://gitlab.com/ikus-soft/rdiffweb/commit/548ec99ab4817ac979082b861ba588a0640d6aa2) by Patrik Dufresne).
+- admin: simplify form validation and save conditionals ([d834e07](https://gitlab.com/ikus-soft/rdiffweb/commit/d834e07d1144d9fcce50b0cde585777b21d62ea2) by Patrik Dufresne).
+- build: exclude minarca-server and doc directories from source distribution ([869af13](https://gitlab.com/ikus-soft/rdiffweb/commit/869af13f0a0d39202e1cf397bd97e8438b31dee7) by Patrik Dufresne).
+- docker: update README to v7.1.0 and remove truncation workaround ([930e995](https://gitlab.com/ikus-soft/rdiffweb/commit/930e9956758db9fd20c74e9e3c6f538e435e960e) by Patrik Dufresne).
+
 ## [7.1.0](https://gitlab.com/ikus-soft/rdiffweb/tags/7.1.0) - 2026-08-03
 
 <small>[Compare with 7.0.1](https://gitlab.com/ikus-soft/rdiffweb/compare/7.0.1...7.1.0)</small>

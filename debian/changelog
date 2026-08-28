@@ -1,3 +1,18 @@
+rdiffweb (7.1.1-1) unstable; urgency=medium
+
+  * changelog: merge 7.1.0 with 7.1.0b3-1 changelog
+  * docker: update README to v7.1.0 and remove truncation workaround
+  * build: exclude minarca-server and doc directories from source distribution
+  * login: change login label base on login_with_email
+  * login: change session timeout tooltip to human-readable format
+  * admin: simplify form validation and save conditionals
+  * admin: add ip_address and user_agent to activity log tooltip
+  * notification: remove leftover debug log statement
+  * librdiff: update rdiff-backup remove increments command syntax
+  * login: fix autofocus attribute mutation on shared render_kw
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Fri, 28 Aug 2026 07:20:31 -0400
+
 rdiffweb (7.1.0-1) unstable; urgency=medium
 
   * ci: add stonking distribution to build matrix
