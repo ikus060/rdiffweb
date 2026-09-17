@@ -85,8 +85,7 @@ def delete_user_with_data(userid):
     """
     Job to delete user with all data.
     """
-    cherrypy.db.clear_sessions()
-    with cherrypy.db.session.begin():
+    try:
         # Let start by deleting all repositories from disk.
         userobj = UserObject.get_user(userid)
         username = userobj.username
@@ -96,7 +95,11 @@ def delete_user_with_data(userid):
             repoobj.delete_repo()
         # Finish by deleting the user it self.
         userobj.delete()
+        userobj.commit()
         logger.info('user [%s] deleted', username)
+    except Exception:
+        UserObject.session.rollback()
+        raise
 
 
 class UserObject(MessageMixin, Base):

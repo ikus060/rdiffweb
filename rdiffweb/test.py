@@ -36,15 +36,16 @@ from rdiffweb.rdw_app import RdiffwebApp
 Thread.isAlive = Thread.is_alive
 
 
-def create_testcases_repo():
+def create_testcases_repo(dest=None):
     """Extract testcases."""
     # Extract 'testcases.tar.gz'
     testcases = importlib.resources.files('rdiffweb.tests') / 'testcases.tar.gz'
-    new = str(tempfile.mkdtemp(prefix='rdiffweb_tests_'))
-    subdir = os.path.join(new, 'admin')
-    os.makedirs(subdir)
-    subprocess.check_call(['tar', '-zxf', testcases], cwd=subdir)
-    return subdir
+    if dest is None:
+        new = str(tempfile.mkdtemp(prefix='rdiffweb_tests_'))
+        dest = os.path.join(new, 'admin')
+    os.makedirs(dest, exist_ok=True)
+    subprocess.check_call(['tar', '-zxf', testcases], cwd=dest)
+    return dest
 
 
 class WebCase(helper.CPWebCase):
@@ -111,11 +112,13 @@ class WebCase(helper.CPWebCase):
         admin_user = UserObject.create_admin_user(self.USERNAME, self.PASSWORD)
         admin_user.commit()
         # Create testcases repo
-        self.testcases = create_testcases_repo()
-        if admin_user:
-            admin_user.user_root = self.testcases
-            admin_user.refresh_repos()
-            admin_user.commit()
+        if admin_user.user_root == '/backups':
+            self.testcases = create_testcases_repo()
+        else:
+            self.testcases = create_testcases_repo(dest=admin_user.user_root)
+        admin_user.user_root = self.testcases
+        admin_user.refresh_repos()
+        admin_user.commit()
         # Login to web application.
         if self.login:
             self._login()

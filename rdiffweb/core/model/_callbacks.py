@@ -19,6 +19,8 @@ from sqlalchemy.orm import Session
 
 
 def add_post_commit_tasks(session, *args):
+    if getattr(session, '_trans_context_manager', False):
+        raise RuntimeError('cannot use add_post_commit_tasks with sql context manager')
     # Add task
     session.info.setdefault("_after_commit_tasks", []).append(args)
 

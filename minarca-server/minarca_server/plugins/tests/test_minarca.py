@@ -19,6 +19,7 @@ import unittest
 from base64 import b64encode
 from importlib.resources import files
 from io import open
+from unittest.mock import MagicMock
 
 import cherrypy
 import minarca_server
@@ -58,6 +59,16 @@ class MinarcaPluginTest(minarca_server.tests.AbstractMinarcaTest):
     basic_headers = [("Authorization", "Basic " + b64encode(b"admin:admin123").decode('ascii'))]
 
     login = True
+
+    def setUp(self):
+        super().setUp()
+        self._quota = {}
+        self.listener = MagicMock()
+        cherrypy.engine.subscribe('user_deleted', self.listener.user_deleted, priority=999)
+
+    def tearDown(self):
+        cherrypy.engine.unsubscribe('user_deleted', self.listener.user_deleted)
+        return super().tearDown()
 
     def test_add_user_without_user_root(self):
         # Given a minarca base dir
@@ -144,6 +155,27 @@ class MinarcaPluginTest(minarca_server.tests.AbstractMinarcaTest):
         # Then setting disk_quota does nothing
         userobj.disk_quota = 12345
         userobj.commit()
+
+    def test_delete_user_with_delete_data(self):
+        # Given a user with data
+        admin = UserObject.get_user(self.USERNAME)
+        myuser = UserObject.add_user('my-user', user_root=admin.user_root).add()
+        myuser.refresh_repos()
+        myuser.commit()
+        self.assertTrue(myuser.repo_objs)
+        self.assertTrue(os.listdir(admin.user_root))
+        self.listener.user_deleted.reset_mock()
+        # When deleting the user with data
+        myuser.schedule_delete(delete_data=True)
+        myuser.commit()
+        cherrypy.scheduler.wait_for_jobs()
+        # Then the user is deleted
+        myuser = UserObject.get_user('my-user')
+        self.assertIsNone(myuser)
+        # Then the data is also deleted
+        self.assertFalse(os.listdir(admin.user_root))
+        # Then the listener was called - if not called an exception occured.
+        self.listener.user_deleted.assert_called_once_with('my-user')
 
 
 class MinarcaAdminLogView(minarca_server.tests.AbstractMinarcaTest):
