@@ -199,7 +199,7 @@ package:rdiffweb:deb:
 package:minarca-server:deb:
   <<: *tox
   # Older image for pyinstaller
-  image: python:3.12-bullseye
+  image: python:3.12-bookworm
   stage: package
   needs: []
   variables:
