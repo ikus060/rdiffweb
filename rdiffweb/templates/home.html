@@ -92,9 +92,9 @@
     <!-- Errors -->
     <div class="col-6 col-xxl-3">
       <KpiCard :title="_('Errors')"
-               :value="error_count"
+               :value="total_error_count"
                :subtitle="_('Across all repositories')"
-               :color="'danger' if error_count else 'success'"
+               :color="'danger' if total_error_count else 'success'"
                icon="bi-bug" />
     </div>
   </div>

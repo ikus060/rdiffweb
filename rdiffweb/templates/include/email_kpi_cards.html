@@ -72,8 +72,8 @@
                       letter-spacing:0.4px">{% trans %}Errors{% endtrans %}</div>
           <div style="font-size:22px;
                       font-weight:700;
-                      color:{{ bs_colors.danger.color if error_count else bs_colors.success.color }};
-                      margin:4px 0">{{ error_count }}</div>
+                      color:{{ bs_colors.danger.color if total_error_count else bs_colors.success.color }};
+                      margin:4px 0">{{ total_error_count }}</div>
           <div style="font-size:11px;color:#6c757d;">{% trans %}Across all repositories{% endtrans %}</div>
         </td>
       </tr>

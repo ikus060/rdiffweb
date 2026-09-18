@@ -103,12 +103,13 @@
             <RepoStatus :repo="repo" class="badge" />
           </td>
           {# Errors #}
-          {% set error_count = (repo.session_statistics and repo.session_statistics[-1].errors) or 0 %}
-          <td data-order="{{ error_count }}">
-            {% if error_count > 0 %}
-              <a href="{{ url_for('logs', repo, date=repo.session_statistics[-1].date) }}">{{ error_count }}</a>
-            {% else %}
+          <td data-order="{{ repo.last_error_count or 0 }}">
+            {% if repo.last_error_count is none %}
               <span class="text-muted small">&mdash;</span>
+            {% elif repo.last_error_count %}
+              <a href="{{ url_for('logs', repo, date=repo.last_error_date) }}">{{ repo.last_error_count }}</a>
+            {% else %}
+              {{ repo.last_error_count }}
             {% endif %}
           </td>
           <td data-search="" class="text-end">

@@ -27,6 +27,8 @@ class AdminReposPage:
         """
         Show all user repositories
         """
+        repo_objs = RepoObject.query.all()
+        RepoObject.attach_statistics_info(repo_objs)
         return {
-            "repos": RepoObject.query.all(),
+            "repos": repo_objs,
         }

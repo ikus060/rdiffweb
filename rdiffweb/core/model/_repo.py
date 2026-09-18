@@ -192,6 +192,29 @@ class RepoObject(MessageMixin, Base, RdiffRepo):
         except ValueError:
             raise DoesNotExistError(path)
 
+    @classmethod
+    def attach_statistics_info(cls, repo_objs):
+        for repo in repo_objs:
+            try:
+                stats = repo.session_statistics
+            except Exception:
+                cherrypy.log('unexpected error trying to get session_statistics', traceback=True)
+                stats = None
+
+            if stats:
+                repo.last_error_count = stats[-1].errors
+                repo.last_error_date = stats[-1].date
+                repo.last_filesize = stats[-1].sourcefilesize
+                repo.first_backup_date = stats[0].date
+                repo.backup_count = len(stats)
+            else:
+                repo.last_error_count = None
+                repo.last_error_date = None
+                repo.last_filesize = None
+                repo.first_backup_date = None
+                repo.backup_count = 0
+        return repo_objs
+
     def __init__(self, *args, **kwargs):
         Base.__init__(self, *args, **kwargs)
         self.__init_on_load__()

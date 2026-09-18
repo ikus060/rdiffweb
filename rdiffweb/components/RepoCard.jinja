@@ -28,7 +28,7 @@
       {# Backup count #}
       <div class="col-6">
         <div class="bg-light rounded-3 p-2">
-          <div class="fw-bold text-truncate">{{ repo.session_statistics | length if repo.session_statistics else mdash }}</div>
+          <div class="fw-bold text-truncate">{{ repo.backup_count or mdash }}</div>
           <div class="text-muted" style="font-size:.72rem">{% trans %}Restore points{% endtrans %}</div>
         </div>
       </div>
@@ -39,25 +39,22 @@
         <RdwIcon value="bi-calendar-range" class="me-1" />
         {%- trans %}Oldest:{% endtrans %}
         <strong>
-          <RdwTime :value="repo.session_statistics and repo.session_statistics[0].date" format="short" />
+          <RdwTime :value="repo.first_backup_date" format="short" />
         </strong>
       </span>
       {# Error count #}
       <span class="text-muted small">
-        {% if repo.session_statistics %}
-          {% set error_count = repo.session_statistics[-1].errors %}
-          {% if error_count > 0 %}
-            <a class="text-danger-emphasis fw-semibold"
-               href="{{ url_for('logs', repo, date=repo.session_statistics[-1].date) }}">
-              <RdwIcon value="bi-exclamation-circle" class="me-1" />
-              {{- _('%(count)s errors', count=error_count) }}
-            </a>
-          {% else %}
-            <RdwIcon value="bi-check-circle" class="text-success" class="me-1" />
-            {{- _('%(count)s errors', count=error_count) }}
-          {% endif %}
-        {% else %}
+        {% if repo.last_error_count is none %}
           {{ mdash }}
+        {% elif repo.last_error_date %}
+          <a class="text-danger-emphasis fw-semibold"
+             href="{{ url_for('logs', repo, date=repo.last_error_date) }}">
+            <RdwIcon value="bi-exclamation-circle" class="me-1" />
+            {{- _('%(count)s errors', count=repo.last_error_count) }}
+          </a>
+        {% else %}
+          <RdwIcon value="bi-check-circle" class="text-success" class="me-1" />
+          {{- _('%(count)s errors', count=repo.last_error_count) }}
         {% endif %}
       </span>
     </div>

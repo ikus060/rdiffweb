@@ -34,7 +34,7 @@ from packaging.version import InvalidVersion, Version
 from sqlalchemy import func, or_
 
 from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.core.model import Message, UserObject
+from rdiffweb.core.model import Message, RepoObject, UserObject
 
 CONTEXT = 'NOTIFICATION'
 
@@ -465,6 +465,7 @@ class NotificationPlugin(SimplePlugin):
             return False
 
         repo_objs = list(userobj.repo_objs)
+        repo_objs = RepoObject.attach_statistics_info(repo_objs)
         status_counts = Counter(r.status[0] for r in repo_objs)
 
         data = {
@@ -480,7 +481,7 @@ class NotificationPlugin(SimplePlugin):
             "total_interrupted": status_counts["interrupted"],
             "total_in_progress": status_counts["in_progress"],
             # Errors
-            "error_count": sum(r.session_statistics[-1].errors for r in repo_objs if r.last_backup_date),
+            "total_error_count": sum(r.last_error_count for r in repo_objs if r.last_error_count),
             # Storage
             "disk_usage": userobj.disk_usage,
             "disk_quota": userobj.disk_quota,

@@ -23,7 +23,7 @@ from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from cherrypy_foundation.url import url_for
 
 from rdiffweb.core.librdiff import RdiffTime
-from rdiffweb.core.model import DiskUsage, UserObject
+from rdiffweb.core.model import DiskUsage, RepoObject, UserObject
 
 # Define the logger
 logger = logging.getLogger(__name__)
@@ -68,6 +68,7 @@ class HomePage:
 
         # Add disk usage to repos.
         repo_objs = DiskUsage.attach_disk_usage(repo_objs)
+        repo_objs = RepoObject.attach_statistics_info(repo_objs)
 
         activity_end = RdiffTime()
         activity_start = RdiffTime() - timedelta(days=30)
@@ -82,7 +83,7 @@ class HomePage:
             "total_interrupted": status_counts["interrupted"],
             "total_in_progress": status_counts["in_progress"],
             # Errors
-            "error_count": sum(r.session_statistics[-1].errors for r in repo_objs if r.last_backup_date),
+            "total_error_count": sum(r.last_error_count for r in repo_objs if r.last_error_count),
             # last_backup
             "last_backup_date": last_backup.last_backup_date if last_backup else None,
             "last_backup_repo": last_backup.display_name if last_backup else None,

@@ -72,9 +72,7 @@
                   <div style="font-size:15px;
                               font-weight:700;
                               color:#212529;
-                              margin-bottom:2px">
-                    {{ repo.session_statistics | length if repo.session_statistics else mdash }}
-                  </div>
+                              margin-bottom:2px">{{ repo.backup_count or mdash }}</div>
                   {% trans %}Restore points{% endtrans %}
                 </td>
                 <td width="34%"
@@ -87,7 +85,7 @@
                               font-weight:700;
                               color:#212529;
                               margin-bottom:2px">
-                    {{ repo.session_statistics[-1].sourcefilesize | filesize if repo.session_statistics else mdash }}
+                    {{ repo.last_filesize | filesize if repo.last_filesize else mdash }}
                   </div>
                   {% trans %}Size{% endtrans %}
                 </td>
@@ -103,13 +101,12 @@
               <tr>
                 <td style="font-size:11px;color:#6c757d;">
                   {% trans %}Oldest:{% endtrans %}
-                  <strong>{{ repo.session_statistics[0].date | format_date if repo.session_statistics else mdash }}</strong>
+                  <strong>{{ repo.first_backup_date | format_date if repo.first_backup_date else mdash }}</strong>
                 </td>
-                {% set error_count = repo.session_statistics[-1].errors if repo.session_statistics else 0 %}
                 <td align="right"
                     style="font-size:11px;
-                           color:{{ bs_colors.danger.color if error_count else '#6c757d' }};
-                           font-weight:600">{{ _('%(count)s errors', count=error_count) }}</td>
+                           color:{{ bs_colors.danger.color if repo.last_error_count else '#6c757d' }};
+                           font-weight:600">{{ _('%(count)s errors', count=repo.last_error_count) }}</td>
               </tr>
             </tbody>
           </table>
