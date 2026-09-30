@@ -15,8 +15,16 @@
   width: 100%;
   color: var(--bs-body-color) !important;
   background-color: var(--bs-body-bg) !important;
-  min-width: 25vw;
   padding:0 !important;
+}
+/* If the row is too long, make it wrap. */
+.rdw-table .dt-layout-row {
+  flex-wrap: wrap;
+}
+/* Add margin arround buttons when content is wrapping. */
+.rdw-table .dt-buttons .btn.btn-sm  {
+  margin-top: 3px;
+  margin-bottom: 3px;
 }
 
 /* Hide search label */

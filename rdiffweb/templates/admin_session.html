@@ -14,9 +14,10 @@
     {% trans %}This is a list of devices that are logged into this application. It may include authenticated and unauthenticated users. You may revoke any sessions that you do not recognize except your current session.{% endtrans %}
   </p>
   {% set buttons = [
-      {'text': _('Authenticated'), 'extend': 'filter', 'column': 1, 'search': '^1', 'regex': True, 'className':'btn-outline-primary'},
-      {'text': _('Anonymous'), 'extend': 'filter', 'column': 1, 'search': '^0', 'regex': True, 'className':'btn-outline-primary'},
-      {'text': _('Reset Filters'), 'extend': 'reset', 'className':'btn-secondary ms-3'},
+      {'text': _('Authenticated'), 'extend': 'filter', 'column': 1, 'search': '^1', 'regex': True, 'className':'btn-outline-secondary'},
+      {'text': _('Anonymous'), 'extend': 'filter', 'column': 1, 'search': '^0', 'regex': True, 'className':'btn-outline-secondary'},
+      {'extend': 'spacer'},
+      {'text': _('Reset Filters'), 'extend': 'reset', 'className':'btn-secondary'},
     ] %}
   <RdwTable :buttons="{{ buttons }}" class="border rounded-2">
     <thead class="table-light small">
