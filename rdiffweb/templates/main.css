@@ -151,7 +151,7 @@ main {
 }
 
 #rdw-header-logo {
-    max-width: 216px;
+    max-width: 13.5rem;
     max-height: 64px;
 }
 
@@ -271,7 +271,7 @@ main {
 /* Special container with max-width */
 .rdw-container {
     width: 100%;
-    max-width: 860px;
+    max-width: 53.75rem;
     margin-right: auto;
     margin-left: auto;
 }
