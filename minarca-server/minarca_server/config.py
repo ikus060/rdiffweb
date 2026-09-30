@@ -182,9 +182,9 @@ def get_parser():
         log_file='/var/log/minarca/server.log',
         welcome_msg={
             '': welcome_style
-            + '<div class="h2 mx-auto mb-5" style="max-width: 40rem">A free and open-source backup software providing end-to-end integration to put you in control of your backup strategy.</div><a class="text-light" href="https://minarca.org/">website</a> • <a class="text-light" href="https://minarca.org/doc">docs</a> • <a class="text-light" href="https://groups.google.com/d/forum/minarca">community</a>',
+            + '<div class="h2 mx-auto mb-5" style="max-width: 40rem">A free and open-source backup software providing end-to-end integration to put you in control of your backup strategy.</div><a class="text-light" href="https://minarca.org/">website</a> • <a class="text-light" href="https://minarca.org/doc">docs</a> • <a class="text-light" href="https://minarca.discourse.group/">community</a>',
             'fr': welcome_style
-            + '<div class="h2 mx-auto mb-5" style="max-width: 40rem">Un logiciel de sauvegarde gratuit et à code source ouvert fournissant une intégration bout en bout pour vous permettre de contrôler votre stratégie de sauvegarde.</div><a class="text-light" href="https://minarca.org/">site web</a> • <a class="text-light" href="https://minarca.org/doc">documentations</a> • <a class="text-light" href="https://groups.google.com/d/forum/minarca">communauté</a>',
+            + '<div class="h2 mx-auto mb-5" style="max-width: 40rem">Un logiciel de sauvegarde gratuit et à code source ouvert fournissant une intégration bout en bout pour vous permettre de contrôler votre stratégie de sauvegarde.</div><a class="text-light" href="https://minarca.org/">site web</a> • <a class="text-light" href="https://minarca.org/doc">documentations</a> • <a class="text-light" href="https://minarca.discourse.group/">communauté</a>',
         },
         latest_version_url='https://latest.ikus-soft.com/minarca/latest_version',
     )

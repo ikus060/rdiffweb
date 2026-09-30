@@ -4,7 +4,7 @@
 <strong>
 <a href="https://www.rdiffweb.org">website</a>
 • <a href="https://www.ikus-soft.com/archive/rdiffweb/doc/latest/html/">docs</a>
-• <a href="https://groups.google.com/d/forum/rdiffweb">community</a>
+• <a href="https://minarca.discourse.group/">community</a>
 • <a href="https://rdiffweb-demo.ikus-soft.com/">demo</a>
 </strong>
 </p>
@@ -100,11 +100,11 @@ By signing up for, you will receive regular updates and notifications about new 
 
 [Rdiffweb Newsletter](https://rdiffweb.org/contactus).
 
-## Google Group
+## Community
 
 Join our growing community to get answers to your technical questions.
 
-Rdiffweb users should use the [Rdiffweb Google Group](https://groups.google.com/forum/#!forum/rdiffweb).
+Rdiffweb users should use the [Discourse Group](https://minarca.discourse.group/).
 
 ## Documentation
 

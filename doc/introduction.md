@@ -40,7 +40,7 @@ The Rdiffweb application relies on rdiff-backup and must be installed on the sam
 
 Rdiffweb is open-source, and contributions are welcome. Here is the main communication channel to get help from other users.
 
-[Rdiffweb Google Group](https://groups.google.com/forum/#!forum/rdiffweb)
+[Discourse Group](https://minarca.discourse.group/)
 
 ### Bug tracker
 
