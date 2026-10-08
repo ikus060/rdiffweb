@@ -14,9 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import contextvars
 import itertools
 import json
 import logging
+from collections import namedtuple
+from contextlib import contextmanager
 
 import cherrypy
 import cherrypy_foundation.plugins.db  # noqa
@@ -62,6 +65,35 @@ class JSONString(TypeDecorator):
         except (TypeError, json.JSONDecodeError) as e:
             logger.warning("Failed to deserialize JSON string: %s. Error: %s", value, e)
             return None
+
+
+class _MessageContext(
+    namedtuple('_MessageContext', ['author', 'author_id', 'author_username', 'ip_address', 'user_agent'])
+):
+
+    def __new__(cls, author=None, author_id=None, author_username='', ip_address='', user_agent=''):
+        # Derive id/username from the author when one is provided.
+        if author is not None:
+            author_id = author.id
+            author_username = author.username
+        return super().__new__(cls, author, author_id, author_username, ip_address, user_agent)
+
+    def _replace(self, **kwds):
+        if 'author' in kwds and kwds['author'] is not None:
+            kwds.setdefault('author_id', kwds['author'].id)
+            kwds.setdefault('author_username', kwds['author'].username)
+        return super()._replace(**kwds)
+
+    @contextmanager
+    def use(self):
+        ctx = (
+            self._replace(author=None) if self.author and inspect(self.author).session != cherrypy.db.session else self
+        )
+        token = Message._context_var.set(ctx)
+        try:
+            yield self
+        finally:
+            Message._context_var.reset(token)
 
 
 def get_model_changes(model):
@@ -142,12 +174,14 @@ class Message(Base):
     changes = Column('changes', JSONString, nullable=True)
     date = Column(Timestamp(timezone=True), default=func.now())
 
+    _context_var = contextvars.ContextVar('message_context', default=None)
+
     def __init__(self, **kwargs):
         """
         Called only when creating a NEW instance, not when loading from DB.
         """
         super().__init__(**kwargs)
-        self._initialize_from_session()
+        self._initialize_from_context()
 
     @property
     def model_object(self):
@@ -164,26 +198,57 @@ class Message(Base):
             self.author_username = value.username
         return value
 
-    def _initialize_from_session(self):
-        """Populate fields from the current CherryPy session/request."""
-        request = cherrypy.request
-        try:
-            if not self.author:
-                self.author = request.currentuser
-        except AttributeError:
-            pass  # No active request/user
+    def _initialize_from_context(self):
+        """
+        Populate fields from the current execution context: either the live
+        CherryPy request (the common case), or a propagated ExecutionContext
+        installed via `copy_context()` in a background thread.
+        """
+        ctx = Message._current_context()
+        if not self.author and ctx.author is not None:
+            self.author = ctx.author
+        if not self.author_id and ctx.author_id:
+            self.author_id = ctx.author_id
+        if not self.author_username and ctx.author_username:
+            self.author_username = ctx.author_username
+        if not self.ip_address and ctx.ip_address:
+            self.ip_address = ctx.ip_address
+        if not self.user_agent and ctx.user_agent:
+            self.user_agent = ctx.user_agent
 
-        try:
-            if not self.ip_address:
-                self.ip_address = request.remote.ip or ''
-        except AttributeError:
-            pass
+    @staticmethod
+    def capture_context():
+        """
+        Capture author/ip/user-agent from the current CherryPy request.
+        Call this from the HTTP thread before scheduling background work.
+        Returns a context-manager-capable object; use it with `.use()`.
+        """
+        request = getattr(cherrypy, 'request', None)
+        author = getattr(request, 'currentuser', None) if request else None
+        author_id = getattr(author, 'id', None) if author else None
+        author_username = getattr(author, 'username', None) if author else None
+        ip_address = ''
+        user_agent = ''
+        if request is not None:
+            try:
+                ip_address = request.remote.ip or ''
+            except AttributeError:
+                pass
+            try:
+                user_agent = request.headers.get('User-Agent', '')
+            except AttributeError:
+                pass
+        return _MessageContext(
+            author=author,
+            author_id=author_id,
+            author_username=author_username,
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
 
-        try:
-            if not self.user_agent:
-                self.user_agent = request.headers.get('User-Agent', '')
-        except AttributeError:
-            pass
+    @classmethod
+    def _current_context(cls):
+        return cls._context_var.get() or cls.capture_context()
 
 
 class MessageMixin:

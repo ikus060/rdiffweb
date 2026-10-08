@@ -21,6 +21,7 @@ import sys
 
 import cherrypy
 from cherrypy_foundation.passwd import check_password, hash_password
+from cherrypy_foundation.tools.i18n import gettext
 from cherrypy_foundation.tools.i18n import gettext_lazy as _
 from sqlalchemy import (
     Boolean,
@@ -42,7 +43,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Session, relationship, validates
 
 from ._callbacks import add_post_commit_tasks
-from ._message import AUDIT_IGNORE, MessageMixin, get_model_changes
+from ._message import AUDIT_IGNORE, Message, MessageMixin, get_model_changes
 from ._repo import RepoObject
 from ._session import SessionObject
 from ._sshkey import SshKey
@@ -81,25 +82,38 @@ Base = cherrypy.db.base
 SEP = b'/'
 
 
-def delete_user_with_data(userid):
+def delete_user_with_data(userid, ctx):
     """
     Job to delete user with all data.
     """
     try:
-        # Let start by deleting all repositories from disk.
         userobj = UserObject.get_user(userid)
         username = userobj.username
-        logger.info('deleting user [%s] with data', username)
-        for repoobj in userobj.repo_objs:
-            logger.info('deleting repository [%s]', repoobj.display_name)
-            repoobj.delete_repo()
-        # Finish by deleting the user it self.
-        userobj.delete()
-        userobj.commit()
-        logger.info('user [%s] deleted', username)
     except Exception:
+        logger.warning("deleting user id [%s] failed", userid, exc_info=True)
         UserObject.session.rollback()
         raise
+
+    try:
+        with ctx.use():
+            # Let start by deleting all repositories from disk.
+            logger.info('deleting user [%s] with data', username)
+            for repoobj in userobj.repo_objs:
+                logger.info('deleting repository [%s]', repoobj.display_name)
+                repoobj.delete_repo()
+                repoobj.commit()
+            # Finish by deleting the user it self.
+            userobj.delete()
+            userobj.commit()
+            logger.info('user [%s] deleted', username)
+    except Exception:
+        logger.warning("deleting user [%s] failed", username, exc_info=True)
+        UserObject.session.rollback()
+        userobj.add_message(Message(body=gettext("Deletion of user failed"), type=Message.TYPE_EVENT))
+        userobj.commit()
+        raise
+    finally:
+        UserObject.session.rollback()
 
 
 class UserObject(MessageMixin, Base):
@@ -365,11 +379,16 @@ class UserObject(MessageMixin, Base):
             raise ValueError(_("can't delete admin user"))
         if delete_data:
             self.status = UserObject.STATUS_DELETING
+            self.add_message(Message(body=gettext("Deletion of user has been scheduled."), type=Message.TYPE_EVENT))
             for repoobj in self.repo_objs:
+                repoobj.add_message(
+                    Message(body=gettext("Deletion of repository has been scheduled."), type=Message.TYPE_EVENT)
+                )
                 repoobj._status = RepoObject.STATUS_DELETING
-            add_post_commit_tasks(self.session, 'scheduler:add_job_now', delete_user_with_data, self.id)
+            ctx = Message.capture_context()
+            add_post_commit_tasks(self.session, 'scheduler:add_job_now', delete_user_with_data, self.id, ctx)
         else:
-            # Otherwise, let delete use directly.
+            # Otherwise, let delete user directly.
             return Base.delete(self)
 
     def delete(self):

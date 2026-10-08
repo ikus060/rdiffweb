@@ -90,6 +90,7 @@ class LoginPageTest(rdiffweb.test.WebCase):
         cherrypy.scheduler.wait_for_jobs()
         user = UserObject.get_user(self.USERNAME)
         self.assertEqual("User login to web application", user.messages[-1].body)
+        self.assertEqual(userobj.id, user.messages[-1].author_id)
 
     def test_login_case_insensitive(self):
         # When authenticating with valid credentials with all uppercase username

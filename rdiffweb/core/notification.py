@@ -39,23 +39,20 @@ from rdiffweb.core.model import Message, RepoObject, UserObject
 CONTEXT = 'NOTIFICATION'
 
 
-def _log_user_login(user_id, date, ip_address, user_agent):
+def _log_user_login(ctx):
     """Used to log user loging asynchronously."""
     # Make sure to start from a clean session.
     cherrypy.db.clear_sessions()
     # Log event
     with cherrypy.db.session.begin():
-        user = UserObject.get_user(user_id)
-        user.add_message(
-            Message(
-                body=_("User login to web application"),
-                type=Message.TYPE_EVENT,
-                date=date,
-                ip_address=ip_address,
-                user_agent=user_agent,
-                author=user,
+        author = UserObject.get_user(ctx.author_id)
+        with ctx.use():
+            author.add_message(
+                Message(
+                    body=_("User login to web application"),
+                    type=Message.TYPE_EVENT,
+                )
             )
-        )
 
 
 class NotificationPlugin(SimplePlugin):
@@ -333,15 +330,11 @@ class NotificationPlugin(SimplePlugin):
         )
         # Log user_login in a different thread.
         if hasattr(userobj, 'add_message'):
-            request = cherrypy.serving.request
-            now = datetime.now(timezone.utc)
+            ctx = Message.capture_context()._replace(author=userobj)
             self.bus.publish(
                 'scheduler:add_job_now',
                 _log_user_login,
-                user_id=userobj.id,
-                date=now,
-                ip_address=request.remote.ip,
-                user_agent=request.headers.get('User-Agent', ''),
+                ctx=ctx,
             )
 
     def notification_job(self):
