@@ -53,6 +53,16 @@ STDOUT_ENCODING = 'utf-8'
 LANG = "en_US." + STDOUT_ENCODING
 
 
+def _is_child_of(child, parent):
+    """
+    Return True if the child is relative to parent path or False.
+    This method is string-based.
+    """
+    child = os.path.normpath(child)
+    parent = os.path.normpath(parent)
+    return child == parent or child.startswith(parent.rstrip(b'/') + b'/')
+
+
 def rdiff_backup_version():
     """
     Get rdiff-backup version
@@ -996,9 +1006,9 @@ class RdiffRepo(object):
         """Return a new instance of DirEntry to represent the given path."""
         # Compute increment directory location.
         assert isinstance(path, bytes)
-        full_path = os.path.normpath(os.path.join(self.full_path, path.strip(b'/')))
-        increment_path = os.path.normpath(os.path.join(self._increment_path, path.strip(b'/'), b'..'))
-        if not full_path.startswith(self.full_path) or not increment_path.startswith(self.full_path):
+        full_path = os.path.join(self.full_path, path.strip(b'/'))
+        increment_path = os.path.dirname(os.path.join(self._increment_path, path.strip(b'/')))
+        if not _is_child_of(full_path, self.full_path) or not _is_child_of(increment_path, self.full_path):
             raise AccessDeniedError('%s make reference outside the repository' % self._decode(path))
         relative_path = os.path.relpath(full_path, self.full_path)
         if relative_path.startswith(RDIFF_BACKUP_DATA):

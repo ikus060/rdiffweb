@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+from pathlib import Path
 
 import cherrypy
 from selenium.webdriver.common.action_chains import ActionChains
@@ -34,6 +35,37 @@ class HistoryPageTest(rdiffweb.test.WebCase):
             url += "?limit=%s" % limit
         self.getPage(url)
         self.assertStatus('200 OK')
+
+    def test_history_path_traversal(self):
+        # Given a user with single repo
+        user = UserObject.get_user(self.USERNAME)
+        (Path(self.testcases) / 'broker-repo').rename(Path(self.testcases) / 'testcases-secret')
+        user.refresh_repos(delete=True)
+        user.commit()
+        self.assertEqual(['testcases', 'testcases-secret'], [r.name for r in user.repo_objs])
+        # When browsing /history/user/test/../testing
+        self.getPage('/history/admin/testcases/%2e%2e/testcases-secret')
+        # Then an error should be raised.
+        self.assertStatus(403)
+
+    def test_history_with_single_repo(self):
+        """
+        Verify if browsing '/history/' for a single repository is working.
+        """
+        # Change the user setting to match single repo.
+        user = UserObject.get_user(self.USERNAME)
+        user.user_root = os.path.join(self.testcases, 'testcases')
+        user.refresh_repos(delete=True)
+        user.commit()
+        self.assertEqual([''], [r.name for r in user.repo_objs])
+        # Check if browsing is working.
+        self.getPage('/history/admin')
+        self.assertStatus('200 OK')
+        self.assertInBody('Files')
+        # Check sub directory browsing
+        self.getPage('/history/admin/Revisions/')
+        self.assertStatus('200 OK')
+        self.assertInBody('Files')
 
     def test_history_with_root(self):
         self._history(self.USERNAME, self.REPO, limit=10)
