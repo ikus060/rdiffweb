@@ -445,7 +445,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Fix exception raised for invalid locale identifier ([17c6d10](https://gitlab.com/ikus-soft/rdiffweb/commit/17c6d10a5a50d46218649c708a030e6f43d6620e) by Patrik Dufresne).
-- Fix token impersonation vulnerability ([4ce35fc](https://gitlab.com/ikus-soft/rdiffweb/commit/4ce35fc2d23ac1cc789186f32bf76603b2eddeb3) by Patrik Dufresne).
+- Fix token impersonation vulnerability CVE-2025-67796 ([4ce35fc](https://gitlab.com/ikus-soft/rdiffweb/commit/4ce35fc2d23ac1cc789186f32bf76603b2eddeb3) by Patrik Dufresne).
 - Fix selenium execution with bookworm ([1fd8db3](https://gitlab.com/ikus-soft/rdiffweb/commit/1fd8db32b9eb738168f5b1b126f020652674be9d) by Patrik Dufresne).
 - Fix doc upload #337 ([6d7219b](https://gitlab.com/ikus-soft/rdiffweb/commit/6d7219bd4348ad28e1704a4d708111751151fddc) by Patrik Dufresne).
 
