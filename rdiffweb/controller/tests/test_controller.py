@@ -86,6 +86,11 @@ class ControllerTest(rdiffweb.test.WebCase):
         self.getPage('/static//../../test.js')
         self.assertStatus(403)
 
+    def test_dt_language(self):
+        for locale in ['en', 'fr', 'fr_CA']:
+            self.getPage(f'/static/dt-language/{locale}')
+            self.assertStatus(200)
+
 
 class ControllerExternalUrlTest(rdiffweb.test.WebCase):
     default_config = {'external_url': 'https://www.example.com'}
