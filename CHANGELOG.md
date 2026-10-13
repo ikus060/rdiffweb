@@ -27,10 +27,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - notification: remove leftover debug log statement ([1ad4c7f](https://gitlab.com/ikus-soft/rdiffweb/commit/1ad4c7f22c2e4afe45ab49e3397db93d87ed1c43) by Patrik Dufresne).
 
-### Merged
-
-- changelog: merge 7.1.0 with 7.1.0b3-1 changelog ([2d9bb30](https://gitlab.com/ikus-soft/rdiffweb/commit/2d9bb302e771a12487253be944523fef518a712c) by Patrik Dufresne).
-
 ### Misc
 
 - librdiff: update rdiff-backup remove increments command syntax ([548ec99](https://gitlab.com/ikus-soft/rdiffweb/commit/548ec99ab4817ac979082b861ba588a0640d6aa2) by Patrik Dufresne).
@@ -308,7 +304,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Update Debian packaging ([40d80fd](https://gitlab.com/ikus-soft/rdiffweb/commit/40d80fdcfb844aa98c151a645698c498551fd837) by Patrik Dufresne).
 
 
-## [6.2.5](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.5) - 2026-04-29
+## Minarca-server [6.2.5](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.5) - 2026-04-29
 
 <small>[Compare with 6.2.4](https://gitlab.com/ikus-soft/rdiffweb/compare/6.2.4...6.2.5)</small>
 
@@ -316,7 +312,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - ridffweb: bump to 2.11.5 to pre-fill login ([24b5c1a](https://gitlab.com/ikus-soft/rdiffweb/commit/24b5c1a17fb22fdccc2a9a36b4aa50b679179715) by Patrik Dufresne).
 
-## [2.11.5](https://gitlab.com/ikus-soft/rdiffweb/tags/2.11.5) - 2026-04-28
+## Rdiffweb [2.11.5](https://gitlab.com/ikus-soft/rdiffweb/tags/2.11.5) - 2026-04-28
 
 <small>[Compare with 2.11.4](https://gitlab.com/ikus-soft/rdiffweb/compare/2.11.4...2.11.5)</small>
 
@@ -324,7 +320,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - login: add support for pre-filling login field via query string parameter ([ffe2bfe](https://gitlab.com/ikus-soft/rdiffweb/commit/ffe2bfea08f4cfe562d166c42ab4a4f050590c82) by Patrik Dufresne).
 
-## [6.2.4](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.4) - 2026-04-24
+## Minarca-server [6.2.4](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.4) - 2026-04-24
 
 <small>[Compare with 6.2.3](https://gitlab.com/ikus-soft/rdiffweb/compare/6.2.3...6.2.4)</small>
 
@@ -332,7 +328,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 -  rdiffweb: bump to v2.11.4 to fix foreign key error ([70e98ca](https://gitlab.com/ikus-soft/rdiffweb/commit/70e98ca976347cc2444e1ced0a0e617b59275bce) by Patrik Dufresne).
 
-## [2.11.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.11.4) - 2026-04-23
+## Rdiffweb [2.11.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.11.4) - 2026-04-23
 
 <small>[Compare with 2.11.3](https://gitlab.com/ikus-soft/rdiffweb/compare/2.11.3...2.11.4)</small>
 
@@ -344,7 +340,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - ci: pin image pipeline-trigger:2.9.0 ([b31ee73](https://gitlab.com/ikus-soft/rdiffweb/commit/b31ee730bec416b9947f83b2399c6c607f369c18) by Patrik Dufresne).
 
-## [2.11.3](https://gitlab.com/ikus-soft/rdiffweb/tags/2.11.3) - 2026-04-09
+## Rdiffweb [2.11.3](https://gitlab.com/ikus-soft/rdiffweb/tags/2.11.3) - 2026-04-09
 
 <small>[Compare with 2.11.2](https://gitlab.com/ikus-soft/rdiffweb/compare/2.11.2...2.11.3)</small>
 
@@ -353,7 +349,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Update changelog ([579ce23](https://gitlab.com/ikus-soft/rdiffweb/commit/579ce233777e2e08e231fee7afb85c6226aeb31b) by Patrik Dufresne).
 - api: restrict /api/users endpoint to administrators only ([b4ad4db](https://gitlab.com/ikus-soft/rdiffweb/commit/b4ad4dbf3cfc691d488b378afc4ee0308345f0fa) by Patrik Dufresne).
 
-## [6.2.3](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.3) - 2026-04-09
+## Minarca-server [6.2.3](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.3) - 2026-04-09
 
 <small>[Compare with 6.2.2](https://gitlab.com/ikus-soft/rdiffweb/compare/6.2.2...6.2.3)</small>
 
@@ -363,7 +359,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - rdiffweb: bump to v2.11.2 ([6fd6a3e](https://gitlab.com/ikus-soft/rdiffweb/commit/6fd6a3e88193ef6df9543a97f60ca8d8f55a9586) by Patrik Dufresne).
 - ci: replace pipeline-trigger image ([206a09d](https://gitlab.com/ikus-soft/rdiffweb/commit/206a09d278026c4c593ae3a58abbe78d5392faab) by Patrik Dufresne).
 
-## [2.11.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.11.2) - 2026-04-07
+## Rdiffweb [2.11.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.11.2) - 2026-04-07
 
 <small>[Compare with 2.11.1](https://gitlab.com/ikus-soft/rdiffweb/compare/2.11.1...2.11.2)</small>
 
@@ -371,7 +367,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - smtp: fix encoding for email_from ([7f25368](https://gitlab.com/ikus-soft/rdiffweb/commit/7f253685aa8e07181a12ee7dbd4b2ee084ebf699) by Patrik Dufresne).
 
-## [6.2.2](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.2) - 2026-03-18
+## Minarca-server [6.2.2](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.2) - 2026-03-18
 
 <small>[Compare with 6.2.1](https://gitlab.com/ikus-soft/rdiffweb/compare/6.2.1...6.2.2)</small>
 
@@ -379,7 +375,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - rdiffweb: bump to v2.11.1 to fix argparse issue ([113611d](https://gitlab.com/ikus-soft/rdiffweb/commit/113611d72d76c887be5dc00d60353cb53ce6c64c) by Patrik Dufresne).
 
-## [2.11.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.11.1) - 2026-03-11
+## Rdiffweb [2.11.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.11.1) - 2026-03-11
 
 <small>[Compare with 2.11.0](https://gitlab.com/ikus-soft/rdiffweb/compare/2.11.0...2.11.1)</small>
 
@@ -392,7 +388,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - fix: bookwork test by pinning setuptools version ([ff517f1](https://gitlab.com/ikus-soft/rdiffweb/commit/ff517f141ba66be5bd7290ce115c7f089b8e1131) by Patrik Dufresne).
 
-## [6.2.1](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.1) - 2026-02-27
+## Minarca-server [6.2.1](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.1) - 2026-02-27
 
 <small>[Compare with 6.2.0](https://gitlab.com/ikus-soft/rdiffweb/compare/6.2.0...6.2.1)</small>
 
@@ -400,7 +396,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix permissions set on /etc/minarca, /var/log & /var/lib/minarca during installation ([2c3bae4](https://gitlab.com/ikus-soft/rdiffweb/commit/2c3bae42925635e8882cab735658ddcacc448f00) by Patrik Dufresne).
 
-## [6.2.0](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.0) - 2026-01-14
+## Minarca-server [6.2.0](https://gitlab.com/ikus-soft/rdiffweb/tags/6.2.0) - 2026-01-14
 
 <small>[Compare with 6.1.3](https://gitlab.com/ikus-soft/rdiffweb/compare/6.1.3...6.2.0)</small>
 
@@ -428,7 +424,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Update tzlocal ([47cb037](https://gitlab.com/ikus-soft/rdiffweb/commit/47cb0375c8cdcfd41942729d811a289e11369b39) by Patrik Dufresne).
 - Update gitignore ([fc0ec0b](https://gitlab.com/ikus-soft/rdiffweb/commit/fc0ec0bf7661bcd0ac7507a65ce199e1b2732a57) by Patrik Dufresne).
 
-## [2.11.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.11.0) - 2026-01-07
+## Rdiffweb [2.11.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.11.0) - 2026-01-07
 
 <small>[Compare with 2.10.5](https://gitlab.com/ikus-soft/rdiffweb/compare/2.10.5...2.11.0)</small>
 
@@ -483,7 +479,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Clean-up deprecated code ([2b71ff3](https://gitlab.com/ikus-soft/rdiffweb/commit/2b71ff319d37c087e4603532ab454d8fb5a3665d) by Patrik Dufresne).
 - Update installation.md ([5f981bc](https://gitlab.com/ikus-soft/rdiffweb/commit/5f981bc5fc3583a89a90785d3b15822a2609ebdc) by gary test2021).
 
-## [6.1.3](https://gitlab.com/ikus-soft/rdiffweb/tags/6.1.3) - 2025-10-03
+## Minarca-server [6.1.3](https://gitlab.com/ikus-soft/rdiffweb/tags/6.1.3) - 2025-10-03
 
 <small>[Compare with 6.1.2](https://gitlab.com/ikus-soft/rdiffweb/compare/6.1.2...6.1.3)</small>
 
@@ -496,7 +492,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Upgrade rdiffweb ([af117a5](https://gitlab.com/ikus-soft/rdiffweb/commit/af117a5d4a79b37df5347614f543eaebff6f9841) by Patrik Dufresne).
 - Drop Ubuntu Oracular ([aa36033](https://gitlab.com/ikus-soft/rdiffweb/commit/aa36033b059f9b10fe9639751013e26e6f930088) by Patrik Dufresne).
 
-## [6.1.2](https://gitlab.com/ikus-soft/rdiffweb/tags/6.1.2) - 2025-06-21
+## Minarca-server [6.1.2](https://gitlab.com/ikus-soft/rdiffweb/tags/6.1.2) - 2025-06-21
 
 <small>[Compare with 6.1.1](https://gitlab.com/ikus-soft/rdiffweb/compare/6.1.1...6.1.2)</small>
 
@@ -507,7 +503,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Adjust warnings handling ([5e73659](https://gitlab.com/ikus-soft/rdiffweb/commit/5e73659ed722d2658035a312a80c95100e6a1784) by Patrik Dufresne).
 - Bump rdiffweb to 2.10.5 to fix warnings ([fd19fc8](https://gitlab.com/ikus-soft/rdiffweb/commit/fd19fc8d106490b163aa6e08ad0f2bc1761796a4) by Patrik Dufresne).
 
-## [2.10.5](https://gitlab.com/ikus-soft/rdiffweb/tags/2.10.5) - 2025-06-20
+## Rdiffweb [2.10.5](https://gitlab.com/ikus-soft/rdiffweb/tags/2.10.5) - 2025-06-20
 
 <small>[Compare with 2.10.4](https://gitlab.com/ikus-soft/rdiffweb/compare/2.10.4...2.10.5)</small>
 
@@ -515,7 +511,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Capture warnings ([b274c30](https://gitlab.com/ikus-soft/rdiffweb/commit/b274c30fc9d039f52cdc05386cd525bd7bf881df) by Patrik Dufresne).
 
-## [6.1.1](https://gitlab.com/ikus-soft/rdiffweb/tags/6.1.1) - 2025-06-18
+## Minarca-server [6.1.1](https://gitlab.com/ikus-soft/rdiffweb/tags/6.1.1) - 2025-06-18
 
 <small>[Compare with 6.1.0](https://gitlab.com/ikus-soft/rdiffweb/compare/6.1.0...6.1.1)</small>
 
@@ -523,7 +519,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Upgrade debbuild to define conffiles ([19c5a68](https://gitlab.com/ikus-soft/rdiffweb/commit/19c5a682e47f8a207ab878a136aa7de768ccce0d) by Patrik Dufresne).
 
-## [6.1.0](https://gitlab.com/ikus-soft/rdiffweb/tags/6.1.0) - 2025-06-13
+## Minarca-server [6.1.0](https://gitlab.com/ikus-soft/rdiffweb/tags/6.1.0) - 2025-06-13
 
 <small>[Compare with 6.0.5](https://gitlab.com/ikus-soft/rdiffweb/compare/6.0.5...6.1.0)</small>
 
@@ -544,19 +540,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Remove apt install from CICD build ([de19b0b](https://gitlab.com/ikus-soft/rdiffweb/commit/de19b0b61835de0611af2ae05909f31bd18c2796) by Patrik Dufresne).
 - Remove dependencies on `libxcb1` ([d56f1ac](https://gitlab.com/ikus-soft/rdiffweb/commit/d56f1ac82bf2c99ce797c3f75c6fedb3c0bb5187) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-fix-ubuntu' into 'master' ([408f4f0](https://gitlab.com/ikus-soft/rdiffweb/commit/408f4f0ddcecc7fdceeaaf15febad1a0863eae0d) by Patrik Dufresne).
-- Merge branch 'patrik-copyright' into 'master' ([db753d7](https://gitlab.com/ikus-soft/rdiffweb/commit/db753d7e3b4997c3142195d775d1b8629c0745c4) by Patrik Dufresne).
-- Merge branch 'patrik-python-3.12' into 'master' ([1c99b6f](https://gitlab.com/ikus-soft/rdiffweb/commit/1c99b6fa934f7b50671bfc4e8eac3832d490c132) by Patrik Dufresne).
-- Merge branch 'patrik-bump-rdiffweb' into 'master' ([33bddb1](https://gitlab.com/ikus-soft/rdiffweb/commit/33bddb1c08fbeff1ec4249b7d56f977bee882454) by Patrik Dufresne).
-- Merge branch 'patrik-return-jail-error' into 'master' ([d2e5b6f](https://gitlab.com/ikus-soft/rdiffweb/commit/d2e5b6ff20a1582bc73eba2311aa68fdcd12f4e8) by Patrik Dufresne).
-- Merge branch 'patrik-docker' into 'master' ([dad374d](https://gitlab.com/ikus-soft/rdiffweb/commit/dad374d565bdc6e54f2c0737a227dbbcf26c7b62) by Patrik Dufresne).
-- Merge branch 'patrik-remove-libxcb1' into 'master' ([a024ced](https://gitlab.com/ikus-soft/rdiffweb/commit/a024ced7be4a402cc75f26a5cccf564548e8b35a) by Patrik Dufresne).
-- Merge commit '7c86a1be95c4458cc71400699dcdf257ca323ec7' ([089f8d1](https://gitlab.com/ikus-soft/rdiffweb/commit/089f8d1e338e35d861320fddf8994cb6997c434b) by Patrik Dufresne).
-- Merge branch 'patrik-fix-readme' into 'master' ([ec1b078](https://gitlab.com/ikus-soft/rdiffweb/commit/ec1b0780f8088ff1fcb95235ce30d22b1b74627f) by Patrik Dufresne).
-- Merge branch 'patrik-pyproject-toml' into 'master' ([baa5280](https://gitlab.com/ikus-soft/rdiffweb/commit/baa5280c951cc40e158785405404e822e373a056) by Patrik Dufresne).
 
 ### Misc
 
@@ -581,7 +564,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bump rdiffweb version to 2.10.0b1 ([980c691](https://gitlab.com/ikus-soft/rdiffweb/commit/980c6913ab5afe5d1f9e704eecc3e8ad4b3c1eaf) by Patrik Dufresne).
 - Migrate to pyproject.toml and pyinstaller ([11e9aba](https://gitlab.com/ikus-soft/rdiffweb/commit/11e9aba180a73b8fb6c206c3b3f328c8bafe572e) by Patrik Dufresne).
 
-## [2.10.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.10.4) - 2025-06-13
+## Rdiffweb [2.10.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.10.4) - 2025-06-13
 
 <small>[Compare with 2.9.7](https://gitlab.com/ikus-soft/rdiffweb/compare/2.9.7...2.10.4)</small>
 
@@ -609,10 +592,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Remove wsgi entrypoint ([bf2724c](https://gitlab.com/ikus-soft/rdiffweb/commit/bf2724c30c277fd0d2f6876bef3c2f695b894752) by Patrik Dufresne).
 - Remove obsolete option `brand-default-theme` from the doc ([b2e0fe9](https://gitlab.com/ikus-soft/rdiffweb/commit/b2e0fe9ba75b16f157b983f59658a6bcf7c5cb62) by Patrik Dufresne).
-
-### Merged
-
-- Merge commit 'c226f6453048cbe8188ea94cc2562596e2dbee0b' ([687d574](https://gitlab.com/ikus-soft/rdiffweb/commit/687d574b9da4c3ffc9cc88a834373bc8adb036cf) by Patrik Dufresne).
 
 ### Misc
 
@@ -656,7 +635,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Updating standards version to 4.7.0. ([2a46580](https://gitlab.com/ikus-soft/rdiffweb/commit/2a4658071b24ca69504e3537800f603a41ced282) by Daniel Baumann).
 - Removing pre-bullseye versioned build-depends. ([1c53109](https://gitlab.com/ikus-soft/rdiffweb/commit/1c5310904a327b864ec427e8c7974c70744284b1) by Daniel Baumann).
 
-## [6.0.5](https://gitlab.com/ikus-soft/rdiffweb/tags/6.0.5) - 2025-02-20
+## Minarca-server [6.0.5](https://gitlab.com/ikus-soft/rdiffweb/tags/6.0.5) - 2025-02-20
 
 <small>[Compare with 6.0.4](https://gitlab.com/ikus-soft/rdiffweb/compare/6.0.4...6.0.5)</small>
 
@@ -664,7 +643,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Bump rdiffweb version to 2.9.7 to fix admin user creation minarca#293 ([7c86a1b](https://gitlab.com/ikus-soft/rdiffweb/commit/7c86a1be95c4458cc71400699dcdf257ca323ec7) by Patrik Dufresne).
 
-## [2.9.7](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.7) - 2025-02-19
+## Rdiffweb [2.9.7](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.7) - 2025-02-19
 
 <small>[Compare with 2.9.6](https://gitlab.com/ikus-soft/rdiffweb/compare/2.9.6...2.9.7)</small>
 
@@ -672,7 +651,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Trigger creation of default user `admin` after plugin startup minarca#295 ([c226f64](https://gitlab.com/ikus-soft/rdiffweb/commit/c226f6453048cbe8188ea94cc2562596e2dbee0b) by Patrik Dufresne).
 
-## [6.0.4](https://gitlab.com/ikus-soft/rdiffweb/tags/6.0.4) - 2025-01-08
+## Minarca-server [6.0.4](https://gitlab.com/ikus-soft/rdiffweb/tags/6.0.4) - 2025-01-08
 
 <small>[Compare with 6.0.3](https://gitlab.com/ikus-soft/rdiffweb/compare/6.0.3...6.0.4)</small>
 
@@ -688,7 +667,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Split repo ([659547f](https://gitlab.com/ikus-soft/rdiffweb/commit/659547fcdb223a7d94e287364f617fbc12172bba) by Patrik Dufresne).
 
-## [2.9.6](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.6) - 2025-01-06
+## Rdiffweb [2.9.6](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.6) - 2025-01-06
 
 <small>[Compare with 2.9.5](https://gitlab.com/ikus-soft/rdiffweb/compare/2.9.5...2.9.6)</small>
 
@@ -698,7 +677,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Explicitly add "pytz" as dependencies ([99da1b0](https://gitlab.com/ikus-soft/rdiffweb/commit/99da1b00718f84390fec03f1d68cb05f52b020fb) by Patrik Dufresne).
 - Drop Ubuntu Mantic support ([fb9b10f](https://gitlab.com/ikus-soft/rdiffweb/commit/fb9b10fde29c125a7641a8daad96976bd2cf1307) by Patrik Dufresne).
 
-## [6.0.3](https://gitlab.com/ikus-soft/rdiffweb/tags/6.0.3) - 2024-11-12
+## Minarca-server [6.0.3](https://gitlab.com/ikus-soft/rdiffweb/tags/6.0.3) - 2024-11-12
 
 <small>[Compare with 6.0.0](https://gitlab.com/ikus-soft/rdiffweb/compare/6.0.0...6.0.3)</small>
 
@@ -706,7 +685,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Add support for Ubuntu Noble 24.04 LTS & Oracular 24.10 ([73a4fbb](https://gitlab.com/ikus-soft/rdiffweb/commit/73a4fbbb303e64f638d8d181af828ed7b1f25609) by Patrik Dufresne).
 
-## [2.9.5](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.5) - 2024-11-11
+## Rdiffweb [2.9.5](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.5) - 2024-11-11
 
 <small>[Compare with 2.9.4](https://gitlab.com/ikus-soft/rdiffweb/compare/2.9.4...2.9.5)</small>
 
@@ -715,7 +694,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add support for Ubuntu Oracular 24.10 ([9becf16](https://gitlab.com/ikus-soft/rdiffweb/commit/9becf16f0a96fad246021256de58a204318687b8) by Patrik Dufresne).
 - Add support for Ubuntu Noble #317 ([3364f06](https://gitlab.com/ikus-soft/rdiffweb/commit/3364f0644d62590b65ad6610d74139edc8a1740f) by Patrik Dufresne).
 
-## [6.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/6.0.0) - 2024-10-25
+## Minarca-server [6.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/6.0.0) - 2024-10-25
 
 <small>[Compare with 5.0.5](https://gitlab.com/ikus-soft/rdiffweb/compare/5.0.5...6.0.0)</small>
 
@@ -727,11 +706,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix permissions error trying to regenerate identity ([cb6d012](https://gitlab.com/ikus-soft/rdiffweb/commit/cb6d0121dcdccfc0bf1afda02f6c712b9ebba3cc) by Patrik Dufresne).
 - Fix postinst to get minarca's home #256 ([55b99b9](https://gitlab.com/ikus-soft/rdiffweb/commit/55b99b9f784afd7b41d0ddf4f6aa8f5b68e9785c) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-fix-keepdays' into 'master' ([05c79a7](https://gitlab.com/ikus-soft/rdiffweb/commit/05c79a768107eb6f8600ffb0e793494407702a73) by Patrik Dufresne).
-- Merge branch 'patrik-multi-backup-kivy' into 'master' ([6e05249](https://gitlab.com/ikus-soft/rdiffweb/commit/6e05249b2745b443170559c33579db9b501297c0) by Patrik Dufresne).
 
 ### Misc
 
@@ -748,7 +722,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Update colors on minarca server ([d51c472](https://gitlab.com/ikus-soft/rdiffweb/commit/d51c4729f2cd042dc7c75b5c0825ea85ee237bb5) by Patrik Dufresne).
 - Support multi-backup destination ([08f0404](https://gitlab.com/ikus-soft/rdiffweb/commit/08f04049809122e1069ee6dc607391f67b93e5d0) by Patrik Dufresne).
 
-## [2.9.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.4) - 2024-10-24
+## Rdiffweb [2.9.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.4) - 2024-10-24
 
 <small>[Compare with 2.9.3](https://gitlab.com/ikus-soft/rdiffweb/compare/2.9.3...2.9.4)</small>
 
@@ -757,7 +731,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Enforce use of python:3.10-bullseye ([a96f583](https://gitlab.com/ikus-soft/rdiffweb/commit/a96f583797b65a8f68d3780c1ed470c7989a56dc) by Patrik Dufresne).
 - Complete french translation #315 ([9fad72d](https://gitlab.com/ikus-soft/rdiffweb/commit/9fad72d2a19b78be1e5b9dcd4e880e3f7496dbd0) by Patrik Dufresne).
 
-## [2.9.3](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.3) - 2024-08-02
+## Rdiffweb [2.9.3](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.3) - 2024-08-02
 
 <small>[Compare with 2.9.2](https://gitlab.com/ikus-soft/rdiffweb/compare/2.9.2...2.9.3)</small>
 
@@ -765,19 +739,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Provide default encoding value ([7d777ad](https://gitlab.com/ikus-soft/rdiffweb/commit/7d777ad45c132c55bbaf829bdc08c75bd24de035) by Patrik Dufresne).
 
-## [2.9.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.2) - 2024-07-03
+## Rdiffweb [2.9.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.2) - 2024-07-03
 
 <small>[Compare with 2.9.1](https://gitlab.com/ikus-soft/rdiffweb/compare/2.9.1...2.9.2)</small>
-
-### Merged
-
-- Merge branch 'patrik-fix-translation' into 'master' ([0f5ebd9](https://gitlab.com/ikus-soft/rdiffweb/commit/0f5ebd9693ebe86f56b22869d97a3237e2b344c8) by Patrik Dufresne).
 
 ### Misc
 
 - Use default language to send notification if user doesn't have a "Preferred Language" #306 ([0eb3cdc](https://gitlab.com/ikus-soft/rdiffweb/commit/0eb3cdc64ee3eca3e01452dd11313acf29c6435f) by Patrik Dufresne).
 
-## [2.9.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.1) - 2024-06-11
+## Rdiffweb [2.9.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.9.1) - 2024-06-11
 
 <small>[Compare with 2.8.9](https://gitlab.com/ikus-soft/rdiffweb/compare/2.8.9...2.9.1)</small>
 
@@ -789,13 +759,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix backward compatibility for database with empty repo's encoding ([1323c90](https://gitlab.com/ikus-soft/rdiffweb/commit/1323c90452ebf4cfe4f61b899c8ba1adbc01df09) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-admin-view-lang' into 'master' ([3ac0efd](https://gitlab.com/ikus-soft/rdiffweb/commit/3ac0efd4ffe27e4af24c864ca5e47c15d49e11dd) by Patrik Dufresne).
-- Merge branch 'patrik-fix-repo-settings' into 'master' ([9299c2e](https://gitlab.com/ikus-soft/rdiffweb/commit/9299c2e9b74dc7deadf36f58b57b3587e3679043) by Patrik Dufresne).
-- Merge branch 'fix-buster' into 'master' ([9bfabf8](https://gitlab.com/ikus-soft/rdiffweb/commit/9bfabf8cc5ca27b8dbbc6af427599715fdf8f0eb) by Patrik Dufresne).
-- Merge branch 'patrik-restapi-scope' into 'master' ([edb1b12](https://gitlab.com/ikus-soft/rdiffweb/commit/edb1b12d0c51686e2cb7b74946fe508cb6e7a793) by Patrik Dufresne).
-
 ### Misc
 
 - Improve DockerImage ([183c6a8](https://gitlab.com/ikus-soft/rdiffweb/commit/183c6a8cc3d3d822b40b2e540df0e06257991870) by Patrik Dufresne).
@@ -803,7 +766,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - little fix for columns ([f344095](https://gitlab.com/ikus-soft/rdiffweb/commit/f3440954d8f53926cbf0e028d405f614a177bd6b) by Patrik Dufresne).
 - Improve REST api ([6ead98f](https://gitlab.com/ikus-soft/rdiffweb/commit/6ead98f44674350f276f2899d501fb559e35a5f6) by Patrik Dufresne).
 
-## [5.0.5](https://gitlab.com/ikus-soft/rdiffweb/tags/5.0.5) - 2024-04-07
+## Minarca-server [5.0.5](https://gitlab.com/ikus-soft/rdiffweb/tags/5.0.5) - 2024-04-07
 
 <small>[Compare with 5.0.3](https://gitlab.com/ikus-soft/rdiffweb/compare/5.0.3...5.0.5)</small>
 
@@ -811,23 +774,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix compatibility issue with backupninja #237 ([e73c6be](https://gitlab.com/ikus-soft/rdiffweb/commit/e73c6bef98a2ccd397666481e6715fd520b3a7ba) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-fix-backup-ninja' into 'master' ([a2d4246](https://gitlab.com/ikus-soft/rdiffweb/commit/a2d4246456bf7a054394f94479b9e1ea8b01db73) by Patrik Dufresne).
-
-## [5.0.3](https://gitlab.com/ikus-soft/rdiffweb/tags/5.0.3) - 2024-02-19
+## Minarca-server [5.0.3](https://gitlab.com/ikus-soft/rdiffweb/tags/5.0.3) - 2024-02-19
 
 <small>[Compare with 5.0.2](https://gitlab.com/ikus-soft/rdiffweb/compare/5.0.2...5.0.3)</small>
-
-### Merged
-
-- Merge branch 'patrik-fix-page-settings' into 'master' ([5a3fa4c](https://gitlab.com/ikus-soft/rdiffweb/commit/5a3fa4c9b00eedd6ed103f3ad9facb1fa33871c7) by Patrik Dufresne).
 
 ### Misc
 
 - Upgrade rdiffweb to version 2.8.9 ([c90f482](https://gitlab.com/ikus-soft/rdiffweb/commit/c90f482bb1375ec5c1c92147acd04827c7b9ce74) by Patrik Dufresne).
 
-## [2.8.9](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.9) - 2024-02-19
+## Rdiffweb [2.8.9](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.9) - 2024-02-19
 
 <small>[Compare with 2.8.8](https://gitlab.com/ikus-soft/rdiffweb/compare/2.8.8...2.8.9)</small>
 
@@ -835,28 +790,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix display of page settings minarca#235 ([27a12da](https://gitlab.com/ikus-soft/rdiffweb/commit/27a12da1d4e59608236b012b3b0c15a2dc5766e9) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-fix-page-settings' into 'master' ([03a7fd1](https://gitlab.com/ikus-soft/rdiffweb/commit/03a7fd1537300e70046671c46e3c56ba87b7eace) by Patrik Dufresne).
-- Merge branch 'patrik-deb-src' into 'master' ([8a3a4d6](https://gitlab.com/ikus-soft/rdiffweb/commit/8a3a4d6bc1b82ea95c0161629753ee9e4b574f94) by Patrik Dufresne).
-
 ### Misc
 
 - Build Debian source package ([14e4b17](https://gitlab.com/ikus-soft/rdiffweb/commit/14e4b170b2d7b7712ccd82b8af47b52770217fbd) by Patrik Dufresne).
 
-## [5.0.2](https://gitlab.com/ikus-soft/rdiffweb/tags/5.0.2) - 2024-01-08
+## Minarca-server [5.0.2](https://gitlab.com/ikus-soft/rdiffweb/tags/5.0.2) - 2024-01-08
 
 <small>[Compare with 5.0.1](https://gitlab.com/ikus-soft/rdiffweb/compare/5.0.1...5.0.2)</small>
-
-### Merged
-
-- Merge branch 'patrik-hot-fix' into 'master' ([0b7e31b](https://gitlab.com/ikus-soft/rdiffweb/commit/0b7e31b2fa8228cbccb95fc8a864a185f14f2da8) by Patrik Dufresne).
 
 ### Misc
 
 - Upgrade rdiffweb to version 2.8.8 ([1176766](https://gitlab.com/ikus-soft/rdiffweb/commit/1176766d72740b6663de68f9dee945569a0fde11) by Patrik Dufresne).
 
-## [2.8.8](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.8) - 2024-01-08
+## Rdiffweb [2.8.8](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.8) - 2024-01-08
 
 <small>[Compare with 2.8.7](https://gitlab.com/ikus-soft/rdiffweb/compare/2.8.7...2.8.8)</small>
 
@@ -864,17 +810,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix usage of `session-idle-timeout` in config file #296 ([b9602ff](https://gitlab.com/ikus-soft/rdiffweb/commit/b9602ff7d26b20d4019364b8adae5efc907b5eac) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-fix-session-idle-timeout' into 'master' ([32677f4](https://gitlab.com/ikus-soft/rdiffweb/commit/32677f41e8d5d321107a3b8bd9a8939c5ce45b63) by Patrik Dufresne).
-- Merge branch 'patrik-update-auth-mfa' into 'master' ([1d93327](https://gitlab.com/ikus-soft/rdiffweb/commit/1d933278d8d77cf98834ecde1bc842d339bbdb0a) by Patrik Dufresne).
-
 ### Misc
 
 - Avoid uploading duplicate ".deb" files ([4409e70](https://gitlab.com/ikus-soft/rdiffweb/commit/4409e7019b42971fedd5b602f88473e5e170905c) by Patrik Dufresne).
 - Update auth-mfa to support URI encoding ([ab3feae](https://gitlab.com/ikus-soft/rdiffweb/commit/ab3feaee09cfcb55b883971a9a14287a9767b581) by Patrik Dufresne).
 
-## [2.8.7](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.7) - 2024-01-04
+## Rdiffweb [2.8.7](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.7) - 2024-01-04
 
 <small>[Compare with 2.8.6](https://gitlab.com/ikus-soft/rdiffweb/compare/2.8.6...2.8.7)</small>
 
@@ -882,16 +823,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix date calculation when generating report #295 ([b2819ed](https://gitlab.com/ikus-soft/rdiffweb/commit/b2819ed8508149428e193096839c79daf918c440) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-fix-reporting' into 'master' ([f6d36d2](https://gitlab.com/ikus-soft/rdiffweb/commit/f6d36d2b49e34caa2a536b7150ff3a3b661b47b5) by Patrik Dufresne).
-- Merge branch 'patrik-adjust-session-timeout' into 'master' ([b02b517](https://gitlab.com/ikus-soft/rdiffweb/commit/b02b5178952a9e42d48f11c5911e741fc49449ca) by Patrik Dufresne).
-
 ### Misc
 
 - Adjust the session idle and absolute timeouts to 10 and 30 minutes, respectively. ([dc1575b](https://gitlab.com/ikus-soft/rdiffweb/commit/dc1575bd3840eac13db203b94a0e0112e124ef34) by Patrik Dufresne).
 
-## [5.0.1](https://gitlab.com/ikus-soft/rdiffweb/tags/5.0.1) - 2023-11-24
+## Minarca-server [5.0.1](https://gitlab.com/ikus-soft/rdiffweb/tags/5.0.1) - 2023-11-24
 
 <small>[Compare with 5.0.0](https://gitlab.com/ikus-soft/rdiffweb/compare/5.0.0...5.0.1)</small>
 
@@ -899,15 +835,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Add German translation & update documentation ([519dff1](https://gitlab.com/ikus-soft/rdiffweb/commit/519dff13d11fbb1f65a0db524eae6b94d67211cc) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-update-locales' into 'master' ([8342b52](https://gitlab.com/ikus-soft/rdiffweb/commit/8342b5282bdcb6607308b490669ef97ea5be6791) by Patrik Dufresne).
-
 ### Misc
 
 - Fix brokken link to https://www.ikus-soft.com ([60c8db2](https://gitlab.com/ikus-soft/rdiffweb/commit/60c8db208a21daff8d19e010b45b8d8184396d04) by Patrik Dufresne).
 
-## [2.8.6](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.6) - 2023-11-24
+## Rdiffweb [2.8.6](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.6) - 2023-11-24
 
 <small>[Compare with 2.8.5](https://gitlab.com/ikus-soft/rdiffweb/compare/2.8.5...2.8.6)</small>
 
@@ -920,18 +852,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix translation of report #291 ([d5120b8](https://gitlab.com/ikus-soft/rdiffweb/commit/d5120b8dbf87ffc4f44df8a9b9cdf81d42d11a76) by Patrik Dufresne).
 - Fix broken links ([2665cdd](https://gitlab.com/ikus-soft/rdiffweb/commit/2665cdd5a161dbe6e10108d48ba1240dbae77a52) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-update-locales' into 'master' ([211d4cb](https://gitlab.com/ikus-soft/rdiffweb/commit/211d4cb8913a529df56af031bd149a745930a0fb) by Patrik Dufresne).
-- Merge branch 'patrik-bug-fixes' into 'master' ([a3953e7](https://gitlab.com/ikus-soft/rdiffweb/commit/a3953e732873b6ddba37523df5a3b4650a7b033a) by Patrik Dufresne).
-- Merge branch 'patrik-sponsor' into 'master' ([f5b4628](https://gitlab.com/ikus-soft/rdiffweb/commit/f5b4628474fd4b26f4e60d7c9d3aa4cec7aae5d5) by Patrik Dufresne).
-
 ### Misc
 
 - Allow click on checkbox buttons #293 ([cd6a4fb](https://gitlab.com/ikus-soft/rdiffweb/commit/cd6a4fbb7ea44baeee946c5e3f7381287b291dc0) by Patrik Dufresne).
 - Configure sponsor ([7a7e58c](https://gitlab.com/ikus-soft/rdiffweb/commit/7a7e58ce5968026e2cd894e98d5e1af087c0459f) by Patrik Dufresne).
 
-## [5.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/5.0.0) - 2023-10-10
+## Minarca-server [5.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/5.0.0) - 2023-10-10
 
 <small>[Compare with 4.5.3](https://gitlab.com/ikus-soft/rdiffweb/compare/4.5.3...5.0.0)</small>
 
@@ -941,36 +867,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Adding restore support on command line ([b0ef1d7](https://gitlab.com/ikus-soft/rdiffweb/commit/b0ef1d796d754abd1c61dba5456daf8981a41cd2) by Patrik Dufresne).
 - Add support for rdiff-backup 2.2.x and Ubuntu Lunar #194 #203 ([edd54e4](https://gitlab.com/ikus-soft/rdiffweb/commit/edd54e46d77b5d8b9a171c882133480f829ae21f) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-upgrade-rdiffweb' into 'master' ([3cbe7c1](https://gitlab.com/ikus-soft/rdiffweb/commit/3cbe7c105297b4e9fb757683dafab1112c909297) by Patrik Dufresne).
-- Merge branch 'patrik-release' into 'master' ([2d13db9](https://gitlab.com/ikus-soft/rdiffweb/commit/2d13db9d5a7a22c05b8b176d2782e94022effce3) by Patrik Dufresne).
-- Merge branch 'patrik-restore-ui' into 'master' ([decfdfb](https://gitlab.com/ikus-soft/rdiffweb/commit/decfdfb07fd9406ba70e06a840662a166541235c) by Patrik Dufresne).
-- Merge branch 'patrik-file-stats' into 'master' ([b69037b](https://gitlab.com/ikus-soft/rdiffweb/commit/b69037ba5a3701a2ef2d9ab80d5fe8bb5bd7395c) by Patrik Dufresne).
-- Merge branch 'patrik-restore' into 'master' ([73b2890](https://gitlab.com/ikus-soft/rdiffweb/commit/73b28903a306fcd55951adcb4782933f66b726f8) by Patrik Dufresne).
-- Merge branch 'patrik-upgrade' into 'master' ([7477f5e](https://gitlab.com/ikus-soft/rdiffweb/commit/7477f5ee2e0e5c4b148233edb2d1269683291bd9) by Patrik Dufresne).
-- Merge branch 'patrik-2.2-and-lunar' into 'master' ([e4b9f17](https://gitlab.com/ikus-soft/rdiffweb/commit/e4b9f172a3646ab8b1029d7cc045bab63b4d6153) by Patrik Dufresne).
-- Merge branch 'patrik-readme-contribution' into 'master' ([64c05da](https://gitlab.com/ikus-soft/rdiffweb/commit/64c05da26dc0286dcbe214c5f391dc5bf3f56a3c) by Patrik Dufresne).
-
 ### Misc
 
 - Upgrade rdiffweb to v2.8.5 ([b637eb3](https://gitlab.com/ikus-soft/rdiffweb/commit/b637eb3a3200597bbac0b8486fc081b62d8874d9) by Patrik Dufresne).
-- Update rdiffweb to v2.8.4 ([5461475](https://gitlab.com/ikus-soft/rdiffweb/commit/54614758b97342d5a4f0098c4beb484ee5167dd9) by Patrik Dufresne).
 - patrik-fix-test-version ([54e189c](https://gitlab.com/ikus-soft/rdiffweb/commit/54e189ceece9b070bd9ed5ec665fbd134b780e53) by Patrik Dufresne).
-- Upgrade rdiffweb to v2.8.2 ([48603be](https://gitlab.com/ikus-soft/rdiffweb/commit/48603bebbf46e94e94060678780f5a302fe471e0) by Patrik Dufresne).
-- Upgrade rdiffweb v2.8.2a1 ([e0ec28a](https://gitlab.com/ikus-soft/rdiffweb/commit/e0ec28a6eb9dbfa7bd0b0201f0b9f72d5c639b13) by Patrik Dufresne).
-- Upgrade rdiffweb to v2.8.1 ([c437d1b](https://gitlab.com/ikus-soft/rdiffweb/commit/c437d1bdabf5b6c6d7c4c855716be6a37dc650d7) by Patrik Dufresne).
-- Upgrade rdiffweb to v2.8.0a9 ([ffe6fba](https://gitlab.com/ikus-soft/rdiffweb/commit/ffe6fba4969fecc1326ab9ffbc0fc07f3fb7dd30) by Patrik Dufresne).
 - Deploy file stats - update rdiffweb 2.8.0a7 ([9fa14fa](https://gitlab.com/ikus-soft/rdiffweb/commit/9fa14fa7154bc8fa0b44c67437df2d1bfaf97669) by Patrik Dufresne).
-- Upgrade rdiffweb to 2.8.0a5 - ignore weekend ([de99f85](https://gitlab.com/ikus-soft/rdiffweb/commit/de99f8509088dca07a0a1d21a8e2d3c98f3d9a74) by Patrik Dufresne).
-- Upgrade rdiffweb to 2.8.0a4 ([3bf7981](https://gitlab.com/ikus-soft/rdiffweb/commit/3bf798129816b546a5c1c69dabcd9f34b5245664) by Patrik Dufresne).
-- Upgrade rdiffweb to 2.8.0.a3 ([5b51b5d](https://gitlab.com/ikus-soft/rdiffweb/commit/5b51b5df3e6af2501262ba974267b8cbc268397b) by Patrik Dufresne).
-- Upgrade rdiffweb to version 2.8.0a2 ([e429137](https://gitlab.com/ikus-soft/rdiffweb/commit/e429137b46bee18b2b59937d08af96f5dcc64164) by Patrik Dufresne).
-- Log original ssh command or user agent on server side ([3aa5e15](https://gitlab.com/ikus-soft/rdiffweb/commit/3aa5e15243aca588c65faa10c8777494b1e51973) by Patrik Dufresne).
-- Upgrade rdiffweb to v2.8.0a1 ([7d26380](https://gitlab.com/ikus-soft/rdiffweb/commit/7d26380399e3111421d45ca5b344ea17e16a1c74) by Patrik Dufresne).
-- Update Copyright year ([dbcb5d8](https://gitlab.com/ikus-soft/rdiffweb/commit/dbcb5d8e45987b56c8bcac4004d5550511084d97) by Patrik Dufresne).
 
-## [2.8.5](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.5) - 2023-10-10
+## Rdiffweb [2.8.5](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.5) - 2023-10-10
 
 <small>[Compare with 2.8.4](https://gitlab.com/ikus-soft/rdiffweb/compare/2.8.4...2.8.5)</small>
 
@@ -983,15 +886,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix Debian version #289 ([9bc08d0](https://gitlab.com/ikus-soft/rdiffweb/commit/9bc08d0b9ba4ff67c5319fa8c1dca81bfa096d95) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-fix-deb-version' into 'master' ([b7e8bf6](https://gitlab.com/ikus-soft/rdiffweb/commit/b7e8bf660d119879caa22f34b97d099151f8ae3a) by Patrik Dufresne).
-
 ### Misc
 
 - Update README release note ([2199ad7](https://gitlab.com/ikus-soft/rdiffweb/commit/2199ad79fb0fbd5c76230e4c2006220a5f9619f5) by Patrik Dufresne).
 
-## [2.8.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.4) - 2023-09-29
+## Rdiffweb [2.8.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.4) - 2023-09-29
 
 <small>[Compare with 2.8.3](https://gitlab.com/ikus-soft/rdiffweb/compare/2.8.3...2.8.4)</small>
 
@@ -999,11 +898,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Add ratelimit to AccessToken, SSH Keys, User creation ([06f89b4](https://gitlab.com/ikus-soft/rdiffweb/commit/06f89b43469aae70e8833e55192721523f86c5a2) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-rate-limit' into 'master' ([a783916](https://gitlab.com/ikus-soft/rdiffweb/commit/a783916483d56fa3370bd892fc78bc1677bcae6b) by Patrik Dufresne).
-
-## [2.8.3](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.3) - 2023-09-22
+## Rdiffweb [2.8.3](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.3) - 2023-09-22
 
 <small>[Compare with 2.8.2](https://gitlab.com/ikus-soft/rdiffweb/compare/2.8.2...2.8.3)</small>
 
@@ -1011,7 +906,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Remove Ubuntu Kinetic ([c710540](https://gitlab.com/ikus-soft/rdiffweb/commit/c7105406b21661f4825cbd006602993221e6fd8a) by Patrik Dufresne).
 
-## [2.8.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.2) - 2023-08-22
+## Rdiffweb [2.8.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.2) - 2023-08-22
 
 <small>[Compare with 2.8.1](https://gitlab.com/ikus-soft/rdiffweb/compare/2.8.1...2.8.2)</small>
 
@@ -1027,14 +922,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Change layout of file statistics to display a single day #286 ([0a3af7d](https://gitlab.com/ikus-soft/rdiffweb/commit/0a3af7dc8f34100898c52c1fbe8b462887a7551f) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-disable-days' into 'master' ([994f98b](https://gitlab.com/ikus-soft/rdiffweb/commit/994f98bac4025e5e49ede587bbaebade028c3347) by Patrik Dufresne).
-- Merge branch 'patrik-remove-older-exit-code' into 'master' ([4df28b1](https://gitlab.com/ikus-soft/rdiffweb/commit/4df28b12b36f2a1aee9ec4e200c3d01df1318d87) by Patrik Dufresne).
-- Merge branch 'patrik-encoding-none' into 'master' ([8be93e6](https://gitlab.com/ikus-soft/rdiffweb/commit/8be93e674806ec92d2fd33eb2562555da3553cdf) by Patrik Dufresne).
-- Merge branch 'patrik-split-stats' into 'master' ([a51e64c](https://gitlab.com/ikus-soft/rdiffweb/commit/a51e64ca01e3f936c85039fd1675cb4a77d06d18) by Patrik Dufresne).
-- Merge branch 'patrik-selenium' into 'master' ([4bb9c60](https://gitlab.com/ikus-soft/rdiffweb/commit/4bb9c607232e88dba09862c1a5a72a638bbdccee) by Patrik Dufresne).
-
 ### Misc
 
 - Use multi-stage to run test in docker image ([f3ffec9](https://gitlab.com/ikus-soft/rdiffweb/commit/f3ffec9ce43d4e6fa60da93a39e8b4905cba4abd) by Patrik Dufresne).
@@ -1042,7 +929,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Handle exit code 2 for rdiff-backup>=2.2.x #285 ([8609fb2](https://gitlab.com/ikus-soft/rdiffweb/commit/8609fb22a0e16424b2359f4dcfc8d5d1fbe0197b) by Patrik Dufresne).
 - Unpin selenium version to support >= 4.11 ([31d348f](https://gitlab.com/ikus-soft/rdiffweb/commit/31d348f72a59696f110ec8318457e1ebfdfd8619) by Patrik Dufresne).
 
-## [2.8.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.1) - 2023-08-01
+## Rdiffweb [2.8.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.1) - 2023-08-01
 
 <small>[Compare with 2.8.0](https://gitlab.com/ikus-soft/rdiffweb/compare/2.8.0...2.8.1)</small>
 
@@ -1050,7 +937,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Pin selenium to 4.10 ([431832a](https://gitlab.com/ikus-soft/rdiffweb/commit/431832a9a16db8bb54f613b4ba43e3eabbfe9447) by Patrik Dufresne).
 
-## [2.8.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.0) - 2023-07-31
+## Rdiffweb [2.8.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.8.0) - 2023-07-31
 
 <small>[Compare with 2.7.1](https://gitlab.com/ikus-soft/rdiffweb/compare/2.7.1...2.8.0)</small>
 
@@ -1077,25 +964,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Remove "min" prefix from graphs #252 ([7c9f232](https://gitlab.com/ikus-soft/rdiffweb/commit/7c9f232bd46f1f54be9b713e25fe2685e6c2e061) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-release' into 'master' ([9b1a560](https://gitlab.com/ikus-soft/rdiffweb/commit/9b1a560342b1434dd8e700cfaa15bec291a56d0f) by Patrik Dufresne).
-- Merge branch 'patrik-admin-repos-sorting' into 'master' ([dfb4f31](https://gitlab.com/ikus-soft/rdiffweb/commit/dfb4f314f1167620a1439136f4940cf3ec698467) by Patrik Dufresne).
-- Merge branch 'patrik-default-login' into 'master' ([df12a09](https://gitlab.com/ikus-soft/rdiffweb/commit/df12a09c54c940123f925a24d886f4f6fc3d4950) by Patrik Dufresne).
-- Merge branch 'patrik-graphs' into 'master' ([b7c92d3](https://gitlab.com/ikus-soft/rdiffweb/commit/b7c92d3dde4879e2f383b450fd6c52e85c45a023) by Patrik Dufresne).
-- Merge branch 'patrik-trim-verification-code' into 'master' ([68f24db](https://gitlab.com/ikus-soft/rdiffweb/commit/68f24db1bfce037ecfa7908d2d9065917758bb32) by Patrik Dufresne).
-- Merge branch 'patrik-view-file-statistics' into 'master' ([20efb24](https://gitlab.com/ikus-soft/rdiffweb/commit/20efb24acbf783151eb6fd7cb6033c5547b41b6c) by Patrik Dufresne).
-- Merge branch 'patrik-ignore-weekend' into 'master' ([68c06bd](https://gitlab.com/ikus-soft/rdiffweb/commit/68c06bd4cd51792d4a0817e411eec1acebc3ad3b) by Patrik Dufresne).
-- Merge branch 'patrik-email-report' into 'master' ([c530b1f](https://gitlab.com/ikus-soft/rdiffweb/commit/c530b1f9debe31c09e8861dec280821bac470a0c) by Patrik Dufresne).
-- Merge branch 'patrik-doc-fail2ban' into 'master' ([7b9b3f2](https://gitlab.com/ikus-soft/rdiffweb/commit/7b9b3f2c984bad12ca150a7ba037dd53181a3866) by Patrik Dufresne).
-- Merge branch 'patrik-fix-token-expiration' into 'master' ([d5c387c](https://gitlab.com/ikus-soft/rdiffweb/commit/d5c387caaefff1c568841a180f7e279cbffcda9d) by Patrik Dufresne).
-- Merge branch 'patrik-fix-quota-report' into 'master' ([54435f9](https://gitlab.com/ikus-soft/rdiffweb/commit/54435f9448e46a71743daf2e4092a989d05b13a9) by Patrik Dufresne).
-- Merge branch 'patrik-ratelimit-send-report' into 'master' ([feef0d7](https://gitlab.com/ikus-soft/rdiffweb/commit/feef0d7b11d86aed29bf98c21526088117964d85) by Patrik Dufresne).
-- Merge branch 'patrik-quota-visibility' into 'master' ([e55e019](https://gitlab.com/ikus-soft/rdiffweb/commit/e55e01971164701fc2bb6b79d1944d81dd0bea19) by Patrik Dufresne).
-- Merge branch 'patrik-sqlalchemy-2.0' into 'master' ([13383c9](https://gitlab.com/ikus-soft/rdiffweb/commit/13383c9b1db335bd8989e8055eee35606dc37a20) by Patrik Dufresne).
-- Merge branch 'patrik-lunar' into 'master' ([bee4e4b](https://gitlab.com/ikus-soft/rdiffweb/commit/bee4e4bfbea9bc18a6e7148d62f63ffc3a5c8fc8) by Patrik Dufresne).
-- Merge branch 'patrik-admin-users' into 'master' ([854e076](https://gitlab.com/ikus-soft/rdiffweb/commit/854e07670121d3c95da05eff6c7187503a225ac8) by Patrik Dufresne).
-
 ### Misc
 
 - Update Release note ([21657c9](https://gitlab.com/ikus-soft/rdiffweb/commit/21657c9531500ae55fe0603a14454162dfb74991) by Patrik Dufresne).
@@ -1113,7 +981,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Allow admin to select report time range ([2bdae7a](https://gitlab.com/ikus-soft/rdiffweb/commit/2bdae7a032d24a7fbee852193e37c3a937ac473a) by Patrik Dufresne).
 - Improve user management interface #237 ([8ff0766](https://gitlab.com/ikus-soft/rdiffweb/commit/8ff07665582555a7ea890cd484066dccf7db88e5) by Patrik Dufresne).
 
-## [2.7.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.7.1) - 2023-04-29
+## Rdiffweb [2.7.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.7.1) - 2023-04-29
 
 <small>[Compare with 2.7.0](https://gitlab.com/ikus-soft/rdiffweb/compare/2.7.0...2.7.1)</small>
 
@@ -1121,28 +989,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix encoding problem with older Outlook 2007 client #273 ([2944cc4](https://gitlab.com/ikus-soft/rdiffweb/commit/2944cc4c0af8af99863c6f340075306e96f5238c) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-outlook-encoding' into 'master' ([5126aac](https://gitlab.com/ikus-soft/rdiffweb/commit/5126aac07e9f025156d2e64d6f1107120f2625d2) by Patrik Dufresne).
-- Merge branch 'patrik-update-copyright-year' into 'master' ([928eba0](https://gitlab.com/ikus-soft/rdiffweb/commit/928eba08c1ec8022699256ba269cd59e11ee3c41) by Patrik Dufresne).
-
 ### Misc
 
 - Update copyright year ([e9b134b](https://gitlab.com/ikus-soft/rdiffweb/commit/e9b134b0c757b25c773a682d76b3b199c3317afd) by Patrik Dufresne).
 
-## [4.5.3](https://gitlab.com/ikus-soft/rdiffweb/tags/4.5.3) - 2023-04-24
+## Minarca-server [4.5.3](https://gitlab.com/ikus-soft/rdiffweb/tags/4.5.3) - 2023-04-24
 
 <small>[Compare with 4.4.1](https://gitlab.com/ikus-soft/rdiffweb/compare/4.4.1...4.5.3)</small>
-
-### Merged
-
-- Merge branch 'patrik-update-rdiffweb' into 'master' ([f9b5d6d](https://gitlab.com/ikus-soft/rdiffweb/commit/f9b5d6db003ba8383833857a1a3cbd104d8c6b75) by Patrik Dufresne).
 
 ### Misc
 
 - Update Rdiffweb ([86a6216](https://gitlab.com/ikus-soft/rdiffweb/commit/86a62160c9d8c2627a57b9b2a25d73b7f829a502) by Patrik Dufresne).
 
-## [2.7.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.7.0) - 2023-04-20
+## Rdiffweb [2.7.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.7.0) - 2023-04-20
 
 <small>[Compare with 2.6.1](https://gitlab.com/ikus-soft/rdiffweb/compare/2.6.1...2.7.0)</small>
 
@@ -1154,18 +1013,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix time calculation and timerange for reporting #71 ([0235d2b](https://gitlab.com/ikus-soft/rdiffweb/commit/0235d2b3a0d3fba3ac5fdd9117fb94a29dc4283c) by Patrik Dufresne).
 - Fix translation of email_layout ([4240a79](https://gitlab.com/ikus-soft/rdiffweb/commit/4240a79fed389dad71e913c3725527952af66e09) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-prepare-release' into 'master' ([f028f7c](https://gitlab.com/ikus-soft/rdiffweb/commit/f028f7ce8395bb1c9c579bfc1c645412d41191e8) by Patrik Dufresne).
-- Merge branch 'patrik-minor-changes' into 'master' ([d66d674](https://gitlab.com/ikus-soft/rdiffweb/commit/d66d6744db99315fd67bba0fb57fde47d04ebf70) by Patrik Dufresne).
-- Merge branch 'patrik-fix-report' into 'master' ([4d6f4ce](https://gitlab.com/ikus-soft/rdiffweb/commit/4d6f4ce82a62032e78fd497c330c5bbf9069bb68) by Patrik Dufresne).
-- Merge branch 'patrik-selenium-test' into 'master' ([e94d347](https://gitlab.com/ikus-soft/rdiffweb/commit/e94d347b85431673fa124a19845a8c7d17c37203) by Patrik Dufresne).
-- Merge branch 'patrik-check-latest' into 'master' ([78739a0](https://gitlab.com/ikus-soft/rdiffweb/commit/78739a0a697367f431943731db4abb87ab75fe87) by Patrik Dufresne).
-- Merge branch 'patrik-monthly-report' into 'master' ([324ac8d](https://gitlab.com/ikus-soft/rdiffweb/commit/324ac8d6865dbf5a2459d57ee77643144e89c78a) by Patrik Dufresne).
-- Merge branch 'patrik-fix-notification-error' into 'master' ([83b672f](https://gitlab.com/ikus-soft/rdiffweb/commit/83b672f4c2a9bf755ffec604add8e198e7c67c2f) by Patrik Dufresne).
-- Merge branch 'patrik-test-2.2' into 'master' ([6fa3cd8](https://gitlab.com/ikus-soft/rdiffweb/commit/6fa3cd8f2f6938fe352ff4a3df9c2b3698d174a5) by Patrik Dufresne).
-- Merge branch 'patrik-test-invalid-default-lang' into 'master' ([d0cb705](https://gitlab.com/ikus-soft/rdiffweb/commit/d0cb70554720945aa05e933cc6ece454b1cab5cb) by Patrik Dufresne).
 
 ### Misc
 
@@ -1180,7 +1027,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Define subject for MFA Verification Code email #270 ([2982c4e](https://gitlab.com/ikus-soft/rdiffweb/commit/2982c4ebcf32cf17041ca11f89a0a24a1ead2c65) by Patrik Dufresne).
 - Review testing matrix in CICD pipeline ([10ecd1b](https://gitlab.com/ikus-soft/rdiffweb/commit/10ecd1bd01830859b2389b23ae82de72166d28e7) by Patrik Dufresne).
 
-## [4.4.1](https://gitlab.com/ikus-soft/rdiffweb/tags/4.4.1) - 2023-03-22
+## Minarca-server [4.4.1](https://gitlab.com/ikus-soft/rdiffweb/tags/4.4.1) - 2023-03-22
 
 <small>[Compare with 4.4.0](https://gitlab.com/ikus-soft/rdiffweb/compare/4.4.0...4.4.1)</small>
 
@@ -1188,32 +1035,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix `rdiff-backup` executable lookup ([faaa579](https://gitlab.com/ikus-soft/rdiffweb/commit/faaa579d1f32afc63bfbae5acdd813026d2b9287) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-bookworm' into 'master' ([d7db883](https://gitlab.com/ikus-soft/rdiffweb/commit/d7db883fad6cde3e6fd130a596f654b0b84049e7) by Patrik Dufresne).
-
-## [2.6.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.6.1) - 2023-03-22
+## Rdiffweb [2.6.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.6.1) - 2023-03-22
 
 <small>[Compare with 2.6.0](https://gitlab.com/ikus-soft/rdiffweb/compare/2.6.0...2.6.1)</small>
-
-### Merged
-
-- Merge branch 'patrik-search-rdiff-backup' into 'master' ([58b8f56](https://gitlab.com/ikus-soft/rdiffweb/commit/58b8f56cf8c8d3bafd830b07f13a38e71f0fd534) by Patrik Dufresne).
 
 ### Misc
 
 - Fail to start if rdiff-backup is not found #267 ([e68cca9](https://gitlab.com/ikus-soft/rdiffweb/commit/e68cca9743746ac113e489e044f70d6561f4daab) by Patrik Dufresne).
 - Update README file ([e2ed8dc](https://gitlab.com/ikus-soft/rdiffweb/commit/e2ed8dc153ba9e7e168417c7a485943786b76261) by Patrik Dufresne).
 
-## [4.4.0](https://gitlab.com/ikus-soft/rdiffweb/tags/4.4.0) - 2023-03-15
+## Minarca-server [4.4.0](https://gitlab.com/ikus-soft/rdiffweb/tags/4.4.0) - 2023-03-15
 
 <small>[Compare with 4.3.0](https://gitlab.com/ikus-soft/rdiffweb/compare/4.3.0...4.4.0)</small>
-
-### Merged
-
-- Merge branch 'patrik-default-lang' into 'master' ([4fe0506](https://gitlab.com/ikus-soft/rdiffweb/commit/4fe050667b74e9a1c723269554ab72f5a4b1bd6a) by Patrik Dufresne).
-- Merge branch 'patrik-reporting' into 'master' ([5b013cd](https://gitlab.com/ikus-soft/rdiffweb/commit/5b013cd23b0b0e0e7211b41fdadc7f31cdd68579) by Patrik Dufresne).
-- Merge branch 'patrik-create-deb' into 'master' ([9e2a2a2](https://gitlab.com/ikus-soft/rdiffweb/commit/9e2a2a22061a349d7b57389fde8545bff50b0e18) by Patrik Dufresne).
 
 ### Misc
 
@@ -1222,7 +1055,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Redistribute logos in PNG format for better compatibility ([c277a58](https://gitlab.com/ikus-soft/rdiffweb/commit/c277a587b7e40624720f5ae5ccbd960bbc254280) by Patrik Dufresne).
 - Use debbuild to create DEB package for minarca-client ([26785d7](https://gitlab.com/ikus-soft/rdiffweb/commit/26785d7d239d5f6fc2f91a8d6e16684ddf0a330e) by Patrik Dufresne).
 
-## [2.6.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.6.0) - 2023-03-15
+## Rdiffweb [2.6.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.6.0) - 2023-03-15
 
 <small>[Compare with 2.5.8](https://gitlab.com/ikus-soft/rdiffweb/compare/2.5.8...2.6.0)</small>
 
@@ -1241,33 +1074,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 - Change layout of repositories ([edee07d](https://gitlab.com/ikus-soft/rdiffweb/commit/edee07da99a141ccbc7f003779843b2632687eaf) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-upgrade-ldap' into 'master' ([cb5a74a](https://gitlab.com/ikus-soft/rdiffweb/commit/cb5a74aa9a4efa77b0076cb3df5852f9050f7ec3) by Patrik Dufresne).
-- Merge branch 'patrik-selenium' into 'master' ([2333266](https://gitlab.com/ikus-soft/rdiffweb/commit/2333266d56a173515c1901067f86a9e534d32f6b) by Patrik Dufresne).
-- Merge branch 'patrik-fix-send-mail-subject' into 'master' ([cf5d62e](https://gitlab.com/ikus-soft/rdiffweb/commit/cf5d62e7a57d9ac0c24a50291f4b56e0c6ba9e5b) by Patrik Dufresne).
-- Merge branch 'patrik-update-translation' into 'master' ([87b257a](https://gitlab.com/ikus-soft/rdiffweb/commit/87b257a0d9c9b275f87ff3f758a0a6db64e51ff6) by Patrik Dufresne).
-- Merge branch 'patrik-default-lang' into 'master' ([10c58dc](https://gitlab.com/ikus-soft/rdiffweb/commit/10c58dc726856bccf3bcbb853e98cb8bb746ce57) by Patrik Dufresne).
-- Merge branch 'patrik-systemlog-rename-columns' into 'master' ([785f443](https://gitlab.com/ikus-soft/rdiffweb/commit/785f443ab0a27a6b293dc104e619d21f014ca50f) by Patrik Dufresne).
-- Merge branch 'patrik-minute-ago' into 'master' ([5dafda6](https://gitlab.com/ikus-soft/rdiffweb/commit/5dafda6dbd56b653a70b589b850caba8ad653bbc) by Patrik Dufresne).
-- Merge branch 'patrik-404-invalid-log' into 'master' ([b8ec822](https://gitlab.com/ikus-soft/rdiffweb/commit/b8ec822a84b617840841239e024103dba4a8c443) by Patrik Dufresne).
-- Merge branch 'patrik-fix-remove-older' into 'master' ([19e55a6](https://gitlab.com/ikus-soft/rdiffweb/commit/19e55a68f27f4873063f90cdbf4037b9a1af3b8b) by Patrik Dufresne).
-- Merge branch 'patrik-initial-backup' into 'master' ([5561980](https://gitlab.com/ikus-soft/rdiffweb/commit/5561980aaf3bb48f229a003b5b220293fc034233) by Patrik Dufresne).
-- Merge branch 'master' into 'patrik-fix-remove-older' ([f97c0b9](https://gitlab.com/ikus-soft/rdiffweb/commit/f97c0b9722dfce35c3aa2ccef4cf68f365e9cdcf) by Patrik Dufresne).
-- Merge branch 'patrik-admin-notification' into 'master' ([12c6fc2](https://gitlab.com/ikus-soft/rdiffweb/commit/12c6fc2f3f9117e620c23cc38a3ab074df36463d) by Patrik Dufresne).
-- Merge branch 'patrik-event' into 'master' ([22c7807](https://gitlab.com/ikus-soft/rdiffweb/commit/22c78079a5abd67a95882473d7c09d42c42daf5c) by Patrik Dufresne).
-- Merge branch 'rdiffweb-ldapfix-master' into 'master' ([ad5f397](https://gitlab.com/ikus-soft/rdiffweb/commit/ad5f3979d78e6e3f1d07c8b03ec5fc21645259e8) by Patrik Dufresne).
-- Merge branch 'patrik-fixes' into 'master' ([a839aef](https://gitlab.com/ikus-soft/rdiffweb/commit/a839aef9ebbdd44e40622075a6a94d7aade50e62) by Patrik Dufresne).
-- Merge branch 'patrik-status-view' into 'master' ([430d2c2](https://gitlab.com/ikus-soft/rdiffweb/commit/430d2c20950df8c1380043524a53f1e694f6d376) by Patrik Dufresne).
-- Merge branch 'patrik-layout-repositories' into 'master' ([b435124](https://gitlab.com/ikus-soft/rdiffweb/commit/b4351243d4ceee6143770177865835481f9c67e6) by Patrik Dufresne).
-- Merge branch 'patrik-external-url' into 'master' ([f214416](https://gitlab.com/ikus-soft/rdiffweb/commit/f2144165e2bc723e661555c27444945e2a5834db) by Patrik Dufresne).
-- Merge branch 'patrik-quota-documentation' into 'master' ([238b4f5](https://gitlab.com/ikus-soft/rdiffweb/commit/238b4f5b6a09022623a713687d8f444905f14ed2) by Patrik Dufresne).
-- Merge branch 'patrik-hotfix-sqlalchemy' into 'master' ([714478c](https://gitlab.com/ikus-soft/rdiffweb/commit/714478c761aee05fd71049836858811c7d572a32) by Patrik Dufresne).
-- Merge branch 'master' into 'patrik-hotfix-sqlalchemy' ([68298e5](https://gitlab.com/ikus-soft/rdiffweb/commit/68298e5a7582d81ead10bec3498395b3f1a97f85) by Patrik Dufresne).
-- Merge branch 'patrik-email-template' into 'master' ([b06acfb](https://gitlab.com/ikus-soft/rdiffweb/commit/b06acfbf894293098b710745fb38c37ca6b4da1a) by Patrik Dufresne).
-- Merge branch 'patrik-notification-no-activity' into 'master' ([6cbe5a2](https://gitlab.com/ikus-soft/rdiffweb/commit/6cbe5a2c7c2a5e32e7a66db9d7eb23c5f78be21f) by Patrik Dufresne).
-- Merge branch 'patrik-deletion' into 'master' ([b1f2a8a](https://gitlab.com/ikus-soft/rdiffweb/commit/b1f2a8abea8c5db1fa11ea6978f66fd88725b225) by Patrik Dufresne).
 
 ### Misc
 
@@ -1299,7 +1105,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Use bootstrapemail to generate email template ([b066ada](https://gitlab.com/ikus-soft/rdiffweb/commit/b066ada9f9d191a2f3dda0144ddab57e3a0cc612) by Patrik Dufresne).
 - Send notification for inactive backup based on statistics ([2f77b43](https://gitlab.com/ikus-soft/rdiffweb/commit/2f77b437c064635dbd186ed6174a974ff03ad1b0) by Patrik Dufresne).
 
-## [2.5.8](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.8) - 2023-02-19
+## Rdiffweb [2.5.8](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.8) - 2023-02-19
 
 <small>[Compare with 2.5.7](https://gitlab.com/ikus-soft/rdiffweb/compare/2.5.7...2.5.8)</small>
 
@@ -1311,7 +1117,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Support Setuptools v66 ([5e9d089](https://gitlab.com/ikus-soft/rdiffweb/commit/5e9d089046d40f220c2c609b5c5da99e353bfb8d) by Patrik Dufresne).
 
-## [2.5.7](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.7) - 2023-01-27
+## Rdiffweb [2.5.7](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.7) - 2023-01-27
 
 <small>[Compare with 2.5.6](https://gitlab.com/ikus-soft/rdiffweb/compare/2.5.6...2.5.7)</small>
 
@@ -1319,7 +1125,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Enforce SQLAlchemy version between 1.2 or 1.4 ([5eb27cd](https://gitlab.com/ikus-soft/rdiffweb/commit/5eb27cd767831f6b8cfba4b06e6084e6dfbb57de) by Patrik Dufresne).
 
-## [4.3.0](https://gitlab.com/ikus-soft/rdiffweb/tags/4.3.0) - 2023-01-16
+## Minarca-server [4.3.0](https://gitlab.com/ikus-soft/rdiffweb/tags/4.3.0) - 2023-01-16
 
 <small>[Compare with 4.2.5](https://gitlab.com/ikus-soft/rdiffweb/compare/4.2.5...4.3.0)</small>
 
@@ -1332,16 +1138,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix flake8 config ([e625c22](https://gitlab.com/ikus-soft/rdiffweb/commit/e625c2236c770c648de2f4bde6d8f9d0624ab5c8) by Patrik Dufresne).
 - Fix Rdiffweb version to 2.5.0 ([716af85](https://gitlab.com/ikus-soft/rdiffweb/commit/716af852846969afeba43268885700afca2f4ef6) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-final-changes' into 'master' ([496278b](https://gitlab.com/ikus-soft/rdiffweb/commit/496278b5201b191fe901403d7df52603e31e0e52) by Patrik Dufresne).
-- Merge branch 'patrik-import-error-message' into 'master' ([1c96028](https://gitlab.com/ikus-soft/rdiffweb/commit/1c96028b677bad0cc1c95ce5d22e4e202fc14278) by Patrik Dufresne).
-- Merge branch 'patrik-update-theme' into 'master' ([25e1813](https://gitlab.com/ikus-soft/rdiffweb/commit/25e181367ef27afb370c9169e57ccc675072aa37) by Patrik Dufresne).
-- Merge branch 'patrik-upgrade-rdiffweb-2.5.2' into 'master' ([be67c0a](https://gitlab.com/ikus-soft/rdiffweb/commit/be67c0a8488677b7772619d2ee4373b40d11885d) by Patrik Dufresne).
-- Merge branch 'patrik-background-task-update-attr-quota' into 'master' ([6dc3b1b](https://gitlab.com/ikus-soft/rdiffweb/commit/6dc3b1bfaf9c7ae93a68e7dc45c914f33ebfaa31) by Patrik Dufresne).
-- Merge branch 'patrik-upgrade-rdiffweb' into 'master' ([bc2032a](https://gitlab.com/ikus-soft/rdiffweb/commit/bc2032a17e9e0cd99eae7880a6dd422a738f508b) by Patrik Dufresne).
-- Merge branch 'patrik-upgrade-french-translation' into 'master' ([d6e7ef2](https://gitlab.com/ikus-soft/rdiffweb/commit/d6e7ef2dfcf3a96f037a27c521c18d07e7a11835) by Patrik Dufresne).
 
 ### Misc
 
@@ -1358,7 +1154,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Replace deprecated references of `disutils.spawn.find_executable()` by `shutil.which()` ([3422a80](https://gitlab.com/ikus-soft/rdiffweb/commit/3422a807a971cb4c8ac0b1a286908985987a46d4) by Patrik Dufresne).
 - Upgrade rdiffweb v2.5.0a1 include SQL Alchemy ORM ([d45c1f9](https://gitlab.com/ikus-soft/rdiffweb/commit/d45c1f9ee5a39c5a73a0ee0dd618ac41cc7bcbe6) by Patrik Dufresne).
 
-## [2.5.6](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.6) - 2023-01-12
+## Rdiffweb [2.5.6](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.6) - 2023-01-12
 
 <small>[Compare with 2.5.5](https://gitlab.com/ikus-soft/rdiffweb/compare/2.5.5...2.5.6)</small>
 
@@ -1366,22 +1162,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix Hamburger menu and change working minarca#192 ([b4add6d](https://gitlab.com/ikus-soft/rdiffweb/commit/b4add6db996813bebffa97082e9550ebf246f461) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-little-changes' into 'master' ([09425fe](https://gitlab.com/ikus-soft/rdiffweb/commit/09425fe5588f1f0c29951a6f2b0fe5d485cc0e33) by Patrik Dufresne).
-
-## [2.5.5](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.5) - 2022-12-23
+## Rdiffweb [2.5.5](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.5) - 2022-12-23
 
 <small>[Compare with 2.5.4](https://gitlab.com/ikus-soft/rdiffweb/compare/2.5.4...2.5.5)</small>
 
 ### Fixed
 
 - Fix loading of status graph ([26149ba](https://gitlab.com/ikus-soft/rdiffweb/commit/26149baa666e018b773b55da8eb82874e3650d0d) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-huntr' into 'master' ([70c1de6](https://gitlab.com/ikus-soft/rdiffweb/commit/70c1de694f1f93efa494f29115b33857aa496e8d) by Patrik Dufresne).
-- Merge branch 'patrik-fix-status-graph' into 'master' ([b0c1422](https://gitlab.com/ikus-soft/rdiffweb/commit/b0c142251987302e04b2b1c35cf229b7bf93ff57) by Patrik Dufresne).
 
 ### Misc
 
@@ -1392,7 +1179,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Send notification on new SSH Key ([bc4bed8](https://gitlab.com/ikus-soft/rdiffweb/commit/bc4bed89affcba71251fe54ed10639da9d392c1d) by Patrik Dufresne).
 - Disable automatic hyperlink in email template ([6afaae5](https://gitlab.com/ikus-soft/rdiffweb/commit/6afaae56a29536f0118b3380d296c416aa6d078d) by Patrik Dufresne).
 
-## [2.5.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.4) - 2022-12-19
+## Rdiffweb [2.5.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.4) - 2022-12-19
 
 <small>[Compare with 2.5.3](https://gitlab.com/ikus-soft/rdiffweb/compare/2.5.3...2.5.4)</small>
 
@@ -1404,15 +1191,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix graphs loading ([fffa013](https://gitlab.com/ikus-soft/rdiffweb/commit/fffa013fc7bfbae698547e66659236a672c1644c) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-graph' into 'master' ([4e4b4cd](https://gitlab.com/ikus-soft/rdiffweb/commit/4e4b4cd70001f2dc1c08c8e7bdaac0a9b8bf6ac0) by Patrik Dufresne).
-- Merge branch 'patrik-branding' into 'master' ([0f07279](https://gitlab.com/ikus-soft/rdiffweb/commit/0f07279e64f6969afe17776a7fc94ca37ad91643) by Patrik Dufresne).
-- Merge branch 'patrik-csrf-logout' into 'master' ([7c328ec](https://gitlab.com/ikus-soft/rdiffweb/commit/7c328ec9083f70232c0ff5d830cf6204b9b4299e) by Patrik Dufresne).
-- Merge branch 'patrik-release-note' into 'master' ([4392987](https://gitlab.com/ikus-soft/rdiffweb/commit/43929875248842ee35cb039f257bef84ef5b67b1) by Patrik Dufresne).
-- Merge branch 'patrik-fix-chartkick' into 'master' ([31876df](https://gitlab.com/ikus-soft/rdiffweb/commit/31876dfee583d333af5119c46e971c9789f1103d) by Patrik Dufresne).
-- Merge branch 'patrik-discard-X-Forwarded-Host' into 'master' ([b1f509b](https://gitlab.com/ikus-soft/rdiffweb/commit/b1f509be9e28bfaca7c28c1553c62e5cf8f3b90d) by Patrik Dufresne).
-
 ### Misc
 
 - Improve custom branding configuration ([ee3e351](https://gitlab.com/ikus-soft/rdiffweb/commit/ee3e3512a9b50bd3902b17ff145896ec27f5a6fe) by Patrik Dufresne).
@@ -1420,7 +1198,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Create symbolic link for chartkick on Ubuntu Jammy ([6bedf38](https://gitlab.com/ikus-soft/rdiffweb/commit/6bedf3874587470983a063324d9594fe431e4e95) by Patrik Dufresne).
 - Discard `X-Forwarded-Host` headers ([5f86167](https://gitlab.com/ikus-soft/rdiffweb/commit/5f861670ef8f38ca8eea52a98672d0e0fabb5368) by Patrik Dufresne).
 
-## [2.5.3](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.3) - 2022-12-05
+## Rdiffweb [2.5.3](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.3) - 2022-12-05
 
 <small>[Compare with 2.5.2](https://gitlab.com/ikus-soft/rdiffweb/compare/2.5.2...2.5.3)</small>
 
@@ -1428,29 +1206,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix strange behavior in access token management #247 ([2fe0094](https://gitlab.com/ikus-soft/rdiffweb/commit/2fe0094509e1255a88e9d4368728ae1854221e1f) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-update-config' into 'master' ([8e1a479](https://gitlab.com/ikus-soft/rdiffweb/commit/8e1a4790c09ca4dfed24825efe47f6825f4b0a4f) by Patrik Dufresne).
-- Merge branch 'patrik-duplicate-ssh-key' into 'master' ([43b8a9b](https://gitlab.com/ikus-soft/rdiffweb/commit/43b8a9ba89331d51c55f16a7b1266dc3c8c4dc01) by Patrik Dufresne).
-- Merge branch 'patrik-fix-revoke-access-token' into 'master' ([0c7a0e3](https://gitlab.com/ikus-soft/rdiffweb/commit/0c7a0e3b7fb2c89573277f9808b22fe5a480f2f0) by Patrik Dufresne).
-- Merge branch 'patrik-bookworm' into 'master' ([08bb961](https://gitlab.com/ikus-soft/rdiffweb/commit/08bb96199161a24711029c1fdd602db3dbe20510) by Patrik Dufresne).
-
 ### Misc
 
 - Improve handling of duplicate ssh keys added via api #248 ([8f9e1b3](https://gitlab.com/ikus-soft/rdiffweb/commit/8f9e1b353d121fc42fe459afb77959b589fe968e) by Patrik Dufresne).
 - Update dependencies for Debian Bookworm ([86732db](https://gitlab.com/ikus-soft/rdiffweb/commit/86732dbb87a49ad2889718b48e1d989ea515a7aa) by Patrik Dufresne).
 - Update configuration page ([c33ab14](https://gitlab.com/ikus-soft/rdiffweb/commit/c33ab14d7fedbc26134bb5f2ea6909dd9c036811) by Patrik Dufresne).
 
-## [2.5.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.2) - 2022-11-28
+## Rdiffweb [2.5.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.2) - 2022-11-28
 
 <small>[Compare with 2.5.1](https://gitlab.com/ikus-soft/rdiffweb/compare/2.5.1...2.5.2)</small>
-
-### Merged
-
-- Merge branch 'patrik-release' into 'master' ([4383fad](https://gitlab.com/ikus-soft/rdiffweb/commit/4383fad9325d3a32b7550293289870491fb4f4a4) by Patrik Dufresne).
-- Merge branch 'patrik-invalidate-cache' into 'master' ([9af577f](https://gitlab.com/ikus-soft/rdiffweb/commit/9af577f88eff4a551b45aa8da3c9bdceb14612ec) by Patrik Dufresne).
-- Merge branch 'patrik-admin-password-reset' into 'master' ([112d517](https://gitlab.com/ikus-soft/rdiffweb/commit/112d5170ac1d3a7e758d1f22bb42004143d9d482) by Patrik Dufresne).
-- Merge branch 'patrik-fix-empty-user-root' into 'master' ([25e325f](https://gitlab.com/ikus-soft/rdiffweb/commit/25e325f88650d924ea1e88799f07d46d34a5f4d8) by Patrik Dufresne).
 
 ### Misc
 
@@ -1461,7 +1225,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Replace admin password only when `--admin-password` option is provided ([56b374a](https://gitlab.com/ikus-soft/rdiffweb/commit/56b374ac89a6cd4f7b04f1cfdf5bc4732d0eb7fb) by Patrik Dufresne).
 - Block repository access when user_root directory is empty or a relative path ([b2df367](https://gitlab.com/ikus-soft/rdiffweb/commit/b2df3679564d0daa2856213bb307d3e34bd89a25) by Patrik Dufresne).
 
-## [2.5.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.1) - 2022-11-16
+## Rdiffweb [2.5.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.1) - 2022-11-16
 
 <small>[Compare with 2.5.0](https://gitlab.com/ikus-soft/rdiffweb/compare/2.5.0...2.5.1)</small>
 
@@ -1469,20 +1233,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Add support for Ubuntu Kinetic #240 ([a762f47](https://gitlab.com/ikus-soft/rdiffweb/commit/a762f47138c60c6228e2062d4edc664a590e2974) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-release-lock-on-restore' into 'master' ([979ab34](https://gitlab.com/ikus-soft/rdiffweb/commit/979ab34bdb37b644a7d742323e3249f5db463354) by Patrik Dufresne).
-- Merge branch 'patrik-filesize-for-deleted-files' into 'master' ([6013d6f](https://gitlab.com/ikus-soft/rdiffweb/commit/6013d6f053399ccb5730396bb08967cf1282c873) by Patrik Dufresne).
-- Merge branch 'patrik-ru-translation' into 'master' ([68d86a9](https://gitlab.com/ikus-soft/rdiffweb/commit/68d86a993bf3a62cb69dd3c07ce0211e49722e69) by Patrik Dufresne).
-- Merge branch 'patrik-ubuntu-kinetic' into 'master' ([519ffd9](https://gitlab.com/ikus-soft/rdiffweb/commit/519ffd9b980416e9e974967c044a354a69839f5a) by Patrik Dufresne).
-
 ### Misc
 
 - Update Russian translation file ([e91bfe8](https://gitlab.com/ikus-soft/rdiffweb/commit/e91bfe85be6e887a5d9caf82e6480de552078312) by Patrik Dufresne).
 - Release session lock on restore ([ba9aacd](https://gitlab.com/ikus-soft/rdiffweb/commit/ba9aacdb9b3f9b2acba2f2e1db17f4e3e6002b3e) by Patrik Dufresne).
 - Disable filesize for deleted files to improve page loading #241 ([329362e](https://gitlab.com/ikus-soft/rdiffweb/commit/329362e2163d85c73f3e54d6325c721a6c73ecda) by Patrik Dufresne).
 
-## [2.5.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.0) - 2022-11-09
+## Rdiffweb [2.5.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.0) - 2022-11-09
 
 <small>[Compare with 2.4.5](https://gitlab.com/ikus-soft/rdiffweb/compare/2.4.5...2.5.0)</small>
 
@@ -1512,52 +1269,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Removed
 
 - Remove reference to deprecated distutils #208 ([aea43cb](https://gitlab.com/ikus-soft/rdiffweb/commit/aea43cbf0170b0d87e37642b26afdaf1bc8c77c2) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-update-french-translation' into 'master' ([44a2b07](https://gitlab.com/ikus-soft/rdiffweb/commit/44a2b075c21fe0858a2087c2e19175738622e13d) by Patrik Dufresne).
-- Merge branch 'patrik-adjust' into 'master' ([cc29583](https://gitlab.com/ikus-soft/rdiffweb/commit/cc29583e301efdebf57d1fd6fbdc1e2d2ddd59c3) by Patrik Dufresne).
-- Merge branch 'patrik-password-reset' into 'master' ([e1d9e7e](https://gitlab.com/ikus-soft/rdiffweb/commit/e1d9e7e4b27e4cb7f31ad2459b5cb6a8324feda7) by Patrik Dufresne).
-- Merge branch 'patrik-pipeline' into 'master' ([0757fda](https://gitlab.com/ikus-soft/rdiffweb/commit/0757fda8fe064e36c63c868e1a3e31f754806261) by Patrik Dufresne).
-- Merge branch 'patrik-plugin-ordering' into 'master' ([57eabe7](https://gitlab.com/ikus-soft/rdiffweb/commit/57eabe7f8f1f98915feaddfa1d9629bf7f561b54) by Patrik Dufresne).
-- Merge branch 'patrik-test-sql-upgrade' into 'master' ([3dabbcc](https://gitlab.com/ikus-soft/rdiffweb/commit/3dabbcc2183fe5a079e1faaf8cff0c3b264aa7d6) by Patrik Dufresne).
-- Merge branch 'patrik-password-hash' into 'master' ([159335f](https://gitlab.com/ikus-soft/rdiffweb/commit/159335f87ae8c5ea14bb7d1dfd11a037143b95a4) by Patrik Dufresne).
-- Merge branch 'patrik-mfa-notification' into 'master' ([de23b1c](https://gitlab.com/ikus-soft/rdiffweb/commit/de23b1c2ea51e2b1f05356b91b3ff0e80a4c3949) by Patrik Dufresne).
-- Merge branch 'patrik-limit-session' into 'master' ([7287297](https://gitlab.com/ikus-soft/rdiffweb/commit/72872975fccf1676f09d231eabf13ab739eaa36b) by Patrik Dufresne).
-- Merge branch 'patrik-badge' into 'master' ([fa4fd9d](https://gitlab.com/ikus-soft/rdiffweb/commit/fa4fd9daa651320d1aa0bc3aae57a1cea4126efa) by Patrik Dufresne).
-- Merge branch 'patrik-validate-origin' into 'master' ([7b32404](https://gitlab.com/ikus-soft/rdiffweb/commit/7b3240425543fd5c859bb7472a614b73525a90cc) by Patrik Dufresne).
-- Merge branch 'patrik-improve-ratelimit' into 'master' ([8becdaf](https://gitlab.com/ikus-soft/rdiffweb/commit/8becdaf734b11dc277f7b41151c00f12851085f5) by Patrik Dufresne).
-- Merge branch 'patrik-new-old-password' into 'master' ([d49a255](https://gitlab.com/ikus-soft/rdiffweb/commit/d49a25513995b76d2a08b41199954404e686a01a) by Patrik Dufresne).
-- Merge branch 'patrik-support-case-insensitive-column-name' into 'master' ([a5d0bca](https://gitlab.com/ikus-soft/rdiffweb/commit/a5d0bca218bd83c2e131767c061b0872969e9d23) by Patrik Dufresne).
-- Merge branch 'patrik-fix-path-traversal' into 'master' ([3af8497](https://gitlab.com/ikus-soft/rdiffweb/commit/3af84978ef8b5d880604b6ae5cc6bf29c5567136) by Patrik Dufresne).
-- Merge branch 'patrik-stable-test-packages' into 'master' ([7bdb1d6](https://gitlab.com/ikus-soft/rdiffweb/commit/7bdb1d6cf844dd9397ccb5b55fbc1216de8ec2f3) by Patrik Dufresne).
-- Merge branch 'patrik-rate-limit-password-change' into 'master' ([9d18c38](https://gitlab.com/ikus-soft/rdiffweb/commit/9d18c38957434eb417b49022cbd5db9814897694) by Patrik Dufresne).
-- Merge branch 'patrik-validate-fullname' into 'master' ([a92b4fa](https://gitlab.com/ikus-soft/rdiffweb/commit/a92b4fa441d50aee48ad257a0cad1e2aac77cb26) by Patrik Dufresne).
-- Merge branch 'patrik-rdiff-backup-beta' into 'master' ([fc5bfa3](https://gitlab.com/ikus-soft/rdiffweb/commit/fc5bfa3be5fdd8951e3ecdd71ee0e39f837842d0) by Patrik Dufresne).
-- Merge branch 'patrik-fix-permissions' into 'master' ([34f7007](https://gitlab.com/ikus-soft/rdiffweb/commit/34f7007ea0c10213d339097504a97acbfa338b2a) by Patrik Dufresne).
-- Merge branch 'patrik-remove-older-session' into 'master' ([ac30bdb](https://gitlab.com/ikus-soft/rdiffweb/commit/ac30bdbdd6f22859d9fe89370d1d58df43c8ebf4) by Patrik Dufresne).
-- Merge branch 'patrik-csrf-notification' into 'master' ([ba300f7](https://gitlab.com/ikus-soft/rdiffweb/commit/ba300f7de87ed78f7ca757ecb62622a0044e5034) by Patrik Dufresne).
-- Merge commit '422791ea45713aaaa865bdca74addb9fffd93a71' ([87677b8](https://gitlab.com/ikus-soft/rdiffweb/commit/87677b87b6d0d9c9c04d2f700c98e1beab859371) by Patrik Dufresne).
-- Merge commit '28258e5dd85e7c417918ed3bf481e19ed5eff91f' ([7030c18](https://gitlab.com/ikus-soft/rdiffweb/commit/7030c1886a9d1c3d04f603b2918d0ef861a42148) by Patrik Dufresne).
-- Merge branch 'patrik-mfa' into 'master' ([7717a78](https://gitlab.com/ikus-soft/rdiffweb/commit/7717a78a464b85b0f9b30ee5606d23a241f81a34) by Patrik Dufresne).
-- Merge commit '9125f5a2d918fed0f3fc1c86fa94cd1779ed9f73' ([4d1232c](https://gitlab.com/ikus-soft/rdiffweb/commit/4d1232cd0586eb79d1a921969f8f7a198a00d92b) by Patrik Dufresne).
-- Merge commit '73a369a3f7ec7958106d395eb65dd511fca0d9c7' ([7e6918c](https://gitlab.com/ikus-soft/rdiffweb/commit/7e6918cd5203fa07779734202240d683bc79d8fa) by Patrik Dufresne).
-- Merge branch 'patrik-clickjacking-defence' into 'master' ([45141ea](https://gitlab.com/ikus-soft/rdiffweb/commit/45141eaabd9b23eaf3e95ff51857d05b46aff95a) by Patrik Dufresne).
-- Merge branch 'patrik-add-minarca-user-agent' into 'master' ([311f693](https://gitlab.com/ikus-soft/rdiffweb/commit/311f6932d63094cd036bc81df798102d1a3236ef) by Patrik Dufresne).
-- Merge branch 'patrik-remove-distutils' into 'master' ([35d000f](https://gitlab.com/ikus-soft/rdiffweb/commit/35d000f0a25358c58b7ffda62b165d6ac5afb811) by Patrik Dufresne).
-- Merge branch 'patrik-fix-db-migration' into 'master' ([ef6c368](https://gitlab.com/ikus-soft/rdiffweb/commit/ef6c368b0302689a9934c8b1bcbe515852873c34) by Patrik Dufresne).
-- Merge branch 'patrik-active-session' into 'master' ([ab2ad9a](https://gitlab.com/ikus-soft/rdiffweb/commit/ab2ad9a905efc7313fb0193373c21210275b6160) by Patrik Dufresne).
-- Merge branch 'patrik-fix-proxy' into 'master' ([5c4726e](https://gitlab.com/ikus-soft/rdiffweb/commit/5c4726e8c5256cdcf9c201dd43f4ea8d3578e4a8) by Patrik Dufresne).
-- Merge branch 'patrik-session-clean-up' into 'master' ([184bd6a](https://gitlab.com/ikus-soft/rdiffweb/commit/184bd6aeabc1f7385f401e6e4fc032098fd81e97) by Patrik Dufresne).
-- Merge branch 'patrik-datatables' into 'master' ([ecdf6cd](https://gitlab.com/ikus-soft/rdiffweb/commit/ecdf6cd3595ac17a6fbcd9b64242f270a602f552) by Patrik Dufresne).
-- Merge branch 'patrik-adjust-events' into 'master' ([6d5090d](https://gitlab.com/ikus-soft/rdiffweb/commit/6d5090d22e3336c55a2dc62a514739c5547ecbe2) by Patrik Dufresne).
-- Merge branch 'patrik-drop-eof-ubuntu' into 'master' ([a88e6af](https://gitlab.com/ikus-soft/rdiffweb/commit/a88e6af53693e4df76a184dbb0b00eba01199421) by Patrik Dufresne).
-- Merge branch 'patrik-bootstrap-v4' into 'master' ([bf3acaf](https://gitlab.com/ikus-soft/rdiffweb/commit/bf3acaf6de0fb89d36214ec268ccf8330b78c767) by Patrik Dufresne).
-- Merge branch 'patrik-fix-database-upgrade' into 'master' ([17b8157](https://gitlab.com/ikus-soft/rdiffweb/commit/17b8157f65672e0aaebfd3ec2fe6be4dd80df31f) by Patrik Dufresne).
-- Merge branch 'patrik-ubuntu-jammy' into 'master' ([7f0d63f](https://gitlab.com/ikus-soft/rdiffweb/commit/7f0d63f0a5fd9297a4f9d2c646254bdf748278d8) by Patrik Dufresne).
-- Merge branch 'patrik-remove-older-test' into 'master' ([cde5b9e](https://gitlab.com/ikus-soft/rdiffweb/commit/cde5b9eef3eae64fa80b6dc27b4492f4e3feefc2) by Patrik Dufresne).
-- Merge branch 'patrik-refactor-sqlalchemy' into 'master' ([06230b0](https://gitlab.com/ikus-soft/rdiffweb/commit/06230b0af2607551c678d4b3addec4de696b9602) by Patrik Dufresne).
-- Merge branch 'patrik-edit-release-date' into 'master' ([d10b485](https://gitlab.com/ikus-soft/rdiffweb/commit/d10b4853175be9db24f5aa20180744ad3c4c8393) by Patrik Dufresne).
 
 ### Misc
 
@@ -1616,49 +1327,33 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Reffactor to use SQLAlchemy ORM ([2333433](https://gitlab.com/ikus-soft/rdiffweb/commit/23334330328eda53e71a7a41758f7339aa3ee79b) by Patrik Dufresne).
 - Update LDAP plugins ([e51972d](https://gitlab.com/ikus-soft/rdiffweb/commit/e51972ddca6d078a6b47acf1fbdb38412576c21f) by Patrik Dufresne).
 
-## [4.2.5](https://gitlab.com/ikus-soft/rdiffweb/tags/4.2.5) - 2022-10-03
+## Minarca-server [4.2.5](https://gitlab.com/ikus-soft/rdiffweb/tags/4.2.5) - 2022-10-03
 
 <small>[Compare with 4.2.4](https://gitlab.com/ikus-soft/rdiffweb/compare/4.2.4...4.2.5)</small>
-
-### Merged
-
-- Merge branch 'patrik-upgrade-2.4.10' into 'master' ([7917d53](https://gitlab.com/ikus-soft/rdiffweb/commit/7917d53c92ebfd1b0eda4b3aa97e13b0583d7eeb) by Patrik Dufresne).
 
 ### Misc
 
 - Upgrade rdiffweb to 2.4.10 ([6956c6f](https://gitlab.com/ikus-soft/rdiffweb/commit/6956c6f21cee773efe4c8b8ee06edcacbbb8ec95) by Patrik Dufresne).
 
-## [4.2.4](https://gitlab.com/ikus-soft/rdiffweb/tags/4.2.4) - 2022-09-29
+## Minarca-server [4.2.4](https://gitlab.com/ikus-soft/rdiffweb/tags/4.2.4) - 2022-09-29
 
 <small>[Compare with 4.2.3](https://gitlab.com/ikus-soft/rdiffweb/compare/4.2.3...4.2.4)</small>
-
-### Merged
-
-- Merge branch 'patrik-upgrade-2.4.9' into 'master' ([cdece54](https://gitlab.com/ikus-soft/rdiffweb/commit/cdece54d5f5cae1f01ad7a16265aeb93f51b8956) by Patrik Dufresne).
 
 ### Misc
 
 - Upgrade rdiffweb to 2.4.9 ([4fde7cb](https://gitlab.com/ikus-soft/rdiffweb/commit/4fde7cbc5c71c7f8ce5fb2766d4462f7ea78d78b) by Patrik Dufresne).
 
-## [4.2.3](https://gitlab.com/ikus-soft/rdiffweb/tags/4.2.3) - 2022-09-26
+## Minarca-server [4.2.3](https://gitlab.com/ikus-soft/rdiffweb/tags/4.2.3) - 2022-09-26
 
 <small>[Compare with 4.2.2](https://gitlab.com/ikus-soft/rdiffweb/compare/4.2.2...4.2.3)</small>
-
-### Merged
-
-- Merge branch 'patrik-upgrade-2.4.8' into 'master' ([5934756](https://gitlab.com/ikus-soft/rdiffweb/commit/59347568a195d99d8de09a80d705704cc455916a) by Patrik Dufresne).
 
 ### Misc
 
 - Upgrade rdiffweb to 2.4.8 to fix vulnerabilities ([3260618](https://gitlab.com/ikus-soft/rdiffweb/commit/3260618259839643023a4cfa2defd752cb5d982d) by Patrik Dufresne).
 
-## [4.2.2](https://gitlab.com/ikus-soft/rdiffweb/tags/4.2.2) - 2022-09-18
+## Minarca-server [4.2.2](https://gitlab.com/ikus-soft/rdiffweb/tags/4.2.2) - 2022-09-18
 
 <small>[Compare with 4.2.1](https://gitlab.com/ikus-soft/rdiffweb/compare/4.2.1...4.2.2)</small>
-
-### Merged
-
-- Merge branch 'patrik-tidy-up' into 'master' ([1e114b8](https://gitlab.com/ikus-soft/rdiffweb/commit/1e114b8875b9a0009ca1e86d5006e28cf46f9209) by Patrik Dufresne).
 
 ### Misc
 
@@ -1666,7 +1361,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Test minarca-server Debian package ([ddd1e95](https://gitlab.com/ikus-soft/rdiffweb/commit/ddd1e954c17546463bdb76cacb9a4772c76bac3a) by Patrik Dufresne).
 - Update Minarca Logo ([857dfe4](https://gitlab.com/ikus-soft/rdiffweb/commit/857dfe4e897fbe195f4f42ab627f45bb7ee3e9a4) by Patrik Dufresne).
 
-## [2.4.5](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.5) - 2022-09-16
+## Rdiffweb [2.4.5](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.5) - 2022-09-16
 
 <small>[Compare with 2.4.4](https://gitlab.com/ikus-soft/rdiffweb/compare/2.4.4...2.4.5)</small>
 
@@ -1674,7 +1369,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Mitigate CSRF on repository deletion and user deletion #214 #215 ([422791e](https://gitlab.com/ikus-soft/rdiffweb/commit/422791ea45713aaaa865bdca74addb9fffd93a71) by Patrik Dufresne).
 
-## [2.4.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.4) - 2022-09-15
+## Rdiffweb [2.4.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.4) - 2022-09-15
 
 <small>[Compare with 2.4.3](https://gitlab.com/ikus-soft/rdiffweb/compare/2.4.3...2.4.4)</small>
 
@@ -1682,7 +1377,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Use X-Real-IP to identify clients #213 ([28258e5](https://gitlab.com/ikus-soft/rdiffweb/commit/28258e5dd85e7c417918ed3bf481e19ed5eff91f) by Patrik Dufresne).
 
-## [2.4.3](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.3) - 2022-09-14
+## Rdiffweb [2.4.3](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.3) - 2022-09-14
 
 <small>[Compare with 2.4.2](https://gitlab.com/ikus-soft/rdiffweb/compare/2.4.2...2.4.3)</small>
 
@@ -1690,7 +1385,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Mitigate CSRF in profile's SSH Keys #212 ([9125f5a](https://gitlab.com/ikus-soft/rdiffweb/commit/9125f5a2d918fed0f3fc1c86fa94cd1779ed9f73) by Patrik Dufresne).
 
-## [2.4.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.2) - 2022-09-12
+## Rdiffweb [2.4.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.2) - 2022-09-12
 
 <small>[Compare with 2.4.1](https://gitlab.com/ikus-soft/rdiffweb/compare/2.4.1...2.4.2)</small>
 
@@ -1701,7 +1396,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Avoid leakage of the stack trace in the default error page #210 ([e7828ca](https://gitlab.com/ikus-soft/rdiffweb/commit/e7828ca959a03582691679456a90b16903f98afe) by Patrik Dufresne).
 - Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session #209 ([f2de237](https://gitlab.com/ikus-soft/rdiffweb/commit/f2de2371c5e13ce1c6fd6f9a1ed3e5d46b93cd7e) by Patrik Dufresne).
 
-## [2.4.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.1) - 2022-09-08
+## Rdiffweb [2.4.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.1) - 2022-09-08
 
 <small>[Compare with 2.4.0](https://gitlab.com/ikus-soft/rdiffweb/compare/2.4.0...2.4.1)</small>
 
@@ -1715,19 +1410,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Drop Ubuntu hirsute & Impish ([0295c1c](https://gitlab.com/ikus-soft/rdiffweb/commit/0295c1c46600f5ccccfa48b83df726e4461ee70a) by Patrik Dufresne).
 - Update 2.4.0 release date ([3c497da](https://gitlab.com/ikus-soft/rdiffweb/commit/3c497da4a8dcfc5ce967a8172b8da081b6e098fc) by Patrik Dufresne).
 
-## [4.2.1](https://gitlab.com/ikus-soft/rdiffweb/tags/4.2.1) - 2022-07-15
+## Minarca-server [4.2.1](https://gitlab.com/ikus-soft/rdiffweb/tags/4.2.1) - 2022-07-15
 
 <small>[Compare with 4.2.0](https://gitlab.com/ikus-soft/rdiffweb/compare/4.2.0...4.2.1)</small>
-
-### Merged
-
-- Merge branch 'patrik-fix-librsync-upgrade' into 'master' ([f4b810f](https://gitlab.com/ikus-soft/rdiffweb/commit/f4b810f911673b5a68f9ffcf30e006770e8b4e6a) by Patrik Dufresne).
 
 ### Misc
 
 - Adjust `librsync` dependencies for release upgrade ([7fc487f](https://gitlab.com/ikus-soft/rdiffweb/commit/7fc487fe8755c033080ab425218e94310fed1f6d) by Patrik Dufresne).
 
-## [4.2.0](https://gitlab.com/ikus-soft/rdiffweb/tags/4.2.0) - 2022-06-23
+## Minarca-server [4.2.0](https://gitlab.com/ikus-soft/rdiffweb/tags/4.2.0) - 2022-06-23
 
 <small>[Compare with 4.1.1](https://gitlab.com/ikus-soft/rdiffweb/compare/4.1.1...4.2.0)</small>
 
@@ -1738,13 +1429,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Fix to support various version of setuptools-scm ([2393a8b](https://gitlab.com/ikus-soft/rdiffweb/commit/2393a8bc578286829fe130d80c5a6c7327d443da) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-bump-rdiffweb' into 'master' ([6111417](https://gitlab.com/ikus-soft/rdiffweb/commit/6111417725405e4982a41c1ca9d8262e52082a01) by Patrik Dufresne).
-- Merge branch 'patrik-doc-theme' into 'master' ([24bd3a9](https://gitlab.com/ikus-soft/rdiffweb/commit/24bd3a97fa71532f81046ccf917078e1b23ff7e9) by Patrik Dufresne).
-- Merge branch 'patrik-black-isort' into 'master' ([df8c4f3](https://gitlab.com/ikus-soft/rdiffweb/commit/df8c4f3c088976dc4d6a425d7898c1b477784319) by Patrik Dufresne).
-- Merge branch 'patrik-upgrade-rdiffweb' into 'master' ([0eb304f](https://gitlab.com/ikus-soft/rdiffweb/commit/0eb304ff6285b5afa7d66e85b675cdf44becc795) by Patrik Dufresne).
 
 ### Misc
 
@@ -1757,7 +1441,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Upgrade rdiffweb version to 2.4.0 ([c7b1fc2](https://gitlab.com/ikus-soft/rdiffweb/commit/c7b1fc2ce5dda190b753c6165ce2759aa3364d82) by Patrik Dufresne).
 - Bump rdiffweb to v2.4.0a1 ([461e92a](https://gitlab.com/ikus-soft/rdiffweb/commit/461e92af9b4f187e39ec06c6aaf4034972f1a9fa) by IKUS Soft robot).
 
-## [2.4.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.0) - 2022-06-16
+## Rdiffweb [2.4.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.0) - 2022-06-16
 
 <small>[Compare with 2.3.9](https://gitlab.com/ikus-soft/rdiffweb/compare/2.3.9...2.4.0)</small>
 
@@ -1776,34 +1460,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix status page #191 ([c07cc40](https://gitlab.com/ikus-soft/rdiffweb/commit/c07cc40de384f957e4519eee215b7d2ed81ab13d) by Patrik Dufresne).
 - Fix ratelimit #167 ([45613c3](https://gitlab.com/ikus-soft/rdiffweb/commit/45613c36da66ae56ba28853956090fcca0639375) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-http-only-cookie' into 'master' ([a193814](https://gitlab.com/ikus-soft/rdiffweb/commit/a1938147896e0421c86388e62171489219c6dc96) by Patrik Dufresne).
-- Merge branch 'patrik-update-google-tag' into 'master' ([8a6bd45](https://gitlab.com/ikus-soft/rdiffweb/commit/8a6bd453e4218076b4f0477bfac5e1f96a41c6ec) by Patrik Dufresne).
-- Merge branch 'patrik-use-compatible-timestamps' into 'master' ([00c05c5](https://gitlab.com/ikus-soft/rdiffweb/commit/00c05c53f8cdf5ad7e15514fcc9930bf2b83403d) by Patrik Dufresne).
-- Merge branch 'patrik-browse-empty-folder' into 'master' ([03176ef](https://gitlab.com/ikus-soft/rdiffweb/commit/03176ef385bae02d0d30fcff7f2c6e55b2acdcc1) by Patrik Dufresne).
-- Merge branch 'patrik-docker-hub' into 'master' ([5672198](https://gitlab.com/ikus-soft/rdiffweb/commit/56721985ab6c5b8abd76e74b1f5c317e27018cb4) by Patrik Dufresne).
-- Merge branch 'patrik-final-fix' into 'master' ([0ee54ee](https://gitlab.com/ikus-soft/rdiffweb/commit/0ee54eeb7f723e385a6be110bfc42fedbbba4fbc) by Patrik Dufresne).
-- Merge branch 'patrik-rdiff-index' into 'master' ([c7c5ade](https://gitlab.com/ikus-soft/rdiffweb/commit/c7c5adee00f94f2cacde65f375fee064fc43d837) by Patrik Dufresne).
-- Merge branch 'patrik-update-smtp-plugin' into 'master' ([45bafc5](https://gitlab.com/ikus-soft/rdiffweb/commit/45bafc53765db00c5dcfe4e57dda6148577d304e) by Patrik Dufresne).
-- Merge branch 'patrik-fix-status' into 'master' ([66df770](https://gitlab.com/ikus-soft/rdiffweb/commit/66df770f069fb9d17af7adcdb375d156c4308737) by Patrik Dufresne).
-- Merge branch 'patrik-refresh-repo' into 'master' ([f3e49c2](https://gitlab.com/ikus-soft/rdiffweb/commit/f3e49c25ee7caa5d79b5d99cad2e81ab265d0d0b) by Patrik Dufresne).
-- Merge branch 'patrik-run-test-debian' into 'master' ([5aa9049](https://gitlab.com/ikus-soft/rdiffweb/commit/5aa904903f08046adcca52370dd548a211615c68) by Patrik Dufresne).
-- Merge branch 'patrik-update-minarca' into 'master' ([6d5f197](https://gitlab.com/ikus-soft/rdiffweb/commit/6d5f197e95a94788f982196cae6575d321743c9f) by Patrik Dufresne).
-- Merge branch 'patrik-add-tooling' into 'master' ([b7f9343](https://gitlab.com/ikus-soft/rdiffweb/commit/b7f93433be5141241891df43707fcfd5d5d234f8) by Patrik Dufresne).
-- Merge branch 'patrik-chartkick-jinja3' into 'master' ([9dfe9b6](https://gitlab.com/ikus-soft/rdiffweb/commit/9dfe9b62737017373646969fd2f4f33505dd500b) by Patrik Dufresne).
-- Merge branch 'patrik-update-ldap-plugins' into 'master' ([a2b3f6e](https://gitlab.com/ikus-soft/rdiffweb/commit/a2b3f6e9375bd9ac00209c7c699b747dd6bf5dbe) by Patrik Dufresne).
-- Merge branch 'patrik-ubuntu-impish' into 'master' ([780ebe8](https://gitlab.com/ikus-soft/rdiffweb/commit/780ebe8aae9d632268d945fc2e1bdda6bfb41a71) by Patrik Dufresne).
-- Merge branch 'patrik-replace-user-quota-pub-sub' into 'master' ([3837069](https://gitlab.com/ikus-soft/rdiffweb/commit/3837069ae8b592cc51b2e3b9121e3113cada07d1) by Patrik Dufresne).
-- Merge branch 'patrik-reffactoring' into 'master' ([16a8e66](https://gitlab.com/ikus-soft/rdiffweb/commit/16a8e6610b12008cabf92d82d63b7ecdf9dac065) by Patrik Dufresne).
-- Merge branch 'patrik-ratelimit' into 'master' ([41fcb86](https://gitlab.com/ikus-soft/rdiffweb/commit/41fcb860cc579657ec122601141b4174a3ca86a5) by Patrik Dufresne).
-- Merge branch 'patrik-fix-markupsafe' into 'master' ([db8528a](https://gitlab.com/ikus-soft/rdiffweb/commit/db8528afe548a97b0a7b057d170de2462cf76d12) by Patrik Dufresne).
-- Merge branch 'patrik-rate-limit' into 'master' ([580902b](https://gitlab.com/ikus-soft/rdiffweb/commit/580902befef3b29c20db0c2f7b5ce135cc47e621) by Patrik Dufresne).
-- Merge branch 'patrik-close-pipe' into 'master' ([0f395df](https://gitlab.com/ikus-soft/rdiffweb/commit/0f395dfef9f1441c211e93fea7c4bf5b743a6658) by Patrik Dufresne).
-- Merge branch 'patrik-rdiff-backup-version' into 'master' ([dab5a76](https://gitlab.com/ikus-soft/rdiffweb/commit/dab5a764355a3e4f5f3bf2f752a87dad33941321) by Patrik Dufresne).
-- Merge branch 'patrik-drop-centos-8' into 'master' ([ddfb11f](https://gitlab.com/ikus-soft/rdiffweb/commit/ddfb11f26217acd2e47aa266a9483f65af45222b) by Patrik Dufresne).
-- Merge branch 'patrik-validate-email-sender' into 'master' ([0356248](https://gitlab.com/ikus-soft/rdiffweb/commit/035624870ad8c59eec6493e0fd6a35b003d87cfe) by Patrik Dufresne).
 
 ### Misc
 
@@ -1834,19 +1490,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Properly close rdiffweb-restore pipe #174 ([4742d02](https://gitlab.com/ikus-soft/rdiffweb/commit/4742d02288e0d569926e2e4748c5b4c3a5571c23) by Patrik Dufresne).
 - Validate email-sender before sending emails #176 ([7a164ad](https://gitlab.com/ikus-soft/rdiffweb/commit/7a164ade4bf5993cba03df379e6320459d7edfc5) by Patrik Dufresne).
 
-## [4.1.1](https://gitlab.com/ikus-soft/rdiffweb/tags/4.1.1) - 2022-01-18
+## Minarca-server [4.1.1](https://gitlab.com/ikus-soft/rdiffweb/tags/4.1.1) - 2022-01-18
 
 <small>[Compare with 4.1.0](https://gitlab.com/ikus-soft/rdiffweb/compare/4.1.0...4.1.1)</small>
-
-### Merged
-
-- Merge branch 'patrik-fix-apt-repo-creation' into 'master' ([1474226](https://gitlab.com/ikus-soft/rdiffweb/commit/1474226c60000dae7c05562ca465230c47099343) by Patrik Dufresne).
 
 ### Misc
 
 - Improve creation of apt configuration during installation ([65d36fd](https://gitlab.com/ikus-soft/rdiffweb/commit/65d36fd04257b94807e66c17b9d7002f66ab908e) by Patrik Dufresne).
 
-## [4.1.0](https://gitlab.com/ikus-soft/rdiffweb/tags/4.1.0) - 2022-01-05
+## Minarca-server [4.1.0](https://gitlab.com/ikus-soft/rdiffweb/tags/4.1.0) - 2022-01-05
 
 <small>[Compare with 4.0.6](https://gitlab.com/ikus-soft/rdiffweb/compare/4.0.6...4.1.0)</small>
 
@@ -1859,13 +1511,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix to support Rdiffweb v2.3.8 ([c3c2cc4](https://gitlab.com/ikus-soft/rdiffweb/commit/c3c2cc4ebd3194c311989cc1c95e11bfa120bd78) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-rdiffweb-238' into 'master' ([4e80107](https://gitlab.com/ikus-soft/rdiffweb/commit/4e80107211c6c79bbd9c0e626fff781814c36868) by Patrik Dufresne).
-- Merge branch 'patrik-add-arch-to-deb-repo' into 'master' ([42aebdd](https://gitlab.com/ikus-soft/rdiffweb/commit/42aebdd6410ae87d1b74d5213ed2b66bf3e621f3) by Patrik Dufresne).
-- Merge branch 'patrik-add-apt-repo' into 'master' ([6a5b0ad](https://gitlab.com/ikus-soft/rdiffweb/commit/6a5b0ad0a99dc5c2c2e79e47ce32801a6cdc36ac) by Patrik Dufresne).
-- Merge branch 'patrik-sonar' into 'master' ([8f2ef3a](https://gitlab.com/ikus-soft/rdiffweb/commit/8f2ef3ad2877c8826e8d17b26787ba3267f6ed6d) by Patrik Dufresne).
-
 ### Misc
 
 - Bump rdiffweb to v2.3.9 ([1fe5f12](https://gitlab.com/ikus-soft/rdiffweb/commit/1fe5f125b86af0e95024d0276e134201def97ce0) by IKUS Soft robot).
@@ -1875,7 +1520,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bump rdiffweb to v2.3.8 ([8e6c13a](https://gitlab.com/ikus-soft/rdiffweb/commit/8e6c13a4f0a68cd1ab156b74aeba3e422c511fb6) by IKUS Soft robot).
 - Publish sonar repport #166 ([7b593c0](https://gitlab.com/ikus-soft/rdiffweb/commit/7b593c06438fd6e3fa198607bccd57289ea169c8) by Patrik Dufresne).
 
-## [2.3.9](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.9) - 2022-01-05
+## Rdiffweb [2.3.9](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.9) - 2022-01-05
 
 <small>[Compare with 2.3.8](https://gitlab.com/ikus-soft/rdiffweb/compare/2.3.8...2.3.9)</small>
 
@@ -1892,18 +1537,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Remove End-of-life Ubuntu Groovy ([b2ade30](https://gitlab.com/ikus-soft/rdiffweb/commit/b2ade306bce454522e3eacc22129699411296352) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-release-2.3.9' into 'master' ([53e3191](https://gitlab.com/ikus-soft/rdiffweb/commit/53e319169dbdbcf52cdc8bdb4f688ef8b1bec8f0) by Patrik Dufresne).
-- Merge branch 'fix_decode' into 'master' ([b8c1d24](https://gitlab.com/ikus-soft/rdiffweb/commit/b8c1d24e1962b8af57ff8c730f495c72e7bcd3c1) by Patrik Dufresne).
-- Merge branch 'patrik-ubuntu-end-of-life' into 'master' ([adb7ecc](https://gitlab.com/ikus-soft/rdiffweb/commit/adb7ecc0941734803960f6fbd6f942546e9d4e42) by Patrik Dufresne).
-- Merge branch 'patrik-clear-warnings' into 'master' ([8855fbd](https://gitlab.com/ikus-soft/rdiffweb/commit/8855fbd23a2d4d6abd172b2f09382e2f252fa004) by Patrik Dufresne).
-- Merge branch 'patrik-replace-storage-type' into 'master' ([15d8e92](https://gitlab.com/ikus-soft/rdiffweb/commit/15d8e92ef8a7f2f756f5e583c9c614298c5f735f) by Patrik Dufresne).
-- Merge branch 'patrik-handle-null-last-backup-date' into 'master' ([cba2e47](https://gitlab.com/ikus-soft/rdiffweb/commit/cba2e47397de0ed35c7c7684e1dc33ed827ab324) by Patrik Dufresne).
-- Merge branch 'patrik-handle-duplicate-user' into 'master' ([07db1a2](https://gitlab.com/ikus-soft/rdiffweb/commit/07db1a2c8985c24b8e7bf98532cc3065b295fcb1) by Patrik Dufresne).
-- Merge branch 'patrik-fix-symlink-return-code' into 'master' ([aaad9b7](https://gitlab.com/ikus-soft/rdiffweb/commit/aaad9b7aa7aaff3ed71a7e0bfccb2bc8178ebad2) by Patrik Dufresne).
-- Merge branch 'patrik-fix-date-parsing-error' into 'master' ([398f20e](https://gitlab.com/ikus-soft/rdiffweb/commit/398f20e3052207203a5b0aeff5f33216e8f6a9af) by Patrik Dufresne).
-
 ### Misc
 
 - Update release note for v2.3.9 ([44cffe4](https://gitlab.com/ikus-soft/rdiffweb/commit/44cffe43aeb8a230862efc109c039bd7aaad7d31) by Patrik Dufresne).
@@ -1914,23 +1547,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Return an error message for duplicate username #169 ([7410458](https://gitlab.com/ikus-soft/rdiffweb/commit/74104588f3b6bfca7dc58d56ac43ba043b4ffdc4) by Patrik Dufresne).
 - Return 403 error for invalid symlink #168 ([766d1da](https://gitlab.com/ikus-soft/rdiffweb/commit/766d1da446572f2c0f636ccd04e93e13179b3cad) by Patrik Dufresne).
 
-## [2.3.8](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.8) - 2021-12-01
+## Rdiffweb [2.3.8](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.8) - 2021-12-01
 
 <small>[Compare with 2.3.7](https://gitlab.com/ikus-soft/rdiffweb/compare/2.3.7...2.3.8)</small>
 
 ### Fixed
 
 - Fix encoding of LDAP attribute for `ldap-add-user-default-userroot` ([4230497](https://gitlab.com/ikus-soft/rdiffweb/commit/4230497522475a175a59654d11f080c8b7dfe704) by Shane E. Robinson).
-
-### Merged
-
-- Merge branch 'patrik-release-note' into 'master' ([48487fa](https://gitlab.com/ikus-soft/rdiffweb/commit/48487fa2e39ce9f915e66c9a4e11b37c314e462c) by Patrik Dufresne).
-- Merge branch 'patrik-fix-login-tools' into 'master' ([aa6d436](https://gitlab.com/ikus-soft/rdiffweb/commit/aa6d4363d025b8451b78472285c7ce1132df9ecd) by Patrik Dufresne).
-- Merge commit '0864c9ea16027da2766d5856a6af04cc411c0641' into fix_default_userroot_for_ad ([1cc381e](https://gitlab.com/ikus-soft/rdiffweb/commit/1cc381e76b7114806aa33b1b09fb0ae62a27dbba) by Patrik Dufresne).
-- Merge branch 'master' into 'master' ([0864c9e](https://gitlab.com/ikus-soft/rdiffweb/commit/0864c9ea16027da2766d5856a6af04cc411c0641) by Patrik Dufresne).
-- Merge branch 'patrik-nexus' into 'master' ([34455ee](https://gitlab.com/ikus-soft/rdiffweb/commit/34455eeaeb491ff91911294b6bf1c3418586cd11) by Patrik Dufresne).
-- Merge branch 'patrik-fix-chartjs' into 'master' ([3799dd4](https://gitlab.com/ikus-soft/rdiffweb/commit/3799dd42d7067fc949b8320e6c3b821af13e12c0) by Patrik Dufresne).
-- Merge branch 'patrik-archive' into 'master' ([8dfe80b](https://gitlab.com/ikus-soft/rdiffweb/commit/8dfe80b8d0d05ad6d84c1ed710052d126ca523be) by Patrik Dufresne).
 
 ### Misc
 
@@ -1942,13 +1565,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Use Chart.bundle on Debian #164 ([5e60362](https://gitlab.com/ikus-soft/rdiffweb/commit/5e60362ce0bfd4fe2a262b7d8acc829eb5278d85) by Patrik Dufresne).
 - Publish doc to archive.ikus-soft.com ([8815732](https://gitlab.com/ikus-soft/rdiffweb/commit/8815732800a3219b8311d6e571ea24d3649f6c7c) by Patrik Dufresne).
 
-## [4.0.6](https://gitlab.com/ikus-soft/rdiffweb/tags/4.0.6) - 2021-10-21
+## Minarca-server [4.0.6](https://gitlab.com/ikus-soft/rdiffweb/tags/4.0.6) - 2021-10-21
 
 <small>[Compare with 4.0.0](https://gitlab.com/ikus-soft/rdiffweb/compare/4.0.0...4.0.6)</small>
-
-### Merged
-
-- Merge branch 'patrick-doc' into 'master' ([6f76fef](https://gitlab.com/ikus-soft/rdiffweb/commit/6f76fef06027e3fc7053982cd6c93cfe448a72b0) by Patrik Dufresne).
 
 ### Misc
 
@@ -1957,13 +1576,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bump rdiffweb to v2.3.6 ([58adc77](https://gitlab.com/ikus-soft/rdiffweb/commit/58adc77d60650bf78e531c9b22d2036999208351) by IKUS Soft robot).
 - Make call to minarca-server ([375d440](https://gitlab.com/ikus-soft/rdiffweb/commit/375d440855e419e706e02d8f2cea04e7c913ff0a) by Patrik Dufresne).
 
-## [2.3.7](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.7) - 2021-10-21
+## Rdiffweb [2.3.7](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.7) - 2021-10-21
 
 <small>[Compare with 2.3.6](https://gitlab.com/ikus-soft/rdiffweb/compare/2.3.6...2.3.7)</small>
-
-### Merged
-
-- Merge branch 'patrik-fix-deb-version' into 'master' ([3720a4b](https://gitlab.com/ikus-soft/rdiffweb/commit/3720a4b939b7f18296b8d2b31b859d46cd239664) by Patrik Dufresne).
 
 ### Misc
 
@@ -1971,7 +1586,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Skip SameSite=Lax is cookie is not defined ([42455b1](https://gitlab.com/ikus-soft/rdiffweb/commit/42455b19ff973db2728f9289cae3091c39d1f82d) by Patrik Dufresne).
 - Use the right version in Debian package creation ([753533b](https://gitlab.com/ikus-soft/rdiffweb/commit/753533b28da1772db49d419cc426f5228a06166c) by Patrik Dufresne).
 
-## [2.3.6](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.6) - 2021-10-20
+## Rdiffweb [2.3.6](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.6) - 2021-10-20
 
 <small>[Compare with 2.3.4](https://gitlab.com/ikus-soft/rdiffweb/compare/2.3.4...2.3.6)</small>
 
@@ -1988,14 +1603,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Remove obsolete import from i18n ([548bb78](https://gitlab.com/ikus-soft/rdiffweb/commit/548bb78ed48c6010056f090e68678c7e0777a825) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-fix-ubuntu-installation' into 'master' ([d5b43c8](https://gitlab.com/ikus-soft/rdiffweb/commit/d5b43c89e5529b1078d0b8a9fed07eefa86543b7) by Patrik Dufresne).
-- Merge branch 'patrik-csrf-validate-origin' into 'master' ([16bcbd7](https://gitlab.com/ikus-soft/rdiffweb/commit/16bcbd788a37d31921a5c6f7e09a59d95e78dc87) by Patrik Dufresne).
-- Merge branch 'patrik-doc' into 'master' ([1ec8118](https://gitlab.com/ikus-soft/rdiffweb/commit/1ec81187543e027502a5866b8ebc3adf1b72746e) by Patrik Dufresne).
-- Merge branch 'patrik-fix-twine' into 'master' ([4792fa3](https://gitlab.com/ikus-soft/rdiffweb/commit/4792fa3653d5a01e6b7c130a6cf30985341a6183) by Patrik Dufresne).
-- Merge pull request #74 from Fly7113/patch-1 ([4bf55ff](https://gitlab.com/ikus-soft/rdiffweb/commit/4bf55ffebaf8306687c59cc7cf06ec3e48ffe6a4) by Patrik Dufresne).
-
 ### Misc
 
 - Update installation step #162 ([749c9e1](https://gitlab.com/ikus-soft/rdiffweb/commit/749c9e193b6b28ed4df16e9cf694aaa668bb6a49) by Patrik Dufresne).
@@ -2005,7 +1612,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Minor fixes to dvelopement doc ([38a1723](https://gitlab.com/ikus-soft/rdiffweb/commit/38a17234853f8c42c2f294f4a3e0a8c4d86df2d2) by Patrik Dufresne).
 - Update nginx configuration ([9d84294](https://gitlab.com/ikus-soft/rdiffweb/commit/9d8429441050cfe97508fe43b2b9e21f59a287ac) by Lorenzo Moscati).
 
-## [4.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/4.0.0) - 2021-09-20
+## Minarca-server [4.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/4.0.0) - 2021-09-20
 
 <small>[Compare with v3.9.0](https://gitlab.com/ikus-soft/rdiffweb/compare/v3.9.0...4.0.0)</small>
 
@@ -2016,11 +1623,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Removed
 
 - Remove mockldap from testing #155 #156 ([cbde330](https://gitlab.com/ikus-soft/rdiffweb/commit/cbde33045d4ed193f41e203913253be46bd2c8ec) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-favicon' into 'master' ([5b532c1](https://gitlab.com/ikus-soft/rdiffweb/commit/5b532c18139b3e49848b7034459086125a6fcb58) by Patrik Dufresne).
-- Merge branch 'patrik-update-minarca-server-icon' into 'master' ([526b0b3](https://gitlab.com/ikus-soft/rdiffweb/commit/526b0b3ce27bf6cda9db0149a566010912d686c5) by Patrik Dufresne).
 
 ### Misc
 
@@ -2040,16 +1642,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Re-Implement Minarca Client in Python #87 ([911083f](https://gitlab.com/ikus-soft/rdiffweb/commit/911083f3250a94797a990c7524e9dfd9ed2cbd6f) by Patrik Dufresne).
 - Bump Rdiffweb to include chartkick ([2ed3e22](https://gitlab.com/ikus-soft/rdiffweb/commit/2ed3e22d8c6ca3d196e079bfff114a28223640c7) by Patrik Dufresne).
 
-## [2.3.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.4) - 2021-09-20
+## Rdiffweb [2.3.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.4) - 2021-09-20
 
 <small>[Compare with 2.3.3](https://gitlab.com/ikus-soft/rdiffweb/compare/2.3.3...2.3.4)</small>
-
-### Merged
-
-- Merge branch 'patrik-fix-notification' into 'master' ([ba3f6aa](https://gitlab.com/ikus-soft/rdiffweb/commit/ba3f6aa95c422cad497a1f0a8698225ad6320876) by Patrik Dufresne).
-- Merge branch 'patrik-config-print-error' into 'master' ([3bcc6a8](https://gitlab.com/ikus-soft/rdiffweb/commit/3bcc6a8949d564f8e98010d06d7a3d96ab005ea4) by Patrik Dufresne).
-- Merge branch 'patrik-pytest' into 'master' ([67a7ed7](https://gitlab.com/ikus-soft/rdiffweb/commit/67a7ed7e1a01da017deb6c68717e3c758bb3fccc) by Patrik Dufresne).
-- Merge branch 'patrik-fix-email-notification' into 'master' ([0e76471](https://gitlab.com/ikus-soft/rdiffweb/commit/0e76471c26858957a6ee14c7372424d63e6e74d4) by Patrik Dufresne).
 
 ### Misc
 
@@ -2062,7 +1657,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Send email only if email-host is configured #157 ([c583771](https://gitlab.com/ikus-soft/rdiffweb/commit/c58377116d43e0f726b6ead5a008394dc6363396) by Patrik Dufresne).
 - Update Copyright notice ([295f837](https://gitlab.com/ikus-soft/rdiffweb/commit/295f837efd94849c8e84ca98b6f91bf898521b19) by Patrik Dufresne).
 
-## [2.3.3](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.3) - 2021-09-10
+## Rdiffweb [2.3.3](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.3) - 2021-09-10
 
 <small>[Compare with 2.3.2](https://gitlab.com/ikus-soft/rdiffweb/compare/2.3.2...2.3.3)</small>
 
@@ -2071,36 +1666,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add banner to README file ([452e07f](https://gitlab.com/ikus-soft/rdiffweb/commit/452e07fad8a195a61e598dff8bb02fd497f08a1c) by Patrik Dufresne).
 - Add blue theme and automate theme validation #158 ([5431ad3](https://gitlab.com/ikus-soft/rdiffweb/commit/5431ad3095b7401d48f3c4a7aa33c52bdd7f96d9) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-add-banner' into 'master' ([c883d46](https://gitlab.com/ikus-soft/rdiffweb/commit/c883d468b03a73c7876e84fe9914fbd944af0b4f) by Patrik Dufresne).
-- Merge branch 'patrik-add-theme' into 'master' ([12eb48d](https://gitlab.com/ikus-soft/rdiffweb/commit/12eb48d85f78bd0ad70dff8bf444005a6ca13853) by Patrik Dufresne).
-
-## [2.3.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.2) - 2021-09-07
+## Rdiffweb [2.3.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.2) - 2021-09-07
 
 <small>[Compare with 2.3.1](https://gitlab.com/ikus-soft/rdiffweb/compare/2.3.1...2.3.2)</small>
-
-### Merged
-
-- Merge branch 'patrik-update-repos' into 'master' ([835862b](https://gitlab.com/ikus-soft/rdiffweb/commit/835862bd9959fdf3449930728dee1306e863b99b) by Patrik Dufresne).
 
 ### Misc
 
 - Automatically update users repository on location view ([6e6239a](https://gitlab.com/ikus-soft/rdiffweb/commit/6e6239a40f1ed447bb2505359f1f1b5d2cdf8118) by Patrik Dufresne).
 
-## [2.3.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.1) - 2021-07-14
+## Rdiffweb [2.3.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.1) - 2021-07-14
 
 <small>[Compare with 2.3.0](https://gitlab.com/ikus-soft/rdiffweb/compare/2.3.0...2.3.1)</small>
-
-### Merged
-
-- Merge branch 'patrik-fix-var-run' into 'master' ([01dce04](https://gitlab.com/ikus-soft/rdiffweb/commit/01dce0498ea1f3ee4356e7f4ecf21e3cd124a4c9) by Patrik Dufresne).
 
 ### Misc
 
 - Update documentation for session-dir to avoid `/var/run` #148 ([59938c6](https://gitlab.com/ikus-soft/rdiffweb/commit/59938c6fdc6b1310ad6c96c3aa2291da13a06466) by Patrik Dufresne).
 
-## [2.3.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.0) - 2021-07-07
+## Rdiffweb [2.3.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.3.0) - 2021-07-07
 
 <small>[Compare with 2.2.1](https://gitlab.com/ikus-soft/rdiffweb/compare/2.2.1...2.3.0)</small>
 
@@ -2112,15 +1694,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix file and folder sorting in browser view #143 ([42b4687](https://gitlab.com/ikus-soft/rdiffweb/commit/42b468725266d0c0760673bb7bd9381baf945004) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-release-note-2.3.0' into 'master' ([ad98d73](https://gitlab.com/ikus-soft/rdiffweb/commit/ad98d73b6e968d3bc158e938582a7bf91993e6a9) by Patrik Dufresne).
-- Merge branch 'patrik-fix-sorting' into 'master' ([e84f1a6](https://gitlab.com/ikus-soft/rdiffweb/commit/e84f1a6c5721ed7d4943a22a2f41272df50f569a) by Patrik Dufresne).
-- Merge branch 'patrik-docker' into 'master' ([5564c6a](https://gitlab.com/ikus-soft/rdiffweb/commit/5564c6a0672c49db31427e4c7b6dfd166a379d8f) by Patrik Dufresne).
-- Merge branch 'patrik-status' into 'master' ([2619c26](https://gitlab.com/ikus-soft/rdiffweb/commit/2619c2670537c068c78364a74efa573ff389c540) by Patrik Dufresne).
-- Merge branch 'patrik-chartjs' into 'master' ([afa2fd1](https://gitlab.com/ikus-soft/rdiffweb/commit/afa2fd11214dbe5e66ab0beabb1f6488af246902) by Patrik Dufresne).
-- Merge branch 'patrik-timezone' into 'master' ([de0f091](https://gitlab.com/ikus-soft/rdiffweb/commit/de0f0912f3b91505eb5b86aaa01d5bf637731b3b) by Patrik Dufresne).
-
 ### Documented
 
 - Dockerize Rdiffweb #55 ([fd2066d](https://gitlab.com/ikus-soft/rdiffweb/commit/fd2066d5b34969d359d66575b961524de5fbd788) by Patrik Dufresne).
@@ -2131,7 +1704,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Implement status view using chartjs #122 ([89f71f5](https://gitlab.com/ikus-soft/rdiffweb/commit/89f71f5f86aa5d52db651a9d4a1a5a5bff628749) by Patrik Dufresne).
 - Display date with appropriate user's timezone #143 ([5e3f61e](https://gitlab.com/ikus-soft/rdiffweb/commit/5e3f61ec11b7d1670539b6dd87626fdf4f40c235) by Patrik Dufresne).
 
-## [v3.9.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.9.0) - 2021-05-11
+## Minarca-server [v3.9.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.9.0) - 2021-05-11
 
 <small>[Compare with v3.8.0](https://gitlab.com/ikus-soft/rdiffweb/compare/v3.8.0...v3.9.0)</small>
 
@@ -2144,17 +1717,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Fix rdiff-backup-delete missing from PATH ([93060ed](https://gitlab.com/ikus-soft/rdiffweb/commit/93060edd4c02b4259bd8c03d0ff266dfca9caec6) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-compat-11' into 'master' ([e360392](https://gitlab.com/ikus-soft/rdiffweb/commit/e36039286ef37bf39479c852a00776f3590f3892) by Patrik Dufresne).
-- Merge branch 'patrik-fix-pid-file' into 'master' ([69ab4a9](https://gitlab.com/ikus-soft/rdiffweb/commit/69ab4a90a354ea9793584138a3f3bb87214c58d8) by Patrik Dufresne).
-- Merge branch 'patrik-rdiff-backup-2.0-from-deb' into 'master' ([e3e7a56](https://gitlab.com/ikus-soft/rdiffweb/commit/e3e7a562541a9faec41f0cf685c9dae6d194a39e) by Patrik Dufresne).
-- Merge branch 'patrik-update-authorized-keys-on-startup' into 'master' ([bd463f3](https://gitlab.com/ikus-soft/rdiffweb/commit/bd463f336d34e050f0bcfc29cd7288691f30915f) by Patrik Dufresne).
-- Merge branch 'patrik-rdiff-backup2' into 'master' ([5ce49dd](https://gitlab.com/ikus-soft/rdiffweb/commit/5ce49dddb2b47672335164411c66cf203247da6e) by Patrik Dufresne).
-- Merge branch 'patrik-apt-repo' into 'master' ([f07cc5c](https://gitlab.com/ikus-soft/rdiffweb/commit/f07cc5c2af6e6b9b157ca412d0c20a8c5537204e) by Patrik Dufresne).
-- Merge branch 'patrik-drop-debian-stretch' into 'master' ([af5c501](https://gitlab.com/ikus-soft/rdiffweb/commit/af5c501ad094d2d1b5f55c16513fe4db40c9641d) by Patrik Dufresne).
-- Merge branch 'patrik-bump-rdiffweb' into 'master' ([2b9a6d9](https://gitlab.com/ikus-soft/rdiffweb/commit/2b9a6d9f99edea8f137365b10908c2c3354c4b3b) by Patrik Dufresne).
 
 ### Misc
 
@@ -2175,7 +1737,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Run minarca unit test in virtualenv ([ce3bcd6](https://gitlab.com/ikus-soft/rdiffweb/commit/ce3bcd6b38ea79440ea11566c4bd940c8fd8219f) by Patrik Dufresne).
 - Upgrade rdiffweb to 2.1.1 ([4dbf0df](https://gitlab.com/ikus-soft/rdiffweb/commit/4dbf0df8efa0577c5ccd5f2d2f11c3d246212011) by Patrik Dufresne).
 
-## [2.2.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.2.1) - 2021-05-11
+## Rdiffweb [2.2.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.2.1) - 2021-05-11
 
 <small>[Compare with 2.1.0](https://gitlab.com/ikus-soft/rdiffweb/compare/2.1.0...2.2.1)</small>
 
@@ -2217,40 +1779,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Remove dead code ([e8e4f48](https://gitlab.com/ikus-soft/rdiffweb/commit/e8e4f48889263d603d841655d5d69152caa8cbe7) by Patrik Dufresne).
 - Remove rdiff-backup-1.2 and rdiff-backup-2.0 dependencies ([0e3d27f](https://gitlab.com/ikus-soft/rdiffweb/commit/0e3d27f5a220007cb651f6e055350fa5f934e5a1) by Patrik Dufresne).
 - Remove d3js files from debian source package ([1bf1ab2](https://gitlab.com/ikus-soft/rdiffweb/commit/1bf1ab2e752d3b4826fe2ac5fc45e44cbd1e434c) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'bugfix/get-disk-quota' into 'master' ([a1dc60c](https://gitlab.com/ikus-soft/rdiffweb/commit/a1dc60ccfd4eeca0897d5a0924c3d1e0d9eb6b08) by Patrik Dufresne).
-- Merge branch 'patrik-job-conditional' into 'master' ([484fba2](https://gitlab.com/ikus-soft/rdiffweb/commit/484fba270b01ed4672e63b5d93ec034c20318ee7) by Patrik Dufresne).
-- Merge branch 'debian' into 'master' ([ea66652](https://gitlab.com/ikus-soft/rdiffweb/commit/ea66652d5a84205b5c4437a61c9a8e99a882f87e) by Patrik Dufresne).
-- Merge branch 'patrik-sphinx' into 'master' ([23c7bdc](https://gitlab.com/ikus-soft/rdiffweb/commit/23c7bdcaae1b305898f8be9b769a5b3429476399) by Patrik Dufresne).
-- Merge branch 'patrik-download-logs' into 'master' ([9f9e561](https://gitlab.com/ikus-soft/rdiffweb/commit/9f9e5617730e5a845d6d3684c5ce877db98a74db) by Patrik Dufresne).
-- Merge branch 'patrik-status' into 'master' ([236607b](https://gitlab.com/ikus-soft/rdiffweb/commit/236607bfe2b5a70e90a50e062ba75612c30fdd48) by Patrik Dufresne).
-- Merge branch 'patrik-add-logging-to-rdiff-backup-delete' into 'master' ([dbc7d22](https://gitlab.com/ikus-soft/rdiffweb/commit/dbc7d225dfbb9bfcab07b207e8d2e8ed83be1297) by Patrik Dufresne).
-- Merge branch 'patrik-admin-password' into 'master' ([35305ae](https://gitlab.com/ikus-soft/rdiffweb/commit/35305ae3f451092e8143046e3da77f8165fd233a) by Patrik Dufresne).
-- Merge branch 'patrik-session-dir' into 'master' ([8c1078a](https://gitlab.com/ikus-soft/rdiffweb/commit/8c1078aa0ad151f465555333bb7d0d246700cfdd) by Patrik Dufresne).
-- Merge branch 'patrik-background-job' into 'master' ([34f1634](https://gitlab.com/ikus-soft/rdiffweb/commit/34f16341f51d838544bc97c6a176683fcd8dccff) by Patrik Dufresne).
-- Merge branch 'patrik-debian-run-tests' into 'master' ([caa6de6](https://gitlab.com/ikus-soft/rdiffweb/commit/caa6de62110457dd5228f5ac1b30d22d623b09e0) by Patrik Dufresne).
-- Merge branch 'patrik-fix-postgresql-testcases-flakiness' into 'master' ([8025c7e](https://gitlab.com/ikus-soft/rdiffweb/commit/8025c7e9d9b634946c6815d99019bf7e8ce0715a) by Patrik Dufresne).
-- Merge branch 'patrik-drop-debian-stretch' into 'master' ([b2e718d](https://gitlab.com/ikus-soft/rdiffweb/commit/b2e718d993daf2156360e23a6ccd0ab63cda6ec4) by Patrik Dufresne).
-- Merge branch 'patrik-split-browse-and-history' into 'master' ([b5f66cd](https://gitlab.com/ikus-soft/rdiffweb/commit/b5f66cd18601cbc2b054d51e807462c39fff9ff5) by Patrik Dufresne).
-- Merge branch 'patrik-support-absolute-url' into 'master' ([8a7571e](https://gitlab.com/ikus-soft/rdiffweb/commit/8a7571ed2236298ead619c35572ea219d9b5cc32) by Patrik Dufresne).
-- Merge branch 'patrik-fix-test' into 'master' ([b1bf97e](https://gitlab.com/ikus-soft/rdiffweb/commit/b1bf97e0b7e9d1a251fda9389c44884dae4a57b3) by Patrik Dufresne).
-- Merge branch 'patrik-sonar' into 'master' ([420e79d](https://gitlab.com/ikus-soft/rdiffweb/commit/420e79d3d5645f2ae43beeba94f7501ae2f08e4f) by Patrik Dufresne).
-- Merge branch 'patrik-sonar-version' into 'master' ([77302bc](https://gitlab.com/ikus-soft/rdiffweb/commit/77302bc2b82bf0f9f92ba905f0caf354e9f02397) by Patrik Dufresne).
-- Merge branch 'patrik-quota' into 'master' ([40a3f15](https://gitlab.com/ikus-soft/rdiffweb/commit/40a3f1549826a6bfcf7b6b57ea8d8486f0231027) by Patrik Dufresne).
-- Merge branch 'patrik-disable-sshkeys' into 'master' ([c8e7584](https://gitlab.com/ikus-soft/rdiffweb/commit/c8e75848d847c20cce9b6060011e52060ec97af2) by Patrik Dufresne).
-- Merge branch 'patrik-fix-setuptools-scm' into 'master' ([ed19745](https://gitlab.com/ikus-soft/rdiffweb/commit/ed1974591cb7ba151a28b85a24b2a06d5ec637a0) by Patrik Dufresne).
-- Merge branch 'patrik-get-disk-quota-for-dir' into 'master' ([6c57885](https://gitlab.com/ikus-soft/rdiffweb/commit/6c5788570db5d20533cc9fc21b2b14afd37c496f) by Patrik Dufresne).
-- Merge branch 'patrik-sqlalchemy-1.4.0' into 'master' ([bbcf358](https://gitlab.com/ikus-soft/rdiffweb/commit/bbcf358c2b81e9352f3942475734f6d1cfdcbd20) by Patrik Dufresne).
-- Merge branch 'patrik-add-arguments' into 'master' ([3ce3bf8](https://gitlab.com/ikus-soft/rdiffweb/commit/3ce3bf83618e0436c9145bea25fa1b61643e6be2) by Patrik Dufresne).
-- Merge branch 'patrik-sqlalchemy' into 'master' ([0644444](https://gitlab.com/ikus-soft/rdiffweb/commit/0644444b9b3cd3ce8d9455e57d6d62c709f12ef5) by Patrik Dufresne).
-- Merge branch 'patrik-default-role-and-root-directory-ldap' into 'master' ([37c8fd2](https://gitlab.com/ikus-soft/rdiffweb/commit/37c8fd2d4163f75b21f833d2e51aa408da397cb7) by Patrik Dufresne).
-- Merge branch 'patrik-config-argparse' into 'master' ([5e7ce9e](https://gitlab.com/ikus-soft/rdiffweb/commit/5e7ce9ea3ca8be100e05e3598cb25ed41f46dcf4) by Patrik Dufresne).
-- Merge branch 'patrik-fix-nexus-push' into 'master' ([d62a8c2](https://gitlab.com/ikus-soft/rdiffweb/commit/d62a8c2fff9310a29d7dfba2d1edd0f845be57ae) by Patrik Dufresne).
-- Merge branch 'patrik-debian-systemd' into 'master' ([4f84360](https://gitlab.com/ikus-soft/rdiffweb/commit/4f84360f60d5cbe3e61c3d0ff0d22234c3134295) by Patrik Dufresne).
-- Merge branch 'patrik-debian-manpages' into 'master' ([f7825d7](https://gitlab.com/ikus-soft/rdiffweb/commit/f7825d7d4218311bba8c27fe65d9ca10a850f2de) by Patrik Dufresne).
-- Merge branch 'daniel.baumann-debian' into 'master' ([695fbfe](https://gitlab.com/ikus-soft/rdiffweb/commit/695fbfec16a52c72f1b02320b1028c6ed6afbdda) by Patrik Dufresne).
 
 ### Documented
 
@@ -2306,7 +1834,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Updating version number in changelog. ([677f618](https://gitlab.com/ikus-soft/rdiffweb/commit/677f618ae35b7d30c918cd6a08aab6d7db9763d7) by Daniel Baumann).
 - Use ConfigArgParse for configuration #114 ([97945a1](https://gitlab.com/ikus-soft/rdiffweb/commit/97945a13f9c030a22575f4fe5baa642ad55783be) by Patrik Dufresne).
 
-## [v3.8.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.8.0) - 2021-02-17
+## Minarca-server [v3.8.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.8.0) - 2021-02-17
 
 <small>[Compare with v3.7.0](https://gitlab.com/ikus-soft/rdiffweb/compare/v3.7.0...v3.8.0)</small>
 
@@ -2317,15 +1845,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Removed
 
 - Remove obsolete sudoers.d file ([92afad0](https://gitlab.com/ikus-soft/rdiffweb/commit/92afad0dd36e41ffa52a00b9e13e640d9a4c7bd7) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-chroot' into 'master' ([04be60f](https://gitlab.com/ikus-soft/rdiffweb/commit/04be60f6e2ab99b999a9e3faaedb3bd1da170154) by Patrik Dufresne).
-- Merge branch 'patrik-fix-log-format' into 'master' ([afe2306](https://gitlab.com/ikus-soft/rdiffweb/commit/afe2306530ce75e9679cd377effb67874d71d4c3) by Patrik Dufresne).
-- Merge branch 'patrik-fix-minarca-shell-migration' into 'master' ([4014b38](https://gitlab.com/ikus-soft/rdiffweb/commit/4014b38ba84ba07d779e49185557b6c9dcd7a658) by Patrik Dufresne).
-- Merge branch 'patrik-zfs-project-quota' into 'master' ([9546dcf](https://gitlab.com/ikus-soft/rdiffweb/commit/9546dcf7d0b8292a2b5d41a261e25bf94d2e2c10) by Patrik Dufresne).
-- Merge branch 'patrik-tidy-up' into 'master' ([24d6d59](https://gitlab.com/ikus-soft/rdiffweb/commit/24d6d595fc9fd719f5a79b4c2284272dd254b829) by Patrik Dufresne).
-- Merge branch 'patrik-reuse-docker-images' into 'master' ([24b6514](https://gitlab.com/ikus-soft/rdiffweb/commit/24b6514bfd14e8734b36edf14ee27830eab8a282) by Patrik Dufresne).
 
 ### Misc
 
@@ -2351,7 +1870,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bump rdiffweb to v1.5.1b2 ([0981640](https://gitlab.com/ikus-soft/rdiffweb/commit/098164092a5c0e246071abd591e6ec902e4bd396) by IKUS Soft robot).
 - Bump rdiffweb to v1.5.1b1 ([6244d59](https://gitlab.com/ikus-soft/rdiffweb/commit/6244d59e8cfe3a69463c75bb1ca4d082d7cc159a) by IKUS Soft robot).
 
-## [2.1.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.1.0) - 2021-01-15
+## Rdiffweb [2.1.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.1.0) - 2021-01-15
 
 <small>[Compare with 2.0.2](https://gitlab.com/ikus-soft/rdiffweb/compare/2.0.2...2.1.0)</small>
 
@@ -2373,20 +1892,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Remove dh-systemd from Debian build dependencies ([2bd1a00](https://gitlab.com/ikus-soft/rdiffweb/commit/2bd1a0037f4f338b572e7cfff947b51582c66eee) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-release' into 'master' ([24a567d](https://gitlab.com/ikus-soft/rdiffweb/commit/24a567d867d072c0194d8eb2006799787fd324ac) by Patrik Dufresne).
-- Merge branch 'patrik-fix-disk-usage' into 'master' ([716fcbd](https://gitlab.com/ikus-soft/rdiffweb/commit/716fcbd818e4de260a1d8d79b41efedf18e47c83) by Patrik Dufresne).
-- Merge branch 'patrik-logfile-view' into 'master' ([6a3fca5](https://gitlab.com/ikus-soft/rdiffweb/commit/6a3fca5aaff9c3b72f4e9c16bae4a5975e64e2a9) by Patrik Dufresne).
-- Merge branch 'patrik-logging' into 'master' ([c227985](https://gitlab.com/ikus-soft/rdiffweb/commit/c227985ae1b5e09f9c442d7b7b4bb696bf14c28c) by Patrik Dufresne).
-- Merge branch 'patrik-human-size' into 'master' ([04198cf](https://gitlab.com/ikus-soft/rdiffweb/commit/04198cf2d244dddeb402b08447abfe424fce31d1) by Patrik Dufresne).
-- Merge branch 'patrik-fix-access-log' into 'master' ([05faf73](https://gitlab.com/ikus-soft/rdiffweb/commit/05faf7369576671c0c48a884113b128ccc858571) by Patrik Dufresne).
-- Merge branch 'patrik-quota-human-readable' into 'master' ([8fe8489](https://gitlab.com/ikus-soft/rdiffweb/commit/8fe8489871b69f9c250a0b0d119172aa928626f4) by Patrik Dufresne).
-- Merge branch 'patrik-fix-status' into 'master' ([2431245](https://gitlab.com/ikus-soft/rdiffweb/commit/2431245876702912a7a08d14fd7cedd7cdb54c42) by Patrik Dufresne).
-- Merge branch 'patrik-improve-startup-error-handling' into 'master' ([05b285b](https://gitlab.com/ikus-soft/rdiffweb/commit/05b285bf183df7a055f3b523e6ab7ced98fb9502) by Patrik Dufresne).
-- Merge branch 'patrik-quota' into 'master' ([187af28](https://gitlab.com/ikus-soft/rdiffweb/commit/187af287ee667ae165339d25b6feebeba1f01eba) by Patrik Dufresne).
-- Merge branch 'patrik-allow-failure-debian-package' into 'master' ([bf780ba](https://gitlab.com/ikus-soft/rdiffweb/commit/bf780ba333328b659db60202530a68282d1a303b) by Patrik Dufresne).
-
 ### Misc
 
 - Prepare documentation and release note for 2.1.0 ([e3ba07e](https://gitlab.com/ikus-soft/rdiffweb/commit/e3ba07ee1ed34966b2d2ef5909f412bb7a854007) by Patrik Dufresne).
@@ -2405,7 +1910,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Replace cherrypy 8 by 9 for debian bullsyeye to mitigate a bug ([c0fa531](https://gitlab.com/ikus-soft/rdiffweb/commit/c0fa531ac8a38df7a9219be83cf5a3b7ecd01eb2) by Patrik Dufresne).
 - Improve quota management ([a5517f8](https://gitlab.com/ikus-soft/rdiffweb/commit/a5517f8073b1c3d5aba893512f65e925d8338f64) by Patrik Dufresne).
 
-## [2.0.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.0.2) - 2020-12-04
+## Rdiffweb [2.0.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.0.2) - 2020-12-04
 
 <small>[Compare with 2.0.1](https://gitlab.com/ikus-soft/rdiffweb/compare/2.0.1...2.0.2)</small>
 
@@ -2413,15 +1918,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Add `readme_render` to check README.md formatting ([ff1e8cc](https://gitlab.com/ikus-soft/rdiffweb/commit/ff1e8ccbd0bf24daaaa1e6ed77c0de46ce8c592c) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-publish-deb-nexus' into 'master' ([d77ed1d](https://gitlab.com/ikus-soft/rdiffweb/commit/d77ed1df57b3a1dc8bba84f675389275669630cb) by Patrik Dufresne).
-
 ### Misc
 
 - Try to fix pypi upload ([3cb0df3](https://gitlab.com/ikus-soft/rdiffweb/commit/3cb0df37ea5ba39b82d276482a15032e6b3e258b) by Patrik Dufresne).
 
-## [2.0.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.0.1) - 2020-12-04
+## Rdiffweb [2.0.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.0.1) - 2020-12-04
 
 <small>[Compare with 2.0.0](https://gitlab.com/ikus-soft/rdiffweb/compare/2.0.0...2.0.1)</small>
 
@@ -2433,11 +1934,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Remove allow failure on centos7-py3 ([445b139](https://gitlab.com/ikus-soft/rdiffweb/commit/445b139117ff0d7e1e21443bfbdc45dabb93cb4d) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-publish-deb-nexus' into 'master' ([a718f2a](https://gitlab.com/ikus-soft/rdiffweb/commit/a718f2a0d5adada9c4e3087cb7c9bb0da570cc71) by Patrik Dufresne).
-
-## [2.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.0.0) - 2020-12-04
+## Rdiffweb [2.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/2.0.0) - 2020-12-04
 
 <small>[Compare with 1.5.0](https://gitlab.com/ikus-soft/rdiffweb/compare/1.5.0...2.0.0)</small>
 
@@ -2469,21 +1966,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Remove executable bit from files ([3f3b341](https://gitlab.com/ikus-soft/rdiffweb/commit/3f3b3413ee5928210594d4afbb47e06721b8bad9) by Patrik Dufresne).
 - Remove python shebang ([75bccda](https://gitlab.com/ikus-soft/rdiffweb/commit/75bccda86689152ab1cdd6e51925abe89696927a) by Patrik Dufresne).
 - Remove minify dependencies ([60323b6](https://gitlab.com/ikus-soft/rdiffweb/commit/60323b60d54ca0840b30ba89ad648915502db15c) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-publish-deb-nexus' into 'master' ([8177289](https://gitlab.com/ikus-soft/rdiffweb/commit/8177289156c75cb17bf7abe8c59e07ffb5d7a831) by Patrik Dufresne).
-- Merge branch 'patrik-debian' into 'master' ([de75cd1](https://gitlab.com/ikus-soft/rdiffweb/commit/de75cd165a0c7afd30ef89d29e160669b24eec6e) by Patrik Dufresne).
-- Merge branch 'patrik-fix-centos-encoding' into 'master' ([f623d01](https://gitlab.com/ikus-soft/rdiffweb/commit/f623d01f9d1b5dfd50d1363ca3e6949ee7b579c8) by Patrik Dufresne).
-- Merge branch 'patrik-drop-python2' into 'master' ([31ea302](https://gitlab.com/ikus-soft/rdiffweb/commit/31ea302ac1f62da323ebd2cf35ef9e1309339789) by Patrik Dufresne).
-- Merge branch 'patrik-fix-mo' into 'master' ([035b0e3](https://gitlab.com/ikus-soft/rdiffweb/commit/035b0e38ea0579e1e397d85be9e25922650e4987) by Patrik Dufresne).
-- Merge branch 'patrik-tidy-up-code' into 'master' ([833185f](https://gitlab.com/ikus-soft/rdiffweb/commit/833185fef6d1f27a35f4cbaa6f8ad2c52b91043b) by Patrik Dufresne).
-- Merge branch 'patrik-fix-version' into 'master' ([7a41e7d](https://gitlab.com/ikus-soft/rdiffweb/commit/7a41e7db7c0316251c6f652c720ea1f7a0a2c239) by Patrik Dufresne).
-- Merge branch 'patrik-fix-curl' into 'master' ([477d6fc](https://gitlab.com/ikus-soft/rdiffweb/commit/477d6fc3eacf3a32cf5fad7fbbd7d8ecc3ffb85b) by Patrik Dufresne).
-- Merge branch 'patrik-docker-images' into 'master' ([6a70bf3](https://gitlab.com/ikus-soft/rdiffweb/commit/6a70bf3e80ade0a1a8889ee4c6c304dc60e89fbf) by Patrik Dufresne).
-- Merge branch 'patrik-replace-git-references' into 'master' ([bd6b76b](https://gitlab.com/ikus-soft/rdiffweb/commit/bd6b76b1b534949577f00448171fcac3314a2c09) by Patrik Dufresne).
-- Merge branch 'Eeems-patch-1' into 'master' ([dbf22da](https://gitlab.com/ikus-soft/rdiffweb/commit/dbf22da0a97b3608cd57012016de5d9e230b3b4d) by Patrik Dufresne).
-- Merge branch 'patrik-fix-update-repos' into 'master' ([4ad9f8e](https://gitlab.com/ikus-soft/rdiffweb/commit/4ad9f8e7e7295687ed8580fec1943dda9745e462) by Patrik Dufresne).
 
 ### Misc
 
@@ -2532,17 +2014,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Replace patrikdufresne.com reference and github references ([2239ff5](https://gitlab.com/ikus-soft/rdiffweb/commit/2239ff5712e04b073c5e6db3ace655494ea9fbb4) by Patrik Dufresne).
 - Handle elapsed time of days in the graph. ([cc1468f](https://gitlab.com/ikus-soft/rdiffweb/commit/cc1468ff1410695d07d579ce4d15816545f5739b) by Nathaniel van Diepen).
 
-## [v3.7.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.7.0) - 2020-07-01
+## Minarca-server [v3.7.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.7.0) - 2020-07-01
 
 <small>[Compare with v3.6.0](https://gitlab.com/ikus-soft/rdiffweb/compare/v3.6.0...v3.7.0)</small>
 
 ### Removed
 
 - Remove "+stretch" from the debian version ([ecbfcdb](https://gitlab.com/ikus-soft/rdiffweb/commit/ecbfcdbdd935c2e5ac92d8971ccbac1301e70512) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-get-minarca-script' into 'master' ([e5f2b57](https://gitlab.com/ikus-soft/rdiffweb/commit/e5f2b57c88700d7bfb2cd46464a21fb106f7b364) by Patrik Dufresne).
 
 ### Misc
 
@@ -2551,7 +2029,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bump rdiffweb to v1.4.1b2 ([ab1d7b1](https://gitlab.com/ikus-soft/rdiffweb/commit/ab1d7b18e99be575a1c4b733a4f20befed039d4a) by IKUS Soft robot).
 - Replace PDSL inc reference by IKUS Software inc. ([5363e83](https://gitlab.com/ikus-soft/rdiffweb/commit/5363e8369dfe940866d5de6fd24f89aa3c95d98e) by Patrik Dufresne).
 
-## [1.5.0](https://gitlab.com/ikus-soft/rdiffweb/tags/1.5.0) - 2020-07-01
+## Rdiffweb [1.5.0](https://gitlab.com/ikus-soft/rdiffweb/tags/1.5.0) - 2020-07-01
 
 <small>[Compare with 1.4.0](https://gitlab.com/ikus-soft/rdiffweb/compare/1.4.0...1.5.0)</small>
 
@@ -2566,18 +2044,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix Last Update format for minutes and adding unit test #83 ([78cc266](https://gitlab.com/ikus-soft/rdiffweb/commit/78cc2668888f4504408322b464fd77117c3bf366) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-release' into 'master' ([582b3ac](https://gitlab.com/ikus-soft/rdiffweb/commit/582b3ac3fd1de2a8d790d6f2fa3fdd882bfeeb23) by Patrik Dufresne).
-- Merge branch 'patrik-validate-default-theme' into 'master' ([c4fc991](https://gitlab.com/ikus-soft/rdiffweb/commit/c4fc991344a9aa36f926c5ac39e8dc28b6d6cfda) by Patrik Dufresne).
-- Merge branch 'patrik-max-depth-option' into 'master' ([d280cbb](https://gitlab.com/ikus-soft/rdiffweb/commit/d280cbb517e0781a4b885b9baa0e893a67acc7a8) by Patrik Dufresne).
-- Merge branch 'patrik-display-warning' into 'master' ([d0f4c96](https://gitlab.com/ikus-soft/rdiffweb/commit/d0f4c9636d61d3d3540523ed5b04d708dde7948c) by Patrik Dufresne).
-- Merge branch 'patrik-add-debian-bullseye' into 'master' ([3265c91](https://gitlab.com/ikus-soft/rdiffweb/commit/3265c919be41425b1e35b3b544c32b8311ac0d63) by Patrik Dufresne).
-- Merge branch 'patrik-date-last-updated' into 'master' ([54780fb](https://gitlab.com/ikus-soft/rdiffweb/commit/54780fbe519a8e6ec10ea2b008b79812a32c3c6a) by Patrik Dufresne).
-- Merge branch 'patrik-replace-demo-url' into 'master' ([3866909](https://gitlab.com/ikus-soft/rdiffweb/commit/38669099fc2d5f136a4efe60b0d9c87fa2ae441b) by Patrik Dufresne).
-- Merge branch 'patrik-automate-minarca-bump' into 'master' ([e5a99ae](https://gitlab.com/ikus-soft/rdiffweb/commit/e5a99ae6d41f7f3a403405fca75fae29abcb664a) by Patrik Dufresne).
-- Merge branch 'patrik-release-note-1.4.0' into 'master' ([b96c8c9](https://gitlab.com/ikus-soft/rdiffweb/commit/b96c8c96c0addb1085dd7eb85641c5211f2d404f) by Patrik Dufresne).
-
 ### Misc
 
 - Replace platform.dist() by distro package #104 ([49c3805](https://gitlab.com/ikus-soft/rdiffweb/commit/49c3805d1f59f5667ae1b6c8e86fade50f60f1ec) by Patrik Dufresne).
@@ -2587,7 +2053,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Release note v1.4.0 ([e524cfa](https://gitlab.com/ikus-soft/rdiffweb/commit/e524cfad3fc4b4f464e75402dbec692086dcf45c) by Patrik Dufresne).
 - Validate DefaultTheme value. Fix #90 ([c3f281c](https://gitlab.com/ikus-soft/rdiffweb/commit/c3f281c52403386419339bb70c10c73eba6fe5cf) by Patrik Dufresne).
 
-## [v3.6.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.6.0) - 2020-05-20
+## Minarca-server [v3.6.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.6.0) - 2020-05-20
 
 <small>[Compare with v3.5.2](https://gitlab.com/ikus-soft/rdiffweb/compare/v3.5.2...v3.6.0)</small>
 
@@ -2599,11 +2065,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Change the help URL to allow redirection #105 ([ff01c76](https://gitlab.com/ikus-soft/rdiffweb/commit/ff01c765959936e060a6f3b683fe6c47664f4284) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-bump-release' into 'master' ([0aa320c](https://gitlab.com/ikus-soft/rdiffweb/commit/0aa320c9d33395e10b9a7a96ea4de48a02bd4945) by Patrik Dufresne).
-- Merge branch 'patrik-publish-to-apt' into 'master' ([482ccea](https://gitlab.com/ikus-soft/rdiffweb/commit/482cceae68be1653cf08fe71f24ea312feade519) by Patrik Dufresne).
-
 ### Misc
 
 - Bump to v1.4.0 ([67fc912](https://gitlab.com/ikus-soft/rdiffweb/commit/67fc912f9a713484abd0e203919d9cebf985539b) by Patrik Dufresne).
@@ -2613,7 +2074,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bump rdiffweb to 1.4.0b3 ([5d1158e](https://gitlab.com/ikus-soft/rdiffweb/commit/5d1158e38fcfb7e8536a796c15215e791e24d782) by Patrik Dufresne).
 - Bump to v1.3.2 ([1bc0f01](https://gitlab.com/ikus-soft/rdiffweb/commit/1bc0f01f4a45eafe0662d96125bd14c8560e8549) by Patrik Dufresne).
 
-## [1.4.0](https://gitlab.com/ikus-soft/rdiffweb/tags/1.4.0) - 2020-05-20
+## Rdiffweb [1.4.0](https://gitlab.com/ikus-soft/rdiffweb/tags/1.4.0) - 2020-05-20
 
 <small>[Compare with 1.3.2](https://gitlab.com/ikus-soft/rdiffweb/compare/1.3.2...1.4.0)</small>
 
@@ -2628,17 +2089,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix users roles #94 ([9b78407](https://gitlab.com/ikus-soft/rdiffweb/commit/9b784078d21b44422019146146c5638a8a5bd87d) by Patrik Dufresne).
 - Fix single repo discovery ([6411960](https://gitlab.com/ikus-soft/rdiffweb/commit/641196053f527a52fb89ca0d67b648e94fa41a2e) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-users-ssh-keys' into 'master' ([2c3adb7](https://gitlab.com/ikus-soft/rdiffweb/commit/2c3adb7478d47d9ad4d15ebb34a1b2235b25df52) by Patrik Dufresne).
-- Merge branch 'patrik-wtforms-flash' into 'master' ([26f0576](https://gitlab.com/ikus-soft/rdiffweb/commit/26f0576ac31e5ef71a5ed94a031c28cb950ffcfe) by Patrik Dufresne).
-- Merge branch 'patrik-fix-pipeline' into 'master' ([9dc38fb](https://gitlab.com/ikus-soft/rdiffweb/commit/9dc38fb02b54d38f8060c5e42d3266ba7cdf302b) by Patrik Dufresne).
-- Merge branch 'patrik-delete-admin' into 'master' ([246bc24](https://gitlab.com/ikus-soft/rdiffweb/commit/246bc24952f6efeb7d170f4d7b9918fa042d4f2b) by Patrik Dufresne).
-- Merge branch 'patrik-footer' into 'master' ([55a04d6](https://gitlab.com/ikus-soft/rdiffweb/commit/55a04d669a4a0fa7f6ab628a1ede5a63830921d2) by Patrik Dufresne).
-- Merge branch 'patrik-user-roles' into 'master' ([dfcf451](https://gitlab.com/ikus-soft/rdiffweb/commit/dfcf45126bab5deb6db3e68e194d1afb1077acb7) by Patrik Dufresne).
-- Merge branch 'patrik-fix-single-repo' into 'master' ([324426f](https://gitlab.com/ikus-soft/rdiffweb/commit/324426f06cc69489de12be0c804f8eb013604ba4) by Patrik Dufresne).
-- Merge branch 'patrik-release-notes' into 'master' ([5b51155](https://gitlab.com/ikus-soft/rdiffweb/commit/5b511556f42a8548b5e6bd9b1434a242c2ccce58) by Patrik Dufresne).
-
 ### Misc
 
 - Update french translation ([27da3e6](https://gitlab.com/ikus-soft/rdiffweb/commit/27da3e63487707c5755abc7226b3bd2bd5736716) by Patrik Dufresne).
@@ -2648,18 +2098,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - [SPONSORED] Add new user roles to fine tune permissions #104 ([2bef10a](https://gitlab.com/ikus-soft/rdiffweb/commit/2bef10a3361f9b96ce2d46eac10e19dd80ce2925) by Patrik Dufresne).
 - Update change log with v1.3.2 ([5d86d0d](https://gitlab.com/ikus-soft/rdiffweb/commit/5d86d0d0fe09b4562d6aa53f22b3802e82fa459a) by Patrik Dufresne).
 
-## [1.3.2](https://gitlab.com/ikus-soft/rdiffweb/tags/1.3.2) - 2020-04-23
+## Rdiffweb [1.3.2](https://gitlab.com/ikus-soft/rdiffweb/tags/1.3.2) - 2020-04-23
 
 <small>[Compare with 1.3.1](https://gitlab.com/ikus-soft/rdiffweb/compare/1.3.1...1.3.2)</small>
 
 ### Fixed
 
 - Fix repo tree when path are conflicting ([a32c4ab](https://gitlab.com/ikus-soft/rdiffweb/commit/a32c4ab066f7d00e55c75df5fe9453e7a8953047) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'patrik-fix-repo-tree' into 'master' ([6901cb4](https://gitlab.com/ikus-soft/rdiffweb/commit/6901cb4d1ac38dcbc2f118dfd150b80f823d8686) by Patrik Dufresne).
-- Merge branch 'patrik-fix-virtualenv' into 'master' ([ddf2217](https://gitlab.com/ikus-soft/rdiffweb/commit/ddf2217911bed5391c213027ddd7656ac1dcf789) by Patrik Dufresne).
 
 ### Misc
 
@@ -2668,19 +2113,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Lookup executable in virtualenv #92 ([b1be69b](https://gitlab.com/ikus-soft/rdiffweb/commit/b1be69bc12b557030d46a66acc43a765d31cbc0d) by Patrik Dufresne).
 - Update Changelog for v1.3.0 and v1.3.1 ([9bed1ba](https://gitlab.com/ikus-soft/rdiffweb/commit/9bed1bac51a997261950e3c106a2d2dda98d7e1d) by Patrik Dufresne).
 
-## [v3.5.2](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.5.2) - 2020-04-12
+## Minarca-server [v3.5.2](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.5.2) - 2020-04-12
 
 <small>[Compare with v3.5.0](https://gitlab.com/ikus-soft/rdiffweb/compare/v3.5.0...v3.5.2)</small>
-
-### Merged
-
-- Merge branch 'develop/patrik/release' into 'master' ([0574a7d](https://gitlab.com/ikus-soft/rdiffweb/commit/0574a7d26df5bebb0ae0ba21caa198d8de745d0a) by Patrik Dufresne).
 
 ### Misc
 
 - Bump to rdiffweb 1.3.1 ([293d644](https://gitlab.com/ikus-soft/rdiffweb/commit/293d6445e4df92d48bcb2cf73eb99bfe7d72316c) by Patrik Dufresne).
 
-## [1.3.1](https://gitlab.com/ikus-soft/rdiffweb/tags/1.3.1) - 2020-04-10
+## Rdiffweb [1.3.1](https://gitlab.com/ikus-soft/rdiffweb/tags/1.3.1) - 2020-04-10
 
 <small>[Compare with 1.3.0](https://gitlab.com/ikus-soft/rdiffweb/compare/1.3.0...1.3.1)</small>
 
@@ -2688,16 +2129,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Add change log entries for release v1.3.0 ([5cabeb4](https://gitlab.com/ikus-soft/rdiffweb/commit/5cabeb40861dcd5c358071113be8ff0cabb41520) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'patrik-ssha-password' into 'master' ([02cac4f](https://gitlab.com/ikus-soft/rdiffweb/commit/02cac4f7e6192c123625df55e1b2c55b9b67c6f8) by Patrik Dufresne).
-- Merge branch 'develop/patrik/prepare-release' into 'master' ([ccd31b1](https://gitlab.com/ikus-soft/rdiffweb/commit/ccd31b17f6d7b6726a5359aa0a988781a749ad89) by Patrik Dufresne).
-
 ### Misc
 
 - Enforce password encryption by using SSHA scheme #88 ([8bb83e1](https://gitlab.com/ikus-soft/rdiffweb/commit/8bb83e120155efb97753e053e0a95292847e912a) by Patrik Dufresne).
 
-## [v3.5.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.5.0) - 2020-04-08
+## Minarca-server [v3.5.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.5.0) - 2020-04-08
 
 <small>[Compare with v3.4.3](https://gitlab.com/ikus-soft/rdiffweb/compare/v3.4.3...v3.5.0)</small>
 
@@ -2709,19 +2145,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Change permissions recursively ([bf7a7fd](https://gitlab.com/ikus-soft/rdiffweb/commit/bf7a7fd6e8844c2d8c3aaca0eff6eb1899a4526e) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/release' into 'master' ([98dbaef](https://gitlab.com/ikus-soft/rdiffweb/commit/98dbaef3c147860ce52bdffc187565c10290ef8a) by Patrik Dufresne).
-- Merge branch 'develop/patrik/makefile' into 'master' ([2c238bf](https://gitlab.com/ikus-soft/rdiffweb/commit/2c238bf2cf1d6f96eb4329f257c083b4470cea9f) by Patrik Dufresne).
-- Merge branch 'develop/patrik/deb-build' into 'master' ([7023ce4](https://gitlab.com/ikus-soft/rdiffweb/commit/7023ce40797bdef5dccf4591e296622776a269af) by Patrik Dufresne).
-
 ### Misc
 
 - Bump rdiffweb to v1.3.0 ([342de31](https://gitlab.com/ikus-soft/rdiffweb/commit/342de311a1d3437e695f366e90dafb89a157e150) by Patrik Dufresne).
 - Create a Makefile for test & build ([1d97a38](https://gitlab.com/ikus-soft/rdiffweb/commit/1d97a386bad6cd27c18fc17011b2bf876871c778) by Patrik Dufresne).
 - Test deb pacakge on buster ([7771349](https://gitlab.com/ikus-soft/rdiffweb/commit/777134996339c658b433d64365b6fb248e4bf8e7) by Patrik Dufresne).
 
-## [1.3.0](https://gitlab.com/ikus-soft/rdiffweb/tags/1.3.0) - 2020-03-27
+## Rdiffweb [1.3.0](https://gitlab.com/ikus-soft/rdiffweb/tags/1.3.0) - 2020-03-27
 
 <small>[Compare with 1.2.2](https://gitlab.com/ikus-soft/rdiffweb/compare/1.2.2...1.3.0)</small>
 
@@ -2733,30 +2163,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Remove obsolete dependencies to pysqlite2 ([121411c](https://gitlab.com/ikus-soft/rdiffweb/commit/121411cd5bbfd7641afda09143301f228e1946e2) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/fix-duplicate-repos' into 'master' ([885b907](https://gitlab.com/ikus-soft/rdiffweb/commit/885b9077df150d3aae7d37209cf38927779e2520) by Patrik Dufresne).
-- Merge branch 'develop/patrik/cicd' into 'master' ([da66138](https://gitlab.com/ikus-soft/rdiffweb/commit/da66138b195e017d919c8b9d526358a9b3ca8efc) by Patrik Dufresne).
-- Merge branch 'develop/patrik/restore-stream' into 'master' ([4e10583](https://gitlab.com/ikus-soft/rdiffweb/commit/4e105837b38c1fc958389a40d4672fdd3152c6b9) by Patrik Dufresne).
-
 ### Misc
 
 - Pre-build docker images for each target ([fc7bce7](https://gitlab.com/ikus-soft/rdiffweb/commit/fc7bce7bfdab90b5f058d15163b009f453441616) by Patrik Dufresne).
 - Restore files and folder using a subprocess #72 #39 ([48e0fb2](https://gitlab.com/ikus-soft/rdiffweb/commit/48e0fb24ed8a3f10a0aca6720162e0bf449c15ba) by Patrik Dufresne).
 
-## [v3.4.3](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.4.3) - 2020-03-08
+## Minarca-server [v3.4.3](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.4.3) - 2020-03-08
 
 <small>[Compare with v3.4.2](https://gitlab.com/ikus-soft/rdiffweb/compare/v3.4.2...v3.4.3)</small>
-
-### Merged
-
-- Merge branch 'develop/patrik/release-3.4.3' into 'master' ([c8dae9a](https://gitlab.com/ikus-soft/rdiffweb/commit/c8dae9abb7b0d39219893d4fca02a866159bf104) by Patrik Dufresne).
 
 ### Misc
 
 - Bump rdiffweb to v1.2.2 ([1e9a39a](https://gitlab.com/ikus-soft/rdiffweb/commit/1e9a39a64bbad745ae78822f206375adc5480b56) by Patrik Dufresne).
 
-## [1.2.2](https://gitlab.com/ikus-soft/rdiffweb/tags/1.2.2) - 2020-03-05
+## Rdiffweb [1.2.2](https://gitlab.com/ikus-soft/rdiffweb/tags/1.2.2) - 2020-03-05
 
 <small>[Compare with 1.2.1](https://gitlab.com/ikus-soft/rdiffweb/compare/1.2.1...1.2.2)</small>
 
@@ -2772,16 +2192,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Remove some target from gitlab pipeline. ([a7b545e](https://gitlab.com/ikus-soft/rdiffweb/commit/a7b545e6a72bc5bc34e56bff70f8d5cba7c38fbb) by Patrik Dufresne).
 - Remove use of LIMIT to stay compatible with CentOS7 ([07c6a75](https://gitlab.com/ikus-soft/rdiffweb/commit/07c6a7522dc9f7356971086aabe38367c0fba4e2) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/release-1.2.2' into 'master' ([d70bc53](https://gitlab.com/ikus-soft/rdiffweb/commit/d70bc539a558f2138ee8bf3c3d3432d4ad73e3d3) by Patrik Dufresne).
-- Merge branch 'develop/patrik/centos7' into 'master' ([056514c](https://gitlab.com/ikus-soft/rdiffweb/commit/056514c009efec2594c61038399584f10d8ae157) by Patrik Dufresne).
-- Merge branch 'develop/patrik/add-rdiff-backup2' into 'master' ([54af9f0](https://gitlab.com/ikus-soft/rdiffweb/commit/54af9f0e3112328e3f55764a3953b604a2c85a10) by Patrik Dufresne).
-- Merge branch 'develop/patrik/cache-repo-status' into 'master' ([9b79984](https://gitlab.com/ikus-soft/rdiffweb/commit/9b79984c1baf7e4cea464c4a850b06857fcda6fc) by Patrik Dufresne).
-- Merge branch 'develop/patrik/reduce-build' into 'master' ([c3a5996](https://gitlab.com/ikus-soft/rdiffweb/commit/c3a59962d529c72af61fa42dc062015fcedd2d2d) by Patrik Dufresne).
-- Merge branch 'develop/patrik/fix-path' into 'master' ([78da790](https://gitlab.com/ikus-soft/rdiffweb/commit/78da79016d91ca792c1002e131fa3797c33258d7) by Patrik Dufresne).
-- Merge branch 'develop/patrik/improve-ui-refresh' into 'master' ([237196b](https://gitlab.com/ikus-soft/rdiffweb/commit/237196b7b2bd739a9d52125ae1aba858becd5d83) by Patrik Dufresne).
-
 ### Misc
 
 - Test with rdiff-backup pre-release ([7b92457](https://gitlab.com/ikus-soft/rdiffweb/commit/7b9245739210af36b8006216621eda74dbb7a9d2) by Patrik Dufresne).
@@ -2792,7 +2202,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Use full path to call rdiff-backup executable #68 ([139af61](https://gitlab.com/ikus-soft/rdiffweb/commit/139af610fe80d8bf493f44625c3ba9ed905a1fa6) by Patrik Dufresne).
 - Reduce the number of build ([041393f](https://gitlab.com/ikus-soft/rdiffweb/commit/041393f6a5f3341dbbc65563c2f53fd7172f015d) by Patrik Dufresne).
 
-## [v3.4.2](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.4.2) - 2020-02-09
+## Minarca-server [v3.4.2](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.4.2) - 2020-02-09
 
 <small>[Compare with v3.4.0](https://gitlab.com/ikus-soft/rdiffweb/compare/v3.4.0...v3.4.2)</small>
 
@@ -2800,16 +2210,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix default permissions on folders #51 ([0e47632](https://gitlab.com/ikus-soft/rdiffweb/commit/0e47632c6c10e3e5a7044f0def9420a7f76ed653) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/release-3.4.1' into 'master' ([6d4367d](https://gitlab.com/ikus-soft/rdiffweb/commit/6d4367d8426e14b08c0457775a9f7a09652983c8) by Patrik Dufresne).
-- Merge branch 'develop/patrik/fix-permissions' into 'master' ([2ae1c8f](https://gitlab.com/ikus-soft/rdiffweb/commit/2ae1c8ffd5cac49ec2aa71254fe31caef02ebea6) by Patrik Dufresne).
-
 ### Misc
 
 - Prepare release v3.4.1 ([bb688e5](https://gitlab.com/ikus-soft/rdiffweb/commit/bb688e5b428d9f549c20ba36004de55be817f078) by Patrik Dufresne).
 
-## [1.2.1](https://gitlab.com/ikus-soft/rdiffweb/tags/1.2.1) - 2020-02-08
+## Rdiffweb [1.2.1](https://gitlab.com/ikus-soft/rdiffweb/tags/1.2.1) - 2020-02-08
 
 <small>[Compare with 1.2.0](https://gitlab.com/ikus-soft/rdiffweb/compare/1.2.0...1.2.1)</small>
 
@@ -2823,18 +2228,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix access to other user repo #76 ([ad01c5d](https://gitlab.com/ikus-soft/rdiffweb/commit/ad01c5dd06cdee1b58f5a819f1fbdd855ad9b155) by Patrik Dufresne).
 - Fix minarca plugins exception when creating admin user minarca/#47 ([d53d3f4](https://gitlab.com/ikus-soft/rdiffweb/commit/d53d3f497451e5e1c2cddb6c7a74c8ad4c39a411) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/log-rotating' into 'master' ([40d9462](https://gitlab.com/ikus-soft/rdiffweb/commit/40d9462594741a74214ea6b8d056a9f96a7e24a9) by Patrik Dufresne).
-- Merge branch 'develop/patrik/cicd-cache' into 'master' ([3b1d04f](https://gitlab.com/ikus-soft/rdiffweb/commit/3b1d04fcda3b892ca54b7a2c39125bb88c49283f) by Patrik Dufresne).
-- Merge branch 'develop/patrik/fix-admin-user-creation' into 'master' ([017b108](https://gitlab.com/ikus-soft/rdiffweb/commit/017b1086e9460ff95818edaf2db0d1eb5b8e2671) by Patrik Dufresne).
-- Merge branch 'develop/patrik/fix-repo-access-for-admin' into 'master' ([599b3ef](https://gitlab.com/ikus-soft/rdiffweb/commit/599b3ef7bcb7223d0917d0e17e7e9b10bfa58e22) by Patrik Dufresne).
-
 ### Misc
 
 - Update README for v1.2.1 ([d0ac1f6](https://gitlab.com/ikus-soft/rdiffweb/commit/d0ac1f6f421a417715471614ead5b479f8fa06c3) by Patrik Dufresne).
 
-## [v3.4.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.4.0) - 2020-01-30
+## Minarca-server [v3.4.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.4.0) - 2020-01-30
 
 <small>[Compare with v3.3.0](https://gitlab.com/ikus-soft/rdiffweb/compare/v3.3.0...v3.4.0)</small>
 
@@ -2842,18 +2240,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Add port to EmailHost ([e445d47](https://gitlab.com/ikus-soft/rdiffweb/commit/e445d4710278b2167837042bd712d9243796ac50) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/bump-rdiffweb' into 'master' ([faefed5](https://gitlab.com/ikus-soft/rdiffweb/commit/faefed5b8e8f0b079c4232a00d3138cd27cd7de6) by Patrik Dufresne).
-- Merge branch 'develop/patrik/fix-cicd-wine' into 'master' ([042327d](https://gitlab.com/ikus-soft/rdiffweb/commit/042327d7ef0cce4fea096ea73a5c294c68e44868) by Patrik Dufresne).
-- Merge branch 'develop/patrik/fix-EmailHost' into 'master' ([92187e1](https://gitlab.com/ikus-soft/rdiffweb/commit/92187e144e15dec3465dc4b3393cc495368dfc58) by Patrik Dufresne).
-
 ### Misc
 
 - Move all test script to /tests and add scripts to test Windows ([9710940](https://gitlab.com/ikus-soft/rdiffweb/commit/9710940f158961c7c27ffff7610e2fd5208b69c2) by Patrik Dufresne).
 - Bump rdiffweb to 1.2.0 ([0110dc5](https://gitlab.com/ikus-soft/rdiffweb/commit/0110dc5ef61a96f08b223e7102f241d0e9cd9c2c) by Patrik Dufresne).
 
-## [1.2.0](https://gitlab.com/ikus-soft/rdiffweb/tags/1.2.0) - 2020-01-30
+## Rdiffweb [1.2.0](https://gitlab.com/ikus-soft/rdiffweb/tags/1.2.0) - 2020-01-30
 
 <small>[Compare with 1.1.0](https://gitlab.com/ikus-soft/rdiffweb/compare/1.1.0...1.2.0)</small>
 
@@ -2865,14 +2257,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix persistence for SQLite 3.16 ([2625f48](https://gitlab.com/ikus-soft/rdiffweb/commit/2625f48d62204eaa704db984641b4bec0cced168) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/release-1.2.0' into 'master' ([9e5ed79](https://gitlab.com/ikus-soft/rdiffweb/commit/9e5ed7937c1154749743b3cc0cad72651ff48165) by Patrik Dufresne).
-- Merge branch 'develop/patrik/reffactor-db' into 'master' ([3c2e041](https://gitlab.com/ikus-soft/rdiffweb/commit/3c2e0413a32c4a662d54cb42af47d70190e7c280) by Patrik Dufresne).
-- Merge branch 'develop/patrik/add-pipeline-buster' into 'master' ([1757fd8](https://gitlab.com/ikus-soft/rdiffweb/commit/1757fd86f94bf21862c07e2a4ea4f04f080b30c8) by Patrik Dufresne).
-- Merge branch 'develop/patrik/pypi-proxy' into 'master' ([a712cde](https://gitlab.com/ikus-soft/rdiffweb/commit/a712cdea843fa363832d03656567caffd8ae7a0a) by Patrik Dufresne).
-- Merge branch 'develop/patrik/update-doc' into 'master' ([7edced1](https://gitlab.com/ikus-soft/rdiffweb/commit/7edced1e2beaf33cc5950965fcbfd4427420069e) by Patrik Dufresne).
-
 ### Misc
 
 - Update README for release 1.2.0 ([939e84b](https://gitlab.com/ikus-soft/rdiffweb/commit/939e84b23f25cc8bd7e20303910c15d640d5906e) by Patrik Dufresne).
@@ -2883,20 +2267,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Update Documentation ([ed1d729](https://gitlab.com/ikus-soft/rdiffweb/commit/ed1d729b67cc3de5c86d9ac79bd82cc2f722745c) by Patrik Dufresne).
 - Define alternative pip index url to reduce network issues ([130fc3f](https://gitlab.com/ikus-soft/rdiffweb/commit/130fc3f03f53f62198e9ddac30b4411ff1e66cf0) by Patrik Dufresne).
 
-## [v3.3.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.3.0) - 2019-11-06
+## Minarca-server [v3.3.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.3.0) - 2019-11-06
 
 <small>[Compare with v3.0.1](https://gitlab.com/ikus-soft/rdiffweb/compare/v3.0.1...v3.3.0)</small>
 
 ### Added
 
 - Add dependencies for `tail` command line pdsl/rdiffweb#5 ([2270a4e](https://gitlab.com/ikus-soft/rdiffweb/commit/2270a4e8fbee8f437a13477f5dd772fe4150b2fe) by Patrik Dufresne).
-
-### Merged
-
-- Merge branch 'develop/patrik/bump' into 'master' ([65c3ae2](https://gitlab.com/ikus-soft/rdiffweb/commit/65c3ae2e2338b111cbbe7067e6ccc8e40cd48184) by Patrik Dufresne).
-- Merge branch 'develop/patrik/tes' into 'master' ([88e7348](https://gitlab.com/ikus-soft/rdiffweb/commit/88e73485bc56cbc929c09e2647e718853efc076e) by Patrik Dufresne).
-- Merge branch 'develop/patrik/bump-rdiffweb-version' into 'master' ([c5dea03](https://gitlab.com/ikus-soft/rdiffweb/commit/c5dea032978f07a764a4372abfb76edbddfd5324) by Patrik Dufresne).
-- Merge branch 'develo/patrik/headline' into 'master' ([4cfcd54](https://gitlab.com/ikus-soft/rdiffweb/commit/4cfcd54222505a01a5f8de0da5123bcd8ee0ff2c) by Patrik Dufresne).
 
 ### Misc
 
@@ -2909,7 +2286,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Provide default minarca headline pdsl/share#25 ([5e8ec69](https://gitlab.com/ikus-soft/rdiffweb/commit/5e8ec69a778b322e3f9ebb76bc6c13c8245026c2) by Patrik Dufresne).
 - Download only if file doesn't exists ([0892629](https://gitlab.com/ikus-soft/rdiffweb/commit/0892629de6f11ebb4e15f6cca99e8b1c17799076) by Patrik Dufresne).
 
-## [1.1.0](https://gitlab.com/ikus-soft/rdiffweb/tags/1.1.0) - 2019-10-31
+## Rdiffweb [1.1.0](https://gitlab.com/ikus-soft/rdiffweb/tags/1.1.0) - 2019-10-31
 
 <small>[Compare with 1.0.3](https://gitlab.com/ikus-soft/rdiffweb/compare/1.0.3...1.1.0)</small>
 
@@ -2943,23 +2320,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Remove useless condition from `split_path` ([14494d8](https://gitlab.com/ikus-soft/rdiffweb/commit/14494d82b4651c727997dc2857f37b88f73667f8) by Patrik Dufresne).
 - Remove obsolete `admin_repo_edit` entry point ([562a83d](https://gitlab.com/ikus-soft/rdiffweb/commit/562a83d4d11701a557e07c388927357f752817f9) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/bug-fixes' into 'master' ([570becb](https://gitlab.com/ikus-soft/rdiffweb/commit/570becbdc25271f6a952952faff0e17c54e84111) by Patrik Dufresne).
-- Merge branch 'develop/patrik/improve-coverage' into 'master' ([466bc98](https://gitlab.com/ikus-soft/rdiffweb/commit/466bc989cece5b93b5e85e3f67ddc1508c308812) by Patrik Dufresne).
-- Merge branch 'develop/patrik/admin-repos' into 'master' ([817e7fe](https://gitlab.com/ikus-soft/rdiffweb/commit/817e7fe984e00cf5216ccad83412dafebb043b67) by Patrik Dufresne).
-- Merge branch 'develop/patrik/more-sysinfo' into 'master' ([abc1cb9](https://gitlab.com/ikus-soft/rdiffweb/commit/abc1cb97950c929eb8a4fff6c290cab3c69090f6) by Patrik Dufresne).
-- Merge branch 'develop/patrik/repo-url' into 'master' ([640cb49](https://gitlab.com/ikus-soft/rdiffweb/commit/640cb49c37d97507fe6c848348794d8825ec9ce9) by Patrik Dufresne).
-- Merge branch 'develop/patrik/admin-users' into 'master' ([3b2ea9e](https://gitlab.com/ikus-soft/rdiffweb/commit/3b2ea9ec4d403e0587b48a57e96235b320c9aedc) by Patrik Dufresne).
-- Merge branch 'develop/patrik/confirm' into 'master' ([5e7fac1](https://gitlab.com/ikus-soft/rdiffweb/commit/5e7fac1e525327f8d295c4ce0da10758745ad68b) by Patrik Dufresne).
-- Merge branch 'develop/patrik/admin-sysinfo' into 'master' ([fc829c6](https://gitlab.com/ikus-soft/rdiffweb/commit/fc829c6c105fa68869a94d3e8b203bd3ecef3f56) by Patrik Dufresne).
-- Merge branch 'develop/patrik/reffactoring' into 'master' ([29fecf3](https://gitlab.com/ikus-soft/rdiffweb/commit/29fecf300a80fdf85c8265b1303c2f0436a32ede) by Patrik Dufresne).
-- Merge branch 'develop/patrik/show-logs' into 'master' ([03bf891](https://gitlab.com/ikus-soft/rdiffweb/commit/03bf891fd32c8bb3fac7ea3cb981eb154d1e98cc) by Patrik Dufresne).
-- Merge branch 'develop/patrik/upgrade-jinja2' into 'master' ([2e8b946](https://gitlab.com/ikus-soft/rdiffweb/commit/2e8b9467ee06825e8809e310d78540343c74641e) by Patrik Dufresne).
-- Merge branch 'develop/patrik/cache' into 'master' ([622d69c](https://gitlab.com/ikus-soft/rdiffweb/commit/622d69c9206a2f6f89f66843c7f762835fa9257a) by Patrik Dufresne).
-- Merge branch 'develop/patrik/improve-admin-tool' into 'master' ([590919d](https://gitlab.com/ikus-soft/rdiffweb/commit/590919de7e1fa2930467b9d141583b56cec79d94) by Patrik Dufresne).
-- Merge branch 'develop/patrik/update-doc' into 'master' ([d3ec752](https://gitlab.com/ikus-soft/rdiffweb/commit/d3ec752c55464637578847be5d12954ae9b624db) by Patrik Dufresne).
-
 ### Misc
 
 - Update changelog ([e02d468](https://gitlab.com/ikus-soft/rdiffweb/commit/e02d468a5dfbe5fe6bf8db0dd6062b37dc9087b1) by Patrik Dufresne).
@@ -2980,7 +2340,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Update change log with release date ([a1fea23](https://gitlab.com/ikus-soft/rdiffweb/commit/a1fea23e11abfb4da5411340152d47408b9c5e57) by Patrik Dufresne).
 - Update doc from pdsl website ([4912ff3](https://gitlab.com/ikus-soft/rdiffweb/commit/4912ff3c323da01666bf08d1f9b7856288be11b7) by Patrik Dufresne).
 
-## [v3.0.1](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.0.1) - 2019-10-04
+## Minarca-server [v3.0.1](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.0.1) - 2019-10-04
 
 <small>[Compare with v3.0.0](https://gitlab.com/ikus-soft/rdiffweb/compare/v3.0.0...v3.0.1)</small>
 
@@ -2998,37 +2358,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Change user's home permissions ([7ad3262](https://gitlab.com/ikus-soft/rdiffweb/commit/7ad3262803d870eb1bf95f2ae1f99c4024d889ca) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/bump-version' into 'master' ([d2f984a](https://gitlab.com/ikus-soft/rdiffweb/commit/d2f984aa2d19657e6b4709bad20e815e297b7c22) by Patrik Dufresne).
-- Merge branch 'develop/patrik/fix-quota-management' into 'master' ([82e5f9b](https://gitlab.com/ikus-soft/rdiffweb/commit/82e5f9b25858f8e98ad5e4bb21188d0197678b3e) by Patrik Dufresne).
-- Merge branch 'develop/patrik/extra-fix' into 'master' ([45a9658](https://gitlab.com/ikus-soft/rdiffweb/commit/45a9658cc077d977b45486735ea1c05167dbc273) by Patrik Dufresne).
-
 ### Misc
 
 - Bump rdiffweb to v1.0.3 ([4515f1a](https://gitlab.com/ikus-soft/rdiffweb/commit/4515f1a0e455ba165f389e3e9ebc14eaf602f6c7) by Patrik Dufresne).
 - Update the authorized_keys when user's home directory get updated ([616857e](https://gitlab.com/ikus-soft/rdiffweb/commit/616857ecd7d9988ffc8f3b96356d486aa59a48ec) by Patrik Dufresne).
 - Bump rdiffweb version to v1.0.2 ([930f120](https://gitlab.com/ikus-soft/rdiffweb/commit/930f120c8186f35e5b6a70af9d6a944c6130d9ae) by Patrik Dufresne).
 
-## [1.0.3](https://gitlab.com/ikus-soft/rdiffweb/tags/1.0.3) - 2019-10-04
+## Rdiffweb [1.0.3](https://gitlab.com/ikus-soft/rdiffweb/tags/1.0.3) - 2019-10-04
 
 <small>[Compare with 1.0.2](https://gitlab.com/ikus-soft/rdiffweb/compare/1.0.2...1.0.3)</small>
-
-### Merged
-
-- Merge branch 'develop/patrik/remove-auto-update' into 'master' ([e0389da](https://gitlab.com/ikus-soft/rdiffweb/commit/e0389da671239fdb4fd70cda9989b65d1e34d3f4) by Patrik Dufresne).
 
 ### Misc
 
 - Removing the auto update repos ([bfecba1](https://gitlab.com/ikus-soft/rdiffweb/commit/bfecba17fc4eaef739fd781c5c8b34b079106529) by Patrik Dufresne).
 
-## [1.0.2](https://gitlab.com/ikus-soft/rdiffweb/tags/1.0.2) - 2019-10-01
+## Rdiffweb [1.0.2](https://gitlab.com/ikus-soft/rdiffweb/tags/1.0.2) - 2019-10-01
 
 <small>[Compare with 1.0.1](https://gitlab.com/ikus-soft/rdiffweb/compare/1.0.1...1.0.2)</small>
-
-### Merged
-
-- Merge branch 'develop/patrik/fix-admin-user-creation' into 'master' ([f6056f6](https://gitlab.com/ikus-soft/rdiffweb/commit/f6056f64f95e276779a24db48963d4afa5183889) by Patrik Dufresne).
 
 ### Misc
 
@@ -3038,7 +2384,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Create admin user if missing ([7a5f67e](https://gitlab.com/ikus-soft/rdiffweb/commit/7a5f67e48e69b00f34d9a1e8b430768a5bcbffd8) by Patrik Dufresne).
 - Update README ([47eb075](https://gitlab.com/ikus-soft/rdiffweb/commit/47eb07515bf71d4824df5dbc3d6b3432ce097d74) by Patrik Dufresne).
 
-## [1.0.1](https://gitlab.com/ikus-soft/rdiffweb/tags/1.0.1) - 2019-09-22
+## Rdiffweb [1.0.1](https://gitlab.com/ikus-soft/rdiffweb/tags/1.0.1) - 2019-09-22
 
 <small>[Compare with 1.0.0](https://gitlab.com/ikus-soft/rdiffweb/compare/1.0.0...1.0.1)</small>
 
@@ -3051,16 +2397,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix ssh duplicate key pdsl/rdiffweb#57 ([2ce7fb7](https://gitlab.com/ikus-soft/rdiffweb/commit/2ce7fb74e19d1e798ffd9574fa11f998c894c79f) by Patrik Dufresne).
 - Fix removal of SSH Key pdsl/rdiffweb#58 ([d6a6ab1](https://gitlab.com/ikus-soft/rdiffweb/commit/d6a6ab1e4ecfd39a8fb2cd288b2a749716704a80) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/fix-ssh-key' into 'master' ([5c464b9](https://gitlab.com/ikus-soft/rdiffweb/commit/5c464b9c8d2d37e8c947c4559976b73bfb60952d) by Patrik Dufresne).
-
 ### Misc
 
 - Keep only installation step from pypi ([9491503](https://gitlab.com/ikus-soft/rdiffweb/commit/9491503f7bd80b1b6289ceccb8e349c96a5716db) by Patrik Dufresne).
 - Update README link to canonical link ([d95f71c](https://gitlab.com/ikus-soft/rdiffweb/commit/d95f71c014e1ee7bdc4dbedc5416520c0265cbf3) by Patrik Dufresne).
 
-## [v3.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.0.0) - 2019-09-14
+## Minarca-server [v3.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/v3.0.0) - 2019-09-14
 
 <small>[Compare with first commit](https://gitlab.com/ikus-soft/rdiffweb/compare/e025e8db48e813ab8b8ee842e1b83690999f478d...v3.0.0)</small>
 
@@ -3083,11 +2425,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Remove user's ssh key when user get deleted pdsl/minarca-server#13 ([599508e](https://gitlab.com/ikus-soft/rdiffweb/commit/599508e2d4f408a13e996c45af0a478a41ee1153) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/fix-backupninja' into 'master' ([b98ece9](https://gitlab.com/ikus-soft/rdiffweb/commit/b98ece942de4d3310fb537193459085e4df1a73c) by Patrik Dufresne).
-- Merge branch 'develop/patrik/fix-sudo' into 'master' ([ae907e2](https://gitlab.com/ikus-soft/rdiffweb/commit/ae907e260cbc49d6a06dee6d50395184a14f60cc) by Patrik Dufresne).
-
 ### Misc
 
 - Move all files under /data ([6876da9](https://gitlab.com/ikus-soft/rdiffweb/commit/6876da939561d1ac7ca3f35dffc1075aa575a68c) by Patrik Dufresne).
@@ -3107,7 +2444,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Manage SSH keys ([1751cc9](https://gitlab.com/ikus-soft/rdiffweb/commit/1751cc9b22d999aafec985f7ca2e7f1eaa544d46) by Patrik Dufresne).
 - TASK-1079 Create deb packages ([e025e8d](https://gitlab.com/ikus-soft/rdiffweb/commit/e025e8db48e813ab8b8ee842e1b83690999f478d) by Patrik Dufresne).
 
-## [1.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/1.0.0) - 2019-09-11
+## Rdiffweb [1.0.0](https://gitlab.com/ikus-soft/rdiffweb/tags/1.0.0) - 2019-09-11
 
 <small>[Compare with 0.10.9](https://gitlab.com/ikus-soft/rdiffweb/compare/0.10.9...1.0.0)</small>
 
@@ -3160,13 +2497,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Remove remove_older plugin ([57b5e44](https://gitlab.com/ikus-soft/rdiffweb/commit/57b5e44e5c820b43a64098f4409dab4a2eaaed64) by Patrik Dufresne).
 - Remove set_encoding plugin ([d9b107d](https://gitlab.com/ikus-soft/rdiffweb/commit/d9b107dc17ef90356927e244f17bb120c89b1894) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/remove-plugins' into 'master' ([fbb2d52](https://gitlab.com/ikus-soft/rdiffweb/commit/fbb2d524dcac20648acfffb0ae77c3fad251a754) by Patrik Dufresne).
-- Merge branch 'develop/patrik/remove-plugins' ([fbd2e79](https://gitlab.com/ikus-soft/rdiffweb/commit/fbd2e79b154b10df0362cfc47d296afaa59f881b) by Patrik Dufresne).
-- Merge branch 'develop/patrik/fix-performance-issue' into 'master' ([83ef11f](https://gitlab.com/ikus-soft/rdiffweb/commit/83ef11fc32fd1dafca041b7681267cdfddaa533f) by Patrik Dufresne).
-- Merge remote-tracking branch 'origin/master' into develop/patrik/remove-plugins ([0dea6f9](https://gitlab.com/ikus-soft/rdiffweb/commit/0dea6f92e336ceb44916d767f5ca1695162a0a3e) by Patrik Dufresne).
-
 ### Misc
 
 - Enable tools.proxy at application level pdsl/minarca-server#12 ([e08d314](https://gitlab.com/ikus-soft/rdiffweb/commit/e08d314789a95dc768a7ba10c71a9563d1a092d1) by Patrik Dufresne).
@@ -3202,7 +2532,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Rename Component to Controller ([8e15a24](https://gitlab.com/ikus-soft/rdiffweb/commit/8e15a24ad4f3b540d2eecce9ec35a4c532f3ae26) by Patrik Dufresne).
 - Reorganize the packages ([749516f](https://gitlab.com/ikus-soft/rdiffweb/commit/749516f282c0c2f1eba4c180e22fa1c9214ae971) by Patrik Dufresne).
 
-## [0.10.9](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.9) - 2019-05-22
+## Rdiffweb [0.10.9](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.9) - 2019-05-22
 
 <small>[Compare with 0.10.8](https://gitlab.com/ikus-soft/rdiffweb/compare/0.10.8...0.10.9)</small>
 
@@ -3215,19 +2545,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Remove travis-ci / Replace by gitlab CICD ([3baec5f](https://gitlab.com/ikus-soft/rdiffweb/commit/3baec5f1b78e9c931fa920383b69fb97957c4972) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/patrik/fix-error-log' into 'master' ([d41ca64](https://gitlab.com/ikus-soft/rdiffweb/commit/d41ca646a53745b3ccd50069776c301c023f7539) by Patrik Dufresne).
-- Merge branch 'develop/patrik/change-log-level' into 'master' ([c6a481e](https://gitlab.com/ikus-soft/rdiffweb/commit/c6a481e3152dde4ee3dce2cf221e32653e94a730) by Patrik Dufresne).
-- Merge branch 'develop/patrik/cicd-docker-image' into 'master' ([67fc7d5](https://gitlab.com/ikus-soft/rdiffweb/commit/67fc7d5011882054d7a96406f76b8913ac07b96d) by Patrik Dufresne).
-
 ### Misc
 
 - Improve error handling around error.log ([d702aa8](https://gitlab.com/ikus-soft/rdiffweb/commit/d702aa82a109be7721b08f11fb6201684822a7e4) by Patrik Dufresne).
 - CICD rdiffweb deployment ([a78156e](https://gitlab.com/ikus-soft/rdiffweb/commit/a78156ed155737b3609639d8a9413dbc61fcdc74) by Patrik Dufresne).
 - CICD prebuild image ([060bac9](https://gitlab.com/ikus-soft/rdiffweb/commit/060bac9c92e467aaaf05155801f8b5b367ddb127) by Patrik Dufresne).
 
-## [0.10.8](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.8) - 2018-07-14
+## Rdiffweb [0.10.8](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.8) - 2018-07-14
 
 <small>[Compare with 0.10.7](https://gitlab.com/ikus-soft/rdiffweb/compare/0.10.7...0.10.8)</small>
 
@@ -3243,17 +2567,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Remove pages and coverage step from CICD ([552a9dc](https://gitlab.com/ikus-soft/rdiffweb/commit/552a9dc297e1798e30ecb0fc33dea1fe62e85a51) by Patrik Dufresne).
 
-### Merged
-
-- Merge branch 'develop/cherrypy16' into 'master' ([1527dc0](https://gitlab.com/ikus-soft/rdiffweb/commit/1527dc07d6c3c5f29a929b33214775ccea911c5b) by Patrik Dufresne).
-- Merge branch 'develop/demon-task-1027' into 'master' ([a15b36b](https://gitlab.com/ikus-soft/rdiffweb/commit/a15b36b8c4d0179843788740bb70c1fc10d0c9c0) by Patrik Dufresne).
-
 ### Misc
 
 - TASK-1027 Fix bug in deamon plugin scheduler ([4203cf8](https://gitlab.com/ikus-soft/rdiffweb/commit/4203cf87fcaaa63e22a5e1bf2cfba2e7ba000df1) by Patrik Dufresne).
 - Only push branches to github ([b21e524](https://gitlab.com/ikus-soft/rdiffweb/commit/b21e524a85b6d2d908c649dde40845d10309efb6) by Patrik Dufresne).
 
-## [0.10.7](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.7) - 2018-04-12
+## Rdiffweb [0.10.7](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.7) - 2018-04-12
 
 <small>[Compare with 0.10.6](https://gitlab.com/ikus-soft/rdiffweb/compare/0.10.6...0.10.7)</small>
 
@@ -3264,7 +2583,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Update copyright year to 2018 ([430ea16](https://gitlab.com/ikus-soft/rdiffweb/commit/430ea16826cab31353c616a59c89cd79828c32bc) by Patrik Dufresne).
 - Adjust logging level in filter_authentication. ([1eb2269](https://gitlab.com/ikus-soft/rdiffweb/commit/1eb2269a5ecc49df7909dd21aa886b82c91ee85b) by Patrik Dufresne).
 
-## [0.10.6](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.6) - 2018-04-04
+## Rdiffweb [0.10.6](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.6) - 2018-04-04
 
 <small>[Compare with 0.10.5](https://gitlab.com/ikus-soft/rdiffweb/compare/0.10.5...0.10.6)</small>
 
@@ -3299,7 +2618,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Create a Jenkinsfile ([85447a3](https://gitlab.com/ikus-soft/rdiffweb/commit/85447a35565e9c75497ff817169c5ba689e7bd9e) by Patrik Dufresne).
 - Prepare next development version ([e582a5c](https://gitlab.com/ikus-soft/rdiffweb/commit/e582a5c46b3f79b679a386f4c495529bccbeb1a6) by Jenkins).
 
-## [0.10.5](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.5) - 2018-01-31
+## Rdiffweb [0.10.5](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.5) - 2018-01-31
 
 <small>[Compare with 0.10.4](https://gitlab.com/ikus-soft/rdiffweb/compare/0.10.4...0.10.5)</small>
 
@@ -3327,7 +2646,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Provide travis config file ([d564c73](https://gitlab.com/ikus-soft/rdiffweb/commit/d564c73ac179111ac1b14f8ee16f2f72db03d51a) by ikus060).
 - Start implementation of a RESTful API for Rdiffweb. ([e0d4ebb](https://gitlab.com/ikus-soft/rdiffweb/commit/e0d4ebb6f442690f41429d3f97cf51ac7df90214) by Patrik Dufresne).
 
-## [0.10.4](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.4) - 2017-10-16
+## Rdiffweb [0.10.4](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.4) - 2017-10-16
 
 <small>[Compare with 0.10.2](https://gitlab.com/ikus-soft/rdiffweb/compare/0.10.2...0.10.4)</small>
 
@@ -3342,7 +2661,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Move away documentation to www.patrikdufresne.com ([e03a513](https://gitlab.com/ikus-soft/rdiffweb/commit/e03a5136a69198891e6b1adb57a7cc5d90d014a2) by ikus060).
 - Prepare next development version ([4b85b12](https://gitlab.com/ikus-soft/rdiffweb/commit/4b85b12ddb1247a281e47a9289e87f37bd13728c) by Jenkins).
 
-## [0.10.2](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.2) - 2017-05-25
+## Rdiffweb [0.10.2](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.2) - 2017-05-25
 
 <small>[Compare with 0.10.0](https://gitlab.com/ikus-soft/rdiffweb/compare/0.10.0...0.10.2)</small>
 
@@ -3366,7 +2685,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Release 0.10.2 ([bd46726](https://gitlab.com/ikus-soft/rdiffweb/commit/bd46726b02427344967c62352cb065ca070d5302) by Jenkins).
 - Prepare next development version ([46e7109](https://gitlab.com/ikus-soft/rdiffweb/commit/46e710988260de1c3fd4a2b6adffb27433b4c828) by Jenkins).
 
-## [0.10.0](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.0) - 2017-05-17
+## Rdiffweb [0.10.0](https://gitlab.com/ikus-soft/rdiffweb/tags/0.10.0) - 2017-05-17
 
 <small>[Compare with 0.9.5](https://gitlab.com/ikus-soft/rdiffweb/compare/0.9.5...0.10.0)</small>
 
@@ -3404,10 +2723,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Remove babel from installation requirements ([d456356](https://gitlab.com/ikus-soft/rdiffweb/commit/d456356f41bdac40d7ab8c8a78ce922f3ec04f5a) by Patrik Dufresne).
 - Remove obsolete import from page_settings ([a975dec](https://gitlab.com/ikus-soft/rdiffweb/commit/a975dec1662a3ae854b0c4ece70ef2896ac5843d) by Patrik Dufresne).
 
-### Merged
-
-- Merge RdiffPath and DirEntry. ([489f3cd](https://gitlab.com/ikus-soft/rdiffweb/commit/489f3cdfc261d3fc90dfe74faa7a49ac9560cd0e) by Patrik Dufresne).
-
 ### Misc
 
 - Release 0.10.0 ([bd8c27b](https://gitlab.com/ikus-soft/rdiffweb/commit/bd8c27b039808b3d281dbd8fb8f0fcbf011ce2d3) by Jenkins).
@@ -3431,7 +2746,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Reorganize static file. pdsl/rdiffweb#31 ([892ccd6](https://gitlab.com/ikus-soft/rdiffweb/commit/892ccd6e76d82158c986ce8ec028b41127a6abc4) by Patrik Dufresne).
 - Prepare next development version ([df6b0dd](https://gitlab.com/ikus-soft/rdiffweb/commit/df6b0dd32db5cce98e487a5690cd1f7e4daeb474) by Jenkins).
 
-## [0.9.5](https://gitlab.com/ikus-soft/rdiffweb/tags/0.9.5) - 2016-10-11
+## Rdiffweb [0.9.5](https://gitlab.com/ikus-soft/rdiffweb/tags/0.9.5) - 2016-10-11
 
 <small>[Compare with 0.9.3](https://gitlab.com/ikus-soft/rdiffweb/compare/0.9.3...0.9.5)</small>
 
@@ -3441,7 +2756,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Include d3.js as static ressources ([61cf8a6](https://gitlab.com/ikus-soft/rdiffweb/commit/61cf8a650e2e068a88c59ee9f5bf83653b96c89f) by Patrik Dufresne).
 - Prepare next development version ([3b716a1](https://gitlab.com/ikus-soft/rdiffweb/commit/3b716a176ba3ba9494e5694d8a8588acfa77e035) by Jenkins).
 
-## [0.9.3](https://gitlab.com/ikus-soft/rdiffweb/tags/0.9.3) - 2016-10-08
+## Rdiffweb [0.9.3](https://gitlab.com/ikus-soft/rdiffweb/tags/0.9.3) - 2016-10-08
 
 <small>[Compare with 0.9.2](https://gitlab.com/ikus-soft/rdiffweb/compare/0.9.2...0.9.3)</small>
 
@@ -3450,7 +2765,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Release 0.9.3 ([dd72b73](https://gitlab.com/ikus-soft/rdiffweb/commit/dd72b73bdd535edc25f8743f94d9bd03c1c4ca87) by Jenkins).
 - Prepare next development version ([1514ac1](https://gitlab.com/ikus-soft/rdiffweb/commit/1514ac1029bd93f9006745eca6a45079106b37f8) by Jenkins).
 
-## [0.9.2](https://gitlab.com/ikus-soft/rdiffweb/tags/0.9.2) - 2016-10-07
+## Rdiffweb [0.9.2](https://gitlab.com/ikus-soft/rdiffweb/tags/0.9.2) - 2016-10-07
 
 <small>[Compare with 0.9.1](https://gitlab.com/ikus-soft/rdiffweb/compare/0.9.1...0.9.2)</small>
 
@@ -3476,7 +2791,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Swallow exception in status page. ([ff15d1b](https://gitlab.com/ikus-soft/rdiffweb/commit/ff15d1b8b13e8cf2afd93349b4aa08fadda57836) by Patrik Dufresne).
 - Prepare next development version ([87ef8c9](https://gitlab.com/ikus-soft/rdiffweb/commit/87ef8c9429a81a1c36b2cf398d58d6142e8f55d7) by Jenkins).
 
-## [0.9.1](https://gitlab.com/ikus-soft/rdiffweb/tags/0.9.1) - 2016-10-07
+## Rdiffweb [0.9.1](https://gitlab.com/ikus-soft/rdiffweb/tags/0.9.1) - 2016-10-07
 
 <small>[Compare with 0.8.1](https://gitlab.com/ikus-soft/rdiffweb/compare/0.8.1...0.9.1)</small>
 
@@ -3682,7 +2997,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Update french translation ([0161a04](https://gitlab.com/ikus-soft/rdiffweb/commit/0161a048aa45f1b155c6c9ab6a1c4a0065c83b81) by Patrik Dufresne).
 - Review some loglevel. ([5abdc59](https://gitlab.com/ikus-soft/rdiffweb/commit/5abdc595eeebd0eb1451963f80b8a073547f0167) by Patrik Dufresne).
 
-## [0.8.1](https://gitlab.com/ikus-soft/rdiffweb/tags/0.8.1) - 2015-12-21
+## Rdiffweb [0.8.1](https://gitlab.com/ikus-soft/rdiffweb/tags/0.8.1) - 2015-12-21
 
 <small>[Compare with v0.7.0](https://gitlab.com/ikus-soft/rdiffweb/compare/v0.7.0...0.8.1)</small>
 
@@ -3884,17 +3199,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Remove obsolete page error. ([b70bb65](https://gitlab.com/ikus-soft/rdiffweb/commit/b70bb65b2b68344a787923b83f64f08751ca5ab2) by Patrik Dufresne).
 - Remove zip vs tar preference. Allow user to select when restoring. Fix #23 ([6fb8c93](https://gitlab.com/ikus-soft/rdiffweb/commit/6fb8c93891f2f97375a3ed2e1d2dbce6b4975d8d) by Patrik Dufresne).
 
-### Merged
-
-- Merge pull request #47 from ikus060/develop ([eac89dc](https://gitlab.com/ikus-soft/rdiffweb/commit/eac89dc20296f3922a3bcad1148c6fdb610f0c76) by Patrik Dufresne).
-- Merge pull request #34 from peyremorgan/beta-mofiles-nomanifest ([e1e66fc](https://gitlab.com/ikus-soft/rdiffweb/commit/e1e66fcdef2dcadbb696a156251ce2c175c56b57) by Patrik Dufresne).
-- Merge remote-tracking branch 'github/develop' into develop ([2edd91f](https://gitlab.com/ikus-soft/rdiffweb/commit/2edd91f0e5ba821b32310e200f83963d35b38275) by Patrik Dufresne).
-- Merge pull request #32 from peyremorgan/beta-readmetypo ([d464204](https://gitlab.com/ikus-soft/rdiffweb/commit/d464204a9a6247da38b8941943c9f67dc562dc5f) by Patrik Dufresne).
-- Merge pull request #17 from sechanbask/patch-1 ([9c2e14b](https://gitlab.com/ikus-soft/rdiffweb/commit/9c2e14bb81d29d2f7e9e2da2b309ffc33406ecb6) by Patrik Dufresne).
-- Merge pull request #18 from sechanbask/patch-2 ([34f4e62](https://gitlab.com/ikus-soft/rdiffweb/commit/34f4e62a1d90fe7f61da68b1832ad84e34692b2c) by Patrik Dufresne).
-- Merge pull request #19 from sechanbask/patch-3 ([16e04f4](https://gitlab.com/ikus-soft/rdiffweb/commit/16e04f4ba561ca6a3d92a02d5a5b204c5603927a) by Patrik Dufresne).
-- Merge pull request #20 from sechanbask/patch-4 ([6ca07d3](https://gitlab.com/ikus-soft/rdiffweb/commit/6ca07d3fcfeebd6343516c3834efa28de3e1272e) by Patrik Dufresne).
-
 ### Misc
 
 - Enhance repository view. Reduce item size. Include number of repos in title. ([0eb14af](https://gitlab.com/ikus-soft/rdiffweb/commit/0eb14af04bb8b39de2f96f2e5591c244be07dba1) by Patrik Dufresne).
@@ -3955,10 +3259,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Change sorting implementation to use TimSort. ([1ef7eef](https://gitlab.com/ikus-soft/rdiffweb/commit/1ef7eefd483f6b9bfa3c0e3938f4fc796a7351cf) by Patrik Dufresne).
 - Change the creation of the status entry url to make it relative instead of absolute. ([0378aa2](https://gitlab.com/ikus-soft/rdiffweb/commit/0378aa225ef07ad3ffc80be7f92bdcba9e3d010d) by Patrik Dufresne).
-
-### Merged
-
-- Merge remote-tracking branch 'origin/master' ([23e5302](https://gitlab.com/ikus-soft/rdiffweb/commit/23e53020704342aafa853e0a09f3466027610d76) by Patrik Dufresne).
 
 ### Misc
 
