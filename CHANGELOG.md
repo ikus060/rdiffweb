@@ -1223,7 +1223,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Improve test involving scheduled tasks ([766bbdd](https://gitlab.com/ikus-soft/rdiffweb/commit/766bbdd1b153f4a335ab641b495ca6ba232d99fd) by Patrik Dufresne).
 - Invalidate browser cache for logo, headerlogo and favicon on restart #245 ([116c1a3](https://gitlab.com/ikus-soft/rdiffweb/commit/116c1a3a0e326d69ad78743482d5908b496952f8) by Patrik Dufresne).
 - Replace admin password only when `--admin-password` option is provided ([56b374a](https://gitlab.com/ikus-soft/rdiffweb/commit/56b374ac89a6cd4f7b04f1cfdf5bc4732d0eb7fb) by Patrik Dufresne).
-- Block repository access when user_root directory is empty or a relative path ([b2df367](https://gitlab.com/ikus-soft/rdiffweb/commit/b2df3679564d0daa2856213bb307d3e34bd89a25) by Patrik Dufresne).
+- Block repository access when user_root directory is empty or a relative path CVE-2022-4314 ([b2df367](https://gitlab.com/ikus-soft/rdiffweb/commit/b2df3679564d0daa2856213bb307d3e34bd89a25) by Patrik Dufresne).
 
 ## Rdiffweb [2.5.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.5.1) - 2022-11-16
 
@@ -1251,7 +1251,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add test to verify CSRF in user's settings #221 ([836e5a1](https://gitlab.com/ikus-soft/rdiffweb/commit/836e5a181f24b077452671a8a3094dd5046a1468) by Patrik Dufresne).
 - Add REST API to manage sshkeys ([660795d](https://gitlab.com/ikus-soft/rdiffweb/commit/660795dfef9c56305599074d850c39a0622f784a) by Patrik Dufresne).
 - Add artifacts expiration ([3e7911a](https://gitlab.com/ikus-soft/rdiffweb/commit/3e7911a1c3bd66f2de4cf1851fb3ad6ece6b718f) by Patrik Dufresne).
-- Add Clickjacking Defense ([35caf48](https://gitlab.com/ikus-soft/rdiffweb/commit/35caf480cd8a7a62ab16c6a83d4993df478a0016) by Patrik Dufresne).
+- Add Clickjacking Defense CVE-2022-3167 ([35caf48](https://gitlab.com/ikus-soft/rdiffweb/commit/35caf480cd8a7a62ab16c6a83d4993df478a0016) by Patrik Dufresne).
 - Add Minarca User-Agent detection ([bf4e826](https://gitlab.com/ikus-soft/rdiffweb/commit/bf4e8263361893d7cfdf9932e4eaed5af30033bb) by Patrik Dufresne).
 - Add Active Sessions management #203 ([0a2e045](https://gitlab.com/ikus-soft/rdiffweb/commit/0a2e0457e1a433e68e88f9a211e85b5e51a48867) by Patrik Dufresne).
 - Add Ubuntu Jammy support ([a8719da](https://gitlab.com/ikus-soft/rdiffweb/commit/a8719da9d5bc3cf01fc7f36aad1cf16793bdf686) by Patrik Dufresne).
@@ -1277,34 +1277,34 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Handle duplicate token name ([f77eb8c](https://gitlab.com/ikus-soft/rdiffweb/commit/f77eb8c9a2b835eee253621b4f5c693e8b350316) by Patrik Dufresne).
 - Raise `user_added` event before_insert ([516b3d8](https://gitlab.com/ikus-soft/rdiffweb/commit/516b3d8d7c34b1baff50ba3ea035d9c7ff96f1e5) by Patrik Dufresne).
 - Identify persistent sessions with a badge ([b396bfb](https://gitlab.com/ikus-soft/rdiffweb/commit/b396bfb93ea01ef061ce6b6a4260bc0ba8d873fa) by Patrik Dufresne).
-- Delete user's session on password change ([6efb995](https://gitlab.com/ikus-soft/rdiffweb/commit/6efb995bc32c8a8e9ad755eb813dec991dffb2b8) by Patrik Dufresne).
+- Delete user's session on password change CVE-2022-3362 ([6efb995](https://gitlab.com/ikus-soft/rdiffweb/commit/6efb995bc32c8a8e9ad755eb813dec991dffb2b8) by Patrik Dufresne).
 - Use python 3.10 to fix CICD pipeline ([a69d45c](https://gitlab.com/ikus-soft/rdiffweb/commit/a69d45c874d93fc73be353b3f556133191ec17ab) by Patrik Dufresne).
 - Force plugins ordering on startup #232 ([36e3549](https://gitlab.com/ikus-soft/rdiffweb/commit/36e3549cef24cfe1c2d068a5d433430375bd3f2c) by Patrik Dufresne).
 - Use argon2id to store password hash #231 ([397990b](https://gitlab.com/ikus-soft/rdiffweb/commit/397990b53dc5d28507f76e458aed915cdd97de57) by Patrik Dufresne).
 - Improve testing of database upgrade ([7edc428](https://gitlab.com/ikus-soft/rdiffweb/commit/7edc4285e45066cfdb3a0f879cf5f29f422010cd) by Patrik Dufresne).
-- Send email notification when enabling or disabling MFA ([c27c46b](https://gitlab.com/ikus-soft/rdiffweb/commit/c27c46bac656b1da74f28eac1b52dfa5df76e6f2) by Patrik Dufresne).
-- Define idle and absolute session timeout with agressive default to protect usage on public computer ([f2a32f2](https://gitlab.com/ikus-soft/rdiffweb/commit/f2a32f2a9f3fb8be1a9432ac3d81d3aacdb13095) by Patrik Dufresne).
-- Enforce 'Origin' validation ([afc1bdf](https://gitlab.com/ikus-soft/rdiffweb/commit/afc1bdfab5161c74012ff2590a6ec49cc0d8fde0) by Patrik Dufresne).
-- Improve ratelimit implementation ([b78ec09](https://gitlab.com/ikus-soft/rdiffweb/commit/b78ec09f4582e363f6f449df6f987127e126c311) by Patrik Dufresne).
+- Send email notification when enabling or disabling MFA CVE-2022-3363 ([c27c46b](https://gitlab.com/ikus-soft/rdiffweb/commit/c27c46bac656b1da74f28eac1b52dfa5df76e6f2) by Patrik Dufresne).
+- Define idle and absolute session timeout with agressive default to protect usage on public computer CVE-2022-3327 ([f2a32f2](https://gitlab.com/ikus-soft/rdiffweb/commit/f2a32f2a9f3fb8be1a9432ac3d81d3aacdb13095) by Patrik Dufresne).
+- Enforce 'Origin' validation CVE-2022-3457 ([afc1bdf](https://gitlab.com/ikus-soft/rdiffweb/commit/afc1bdfab5161c74012ff2590a6ec49cc0d8fde0) by Patrik Dufresne).
+- Improve ratelimit implementation CVE-2022-3439 ([b78ec09](https://gitlab.com/ikus-soft/rdiffweb/commit/b78ec09f4582e363f6f449df6f987127e126c311) by Patrik Dufresne).
 - Support case insensitive column name #228 ([be24bb6](https://gitlab.com/ikus-soft/rdiffweb/commit/be24bb6bbef0b380cb004955218719db6e89061b) by Patrik Dufresne).
-- Mitigate path traversal vulnerability #227 ([79ff50f](https://gitlab.com/ikus-soft/rdiffweb/commit/79ff50f1bb1841b76964871e339aabb67630d652) by Patrik Dufresne).
-- Enforce password policy new password cannot be set as new password ([2ffc2af](https://gitlab.com/ikus-soft/rdiffweb/commit/2ffc2af65c8f8113b06e0b89929c604bcdf844b9) by Patrik Dufresne).
+- Mitigate path traversal vulnerability #227 CVE-2022-3389 ([79ff50f](https://gitlab.com/ikus-soft/rdiffweb/commit/79ff50f1bb1841b76964871e339aabb67630d652) by Patrik Dufresne).
+- Enforce password policy new password cannot be set as new password CVE-2022-3326 CVE-2022-3376 ([2ffc2af](https://gitlab.com/ikus-soft/rdiffweb/commit/2ffc2af65c8f8113b06e0b89929c604bcdf844b9) by Patrik Dufresne).
 - Make test-package more robust in CICD ([44bed43](https://gitlab.com/ikus-soft/rdiffweb/commit/44bed43eb3e2230eaed04cfd4a9e047cd23f88f7) by Patrik Dufresne).
-- Limit incorrect attempts to change the user's password to prevent brute force attacks #225 ([b5e3bb0](https://gitlab.com/ikus-soft/rdiffweb/commit/b5e3bb0a98268d18ceead36ab9b2b7eaacd659a8) by Patrik Dufresne).
+- Limit incorrect attempts to change the user's password to prevent brute force attacks #225 CVE-2022-3273 ([b5e3bb0](https://gitlab.com/ikus-soft/rdiffweb/commit/b5e3bb0a98268d18ceead36ab9b2b7eaacd659a8) by Patrik Dufresne).
 - Enforce validation on fullname, username and email for increase security #224 ([4d464b4](https://gitlab.com/ikus-soft/rdiffweb/commit/4d464b467f14b8eb9103d7f5f0774e49995527c7) by Patrik Dufresne).
 - Enforce permissions on /etc/rdiffweb ([9aa7191](https://gitlab.com/ikus-soft/rdiffweb/commit/9aa7191c8b355df95682df23f645f7d573a52c50) by Patrik Dufresne).
 - Configure proxy tools with `X-Real-IP` ([a98e965](https://gitlab.com/ikus-soft/rdiffweb/commit/a98e965d5651eb9d2fadd3eebee3dbcf0a2989cc) by Patrik Dufresne).
-- Add more secure headers: Cache-control, Referrer-Policy, X-Content-Type-Options, X-XSS-Protection ([1027c20](https://gitlab.com/ikus-soft/rdiffweb/commit/1027c202e1d8f0162bc02913e6b51154925acb04) by Patrik Dufresne).
+- Add more secure headers: Cache-control, Referrer-Policy, X-Content-Type-Options, X-XSS-Protection CVE-2022-3292 ([1027c20](https://gitlab.com/ikus-soft/rdiffweb/commit/1027c202e1d8f0162bc02913e6b51154925acb04) by Patrik Dufresne).
 - Limit user's fullname and Token name field length ([b62c479](https://gitlab.com/ikus-soft/rdiffweb/commit/b62c479ff6979563c7c23e7182942bc4f460a2c7) by Patrik Dufresne).
 - Timeout 15 min by default and 30 days for persistent session ([b2b1f18](https://gitlab.com/ikus-soft/rdiffweb/commit/b2b1f18472cd0855d6a2dd4123a3bac08a8727a3) by Patrik Dufresne).
-- Define field limit for SSH Key title ([d1fb5ab](https://gitlab.com/ikus-soft/rdiffweb/commit/d1fb5abcd42b57c8274f6bba33573d524359fe42) by Patrik Dufresne).
-- Define field limit for username, email and root directory #223 ([109e401](https://gitlab.com/ikus-soft/rdiffweb/commit/109e401ad74473ee5e59e7e6320d497eb1cfffdb) by Patrik Dufresne).
+- Define field limit for SSH Key title CVE-2022-3298 ([d1fb5ab](https://gitlab.com/ikus-soft/rdiffweb/commit/d1fb5abcd42b57c8274f6bba33573d524359fe42) by Patrik Dufresne).
+- Define field limit for username, email and root directory #223 CVE-2022-3295 CVE-2022-3272 CVE-2022-3290 ([109e401](https://gitlab.com/ikus-soft/rdiffweb/commit/109e401ad74473ee5e59e7e6320d497eb1cfffdb) by Patrik Dufresne).
 - Clean-up invalid path on error page ([5fbc544](https://gitlab.com/ikus-soft/rdiffweb/commit/5fbc544eede96333f22f08d6f92649a06e14a356) by Patrik Dufresne).
-- Generate a new session on login and 2FA #220 ([102a92b](https://gitlab.com/ikus-soft/rdiffweb/commit/102a92b28e6ced74be50b8e08bd2916642affafe) by Patrik Dufresne).
+- Generate a new session on login and 2FA #220 CVE-2022-3269 ([102a92b](https://gitlab.com/ikus-soft/rdiffweb/commit/102a92b28e6ced74be50b8e08bd2916642affafe) by Patrik Dufresne).
 - Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session on HTTP Error #218 ([a7ca8e5](https://gitlab.com/ikus-soft/rdiffweb/commit/a7ca8e5fe1950e6011c75dbb7f22c660587c8503) by Patrik Dufresne).
-- Mitigate CSRF on repository settings #217 ([585cd65](https://gitlab.com/ikus-soft/rdiffweb/commit/585cd65ecd2676de3597e76012bb2b214c08f0fd) by Patrik Dufresne).
+- Mitigate CSRF on repository settings #217 CVE-2022-3267 ([585cd65](https://gitlab.com/ikus-soft/rdiffweb/commit/585cd65ecd2676de3597e76012bb2b214c08f0fd) by Patrik Dufresne).
 - Support MarkupSafe<3 for Debian bookworm ([db8dc09](https://gitlab.com/ikus-soft/rdiffweb/commit/db8dc0929d86cf8266c6194145d61be37a732869) by Patrik Dufresne).
-- Mitigate CSRF on notification #216 ([bfeb1d5](https://gitlab.com/ikus-soft/rdiffweb/commit/bfeb1d559c6953596eead6fd88573cc81e7fd566) by Patrik Dufresne).
+- Mitigate CSRF on notification #216 CVE-2022-3233 ([bfeb1d5](https://gitlab.com/ikus-soft/rdiffweb/commit/bfeb1d559c6953596eead6fd88573cc81e7fd566) by Patrik Dufresne).
 - Update X-Real-IP documentation ([6b19e52](https://gitlab.com/ikus-soft/rdiffweb/commit/6b19e52904cb2279d4c5d25d7fb358e257ea645d) by Patrik Dufresne).
 - Replace last warning message by flash ([da081da](https://gitlab.com/ikus-soft/rdiffweb/commit/da081da06d489dee2b55e89fae69d39488af5dc7) by Patrik Dufresne).
 - Exclude dock/conf.py from sonar analysis ([5ce7777](https://gitlab.com/ikus-soft/rdiffweb/commit/5ce7777f59452f25ddae79eca30e0a4dca9e9b80) by Patrik Dufresne).
@@ -1367,7 +1367,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Misc
 
-- Mitigate CSRF on repository deletion and user deletion #214 #215 ([422791e](https://gitlab.com/ikus-soft/rdiffweb/commit/422791ea45713aaaa865bdca74addb9fffd93a71) by Patrik Dufresne).
+- Mitigate CSRF on repository deletion and user deletion #214 #215 CVE-2022-3232 ([422791e](https://gitlab.com/ikus-soft/rdiffweb/commit/422791ea45713aaaa865bdca74addb9fffd93a71) by Patrik Dufresne).
 
 ## Rdiffweb [2.4.4](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.4) - 2022-09-15
 
@@ -1383,7 +1383,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Misc
 
-- Mitigate CSRF in profile's SSH Keys #212 ([9125f5a](https://gitlab.com/ikus-soft/rdiffweb/commit/9125f5a2d918fed0f3fc1c86fa94cd1779ed9f73) by Patrik Dufresne).
+- Mitigate CSRF in profile's SSH Keys #212 CVE-2022-3221 ([9125f5a](https://gitlab.com/ikus-soft/rdiffweb/commit/9125f5a2d918fed0f3fc1c86fa94cd1779ed9f73) by Patrik Dufresne).
 
 ## Rdiffweb [2.4.2](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.2) - 2022-09-12
 
@@ -1392,9 +1392,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Misc
 
 - Update release version 2.4.2 ([73a369a](https://gitlab.com/ikus-soft/rdiffweb/commit/73a369a3f7ec7958106d395eb65dd511fca0d9c7) by Patrik Dufresne).
-- Enforce minimum and maximum password length #211 ([233befc](https://gitlab.com/ikus-soft/rdiffweb/commit/233befc33bdc45d4838c773d5aed4408720504c5) by Patrik Dufresne).
-- Avoid leakage of the stack trace in the default error page #210 ([e7828ca](https://gitlab.com/ikus-soft/rdiffweb/commit/e7828ca959a03582691679456a90b16903f98afe) by Patrik Dufresne).
-- Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session #209 ([f2de237](https://gitlab.com/ikus-soft/rdiffweb/commit/f2de2371c5e13ce1c6fd6f9a1ed3e5d46b93cd7e) by Patrik Dufresne).
+- Enforce minimum and maximum password length #211 CVE-2022-3175 ([233befc](https://gitlab.com/ikus-soft/rdiffweb/commit/233befc33bdc45d4838c773d5aed4408720504c5) by Patrik Dufresne).
+- Avoid leakage of the stack trace in the default error page #210 CVE-2022-3175 ([e7828ca](https://gitlab.com/ikus-soft/rdiffweb/commit/e7828ca959a03582691679456a90b16903f98afe) by Patrik Dufresne).
+- Use 'Secure' Attribute with Sensitive Cookie in HTTPS Session #209 CVE-2022-3174 ([f2de237](https://gitlab.com/ikus-soft/rdiffweb/commit/f2de2371c5e13ce1c6fd6f9a1ed3e5d46b93cd7e) by Patrik Dufresne).
 
 ## Rdiffweb [2.4.1](https://gitlab.com/ikus-soft/rdiffweb/tags/2.4.1) - 2022-09-08
 
