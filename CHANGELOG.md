@@ -6,6 +6,45 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [7.2.0](https://gitlab.com/ikus-soft/rdiffweb/tags/7.2.0) - 2026-10-13
+
+<small>[Compare with 7.1.1](https://gitlab.com/ikus-soft/rdiffweb/compare/7.1.1...7.2.0)</small>
+
+### Added
+
+- tests: add test for dt-language static endpoint ([83037ce](https://gitlab.com/ikus-soft/rdiffweb/commit/83037ce74be96aed2e81071296ef9f5b5b25d306) by Patrik Dufresne).
+- docs: add non-qualifying vulnerability report categories ([a8b170c](https://gitlab.com/ikus-soft/rdiffweb/commit/a8b170c808183c41cd1c8b74e634d678407e4277) by Patrik Dufresne).
+- docs: add reference to CVE-2025-67796 in changelog ([36127b0](https://gitlab.com/ikus-soft/rdiffweb/commit/36127b06a05b3c1f35aa0e86d9870ee84f768a23) by Patrik Dufresne).
+- model: add MessageContext to propagate author/ip/user-agent to background jobs ([032d444](https://gitlab.com/ikus-soft/rdiffweb/commit/032d4446fa6164fafaf034add7c8fbcda4e34ad4) by Patrik Dufresne).
+
+### Fixed
+
+- librdiff: fix path traversal via sibling repo ([0bce549](https://gitlab.com/ikus-soft/rdiffweb/commit/0bce549ea716e23727f276a4cb18c255aacee7f0) by Patrik Dufresne).
+- model: fix sql error when deleting user with repo #389 ([a2440bd](https://gitlab.com/ikus-soft/rdiffweb/commit/a2440bdf8bb0402cf62943ce95c3d5a845987883) by Patrik Dufresne).
+
+### Changed
+
+- ci: change versioning scheme from pep440 to semver ([3b730ed](https://gitlab.com/ikus-soft/rdiffweb/commit/3b730edef89b74f13e12826f97299d3282420c3b) by Patrik Dufresne).
+- adming-users: change deleting status badge color ([326036e](https://gitlab.com/ikus-soft/rdiffweb/commit/326036e84546aadaeffba2e25d43551f052eacb0) by Patrik Dufresne).
+- shell: change use rdiff-backup 'server' subcommand for v2.2 ([9e1d5bd](https://gitlab.com/ikus-soft/rdiffweb/commit/9e1d5bd2e6e20c0878ebca83f929bf3b61f7a7dc) by Patrik Dufresne).
+
+### Removed
+
+- docs: remove merged commits from changelog ([67489b4](https://gitlab.com/ikus-soft/rdiffweb/commit/67489b4c2e7440b9d64621907f6daf40159a3fb7) by Patrik Dufresne).
+- graphs: remove category badges from cards ([3fc8873](https://gitlab.com/ikus-soft/rdiffweb/commit/3fc88732c47a298467c7e0c0e4e774e1f9a7e123) by Patrik Dufresne).
+
+### Misc
+
+- docs: modify changelog to include CVEs ([9a034d3](https://gitlab.com/ikus-soft/rdiffweb/commit/9a034d3a73d292ec6d6080ab315bc84987ccb8ce) by Patrik Dufresne).
+- docs: update vulnerability reporting instructions in SECURITY.md ([6654240](https://gitlab.com/ikus-soft/rdiffweb/commit/6654240e75368497460439a4b73c37b3eaad88bf) by Patrik Dufresne).
+- ui: replace ms-3 spacing with spacer buttons in DataTables ([f5e6ec0](https://gitlab.com/ikus-soft/rdiffweb/commit/f5e6ec037fbd13942949342fd736968af4fc1f13) by Patrik Dufresne).
+- docs: update community links from Google Group to Discourse ([0e90262](https://gitlab.com/ikus-soft/rdiffweb/commit/0e902621bf2c977f2dfe0f7a4417abac6dbc58ac) by Patrik Dufresne).
+- login-page: replace bootstrap column classes with fixed-width containers ([b5d609d](https://gitlab.com/ikus-soft/rdiffweb/commit/b5d609d6dfabf546b6e064155e1ce5f10e2cd126) by Patrik Dufresne).
+- tox: rename bump env to release and bump git-changelog version ([c018c80](https://gitlab.com/ikus-soft/rdiffweb/commit/c018c807ba17ebc8371934cf32a06927fc618344) by Patrik Dufresne).
+- repo: precompute repo statistics instead of accessing session_statistics directly ([9857de4](https://gitlab.com/ikus-soft/rdiffweb/commit/9857de428a07973bc4efb21436c403d1a200bdfe) by Patrik Dufresne).
+- ci: update minarca-server deb image to bookworm ([9368c32](https://gitlab.com/ikus-soft/rdiffweb/commit/9368c320be4a5a2d65ac0c2efd1e93461481e6b4) by Patrik Dufresne).
+- build: bump cherrypy-foundation dependency to >=1.18.0 ([3f5a1b3](https://gitlab.com/ikus-soft/rdiffweb/commit/3f5a1b38f4b7c184023a2fc921ceb376c2d39a14) by Patrik Dufresne).
+
 ## [7.1.1](https://gitlab.com/ikus-soft/rdiffweb/tags/7.1.1) - 2026-08-28
 
 <small>[Compare with 7.1.0](https://gitlab.com/ikus-soft/rdiffweb/compare/7.1.0...7.1.1)</small>

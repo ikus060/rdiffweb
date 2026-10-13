@@ -1,3 +1,30 @@
+rdiffweb (7.2.0-1) unstable; urgency=medium
+
+  * shell: change use rdiff-backup 'server' subcommand for v2.2
+  * build: bump cherrypy-foundation dependency to >=1.18.0
+  * ci: update minarca-server deb image to bookworm
+  * model: fix sql error when deleting user with repo #389
+  * repo: precompute repo statistics instead of accessing session_statistics
+    directly
+  * tox: rename bump env to release and bump git-changelog version
+  * login-page: replace bootstrap column classes with fixed-width containers
+  * docs: update community links from Google Group to Discourse
+  * ui: replace ms-3 spacing with spacer buttons in DataTables
+  * graphs: remove category badges from cards
+  * adming-users: change deleting status badge color
+  * model: add MessageContext to propagate author/ip/user-agent to background
+    jobs
+  * docs: add reference to CVE-2025-67796 in changelog
+  * docs: update vulnerability reporting instructions in SECURITY.md
+  * librdiff: fix path traversal via sibling repo
+  * docs: add non-qualifying vulnerability report categories
+  * tests: add test for dt-language static endpoint
+  * docs: remove merged commits from changelog
+  * docs: modify changelog to include CVEs
+  * ci: change versioning scheme from pep440 to semver
+
+ -- Patrik Dufresne <patrik@ikus-soft.com>  Tue, 13 Oct 2026 13:08:00 -0400
+
 rdiffweb (7.1.1-1) unstable; urgency=medium
 
   * changelog: merge 7.1.0 with 7.1.0b3-1 changelog
